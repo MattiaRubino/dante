@@ -20,6 +20,22 @@ export const createTemporalConstraintRequestRuleThreeBoundaryKindDefault = `late
 export const createTemporalConstraintRequestRuleThreeConstrainedFacetDefault = `schedule.completion`;
 export const createTemporalConstraintRequestRuleThreeFamilyDefault = `boundary`;
 export const createTemporalConstraintRequestRuleThreeTemporalFormDefault = `absolute`;
+export const createTemporalConstraintRequestRuleFourConstrainedFacetDefault = `schedule.start`;
+export const createTemporalConstraintRequestRuleFourFamilyDefault = `window`;
+export const createTemporalConstraintRequestRuleFourRelationshipDefault = `start_within`;
+export const createTemporalConstraintRequestRuleFourTemporalFormDefault = `absolute`;
+export const createTemporalConstraintRequestRuleFiveConstrainedFacetDefault = `schedule.completion`;
+export const createTemporalConstraintRequestRuleFiveFamilyDefault = `window`;
+export const createTemporalConstraintRequestRuleFiveRelationshipDefault = `completion_within`;
+export const createTemporalConstraintRequestRuleFiveTemporalFormDefault = `absolute`;
+export const createTemporalConstraintRequestRuleSixConstrainedFacetDefault = `schedule.placement`;
+export const createTemporalConstraintRequestRuleSixFamilyDefault = `window`;
+export const createTemporalConstraintRequestRuleSixRelationshipDefault = `full_placement_contained`;
+export const createTemporalConstraintRequestRuleSixTemporalFormDefault = `absolute`;
+export const createTemporalConstraintRequestRuleSevenConstrainedFacetDefault = `schedule.placement`;
+export const createTemporalConstraintRequestRuleSevenFamilyDefault = `window`;
+export const createTemporalConstraintRequestRuleSevenRelationshipDefault = `placement_overlaps`;
+export const createTemporalConstraintRequestRuleSevenTemporalFormDefault = `absolute`;
 export const CreateTemporalConstraintRequest = /*#__PURE__*/ zod.object({
   operation_id: /*#__PURE__*/ zod
     .string()
@@ -30,108 +46,206 @@ export const CreateTemporalConstraintRequest = /*#__PURE__*/ zod.object({
       ),
     ),
   rule: /*#__PURE__*/ zod.union([
-    /*#__PURE__*/ zod
-      .object({
-        boundary_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-        boundary_kind: /*#__PURE__*/ zod
-          ._default(
-            /*#__PURE__*/ zod.literal('earliest_start'),
-            createTemporalConstraintRequestRuleOneBoundaryKindDefault,
-          )
-          .check(/*#__PURE__*/ zod.meta({ title: 'Boundary Kind' })),
-        constrained_facet: /*#__PURE__*/ zod
-          ._default(
-            /*#__PURE__*/ zod.literal('schedule.start'),
-            createTemporalConstraintRequestRuleOneConstrainedFacetDefault,
-          )
-          .check(/*#__PURE__*/ zod.meta({ title: 'Constrained Facet' })),
-        family: /*#__PURE__*/ zod
-          ._default(
-            /*#__PURE__*/ zod.literal('boundary'),
-            createTemporalConstraintRequestRuleOneFamilyDefault,
-          )
-          .check(/*#__PURE__*/ zod.meta({ title: 'Family' })),
-        strength: /*#__PURE__*/ zod.enum(['hard', 'soft']),
-        temporal_form: /*#__PURE__*/ zod
-          ._default(
-            /*#__PURE__*/ zod.literal('absolute'),
-            createTemporalConstraintRequestRuleOneTemporalFormDefault,
-          )
-          .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
-      })
-      .check(
-        /*#__PURE__*/ zod.describe(
-          'Absolute lower bound on accepted Schedule start.',
-        ),
-      ),
-    /*#__PURE__*/ zod
-      .object({
-        boundary_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-        boundary_kind: /*#__PURE__*/ zod
-          ._default(
-            /*#__PURE__*/ zod.literal('latest_start'),
-            createTemporalConstraintRequestRuleTwoBoundaryKindDefault,
-          )
-          .check(/*#__PURE__*/ zod.meta({ title: 'Boundary Kind' })),
-        constrained_facet: /*#__PURE__*/ zod
-          ._default(
-            /*#__PURE__*/ zod.literal('schedule.start'),
-            createTemporalConstraintRequestRuleTwoConstrainedFacetDefault,
-          )
-          .check(/*#__PURE__*/ zod.meta({ title: 'Constrained Facet' })),
-        family: /*#__PURE__*/ zod
-          ._default(
-            /*#__PURE__*/ zod.literal('boundary'),
-            createTemporalConstraintRequestRuleTwoFamilyDefault,
-          )
-          .check(/*#__PURE__*/ zod.meta({ title: 'Family' })),
-        strength: /*#__PURE__*/ zod.enum(['hard', 'soft']),
-        temporal_form: /*#__PURE__*/ zod
-          ._default(
-            /*#__PURE__*/ zod.literal('absolute'),
-            createTemporalConstraintRequestRuleTwoTemporalFormDefault,
-          )
-          .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
-      })
-      .check(
-        /*#__PURE__*/ zod.describe(
-          'Absolute upper bound on accepted Schedule start.',
-        ),
-      ),
-    /*#__PURE__*/ zod
-      .object({
-        boundary_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-        boundary_kind: /*#__PURE__*/ zod
-          ._default(
-            /*#__PURE__*/ zod.literal('latest_completion'),
-            createTemporalConstraintRequestRuleThreeBoundaryKindDefault,
-          )
-          .check(/*#__PURE__*/ zod.meta({ title: 'Boundary Kind' })),
-        constrained_facet: /*#__PURE__*/ zod
-          ._default(
-            /*#__PURE__*/ zod.literal('schedule.completion'),
-            createTemporalConstraintRequestRuleThreeConstrainedFacetDefault,
-          )
-          .check(/*#__PURE__*/ zod.meta({ title: 'Constrained Facet' })),
-        family: /*#__PURE__*/ zod
-          ._default(
-            /*#__PURE__*/ zod.literal('boundary'),
-            createTemporalConstraintRequestRuleThreeFamilyDefault,
-          )
-          .check(/*#__PURE__*/ zod.meta({ title: 'Family' })),
-        strength: /*#__PURE__*/ zod.enum(['hard', 'soft']),
-        temporal_form: /*#__PURE__*/ zod
-          ._default(
-            /*#__PURE__*/ zod.literal('absolute'),
-            createTemporalConstraintRequestRuleThreeTemporalFormDefault,
-          )
-          .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
-      })
-      .check(
-        /*#__PURE__*/ zod.describe(
-          'Absolute upper bound on Schedule completion; product vocabulary may call it a deadline.',
-        ),
-      ),
+    /*#__PURE__*/ zod.object({
+      boundary_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+      boundary_kind: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('earliest_start'),
+          createTemporalConstraintRequestRuleOneBoundaryKindDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Boundary Kind' })),
+      constrained_facet: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('schedule.start'),
+          createTemporalConstraintRequestRuleOneConstrainedFacetDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Constrained Facet' })),
+      family: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('boundary'),
+          createTemporalConstraintRequestRuleOneFamilyDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Family' })),
+      strength: /*#__PURE__*/ zod.enum(['hard', 'soft']),
+      temporal_form: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('absolute'),
+          createTemporalConstraintRequestRuleOneTemporalFormDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
+    }),
+    /*#__PURE__*/ zod.object({
+      boundary_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+      boundary_kind: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('latest_start'),
+          createTemporalConstraintRequestRuleTwoBoundaryKindDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Boundary Kind' })),
+      constrained_facet: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('schedule.start'),
+          createTemporalConstraintRequestRuleTwoConstrainedFacetDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Constrained Facet' })),
+      family: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('boundary'),
+          createTemporalConstraintRequestRuleTwoFamilyDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Family' })),
+      strength: /*#__PURE__*/ zod.enum(['hard', 'soft']),
+      temporal_form: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('absolute'),
+          createTemporalConstraintRequestRuleTwoTemporalFormDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
+    }),
+    /*#__PURE__*/ zod.object({
+      boundary_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+      boundary_kind: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('latest_completion'),
+          createTemporalConstraintRequestRuleThreeBoundaryKindDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Boundary Kind' })),
+      constrained_facet: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('schedule.completion'),
+          createTemporalConstraintRequestRuleThreeConstrainedFacetDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Constrained Facet' })),
+      family: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('boundary'),
+          createTemporalConstraintRequestRuleThreeFamilyDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Family' })),
+      strength: /*#__PURE__*/ zod.enum(['hard', 'soft']),
+      temporal_form: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('absolute'),
+          createTemporalConstraintRequestRuleThreeTemporalFormDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
+    }),
+    /*#__PURE__*/ zod.object({
+      constrained_facet: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('schedule.start'),
+          createTemporalConstraintRequestRuleFourConstrainedFacetDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Constrained Facet' })),
+      ends_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+      family: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('window'),
+          createTemporalConstraintRequestRuleFourFamilyDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Family' })),
+      relationship: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('start_within'),
+          createTemporalConstraintRequestRuleFourRelationshipDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Relationship' })),
+      starts_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+      strength: /*#__PURE__*/ zod.enum(['hard', 'soft']),
+      temporal_form: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('absolute'),
+          createTemporalConstraintRequestRuleFourTemporalFormDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
+    }),
+    /*#__PURE__*/ zod.object({
+      constrained_facet: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('schedule.completion'),
+          createTemporalConstraintRequestRuleFiveConstrainedFacetDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Constrained Facet' })),
+      ends_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+      family: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('window'),
+          createTemporalConstraintRequestRuleFiveFamilyDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Family' })),
+      relationship: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('completion_within'),
+          createTemporalConstraintRequestRuleFiveRelationshipDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Relationship' })),
+      starts_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+      strength: /*#__PURE__*/ zod.enum(['hard', 'soft']),
+      temporal_form: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('absolute'),
+          createTemporalConstraintRequestRuleFiveTemporalFormDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
+    }),
+    /*#__PURE__*/ zod.object({
+      constrained_facet: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('schedule.placement'),
+          createTemporalConstraintRequestRuleSixConstrainedFacetDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Constrained Facet' })),
+      ends_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+      family: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('window'),
+          createTemporalConstraintRequestRuleSixFamilyDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Family' })),
+      relationship: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('full_placement_contained'),
+          createTemporalConstraintRequestRuleSixRelationshipDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Relationship' })),
+      starts_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+      strength: /*#__PURE__*/ zod.enum(['hard', 'soft']),
+      temporal_form: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('absolute'),
+          createTemporalConstraintRequestRuleSixTemporalFormDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
+    }),
+    /*#__PURE__*/ zod.object({
+      constrained_facet: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('schedule.placement'),
+          createTemporalConstraintRequestRuleSevenConstrainedFacetDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Constrained Facet' })),
+      ends_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+      family: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('window'),
+          createTemporalConstraintRequestRuleSevenFamilyDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Family' })),
+      relationship: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('placement_overlaps'),
+          createTemporalConstraintRequestRuleSevenRelationshipDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Relationship' })),
+      starts_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+      strength: /*#__PURE__*/ zod.enum(['hard', 'soft']),
+      temporal_form: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('absolute'),
+          createTemporalConstraintRequestRuleSevenTemporalFormDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
+    }),
   ]),
   subject_ref: /*#__PURE__*/ zod.uuid(),
 });

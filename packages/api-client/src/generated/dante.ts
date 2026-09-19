@@ -18,6 +18,7 @@ import type {
   CreateTemporalConstraintRequest,
   CreatedTemporalConstraintResponse,
   EstablishActivityScheduleRequest,
+  EvaluateTemporalConstraintsRequest,
   EventAgendaMutationResponse,
   EventResponse,
   ExistingAccountSignupResponse,
@@ -80,6 +81,7 @@ import type {
   SignupRequest,
   SignupResendRequest,
   SignupVerificationRequest,
+  TemporalConstraintEvaluationResponse,
   TemporalConstraintListResponse,
   TemporalConstraintResponse,
   TemporalListConstraintsBySubjectParams,
@@ -4037,6 +4039,71 @@ export const temporalCreateConstraint = async (
     status: res.status,
     headers: res.headers,
   } as temporalCreateConstraintResponse;
+};
+
+export type temporalEvaluateConstraintsResponse200 = {
+  data: TemporalConstraintEvaluationResponse;
+  status: 200;
+};
+
+export type temporalEvaluateConstraintsResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalEvaluateConstraintsResponseSuccess =
+  temporalEvaluateConstraintsResponse200 & {
+    headers: Headers;
+  };
+export type temporalEvaluateConstraintsResponseError =
+  temporalEvaluateConstraintsResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalEvaluateConstraintsResponse =
+  | temporalEvaluateConstraintsResponseSuccess
+  | temporalEvaluateConstraintsResponseError;
+
+export const getTemporalEvaluateConstraintsUrl = () => {
+  return `/api/v1/temporal/constraints/evaluate`;
+};
+
+/**
+ * @summary Evaluate Temporal Constraints
+ */
+export const temporalEvaluateConstraints = async (
+  evaluateTemporalConstraintsRequest: EvaluateTemporalConstraintsRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalEvaluateConstraintsResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(getTemporalEvaluateConstraintsUrl(), {
+    ...options,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(evaluateTemporalConstraintsRequest),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalEvaluateConstraintsResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalEvaluateConstraintsResponse;
 };
 
 export type temporalGetConstraintResponse200 = {

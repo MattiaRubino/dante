@@ -1,6 +1,105 @@
 {
   "components": {
     "schemas": {
+      "AbsoluteCompletionWithinWindowCurrentRuleResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "constrained_facet": {
+            "const": "schedule.completion",
+            "default": "schedule.completion",
+            "title": "Constrained Facet",
+            "type": "string"
+          },
+          "ends_at": {
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "family": {
+            "const": "window",
+            "default": "window",
+            "title": "Family",
+            "type": "string"
+          },
+          "material_state_ref": {
+            "format": "uuid",
+            "title": "Material State Ref",
+            "type": "string"
+          },
+          "relationship": {
+            "const": "completion_within",
+            "default": "completion_within",
+            "title": "Relationship",
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          },
+          "strength": {
+            "enum": ["hard", "soft"],
+            "title": "Strength",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "absolute",
+            "default": "absolute",
+            "title": "Temporal Form",
+            "type": "string"
+          }
+        },
+        "required": ["strength", "starts_at", "ends_at", "material_state_ref"],
+        "title": "AbsoluteCompletionWithinWindowCurrentRuleResponse",
+        "type": "object"
+      },
+      "AbsoluteCompletionWithinWindowRuleRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "constrained_facet": {
+            "const": "schedule.completion",
+            "default": "schedule.completion",
+            "title": "Constrained Facet",
+            "type": "string"
+          },
+          "ends_at": {
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "family": {
+            "const": "window",
+            "default": "window",
+            "title": "Family",
+            "type": "string"
+          },
+          "relationship": {
+            "const": "completion_within",
+            "default": "completion_within",
+            "title": "Relationship",
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          },
+          "strength": {
+            "enum": ["hard", "soft"],
+            "title": "Strength",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "absolute",
+            "default": "absolute",
+            "title": "Temporal Form",
+            "type": "string"
+          }
+        },
+        "required": ["strength", "starts_at", "ends_at"],
+        "title": "AbsoluteCompletionWithinWindowRuleRequest",
+        "type": "object"
+      },
       "AbsoluteEarliestStartCurrentRuleResponse": {
         "additionalProperties": false,
         "properties": {
@@ -50,7 +149,6 @@
       },
       "AbsoluteEarliestStartRuleRequest": {
         "additionalProperties": false,
-        "description": "Absolute lower bound on accepted Schedule start.",
         "properties": {
           "boundary_at": {
             "format": "date-time",
@@ -91,7 +189,106 @@
         "title": "AbsoluteEarliestStartRuleRequest",
         "type": "object"
       },
-      "AbsoluteIntervalPlacementRequest": {
+      "AbsoluteFullPlacementContainedWindowCurrentRuleResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "constrained_facet": {
+            "const": "schedule.placement",
+            "default": "schedule.placement",
+            "title": "Constrained Facet",
+            "type": "string"
+          },
+          "ends_at": {
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "family": {
+            "const": "window",
+            "default": "window",
+            "title": "Family",
+            "type": "string"
+          },
+          "material_state_ref": {
+            "format": "uuid",
+            "title": "Material State Ref",
+            "type": "string"
+          },
+          "relationship": {
+            "const": "full_placement_contained",
+            "default": "full_placement_contained",
+            "title": "Relationship",
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          },
+          "strength": {
+            "enum": ["hard", "soft"],
+            "title": "Strength",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "absolute",
+            "default": "absolute",
+            "title": "Temporal Form",
+            "type": "string"
+          }
+        },
+        "required": ["strength", "starts_at", "ends_at", "material_state_ref"],
+        "title": "AbsoluteFullPlacementContainedWindowCurrentRuleResponse",
+        "type": "object"
+      },
+      "AbsoluteFullPlacementContainedWindowRuleRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "constrained_facet": {
+            "const": "schedule.placement",
+            "default": "schedule.placement",
+            "title": "Constrained Facet",
+            "type": "string"
+          },
+          "ends_at": {
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "family": {
+            "const": "window",
+            "default": "window",
+            "title": "Family",
+            "type": "string"
+          },
+          "relationship": {
+            "const": "full_placement_contained",
+            "default": "full_placement_contained",
+            "title": "Relationship",
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          },
+          "strength": {
+            "enum": ["hard", "soft"],
+            "title": "Strength",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "absolute",
+            "default": "absolute",
+            "title": "Temporal Form",
+            "type": "string"
+          }
+        },
+        "required": ["strength", "starts_at", "ends_at"],
+        "title": "AbsoluteFullPlacementContainedWindowRuleRequest",
+        "type": "object"
+      },
+      "AbsoluteIntervalPlacementRequest-Output": {
         "additionalProperties": false,
         "properties": {
           "ends_at": {
@@ -99,10 +296,10 @@
             "title": "Ends At",
             "type": "string"
           },
-          "kind": {
+          "form": {
             "const": "absolute_interval",
             "default": "absolute_interval",
-            "title": "Kind",
+            "title": "Form",
             "type": "string"
           },
           "starts_at": {
@@ -164,7 +361,6 @@
       },
       "AbsoluteLatestCompletionRuleRequest": {
         "additionalProperties": false,
-        "description": "Absolute upper bound on Schedule completion; product vocabulary may call it a deadline.",
         "properties": {
           "boundary_at": {
             "format": "date-time",
@@ -254,7 +450,6 @@
       },
       "AbsoluteLatestStartRuleRequest": {
         "additionalProperties": false,
-        "description": "Absolute upper bound on accepted Schedule start.",
         "properties": {
           "boundary_at": {
             "format": "date-time",
@@ -293,6 +488,204 @@
         },
         "required": ["strength", "boundary_at"],
         "title": "AbsoluteLatestStartRuleRequest",
+        "type": "object"
+      },
+      "AbsolutePlacementOverlapsWindowCurrentRuleResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "constrained_facet": {
+            "const": "schedule.placement",
+            "default": "schedule.placement",
+            "title": "Constrained Facet",
+            "type": "string"
+          },
+          "ends_at": {
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "family": {
+            "const": "window",
+            "default": "window",
+            "title": "Family",
+            "type": "string"
+          },
+          "material_state_ref": {
+            "format": "uuid",
+            "title": "Material State Ref",
+            "type": "string"
+          },
+          "relationship": {
+            "const": "placement_overlaps",
+            "default": "placement_overlaps",
+            "title": "Relationship",
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          },
+          "strength": {
+            "enum": ["hard", "soft"],
+            "title": "Strength",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "absolute",
+            "default": "absolute",
+            "title": "Temporal Form",
+            "type": "string"
+          }
+        },
+        "required": ["strength", "starts_at", "ends_at", "material_state_ref"],
+        "title": "AbsolutePlacementOverlapsWindowCurrentRuleResponse",
+        "type": "object"
+      },
+      "AbsolutePlacementOverlapsWindowRuleRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "constrained_facet": {
+            "const": "schedule.placement",
+            "default": "schedule.placement",
+            "title": "Constrained Facet",
+            "type": "string"
+          },
+          "ends_at": {
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "family": {
+            "const": "window",
+            "default": "window",
+            "title": "Family",
+            "type": "string"
+          },
+          "relationship": {
+            "const": "placement_overlaps",
+            "default": "placement_overlaps",
+            "title": "Relationship",
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          },
+          "strength": {
+            "enum": ["hard", "soft"],
+            "title": "Strength",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "absolute",
+            "default": "absolute",
+            "title": "Temporal Form",
+            "type": "string"
+          }
+        },
+        "required": ["strength", "starts_at", "ends_at"],
+        "title": "AbsolutePlacementOverlapsWindowRuleRequest",
+        "type": "object"
+      },
+      "AbsoluteStartWithinWindowCurrentRuleResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "constrained_facet": {
+            "const": "schedule.start",
+            "default": "schedule.start",
+            "title": "Constrained Facet",
+            "type": "string"
+          },
+          "ends_at": {
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "family": {
+            "const": "window",
+            "default": "window",
+            "title": "Family",
+            "type": "string"
+          },
+          "material_state_ref": {
+            "format": "uuid",
+            "title": "Material State Ref",
+            "type": "string"
+          },
+          "relationship": {
+            "const": "start_within",
+            "default": "start_within",
+            "title": "Relationship",
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          },
+          "strength": {
+            "enum": ["hard", "soft"],
+            "title": "Strength",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "absolute",
+            "default": "absolute",
+            "title": "Temporal Form",
+            "type": "string"
+          }
+        },
+        "required": ["strength", "starts_at", "ends_at", "material_state_ref"],
+        "title": "AbsoluteStartWithinWindowCurrentRuleResponse",
+        "type": "object"
+      },
+      "AbsoluteStartWithinWindowRuleRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "constrained_facet": {
+            "const": "schedule.start",
+            "default": "schedule.start",
+            "title": "Constrained Facet",
+            "type": "string"
+          },
+          "ends_at": {
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "family": {
+            "const": "window",
+            "default": "window",
+            "title": "Family",
+            "type": "string"
+          },
+          "relationship": {
+            "const": "start_within",
+            "default": "start_within",
+            "title": "Relationship",
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          },
+          "strength": {
+            "enum": ["hard", "soft"],
+            "title": "Strength",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "absolute",
+            "default": "absolute",
+            "title": "Temporal Form",
+            "type": "string"
+          }
+        },
+        "required": ["strength", "starts_at", "ends_at"],
+        "title": "AbsoluteStartWithinWindowRuleRequest",
         "type": "object"
       },
       "ActivityResponse": {
@@ -671,7 +1064,7 @@
           "placement": {
             "discriminator": {
               "mapping": {
-                "absolute_interval": "#/components/schemas/AbsoluteIntervalPlacementRequest",
+                "absolute_interval": "#/components/schemas/dante__modules__temporal__api__AbsoluteIntervalPlacementRequest",
                 "coarse_local_period": "#/components/schemas/CoarseLocalPeriodPlacementRequest",
                 "date_span": "#/components/schemas/DateSpanPlacementRequest",
                 "floating_local_interval": "#/components/schemas/FloatingLocalIntervalPlacementRequest",
@@ -690,7 +1083,7 @@
                 "$ref": "#/components/schemas/NamedZoneLocalIntervalPlacementRequest"
               },
               {
-                "$ref": "#/components/schemas/AbsoluteIntervalPlacementRequest"
+                "$ref": "#/components/schemas/dante__modules__temporal__api__AbsoluteIntervalPlacementRequest"
               },
               {
                 "$ref": "#/components/schemas/CoarseLocalPeriodPlacementRequest"
@@ -775,15 +1168,7 @@
             "type": "string"
           },
           "rule": {
-            "discriminator": {
-              "mapping": {
-                "earliest_start": "#/components/schemas/AbsoluteEarliestStartRuleRequest",
-                "latest_completion": "#/components/schemas/AbsoluteLatestCompletionRuleRequest",
-                "latest_start": "#/components/schemas/AbsoluteLatestStartRuleRequest"
-              },
-              "propertyName": "boundary_kind"
-            },
-            "oneOf": [
+            "anyOf": [
               {
                 "$ref": "#/components/schemas/AbsoluteEarliestStartRuleRequest"
               },
@@ -792,6 +1177,18 @@
               },
               {
                 "$ref": "#/components/schemas/AbsoluteLatestCompletionRuleRequest"
+              },
+              {
+                "$ref": "#/components/schemas/AbsoluteStartWithinWindowRuleRequest"
+              },
+              {
+                "$ref": "#/components/schemas/AbsoluteCompletionWithinWindowRuleRequest"
+              },
+              {
+                "$ref": "#/components/schemas/AbsoluteFullPlacementContainedWindowRuleRequest"
+              },
+              {
+                "$ref": "#/components/schemas/AbsolutePlacementOverlapsWindowRuleRequest"
               }
             ],
             "title": "Rule"
@@ -830,15 +1227,7 @@
             "type": "boolean"
           },
           "rule": {
-            "discriminator": {
-              "mapping": {
-                "earliest_start": "#/components/schemas/AbsoluteEarliestStartRuleRequest",
-                "latest_completion": "#/components/schemas/AbsoluteLatestCompletionRuleRequest",
-                "latest_start": "#/components/schemas/AbsoluteLatestStartRuleRequest"
-              },
-              "propertyName": "boundary_kind"
-            },
-            "oneOf": [
+            "anyOf": [
               {
                 "$ref": "#/components/schemas/AbsoluteEarliestStartRuleRequest"
               },
@@ -847,6 +1236,18 @@
               },
               {
                 "$ref": "#/components/schemas/AbsoluteLatestCompletionRuleRequest"
+              },
+              {
+                "$ref": "#/components/schemas/AbsoluteStartWithinWindowRuleRequest"
+              },
+              {
+                "$ref": "#/components/schemas/AbsoluteCompletionWithinWindowRuleRequest"
+              },
+              {
+                "$ref": "#/components/schemas/AbsoluteFullPlacementContainedWindowRuleRequest"
+              },
+              {
+                "$ref": "#/components/schemas/AbsolutePlacementOverlapsWindowRuleRequest"
               }
             ],
             "title": "Rule"
@@ -910,7 +1311,7 @@
           "placement": {
             "discriminator": {
               "mapping": {
-                "absolute_interval": "#/components/schemas/AbsoluteIntervalPlacementRequest",
+                "absolute_interval": "#/components/schemas/dante__modules__temporal__api__AbsoluteIntervalPlacementRequest",
                 "coarse_local_period": "#/components/schemas/CoarseLocalPeriodPlacementRequest",
                 "date_span": "#/components/schemas/DateSpanPlacementRequest",
                 "floating_local_interval": "#/components/schemas/FloatingLocalIntervalPlacementRequest",
@@ -929,7 +1330,7 @@
                 "$ref": "#/components/schemas/NamedZoneLocalIntervalPlacementRequest"
               },
               {
-                "$ref": "#/components/schemas/AbsoluteIntervalPlacementRequest"
+                "$ref": "#/components/schemas/dante__modules__temporal__api__AbsoluteIntervalPlacementRequest"
               },
               {
                 "$ref": "#/components/schemas/CoarseLocalPeriodPlacementRequest"
@@ -940,6 +1341,22 @@
         },
         "required": ["operation_id", "placement"],
         "title": "EstablishActivityScheduleRequest",
+        "type": "object"
+      },
+      "EvaluateTemporalConstraintsRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "placement": {
+            "$ref": "#/components/schemas/dante__modules__temporal__temporal_constraint_api__AbsoluteIntervalPlacementRequest"
+          },
+          "subject_ref": {
+            "format": "uuid",
+            "title": "Subject Ref",
+            "type": "string"
+          }
+        },
+        "required": ["subject_ref", "placement"],
+        "title": "EvaluateTemporalConstraintsRequest",
         "type": "object"
       },
       "EventAbsoluteIntervalPlacementRequest": {
@@ -2338,7 +2755,7 @@
           "placement": {
             "discriminator": {
               "mapping": {
-                "absolute_interval": "#/components/schemas/AbsoluteIntervalPlacementRequest",
+                "absolute_interval": "#/components/schemas/dante__modules__temporal__api__AbsoluteIntervalPlacementRequest",
                 "coarse_local_period": "#/components/schemas/CoarseLocalPeriodPlacementRequest",
                 "date_span": "#/components/schemas/DateSpanPlacementRequest",
                 "floating_local_interval": "#/components/schemas/FloatingLocalIntervalPlacementRequest",
@@ -2357,7 +2774,7 @@
                 "$ref": "#/components/schemas/NamedZoneLocalIntervalPlacementRequest"
               },
               {
-                "$ref": "#/components/schemas/AbsoluteIntervalPlacementRequest"
+                "$ref": "#/components/schemas/dante__modules__temporal__api__AbsoluteIntervalPlacementRequest"
               },
               {
                 "$ref": "#/components/schemas/CoarseLocalPeriodPlacementRequest"
@@ -2389,15 +2806,7 @@
             "type": "string"
           },
           "rule": {
-            "discriminator": {
-              "mapping": {
-                "earliest_start": "#/components/schemas/AbsoluteEarliestStartRuleRequest",
-                "latest_completion": "#/components/schemas/AbsoluteLatestCompletionRuleRequest",
-                "latest_start": "#/components/schemas/AbsoluteLatestStartRuleRequest"
-              },
-              "propertyName": "boundary_kind"
-            },
-            "oneOf": [
+            "anyOf": [
               {
                 "$ref": "#/components/schemas/AbsoluteEarliestStartRuleRequest"
               },
@@ -2406,6 +2815,18 @@
               },
               {
                 "$ref": "#/components/schemas/AbsoluteLatestCompletionRuleRequest"
+              },
+              {
+                "$ref": "#/components/schemas/AbsoluteStartWithinWindowRuleRequest"
+              },
+              {
+                "$ref": "#/components/schemas/AbsoluteCompletionWithinWindowRuleRequest"
+              },
+              {
+                "$ref": "#/components/schemas/AbsoluteFullPlacementContainedWindowRuleRequest"
+              },
+              {
+                "$ref": "#/components/schemas/AbsolutePlacementOverlapsWindowRuleRequest"
               }
             ],
             "title": "Rule"
@@ -2711,15 +3132,7 @@
             "type": "boolean"
           },
           "rule": {
-            "discriminator": {
-              "mapping": {
-                "earliest_start": "#/components/schemas/AbsoluteEarliestStartRuleRequest",
-                "latest_completion": "#/components/schemas/AbsoluteLatestCompletionRuleRequest",
-                "latest_start": "#/components/schemas/AbsoluteLatestStartRuleRequest"
-              },
-              "propertyName": "boundary_kind"
-            },
-            "oneOf": [
+            "anyOf": [
               {
                 "$ref": "#/components/schemas/AbsoluteEarliestStartRuleRequest"
               },
@@ -2728,6 +3141,18 @@
               },
               {
                 "$ref": "#/components/schemas/AbsoluteLatestCompletionRuleRequest"
+              },
+              {
+                "$ref": "#/components/schemas/AbsoluteStartWithinWindowRuleRequest"
+              },
+              {
+                "$ref": "#/components/schemas/AbsoluteCompletionWithinWindowRuleRequest"
+              },
+              {
+                "$ref": "#/components/schemas/AbsoluteFullPlacementContainedWindowRuleRequest"
+              },
+              {
+                "$ref": "#/components/schemas/AbsolutePlacementOverlapsWindowRuleRequest"
               }
             ],
             "title": "Rule"
@@ -3629,6 +4054,109 @@
         "title": "SignupVerificationRequest",
         "type": "object"
       },
+      "TemporalConstraintEvaluationItemResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "constrained_facet": {
+            "enum": [
+              "schedule.start",
+              "schedule.completion",
+              "schedule.placement"
+            ],
+            "title": "Constrained Facet",
+            "type": "string"
+          },
+          "constraint_ref": {
+            "format": "uuid",
+            "title": "Constraint Ref",
+            "type": "string"
+          },
+          "evaluation": {
+            "enum": ["satisfied", "violated", "not_evaluable"],
+            "title": "Evaluation",
+            "type": "string"
+          },
+          "family": {
+            "enum": ["boundary", "window"],
+            "title": "Family",
+            "type": "string"
+          },
+          "material_state_ref": {
+            "format": "uuid",
+            "title": "Material State Ref",
+            "type": "string"
+          },
+          "reason_code": {
+            "title": "Reason Code",
+            "type": "string"
+          },
+          "rule_code": {
+            "title": "Rule Code",
+            "type": "string"
+          },
+          "strength": {
+            "enum": ["hard", "soft"],
+            "title": "Strength",
+            "type": "string"
+          }
+        },
+        "required": [
+          "constraint_ref",
+          "material_state_ref",
+          "family",
+          "rule_code",
+          "constrained_facet",
+          "strength",
+          "evaluation",
+          "reason_code"
+        ],
+        "title": "TemporalConstraintEvaluationItemResponse",
+        "type": "object"
+      },
+      "TemporalConstraintEvaluationResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "hard_set_status": {
+            "enum": ["feasible", "infeasible", "undetermined"],
+            "title": "Hard Set Status",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TemporalConstraintEvaluationItemResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "placement": {
+            "$ref": "#/components/schemas/AbsoluteIntervalPlacementRequest-Output"
+          },
+          "status": {
+            "enum": [
+              "admissible",
+              "admissible_with_soft_violations",
+              "inadmissible",
+              "not_evaluable"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "subject_ref": {
+            "format": "uuid",
+            "title": "Subject Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "subject_ref",
+          "placement",
+          "status",
+          "hard_set_status",
+          "items"
+        ],
+        "title": "TemporalConstraintEvaluationResponse",
+        "type": "object"
+      },
       "TemporalConstraintListResponse": {
         "additionalProperties": false,
         "properties": {
@@ -3655,25 +4183,25 @@
           "current_rule": {
             "anyOf": [
               {
-                "discriminator": {
-                  "mapping": {
-                    "earliest_start": "#/components/schemas/AbsoluteEarliestStartCurrentRuleResponse",
-                    "latest_completion": "#/components/schemas/AbsoluteLatestCompletionCurrentRuleResponse",
-                    "latest_start": "#/components/schemas/AbsoluteLatestStartCurrentRuleResponse"
-                  },
-                  "propertyName": "boundary_kind"
-                },
-                "oneOf": [
-                  {
-                    "$ref": "#/components/schemas/AbsoluteEarliestStartCurrentRuleResponse"
-                  },
-                  {
-                    "$ref": "#/components/schemas/AbsoluteLatestStartCurrentRuleResponse"
-                  },
-                  {
-                    "$ref": "#/components/schemas/AbsoluteLatestCompletionCurrentRuleResponse"
-                  }
-                ]
+                "$ref": "#/components/schemas/AbsoluteEarliestStartCurrentRuleResponse"
+              },
+              {
+                "$ref": "#/components/schemas/AbsoluteLatestStartCurrentRuleResponse"
+              },
+              {
+                "$ref": "#/components/schemas/AbsoluteLatestCompletionCurrentRuleResponse"
+              },
+              {
+                "$ref": "#/components/schemas/AbsoluteStartWithinWindowCurrentRuleResponse"
+              },
+              {
+                "$ref": "#/components/schemas/AbsoluteCompletionWithinWindowCurrentRuleResponse"
+              },
+              {
+                "$ref": "#/components/schemas/AbsoluteFullPlacementContainedWindowCurrentRuleResponse"
+              },
+              {
+                "$ref": "#/components/schemas/AbsolutePlacementOverlapsWindowCurrentRuleResponse"
               },
               {
                 "type": "null"
@@ -4647,6 +5175,54 @@
         },
         "required": ["loc", "msg", "type"],
         "title": "ValidationError",
+        "type": "object"
+      },
+      "dante__modules__temporal__api__AbsoluteIntervalPlacementRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "ends_at": {
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "kind": {
+            "const": "absolute_interval",
+            "default": "absolute_interval",
+            "title": "Kind",
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          }
+        },
+        "required": ["starts_at", "ends_at"],
+        "title": "AbsoluteIntervalPlacementRequest",
+        "type": "object"
+      },
+      "dante__modules__temporal__temporal_constraint_api__AbsoluteIntervalPlacementRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "ends_at": {
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "form": {
+            "const": "absolute_interval",
+            "default": "absolute_interval",
+            "title": "Form",
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          }
+        },
+        "required": ["starts_at", "ends_at"],
+        "title": "AbsoluteIntervalPlacementRequest",
         "type": "object"
       }
     },
@@ -14136,6 +14712,45 @@
           }
         },
         "summary": "Create Temporal Constraint",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/constraints/evaluate": {
+      "post": {
+        "operationId": "temporal_evaluate_constraints",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EvaluateTemporalConstraintsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemporalConstraintEvaluationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Evaluate Temporal Constraints",
         "tags": ["temporal"]
       }
     },

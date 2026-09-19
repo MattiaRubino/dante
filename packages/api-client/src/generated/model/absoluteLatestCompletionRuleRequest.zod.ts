@@ -10,40 +10,34 @@ export const absoluteLatestCompletionRuleRequestBoundaryKindDefault = `latest_co
 export const absoluteLatestCompletionRuleRequestConstrainedFacetDefault = `schedule.completion`;
 export const absoluteLatestCompletionRuleRequestFamilyDefault = `boundary`;
 export const absoluteLatestCompletionRuleRequestTemporalFormDefault = `absolute`;
-export const AbsoluteLatestCompletionRuleRequest = /*#__PURE__*/ zod
-  .object({
-    boundary_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-    boundary_kind: /*#__PURE__*/ zod
-      ._default(
-        /*#__PURE__*/ zod.literal('latest_completion'),
-        absoluteLatestCompletionRuleRequestBoundaryKindDefault,
-      )
-      .check(/*#__PURE__*/ zod.meta({ title: 'Boundary Kind' })),
-    constrained_facet: /*#__PURE__*/ zod
-      ._default(
-        /*#__PURE__*/ zod.literal('schedule.completion'),
-        absoluteLatestCompletionRuleRequestConstrainedFacetDefault,
-      )
-      .check(/*#__PURE__*/ zod.meta({ title: 'Constrained Facet' })),
-    family: /*#__PURE__*/ zod
-      ._default(
-        /*#__PURE__*/ zod.literal('boundary'),
-        absoluteLatestCompletionRuleRequestFamilyDefault,
-      )
-      .check(/*#__PURE__*/ zod.meta({ title: 'Family' })),
-    strength: /*#__PURE__*/ zod.enum(['hard', 'soft']),
-    temporal_form: /*#__PURE__*/ zod
-      ._default(
-        /*#__PURE__*/ zod.literal('absolute'),
-        absoluteLatestCompletionRuleRequestTemporalFormDefault,
-      )
-      .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
-  })
-  .check(
-    /*#__PURE__*/ zod.describe(
-      'Absolute upper bound on Schedule completion; product vocabulary may call it a deadline.',
-    ),
-  );
+export const AbsoluteLatestCompletionRuleRequest = /*#__PURE__*/ zod.object({
+  boundary_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+  boundary_kind: /*#__PURE__*/ zod
+    ._default(
+      /*#__PURE__*/ zod.literal('latest_completion'),
+      absoluteLatestCompletionRuleRequestBoundaryKindDefault,
+    )
+    .check(/*#__PURE__*/ zod.meta({ title: 'Boundary Kind' })),
+  constrained_facet: /*#__PURE__*/ zod
+    ._default(
+      /*#__PURE__*/ zod.literal('schedule.completion'),
+      absoluteLatestCompletionRuleRequestConstrainedFacetDefault,
+    )
+    .check(/*#__PURE__*/ zod.meta({ title: 'Constrained Facet' })),
+  family: /*#__PURE__*/ zod
+    ._default(
+      /*#__PURE__*/ zod.literal('boundary'),
+      absoluteLatestCompletionRuleRequestFamilyDefault,
+    )
+    .check(/*#__PURE__*/ zod.meta({ title: 'Family' })),
+  strength: /*#__PURE__*/ zod.enum(['hard', 'soft']),
+  temporal_form: /*#__PURE__*/ zod
+    ._default(
+      /*#__PURE__*/ zod.literal('absolute'),
+      absoluteLatestCompletionRuleRequestTemporalFormDefault,
+    )
+    .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
+});
 
 export type AbsoluteLatestCompletionRuleRequest = zod.input<
   typeof AbsoluteLatestCompletionRuleRequest

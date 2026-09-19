@@ -10,40 +10,34 @@ export const absoluteLatestStartRuleRequestBoundaryKindDefault = `latest_start`;
 export const absoluteLatestStartRuleRequestConstrainedFacetDefault = `schedule.start`;
 export const absoluteLatestStartRuleRequestFamilyDefault = `boundary`;
 export const absoluteLatestStartRuleRequestTemporalFormDefault = `absolute`;
-export const AbsoluteLatestStartRuleRequest = /*#__PURE__*/ zod
-  .object({
-    boundary_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-    boundary_kind: /*#__PURE__*/ zod
-      ._default(
-        /*#__PURE__*/ zod.literal('latest_start'),
-        absoluteLatestStartRuleRequestBoundaryKindDefault,
-      )
-      .check(/*#__PURE__*/ zod.meta({ title: 'Boundary Kind' })),
-    constrained_facet: /*#__PURE__*/ zod
-      ._default(
-        /*#__PURE__*/ zod.literal('schedule.start'),
-        absoluteLatestStartRuleRequestConstrainedFacetDefault,
-      )
-      .check(/*#__PURE__*/ zod.meta({ title: 'Constrained Facet' })),
-    family: /*#__PURE__*/ zod
-      ._default(
-        /*#__PURE__*/ zod.literal('boundary'),
-        absoluteLatestStartRuleRequestFamilyDefault,
-      )
-      .check(/*#__PURE__*/ zod.meta({ title: 'Family' })),
-    strength: /*#__PURE__*/ zod.enum(['hard', 'soft']),
-    temporal_form: /*#__PURE__*/ zod
-      ._default(
-        /*#__PURE__*/ zod.literal('absolute'),
-        absoluteLatestStartRuleRequestTemporalFormDefault,
-      )
-      .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
-  })
-  .check(
-    /*#__PURE__*/ zod.describe(
-      'Absolute upper bound on accepted Schedule start.',
-    ),
-  );
+export const AbsoluteLatestStartRuleRequest = /*#__PURE__*/ zod.object({
+  boundary_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+  boundary_kind: /*#__PURE__*/ zod
+    ._default(
+      /*#__PURE__*/ zod.literal('latest_start'),
+      absoluteLatestStartRuleRequestBoundaryKindDefault,
+    )
+    .check(/*#__PURE__*/ zod.meta({ title: 'Boundary Kind' })),
+  constrained_facet: /*#__PURE__*/ zod
+    ._default(
+      /*#__PURE__*/ zod.literal('schedule.start'),
+      absoluteLatestStartRuleRequestConstrainedFacetDefault,
+    )
+    .check(/*#__PURE__*/ zod.meta({ title: 'Constrained Facet' })),
+  family: /*#__PURE__*/ zod
+    ._default(
+      /*#__PURE__*/ zod.literal('boundary'),
+      absoluteLatestStartRuleRequestFamilyDefault,
+    )
+    .check(/*#__PURE__*/ zod.meta({ title: 'Family' })),
+  strength: /*#__PURE__*/ zod.enum(['hard', 'soft']),
+  temporal_form: /*#__PURE__*/ zod
+    ._default(
+      /*#__PURE__*/ zod.literal('absolute'),
+      absoluteLatestStartRuleRequestTemporalFormDefault,
+    )
+    .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
+});
 
 export type AbsoluteLatestStartRuleRequest = zod.input<
   typeof AbsoluteLatestStartRuleRequest
