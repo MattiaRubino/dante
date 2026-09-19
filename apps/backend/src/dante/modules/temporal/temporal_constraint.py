@@ -1,4 +1,4 @@
-"""B04-A Temporal Constraint application operations over the canonical PostgreSQL core."""
+"""Temporal Constraint application operations over the canonical PostgreSQL core."""
 
 from __future__ import annotations
 
@@ -27,11 +27,17 @@ from dante.platform.time import normalize_utc_instant
 TemporalConstraintSubjectKind = Literal["activity", "event"]
 TemporalConstraintStrength = Literal["hard", "soft"]
 TemporalConstraintStatus = Literal["active", "retired"]
+TemporalConstraintBoundaryKind = Literal[
+    "earliest_start",
+    "latest_start",
+    "latest_completion",
+]
+TemporalConstraintFacet = Literal["schedule.start", "schedule.completion"]
 MutationKind = Literal["create", "revise", "retire"]
 
 
 class TemporalConstraintInputError(ValueError):
-    """The requested Temporal Constraint operation is outside the activated B04-A contract."""
+    """The requested Temporal Constraint operation is outside the activated contract."""
 
 
 class TemporalConstraintOperationIdReuseError(RuntimeError):
@@ -50,33 +56,81 @@ class TemporalConstraintPersistenceError(RuntimeError):
     """Canonical Temporal Constraint persistence could not complete safely."""
 
 
+def _normalize_boundary(value: datetime) -> datetime:
+    try:
+        return normalize_utc_instant(value)
+    except ValueError as exc:
+        raise TemporalConstraintInputError(str(exc)) from exc
+
+
+def _validate_strength(value: str) -> TemporalConstraintStrength:
+    if value not in {"hard", "soft"}:
+        raise TemporalConstraintInputError(
+            "Temporal Constraint strength must be either hard or soft."
+        )
+    return cast(TemporalConstraintStrength, value)
+
+
+def _admitted_pair(boundary_kind: str, constrained_facet: str) -> bool:
+    return (
+        (boundary_kind == "earliest_start" and constrained_facet == "schedule.start")
+        or (boundary_kind == "latest_start" and constrained_facet == "schedule.start")
+        or (
+            boundary_kind == "latest_completion"
+            and constrained_facet == "schedule.completion"
+        )
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class AbsoluteBoundaryRule:
+    """One complete B04-A/B typed absolute Schedule boundary rule."""
+
+    boundary_kind: TemporalConstraintBoundaryKind
+    constrained_facet: TemporalConstraintFacet
+    strength: TemporalConstraintStrength
+    boundary_at: datetime
+
+    def __post_init__(self) -> None:
+        _validate_strength(self.strength)
+        if not _admitted_pair(self.boundary_kind, self.constrained_facet):
+            raise TemporalConstraintInputError(
+                "Temporal Constraint boundary kind and constrained facet are not an admitted B04-B pair."
+            )
+        object.__setattr__(self, "boundary_at", _normalize_boundary(self.boundary_at))
+
+
 @dataclass(frozen=True, slots=True)
 class AbsoluteEarliestStartRule:
-    """The first complete B04-A typed rule: absolute earliest Schedule start."""
+    """B04-A compatibility value for an absolute earliest Schedule start."""
 
     strength: TemporalConstraintStrength
     boundary_at: datetime
 
     def __post_init__(self) -> None:
-        if self.strength not in {"hard", "soft"}:
-            raise TemporalConstraintInputError(
-                "Temporal Constraint strength must be either hard or soft."
-            )
-        try:
-            normalized = normalize_utc_instant(self.boundary_at)
-        except ValueError as exc:
-            raise TemporalConstraintInputError(str(exc)) from exc
-        object.__setattr__(self, "boundary_at", normalized)
+        _validate_strength(self.strength)
+        object.__setattr__(self, "boundary_at", _normalize_boundary(self.boundary_at))
+
+    @property
+    def boundary_kind(self) -> Literal["earliest_start"]:
+        return "earliest_start"
+
+    @property
+    def constrained_facet(self) -> Literal["schedule.start"]:
+        return "schedule.start"
+
+
+TemporalConstraintRule = AbsoluteBoundaryRule | AbsoluteEarliestStartRule
 
 
 @dataclass(frozen=True, slots=True)
 class TemporalConstraintCurrentRuleView:
-    """Current accepted B04-A rule MaterialState."""
+    """Current accepted typed absolute boundary MaterialState."""
 
     material_state_ref: MaterialStateRef
     family: Literal["boundary"]
-    boundary_kind: Literal["earliest_start"]
-    constrained_facet: Literal["schedule.start"]
+    boundary_kind: TemporalConstraintBoundaryKind
+    constrained_facet: TemporalConstraintFacet
     strength: TemporalConstraintStrength
     temporal_form: Literal["absolute"]
     boundary_at: datetime
@@ -101,7 +155,7 @@ class CreatedTemporalConstraintView:
     subject_native_ref: NativeRef
     subject_kind: TemporalConstraintSubjectKind
     material_state_ref: MaterialStateRef
-    rule: AbsoluteEarliestStartRule
+    rule: TemporalConstraintRule
     recorded_at: datetime
     replayed: bool
 
@@ -115,7 +169,7 @@ class RevisedTemporalConstraintView:
     subject_kind: TemporalConstraintSubjectKind
     previous_material_state_ref: MaterialStateRef
     material_state_ref: MaterialStateRef
-    rule: AbsoluteEarliestStartRule
+    rule: TemporalConstraintRule
     recorded_at: datetime
     replayed: bool
 
@@ -230,7 +284,7 @@ _MUTATE_SQL = text(
            active,
            created_at,
            replayed
-      FROM dante.mutate_self_absolute_earliest_start_constraint(
+      FROM dante.mutate_self_absolute_boundary_constraint(
            :self_person_ref,
            :operation_id,
            :intent_fingerprint,
@@ -239,6 +293,8 @@ _MUTATE_SQL = text(
            :constraint_ref,
            :expected_material_state_ref,
            :resulting_material_state_ref,
+           :boundary_kind_code,
+           :constrained_facet_code,
            :strength_code,
            :boundary_at
       )
@@ -271,11 +327,11 @@ def _hash(payload: Mapping[str, str]) -> str:
     ).hexdigest()
 
 
-def _rule_payload(rule: AbsoluteEarliestStartRule) -> dict[str, str]:
+def _rule_payload(rule: TemporalConstraintRule) -> dict[str, str]:
     return {
         "family": "boundary",
-        "boundary_kind": "earliest_start",
-        "constrained_facet": "schedule.start",
+        "boundary_kind": rule.boundary_kind,
+        "constrained_facet": rule.constrained_facet,
         "strength": rule.strength,
         "temporal_form": "absolute",
         "boundary_at": rule.boundary_at.isoformat(timespec="microseconds"),
@@ -285,7 +341,7 @@ def _rule_payload(rule: AbsoluteEarliestStartRule) -> dict[str, str]:
 def _create_fingerprint(
     *,
     subject_native_ref: NativeRef,
-    rule: AbsoluteEarliestStartRule,
+    rule: TemporalConstraintRule,
 ) -> str:
     return _hash(
         {
@@ -300,7 +356,7 @@ def _revise_fingerprint(
     *,
     constraint_ref: ScopedRecordRef,
     expected_material_state_ref: MaterialStateRef,
-    rule: AbsoluteEarliestStartRule,
+    rule: TemporalConstraintRule,
 ) -> str:
     return _hash(
         {
@@ -336,7 +392,7 @@ def _constraint_name(exc: IntegrityError) -> str | None:
 def _subject_kind(value: object) -> TemporalConstraintSubjectKind:
     if value not in {"activity", "event"}:
         raise TemporalConstraintPersistenceError(
-            "Stored Temporal Constraint subject family is outside B04-A."
+            "Stored Temporal Constraint subject family is outside B04."
         )
     return cast(TemporalConstraintSubjectKind, str(value))
 
@@ -355,21 +411,24 @@ def _constraint_from_row(row: RowMapping) -> TemporalConstraintView:
             current_rule=None,
         )
 
-    expected = {
-        "family_code": "boundary",
-        "constrained_facet_code": "schedule.start",
-        "boundary_kind_code": "earliest_start",
-        "temporal_form_code": "absolute",
-    }
-    if any(row[key] != expected_value for key, expected_value in expected.items()):
-        raise TemporalConstraintPersistenceError(
-            "Stored current Temporal Constraint rule is outside the activated B04-A shape."
-        )
+    family_value = row["family_code"]
+    facet_value = row["constrained_facet_code"]
+    boundary_kind_value = row["boundary_kind_code"]
+    temporal_form_value = row["temporal_form_code"]
     strength_value = row["strength_code"]
     boundary_value = row["boundary_at"]
-    if strength_value not in {"hard", "soft"} or not isinstance(boundary_value, datetime):
+    if (
+        family_value != "boundary"
+        or temporal_form_value != "absolute"
+        or boundary_kind_value
+        not in {"earliest_start", "latest_start", "latest_completion"}
+        or facet_value not in {"schedule.start", "schedule.completion"}
+        or not _admitted_pair(str(boundary_kind_value), str(facet_value))
+        or strength_value not in {"hard", "soft"}
+        or not isinstance(boundary_value, datetime)
+    ):
         raise TemporalConstraintPersistenceError(
-            "Stored current Temporal Constraint payload is incomplete."
+            "Stored current Temporal Constraint rule is outside the activated B04-B shape."
         )
     try:
         boundary_at = normalize_utc_instant(boundary_value)
@@ -385,8 +444,8 @@ def _constraint_from_row(row: RowMapping) -> TemporalConstraintView:
         current_rule=TemporalConstraintCurrentRuleView(
             material_state_ref=MaterialStateRef(UUID(str(material_state_value))),
             family="boundary",
-            boundary_kind="earliest_start",
-            constrained_facet="schedule.start",
+            boundary_kind=cast(TemporalConstraintBoundaryKind, str(boundary_kind_value)),
+            constrained_facet=cast(TemporalConstraintFacet, str(facet_value)),
             strength=cast(TemporalConstraintStrength, str(strength_value)),
             temporal_form="absolute",
             boundary_at=boundary_at,
@@ -450,7 +509,7 @@ async def _mutate_in_session(
     constraint_ref: ScopedRecordRef,
     expected_material_state_ref: MaterialStateRef | None,
     resulting_material_state_ref: MaterialStateRef | None,
-    rule: AbsoluteEarliestStartRule | None,
+    rule: TemporalConstraintRule | None,
 ) -> RowMapping:
     return (
         (
@@ -465,6 +524,10 @@ async def _mutate_in_session(
                     "constraint_ref": constraint_ref,
                     "expected_material_state_ref": expected_material_state_ref,
                     "resulting_material_state_ref": resulting_material_state_ref,
+                    "boundary_kind_code": None if rule is None else rule.boundary_kind,
+                    "constrained_facet_code": None
+                    if rule is None
+                    else rule.constrained_facet,
                     "strength_code": None if rule is None else rule.strength,
                     "boundary_at": None if rule is None else rule.boundary_at,
                 },
@@ -485,7 +548,7 @@ def _raise_integrity(exc: IntegrityError, *, allow_state_conflict: bool) -> None
 
 
 class TemporalConstraintApplication:
-    """Transaction-owning B04-A Temporal Constraint commands and current-state reads."""
+    """Transaction-owning Temporal Constraint commands and current-state reads."""
 
     def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
         self._session_factory = session_factory
@@ -496,7 +559,7 @@ class TemporalConstraintApplication:
         self_person_ref: NativeRef,
         operation_id: str,
         subject_native_ref: NativeRef,
-        rule: AbsoluteEarliestStartRule,
+        rule: TemporalConstraintRule,
     ) -> CreatedTemporalConstraintView:
         normalized_operation_id = _normalize_operation_id(operation_id)
         _require_uuid7(subject_native_ref, label="Temporal Constraint subject reference")
@@ -556,7 +619,7 @@ class TemporalConstraintApplication:
         operation_id: str,
         constraint_ref: ScopedRecordRef,
         expected_material_state_ref: MaterialStateRef,
-        rule: AbsoluteEarliestStartRule,
+        rule: TemporalConstraintRule,
     ) -> RevisedTemporalConstraintView:
         normalized_operation_id = _normalize_operation_id(operation_id)
         _require_uuid7(constraint_ref, label="Temporal Constraint reference")
