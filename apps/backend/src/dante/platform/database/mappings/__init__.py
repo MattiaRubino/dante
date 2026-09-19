@@ -18,6 +18,7 @@ from . import (
     occurrence_generation,
     recurrence,
     schedule,
+    schedule_move,
     session,
     temporal_constraint,
 )
@@ -61,6 +62,9 @@ MAPPED_TABLES: tuple[Table, ...] = cast(
         movement_policy.ScheduleMovementPolicyStateRow.__table__,
         movement_policy.ScheduleMovementPolicyCurrentHistoryRow.__table__,
         movement_policy.ScheduleMovementPolicyMutationOperationRow.__table__,
+        schedule_move.ScheduleMoveProposalRow.__table__,
+        schedule_move.ScheduleMoveRequestOperationRow.__table__,
+        schedule_move.ScheduleMoveAcceptOperationRow.__table__,
         actual.ActualRow.__table__,
         temporal_constraint.TemporalConstraintRow.__table__,
         temporal_constraint.TemporalConstraintStateRow.__table__,
