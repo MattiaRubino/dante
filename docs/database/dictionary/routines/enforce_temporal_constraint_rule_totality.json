@@ -8,7 +8,7 @@
     "name": "enforce_temporal_constraint_rule_totality",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Enforce one complete typed absolute Temporal Constraint payload, selecting exactly one boundary or window family and the exact family-specific kind/relationship to constrained-facet matrix.",
+  "purpose": "Enforce one complete typed Temporal Constraint payload, selecting exactly one boundary, window or duration family and the exact family-specific kind/relationship to constrained-facet matrix.",
   "classification": {
     "persistence_role": "integrity_trigger_function",
     "canonicality": "integrity",
@@ -19,12 +19,13 @@
       "docs/workstreams/timeline-temporal-operational-b04-a-implementation-freeze.md",
       "docs/workstreams/timeline-temporal-operational-b04-b-implementation-freeze.md",
       "docs/workstreams/timeline-temporal-operational-b04-c-implementation-freeze.md",
+      "docs/workstreams/timeline-temporal-operational-b04-e-implementation-freeze.md",
       "docs/workstreams/timeline-temporal-operational-b04-execution-plan.md",
       "docs/domain/concepts/temporal-constraint.md",
       "docs/development/backend-cp6-02-postgresql-persistence-constitution.md"
     ],
-    "domain_concepts": ["Temporal Constraint", "Deadline", "Window", "Preference"],
-    "logical_families": ["Temporal Constraint", "Boundary Rule", "Window Rule", "LR-05"],
+    "domain_concepts": ["Temporal Constraint", "Deadline", "Window", "Preference", "Duration"],
+    "logical_families": ["Temporal Constraint", "Boundary Rule", "Window Rule", "Duration Rule", "LR-05"],
     "reference_families": ["MaterialStateRef"],
     "material_facets": ["temporal_constraint.rule"]
   },
@@ -77,15 +78,16 @@
   "proof": {
     "obligations": [
       "canonical rule state cannot remain incomplete",
-      "boundary family requires exactly one boundary discriminator/value pair and no window payload",
+      "boundary family requires exactly one boundary discriminator/value pair and no window/duration payload",
       "earliest_start + schedule.start is admitted",
       "latest_start + schedule.start is admitted",
       "latest_completion + schedule.completion is admitted",
-      "window family requires exactly one window discriminator/geometry pair and no boundary payload",
+      "window family requires exactly one window discriminator/geometry pair and no boundary/duration payload",
       "start_within + schedule.start is admitted",
       "completion_within + schedule.completion is admitted",
       "full_placement_contained + schedule.placement is admitted",
       "placement_overlaps + schedule.placement is admitted",
+      "duration family requires exactly one positive minimum/maximum payload and schedule.placement",
       "every other family/kind-or-relationship/facet combination fails closed",
       "runtime cannot execute the validator directly"
     ],
@@ -93,8 +95,8 @@
       "apps/backend/tests/integration/temporal/test_b04_temporal_constraint_core.py",
       "apps/backend/tests/integration/temporal/test_b04_absolute_boundary_deadline.py",
       "apps/backend/tests/integration/temporal/test_b04_absolute_window_core.py",
-      "apps/backend/tests/integration/database/test_b04_c_window_catalog_probe.py",
-      "apps/backend/tests/integration/database/test_b04_temporal_constraint_catalog.py",
+      "apps/backend/tests/integration/temporal/test_b04_duration_constraint_core.py",
+      "apps/backend/tests/integration/database/test_b04_e_duration_catalog_probe.py",
       "apps/backend/tests/integration/database/test_database_current_catalog.py"
     ],
     "staged_evidence": []
