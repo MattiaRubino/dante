@@ -14,11 +14,16 @@ export type {
   TemporalWorkspacePort,
 } from './application';
 export type {
+  TemporalActivityConstraintRuleInput,
   TemporalActivityCreateRequest,
   TemporalActivityCreateResult,
   TemporalActivityDataSource,
   TemporalActivityScheduleEstablishRequest,
   TemporalActivityRecord,
+  TemporalConstrainedActivityCreateRequest,
+  TemporalConstrainedActivityCreateResult,
+  TemporalConstrainedActivityDataSource,
+  TemporalCreatedActivityConstraint,
   TemporalFloatingLocalScheduleRecord,
   TemporalScheduleRecord,
   TemporalScheduledActivityCreateRequest,
@@ -41,6 +46,7 @@ export {
   createRemoteTemporalActivityDataSource,
   type TemporalActivityRemoteFailureKind,
 } from './remote-activity-data-source';
+export { createRemoteTemporalConstrainedActivityDataSource } from './remote-constrained-activity-data-source';
 export {
   TemporalEventAgendaRemoteError,
   createRemoteTemporalEventAgendaDataSource,
