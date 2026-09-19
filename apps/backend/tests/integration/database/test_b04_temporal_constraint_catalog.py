@@ -14,13 +14,15 @@ from dante.platform.database.mappings import MAPPED_TABLES
 
 pytestmark = pytest.mark.postgres
 
-_CURRENT_REVISION = "20260919_34"
+_CURRENT_REVISION = "20260919_36"
 _REPO_ROOT = Path(__file__).resolve().parents[5]
 _B04_TABLES = {
     "temporal_constraint",
     "temporal_constraint_state",
     "temporal_constraint_boundary_state",
     "temporal_constraint_boundary_absolute_state",
+    "temporal_constraint_window_state",
+    "temporal_constraint_window_absolute_state",
     "temporal_constraint_current_history",
     "temporal_constraint_mutation_operation",
 }
@@ -29,21 +31,45 @@ _B04_RUNTIME_READ_TABLES = {
     "temporal_constraint_state",
     "temporal_constraint_boundary_state",
     "temporal_constraint_boundary_absolute_state",
+    "temporal_constraint_window_state",
+    "temporal_constraint_window_absolute_state",
 }
 _B04_TRIGGERS = {
-    "trg_temporal_constraint_native_ref": (False, False, False, "enforce_native_ref_eligibility"),
-    "ctrg_temporal_constraint_owner_complete": (True, True, True, "enforce_owner_creation_completeness"),
-    "ctrg_temporal_constraint_state_state_totality": (True, True, True, "enforce_material_state_totality"),
-    "ctrg_temporal_constraint_state_rule_totality": (True, True, True, "enforce_temporal_constraint_rule_totality"),
-    "ctrg_temporal_constraint_boundary_state_rule_totality": (True, True, True, "enforce_temporal_constraint_rule_totality"),
-    "ctrg_temporal_constraint_boundary_absolute_state_rule_totality": (True, True, True, "enforce_temporal_constraint_rule_totality"),
-    "ctrg_temporal_constraint_current_history_equivalence": (True, True, True, "enforce_current_history_equivalence"),
+    "trg_temporal_constraint_native_ref": (
+        False, False, False, "enforce_native_ref_eligibility"
+    ),
+    "ctrg_temporal_constraint_owner_complete": (
+        True, True, True, "enforce_owner_creation_completeness"
+    ),
+    "ctrg_temporal_constraint_state_state_totality": (
+        True, True, True, "enforce_material_state_totality"
+    ),
+    "ctrg_temporal_constraint_state_rule_totality": (
+        True, True, True, "enforce_temporal_constraint_rule_totality"
+    ),
+    "ctrg_temporal_constraint_boundary_state_rule_totality": (
+        True, True, True, "enforce_temporal_constraint_rule_totality"
+    ),
+    "ctrg_temporal_constraint_boundary_absolute_state_rule_totality": (
+        True, True, True, "enforce_temporal_constraint_rule_totality"
+    ),
+    "ctrg_temporal_constraint_window_state_rule_totality": (
+        True, True, True, "enforce_temporal_constraint_rule_totality"
+    ),
+    "ctrg_temporal_constraint_window_absolute_state_rule_totality": (
+        True, True, True, "enforce_temporal_constraint_rule_totality"
+    ),
+    "ctrg_temporal_constraint_current_history_equivalence": (
+        True, True, True, "enforce_current_history_equivalence"
+    ),
 }
 _MUTATE_SIGNATURES = (
     "dante.mutate_self_absolute_earliest_start_constraint("
     "uuid,text,text,text,uuid,uuid,uuid,uuid,text,timestamptz)",
     "dante.mutate_self_absolute_boundary_constraint("
     "uuid,text,text,text,uuid,uuid,uuid,uuid,text,text,text,timestamptz)",
+    "dante.mutate_self_absolute_window_constraint("
+    "uuid,text,text,text,uuid,uuid,uuid,uuid,text,text,text,timestamptz,timestamptz)",
 )
 _SHARED_ROUTINES = (
     "dante.enforce_scoped_address_owner()",
@@ -144,8 +170,8 @@ def test_b04_catalog_surface_and_live_topology(migrated_database: Any) -> None:
     assert b04_tables == _B04_TABLES
     assert owners == {(table, "dante_owner") for table in _B04_TABLES}
     assert topology is not None
-    assert topology == (107, 5, 34, 85, 212, 129, 309, 0, 0, 0)
-    print("B04_LIVE_TOPOLOGY=" + ",".join(str(value) for value in topology))
+    assert topology == (109, 5, 35, 87, 214, 131, 312, 0, 0, 0)
+    print("B04_LIVE_TOPOLOGY=" + "|".join(str(value) for value in topology))
 
     config = Config(toml_file=str(_REPO_ROOT / "apps" / "backend" / "pyproject.toml"))
     scripts = ScriptDirectory.from_config(config)
@@ -175,7 +201,6 @@ def test_b04_triggers_and_routine_acl_are_exact(migrated_database: Any) -> None:
                 (sorted(_B04_TABLES),),
             )
         }
-
         direct_acl = {
             (str(row[0]), str(row[1]), str(row[2]))
             for row in connection.execute(
@@ -194,7 +219,6 @@ def test_b04_triggers_and_routine_acl_are_exact(migrated_database: Any) -> None:
                 (sorted(_B04_TABLES),),
             )
         }
-
         mutation_security = {
             signature: _routine_security(connection, signature)
             for signature in _MUTATE_SIGNATURES
