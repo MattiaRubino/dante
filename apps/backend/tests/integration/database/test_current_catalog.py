@@ -20,7 +20,7 @@ from dante.platform.database.metadata import Base
 
 pytestmark = pytest.mark.postgres
 
-_CURRENT_REVISION = "20260919_34"
+_CURRENT_REVISION = "20260919_36"
 _REPO_ROOT = Path(__file__).resolve().parents[5]
 _DICTIONARY_ROOT = _REPO_ROOT / "docs" / "database" / "dictionary"
 _RUNTIME_ROLE = "dante_runtime"
@@ -35,11 +35,13 @@ _TABLE_PRIVILEGES = (
 )
 _COLUMN_PRIVILEGES = ("SELECT", "INSERT", "UPDATE", "REFERENCES")
 
+
 def _entries(kind: str) -> dict[str, dict[str, Any]]:
     return {
         path.stem: json.loads(path.read_text(encoding="utf-8"))
         for path in sorted((_DICTIONARY_ROOT / kind).glob("*.json"))
     }
+
 
 def _admin(database: Any) -> psycopg.Connection[Any]:
     return psycopg.connect(
@@ -50,6 +52,7 @@ def _admin(database: Any) -> psycopg.Connection[Any]:
         password=database.cluster.admin_password,
         autocommit=True,
     )
+
 
 def _dictionary_sets(
     tables: dict[str, dict[str, Any]],
@@ -67,39 +70,33 @@ def _dictionary_sets(
             assert len(columns) == len(entry["structure"]["columns"])
             for grant in entry["security"]["expected_grants"]:
                 assert set(map(str, grant["columns"])) <= columns
-
             if kind != "table":
                 continue
-
             primary_key = entry["structure"]["primary_key"]
             assert primary_key is not None
             constraints.add(str(primary_key["name"]))
-
             for group in ("unique_constraints", "check_constraints"):
                 for constraint in entry["structure"][group]:
                     name_ = str(constraint["name"])
                     assert name_ not in constraints
                     constraints.add(name_)
-
             for foreign_key in entry["structure"]["foreign_keys"]:
                 name_ = str(foreign_key["name"])
                 assert name_ not in constraints
                 constraints.add(name_)
                 target = foreign_key["target"]
                 assert str(target["table"]) in tables
-
             for index in entry["structure"]["indexes"]:
                 name_ = str(index["name"])
                 assert name_ not in indexes
                 indexes.add(name_)
-
             for trigger in entry["structure"]["triggers"]:
                 name_ = str(trigger["name"])
                 assert name_ not in triggers
                 triggers.add(name_)
                 assert str(trigger["routine"]).removeprefix("dante.") in routines
-
     return indexes, constraints, triggers
+
 
 def test_current_catalog_matches_dictionary_sqlalchemy_and_alembic(
     migrated_database: Any,
@@ -108,9 +105,7 @@ def test_current_catalog_matches_dictionary_sqlalchemy_and_alembic(
     views = _entries("views")
     routines = _entries("routines")
     expected_indexes, expected_constraints, expected_triggers = _dictionary_sets(
-        tables,
-        views,
-        routines,
+        tables, views, routines
     )
     scope = json.loads((_DICTIONARY_ROOT / "scope.json").read_text(encoding="utf-8"))
 
@@ -119,33 +114,27 @@ def test_current_catalog_matches_dictionary_sqlalchemy_and_alembic(
             """
             SELECT
               (SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
-               WHERE n.nspname='dante' AND c.relkind='r'
-                 AND c.relname<>'alembic_version'),
+               WHERE n.nspname='dante' AND c.relkind='r' AND c.relname<>'alembic_version'),
               (SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
                WHERE n.nspname='dante' AND c.relkind='v'),
               (SELECT count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
                WHERE n.nspname='dante'),
-              (SELECT count(*) FROM pg_trigger t
-               JOIN pg_class c ON c.oid=t.tgrelid
+              (SELECT count(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid
                JOIN pg_namespace n ON n.oid=c.relnamespace
                WHERE n.nspname='dante' AND NOT t.tgisinternal),
-              (SELECT count(*) FROM pg_index i
-               JOIN pg_class c ON c.oid=i.indrelid
+              (SELECT count(*) FROM pg_index i JOIN pg_class c ON c.oid=i.indrelid
                JOIN pg_namespace n ON n.oid=c.relnamespace
                WHERE n.nspname='dante' AND c.relname<>'alembic_version'),
-              (SELECT count(*) FROM pg_constraint c
-               JOIN pg_namespace n ON n.oid=c.connamespace
+              (SELECT count(*) FROM pg_constraint c JOIN pg_namespace n ON n.oid=c.connamespace
                WHERE n.nspname='dante' AND c.contype='f'),
-              (SELECT count(*) FROM pg_constraint c
-               JOIN pg_namespace n ON n.oid=c.connamespace
+              (SELECT count(*) FROM pg_constraint c JOIN pg_namespace n ON n.oid=c.connamespace
                WHERE n.nspname='dante' AND c.contype='c')
             """
         ).fetchone()
         live_tables = {
             str(row[0])
             for row in connection.execute(
-                "SELECT tablename FROM pg_tables "
-                "WHERE schemaname='dante' AND tablename<>'alembic_version'"
+                "SELECT tablename FROM pg_tables WHERE schemaname='dante' AND tablename<>'alembic_version'"
             )
         }
         live_views = {
@@ -157,16 +146,13 @@ def test_current_catalog_matches_dictionary_sqlalchemy_and_alembic(
         live_routines = {
             str(row[0])
             for row in connection.execute(
-                "SELECT p.proname FROM pg_proc p "
-                "JOIN pg_namespace n ON n.oid=p.pronamespace "
-                "WHERE n.nspname='dante'"
+                "SELECT p.proname FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='dante'"
             )
         }
         live_constraints = {
             str(row[0])
             for row in connection.execute(
-                "SELECT con.conname FROM pg_constraint con "
-                "JOIN pg_class c ON c.oid=con.conrelid "
+                "SELECT con.conname FROM pg_constraint con JOIN pg_class c ON c.oid=con.conrelid "
                 "JOIN pg_namespace n ON n.oid=c.relnamespace "
                 "WHERE n.nspname='dante' AND c.relname<>'alembic_version' "
                 "AND con.contype IN ('p','u','f','c')"
@@ -175,15 +161,13 @@ def test_current_catalog_matches_dictionary_sqlalchemy_and_alembic(
         live_indexes = {
             str(row[0])
             for row in connection.execute(
-                "SELECT indexname FROM pg_indexes "
-                "WHERE schemaname='dante' AND tablename<>'alembic_version'"
+                "SELECT indexname FROM pg_indexes WHERE schemaname='dante' AND tablename<>'alembic_version'"
             )
         }
         live_triggers = {
             str(row[0])
             for row in connection.execute(
-                "SELECT t.tgname FROM pg_trigger t "
-                "JOIN pg_class c ON c.oid=t.tgrelid "
+                "SELECT t.tgname FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid "
                 "JOIN pg_namespace n ON n.oid=c.relnamespace "
                 "WHERE n.nspname='dante' AND NOT t.tgisinternal"
             )
@@ -191,8 +175,8 @@ def test_current_catalog_matches_dictionary_sqlalchemy_and_alembic(
         owners = {
             str(row[0])
             for row in connection.execute(
-                "SELECT DISTINCT pg_get_userbyid(c.relowner) "
-                "FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace "
+                "SELECT DISTINCT pg_get_userbyid(c.relowner) FROM pg_class c "
+                "JOIN pg_namespace n ON n.oid=c.relnamespace "
                 "WHERE n.nspname='dante' AND c.relname<>'alembic_version'"
             )
         }
@@ -224,7 +208,6 @@ def test_current_catalog_matches_dictionary_sqlalchemy_and_alembic(
     assert set(mapped) == set(tables)
     assert len(MAPPED_TABLES) == len(Base.registry.mappers) == len(Base.metadata.tables)
     assert set(VIEW_METADATA.tables) == {f"dante.{name}" for name in views}
-
     for name, entry in tables.items():
         mapping = entry["implementation"]["sqlalchemy"]
         row = getattr(
@@ -237,6 +220,7 @@ def test_current_catalog_matches_dictionary_sqlalchemy_and_alembic(
     config = Config(toml_file=str(_REPO_ROOT / "apps" / "backend" / "pyproject.toml"))
     scripts = ScriptDirectory.from_config(config)
     assert scripts.get_heads() == [_CURRENT_REVISION]
+
 
 def _expected_runtime_acl(
     entry: dict[str, Any],
@@ -254,11 +238,11 @@ def _expected_runtime_acl(
             table_privileges.add(privilege)
     return table_privileges, column_privileges
 
+
 def test_runtime_table_and_column_acl_matches_dictionary(
     migrated_database: Any,
 ) -> None:
     tables = _entries("tables")
-
     with _admin(migrated_database) as connection:
         schema_acl = connection.execute(
             "SELECT has_schema_privilege(%s,'dante','USAGE'), "
@@ -266,14 +250,13 @@ def test_runtime_table_and_column_acl_matches_dictionary(
             (_RUNTIME_ROLE, _RUNTIME_ROLE),
         ).fetchone()
         assert schema_acl == (True, False)
-
         for table_name, entry in tables.items():
             table_privileges, column_privileges = _expected_runtime_acl(entry)
             relation = f"dante.{table_name}"
-
             actual_table = connection.execute(
-                "SELECT "
-                + ", ".join("has_table_privilege(%s,%s,%s)" for _ in _TABLE_PRIVILEGES),
+                "SELECT " + ", ".join(
+                    "has_table_privilege(%s,%s,%s)" for _ in _TABLE_PRIVILEGES
+                ),
                 tuple(
                     value
                     for privilege in _TABLE_PRIVILEGES
@@ -283,14 +266,13 @@ def test_runtime_table_and_column_acl_matches_dictionary(
             assert actual_table == tuple(
                 privilege in table_privileges for privilege in _TABLE_PRIVILEGES
             ), table_name
-
             for column in map(
                 str, (item["name"] for item in entry["structure"]["columns"])
             ):
                 actual_column = connection.execute(
-                    "SELECT "
-                    + ", ".join(
-                        "has_column_privilege(%s,%s,%s,%s)" for _ in _COLUMN_PRIVILEGES
+                    "SELECT " + ", ".join(
+                        "has_column_privilege(%s,%s,%s,%s)"
+                        for _ in _COLUMN_PRIVILEGES
                     ),
                     tuple(
                         value
@@ -305,129 +287,83 @@ def test_runtime_table_and_column_acl_matches_dictionary(
                 )
                 assert actual_column == expected_column, f"{table_name}.{column}"
 
+
 def test_account_security_lock_capability_is_exact(migrated_database: Any) -> None:
     with _admin(migrated_database) as connection:
         function_acl = connection.execute(
             """
-            SELECT
-              pg_get_userbyid(p.proowner),
-              p.prosecdef,
-              p.provolatile,
-              p.proparallel,
-              p.proleakproof,
-              p.proconfig,
-              has_function_privilege('dante_runtime','dante.acquire_account_security_lock(uuid)','EXECUTE'),
-              has_function_privilege('dante_migrator','dante.acquire_account_security_lock(uuid)','EXECUTE'),
-              EXISTS (
-                SELECT 1
-                FROM aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) AS acl
-                WHERE acl.grantee = 0 AND acl.privilege_type = 'EXECUTE'
-              )
-            FROM pg_proc p
-            JOIN pg_namespace n ON n.oid = p.pronamespace
-            WHERE n.nspname = 'dante'
-              AND p.oid = to_regprocedure('dante.acquire_account_security_lock(uuid)')
+            SELECT pg_get_userbyid(p.proowner),p.prosecdef,p.provolatile,p.proparallel,
+                   p.proleakproof,p.proconfig,
+                   has_function_privilege('dante_runtime','dante.acquire_account_security_lock(uuid)','EXECUTE'),
+                   has_function_privilege('dante_migrator','dante.acquire_account_security_lock(uuid)','EXECUTE'),
+                   EXISTS (
+                     SELECT 1 FROM aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) AS acl
+                     WHERE acl.grantee=0 AND acl.privilege_type='EXECUTE'
+                   )
+            FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+            WHERE n.nspname='dante'
+              AND p.oid=to_regprocedure('dante.acquire_account_security_lock(uuid)')
             """
         ).fetchone()
-
     assert function_acl is not None
     assert function_acl[0:5] == ("dante_owner", True, "v", "u", False)
     assert function_acl[5] == ["search_path=pg_catalog, dante, pg_temp"]
     assert function_acl[6:9] == (True, False, False)
 
+
 def test_create_self_activity_capability_is_exact(migrated_database: Any) -> None:
     with _admin(migrated_database) as connection:
         function_acl = connection.execute(
             """
-            SELECT
-              pg_get_userbyid(p.proowner),
-              p.prosecdef,
-              p.provolatile,
-              p.proparallel,
-              p.proleakproof,
-              p.proconfig,
-              oidvectortypes(p.proargtypes),
-              pg_get_function_result(p.oid),
-              has_function_privilege(
-                'dante_runtime',
-                'dante.create_self_activity(uuid,text,text,uuid,text)',
-                'EXECUTE'
-              ),
-              has_function_privilege(
-                'dante_migrator',
-                'dante.create_self_activity(uuid,text,text,uuid,text)',
-                'EXECUTE'
-              ),
-              EXISTS (
-                SELECT 1
-                FROM aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) AS acl
-                WHERE acl.grantee = 0 AND acl.privilege_type = 'EXECUTE'
-              )
-            FROM pg_proc p
-            JOIN pg_namespace n ON n.oid=p.pronamespace
-            WHERE n.nspname = 'dante'
-              AND p.oid = to_regprocedure(
-                'dante.create_self_activity(uuid,text,text,uuid,text)'
-              )
+            SELECT pg_get_userbyid(p.proowner),p.prosecdef,p.provolatile,p.proparallel,
+                   p.proleakproof,p.proconfig,oidvectortypes(p.proargtypes),pg_get_function_result(p.oid),
+                   has_function_privilege('dante_runtime','dante.create_self_activity(uuid,text,text,uuid,text)','EXECUTE'),
+                   has_function_privilege('dante_migrator','dante.create_self_activity(uuid,text,text,uuid,text)','EXECUTE'),
+                   EXISTS (
+                     SELECT 1 FROM aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) AS acl
+                     WHERE acl.grantee=0 AND acl.privilege_type='EXECUTE'
+                   )
+            FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+            WHERE n.nspname='dante'
+              AND p.oid=to_regprocedure('dante.create_self_activity(uuid,text,text,uuid,text)')
             """
         ).fetchone()
-
     assert function_acl is not None
     assert function_acl[0:5] == ("dante_owner", True, "v", "u", False)
     assert function_acl[5] == ["search_path=pg_catalog, dante, pg_temp"]
     assert function_acl[6] == "uuid, text, text, uuid, text"
     assert function_acl[7] == (
-        "TABLE(activity_ref uuid, title text, created_at timestamp with time zone, "
-        "replayed boolean)"
+        "TABLE(activity_ref uuid, title text, created_at timestamp with time zone, replayed boolean)"
     )
     assert function_acl[8:11] == (True, False, False)
+
 
 def test_create_self_event_capability_is_exact(migrated_database: Any) -> None:
     with _admin(migrated_database) as connection:
         function_acl = connection.execute(
             """
-            SELECT
-              pg_get_userbyid(p.proowner),
-              p.prosecdef,
-              p.provolatile,
-              p.proparallel,
-              p.proleakproof,
-              p.proconfig,
-              oidvectortypes(p.proargtypes),
-              pg_get_function_result(p.oid),
-              has_function_privilege(
-                'dante_runtime',
-                'dante.create_self_event(uuid,text,text,uuid,text)',
-                'EXECUTE'
-              ),
-              has_function_privilege(
-                'dante_migrator',
-                'dante.create_self_event(uuid,text,text,uuid,text)',
-                'EXECUTE'
-              ),
-              EXISTS (
-                SELECT 1
-                FROM aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) AS acl
-                WHERE acl.grantee = 0 AND acl.privilege_type = 'EXECUTE'
-              )
-            FROM pg_proc p
-            JOIN pg_namespace n ON n.oid=p.pronamespace
-            WHERE n.nspname = 'dante'
-              AND p.oid = to_regprocedure(
-                'dante.create_self_event(uuid,text,text,uuid,text)'
-              )
+            SELECT pg_get_userbyid(p.proowner),p.prosecdef,p.provolatile,p.proparallel,
+                   p.proleakproof,p.proconfig,oidvectortypes(p.proargtypes),pg_get_function_result(p.oid),
+                   has_function_privilege('dante_runtime','dante.create_self_event(uuid,text,text,uuid,text)','EXECUTE'),
+                   has_function_privilege('dante_migrator','dante.create_self_event(uuid,text,text,uuid,text)','EXECUTE'),
+                   EXISTS (
+                     SELECT 1 FROM aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) AS acl
+                     WHERE acl.grantee=0 AND acl.privilege_type='EXECUTE'
+                   )
+            FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+            WHERE n.nspname='dante'
+              AND p.oid=to_regprocedure('dante.create_self_event(uuid,text,text,uuid,text)')
             """
         ).fetchone()
-
     assert function_acl is not None
     assert function_acl[0:5] == ("dante_owner", True, "v", "u", False)
     assert function_acl[5] == ["search_path=pg_catalog, dante, pg_temp"]
     assert function_acl[6] == "uuid, text, text, uuid, text"
     assert function_acl[7] == (
-        "TABLE(event_ref uuid, title text, created_at timestamp with time zone, "
-        "replayed boolean)"
+        "TABLE(event_ref uuid, title text, created_at timestamp with time zone, replayed boolean)"
     )
     assert function_acl[8:11] == (True, False, False)
+
 
 def test_establish_self_floating_schedule_capability_is_exact(
     migrated_database: Any,
@@ -439,30 +375,19 @@ def test_establish_self_floating_schedule_capability_is_exact(
     with _admin(migrated_database) as connection:
         function_acl = connection.execute(
             """
-            SELECT
-              pg_get_userbyid(p.proowner),
-              p.prosecdef,
-              p.provolatile,
-              p.proparallel,
-              p.proleakproof,
-              p.proconfig,
-              oidvectortypes(p.proargtypes),
-              pg_get_function_result(p.oid),
-              has_function_privilege('dante_runtime', %s, 'EXECUTE'),
-              has_function_privilege('dante_migrator', %s, 'EXECUTE'),
-              EXISTS (
-                SELECT 1
-                FROM aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) AS acl
-                WHERE acl.grantee = 0 AND acl.privilege_type = 'EXECUTE'
-              )
-            FROM pg_proc p
-            JOIN pg_namespace n ON n.oid=p.pronamespace
-            WHERE n.nspname = 'dante'
-              AND p.oid = to_regprocedure(%s)
+            SELECT pg_get_userbyid(p.proowner),p.prosecdef,p.provolatile,p.proparallel,
+                   p.proleakproof,p.proconfig,oidvectortypes(p.proargtypes),pg_get_function_result(p.oid),
+                   has_function_privilege('dante_runtime',%s,'EXECUTE'),
+                   has_function_privilege('dante_migrator',%s,'EXECUTE'),
+                   EXISTS (
+                     SELECT 1 FROM aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) AS acl
+                     WHERE acl.grantee=0 AND acl.privilege_type='EXECUTE'
+                   )
+            FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+            WHERE n.nspname='dante' AND p.oid=to_regprocedure(%s)
             """,
             (signature, signature, signature),
         ).fetchone()
-
     assert function_acl is not None
     assert function_acl[0:5] == ("dante_owner", True, "v", "u", False)
     assert function_acl[5] == ["search_path=pg_catalog, dante, pg_temp"]
@@ -477,51 +402,45 @@ def test_establish_self_floating_schedule_capability_is_exact(
     )
     assert function_acl[8:11] == (True, False, False)
 
+
 def test_m3_account_security_lock_is_narrow_and_transaction_scoped(
     migrated_database: Any,
 ) -> None:
     account_ref = uuid7()
     created_at = datetime.now(UTC)
-
     with _admin(migrated_database) as connection:
         connection.execute(
             """
-            INSERT INTO dante.account(account_ref, status_code, created_at, disabled_at)
-            VALUES (%s, 'active', %s, NULL)
+            INSERT INTO dante.account(account_ref,status_code,created_at,disabled_at)
+            VALUES (%s,'active',%s,NULL)
             """,
             (account_ref, created_at),
         )
 
     runtime_kwargs = migrated_database.connection_kwargs(
-        "dante_runtime",
-        migrated_database.cluster.runtime_password,
+        "dante_runtime", migrated_database.cluster.runtime_password
     )
     with psycopg.connect(**runtime_kwargs) as runtime_connection:
         with pytest.raises(psycopg.errors.InsufficientPrivilege) as direct_lock_error:
             runtime_connection.execute(
-                "SELECT account_ref FROM dante.account WHERE account_ref = %s FOR UPDATE",
+                "SELECT account_ref FROM dante.account WHERE account_ref=%s FOR UPDATE",
                 (account_ref,),
             )
         assert direct_lock_error.value.sqlstate == "42501"
         runtime_connection.rollback()
-
         runtime_connection.execute(
-            "SELECT dante.acquire_account_security_lock(%s)",
-            (account_ref,),
+            "SELECT dante.acquire_account_security_lock(%s)", (account_ref,)
         )
-
         with _admin(migrated_database) as contender:
             with pytest.raises(psycopg.errors.LockNotAvailable) as lock_error:
                 contender.execute(
-                    "SELECT account_ref FROM dante.account WHERE account_ref = %s FOR UPDATE NOWAIT",
+                    "SELECT account_ref FROM dante.account WHERE account_ref=%s FOR UPDATE NOWAIT",
                     (account_ref,),
                 )
             assert lock_error.value.sqlstate == "55P03"
-
             runtime_connection.rollback()
-
             acquired = contender.execute(
-                "SELECT account_ref FROM dante.account WHERE account_ref = %s FOR UPDATE NOWAIT",
+                "SELECT account_ref FROM dante.account WHERE account_ref=%s FOR UPDATE NOWAIT",
                 (account_ref,),
             ).fetchone()
             assert acquired == (account_ref,)
