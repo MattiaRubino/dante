@@ -1,0 +1,96 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "routine:dante.mutate_self_absolute_boundary_constraint",
+    "type": "routine",
+    "schema": "dante",
+    "name": "mutate_self_absolute_boundary_constraint",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Governed B04-B capability for idempotent self-scoped create, revise and retire of the frozen absolute boundary/deadline Temporal Constraint matrix with expected-state CAS.",
+  "classification": {
+    "persistence_role": "canonical_mutation_capability",
+    "canonicality": "capability_surface",
+    "family": "temporal_constraint"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/workstreams/timeline-temporal-operational-b04-b-implementation-freeze.md",
+      "docs/workstreams/timeline-temporal-operational-b04-execution-plan.md",
+      "docs/domain/concepts/temporal-constraint.md",
+      "docs/development/backend-cp6-02-postgresql-persistence-constitution.md"
+    ],
+    "domain_concepts": ["Temporal Constraint", "Deadline", "Activity", "Event"],
+    "logical_families": ["Temporal Constraint", "Boundary Rule", "LR-05", "application operation idempotency control"],
+    "reference_families": ["NativeRef", "ScopedRecordRef", "MaterialStateRef"],
+    "material_facets": ["temporal_constraint.rule"]
+  },
+  "implementation": {
+    "introducing_stage": "B04-B-BOUNDARY",
+    "alembic_revision": "20260919_34",
+    "sqlalchemy": {"mode":"none","module":null,"symbol":null},
+    "runtime_acl_stage": "B04-B-BOUNDARY"
+  },
+  "structure": {
+    "columns": [],
+    "primary_key": null,
+    "foreign_keys": [],
+    "unique_constraints": [],
+    "check_constraints": [],
+    "indexes": [],
+    "triggers": [],
+    "table": null,
+    "view": null,
+    "routine": {
+      "routine_kind": "function",
+      "language": "plpgsql",
+      "argument_types": ["uuid", "text", "text", "text", "uuid", "uuid", "uuid", "uuid", "text", "text", "text", "timestamp with time zone"],
+      "return_type": "TABLE(constraint_ref uuid, subject_native_ref uuid, material_state_ref uuid, active boolean, created_at timestamp with time zone, replayed boolean)",
+      "security": "DEFINER",
+      "volatility": "VOLATILE",
+      "parallel_safety": "UNSAFE",
+      "leakproof": false,
+      "function_search_path": ["pg_catalog", "dante", "pg_temp"],
+      "direct_runtime_execute": true
+    }
+  },
+  "state_history": {
+    "material_state_behavior": "Create/revise atomically append complete immutable absolute-boundary rule MaterialStates; retire does not erase prior rule state.",
+    "current_binding": "Create establishes current binding/history, revise performs expected-state CAS then moves current selection, retire performs CAS then removes only the current binding and closes history.",
+    "chronology": "Accepted mutation time establishes current-history episode boundaries; idempotent replay returns the originally accepted effect rather than fabricating a transition.",
+    "immutability_policy": "The routine never rewrites an existing rule MaterialState. Same operation id plus changed material intent conflicts."
+  },
+  "lifecycle": {
+    "retention": "Mutation receipts and historical canonical states are retained for replay and reconstructible history.",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "Retire closes currentness only; no canonical constraint/history delete path is exposed."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": [
+      {"grantee":"dante_runtime","privilege":"EXECUTE","columns":[],"grant_option":false}
+    ]
+  },
+  "proof": {
+    "obligations": [
+      "only self-owned Activity or Event subjects are admitted",
+      "only the frozen absolute boundary kind/facet matrix is admitted",
+      "create/revise/retire are atomic and idempotent",
+      "server-generated create references do not break exact operation replay",
+      "revise/retire enforce exact expected-state CAS",
+      "stale expected state and operation-id changed intent are rejected",
+      "runtime executes only the governed capability rather than direct canonical table DML"
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b04_absolute_boundary_deadline.py",
+      "apps/backend/tests/integration/temporal/test_b04_absolute_boundary_application.py",
+      "apps/backend/tests/integration/database/test_b04_temporal_constraint_catalog.py",
+      "apps/backend/tests/integration/database/test_current_catalog.py",
+      "apps/backend/tests/integration/database/test_database_current_catalog.py"
+    ],
+    "staged_evidence": []
+  }
+}
