@@ -75,6 +75,9 @@ _EXPECTED_TEMPORAL_OPERATIONS = {
     ("/api/v1/temporal/constraints/{constraint_ref}/retire", "post"): (
         "temporal_retire_constraint"
     ),
+    ("/api/v1/temporal/activities/constrained", "post"): (
+        "temporal_create_constrained_activity"
+    ),
 }
 
 
