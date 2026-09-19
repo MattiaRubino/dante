@@ -1,4 +1,4 @@
-"""Authenticated B04-A API for canonical Temporal Constraint authoring and reads."""
+"""Authenticated API for canonical Temporal Constraint authoring and reads."""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ from dante.context.dependencies import (
     require_mutating_dante_context,
 )
 from dante.modules.temporal.temporal_constraint import (
-    AbsoluteEarliestStartRule,
+    AbsoluteBoundaryRule,
     CreatedTemporalConstraintView,
     RevisedTemporalConstraintView,
     RetiredTemporalConstraintView,
@@ -24,6 +24,7 @@ from dante.modules.temporal.temporal_constraint import (
     TemporalConstraintNotFoundError,
     TemporalConstraintOperationIdReuseError,
     TemporalConstraintPersistenceError,
+    TemporalConstraintRule,
     TemporalConstraintStateConflictError,
     TemporalConstraintView,
 )
@@ -40,7 +41,7 @@ MutatingDanteContextDependency = Annotated[
 
 
 class AbsoluteEarliestStartRuleRequest(BaseModel):
-    """First public typed Temporal Constraint rule activated by B04-A."""
+    """Absolute lower bound on accepted Schedule start."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -52,12 +53,46 @@ class AbsoluteEarliestStartRuleRequest(BaseModel):
     boundary_at: datetime
 
 
+class AbsoluteLatestStartRuleRequest(BaseModel):
+    """Absolute upper bound on accepted Schedule start."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    family: Literal["boundary"] = "boundary"
+    boundary_kind: Literal["latest_start"] = "latest_start"
+    constrained_facet: Literal["schedule.start"] = "schedule.start"
+    strength: Literal["hard", "soft"]
+    temporal_form: Literal["absolute"] = "absolute"
+    boundary_at: datetime
+
+
+class AbsoluteLatestCompletionRuleRequest(BaseModel):
+    """Absolute upper bound on Schedule completion; product vocabulary may call it a deadline."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    family: Literal["boundary"] = "boundary"
+    boundary_kind: Literal["latest_completion"] = "latest_completion"
+    constrained_facet: Literal["schedule.completion"] = "schedule.completion"
+    strength: Literal["hard", "soft"]
+    temporal_form: Literal["absolute"] = "absolute"
+    boundary_at: datetime
+
+
+TemporalConstraintRuleRequest = Annotated[
+    AbsoluteEarliestStartRuleRequest
+    | AbsoluteLatestStartRuleRequest
+    | AbsoluteLatestCompletionRuleRequest,
+    Field(discriminator="boundary_kind"),
+]
+
+
 class CreateTemporalConstraintRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     operation_id: str = Field(min_length=1, max_length=200)
     subject_ref: UUID
-    rule: AbsoluteEarliestStartRuleRequest
+    rule: TemporalConstraintRuleRequest
 
 
 class ReviseTemporalConstraintRequest(BaseModel):
@@ -65,7 +100,7 @@ class ReviseTemporalConstraintRequest(BaseModel):
 
     operation_id: str = Field(min_length=1, max_length=200)
     expected_material_state_ref: UUID
-    rule: AbsoluteEarliestStartRuleRequest
+    rule: TemporalConstraintRuleRequest
 
 
 class RetireTemporalConstraintRequest(BaseModel):
@@ -75,16 +110,24 @@ class RetireTemporalConstraintRequest(BaseModel):
     expected_material_state_ref: UUID
 
 
-class TemporalConstraintCurrentRuleResponse(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
+class AbsoluteEarliestStartCurrentRuleResponse(AbsoluteEarliestStartRuleRequest):
     material_state_ref: UUID
-    family: Literal["boundary"] = "boundary"
-    boundary_kind: Literal["earliest_start"] = "earliest_start"
-    constrained_facet: Literal["schedule.start"] = "schedule.start"
-    strength: Literal["hard", "soft"]
-    temporal_form: Literal["absolute"] = "absolute"
-    boundary_at: datetime
+
+
+class AbsoluteLatestStartCurrentRuleResponse(AbsoluteLatestStartRuleRequest):
+    material_state_ref: UUID
+
+
+class AbsoluteLatestCompletionCurrentRuleResponse(AbsoluteLatestCompletionRuleRequest):
+    material_state_ref: UUID
+
+
+TemporalConstraintCurrentRuleResponse = Annotated[
+    AbsoluteEarliestStartCurrentRuleResponse
+    | AbsoluteLatestStartCurrentRuleResponse
+    | AbsoluteLatestCompletionCurrentRuleResponse,
+    Field(discriminator="boundary_kind"),
+]
 
 
 class TemporalConstraintResponse(BaseModel):
@@ -110,7 +153,7 @@ class CreatedTemporalConstraintResponse(BaseModel):
     subject_ref: UUID
     subject_kind: Literal["activity", "event"]
     material_state_ref: UUID
-    rule: AbsoluteEarliestStartRuleRequest
+    rule: TemporalConstraintRuleRequest
     recorded_at: datetime
     replayed: bool = False
 
@@ -123,7 +166,7 @@ class RevisedTemporalConstraintResponse(BaseModel):
     subject_kind: Literal["activity", "event"]
     previous_material_state_ref: UUID
     material_state_ref: UUID
-    rule: AbsoluteEarliestStartRuleRequest
+    rule: TemporalConstraintRuleRequest
     recorded_at: datetime
     replayed: bool = False
 
@@ -150,36 +193,57 @@ TemporalConstraintApplicationDependency = Annotated[
 ]
 
 
-def _rule_from_request(payload: AbsoluteEarliestStartRuleRequest) -> AbsoluteEarliestStartRule:
-    return AbsoluteEarliestStartRule(
+def _rule_from_request(payload: TemporalConstraintRuleRequest) -> AbsoluteBoundaryRule:
+    return AbsoluteBoundaryRule(
+        boundary_kind=payload.boundary_kind,
+        constrained_facet=payload.constrained_facet,
         strength=payload.strength,
         boundary_at=payload.boundary_at,
     )
 
 
-def _rule_request(rule: AbsoluteEarliestStartRule) -> AbsoluteEarliestStartRuleRequest:
-    return AbsoluteEarliestStartRuleRequest(
+def _rule_request(rule: TemporalConstraintRule) -> TemporalConstraintRuleRequest:
+    if rule.boundary_kind == "earliest_start":
+        return AbsoluteEarliestStartRuleRequest(
+            strength=rule.strength,
+            boundary_at=rule.boundary_at,
+        )
+    if rule.boundary_kind == "latest_start":
+        return AbsoluteLatestStartRuleRequest(
+            strength=rule.strength,
+            boundary_at=rule.boundary_at,
+        )
+    return AbsoluteLatestCompletionRuleRequest(
         strength=rule.strength,
         boundary_at=rule.boundary_at,
     )
 
 
-def _constraint_response(value: TemporalConstraintView) -> TemporalConstraintResponse:
+def _current_rule_response(
+    value: TemporalConstraintView,
+) -> TemporalConstraintCurrentRuleResponse | None:
     current_rule = value.current_rule
+    if current_rule is None:
+        return None
+    common = {
+        "material_state_ref": current_rule.material_state_ref,
+        "strength": current_rule.strength,
+        "boundary_at": current_rule.boundary_at,
+    }
+    if current_rule.boundary_kind == "earliest_start":
+        return AbsoluteEarliestStartCurrentRuleResponse(**common)
+    if current_rule.boundary_kind == "latest_start":
+        return AbsoluteLatestStartCurrentRuleResponse(**common)
+    return AbsoluteLatestCompletionCurrentRuleResponse(**common)
+
+
+def _constraint_response(value: TemporalConstraintView) -> TemporalConstraintResponse:
     return TemporalConstraintResponse(
         constraint_ref=value.constraint_ref,
         subject_ref=value.subject_native_ref,
         subject_kind=value.subject_kind,
         status=value.status,
-        current_rule=(
-            None
-            if current_rule is None
-            else TemporalConstraintCurrentRuleResponse(
-                material_state_ref=current_rule.material_state_ref,
-                strength=current_rule.strength,
-                boundary_at=current_rule.boundary_at,
-            )
-        ),
+        current_rule=_current_rule_response(value),
     )
 
 
