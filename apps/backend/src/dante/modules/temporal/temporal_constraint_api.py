@@ -1,4 +1,4 @@
-"""Authenticated API for canonical Temporal Constraint authoring and reads."""
+"""Authenticated API for canonical Temporal Constraint authoring, reads and evaluation."""
 
 from __future__ import annotations
 
@@ -10,16 +10,16 @@ from fastapi import APIRouter, Depends, Query, Request, Response
 from pydantic import BaseModel, ConfigDict, Field
 
 from dante.context.contracts import DanteContext
-from dante.context.dependencies import (
-    require_dante_context,
-    require_mutating_dante_context,
-)
+from dante.context.dependencies import require_dante_context, require_mutating_dante_context
 from dante.modules.temporal.temporal_constraint import (
     AbsoluteBoundaryRule,
+    AbsoluteIntervalPlacement,
+    AbsoluteWindowRule,
     CreatedTemporalConstraintView,
     RevisedTemporalConstraintView,
     RetiredTemporalConstraintView,
     TemporalConstraintApplication,
+    TemporalConstraintEvaluationView,
     TemporalConstraintInputError,
     TemporalConstraintNotFoundError,
     TemporalConstraintOperationIdReuseError,
@@ -41,10 +41,7 @@ MutatingDanteContextDependency = Annotated[
 
 
 class AbsoluteEarliestStartRuleRequest(BaseModel):
-    """Absolute lower bound on accepted Schedule start."""
-
     model_config = ConfigDict(extra="forbid")
-
     family: Literal["boundary"] = "boundary"
     boundary_kind: Literal["earliest_start"] = "earliest_start"
     constrained_facet: Literal["schedule.start"] = "schedule.start"
@@ -54,10 +51,7 @@ class AbsoluteEarliestStartRuleRequest(BaseModel):
 
 
 class AbsoluteLatestStartRuleRequest(BaseModel):
-    """Absolute upper bound on accepted Schedule start."""
-
     model_config = ConfigDict(extra="forbid")
-
     family: Literal["boundary"] = "boundary"
     boundary_kind: Literal["latest_start"] = "latest_start"
     constrained_facet: Literal["schedule.start"] = "schedule.start"
@@ -67,10 +61,7 @@ class AbsoluteLatestStartRuleRequest(BaseModel):
 
 
 class AbsoluteLatestCompletionRuleRequest(BaseModel):
-    """Absolute upper bound on Schedule completion; product vocabulary may call it a deadline."""
-
     model_config = ConfigDict(extra="forbid")
-
     family: Literal["boundary"] = "boundary"
     boundary_kind: Literal["latest_completion"] = "latest_completion"
     constrained_facet: Literal["schedule.completion"] = "schedule.completion"
@@ -79,17 +70,63 @@ class AbsoluteLatestCompletionRuleRequest(BaseModel):
     boundary_at: datetime
 
 
-TemporalConstraintRuleRequest = Annotated[
+class AbsoluteStartWithinWindowRuleRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    family: Literal["window"] = "window"
+    relationship: Literal["start_within"] = "start_within"
+    constrained_facet: Literal["schedule.start"] = "schedule.start"
+    strength: Literal["hard", "soft"]
+    temporal_form: Literal["absolute"] = "absolute"
+    starts_at: datetime
+    ends_at: datetime
+
+
+class AbsoluteCompletionWithinWindowRuleRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    family: Literal["window"] = "window"
+    relationship: Literal["completion_within"] = "completion_within"
+    constrained_facet: Literal["schedule.completion"] = "schedule.completion"
+    strength: Literal["hard", "soft"]
+    temporal_form: Literal["absolute"] = "absolute"
+    starts_at: datetime
+    ends_at: datetime
+
+
+class AbsoluteFullPlacementContainedWindowRuleRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    family: Literal["window"] = "window"
+    relationship: Literal["full_placement_contained"] = "full_placement_contained"
+    constrained_facet: Literal["schedule.placement"] = "schedule.placement"
+    strength: Literal["hard", "soft"]
+    temporal_form: Literal["absolute"] = "absolute"
+    starts_at: datetime
+    ends_at: datetime
+
+
+class AbsolutePlacementOverlapsWindowRuleRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    family: Literal["window"] = "window"
+    relationship: Literal["placement_overlaps"] = "placement_overlaps"
+    constrained_facet: Literal["schedule.placement"] = "schedule.placement"
+    strength: Literal["hard", "soft"]
+    temporal_form: Literal["absolute"] = "absolute"
+    starts_at: datetime
+    ends_at: datetime
+
+
+TemporalConstraintRuleRequest = (
     AbsoluteEarliestStartRuleRequest
     | AbsoluteLatestStartRuleRequest
-    | AbsoluteLatestCompletionRuleRequest,
-    Field(discriminator="boundary_kind"),
-]
+    | AbsoluteLatestCompletionRuleRequest
+    | AbsoluteStartWithinWindowRuleRequest
+    | AbsoluteCompletionWithinWindowRuleRequest
+    | AbsoluteFullPlacementContainedWindowRuleRequest
+    | AbsolutePlacementOverlapsWindowRuleRequest
+)
 
 
 class CreateTemporalConstraintRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
-
     operation_id: str = Field(min_length=1, max_length=200)
     subject_ref: UUID
     rule: TemporalConstraintRuleRequest
@@ -97,7 +134,6 @@ class CreateTemporalConstraintRequest(BaseModel):
 
 class ReviseTemporalConstraintRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
-
     operation_id: str = Field(min_length=1, max_length=200)
     expected_material_state_ref: UUID
     rule: TemporalConstraintRuleRequest
@@ -105,7 +141,6 @@ class ReviseTemporalConstraintRequest(BaseModel):
 
 class RetireTemporalConstraintRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
-
     operation_id: str = Field(min_length=1, max_length=200)
     expected_material_state_ref: UUID
 
@@ -122,17 +157,39 @@ class AbsoluteLatestCompletionCurrentRuleResponse(AbsoluteLatestCompletionRuleRe
     material_state_ref: UUID
 
 
-TemporalConstraintCurrentRuleResponse = Annotated[
+class AbsoluteStartWithinWindowCurrentRuleResponse(AbsoluteStartWithinWindowRuleRequest):
+    material_state_ref: UUID
+
+
+class AbsoluteCompletionWithinWindowCurrentRuleResponse(AbsoluteCompletionWithinWindowRuleRequest):
+    material_state_ref: UUID
+
+
+class AbsoluteFullPlacementContainedWindowCurrentRuleResponse(
+    AbsoluteFullPlacementContainedWindowRuleRequest
+):
+    material_state_ref: UUID
+
+
+class AbsolutePlacementOverlapsWindowCurrentRuleResponse(
+    AbsolutePlacementOverlapsWindowRuleRequest
+):
+    material_state_ref: UUID
+
+
+TemporalConstraintCurrentRuleResponse = (
     AbsoluteEarliestStartCurrentRuleResponse
     | AbsoluteLatestStartCurrentRuleResponse
-    | AbsoluteLatestCompletionCurrentRuleResponse,
-    Field(discriminator="boundary_kind"),
-]
+    | AbsoluteLatestCompletionCurrentRuleResponse
+    | AbsoluteStartWithinWindowCurrentRuleResponse
+    | AbsoluteCompletionWithinWindowCurrentRuleResponse
+    | AbsoluteFullPlacementContainedWindowCurrentRuleResponse
+    | AbsolutePlacementOverlapsWindowCurrentRuleResponse
+)
 
 
 class TemporalConstraintResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
-
     constraint_ref: UUID
     subject_ref: UUID
     subject_kind: Literal["activity", "event"]
@@ -142,13 +199,11 @@ class TemporalConstraintResponse(BaseModel):
 
 class TemporalConstraintListResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
-
     items: list[TemporalConstraintResponse]
 
 
 class CreatedTemporalConstraintResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
-
     constraint_ref: UUID
     subject_ref: UUID
     subject_kind: Literal["activity", "event"]
@@ -160,7 +215,6 @@ class CreatedTemporalConstraintResponse(BaseModel):
 
 class RevisedTemporalConstraintResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
-
     constraint_ref: UUID
     subject_ref: UUID
     subject_kind: Literal["activity", "event"]
@@ -173,13 +227,51 @@ class RevisedTemporalConstraintResponse(BaseModel):
 
 class RetiredTemporalConstraintResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
-
     constraint_ref: UUID
     subject_ref: UUID
     subject_kind: Literal["activity", "event"]
     previous_material_state_ref: UUID
     recorded_at: datetime
     replayed: bool = False
+
+
+class AbsoluteIntervalPlacementRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    form: Literal["absolute_interval"] = "absolute_interval"
+    starts_at: datetime
+    ends_at: datetime
+
+
+class EvaluateTemporalConstraintsRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    subject_ref: UUID
+    placement: AbsoluteIntervalPlacementRequest
+
+
+class TemporalConstraintEvaluationItemResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    constraint_ref: UUID
+    material_state_ref: UUID
+    family: Literal["boundary", "window"]
+    rule_code: str
+    constrained_facet: Literal["schedule.start", "schedule.completion", "schedule.placement"]
+    strength: Literal["hard", "soft"]
+    evaluation: Literal["satisfied", "violated", "not_evaluable"]
+    reason_code: str
+
+
+class TemporalConstraintEvaluationResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    subject_ref: UUID
+    placement: AbsoluteIntervalPlacementRequest
+    status: Literal[
+        "admissible",
+        "admissible_with_soft_violations",
+        "inadmissible",
+        "not_evaluable",
+    ]
+    hard_set_status: Literal["feasible", "infeasible", "undetermined"]
+    items: list[TemporalConstraintEvaluationItemResponse]
 
 
 def get_temporal_constraint_application(request: Request) -> TemporalConstraintApplication:
@@ -193,7 +285,23 @@ TemporalConstraintApplicationDependency = Annotated[
 ]
 
 
-def _rule_from_request(payload: TemporalConstraintRuleRequest) -> AbsoluteBoundaryRule:
+def _rule_from_request(payload: TemporalConstraintRuleRequest) -> TemporalConstraintRule:
+    if isinstance(
+        payload,
+        (
+            AbsoluteStartWithinWindowRuleRequest,
+            AbsoluteCompletionWithinWindowRuleRequest,
+            AbsoluteFullPlacementContainedWindowRuleRequest,
+            AbsolutePlacementOverlapsWindowRuleRequest,
+        ),
+    ):
+        return AbsoluteWindowRule(
+            relationship=payload.relationship,
+            constrained_facet=payload.constrained_facet,
+            strength=payload.strength,
+            starts_at=payload.starts_at,
+            ends_at=payload.ends_at,
+        )
     return AbsoluteBoundaryRule(
         boundary_kind=payload.boundary_kind,
         constrained_facet=payload.constrained_facet,
@@ -203,6 +311,19 @@ def _rule_from_request(payload: TemporalConstraintRuleRequest) -> AbsoluteBounda
 
 
 def _rule_request(rule: TemporalConstraintRule) -> TemporalConstraintRuleRequest:
+    if isinstance(rule, AbsoluteWindowRule):
+        common = {
+            "strength": rule.strength,
+            "starts_at": rule.starts_at,
+            "ends_at": rule.ends_at,
+        }
+        if rule.relationship == "start_within":
+            return AbsoluteStartWithinWindowRuleRequest(**common)
+        if rule.relationship == "completion_within":
+            return AbsoluteCompletionWithinWindowRuleRequest(**common)
+        if rule.relationship == "full_placement_contained":
+            return AbsoluteFullPlacementContainedWindowRuleRequest(**common)
+        return AbsolutePlacementOverlapsWindowRuleRequest(**common)
     if rule.boundary_kind == "earliest_start":
         return AbsoluteEarliestStartRuleRequest(
             strength=rule.strength,
@@ -225,6 +346,20 @@ def _current_rule_response(
     current_rule = value.current_rule
     if current_rule is None:
         return None
+    if current_rule.family == "window":
+        common = {
+            "material_state_ref": current_rule.material_state_ref,
+            "strength": current_rule.strength,
+            "starts_at": current_rule.starts_at,
+            "ends_at": current_rule.ends_at,
+        }
+        if current_rule.relationship == "start_within":
+            return AbsoluteStartWithinWindowCurrentRuleResponse(**common)
+        if current_rule.relationship == "completion_within":
+            return AbsoluteCompletionWithinWindowCurrentRuleResponse(**common)
+        if current_rule.relationship == "full_placement_contained":
+            return AbsoluteFullPlacementContainedWindowCurrentRuleResponse(**common)
+        return AbsolutePlacementOverlapsWindowCurrentRuleResponse(**common)
     common = {
         "material_state_ref": current_rule.material_state_ref,
         "strength": current_rule.strength,
@@ -280,6 +415,31 @@ def _retired_response(value: RetiredTemporalConstraintView) -> RetiredTemporalCo
         previous_material_state_ref=value.previous_material_state_ref,
         recorded_at=value.recorded_at,
         replayed=value.replayed,
+    )
+
+
+def _evaluation_response(value: TemporalConstraintEvaluationView) -> TemporalConstraintEvaluationResponse:
+    return TemporalConstraintEvaluationResponse(
+        subject_ref=value.subject_native_ref,
+        placement=AbsoluteIntervalPlacementRequest(
+            starts_at=value.placement.starts_at,
+            ends_at=value.placement.ends_at,
+        ),
+        status=value.status,
+        hard_set_status=value.hard_set_status,
+        items=[
+            TemporalConstraintEvaluationItemResponse(
+                constraint_ref=item.constraint_ref,
+                material_state_ref=item.material_state_ref,
+                family=item.family,
+                rule_code=item.rule_code,
+                constrained_facet=item.constrained_facet,
+                strength=item.strength,
+                evaluation=item.evaluation,
+                reason_code=item.reason_code,
+            )
+            for item in value.items
+        ],
     )
 
 
@@ -385,9 +545,7 @@ async def revise_temporal_constraint_rule(
             self_person_ref=context.self_person_ref,
             operation_id=payload.operation_id,
             constraint_ref=ScopedRecordRef(constraint_ref),
-            expected_material_state_ref=MaterialStateRef(
-                payload.expected_material_state_ref
-            ),
+            expected_material_state_ref=MaterialStateRef(payload.expected_material_state_ref),
             rule=_rule_from_request(payload.rule),
         )
     except TemporalConstraintInputError as exc:
@@ -428,9 +586,7 @@ async def retire_temporal_constraint(
             self_person_ref=context.self_person_ref,
             operation_id=payload.operation_id,
             constraint_ref=ScopedRecordRef(constraint_ref),
-            expected_material_state_ref=MaterialStateRef(
-                payload.expected_material_state_ref
-            ),
+            expected_material_state_ref=MaterialStateRef(payload.expected_material_state_ref),
         )
     except TemporalConstraintInputError as exc:
         raise ProblemError(
@@ -450,6 +606,43 @@ async def retire_temporal_constraint(
     except TemporalConstraintPersistenceError as exc:
         raise _persistence_problem() from exc
     return _retired_response(result)
+
+
+@router.post(
+    "/constraints/evaluate",
+    response_model=TemporalConstraintEvaluationResponse,
+    operation_id="temporal_evaluate_constraints",
+)
+async def evaluate_temporal_constraints(
+    payload: EvaluateTemporalConstraintsRequest,
+    context: DanteContextDependency,
+    application: TemporalConstraintApplicationDependency,
+    response: Response,
+) -> TemporalConstraintEvaluationResponse:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        result = await application.evaluate_constraints(
+            self_person_ref=context.self_person_ref,
+            subject_native_ref=NativeRef(payload.subject_ref),
+            placement=AbsoluteIntervalPlacement(
+                starts_at=payload.placement.starts_at,
+                ends_at=payload.placement.ends_at,
+            ),
+        )
+    except TemporalConstraintInputError as exc:
+        raise ProblemError(
+            status=422,
+            code="temporal.constraint.invalid_evaluation",
+            category="validation",
+            title="Invalid Temporal Constraint evaluation",
+            detail=str(exc),
+            retryable=False,
+        ) from exc
+    except TemporalConstraintNotFoundError as exc:
+        raise _not_found_problem() from exc
+    except TemporalConstraintPersistenceError as exc:
+        raise _persistence_problem() from exc
+    return _evaluation_response(result)
 
 
 @router.get(
@@ -515,6 +708,4 @@ async def list_temporal_constraints_by_subject(
         raise _not_found_problem() from exc
     except TemporalConstraintPersistenceError as exc:
         raise _persistence_problem() from exc
-    return TemporalConstraintListResponse(
-        items=[_constraint_response(value) for value in results]
-    )
+    return TemporalConstraintListResponse(items=[_constraint_response(value) for value in results])
