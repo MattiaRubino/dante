@@ -62,6 +62,13 @@ export type TemporalConstrainedActivityCreateResult = Readonly<{
   replayed: boolean;
 }>;
 
+export interface TemporalConstrainedActivityDataSource {
+  createConstrainedActivity(
+    request: TemporalConstrainedActivityCreateRequest,
+    signal?: AbortSignal,
+  ): Promise<TemporalConstrainedActivityCreateResult>;
+}
+
 export type TemporalScheduleRecord = Readonly<{
   scheduleRef: string;
   placementMaterialStateRef: string;
@@ -100,10 +107,6 @@ export interface TemporalActivityDataSource {
     request: TemporalActivityCreateRequest,
     signal?: AbortSignal,
   ): Promise<TemporalActivityCreateResult>;
-  createConstrainedActivity(
-    request: TemporalConstrainedActivityCreateRequest,
-    signal?: AbortSignal,
-  ): Promise<TemporalConstrainedActivityCreateResult>;
   createScheduledActivity(
     request: TemporalScheduledActivityCreateRequest,
     signal?: AbortSignal,
