@@ -8,7 +8,7 @@
     "name": "temporal_constraint_boundary_absolute_state",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Exact absolute-instant value for the first complete B04-A earliest-start Temporal Constraint boundary rule.",
+  "purpose": "Exact absolute-instant value shared by the activated B04-A/B Temporal Constraint boundary kinds.",
   "classification": {
     "persistence_role": "typed_material_state_payload",
     "canonicality": "canonical",
@@ -17,10 +17,11 @@
   "semantic_traceability": {
     "authority_sources": [
       "docs/workstreams/timeline-temporal-operational-b04-a-implementation-freeze.md",
+      "docs/workstreams/timeline-temporal-operational-b04-b-implementation-freeze.md",
       "docs/workstreams/timeline-temporal-operational-b04-execution-plan.md",
       "docs/development/backend-cp6-02-postgresql-persistence-constitution.md"
     ],
-    "domain_concepts": ["Temporal Constraint"],
+    "domain_concepts": ["Temporal Constraint", "Deadline"],
     "logical_families": ["Temporal Constraint", "Boundary Rule", "LR-05"],
     "reference_families": ["MaterialStateRef"],
     "material_facets": ["temporal_constraint.rule"]
@@ -37,8 +38,8 @@
   },
   "structure": {
     "columns": [
-      {"name":"material_state_ref","postgres_type":"uuid","nullable":false,"default":{"kind":"none","expression":null},"meaning":"MaterialStateRef of the boundary rule owning this exact absolute value.","semantic_type":"MaterialStateRef","value_contract":"Exactly one absolute value for each B04-A absolute boundary state."},
-      {"name":"boundary_at","postgres_type":"timestamp with time zone","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Exact finite absolute instant of the earliest-start boundary.","semantic_type":null,"value_contract":"Finite timestamptz. It is not a fabricated resolution of a date, floating-local or named-zone-local value."}
+      {"name":"material_state_ref","postgres_type":"uuid","nullable":false,"default":{"kind":"none","expression":null},"meaning":"MaterialStateRef of the boundary rule owning this exact absolute value.","semantic_type":"MaterialStateRef","value_contract":"Exactly one absolute value for each activated absolute boundary state."},
+      {"name":"boundary_at","postgres_type":"timestamp with time zone","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Exact finite absolute instant of the typed earliest-start, latest-start or latest-completion boundary.","semantic_type":null,"value_contract":"Finite timestamptz. It is not a fabricated resolution of a date, floating-local or named-zone-local value."}
     ],
     "primary_key": {"name":"pk_temporal_constraint_boundary_absolute_state","columns":["material_state_ref"],"reason":"At most one exact absolute boundary value per rule MaterialState.","deferrable":false,"initially":"NOT DEFERRABLE","enforced":true},
     "foreign_keys": [
@@ -46,13 +47,13 @@
     ],
     "unique_constraints": [],
     "check_constraints": [
-      {"name":"ck_temporal_constraint_boundary_absolute_state_finite","expression_contract":"isfinite(boundary_at)","reason":"Reject infinite timestamps from canonical B04-A boundary truth.","enforced":true,"validated":true,"no_inherit":false}
+      {"name":"ck_temporal_constraint_boundary_absolute_state_finite","expression_contract":"isfinite(boundary_at)","reason":"Reject infinite timestamps from canonical absolute boundary truth.","enforced":true,"validated":true,"no_inherit":false}
     ],
     "indexes": [
       {"name":"pk_temporal_constraint_boundary_absolute_state","method":"btree","unique":true,"keys":["material_state_ref"],"predicate":null,"include":[],"source":"primary_key","reason":"Exact boundary-value lookup by rule MaterialStateRef.","valid":true,"ready":true,"live":true}
     ],
     "triggers": [
-      {"name":"ctrg_temporal_constraint_boundary_absolute_state_rule_totality","routine":"dante.enforce_temporal_constraint_rule_totality","events":["INSERT","UPDATE","DELETE"],"timing":"AFTER","orientation":"ROW","constraint_trigger":true,"deferrable":true,"initially_deferred":true,"enabled_mode":"ORIGIN","update_columns":[],"when_condition":null,"arguments":[],"invariant_role":"temporal_constraint_rule_totality","reason":"Reject incomplete or multiply-shaped canonical B04-A rule payloads by transaction end."}
+      {"name":"ctrg_temporal_constraint_boundary_absolute_state_rule_totality","routine":"dante.enforce_temporal_constraint_rule_totality","events":["INSERT","UPDATE","DELETE"],"timing":"AFTER","orientation":"ROW","constraint_trigger":true,"deferrable":true,"initially_deferred":true,"enabled_mode":"ORIGIN","update_columns":[],"when_condition":null,"arguments":[],"invariant_role":"temporal_constraint_rule_totality","reason":"Reject incomplete, multiply-shaped or semantically mismatched canonical B04-A/B rule payloads by transaction end."}
     ],
     "table": {"persistence":"permanent","access_method":"heap","partitioned":false,"row_security":false,"force_row_security":false,"replica_identity":"default","reloptions":[]},
     "view": null,
@@ -73,12 +74,14 @@
   "security": {"owner_role":"dante_owner","default_deny_non_owner":true,"expected_grants":[{"grantee":"dante_runtime","privilege":"SELECT","columns":[],"grant_option":false}]},
   "proof": {
     "obligations": [
-      "absolute earliest-start boundary has one finite timestamptz value",
-      "absolute payload exists only with the matching typed boundary discriminator",
+      "each activated absolute boundary has one finite timestamptz value",
+      "absolute payload exists only with a matching typed boundary discriminator",
+      "deadline/latest-completion remains a boundary rule and does not establish Outcome",
       "rule revisions append rather than rewrite boundary values"
     ],
     "test_refs": [
       "apps/backend/tests/integration/temporal/test_b04_temporal_constraint_core.py",
+      "apps/backend/tests/integration/temporal/test_b04_absolute_boundary_deadline.py",
       "apps/backend/tests/integration/temporal/test_b04_temporal_constraint_api_activation.py",
       "apps/backend/tests/integration/database/test_b04_temporal_constraint_catalog.py",
       "apps/backend/tests/integration/database/test_database_current_catalog.py"
