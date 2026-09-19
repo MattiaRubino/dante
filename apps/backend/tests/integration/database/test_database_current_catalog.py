@@ -19,8 +19,8 @@ from dante.platform.database.metadata import Base
 
 pytestmark = pytest.mark.postgres
 
-_CURRENT_REVISION = "20260919_34"
-_CURRENT_TOPOLOGY = (107, 5, 34, 85, 212, 129, 309, 0, 0, 0)
+_CURRENT_REVISION = "20260919_36"
+_CURRENT_TOPOLOGY = (109, 5, 35, 87, 214, 131, 312, 0, 0, 0)
 _REPO_ROOT = Path(__file__).resolve().parents[5]
 _DICTIONARY_ROOT = _REPO_ROOT / "docs" / "database" / "dictionary"
 
@@ -85,11 +85,15 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
         tables, routines
     )
     scope = json.loads((_DICTIONARY_ROOT / "scope.json").read_text(encoding="utf-8"))
+
     with _admin(migrated_database) as connection:
         environment = connection.execute(
-            "SELECT current_setting('server_version_num'),current_setting('server_encoding'),current_setting('max_identifier_length')"
+            "SELECT current_setting('server_version_num'),"
+            "current_setting('server_encoding'),"
+            "current_setting('max_identifier_length')"
         ).fetchone()
-        topology = connection.execute("""
+        topology = connection.execute(
+            """
             SELECT
               (SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='dante' AND c.relkind='r' AND c.relname<>'alembic_version'),
               (SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='dante' AND c.relkind='v'),
@@ -101,7 +105,8 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
               (SELECT count(*) FROM pg_type t JOIN pg_namespace n ON n.oid=t.typnamespace WHERE n.nspname='dante' AND t.typtype IN ('d','e')),
               (SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='dante' AND c.relkind IN ('S','m','p')),
               (SELECT count(*) FROM pg_policy p JOIN pg_class c ON c.oid=p.polrelid JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='dante')
-        """).fetchone()
+            """
+        ).fetchone()
         live_tables = {
             str(r[0])
             for r in connection.execute(
@@ -109,8 +114,7 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
             )
         }
         live_views = {
-            str(r[0])
-            for r in connection.execute(
+            str(r[0]) for r in connection.execute(
                 "SELECT viewname FROM pg_views WHERE schemaname='dante'"
             )
         }
@@ -152,10 +156,12 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
         current_revision = connection.execute(
             "SELECT version_num FROM dante.alembic_version"
         ).fetchone()
+
     assert environment == ("180006", "UTF8", "63")
     assert topology == _CURRENT_TOPOLOGY
+    print("DATABASE_CURRENT_TOPOLOGY=" + "|".join(str(value) for value in topology))
     assert current_revision == (_CURRENT_REVISION,)
-    assert (len(tables), len(views), len(routines)) == (107, 5, 34)
+    assert (len(tables), len(views), len(routines)) == (109, 5, 35)
     assert live_tables == set(tables)
     assert live_views == set(views)
     assert live_routines == set(routines)
@@ -166,38 +172,32 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
     assert extensions["postgis"] == "3.6.4"
     assert extensions["vector"] == "0.8.6"
     assert set(extensions) == {
-        "postgis",
-        "vector",
-        "pg_trgm",
-        "unaccent",
-        "pg_stat_statements",
+        "postgis", "vector", "pg_trgm", "unaccent", "pg_stat_statements"
     }
+
     current = scope["current_materialization"]
     assert current["completed_stages"] == [
-        "CP6-M01",
-        "CP6-M02",
-        "CP6-M03",
-        "CP6-M04",
-        "CP6-M05",
-        "CP6-M06",
-        "CP6-M07",
+        "CP6-M01", "CP6-M02", "CP6-M03", "CP6-M04", "CP6-M05", "CP6-M06", "CP6-M07"
     ]
     assert current["standalone_entries"] == {
-        "tables": 107,
+        "tables": 109,
         "views": 5,
-        "routines": 34,
-        "total": 146,
+        "routines": 35,
+        "total": 149,
     }
-    assert current["embedded_objects"] == {"triggers": 85, "physical_indexes": 212}
+    assert current["embedded_objects"] == {
+        "triggers": 87,
+        "physical_indexes": 214,
+    }
     assert current["constraints"] == {
-        "foreign_keys": 129,
-        "check_constraints": 309,
+        "foreign_keys": 131,
+        "check_constraints": 312,
     }
     assert (
         len(MAPPED_TABLES)
         == len(Base.registry.mappers)
         == len(Base.metadata.tables)
-        == 107
+        == 109
     )
     assert all(len(mapper.relationships) == 0 for mapper in Base.registry.mappers)
     assert set(VIEW_METADATA.tables) == {f"dante.{name}" for name in views}
@@ -210,6 +210,7 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
         assert isinstance(row.__table__, Table)
         assert row.__table__.name == name
         assert row.__table__.schema == "dante"
+
     config = Config(toml_file=str(_REPO_ROOT / "apps" / "backend" / "pyproject.toml"))
     scripts = ScriptDirectory.from_config(config)
     assert scripts.get_heads() == [_CURRENT_REVISION]
