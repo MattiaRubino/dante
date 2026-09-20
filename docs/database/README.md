@@ -1,13 +1,13 @@
 # DANTE Database System of Record
 
 - **Status:** CURRENT / AUTHORITATIVE DATABASE REFERENCE
-- **Last reconciled:** 2026-09-19
+- **Last reconciled:** 2026-09-20
 - **PostgreSQL:** 18.6
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
-- **Timeline candidate Alembic head:** `20260920_42`
-- **Timeline candidate topology:** `116|5|44|90|233|153|331|0|0|0`
+- **Timeline candidate Alembic head (source):** `20260920_43`
+- **Timeline candidate expected topology (PostgreSQL proof pending):** `118|5|46|90|237|156|335|0|0|0`
 - **Timeline candidate DB overlay:** `timeline-temporal-operational.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 - **Persistence ADR:** `../decisions/ADR-010-postgresql-persistence-constitution.md`
@@ -65,7 +65,9 @@ Protected `main` remains integration authority. Candidate truth is never relabel
 20260919_40 B04-E planned Schedule duration constraints
     ↓
 20260919_41 B04-E duration runtime-read ACL
-20260920_42 B04-F Schedule hard-constraint guard [current candidate head]
+20260920_42 B04-F Schedule hard-constraint guard
+    ↓
+20260920_43 B05-A1 self-scoped Life Area catalog create/list [source head]
 ```
 
 No accepted historical migration was edited, rebased, renumbered or flattened.
@@ -73,13 +75,13 @@ No accepted historical migration was edited, rebased, renumbered or flattened.
 ## 3. Current candidate topology
 
 ```text
-116 tables
+118 tables
 5 views
-44 routines
+46 routines
 90 triggers
-233 physical indexes
-153 foreign keys
-331 CHECK constraints
+237 physical indexes
+156 foreign keys
+335 CHECK constraints
 0 enums/domains
 0 sequences
 0 materialized views
@@ -87,7 +89,7 @@ No accepted historical migration was edited, rebased, renumbered or flattened.
 0 RLS policies
 ```
 
-This topology was read directly from PostgreSQL 18.6 at `_41` and reconciled with `dictionary/scope.json`, SQLAlchemy mappings, Alembic and whole-catalog tests.
+The `_42` topology was read directly from PostgreSQL 18.6 during B04-F closure. The `_43` figures above are the **expected** Dictionary/migration topology for B05-A1 and remain pending direct PostgreSQL proof. No PostgreSQL PASS is claimed by these figures.
 
 ## 4. Timeline persistence classification
 
@@ -205,7 +207,7 @@ TC-011 relative before/after        → deferred until reviewed bounded referenc
 
 No fake Activity/Event `last_at`, no generic `related_id + type`, and no generic JSON rule payload were introduced.
 
-B04-E exposes no new public Temporal HTTP endpoint, so OpenAPI/client artifacts intentionally do not churn in this slice. B04-F still owns whole-block public API inventory/snapshot regression.
+B04-E exposed no new public Temporal HTTP endpoint, so OpenAPI/client artifacts did not churn in that slice. B04-F subsequently closed the whole-block public API inventory/snapshot regression.
 
 ## 5. Permanent non-collapse invariants
 
@@ -247,7 +249,10 @@ B04-B                                CLOSED / PROVEN at 20260919_34
 B04-C                                CLOSED / PROVEN at 20260919_36
 B04-D Movement Policy                CLOSED / PROVEN at 20260919_39
 B04-E Advanced-family applicability  CLOSED / PROVEN at 20260919_41
-B04 overall                          IN PROGRESS — B04-F NEXT
+B04-F Whole-B04 closure              CLOSED / PROVEN at 20260920_42
+B04 overall                          CLOSED / PROVEN
+B05-A1 Life Area create/list          IMPLEMENTED — DIRECT POSTGRESQL PROOF PENDING
+B05-A2+ lifecycle and assignment      OPEN
 ```
 
 Observed B04-E local evidence:
@@ -263,6 +268,4 @@ Proof covers duration lifecycle/current/history/CAS/idempotency, hard minimum/ma
 
 ## 7. Current next boundary
 
-B04-E is closed. Next is **B04-F Whole-B04 closure**.
-
-B04-F owns broad B04 regression, exact public Temporal API/OpenAPI inventory verification, applicable product/manual acceptance, final database/docs reconciliation and the final B04 closure decision before B05 begins.
+B04-F whole-block closure is complete (see `../workstreams/timeline-temporal-operational-b04-f-closure-2026-09-20.md`). B05-A1 has added `dante.life_area`, `dante.life_area_create_operation`, `create_self_life_area` and `list_self_life_areas` at `_43`. These LR-12 records are not native-address entries, item assignments or Tag owners. Runtime is granted only bounded function EXECUTE; real PostgreSQL catalog/ACL proof and B05-A2 lifecycle remain open. The Dictionary and generated API client are updated in this change.

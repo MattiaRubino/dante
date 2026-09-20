@@ -11,8 +11,11 @@ import type {
   AuthHandleAppleCallbackBody,
   AuthenticatedSessionResponse,
   AuthenticationMethodsResponse,
+  ConstrainedActivityResponse,
   CreateActivityRequest,
+  CreateConstrainedActivityRequest,
   CreateEventRequest,
+  CreateLifeAreaRequest,
   CreateScheduledActivityRequest,
   CreateScheduledEventRequest,
   CreateTemporalConstraintRequest,
@@ -26,6 +29,7 @@ import type {
   GoogleAuthenticationBegunResponse,
   GoogleAuthenticationCompleteRequest,
   HTTPValidationError,
+  LifeAreaResponse,
   PasskeyAuthenticationCompleteRequest,
   PasskeyBeginRequest,
   PasskeyCeremonyResponse,
@@ -3652,6 +3656,75 @@ export const createActivityApiV1TemporalActivitiesPost = async (
   } as createActivityApiV1TemporalActivitiesPostResponse;
 };
 
+export type temporalCreateConstrainedActivityResponse201 = {
+  data: ConstrainedActivityResponse;
+  status: 201;
+};
+
+export type temporalCreateConstrainedActivityResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalCreateConstrainedActivityResponseSuccess =
+  temporalCreateConstrainedActivityResponse201 & {
+    headers: Headers;
+  };
+export type temporalCreateConstrainedActivityResponseError =
+  temporalCreateConstrainedActivityResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalCreateConstrainedActivityResponse =
+  | temporalCreateConstrainedActivityResponseSuccess
+  | temporalCreateConstrainedActivityResponseError;
+
+export const getTemporalCreateConstrainedActivityUrl = () => {
+  return `/api/v1/temporal/activities/constrained`;
+};
+
+/**
+ * Create one unplaced Activity and its initial B04 constraints atomically.
+ * @summary Temporal Create Constrained Activity
+ */
+export const temporalCreateConstrainedActivity = async (
+  createConstrainedActivityRequest: CreateConstrainedActivityRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalCreateConstrainedActivityResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalCreateConstrainedActivityUrl(),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(createConstrainedActivityRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalCreateConstrainedActivityResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalCreateConstrainedActivityResponse;
+};
+
 export type createScheduledActivityApiV1TemporalActivitiesScheduledPostResponse201 =
   {
     data:
@@ -4566,6 +4639,110 @@ export const replaceEventAgendaApiV1TemporalEventsEventRefAgendaPut = async (
     status: res.status,
     headers: res.headers,
   } as replaceEventAgendaApiV1TemporalEventsEventRefAgendaPutResponse;
+};
+
+export type temporalListLifeAreasResponse200 = {
+  data: LifeAreaResponse[];
+  status: 200;
+};
+
+export type temporalListLifeAreasResponseSuccess =
+  temporalListLifeAreasResponse200 & {
+    headers: Headers;
+  };
+export type temporalListLifeAreasResponse =
+  temporalListLifeAreasResponseSuccess;
+
+export const getTemporalListLifeAreasUrl = () => {
+  return `/api/v1/temporal/life-areas`;
+};
+
+/**
+ * @summary List Life Areas
+ */
+export const temporalListLifeAreas = async (
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListLifeAreasResponse> => {
+  const res = await (fetchFn ?? fetch)(getTemporalListLifeAreasUrl(), {
+    ...options,
+    method: 'GET',
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListLifeAreasResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListLifeAreasResponse;
+};
+
+export type temporalCreateLifeAreaResponse201 = {
+  data: LifeAreaResponse;
+  status: 201;
+};
+
+export type temporalCreateLifeAreaResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalCreateLifeAreaResponseSuccess =
+  temporalCreateLifeAreaResponse201 & {
+    headers: Headers;
+  };
+export type temporalCreateLifeAreaResponseError =
+  temporalCreateLifeAreaResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalCreateLifeAreaResponse =
+  temporalCreateLifeAreaResponseSuccess | temporalCreateLifeAreaResponseError;
+
+export const getTemporalCreateLifeAreaUrl = () => {
+  return `/api/v1/temporal/life-areas`;
+};
+
+/**
+ * @summary Create Life Area
+ */
+export const temporalCreateLifeArea = async (
+  createLifeAreaRequest: CreateLifeAreaRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalCreateLifeAreaResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(getTemporalCreateLifeAreaUrl(), {
+    ...options,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(createLifeAreaRequest),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalCreateLifeAreaResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalCreateLifeAreaResponse;
 };
 
 export type reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchResponse200 =

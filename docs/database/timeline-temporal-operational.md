@@ -1,15 +1,17 @@
 # Timeline / Temporal-Operational — Candidate Database Overlay
 
 - **Status:** CURRENT CANDIDATE DATABASE AUTHORITY
-- **Reconciled:** 2026-09-19
+- **Reconciled:** 2026-09-20
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
-- **Candidate head:** `20260920_42`
-- **Candidate topology:** `116|5|44|90|233|153|331|0|0|0`
+- **Candidate source head:** `20260920_43`
+- **Candidate expected topology (PostgreSQL proof pending):** `118|5|46|90|237|156|335|0|0|0`
 - **Whole-DB SoR:** `README.md`
 - **Machine-readable authority:** `dictionary/`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 - **B04-E closure authority:** `../workstreams/timeline-temporal-operational-b04-e-closure-2026-09-19.md`
+- **B04 whole-block closure authority:** `../workstreams/timeline-temporal-operational-b04-f-closure-2026-09-20.md`
+- **B05 pre-scope (no DDL):** `../workstreams/timeline-temporal-operational-b05-execution-plan.md`
 
 ## 1. Purpose and authority boundary
 
@@ -39,6 +41,8 @@ This file is the human-readable database overlay for Timeline candidate-only per
 20260919_41 B04-E duration runtime-read ACL
     ↓
 20260920_42 B04-F Schedule hard-constraint guard
+    ↓
+20260920_43 B05-A1 self-scoped Life Area catalog create/list
 ```
 
 ## 3. Temporal Constraint authority through B04-E
@@ -104,19 +108,19 @@ No fake previous-time field, generic relationship root, `related_id + type`, or 
 
 B04-D movement admissibility is extended through hard duration rules by the same internal guard.
 
-B04-E adds no public Temporal HTTP route; OpenAPI/client artifacts intentionally remain unchanged in E. Whole-B04 B04-F still owns exact public API/OpenAPI regression.
+B04-E adds no public Temporal HTTP route; OpenAPI/client artifacts intentionally remain unchanged in E. Whole-B04 B04-F closed the exact public API/OpenAPI regression.
 
 ## 6. Current candidate topology
 
 ```text
-Alembic     20260920_42
-Tables      116
+Alembic     20260920_43
+Tables      118
 Views       5
-Routines    44
+Routines    46
 Triggers    90
-Indexes     233
-FKs         153
-CHECKs      331
+Indexes     237
+FKs         156
+CHECKs      335
 Enums       0
 Domains     0
 Sequences   0
@@ -130,13 +134,14 @@ RLS         0
 B01 ✅ CLOSED / PROVEN
 B02 ✅ CLOSED / PROVEN
 B03 ✅ CLOSED / PROVEN
-B04  🟡 IN PROGRESS
+B04  ✅ CLOSED / PROVEN
 ├─ B04-A ✅ CLOSED / PROVEN
 ├─ B04-B ✅ CLOSED / PROVEN
 ├─ B04-C ✅ CLOSED / PROVEN
 ├─ B04-D ✅ CLOSED / PROVEN
 ├─ B04-E ✅ CLOSED / PROVEN
-└─ B04-F ⬜ NEXT
+└─ B04-F ✅ CLOSED / PROVEN
+B05  🟡 A1 CREATE/LIST IMPLEMENTED / POSTGRESQL PROOF PENDING
 ```
 
 Observed B04-E evidence:
@@ -150,4 +155,4 @@ DATABASE_CURRENT_TOPOLOGY                         116|5|44|90|233|153|331|0|0|0
 
 ## 8. Next persistence boundary
 
-B04-F is next and should not invent new B04 semantics. It is the whole-block proof/reconciliation slice: broad regressions, public API/OpenAPI inventory, applicable product/manual acceptance, and final closure before B05.
+B04-F is closed with direct proof recorded in its whole-block closure record. B05-A1 creates only a self-scoped LR-12 profile and its immutable creation receipt; it grants bounded runtime EXECUTE for create/list, with no generic table access and no NativeRef registration. `_43` topology is derived from the reviewed migration/Dictionary and **not yet observed** in PostgreSQL. Direct migrated-catalog/ACL and application proof must be supplied before B05-A1 is marked PROVEN. Rename/reorder/archive/hide/show remain B05-A2; primary item relation remains B05-B.

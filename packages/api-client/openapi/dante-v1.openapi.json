@@ -1000,6 +1000,29 @@
         "title": "CoarseLocalPeriodPlacementRequest",
         "type": "object"
       },
+      "ConstrainedActivityResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "activity": {
+            "$ref": "#/components/schemas/ActivityResponse"
+          },
+          "constraints": {
+            "items": {
+              "$ref": "#/components/schemas/CreatedTemporalConstraintResponse"
+            },
+            "title": "Constraints",
+            "type": "array"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          }
+        },
+        "required": ["activity", "constraints"],
+        "title": "ConstrainedActivityResponse",
+        "type": "object"
+      },
       "CreateActivityRequest": {
         "additionalProperties": false,
         "description": "Minimum B01 CreateActivity command; placement is not an Activity field.",
@@ -1019,6 +1042,58 @@
         },
         "required": ["operation_id", "title"],
         "title": "CreateActivityRequest",
+        "type": "object"
+      },
+      "CreateConstrainedActivityRequest": {
+        "additionalProperties": false,
+        "description": "Atomic unplaced Activity plus 1..4 public B04 boundary/window rules.",
+        "properties": {
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "rules": {
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/AbsoluteEarliestStartRuleRequest"
+                },
+                {
+                  "$ref": "#/components/schemas/AbsoluteLatestStartRuleRequest"
+                },
+                {
+                  "$ref": "#/components/schemas/AbsoluteLatestCompletionRuleRequest"
+                },
+                {
+                  "$ref": "#/components/schemas/AbsoluteStartWithinWindowRuleRequest"
+                },
+                {
+                  "$ref": "#/components/schemas/AbsoluteCompletionWithinWindowRuleRequest"
+                },
+                {
+                  "$ref": "#/components/schemas/AbsoluteFullPlacementContainedWindowRuleRequest"
+                },
+                {
+                  "$ref": "#/components/schemas/AbsolutePlacementOverlapsWindowRuleRequest"
+                }
+              ]
+            },
+            "maxItems": 4,
+            "minItems": 1,
+            "title": "Rules",
+            "type": "array"
+          },
+          "title": {
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "title", "rules"],
+        "title": "CreateConstrainedActivityRequest",
         "type": "object"
       },
       "CreateEventRequest": {
@@ -1049,6 +1124,26 @@
         },
         "required": ["operation_id", "title"],
         "title": "CreateEventRequest",
+        "type": "object"
+      },
+      "CreateLifeAreaRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "name"],
+        "title": "CreateLifeAreaRequest",
         "type": "object"
       },
       "CreateScheduledActivityRequest": {
@@ -1652,6 +1747,33 @@
         "type": "object"
       },
       "JsonValue": {},
+      "LifeAreaResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "life_area_ref": {
+            "format": "uuid",
+            "title": "Life Area Ref",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          }
+        },
+        "required": ["life_area_ref", "name", "created_at"],
+        "title": "LifeAreaResponse",
+        "type": "object"
+      },
       "NamedZoneLocalIntervalPlacementRequest": {
         "additionalProperties": false,
         "properties": {
@@ -14433,6 +14555,46 @@
         "tags": ["temporal"]
       }
     },
+    "/api/v1/temporal/activities/constrained": {
+      "post": {
+        "description": "Create one unplaced Activity and its initial B04 constraints atomically.",
+        "operationId": "temporal_create_constrained_activity",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateConstrainedActivityRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConstrainedActivityResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Temporal Create Constrained Activity",
+        "tags": ["temporal"]
+      }
+    },
     "/api/v1/temporal/activities/scheduled": {
       "post": {
         "operationId": "create_scheduled_activity_api_v1_temporal_activities_scheduled_post",
@@ -15091,6 +15253,66 @@
           }
         },
         "summary": "Replace Event Agenda",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/life-areas": {
+      "get": {
+        "operationId": "temporal_list_life_areas",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/LifeAreaResponse"
+                  },
+                  "title": "Response Temporal List Life Areas",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Life Areas",
+        "tags": ["temporal"]
+      },
+      "post": {
+        "operationId": "temporal_create_life_area",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLifeAreaRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LifeAreaResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Life Area",
         "tags": ["temporal"]
       }
     },

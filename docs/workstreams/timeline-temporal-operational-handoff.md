@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B03 ✅ CLOSED / PROVEN + pre-B04 governance ✅ FROZEN + B04 ✅ CLOSED / PROVEN → B05 NEXT
+- **Status:** B04 ✅ CLOSED / PROVEN → B05-A1 create/list implemented, local PostgreSQL proof pending
 - **Reconciled:** 2026-09-20
 - **Branch:** `feature/timeline-temporal-operational`
 - **Current roadmap:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -8,6 +8,7 @@
 - **B04 execution authority:** `docs/workstreams/timeline-temporal-operational-b04-execution-plan.md`
 - **B04-E closure:** `docs/workstreams/timeline-temporal-operational-b04-e-closure-2026-09-19.md`
 - **B04 whole-block closure:** `docs/workstreams/timeline-temporal-operational-b04-f-closure-2026-09-20.md`
+- **B05 execution plan / pre-scope:** `docs/workstreams/timeline-temporal-operational-b05-execution-plan.md`
 - **Timeline candidate DB overlay:** `docs/database/timeline-temporal-operational.md`
 - **CI:** no CI launch is implied or authorized
 
@@ -26,7 +27,7 @@ B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
 ├─ B04-D Movement Policy                         ✅ CLOSED / PROVEN
 ├─ B04-E Advanced-family applicability           ✅ CLOSED / PROVEN
 └─ B04-F Whole-B04 closure                       ✅ CLOSED / PROVEN
-B05 Product Organization                         ⬜ NEXT
+B05 Product Organization                         🟡 A1 CREATE/LIST / PROOF PENDING
 ...
 B15 Whole Vertical Closure                       ⬜
 ```
@@ -35,8 +36,8 @@ Current candidate DB:
 
 ```text
 PostgreSQL 18.6
-Alembic     20260920_42
-Topology    116|5|44|90|233|153|331|0|0|0
+Alembic source 20260920_43
+Expected topology 118|5|46|90|237|156|335|0|0|0 (not yet directly observed)
 ```
 
 ## 2. Binding foundation carried forward
@@ -195,7 +196,20 @@ It records compact final PostgreSQL/web proof, Dictionary/Alembic reconciliation
 
 ```text
 B04 ✅ CLOSED / PROVEN
-B05 ⬜ NEXT
+B05 🟡 A1 IMPLEMENTED / DIRECT PROOF PENDING
 ```
 
-Prepare B05 only through its own bounded pre-scope. CI remains separately authorized and should not replace faster local gates.
+B05-A1 creates self-scoped LR-12 `life_area` plus an immutable create receipt at `_43`, two bounded database routines, explicit Temporal create/list operations, Dictionary objects/scope and generated API client. The expected `_43` catalog/ACL and application behavior still require the user's local real-PostgreSQL proof; do not mark ORG-002/003 or B05-A1 closed. B05-A2 lifecycle and B05-B primary assignment remain open. No CI/Actions are launched.
+
+Local proof to run on the user's PostgreSQL-equipped checkout after pulling `_43`:
+
+```bash
+cd ~/projects/dante/apps/backend
+uv run --locked pytest -q -m postgres \
+  tests/integration/temporal/test_b05_a1_life_area.py \
+  tests/integration/database/test_database_current_catalog.py \
+  tests/integration/database/test_b04_d_movement_catalog_probe.py \
+  tests/integration/database/test_b04_e_duration_catalog_probe.py
+```
+
+This command has not been run in a PostgreSQL-equipped environment by this change. Any failed topology/ACL/application invariant must be repaired forward before a B05-A1 proof or closure record is written.

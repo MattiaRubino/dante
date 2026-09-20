@@ -65,6 +65,7 @@ ConstrainedActivityApplicationDependency = Annotated[
     "/activities/constrained",
     response_model=ConstrainedActivityResponse,
     status_code=201,
+    operation_id="temporal_create_constrained_activity",
 )
 async def temporal_create_constrained_activity(
     payload: CreateConstrainedActivityRequest,

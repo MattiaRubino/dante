@@ -10,6 +10,7 @@
 - **B04-D closure:** `docs/workstreams/timeline-temporal-operational-b04-d-closure-2026-09-19.md` ✅
 - **B04-E closure:** `docs/workstreams/timeline-temporal-operational-b04-e-closure-2026-09-19.md` ✅
 - **B04-F / whole-B04 closure:** `docs/workstreams/timeline-temporal-operational-b04-f-closure-2026-09-20.md` ✅
+- **B05 execution plan / pre-scope:** `docs/workstreams/timeline-temporal-operational-b05-execution-plan.md` ✅
 - **Timeline candidate DB overlay:** `docs/database/timeline-temporal-operational.md`
 
 The archived semantic freeze remains the binding detailed inventory for the full vertical. This file is the live implementation/proof ledger.
@@ -79,7 +80,7 @@ B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
 ├─ B04-D Movement Policy                         ✅ CLOSED / PROVEN
 ├─ B04-E Advanced-family applicability           ✅ CLOSED / PROVEN
 └─ B04-F Whole-B04 closure                       ✅ CLOSED / PROVEN
-B05 Product Organization                         ⬜ NEXT
+B05 Product Organization                         🟡 A1 CREATE/LIST / PROOF PENDING
 B06 Routine / Recurrence / Occurrence Baseline   ⬜
 B07 UI/UX Consolidation v1                       ⬜
 B08 Session Runtime                              ⬜
@@ -96,8 +97,8 @@ Current candidate persistence authority:
 
 ```text
 PostgreSQL       18.6
-Alembic head     20260920_42
-Topology         116|5|44|90|233|153|331|0|0|0
+Alembic source   20260920_43
+Expected topology 118|5|46|90|237|156|335|0|0|0 (direct PG proof pending)
 ```
 
 ---
@@ -114,7 +115,7 @@ DB same-change reconciliation and Temporal API inventory/operationId/OpenAPI gen
 
 ---
 
-# 4. B04 — Temporal Constraints + Movement Policy 🟡 IN PROGRESS
+# 4. B04 — Temporal Constraints + Movement Policy ✅ CLOSED / PROVEN
 
 ## B04-A ✅ CLOSED / PROVEN
 
@@ -222,7 +223,31 @@ No PASS came from prototype-only fields.
 
 ---
 
-# 5. Later ownership register
+# 5. B05 — Product Organization ⬜ PRE-SCOPE FROZEN / IMPLEMENTATION OPEN
+
+Execution authority: `timeline-temporal-operational-b05-execution-plan.md`. Semantic authority was reopened and the LR-12 product-profile boundary established in pre-scope. This is not a materialized Life Area, a new Domain owner or an assignment of existing items.
+
+```text
+ORG-001  authority/pre-scope             ✅ pre-scope recorded
+ORG-002  exact durable representation   🟡 LR-12 A1 mapped/Dictionary; PG proof pending
+ORG-003  Life Area create               🟡 A1 implemented; direct PG proof pending
+ORG-004..008  rename/reorder/archive/hide/appearance                 ⬜ B05-A2
+ORG-009  primary per-actor item assignment                         ⬜ B05-B
+ORG-010  separate secondary Tags                                ⬜ B05-C
+ORG-011  non-collapse with Goal/Plan/Tag/Place/provider calendar  ⬜ verify throughout
+ORG-012  real Timeline organization and filtering                ⬜ B05-D
+ORG-013  hidden-item scheduling/conflict relevance               ⬜ B05-D
+ORG-014  actor-local shared-item design without invented grants   ⬜ B05-B/B09 boundary
+ORG-015  accessible non-color-only presentation                  ⬜ B05-D
+B05-T01..05  automated lifecycle, relation, view, conflict, accessibility proofs  ⬜
+B05-T06  manual Life Area organization userTest                    ⬜ B05-E
+```
+
+The B03-E transferred postponed/TBD Event rediscovery belongs to B05-D: no Activity Planning Tray conversion and no invented placement. B05-A1 `_43` adds self-scoped Life Area create/list API, Dictionary and generated client; direct PostgreSQL/ACL proof is outstanding, so B05-A1 and B05 remain open.
+
+---
+
+# 6. Later ownership register
 
 ```text
 B05  Calendar / Life Area / Tags / product organization
@@ -238,11 +263,11 @@ B14  analytics / statistics / signals
 B15  whole-vertical closure
 ```
 
-# 6. Current gate
+# 7. Current gate
 
 ```text
 B04 ✅ CLOSED / PROVEN
-B05 ⬜ NEXT
+B05 🟡 A1 IMPLEMENTED / DIRECT PROOF PENDING
 ```
 
-Next gate: B05 pre-scope. CI remains separate and is not implicitly authorized.
+Next gate: user-run local direct PostgreSQL proof of `_43` catalog/ACL, then B05-A2 lifecycle and later primary assignment. ORG-001 pre-scope is recorded; ORG-002/003 are implemented but not proven; the remaining obligations stay open. No CI/Actions dispatched.

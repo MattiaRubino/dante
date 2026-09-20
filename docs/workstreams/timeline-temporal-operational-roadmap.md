@@ -3,13 +3,14 @@
 - **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-20
 - **Branch/workstream:** `feature/timeline-temporal-operational`
 - **Current completed frontier:** B04 Temporal Constraints + Movement Policy ✅ CLOSED / PROVEN
-- **Next block:** B05 Product Organization ⬜ NEXT
-- **Current candidate DB authority:** PostgreSQL 18.6 / Alembic `20260920_42`
-- **Current candidate topology:** `116|5|44|90|233|153|331|0|0|0`
+- **Current block:** B05 Product Organization 🟡 IN PROGRESS / A1 PROOF PENDING
+- **Current candidate DB source:** PostgreSQL 18.6 / Alembic `20260920_43`
+- **Candidate expected topology (PostgreSQL proof pending):** `118|5|46|90|237|156|335|0|0|0`
 - **Live progress ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **B04 execution authority:** `docs/workstreams/timeline-temporal-operational-b04-execution-plan.md`
 - **B04-E closure:** `docs/workstreams/timeline-temporal-operational-b04-e-closure-2026-09-19.md`
 - **B04 whole-block closure:** `docs/workstreams/timeline-temporal-operational-b04-f-closure-2026-09-20.md`
+- **B05 execution authority:** `docs/workstreams/timeline-temporal-operational-b05-execution-plan.md`
 
 The archived semantic freeze preserves the complete functionality/non-collapse inventory. This document is the current sequencing authority.
 
@@ -73,7 +74,7 @@ B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
 ├─ B04-D Movement Policy                         ✅ CLOSED / PROVEN
 ├─ B04-E Advanced-family applicability           ✅ CLOSED / PROVEN
 └─ B04-F Whole-B04 closure                       ✅ CLOSED / PROVEN
-B05 Product Organization                         ⬜ NEXT
+B05 Product Organization                         🟡 A1 CREATE/LIST / PROOF PENDING
 B06 Routine / Recurrence / Occurrence Baseline   ⬜
 B07 UI/UX Consolidation v1                       ⬜
 B08 Session Runtime                              ⬜
@@ -86,7 +87,7 @@ B14 Analytics / Statistics / Signals             ⬜
 B15 Whole Vertical Closure                       ⬜
 ```
 
-B05 may begin only through its own approved pre-scope.
+B05 pre-scope is recorded in `timeline-temporal-operational-b05-execution-plan.md`; this does not close B05-A or authorize unreviewed DDL.
 
 ---
 
@@ -216,7 +217,7 @@ B15 Whole Vertical Closure
 
 ```text
 B04 ✅ CLOSED / PROVEN
-B05 ⬜ NEXT
+B05 🟡 A1 IMPLEMENTED / DIRECT PROOF PENDING
 ```
 
-Immediate action: prepare the bounded B05 Product Organization pre-scope. CI remains separate and is not implicitly authorized.
+Immediate action: local real-PostgreSQL proof of B05-A1 `_43` and API/catalog invariants, then B05-A2 lifecycle. The direct proof is not yet claimed. Follow the B05 execution plan; CI and Actions are not launched.

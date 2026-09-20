@@ -1,0 +1,109 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "routine:dante.list_self_life_areas",
+    "type": "routine",
+    "schema": "dante",
+    "name": "list_self_life_areas",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Only the authenticated self Person's LR-12 profile list, deterministic by creation timestamp and reference.",
+  "classification": {
+    "persistence_role": "list_self_life_areas",
+    "canonicality": "capability_surface",
+    "family": "product_organization"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/workstreams/timeline-temporal-operational-b05-execution-plan.md",
+      "docs/product/v1-calendar-contexts-and-grouped-views.md",
+      "docs/logical-model/representation-framework-v1.md",
+      "docs/development/backend-cp6-02-postgresql-persistence-constitution.md"
+    ],
+    "domain_concepts": [],
+    "logical_families": [
+      "LR-12 product / organizational profile"
+    ],
+    "reference_families": [
+      "NativeRef"
+    ],
+    "material_facets": []
+  },
+  "implementation": {
+    "introducing_stage": "B05-A1-LIFE-AREA-CATALOG",
+    "alembic_revision": "20260920_43",
+    "sqlalchemy": {
+      "mode": "none",
+      "module": null,
+      "symbol": null
+    },
+    "runtime_acl_stage": "B05-A1-LIFE-AREA-CATALOG"
+  },
+  "structure": {
+    "columns": [],
+    "primary_key": null,
+    "foreign_keys": [],
+    "unique_constraints": [],
+    "check_constraints": [],
+    "indexes": [],
+    "triggers": [],
+    "table": null,
+    "view": null,
+    "routine": {
+      "routine_kind": "function",
+      "language": "sql",
+      "argument_types": [
+        "uuid"
+      ],
+      "return_type": "TABLE(life_area_ref uuid, name text, created_at timestamp with time zone)",
+      "security": "DEFINER",
+      "volatility": "STABLE",
+      "parallel_safety": "SAFE",
+      "leakproof": false,
+      "function_search_path": [
+        "pg_catalog",
+        "dante",
+        "pg_temp"
+      ],
+      "direct_runtime_execute": true
+    }
+  },
+  "state_history": {
+    "material_state_behavior": "No Domain MaterialStateRef is introduced for initial profile create/read.",
+    "current_binding": "Self-scoped current profile row; no accepted item assignment yet.",
+    "chronology": "created_at is statement-time PostgreSQL truth, not UUIDv7 order.",
+    "immutability_policy": "Creation receipts immutable; mutation/history design remains B05-A2."
+  },
+  "lifecycle": {
+    "retention": "Retained for later association and user organization.",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No runtime DELETE; downgrade refuses while any Life Area or receipt exists."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": [
+      {
+        "grantee": "dante_runtime",
+        "privilege": "EXECUTE",
+        "columns": [],
+        "grant_option": false
+      }
+    ]
+  },
+  "proof": {
+    "obligations": [
+      "Runtime has no raw table DML or SELECT; operations use self-scoped guarded routines.",
+      "A profile ID is not NativeRef, ScopedRecordRef or Domain ownership.",
+      "Function owner dante_owner, trusted search_path and least-privilege runtime EXECUTE.",
+      "No other actor's areas appear; no generic runtime SELECT on profile tables."
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b05_a1_life_area.py",
+      "apps/backend/tests/integration/database/test_database_current_catalog.py"
+    ],
+    "staged_evidence": []
+  }
+}
