@@ -9,6 +9,7 @@ import type {
   AppearanceLifeAreaRequest,
   AppleAuthenticationBegunResponse,
   AppleNotificationRequest,
+  ArchiveProductTagRequest,
   AssignLifeAreaRequest,
   AuthHandleAppleCallbackBody,
   AuthenticatedSessionResponse,
@@ -18,6 +19,7 @@ import type {
   CreateConstrainedActivityRequest,
   CreateEventRequest,
   CreateLifeAreaRequest,
+  CreateProductTagRequest,
   CreateScheduledActivityRequest,
   CreateScheduledEventRequest,
   CreateTemporalConstraintRequest,
@@ -47,6 +49,10 @@ import type {
   PasswordRecoveryValidationRequest,
   PasswordResetRequest,
   ProblemDetails,
+  ProductTagEdgeResponse,
+  ProductTagEffectResponse,
+  ProductTagMutationResponse,
+  ProductTagResponse,
   ProviderAuthenticatedResponse,
   ProviderBeginRequest,
   ProviderEnrollmentEmailRequest,
@@ -60,6 +66,7 @@ import type {
   RecoveryAcceptedResponse,
   RecoveryValidationResponse,
   RenameLifeAreaRequest,
+  RenameProductTagRequest,
   ReorderLifeAreasRequest,
   ReplaceEventAgendaRequest,
   RestoredScheduleAbsoluteResponse,
@@ -93,6 +100,7 @@ import type {
   SignupRequest,
   SignupResendRequest,
   SignupVerificationRequest,
+  TagOperationRequest,
   TemporalConstraintEvaluationResponse,
   TemporalConstraintListResponse,
   TemporalConstraintResponse,
@@ -3990,6 +3998,152 @@ export const establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedule
     } as establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostResponse;
   };
 
+export type temporalAttachActivityTagResponse200 = {
+  data: ProductTagEffectResponse;
+  status: 200;
+};
+
+export type temporalAttachActivityTagResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalAttachActivityTagResponseSuccess =
+  temporalAttachActivityTagResponse200 & {
+    headers: Headers;
+  };
+export type temporalAttachActivityTagResponseError =
+  temporalAttachActivityTagResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalAttachActivityTagResponse =
+  | temporalAttachActivityTagResponseSuccess
+  | temporalAttachActivityTagResponseError;
+
+export const getTemporalAttachActivityTagUrl = (
+  activityRef: string,
+  tagRef: string,
+) => {
+  return `/api/v1/temporal/activities/${activityRef}/tags/${tagRef}/attach`;
+};
+
+/**
+ * @summary Attach Activity Tag
+ */
+export const temporalAttachActivityTag = async (
+  activityRef: string,
+  tagRef: string,
+  tagOperationRequest: TagOperationRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalAttachActivityTagResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalAttachActivityTagUrl(activityRef, tagRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(tagOperationRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalAttachActivityTagResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalAttachActivityTagResponse;
+};
+
+export type temporalDetachActivityTagResponse200 = {
+  data: ProductTagEffectResponse;
+  status: 200;
+};
+
+export type temporalDetachActivityTagResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalDetachActivityTagResponseSuccess =
+  temporalDetachActivityTagResponse200 & {
+    headers: Headers;
+  };
+export type temporalDetachActivityTagResponseError =
+  temporalDetachActivityTagResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalDetachActivityTagResponse =
+  | temporalDetachActivityTagResponseSuccess
+  | temporalDetachActivityTagResponseError;
+
+export const getTemporalDetachActivityTagUrl = (
+  activityRef: string,
+  tagRef: string,
+) => {
+  return `/api/v1/temporal/activities/${activityRef}/tags/${tagRef}/detach`;
+};
+
+/**
+ * @summary Detach Activity Tag
+ */
+export const temporalDetachActivityTag = async (
+  activityRef: string,
+  tagRef: string,
+  tagOperationRequest: TagOperationRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalDetachActivityTagResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalDetachActivityTagUrl(activityRef, tagRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(tagOperationRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalDetachActivityTagResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalDetachActivityTagResponse;
+};
+
 export type temporalListConstraintsBySubjectResponse200 = {
   data: TemporalConstraintListResponse;
   status: 200;
@@ -4649,6 +4803,150 @@ export const replaceEventAgendaApiV1TemporalEventsEventRefAgendaPut = async (
     status: res.status,
     headers: res.headers,
   } as replaceEventAgendaApiV1TemporalEventsEventRefAgendaPutResponse;
+};
+
+export type temporalAttachEventTagResponse200 = {
+  data: ProductTagEffectResponse;
+  status: 200;
+};
+
+export type temporalAttachEventTagResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalAttachEventTagResponseSuccess =
+  temporalAttachEventTagResponse200 & {
+    headers: Headers;
+  };
+export type temporalAttachEventTagResponseError =
+  temporalAttachEventTagResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalAttachEventTagResponse =
+  temporalAttachEventTagResponseSuccess | temporalAttachEventTagResponseError;
+
+export const getTemporalAttachEventTagUrl = (
+  eventRef: string,
+  tagRef: string,
+) => {
+  return `/api/v1/temporal/events/${eventRef}/tags/${tagRef}/attach`;
+};
+
+/**
+ * @summary Attach Event Tag
+ */
+export const temporalAttachEventTag = async (
+  eventRef: string,
+  tagRef: string,
+  tagOperationRequest: TagOperationRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalAttachEventTagResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalAttachEventTagUrl(eventRef, tagRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(tagOperationRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalAttachEventTagResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalAttachEventTagResponse;
+};
+
+export type temporalDetachEventTagResponse200 = {
+  data: ProductTagEffectResponse;
+  status: 200;
+};
+
+export type temporalDetachEventTagResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalDetachEventTagResponseSuccess =
+  temporalDetachEventTagResponse200 & {
+    headers: Headers;
+  };
+export type temporalDetachEventTagResponseError =
+  temporalDetachEventTagResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalDetachEventTagResponse =
+  temporalDetachEventTagResponseSuccess | temporalDetachEventTagResponseError;
+
+export const getTemporalDetachEventTagUrl = (
+  eventRef: string,
+  tagRef: string,
+) => {
+  return `/api/v1/temporal/events/${eventRef}/tags/${tagRef}/detach`;
+};
+
+/**
+ * @summary Detach Event Tag
+ */
+export const temporalDetachEventTag = async (
+  eventRef: string,
+  tagRef: string,
+  tagOperationRequest: TagOperationRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalDetachEventTagResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalDetachEventTagUrl(eventRef, tagRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(tagOperationRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalDetachEventTagResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalDetachEventTagResponse;
 };
 
 export type temporalListLifeAreaAssignmentsResponse200 = {
@@ -5549,6 +5847,285 @@ export const undoScheduleUnscheduleApiV1TemporalSchedulesScheduleRefUnscheduleUn
       headers: res.headers,
     } as undoScheduleUnscheduleApiV1TemporalSchedulesScheduleRefUnscheduleUndoPostResponse;
   };
+
+export type temporalListProductTagsResponse200 = {
+  data: ProductTagResponse[];
+  status: 200;
+};
+
+export type temporalListProductTagsResponseSuccess =
+  temporalListProductTagsResponse200 & {
+    headers: Headers;
+  };
+export type temporalListProductTagsResponse =
+  temporalListProductTagsResponseSuccess;
+
+export const getTemporalListProductTagsUrl = () => {
+  return `/api/v1/temporal/tags`;
+};
+
+/**
+ * @summary List Tags
+ */
+export const temporalListProductTags = async (
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListProductTagsResponse> => {
+  const res = await (fetchFn ?? fetch)(getTemporalListProductTagsUrl(), {
+    ...options,
+    method: 'GET',
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListProductTagsResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListProductTagsResponse;
+};
+
+export type temporalCreateProductTagResponse201 = {
+  data: ProductTagResponse;
+  status: 201;
+};
+
+export type temporalCreateProductTagResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalCreateProductTagResponseSuccess =
+  temporalCreateProductTagResponse201 & {
+    headers: Headers;
+  };
+export type temporalCreateProductTagResponseError =
+  temporalCreateProductTagResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalCreateProductTagResponse =
+  | temporalCreateProductTagResponseSuccess
+  | temporalCreateProductTagResponseError;
+
+export const getTemporalCreateProductTagUrl = () => {
+  return `/api/v1/temporal/tags`;
+};
+
+/**
+ * @summary Create Tag
+ */
+export const temporalCreateProductTag = async (
+  createProductTagRequest: CreateProductTagRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalCreateProductTagResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(getTemporalCreateProductTagUrl(), {
+    ...options,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(createProductTagRequest),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalCreateProductTagResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalCreateProductTagResponse;
+};
+
+export type temporalListItemTagsResponse200 = {
+  data: ProductTagEdgeResponse[];
+  status: 200;
+};
+
+export type temporalListItemTagsResponseSuccess =
+  temporalListItemTagsResponse200 & {
+    headers: Headers;
+  };
+export type temporalListItemTagsResponse = temporalListItemTagsResponseSuccess;
+
+export const getTemporalListItemTagsUrl = () => {
+  return `/api/v1/temporal/tags/assignments`;
+};
+
+/**
+ * @summary List Item Tags
+ */
+export const temporalListItemTags = async (
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListItemTagsResponse> => {
+  const res = await (fetchFn ?? fetch)(getTemporalListItemTagsUrl(), {
+    ...options,
+    method: 'GET',
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListItemTagsResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListItemTagsResponse;
+};
+
+export type temporalArchiveProductTagResponse200 = {
+  data: ProductTagMutationResponse;
+  status: 200;
+};
+
+export type temporalArchiveProductTagResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalArchiveProductTagResponseSuccess =
+  temporalArchiveProductTagResponse200 & {
+    headers: Headers;
+  };
+export type temporalArchiveProductTagResponseError =
+  temporalArchiveProductTagResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalArchiveProductTagResponse =
+  | temporalArchiveProductTagResponseSuccess
+  | temporalArchiveProductTagResponseError;
+
+export const getTemporalArchiveProductTagUrl = (tagRef: string) => {
+  return `/api/v1/temporal/tags/${tagRef}/archive`;
+};
+
+/**
+ * @summary Archive Tag
+ */
+export const temporalArchiveProductTag = async (
+  tagRef: string,
+  archiveProductTagRequest: ArchiveProductTagRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalArchiveProductTagResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalArchiveProductTagUrl(tagRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(archiveProductTagRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalArchiveProductTagResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalArchiveProductTagResponse;
+};
+
+export type temporalRenameProductTagResponse200 = {
+  data: ProductTagMutationResponse;
+  status: 200;
+};
+
+export type temporalRenameProductTagResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalRenameProductTagResponseSuccess =
+  temporalRenameProductTagResponse200 & {
+    headers: Headers;
+  };
+export type temporalRenameProductTagResponseError =
+  temporalRenameProductTagResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalRenameProductTagResponse =
+  | temporalRenameProductTagResponseSuccess
+  | temporalRenameProductTagResponseError;
+
+export const getTemporalRenameProductTagUrl = (tagRef: string) => {
+  return `/api/v1/temporal/tags/${tagRef}/name`;
+};
+
+/**
+ * @summary Rename Tag
+ */
+export const temporalRenameProductTag = async (
+  tagRef: string,
+  renameProductTagRequest: RenameProductTagRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalRenameProductTagResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(getTemporalRenameProductTagUrl(tagRef), {
+    ...options,
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(renameProductTagRequest),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalRenameProductTagResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalRenameProductTagResponse;
+};
 
 export type getTimelineWindowApiV1TemporalTimelineWindowGetResponse200 = {
   data: TimelineWindowEmptyResponse | TimelineWindowItemsResponse;

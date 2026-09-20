@@ -1,0 +1,304 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "table:dante.product_tag_operation",
+    "type": "table",
+    "schema": "dante",
+    "name": "product_tag_operation",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Immutable actor-local catalog create/rename/archive acceptance receipt.",
+  "classification": {
+    "persistence_role": "product_tag_operation",
+    "canonicality": "control",
+    "family": "product_organization"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/workstreams/timeline-temporal-operational-b05-execution-plan.md",
+      "docs/product/v1-core-domain-glossary.md",
+      "docs/development/backend-cp6-02-postgresql-persistence-constitution.md"
+    ],
+    "domain_concepts": [],
+    "logical_families": [
+      "LR-12 actor-local secondary product organization",
+      "typed item relation"
+    ],
+    "reference_families": [
+      "NativeRef"
+    ],
+    "material_facets": []
+  },
+  "implementation": {
+    "introducing_stage": "B05-C-SECONDARY-TAGS",
+    "alembic_revision": "20260920_47",
+    "sqlalchemy": {
+      "mode": "orm_row",
+      "module": "dante.platform.database.mappings.product_tag",
+      "symbol": "ProductTagOperationRow"
+    },
+    "runtime_acl_stage": "B05-C-SECONDARY-TAGS"
+  },
+  "structure": {
+    "columns": [
+      {
+        "name": "self_person_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Actor accepting this catalog operation.",
+        "semantic_type": "NativeRef",
+        "value_contract": null
+      },
+      {
+        "name": "operation_id",
+        "postgres_type": "text",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Actor-local idempotency key.",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "intent_fingerprint",
+        "postgres_type": "text",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "SHA-256 normalized typed intent.",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "tag_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Catalog Tag identifier.",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "kind",
+        "postgres_type": "text",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Exact create, rename or archive verb.",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "expected_revision",
+        "postgres_type": "bigint",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Prior Tag revision; zero for create.",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "accepted_revision",
+        "postgres_type": "bigint",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Post-acceptance Tag revision.",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "accepted_at",
+        "postgres_type": "timestamp with time zone",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Server acceptance instant.",
+        "semantic_type": null,
+        "value_contract": null
+      }
+    ],
+    "primary_key": {
+      "name": "pk_product_tag_operation",
+      "columns": [
+        "self_person_ref",
+        "operation_id"
+      ],
+      "reason": "Unique actor-local Tag identity, operation or typed association.",
+      "deferrable": false,
+      "initially": "NOT DEFERRABLE",
+      "enforced": true
+    },
+    "foreign_keys": [
+      {
+        "name": "fk_product_tag_operation_person",
+        "columns": [
+          "self_person_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "person",
+          "columns": [
+            "person_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "NativeRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Existing typed item, actor or Tag; guarded functions additionally prove same self scope."
+      },
+      {
+        "name": "fk_product_tag_operation_tag",
+        "columns": [
+          "tag_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "product_tag",
+          "columns": [
+            "tag_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": null,
+        "cardinality": "many_to_one",
+        "semantic_reason": "Existing typed item, actor or Tag; guarded functions additionally prove same self scope."
+      }
+    ],
+    "unique_constraints": [],
+    "check_constraints": [
+      {
+        "name": "ck_product_tag_operation_id",
+        "expression_contract": "operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200",
+        "reason": "Bounded valid product Tag value or acceptance intent.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_product_tag_operation_fingerprint",
+        "expression_contract": "intent_fingerprint ~ '^[0-9a-f]{64}$'",
+        "reason": "Bounded valid product Tag value or acceptance intent.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_product_tag_operation_kind",
+        "expression_contract": "kind IN ('create','rename','archive')",
+        "reason": "Bounded valid product Tag value or acceptance intent.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_product_tag_operation_expected",
+        "expression_contract": "expected_revision>=0",
+        "reason": "Bounded valid product Tag value or acceptance intent.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_product_tag_operation_accepted",
+        "expression_contract": "accepted_revision=expected_revision+1",
+        "reason": "Bounded valid product Tag value or acceptance intent.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "pk_product_tag_operation",
+        "method": "btree",
+        "unique": true,
+        "keys": [
+          "self_person_ref",
+          "operation_id"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "primary_key",
+        "reason": "Actor-local identity or unique typed edge.",
+        "valid": true,
+        "ready": true,
+        "live": true
+      }
+    ],
+    "triggers": [],
+    "table": {
+      "persistence": "permanent",
+      "access_method": "heap",
+      "partitioned": false,
+      "row_security": false,
+      "force_row_security": false,
+      "replica_identity": "default",
+      "reloptions": []
+    },
+    "view": null,
+    "routine": null
+  },
+  "state_history": {
+    "material_state_behavior": "Actor-local product organization, never Domain MaterialStateRef.",
+    "current_binding": "Current catalog or immutable accepted receipt.",
+    "chronology": "Server accepted organization instants.",
+    "immutability_policy": "Append-only accepted commands; replay before current-state checks."
+  },
+  "lifecycle": {
+    "retention": "Retain archived profiles, existing edges and accepted receipts; detach removes current edge but retains receipt.",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No runtime raw table writes; destructive downgrade refused."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": []
+  },
+  "proof": {
+    "obligations": [
+      "Actor self scope and true typed FKs without NativeRef Tag owner.",
+      "Independent multi-valued Tags, archived attach rejection and replay across later state changes.",
+      "No raw runtime access; primary Life Area and B04 scheduling unaffected."
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b05_secondary_tags.py",
+      "apps/backend/tests/integration/database/test_database_current_catalog.py"
+    ],
+    "staged_evidence": []
+  }
+}

@@ -1,0 +1,107 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "routine:dante.list_self_product_tags",
+    "type": "routine",
+    "schema": "dante",
+    "name": "list_self_product_tags",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Bounded self-scoped list_self_product_tags product Tag catalog or typed association capability.",
+  "classification": {
+    "persistence_role": "list_self_product_tags",
+    "canonicality": "capability_surface",
+    "family": "product_organization"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/workstreams/timeline-temporal-operational-b05-execution-plan.md",
+      "docs/product/v1-core-domain-glossary.md",
+      "docs/development/backend-cp6-02-postgresql-persistence-constitution.md"
+    ],
+    "domain_concepts": [],
+    "logical_families": [
+      "LR-12 actor-local secondary product organization",
+      "typed item relation"
+    ],
+    "reference_families": [
+      "NativeRef"
+    ],
+    "material_facets": []
+  },
+  "implementation": {
+    "introducing_stage": "B05-C-SECONDARY-TAGS",
+    "alembic_revision": "20260920_47",
+    "sqlalchemy": {
+      "mode": "none",
+      "module": null,
+      "symbol": null
+    },
+    "runtime_acl_stage": "B05-C-SECONDARY-TAGS"
+  },
+  "structure": {
+    "columns": [],
+    "primary_key": null,
+    "foreign_keys": [],
+    "unique_constraints": [],
+    "check_constraints": [],
+    "indexes": [],
+    "triggers": [],
+    "table": null,
+    "view": null,
+    "routine": {
+      "routine_kind": "function",
+      "language": "sql",
+      "argument_types": [
+        "uuid"
+      ],
+      "return_type": "TABLE(tag_ref uuid, name text, revision bigint, archived boolean, created_at timestamp with time zone, updated_at timestamp with time zone)",
+      "security": "DEFINER",
+      "volatility": "STABLE",
+      "parallel_safety": "SAFE",
+      "leakproof": false,
+      "function_search_path": [
+        "pg_catalog",
+        "dante",
+        "pg_temp"
+      ],
+      "direct_runtime_execute": true
+    }
+  },
+  "state_history": {
+    "material_state_behavior": "Tag organization is product state, not Domain MaterialStateRef.",
+    "current_binding": "Only self actor catalog and independently typed item edges.",
+    "chronology": "Immutable accepted operation receipts survive subsequent changes.",
+    "immutability_policy": "Guarded SQL routine; no direct runtime table mutation."
+  },
+  "lifecycle": {
+    "retention": "Retain accepted commands and archived Tag associations for truthful discovery.",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No direct raw runtime deletion; forward-only migration."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": [
+      {
+        "grantee": "dante_runtime",
+        "privilege": "EXECUTE",
+        "columns": [],
+        "grant_option": false
+      }
+    ]
+  },
+  "proof": {
+    "obligations": [
+      "Runtime EXECUTE only; no raw Tag table access.",
+      "Actor isolation, replay and Tag-vs-primary-area semantics verified in PostgreSQL."
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b05_secondary_tags.py",
+      "apps/backend/tests/integration/database/test_database_current_catalog.py"
+    ],
+    "staged_evidence": []
+  }
+}

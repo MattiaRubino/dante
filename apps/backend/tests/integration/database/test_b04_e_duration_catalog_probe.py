@@ -10,8 +10,8 @@ import pytest
 pytestmark = pytest.mark.postgres
 
 # Current candidate must still preserve the B04-E payload and ACL invariants.
-_EXPECTED_REVISION = "20260920_46"
-_EXPECTED_TOPOLOGY = (123, 5, 54, 90, 245, 170, 354, 0, 0, 0)
+_EXPECTED_REVISION = "20260920_47"
+_EXPECTED_TOPOLOGY = (129, 5, 60, 90, 254, 185, 366, 0, 0, 0)
 
 
 def _admin(database: Any) -> psycopg.Connection[Any]:

@@ -1,0 +1,259 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "table:dante.event_tag",
+    "type": "table",
+    "schema": "dante",
+    "name": "event_tag",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Current typed many-valued secondary Tag edge for an existing self event; independent of primary area.",
+  "classification": {
+    "persistence_role": "event_tag",
+    "canonicality": "relation",
+    "family": "product_organization"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/workstreams/timeline-temporal-operational-b05-execution-plan.md",
+      "docs/product/v1-core-domain-glossary.md",
+      "docs/development/backend-cp6-02-postgresql-persistence-constitution.md"
+    ],
+    "domain_concepts": [
+      "Event"
+    ],
+    "logical_families": [
+      "LR-12 actor-local secondary product organization",
+      "typed item relation"
+    ],
+    "reference_families": [
+      "NativeRef"
+    ],
+    "material_facets": []
+  },
+  "implementation": {
+    "introducing_stage": "B05-C-SECONDARY-TAGS",
+    "alembic_revision": "20260920_47",
+    "sqlalchemy": {
+      "mode": "orm_row",
+      "module": "dante.platform.database.mappings.product_tag",
+      "symbol": "EventTagRow"
+    },
+    "runtime_acl_stage": "B05-C-SECONDARY-TAGS"
+  },
+  "structure": {
+    "columns": [
+      {
+        "name": "self_person_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Organizing self Person.",
+        "semantic_type": "NativeRef",
+        "value_contract": null
+      },
+      {
+        "name": "event_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Existing canonical event identity.",
+        "semantic_type": "NativeRef",
+        "value_contract": null
+      },
+      {
+        "name": "tag_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Secondary Tag profile, not primary Life Area.",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "attached_at",
+        "postgres_type": "timestamp with time zone",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Accepted attachment instant.",
+        "semantic_type": null,
+        "value_contract": null
+      }
+    ],
+    "primary_key": {
+      "name": "pk_event_tag",
+      "columns": [
+        "self_person_ref",
+        "event_ref",
+        "tag_ref"
+      ],
+      "reason": "Unique actor-local Tag identity, operation or typed association.",
+      "deferrable": false,
+      "initially": "NOT DEFERRABLE",
+      "enforced": true
+    },
+    "foreign_keys": [
+      {
+        "name": "fk_event_tag_person",
+        "columns": [
+          "self_person_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "person",
+          "columns": [
+            "person_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "NativeRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Existing typed item, actor or Tag; guarded functions additionally prove same self scope."
+      },
+      {
+        "name": "fk_event_tag_event",
+        "columns": [
+          "event_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "event",
+          "columns": [
+            "event_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "NativeRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Existing typed item, actor or Tag; guarded functions additionally prove same self scope."
+      },
+      {
+        "name": "fk_event_tag_tag",
+        "columns": [
+          "tag_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "product_tag",
+          "columns": [
+            "tag_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": null,
+        "cardinality": "many_to_one",
+        "semantic_reason": "Existing typed item, actor or Tag; guarded functions additionally prove same self scope."
+      }
+    ],
+    "unique_constraints": [],
+    "check_constraints": [],
+    "indexes": [
+      {
+        "name": "pk_event_tag",
+        "method": "btree",
+        "unique": true,
+        "keys": [
+          "self_person_ref",
+          "event_ref",
+          "tag_ref"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "primary_key",
+        "reason": "Actor-local identity or unique typed edge.",
+        "valid": true,
+        "ready": true,
+        "live": true
+      },
+      {
+        "name": "ix_event_tag_self_person_tag",
+        "method": "btree",
+        "unique": false,
+        "keys": [
+          "self_person_ref",
+          "tag_ref",
+          "event_ref"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "explicit_index",
+        "reason": "Actor-local catalog and reverse Tag lookup.",
+        "valid": true,
+        "ready": true,
+        "live": true
+      }
+    ],
+    "triggers": [],
+    "table": {
+      "persistence": "permanent",
+      "access_method": "heap",
+      "partitioned": false,
+      "row_security": false,
+      "force_row_security": false,
+      "replica_identity": "default",
+      "reloptions": []
+    },
+    "view": null,
+    "routine": null
+  },
+  "state_history": {
+    "material_state_behavior": "Actor-local product organization, never Domain MaterialStateRef.",
+    "current_binding": "Current edge per actor/item/tag; zero to many independent of primary area.",
+    "chronology": "Server accepted organization instants.",
+    "immutability_policy": "Guarded current row mutation only."
+  },
+  "lifecycle": {
+    "retention": "Retain archived profiles, existing edges and accepted receipts; detach removes current edge but retains receipt.",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No runtime raw table writes; destructive downgrade refused."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": []
+  },
+  "proof": {
+    "obligations": [
+      "Actor self scope and true typed FKs without NativeRef Tag owner.",
+      "Independent multi-valued Tags, archived attach rejection and replay across later state changes.",
+      "No raw runtime access; primary Life Area and B04 scheduling unaffected."
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b05_secondary_tags.py",
+      "apps/backend/tests/integration/database/test_database_current_catalog.py"
+    ],
+    "staged_evidence": []
+  }
+}

@@ -6,8 +6,8 @@
 - **PostgreSQL:** 18.6
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
-- **Current candidate Alembic source head on `feature/timeline-temporal-operational`:** `20260920_46`
-- **Current candidate expected topology (PostgreSQL proof pending):** `123|5|54|90|245|170|354|0|0|0`
+- **Current candidate Alembic source head on `feature/timeline-temporal-operational`:** `20260920_47`
+- **Current candidate expected topology (PostgreSQL proof pending):** `129|5|60|90|254|185|366|0|0|0`
 - **Frozen CP6 head:** `20260826_08`
 - **Last reconciled:** 2026-09-20
 
@@ -24,21 +24,21 @@ Current checked-out DB Reference
 ≈ direct tests
 ```
 
-A mismatch is a defect. Protected `main` remains integration authority. B05-A `_45` passed the direct PostgreSQL catalog proof; `_46` is B05-B source only and awaits its own PostgreSQL proof.
+A mismatch is a defect. Protected `main` remains integration authority. B05-A `_45` and B05-B `_46` passed direct PostgreSQL proof. `_47` B05-C is not yet proved in PostgreSQL.
 
 ## 2. Current checked-out business-schema inventory
 
 Authoritative counts are in `scope.json`:
 
 ```text
-tables      123
+tables      129
 views         5
-routines     54
-standalone  182
+routines     60
+standalone  194
 triggers     90
-indexes      245
-FKs          170
-CHECKs       354
+indexes      254
+FKs          185
+CHECKs       366
 ```
 
 No enum/domain, sequence, materialized view, partitioned table or RLS policy exists in the DANTE business-schema inventory.
@@ -87,6 +87,11 @@ B05-B / 20260920_46
   typed Activity/Event actor-local current primary assignment and immutable receipts
   bounded create/reassign/list/legacy inventory; direct old create privilege retired
   no invented legacy default, provider calendar, Domain owner, Tag or sharing grant
+
+B05-C / 20260920_47
+  actor-local secondary Tag catalog, archive and immutable operation receipt
+  typed independent Activity/Event many-valued edges and attach/detach receipts
+  no primary-area replacement, hierarchy, Goal/Plan or sharing grant
 ```
 
 The object tree and `scope.json`, not this prose summary, are structural source of truth.
@@ -188,7 +193,8 @@ B04-E Advanced-family applicability  CLOSED / PROVEN at 20260919_41
 B04-F Whole-B04 closure              CLOSED / PROVEN at 20260920_42
 B04 overall                          CLOSED / PROVEN
 B05-A Life Area full lifecycle        CLOSED / PROVEN at `_45`
-B05-B primary assignment             SOURCE IMPLEMENTED / DIRECT POSTGRESQL PROOF PENDING
+B05-B primary assignment             CLOSED / PROVEN at `_46` (16 selected tests)
+B05-C secondary Tags                 SOURCE IMPLEMENTED / DIRECT POSTGRESQL PROOF PENDING
 ```
 
 Observed B04-E evidence:
@@ -225,4 +231,4 @@ extension-owned objects excluded correctly
 
 No real object → no ceremonial Dictionary entry. Every real current DANTE business object requires matching Dictionary/Alembic/SQLAlchemy/current-human-reference/direct-PostgreSQL proof in the same reviewed slice.
 
-B04-F and B05-A are closed: the user-run `_45` current catalog test passed. B05-B `_46` adds four typed relation/receipt tables and six bounded functions with matching mappings and Dictionary objects. Legacy items remain unassigned until explicitly reconciled. Direct `_46` PostgreSQL catalog/ACL/application proof remains pending.
+B04-F, B05-A and B05-B are closed. User-run `_46` selected catalog/ACL/application proof passed (16 tests); legacy items remain unassigned until explicitly reconciled. `_47` adds six Tag catalog/typed-edge/receipt tables and six bounded functions, with matching mappings and Dictionary objects. Its direct PostgreSQL proof remains pending.

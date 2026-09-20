@@ -4,8 +4,8 @@
 - **Reconciled:** 2026-09-20
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
-- **Candidate source head:** `20260920_46`
-- **Candidate expected topology (PostgreSQL proof pending):** `123|5|54|90|245|170|354|0|0|0`
+- **Candidate source head:** `20260920_47`
+- **Candidate expected topology (PostgreSQL proof pending):** `129|5|60|90|254|185|366|0|0|0`
 - **Whole-DB SoR:** `README.md`
 - **Machine-readable authority:** `dictionary/`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
@@ -46,6 +46,7 @@ This file is the human-readable database overlay for Timeline candidate-only per
 20260920_44 B05-A full Life Area lifecycle
 20260920_45 B05-A receipt CHECK catalog name reconciliation
 20260920_46 B05-B typed actor-local Activity/Event primary Life Area assignment
+20260920_47 B05-C secondary actor-local product Tags and typed item associations
 ```
 
 ## 3. Temporal Constraint authority through B04-E
@@ -116,14 +117,14 @@ B04-E adds no public Temporal HTTP route; OpenAPI/client artifacts intentionally
 ## 6. Current candidate topology
 
 ```text
-Alembic     20260920_46
-Tables      123
+Alembic     20260920_47
+Tables      129
 Views       5
-Routines    54
+Routines    60
 Triggers    90
-Indexes     245
-FKs         170
-CHECKs      354
+Indexes     254
+FKs         185
+CHECKs      366
 Enums       0
 Domains     0
 Sequences   0
@@ -145,7 +146,8 @@ B04  ✅ CLOSED / PROVEN
 ├─ B04-E ✅ CLOSED / PROVEN
 └─ B04-F ✅ CLOSED / PROVEN
 B05-A ✅ CLOSED / PROVEN at `_45`
-B05-B 🟡 SOURCE IMPLEMENTED at `_46` / POSTGRESQL PROOF PENDING
+B05-B ✅ CLOSED / PROVEN at `_46` (16 selected PostgreSQL tests)
+B05-C 🟡 SOURCE IMPLEMENTED at `_47` / POSTGRESQL PROOF PENDING
 ```
 
 Observed B04-E evidence:

@@ -816,6 +816,25 @@
         "title": "AppleNotificationRequest",
         "type": "object"
       },
+      "ArchiveProductTagRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_revision": {
+            "minimum": 1.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "expected_revision"],
+        "title": "ArchiveProductTagRequest",
+        "type": "object"
+      },
       "AssertionAuthenticatorResponse": {
         "additionalProperties": false,
         "description": "Bounded browser assertion evidence consumed by python-fido2.",
@@ -1254,6 +1273,26 @@
         },
         "required": ["operation_id", "name"],
         "title": "CreateLifeAreaRequest",
+        "type": "object"
+      },
+      "CreateProductTagRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "name"],
+        "title": "CreateProductTagRequest",
         "type": "object"
       },
       "CreateScheduledActivityRequest": {
@@ -2473,6 +2512,125 @@
         "title": "ProblemFieldError",
         "type": "object"
       },
+      "ProductTagEdgeResponse": {
+        "properties": {
+          "attached_at": {
+            "format": "date-time",
+            "title": "Attached At",
+            "type": "string"
+          },
+          "subject_kind": {
+            "enum": ["activity", "event"],
+            "title": "Subject Kind",
+            "type": "string"
+          },
+          "subject_native_ref": {
+            "format": "uuid",
+            "title": "Subject Native Ref",
+            "type": "string"
+          },
+          "tag_ref": {
+            "format": "uuid",
+            "title": "Tag Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "subject_kind",
+          "subject_native_ref",
+          "tag_ref",
+          "attached_at"
+        ],
+        "title": "ProductTagEdgeResponse",
+        "type": "object"
+      },
+      "ProductTagEffectResponse": {
+        "properties": {
+          "accepted_at": {
+            "format": "date-time",
+            "title": "Accepted At",
+            "type": "string"
+          },
+          "attached": {
+            "title": "Attached",
+            "type": "boolean"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          }
+        },
+        "required": ["attached", "accepted_at", "replayed"],
+        "title": "ProductTagEffectResponse",
+        "type": "object"
+      },
+      "ProductTagMutationResponse": {
+        "properties": {
+          "accepted_revision": {
+            "title": "Accepted Revision",
+            "type": "integer"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "tag_ref": {
+            "format": "uuid",
+            "title": "Tag Ref",
+            "type": "string"
+          }
+        },
+        "required": ["tag_ref", "accepted_revision", "replayed"],
+        "title": "ProductTagMutationResponse",
+        "type": "object"
+      },
+      "ProductTagResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "archived": {
+            "title": "Archived",
+            "type": "boolean"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "revision": {
+            "title": "Revision",
+            "type": "integer"
+          },
+          "tag_ref": {
+            "format": "uuid",
+            "title": "Tag Ref",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tag_ref",
+          "name",
+          "revision",
+          "archived",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ProductTagResponse",
+        "type": "object"
+      },
       "ProviderAuthenticatedResponse": {
         "additionalProperties": false,
         "description": "Provider authentication converged on canonical DANTE AuthSession truth.",
@@ -2836,6 +2994,31 @@
         },
         "required": ["operation_id", "expected_revision", "name"],
         "title": "RenameLifeAreaRequest",
+        "type": "object"
+      },
+      "RenameProductTagRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_revision": {
+            "minimum": 1.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "name": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "expected_revision", "name"],
+        "title": "RenameProductTagRequest",
         "type": "object"
       },
       "ReorderLifeAreasRequest": {
@@ -4775,6 +4958,20 @@
         },
         "required": ["signup_ref", "code"],
         "title": "SignupVerificationRequest",
+        "type": "object"
+      },
+      "TagOperationRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id"],
+        "title": "TagOperationRequest",
         "type": "object"
       },
       "TemporalConstraintEvaluationItemResponse": {
@@ -15455,6 +15652,128 @@
         "tags": ["temporal"]
       }
     },
+    "/api/v1/temporal/activities/{activity_ref}/tags/{tag_ref}/attach": {
+      "post": {
+        "operationId": "temporal_attach_activity_tag",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "tag_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Tag Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagOperationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductTagEffectResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Attach Activity Tag",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/activities/{activity_ref}/tags/{tag_ref}/detach": {
+      "post": {
+        "operationId": "temporal_detach_activity_tag",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "tag_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Tag Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagOperationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductTagEffectResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Detach Activity Tag",
+        "tags": ["temporal"]
+      }
+    },
     "/api/v1/temporal/constraints": {
       "get": {
         "operationId": "temporal_list_constraints_by_subject",
@@ -15909,6 +16228,128 @@
           }
         },
         "summary": "Replace Event Agenda",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/events/{event_ref}/tags/{tag_ref}/attach": {
+      "post": {
+        "operationId": "temporal_attach_event_tag",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Ref",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "tag_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Tag Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagOperationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductTagEffectResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Attach Event Tag",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/events/{event_ref}/tags/{tag_ref}/detach": {
+      "post": {
+        "operationId": "temporal_detach_event_tag",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Ref",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "tag_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Tag Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagOperationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductTagEffectResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Detach Event Tag",
         "tags": ["temporal"]
       }
     },
@@ -16567,6 +17008,191 @@
           }
         },
         "summary": "Undo Schedule Unschedule",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/tags": {
+      "get": {
+        "operationId": "temporal_list_product_tags",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ProductTagResponse"
+                  },
+                  "title": "Response Temporal List Product Tags",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Tags",
+        "tags": ["temporal"]
+      },
+      "post": {
+        "operationId": "temporal_create_product_tag",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProductTagRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductTagResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Tag",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/tags/assignments": {
+      "get": {
+        "operationId": "temporal_list_item_tags",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ProductTagEdgeResponse"
+                  },
+                  "title": "Response Temporal List Item Tags",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Item Tags",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/tags/{tag_ref}/archive": {
+      "post": {
+        "operationId": "temporal_archive_product_tag",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tag_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Tag Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArchiveProductTagRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductTagMutationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Archive Tag",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/tags/{tag_ref}/name": {
+      "put": {
+        "operationId": "temporal_rename_product_tag",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tag_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Tag Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RenameProductTagRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductTagMutationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Rename Tag",
         "tags": ["temporal"]
       }
     },

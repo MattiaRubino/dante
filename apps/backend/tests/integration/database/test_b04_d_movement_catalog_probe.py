@@ -10,8 +10,8 @@ import pytest
 pytestmark = pytest.mark.postgres
 
 # Current candidate must still preserve every B04-D table and runtime ACL.
-_EXPECTED_REVISION = "20260920_46"
-_EXPECTED_TOPOLOGY = (123, 5, 54, 90, 245, 170, 354, 0, 0, 0)
+_EXPECTED_REVISION = "20260920_47"
+_EXPECTED_TOPOLOGY = (129, 5, 60, 90, 254, 185, 366, 0, 0, 0)
 
 _B04_D_TABLES = {
     "schedule_movement_policy_state",

@@ -69,6 +69,27 @@ _EXPECTED_TEMPORAL_OPERATIONS = {
         "put",
     ): "temporal_set_life_area_appearance",
     ("/api/v1/temporal/life-area-assignments", "get"): "temporal_list_life_area_assignments",
+    ("/api/v1/temporal/tags", "post"): "temporal_create_product_tag",
+    ("/api/v1/temporal/tags", "get"): "temporal_list_product_tags",
+    ("/api/v1/temporal/tags/{tag_ref}/name", "put"): "temporal_rename_product_tag",
+    ("/api/v1/temporal/tags/{tag_ref}/archive", "post"): "temporal_archive_product_tag",
+    ("/api/v1/temporal/tags/assignments", "get"): "temporal_list_item_tags",
+    (
+        "/api/v1/temporal/activities/{activity_ref}/tags/{tag_ref}/attach",
+        "post",
+    ): "temporal_attach_activity_tag",
+    (
+        "/api/v1/temporal/activities/{activity_ref}/tags/{tag_ref}/detach",
+        "post",
+    ): "temporal_detach_activity_tag",
+    (
+        "/api/v1/temporal/events/{event_ref}/tags/{tag_ref}/attach",
+        "post",
+    ): "temporal_attach_event_tag",
+    (
+        "/api/v1/temporal/events/{event_ref}/tags/{tag_ref}/detach",
+        "post",
+    ): "temporal_detach_event_tag",
     (
         "/api/v1/temporal/life-area-assignments/unassigned",
         "get",
