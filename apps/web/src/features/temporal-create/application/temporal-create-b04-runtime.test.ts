@@ -302,10 +302,13 @@ describe('B04 Temporal Create runtime', () => {
     }
     expect(request.placement.startsAt.toString()).toBe('2026-10-20T07:00:00Z');
     expect(request.placement.endsAt.toString()).toBe('2026-10-20T08:00:00Z');
-    expect(placed.effect?.projection.placement?.kind).toBe('absolute');
+    if (placed.effect?.projection === null || placed.effect === null) {
+      throw new Error('Expected applied B04 placement mutation effect.');
+    }
+    expect(placed.effect.projection.placement?.kind).toBe('absolute');
 
-    const undone = await placed.effect?.undo();
-    expect(undone?.status).toBe('applied');
+    const undone = await placed.effect.undo();
+    expect(undone.status).toBe('applied');
     expect(unscheduleSchedule).toHaveBeenCalledTimes(1);
     expect(unscheduleSchedule.mock.calls[0]?.[0]).toMatchObject({
       scheduleRef: SCHEDULE_REF,
