@@ -97,7 +97,7 @@ Current candidate persistence authority:
 
 ```text
 PostgreSQL       18.6
-Alembic source   20260920_44
+Alembic source   20260920_45
 Expected topology 119|5|48|90|239|158|344|0|0|0 (direct PG proof pending)
 ```
 
@@ -243,7 +243,7 @@ B05-T01..05  automated lifecycle, relation, view, conflict, accessibility proofs
 B05-T06  manual Life Area organization userTest                    ⬜ B05-E
 ```
 
-The B03-E transferred postponed/TBD Event rediscovery belongs to B05-D: no Activity Planning Tray conversion and no invented placement. B05-A `_43`/`_44` adds self-scoped create/list/lifecycle/reorder API, Dictionary and generated client; direct PostgreSQL/ACL proof remains outstanding before B05-A and B05 closure.
+The B03-E transferred postponed/TBD Event rediscovery belongs to B05-D: no Activity Planning Tray conversion and no invented placement. B05-A `_43`–`_45` adds self-scoped create/list/lifecycle/reorder API, Dictionary and generated client; direct PostgreSQL/ACL proof remains outstanding before B05-A and B05 closure.
 
 ---
 
@@ -270,4 +270,4 @@ B04 ✅ CLOSED / PROVEN
 B05 🟡 A IMPLEMENTED / DIRECT PROOF PENDING
 ```
 
-Next gate: user-run local direct PostgreSQL proof of complete B05-A `_44` catalog/ACL/lifecycle, then B05-B primary assignment. ORG-001 pre-scope is recorded; ORG-002..008 are implemented but not yet proven; later obligations stay open. No CI/Actions dispatched.
+Next gate: user-run local direct PostgreSQL proof of complete B05-A `_45` catalog/ACL/lifecycle, then B05-B primary assignment. ORG-001 pre-scope is recorded; ORG-002..008 are implemented but not yet proven; later obligations stay open. No CI/Actions dispatched.

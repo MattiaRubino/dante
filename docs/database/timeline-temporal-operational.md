@@ -4,7 +4,7 @@
 - **Reconciled:** 2026-09-20
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
-- **Candidate source head:** `20260920_44`
+- **Candidate source head:** `20260920_45`
 - **Candidate expected topology (PostgreSQL proof pending):** `119|5|48|90|239|158|344|0|0|0`
 - **Whole-DB SoR:** `README.md`
 - **Machine-readable authority:** `dictionary/`
@@ -44,6 +44,7 @@ This file is the human-readable database overlay for Timeline candidate-only per
     ↓
 20260920_43 B05-A self-scoped Life Area catalog create/list
 20260920_44 B05-A full Life Area lifecycle
+20260920_45 B05-A receipt CHECK catalog name reconciliation
 ```
 
 ## 3. Temporal Constraint authority through B04-E
@@ -114,7 +115,7 @@ B04-E adds no public Temporal HTTP route; OpenAPI/client artifacts intentionally
 ## 6. Current candidate topology
 
 ```text
-Alembic     20260920_44
+Alembic     20260920_45
 Tables      118
 Views       5
 Routines    46
@@ -156,4 +157,4 @@ DATABASE_CURRENT_TOPOLOGY                         116|5|44|90|233|153|331|0|0|0
 
 ## 8. Next persistence boundary
 
-B04-F is closed with direct proof recorded in its whole-block closure record. B05-A `_43` and `_44` establish self-scoped LR-12 profiles, immutable create/mutation receipts and bounded create/list/mutate/reorder routines. There is no generic runtime table access or NativeRef registration. `_44` topology is derived from migration/Dictionary and **not yet observed** in PostgreSQL. Direct migrated-catalog/ACL and application proof is required before B05-A is PROVEN; B05-B owns the primary item relation.
+B04-F is closed with direct proof recorded in its whole-block closure record. B05-A `_43`–`_45` establish self-scoped LR-12 profiles, immutable create/mutation receipts and bounded create/list/mutate/reorder routines. There is no generic runtime table access or NativeRef registration. The `_44` topology was observed exactly in PostgreSQL; the CHECK name mismatch is repaired forward at `_45`. The `_45` catalog equality has **not yet been observed** in PostgreSQL. Direct migrated-catalog/ACL and application proof is required before B05-A is PROVEN; B05-B owns the primary item relation.

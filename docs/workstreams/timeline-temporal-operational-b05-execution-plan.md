@@ -4,11 +4,11 @@
 - **Date:** 2026-09-20
 - **Branch:** `feature/timeline-temporal-operational`
 - **Entering candidate DB:** PostgreSQL 18.6 / Alembic `20260920_42` / `116|5|44|90|233|153|331|0|0|0`
-- **B05-A source head / expected topology:** `20260920_44` / `119|5|48|90|239|158|344|0|0|0` (direct PostgreSQL proof pending)
+- **B05-A source head / expected topology:** `20260920_45` / `119|5|48|90|239|158|344|0|0|0` (direct PostgreSQL proof pending)
 - **Previous block:** B04 ✅ CLOSED / PROVEN
 - **CI / Actions:** not authorized by this plan
 
-This is the B05 entry gate required by the [current roadmap](timeline-temporal-operational-roadmap.md). It fixes the semantic contract and implementation order. The pre-scope itself introduced no migration/API; B05-A implementation spans `_43` and `_44`, with direct PostgreSQL proof outstanding. It does not close B05-A or user acceptance.
+This is the B05 entry gate required by the [current roadmap](timeline-temporal-operational-roadmap.md). It fixes the semantic contract and implementation order. The pre-scope itself introduced no migration/API; B05-A implementation spans `_43`–`_45`, with final direct PostgreSQL proof outstanding. It does not close B05-A or user acceptance.
 
 ## 1. Authority and representation
 
@@ -49,7 +49,7 @@ These letters are execution subdivisions **within documented B05**, not a renumb
 
 For every slice changing persistence, complete **in the same change**: forward-only Alembic → SQLAlchemy → Dictionary objects/scope → real PostgreSQL catalog + owner/ACL → DB README + candidate overlay → direct PostgreSQL tests → map/roadmap/handoff. Do not edit historical migrations or claim a calculated catalog topology as observed. For every new Temporal public operation: explicit stable `temporal_*` operationId → exact inventory test → exported OpenAPI snapshot → generated client (`pnpm api:generate`) → affected API/frontend tests and docs. No manual editing of generated code. A slice cannot be marked CLOSED/PROVEN while a current representation is known stale.
 
-The **pre-scope step** changed no structural artifacts. B05-A spans `_43` and `_44`: three mapped tables, four scoped functions, seven explicit Temporal endpoints, Dictionary/`scope.json`, API inventory and generated client. `_44` direct migrated-PostgreSQL proof remains open: do not confuse source alignment with a real-catalog PASS.
+The **pre-scope step** changed no structural artifacts. B05-A spans `_43`–`_45`: three mapped tables, four scoped functions, seven explicit Temporal endpoints, Dictionary/`scope.json`, API inventory and generated client. `_44` passed seven of eight selected PostgreSQL tests and exposed a single generated CHECK name mismatch; `_45` renames that validated CHECK without changing data or topology. Final `_45` direct migrated-PostgreSQL proof remains open: do not confuse source alignment with a real-catalog PASS.
 
 ## 5. Exit boundary and explicit exclusions
 

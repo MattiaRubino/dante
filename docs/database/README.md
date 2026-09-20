@@ -6,7 +6,7 @@
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
-- **Timeline candidate Alembic head (source):** `20260920_44`
+- **Timeline candidate Alembic head (source):** `20260920_45`
 - **Timeline candidate expected topology (PostgreSQL proof pending):** `119|5|48|90|239|158|344|0|0|0`
 - **Timeline candidate DB overlay:** `timeline-temporal-operational.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
@@ -69,7 +69,9 @@ Protected `main` remains integration authority. Candidate truth is never relabel
     ↓
 20260920_43 B05-A Life Area initial create/list schema
     ↓
-20260920_44 B05-A full actor-local Life Area lifecycle [source head]
+20260920_44 B05-A full actor-local Life Area lifecycle
+    ↓
+20260920_45 B05-A validated receipt CHECK name reconciliation [source head]
 ```
 
 No accepted historical migration was edited, rebased, renumbered or flattened.
@@ -91,7 +93,7 @@ No accepted historical migration was edited, rebased, renumbered or flattened.
 0 RLS policies
 ```
 
-The `_42` topology was read directly from PostgreSQL 18.6 during B04-F closure. The `_44` figures above are the **expected** Dictionary/migration topology for all of B05-A and remain pending direct PostgreSQL proof. No PostgreSQL PASS is claimed by these figures.
+The `_42` topology was read directly from PostgreSQL 18.6 during B04-F closure. User-run `_44` tests observed the listed topology exactly and passed seven of eight checks; current catalog reconciliation failed only because one CHECK name was auto-prefixed and truncated. `_45` renames that validated CHECK without changing topology or rows. The `_45` catalog equality and complete B05-A proof remain pending direct PostgreSQL rerun.
 
 ## 4. Timeline persistence classification
 
@@ -270,4 +272,4 @@ Proof covers duration lifecycle/current/history/CAS/idempotency, hard minimum/ma
 
 ## 7. Current next boundary
 
-B04-F whole-block closure is complete (see `../workstreams/timeline-temporal-operational-b04-f-closure-2026-09-20.md`). B05-A spans `_43` and `_44`: Life Area and immutable creation/mutation receipts, create/list/mutate/reorder bounded routines, and self-scoped API lifecycle. LR-12 profiles are not native-address entries, item assignments or Tag owners. Runtime has only bounded function EXECUTE; direct PostgreSQL catalog, ACL and application proof is outstanding before B05-A closure. The Dictionary and generated API client are updated in this change.
+B04-F whole-block closure is complete (see `../workstreams/timeline-temporal-operational-b04-f-closure-2026-09-20.md`). B05-A spans `_43`–`_45`: Life Area and immutable creation/mutation receipts, create/list/mutate/reorder bounded routines, and self-scoped API lifecycle. LR-12 profiles are not native-address entries, item assignments or Tag owners. Runtime has only bounded function EXECUTE; direct PostgreSQL catalog, ACL and application proof is outstanding before B05-A closure. The Dictionary and generated API client are updated in this change.

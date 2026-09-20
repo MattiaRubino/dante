@@ -36,7 +36,7 @@ Current candidate DB:
 
 ```text
 PostgreSQL 18.6
-Alembic source 20260920_44
+Alembic source 20260920_45
 Expected topology 119|5|48|90|239|158|344|0|0|0 (not yet directly observed)
 ```
 
@@ -199,9 +199,9 @@ B04 ✅ CLOSED / PROVEN
 B05 🟡 A IMPLEMENTED / DIRECT PROOF PENDING
 ```
 
-B05-A spans `_43` and `_44`: self-scoped LR-12 profiles, immutable create/mutation receipts, four bounded routines, seven explicit Temporal operations, current Dictionary/scope and generated client. The expected `_44` catalog/ACL and lifecycle behavior require the user's local real-PostgreSQL proof; do not mark ORG-002..008 or B05-A closed yet. B05-B primary assignment remains open. No CI/Actions are launched.
+B05-A spans `_43`–`_45`: self-scoped LR-12 profiles, immutable create/mutation receipts, four bounded routines, seven explicit Temporal operations, current Dictionary/scope and generated client. The user-run `_44` proof passed seven of eight tests; its sole failure was a PostgreSQL CHECK name mismatch. `_45` renames that validated constraint and requires a rerun. The expected `_45` catalog/ACL and lifecycle behavior require the user's local real-PostgreSQL proof; do not mark ORG-002..008 or B05-A closed yet. B05-B primary assignment remains open. No CI/Actions are launched.
 
-Local proof to run on the user's PostgreSQL-equipped checkout after pulling `_44`:
+Local proof to run on the user's PostgreSQL-equipped checkout after pulling `_45`:
 
 ```bash
 cd ~/projects/dante/apps/backend
