@@ -759,7 +759,9 @@ export function createB04TemporalCreateRuntime(
         activityDataSource: activitySource,
         ids,
       }),
-      eventDataSource: options.eventDataSource,
+      ...(options.eventDataSource === undefined
+        ? {}
+        : { eventDataSource: options.eventDataSource }),
       scheduleDataSource: scheduleSource,
       ids,
     });
