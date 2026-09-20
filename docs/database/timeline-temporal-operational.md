@@ -5,7 +5,7 @@
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
 - **Candidate source head:** `20260920_47`
-- **Candidate expected topology (PostgreSQL proof pending):** `129|5|60|90|254|185|366|0|0|0`
+- **Candidate expected topology (asserted by 26 passing PostgreSQL tests):** `129|5|60|90|254|185|366|0|0|0`
 - **Whole-DB SoR:** `README.md`
 - **Machine-readable authority:** `dictionary/`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
@@ -147,7 +147,7 @@ B04  ✅ CLOSED / PROVEN
 └─ B04-F ✅ CLOSED / PROVEN
 B05-A ✅ CLOSED / PROVEN at `_45`
 B05-B ✅ CLOSED / PROVEN at `_46` (16 selected PostgreSQL tests)
-B05-C 🟡 SOURCE IMPLEMENTED at `_47` / POSTGRESQL PROOF PENDING
+B05-C ✅ CLOSED / PROVEN at `_47` (26 selected PostgreSQL tests)
 ```
 
 Observed B04-E evidence:
@@ -161,4 +161,4 @@ DATABASE_CURRENT_TOPOLOGY                         116|5|44|90|233|153|331|0|0|0
 
 ## 8. Next persistence boundary
 
-B05-A `_43`–`_45` established the LR-12 catalog and passed the user's direct `_45` catalog proof. `_46` adds two typed actor/item primary-area relations and two immutable assignment-receipt relations. Six guarded routines create/assign/list and inventory legacy unassigned rows. New Activity/Event creation requires a primary area in the same transaction; original unassigned create routines lose direct runtime EXECUTE. Archived targets reject new assignments, existing assignments remain discoverable. Neither B04 Schedule truth nor pre-B05 item rows are rewritten. `_46` is a candidate source calculation and still needs direct PostgreSQL catalog/application/ACL proof.
+B05-A `_43`–`_45` established the LR-12 catalog and passed the user's direct `_45` catalog proof. `_46` adds two typed actor/item primary-area relations and two immutable assignment-receipt relations. Six guarded routines create/assign/list and inventory legacy unassigned rows. New Activity/Event creation requires a primary area in the same transaction; original unassigned create routines lose direct runtime EXECUTE. Archived targets reject new assignments, existing assignments remain discoverable. Neither B04 Schedule truth nor pre-B05 item rows are rewritten. `_46` passed 16 direct PostgreSQL tests; `_47` passed 26 selected tests. B05-D frontend migration remains open.

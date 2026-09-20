@@ -7,7 +7,7 @@
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Current candidate Alembic source head on `feature/timeline-temporal-operational`:** `20260920_47`
-- **Current candidate expected topology (PostgreSQL proof pending):** `129|5|60|90|254|185|366|0|0|0`
+- **Current candidate expected topology (asserted by 26 passing PostgreSQL tests):** `129|5|60|90|254|185|366|0|0|0`
 - **Frozen CP6 head:** `20260826_08`
 - **Last reconciled:** 2026-09-20
 
@@ -24,7 +24,7 @@ Current checked-out DB Reference
 ≈ direct tests
 ```
 
-A mismatch is a defect. Protected `main` remains integration authority. B05-A `_45` and B05-B `_46` passed direct PostgreSQL proof. `_47` B05-C is not yet proved in PostgreSQL.
+A mismatch is a defect. Protected `main` remains integration authority. B05-A `_45`, B05-B `_46` and B05-C `_47` passed direct PostgreSQL proof (the latter: 26 selected tests).
 
 ## 2. Current checked-out business-schema inventory
 
@@ -194,7 +194,7 @@ B04-F Whole-B04 closure              CLOSED / PROVEN at 20260920_42
 B04 overall                          CLOSED / PROVEN
 B05-A Life Area full lifecycle        CLOSED / PROVEN at `_45`
 B05-B primary assignment             CLOSED / PROVEN at `_46` (16 selected tests)
-B05-C secondary Tags                 SOURCE IMPLEMENTED / DIRECT POSTGRESQL PROOF PENDING
+B05-C secondary Tags                 CLOSED / PROVEN at `_47` (26 selected tests)
 ```
 
 Observed B04-E evidence:
@@ -231,4 +231,4 @@ extension-owned objects excluded correctly
 
 No real object → no ceremonial Dictionary entry. Every real current DANTE business object requires matching Dictionary/Alembic/SQLAlchemy/current-human-reference/direct-PostgreSQL proof in the same reviewed slice.
 
-B04-F, B05-A and B05-B are closed. User-run `_46` selected catalog/ACL/application proof passed (16 tests); legacy items remain unassigned until explicitly reconciled. `_47` adds six Tag catalog/typed-edge/receipt tables and six bounded functions, with matching mappings and Dictionary objects. Its direct PostgreSQL proof remains pending.
+B04-F, B05-A, B05-B and B05-C are closed. User-run `_46` selected catalog/ACL/application proof passed (16 tests); legacy items remain unassigned until explicitly reconciled. `_47` adds six Tag catalog/typed-edge/receipt tables and six bounded functions, with matching mappings and Dictionary objects. Its direct PostgreSQL proof passed (26 selected tests). B05-D frontend integration remains open.

@@ -1,16 +1,16 @@
 # Timeline / Temporal-Operational — B05 Product Organization Execution Plan
 
-- **Status:** B05-A/B ✅ CLOSED / PROVEN → B05-C SECONDARY TAGS ACTIVE; B05 NOT CLOSED
+- **Status:** B05-A/B/C ✅ CLOSED / PROVEN → B05-D PRODUCT INTEGRATION ACTIVE; B05 NOT CLOSED
 - **Date:** 2026-09-20
 - **Branch:** `feature/timeline-temporal-operational`
 - **Entering candidate DB:** PostgreSQL 18.6 / Alembic `20260920_42` / `116|5|44|90|233|153|331|0|0|0`
 - **B05-A proved head / topology:** `20260920_45` / `119|5|48|90|239|158|344|0|0|0`
 - **B05-B proved head / topology:** `20260920_46` / `123|5|54|90|245|170|354|0|0|0`
-- **B05-C candidate head / expected topology:** `20260920_47` / `129|5|60|90|254|185|366|0|0|0` (direct PostgreSQL proof pending)
+- **B05-C proved head / expected topology:** `20260920_47` / `129|5|60|90|254|185|366|0|0|0` (26 selected direct PostgreSQL tests passed)
 - **Previous block:** B04 ✅ CLOSED / PROVEN
 - **CI / Actions:** not authorized by this plan
 
-This is the B05 entry gate required by the [current roadmap](timeline-temporal-operational-roadmap.md). It fixes the semantic contract and implementation order. B05-A and B05-B are closed with direct PostgreSQL evidence in their [catalog](timeline-temporal-operational-b05-a-closure-2026-09-20.md) and [assignment](timeline-temporal-operational-b05-b-closure-2026-09-20.md) closure records. B05-C proceeds under the retained contract below.
+This is the B05 entry gate required by the [current roadmap](timeline-temporal-operational-roadmap.md). It fixes the semantic contract and implementation order. B05-A and B05-B are closed with direct PostgreSQL evidence in their [catalog](timeline-temporal-operational-b05-a-closure-2026-09-20.md) and [assignment](timeline-temporal-operational-b05-b-closure-2026-09-20.md) closure records. B05-C is closed with direct PostgreSQL evidence in its [Tag closure record](timeline-temporal-operational-b05-c-closure-2026-09-20.md). B05-D proceeds under the retained contract below.
 
 ## 1. Authority and representation
 
@@ -39,7 +39,7 @@ Current frontend inspection shows `contextId` as prototype metadata, a literal `
 | --- | --- | --- |
 | **B05-A — Life Area catalog** | LR-12 identity, guarded create/list, rename, reorder, archive, hide/show and optional icon/color; self-scoped reads/mutations. | ✅ CLOSED / PROVEN at `_45`; no kernel/native-address pollution; self isolation, concurrency/idempotency, DB/ACL, Dictionary and API/client parity. |
 | **B05-B — primary assignment** | ✅ CLOSED / PROVEN at `_46`: typed actor-local one-primary-area relation for Activity/Event, creation and reassignment; explicit legacy inventory. | 16 selected direct PostgreSQL tests passed at the proved branch head. |
-| **B05-C — secondary Tags** | Distinct actor-local multi-valued product Tag and item relation; no Goal/Plan or semantic hierarchy inference. | Tag is not primary owner, labels do not identify Domain concepts, independent many-valued association and cross-actor isolation. |
+| **B05-C — secondary Tags** | ✅ CLOSED / PROVEN at `_47`: distinct actor-local multi-valued product Tag and typed item relations. | 26 selected direct PostgreSQL tests passed at the proved branch head. |
 | **B05-D — product integration** | Timeline unified/grouped/focused filtering over canonical assignments, create/edit/read of real catalog; postponed/TBD Event rediscovery and explicit replanning. | Real-stack coverage for scheduled/all-day/coarse/floating/unscheduled items, hidden conflicts, no fake Event time, Activity Planning Tray stays distinct, accessibility without color-only indication. |
 | **B05-E — whole-block closure** | Reconcile lifecycle, assignment, Tags, frontend, manual userTest, docs and workstream ledger. | ORG-001..015 and B05-T01..06 explicitly discharged; PostgreSQL catalog/owner/ACL, Dictionary, Alembic, SQLAlchemy, Temporal API inventory, OpenAPI snapshot/client and manual proof all current. |
 

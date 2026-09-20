@@ -7,7 +7,7 @@
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
 - **Timeline candidate Alembic head (source):** `20260920_47`
-- **Timeline candidate expected topology (PostgreSQL proof pending):** `129|5|60|90|254|185|366|0|0|0`
+- **Timeline candidate expected topology (asserted by 26 passing PostgreSQL tests):** `129|5|60|90|254|185|366|0|0|0`
 - **Timeline candidate DB overlay:** `timeline-temporal-operational.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 - **Persistence ADR:** `../decisions/ADR-010-postgresql-persistence-constitution.md`
@@ -76,7 +76,7 @@ Protected `main` remains integration authority. Candidate truth is never relabel
     ↓
 20260920_46 B05-B typed primary Life Area assignment [16 direct PostgreSQL tests PASSED]
     ↓
-20260920_47 B05-C secondary actor-local Tags and typed Activity/Event edges [proof pending]
+20260920_47 B05-C secondary actor-local Tags and typed Activity/Event edges [26 direct PostgreSQL tests PASSED]
 ```
 
 No accepted historical migration was edited, rebased, renumbered or flattened.
@@ -98,7 +98,7 @@ No accepted historical migration was edited, rebased, renumbered or flattened.
 0 RLS policies
 ```
 
-The `_42` topology was read directly from PostgreSQL 18.6 during B04-F closure. `_45` closed B05-A. The user ran 16 selected PostgreSQL tests at `_46`, including whole-catalog reconciliation, closing B05-B. `_47` is the calculated B05-C candidate; its topology is not yet observed in PostgreSQL.
+The `_42` topology was read directly from PostgreSQL 18.6 during B04-F closure. `_45` closed B05-A. The user ran 16 selected PostgreSQL tests at `_46`, including whole-catalog reconciliation, closing B05-B. The user ran 26 selected PostgreSQL tests at `_47`, including whole-catalog reconciliation, closing B05-C. The topology is an expected value asserted by the passing catalog test, not a separate manual PostgreSQL inventory.
 
 ## 4. Timeline persistence classification
 
@@ -262,7 +262,7 @@ B04-F Whole-B04 closure              CLOSED / PROVEN at 20260920_42
 B04 overall                          CLOSED / PROVEN
 B05-A Life Area full lifecycle        CLOSED / PROVEN at `_45`
 B05-B primary assignment             CLOSED / PROVEN at `_46` (16 selected tests)
-B05-C secondary Tags                 SOURCE IMPLEMENTED / DIRECT POSTGRESQL PROOF PENDING
+B05-C secondary Tags                 CLOSED / PROVEN at `_47` (26 selected tests)
 ```
 
 Observed B04-E local evidence:
@@ -278,4 +278,4 @@ Proof covers duration lifecycle/current/history/CAS/idempotency, hard minimum/ma
 
 ## 7. Current next boundary
 
-B04-F, B05-A and B05-B are closed with direct PostgreSQL proof (see their workstream closure records). `_46` keeps explicit legacy-unassigned Activity/Event items and revokes runtime access to bare create helpers. `_47` adds a distinct Tag catalog and independent many-valued typed Activity/Event edges, with immutable acceptance receipts and bounded runtime functions. The calculated `_47` catalog and behavior await direct user-run PostgreSQL proof before B05-C closes. B04 Schedule truth is unchanged.
+B04-F, B05-A, B05-B and B05-C are closed with direct PostgreSQL proof (see their workstream closure records). `_46` keeps explicit legacy-unassigned Activity/Event items and revokes runtime access to bare create helpers. `_47` adds a distinct Tag catalog and independent many-valued typed Activity/Event edges, with immutable acceptance receipts and bounded runtime functions. The user's 26-test `_47` run passed; B05-D frontend integration remains open. B04 Schedule truth is unchanged.

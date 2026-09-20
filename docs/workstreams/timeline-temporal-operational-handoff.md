@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B04 ✅ CLOSED / PROVEN → B05-A/B ✅ CLOSED / PROVEN → B05-C active
+- **Status:** B04 ✅ CLOSED / PROVEN → B05-A/B/C ✅ CLOSED / PROVEN → B05-D active
 - **Reconciled:** 2026-09-20
 - **Branch:** `feature/timeline-temporal-operational`
 - **Current roadmap:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -27,7 +27,7 @@ B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
 ├─ B04-D Movement Policy                         ✅ CLOSED / PROVEN
 ├─ B04-E Advanced-family applicability           ✅ CLOSED / PROVEN
 └─ B04-F Whole-B04 closure                       ✅ CLOSED / PROVEN
-B05 Product Organization                         🟡 B05-C secondary Tags / proof pending
+B05 Product Organization                         🟡 B05-D product integration
 ...
 B15 Whole Vertical Closure                       ⬜
 ```
@@ -37,7 +37,7 @@ Current candidate DB:
 ```text
 PostgreSQL 18.6
 Alembic source 20260920_47
-Expected topology 129|5|60|90|254|185|366|0|0|0 (B05-C direct proof pending)
+Expected topology 129|5|60|90|254|185|366|0|0|0 (asserted by 26 passing direct PostgreSQL tests)
 ```
 
 ## 2. Binding foundation carried forward
@@ -198,7 +198,8 @@ It records compact final PostgreSQL/web proof, Dictionary/Alembic reconciliation
 B04 ✅ CLOSED / PROVEN
 B05-A ✅ CLOSED / PROVEN at `_45`
 B05-B ✅ CLOSED / PROVEN at `_46` (16 selected PostgreSQL tests)
-B05-C 🟡 `_47` SOURCE IMPLEMENTED / DIRECT PROOF PENDING
+B05-C ✅ CLOSED / PROVEN at `_47` (26 selected PostgreSQL tests)
+B05-D 🟡 PRODUCT INTEGRATION ACTIVE
 ```
 
 B05-A `_43`–`_45` closed with the user's direct `_45` catalog pass. B05-B `_46` creates typed Activity/Event actor-local primary assignment and immutable acceptance receipts, atomically binds new creates, inventories legacy unassigned items and rejects archived areas as new targets. Four assignment/inventory HTTP operations, exact API inventory, OpenAPI/client and direct PostgreSQL tests accompany it. B05-D retains ownership of real frontend grouping/create migration. No CI/Actions are launched.
@@ -220,4 +221,4 @@ uv run --locked pytest -q --no-cov -m postgres \
   tests/integration/temporal/test_b04_f_constrained_activity_application.py
 ```
 
-The user's second `_46` run passed all 16 selected PostgreSQL tests in 26.47s after the importlib-compatible helper fix; B05-B is closed. `_47` B05-C adds actor-local Tags and independent typed Activity/Event many-valued edges. Its direct PostgreSQL assertions have not yet run; inspect the `_47` result before claiming B05-C closed. B05-D still owns real frontend migration.
+The user's second `_46` run passed all 16 selected PostgreSQL tests in 26.47s after the importlib-compatible helper fix; B05-B is closed. The user's `_47` run passed all 26 selected direct PostgreSQL tests in 39.12s, closing B05-C actor-local Tags and independent typed Activity/Event many-valued edges. B05-D still owns real frontend migration and Event rediscovery; B05 remains open.
