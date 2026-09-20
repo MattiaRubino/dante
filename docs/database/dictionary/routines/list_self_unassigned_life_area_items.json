@@ -1,0 +1,111 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "routine:dante.list_self_unassigned_life_area_items",
+    "type": "routine",
+    "schema": "dante",
+    "name": "list_self_unassigned_life_area_items",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Explicitly inventory existing self-owned pre-B05 Activity/Event rows without a primary Life Area; no inferred default or silent migration.",
+  "classification": {
+    "persistence_role": "list_self_unassigned_life_area_items",
+    "canonicality": "capability_surface",
+    "family": "product_organization"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/workstreams/timeline-temporal-operational-b05-execution-plan.md",
+      "docs/product/v1-calendar-contexts-and-grouped-views.md",
+      "docs/development/backend-cp6-02-postgresql-persistence-constitution.md"
+    ],
+    "domain_concepts": [
+      "Activity",
+      "Event"
+    ],
+    "logical_families": [
+      "LR-12 actor-local primary product organization",
+      "typed item relation"
+    ],
+    "reference_families": [
+      "NativeRef"
+    ],
+    "material_facets": []
+  },
+  "implementation": {
+    "introducing_stage": "B05-B-PRIMARY-ASSIGNMENT",
+    "alembic_revision": "20260920_46",
+    "sqlalchemy": {
+      "mode": "none",
+      "module": null,
+      "symbol": null
+    },
+    "runtime_acl_stage": "B05-B-PRIMARY-ASSIGNMENT"
+  },
+  "structure": {
+    "columns": [],
+    "primary_key": null,
+    "foreign_keys": [],
+    "unique_constraints": [],
+    "check_constraints": [],
+    "indexes": [],
+    "triggers": [],
+    "table": null,
+    "view": null,
+    "routine": {
+      "routine_kind": "function",
+      "language": "sql",
+      "argument_types": [
+        "uuid"
+      ],
+      "return_type": "TABLE(subject_kind text, subject_native_ref uuid, title text, created_at timestamp with time zone)",
+      "security": "DEFINER",
+      "volatility": "STABLE",
+      "parallel_safety": "SAFE",
+      "leakproof": false,
+      "function_search_path": [
+        "pg_catalog",
+        "dante",
+        "pg_temp"
+      ],
+      "direct_runtime_execute": true
+    }
+  },
+  "state_history": {
+    "material_state_behavior": "Organizational assignment is product state; never a Domain MaterialStateRef.",
+    "current_binding": "Exactly one current actor-local primary Life Area per assigned item; older unassigned items remain explicit.",
+    "chronology": "Current assignment revision and assigned_at are server-accepted organizational state.",
+    "immutability_policy": "CAS advances the actor-local revision; earlier transitions persist as receipts."
+  },
+  "lifecycle": {
+    "retention": "Retain archived-area associations and accepted transition history; no implicit reassignment.",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "Runtime has no direct DELETE; forward-only migration refuses destructive downgrade."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": [
+      {
+        "grantee": "dante_runtime",
+        "privilege": "EXECUTE",
+        "columns": [],
+        "grant_option": false
+      }
+    ]
+  },
+  "proof": {
+    "obligations": [
+      "True typed FK to item, Person and Life Area; no polymorphic owner or NativeAddress pollution.",
+      "Actor self scope, archived-target rejection, idempotency and CAS are verified in PostgreSQL.",
+      "No runtime raw table access; B04 scheduling is unaffected."
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b05_primary_life_area_assignment.py",
+      "apps/backend/tests/integration/database/test_database_current_catalog.py"
+    ],
+    "staged_evidence": []
+  }
+}

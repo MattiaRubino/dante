@@ -41,6 +41,7 @@ export const CreateScheduledEventApiV1TemporalEventsScheduledPostBody =
           ),
         ),
     ),
+    life_area_ref: /*#__PURE__*/ zod.uuid(),
     operation_id: /*#__PURE__*/ zod
       .string()
       .check(/*#__PURE__*/ zod.minLength(1))

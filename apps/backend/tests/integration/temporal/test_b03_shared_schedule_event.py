@@ -13,6 +13,7 @@ from uuid import UUID, uuid7
 
 import psycopg
 import pytest
+from b05_legacy_test_support import api_test_life_area
 from fastapi.testclient import TestClient
 from pydantic import SecretStr
 
@@ -203,6 +204,9 @@ def _post_scheduled_event(
         "/api/v1/temporal/events/scheduled",
         json={
             "operation_id": operation_id,
+            "life_area_ref": api_test_life_area(
+                client, {**_base_headers(), CSRF_HEADER_NAME: csrf}
+            ),
             "title": title,
             "placement": placement,
         },
@@ -231,6 +235,7 @@ def test_b03b_event_forms_share_schedule_and_project_with_activity(
             "/api/v1/temporal/activities/scheduled",
             json={
                 "operation_id": "operation:b03-b:activity-witness",
+                "life_area_ref": api_test_life_area(client, mutation_headers),
                 "title": "Activity witness",
                 "placement": {
                     "kind": "floating_local_interval",
@@ -271,8 +276,9 @@ def test_b03b_event_forms_share_schedule_and_project_with_activity(
         assert replay.status_code == 200
         assert replay.json()["event_ref"] == floating_body["event_ref"]
         assert replay.json()["schedule_ref"] == floating_body["schedule_ref"]
-        assert replay.json()["placement_material_state_ref"] == (
-            floating_body["placement_material_state_ref"]
+        assert (
+            replay.json()["placement_material_state_ref"]
+            == (floating_body["placement_material_state_ref"])
         )
         assert replay.json()["replayed"] is True
 

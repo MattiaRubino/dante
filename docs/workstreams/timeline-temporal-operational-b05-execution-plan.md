@@ -1,14 +1,14 @@
 # Timeline / Temporal-Operational — B05 Product Organization Execution Plan
 
-- **Status:** PRE-SCOPE FROZEN / FULL B05-A IMPLEMENTED, POSTGRESQL PROOF PENDING; B05 NOT CLOSED
+- **Status:** B05-A ✅ CLOSED / PROVEN → B05-B PRIMARY ASSIGNMENT ACTIVE; B05 NOT CLOSED
 - **Date:** 2026-09-20
 - **Branch:** `feature/timeline-temporal-operational`
 - **Entering candidate DB:** PostgreSQL 18.6 / Alembic `20260920_42` / `116|5|44|90|233|153|331|0|0|0`
-- **B05-A source head / expected topology:** `20260920_45` / `119|5|48|90|239|158|344|0|0|0` (direct PostgreSQL proof pending)
+- **B05-A proved head / topology:** `20260920_45` / `119|5|48|90|239|158|344|0|0|0`
 - **Previous block:** B04 ✅ CLOSED / PROVEN
 - **CI / Actions:** not authorized by this plan
 
-This is the B05 entry gate required by the [current roadmap](timeline-temporal-operational-roadmap.md). It fixes the semantic contract and implementation order. The pre-scope itself introduced no migration/API; B05-A implementation spans `_43`–`_45`, with final direct PostgreSQL proof outstanding. It does not close B05-A or user acceptance.
+This is the B05 entry gate required by the [current roadmap](timeline-temporal-operational-roadmap.md). It fixes the semantic contract and implementation order. B05-A is closed with direct PostgreSQL evidence in [its closure record](timeline-temporal-operational-b05-a-closure-2026-09-20.md). B05-B proceeds under the retained contract below.
 
 ## 1. Authority and representation
 
@@ -35,7 +35,7 @@ Current frontend inspection shows `contextId` as prototype metadata, a literal `
 
 | Slice | Owned outcome | Mandatory proof before closing |
 | --- | --- | --- |
-| **B05-A — Life Area catalog** | LR-12 identity, guarded create/list, rename, reorder, archive, hide/show and optional icon/color; self-scoped reads/mutations. | Source implemented, direct PG proof pending; no kernel/native-address pollution; self isolation, concurrency/idempotency, DB/ACL, Dictionary and API/client parity. |
+| **B05-A — Life Area catalog** | LR-12 identity, guarded create/list, rename, reorder, archive, hide/show and optional icon/color; self-scoped reads/mutations. | ✅ CLOSED / PROVEN at `_45`; no kernel/native-address pollution; self isolation, concurrency/idempotency, DB/ACL, Dictionary and API/client parity. |
 | **B05-B — primary assignment** | Typed actor-local one-primary-area relation for Activity/Event, creation and reassignment; inventory and transition for older rows; later eligible item families only when activated. | Referential integrity and actor authorization at DB/application boundary; atomic create/replay; no duplicate canonical item; archived target policy; existing-row reconciliation; B04 scheduling unchanged. |
 | **B05-C — secondary Tags** | Distinct actor-local multi-valued product Tag and item relation; no Goal/Plan or semantic hierarchy inference. | Tag is not primary owner, labels do not identify Domain concepts, independent many-valued association and cross-actor isolation. |
 | **B05-D — product integration** | Timeline unified/grouped/focused filtering over canonical assignments, create/edit/read of real catalog; postponed/TBD Event rediscovery and explicit replanning. | Real-stack coverage for scheduled/all-day/coarse/floating/unscheduled items, hidden conflicts, no fake Event time, Activity Planning Tray stays distinct, accessibility without color-only indication. |
@@ -49,9 +49,17 @@ These letters are execution subdivisions **within documented B05**, not a renumb
 
 For every slice changing persistence, complete **in the same change**: forward-only Alembic → SQLAlchemy → Dictionary objects/scope → real PostgreSQL catalog + owner/ACL → DB README + candidate overlay → direct PostgreSQL tests → map/roadmap/handoff. Do not edit historical migrations or claim a calculated catalog topology as observed. For every new Temporal public operation: explicit stable `temporal_*` operationId → exact inventory test → exported OpenAPI snapshot → generated client (`pnpm api:generate`) → affected API/frontend tests and docs. No manual editing of generated code. A slice cannot be marked CLOSED/PROVEN while a current representation is known stale.
 
-The **pre-scope step** changed no structural artifacts. B05-A spans `_43`–`_45`: three mapped tables, four scoped functions, seven explicit Temporal endpoints, Dictionary/`scope.json`, API inventory and generated client. `_44` passed seven of eight selected PostgreSQL tests and exposed a single generated CHECK name mismatch; `_45` renames that validated CHECK without changing data or topology. Final `_45` direct migrated-PostgreSQL proof remains open: do not confuse source alignment with a real-catalog PASS.
+B05-A spans `_43`–`_45`: three mapped tables, four scoped functions, seven explicit Temporal endpoints, Dictionary/`scope.json`, API inventory and generated client. `_44` passed seven of eight selected PostgreSQL tests and exposed a single generated CHECK name mismatch; `_45` renamed that validated CHECK without changing data or topology. The final `_45` direct catalog proof passed; evidence is recorded in the B05-A closure record.
 
-## 5. Exit boundary and explicit exclusions
+## 5. B05-B typed primary assignment decision
+
+`_46` adds exactly two actor-local current typed relations (`activity_life_area_assignment`, `event_life_area_assignment`) and two immutable typed acceptance-receipt tables. Their keys are `(self_person_ref, activity_ref)` or `(self_person_ref, event_ref)`, not a polymorphic `item_type/item_id` relation. Three real foreign keys per table bind the canonical typed item, Person and LR-12 Life Area. DB security-definer functions check existing self-owned item descriptors, application context, current non-archived self area and optimistic assignment revision under a serialized Person lock. The initial assignment expects revision 0; reassignment advances exactly once. The idempotent receipt is checked before current archive/revision state so a historic accepted command remains replayable. Archived areas refuse new assignments but keep their current associations and receipts; hidden areas do not affect assignments or any B04 Schedule truth.
+
+New Activity/Event creation uses atomic wrappers around existing canonical create/Agenda capabilities and initial typed assignment with a fingerprint including the Life Area; scheduled and constrained authoring compose those wrappers in the same transaction. Direct runtime EXECUTE on all three old bare Activity/Event create helpers is revoked. Old rows remain genuinely unassigned, discoverable via `list_self_unassigned_life_area_items` and assignable explicitly; no `NOT NULL`, synthetic default or bulk rewrite occurs until reconciliation is complete. Public create requests require `life_area_ref`; reads expose nullable area/revision for historical rows, with separate actor-local assignment and inventory endpoints. B05-D is responsible for replacing the prototype `personale` frontend paths with these canonical operations; this B05-B step does not pretend the frontend migration already happened.
+
+The `_46` topology `123|5|54|90|245|170|354|0|0|0` is calculated from source and **not** observed in PostgreSQL yet. This slice stays open until the user's local direct catalog, lifecycle/assignment, ACL and API-proof command passes. B09, not B05-B, grants authority to any additional participant; no shared-item data or access is invented here.
+
+## 6. Exit boundary and explicit exclusions
 
 B05 closes only when a user can create and organize their Activity/Event items in real areas, use separate Tags, inspect unified/grouped/focused views and find postponed Events without inventing times; hidden areas continue to participate in authorized scheduling/conflict truth. Re-run actor-local and access proofs, reconciliation of legacy items and applicable manual userTest. A visual prototype or a green mock-only test is insufficient.
 

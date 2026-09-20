@@ -8,7 +8,7 @@
     "name": "create_self_activity",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Bounded SECURITY DEFINER capability that atomically creates or idempotently replays one self-scoped canonical Activity, its NativeAddress, minimum actionable-intention descriptor and immutable create-operation receipt without granting generic runtime DML.",
+  "purpose": "Internal SECURITY DEFINER helper for atomic canonical Activity creation; direct runtime EXECUTE retired in B05-B so public creation always assigns one Life Area in the same transaction.",
   "classification": {
     "persistence_role": "activity_create_capability",
     "canonicality": "capability_surface",
@@ -52,7 +52,7 @@
       "parallel_safety": "UNSAFE",
       "leakproof": false,
       "function_search_path": ["pg_catalog", "dante", "pg_temp"],
-      "direct_runtime_execute": true
+      "direct_runtime_execute": false
     }
   },
   "state_history": {
@@ -70,15 +70,13 @@
   "security": {
     "owner_role": "dante_owner",
     "default_deny_non_owner": true,
-    "expected_grants": [
-      {"grantee": "dante_runtime", "privilege": "EXECUTE", "columns": [], "grant_option": false}
-    ]
+    "expected_grants": []
   },
   "proof": {
     "obligations": [
       "function owner is dante_owner and SECURITY DEFINER is enabled",
       "trusted search_path is exactly pg_catalog,dante,pg_temp",
-      "runtime EXECUTE is granted while PUBLIC and dante_migrator EXECUTE are denied",
+      "B05-B denies direct runtime EXECUTE while its Life Area-bound wrapper remains executable",
       "runtime receives no generic INSERT/UPDATE/DELETE authority on Activity persistence",
       "UUIDv7 Activity identity, NativeAddress, descriptor and receipt are created atomically",
       "same operation id/same intent replays and same operation id/different intent conflicts"

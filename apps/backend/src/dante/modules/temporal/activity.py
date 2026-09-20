@@ -41,6 +41,10 @@ class ActivityPersistenceError(RuntimeError):
     """Canonical Activity persistence could not complete safely."""
 
 
+class ActivityLifeAreaUnavailableError(RuntimeError):
+    """The requested primary Life Area is unavailable in the current self scope."""
+
+
 @dataclass(frozen=True, slots=True)
 class ActivityView:
     """Application projection of the minimum Activity state."""
@@ -48,6 +52,8 @@ class ActivityView:
     activity_ref: NativeRef
     title: str
     created_at: datetime
+    life_area_ref: UUID | None = None
+    life_area_assignment_revision: int | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -81,9 +87,9 @@ def _normalize_operation_id(value: str) -> str:
     return normalized
 
 
-def _intent_fingerprint(*, title: str) -> str:
+def _intent_fingerprint(*, title: str, life_area_ref: UUID) -> str:
     payload = json.dumps(
-        {"title": title},
+        {"version": 2, "title": title, "life_area_ref": str(life_area_ref)},
         ensure_ascii=False,
         separators=(",", ":"),
         sort_keys=True,
@@ -103,7 +109,37 @@ def _activity_from_row(row: RowMapping) -> ActivityView:
         activity_ref=NativeRef(UUID(str(row["activity_ref"]))),
         title=str(row["title"]),
         created_at=row["created_at"],
+        life_area_ref=(
+            None if row.get("life_area_ref") is None else UUID(str(row["life_area_ref"]))
+        ),
+        life_area_assignment_revision=(
+            None
+            if row.get("life_area_assignment_revision") is None
+            else int(row["life_area_assignment_revision"])
+        ),
     )
+
+
+async def _read_current_area(
+    database_session: AsyncSession, *, self_person_ref: NativeRef, activity_ref: NativeRef
+) -> tuple[UUID | None, int | None]:
+    row = (
+        (
+            await database_session.execute(
+                text("""
+                SELECT life_area_ref, assignment_revision
+                  FROM dante.list_self_life_area_assignments(:self_person_ref)
+                 WHERE subject_kind='activity' AND subject_native_ref=:activity_ref
+            """),
+                {"self_person_ref": self_person_ref, "activity_ref": activity_ref},
+            )
+        )
+        .mappings()
+        .one_or_none()
+    )
+    if row is None:
+        return None, None
+    return UUID(str(row["life_area_ref"])), int(row["assignment_revision"])
 
 
 class TemporalActivityApplication:
@@ -119,18 +155,21 @@ class TemporalActivityApplication:
         self_person_ref: NativeRef,
         operation_id: str,
         title: str,
+        life_area_ref: UUID,
         requested_activity_ref: NativeRef,
     ) -> CreateActivityResult:
-        fingerprint = _intent_fingerprint(title=title)
+        fingerprint = _intent_fingerprint(title=title, life_area_ref=life_area_ref)
         statement = text(
             """
-            SELECT activity_ref, title, created_at, replayed
-            FROM dante.create_self_activity(
+            SELECT activity_ref,title,created_at,life_area_ref,
+                   assignment_revision AS life_area_assignment_revision,replayed
+            FROM dante.create_self_activity_in_life_area(
                 :self_person_ref,
                 :operation_id,
                 :intent_fingerprint,
                 :activity_ref,
-                :title
+                :title,
+                :life_area_ref
             )
             """
         )
@@ -144,6 +183,7 @@ class TemporalActivityApplication:
                         "intent_fingerprint": fingerprint,
                         "activity_ref": requested_activity_ref,
                         "title": title,
+                        "life_area_ref": life_area_ref,
                     },
                 )
             )
@@ -161,6 +201,7 @@ class TemporalActivityApplication:
         self_person_ref: NativeRef,
         operation_id: str,
         title: str,
+        life_area_ref: UUID,
     ) -> CreateActivityResult:
         normalized_title = _normalize_title(title)
         normalized_operation_id = _normalize_operation_id(operation_id)
@@ -176,11 +217,14 @@ class TemporalActivityApplication:
                     self_person_ref=self_person_ref,
                     operation_id=normalized_operation_id,
                     title=normalized_title,
+                    life_area_ref=life_area_ref,
                     requested_activity_ref=activity_ref,
                 )
         except IntegrityError as exc:
             if _constraint_name(exc) == "pk_activity_create_operation":
                 raise ActivityOperationIdReuseError() from exc
+            if _constraint_name(exc) == "life_area_assignment_target_unavailable":
+                raise ActivityLifeAreaUnavailableError() from exc
             raise ActivityPersistenceError() from exc
         except DBAPIError as exc:
             raise ActivityPersistenceError() from exc
@@ -193,6 +237,7 @@ class TemporalActivityApplication:
         self_person_ref: NativeRef,
         operation_id: str,
         title: str,
+        life_area_ref: UUID,
         placement: FloatingLocalIntervalPlacement,
     ) -> CreateScheduledActivityResult:
         """Compatibility wrapper for the proven B02-A floating-local path."""
@@ -200,6 +245,7 @@ class TemporalActivityApplication:
             self_person_ref=self_person_ref,
             operation_id=operation_id,
             title=title,
+            life_area_ref=life_area_ref,
             placement=placement,
         )
 
@@ -209,6 +255,7 @@ class TemporalActivityApplication:
         self_person_ref: NativeRef,
         operation_id: str,
         title: str,
+        life_area_ref: UUID,
         placement: SchedulePlacement,
     ) -> CreateScheduledActivityResult:
         """Create Activity and one typed accepted Schedule atomically."""
@@ -226,6 +273,7 @@ class TemporalActivityApplication:
                     self_person_ref=self_person_ref,
                     operation_id=normalized_operation_id,
                     title=normalized_title,
+                    life_area_ref=life_area_ref,
                     requested_activity_ref=activity_ref,
                 )
 
@@ -258,6 +306,8 @@ class TemporalActivityApplication:
                 "pk_schedule_establish_operation",
             }:
                 raise ActivityOperationIdReuseError() from exc
+            if _constraint_name(exc) == "life_area_assignment_target_unavailable":
+                raise ActivityLifeAreaUnavailableError() from exc
             raise ActivityPersistenceError() from exc
         except DBAPIError as exc:
             raise ActivityPersistenceError() from exc
@@ -305,10 +355,16 @@ class TemporalActivityApplication:
                 if activity_row is None:
                     raise ActivityNotFoundError()
 
+                area_ref, area_revision = await _read_current_area(
+                    database_session, self_person_ref=self_person_ref, activity_ref=activity_ref
+                )
+
                 activity = ActivityView(
                     activity_ref=activity_row.activity_ref,
                     title=activity_row.title,
                     created_at=activity_row.created_at,
+                    life_area_ref=area_ref,
+                    life_area_assignment_revision=area_revision,
                 )
                 schedule = await establish_schedule_in_session(
                     database_session,
@@ -346,8 +402,13 @@ class TemporalActivityApplication:
             """
             SELECT intention.activity_ref,
                    intention.title,
-                   intention.created_at
+                   intention.created_at,
+                   assignment.life_area_ref,
+                   assignment.assignment_revision AS life_area_assignment_revision
             FROM dante.activity_intention AS intention
+            LEFT JOIN dante.list_self_life_area_assignments(:self_person_ref) AS assignment
+              ON assignment.subject_kind='activity'
+             AND assignment.subject_native_ref=intention.activity_ref
             WHERE intention.self_person_ref = :self_person_ref
               AND NOT EXISTS (
                   SELECT 1
@@ -397,13 +458,18 @@ class TemporalActivityApplication:
                 database_session.begin(),
             ):
                 row = await database_session.scalar(statement)
+                if row is None:
+                    return None
+                area_ref, area_revision = await _read_current_area(
+                    database_session, self_person_ref=self_person_ref, activity_ref=activity_ref
+                )
         except SQLAlchemyError as exc:
             raise ActivityPersistenceError() from exc
 
-        if row is None:
-            return None
         return ActivityView(
             activity_ref=row.activity_ref,
             title=row.title,
             created_at=row.created_at,
+            life_area_ref=area_ref,
+            life_area_assignment_revision=area_revision,
         )

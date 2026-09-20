@@ -52,7 +52,7 @@
       "parallel_safety": "UNSAFE",
       "leakproof": false,
       "function_search_path": ["pg_catalog", "dante", "pg_temp"],
-      "direct_runtime_execute": true
+      "direct_runtime_execute": false
     }
   },
   "state_history": {
@@ -70,15 +70,13 @@
   "security": {
     "owner_role": "dante_owner",
     "default_deny_non_owner": true,
-    "expected_grants": [
-      {"grantee":"dante_runtime","privilege":"EXECUTE","columns":[],"grant_option":false}
-    ]
+    "expected_grants": []
   },
   "proof": {
     "obligations": [
       "function owner is dante_owner and SECURITY DEFINER is enabled",
       "trusted search_path is exactly pg_catalog,dante,pg_temp",
-      "runtime EXECUTE is granted while PUBLIC and dante_migrator EXECUTE are denied",
+      "B05-B denies direct runtime EXECUTE while its Life Area-bound wrapper remains executable",
       "runtime receives no generic INSERT/UPDATE/DELETE authority on Event persistence",
       "UUIDv7 Event identity, NativeAddress, expectation descriptor and receipt are created atomically",
       "same operation id/same intent replays and same operation id/different intent conflicts"

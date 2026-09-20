@@ -52,6 +52,10 @@ class ConstrainedActivityPersistenceError(RuntimeError):
     """The atomic Activity + Temporal Constraint effect could not complete safely."""
 
 
+class ConstrainedActivityLifeAreaUnavailableError(RuntimeError):
+    """The requested Life Area cannot receive a new constrained Activity."""
+
+
 @dataclass(frozen=True, slots=True)
 class CreateConstrainedActivityResult:
     activity: ActivityView
@@ -77,10 +81,10 @@ def _normalize_operation_id(value: str) -> str:
     return normalized
 
 
-def _activity_fingerprint(title: str) -> str:
+def _activity_fingerprint(*, title: str, life_area_ref: UUID) -> str:
     return hashlib.sha256(
         json.dumps(
-            {"title": title},
+            {"version": 2, "title": title, "life_area_ref": str(life_area_ref)},
             ensure_ascii=False,
             separators=(",", ":"),
             sort_keys=True,
@@ -133,7 +137,7 @@ def _child_operation_id(parent_operation_id: str, index: int) -> str:
 
 
 def _child_fingerprint(composite_fingerprint: str, index: int) -> str:
-    return hashlib.sha256(f"{composite_fingerprint}:{index}".encode("utf-8")).hexdigest()
+    return hashlib.sha256(f"{composite_fingerprint}:{index}".encode()).hexdigest()
 
 
 def _constraint_name(exc: IntegrityError) -> str | None:
@@ -144,13 +148,15 @@ def _constraint_name(exc: IntegrityError) -> str | None:
 
 _CREATE_ACTIVITY_SQL = text(
     """
-    SELECT activity_ref, title, created_at, replayed
-      FROM dante.create_self_activity(
+    SELECT activity_ref, title, created_at, life_area_ref,
+           assignment_revision AS life_area_assignment_revision, replayed
+      FROM dante.create_self_activity_in_life_area(
            :self_person_ref,
            :operation_id,
            :intent_fingerprint,
            :activity_ref,
-           :title
+           :title,
+           :life_area_ref
       )
     """
 )
@@ -162,6 +168,7 @@ async def _create_activity_in_session(
     self_person_ref: NativeRef,
     operation_id: str,
     title: str,
+    life_area_ref: UUID,
     requested_activity_ref: NativeRef,
 ) -> tuple[ActivityView, bool]:
     row = (
@@ -171,9 +178,12 @@ async def _create_activity_in_session(
                 {
                     "self_person_ref": self_person_ref,
                     "operation_id": operation_id,
-                    "intent_fingerprint": _activity_fingerprint(title),
+                    "intent_fingerprint": _activity_fingerprint(
+                        title=title, life_area_ref=life_area_ref
+                    ),
                     "activity_ref": requested_activity_ref,
                     "title": title,
+                    "life_area_ref": life_area_ref,
                 },
             )
         )
@@ -185,6 +195,8 @@ async def _create_activity_in_session(
             activity_ref=NativeRef(UUID(str(row["activity_ref"]))),
             title=str(row["title"]),
             created_at=cast(datetime, row["created_at"]),
+            life_area_ref=UUID(str(row["life_area_ref"])),
+            life_area_assignment_revision=int(row["life_area_assignment_revision"]),
         ),
         bool(row["replayed"]),
     )
@@ -202,6 +214,7 @@ class ConstrainedActivityApplication:
         self_person_ref: NativeRef,
         operation_id: str,
         title: str,
+        life_area_ref: UUID,
         rules: tuple[TemporalConstraintRule, ...],
     ) -> CreateConstrainedActivityResult:
         normalized_title = _normalize_title(title)
@@ -228,6 +241,7 @@ class ConstrainedActivityApplication:
                     self_person_ref=self_person_ref,
                     operation_id=normalized_operation_id,
                     title=normalized_title,
+                    life_area_ref=life_area_ref,
                     requested_activity_ref=requested_activity_ref,
                 )
 
@@ -263,9 +277,7 @@ class ConstrainedActivityApplication:
                             constraint_ref=ScopedRecordRef(UUID(str(row["constraint_ref"]))),
                             subject_native_ref=NativeRef(UUID(str(row["subject_native_ref"]))),
                             subject_kind="activity",
-                            material_state_ref=MaterialStateRef(
-                                UUID(str(material_state_value))
-                            ),
+                            material_state_ref=MaterialStateRef(UUID(str(material_state_value))),
                             rule=rule,
                             recorded_at=cast(datetime, row["created_at"]),
                             replayed=rule_replayed,
@@ -287,6 +299,8 @@ class ConstrainedActivityApplication:
         ) as exc:
             raise ConstrainedActivityOperationIdReuseError() from exc
         except IntegrityError as exc:
+            if _constraint_name(exc) == "life_area_assignment_target_unavailable":
+                raise ConstrainedActivityLifeAreaUnavailableError() from exc
             if _constraint_name(exc) in {
                 "pk_activity_create_operation",
                 "pk_temporal_constraint_mutation_operation",

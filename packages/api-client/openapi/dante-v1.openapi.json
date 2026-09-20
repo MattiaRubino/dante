@@ -702,6 +702,30 @@
             "title": "Created At",
             "type": "string"
           },
+          "life_area_assignment_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Assignment Revision"
+          },
+          "life_area_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Ref"
+          },
           "replayed": {
             "default": false,
             "title": "Replayed",
@@ -884,6 +908,34 @@
         },
         "required": ["id", "rawId", "type", "response"],
         "title": "AssertionCredential",
+        "type": "object"
+      },
+      "AssignLifeAreaRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_assignment_revision": {
+            "minimum": 0.0,
+            "title": "Expected Assignment Revision",
+            "type": "integer"
+          },
+          "life_area_ref": {
+            "format": "uuid",
+            "title": "Life Area Ref",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "life_area_ref",
+          "expected_assignment_revision"
+        ],
+        "title": "AssignLifeAreaRequest",
         "type": "object"
       },
       "AuthenticatedSessionResponse": {
@@ -1070,6 +1122,11 @@
         "additionalProperties": false,
         "description": "Minimum B01 CreateActivity command; placement is not an Activity field.",
         "properties": {
+          "life_area_ref": {
+            "format": "uuid",
+            "title": "Life Area Ref",
+            "type": "string"
+          },
           "operation_id": {
             "maxLength": 200,
             "minLength": 1,
@@ -1083,7 +1140,7 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "title"],
+        "required": ["operation_id", "title", "life_area_ref"],
         "title": "CreateActivityRequest",
         "type": "object"
       },
@@ -1091,6 +1148,11 @@
         "additionalProperties": false,
         "description": "Atomic unplaced Activity plus 1..4 public B04 boundary/window rules.",
         "properties": {
+          "life_area_ref": {
+            "format": "uuid",
+            "title": "Life Area Ref",
+            "type": "string"
+          },
           "operation_id": {
             "maxLength": 200,
             "minLength": 1,
@@ -1135,7 +1197,7 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "title", "rules"],
+        "required": ["operation_id", "title", "life_area_ref", "rules"],
         "title": "CreateConstrainedActivityRequest",
         "type": "object"
       },
@@ -1152,6 +1214,11 @@
             "title": "Agenda Parts",
             "type": "array"
           },
+          "life_area_ref": {
+            "format": "uuid",
+            "title": "Life Area Ref",
+            "type": "string"
+          },
           "operation_id": {
             "maxLength": 200,
             "minLength": 1,
@@ -1165,7 +1232,7 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "title"],
+        "required": ["operation_id", "title", "life_area_ref"],
         "title": "CreateEventRequest",
         "type": "object"
       },
@@ -1193,6 +1260,11 @@
         "additionalProperties": false,
         "description": "Atomic Activity + accepted Schedule authoring command.",
         "properties": {
+          "life_area_ref": {
+            "format": "uuid",
+            "title": "Life Area Ref",
+            "type": "string"
+          },
           "operation_id": {
             "maxLength": 200,
             "minLength": 1,
@@ -1236,7 +1308,7 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "title", "placement"],
+        "required": ["operation_id", "title", "life_area_ref", "placement"],
         "title": "CreateScheduledActivityRequest",
         "type": "object"
       },
@@ -1252,6 +1324,11 @@
             "maxItems": 100,
             "title": "Agenda Parts",
             "type": "array"
+          },
+          "life_area_ref": {
+            "format": "uuid",
+            "title": "Life Area Ref",
+            "type": "string"
           },
           "operation_id": {
             "maxLength": 200,
@@ -1292,7 +1369,7 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "title", "placement"],
+        "required": ["operation_id", "title", "life_area_ref", "placement"],
         "title": "CreateScheduledEventRequest",
         "type": "object"
       },
@@ -1660,6 +1737,30 @@
             "title": "Event Ref",
             "type": "string"
           },
+          "life_area_assignment_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Assignment Revision"
+          },
+          "life_area_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Ref"
+          },
           "replayed": {
             "default": false,
             "title": "Replayed",
@@ -1790,6 +1891,50 @@
         "type": "object"
       },
       "JsonValue": {},
+      "LifeAreaAssignmentResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "assigned_at": {
+            "format": "date-time",
+            "title": "Assigned At",
+            "type": "string"
+          },
+          "assignment_revision": {
+            "minimum": 1.0,
+            "title": "Assignment Revision",
+            "type": "integer"
+          },
+          "life_area_ref": {
+            "format": "uuid",
+            "title": "Life Area Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "subject_kind": {
+            "enum": ["activity", "event"],
+            "title": "Subject Kind",
+            "type": "string"
+          },
+          "subject_native_ref": {
+            "format": "uuid",
+            "title": "Subject Native Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "subject_kind",
+          "subject_native_ref",
+          "life_area_ref",
+          "assignment_revision",
+          "assigned_at"
+        ],
+        "title": "LifeAreaAssignmentResponse",
+        "type": "object"
+      },
       "LifeAreaMutationResponse": {
         "properties": {
           "accepted_revision": {
@@ -3536,6 +3681,30 @@
             "title": "Ends At",
             "type": "string"
           },
+          "life_area_assignment_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Assignment Revision"
+          },
+          "life_area_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Ref"
+          },
           "placement_material_state_ref": {
             "format": "uuid",
             "title": "Placement Material State Ref",
@@ -3591,6 +3760,30 @@
             "format": "date-time",
             "title": "Created At",
             "type": "string"
+          },
+          "life_area_assignment_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Assignment Revision"
+          },
+          "life_area_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Ref"
           },
           "local_date": {
             "format": "date",
@@ -3658,6 +3851,30 @@
             "title": "End Date Exclusive",
             "type": "string"
           },
+          "life_area_assignment_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Assignment Revision"
+          },
+          "life_area_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Ref"
+          },
           "placement_material_state_ref": {
             "format": "uuid",
             "title": "Placement Material State Ref",
@@ -3718,6 +3935,30 @@
             "format": "date-time",
             "title": "Ends Local At",
             "type": "string"
+          },
+          "life_area_assignment_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Assignment Revision"
+          },
+          "life_area_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Ref"
           },
           "placement_material_state_ref": {
             "format": "uuid",
@@ -3797,6 +4038,30 @@
             "title": "Ends Local At",
             "type": "string"
           },
+          "life_area_assignment_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Assignment Revision"
+          },
+          "life_area_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Ref"
+          },
           "placement_material_state_ref": {
             "format": "uuid",
             "title": "Placement Material State Ref",
@@ -3870,6 +4135,30 @@
             "title": "Event Ref",
             "type": "string"
           },
+          "life_area_assignment_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Assignment Revision"
+          },
+          "life_area_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Ref"
+          },
           "placement_material_state_ref": {
             "format": "uuid",
             "title": "Placement Material State Ref",
@@ -3939,6 +4228,30 @@
             "format": "uuid",
             "title": "Event Ref",
             "type": "string"
+          },
+          "life_area_assignment_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Assignment Revision"
+          },
+          "life_area_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Ref"
           },
           "local_date": {
             "format": "date",
@@ -4020,6 +4333,30 @@
             "title": "Event Ref",
             "type": "string"
           },
+          "life_area_assignment_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Assignment Revision"
+          },
+          "life_area_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Ref"
+          },
           "placement_material_state_ref": {
             "format": "uuid",
             "title": "Placement Material State Ref",
@@ -4095,6 +4432,30 @@
             "title": "Event Ref",
             "type": "string"
           },
+          "life_area_assignment_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Assignment Revision"
+          },
+          "life_area_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Ref"
+          },
           "placement_material_state_ref": {
             "format": "uuid",
             "title": "Placement Material State Ref",
@@ -4169,6 +4530,30 @@
             "format": "uuid",
             "title": "Event Ref",
             "type": "string"
+          },
+          "life_area_assignment_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Assignment Revision"
+          },
+          "life_area_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Ref"
           },
           "placement_material_state_ref": {
             "format": "uuid",
@@ -5370,6 +5755,38 @@
         "title": "TimelineWindowItemsResponse",
         "type": "object"
       },
+      "UnassignedLifeAreaItemResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "subject_kind": {
+            "enum": ["activity", "event"],
+            "title": "Subject Kind",
+            "type": "string"
+          },
+          "subject_native_ref": {
+            "format": "uuid",
+            "title": "Subject Native Ref",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "subject_kind",
+          "subject_native_ref",
+          "title",
+          "created_at"
+        ],
+        "title": "UnassignedLifeAreaItemResponse",
+        "type": "object"
+      },
       "UnauthenticatedSessionResponse": {
         "additionalProperties": false,
         "description": "Unauthenticated bootstrap representation.",
@@ -5786,7 +6203,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -6128,7 +6545,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -6401,7 +6818,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -6681,7 +7098,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -7005,7 +7422,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -7295,7 +7712,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -7575,7 +7992,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -7874,7 +8291,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -8167,7 +8584,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -8476,7 +8893,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -8779,7 +9196,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -9088,7 +9505,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -9399,7 +9816,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -9705,7 +10122,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -10005,7 +10422,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -10315,7 +10732,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -10608,7 +11025,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -10894,7 +11311,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -11198,7 +11615,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -11510,7 +11927,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -11798,7 +12215,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -12084,7 +12501,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -12396,7 +12813,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -12656,7 +13073,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -12910,7 +13327,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -13154,7 +13571,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -13397,7 +13814,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -13888,7 +14305,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -14132,7 +14549,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -14376,7 +14793,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -14634,7 +15051,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -15492,6 +15909,154 @@
           }
         },
         "summary": "Replace Event Agenda",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/life-area-assignments": {
+      "get": {
+        "operationId": "temporal_list_life_area_assignments",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/LifeAreaAssignmentResponse"
+                  },
+                  "title": "Response Temporal List Life Area Assignments",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Life Area Assignments",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/life-area-assignments/activities/{activity_ref}": {
+      "put": {
+        "operationId": "temporal_assign_activity_life_area",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignLifeAreaRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LifeAreaAssignmentResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Assign Activity Life Area",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/life-area-assignments/events/{event_ref}": {
+      "put": {
+        "operationId": "temporal_assign_event_life_area",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignLifeAreaRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LifeAreaAssignmentResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Assign Event Life Area",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/life-area-assignments/unassigned": {
+      "get": {
+        "operationId": "temporal_list_unassigned_life_area_items",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/UnassignedLifeAreaItemResponse"
+                  },
+                  "title": "Response Temporal List Unassigned Life Area Items",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Unassigned Life Area Items",
         "tags": ["temporal"]
       }
     },

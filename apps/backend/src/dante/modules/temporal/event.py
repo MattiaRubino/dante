@@ -47,6 +47,10 @@ class EventPersistenceError(RuntimeError):
     """Canonical Event persistence could not complete safely."""
 
 
+class EventLifeAreaUnavailableError(RuntimeError):
+    """The requested actor-local Life Area is unavailable for Event creation."""
+
+
 @dataclass(frozen=True, slots=True)
 class EventView:
     """Application projection of the accepted Event expectation state."""
@@ -56,6 +60,8 @@ class EventView:
     agenda_revision: int
     agenda_parts: tuple[str, ...]
     created_at: datetime
+    life_area_ref: UUID | None = None
+    life_area_assignment_revision: int | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -113,10 +119,9 @@ def _normalize_agenda_parts(values: tuple[str, ...] | list[str]) -> tuple[str, .
     return tuple(normalized)
 
 
-def _intent_fingerprint(*, title: str, agenda_parts: tuple[str, ...]) -> str:
-    # Preserve the exact B03-A/B fingerprint for the empty-Agenda contract so
-    # pre-B03-D create receipts remain replayable after the schema advances.
-    intent: dict[str, object] = {"title": title}
+def _intent_fingerprint(*, title: str, agenda_parts: tuple[str, ...], life_area_ref: UUID) -> str:
+    """Bind Event identity creation to its required primary Life Area."""
+    intent: dict[str, object] = {"version": 2, "title": title, "life_area_ref": str(life_area_ref)}
     if agenda_parts:
         intent["agenda_parts"] = list(agenda_parts)
     payload = json.dumps(
@@ -169,6 +174,12 @@ def _event_from_row(row: RowMapping) -> EventView:
         agenda_revision=int(row.get("agenda_revision") or 0),
         agenda_parts=agenda_parts,
         created_at=row["created_at"],
+        life_area_ref=(
+            UUID(str(row["life_area_ref"])) if row.get("life_area_ref") is not None else None
+        ),
+        life_area_assignment_revision=(
+            int(row["assignment_revision"]) if row.get("assignment_revision") is not None else None
+        ),
     )
 
 
@@ -187,18 +198,23 @@ class TemporalEventApplication:
         title: str,
         agenda_parts: tuple[str, ...],
         requested_event_ref: NativeRef,
+        life_area_ref: UUID,
     ) -> CreateEventResult:
-        fingerprint = _intent_fingerprint(title=title, agenda_parts=agenda_parts)
+        fingerprint = _intent_fingerprint(
+            title=title, agenda_parts=agenda_parts, life_area_ref=life_area_ref
+        )
         statement = text(
             """
-            SELECT event_ref, title, created_at, agenda_revision, agenda_parts, replayed
-            FROM dante.create_self_event_with_agenda(
+            SELECT event_ref, title, created_at, agenda_revision, agenda_parts,
+                   life_area_ref, assignment_revision, replayed
+            FROM dante.create_self_event_with_agenda_in_life_area(
                 :self_person_ref,
                 :operation_id,
                 :intent_fingerprint,
                 :event_ref,
                 :title,
-                :agenda_parts
+                :agenda_parts,
+                :life_area_ref
             )
             """
         )
@@ -213,6 +229,7 @@ class TemporalEventApplication:
                         "event_ref": requested_event_ref,
                         "title": title,
                         "agenda_parts": list(agenda_parts),
+                        "life_area_ref": life_area_ref,
                     },
                 )
             )
@@ -230,6 +247,7 @@ class TemporalEventApplication:
         self_person_ref: NativeRef,
         operation_id: str,
         title: str,
+        life_area_ref: UUID,
         agenda_parts: tuple[str, ...] | list[str] = (),
     ) -> CreateEventResult:
         """Create one self-owned Event expectation through the bounded DB capability."""
@@ -250,10 +268,13 @@ class TemporalEventApplication:
                     title=normalized_title,
                     agenda_parts=normalized_agenda,
                     requested_event_ref=event_ref,
+                    life_area_ref=life_area_ref,
                 )
         except IntegrityError as exc:
             if _constraint_name(exc) == "pk_event_create_operation":
                 raise EventOperationIdReuseError() from exc
+            if _constraint_name(exc) == "life_area_assignment_target_unavailable":
+                raise EventLifeAreaUnavailableError() from exc
             raise EventPersistenceError() from exc
         except DBAPIError as exc:
             raise EventPersistenceError() from exc
@@ -266,6 +287,7 @@ class TemporalEventApplication:
         self_person_ref: NativeRef,
         operation_id: str,
         title: str,
+        life_area_ref: UUID,
         placement: SchedulePlacement,
         agenda_parts: tuple[str, ...] | list[str] = (),
     ) -> CreateScheduledEventResult:
@@ -288,6 +310,7 @@ class TemporalEventApplication:
                     title=normalized_title,
                     agenda_parts=normalized_agenda,
                     requested_event_ref=event_ref,
+                    life_area_ref=life_area_ref,
                 )
                 schedule_result = await establish_schedule_in_session(
                     database_session,
@@ -310,6 +333,8 @@ class TemporalEventApplication:
         except ScheduleInputError as exc:
             raise EventInputError(str(exc)) from exc
         except IntegrityError as exc:
+            if _constraint_name(exc) == "life_area_assignment_target_unavailable":
+                raise EventLifeAreaUnavailableError() from exc
             if _constraint_name(exc) in {
                 "pk_event_create_operation",
                 "pk_schedule_establish_operation",
@@ -416,6 +441,11 @@ class TemporalEventApplication:
         revision_statement = select(EventAgendaCurrentRow.revision).where(
             EventAgendaCurrentRow.event_ref == event_ref
         )
+        assignment_statement = text("""
+            SELECT life_area_ref, assignment_revision
+              FROM dante.list_self_life_area_assignments(:self_person_ref)
+             WHERE subject_kind='event' AND subject_native_ref=:event_ref
+        """)
 
         try:
             async with (
@@ -425,10 +455,18 @@ class TemporalEventApplication:
                 row = await database_session.scalar(expectation_statement)
                 if row is None:
                     return None
-                agenda_parts = tuple(
-                    (await database_session.scalars(agenda_statement)).all()
-                )
+                agenda_parts = tuple((await database_session.scalars(agenda_statement)).all())
                 agenda_revision = await database_session.scalar(revision_statement)
+                assignment = (
+                    (
+                        await database_session.execute(
+                            assignment_statement,
+                            {"self_person_ref": self_person_ref, "event_ref": event_ref},
+                        )
+                    )
+                    .mappings()
+                    .one_or_none()
+                )
         except SQLAlchemyError as exc:
             raise EventPersistenceError() from exc
 
@@ -438,4 +476,8 @@ class TemporalEventApplication:
             agenda_revision=0 if agenda_revision is None else int(agenda_revision),
             agenda_parts=agenda_parts,
             created_at=row.created_at,
+            life_area_ref=UUID(str(assignment["life_area_ref"])) if assignment else None,
+            life_area_assignment_revision=(
+                int(assignment["assignment_revision"]) if assignment else None
+            ),
         )

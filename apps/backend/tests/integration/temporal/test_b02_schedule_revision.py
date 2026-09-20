@@ -8,6 +8,7 @@ from uuid import uuid7
 
 import psycopg
 import pytest
+from b05_legacy_test_support import ensure_test_life_area
 
 from dante.auth.contracts import Principal
 from dante.context.contracts import DanteContext
@@ -157,6 +158,7 @@ async def test_revision_retains_history_moves_current_and_replays_exact_intent(
     try:
         created = await activities.create_activity_with_floating_schedule(
             self_person_ref=self_person_ref,
+            life_area_ref=ensure_test_life_area(migrated_database, self_person_ref),
             operation_id="operation:b02-c:create",
             title="Activity con revisione",
             placement=initial,
@@ -256,6 +258,7 @@ async def test_missing_and_cross_self_schedule_revision_are_indistinguishable(
     try:
         created = await activities.create_activity_with_floating_schedule(
             self_person_ref=owner_ref,
+            life_area_ref=ensure_test_life_area(migrated_database, owner_ref),
             operation_id="operation:b02-c:private-create",
             title="Schedule privata",
             placement=placement,

@@ -10,7 +10,8 @@
 - **B04-D closure:** `docs/workstreams/timeline-temporal-operational-b04-d-closure-2026-09-19.md` ✅
 - **B04-E closure:** `docs/workstreams/timeline-temporal-operational-b04-e-closure-2026-09-19.md` ✅
 - **B04-F / whole-B04 closure:** `docs/workstreams/timeline-temporal-operational-b04-f-closure-2026-09-20.md` ✅
-- **B05 execution plan / pre-scope:** `docs/workstreams/timeline-temporal-operational-b05-execution-plan.md` ✅
+- **B05 execution plan:** `docs/workstreams/timeline-temporal-operational-b05-execution-plan.md` ✅
+- **B05-A closure:** `docs/workstreams/timeline-temporal-operational-b05-a-closure-2026-09-20.md` ✅
 - **Timeline candidate DB overlay:** `docs/database/timeline-temporal-operational.md`
 
 The archived semantic freeze remains the binding detailed inventory for the full vertical. This file is the live implementation/proof ledger.
@@ -97,8 +98,8 @@ Current candidate persistence authority:
 
 ```text
 PostgreSQL       18.6
-Alembic source   20260920_45
-Expected topology 119|5|48|90|239|158|344|0|0|0 (direct PG proof pending)
+Alembic source   20260920_46
+Expected topology 123|5|54|90|245|170|354|0|0|0 (B05-B direct PG proof pending)
 ```
 
 ---
@@ -225,25 +226,25 @@ No PASS came from prototype-only fields.
 
 # 5. B05 — Product Organization ⬜ PRE-SCOPE FROZEN / IMPLEMENTATION OPEN
 
-Execution authority: `timeline-temporal-operational-b05-execution-plan.md`. Semantic authority was reopened and the LR-12 product-profile boundary established in pre-scope. This is not a materialized Life Area, a new Domain owner or an assignment of existing items.
+Execution authority: `timeline-temporal-operational-b05-execution-plan.md`. B05-A LR-12 catalog is proven; B05-B source implements actor-local typed Activity/Event assignments, and awaits direct PostgreSQL proof. Neither is a new Domain owner nor an implicit assignment of old rows.
 
 ```text
 ORG-001  authority/pre-scope             ✅ pre-scope recorded
-ORG-002  exact durable representation   🟡 LR-12 A mapped/Dictionary; PG proof pending
-ORG-003  Life Area create               🟡 A implemented; direct PG proof pending
-ORG-004..008  rename/reorder/archive/hide/appearance                 🟡 B05-A implemented; PG proof pending
-ORG-009  primary per-actor item assignment                         ⬜ B05-B
+ORG-002  exact durable representation   ✅ B05-A proven
+ORG-003  Life Area create               ✅ B05-A proven
+ORG-004..008  rename/reorder/archive/hide/appearance                 ✅ B05-A proven
+ORG-009  primary per-actor item assignment                         🟡 B05-B source / direct proof pending
 ORG-010  separate secondary Tags                                ⬜ B05-C
 ORG-011  non-collapse with Goal/Plan/Tag/Place/provider calendar  ⬜ verify throughout
 ORG-012  real Timeline organization and filtering                ⬜ B05-D
 ORG-013  hidden-item scheduling/conflict relevance               ⬜ B05-D
-ORG-014  actor-local shared-item design without invented grants   ⬜ B05-B/B09 boundary
+ORG-014  actor-local self-only boundary without invented grants    🟡 B05-B source / B09 sharing pending
 ORG-015  accessible non-color-only presentation                  ⬜ B05-D
 B05-T01..05  automated lifecycle, relation, view, conflict, accessibility proofs  ⬜
 B05-T06  manual Life Area organization userTest                    ⬜ B05-E
 ```
 
-The B03-E transferred postponed/TBD Event rediscovery belongs to B05-D: no Activity Planning Tray conversion and no invented placement. B05-A `_43`–`_45` adds self-scoped create/list/lifecycle/reorder API, Dictionary and generated client; direct PostgreSQL/ACL proof remains outstanding before B05-A and B05 closure.
+The B03-E transferred postponed/TBD Event rediscovery belongs to B05-D: no Activity Planning Tray conversion and no invented placement. B05-A `_43`–`_45` is proven by the user's catalog test. B05-B `_46` binds newly created Activity/Event to one actor-local area atomically and inventories unassigned legacy rows. Its direct PostgreSQL proof is pending; B05 as a whole remains open.
 
 ---
 
@@ -267,7 +268,8 @@ B15  whole-vertical closure
 
 ```text
 B04 ✅ CLOSED / PROVEN
-B05 🟡 A IMPLEMENTED / DIRECT PROOF PENDING
+B05-A ✅ CLOSED / PROVEN
+B05-B 🟡 `_46` SOURCE IMPLEMENTED / DIRECT PROOF PENDING
 ```
 
-Next gate: user-run local direct PostgreSQL proof of complete B05-A `_45` catalog/ACL/lifecycle, then B05-B primary assignment. ORG-001 pre-scope is recorded; ORG-002..008 are implemented but not yet proven; later obligations stay open. No CI/Actions dispatched.
+Current gate: B05-A ✅ CLOSED / PROVEN at `_45`; B05-B primary assignment is active. ORG-001..008 are discharged; later obligations stay open. No CI/Actions dispatched.

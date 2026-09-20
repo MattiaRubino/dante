@@ -17,6 +17,7 @@ from dante.context.dependencies import (
 from dante.modules.temporal.event import (
     EventAgendaRevisionConflictError,
     EventInputError,
+    EventLifeAreaUnavailableError,
     EventNotFoundError,
     EventOperationIdReuseError,
     EventPersistenceError,
@@ -25,7 +26,6 @@ from dante.modules.temporal.event import (
 )
 from dante.modules.temporal.schedule import (
     AbsoluteIntervalPlacement,
-    CoarseLocalPeriodPlacement,
     DateSpanPlacement,
     FloatingLocalIntervalPlacement,
     NamedZoneLocalIntervalPlacement,
@@ -50,6 +50,7 @@ class CreateEventRequest(BaseModel):
 
     operation_id: str = Field(min_length=1, max_length=200)
     title: str = Field(min_length=1, max_length=300)
+    life_area_ref: UUID
     agenda_parts: list[AgendaPart] = Field(default_factory=list, max_length=100)
 
 
@@ -119,6 +120,7 @@ class CreateScheduledEventRequest(BaseModel):
 
     operation_id: str = Field(min_length=1, max_length=200)
     title: str = Field(min_length=1, max_length=300)
+    life_area_ref: UUID
     agenda_parts: list[AgendaPart] = Field(default_factory=list, max_length=100)
     placement: EventSchedulePlacementRequest
 
@@ -131,6 +133,8 @@ class EventResponse(BaseModel):
     agenda_revision: int = Field(ge=0)
     agenda_parts: list[str]
     created_at: datetime
+    life_area_ref: UUID | None = None
+    life_area_assignment_revision: int | None = Field(default=None, ge=1)
     replayed: bool = False
 
 
@@ -151,6 +155,8 @@ class ScheduledEventFloatingResponse(BaseModel):
     agenda_revision: int = Field(ge=0)
     agenda_parts: list[str]
     created_at: datetime
+    life_area_ref: UUID | None = None
+    life_area_assignment_revision: int | None = Field(default=None, ge=1)
     schedule_ref: UUID
     placement_material_state_ref: UUID
     temporal_form: Literal["floating_local"] = "floating_local"
@@ -167,6 +173,8 @@ class ScheduledEventDateSpanResponse(BaseModel):
     agenda_revision: int = Field(ge=0)
     agenda_parts: list[str]
     created_at: datetime
+    life_area_ref: UUID | None = None
+    life_area_assignment_revision: int | None = Field(default=None, ge=1)
     schedule_ref: UUID
     placement_material_state_ref: UUID
     temporal_form: Literal["date_span"] = "date_span"
@@ -183,6 +191,8 @@ class ScheduledEventNamedZoneResponse(BaseModel):
     agenda_revision: int = Field(ge=0)
     agenda_parts: list[str]
     created_at: datetime
+    life_area_ref: UUID | None = None
+    life_area_assignment_revision: int | None = Field(default=None, ge=1)
     schedule_ref: UUID
     placement_material_state_ref: UUID
     temporal_form: Literal["named_zone_local"] = "named_zone_local"
@@ -202,6 +212,8 @@ class ScheduledEventAbsoluteResponse(BaseModel):
     agenda_revision: int = Field(ge=0)
     agenda_parts: list[str]
     created_at: datetime
+    life_area_ref: UUID | None = None
+    life_area_assignment_revision: int | None = Field(default=None, ge=1)
     schedule_ref: UUID
     placement_material_state_ref: UUID
     temporal_form: Literal["absolute"] = "absolute"
@@ -218,6 +230,8 @@ class ScheduledEventCoarseResponse(BaseModel):
     agenda_revision: int = Field(ge=0)
     agenda_parts: list[str]
     created_at: datetime
+    life_area_ref: UUID | None = None
+    life_area_assignment_revision: int | None = Field(default=None, ge=1)
     schedule_ref: UUID
     placement_material_state_ref: UUID
     temporal_form: Literal["coarse_local_period"] = "coarse_local_period"
@@ -254,6 +268,8 @@ def _event_response(event: EventView, *, replayed: bool = False) -> EventRespons
         agenda_revision=event.agenda_revision,
         agenda_parts=list(event.agenda_parts),
         created_at=event.created_at,
+        life_area_ref=event.life_area_ref,
+        life_area_assignment_revision=event.life_area_assignment_revision,
         replayed=replayed,
     )
 
@@ -298,6 +314,8 @@ def _scheduled_event_response(
         "agenda_revision": event.agenda_revision,
         "agenda_parts": list(event.agenda_parts),
         "created_at": event.created_at,
+        "life_area_ref": event.life_area_ref,
+        "life_area_assignment_revision": event.life_area_assignment_revision,
         "schedule_ref": schedule_ref,
         "placement_material_state_ref": material_state_ref,
         "replayed": replayed,
@@ -360,6 +378,7 @@ async def create_event(
             self_person_ref=context.self_person_ref,
             operation_id=payload.operation_id,
             title=payload.title,
+            life_area_ref=payload.life_area_ref,
             agenda_parts=payload.agenda_parts,
         )
     except EventInputError as exc:
@@ -378,6 +397,15 @@ async def create_event(
             category="conflict",
             title="Event operation conflict",
             detail="The operation id was already used for a different Event intent.",
+            retryable=False,
+        ) from exc
+    except EventLifeAreaUnavailableError as exc:
+        raise ProblemError(
+            status=422,
+            code="temporal.event.life_area_unavailable",
+            category="validation",
+            title="Unavailable Life Area",
+            detail="The primary Life Area is unavailable or archived in the current self scope.",
             retryable=False,
         ) from exc
     except EventPersistenceError as exc:
@@ -413,6 +441,7 @@ async def create_scheduled_event(
             self_person_ref=context.self_person_ref,
             operation_id=payload.operation_id,
             title=payload.title,
+            life_area_ref=payload.life_area_ref,
             agenda_parts=payload.agenda_parts,
             placement=placement,
         )
@@ -432,6 +461,15 @@ async def create_scheduled_event(
             category="conflict",
             title="Event operation conflict",
             detail="The operation id was already used for a different Event intent.",
+            retryable=False,
+        ) from exc
+    except EventLifeAreaUnavailableError as exc:
+        raise ProblemError(
+            status=422,
+            code="temporal.event.life_area_unavailable",
+            category="validation",
+            title="Unavailable Life Area",
+            detail="The primary Life Area is unavailable or archived in the current self scope.",
             retryable=False,
         ) from exc
     except EventPersistenceError as exc:

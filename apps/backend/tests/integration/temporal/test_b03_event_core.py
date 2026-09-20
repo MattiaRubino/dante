@@ -13,6 +13,7 @@ from uuid import UUID, uuid7
 
 import psycopg
 import pytest
+from b05_legacy_test_support import api_test_life_area
 from fastapi.testclient import TestClient
 from pydantic import SecretStr
 
@@ -228,7 +229,11 @@ def test_create_event_is_canonical_idempotent_and_self_scoped(
 
         created = client.post(
             "/api/v1/temporal/events",
-            json={"operation_id": "operation:b03-a-create-1", "title": "Visita medica"},
+            json={
+                "operation_id": "operation:b03-a-create-1",
+                "title": "Visita medica",
+                "life_area_ref": api_test_life_area(client, mutation_headers),
+            },
             headers=mutation_headers,
         )
         assert created.status_code == 201
@@ -241,7 +246,11 @@ def test_create_event_is_canonical_idempotent_and_self_scoped(
 
         replay = client.post(
             "/api/v1/temporal/events",
-            json={"operation_id": "operation:b03-a-create-1", "title": " Visita medica "},
+            json={
+                "operation_id": "operation:b03-a-create-1",
+                "title": " Visita medica ",
+                "life_area_ref": api_test_life_area(client, mutation_headers),
+            },
             headers=mutation_headers,
         )
         assert replay.status_code == 200
@@ -250,7 +259,11 @@ def test_create_event_is_canonical_idempotent_and_self_scoped(
 
         conflict = client.post(
             "/api/v1/temporal/events",
-            json={"operation_id": "operation:b03-a-create-1", "title": "Intento diverso"},
+            json={
+                "operation_id": "operation:b03-a-create-1",
+                "title": "Intento diverso",
+                "life_area_ref": api_test_life_area(client, mutation_headers),
+            },
             headers=mutation_headers,
         )
         assert conflict.status_code == 409
@@ -291,7 +304,11 @@ def test_event_requires_csrf_and_other_self_cannot_read_it(
         first_csrf = _signin(first_client, first_email)
         rejected = first_client.post(
             "/api/v1/temporal/events",
-            json={"operation_id": "operation:no-csrf", "title": "Non creare"},
+            json={
+                "operation_id": "operation:no-csrf",
+                "title": "Non creare",
+                "life_area_ref": str(uuid7()),
+            },
             headers=_base_headers(),
         )
         assert rejected.status_code == 403
@@ -299,7 +316,13 @@ def test_event_requires_csrf_and_other_self_cannot_read_it(
 
         created = first_client.post(
             "/api/v1/temporal/events",
-            json={"operation_id": "operation:first-event", "title": "Solo primo utente"},
+            json={
+                "operation_id": "operation:first-event",
+                "title": "Solo primo utente",
+                "life_area_ref": api_test_life_area(
+                    first_client, {**_base_headers(), CSRF_HEADER_NAME: first_csrf}
+                ),
+            },
             headers={**_base_headers(), CSRF_HEADER_NAME: first_csrf},
         )
         assert created.status_code == 201

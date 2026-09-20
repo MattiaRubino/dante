@@ -8,6 +8,7 @@ from uuid import uuid7
 
 import psycopg
 import pytest
+from b05_legacy_test_support import ensure_test_life_area
 
 from dante.modules.temporal.constrained_activity import (
     ConstrainedActivityApplication,
@@ -26,9 +27,7 @@ from dante.platform.database.runtime import create_database_runtime
 def _seed_person(database: Any) -> NativeRef:
     self_ref = NativeRef(uuid7())
     with psycopg.connect(
-        **database.connection_kwargs(
-            "dante_migrator", database.cluster.migrator_password
-        )
+        **database.connection_kwargs("dante_migrator", database.cluster.migrator_password)
     ) as connection:
         connection.execute("SET ROLE dante_owner")
         connection.execute("SET search_path TO pg_catalog,dante,pg_temp")
@@ -44,9 +43,7 @@ def _seed_person(database: Any) -> NativeRef:
 def _seed_activity(database: Any, *, self_ref: NativeRef, title: str) -> NativeRef:
     activity_ref = NativeRef(uuid7())
     with psycopg.connect(
-        **database.connection_kwargs(
-            "dante_migrator", database.cluster.migrator_password
-        )
+        **database.connection_kwargs("dante_migrator", database.cluster.migrator_password)
     ) as connection:
         connection.execute("SET ROLE dante_owner")
         connection.execute("SET search_path TO pg_catalog,dante,pg_temp")
@@ -92,6 +89,7 @@ async def test_b04_f_atomic_constrained_activity_create_replay_and_changed_inten
     try:
         created = await application.create_activity_with_constraints(
             self_person_ref=self_ref,
+            life_area_ref=ensure_test_life_area(migrated_database, self_ref),
             operation_id="operation:b04-f:constrained-deadline",
             title="Consegna relazione",
             rules=rules,
@@ -109,6 +107,7 @@ async def test_b04_f_atomic_constrained_activity_create_replay_and_changed_inten
 
         replay = await application.create_activity_with_constraints(
             self_person_ref=self_ref,
+            life_area_ref=ensure_test_life_area(migrated_database, self_ref),
             operation_id="operation:b04-f:constrained-deadline",
             title="Consegna relazione",
             rules=rules,
@@ -123,6 +122,7 @@ async def test_b04_f_atomic_constrained_activity_create_replay_and_changed_inten
         with pytest.raises(ConstrainedActivityOperationIdReuseError):
             await application.create_activity_with_constraints(
                 self_person_ref=self_ref,
+                life_area_ref=ensure_test_life_area(migrated_database, self_ref),
                 operation_id="operation:b04-f:constrained-deadline",
                 title="Consegna relazione",
                 rules=(
@@ -169,6 +169,7 @@ async def test_b04_f_constraint_collision_rolls_back_new_activity(
         with pytest.raises(ConstrainedActivityOperationIdReuseError):
             await application.create_activity_with_constraints(
                 self_person_ref=self_ref,
+                life_area_ref=ensure_test_life_area(migrated_database, self_ref),
                 operation_id=parent_operation_id,
                 title="This Activity must roll back",
                 rules=(

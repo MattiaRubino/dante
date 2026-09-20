@@ -42,6 +42,7 @@ export const createConstrainedActivityRequestTitleMax = 300;
 
 export const CreateConstrainedActivityRequest = /*#__PURE__*/ zod
   .object({
+    life_area_ref: /*#__PURE__*/ zod.uuid(),
     operation_id: /*#__PURE__*/ zod
       .string()
       .check(/*#__PURE__*/ zod.minLength(1))

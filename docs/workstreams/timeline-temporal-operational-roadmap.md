@@ -2,10 +2,10 @@
 
 - **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-20
 - **Branch/workstream:** `feature/timeline-temporal-operational`
-- **Current completed frontier:** B04 Temporal Constraints + Movement Policy ✅ CLOSED / PROVEN
-- **Current block:** B05 Product Organization 🟡 IN PROGRESS / A1 PROOF PENDING
-- **Current candidate DB source:** PostgreSQL 18.6 / Alembic `20260920_45`
-- **Candidate expected topology (PostgreSQL proof pending):** `119|5|48|90|239|158|344|0|0|0`
+- **Current completed frontier:** B05-A Life Area catalog ✅ CLOSED / PROVEN
+- **Current block:** B05 Product Organization 🟡 B05-B SOURCE IMPLEMENTED / DIRECT PROOF PENDING
+- **Current candidate DB source:** PostgreSQL 18.6 / Alembic `20260920_46`
+- **Candidate expected topology (PostgreSQL proof pending):** `123|5|54|90|245|170|354|0|0|0`
 - **Live progress ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **B04 execution authority:** `docs/workstreams/timeline-temporal-operational-b04-execution-plan.md`
 - **B04-E closure:** `docs/workstreams/timeline-temporal-operational-b04-e-closure-2026-09-19.md`
@@ -87,7 +87,7 @@ B14 Analytics / Statistics / Signals             ⬜
 B15 Whole Vertical Closure                       ⬜
 ```
 
-B05 pre-scope is recorded in `timeline-temporal-operational-b05-execution-plan.md`; this does not close B05-A or authorize unreviewed DDL.
+B05-A is closed with direct `_45` proof. B05-B implementation and the remaining B05 sequencing are recorded in `timeline-temporal-operational-b05-execution-plan.md`; `_46` still requires direct PostgreSQL proof.
 
 ---
 
@@ -217,7 +217,8 @@ B15 Whole Vertical Closure
 
 ```text
 B04 ✅ CLOSED / PROVEN
-B05 🟡 A IMPLEMENTED / DIRECT PROOF PENDING
+B05-A ✅ CLOSED / PROVEN at `_45`
+B05-B 🟡 `_46` SOURCE IMPLEMENTED / DIRECT PROOF PENDING
 ```
 
-Immediate action: local real-PostgreSQL proof of complete B05-A `_45` and API/catalog/lifecycle invariants, then B05-B primary assignment. The direct proof is not yet claimed. Follow the B05 execution plan; CI and Actions are not launched.
+Current action: finish direct user-run B05-B PostgreSQL proof at `_46` and repair forward if necessary before marking B05-B closed; then proceed directly with B05-C Tags. CI and Actions are not launched.

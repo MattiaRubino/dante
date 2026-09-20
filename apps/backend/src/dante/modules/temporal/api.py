@@ -16,6 +16,7 @@ from dante.context.dependencies import (
 )
 from dante.modules.temporal.activity import (
     ActivityInputError,
+    ActivityLifeAreaUnavailableError,
     ActivityNotFoundError,
     ActivityOperationIdReuseError,
     ActivityPersistenceError,
@@ -306,6 +307,7 @@ class CreateActivityRequest(BaseModel):
 
     operation_id: str = Field(min_length=1, max_length=200)
     title: str = Field(min_length=1, max_length=300)
+    life_area_ref: UUID
 
 
 class DateSpanPlacementRequest(BaseModel):
@@ -367,6 +369,7 @@ class CreateScheduledActivityRequest(BaseModel):
 
     operation_id: str = Field(min_length=1, max_length=200)
     title: str = Field(min_length=1, max_length=300)
+    life_area_ref: UUID
     placement: SchedulePlacementRequest
 
 
@@ -415,6 +418,8 @@ class ActivityResponse(BaseModel):
     activity_ref: UUID
     title: str
     created_at: datetime
+    life_area_ref: UUID | None = None
+    life_area_assignment_revision: int | None = Field(default=None, ge=1)
     replayed: bool = False
 
 
@@ -424,6 +429,8 @@ class ScheduledActivityResponse(BaseModel):
     activity_ref: UUID
     title: str
     created_at: datetime
+    life_area_ref: UUID | None = None
+    life_area_assignment_revision: int | None = Field(default=None, ge=1)
     schedule_ref: UUID
     placement_material_state_ref: UUID
     temporal_form: Literal["floating_local"] = "floating_local"
@@ -438,6 +445,8 @@ class ScheduledActivityDateSpanResponse(BaseModel):
     activity_ref: UUID
     title: str
     created_at: datetime
+    life_area_ref: UUID | None = None
+    life_area_assignment_revision: int | None = Field(default=None, ge=1)
     schedule_ref: UUID
     placement_material_state_ref: UUID
     temporal_form: Literal["date_span"] = "date_span"
@@ -452,6 +461,8 @@ class ScheduledActivityNamedZoneResponse(BaseModel):
     activity_ref: UUID
     title: str
     created_at: datetime
+    life_area_ref: UUID | None = None
+    life_area_assignment_revision: int | None = Field(default=None, ge=1)
     schedule_ref: UUID
     placement_material_state_ref: UUID
     temporal_form: Literal["named_zone_local"] = "named_zone_local"
@@ -469,6 +480,8 @@ class ScheduledActivityAbsoluteResponse(BaseModel):
     activity_ref: UUID
     title: str
     created_at: datetime
+    life_area_ref: UUID | None = None
+    life_area_assignment_revision: int | None = Field(default=None, ge=1)
     schedule_ref: UUID
     placement_material_state_ref: UUID
     temporal_form: Literal["absolute"] = "absolute"
@@ -483,6 +496,8 @@ class ScheduledActivityCoarseResponse(BaseModel):
     activity_ref: UUID
     title: str
     created_at: datetime
+    life_area_ref: UUID | None = None
+    life_area_assignment_revision: int | None = Field(default=None, ge=1)
     schedule_ref: UUID
     placement_material_state_ref: UUID
     temporal_form: Literal["coarse_local_period"] = "coarse_local_period"
@@ -701,6 +716,8 @@ def _activity_response(activity: ActivityView, *, replayed: bool = False) -> Act
         activity_ref=activity.activity_ref,
         title=activity.title,
         created_at=activity.created_at,
+        life_area_ref=activity.life_area_ref,
+        life_area_assignment_revision=activity.life_area_assignment_revision,
         replayed=replayed,
     )
 
@@ -863,6 +880,8 @@ def _scheduled_activity_response(
         "activity_ref": activity.activity_ref,
         "title": activity.title,
         "created_at": activity.created_at,
+        "life_area_ref": activity.life_area_ref,
+        "life_area_assignment_revision": activity.life_area_assignment_revision,
         "schedule_ref": schedule_ref,
         "placement_material_state_ref": material_state_ref,
         "replayed": replayed,
@@ -1048,6 +1067,7 @@ async def create_activity(
             self_person_ref=context.self_person_ref,
             operation_id=payload.operation_id,
             title=payload.title,
+            life_area_ref=payload.life_area_ref,
         )
     except ActivityInputError as exc:
         raise ProblemError(
@@ -1065,6 +1085,15 @@ async def create_activity(
             category="conflict",
             title="Activity operation conflict",
             detail="The operation id was already used for a different Activity intent.",
+            retryable=False,
+        ) from exc
+    except ActivityLifeAreaUnavailableError as exc:
+        raise ProblemError(
+            status=422,
+            code="temporal.activity.life_area_unavailable",
+            category="validation",
+            title="Unavailable Life Area",
+            detail="The primary Life Area is unavailable or archived in the current self scope.",
             retryable=False,
         ) from exc
     except ActivityPersistenceError as exc:
@@ -1099,6 +1128,7 @@ async def create_scheduled_activity(
             self_person_ref=context.self_person_ref,
             operation_id=payload.operation_id,
             title=payload.title,
+            life_area_ref=payload.life_area_ref,
             placement=placement,
         )
     except (ActivityInputError, ScheduleInputError) as exc:
@@ -1117,6 +1147,15 @@ async def create_scheduled_activity(
             category="conflict",
             title="Schedule operation conflict",
             detail="The operation id was already used for a different temporal intent.",
+            retryable=False,
+        ) from exc
+    except ActivityLifeAreaUnavailableError as exc:
+        raise ProblemError(
+            status=422,
+            code="temporal.activity.life_area_unavailable",
+            category="validation",
+            title="Unavailable Life Area",
+            detail="The primary Life Area is unavailable or archived in the current self scope.",
             retryable=False,
         ) from exc
     except ActivityPersistenceError as exc:

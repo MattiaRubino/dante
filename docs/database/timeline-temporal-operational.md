@@ -4,8 +4,8 @@
 - **Reconciled:** 2026-09-20
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
-- **Candidate source head:** `20260920_45`
-- **Candidate expected topology (PostgreSQL proof pending):** `119|5|48|90|239|158|344|0|0|0`
+- **Candidate source head:** `20260920_46`
+- **Candidate expected topology (PostgreSQL proof pending):** `123|5|54|90|245|170|354|0|0|0`
 - **Whole-DB SoR:** `README.md`
 - **Machine-readable authority:** `dictionary/`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
@@ -45,6 +45,7 @@ This file is the human-readable database overlay for Timeline candidate-only per
 20260920_43 B05-A self-scoped Life Area catalog create/list
 20260920_44 B05-A full Life Area lifecycle
 20260920_45 B05-A receipt CHECK catalog name reconciliation
+20260920_46 B05-B typed actor-local Activity/Event primary Life Area assignment
 ```
 
 ## 3. Temporal Constraint authority through B04-E
@@ -115,14 +116,14 @@ B04-E adds no public Temporal HTTP route; OpenAPI/client artifacts intentionally
 ## 6. Current candidate topology
 
 ```text
-Alembic     20260920_45
-Tables      118
+Alembic     20260920_46
+Tables      123
 Views       5
-Routines    46
+Routines    54
 Triggers    90
-Indexes     237
-FKs         156
-CHECKs      335
+Indexes     245
+FKs         170
+CHECKs      354
 Enums       0
 Domains     0
 Sequences   0
@@ -143,7 +144,8 @@ B04  ✅ CLOSED / PROVEN
 ├─ B04-D ✅ CLOSED / PROVEN
 ├─ B04-E ✅ CLOSED / PROVEN
 └─ B04-F ✅ CLOSED / PROVEN
-B05  🟡 A FULL LIFECYCLE IMPLEMENTED / POSTGRESQL PROOF PENDING
+B05-A ✅ CLOSED / PROVEN at `_45`
+B05-B 🟡 SOURCE IMPLEMENTED at `_46` / POSTGRESQL PROOF PENDING
 ```
 
 Observed B04-E evidence:
@@ -157,4 +159,4 @@ DATABASE_CURRENT_TOPOLOGY                         116|5|44|90|233|153|331|0|0|0
 
 ## 8. Next persistence boundary
 
-B04-F is closed with direct proof recorded in its whole-block closure record. B05-A `_43`–`_45` establish self-scoped LR-12 profiles, immutable create/mutation receipts and bounded create/list/mutate/reorder routines. There is no generic runtime table access or NativeRef registration. The `_44` topology was observed exactly in PostgreSQL; the CHECK name mismatch is repaired forward at `_45`. The `_45` catalog equality has **not yet been observed** in PostgreSQL. Direct migrated-catalog/ACL and application proof is required before B05-A is PROVEN; B05-B owns the primary item relation.
+B05-A `_43`–`_45` established the LR-12 catalog and passed the user's direct `_45` catalog proof. `_46` adds two typed actor/item primary-area relations and two immutable assignment-receipt relations. Six guarded routines create/assign/list and inventory legacy unassigned rows. New Activity/Event creation requires a primary area in the same transaction; original unassigned create routines lose direct runtime EXECUTE. Archived targets reject new assignments, existing assignments remain discoverable. Neither B04 Schedule truth nor pre-B05 item rows are rewritten. `_46` is a candidate source calculation and still needs direct PostgreSQL catalog/application/ACL proof.

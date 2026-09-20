@@ -9,6 +9,7 @@ from uuid import UUID, uuid7
 
 import psycopg
 import pytest
+from b05_legacy_test_support import ensure_test_life_area
 
 from dante.auth.contracts import Principal
 from dante.context.contracts import DanteContext
@@ -127,6 +128,7 @@ async def test_scheduled_activity_create_is_atomic_idempotent_and_timeline_visib
     try:
         created = await activity_application.create_activity_with_floating_schedule(
             self_person_ref=self_person_ref,
+            life_area_ref=ensure_test_life_area(migrated_database, self_person_ref),
             operation_id="operation:b02-a:create-1",
             title="Deep work reale",
             placement=placement,
@@ -140,6 +142,7 @@ async def test_scheduled_activity_create_is_atomic_idempotent_and_timeline_visib
 
         replay = await activity_application.create_activity_with_floating_schedule(
             self_person_ref=self_person_ref,
+            life_area_ref=ensure_test_life_area(migrated_database, self_person_ref),
             operation_id=" operation:b02-a:create-1 ",
             title=" Deep work reale ",
             placement=placement,
@@ -152,6 +155,7 @@ async def test_scheduled_activity_create_is_atomic_idempotent_and_timeline_visib
         with pytest.raises(ActivityOperationIdReuseError):
             await activity_application.create_activity_with_floating_schedule(
                 self_person_ref=self_person_ref,
+                life_area_ref=ensure_test_life_area(migrated_database, self_person_ref),
                 operation_id="operation:b02-a:create-1",
                 title="Deep work reale",
                 placement=FloatingLocalIntervalPlacement(
@@ -212,6 +216,7 @@ async def test_concurrent_same_scheduled_create_serializes_to_one_canonical_iden
     async def create_once() -> CreateScheduledActivityResult:
         return await application.create_activity_with_floating_schedule(
             self_person_ref=self_person_ref,
+            life_area_ref=ensure_test_life_area(migrated_database, self_person_ref),
             operation_id="operation:b02-a:race",
             title="Concorrenza controllata",
             placement=placement,
@@ -241,6 +246,7 @@ async def test_prior_unplaced_command_id_cannot_be_reinterpreted_as_scheduled_cr
     try:
         unplaced = await application.create_activity(
             self_person_ref=self_person_ref,
+            life_area_ref=ensure_test_life_area(migrated_database, self_person_ref),
             operation_id="operation:b02-a:historical-unplaced",
             title="Intento già fissato",
         )
@@ -249,6 +255,7 @@ async def test_prior_unplaced_command_id_cannot_be_reinterpreted_as_scheduled_cr
         with pytest.raises(ActivityOperationIdReuseError):
             await application.create_activity_with_floating_schedule(
                 self_person_ref=self_person_ref,
+                life_area_ref=ensure_test_life_area(migrated_database, self_person_ref),
                 operation_id="operation:b02-a:historical-unplaced",
                 title="Intento già fissato",
                 placement=FloatingLocalIntervalPlacement(

@@ -19,6 +19,18 @@ export const ScheduledEventCoarseResponse = /*#__PURE__*/ zod.object({
     ),
   created_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
   event_ref: /*#__PURE__*/ zod.uuid(),
+  life_area_assignment_revision: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.int().check(/*#__PURE__*/ zod.gte(1)),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
+  life_area_ref: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.uuid(),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
   local_date: /*#__PURE__*/ zod.iso.date(),
   period: /*#__PURE__*/ zod.enum(['morning', 'afternoon', 'evening']),
   placement_material_state_ref: /*#__PURE__*/ zod.uuid(),

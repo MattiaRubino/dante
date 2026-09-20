@@ -20,7 +20,7 @@ from dante.platform.database.metadata import Base
 
 pytestmark = pytest.mark.postgres
 
-_CURRENT_REVISION = "20260919_36"
+_CURRENT_REVISION = "20260920_46"
 _REPO_ROOT = Path(__file__).resolve().parents[5]
 _DICTIONARY_ROOT = _REPO_ROOT / "docs" / "database" / "dictionary"
 _RUNTIME_ROLE = "dante_runtime"
@@ -139,9 +139,7 @@ def test_current_catalog_matches_dictionary_sqlalchemy_and_alembic(
         }
         live_views = {
             str(row[0])
-            for row in connection.execute(
-                "SELECT viewname FROM pg_views WHERE schemaname='dante'"
-            )
+            for row in connection.execute("SELECT viewname FROM pg_views WHERE schemaname='dante'")
         }
         live_routines = {
             str(row[0])
@@ -254,9 +252,7 @@ def test_runtime_table_and_column_acl_matches_dictionary(
             table_privileges, column_privileges = _expected_runtime_acl(entry)
             relation = f"dante.{table_name}"
             actual_table = connection.execute(
-                "SELECT " + ", ".join(
-                    "has_table_privilege(%s,%s,%s)" for _ in _TABLE_PRIVILEGES
-                ),
+                "SELECT " + ", ".join("has_table_privilege(%s,%s,%s)" for _ in _TABLE_PRIVILEGES),
                 tuple(
                     value
                     for privilege in _TABLE_PRIVILEGES
@@ -266,14 +262,10 @@ def test_runtime_table_and_column_acl_matches_dictionary(
             assert actual_table == tuple(
                 privilege in table_privileges for privilege in _TABLE_PRIVILEGES
             ), table_name
-            for column in map(
-                str, (item["name"] for item in entry["structure"]["columns"])
-            ):
+            for column in map(str, (item["name"] for item in entry["structure"]["columns"])):
                 actual_column = connection.execute(
-                    "SELECT " + ", ".join(
-                        "has_column_privilege(%s,%s,%s,%s)"
-                        for _ in _COLUMN_PRIVILEGES
-                    ),
+                    "SELECT "
+                    + ", ".join("has_column_privilege(%s,%s,%s,%s)" for _ in _COLUMN_PRIVILEGES),
                     tuple(
                         value
                         for privilege in _COLUMN_PRIVILEGES
@@ -335,7 +327,7 @@ def test_create_self_activity_capability_is_exact(migrated_database: Any) -> Non
     assert function_acl[7] == (
         "TABLE(activity_ref uuid, title text, created_at timestamp with time zone, replayed boolean)"
     )
-    assert function_acl[8:11] == (True, False, False)
+    assert function_acl[8:11] == (False, False, False)
 
 
 def test_create_self_event_capability_is_exact(migrated_database: Any) -> None:
@@ -362,7 +354,7 @@ def test_create_self_event_capability_is_exact(migrated_database: Any) -> None:
     assert function_acl[7] == (
         "TABLE(event_ref uuid, title text, created_at timestamp with time zone, replayed boolean)"
     )
-    assert function_acl[8:11] == (True, False, False)
+    assert function_acl[8:11] == (False, False, False)
 
 
 def test_establish_self_floating_schedule_capability_is_exact(
@@ -428,9 +420,7 @@ def test_m3_account_security_lock_is_narrow_and_transaction_scoped(
             )
         assert direct_lock_error.value.sqlstate == "42501"
         runtime_connection.rollback()
-        runtime_connection.execute(
-            "SELECT dante.acquire_account_security_lock(%s)", (account_ref,)
-        )
+        runtime_connection.execute("SELECT dante.acquire_account_security_lock(%s)", (account_ref,))
         with _admin(migrated_database) as contender:
             with pytest.raises(psycopg.errors.LockNotAvailable) as lock_error:
                 contender.execute(

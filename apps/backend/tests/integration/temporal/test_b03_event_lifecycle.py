@@ -13,6 +13,7 @@ from uuid import UUID, uuid7
 
 import psycopg
 import pytest
+from b05_legacy_test_support import api_test_life_area
 from fastapi.testclient import TestClient
 from pydantic import SecretStr
 
@@ -206,7 +207,9 @@ def _timeline(client: TestClient, *, start: str, end: str) -> list[dict[str, obj
     return [] if payload["kind"] == "empty" else payload["items"]
 
 
-def _schedule_history(database: Any, schedule_ref: UUID) -> tuple[UUID | None, list[tuple[Any, ...]]]:
+def _schedule_history(
+    database: Any, schedule_ref: UUID
+) -> tuple[UUID | None, list[tuple[Any, ...]]]:
     with psycopg.connect(
         **database.connection_kwargs(
             "dante_migrator",
@@ -258,6 +261,7 @@ def test_b03c_event_reschedule_postpone_and_guarded_undo_preserve_identity_and_h
             "/api/v1/temporal/events/scheduled",
             json={
                 "operation_id": "operation:b03-c:create",
+                "life_area_ref": api_test_life_area(client, headers),
                 "title": "Revisione contratto",
                 "placement": {
                     "kind": "floating_local_interval",
@@ -386,7 +390,9 @@ def test_b03c_event_reschedule_postpone_and_guarded_undo_preserve_identity_and_h
         restored_body = restored.json()
         restored_state_ref = UUID(restored_body["placement_material_state_ref"])
         assert restored_state_ref not in {initial_state_ref, revised_state_ref}
-        assert UUID(restored_body["restored_from_placement_material_state_ref"]) == revised_state_ref
+        assert (
+            UUID(restored_body["restored_from_placement_material_state_ref"]) == revised_state_ref
+        )
         assert restored_body["starts_local_at"] == "2026-09-22T14:30:00"
         assert restored_body["ends_local_at"] == "2026-09-22T16:00:00"
 

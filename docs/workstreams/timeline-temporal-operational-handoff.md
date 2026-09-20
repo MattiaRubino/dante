@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B04 ✅ CLOSED / PROVEN → B05-A full lifecycle implemented, local PostgreSQL proof pending
+- **Status:** B04 ✅ CLOSED / PROVEN → B05-A ✅ CLOSED / PROVEN → B05-B active
 - **Reconciled:** 2026-09-20
 - **Branch:** `feature/timeline-temporal-operational`
 - **Current roadmap:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -36,8 +36,8 @@ Current candidate DB:
 
 ```text
 PostgreSQL 18.6
-Alembic source 20260920_45
-Expected topology 119|5|48|90|239|158|344|0|0|0 (not yet directly observed)
+Alembic source 20260920_46
+Expected topology 123|5|54|90|245|170|354|0|0|0 (B05-B direct proof pending)
 ```
 
 ## 2. Binding foundation carried forward
@@ -196,20 +196,25 @@ It records compact final PostgreSQL/web proof, Dictionary/Alembic reconciliation
 
 ```text
 B04 ✅ CLOSED / PROVEN
-B05 🟡 A IMPLEMENTED / DIRECT PROOF PENDING
+B05-A ✅ CLOSED / PROVEN at `_45`
+B05-B 🟡 `_46` SOURCE IMPLEMENTED / DIRECT PROOF PENDING
 ```
 
-B05-A spans `_43`–`_45`: self-scoped LR-12 profiles, immutable create/mutation receipts, four bounded routines, seven explicit Temporal operations, current Dictionary/scope and generated client. The user-run `_44` proof passed seven of eight tests; its sole failure was a PostgreSQL CHECK name mismatch. `_45` renames that validated constraint and requires a rerun. The expected `_45` catalog/ACL and lifecycle behavior require the user's local real-PostgreSQL proof; do not mark ORG-002..008 or B05-A closed yet. B05-B primary assignment remains open. No CI/Actions are launched.
+B05-A `_43`–`_45` closed with the user's direct `_45` catalog pass. B05-B `_46` creates typed Activity/Event actor-local primary assignment and immutable acceptance receipts, atomically binds new creates, inventories legacy unassigned items and rejects archived areas as new targets. Four assignment/inventory HTTP operations, exact API inventory, OpenAPI/client and direct PostgreSQL tests accompany it. B05-D retains ownership of real frontend grouping/create migration. No CI/Actions are launched.
 
-Local proof to run on the user's PostgreSQL-equipped checkout after pulling `_45`:
+Local proof to run on the user's PostgreSQL-equipped checkout after pulling `_46`:
 
 ```bash
 cd ~/projects/dante/apps/backend
-uv run --locked pytest -q -m postgres \
+uv run --locked pytest -q --no-cov -m postgres \
   tests/integration/temporal/test_b05_life_area_catalog.py \
+  tests/integration/temporal/test_b05_primary_life_area_assignment.py \
   tests/integration/database/test_database_current_catalog.py \
   tests/integration/database/test_b04_d_movement_catalog_probe.py \
-  tests/integration/database/test_b04_e_duration_catalog_probe.py
+  tests/integration/database/test_b04_e_duration_catalog_probe.py \
+  tests/integration/temporal/test_b01_activity_core.py \
+  tests/integration/temporal/test_b03_event_core.py \
+  tests/integration/temporal/test_b04_f_constrained_activity_application.py
 ```
 
-This command has not been run in a PostgreSQL-equipped environment by this change. Any failed topology/ACL/application invariant must be repaired forward before a B05-A proof or closure record is written.
+This `_46` command has not yet been run in a PostgreSQL-equipped environment; B05-B is not closed until its direct result is inspected. Any failed topology/ACL/application invariant must be repaired forward before a B05-B closure record is written.

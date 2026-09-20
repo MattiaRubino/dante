@@ -27,6 +27,7 @@ export const CreateEventRequest = /*#__PURE__*/ zod.object({
       )
       .check(/*#__PURE__*/ zod.maxLength(createEventRequestAgendaPartsMax)),
   ),
+  life_area_ref: /*#__PURE__*/ zod.uuid(),
   operation_id: /*#__PURE__*/ zod
     .string()
     .check(/*#__PURE__*/ zod.minLength(1))

@@ -8,6 +8,7 @@ from uuid import uuid7
 
 import psycopg
 import pytest
+from b05_legacy_test_support import ensure_test_life_area
 
 from dante.auth.contracts import Principal
 from dante.context.contracts import DanteContext
@@ -114,15 +115,13 @@ async def test_existing_unplaced_activity_is_scheduled_idempotently_and_visible_
     try:
         created = await activity_application.create_activity(
             self_person_ref=self_person_ref,
+            life_area_ref=ensure_test_life_area(migrated_database, self_person_ref),
             operation_id="operation:b02-b:create-unplaced",
             title="Activity da collocare",
         )
-        assert (
-            await activity_application.list_unplaced(
-                self_person_ref=self_person_ref,
-            )
-            == (created.activity,)
-        )
+        assert await activity_application.list_unplaced(
+            self_person_ref=self_person_ref,
+        ) == (created.activity,)
 
         placed = await activity_application.schedule_existing_activity(
             self_person_ref=self_person_ref,
@@ -175,9 +174,7 @@ async def test_existing_unplaced_activity_is_scheduled_idempotently_and_visible_
         assert len(window.items) == 1
         assert window.items[0].activity_ref == created.activity.activity_ref
         assert window.items[0].schedule_ref == placed.schedule.schedule_ref
-        assert window.items[0].placement_material_state_ref == (
-            placed.schedule.material_state_ref
-        )
+        assert window.items[0].placement_material_state_ref == (placed.schedule.material_state_ref)
     finally:
         await runtime.dispose()
 
@@ -204,6 +201,7 @@ async def test_missing_or_cross_self_activity_cannot_be_scheduled(
     try:
         created = await application.create_activity(
             self_person_ref=owner_ref,
+            life_area_ref=ensure_test_life_area(migrated_database, owner_ref),
             operation_id="operation:b02-b:private-create",
             title="Activity privata",
         )

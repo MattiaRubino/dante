@@ -8,6 +8,7 @@ from uuid import UUID, uuid7
 
 import psycopg
 import pytest
+from b05_legacy_test_support import ensure_test_life_area
 
 from dante.auth.contracts import Principal
 from dante.context.contracts import DanteContext
@@ -214,12 +215,14 @@ async def test_all_forms_establish_revise_unschedule_and_undo_losslessly(
             operation_prefix = f"operation:b02-e1:form-{index}"
             created = await activities.create_activity_with_schedule(
                 self_person_ref=self_person_ref,
+                life_area_ref=ensure_test_life_area(migrated_database, self_person_ref),
                 operation_id=f"{operation_prefix}:create",
                 title=f"E1 form {index}",
                 placement=placement,
             )
             replayed_create = await activities.create_activity_with_schedule(
                 self_person_ref=self_person_ref,
+                life_area_ref=ensure_test_life_area(migrated_database, self_person_ref),
                 operation_id=f"{operation_prefix}:create",
                 title=f"E1 form {index}",
                 placement=placement,
@@ -380,6 +383,7 @@ async def test_one_activity_can_own_multiple_independent_schedules(
     try:
         created = await activities.create_activity(
             self_person_ref=self_person_ref,
+            life_area_ref=ensure_test_life_area(migrated_database, self_person_ref),
             operation_id="operation:b02-e1:multi:create",
             title="Una Activity con più Schedule",
         )
@@ -503,6 +507,7 @@ async def test_timeline_projects_each_current_form_with_half_open_inclusion(
         for index, (title, placement) in enumerate((included | excluded).items()):
             await activities.create_activity_with_schedule(
                 self_person_ref=self_person_ref,
+                life_area_ref=ensure_test_life_area(migrated_database, self_person_ref),
                 operation_id=f"operation:b02-e2:projection:{index}",
                 title=title,
                 placement=placement,
@@ -510,6 +515,7 @@ async def test_timeline_projects_each_current_form_with_half_open_inclusion(
 
         historical = await activities.create_activity_with_schedule(
             self_person_ref=self_person_ref,
+            life_area_ref=ensure_test_life_area(migrated_database, self_person_ref),
             operation_id="operation:b02-e2:current-only:create",
             title="E2 current only",
             placement=DateSpanPlacement(
@@ -622,6 +628,7 @@ async def test_timeline_uses_real_dst_day_bounds_and_effective_display_zone(
         for index, (title, placement) in enumerate(dst_placements.items()):
             await activities.create_activity_with_schedule(
                 self_person_ref=self_person_ref,
+                life_area_ref=ensure_test_life_area(migrated_database, self_person_ref),
                 operation_id=f"operation:b02-e2:dst:{index}",
                 title=title,
                 placement=placement,

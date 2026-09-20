@@ -16,9 +16,7 @@ _PRE_B04_TEMPORAL_OPERATIONS = {
     ("/api/v1/temporal/timeline/window", "get"): (
         "get_timeline_window_api_v1_temporal_timeline_window_get"
     ),
-    ("/api/v1/temporal/activities", "post"): (
-        "create_activity_api_v1_temporal_activities_post"
-    ),
+    ("/api/v1/temporal/activities", "post"): ("create_activity_api_v1_temporal_activities_post"),
     ("/api/v1/temporal/activities/scheduled", "post"): (
         "create_scheduled_activity_api_v1_temporal_activities_scheduled_post"
     ),
@@ -40,9 +38,7 @@ _PRE_B04_TEMPORAL_OPERATIONS = {
     ("/api/v1/temporal/activities/{activity_ref}", "get"): (
         "get_activity_api_v1_temporal_activities__activity_ref__get"
     ),
-    ("/api/v1/temporal/events", "post"): (
-        "create_event_api_v1_temporal_events_post"
-    ),
+    ("/api/v1/temporal/events", "post"): ("create_event_api_v1_temporal_events_post"),
     ("/api/v1/temporal/events/scheduled", "post"): (
         "create_scheduled_event_api_v1_temporal_events_scheduled_post"
     ),
@@ -64,27 +60,38 @@ _EXPECTED_TEMPORAL_OPERATIONS = {
     ("/api/v1/temporal/life-areas/order", "put"): "temporal_reorder_life_areas",
     ("/api/v1/temporal/life-areas/{life_area_ref}/name", "patch"): "temporal_rename_life_area",
     ("/api/v1/temporal/life-areas/{life_area_ref}/archive", "post"): "temporal_archive_life_area",
-    ("/api/v1/temporal/life-areas/{life_area_ref}/visibility", "put"): "temporal_set_life_area_visibility",
-    ("/api/v1/temporal/life-areas/{life_area_ref}/appearance", "put"): "temporal_set_life_area_appearance",
+    (
+        "/api/v1/temporal/life-areas/{life_area_ref}/visibility",
+        "put",
+    ): "temporal_set_life_area_visibility",
+    (
+        "/api/v1/temporal/life-areas/{life_area_ref}/appearance",
+        "put",
+    ): "temporal_set_life_area_appearance",
+    ("/api/v1/temporal/life-area-assignments", "get"): "temporal_list_life_area_assignments",
+    (
+        "/api/v1/temporal/life-area-assignments/unassigned",
+        "get",
+    ): "temporal_list_unassigned_life_area_items",
+    (
+        "/api/v1/temporal/life-area-assignments/activities/{activity_ref}",
+        "put",
+    ): "temporal_assign_activity_life_area",
+    (
+        "/api/v1/temporal/life-area-assignments/events/{event_ref}",
+        "put",
+    ): "temporal_assign_event_life_area",
     ("/api/v1/temporal/constraints", "post"): "temporal_create_constraint",
-    ("/api/v1/temporal/constraints", "get"): (
-        "temporal_list_constraints_by_subject"
-    ),
-    ("/api/v1/temporal/constraints/evaluate", "post"): (
-        "temporal_evaluate_constraints"
-    ),
-    ("/api/v1/temporal/constraints/{constraint_ref}", "get"): (
-        "temporal_get_constraint"
-    ),
+    ("/api/v1/temporal/constraints", "get"): ("temporal_list_constraints_by_subject"),
+    ("/api/v1/temporal/constraints/evaluate", "post"): ("temporal_evaluate_constraints"),
+    ("/api/v1/temporal/constraints/{constraint_ref}", "get"): ("temporal_get_constraint"),
     ("/api/v1/temporal/constraints/{constraint_ref}/rule", "patch"): (
         "temporal_revise_constraint_rule"
     ),
     ("/api/v1/temporal/constraints/{constraint_ref}/retire", "post"): (
         "temporal_retire_constraint"
     ),
-    ("/api/v1/temporal/activities/constrained", "post"): (
-        "temporal_create_constrained_activity"
-    ),
+    ("/api/v1/temporal/activities/constrained", "post"): ("temporal_create_constrained_activity"),
 }
 
 

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import Annotated, cast
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request, Response
 from pydantic import BaseModel, ConfigDict, Field
@@ -13,6 +14,7 @@ from dante.modules.temporal.api import ActivityResponse
 from dante.modules.temporal.constrained_activity import (
     ConstrainedActivityApplication,
     ConstrainedActivityInputError,
+    ConstrainedActivityLifeAreaUnavailableError,
     ConstrainedActivityOperationIdReuseError,
     ConstrainedActivityPersistenceError,
 )
@@ -39,6 +41,7 @@ class CreateConstrainedActivityRequest(BaseModel):
 
     operation_id: str = Field(min_length=1, max_length=200)
     title: str = Field(min_length=1, max_length=300)
+    life_area_ref: UUID
     rules: list[TemporalConstraintRuleRequest] = Field(min_length=1, max_length=4)
 
 
@@ -81,6 +84,7 @@ async def temporal_create_constrained_activity(
             self_person_ref=context.self_person_ref,
             operation_id=payload.operation_id,
             title=payload.title,
+            life_area_ref=payload.life_area_ref,
             rules=tuple(_rule_from_request(rule) for rule in payload.rules),
         )
     except ConstrainedActivityInputError as exc:
@@ -101,6 +105,15 @@ async def temporal_create_constrained_activity(
             detail="The operation id was already used for a different Activity/constraint intent.",
             retryable=False,
         ) from exc
+    except ConstrainedActivityLifeAreaUnavailableError as exc:
+        raise ProblemError(
+            status=422,
+            code="temporal.activity.life_area_unavailable",
+            category="validation",
+            title="Unavailable Life Area",
+            detail="The primary Life Area is unavailable or archived in this self scope.",
+            retryable=False,
+        ) from exc
     except ConstrainedActivityPersistenceError as exc:
         raise ProblemError(
             status=503,
@@ -118,6 +131,8 @@ async def temporal_create_constrained_activity(
             activity_ref=result.activity.activity_ref,
             title=result.activity.title,
             created_at=result.activity.created_at,
+            life_area_ref=result.activity.life_area_ref,
+            life_area_assignment_revision=result.activity.life_area_assignment_revision,
             replayed=result.replayed,
         ),
         constraints=[_created_response(value) for value in result.constraints],

@@ -10,8 +10,8 @@ import pytest
 pytestmark = pytest.mark.postgres
 
 # Current candidate must still preserve every B04-D table and runtime ACL.
-_EXPECTED_REVISION = "20260920_45"
-_EXPECTED_TOPOLOGY = (119, 5, 48, 90, 239, 158, 344, 0, 0, 0)
+_EXPECTED_REVISION = "20260920_46"
+_EXPECTED_TOPOLOGY = (123, 5, 54, 90, 245, 170, 354, 0, 0, 0)
 
 _B04_D_TABLES = {
     "schedule_movement_policy_state",
@@ -50,9 +50,7 @@ def _admin(database: Any) -> psycopg.Connection[Any]:
 @pytest.mark.postgres
 def test_b04_d_revision_and_topology(migrated_database: Any) -> None:
     with _admin(migrated_database) as connection:
-        revision = connection.execute(
-            "SELECT version_num FROM dante.alembic_version"
-        ).fetchone()
+        revision = connection.execute("SELECT version_num FROM dante.alembic_version").fetchone()
         topology = connection.execute(
             """
             SELECT

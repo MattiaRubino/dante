@@ -6,8 +6,8 @@
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
-- **Timeline candidate Alembic head (source):** `20260920_45`
-- **Timeline candidate expected topology (PostgreSQL proof pending):** `119|5|48|90|239|158|344|0|0|0`
+- **Timeline candidate Alembic head (source):** `20260920_46`
+- **Timeline candidate expected topology (PostgreSQL proof pending):** `123|5|54|90|245|170|354|0|0|0`
 - **Timeline candidate DB overlay:** `timeline-temporal-operational.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 - **Persistence ADR:** `../decisions/ADR-010-postgresql-persistence-constitution.md`
@@ -65,13 +65,16 @@ Protected `main` remains integration authority. Candidate truth is never relabel
 20260919_40 B04-E planned Schedule duration constraints
     ↓
 20260919_41 B04-E duration runtime-read ACL
+    ↓
 20260920_42 B04-F Schedule hard-constraint guard
     ↓
 20260920_43 B05-A Life Area initial create/list schema
     ↓
 20260920_44 B05-A full actor-local Life Area lifecycle
     ↓
-20260920_45 B05-A validated receipt CHECK name reconciliation [source head]
+20260920_45 B05-A validated receipt CHECK name reconciliation [direct catalog proof PASSED]
+    ↓
+20260920_46 B05-B typed primary Life Area assignment [source head, PostgreSQL proof pending]
 ```
 
 No accepted historical migration was edited, rebased, renumbered or flattened.
@@ -79,13 +82,13 @@ No accepted historical migration was edited, rebased, renumbered or flattened.
 ## 3. Current candidate topology
 
 ```text
-119 tables
+123 tables
 5 views
-48 routines
+54 routines
 90 triggers
-239 physical indexes
-158 foreign keys
-344 CHECK constraints
+245 physical indexes
+170 foreign keys
+354 CHECK constraints
 0 enums/domains
 0 sequences
 0 materialized views
@@ -93,7 +96,7 @@ No accepted historical migration was edited, rebased, renumbered or flattened.
 0 RLS policies
 ```
 
-The `_42` topology was read directly from PostgreSQL 18.6 during B04-F closure. User-run `_44` tests observed the listed topology exactly and passed seven of eight checks; current catalog reconciliation failed only because one CHECK name was auto-prefixed and truncated. `_45` renames that validated CHECK without changing topology or rows. The `_45` catalog equality and complete B05-A proof remain pending direct PostgreSQL rerun.
+The `_42` topology was read directly from PostgreSQL 18.6 during B04-F closure. User-run `_44` tests passed seven of eight checks; `_45` corrected the CHECK name and the user directly proved the current catalog (`1 passed in 6.00s`), closing B05-A. `_46` is the B05-B source candidate; its topology is calculated and requires direct PostgreSQL proof, not yet observed.
 
 ## 4. Timeline persistence classification
 
@@ -255,8 +258,8 @@ B04-D Movement Policy                CLOSED / PROVEN at 20260919_39
 B04-E Advanced-family applicability  CLOSED / PROVEN at 20260919_41
 B04-F Whole-B04 closure              CLOSED / PROVEN at 20260920_42
 B04 overall                          CLOSED / PROVEN
-B05-A Life Area full lifecycle        IMPLEMENTED — DIRECT POSTGRESQL PROOF PENDING
-B05-B primary assignment             OPEN
+B05-A Life Area full lifecycle        CLOSED / PROVEN at `_45`
+B05-B primary assignment             SOURCE IMPLEMENTED / DIRECT POSTGRESQL PROOF PENDING
 ```
 
 Observed B04-E local evidence:
@@ -272,4 +275,4 @@ Proof covers duration lifecycle/current/history/CAS/idempotency, hard minimum/ma
 
 ## 7. Current next boundary
 
-B04-F whole-block closure is complete (see `../workstreams/timeline-temporal-operational-b04-f-closure-2026-09-20.md`). B05-A spans `_43`–`_45`: Life Area and immutable creation/mutation receipts, create/list/mutate/reorder bounded routines, and self-scoped API lifecycle. LR-12 profiles are not native-address entries, item assignments or Tag owners. Runtime has only bounded function EXECUTE; direct PostgreSQL catalog, ACL and application proof is outstanding before B05-A closure. The Dictionary and generated API client are updated in this change.
+B04-F and B05-A are closed with direct proof (see `../workstreams/timeline-temporal-operational-b05-a-closure-2026-09-20.md`). The `_46` B05-B candidate adds typed actor/item primary Life Area assignments and immutable receipts for Activity/Event, six bounded functions, and explicit legacy-unassigned inventory. Old bare create capabilities lose runtime EXECUTE; B04 Schedule truth is unchanged. `_46` catalog and behavior are source-aligned but await user-run direct PostgreSQL proof before B05-B closes.

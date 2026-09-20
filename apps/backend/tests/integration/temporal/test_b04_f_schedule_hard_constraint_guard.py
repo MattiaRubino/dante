@@ -8,6 +8,7 @@ from uuid import uuid7
 
 import psycopg
 import pytest
+from b05_legacy_test_support import ensure_test_life_area
 
 from dante.modules.temporal.activity import (
     ActivityPersistenceError,
@@ -28,9 +29,7 @@ from dante.platform.database.runtime import create_database_runtime
 def _seed_person(database: Any) -> NativeRef:
     self_ref = NativeRef(uuid7())
     with psycopg.connect(
-        **database.connection_kwargs(
-            "dante_migrator", database.cluster.migrator_password
-        )
+        **database.connection_kwargs("dante_migrator", database.cluster.migrator_password)
     ) as connection:
         connection.execute("SET ROLE dante_owner")
         connection.execute("SET search_path TO pg_catalog,dante,pg_temp")
@@ -46,11 +45,13 @@ def _seed_person(database: Any) -> NativeRef:
 async def _create_windowed_activity(
     application: ConstrainedActivityApplication,
     *,
+    database: Any,
     self_ref: NativeRef,
     operation_id: str,
 ) -> NativeRef:
     result = await application.create_activity_with_constraints(
         self_person_ref=self_ref,
+        life_area_ref=ensure_test_life_area(database, self_ref),
         operation_id=operation_id,
         title=f"Windowed {operation_id}",
         rules=(
@@ -78,6 +79,7 @@ async def test_b04_f_schedule_establish_enforces_hard_window_and_fails_closed_fo
     try:
         admissible_ref = await _create_windowed_activity(
             constrained,
+            database=migrated_database,
             self_ref=self_ref,
             operation_id="operation:b04-f:guard:admissible",
         )
@@ -97,6 +99,7 @@ async def test_b04_f_schedule_establish_enforces_hard_window_and_fails_closed_fo
 
         rejected_ref = await _create_windowed_activity(
             constrained,
+            database=migrated_database,
             self_ref=self_ref,
             operation_id="operation:b04-f:guard:rejected",
         )
@@ -113,6 +116,7 @@ async def test_b04_f_schedule_establish_enforces_hard_window_and_fails_closed_fo
 
         floating_ref = await _create_windowed_activity(
             constrained,
+            database=migrated_database,
             self_ref=self_ref,
             operation_id="operation:b04-f:guard:floating",
         )
@@ -122,8 +126,8 @@ async def test_b04_f_schedule_establish_enforces_hard_window_and_fails_closed_fo
                 activity_ref=floating_ref,
                 operation_id="operation:b04-f:guard:place:floating",
                 placement=FloatingLocalIntervalPlacement(
-                    starts_local_at=datetime(2026, 10, 20, 9, 0),
-                    ends_local_at=datetime(2026, 10, 20, 10, 0),
+                    starts_local_at=datetime(2026, 10, 20, 9, 0),  # noqa: DTZ001
+                    ends_local_at=datetime(2026, 10, 20, 10, 0),  # noqa: DTZ001
                 ),
             )
 
@@ -156,6 +160,7 @@ async def test_b04_f_schedule_revision_rejects_hard_constraint_bypass_without_ch
     try:
         activity_ref = await _create_windowed_activity(
             constrained,
+            database=migrated_database,
             self_ref=self_ref,
             operation_id="operation:b04-f:guard:revise",
         )

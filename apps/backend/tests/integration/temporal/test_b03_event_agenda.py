@@ -13,6 +13,7 @@ from uuid import UUID, uuid7
 
 import psycopg
 import pytest
+from b05_legacy_test_support import api_test_life_area
 from fastapi.testclient import TestClient
 from pydantic import SecretStr
 
@@ -185,7 +186,8 @@ def _signin(client: TestClient, email: str) -> str:
     )
     assert response.status_code == 200
     token = response.json()["csrf_token"]
-    assert isinstance(token, str) and token
+    assert isinstance(token, str)
+    assert token
     return token
 
 
@@ -226,6 +228,7 @@ def test_event_agenda_create_add_edit_reorder_remove_replay_and_reload(
             "/api/v1/temporal/events",
             json={
                 "operation_id": "operation:b03-d:create",
+                "life_area_ref": api_test_life_area(client, mutation_headers),
                 "title": "Riunione B03-D",
                 "agenda_parts": ["Apertura", "Decisione"],
             },
@@ -338,6 +341,7 @@ def test_event_agenda_create_add_edit_reorder_remove_replay_and_reload(
             "/api/v1/temporal/events",
             json={
                 "operation_id": "operation:b03-d:create",
+                "life_area_ref": api_test_life_area(client, mutation_headers),
                 "title": "Riunione B03-D",
                 "agenda_parts": ["Apertura", "Decisione"],
             },
@@ -402,7 +406,13 @@ def test_event_agenda_mutation_is_csrf_and_self_scoped(
         owner_csrf = _signin(owner, owner_email)
         created = owner.post(
             "/api/v1/temporal/events",
-            json={"operation_id": "operation:b03-d:scope-create", "title": "Privato"},
+            json={
+                "operation_id": "operation:b03-d:scope-create",
+                "title": "Privato",
+                "life_area_ref": api_test_life_area(
+                    owner, {**_base_headers(), CSRF_HEADER_NAME: owner_csrf}
+                ),
+            },
             headers={**_base_headers(), CSRF_HEADER_NAME: owner_csrf},
         )
         assert created.status_code == 201

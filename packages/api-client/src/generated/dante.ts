@@ -9,6 +9,7 @@ import type {
   AppearanceLifeAreaRequest,
   AppleAuthenticationBegunResponse,
   AppleNotificationRequest,
+  AssignLifeAreaRequest,
   AuthHandleAppleCallbackBody,
   AuthenticatedSessionResponse,
   AuthenticationMethodsResponse,
@@ -30,6 +31,7 @@ import type {
   GoogleAuthenticationBegunResponse,
   GoogleAuthenticationCompleteRequest,
   HTTPValidationError,
+  LifeAreaAssignmentResponse,
   LifeAreaMutationResponse,
   LifeAreaReorderResponse,
   LifeAreaResponse,
@@ -97,6 +99,7 @@ import type {
   TemporalListConstraintsBySubjectParams,
   TimelineWindowEmptyResponse,
   TimelineWindowItemsResponse,
+  UnassignedLifeAreaItemResponse,
   UnauthenticatedSessionResponse,
   UndoScheduleUnscheduleRequest,
   UnplacedActivitiesResponse,
@@ -4646,6 +4649,230 @@ export const replaceEventAgendaApiV1TemporalEventsEventRefAgendaPut = async (
     status: res.status,
     headers: res.headers,
   } as replaceEventAgendaApiV1TemporalEventsEventRefAgendaPutResponse;
+};
+
+export type temporalListLifeAreaAssignmentsResponse200 = {
+  data: LifeAreaAssignmentResponse[];
+  status: 200;
+};
+
+export type temporalListLifeAreaAssignmentsResponseSuccess =
+  temporalListLifeAreaAssignmentsResponse200 & {
+    headers: Headers;
+  };
+export type temporalListLifeAreaAssignmentsResponse =
+  temporalListLifeAreaAssignmentsResponseSuccess;
+
+export const getTemporalListLifeAreaAssignmentsUrl = () => {
+  return `/api/v1/temporal/life-area-assignments`;
+};
+
+/**
+ * @summary List Life Area Assignments
+ */
+export const temporalListLifeAreaAssignments = async (
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListLifeAreaAssignmentsResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalListLifeAreaAssignmentsUrl(),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListLifeAreaAssignmentsResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListLifeAreaAssignmentsResponse;
+};
+
+export type temporalAssignActivityLifeAreaResponse200 = {
+  data: LifeAreaAssignmentResponse;
+  status: 200;
+};
+
+export type temporalAssignActivityLifeAreaResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalAssignActivityLifeAreaResponseSuccess =
+  temporalAssignActivityLifeAreaResponse200 & {
+    headers: Headers;
+  };
+export type temporalAssignActivityLifeAreaResponseError =
+  temporalAssignActivityLifeAreaResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalAssignActivityLifeAreaResponse =
+  | temporalAssignActivityLifeAreaResponseSuccess
+  | temporalAssignActivityLifeAreaResponseError;
+
+export const getTemporalAssignActivityLifeAreaUrl = (activityRef: string) => {
+  return `/api/v1/temporal/life-area-assignments/activities/${activityRef}`;
+};
+
+/**
+ * @summary Assign Activity Life Area
+ */
+export const temporalAssignActivityLifeArea = async (
+  activityRef: string,
+  assignLifeAreaRequest: AssignLifeAreaRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalAssignActivityLifeAreaResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalAssignActivityLifeAreaUrl(activityRef),
+    {
+      ...options,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(assignLifeAreaRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalAssignActivityLifeAreaResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalAssignActivityLifeAreaResponse;
+};
+
+export type temporalAssignEventLifeAreaResponse200 = {
+  data: LifeAreaAssignmentResponse;
+  status: 200;
+};
+
+export type temporalAssignEventLifeAreaResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalAssignEventLifeAreaResponseSuccess =
+  temporalAssignEventLifeAreaResponse200 & {
+    headers: Headers;
+  };
+export type temporalAssignEventLifeAreaResponseError =
+  temporalAssignEventLifeAreaResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalAssignEventLifeAreaResponse =
+  | temporalAssignEventLifeAreaResponseSuccess
+  | temporalAssignEventLifeAreaResponseError;
+
+export const getTemporalAssignEventLifeAreaUrl = (eventRef: string) => {
+  return `/api/v1/temporal/life-area-assignments/events/${eventRef}`;
+};
+
+/**
+ * @summary Assign Event Life Area
+ */
+export const temporalAssignEventLifeArea = async (
+  eventRef: string,
+  assignLifeAreaRequest: AssignLifeAreaRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalAssignEventLifeAreaResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalAssignEventLifeAreaUrl(eventRef),
+    {
+      ...options,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(assignLifeAreaRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalAssignEventLifeAreaResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalAssignEventLifeAreaResponse;
+};
+
+export type temporalListUnassignedLifeAreaItemsResponse200 = {
+  data: UnassignedLifeAreaItemResponse[];
+  status: 200;
+};
+
+export type temporalListUnassignedLifeAreaItemsResponseSuccess =
+  temporalListUnassignedLifeAreaItemsResponse200 & {
+    headers: Headers;
+  };
+export type temporalListUnassignedLifeAreaItemsResponse =
+  temporalListUnassignedLifeAreaItemsResponseSuccess;
+
+export const getTemporalListUnassignedLifeAreaItemsUrl = () => {
+  return `/api/v1/temporal/life-area-assignments/unassigned`;
+};
+
+/**
+ * @summary List Unassigned Life Area Items
+ */
+export const temporalListUnassignedLifeAreaItems = async (
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListUnassignedLifeAreaItemsResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalListUnassignedLifeAreaItemsUrl(),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListUnassignedLifeAreaItemsResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListUnassignedLifeAreaItemsResponse;
 };
 
 export type temporalListLifeAreasResponse200 = {

@@ -12,6 +12,7 @@ export const createActivityApiV1TemporalActivitiesPostBodyTitleMax = 300;
 
 export const CreateActivityApiV1TemporalActivitiesPostBody = /*#__PURE__*/ zod
   .object({
+    life_area_ref: /*#__PURE__*/ zod.uuid(),
     operation_id: /*#__PURE__*/ zod
       .string()
       .check(/*#__PURE__*/ zod.minLength(1))

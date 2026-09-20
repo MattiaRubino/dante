@@ -33,18 +33,18 @@
       "CP6-M07"
     ],
     "standalone_entries": {
-      "tables": 119,
+      "tables": 123,
       "views": 5,
-      "routines": 48,
-      "total": 172
+      "routines": 54,
+      "total": 182
     },
     "embedded_objects": {
       "triggers": 90,
-      "physical_indexes": 239
+      "physical_indexes": 245
     },
     "constraints": {
-      "foreign_keys": 158,
-      "check_constraints": 344
+      "foreign_keys": 170,
+      "check_constraints": 354
     }
   },
   "technical_foundation": {
