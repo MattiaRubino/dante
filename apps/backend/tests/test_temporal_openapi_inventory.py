@@ -61,6 +61,11 @@ _EXPECTED_TEMPORAL_OPERATIONS = {
     **_PRE_B04_TEMPORAL_OPERATIONS,
     ("/api/v1/temporal/life-areas", "post"): "temporal_create_life_area",
     ("/api/v1/temporal/life-areas", "get"): "temporal_list_life_areas",
+    ("/api/v1/temporal/life-areas/order", "put"): "temporal_reorder_life_areas",
+    ("/api/v1/temporal/life-areas/{life_area_ref}/name", "patch"): "temporal_rename_life_area",
+    ("/api/v1/temporal/life-areas/{life_area_ref}/archive", "post"): "temporal_archive_life_area",
+    ("/api/v1/temporal/life-areas/{life_area_ref}/visibility", "put"): "temporal_set_life_area_visibility",
+    ("/api/v1/temporal/life-areas/{life_area_ref}/appearance", "put"): "temporal_set_life_area_appearance",
     ("/api/v1/temporal/constraints", "post"): "temporal_create_constraint",
     ("/api/v1/temporal/constraints", "get"): (
         "temporal_list_constraints_by_subject"

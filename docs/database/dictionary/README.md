@@ -6,8 +6,8 @@
 - **PostgreSQL:** 18.6
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
-- **Current candidate Alembic source head on `feature/timeline-temporal-operational`:** `20260920_43`
-- **Current candidate expected topology (PostgreSQL proof pending):** `118|5|46|90|237|156|335|0|0|0`
+- **Current candidate Alembic source head on `feature/timeline-temporal-operational`:** `20260920_44`
+- **Current candidate expected topology (PostgreSQL proof pending):** `119|5|48|90|239|158|344|0|0|0`
 - **Frozen CP6 head:** `20260826_08`
 - **Last reconciled:** 2026-09-20
 
@@ -24,21 +24,21 @@ Current checked-out DB Reference
 ≈ direct tests
 ```
 
-A mismatch is a defect. Protected `main` remains integration authority; `_43` is the candidate source head on the Timeline branch and awaits direct PostgreSQL catalog confirmation before a B05-A1 proof claim.
+A mismatch is a defect. Protected `main` remains integration authority; `_44` is the candidate source head on the Timeline branch and awaits direct PostgreSQL catalog confirmation before a B05-A proof claim.
 
 ## 2. Current checked-out business-schema inventory
 
 Authoritative counts are in `scope.json`:
 
 ```text
-tables      118
+tables      119
 views         5
-routines     46
-standalone  169
+routines     48
+standalone  172
 triggers     90
-indexes      237
-FKs          156
-CHECKs       335
+indexes      239
+FKs          158
+CHECKs       344
 ```
 
 No enum/domain, sequence, materialized view, partitioned table or RLS policy exists in the DANTE business-schema inventory.
@@ -78,9 +78,10 @@ B04-E / 20260919_40 → 20260919_41
 B04-F / 20260920_42
   Schedule establish/revise hard-constraint guard
 
-B05-A1 / 20260920_43
-  self-scoped LR-12 Life Area profile identity, create receipt, bounded create/list functions
-  no NativeRef, item assignment, Tags or lifecycle mutation yet
+B05-A / 20260920_43 → 20260920_44
+  self-scoped LR-12 Life Area identity, creation and mutation receipts
+  bounded create/list/mutate/reorder, revision, archive, visibility and appearance
+  no NativeRef, item assignment or Tags
 ```
 
 The object tree and `scope.json`, not this prose summary, are structural source of truth.
@@ -181,8 +182,8 @@ B04-D Movement Policy                CLOSED / PROVEN at 20260919_39
 B04-E Advanced-family applicability  CLOSED / PROVEN at 20260919_41
 B04-F Whole-B04 closure              CLOSED / PROVEN at 20260920_42
 B04 overall                          CLOSED / PROVEN
-B05-A1 Life Area create/list          IMPLEMENTED — DIRECT POSTGRESQL PROOF PENDING
-B05-A2+ lifecycle and assignment      OPEN
+B05-A Life Area full lifecycle        IMPLEMENTED — DIRECT POSTGRESQL PROOF PENDING
+B05-B primary assignment             OPEN
 ```
 
 Observed B04-E evidence:
@@ -219,4 +220,4 @@ extension-owned objects excluded correctly
 
 No real object → no ceremonial Dictionary entry. Every real current DANTE business object requires matching Dictionary/Alembic/SQLAlchemy/current-human-reference/direct-PostgreSQL proof in the same reviewed slice.
 
-B04-F is closed. B05-A1 `_43` has four new object entries aligned with Alembic and SQLAlchemy. Catalog/ACL parity remains a direct PostgreSQL gate before any B05-A1 closure; B05-A2 owns the remaining Life Area lifecycle.
+B04-F is closed. B05-A `_43` and `_44` have three tables and four routines aligned with Alembic and SQLAlchemy. Direct PostgreSQL catalog/ACL/application parity is required before B05-A closure. B05-B owns the primary item relation.

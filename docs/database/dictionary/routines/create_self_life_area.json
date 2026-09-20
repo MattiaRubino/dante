@@ -31,14 +31,14 @@
     "material_facets": []
   },
   "implementation": {
-    "introducing_stage": "B05-A1-LIFE-AREA-CATALOG",
+    "introducing_stage": "B05-A-LIFE-AREA-CATALOG",
     "alembic_revision": "20260920_43",
     "sqlalchemy": {
       "mode": "none",
       "module": null,
       "symbol": null
     },
-    "runtime_acl_stage": "B05-A1-LIFE-AREA-CATALOG"
+    "runtime_acl_stage": "B05-A-LIFE-AREA-CATALOG"
   },
   "structure": {
     "columns": [],
@@ -74,10 +74,10 @@
     }
   },
   "state_history": {
-    "material_state_behavior": "No Domain MaterialStateRef is introduced for initial profile create/read.",
+    "material_state_behavior": "No Domain MaterialStateRef is introduced for product profile lifecycle.",
     "current_binding": "Self-scoped current profile row; no accepted item assignment yet.",
     "chronology": "created_at is statement-time PostgreSQL truth, not UUIDv7 order.",
-    "immutability_policy": "Creation receipts immutable; mutation/history design remains B05-A2."
+    "immutability_policy": "Creation and lifecycle receipts immutable; current profile revisions govern mutations."
   },
   "lifecycle": {
     "retention": "Retained for later association and user organization.",
@@ -105,7 +105,7 @@
       "Concurrent same key serializes; same intent replays; differing intent conflicts."
     ],
     "test_refs": [
-      "apps/backend/tests/integration/temporal/test_b05_a1_life_area.py",
+      "apps/backend/tests/integration/temporal/test_b05_life_area_catalog.py",
       "apps/backend/tests/integration/database/test_database_current_catalog.py"
     ],
     "staged_evidence": []

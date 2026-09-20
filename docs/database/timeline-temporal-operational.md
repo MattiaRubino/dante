@@ -4,8 +4,8 @@
 - **Reconciled:** 2026-09-20
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
-- **Candidate source head:** `20260920_43`
-- **Candidate expected topology (PostgreSQL proof pending):** `118|5|46|90|237|156|335|0|0|0`
+- **Candidate source head:** `20260920_44`
+- **Candidate expected topology (PostgreSQL proof pending):** `119|5|48|90|239|158|344|0|0|0`
 - **Whole-DB SoR:** `README.md`
 - **Machine-readable authority:** `dictionary/`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
@@ -42,7 +42,8 @@ This file is the human-readable database overlay for Timeline candidate-only per
     ↓
 20260920_42 B04-F Schedule hard-constraint guard
     ↓
-20260920_43 B05-A1 self-scoped Life Area catalog create/list
+20260920_43 B05-A self-scoped Life Area catalog create/list
+20260920_44 B05-A full Life Area lifecycle
 ```
 
 ## 3. Temporal Constraint authority through B04-E
@@ -113,7 +114,7 @@ B04-E adds no public Temporal HTTP route; OpenAPI/client artifacts intentionally
 ## 6. Current candidate topology
 
 ```text
-Alembic     20260920_43
+Alembic     20260920_44
 Tables      118
 Views       5
 Routines    46
@@ -141,7 +142,7 @@ B04  ✅ CLOSED / PROVEN
 ├─ B04-D ✅ CLOSED / PROVEN
 ├─ B04-E ✅ CLOSED / PROVEN
 └─ B04-F ✅ CLOSED / PROVEN
-B05  🟡 A1 CREATE/LIST IMPLEMENTED / POSTGRESQL PROOF PENDING
+B05  🟡 A FULL LIFECYCLE IMPLEMENTED / POSTGRESQL PROOF PENDING
 ```
 
 Observed B04-E evidence:
@@ -155,4 +156,4 @@ DATABASE_CURRENT_TOPOLOGY                         116|5|44|90|233|153|331|0|0|0
 
 ## 8. Next persistence boundary
 
-B04-F is closed with direct proof recorded in its whole-block closure record. B05-A1 creates only a self-scoped LR-12 profile and its immutable creation receipt; it grants bounded runtime EXECUTE for create/list, with no generic table access and no NativeRef registration. `_43` topology is derived from the reviewed migration/Dictionary and **not yet observed** in PostgreSQL. Direct migrated-catalog/ACL and application proof must be supplied before B05-A1 is marked PROVEN. Rename/reorder/archive/hide/show remain B05-A2; primary item relation remains B05-B.
+B04-F is closed with direct proof recorded in its whole-block closure record. B05-A `_43` and `_44` establish self-scoped LR-12 profiles, immutable create/mutation receipts and bounded create/list/mutate/reorder routines. There is no generic runtime table access or NativeRef registration. `_44` topology is derived from migration/Dictionary and **not yet observed** in PostgreSQL. Direct migrated-catalog/ACL and application proof is required before B05-A is PROVEN; B05-B owns the primary item relation.

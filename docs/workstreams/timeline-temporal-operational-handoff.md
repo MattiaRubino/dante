@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B04 ✅ CLOSED / PROVEN → B05-A1 create/list implemented, local PostgreSQL proof pending
+- **Status:** B04 ✅ CLOSED / PROVEN → B05-A full lifecycle implemented, local PostgreSQL proof pending
 - **Reconciled:** 2026-09-20
 - **Branch:** `feature/timeline-temporal-operational`
 - **Current roadmap:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -36,8 +36,8 @@ Current candidate DB:
 
 ```text
 PostgreSQL 18.6
-Alembic source 20260920_43
-Expected topology 118|5|46|90|237|156|335|0|0|0 (not yet directly observed)
+Alembic source 20260920_44
+Expected topology 119|5|48|90|239|158|344|0|0|0 (not yet directly observed)
 ```
 
 ## 2. Binding foundation carried forward
@@ -196,20 +196,20 @@ It records compact final PostgreSQL/web proof, Dictionary/Alembic reconciliation
 
 ```text
 B04 ✅ CLOSED / PROVEN
-B05 🟡 A1 IMPLEMENTED / DIRECT PROOF PENDING
+B05 🟡 A IMPLEMENTED / DIRECT PROOF PENDING
 ```
 
-B05-A1 creates self-scoped LR-12 `life_area` plus an immutable create receipt at `_43`, two bounded database routines, explicit Temporal create/list operations, Dictionary objects/scope and generated API client. The expected `_43` catalog/ACL and application behavior still require the user's local real-PostgreSQL proof; do not mark ORG-002/003 or B05-A1 closed. B05-A2 lifecycle and B05-B primary assignment remain open. No CI/Actions are launched.
+B05-A spans `_43` and `_44`: self-scoped LR-12 profiles, immutable create/mutation receipts, four bounded routines, seven explicit Temporal operations, current Dictionary/scope and generated client. The expected `_44` catalog/ACL and lifecycle behavior require the user's local real-PostgreSQL proof; do not mark ORG-002..008 or B05-A closed yet. B05-B primary assignment remains open. No CI/Actions are launched.
 
-Local proof to run on the user's PostgreSQL-equipped checkout after pulling `_43`:
+Local proof to run on the user's PostgreSQL-equipped checkout after pulling `_44`:
 
 ```bash
 cd ~/projects/dante/apps/backend
 uv run --locked pytest -q -m postgres \
-  tests/integration/temporal/test_b05_a1_life_area.py \
+  tests/integration/temporal/test_b05_life_area_catalog.py \
   tests/integration/database/test_database_current_catalog.py \
   tests/integration/database/test_b04_d_movement_catalog_probe.py \
   tests/integration/database/test_b04_e_duration_catalog_probe.py
 ```
 
-This command has not been run in a PostgreSQL-equipped environment by this change. Any failed topology/ACL/application invariant must be repaired forward before a B05-A1 proof or closure record is written.
+This command has not been run in a PostgreSQL-equipped environment by this change. Any failed topology/ACL/application invariant must be repaired forward before a B05-A proof or closure record is written.

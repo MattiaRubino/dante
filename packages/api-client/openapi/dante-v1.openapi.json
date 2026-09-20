@@ -716,6 +716,49 @@
         "title": "ActivityResponse",
         "type": "object"
       },
+      "AppearanceLifeAreaRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "color_code": {
+            "anyOf": [
+              {
+                "maxLength": 7,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color Code"
+          },
+          "expected_revision": {
+            "minimum": 1.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "icon_code": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Icon Code"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "expected_revision"],
+        "title": "AppearanceLifeAreaRequest",
+        "type": "object"
+      },
       "AppleAuthenticationBegunResponse": {
         "additionalProperties": false,
         "description": "Server-authored Apple authorization URL for one persisted transaction.",
@@ -1747,13 +1790,78 @@
         "type": "object"
       },
       "JsonValue": {},
+      "LifeAreaMutationResponse": {
+        "properties": {
+          "accepted_revision": {
+            "title": "Accepted Revision",
+            "type": "integer"
+          },
+          "life_area_ref": {
+            "format": "uuid",
+            "title": "Life Area Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          }
+        },
+        "required": ["life_area_ref", "accepted_revision", "replayed"],
+        "title": "LifeAreaMutationResponse",
+        "type": "object"
+      },
+      "LifeAreaReorderResponse": {
+        "properties": {
+          "affected_count": {
+            "title": "Affected Count",
+            "type": "integer"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          }
+        },
+        "required": ["affected_count", "replayed"],
+        "title": "LifeAreaReorderResponse",
+        "type": "object"
+      },
       "LifeAreaResponse": {
         "additionalProperties": false,
         "properties": {
+          "archived": {
+            "title": "Archived",
+            "type": "boolean"
+          },
+          "color_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color Code"
+          },
           "created_at": {
             "format": "date-time",
             "title": "Created At",
             "type": "string"
+          },
+          "hidden": {
+            "title": "Hidden",
+            "type": "boolean"
+          },
+          "icon_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Icon Code"
           },
           "life_area_ref": {
             "format": "uuid",
@@ -1768,10 +1876,53 @@
             "default": false,
             "title": "Replayed",
             "type": "boolean"
+          },
+          "revision": {
+            "title": "Revision",
+            "type": "integer"
+          },
+          "sort_order": {
+            "title": "Sort Order",
+            "type": "integer"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
           }
         },
-        "required": ["life_area_ref", "name", "created_at"],
+        "required": [
+          "life_area_ref",
+          "name",
+          "created_at",
+          "revision",
+          "sort_order",
+          "archived",
+          "hidden",
+          "icon_code",
+          "color_code",
+          "updated_at"
+        ],
         "title": "LifeAreaResponse",
+        "type": "object"
+      },
+      "MutationRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_revision": {
+            "minimum": 1.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "expected_revision"],
+        "title": "MutationRequest",
         "type": "object"
       },
       "NamedZoneLocalIntervalPlacementRequest": {
@@ -1808,6 +1959,24 @@
         },
         "required": ["starts_local_at", "ends_local_at", "zone_id"],
         "title": "NamedZoneLocalIntervalPlacementRequest",
+        "type": "object"
+      },
+      "OrderEntry": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_revision": {
+            "minimum": 1.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "life_area_ref": {
+            "format": "uuid",
+            "title": "Life Area Ref",
+            "type": "string"
+          }
+        },
+        "required": ["life_area_ref", "expected_revision"],
+        "title": "OrderEntry",
         "type": "object"
       },
       "PasskeyAuthenticationCompleteRequest": {
@@ -2497,6 +2666,53 @@
         },
         "required": ["id", "rawId", "type", "response"],
         "title": "RegistrationCredential",
+        "type": "object"
+      },
+      "RenameLifeAreaRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_revision": {
+            "minimum": 1.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "name": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "expected_revision", "name"],
+        "title": "RenameLifeAreaRequest",
+        "type": "object"
+      },
+      "ReorderLifeAreasRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/OrderEntry"
+            },
+            "maxItems": 500,
+            "title": "Entries",
+            "type": "array"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "entries"],
+        "title": "ReorderLifeAreasRequest",
         "type": "object"
       },
       "ReplaceEventAgendaRequest": {
@@ -5297,6 +5513,29 @@
         },
         "required": ["loc", "msg", "type"],
         "title": "ValidationError",
+        "type": "object"
+      },
+      "VisibilityLifeAreaRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_revision": {
+            "minimum": 1.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "hidden": {
+            "title": "Hidden",
+            "type": "boolean"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "expected_revision", "hidden"],
+        "title": "VisibilityLifeAreaRequest",
         "type": "object"
       },
       "dante__modules__temporal__api__AbsoluteIntervalPlacementRequest": {
@@ -15313,6 +15552,249 @@
           }
         },
         "summary": "Create Life Area",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/life-areas/order": {
+      "put": {
+        "operationId": "temporal_reorder_life_areas",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReorderLifeAreasRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LifeAreaReorderResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reorder Life Areas",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/life-areas/{life_area_ref}/appearance": {
+      "put": {
+        "operationId": "temporal_set_life_area_appearance",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "life_area_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Life Area Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppearanceLifeAreaRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LifeAreaMutationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Life Area Appearance",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/life-areas/{life_area_ref}/archive": {
+      "post": {
+        "operationId": "temporal_archive_life_area",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "life_area_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Life Area Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MutationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LifeAreaMutationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Archive Life Area",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/life-areas/{life_area_ref}/name": {
+      "patch": {
+        "operationId": "temporal_rename_life_area",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "life_area_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Life Area Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RenameLifeAreaRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LifeAreaMutationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Rename Life Area",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/life-areas/{life_area_ref}/visibility": {
+      "put": {
+        "operationId": "temporal_set_life_area_visibility",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "life_area_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Life Area Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VisibilityLifeAreaRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LifeAreaMutationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Life Area Visibility",
         "tags": ["temporal"]
       }
     },

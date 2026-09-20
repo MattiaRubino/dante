@@ -97,8 +97,8 @@ Current candidate persistence authority:
 
 ```text
 PostgreSQL       18.6
-Alembic source   20260920_43
-Expected topology 118|5|46|90|237|156|335|0|0|0 (direct PG proof pending)
+Alembic source   20260920_44
+Expected topology 119|5|48|90|239|158|344|0|0|0 (direct PG proof pending)
 ```
 
 ---
@@ -229,9 +229,9 @@ Execution authority: `timeline-temporal-operational-b05-execution-plan.md`. Sema
 
 ```text
 ORG-001  authority/pre-scope             ✅ pre-scope recorded
-ORG-002  exact durable representation   🟡 LR-12 A1 mapped/Dictionary; PG proof pending
-ORG-003  Life Area create               🟡 A1 implemented; direct PG proof pending
-ORG-004..008  rename/reorder/archive/hide/appearance                 ⬜ B05-A2
+ORG-002  exact durable representation   🟡 LR-12 A mapped/Dictionary; PG proof pending
+ORG-003  Life Area create               🟡 A implemented; direct PG proof pending
+ORG-004..008  rename/reorder/archive/hide/appearance                 🟡 B05-A implemented; PG proof pending
 ORG-009  primary per-actor item assignment                         ⬜ B05-B
 ORG-010  separate secondary Tags                                ⬜ B05-C
 ORG-011  non-collapse with Goal/Plan/Tag/Place/provider calendar  ⬜ verify throughout
@@ -243,7 +243,7 @@ B05-T01..05  automated lifecycle, relation, view, conflict, accessibility proofs
 B05-T06  manual Life Area organization userTest                    ⬜ B05-E
 ```
 
-The B03-E transferred postponed/TBD Event rediscovery belongs to B05-D: no Activity Planning Tray conversion and no invented placement. B05-A1 `_43` adds self-scoped Life Area create/list API, Dictionary and generated client; direct PostgreSQL/ACL proof is outstanding, so B05-A1 and B05 remain open.
+The B03-E transferred postponed/TBD Event rediscovery belongs to B05-D: no Activity Planning Tray conversion and no invented placement. B05-A `_43`/`_44` adds self-scoped create/list/lifecycle/reorder API, Dictionary and generated client; direct PostgreSQL/ACL proof remains outstanding before B05-A and B05 closure.
 
 ---
 
@@ -267,7 +267,7 @@ B15  whole-vertical closure
 
 ```text
 B04 ✅ CLOSED / PROVEN
-B05 🟡 A1 IMPLEMENTED / DIRECT PROOF PENDING
+B05 🟡 A IMPLEMENTED / DIRECT PROOF PENDING
 ```
 
-Next gate: user-run local direct PostgreSQL proof of `_43` catalog/ACL, then B05-A2 lifecycle and later primary assignment. ORG-001 pre-scope is recorded; ORG-002/003 are implemented but not proven; the remaining obligations stay open. No CI/Actions dispatched.
+Next gate: user-run local direct PostgreSQL proof of complete B05-A `_44` catalog/ACL/lifecycle, then B05-B primary assignment. ORG-001 pre-scope is recorded; ORG-002..008 are implemented but not yet proven; later obligations stay open. No CI/Actions dispatched.

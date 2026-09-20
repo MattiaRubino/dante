@@ -31,14 +31,14 @@
     "material_facets": []
   },
   "implementation": {
-    "introducing_stage": "B05-A1-LIFE-AREA-CATALOG",
+    "introducing_stage": "B05-A-LIFE-AREA-CATALOG",
     "alembic_revision": "20260920_43",
     "sqlalchemy": {
       "mode": "orm_row",
       "module": "dante.platform.database.mappings.life_area",
       "symbol": "LifeAreaRow"
     },
-    "runtime_acl_stage": "B05-A1-LIFE-AREA-CATALOG"
+    "runtime_acl_stage": "B05-A-LIFE-AREA-CATALOG"
   },
   "structure": {
     "columns": [
@@ -89,6 +89,90 @@
         "meaning": "Server statement-time creation instant.",
         "semantic_type": null,
         "value_contract": null
+      },
+      {
+        "name": "revision",
+        "postgres_type": "bigint",
+        "nullable": false,
+        "default": {
+          "kind": "server",
+          "expression": "1"
+        },
+        "meaning": "Optimistic actor-local profile revision.",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "sort_order",
+        "postgres_type": "bigint",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Ordinal position in complete actor catalog.",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "archived",
+        "postgres_type": "boolean",
+        "nullable": false,
+        "default": {
+          "kind": "server",
+          "expression": "false"
+        },
+        "meaning": "Non-destructive archive state.",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "hidden",
+        "postgres_type": "boolean",
+        "nullable": false,
+        "default": {
+          "kind": "server",
+          "expression": "false"
+        },
+        "meaning": "Actor-local display preference only.",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "icon_code",
+        "postgres_type": "text",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Bounded presentation icon identifier.",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "color_code",
+        "postgres_type": "text",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Presentation-only uppercase RGB hex.",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "updated_at",
+        "postgres_type": "timestamp with time zone",
+        "nullable": false,
+        "default": {
+          "kind": "server",
+          "expression": "statement_timestamp()"
+        },
+        "meaning": "Latest accepted mutation instant.",
+        "semantic_type": null,
+        "value_contract": null
       }
     ],
     "primary_key": {
@@ -126,7 +210,19 @@
         "semantic_reason": "The actor-local profile belongs to an existing Person without creating a Domain owner."
       }
     ],
-    "unique_constraints": [],
+    "unique_constraints": [
+      {
+        "name": "uq_life_area_self_person_sort_order",
+        "columns": [
+          "self_person_ref",
+          "sort_order"
+        ],
+        "reason": "A single ordinal per actor, checked after atomic reorder.",
+        "deferrable": true,
+        "initially": "DEFERRED",
+        "enforced": true
+      }
+    ],
     "check_constraints": [
       {
         "name": "ck_life_area_uuidv7",
@@ -140,6 +236,38 @@
         "name": "ck_life_area_name",
         "expression_contract": "name=btrim(name) AND name<>'' AND char_length(name)<=100",
         "reason": "Nonempty bounded normalized display name.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_life_area_revision",
+        "expression_contract": "revision>=1",
+        "reason": "Optimistic revision is positive.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_life_area_sort_order",
+        "expression_contract": "sort_order>=0",
+        "reason": "Nonnegative actor-local order.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_life_area_icon_code",
+        "expression_contract": "icon_code IS NULL OR (char_length(icon_code)<=40 AND icon_code ~ '^[a-z][a-z0-9_-]*$')",
+        "reason": "Constrained display icon token.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_life_area_color_code",
+        "expression_contract": "color_code IS NULL OR color_code ~ '^#[0-9A-F]{6}$'",
+        "reason": "Normalized hex color.",
         "enforced": true,
         "validated": true,
         "no_inherit": false
@@ -177,6 +305,22 @@
         "valid": true,
         "ready": true,
         "live": true
+      },
+      {
+        "name": "uq_life_area_self_person_sort_order",
+        "method": "btree",
+        "unique": true,
+        "keys": [
+          "self_person_ref",
+          "sort_order"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "unique_constraint",
+        "reason": "Current actor-local presentation order.",
+        "valid": true,
+        "ready": true,
+        "live": true
       }
     ],
     "triggers": [],
@@ -193,10 +337,10 @@
     "routine": null
   },
   "state_history": {
-    "material_state_behavior": "No Domain MaterialStateRef is introduced for initial profile create/read.",
-    "current_binding": "Initial profile identity and name only; lifecycle/ordering/visibility follow B05-A2.",
-    "chronology": "created_at is statement-time PostgreSQL truth, not UUIDv7 order.",
-    "immutability_policy": "Creation receipts immutable; mutation/history design remains B05-A2."
+    "material_state_behavior": "LR-12 product profile changes use an optimistic revision and immutable operation receipts; no Domain MaterialStateRef.",
+    "current_binding": "Current profile row; primary item assignment is B05-B.",
+    "chronology": "created_at and updated_at are database statement instants; sort_order is presentation only.",
+    "immutability_policy": "Create and mutation receipts are immutable; current row revisions advance on changes; no runtime DELETE."
   },
   "lifecycle": {
     "retention": "Retained for later association and user organization.",
@@ -212,10 +356,12 @@
   "proof": {
     "obligations": [
       "Runtime has no raw table DML or SELECT; operations use self-scoped guarded routines.",
-      "A profile ID is not NativeRef, ScopedRecordRef or Domain ownership."
+      "A profile ID is not NativeRef, ScopedRecordRef or Domain ownership.",
+      "Reorder is a complete actor-local permutation with per-profile expected revisions.",
+      "Archive retains the catalog entry; hide and appearance never change scheduling truth."
     ],
     "test_refs": [
-      "apps/backend/tests/integration/temporal/test_b05_a1_life_area.py",
+      "apps/backend/tests/integration/temporal/test_b05_life_area_catalog.py",
       "apps/backend/tests/integration/database/test_database_current_catalog.py"
     ],
     "staged_evidence": []

@@ -6,6 +6,7 @@
  */
 import type {
   ActivityResponse,
+  AppearanceLifeAreaRequest,
   AppleAuthenticationBegunResponse,
   AppleNotificationRequest,
   AuthHandleAppleCallbackBody,
@@ -29,7 +30,10 @@ import type {
   GoogleAuthenticationBegunResponse,
   GoogleAuthenticationCompleteRequest,
   HTTPValidationError,
+  LifeAreaMutationResponse,
+  LifeAreaReorderResponse,
   LifeAreaResponse,
+  MutationRequest,
   PasskeyAuthenticationCompleteRequest,
   PasskeyBeginRequest,
   PasskeyCeremonyResponse,
@@ -53,6 +57,8 @@ import type {
   ReauthenticateRequest,
   RecoveryAcceptedResponse,
   RecoveryValidationResponse,
+  RenameLifeAreaRequest,
+  ReorderLifeAreasRequest,
   ReplaceEventAgendaRequest,
   RestoredScheduleAbsoluteResponse,
   RestoredScheduleCoarseResponse,
@@ -96,6 +102,7 @@ import type {
   UnplacedActivitiesResponse,
   UnscheduleScheduleRequest,
   UnscheduledScheduleResponse,
+  VisibilityLifeAreaRequest,
 } from './model';
 
 export type authBeginAppleAuthenticationResponse200 = {
@@ -4743,6 +4750,345 @@ export const temporalCreateLifeArea = async (
     status: res.status,
     headers: res.headers,
   } as temporalCreateLifeAreaResponse;
+};
+
+export type temporalReorderLifeAreasResponse200 = {
+  data: LifeAreaReorderResponse;
+  status: 200;
+};
+
+export type temporalReorderLifeAreasResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalReorderLifeAreasResponseSuccess =
+  temporalReorderLifeAreasResponse200 & {
+    headers: Headers;
+  };
+export type temporalReorderLifeAreasResponseError =
+  temporalReorderLifeAreasResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalReorderLifeAreasResponse =
+  | temporalReorderLifeAreasResponseSuccess
+  | temporalReorderLifeAreasResponseError;
+
+export const getTemporalReorderLifeAreasUrl = () => {
+  return `/api/v1/temporal/life-areas/order`;
+};
+
+/**
+ * @summary Reorder Life Areas
+ */
+export const temporalReorderLifeAreas = async (
+  reorderLifeAreasRequest: ReorderLifeAreasRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalReorderLifeAreasResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(getTemporalReorderLifeAreasUrl(), {
+    ...options,
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(reorderLifeAreasRequest),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalReorderLifeAreasResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalReorderLifeAreasResponse;
+};
+
+export type temporalSetLifeAreaAppearanceResponse200 = {
+  data: LifeAreaMutationResponse;
+  status: 200;
+};
+
+export type temporalSetLifeAreaAppearanceResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalSetLifeAreaAppearanceResponseSuccess =
+  temporalSetLifeAreaAppearanceResponse200 & {
+    headers: Headers;
+  };
+export type temporalSetLifeAreaAppearanceResponseError =
+  temporalSetLifeAreaAppearanceResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalSetLifeAreaAppearanceResponse =
+  | temporalSetLifeAreaAppearanceResponseSuccess
+  | temporalSetLifeAreaAppearanceResponseError;
+
+export const getTemporalSetLifeAreaAppearanceUrl = (lifeAreaRef: string) => {
+  return `/api/v1/temporal/life-areas/${lifeAreaRef}/appearance`;
+};
+
+/**
+ * @summary Set Life Area Appearance
+ */
+export const temporalSetLifeAreaAppearance = async (
+  lifeAreaRef: string,
+  appearanceLifeAreaRequest: AppearanceLifeAreaRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalSetLifeAreaAppearanceResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalSetLifeAreaAppearanceUrl(lifeAreaRef),
+    {
+      ...options,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(appearanceLifeAreaRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalSetLifeAreaAppearanceResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalSetLifeAreaAppearanceResponse;
+};
+
+export type temporalArchiveLifeAreaResponse200 = {
+  data: LifeAreaMutationResponse;
+  status: 200;
+};
+
+export type temporalArchiveLifeAreaResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalArchiveLifeAreaResponseSuccess =
+  temporalArchiveLifeAreaResponse200 & {
+    headers: Headers;
+  };
+export type temporalArchiveLifeAreaResponseError =
+  temporalArchiveLifeAreaResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalArchiveLifeAreaResponse =
+  temporalArchiveLifeAreaResponseSuccess | temporalArchiveLifeAreaResponseError;
+
+export const getTemporalArchiveLifeAreaUrl = (lifeAreaRef: string) => {
+  return `/api/v1/temporal/life-areas/${lifeAreaRef}/archive`;
+};
+
+/**
+ * @summary Archive Life Area
+ */
+export const temporalArchiveLifeArea = async (
+  lifeAreaRef: string,
+  mutationRequest: MutationRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalArchiveLifeAreaResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalArchiveLifeAreaUrl(lifeAreaRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(mutationRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalArchiveLifeAreaResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalArchiveLifeAreaResponse;
+};
+
+export type temporalRenameLifeAreaResponse200 = {
+  data: LifeAreaMutationResponse;
+  status: 200;
+};
+
+export type temporalRenameLifeAreaResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalRenameLifeAreaResponseSuccess =
+  temporalRenameLifeAreaResponse200 & {
+    headers: Headers;
+  };
+export type temporalRenameLifeAreaResponseError =
+  temporalRenameLifeAreaResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalRenameLifeAreaResponse =
+  temporalRenameLifeAreaResponseSuccess | temporalRenameLifeAreaResponseError;
+
+export const getTemporalRenameLifeAreaUrl = (lifeAreaRef: string) => {
+  return `/api/v1/temporal/life-areas/${lifeAreaRef}/name`;
+};
+
+/**
+ * @summary Rename Life Area
+ */
+export const temporalRenameLifeArea = async (
+  lifeAreaRef: string,
+  renameLifeAreaRequest: RenameLifeAreaRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalRenameLifeAreaResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalRenameLifeAreaUrl(lifeAreaRef),
+    {
+      ...options,
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(renameLifeAreaRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalRenameLifeAreaResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalRenameLifeAreaResponse;
+};
+
+export type temporalSetLifeAreaVisibilityResponse200 = {
+  data: LifeAreaMutationResponse;
+  status: 200;
+};
+
+export type temporalSetLifeAreaVisibilityResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalSetLifeAreaVisibilityResponseSuccess =
+  temporalSetLifeAreaVisibilityResponse200 & {
+    headers: Headers;
+  };
+export type temporalSetLifeAreaVisibilityResponseError =
+  temporalSetLifeAreaVisibilityResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalSetLifeAreaVisibilityResponse =
+  | temporalSetLifeAreaVisibilityResponseSuccess
+  | temporalSetLifeAreaVisibilityResponseError;
+
+export const getTemporalSetLifeAreaVisibilityUrl = (lifeAreaRef: string) => {
+  return `/api/v1/temporal/life-areas/${lifeAreaRef}/visibility`;
+};
+
+/**
+ * @summary Set Life Area Visibility
+ */
+export const temporalSetLifeAreaVisibility = async (
+  lifeAreaRef: string,
+  visibilityLifeAreaRequest: VisibilityLifeAreaRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalSetLifeAreaVisibilityResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalSetLifeAreaVisibilityUrl(lifeAreaRef),
+    {
+      ...options,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(visibilityLifeAreaRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalSetLifeAreaVisibilityResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalSetLifeAreaVisibilityResponse;
 };
 
 export type reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchResponse200 =

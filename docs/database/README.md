@@ -6,8 +6,8 @@
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
-- **Timeline candidate Alembic head (source):** `20260920_43`
-- **Timeline candidate expected topology (PostgreSQL proof pending):** `118|5|46|90|237|156|335|0|0|0`
+- **Timeline candidate Alembic head (source):** `20260920_44`
+- **Timeline candidate expected topology (PostgreSQL proof pending):** `119|5|48|90|239|158|344|0|0|0`
 - **Timeline candidate DB overlay:** `timeline-temporal-operational.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 - **Persistence ADR:** `../decisions/ADR-010-postgresql-persistence-constitution.md`
@@ -67,7 +67,9 @@ Protected `main` remains integration authority. Candidate truth is never relabel
 20260919_41 B04-E duration runtime-read ACL
 20260920_42 B04-F Schedule hard-constraint guard
     ↓
-20260920_43 B05-A1 self-scoped Life Area catalog create/list [source head]
+20260920_43 B05-A Life Area initial create/list schema
+    ↓
+20260920_44 B05-A full actor-local Life Area lifecycle [source head]
 ```
 
 No accepted historical migration was edited, rebased, renumbered or flattened.
@@ -75,13 +77,13 @@ No accepted historical migration was edited, rebased, renumbered or flattened.
 ## 3. Current candidate topology
 
 ```text
-118 tables
+119 tables
 5 views
-46 routines
+48 routines
 90 triggers
-237 physical indexes
-156 foreign keys
-335 CHECK constraints
+239 physical indexes
+158 foreign keys
+344 CHECK constraints
 0 enums/domains
 0 sequences
 0 materialized views
@@ -89,7 +91,7 @@ No accepted historical migration was edited, rebased, renumbered or flattened.
 0 RLS policies
 ```
 
-The `_42` topology was read directly from PostgreSQL 18.6 during B04-F closure. The `_43` figures above are the **expected** Dictionary/migration topology for B05-A1 and remain pending direct PostgreSQL proof. No PostgreSQL PASS is claimed by these figures.
+The `_42` topology was read directly from PostgreSQL 18.6 during B04-F closure. The `_44` figures above are the **expected** Dictionary/migration topology for all of B05-A and remain pending direct PostgreSQL proof. No PostgreSQL PASS is claimed by these figures.
 
 ## 4. Timeline persistence classification
 
@@ -251,8 +253,8 @@ B04-D Movement Policy                CLOSED / PROVEN at 20260919_39
 B04-E Advanced-family applicability  CLOSED / PROVEN at 20260919_41
 B04-F Whole-B04 closure              CLOSED / PROVEN at 20260920_42
 B04 overall                          CLOSED / PROVEN
-B05-A1 Life Area create/list          IMPLEMENTED — DIRECT POSTGRESQL PROOF PENDING
-B05-A2+ lifecycle and assignment      OPEN
+B05-A Life Area full lifecycle        IMPLEMENTED — DIRECT POSTGRESQL PROOF PENDING
+B05-B primary assignment             OPEN
 ```
 
 Observed B04-E local evidence:
@@ -268,4 +270,4 @@ Proof covers duration lifecycle/current/history/CAS/idempotency, hard minimum/ma
 
 ## 7. Current next boundary
 
-B04-F whole-block closure is complete (see `../workstreams/timeline-temporal-operational-b04-f-closure-2026-09-20.md`). B05-A1 has added `dante.life_area`, `dante.life_area_create_operation`, `create_self_life_area` and `list_self_life_areas` at `_43`. These LR-12 records are not native-address entries, item assignments or Tag owners. Runtime is granted only bounded function EXECUTE; real PostgreSQL catalog/ACL proof and B05-A2 lifecycle remain open. The Dictionary and generated API client are updated in this change.
+B04-F whole-block closure is complete (see `../workstreams/timeline-temporal-operational-b04-f-closure-2026-09-20.md`). B05-A spans `_43` and `_44`: Life Area and immutable creation/mutation receipts, create/list/mutate/reorder bounded routines, and self-scoped API lifecycle. LR-12 profiles are not native-address entries, item assignments or Tag owners. Runtime has only bounded function EXECUTE; direct PostgreSQL catalog, ACL and application proof is outstanding before B05-A closure. The Dictionary and generated API client are updated in this change.

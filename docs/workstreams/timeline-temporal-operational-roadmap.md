@@ -4,8 +4,8 @@
 - **Branch/workstream:** `feature/timeline-temporal-operational`
 - **Current completed frontier:** B04 Temporal Constraints + Movement Policy ✅ CLOSED / PROVEN
 - **Current block:** B05 Product Organization 🟡 IN PROGRESS / A1 PROOF PENDING
-- **Current candidate DB source:** PostgreSQL 18.6 / Alembic `20260920_43`
-- **Candidate expected topology (PostgreSQL proof pending):** `118|5|46|90|237|156|335|0|0|0`
+- **Current candidate DB source:** PostgreSQL 18.6 / Alembic `20260920_44`
+- **Candidate expected topology (PostgreSQL proof pending):** `119|5|48|90|239|158|344|0|0|0`
 - **Live progress ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **B04 execution authority:** `docs/workstreams/timeline-temporal-operational-b04-execution-plan.md`
 - **B04-E closure:** `docs/workstreams/timeline-temporal-operational-b04-e-closure-2026-09-19.md`
@@ -217,7 +217,7 @@ B15 Whole Vertical Closure
 
 ```text
 B04 ✅ CLOSED / PROVEN
-B05 🟡 A1 IMPLEMENTED / DIRECT PROOF PENDING
+B05 🟡 A IMPLEMENTED / DIRECT PROOF PENDING
 ```
 
-Immediate action: local real-PostgreSQL proof of B05-A1 `_43` and API/catalog invariants, then B05-A2 lifecycle. The direct proof is not yet claimed. Follow the B05 execution plan; CI and Actions are not launched.
+Immediate action: local real-PostgreSQL proof of complete B05-A `_44` and API/catalog/lifecycle invariants, then B05-B primary assignment. The direct proof is not yet claimed. Follow the B05 execution plan; CI and Actions are not launched.

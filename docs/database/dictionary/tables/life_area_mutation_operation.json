@@ -2,15 +2,15 @@
   "$schema": "../schema/object-v1.schema.json",
   "dictionary_version": 1,
   "object": {
-    "key": "table:dante.life_area_create_operation",
+    "key": "table:dante.life_area_mutation_operation",
     "type": "table",
     "schema": "dante",
-    "name": "life_area_create_operation",
+    "name": "life_area_mutation_operation",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Self-scoped immutable create receipt; operation key never becomes a Life Area identity.",
+  "purpose": "Immutable self-scoped receipt for accepted Life Area lifecycle and order changes.",
   "classification": {
-    "persistence_role": "life_area_create_receipt",
+    "persistence_role": "life_area_mutation_receipt",
     "canonicality": "control",
     "family": "product_organization"
   },
@@ -32,11 +32,11 @@
   },
   "implementation": {
     "introducing_stage": "B05-A-LIFE-AREA-CATALOG",
-    "alembic_revision": "20260920_43",
+    "alembic_revision": "20260920_44",
     "sqlalchemy": {
       "mode": "orm_row",
       "module": "dante.platform.database.mappings.life_area",
-      "symbol": "LifeAreaCreateOperationRow"
+      "symbol": "LifeAreaMutationOperationRow"
     },
     "runtime_acl_stage": "B05-A-LIFE-AREA-CATALOG"
   },
@@ -50,9 +50,9 @@
           "kind": "none",
           "expression": null
         },
-        "meaning": "Idempotency actor scope.",
+        "meaning": "Self Person who owns this operation.",
         "semantic_type": "NativeRef",
-        "value_contract": "Existing self Person."
+        "value_contract": "Direct FK to Person; no new native owner."
       },
       {
         "name": "operation_id",
@@ -62,9 +62,9 @@
           "kind": "none",
           "expression": null
         },
-        "meaning": "Client operation key.",
+        "meaning": "Idempotent command key within self scope.",
         "semantic_type": null,
-        "value_contract": "Normalized nonempty up to 200 characters."
+        "value_contract": null
       },
       {
         "name": "intent_fingerprint",
@@ -74,49 +74,85 @@
           "kind": "none",
           "expression": null
         },
-        "meaning": "SHA-256 of version 1 normalized name JSON payload.",
+        "meaning": "SHA-256 fingerprint of typed normalized command.",
         "semantic_type": null,
-        "value_contract": "64 lowercase hexadecimal characters."
+        "value_contract": null
       },
       {
-        "name": "life_area_ref",
-        "postgres_type": "uuid",
+        "name": "mutation_kind",
+        "postgres_type": "text",
         "nullable": false,
         "default": {
           "kind": "none",
           "expression": null
         },
-        "meaning": "Created profile identifier, not a Domain reference.",
+        "meaning": "Rename, visibility, archive, appearance or reorder.",
         "semantic_type": null,
-        "value_contract": "FK to exactly one Life Area."
+        "value_contract": null
       },
       {
-        "name": "created_at",
+        "name": "life_area_ref",
+        "postgres_type": "uuid",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Changed profile; absent for whole-catalog reorder.",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "accepted_revision",
+        "postgres_type": "bigint",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Accepted new revision; absent for reorder.",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "affected_count",
+        "postgres_type": "integer",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Number of changed rows.",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "accepted_at",
         "postgres_type": "timestamp with time zone",
         "nullable": false,
         "default": {
           "kind": "none",
           "expression": null
         },
-        "meaning": "Atomic creation receipt instant.",
+        "meaning": "Database acceptance instant.",
         "semantic_type": null,
         "value_contract": null
       }
     ],
     "primary_key": {
-      "name": "pk_life_area_create_operation",
+      "name": "pk_life_area_mutation_operation",
       "columns": [
         "self_person_ref",
         "operation_id"
       ],
-      "reason": "One material operation per actor and key.",
+      "reason": "One receipt per self-scoped mutation key.",
       "deferrable": false,
       "initially": "NOT DEFERRABLE",
       "enforced": true
     },
     "foreign_keys": [
       {
-        "name": "fk_life_area_create_operation_self_person_ref_person",
+        "name": "fk_life_area_mutation_operation_self_person_ref_person",
         "columns": [
           "self_person_ref"
         ],
@@ -139,7 +175,7 @@
         "semantic_reason": "Actor scope exists."
       },
       {
-        "name": "fk_life_area_create_operation_life_area_ref_life_area",
+        "name": "fk_life_area_mutation_operation_life_area_ref_life_area",
         "columns": [
           "life_area_ref"
         ],
@@ -162,31 +198,44 @@
         "semantic_reason": "Receipt references one existing LR-12 profile."
       }
     ],
-    "unique_constraints": [
-      {
-        "name": "uq_life_area_create_operation_life_area_ref",
-        "columns": [
-          "life_area_ref"
-        ],
-        "reason": "One create receipt per profile.",
-        "deferrable": false,
-        "initially": "NOT DEFERRABLE",
-        "enforced": true
-      }
-    ],
+    "unique_constraints": [],
     "check_constraints": [
       {
-        "name": "ck_life_area_create_operation_operation_id",
+        "name": "ck_life_area_mutation_operation_operation_id",
         "expression_contract": "operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200",
-        "reason": "Normalized bounded operation key.",
+        "reason": "Bounded normalized operation key.",
         "enforced": true,
         "validated": true,
         "no_inherit": false
       },
       {
-        "name": "ck_life_area_create_operation_fingerprint",
+        "name": "ck_life_area_mutation_operation_fingerprint",
         "expression_contract": "intent_fingerprint ~ '^[0-9a-f]{64}$'",
-        "reason": "Canonical SHA-256 hexadecimal fingerprint.",
+        "reason": "Canonical SHA-256 fingerprint.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_life_area_mutation_operation_kind",
+        "expression_contract": "mutation_kind IN ('rename','visibility','archive','appearance','reorder')",
+        "reason": "Bounded lifecycle verbs.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_life_area_mutation_operation_shape",
+        "expression_contract": "(mutation_kind='reorder' AND life_area_ref IS NULL AND accepted_revision IS NULL) OR (mutation_kind<>'reorder' AND life_area_ref IS NOT NULL AND accepted_revision>=2)",
+        "reason": "Receipt shape matches operation kind.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_life_area_mutation_operation_count",
+        "expression_contract": "affected_count>=0",
+        "reason": "A reorder can be accepted unchanged.",
         "enforced": true,
         "validated": true,
         "no_inherit": false
@@ -194,7 +243,7 @@
     ],
     "indexes": [
       {
-        "name": "pk_life_area_create_operation",
+        "name": "pk_life_area_mutation_operation",
         "method": "btree",
         "unique": true,
         "keys": [
@@ -204,22 +253,7 @@
         "predicate": null,
         "include": [],
         "source": "primary_key",
-        "reason": "Atomic operation replay arbiter.",
-        "valid": true,
-        "ready": true,
-        "live": true
-      },
-      {
-        "name": "uq_life_area_create_operation_life_area_ref",
-        "method": "btree",
-        "unique": true,
-        "keys": [
-          "life_area_ref"
-        ],
-        "predicate": null,
-        "include": [],
-        "source": "unique_constraint",
-        "reason": "Prevent two create receipts claiming one profile.",
+        "reason": "Self-scoped idempotency arbiter.",
         "valid": true,
         "ready": true,
         "live": true
@@ -239,10 +273,10 @@
     "routine": null
   },
   "state_history": {
-    "material_state_behavior": "No Domain MaterialStateRef is introduced for product profile lifecycle.",
-    "current_binding": "Self-scoped current profile row; no accepted item assignment yet.",
-    "chronology": "created_at is statement-time PostgreSQL truth, not UUIDv7 order.",
-    "immutability_policy": "Never updated by create/replay; same key/different fingerprint conflicts."
+    "material_state_behavior": "Immutable LR-12 operation receipt, never Domain MaterialStateRef.",
+    "current_binding": "Retains acceptance revision and count independently of later current row changes.",
+    "chronology": "accepted_at records database statement-time acceptance.",
+    "immutability_policy": "Only bounded security-definer routines insert receipts; runtime has no raw table privileges."
   },
   "lifecycle": {
     "retention": "Retained for later association and user organization.",

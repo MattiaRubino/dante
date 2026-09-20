@@ -53,6 +53,7 @@ MAPPED_TABLES: tuple[Table, ...] = cast(
         activity.ActivityCreateOperationRow.__table__,
         life_area.LifeAreaRow.__table__,
         life_area.LifeAreaCreateOperationRow.__table__,
+        life_area.LifeAreaMutationOperationRow.__table__,
         event.EventExpectationRow.__table__,
         event.EventAgendaPartRow.__table__,
         event.EventAgendaCurrentRow.__table__,

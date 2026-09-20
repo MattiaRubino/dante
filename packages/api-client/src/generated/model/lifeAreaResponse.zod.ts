@@ -8,13 +8,26 @@ import * as zod from 'zod/mini';
 
 export const lifeAreaResponseReplayedDefault = false;
 export const LifeAreaResponse = /*#__PURE__*/ zod.object({
+  archived: /*#__PURE__*/ zod.boolean(),
+  color_code: /*#__PURE__*/ zod.union([
+    /*#__PURE__*/ zod.string(),
+    /*#__PURE__*/ zod.null(),
+  ]),
   created_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+  hidden: /*#__PURE__*/ zod.boolean(),
+  icon_code: /*#__PURE__*/ zod.union([
+    /*#__PURE__*/ zod.string(),
+    /*#__PURE__*/ zod.null(),
+  ]),
   life_area_ref: /*#__PURE__*/ zod.uuid(),
   name: /*#__PURE__*/ zod.string(),
   replayed: /*#__PURE__*/ zod._default(
     /*#__PURE__*/ zod.boolean(),
     lifeAreaResponseReplayedDefault,
   ),
+  revision: /*#__PURE__*/ zod.int(),
+  sort_order: /*#__PURE__*/ zod.int(),
+  updated_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
 });
 
 export type LifeAreaResponse = zod.input<typeof LifeAreaResponse>;

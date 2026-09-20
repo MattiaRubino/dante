@@ -2,15 +2,15 @@
   "$schema": "../schema/object-v1.schema.json",
   "dictionary_version": 1,
   "object": {
-    "key": "routine:dante.list_self_life_areas",
+    "key": "routine:dante.mutate_self_life_area",
     "type": "routine",
     "schema": "dante",
-    "name": "list_self_life_areas",
+    "name": "mutate_self_life_area",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Read the authenticated self Person catalog, including archived and hidden entries in explicit presentation order.",
+  "purpose": "Guarded actor-local rename, archive, visibility and appearance with CAS and immutable replay receipts.",
   "classification": {
-    "persistence_role": "list_self_life_areas",
+    "persistence_role": "mutate_self_life_area",
     "canonicality": "capability_surface",
     "family": "product_organization"
   },
@@ -52,14 +52,23 @@
     "view": null,
     "routine": {
       "routine_kind": "function",
-      "language": "sql",
+      "language": "plpgsql",
       "argument_types": [
-        "uuid"
+        "uuid",
+        "text",
+        "text",
+        "uuid",
+        "bigint",
+        "text",
+        "text",
+        "boolean",
+        "text",
+        "text"
       ],
-      "return_type": "TABLE(life_area_ref uuid, name text, created_at timestamp with time zone, revision bigint, sort_order bigint, archived boolean, hidden boolean, icon_code text, color_code text, updated_at timestamp with time zone)",
+      "return_type": "TABLE(accepted_revision bigint, replayed boolean)",
       "security": "DEFINER",
-      "volatility": "STABLE",
-      "parallel_safety": "SAFE",
+      "volatility": "VOLATILE",
+      "parallel_safety": "UNSAFE",
       "leakproof": false,
       "function_search_path": [
         "pg_catalog",
@@ -70,8 +79,8 @@
     }
   },
   "state_history": {
-    "material_state_behavior": "No Domain MaterialStateRef is introduced for product profile lifecycle.",
-    "current_binding": "Self-scoped current profile row; no accepted item assignment yet.",
+    "material_state_behavior": "LR-12 product metadata only; immutable receipt and current revision, no Domain MaterialStateRef.",
+    "current_binding": "Current self-scoped profile row; no item assignment yet.",
     "chronology": "created_at is statement-time PostgreSQL truth, not UUIDv7 order.",
     "immutability_policy": "Creation and lifecycle receipts immutable; current profile revisions govern mutations."
   },
@@ -95,10 +104,9 @@
   },
   "proof": {
     "obligations": [
-      "Runtime has no raw table DML or SELECT; operations use self-scoped guarded routines.",
-      "A profile ID is not NativeRef, ScopedRecordRef or Domain ownership.",
-      "Function owner dante_owner, trusted search_path and least-privilege runtime EXECUTE.",
-      "No other actor's areas appear; no generic runtime SELECT on profile tables."
+      "Runtime has function EXECUTE and no raw table access.",
+      "Person row lock serializes create and lifecycle; receipts prevent duplicate acceptance.",
+      "Optimistic revisions reject stale intent and replay retains acceptance evidence."
     ],
     "test_refs": [
       "apps/backend/tests/integration/temporal/test_b05_life_area_catalog.py",

@@ -1,14 +1,14 @@
 # Timeline / Temporal-Operational — B05 Product Organization Execution Plan
 
-- **Status:** PRE-SCOPE FROZEN / B05-A1 CREATE-LIST IMPLEMENTED, POSTGRESQL PROOF PENDING; B05 NOT CLOSED
+- **Status:** PRE-SCOPE FROZEN / FULL B05-A IMPLEMENTED, POSTGRESQL PROOF PENDING; B05 NOT CLOSED
 - **Date:** 2026-09-20
 - **Branch:** `feature/timeline-temporal-operational`
 - **Entering candidate DB:** PostgreSQL 18.6 / Alembic `20260920_42` / `116|5|44|90|233|153|331|0|0|0`
-- **B05-A1 source head / expected topology:** `20260920_43` / `118|5|46|90|237|156|335|0|0|0` (direct PostgreSQL proof pending)
+- **B05-A source head / expected topology:** `20260920_44` / `119|5|48|90|239|158|344|0|0|0` (direct PostgreSQL proof pending)
 - **Previous block:** B04 ✅ CLOSED / PROVEN
 - **CI / Actions:** not authorized by this plan
 
-This is the B05 entry gate required by the [current roadmap](timeline-temporal-operational-roadmap.md). It fixes the semantic contract and implementation order. The pre-scope itself introduced no migration/API; subsequent B05-A1 implementation adds create/list catalog at `_43`, with direct PostgreSQL proof still outstanding. It does not close B05-A or user acceptance.
+This is the B05 entry gate required by the [current roadmap](timeline-temporal-operational-roadmap.md). It fixes the semantic contract and implementation order. The pre-scope itself introduced no migration/API; B05-A implementation spans `_43` and `_44`, with direct PostgreSQL proof outstanding. It does not close B05-A or user acceptance.
 
 ## 1. Authority and representation
 
@@ -35,7 +35,7 @@ Current frontend inspection shows `contextId` as prototype metadata, a literal `
 
 | Slice | Owned outcome | Mandatory proof before closing |
 | --- | --- | --- |
-| **B05-A — Life Area catalog** | **A1:** LR-12 identity plus guarded create/list; **A2:** rename, reorder, archive, hide/show and optional icon/color; self-scoped reads/mutations. | A1 implemented, direct PG proof pending; no kernel/native-address pollution; self isolation, concurrency/idempotency, DB/ACL, Dictionary and API/client parity. A2 remains wholly open. |
+| **B05-A — Life Area catalog** | LR-12 identity, guarded create/list, rename, reorder, archive, hide/show and optional icon/color; self-scoped reads/mutations. | Source implemented, direct PG proof pending; no kernel/native-address pollution; self isolation, concurrency/idempotency, DB/ACL, Dictionary and API/client parity. |
 | **B05-B — primary assignment** | Typed actor-local one-primary-area relation for Activity/Event, creation and reassignment; inventory and transition for older rows; later eligible item families only when activated. | Referential integrity and actor authorization at DB/application boundary; atomic create/replay; no duplicate canonical item; archived target policy; existing-row reconciliation; B04 scheduling unchanged. |
 | **B05-C — secondary Tags** | Distinct actor-local multi-valued product Tag and item relation; no Goal/Plan or semantic hierarchy inference. | Tag is not primary owner, labels do not identify Domain concepts, independent many-valued association and cross-actor isolation. |
 | **B05-D — product integration** | Timeline unified/grouped/focused filtering over canonical assignments, create/edit/read of real catalog; postponed/TBD Event rediscovery and explicit replanning. | Real-stack coverage for scheduled/all-day/coarse/floating/unscheduled items, hidden conflicts, no fake Event time, Activity Planning Tray stays distinct, accessibility without color-only indication. |
@@ -43,15 +43,13 @@ Current frontend inspection shows `contextId` as prototype metadata, a literal `
 
 These letters are execution subdivisions **within documented B05**, not a renumbering of B06 Routine/Recurrence or B07 UI/UX consolidation. B05-D implements only the grouping/organization UI necessary for B05; broad UI cleanup stays B07. B03-E's postponed/TBD Event rediscovery is explicitly transferred into B05-D, without turning an Event into an Activity Planning Tray entry.
 
-## 4. B05-A1 physical/API decision and outstanding lifecycle freeze
+## 4. B05-A physical/API decision and lifecycle invariants
 
-B05-A1 inspected existing `account_application_context`, self Person, Activity/Event ownership and prototype grouping. It introduces `dante.life_area(life_area_ref, self_person_ref, name, created_at)` as an actor-local LR-12 profile with a direct Person FK and independent application UUIDv7 identifier; there is **no** registration in `native_address` or generic `scoped_address`. `dante.life_area_create_operation` records immutable `(self_person_ref, operation_id)` create receipts; a bounded SECURITY DEFINER create routine verifies/serializes/fingerprints/replays creation, and a bounded read routine returns only that self Person's catalog. Runtime has EXECUTE on those two routines and no raw table access. The HTTP create/list operations have explicit `temporal_*` IDs. This is the exact A1 physical choice, subject to direct PostgreSQL catalog/ACL proof, not an assertion that all of B05-A is frozen.
-
-B05-A2 must still freeze consequential change history/CAS per CP6 MAT-01, concurrent reorder, archive/visibility, icon/color, idempotent lifecycle mutations, policy for already-assigned items, owner/ACL and non-destructive rollback before adding those fields/operations. A stable application ID alone does not justify a MaterialStateRef. Do not add placeholders for future lifecycle to A1.
+`_43` establishes the actor-local LR-12 `life_area` profile with a Person FK, application UUIDv7 and immutable create receipt. `_44` adds positive current revision, complete actor-local order, non-destructive archive, actor-local visibility, optional bounded icon and uppercase RGB color, `updated_at`, and immutable lifecycle/reorder receipts. These profile revisions and receipts are product metadata, not Domain MaterialStateRefs; no `native_address` entry exists for an area. Creation and every mutation lock the self Person to serialize catalog changes. Each single-area mutation compares the expected revision and records acceptance atomically; reorder requires a complete permutation and expected revisions for every row, including archived rows. Replays return their accepted revision/count without altering later state. A no-op single-area mutation returns conflict; an unchanged complete reorder is recorded with zero changes. Mutation operation IDs are actor-local within the lifecycle/reorder receipt namespace, fingerprinted against normalized typed intent and never reused there for another verb or payload. Creation uses its separate immutable create receipt namespace. Names can duplicate; IDs remain distinct. Archive retains the row and history; hidden state and styling never change temporal/scheduling truth. B05-B must define assignment policy for archived targets and discoverability of already-assigned items before binding items. The runtime has only four bounded function EXECUTE privileges and no raw profile table access. A downgrade refuses to erase accepted profile lifecycle state.
 
 For every slice changing persistence, complete **in the same change**: forward-only Alembic → SQLAlchemy → Dictionary objects/scope → real PostgreSQL catalog + owner/ACL → DB README + candidate overlay → direct PostgreSQL tests → map/roadmap/handoff. Do not edit historical migrations or claim a calculated catalog topology as observed. For every new Temporal public operation: explicit stable `temporal_*` operationId → exact inventory test → exported OpenAPI snapshot → generated client (`pnpm api:generate`) → affected API/frontend tests and docs. No manual editing of generated code. A slice cannot be marked CLOSED/PROVEN while a current representation is known stale.
 
-The **pre-scope step** changed no structural artifacts. The subsequent B05-A1 slice adds `_43`, two mapped tables, two scoped functions and two explicit Temporal endpoints, with Dictionary/`scope.json`, API inventory and generated client updated in the same working change. `_43` direct migrated-PostgreSQL proof remains open: do not confuse source alignment with a real-catalog PASS.
+The **pre-scope step** changed no structural artifacts. B05-A spans `_43` and `_44`: three mapped tables, four scoped functions, seven explicit Temporal endpoints, Dictionary/`scope.json`, API inventory and generated client. `_44` direct migrated-PostgreSQL proof remains open: do not confuse source alignment with a real-catalog PASS.
 
 ## 5. Exit boundary and explicit exclusions
 
