@@ -95,8 +95,8 @@ Current candidate persistence authority:
 
 ```text
 PostgreSQL       18.6
-Alembic head     20260919_41
-Topology         116|5|43|90|233|153|331|0|0|0
+Alembic head     20260920_42
+Topology         116|5|44|90|233|153|331|0|0|0
 ```
 
 ---
@@ -186,7 +186,8 @@ Persistence authority:
 ```text
 20260919_40 planned Schedule duration constraints
 20260919_41 duration runtime-read ACL
-Topology      116|5|43|90|233|153|331|0|0|0
+20260920_42 Schedule hard-constraint guard
+Topology      116|5|44|90|233|153|331|0|0|0
 ```
 
 Observed proof:

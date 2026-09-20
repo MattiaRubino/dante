@@ -6,8 +6,8 @@
 - **PostgreSQL:** 18.6
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
-- **Current candidate Alembic head on `feature/timeline-temporal-operational`:** `20260919_41`
-- **Current candidate topology:** `116|5|43|90|233|153|331|0|0|0`
+- **Current candidate Alembic head on `feature/timeline-temporal-operational`:** `20260920_42`
+- **Current candidate topology:** `116|5|44|90|233|153|331|0|0|0`
 - **Frozen CP6 head:** `20260826_08`
 - **Last reconciled:** 2026-09-19
 
@@ -33,7 +33,7 @@ Authoritative counts are in `scope.json`:
 ```text
 tables      116
 views         5
-routines     43
+routines     44
 standalone  164
 triggers     90
 indexes      233
@@ -71,6 +71,7 @@ B04-D / 20260919_37 → 20260919_39
   Schedule Movement Policy + governed automatic move + proposal/acceptance
 
 B04-E / 20260919_40 → 20260919_41
+B04-F / 20260920_42 Schedule hard-constraint guard
   planned Schedule duration constraints + runtime read ACL
   boundary/window/duration evaluation composition
   hard-duration integration into governed automatic movement
@@ -181,7 +182,7 @@ Observed B04-E evidence:
 core duration + movement integration             4 PASS
 application/evaluator/regression                13 PASS / 3 deselected
 whole catalog + B04-E catalog reconciliation     3 PASS
-DATABASE_CURRENT_TOPOLOGY                         116|5|43|90|233|153|331|0|0|0
+DATABASE_CURRENT_TOPOLOGY                         116|5|44|90|233|153|331|0|0|0
 ```
 
 ## 7. Object contract

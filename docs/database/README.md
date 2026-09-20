@@ -6,8 +6,8 @@
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
-- **Timeline candidate Alembic head:** `20260919_41`
-- **Timeline candidate topology:** `116|5|43|90|233|153|331|0|0|0`
+- **Timeline candidate Alembic head:** `20260920_42`
+- **Timeline candidate topology:** `116|5|44|90|233|153|331|0|0|0`
 - **Timeline candidate DB overlay:** `timeline-temporal-operational.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 - **Persistence ADR:** `../decisions/ADR-010-postgresql-persistence-constitution.md`
@@ -64,7 +64,8 @@ Protected `main` remains integration authority. Candidate truth is never relabel
     ↓
 20260919_40 B04-E planned Schedule duration constraints
     ↓
-20260919_41 B04-E duration runtime-read ACL [current candidate head]
+20260919_41 B04-E duration runtime-read ACL
+20260920_42 B04-F Schedule hard-constraint guard [current candidate head]
 ```
 
 No accepted historical migration was edited, rebased, renumbered or flattened.
@@ -74,7 +75,7 @@ No accepted historical migration was edited, rebased, renumbered or flattened.
 ```text
 116 tables
 5 views
-43 routines
+44 routines
 90 triggers
 233 physical indexes
 153 foreign keys
@@ -255,7 +256,7 @@ Observed B04-E local evidence:
 core duration + movement integration             4 PASS
 application/evaluator/regression                13 PASS / 3 deselected
 whole catalog + B04-E catalog/ACL                3 PASS
-DATABASE_CURRENT_TOPOLOGY                        116|5|43|90|233|153|331|0|0|0
+DATABASE_CURRENT_TOPOLOGY                        116|5|44|90|233|153|331|0|0|0
 ```
 
 Proof covers duration lifecycle/current/history/CAS/idempotency, hard minimum/maximum behavior, soft violation explanation, boundary/window/duration composition, duration/window infeasibility, automatic-move enforcement, runtime least-privilege ACL and exact Dictionary/SQLAlchemy/Alembic/PostgreSQL parity.

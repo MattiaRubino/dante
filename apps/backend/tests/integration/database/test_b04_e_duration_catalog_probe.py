@@ -9,8 +9,8 @@ import pytest
 
 pytestmark = pytest.mark.postgres
 
-_EXPECTED_REVISION = "20260919_41"
-_EXPECTED_TOPOLOGY = (116, 5, 43, 90, 233, 153, 331, 0, 0, 0)
+_EXPECTED_REVISION = "20260920_42"
+_EXPECTED_TOPOLOGY = (116, 5, 44, 90, 233, 153, 331, 0, 0, 0)
 
 
 def _admin(database: Any) -> psycopg.Connection[Any]:

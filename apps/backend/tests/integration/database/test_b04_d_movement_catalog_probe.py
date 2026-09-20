@@ -9,8 +9,8 @@ import pytest
 
 pytestmark = pytest.mark.postgres
 
-_EXPECTED_REVISION = "20260919_39"
-_EXPECTED_TOPOLOGY = (115, 5, 42, 89, 232, 152, 329, 0, 0, 0)
+_EXPECTED_REVISION = "20260920_42"
+_EXPECTED_TOPOLOGY = (116, 5, 44, 90, 233, 153, 331, 0, 0, 0)
 
 _B04_D_TABLES = {
     "schedule_movement_policy_state",

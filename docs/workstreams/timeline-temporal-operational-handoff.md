@@ -34,8 +34,8 @@ Current candidate DB:
 
 ```text
 PostgreSQL 18.6
-Alembic     20260919_41
-Topology    116|5|43|90|233|153|331|0|0|0
+Alembic     20260920_42
+Topology    116|5|44|90|233|153|331|0|0|0
 ```
 
 ## 2. Binding foundation carried forward
@@ -115,6 +115,7 @@ Candidate chain:
 20260919_40 B04-E planned Schedule duration constraints
     ↓
 20260919_41 B04-E duration runtime-read ACL
+20260920_42 B04-F Schedule hard-constraint guard
 ```
 
 Canonical B04-E object/capability:
@@ -159,7 +160,7 @@ Observed local proof:
 core duration + movement integration             4 PASS
 application/evaluator/regression                13 PASS / 3 deselected
 whole catalog + Dictionary/SQLAlchemy/Alembic/DB 3 PASS
-DATABASE_CURRENT_TOPOLOGY                         116|5|43|90|233|153|331|0|0|0
+DATABASE_CURRENT_TOPOLOGY                         116|5|44|90|233|153|331|0|0|0
 ```
 
 No public Temporal HTTP endpoint was added in B04-E; no OpenAPI/client churn is claimed for E.

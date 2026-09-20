@@ -5,8 +5,8 @@
 - **Current completed frontier:** B04-E Advanced-family applicability ✅ CLOSED / PROVEN
 - **Current active block:** B04 Temporal Constraints + Movement Policy
 - **Current active slice:** B04-F Whole-B04 closure
-- **Current candidate DB authority:** PostgreSQL 18.6 / Alembic `20260919_41`
-- **Current candidate topology:** `116|5|43|90|233|153|331|0|0|0`
+- **Current candidate DB authority:** PostgreSQL 18.6 / Alembic `20260920_42`
+- **Current candidate topology:** `116|5|44|90|233|153|331|0|0|0`
 - **Live progress ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **B04 execution authority:** `docs/workstreams/timeline-temporal-operational-b04-execution-plan.md`
 - **B04-E closure:** `docs/workstreams/timeline-temporal-operational-b04-e-closure-2026-09-19.md`
@@ -153,7 +153,8 @@ Persistence authority:
 ```text
 20260919_40 planned Schedule duration constraints
 20260919_41 duration runtime read ACL
-116|5|43|90|233|153|331|0|0|0
+20260920_42 Schedule hard-constraint guard
+116|5|44|90|233|153|331|0|0|0
 ```
 
 Observed proof:

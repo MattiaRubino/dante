@@ -4,8 +4,8 @@
 - **Reconciled:** 2026-09-19
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
-- **Candidate head:** `20260919_41`
-- **Candidate topology:** `116|5|43|90|233|153|331|0|0|0`
+- **Candidate head:** `20260920_42`
+- **Candidate topology:** `116|5|44|90|233|153|331|0|0|0`
 - **Whole-DB SoR:** `README.md`
 - **Machine-readable authority:** `dictionary/`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
@@ -37,6 +37,8 @@ This file is the human-readable database overlay for Timeline candidate-only per
 20260919_40 B04-E planned Schedule duration constraints
     ↓
 20260919_41 B04-E duration runtime-read ACL
+    ↓
+20260920_42 B04-F Schedule hard-constraint guard
 ```
 
 ## 3. Temporal Constraint authority through B04-E
@@ -107,10 +109,10 @@ B04-E adds no public Temporal HTTP route; OpenAPI/client artifacts intentionally
 ## 6. Current candidate topology
 
 ```text
-Alembic     20260919_41
+Alembic     20260920_42
 Tables      116
 Views       5
-Routines    43
+Routines    44
 Triggers    90
 Indexes     233
 FKs         153
@@ -143,7 +145,7 @@ Observed B04-E evidence:
 core duration + movement integration             4 PASS
 application/evaluator/regression                13 PASS / 3 deselected
 whole catalog + B04-E catalog reconciliation     3 PASS
-DATABASE_CURRENT_TOPOLOGY                         116|5|43|90|233|153|331|0|0|0
+DATABASE_CURRENT_TOPOLOGY                         116|5|44|90|233|153|331|0|0|0
 ```
 
 ## 8. Next persistence boundary
