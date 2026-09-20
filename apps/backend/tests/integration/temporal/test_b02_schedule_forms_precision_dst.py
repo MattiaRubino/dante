@@ -8,7 +8,7 @@ from uuid import UUID, uuid7
 
 import psycopg
 import pytest
-from b05_legacy_test_support import ensure_test_life_area
+from tests.integration.temporal.b05_legacy_test_support import ensure_test_life_area
 
 from dante.auth.contracts import Principal
 from dante.context.contracts import DanteContext

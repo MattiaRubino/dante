@@ -13,9 +13,9 @@ from uuid import UUID, uuid7
 
 import psycopg
 import pytest
-from b05_legacy_test_support import api_test_life_area
 from fastapi.testclient import TestClient
 from pydantic import SecretStr
+from tests.integration.temporal.b05_legacy_test_support import api_test_life_area
 
 from dante.auth.email import normalize_email
 from dante.auth.passwords import PasswordKdf

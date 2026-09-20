@@ -217,4 +217,4 @@ uv run --locked pytest -q --no-cov -m postgres \
   tests/integration/temporal/test_b04_f_constrained_activity_application.py
 ```
 
-This `_46` command has not yet been run in a PostgreSQL-equipped environment; B05-B is not closed until its direct result is inspected. Any failed topology/ACL/application invariant must be repaired forward before a B05-B closure record is written.
+The first user-local `_46` run stopped during pytest collection: legacy B01/B03/B04 test modules imported their shared helper as a top-level module, which is not resolvable under the repository's `--import-mode=importlib`. All twelve helper imports now use its `tests.integration.temporal` package path. This is a test-only repair; the PostgreSQL assertions have not yet run. B05-B remains open until the direct rerun is inspected. Any failed topology/ACL/application invariant must be repaired forward before a B05-B closure record is written.
