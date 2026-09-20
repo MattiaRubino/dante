@@ -1,15 +1,15 @@
 # Timeline / Temporal-Operational Vertical — Implementation Roadmap
 
-- **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-19
+- **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-20
 - **Branch/workstream:** `feature/timeline-temporal-operational`
-- **Current completed frontier:** B04-E Advanced-family applicability ✅ CLOSED / PROVEN
-- **Current active block:** B04 Temporal Constraints + Movement Policy
-- **Current active slice:** B04-F Whole-B04 closure
+- **Current completed frontier:** B04 Temporal Constraints + Movement Policy ✅ CLOSED / PROVEN
+- **Next block:** B05 Product Organization ⬜ NEXT
 - **Current candidate DB authority:** PostgreSQL 18.6 / Alembic `20260920_42`
 - **Current candidate topology:** `116|5|44|90|233|153|331|0|0|0`
 - **Live progress ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **B04 execution authority:** `docs/workstreams/timeline-temporal-operational-b04-execution-plan.md`
 - **B04-E closure:** `docs/workstreams/timeline-temporal-operational-b04-e-closure-2026-09-19.md`
+- **B04 whole-block closure:** `docs/workstreams/timeline-temporal-operational-b04-f-closure-2026-09-20.md`
 
 The archived semantic freeze preserves the complete functionality/non-collapse inventory. This document is the current sequencing authority.
 
@@ -66,14 +66,14 @@ B01 Activity Core                                ✅ CLOSED / PROVEN
 B02 Schedule Core                                ✅ CLOSED / PROVEN
 B03 Event Core                                   ✅ CLOSED / PROVEN
 PRE-B04 DB/API GOVERNANCE                        ✅ CLOSED / FROZEN
-B04 Temporal Constraints + Movement Policy       🟡 IN PROGRESS
+B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
 ├─ B04-A Temporal Constraint canonical core      ✅ CLOSED / PROVEN
 ├─ B04-B Boundary / Deadline constraints         ✅ CLOSED / PROVEN
 ├─ B04-C Windows / Preferences / Evaluation      ✅ CLOSED / PROVEN
 ├─ B04-D Movement Policy                         ✅ CLOSED / PROVEN
 ├─ B04-E Advanced-family applicability           ✅ CLOSED / PROVEN
-└─ B04-F Whole-B04 closure                       🟡 ACTIVE
-B05 Product Organization                         ⬜
+└─ B04-F Whole-B04 closure                       ✅ CLOSED / PROVEN
+B05 Product Organization                         ⬜ NEXT
 B06 Routine / Recurrence / Occurrence Baseline   ⬜
 B07 UI/UX Consolidation v1                       ⬜
 B08 Session Runtime                              ⬜
@@ -86,7 +86,7 @@ B14 Analytics / Statistics / Signals             ⬜
 B15 Whole Vertical Closure                       ⬜
 ```
 
-B05 starts only after B04-F closes the whole B04 block.
+B05 may begin only through its own approved pre-scope.
 
 ---
 
@@ -169,7 +169,7 @@ Closure authority: `timeline-temporal-operational-b04-e-closure-2026-09-19.md`.
 
 ---
 
-# 3. B04-F — Whole-B04 closure 🟡 ACTIVE
+# 3. B04-F — Whole-B04 closure ✅ CLOSED / PROVEN
 
 B04-F is a closure/proof slice, not a new semantic-family implementation slice.
 
@@ -192,14 +192,7 @@ DB README + Timeline candidate overlay reconciliation
 map / roadmap / handoff / final B04 closure record
 ```
 
-Execution discipline for B04-F:
-
-- first inventory what is already proven by B04-A..E and do not rerun redundant micro-tests;
-- run compact whole-B04 backend/PostgreSQL regressions locally;
-- run exact Temporal OpenAPI/inventory and generated-client parity only where required by the already-public B04-A/B/C contract;
-- inspect current frontend Create/edit/read/explanation behavior and distinguish prototype-only fields from backend-backed truth;
-- request manual userTest only for product behavior that cannot be proven in the connector/runtime environment;
-- close B04 only after every frozen ledger item is implemented, explicitly deferred, or proven out-of-scope with an owner/reopening trigger.
+Closure authority: `timeline-temporal-operational-b04-f-closure-2026-09-20.md`.
 
 ---
 
@@ -222,8 +215,8 @@ B15 Whole Vertical Closure
 # 5. Current gate
 
 ```text
-B04-E ✅ CLOSED / PROVEN
-B04-F 🟡 ACTIVE
+B04 ✅ CLOSED / PROVEN
+B05 ⬜ NEXT
 ```
 
-Immediate action: perform the compact whole-B04 proof/reconciliation matrix. CI remains separate and is not implicitly authorized.
+Immediate action: prepare the bounded B05 Product Organization pre-scope. CI remains separate and is not implicitly authorized.

@@ -1,12 +1,13 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B03 ✅ CLOSED / PROVEN + pre-B04 governance ✅ FROZEN + B04-A/B/C/D/E ✅ CLOSED / PROVEN → B04-F ACTIVE
-- **Reconciled:** 2026-09-19
+- **Status:** B03 ✅ CLOSED / PROVEN + pre-B04 governance ✅ FROZEN + B04 ✅ CLOSED / PROVEN → B05 NEXT
+- **Reconciled:** 2026-09-20
 - **Branch:** `feature/timeline-temporal-operational`
 - **Current roadmap:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Current live map/ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **B04 execution authority:** `docs/workstreams/timeline-temporal-operational-b04-execution-plan.md`
 - **B04-E closure:** `docs/workstreams/timeline-temporal-operational-b04-e-closure-2026-09-19.md`
+- **B04 whole-block closure:** `docs/workstreams/timeline-temporal-operational-b04-f-closure-2026-09-20.md`
 - **Timeline candidate DB overlay:** `docs/database/timeline-temporal-operational.md`
 - **CI:** no CI launch is implied or authorized
 
@@ -18,14 +19,14 @@ B01 Activity Core                                ✅ CLOSED / PROVEN
 B02 Schedule Core                                ✅ CLOSED / PROVEN
 B03 Event Core                                   ✅ CLOSED / PROVEN
 PRE-B04 DB/API GOVERNANCE                        ✅ CLOSED / FROZEN
-B04 Temporal Constraints + Movement Policy       🟡 IN PROGRESS
+B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
 ├─ B04-A Temporal Constraint canonical core      ✅ CLOSED / PROVEN
 ├─ B04-B Boundary / Deadline                     ✅ CLOSED / PROVEN
 ├─ B04-C Windows / Preferences / Evaluation      ✅ CLOSED / PROVEN
 ├─ B04-D Movement Policy                         ✅ CLOSED / PROVEN
 ├─ B04-E Advanced-family applicability           ✅ CLOSED / PROVEN
-└─ B04-F Whole-B04 closure                       🟡 ACTIVE
-B05 Product Organization                         ⬜
+└─ B04-F Whole-B04 closure                       ✅ CLOSED / PROVEN
+B05 Product Organization                         ⬜ NEXT
 ...
 B15 Whole Vertical Closure                       ⬜
 ```
@@ -184,34 +185,17 @@ optimization/replanning search
 multi-actor grants / complete Authority model
 ```
 
-## 9. Immediate active gate — B04-F
+## 9. B04 whole-block closure
 
-B04-F is whole-block closure. It must not add a new constraint family merely to produce more implementation work.
+Closure authority: `timeline-temporal-operational-b04-f-closure-2026-09-20.md`.
 
-Required proof/reconciliation:
-
-```text
-whole B04 PostgreSQL/backend regressions
-Activity/Event/Schedule integration regression
-hard vs soft evaluation
-Deadline passage != Outcome
-Movement Policy + proposal/acceptance enforcement
-duration integration
-exact Temporal public API inventory
-OpenAPI snapshot/export parity and generated-client check
-frontend Create/edit/read/explanation audit against backend truth
-real-stack/manual userTest only where product behavior cannot be proven automatically
-Dictionary / SQLAlchemy / Alembic parity
-final DB docs/map/roadmap/handoff/B04 closure record
-```
-
-Prototype-only UI fields are not proof.
+It records compact final PostgreSQL/web proof, Dictionary/Alembic reconciliation and the accepted real-stack manual hard-window flow. `Fascia` remains a B02 coarse Schedule placement, not a B04 constraint.
 
 ## 10. Current gate
 
 ```text
-B04-E ✅ CLOSED / PROVEN
-B04-F 🟡 ACTIVE
+B04 ✅ CLOSED / PROVEN
+B05 ⬜ NEXT
 ```
 
-Proceed with compact whole-B04 proof inventory and avoid redundant micro-test reruns. CI remains separately authorized and should not replace faster local gates.
+Prepare B05 only through its own bounded pre-scope. CI remains separately authorized and should not replace faster local gates.

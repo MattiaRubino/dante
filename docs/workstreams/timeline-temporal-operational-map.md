@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational Vertical — Semantic Work Map / Live Ledger
 
-- **Status:** CURRENT SEMANTIC MAP + LIVE IMPLEMENTATION LEDGER — reconciled 2026-09-19
+- **Status:** CURRENT SEMANTIC MAP + LIVE IMPLEMENTATION LEDGER — reconciled 2026-09-20
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **B04 execution plan:** `docs/workstreams/timeline-temporal-operational-b04-execution-plan.md`
@@ -9,6 +9,7 @@
 - **B04-C closure:** `docs/workstreams/timeline-temporal-operational-b04-c-closure-2026-09-19.md` ✅
 - **B04-D closure:** `docs/workstreams/timeline-temporal-operational-b04-d-closure-2026-09-19.md` ✅
 - **B04-E closure:** `docs/workstreams/timeline-temporal-operational-b04-e-closure-2026-09-19.md` ✅
+- **B04-F / whole-B04 closure:** `docs/workstreams/timeline-temporal-operational-b04-f-closure-2026-09-20.md` ✅
 - **Timeline candidate DB overlay:** `docs/database/timeline-temporal-operational.md`
 
 The archived semantic freeze remains the binding detailed inventory for the full vertical. This file is the live implementation/proof ledger.
@@ -71,14 +72,14 @@ B01 Activity Core                                ✅ CLOSED / PROVEN
 B02 Schedule Core                                ✅ CLOSED / PROVEN
 B03 Event Core                                   ✅ CLOSED / PROVEN
 PRE-B04 DB/API GOVERNANCE                        ✅ CLOSED / FROZEN
-B04 Temporal Constraints + Movement Policy       🟡 IN PROGRESS
+B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
 ├─ B04-A Temporal Constraint canonical core      ✅ CLOSED / PROVEN
 ├─ B04-B Boundary / Deadline constraints         ✅ CLOSED / PROVEN
 ├─ B04-C Windows / Preferences / Evaluation      ✅ CLOSED / PROVEN
 ├─ B04-D Movement Policy                         ✅ CLOSED / PROVEN
 ├─ B04-E Advanced-family applicability           ✅ CLOSED / PROVEN
-└─ B04-F Whole-B04 closure                       🟡 ACTIVE
-B05 Product Organization                         ⬜
+└─ B04-F Whole-B04 closure                       ✅ CLOSED / PROVEN
+B05 Product Organization                         ⬜ NEXT
 B06 Routine / Recurrence / Occurrence Baseline   ⬜
 B07 UI/UX Consolidation v1                       ⬜
 B08 Session Runtime                              ⬜
@@ -200,7 +201,7 @@ whole catalog / Dictionary / SQLAlchemy / DB     3 PASS
 
 Closure authority: `timeline-temporal-operational-b04-e-closure-2026-09-19.md`.
 
-## B04-F Whole-B04 closure 🟡 ACTIVE
+## B04-F Whole-B04 closure ✅ CLOSED / PROVEN
 
 B04-F does not invent a new Temporal Constraint family. It closes the whole B04 block through:
 
@@ -215,7 +216,9 @@ Dictionary / SQLAlchemy / Alembic reconciliation
 final DB docs + map/roadmap/handoff + B04 closure record
 ```
 
-No PASS may come from prototype-only fields.
+The whole-B04 closure record is `timeline-temporal-operational-b04-f-closure-2026-09-20.md`.
+
+No PASS came from prototype-only fields.
 
 ---
 
@@ -238,8 +241,8 @@ B15  whole-vertical closure
 # 6. Current gate
 
 ```text
-B04-E ✅ CLOSED / PROVEN
-B04-F 🟡 ACTIVE
+B04 ✅ CLOSED / PROVEN
+B05 ⬜ NEXT
 ```
 
-Immediate next gate: whole-B04 regression and representation/product acceptance required by the frozen B04 execution plan. CI remains separate and is not implicitly authorized.
+Next gate: B05 pre-scope. CI remains separate and is not implicitly authorized.
