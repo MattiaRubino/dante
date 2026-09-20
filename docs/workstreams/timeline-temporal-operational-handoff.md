@@ -212,6 +212,7 @@ uv run --locked pytest -q --no-cov -m postgres \
   tests/integration/temporal/test_b05_primary_life_area_assignment.py \
   tests/integration/temporal/test_b05_secondary_tags.py \
   tests/integration/database/test_database_current_catalog.py \
+  tests/integration/database/test_current_catalog.py \
   tests/integration/database/test_b04_d_movement_catalog_probe.py \
   tests/integration/database/test_b04_e_duration_catalog_probe.py \
   tests/integration/temporal/test_b01_activity_core.py \
