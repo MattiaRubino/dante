@@ -1,13 +1,13 @@
 # DANTE Database System of Record
 
 - **Status:** CURRENT / AUTHORITATIVE DATABASE REFERENCE
-- **Last reconciled:** 2026-09-20
+- **Last reconciled:** 2026-09-21
 - **PostgreSQL:** 18.6
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
 - **Timeline candidate Alembic head (source):** `20260921_48`
-- **Timeline candidate expected topology:** `129|5|62|90|254|185|366|0|0|0` (B05-D local proof pending)
+- **Timeline candidate expected topology:** `129|5|62|90|254|185|366|0|0|0` (B05-D proven)
 - **Timeline candidate DB overlay:** `timeline-temporal-operational.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 - **Persistence ADR:** `../decisions/ADR-010-postgresql-persistence-constitution.md`
@@ -77,7 +77,7 @@ Protected `main` remains integration authority. Candidate truth is never relabel
 20260920_46 B05-B typed primary Life Area assignment [16 direct PostgreSQL tests PASSED]
     ↓
 20260920_47 B05-C secondary actor-local Tags and typed Activity/Event edges [26 direct PostgreSQL tests PASSED]
-20260921_48 B05-D postponed Event discovery/replan capability [local proof pending]
+20260921_48 B05-D postponed Event discovery/replan capability [24 PostgreSQL/API/catalog + 41 selected web tests PASSED]
 ```
 
 No accepted historical migration was edited, rebased, renumbered or flattened.
@@ -279,4 +279,4 @@ Proof covers duration lifecycle/current/history/CAS/idempotency, hard minimum/ma
 
 ## 7. Current next boundary
 
-B04-F, B05-A, B05-B and B05-C are closed with direct PostgreSQL proof (see their workstream closure records). `_46` keeps explicit legacy-unassigned Activity/Event items and revokes runtime access to bare create helpers. `_47` adds a distinct Tag catalog and independent many-valued typed Activity/Event edges, with immutable acceptance receipts and bounded runtime functions. The user's 26-test `_47` run passed; B05-D frontend integration remains open. B04 Schedule truth is unchanged.
+B04-F and B05-A through B05-D are closed with their recorded proof. `_46` keeps explicit legacy-unassigned Activity/Event items and revokes runtime access to bare create helpers. `_47` adds a distinct Tag catalog and independent many-valued typed Activity/Event edges, with immutable acceptance receipts and bounded runtime functions. `_48` adds a bounded Event-only postponed discovery/replan capability without fabricating placement truth. The user's B05-D gate passed 24 PostgreSQL/API/catalog tests and 41 selected web tests; B05-E whole-block reconciliation remains open. B04 Schedule truth is unchanged.

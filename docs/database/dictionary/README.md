@@ -7,9 +7,9 @@
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Current candidate Alembic source head on `feature/timeline-temporal-operational`:** `20260921_48`
-- **Current candidate expected topology:** `129|5|62|90|254|185|366|0|0|0` (B05-D local proof pending)
+- **Current candidate expected topology:** `129|5|62|90|254|185|366|0|0|0` (B05-D proven)
 - **Frozen CP6 head:** `20260826_08`
-- **Last reconciled:** 2026-09-20
+- **Last reconciled:** 2026-09-21
 
 ## 1. Purpose
 
@@ -88,10 +88,15 @@ B05-B / 20260920_46
   bounded create/reassign/list/legacy inventory; direct old create privilege retired
   no invented legacy default, provider calendar, Domain owner, Tag or sharing grant
 
-B05-D candidate / 20260921_48
+B05-C / 20260920_47
   actor-local secondary Tag catalog, archive and immutable operation receipt
   typed independent Activity/Event many-valued edges and attach/detach receipts
   no primary-area replacement, hierarchy, Goal/Plan or sharing grant
+
+B05-D / 20260921_48
+  actor-scoped postponed Event discovery with no fabricated placement
+  Event/Schedule pair assertion and governed Undo + normal replan composition
+  no Activity Planning Tray conversion, new Domain owner or Schedule-truth bypass
 ```
 
 The object tree and `scope.json`, not this prose summary, are structural source of truth.
@@ -231,4 +236,4 @@ extension-owned objects excluded correctly
 
 No real object → no ceremonial Dictionary entry. Every real current DANTE business object requires matching Dictionary/Alembic/SQLAlchemy/current-human-reference/direct-PostgreSQL proof in the same reviewed slice.
 
-B04-F, B05-A, B05-B and B05-C are closed. User-run `_46` selected catalog/ACL/application proof passed (16 tests); legacy items remain unassigned until explicitly reconciled. `_47` adds six Tag catalog/typed-edge/receipt tables and six bounded functions, with matching mappings and Dictionary objects. Its direct PostgreSQL proof passed (26 selected tests). B05-D frontend integration remains open.
+B04-F and B05-A through B05-D are closed. User-run `_46` selected catalog/ACL/application proof passed (16 tests); legacy items remain unassigned until explicitly reconciled. `_47` adds six Tag catalog/typed-edge/receipt tables and six bounded functions, with matching mappings and Dictionary objects. Its direct PostgreSQL proof passed (26 selected tests). `_48` adds the postponed Event discovery/replan routines with matching mapping and Dictionary entries; the B05-D gate passed. B05-E whole-block reconciliation remains open.

@@ -1,11 +1,11 @@
 # Timeline / Temporal-Operational Vertical — Implementation Roadmap
 
-- **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-20
+- **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-21
 - **Branch/workstream:** `feature/timeline-temporal-operational`
-- **Current completed frontier:** B05-A/B/C ✅ CLOSED / PROVEN
-- **Current block:** B05 Product Organization 🟡 B05-D PRODUCT INTEGRATION
+- **Current completed frontier:** B05-A/B/C/D ✅ CLOSED / PROVEN
+- **Current block:** B05 Product Organization 🟡 B05-E WHOLE-BLOCK CLOSURE
 - **Current candidate DB source:** PostgreSQL 18.6 / Alembic `20260921_48`
-- **Candidate expected topology:** `129|5|62|90|254|185|366|0|0|0` (B05-D local proof pending)
+- **Candidate expected topology:** `129|5|62|90|254|185|366|0|0|0` (B05-D proven)
 - **Live progress ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **B04 execution authority:** `docs/workstreams/timeline-temporal-operational-b04-execution-plan.md`
 - **B04-E closure:** `docs/workstreams/timeline-temporal-operational-b04-e-closure-2026-09-19.md`
@@ -74,7 +74,7 @@ B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
 ├─ B04-D Movement Policy                         ✅ CLOSED / PROVEN
 ├─ B04-E Advanced-family applicability           ✅ CLOSED / PROVEN
 └─ B04-F Whole-B04 closure                       ✅ CLOSED / PROVEN
-B05 Product Organization                         🟡 B05-D product integration
+B05 Product Organization                         🟡 B05-E whole-block closure
 B06 Routine / Recurrence / Occurrence Baseline   ⬜
 B07 UI/UX Consolidation v1                       ⬜
 B08 Session Runtime                              ⬜
@@ -87,7 +87,7 @@ B14 Analytics / Statistics / Signals             ⬜
 B15 Whole Vertical Closure                       ⬜
 ```
 
-B05-A is closed with direct `_45` proof. B05-B passed 16 selected PostgreSQL tests at `_46` and is closed; its closure record fixes the retained legacy-unassigned boundary. B05-C passed 26 selected direct PostgreSQL tests at `_47` and is closed. B05-D is implemented as candidate `_48` and awaits the user's local API/database/frontend proof before B05-E closure.
+B05-A is closed with direct `_45` proof. B05-B passed 16 selected PostgreSQL tests at `_46` and is closed; its closure record fixes the retained legacy-unassigned boundary. B05-C passed 26 selected direct PostgreSQL tests at `_47` and is closed. B05-D passed deterministic generated/client/typecheck gates, 41 selected web tests and 24 selected PostgreSQL/API/catalog tests at `_48`; B05-E now owns only whole-block reconciliation and manual product closure.
 
 ---
 
@@ -220,7 +220,8 @@ B04 ✅ CLOSED / PROVEN
 B05-A ✅ CLOSED / PROVEN at `_45`
 B05-B ✅ CLOSED / PROVEN at `_46`
 B05-C ✅ CLOSED / PROVEN at `_47` (26 selected PostgreSQL tests)
-B05-D 🟡 PRODUCT INTEGRATION ACTIVE
+B05-D ✅ CLOSED / PROVEN at `_48` (41 selected web + 24 PostgreSQL/API/catalog tests)
+B05-E 🟡 WHOLE-BLOCK CLOSURE ACTIVE
 ```
 
-Current action: implement B05-D product integration over the proved `_47` catalog and typed assignment/Tag APIs. No B05 whole-block closure is claimed; no CI or Actions are launched.
+Current action: discharge the B05-E whole-block ledger and manual product walkthrough. B05 itself is not closed; no CI or Actions are launched.

@@ -1,17 +1,17 @@
 # Timeline / Temporal-Operational — B05 Product Organization Execution Plan
 
-- **Status:** B05-A/B/C ✅ CLOSED / PROVEN → B05-D PRODUCT INTEGRATION ACTIVE; B05 NOT CLOSED
+- **Status:** B05-A/B/C/D ✅ CLOSED / PROVEN → B05-E WHOLE-BLOCK CLOSURE ACTIVE; B05 NOT CLOSED
 - **Date:** 2026-09-20
 - **Branch:** `feature/timeline-temporal-operational`
 - **Entering candidate DB:** PostgreSQL 18.6 / Alembic `20260920_42` / `116|5|44|90|233|153|331|0|0|0`
 - **B05-A proved head / topology:** `20260920_45` / `119|5|48|90|239|158|344|0|0|0`
 - **B05-B proved head / topology:** `20260920_46` / `123|5|54|90|245|170|354|0|0|0`
 - **B05-C proved head / expected topology:** `20260920_47` / `129|5|60|90|254|185|366|0|0|0` (26 selected direct PostgreSQL tests passed)
-- **B05-D implementation candidate:** `20260921_48` / `129|5|62|90|254|185|366|0|0|0` (local proof pending; it is not closed/proven).
+- **B05-D proved head / topology:** `20260921_48` / `129|5|62|90|254|185|366|0|0|0` (24 PostgreSQL + 41 selected web tests passed; see [closure](timeline-temporal-operational-b05-d-closure-2026-09-21.md)).
 - **Previous block:** B04 ✅ CLOSED / PROVEN
 - **CI / Actions:** not authorized by this plan
 
-This is the B05 entry gate required by the [current roadmap](timeline-temporal-operational-roadmap.md). It fixes the semantic contract and implementation order. B05-A and B05-B are closed with direct PostgreSQL evidence in their [catalog](timeline-temporal-operational-b05-a-closure-2026-09-20.md) and [assignment](timeline-temporal-operational-b05-b-closure-2026-09-20.md) closure records. B05-C is closed with direct PostgreSQL evidence in its [Tag closure record](timeline-temporal-operational-b05-c-closure-2026-09-20.md). B05-D proceeds under the retained contract below.
+This is the B05 entry gate required by the [current roadmap](timeline-temporal-operational-roadmap.md). It fixes the semantic contract and implementation order. B05-A and B05-B are closed with direct PostgreSQL evidence in their [catalog](timeline-temporal-operational-b05-a-closure-2026-09-20.md) and [assignment](timeline-temporal-operational-b05-b-closure-2026-09-20.md) closure records. B05-C is closed with direct PostgreSQL evidence in its [Tag closure record](timeline-temporal-operational-b05-c-closure-2026-09-20.md). B05-D is closed with the user-run evidence recorded in its [closure record](timeline-temporal-operational-b05-d-closure-2026-09-21.md). B05-E proceeds under the retained contract below.
 
 ## 1. Authority and representation
 

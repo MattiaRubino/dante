@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational Vertical — Semantic Work Map / Live Ledger
 
-- **Status:** CURRENT SEMANTIC MAP + LIVE IMPLEMENTATION LEDGER — reconciled 2026-09-20
+- **Status:** CURRENT SEMANTIC MAP + LIVE IMPLEMENTATION LEDGER — reconciled 2026-09-21
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **B04 execution plan:** `docs/workstreams/timeline-temporal-operational-b04-execution-plan.md`
@@ -14,6 +14,7 @@
 - **B05-A closure:** `docs/workstreams/timeline-temporal-operational-b05-a-closure-2026-09-20.md` ✅
 - **B05-B closure:** `docs/workstreams/timeline-temporal-operational-b05-b-closure-2026-09-20.md` ✅
 - **B05-C closure:** `docs/workstreams/timeline-temporal-operational-b05-c-closure-2026-09-20.md` ✅
+- **B05-D closure:** `docs/workstreams/timeline-temporal-operational-b05-d-closure-2026-09-21.md` ✅
 - **Timeline candidate DB overlay:** `docs/database/timeline-temporal-operational.md`
 
 The archived semantic freeze remains the binding detailed inventory for the full vertical. This file is the live implementation/proof ledger.
@@ -83,7 +84,7 @@ B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
 ├─ B04-D Movement Policy                         ✅ CLOSED / PROVEN
 ├─ B04-E Advanced-family applicability           ✅ CLOSED / PROVEN
 └─ B04-F Whole-B04 closure                       ✅ CLOSED / PROVEN
-B05 Product Organization                         🟡 B05-D product integration
+B05 Product Organization                         🟡 B05-E whole-block closure
 B06 Routine / Recurrence / Occurrence Baseline   ⬜
 B07 UI/UX Consolidation v1                       ⬜
 B08 Session Runtime                              ⬜
@@ -101,7 +102,7 @@ Current candidate persistence authority:
 ```text
 PostgreSQL       18.6
 Alembic source   20260921_48
-Expected topology 129|5|62|90|254|185|366|0|0|0 (B05-D local proof pending)
+Expected topology 129|5|62|90|254|185|366|0|0|0 (B05-D proven)
 ```
 
 ---
@@ -226,9 +227,9 @@ No PASS came from prototype-only fields.
 
 ---
 
-# 5. B05 — Product Organization 🟡 IMPLEMENTATION OPEN
+# 5. B05 — Product Organization 🟡 WHOLE-BLOCK CLOSURE OPEN
 
-Execution authority: `timeline-temporal-operational-b05-execution-plan.md`. B05-A LR-12 catalog, B05-B actor-local typed Activity/Event assignments and B05-C Tag catalog/typed secondary edges are proven by direct PostgreSQL runs. B05-D frontend integration remains open. None is a new Domain owner or an implicit assignment of old rows.
+Execution authority: `timeline-temporal-operational-b05-execution-plan.md`. B05-A LR-12 catalog, B05-B actor-local typed Activity/Event assignments, B05-C Tag catalog/typed secondary edges and B05-D production integration are proven. None is a new Domain owner or an implicit assignment of old rows.
 
 ```text
 ORG-001  authority/pre-scope             ✅ pre-scope recorded
@@ -238,15 +239,15 @@ ORG-004..008  rename/reorder/archive/hide/appearance                 ✅ B05-A p
 ORG-009  primary per-actor item assignment                         ✅ B05-B proven
 ORG-010  separate secondary Tags                                ✅ B05-C proven
 ORG-011  non-collapse with Goal/Plan/Tag/Place/provider calendar  ⬜ verify throughout
-ORG-012  real Timeline organization and filtering                ⬜ B05-D
-ORG-013  hidden-item scheduling/conflict relevance               ⬜ B05-D
+ORG-012  real Timeline organization and filtering                ✅ B05-D
+ORG-013  hidden-item scheduling/conflict relevance               ✅ B05-D
 ORG-014  actor-local self-only boundary without invented grants    ✅ B05-B proven / B09 sharing deferred
-ORG-015  accessible non-color-only presentation                  ⬜ B05-D
-B05-T01..05  automated lifecycle, relation, view, conflict, accessibility proofs  ⬜
+ORG-015  accessible non-color-only presentation                  ✅ B05-D
+B05-T01..05  automated lifecycle, relation, view, conflict, accessibility proofs  ✅ B05-A..D proven
 B05-T06  manual Life Area organization userTest                    ⬜ B05-E
 ```
 
-The B03-E transferred postponed/TBD Event rediscovery belongs to B05-D: no Activity Planning Tray conversion and no invented placement. B05-A `_43`–`_45` and B05-B `_46` are proven. `_46` binds newly created Activity/Event to an actor-local area atomically and inventories unassigned legacy rows. B05-C `_47` adds distinct secondary many-valued Tag profiles and typed edges, proved by 26 direct PostgreSQL tests. B05-D and B05 as a whole remain open.
+The B03-E transferred postponed/TBD Event rediscovery belongs to B05-D: no Activity Planning Tray conversion and no invented placement. B05-A `_43`–`_45` and B05-B `_46` are proven. `_46` binds newly created Activity/Event to an actor-local area atomically and inventories unassigned legacy rows. B05-C `_47` adds distinct secondary many-valued Tag profiles and typed edges, proved by 26 direct PostgreSQL tests. B05-D `_48` is proven by generated/client/typecheck gates, 41 selected web tests and 24 selected PostgreSQL/API/catalog tests; B05-E remains open.
 
 ---
 
@@ -273,7 +274,8 @@ B04 ✅ CLOSED / PROVEN
 B05-A ✅ CLOSED / PROVEN
 B05-B ✅ CLOSED / PROVEN at `_46`
 B05-C ✅ CLOSED / PROVEN at `_47` (26 selected PostgreSQL tests)
-B05-D 🟡 PRODUCT INTEGRATION ACTIVE
+B05-D ✅ CLOSED / PROVEN at `_48` (41 selected web + 24 PostgreSQL/API/catalog tests)
+B05-E 🟡 WHOLE-BLOCK CLOSURE ACTIVE
 ```
 
-Current gate: B05-A/B/C ✅ CLOSED / PROVEN; B05-D product integration is active. ORG-010 Tag catalog and typed edges are proved; frontend and whole-block obligations remain open. No CI/Actions dispatched.
+Current gate: B05-A/B/C/D ✅ CLOSED / PROVEN. B05-E must reconcile the ledger and obtain the manual Life Area organization walkthrough before any B05 whole-block closure. No CI/Actions dispatched.
