@@ -116,6 +116,7 @@ function canonicalBasis(
 
 export function canonicalScheduledDateLaneItem(
   item: TemporalTimelineScheduledItem,
+  groupId = 'personale',
 ): TimelineAllDayItem | null {
   if (item.temporalForm === 'date-span') {
     return Object.freeze({
@@ -123,8 +124,8 @@ export function canonicalScheduledDateLaneItem(
       startDateKey: item.startDate.toString(),
       endDateExclusiveKey: item.endDateExclusive.toString(),
       title: item.title,
-      groupId: 'personale',
-      appearanceTone: 'personal',
+      groupId,
+      ...(groupId === 'personale' ? { appearanceTone: 'personal' as const } : {}),
       canonicalBasis: canonicalBasis(item),
       laneKind: 'all-day' as const,
     });
@@ -135,8 +136,8 @@ export function canonicalScheduledDateLaneItem(
       startDateKey: item.localDate.toString(),
       endDateExclusiveKey: item.localDate.add({ days: 1 }).toString(),
       title: item.title,
-      groupId: 'personale',
-      appearanceTone: 'personal',
+      groupId,
+      ...(groupId === 'personale' ? { appearanceTone: 'personal' as const } : {}),
       canonicalBasis: canonicalBasis(item),
       laneKind: 'coarse' as const,
       coarsePeriod: item.period,
@@ -147,6 +148,7 @@ export function canonicalScheduledDateLaneItem(
 
 export function canonicalScheduledTimelineEvents(
   item: TemporalTimelineScheduledItem,
+  groupId = 'personale',
 ): readonly Readonly<{ dateKey: string; event: TimelineEvent }>[] {
   const interval = displayedInterval(item);
   if (interval === null) {
@@ -183,8 +185,8 @@ export function canonicalScheduledTimelineEvents(
           startMinute,
           endMinute,
           title: item.title,
-          groupId: 'personale',
-          appearanceTone: 'personal',
+          groupId,
+          ...(groupId === 'personale' ? { appearanceTone: 'personal' as const } : {}),
           canonicalBasis: canonicalBasis(item),
           ...(meta === undefined ? {} : { meta }),
         }),
@@ -237,6 +239,7 @@ export function useAuthoritativeTimelineHydration(
     }>[],
   ) => void,
   onReconcileDateLane: (items: readonly TimelineAllDayItem[]) => void,
+  resolveGroupId?: ((item: TemporalTimelineScheduledItem) => string) | null,
 ): void {
   const { state } = useTemporalTimelineRuntime();
   const reconcileEventsRef = useRef(onReconcileEvents);
@@ -254,18 +257,21 @@ export function useAuthoritativeTimelineHydration(
     if (state.status !== 'ready' || state.window === null) {
       return;
     }
+    if (resolveGroupId === null) {
+      return;
+    }
 
     const items = state.window.kind === 'window' ? state.window.items : [];
     reconcileEventsRef.current(
-      Object.freeze(items.flatMap(canonicalScheduledTimelineEvents)),
+      Object.freeze(items.flatMap((item) => canonicalScheduledTimelineEvents(item, resolveGroupId?.(item)))),
     );
     reconcileDateLaneRef.current(
       Object.freeze(
         items.flatMap((item) => {
-          const projected = canonicalScheduledDateLaneItem(item);
+          const projected = canonicalScheduledDateLaneItem(item, resolveGroupId?.(item));
           return projected === null ? [] : [projected];
         }),
       ),
     );
-  }, [state]);
+  }, [state, resolveGroupId]);
 }

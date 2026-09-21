@@ -218,10 +218,7 @@ describe('remote temporal Event data source', () => {
           );
         }
         return Promise.resolve(
-          jsonResponse(
-            { code: 'temporal.event.invalid_schedule_create' },
-            422,
-          ),
+          jsonResponse({ code: 'temporal.event.invalid_schedule_create' }, 422),
         );
       }),
     );
@@ -280,5 +277,74 @@ describe('remote temporal Event data source', () => {
         },
       }),
     ).rejects.toBeInstanceOf(TemporalEventRemoteError);
+  });
+
+  it('discovers and replans a real postponed Event without fabricating a placement', async () => {
+    const fetchFn = vi.fn<typeof globalThis.fetch>((input, init) => {
+      if (input === '/api/v1/auth/session') {
+        return Promise.resolve(
+          jsonResponse({ authenticated: true, csrf_token: 'csrf-b05-d' }),
+        );
+      }
+      if (input === '/api/v1/temporal/events/postponed') {
+        expect(init?.method).toBeUndefined();
+        expect(new Headers(init?.headers).get('X-Dante-Client')).toBe('web');
+        return Promise.resolve(
+          jsonResponse([
+            {
+              event_ref: EVENT_REF,
+              schedule_ref: SCHEDULE_REF,
+              title: 'Evento posticipato',
+              created_at: '2026-09-20T10:00:00Z',
+              life_area_ref: '0199a8c0-6e74-7bc0-8ad0-a2f403f5617d',
+              life_area_assignment_revision: 1,
+              unschedule_operation_id: 'operation:b05-d:postpone',
+            },
+          ]),
+        );
+      }
+      expect(input).toBe(
+        `/api/v1/temporal/events/${EVENT_REF}/schedules/${SCHEDULE_REF}/replan`,
+      );
+      expect(init?.method).toBe('PUT');
+      expect(JSON.parse(String(init?.body))).toEqual({
+        operation_id: 'operation:b05-d:replan',
+        unschedule_operation_id: 'operation:b05-d:postpone',
+        placement: {
+          kind: 'coarse_local_period',
+          local_date: '2026-09-25',
+          period: 'evening',
+        },
+      });
+      return Promise.resolve(
+        jsonResponse({
+          ...commonResponse(),
+          temporal_form: 'coarse_local_period',
+          local_date: '2026-09-25',
+          period: 'evening',
+        }),
+      );
+    });
+    const source = createRemoteTemporalEventDataSource(fetchFn);
+    const [postponed] = await source.listPostponedEvents();
+    expect(postponed).toMatchObject({
+      eventRef: EVENT_REF,
+      scheduleRef: SCHEDULE_REF,
+      title: 'Evento posticipato',
+      unscheduleOperationId: 'operation:b05-d:postpone',
+    });
+    await expect(
+      source.replanPostponedEvent({
+        eventRef: EVENT_REF,
+        scheduleRef: SCHEDULE_REF,
+        unscheduleOperationId: 'operation:b05-d:postpone',
+        operationId: 'operation:b05-d:replan',
+        placement: {
+          kind: 'coarse-local-period',
+          localDate: Temporal.PlainDate.from('2026-09-25'),
+          period: 'evening',
+        },
+      }),
+    ).resolves.toMatchObject({ schedule: { scheduleRef: SCHEDULE_REF } });
   });
 });

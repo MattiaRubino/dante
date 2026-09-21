@@ -1,0 +1,71 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "routine:dante.list_self_postponed_events",
+    "type": "routine",
+    "schema": "dante",
+    "name": "list_self_postponed_events",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Bounded self-scoped discovery of Event Schedules explicitly withdrawn from current placement, retaining their true Event and Schedule identities without inventing a temporal form.",
+  "classification": {
+    "persistence_role": "postponed_event_discovery",
+    "canonicality": "capability_surface",
+    "family": "timeline_temporal_operational"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/workstreams/timeline-temporal-operational-b05-execution-plan.md",
+      "docs/product/v1-core-domain-glossary.md",
+      "docs/development/backend-cp6-02-postgresql-persistence-constitution.md"
+    ],
+    "domain_concepts": ["Event", "Schedule", "postponement"],
+    "logical_families": ["LR-10 Event", "CP6 Schedule placement"],
+    "reference_families": ["NativeRef", "ScopedRecordRef"],
+    "material_facets": ["no current Schedule placement"]
+  },
+  "implementation": {
+    "introducing_stage": "B05-D-POSTPONED-EVENTS",
+    "alembic_revision": "20260921_48",
+    "sqlalchemy": {"mode": "none", "module": null, "symbol": null},
+    "runtime_acl_stage": "B05-D-POSTPONED-EVENTS"
+  },
+  "structure": {
+    "columns": [], "primary_key": null, "foreign_keys": [], "unique_constraints": [],
+    "check_constraints": [], "indexes": [], "triggers": [], "table": null, "view": null,
+    "routine": {
+      "routine_kind": "function", "language": "sql", "argument_types": ["uuid"],
+      "return_type": "TABLE(event_ref uuid, schedule_ref uuid, title text, created_at timestamp with time zone, life_area_ref uuid, life_area_assignment_revision bigint, unschedule_operation_id text)",
+      "security": "DEFINER", "volatility": "STABLE", "parallel_safety": "SAFE", "leakproof": false,
+      "function_search_path": ["pg_catalog", "dante", "pg_temp"], "direct_runtime_execute": true
+    }
+  },
+  "state_history": {
+    "material_state_behavior": "The routine exposes only a Schedule absence from current placement; it does not manufacture timestamps, an interval, or a replacement MaterialState.",
+    "current_binding": "Actor-owned Event Schedule with a latest actor-owned unschedule receipt and no schedule_current_placement row.",
+    "chronology": "The source unschedule operation id remains the exact guarded basis for a future replan.",
+    "immutability_policy": "Read-only capability; replan composes existing governed undo and revision capabilities."
+  },
+  "lifecycle": {
+    "retention": "Postponed discovery remains available while the Event, Schedule and unschedule receipt are retained.",
+    "redaction": null, "retirement_tombstone": null,
+    "delete_behavior": "No raw runtime deletion or placement synthesis."
+  },
+  "security": {
+    "owner_role": "dante_owner", "default_deny_non_owner": true,
+    "expected_grants": [{"grantee": "dante_runtime", "privilege": "EXECUTE", "columns": [], "grant_option": false}]
+  },
+  "proof": {
+    "obligations": [
+      "Discovery is actor-isolated and contains no fabricated clock time or temporal form.",
+      "Runtime receives EXECUTE only and replan retains EventRef/ScheduleRef through guarded existing capabilities."
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b03_event_lifecycle.py",
+      "apps/backend/tests/integration/temporal/test_b05_primary_life_area_assignment.py",
+      "apps/backend/tests/integration/database/test_database_current_catalog.py"
+    ],
+    "staged_evidence": []
+  }
+}

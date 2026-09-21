@@ -41,6 +41,12 @@ import {
 
 export type TemporalCreateRecurrenceOwner = 'event' | 'routine' | null;
 
+const LIFE_AREA_REF = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+export function isCanonicalLifeAreaRef(value: string): boolean {
+  return LIFE_AREA_REF.test(value);
+}
+
 export type TemporalCreateMetadata = Readonly<{
   kind: TemporalCreateKind;
   contextId: string;
@@ -245,7 +251,7 @@ function b01ActivityIntentSupported(
   const baseline = createTemporalCreateFields({
     date: specification.date,
     timeZoneId: specification.timeZoneId,
-    contextId: 'personale',
+    contextId: specification.contextId,
     timeSemantics: 'unscheduled',
   });
 
@@ -253,7 +259,7 @@ function b01ActivityIntentSupported(
     prepared.metadata.kind === 'activity' &&
     prepared.command.payload.placement === null &&
     prepared.metadata.timeSemantics === 'unscheduled' &&
-    prepared.metadata.contextId === 'personale' &&
+    (prepared.metadata.contextId === 'personale' || isCanonicalLifeAreaRef(prepared.metadata.contextId)) &&
     prepared.metadata.notes.length === 0 &&
     specification.durationMinutes === baseline.durationMinutes &&
     specification.appearanceTone === null &&
@@ -274,7 +280,7 @@ function b02eScheduledActivityIntentSupported(
   if (
     prepared.metadata.kind !== 'activity' ||
     placement === null ||
-    prepared.metadata.contextId !== 'personale' ||
+    (prepared.metadata.contextId !== 'personale' && !isCanonicalLifeAreaRef(prepared.metadata.contextId)) ||
     prepared.metadata.notes.length !== 0 ||
     specification.appearanceTone !== null ||
     specification.eventRecurrence.patternKind !== 'none' ||
@@ -294,7 +300,7 @@ function b02eScheduledActivityIntentSupported(
     timeZoneId: specification.timeZoneId,
     timeDisambiguation: specification.timeDisambiguation,
     coarsePeriod: specification.coarsePeriod,
-    contextId: 'personale',
+    contextId: specification.contextId,
   });
 
   return (
@@ -492,6 +498,7 @@ class RemoteActivityTemporalWorkspace implements TemporalWorkspacePort {
 
   public async execute(
     command: TemporalCommand,
+    lifeAreaRef?: string,
   ): Promise<TemporalOperationResult> {
     if (command.type === 'temporal.placement.replace') {
       const placement = command.payload.placement;
@@ -599,6 +606,7 @@ class RemoteActivityTemporalWorkspace implements TemporalWorkspacePort {
         const result = await this.source.createActivity({
           operationId: command.operationId,
           title: command.payload.title,
+          ...(lifeAreaRef === undefined ? {} : { lifeAreaRef }),
         });
         return Object.freeze({
           operationId: command.operationId,
@@ -612,6 +620,7 @@ class RemoteActivityTemporalWorkspace implements TemporalWorkspacePort {
       const result = await this.source.createScheduledActivity({
         operationId: command.operationId,
         title: command.payload.title,
+        ...(lifeAreaRef === undefined ? {} : { lifeAreaRef }),
         placement: schedulePlacement as TemporalSchedulePlacementInput,
       });
       return Object.freeze({
@@ -907,7 +916,8 @@ class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
   ): Promise<TemporalCreateExecution> {
     if (
       this.canonicalActivityOnly &&
-      !canonicalActivityIntentSupported(prepared)
+      (!isCanonicalLifeAreaRef(prepared.metadata.contextId) ||
+        !canonicalActivityIntentSupported(prepared))
     ) {
       return Object.freeze({
         result: unavailableResult(
@@ -935,7 +945,14 @@ class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
       this.richOperationFingerprints.set(prepared.operationId, richFingerprint);
     }
 
-    const result = await this.workspace.execute(prepared.command);
+    const result = this.workspace instanceof RemoteActivityTemporalWorkspace
+      ? await this.workspace.execute(
+          prepared.command,
+          isCanonicalLifeAreaRef(prepared.metadata.contextId)
+            ? prepared.metadata.contextId
+            : undefined,
+        )
+      : await this.workspace.execute(prepared.command);
     if (result.status !== 'applied' || !result.item) {
       return Object.freeze({ result, effect: null });
     }

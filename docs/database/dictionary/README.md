@@ -6,8 +6,8 @@
 - **PostgreSQL:** 18.6
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
-- **Current candidate Alembic source head on `feature/timeline-temporal-operational`:** `20260920_47`
-- **Current candidate expected topology (asserted by 26 passing PostgreSQL tests):** `129|5|60|90|254|185|366|0|0|0`
+- **Current candidate Alembic source head on `feature/timeline-temporal-operational`:** `20260921_48`
+- **Current candidate expected topology:** `129|5|62|90|254|185|366|0|0|0` (B05-D local proof pending)
 - **Frozen CP6 head:** `20260826_08`
 - **Last reconciled:** 2026-09-20
 
@@ -33,8 +33,8 @@ Authoritative counts are in `scope.json`:
 ```text
 tables      129
 views         5
-routines     60
-standalone  194
+routines     62
+standalone  196
 triggers     90
 indexes      254
 FKs          185
@@ -88,7 +88,7 @@ B05-B / 20260920_46
   bounded create/reassign/list/legacy inventory; direct old create privilege retired
   no invented legacy default, provider calendar, Domain owner, Tag or sharing grant
 
-B05-C / 20260920_47
+B05-D candidate / 20260921_48
   actor-local secondary Tag catalog, archive and immutable operation receipt
   typed independent Activity/Event many-valued edges and attach/detach receipts
   no primary-area replacement, hierarchy, Goal/Plan or sharing grant

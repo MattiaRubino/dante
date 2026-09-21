@@ -1,8 +1,9 @@
-import type { PlainDate } from '@dante/time';
+import { Temporal, detectDeviceTimeZone, type PlainDate } from '@dante/time';
 import {
   type KeyboardEvent,
   type PointerEvent as ReactPointerEvent,
   useCallback,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useReducer,
@@ -54,6 +55,13 @@ import type {
 import { applyTimelineAllDayGeometry } from './timeline-all-day-runtime';
 import { TimelineDayStream } from './timeline-day-stream';
 import { TimelineHeader } from './timeline-header';
+import {
+  canonicalOrganizationGroups,
+  LEGACY_UNASSIGNED_GROUP,
+  TimelineOrganizationPanel,
+  useTimelineOrganization,
+} from './timeline-organization';
+import { TimelinePostponedEventsPanel } from './timeline-postponed-events';
 import {
   CalendarPopover,
   EventDetailDialog,
@@ -142,19 +150,75 @@ export function TimelineSurface({
       ? temporalRuntimeState.effectiveZoneId
       : null;
   const locale = i18n.resolvedLanguage ?? i18n.language;
-  // Phase 1 parity deliberately uses the accepted prototype clock. The mock
-  // dataset is built around this instant; using wall-clock time makes the
-  // initial viewport visually incomparable and moves the Now line away from
-  // the reference scene. A real clock belongs to the later data-source layer.
-  const timelineToday = TIMELINE_PROTOTYPE_TODAY;
-  const timelineNowMinute = TIMELINE_PROTOTYPE_NOW_MINUTE;
+  const prototypeMode = import.meta.env.MODE === 'test';
+  const clockZone = effectiveZoneId ?? detectDeviceTimeZone();
+  const timelineToday = prototypeMode
+    ? TIMELINE_PROTOTYPE_TODAY
+    : Temporal.Now.plainDateISO(clockZone);
+  const now = Temporal.Now.zonedDateTimeISO(clockZone);
+  const timelineNowMinute = prototypeMode
+    ? TIMELINE_PROTOTYPE_NOW_MINUTE
+    : now.hour * 60 + now.minute;
   const initialDate = parseTimelineViewedDate(viewedDateIso) ?? timelineToday;
   const initialDateRef = useRef(initialDate);
   const [state, dispatch] = useReducer(
     timelineReducer,
     timelineToday,
-    createInitialTimelineState,
+    (today) => createInitialTimelineState(today, prototypeMode),
   );
+  const organization = useTimelineOrganization(!prototypeMode);
+  const canonicalGroups = useMemo(
+    () =>
+      organization.snapshot === null
+        ? null
+        : canonicalOrganizationGroups(organization.snapshot),
+    [organization.snapshot],
+  );
+  const creationEnabled =
+    prototypeMode ||
+    (organization.snapshot?.areas.some((area) => !area.archived) ?? false);
+  useEffect(() => {
+    if (canonicalGroups !== null) {
+      dispatch({ type: 'reconcile-canonical-groups', groups: canonicalGroups });
+    }
+  }, [canonicalGroups]);
+  const assignmentBySubject = useMemo(
+    () =>
+      new Map(
+        organization.snapshot?.assignments.map((entry) => [
+          `${entry.kind}:${entry.itemRef}`,
+          entry.areaRef,
+        ]) ?? [],
+      ),
+    [organization.snapshot],
+  );
+  const resolveGroupId = useCallback(
+    (
+      item: import('../../../temporal/timeline-read').TemporalTimelineScheduledItem,
+    ) =>
+      assignmentBySubject.get(
+        item.kind === 'scheduled_activity'
+          ? `activity:${item.activityRef}`
+          : `event:${item.eventRef}`,
+      ) ?? LEGACY_UNASSIGNED_GROUP,
+    [assignmentBySubject],
+  );
+  const visibleGroups = useMemo(
+    () => state.groups.filter((group) => !group.hidden),
+    [state.groups],
+  );
+  const presentationFilters = useMemo(() => {
+    if (!state.groups.some((group) => group.hidden)) return state.filters;
+    const visible = new Set(visibleGroups.map((group) => group.id));
+    if (state.filters.size) {
+      const focused = new Set(
+        [...state.filters].filter((id) => visible.has(id)),
+      );
+      return focused.size ? focused : new Set(['__no_visible_area__']);
+    }
+    // A sentinel prevents an empty focus from accidentally showing every hidden item.
+    return visible.size ? visible : new Set(['__no_visible_area__']);
+  }, [state.filters, state.groups, visibleGroups]);
   const [anchor, setAnchor] = useState<PlainDate>(() => initialDate);
   const [viewDate, setViewDate] = useState<PlainDate>(() => initialDate);
   const [calendarOpen, setCalendarOpen] = useState(false);
@@ -231,16 +295,21 @@ export function TimelineSurface({
   useAuthoritativeTimelineHydration(
     reconcileAuthoritativeEvents,
     reconcileAuthoritativeDateLane,
+    prototypeMode
+      ? undefined
+      : organization.snapshot === null
+        ? null
+        : resolveGroupId,
   );
 
   const renderedDayInputs = useMemo(
     () => ({
       eventsByDate: state.eventsByDate,
-      groups: state.groups,
+      groups: visibleGroups,
       zoom: state.zoom,
       expandedEventIds: state.expandedEventIds,
     }),
-    [state.eventsByDate, state.expandedEventIds, state.groups, state.zoom],
+    [state.eventsByDate, state.expandedEventIds, visibleGroups, state.zoom],
   );
   const baseRenderedDays = useMemo(
     () =>
@@ -257,9 +326,9 @@ export function TimelineSurface({
       applyTimelineAllDayGeometry(
         baseRenderedDays,
         state.allDayItems,
-        state.filters,
+        presentationFilters,
       ),
-    [baseRenderedDays, state.allDayItems, state.filters],
+    [baseRenderedDays, state.allDayItems, presentationFilters],
   );
 
   useLayoutEffect(() => {
@@ -350,8 +419,7 @@ export function TimelineSurface({
           setCanonicalUndo({
             kind: 'revision',
             scheduleRef: result.scheduleRef,
-            expectedPlacementMaterialStateRef:
-              result.placementMaterialStateRef,
+            expectedPlacementMaterialStateRef: result.placementMaterialStateRef,
             placement: revision.previous,
           });
           showCanonicalUndo(
@@ -389,13 +457,7 @@ export function TimelineSurface({
           );
         });
     },
-    [
-      effectiveZoneId,
-      reviseSchedule,
-      showCanonicalUndo,
-      showScheduleNotice,
-      t,
-    ],
+    [effectiveZoneId, reviseSchedule, showCanonicalUndo, showScheduleNotice, t],
   );
 
   const unscheduleCanonicalBasis = useCallback(
@@ -441,7 +503,8 @@ export function TimelineSurface({
                 )
               : t(
                   ($) =>
-                    $.common.home.timeline.feedback.scheduleUnscheduleUnavailable,
+                    $.common.home.timeline.feedback
+                      .scheduleUnscheduleUnavailable,
                 ),
           });
         })
@@ -457,10 +520,7 @@ export function TimelineSurface({
 
   const undoCanonicalSchedule = useCallback(() => {
     const undo = canonicalUndo;
-    if (
-      undo === null ||
-      pendingScheduleRefsRef.current.has(undo.scheduleRef)
-    ) {
+    if (undo === null || pendingScheduleRefsRef.current.has(undo.scheduleRef)) {
       return;
     }
 
@@ -1018,7 +1078,7 @@ export function TimelineSurface({
         locale={locale}
         today={timelineToday}
         viewDate={viewDate}
-        groups={state.groups}
+        groups={visibleGroups}
         filters={state.filters}
         nowNeeded={nowNeeded}
         split={expanded}
@@ -1049,9 +1109,34 @@ export function TimelineSurface({
         onToggleFilter={(groupId: TimelineGroupId) =>
           dispatch({ type: 'toggle-filter', groupId })
         }
-        onReorderGroup={(groupId, targetIndex) =>
-          dispatch({ type: 'reorder-group', groupId, targetIndex })
-        }
+        onReorderGroup={(groupId, targetIndex) => {
+          if (prototypeMode) {
+            dispatch({ type: 'reorder-group', groupId, targetIndex });
+            return;
+          }
+          const areas = organization.snapshot?.areas;
+          const targetGroup = visibleGroups[targetIndex];
+          if (!areas || !targetGroup) return;
+          const ordered = [...areas].sort((a, b) => a.sortOrder - b.sortOrder);
+          const sourceIndex = ordered.findIndex((area) => area.ref === groupId);
+          const destinationIndex = ordered.findIndex(
+            (area) => area.ref === targetGroup.id,
+          );
+          if (sourceIndex < 0 || destinationIndex < 0) return;
+          const [moved] = ordered.splice(sourceIndex, 1);
+          if (!moved) return;
+          ordered.splice(destinationIndex, 0, moved);
+          void organization.source
+            .reorderAreas(ordered)
+            .then(organization.refresh)
+            .catch(() => {
+              organization.refresh();
+              showScheduleNotice({
+                kind: 'error',
+                message: 'Ordine Life Area cambiato: aggiorna e riprova.',
+              });
+            });
+        }}
         onGroupScroll={(scrollLeft) => {
           const grid = gridRef.current;
           if (
@@ -1076,6 +1161,32 @@ export function TimelineSurface({
         onRemoveCreatedAllDay={(itemId) =>
           dispatch({ type: 'remove-all-day', itemId })
         }
+        creationEnabled={creationEnabled}
+      />
+
+      {!prototypeMode && (
+        <TimelineOrganizationPanel
+          snapshot={organization.snapshot}
+          error={organization.error}
+          source={organization.source}
+          onRefresh={organization.refresh}
+          selectedItem={(() => {
+            const focused =
+              state.focusedEventId === null
+                ? detailState?.event
+                : findTimelineEvent(state, state.focusedEventId)?.event;
+            const basis = focused?.canonicalBasis;
+            return basis?.kind === 'scheduled-event'
+              ? ({ kind: 'event', itemRef: basis.eventRef } as const)
+              : basis?.kind === 'scheduled-activity'
+                ? ({ kind: 'activity', itemRef: basis.activityRef } as const)
+                : null;
+          })()}
+        />
+      )}
+      <TimelinePostponedEventsPanel
+        enabled={!prototypeMode}
+        areas={organization.snapshot?.areas ?? []}
       />
 
       <TimelineCanonicalActionsProvider
@@ -1088,7 +1199,11 @@ export function TimelineSurface({
           days={renderedDays}
           today={timelineToday}
           nowMinute={timelineNowMinute}
-          state={state}
+          state={
+            presentationFilters === state.filters
+              ? state
+              : { ...state, filters: presentationFilters }
+          }
           expanded={expanded}
           gridRef={gridRef}
           onScroll={handleScroll}
@@ -1260,8 +1375,7 @@ export function TimelineSurface({
         pending={
           detailState?.allowUnschedule === true &&
           detailState.event.canonicalBasis !== undefined &&
-          pendingScheduleRef ===
-            detailState.event.canonicalBasis.scheduleRef
+          pendingScheduleRef === detailState.event.canonicalBasis.scheduleRef
         }
         onUnschedule={() => {
           const basis = detailState?.event.canonicalBasis;

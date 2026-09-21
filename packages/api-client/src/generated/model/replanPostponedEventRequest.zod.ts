@@ -6,45 +6,24 @@
  */
 import * as zod from 'zod/mini';
 
-export const createScheduledEventRequestAgendaPartsItemMax = 1000;
+export const replanPostponedEventRequestOperationIdMax = 200;
 
-export const createScheduledEventRequestAgendaPartsMax = 100;
+export const replanPostponedEventRequestPlacementOneKindDefault = `date_span`;
+export const replanPostponedEventRequestPlacementTwoKindDefault = `floating_local_interval`;
+export const replanPostponedEventRequestPlacementThreeDisambiguationDefault = `reject`;
+export const replanPostponedEventRequestPlacementThreeKindDefault = `named_zone_local_interval`;
+export const replanPostponedEventRequestPlacementThreeZoneIdMax = 200;
 
-export const createScheduledEventRequestOperationIdMax = 200;
+export const replanPostponedEventRequestPlacementFourKindDefault = `absolute_interval`;
+export const replanPostponedEventRequestPlacementFiveKindDefault = `coarse_local_period`;
+export const replanPostponedEventRequestUnscheduleOperationIdMax = 200;
 
-export const createScheduledEventRequestPlacementOneKindDefault = `date_span`;
-export const createScheduledEventRequestPlacementTwoKindDefault = `floating_local_interval`;
-export const createScheduledEventRequestPlacementThreeDisambiguationDefault = `reject`;
-export const createScheduledEventRequestPlacementThreeKindDefault = `named_zone_local_interval`;
-export const createScheduledEventRequestPlacementThreeZoneIdMax = 200;
-
-export const createScheduledEventRequestPlacementFourKindDefault = `absolute_interval`;
-export const createScheduledEventRequestPlacementFiveKindDefault = `coarse_local_period`;
-export const createScheduledEventRequestTitleMax = 300;
-
-export const CreateScheduledEventRequest = /*#__PURE__*/ zod.object({
-  agenda_parts: /*#__PURE__*/ zod.optional(
-    /*#__PURE__*/ zod
-      .array(
-        /*#__PURE__*/ zod
-          .string()
-          .check(/*#__PURE__*/ zod.minLength(1))
-          .check(
-            /*#__PURE__*/ zod.maxLength(
-              createScheduledEventRequestAgendaPartsItemMax,
-            ),
-          ),
-      )
-      .check(
-        /*#__PURE__*/ zod.maxLength(createScheduledEventRequestAgendaPartsMax),
-      ),
-  ),
-  life_area_ref: /*#__PURE__*/ zod.uuid(),
+export const ReplanPostponedEventRequest = /*#__PURE__*/ zod.object({
   operation_id: /*#__PURE__*/ zod
     .string()
     .check(/*#__PURE__*/ zod.minLength(1))
     .check(
-      /*#__PURE__*/ zod.maxLength(createScheduledEventRequestOperationIdMax),
+      /*#__PURE__*/ zod.maxLength(replanPostponedEventRequestOperationIdMax),
     ),
   placement: /*#__PURE__*/ zod.union([
     /*#__PURE__*/ zod.object({
@@ -52,7 +31,7 @@ export const CreateScheduledEventRequest = /*#__PURE__*/ zod.object({
       kind: /*#__PURE__*/ zod
         ._default(
           /*#__PURE__*/ zod.literal('date_span'),
-          createScheduledEventRequestPlacementOneKindDefault,
+          replanPostponedEventRequestPlacementOneKindDefault,
         )
         .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
       start_date: /*#__PURE__*/ zod.iso.date(),
@@ -62,7 +41,7 @@ export const CreateScheduledEventRequest = /*#__PURE__*/ zod.object({
       kind: /*#__PURE__*/ zod
         ._default(
           /*#__PURE__*/ zod.literal('floating_local_interval'),
-          createScheduledEventRequestPlacementTwoKindDefault,
+          replanPostponedEventRequestPlacementTwoKindDefault,
         )
         .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
       starts_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
@@ -70,13 +49,13 @@ export const CreateScheduledEventRequest = /*#__PURE__*/ zod.object({
     /*#__PURE__*/ zod.object({
       disambiguation: /*#__PURE__*/ zod._default(
         /*#__PURE__*/ zod.enum(['reject', 'earlier', 'later']),
-        createScheduledEventRequestPlacementThreeDisambiguationDefault,
+        replanPostponedEventRequestPlacementThreeDisambiguationDefault,
       ),
       ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
       kind: /*#__PURE__*/ zod
         ._default(
           /*#__PURE__*/ zod.literal('named_zone_local_interval'),
-          createScheduledEventRequestPlacementThreeKindDefault,
+          replanPostponedEventRequestPlacementThreeKindDefault,
         )
         .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
       starts_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
@@ -85,7 +64,7 @@ export const CreateScheduledEventRequest = /*#__PURE__*/ zod.object({
         .check(/*#__PURE__*/ zod.minLength(1))
         .check(
           /*#__PURE__*/ zod.maxLength(
-            createScheduledEventRequestPlacementThreeZoneIdMax,
+            replanPostponedEventRequestPlacementThreeZoneIdMax,
           ),
         ),
     }),
@@ -94,7 +73,7 @@ export const CreateScheduledEventRequest = /*#__PURE__*/ zod.object({
       kind: /*#__PURE__*/ zod
         ._default(
           /*#__PURE__*/ zod.literal('absolute_interval'),
-          createScheduledEventRequestPlacementFourKindDefault,
+          replanPostponedEventRequestPlacementFourKindDefault,
         )
         .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
       starts_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
@@ -103,22 +82,26 @@ export const CreateScheduledEventRequest = /*#__PURE__*/ zod.object({
       kind: /*#__PURE__*/ zod
         ._default(
           /*#__PURE__*/ zod.literal('coarse_local_period'),
-          createScheduledEventRequestPlacementFiveKindDefault,
+          replanPostponedEventRequestPlacementFiveKindDefault,
         )
         .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
       local_date: /*#__PURE__*/ zod.iso.date(),
       period: /*#__PURE__*/ zod.enum(['morning', 'afternoon', 'evening']),
     }),
   ]),
-  title: /*#__PURE__*/ zod
+  unschedule_operation_id: /*#__PURE__*/ zod
     .string()
     .check(/*#__PURE__*/ zod.minLength(1))
-    .check(/*#__PURE__*/ zod.maxLength(createScheduledEventRequestTitleMax)),
+    .check(
+      /*#__PURE__*/ zod.maxLength(
+        replanPostponedEventRequestUnscheduleOperationIdMax,
+      ),
+    ),
 });
 
-export type CreateScheduledEventRequest = zod.input<
-  typeof CreateScheduledEventRequest
+export type ReplanPostponedEventRequest = zod.input<
+  typeof ReplanPostponedEventRequest
 >;
-export type CreateScheduledEventRequestOutput = zod.output<
-  typeof CreateScheduledEventRequest
+export type ReplanPostponedEventRequestOutput = zod.output<
+  typeof ReplanPostponedEventRequest
 >;

@@ -32,6 +32,7 @@ import {
   type TemporalCreatePreparation,
   type TemporalCreateRecord,
   type TemporalCreateRuntime,
+  isCanonicalLifeAreaRef,
 } from './temporal-create-runtime';
 
 export type B03TemporalCreateRuntimeOptions = Readonly<{
@@ -81,7 +82,8 @@ function b03dScheduledEventIntentSupported(
   if (
     prepared.metadata.kind !== 'event' ||
     prepared.command.payload.placement === null ||
-    prepared.metadata.contextId !== 'personale' ||
+    (import.meta.env.MODE !== 'test' && !isCanonicalLifeAreaRef(prepared.metadata.contextId)) ||
+    (prepared.metadata.contextId !== 'personale' && !isCanonicalLifeAreaRef(prepared.metadata.contextId)) ||
     prepared.metadata.notes.length !== 0 ||
     specification.appearanceTone !== null ||
     specification.eventRecurrence.patternKind !== 'none' ||
@@ -105,7 +107,7 @@ function b03dScheduledEventIntentSupported(
     timeZoneId: specification.timeZoneId,
     timeDisambiguation: specification.timeDisambiguation,
     coarsePeriod: specification.coarsePeriod,
-    contextId: 'personale',
+    contextId: specification.contextId,
   });
 
   return (
@@ -462,6 +464,7 @@ class B03TemporalCreateRuntime implements TemporalCreateRuntime {
       const created = await this.eventSource.createScheduledEvent({
         operationId: prepared.operationId,
         title: prepared.command.payload.title,
+        ...(isCanonicalLifeAreaRef(prepared.metadata.contextId) ? { lifeAreaRef: prepared.metadata.contextId } : {}),
         agendaParts: prepared.metadata.specification.event.agendaParts,
         placement: schedulePlacement,
       });

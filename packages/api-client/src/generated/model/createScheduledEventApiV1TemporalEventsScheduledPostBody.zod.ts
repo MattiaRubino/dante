@@ -19,6 +19,7 @@ export const createScheduledEventApiV1TemporalEventsScheduledPostBodyPlacementTh
 export const createScheduledEventApiV1TemporalEventsScheduledPostBodyPlacementThreeZoneIdMax = 200;
 
 export const createScheduledEventApiV1TemporalEventsScheduledPostBodyPlacementFourKindDefault = `absolute_interval`;
+export const createScheduledEventApiV1TemporalEventsScheduledPostBodyPlacementFiveKindDefault = `coarse_local_period`;
 export const createScheduledEventApiV1TemporalEventsScheduledPostBodyTitleMax = 300;
 
 export const CreateScheduledEventApiV1TemporalEventsScheduledPostBody =
@@ -102,6 +103,16 @@ export const CreateScheduledEventApiV1TemporalEventsScheduledPostBody =
           )
           .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
         starts_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+      }),
+      /*#__PURE__*/ zod.object({
+        kind: /*#__PURE__*/ zod
+          ._default(
+            /*#__PURE__*/ zod.literal('coarse_local_period'),
+            createScheduledEventApiV1TemporalEventsScheduledPostBodyPlacementFiveKindDefault,
+          )
+          .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+        local_date: /*#__PURE__*/ zod.iso.date(),
+        period: /*#__PURE__*/ zod.enum(['morning', 'afternoon', 'evening']),
       }),
     ]),
     title: /*#__PURE__*/ zod

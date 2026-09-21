@@ -21,11 +21,14 @@ from dante.modules.temporal.event import (
     EventNotFoundError,
     EventOperationIdReuseError,
     EventPersistenceError,
+    EventReplanConflictError,
     EventView,
+    PostponedEventView,
     TemporalEventApplication,
 )
 from dante.modules.temporal.schedule import (
     AbsoluteIntervalPlacement,
+    CoarseLocalPeriodPlacement,
     DateSpanPlacement,
     FloatingLocalIntervalPlacement,
     NamedZoneLocalIntervalPlacement,
@@ -110,7 +113,8 @@ EventSchedulePlacementRequest = Annotated[
     EventDateSpanPlacementRequest
     | EventFloatingLocalIntervalPlacementRequest
     | EventNamedZoneLocalIntervalPlacementRequest
-    | EventAbsoluteIntervalPlacementRequest,
+    | EventAbsoluteIntervalPlacementRequest
+    | EventCoarseLocalPeriodPlacementRequest,
     Field(discriminator="kind"),
 ]
 
@@ -122,6 +126,14 @@ class CreateScheduledEventRequest(BaseModel):
     title: str = Field(min_length=1, max_length=300)
     life_area_ref: UUID
     agenda_parts: list[AgendaPart] = Field(default_factory=list, max_length=100)
+    placement: EventSchedulePlacementRequest
+
+
+class ReplanPostponedEventRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    operation_id: str = Field(min_length=1, max_length=200)
+    unschedule_operation_id: str = Field(min_length=1, max_length=200)
     placement: EventSchedulePlacementRequest
 
 
@@ -145,6 +157,18 @@ class EventAgendaMutationResponse(BaseModel):
     agenda_revision: int = Field(ge=1)
     agenda_parts: list[str]
     replayed: bool = False
+
+
+class PostponedEventResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    event_ref: UUID
+    schedule_ref: UUID
+    title: str
+    created_at: datetime
+    life_area_ref: UUID | None = None
+    life_area_assignment_revision: int | None = Field(default=None, ge=1)
+    unschedule_operation_id: str
 
 
 class ScheduledEventFloatingResponse(BaseModel):
@@ -274,6 +298,18 @@ def _event_response(event: EventView, *, replayed: bool = False) -> EventRespons
     )
 
 
+def _postponed_event_response(event: PostponedEventView) -> PostponedEventResponse:
+    return PostponedEventResponse(
+        event_ref=event.event_ref,
+        schedule_ref=event.schedule_ref,
+        title=event.title,
+        created_at=event.created_at,
+        life_area_ref=event.life_area_ref,
+        life_area_assignment_revision=event.life_area_assignment_revision,
+        unschedule_operation_id=event.unschedule_operation_id,
+    )
+
+
 def _placement_from_request(payload: EventSchedulePlacementRequest) -> SchedulePlacement:
     if isinstance(payload, EventDateSpanPlacementRequest):
         return DateSpanPlacement(
@@ -296,6 +332,11 @@ def _placement_from_request(payload: EventSchedulePlacementRequest) -> ScheduleP
         return AbsoluteIntervalPlacement(
             starts_at=payload.starts_at,
             ends_at=payload.ends_at,
+        )
+    if isinstance(payload, EventCoarseLocalPeriodPlacementRequest):
+        return CoarseLocalPeriodPlacement(
+            local_date=payload.local_date,
+            period=payload.period,
         )
     raise TypeError("Unsupported Event authoring placement")
 
@@ -553,6 +594,101 @@ async def replace_event_agenda(
         event_ref=result.event_ref,
         agenda_revision=result.agenda_revision,
         agenda_parts=list(result.agenda_parts),
+        replayed=result.replayed,
+    )
+
+
+@router.get(
+    "/events/postponed",
+    response_model=list[PostponedEventResponse],
+    operation_id="temporal_list_postponed_events",
+)
+async def list_postponed_events(
+    context: DanteContextDependency,
+    application: TemporalEventApplicationDependency,
+    response: Response,
+) -> list[PostponedEventResponse]:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        events = await application.list_postponed(self_person_ref=context.self_person_ref)
+    except EventPersistenceError as exc:
+        raise ProblemError(
+            status=503,
+            code="temporal.event.postponed_read_unavailable",
+            category="service",
+            title="Postponed Events unavailable",
+            detail="Postponed Events could not be read safely.",
+            retryable=True,
+        ) from exc
+    return [_postponed_event_response(event) for event in events]
+
+
+@router.put(
+    "/events/{event_ref}/schedules/{schedule_ref}/replan",
+    response_model=ScheduledEventMutationResponse,
+    operation_id="temporal_replan_postponed_event",
+)
+async def replan_postponed_event(
+    event_ref: UUID,
+    schedule_ref: UUID,
+    payload: ReplanPostponedEventRequest,
+    context: MutatingDanteContextDependency,
+    application: TemporalEventApplicationDependency,
+    response: Response,
+) -> ScheduledEventMutationResponse:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        result = await application.replan_postponed_event(
+            self_person_ref=context.self_person_ref,
+            event_ref=NativeRef(event_ref),
+            schedule_ref=schedule_ref,
+            unschedule_operation_id=payload.unschedule_operation_id,
+            operation_id=payload.operation_id,
+            placement=_placement_from_request(payload.placement),
+        )
+    except (EventInputError, ScheduleInputError) as exc:
+        raise ProblemError(
+            status=422,
+            code="temporal.event.invalid_replan",
+            category="validation",
+            title="Invalid Event replan",
+            detail=str(exc),
+            retryable=False,
+        ) from exc
+    except EventOperationIdReuseError as exc:
+        raise ProblemError(
+            status=409,
+            code="temporal.event.replan_operation_id_reused",
+            category="conflict",
+            title="Event replan operation conflict",
+            detail="The operation id was already used for a different Event replan.",
+            retryable=False,
+        ) from exc
+    except EventReplanConflictError as exc:
+        raise ProblemError(
+            status=409,
+            code="temporal.event.replan_conflict",
+            category="conflict",
+            title="Event replan conflict",
+            detail="The Event Schedule is no longer in the postponed state that was read.",
+            retryable=False,
+        ) from exc
+    except EventNotFoundError as exc:
+        raise _not_found_problem() from exc
+    except EventPersistenceError as exc:
+        raise ProblemError(
+            status=503,
+            code="temporal.event.persistence_unavailable",
+            category="service",
+            title="Event unavailable",
+            detail="The Event could not be replanned atomically.",
+            retryable=True,
+        ) from exc
+    return _scheduled_event_response(
+        event=result.event,
+        schedule_ref=result.schedule.schedule_ref,
+        material_state_ref=result.schedule.material_state_ref,
+        placement=result.schedule.placement,
         replayed=result.replayed,
     )
 

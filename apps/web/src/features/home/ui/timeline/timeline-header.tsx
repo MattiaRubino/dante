@@ -102,6 +102,7 @@ type TimelineHeaderProps = Readonly<{
   onMaterializeCreatedAllDay: (item: TimelineAllDayItem) => void;
   onRemoveCreatedEvent: (eventId: TimelineEvent['id']) => void;
   onRemoveCreatedAllDay: (itemId: string) => void;
+  creationEnabled?: boolean;
 }>;
 
 export function TimelineHeader({
@@ -131,6 +132,7 @@ export function TimelineHeader({
   onMaterializeCreatedAllDay,
   onRemoveCreatedEvent,
   onRemoveCreatedAllDay,
+  creationEnabled = true,
 }: TimelineHeaderProps) {
   const { t } = useTranslation('common');
   const week = buildIsoWeek(viewDate);
@@ -209,6 +211,7 @@ export function TimelineHeader({
               onViewOptionsToggle();
             }
           }}
+          creationEnabled={creationEnabled}
         />
 
         <button

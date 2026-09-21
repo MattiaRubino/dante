@@ -36,8 +36,8 @@ Current candidate DB:
 
 ```text
 PostgreSQL 18.6
-Alembic source 20260920_47
-Expected topology 129|5|60|90|254|185|366|0|0|0 (asserted by 26 passing direct PostgreSQL tests)
+Alembic source 20260921_48
+Expected topology 129|5|62|90|254|185|366|0|0|0 (B05-D local proof pending)
 ```
 
 ## 2. Binding foundation carried forward
@@ -204,14 +204,27 @@ B05-D 🟡 PRODUCT INTEGRATION ACTIVE
 
 B05-A `_43`–`_45` closed with the user's direct `_45` catalog pass. B05-B `_46` creates typed Activity/Event actor-local primary assignment and immutable acceptance receipts, atomically binds new creates, inventories legacy unassigned items and rejects archived areas as new targets. Four assignment/inventory HTTP operations, exact API inventory, OpenAPI/client and direct PostgreSQL tests accompany it. B05-D retains ownership of real frontend grouping/create migration. No CI/Actions are launched.
 
-Local proof to run on the user's PostgreSQL-equipped checkout after pulling `_47`:
+Local proof to run on the user's PostgreSQL-equipped checkout after pulling `_48`:
 
 ```bash
-cd ~/projects/dante/apps/backend
+cd ~/projects/dante
+pnpm generated:check
+pnpm --filter @dante/api-client typecheck
+pnpm --filter @dante/web typecheck
+pnpm --filter @dante/web exec vitest run \
+  src/features/temporal/remote-activity-data-source.test.ts \
+  src/features/temporal/remote-event-data-source.test.ts \
+  src/features/temporal/remote-organization.test.ts \
+  src/features/home/ui/timeline/timeline-organization.test.ts \
+  src/features/home/ui/timeline/model/timeline-state.test.ts \
+  src/features/home/ui/timeline/timeline-schedule-forms-b02.test.tsx
+
+cd apps/backend
 uv run --locked pytest -q --no-cov -m postgres \
   tests/integration/temporal/test_b05_life_area_catalog.py \
   tests/integration/temporal/test_b05_primary_life_area_assignment.py \
   tests/integration/temporal/test_b05_secondary_tags.py \
+  tests/integration/temporal/test_b03_event_lifecycle.py \
   tests/integration/database/test_database_current_catalog.py \
   tests/integration/database/test_current_catalog.py \
   tests/integration/database/test_b04_d_movement_catalog_probe.py \

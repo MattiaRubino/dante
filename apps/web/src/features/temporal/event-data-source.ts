@@ -29,6 +29,7 @@ export type TemporalEventScheduleRecord = Readonly<{
 export type TemporalScheduledEventCreateRequest = Readonly<{
   operationId: string;
   title: string;
+  lifeAreaRef?: string;
   agendaParts: readonly string[];
   placement: TemporalSchedulePlacementInput;
 }>;
@@ -37,6 +38,25 @@ export type TemporalScheduledEventCreateResult = Readonly<{
   event: TemporalEventRecord;
   schedule: TemporalEventScheduleRecord;
   replayed: boolean;
+}>;
+
+/** A real Event whose Schedule has been explicitly withdrawn. */
+export type TemporalPostponedEventRecord = Readonly<{
+  eventRef: string;
+  scheduleRef: string;
+  title: string;
+  createdAt: Instant;
+  lifeAreaRef: string | null;
+  lifeAreaAssignmentRevision: number | null;
+  unscheduleOperationId: string;
+}>;
+
+export type TemporalPostponedEventReplanRequest = Readonly<{
+  eventRef: string;
+  scheduleRef: string;
+  unscheduleOperationId: string;
+  operationId: string;
+  placement: TemporalSchedulePlacementInput;
 }>;
 
 export type TemporalEventAgendaReplaceRequest = Readonly<{
@@ -58,10 +78,20 @@ export interface TemporalEventDataSource {
     request: TemporalScheduledEventCreateRequest,
     signal?: AbortSignal,
   ): Promise<TemporalScheduledEventCreateResult>;
+  listPostponedEvents(
+    signal?: AbortSignal,
+  ): Promise<readonly TemporalPostponedEventRecord[]>;
+  replanPostponedEvent(
+    request: TemporalPostponedEventReplanRequest,
+    signal?: AbortSignal,
+  ): Promise<TemporalScheduledEventCreateResult>;
 }
 
 export interface TemporalEventAgendaDataSource {
-  loadEvent(eventRef: string, signal?: AbortSignal): Promise<TemporalEventDetailRecord>;
+  loadEvent(
+    eventRef: string,
+    signal?: AbortSignal,
+  ): Promise<TemporalEventDetailRecord>;
   replaceAgenda(
     request: TemporalEventAgendaReplaceRequest,
     signal?: AbortSignal,

@@ -48,6 +48,7 @@ import type {
   PasswordRecoveryRequest,
   PasswordRecoveryValidationRequest,
   PasswordResetRequest,
+  PostponedEventResponse,
   ProblemDetails,
   ProductTagEdgeResponse,
   ProductTagEffectResponse,
@@ -69,6 +70,7 @@ import type {
   RenameProductTagRequest,
   ReorderLifeAreasRequest,
   ReplaceEventAgendaRequest,
+  ReplanPostponedEventRequest,
   RestoredScheduleAbsoluteResponse,
   RestoredScheduleCoarseResponse,
   RestoredScheduleDateSpanResponse,
@@ -4603,6 +4605,46 @@ export const createEventApiV1TemporalEventsPost = async (
   } as createEventApiV1TemporalEventsPostResponse;
 };
 
+export type temporalListPostponedEventsResponse200 = {
+  data: PostponedEventResponse[];
+  status: 200;
+};
+
+export type temporalListPostponedEventsResponseSuccess =
+  temporalListPostponedEventsResponse200 & {
+    headers: Headers;
+  };
+export type temporalListPostponedEventsResponse =
+  temporalListPostponedEventsResponseSuccess;
+
+export const getTemporalListPostponedEventsUrl = () => {
+  return `/api/v1/temporal/events/postponed`;
+};
+
+/**
+ * @summary List Postponed Events
+ */
+export const temporalListPostponedEvents = async (
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListPostponedEventsResponse> => {
+  const res = await (fetchFn ?? fetch)(getTemporalListPostponedEventsUrl(), {
+    ...options,
+    method: 'GET',
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListPostponedEventsResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListPostponedEventsResponse;
+};
+
 export type createScheduledEventApiV1TemporalEventsScheduledPostResponse201 = {
   data:
     | ScheduledEventFloatingResponse
@@ -4803,6 +4845,84 @@ export const replaceEventAgendaApiV1TemporalEventsEventRefAgendaPut = async (
     status: res.status,
     headers: res.headers,
   } as replaceEventAgendaApiV1TemporalEventsEventRefAgendaPutResponse;
+};
+
+export type temporalReplanPostponedEventResponse200 = {
+  data:
+    | ScheduledEventFloatingResponse
+    | ScheduledEventDateSpanResponse
+    | ScheduledEventNamedZoneResponse
+    | ScheduledEventAbsoluteResponse
+    | ScheduledEventCoarseResponse;
+  status: 200;
+};
+
+export type temporalReplanPostponedEventResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalReplanPostponedEventResponseSuccess =
+  temporalReplanPostponedEventResponse200 & {
+    headers: Headers;
+  };
+export type temporalReplanPostponedEventResponseError =
+  temporalReplanPostponedEventResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalReplanPostponedEventResponse =
+  | temporalReplanPostponedEventResponseSuccess
+  | temporalReplanPostponedEventResponseError;
+
+export const getTemporalReplanPostponedEventUrl = (
+  eventRef: string,
+  scheduleRef: string,
+) => {
+  return `/api/v1/temporal/events/${eventRef}/schedules/${scheduleRef}/replan`;
+};
+
+/**
+ * @summary Replan Postponed Event
+ */
+export const temporalReplanPostponedEvent = async (
+  eventRef: string,
+  scheduleRef: string,
+  replanPostponedEventRequest: ReplanPostponedEventRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalReplanPostponedEventResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalReplanPostponedEventUrl(eventRef, scheduleRef),
+    {
+      ...options,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(replanPostponedEventRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalReplanPostponedEventResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalReplanPostponedEventResponse;
 };
 
 export type temporalAttachEventTagResponse200 = {

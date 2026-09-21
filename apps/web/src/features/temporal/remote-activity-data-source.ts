@@ -59,8 +59,9 @@ function requireExactKeys(
   payload: Record<string, unknown>,
   allowed: readonly string[],
   label: string,
+  optional: readonly string[] = [],
 ): void {
-  const allowedKeys = new Set(allowed);
+  const allowedKeys = new Set([...allowed, ...optional]);
   for (const key of Object.keys(payload)) {
     if (!allowedKeys.has(key)) {
       throw new TemporalActivityRemoteError(
@@ -178,6 +179,7 @@ function parseActivity(
     payload,
     ['activity_ref', 'title', 'created_at', 'replayed'],
     'Activity response',
+    ['life_area_ref', 'life_area_assignment_revision'],
   );
   if (typeof payload.title !== 'string' || payload.title.trim().length === 0) {
     throw new TemporalActivityRemoteError(
@@ -371,6 +373,7 @@ function parseScheduledActivity(
     payload,
     scheduledResponseKeys(payload.temporal_form),
     'Scheduled Activity response',
+    ['life_area_ref', 'life_area_assignment_revision'],
   );
   if (typeof payload.title !== 'string' || payload.title.trim().length === 0) {
     throw new TemporalActivityRemoteError(
@@ -613,6 +616,7 @@ export function createRemoteTemporalActivityDataSource(
         body: JSON.stringify({
           operation_id: request.operationId.trim(),
           title: request.title.trim(),
+          ...(request.lifeAreaRef === undefined ? {} : { life_area_ref: request.lifeAreaRef }),
         }),
         ...(signal === undefined ? {} : { signal }),
       });
@@ -638,6 +642,7 @@ export function createRemoteTemporalActivityDataSource(
           body: JSON.stringify({
             operation_id: request.operationId.trim(),
             title: request.title.trim(),
+            ...(request.lifeAreaRef === undefined ? {} : { life_area_ref: request.lifeAreaRef }),
             placement: serializePlacement(request.placement),
           }),
           ...(signal === undefined ? {} : { signal }),

@@ -18,13 +18,15 @@ from dante.modules.temporal.schedule import (
     ScheduleInputError,
     SchedulePlacement,
     establish_schedule_in_session,
+    revise_schedule_in_session,
+    undo_schedule_unschedule_in_session,
 )
 from dante.platform.database.mappings.event import (
     EventAgendaCurrentRow,
     EventAgendaPartRow,
     EventExpectationRow,
 )
-from dante.platform.database.references import NativeRef, new_native_ref
+from dante.platform.database.references import NativeRef, ScopedRecordRef, new_native_ref
 
 
 class EventInputError(ValueError):
@@ -49,6 +51,10 @@ class EventPersistenceError(RuntimeError):
 
 class EventLifeAreaUnavailableError(RuntimeError):
     """The requested actor-local Life Area is unavailable for Event creation."""
+
+
+class EventReplanConflictError(RuntimeError):
+    """The Event Schedule is no longer in the postponed state being replanned."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -79,6 +85,19 @@ class CreateScheduledEventResult:
     event: EventView
     schedule: EstablishedScheduleView
     replayed: bool
+
+
+@dataclass(frozen=True, slots=True)
+class PostponedEventView:
+    """Event with retained Schedule identity and no current placement."""
+
+    event_ref: NativeRef
+    schedule_ref: UUID
+    title: str
+    created_at: datetime
+    life_area_ref: UUID | None
+    life_area_assignment_revision: int | None
+    unschedule_operation_id: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -158,6 +177,11 @@ def _schedule_operation_id(event_operation_id: str) -> str:
     return f"event-create-schedule:{digest}"
 
 
+def _replan_restore_operation_id(operation_id: str) -> str:
+    digest = hashlib.sha256(operation_id.encode("utf-8")).hexdigest()
+    return f"event-replan-restore:{digest}"
+
+
 def _constraint_name(exc: DBAPIError) -> str | None:
     original = exc.orig
     diagnostic = getattr(original, "diag", None)
@@ -179,6 +203,57 @@ def _event_from_row(row: RowMapping) -> EventView:
         ),
         life_area_assignment_revision=(
             int(row["assignment_revision"]) if row.get("assignment_revision") is not None else None
+        ),
+    )
+
+
+async def _read_event_in_session(
+    database_session: AsyncSession,
+    *,
+    self_person_ref: NativeRef,
+    event_ref: NativeRef,
+) -> EventView | None:
+    expectation_statement = select(EventExpectationRow).where(
+        EventExpectationRow.event_ref == event_ref,
+        EventExpectationRow.self_person_ref == self_person_ref,
+    )
+    agenda_statement = (
+        select(EventAgendaPartRow.content)
+        .where(EventAgendaPartRow.event_ref == event_ref)
+        .order_by(EventAgendaPartRow.position)
+    )
+    revision_statement = select(EventAgendaCurrentRow.revision).where(
+        EventAgendaCurrentRow.event_ref == event_ref
+    )
+    assignment_statement = text("""
+        SELECT life_area_ref, assignment_revision
+          FROM dante.list_self_life_area_assignments(:self_person_ref)
+         WHERE subject_kind='event' AND subject_native_ref=:event_ref
+    """)
+    row = await database_session.scalar(expectation_statement)
+    if row is None:
+        return None
+    agenda_parts = tuple((await database_session.scalars(agenda_statement)).all())
+    agenda_revision = await database_session.scalar(revision_statement)
+    assignment = (
+        (
+            await database_session.execute(
+                assignment_statement,
+                {"self_person_ref": self_person_ref, "event_ref": event_ref},
+            )
+        )
+        .mappings()
+        .one_or_none()
+    )
+    return EventView(
+        event_ref=row.event_ref,
+        title=row.title,
+        agenda_revision=0 if agenda_revision is None else int(agenda_revision),
+        agenda_parts=agenda_parts,
+        created_at=row.created_at,
+        life_area_ref=UUID(str(assignment["life_area_ref"])) if assignment else None,
+        life_area_assignment_revision=(
+            int(assignment["assignment_revision"]) if assignment else None
         ),
     )
 
@@ -429,55 +504,145 @@ class TemporalEventApplication:
         event_ref: NativeRef,
     ) -> EventView | None:
         """Read one Event and its ordered Agenda inside authenticated self scope."""
-        expectation_statement = select(EventExpectationRow).where(
-            EventExpectationRow.event_ref == event_ref,
-            EventExpectationRow.self_person_ref == self_person_ref,
-        )
-        agenda_statement = (
-            select(EventAgendaPartRow.content)
-            .where(EventAgendaPartRow.event_ref == event_ref)
-            .order_by(EventAgendaPartRow.position)
-        )
-        revision_statement = select(EventAgendaCurrentRow.revision).where(
-            EventAgendaCurrentRow.event_ref == event_ref
-        )
-        assignment_statement = text("""
-            SELECT life_area_ref, assignment_revision
-              FROM dante.list_self_life_area_assignments(:self_person_ref)
-             WHERE subject_kind='event' AND subject_native_ref=:event_ref
-        """)
-
         try:
             async with (
                 self._session_factory() as database_session,
                 database_session.begin(),
             ):
-                row = await database_session.scalar(expectation_statement)
-                if row is None:
-                    return None
-                agenda_parts = tuple((await database_session.scalars(agenda_statement)).all())
-                agenda_revision = await database_session.scalar(revision_statement)
-                assignment = (
-                    (
-                        await database_session.execute(
-                            assignment_statement,
-                            {"self_person_ref": self_person_ref, "event_ref": event_ref},
-                        )
-                    )
-                    .mappings()
-                    .one_or_none()
+                return await _read_event_in_session(
+                    database_session,
+                    self_person_ref=self_person_ref,
+                    event_ref=event_ref,
                 )
         except SQLAlchemyError as exc:
             raise EventPersistenceError() from exc
 
-        return EventView(
-            event_ref=row.event_ref,
-            title=row.title,
-            agenda_revision=0 if agenda_revision is None else int(agenda_revision),
-            agenda_parts=agenda_parts,
-            created_at=row.created_at,
-            life_area_ref=UUID(str(assignment["life_area_ref"])) if assignment else None,
-            life_area_assignment_revision=(
-                int(assignment["assignment_revision"]) if assignment else None
-            ),
+    async def list_postponed(self, *, self_person_ref: NativeRef) -> tuple[PostponedEventView, ...]:
+        statement = text("""
+            SELECT event_ref,schedule_ref,title,created_at,life_area_ref,
+                   life_area_assignment_revision,unschedule_operation_id
+              FROM dante.list_self_postponed_events(:self_person_ref)
+        """)
+        try:
+            async with self._session_factory() as database_session, database_session.begin():
+                rows = (
+                    (
+                        await database_session.execute(
+                            statement, {"self_person_ref": self_person_ref}
+                        )
+                    )
+                    .mappings()
+                    .all()
+                )
+        except SQLAlchemyError as exc:
+            raise EventPersistenceError() from exc
+        return tuple(
+            PostponedEventView(
+                event_ref=NativeRef(UUID(str(row["event_ref"]))),
+                schedule_ref=UUID(str(row["schedule_ref"])),
+                title=str(row["title"]),
+                created_at=row["created_at"],
+                life_area_ref=(
+                    None if row["life_area_ref"] is None else UUID(str(row["life_area_ref"]))
+                ),
+                life_area_assignment_revision=(
+                    None
+                    if row["life_area_assignment_revision"] is None
+                    else int(row["life_area_assignment_revision"])
+                ),
+                unschedule_operation_id=str(row["unschedule_operation_id"]),
+            )
+            for row in rows
         )
+
+    async def replan_postponed_event(
+        self,
+        *,
+        self_person_ref: NativeRef,
+        event_ref: NativeRef,
+        schedule_ref: UUID,
+        unschedule_operation_id: str,
+        operation_id: str,
+        placement: SchedulePlacement,
+    ) -> CreateScheduledEventResult:
+        normalized_operation_id = _normalize_operation_id(operation_id)
+        normalized_unschedule_operation_id = _normalize_operation_id(unschedule_operation_id)
+        if event_ref.version != 7 or schedule_ref.version != 7:
+            raise EventInputError("Event and Schedule references must be canonical UUIDv7 values.")
+        try:
+            async with self._session_factory() as database_session, database_session.begin():
+                event = await _read_event_in_session(
+                    database_session,
+                    self_person_ref=self_person_ref,
+                    event_ref=event_ref,
+                )
+                event_schedule_match = await database_session.scalar(
+                    text(
+                        """
+                        SELECT dante.assert_self_event_schedule(
+                            :self_person_ref,:event_ref,:schedule_ref
+                        )
+                        """
+                    ),
+                    {
+                        "self_person_ref": self_person_ref,
+                        "event_ref": event_ref,
+                        "schedule_ref": schedule_ref,
+                    },
+                )
+                if event is None or event_schedule_match is not True:
+                    raise EventNotFoundError()
+                restored = await undo_schedule_unschedule_in_session(
+                    database_session,
+                    self_person_ref=self_person_ref,
+                    operation_id=_replan_restore_operation_id(normalized_operation_id),
+                    schedule_ref=ScopedRecordRef(schedule_ref),
+                    unschedule_operation_id=normalized_unschedule_operation_id,
+                )
+                revised = await revise_schedule_in_session(
+                    database_session,
+                    self_person_ref=self_person_ref,
+                    operation_id=normalized_operation_id,
+                    schedule_ref=ScopedRecordRef(schedule_ref),
+                    expected_material_state_ref=restored.material_state_ref,
+                    placement=placement,
+                )
+                schedule = EstablishedScheduleView(
+                    subject_native_ref=event_ref,
+                    schedule_ref=ScopedRecordRef(schedule_ref),
+                    material_state_ref=revised.material_state_ref,
+                    placement=placement,
+                    created_at=revised.created_at,
+                    replayed=revised.replayed,
+                )
+                return CreateScheduledEventResult(
+                    event=event, schedule=schedule, replayed=revised.replayed
+                )
+        except EventNotFoundError:
+            raise
+        except ScheduleInputError as exc:
+            raise EventInputError(str(exc)) from exc
+        except IntegrityError as exc:
+            constraint = _constraint_name(exc)
+            if constraint in {
+                "pk_schedule_revision_operation",
+                "pk_schedule_unschedule_undo_operation",
+            }:
+                raise EventOperationIdReuseError() from exc
+            if constraint in {
+                "schedule_revision_expected_state",
+                "schedule_unschedule_undo_expected_state",
+            }:
+                raise EventReplanConflictError() from exc
+            if constraint in {
+                "schedule_revision_schedule_not_found",
+                "schedule_unschedule_undo_not_found",
+            }:
+                raise EventNotFoundError() from exc
+            if constraint == "schedule_unschedule_undo_unsupported_form":
+                raise EventInputError(
+                    "The prior Event Schedule placement form cannot be replanned."
+                ) from exc
+            raise EventPersistenceError() from exc
+        except (DBAPIError, SQLAlchemyError) as exc:
+            raise EventPersistenceError() from exc

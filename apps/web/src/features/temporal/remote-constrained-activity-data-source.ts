@@ -220,6 +220,7 @@ export function createRemoteTemporalConstrainedActivityDataSource(
           body: JSON.stringify({
             operation_id: request.operationId.trim(),
             title: request.title.trim(),
+            ...(request.lifeAreaRef === undefined ? {} : { life_area_ref: request.lifeAreaRef }),
             rules: request.rules.map(serializeRule),
           }),
           ...(signal === undefined ? {} : { signal }),

@@ -7,6 +7,7 @@
 - **B05-A proved head / topology:** `20260920_45` / `119|5|48|90|239|158|344|0|0|0`
 - **B05-B proved head / topology:** `20260920_46` / `123|5|54|90|245|170|354|0|0|0`
 - **B05-C proved head / expected topology:** `20260920_47` / `129|5|60|90|254|185|366|0|0|0` (26 selected direct PostgreSQL tests passed)
+- **B05-D implementation candidate:** `20260921_48` / `129|5|62|90|254|185|366|0|0|0` (local proof pending; it is not closed/proven).
 - **Previous block:** B04 ✅ CLOSED / PROVEN
 - **CI / Actions:** not authorized by this plan
 
@@ -80,6 +81,25 @@ Dictionary/mappings, current catalog and direct PostgreSQL tests are same-change
 obligations. B05-D owns real frontend Tag editing and grouped presentation.
 
 ## 7. Exit boundary and explicit exclusions
+
+## 6A. B05-D implemented candidate — strict integration boundary
+
+`_48` adds one read-only, actor-scoped PostgreSQL capability for Event Schedules whose
+current placement was explicitly withdrawn. It returns retained EventRef/ScheduleRef,
+the actor-local Life Area basis and the exact unschedule receipt; it returns neither a
+made-up interval nor a synthetic time. Replan is a single application transaction that
+first performs the governed Undo of that exact receipt and then a normal governed
+Schedule revision. It therefore preserves identity, monotonic Schedule history,
+idempotent operation receipts and the existing B04 hard-admissibility path.
+
+The production Timeline obtains its groups from actor-local Life Areas and maps canonical
+Activity/Event reads through the typed assignment relation. Legacy items remain in an
+explicit unassigned group. Hide is presentation-only; it cannot delete an assignment,
+alter Schedule truth or make an item unavailable to the postponed Event panel. Creation
+is disabled until an active canonical Life Area exists; the prototype `personale` value
+is no longer a production fallback. Tags remain secondary associations. Postponed Events
+have their own Event-only panel and can be replanned as timed, all-day/date-span or
+coarse-period intent; they never enter the Activity Planning Tray.
 
 B05 closes only when a user can create and organize their Activity/Event items in real areas, use separate Tags, inspect unified/grouped/focused views and find postponed Events without inventing times; hidden areas continue to participate in authorized scheduling/conflict truth. Re-run actor-local and access proofs, reconciliation of legacy items and applicable manual userTest. A visual prototype or a green mock-only test is insufficient.
 

@@ -6,8 +6,8 @@
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
-- **Timeline candidate Alembic head (source):** `20260920_47`
-- **Timeline candidate expected topology (asserted by 26 passing PostgreSQL tests):** `129|5|60|90|254|185|366|0|0|0`
+- **Timeline candidate Alembic head (source):** `20260921_48`
+- **Timeline candidate expected topology:** `129|5|62|90|254|185|366|0|0|0` (B05-D local proof pending)
 - **Timeline candidate DB overlay:** `timeline-temporal-operational.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 - **Persistence ADR:** `../decisions/ADR-010-postgresql-persistence-constitution.md`
@@ -77,6 +77,7 @@ Protected `main` remains integration authority. Candidate truth is never relabel
 20260920_46 B05-B typed primary Life Area assignment [16 direct PostgreSQL tests PASSED]
     ↓
 20260920_47 B05-C secondary actor-local Tags and typed Activity/Event edges [26 direct PostgreSQL tests PASSED]
+20260921_48 B05-D postponed Event discovery/replan capability [local proof pending]
 ```
 
 No accepted historical migration was edited, rebased, renumbered or flattened.

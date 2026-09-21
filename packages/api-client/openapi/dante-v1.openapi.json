@@ -1379,6 +1379,7 @@
             "discriminator": {
               "mapping": {
                 "absolute_interval": "#/components/schemas/EventAbsoluteIntervalPlacementRequest",
+                "coarse_local_period": "#/components/schemas/EventCoarseLocalPeriodPlacementRequest",
                 "date_span": "#/components/schemas/EventDateSpanPlacementRequest",
                 "floating_local_interval": "#/components/schemas/EventFloatingLocalIntervalPlacementRequest",
                 "named_zone_local_interval": "#/components/schemas/EventNamedZoneLocalIntervalPlacementRequest"
@@ -1397,6 +1398,9 @@
               },
               {
                 "$ref": "#/components/schemas/EventAbsoluteIntervalPlacementRequest"
+              },
+              {
+                "$ref": "#/components/schemas/EventCoarseLocalPeriodPlacementRequest"
               }
             ],
             "title": "Placement"
@@ -1665,6 +1669,30 @@
         },
         "required": ["event_ref", "agenda_revision", "agenda_parts"],
         "title": "EventAgendaMutationResponse",
+        "type": "object"
+      },
+      "EventCoarseLocalPeriodPlacementRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "coarse_local_period",
+            "default": "coarse_local_period",
+            "title": "Kind",
+            "type": "string"
+          },
+          "local_date": {
+            "format": "date",
+            "title": "Local Date",
+            "type": "string"
+          },
+          "period": {
+            "enum": ["morning", "afternoon", "evening"],
+            "title": "Period",
+            "type": "string"
+          }
+        },
+        "required": ["local_date", "period"],
+        "title": "EventCoarseLocalPeriodPlacementRequest",
         "type": "object"
       },
       "EventDateSpanPlacementRequest": {
@@ -2413,6 +2441,67 @@
         "title": "PasswordResetRequest",
         "type": "object"
       },
+      "PostponedEventResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "event_ref": {
+            "format": "uuid",
+            "title": "Event Ref",
+            "type": "string"
+          },
+          "life_area_assignment_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Assignment Revision"
+          },
+          "life_area_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Ref"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "unschedule_operation_id": {
+            "title": "Unschedule Operation Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "event_ref",
+          "schedule_ref",
+          "title",
+          "created_at",
+          "unschedule_operation_id"
+        ],
+        "title": "PostponedEventResponse",
+        "type": "object"
+      },
       "ProblemDetails": {
         "additionalProperties": false,
         "description": "DANTE RFC 9457 public error contract.",
@@ -3071,6 +3160,56 @@
         },
         "required": ["operation_id", "expected_revision", "agenda_parts"],
         "title": "ReplaceEventAgendaRequest",
+        "type": "object"
+      },
+      "ReplanPostponedEventRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "placement": {
+            "discriminator": {
+              "mapping": {
+                "absolute_interval": "#/components/schemas/EventAbsoluteIntervalPlacementRequest",
+                "coarse_local_period": "#/components/schemas/EventCoarseLocalPeriodPlacementRequest",
+                "date_span": "#/components/schemas/EventDateSpanPlacementRequest",
+                "floating_local_interval": "#/components/schemas/EventFloatingLocalIntervalPlacementRequest",
+                "named_zone_local_interval": "#/components/schemas/EventNamedZoneLocalIntervalPlacementRequest"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/EventDateSpanPlacementRequest"
+              },
+              {
+                "$ref": "#/components/schemas/EventFloatingLocalIntervalPlacementRequest"
+              },
+              {
+                "$ref": "#/components/schemas/EventNamedZoneLocalIntervalPlacementRequest"
+              },
+              {
+                "$ref": "#/components/schemas/EventAbsoluteIntervalPlacementRequest"
+              },
+              {
+                "$ref": "#/components/schemas/EventCoarseLocalPeriodPlacementRequest"
+              }
+            ],
+            "title": "Placement"
+          },
+          "unschedule_operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Unschedule Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "unschedule_operation_id", "placement"],
+        "title": "ReplanPostponedEventRequest",
         "type": "object"
       },
       "RestoredScheduleAbsoluteResponse": {
@@ -6400,7 +6539,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -6742,7 +6881,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -7015,7 +7154,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -7295,7 +7434,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -7619,7 +7758,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -7909,7 +8048,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -8189,7 +8328,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -8488,7 +8627,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -8781,7 +8920,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -9090,7 +9229,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -9393,7 +9532,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -9702,7 +9841,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -10013,7 +10152,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -10319,7 +10458,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -10619,7 +10758,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -10929,7 +11068,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -11222,7 +11361,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -11508,7 +11647,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -11812,7 +11951,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -12124,7 +12263,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -12412,7 +12551,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -12698,7 +12837,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -13010,7 +13149,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -13270,7 +13409,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -13524,7 +13663,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -13768,7 +13907,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -14011,7 +14150,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -14502,7 +14641,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -14746,7 +14885,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -14990,7 +15129,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -15248,7 +15387,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -16073,6 +16212,29 @@
         "tags": ["temporal"]
       }
     },
+    "/api/v1/temporal/events/postponed": {
+      "get": {
+        "operationId": "temporal_list_postponed_events",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PostponedEventResponse"
+                  },
+                  "title": "Response Temporal List Postponed Events",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Postponed Events",
+        "tags": ["temporal"]
+      }
+    },
     "/api/v1/temporal/events/scheduled": {
       "post": {
         "operationId": "create_scheduled_event_api_v1_temporal_events_scheduled_post",
@@ -16228,6 +16390,94 @@
           }
         },
         "summary": "Replace Event Agenda",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/events/{event_ref}/schedules/{schedule_ref}/replan": {
+      "put": {
+        "operationId": "temporal_replan_postponed_event",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Ref",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "schedule_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Schedule Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReplanPostponedEventRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "discriminator": {
+                    "mapping": {
+                      "absolute": "#/components/schemas/ScheduledEventAbsoluteResponse",
+                      "coarse_local_period": "#/components/schemas/ScheduledEventCoarseResponse",
+                      "date_span": "#/components/schemas/ScheduledEventDateSpanResponse",
+                      "floating_local": "#/components/schemas/ScheduledEventFloatingResponse",
+                      "named_zone_local": "#/components/schemas/ScheduledEventNamedZoneResponse"
+                    },
+                    "propertyName": "temporal_form"
+                  },
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ScheduledEventFloatingResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ScheduledEventDateSpanResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ScheduledEventNamedZoneResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ScheduledEventAbsoluteResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ScheduledEventCoarseResponse"
+                    }
+                  ],
+                  "title": "Response Temporal Replan Postponed Event"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Replan Postponed Event",
         "tags": ["temporal"]
       }
     },

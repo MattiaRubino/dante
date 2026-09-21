@@ -55,6 +55,8 @@ _PRE_B04_TEMPORAL_OPERATIONS = {
 # history so new operations cannot inherit the legacy implicit-ID exception.
 _EXPECTED_TEMPORAL_OPERATIONS = {
     **_PRE_B04_TEMPORAL_OPERATIONS,
+    ("/api/v1/temporal/events/postponed", "get"): "temporal_list_postponed_events",
+    ("/api/v1/temporal/events/{event_ref}/schedules/{schedule_ref}/replan", "put"): "temporal_replan_postponed_event",
     ("/api/v1/temporal/life-areas", "post"): "temporal_create_life_area",
     ("/api/v1/temporal/life-areas", "get"): "temporal_list_life_areas",
     ("/api/v1/temporal/life-areas/order", "put"): "temporal_reorder_life_areas",

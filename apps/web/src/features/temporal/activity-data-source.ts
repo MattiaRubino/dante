@@ -14,6 +14,7 @@ export type TemporalActivityRecord = Readonly<{
 export type TemporalActivityCreateRequest = Readonly<{
   operationId: string;
   title: string;
+  lifeAreaRef?: string;
 }>;
 
 export type TemporalActivityCreateResult = Readonly<{
@@ -48,6 +49,7 @@ export type TemporalActivityConstraintRuleInput =
 export type TemporalConstrainedActivityCreateRequest = Readonly<{
   operationId: string;
   title: string;
+  lifeAreaRef?: string;
   rules: readonly TemporalActivityConstraintRuleInput[];
 }>;
 
@@ -87,6 +89,7 @@ export type TemporalFloatingLocalScheduleRecord = TemporalScheduleRecord &
 export type TemporalScheduledActivityCreateRequest = Readonly<{
   operationId: string;
   title: string;
+  lifeAreaRef?: string;
   placement: TemporalSchedulePlacementInput;
 }>;
 

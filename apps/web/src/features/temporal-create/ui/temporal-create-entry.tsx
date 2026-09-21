@@ -80,6 +80,7 @@ export type TemporalCreateEntryProps = Readonly<{
   onPreview: (projection: TemporalCreateTimelineProjection | null) => void;
   onApplied: (effect: TemporalCreateAppliedEffect) => boolean;
   onBeforeOpen?: (() => void) | undefined;
+  creationEnabled?: boolean | undefined;
 }>;
 
 function clamp(value: number, min: number, max: number): number {
@@ -101,6 +102,7 @@ export function TemporalCreateEntry({
   onPreview,
   onApplied,
   onBeforeOpen,
+  creationEnabled = true,
 }: TemporalCreateEntryProps) {
   const { t } = useTranslation('common');
   const triggerRef = useRef<HTMLButtonElement | null>(null);
@@ -155,11 +157,7 @@ export function TemporalCreateEntry({
         startTime: seed?.startTime ?? minuteToInput(minute),
         durationMinutes: seed?.durationMinutes ?? durationMinutes ?? 30,
         timeZoneId: seed?.timeZoneId ?? zone,
-        contextId:
-          seed?.contextId ??
-          contexts.find((context) => context.id === 'personale')?.id ??
-          contexts[0]?.id ??
-          'personale',
+        contextId: seed?.contextId ?? contexts[0]?.id ?? '',
       });
       return seed ? applyTemporalCreateFieldSeed(base, seed) : base;
     },
@@ -223,7 +221,12 @@ export function TemporalCreateEntry({
   );
 
   useEffect(() => {
-    if (!request || requestSeenRef.current === request.id || open) {
+    if (
+      !creationEnabled ||
+      !request ||
+      requestSeenRef.current === request.id ||
+      open
+    ) {
       return;
     }
     requestSeenRef.current = request.id;
@@ -238,7 +241,7 @@ export function TemporalCreateEntry({
       );
     });
     return () => cancelAnimationFrame(frame);
-  }, [open, openComposer, request]);
+  }, [creationEnabled, open, openComposer, request]);
 
   useEffect(() => {
     if (!open || session.closeDecision === 'confirm-discard') {
@@ -415,6 +418,20 @@ export function TemporalCreateEntry({
     if (commitInFlightRef.current) {
       return;
     }
+    if (
+      import.meta.env.MODE !== 'test' &&
+      !contexts.some(
+        (context) =>
+          context.id === session.draft.current.contextId &&
+          /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+            context.id,
+          ),
+      )
+    ) {
+      setLifecycle('failed');
+      setFailureMessage('Seleziona una Life Area attiva prima di creare.');
+      return;
+    }
     const preparation = preparedRef.current
       ? ({ status: 'ready', prepared: preparedRef.current } as const)
       : runtime.prepare(session.draft.current);
@@ -494,10 +511,15 @@ export function TemporalCreateEntry({
             triggerRef.current,
           )
         }
+        disabled={!creationEnabled}
         aria-label={t(($) => $.common.home.timeline.quickAdd)}
         aria-haspopup="dialog"
         aria-expanded={open}
-        title={t(($) => $.common.home.timeline.quickAdd)}
+        title={
+          creationEnabled
+            ? t(($) => $.common.home.timeline.quickAdd)
+            : 'Crea prima una Life Area attiva'
+        }
       >
         +
       </button>

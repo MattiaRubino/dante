@@ -15,6 +15,9 @@ export type TimelineGroup = Readonly<{
   id: TimelineGroupId;
   label: string;
   tone: TimelineSemanticTone;
+  /** Actor-local organization preference; not a Schedule or conflict filter. */
+  hidden?: boolean;
+  archived?: boolean;
 }>;
 
 export type TimelineCanonicalSchedulePlacement =

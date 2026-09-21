@@ -1,0 +1,16 @@
+.timeline-organization { position: relative; z-index: 5; padding: .4rem 1rem; }
+.timeline-organization > button, .timeline-organization section button { cursor: pointer; }
+.timeline-organization > section { max-height: min(60vh, 520px); overflow: auto; border: 1px solid #4a4a4a; border-radius: 12px; background: #172024; color: #f7f7f7; padding: 1rem; }
+.timeline-organization ul { list-style: none; padding: 0; }
+.timeline-organization li { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; padding: .35rem 0; }
+.timeline-organization li > span { min-width: 9rem; }
+.timeline-organization label { display: inline-flex; align-items: center; gap: .4rem; }
+.timeline-organization input, .timeline-organization select { color: #fff; background: #19252a; border: 1px solid #667; border-radius: .25rem; padding: .35rem; }
+.timeline-organization button:focus-visible, .timeline-organization input:focus-visible, .timeline-organization select:focus-visible { outline: 2px solid #f79553; outline-offset: 2px; }
+.timeline-postponed { position: relative; z-index: 5; padding: .4rem 1rem; }
+.timeline-postponed > section { max-width: 34rem; border: 1px solid #4a4a4a; border-radius: 12px; background: #172024; color: #f7f7f7; padding: 1rem; }
+.timeline-postponed ul { list-style: none; padding: 0; }
+.timeline-postponed li { margin: .35rem 0; }
+.timeline-postponed form { display: grid; gap: .55rem; }
+.timeline-postponed label { display: grid; gap: .2rem; }
+.timeline-postponed input, .timeline-postponed select { color: #fff; background: #19252a; border: 1px solid #667; border-radius: .25rem; padding: .35rem; }

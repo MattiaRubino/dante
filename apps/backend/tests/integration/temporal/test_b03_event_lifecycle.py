@@ -446,3 +446,106 @@ def test_b03c_event_reschedule_postpone_and_guarded_undo_preserve_identity_and_h
 
     assert event_ref.version == 7
     assert schedule_ref.version == 7
+
+
+@pytest.mark.postgres
+def test_b05d_postponed_event_discovery_and_replan_preserve_identity(
+    migrated_database: Any,
+    b03c_hibp_stub_url: str,
+) -> None:
+    email = "b05d.postponed@example.com"
+    auth_settings = _auth_settings(b03c_hibp_stub_url)
+    _seed_account(migrated_database, auth_settings, email)
+    app = create_app(_settings(migrated_database, b03c_hibp_stub_url))
+
+    with TestClient(app, base_url=_CANONICAL_ORIGIN) as client:
+        csrf = _signin(client, email)
+        headers = _mutation_headers(csrf)
+        created = client.post(
+            "/api/v1/temporal/events/scheduled",
+            json={
+                "operation_id": "operation:b05-d:create",
+                "life_area_ref": api_test_life_area(client, headers),
+                "title": "Evento da ripianificare",
+                "placement": {
+                    "kind": "coarse_local_period",
+                    "local_date": "2026-09-24",
+                    "period": "morning",
+                },
+            },
+            headers=headers,
+        )
+        assert created.status_code == 201
+        initial = created.json()
+        event_ref = UUID(initial["event_ref"])
+        schedule_ref = UUID(initial["schedule_ref"])
+        unscheduled = client.post(
+            f"/api/v1/temporal/schedules/{schedule_ref}/unschedule",
+            json={
+                "operation_id": "operation:b05-d:postpone",
+                "expected_placement_material_state_ref": initial["placement_material_state_ref"],
+            },
+            headers=headers,
+        )
+        assert unscheduled.status_code == 200
+
+        listed = client.get("/api/v1/temporal/events/postponed", headers=_base_headers())
+        assert listed.status_code == 200
+        postponed = listed.json()
+        assert postponed == [
+            {
+                "event_ref": str(event_ref),
+                "schedule_ref": str(schedule_ref),
+                "title": "Evento da ripianificare",
+                "created_at": initial["created_at"],
+                "life_area_ref": initial["life_area_ref"],
+                "life_area_assignment_revision": 1,
+                "unschedule_operation_id": "operation:b05-d:postpone",
+            }
+        ]
+        assert "temporal_form" not in postponed[0]
+        assert "starts_local_at" not in postponed[0]
+
+        request = {
+            "operation_id": "operation:b05-d:replan",
+            "unschedule_operation_id": "operation:b05-d:postpone",
+            "placement": {
+                "kind": "date_span",
+                "start_date": "2026-09-25",
+                "end_date_exclusive": "2026-09-27",
+            },
+        }
+        replanned = client.put(
+            f"/api/v1/temporal/events/{event_ref}/schedules/{schedule_ref}/replan",
+            json=request,
+            headers=headers,
+        )
+        assert replanned.status_code == 200
+        body = replanned.json()
+        assert body["event_ref"] == str(event_ref)
+        assert body["schedule_ref"] == str(schedule_ref)
+        assert body["temporal_form"] == "date_span"
+        assert body["start_date"] == "2026-09-25"
+        assert client.get("/api/v1/temporal/events/postponed", headers=_base_headers()).json() == []
+
+        replay = client.put(
+            f"/api/v1/temporal/events/{event_ref}/schedules/{schedule_ref}/replan",
+            json=request,
+            headers=headers,
+        )
+        assert replay.status_code == 200
+        assert replay.json()["replayed"] is True
+        conflict = client.put(
+            f"/api/v1/temporal/events/{event_ref}/schedules/{schedule_ref}/replan",
+            json={
+                **request,
+                "placement": {
+                    "kind": "date_span",
+                    "start_date": "2026-09-26",
+                    "end_date_exclusive": "2026-09-27",
+                },
+            },
+            headers=headers,
+        )
+        assert conflict.status_code == 409
+        assert conflict.json()["code"] == "temporal.event.replan_operation_id_reused"

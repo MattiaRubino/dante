@@ -6,6 +6,8 @@ import {
 } from '../../platform/api/web-fetch';
 import type {
   TemporalEventDataSource,
+  TemporalPostponedEventRecord,
+  TemporalPostponedEventReplanRequest,
   TemporalScheduledEventCreateRequest,
   TemporalScheduledEventCreateResult,
 } from './event-data-source';
@@ -17,15 +19,13 @@ import { invalidateTemporalTimelineRead } from './timeline-invalidation';
 
 const SESSION_ENDPOINT = '/api/v1/auth/session';
 const SCHEDULED_EVENT_ENDPOINT = '/api/v1/temporal/events/scheduled';
+const POSTPONED_EVENT_ENDPOINT = '/api/v1/temporal/events/postponed';
 const CSRF_HEADER_NAME = 'X-Dante-CSRF';
 const UUID_V7 =
   /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export type TemporalEventRemoteFailureKind =
-  | 'transport'
-  | 'http'
-  | 'protocol'
-  | 'authentication';
+  'transport' | 'http' | 'protocol' | 'authentication';
 
 export class TemporalEventRemoteError extends Error {
   public constructor(
@@ -51,8 +51,9 @@ function requireExactKeys(
   payload: Record<string, unknown>,
   allowed: readonly string[],
   label: string,
+  optional: readonly string[] = [],
 ): void {
-  const allowedKeys = new Set(allowed);
+  const allowedKeys = new Set([...allowed, ...optional]);
   for (const key of Object.keys(payload)) {
     if (!allowedKeys.has(key)) {
       throw new TemporalEventRemoteError(
@@ -356,6 +357,7 @@ function parseScheduledEvent(
     payload,
     scheduledResponseKeys(payload.temporal_form),
     'Scheduled Event response',
+    ['life_area_ref', 'life_area_assignment_revision'],
   );
   if (typeof payload.title !== 'string' || payload.title.trim().length === 0) {
     throw new TemporalEventRemoteError(
@@ -386,6 +388,71 @@ function parseScheduledEvent(
       placement: parseAcceptedPlacement(payload),
     }),
     replayed: payload.replayed,
+  });
+}
+
+function parsePostponedEvent(payload: unknown): TemporalPostponedEventRecord {
+  if (!isRecord(payload)) {
+    throw new TemporalEventRemoteError(
+      'protocol',
+      'Postponed Event must be an object.',
+    );
+  }
+  requireExactKeys(
+    payload,
+    [
+      'event_ref',
+      'schedule_ref',
+      'title',
+      'created_at',
+      'unschedule_operation_id',
+    ],
+    'Postponed Event',
+    ['life_area_ref', 'life_area_assignment_revision'],
+  );
+  if (typeof payload.title !== 'string' || !payload.title.trim()) {
+    throw new TemporalEventRemoteError(
+      'protocol',
+      'Postponed Event title must be non-empty text.',
+    );
+  }
+  if (
+    typeof payload.unschedule_operation_id !== 'string' ||
+    !payload.unschedule_operation_id.trim() ||
+    payload.unschedule_operation_id.length > 200
+  ) {
+    throw new TemporalEventRemoteError(
+      'protocol',
+      'Postponed Event unschedule operation is invalid.',
+    );
+  }
+  const lifeAreaRef =
+    payload.life_area_ref === undefined || payload.life_area_ref === null
+      ? null
+      : parseUuidV7(payload.life_area_ref, 'life_area_ref');
+  const lifeAreaAssignmentRevision =
+    payload.life_area_assignment_revision === undefined ||
+    payload.life_area_assignment_revision === null
+      ? null
+      : payload.life_area_assignment_revision;
+  if (
+    lifeAreaAssignmentRevision !== null &&
+    (!Number.isInteger(lifeAreaAssignmentRevision) ||
+      lifeAreaAssignmentRevision < 1)
+  ) {
+    throw new TemporalEventRemoteError(
+      'protocol',
+      'Postponed Event Life Area assignment revision must be a positive integer.',
+    );
+  }
+  return Object.freeze({
+    eventRef: parseUuidV7(payload.event_ref, 'event_ref'),
+    scheduleRef: parseUuidV7(payload.schedule_ref, 'schedule_ref'),
+    title: payload.title,
+    createdAt: parseInstant(payload.created_at, 'created_at'),
+    lifeAreaRef,
+    lifeAreaAssignmentRevision,
+    unscheduleOperationId: payload.unschedule_operation_id,
   });
 }
 
@@ -564,12 +631,35 @@ function validateRequest(request: TemporalScheduledEventCreateRequest): void {
   const operationId = request.operationId.trim();
   const title = request.title.trim();
   if (!operationId || operationId.length > 200) {
-    throw new RangeError('Event operation id must contain 1 to 200 characters.');
+    throw new RangeError(
+      'Event operation id must contain 1 to 200 characters.',
+    );
   }
   if (!title || title.length > 300) {
     throw new RangeError('Event title must contain 1 to 300 characters.');
   }
   normalizedAgendaParts(request.agendaParts);
+  validatePlacement(request.placement);
+}
+
+function validateReplanRequest(
+  request: TemporalPostponedEventReplanRequest,
+): void {
+  parseUuidV7(request.eventRef, 'Event reference');
+  parseUuidV7(request.scheduleRef, 'Schedule reference');
+  if (!request.operationId.trim() || request.operationId.trim().length > 200) {
+    throw new RangeError(
+      'Event replan operation id must contain 1 to 200 characters.',
+    );
+  }
+  if (
+    !request.unscheduleOperationId.trim() ||
+    request.unscheduleOperationId.trim().length > 200
+  ) {
+    throw new RangeError(
+      'Event unschedule operation id must contain 1 to 200 characters.',
+    );
+  }
   validatePlacement(request.placement);
 }
 
@@ -596,13 +686,65 @@ export function createRemoteTemporalEventDataSource(
         body: JSON.stringify({
           operation_id: request.operationId.trim(),
           title: request.title.trim(),
+          ...(request.lifeAreaRef === undefined
+            ? {}
+            : { life_area_ref: request.lifeAreaRef }),
           agenda_parts: agendaParts,
           placement: serializePlacement(request.placement),
         }),
         ...(signal === undefined ? {} : { signal }),
       });
-      const payload = await requireOk(response, 'Create Scheduled Event response');
+      const payload = await requireOk(
+        response,
+        'Create Scheduled Event response',
+      );
       const result = parseScheduledEvent(payload);
+      invalidateTemporalTimelineRead();
+      return result;
+    },
+    async listPostponedEvents(
+      signal?: AbortSignal,
+    ): Promise<readonly TemporalPostponedEventRecord[]> {
+      const response = await fetchResponse(
+        webFetch,
+        POSTPONED_EVENT_ENDPOINT,
+        signal === undefined ? undefined : { signal },
+      );
+      const payload = await requireOk(response, 'Postponed Events response');
+      if (!Array.isArray(payload)) {
+        throw new TemporalEventRemoteError(
+          'protocol',
+          'Postponed Events response must be an array.',
+        );
+      }
+      return Object.freeze(payload.map(parsePostponedEvent));
+    },
+    async replanPostponedEvent(
+      request: TemporalPostponedEventReplanRequest,
+      signal?: AbortSignal,
+    ): Promise<TemporalScheduledEventCreateResult> {
+      validateReplanRequest(request);
+      const csrf = await csrfToken(webFetch, signal);
+      const response = await fetchResponse(
+        webFetch,
+        `/api/v1/temporal/events/${request.eventRef}/schedules/${request.scheduleRef}/replan`,
+        {
+          method: 'PUT',
+          headers: new Headers({
+            'Content-Type': 'application/json',
+            [CSRF_HEADER_NAME]: csrf,
+          }),
+          body: JSON.stringify({
+            operation_id: request.operationId.trim(),
+            unschedule_operation_id: request.unscheduleOperationId.trim(),
+            placement: serializePlacement(request.placement),
+          }),
+          ...(signal === undefined ? {} : { signal }),
+        },
+      );
+      const result = parseScheduledEvent(
+        await requireOk(response, 'Replan postponed Event response'),
+      );
       invalidateTemporalTimelineRead();
       return result;
     },

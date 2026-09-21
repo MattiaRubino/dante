@@ -52,6 +52,7 @@ type TimelineCreateBridgeProps = Readonly<{
   onRemoveCreatedEvent: (eventId: TimelineEvent['id']) => void;
   onRemoveCreatedAllDay: (itemId: string) => void;
   onBeforeOpen?: () => void;
+  creationEnabled?: boolean;
 }>;
 
 type PortalTarget = Readonly<{
@@ -316,6 +317,7 @@ export function TimelineCreateBridge({
   onRemoveCreatedEvent,
   onRemoveCreatedAllDay,
   onBeforeOpen,
+  creationEnabled = true,
 }: TimelineCreateBridgeProps) {
   const { t } = useTranslation('common');
   const [runtime] = useState(
@@ -340,12 +342,14 @@ export function TimelineCreateBridge({
 
   const contextOptions = useMemo<readonly TemporalCreateContextOption[]>(
     () =>
-      groups.map((group) => ({
-        id: group.id,
-        label: group.label,
-        tone: group.tone,
-        local: group.id.startsWith('local-context:'),
-      })),
+      groups
+        .filter((group) => !group.archived)
+        .map((group) => ({
+          id: group.id,
+          label: group.label,
+          tone: group.tone,
+          local: group.id.startsWith('local-context:'),
+        })),
     [groups],
   );
 
@@ -921,6 +925,7 @@ export function TimelineCreateBridge({
           onPreview={setPreview}
           onApplied={applied}
           onBeforeOpen={onBeforeOpen}
+          creationEnabled={creationEnabled}
         />
       </TemporalCreateContextCatalogProvider>
 

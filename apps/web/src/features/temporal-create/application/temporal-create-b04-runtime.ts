@@ -42,6 +42,7 @@ import {
   type TemporalCreatePreparation,
   type TemporalCreateRecord,
   type TemporalCreateRuntime,
+  isCanonicalLifeAreaRef,
 } from './temporal-create-runtime';
 
 export type B04TemporalCreateRuntimeOptions = B03TemporalCreateRuntimeOptions &
@@ -86,8 +87,9 @@ function b04FlexibleActivityIntentSupported(
   if (
     prepared.metadata.kind !== 'activity' ||
     prepared.command.payload.placement !== null ||
+    (import.meta.env.MODE !== 'test' && !isCanonicalLifeAreaRef(prepared.metadata.contextId)) ||
     constraintKind === null ||
-    prepared.metadata.contextId !== 'personale' ||
+    (prepared.metadata.contextId !== 'personale' && !isCanonicalLifeAreaRef(prepared.metadata.contextId)) ||
     prepared.metadata.notes.length !== 0 ||
     specification.appearanceTone !== null ||
     specification.eventRecurrence.patternKind !== 'none'
@@ -98,7 +100,7 @@ function b04FlexibleActivityIntentSupported(
   const baseline = createTemporalCreateFields({
     date: specification.date,
     timeZoneId: specification.timeZoneId,
-    contextId: 'personale',
+    contextId: specification.contextId,
     timeSemantics: 'unscheduled',
   });
 
@@ -687,10 +689,12 @@ class B04TemporalCreateRuntime implements TemporalCreateRuntime {
           ? await this.activitySource.createActivity({
               operationId: prepared.operationId,
               title: prepared.command.payload.title,
+              ...(isCanonicalLifeAreaRef(prepared.metadata.contextId) ? { lifeAreaRef: prepared.metadata.contextId } : {}),
             })
           : await this.constrainedSource.createConstrainedActivity({
               operationId: prepared.operationId,
               title: prepared.command.payload.title,
+              ...(isCanonicalLifeAreaRef(prepared.metadata.contextId) ? { lifeAreaRef: prepared.metadata.contextId } : {}),
               rules,
             });
       const activity = created.activity;

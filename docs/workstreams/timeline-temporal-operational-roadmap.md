@@ -4,8 +4,8 @@
 - **Branch/workstream:** `feature/timeline-temporal-operational`
 - **Current completed frontier:** B05-A/B/C ✅ CLOSED / PROVEN
 - **Current block:** B05 Product Organization 🟡 B05-D PRODUCT INTEGRATION
-- **Current candidate DB source:** PostgreSQL 18.6 / Alembic `20260920_47`
-- **Candidate expected topology (asserted by 26 passing PostgreSQL tests):** `129|5|60|90|254|185|366|0|0|0`
+- **Current candidate DB source:** PostgreSQL 18.6 / Alembic `20260921_48`
+- **Candidate expected topology:** `129|5|62|90|254|185|366|0|0|0` (B05-D local proof pending)
 - **Live progress ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **B04 execution authority:** `docs/workstreams/timeline-temporal-operational-b04-execution-plan.md`
 - **B04-E closure:** `docs/workstreams/timeline-temporal-operational-b04-e-closure-2026-09-19.md`
@@ -87,7 +87,7 @@ B14 Analytics / Statistics / Signals             ⬜
 B15 Whole Vertical Closure                       ⬜
 ```
 
-B05-A is closed with direct `_45` proof. B05-B passed 16 selected PostgreSQL tests at `_46` and is closed; its closure record fixes the retained legacy-unassigned boundary. B05-C passed 26 selected direct PostgreSQL tests at `_47` and is closed; B05-D product integration is next under `timeline-temporal-operational-b05-execution-plan.md`.
+B05-A is closed with direct `_45` proof. B05-B passed 16 selected PostgreSQL tests at `_46` and is closed; its closure record fixes the retained legacy-unassigned boundary. B05-C passed 26 selected direct PostgreSQL tests at `_47` and is closed. B05-D is implemented as candidate `_48` and awaits the user's local API/database/frontend proof before B05-E closure.
 
 ---
 

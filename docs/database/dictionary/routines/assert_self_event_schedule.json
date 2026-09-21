@@ -1,0 +1,14 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {"key": "routine:dante.assert_self_event_schedule", "type": "routine", "schema": "dante", "name": "assert_self_event_schedule", "ownership_class": "dante_owned"},
+  "purpose": "Bounded actor-scoped proof that a retained Schedule belongs to a self-owned Event before composed Event replan operations.",
+  "classification": {"persistence_role": "event_schedule_ownership_assertion", "canonicality": "capability_surface", "family": "timeline_temporal_operational"},
+  "semantic_traceability": {"authority_sources": ["docs/workstreams/timeline-temporal-operational-b05-execution-plan.md", "docs/development/backend-cp6-02-postgresql-persistence-constitution.md"], "domain_concepts": ["Event", "Schedule"], "logical_families": ["LR-10 Event", "CP6 Schedule placement"], "reference_families": ["NativeRef", "ScopedRecordRef"], "material_facets": []},
+  "implementation": {"introducing_stage": "B05-D-POSTPONED-EVENTS", "alembic_revision": "20260921_48", "sqlalchemy": {"mode": "none", "module": null, "symbol": null}, "runtime_acl_stage": "B05-D-POSTPONED-EVENTS"},
+  "structure": {"columns": [], "primary_key": null, "foreign_keys": [], "unique_constraints": [], "check_constraints": [], "indexes": [], "triggers": [], "table": null, "view": null, "routine": {"routine_kind": "function", "language": "sql", "argument_types": ["uuid", "uuid", "uuid"], "return_type": "boolean", "security": "DEFINER", "volatility": "STABLE", "parallel_safety": "SAFE", "leakproof": false, "function_search_path": ["pg_catalog", "dante", "pg_temp"], "direct_runtime_execute": true}},
+  "state_history": {"material_state_behavior": "No state change; this is a narrow ownership/pairing predicate.", "current_binding": "Self Event expectation and its retained shared Schedule subject binding.", "chronology": "Does not expose or alter Schedule history.", "immutability_policy": "Read-only guarded SQL capability."},
+  "lifecycle": {"retention": "Available while the Event and Schedule are retained.", "redaction": null, "retirement_tombstone": null, "delete_behavior": "No runtime mutation."},
+  "security": {"owner_role": "dante_owner", "default_deny_non_owner": true, "expected_grants": [{"grantee": "dante_runtime", "privilege": "EXECUTE", "columns": [], "grant_option": false}]},
+  "proof": {"obligations": ["No raw runtime Schedule read is required to pair Event and Schedule.", "Pairing remains actor scoped."], "test_refs": ["apps/backend/tests/integration/temporal/test_b03_event_lifecycle.py", "apps/backend/tests/integration/database/test_database_current_catalog.py"], "staged_evidence": []}
+}

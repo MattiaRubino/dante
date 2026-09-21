@@ -35,6 +35,7 @@ export type TimelineState = Readonly<{
   eventsByDate: Readonly<Record<string, readonly TimelineEvent[]>>;
   allDayItems: readonly TimelineAllDayItem[];
   groups: readonly TimelineGroup[];
+  prototypeEnabled: boolean;
   filters: ReadonlySet<TimelineGroupId>;
   focusedEventId: TimelineEventId | null;
   expandedEventIds: ReadonlySet<TimelineEventId>;
@@ -46,6 +47,7 @@ export type TimelineState = Readonly<{
 export type TimelineAction =
   | Readonly<{ type: 'toggle-filter'; groupId: TimelineGroupId }>
   | Readonly<{ type: 'reset-groups-focus' }>
+  | Readonly<{ type: 'reconcile-canonical-groups'; groups: readonly TimelineGroup[] }>
   | Readonly<{ type: 'create-group'; group: TimelineGroup }>
   | Readonly<{
       type: 'reorder-group';
@@ -132,11 +134,13 @@ function sortAllDayItems(
 
 export function createInitialTimelineState(
   fixtureAnchor: PlainDate = TIMELINE_PROTOTYPE_TODAY,
+  prototypeEnabled = true,
 ): TimelineState {
   return {
-    eventsByDate: createTimelinePrototypeStore(fixtureAnchor),
+    eventsByDate: prototypeEnabled ? createTimelinePrototypeStore(fixtureAnchor) : {},
     allDayItems: [],
-    groups: [...TIMELINE_GROUPS],
+    groups: prototypeEnabled ? [...TIMELINE_GROUPS] : [],
+    prototypeEnabled,
     filters: new Set<TimelineGroupId>(),
     focusedEventId: null,
     expandedEventIds: new Set<TimelineEventId>(),
@@ -151,7 +155,8 @@ export function timelineEventsForDate(
   dateKey: string,
 ): readonly TimelineEvent[] {
   return (
-    state.eventsByDate[dateKey] ?? createTimelinePrototypeEventsForDate(dateKey)
+    state.eventsByDate[dateKey] ??
+    (state.prototypeEnabled ? createTimelinePrototypeEventsForDate(dateKey) : [])
   );
 }
 
@@ -240,7 +245,7 @@ function materializeEvent(
     );
   const targetEvents =
     eventsByDate[action.dateKey] ??
-    createTimelinePrototypeEventsForDate(action.dateKey);
+    (state.prototypeEnabled ? createTimelinePrototypeEventsForDate(action.dateKey) : []);
   eventsByDate[action.dateKey] = sortEvents([
     ...targetEvents.filter((event) => event.id !== action.event.id),
     action.event,
@@ -280,7 +285,7 @@ function reconcileAuthoritativeEvents(
   for (const projection of projections) {
     const currentEvents =
       eventsByDate[projection.dateKey] ??
-      createTimelinePrototypeEventsForDate(projection.dateKey);
+      (state.prototypeEnabled ? createTimelinePrototypeEventsForDate(projection.dateKey) : []);
     eventsByDate[projection.dateKey] = sortEvents([
       ...currentEvents.filter((event) => event.id !== projection.event.id),
       projection.event,
@@ -583,6 +588,15 @@ export function timelineReducer(
         filters: new Set<TimelineGroupId>(),
         focusedEventId: null,
       };
+
+    case 'reconcile-canonical-groups': {
+      const ids = new Set(action.groups.map((group) => group.id));
+      return {
+        ...state,
+        groups: action.groups,
+        filters: new Set([...state.filters].filter((id) => ids.has(id))),
+      };
+    }
 
     case 'create-group': {
       const duplicate = state.groups.some(
