@@ -6,7 +6,7 @@
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
-- **Timeline candidate Alembic head (source):** `20260921_50`
+- **Timeline candidate Alembic head (source):** `20260921_51`
 - **Timeline candidate expected topology:** `135|5|68|90|263|201|381|0|0|0` (B06-A candidate; pending direct proof)
 - **Timeline candidate DB overlay:** `timeline-temporal-operational.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
@@ -80,6 +80,7 @@ Protected `main` remains integration authority. Candidate truth is never relabel
 20260921_48 B05-D postponed Event discovery/replan capability [24 PostgreSQL/API/catalog + 41 selected web tests PASSED]
 20260921_49 B06-A Routine source core, lifecycle and typed product organization [candidate superseded by _50]
 20260921_50 B06-A atomic initial Routine/Recurrence companion correction [pending direct proof]
+20260921_51 B06-A qualified Routine source/Life Area command repair [pending direct proof]
 ```
 
 No accepted historical migration was edited, rebased, renumbered or flattened.

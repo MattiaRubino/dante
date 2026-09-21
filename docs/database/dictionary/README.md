@@ -6,7 +6,7 @@
 - **PostgreSQL:** 18.6
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
-- **Current candidate Alembic source head on `feature/timeline-temporal-operational`:** `20260921_50`
+- **Current candidate Alembic source head on `feature/timeline-temporal-operational`:** `20260921_51`
 - **Current candidate expected topology:** `135|5|68|90|263|201|381|0|0|0` (B06-A candidate; pending direct proof)
 - **Frozen CP6 head:** `20260826_08`
 - **Last reconciled:** 2026-09-21
@@ -93,7 +93,7 @@ B05-C / 20260920_47
   typed independent Activity/Event many-valued edges and attach/detach receipts
   no primary-area replacement, hierarchy, Goal/Plan or sharing grant
 
-B06-A / 20260921_50
+B06-A / 20260921_51
   self-owned Routine source, lifecycle, atomic Life Area/source Tag organization
   CP6-required distinct initial daily floating-local Recurrence companion at create
   no generated Occurrence, Activity, Schedule, fake materialization or Timeline projection

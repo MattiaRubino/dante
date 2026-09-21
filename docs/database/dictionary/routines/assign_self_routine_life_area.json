@@ -32,7 +32,7 @@
   },
   "implementation": {
     "introducing_stage": "B06-A-ROUTINE-CORE",
-    "alembic_revision": "20260921_49",
+    "alembic_revision": "20260921_51",
     "sqlalchemy": {
       "mode": "none",
       "module": null,
