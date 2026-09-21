@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B04 ✅ CLOSED / PROVEN → B05-A/B/C/D ✅ CLOSED / PROVEN → B05-E active
+- **Status:** B04 ✅ CLOSED / PROVEN → B05 ✅ CLOSED / PROVEN → B06 next
 - **Reconciled:** 2026-09-21
 - **Branch:** `feature/timeline-temporal-operational`
 - **Current roadmap:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -10,6 +10,7 @@
 - **B04 whole-block closure:** `docs/workstreams/timeline-temporal-operational-b04-f-closure-2026-09-20.md`
 - **B05 execution plan / pre-scope:** `docs/workstreams/timeline-temporal-operational-b05-execution-plan.md`
 - **B05-D closure:** `docs/workstreams/timeline-temporal-operational-b05-d-closure-2026-09-21.md`
+- **B05 whole-block closure:** `docs/workstreams/timeline-temporal-operational-b05-e-closure-2026-09-21.md`
 - **Timeline candidate DB overlay:** `docs/database/timeline-temporal-operational.md`
 - **CI:** no CI launch is implied or authorized
 
@@ -28,7 +29,7 @@ B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
 ├─ B04-D Movement Policy                         ✅ CLOSED / PROVEN
 ├─ B04-E Advanced-family applicability           ✅ CLOSED / PROVEN
 └─ B04-F Whole-B04 closure                       ✅ CLOSED / PROVEN
-B05 Product Organization                         🟡 B05-E whole-block closure
+B05 Product Organization                         ✅ CLOSED / PROVEN
 ...
 B15 Whole Vertical Closure                       ⬜
 ```
@@ -201,10 +202,10 @@ B05-A ✅ CLOSED / PROVEN at `_45`
 B05-B ✅ CLOSED / PROVEN at `_46` (16 selected PostgreSQL tests)
 B05-C ✅ CLOSED / PROVEN at `_47` (26 selected PostgreSQL tests)
 B05-D ✅ CLOSED / PROVEN at `_48` (41 selected web + 24 PostgreSQL/API/catalog tests)
-B05-E 🟡 WHOLE-BLOCK CLOSURE ACTIVE
+B05-E ✅ WHOLE-BLOCK CLOSURE / MANUAL WALKTHROUGH COMPLETE
 ```
 
-B05-A `_43`–`_45` closed with the user's direct `_45` catalog pass. B05-B `_46` creates typed Activity/Event actor-local primary assignment and immutable acceptance receipts, atomically binds new creates, inventories legacy unassigned items and rejects archived areas as new targets. B05-D `_48` completed real frontend grouping/create migration and Event-only postponed discovery/replan without fabricating a time or converting an Event into an Activity. The user passed generated/client and typecheck gates, 41 selected web tests and 24 selected PostgreSQL/API/catalog tests. B05-E retains only whole-block reconciliation and manual product proof. No CI/Actions are launched.
+B05-A `_43`–`_45` closed with the user's direct `_45` catalog pass. B05-B `_46` creates typed Activity/Event actor-local primary assignment and immutable acceptance receipts, atomically binds new creates, inventories legacy unassigned items and rejects archived areas as new targets. B05-D `_48` completed real frontend grouping/create migration and Event-only postponed discovery/replan without fabricating a time or converting an Event into an Activity. The user passed generated/client and typecheck gates, 41 selected web tests and 24 selected PostgreSQL/API/catalog tests. B05-E completed the real-stack manual walkthrough: Event postponement rediscovery, Activity return to the Planning Tray, restoration and `+` creation with an active Life Area work. B05 is closed. No CI/Actions are launched.
 
 User-run proof command for `_48` (completed successfully; organization coverage was then run separately):
 
@@ -236,4 +237,4 @@ uv run --locked pytest -q --no-cov -m postgres \
   tests/integration/temporal/test_b04_f_constrained_activity_application.py
 ```
 
-The user's second `_46` run passed all 16 selected PostgreSQL tests in 26.47s after the importlib-compatible helper fix; B05-B is closed. The user's `_47` run passed all 26 selected direct PostgreSQL tests in 39.12s, closing B05-C actor-local Tags and independent typed Activity/Event many-valued edges. The user then passed B05-D's generated/client/typecheck gates, 41 selected web tests and 24 selected PostgreSQL/API/catalog tests. B05-D is closed; B05-E and B05 itself remain open.
+The user's second `_46` run passed all 16 selected PostgreSQL tests in 26.47s after the importlib-compatible helper fix; B05-B is closed. The user's `_47` run passed all 26 selected direct PostgreSQL tests in 39.12s, closing B05-C actor-local Tags and independent typed Activity/Event many-valued edges. The user then passed B05-D's generated/client/typecheck gates, 41 selected web tests and 24 selected PostgreSQL/API/catalog tests. The completed B05-E real-stack walkthrough closed the remaining product gate; B05 is closed.

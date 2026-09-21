@@ -84,7 +84,7 @@ B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
 ├─ B04-D Movement Policy                         ✅ CLOSED / PROVEN
 ├─ B04-E Advanced-family applicability           ✅ CLOSED / PROVEN
 └─ B04-F Whole-B04 closure                       ✅ CLOSED / PROVEN
-B05 Product Organization                         🟡 B05-E whole-block closure
+B05 Product Organization                         ✅ CLOSED / PROVEN
 B06 Routine / Recurrence / Occurrence Baseline   ⬜
 B07 UI/UX Consolidation v1                       ⬜
 B08 Session Runtime                              ⬜
@@ -244,10 +244,10 @@ ORG-013  hidden-item scheduling/conflict relevance               ✅ B05-D
 ORG-014  actor-local self-only boundary without invented grants    ✅ B05-B proven / B09 sharing deferred
 ORG-015  accessible non-color-only presentation                  ✅ B05-D
 B05-T01..05  automated lifecycle, relation, view, conflict, accessibility proofs  ✅ B05-A..D proven
-B05-T06  manual Life Area organization userTest                    ⬜ B05-E
+B05-T06  manual Life Area organization userTest                    ✅ B05-E proven
 ```
 
-The B03-E transferred postponed/TBD Event rediscovery belongs to B05-D: no Activity Planning Tray conversion and no invented placement. B05-A `_43`–`_45` and B05-B `_46` are proven. `_46` binds newly created Activity/Event to an actor-local area atomically and inventories unassigned legacy rows. B05-C `_47` adds distinct secondary many-valued Tag profiles and typed edges, proved by 26 direct PostgreSQL tests. B05-D `_48` is proven by generated/client/typecheck gates, 41 selected web tests and 24 selected PostgreSQL/API/catalog tests; B05-E remains open.
+The B03-E transferred postponed/TBD Event rediscovery belongs to B05-D: no Activity Planning Tray conversion and no invented placement. B05-A `_43`–`_45` and B05-B `_46` are proven. `_46` binds newly created Activity/Event to an actor-local area atomically and inventories unassigned legacy rows. B05-C `_47` adds distinct secondary many-valued Tag profiles and typed edges, proved by 26 direct PostgreSQL tests. B05-D `_48` is proven by generated/client/typecheck gates, 41 selected web tests and 24 selected PostgreSQL/API/catalog tests. B05-E recorded the completed real-stack manual walkthrough, including immediate Event rediscovery, Activity Planning Tray refresh and restored `+` creation with an active Life Area; B05 is closed.
 
 ---
 
@@ -275,7 +275,7 @@ B05-A ✅ CLOSED / PROVEN
 B05-B ✅ CLOSED / PROVEN at `_46`
 B05-C ✅ CLOSED / PROVEN at `_47` (26 selected PostgreSQL tests)
 B05-D ✅ CLOSED / PROVEN at `_48` (41 selected web + 24 PostgreSQL/API/catalog tests)
-B05-E 🟡 WHOLE-BLOCK CLOSURE ACTIVE
+B05-E ✅ WHOLE-BLOCK CLOSURE / MANUAL WALKTHROUGH COMPLETE
 ```
 
-Current gate: B05-A/B/C/D ✅ CLOSED / PROVEN. B05-E must reconcile the ledger and obtain the manual Life Area organization walkthrough before any B05 whole-block closure. No CI/Actions dispatched.
+Current gate: B05 ✅ CLOSED / PROVEN. B06 Routine / Recurrence / Occurrence Baseline is next. No CI/Actions dispatched.

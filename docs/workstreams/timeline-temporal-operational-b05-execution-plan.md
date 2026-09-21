@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — B05 Product Organization Execution Plan
 
-- **Status:** B05-A/B/C/D ✅ CLOSED / PROVEN → B05-E WHOLE-BLOCK CLOSURE ACTIVE; B05 NOT CLOSED
+- **Status:** B05 ✅ CLOSED / PROVEN
 - **Date:** 2026-09-20
 - **Branch:** `feature/timeline-temporal-operational`
 - **Entering candidate DB:** PostgreSQL 18.6 / Alembic `20260920_42` / `116|5|44|90|233|153|331|0|0|0`
@@ -11,7 +11,7 @@
 - **Previous block:** B04 ✅ CLOSED / PROVEN
 - **CI / Actions:** not authorized by this plan
 
-This is the B05 entry gate required by the [current roadmap](timeline-temporal-operational-roadmap.md). It fixes the semantic contract and implementation order. B05-A and B05-B are closed with direct PostgreSQL evidence in their [catalog](timeline-temporal-operational-b05-a-closure-2026-09-20.md) and [assignment](timeline-temporal-operational-b05-b-closure-2026-09-20.md) closure records. B05-C is closed with direct PostgreSQL evidence in its [Tag closure record](timeline-temporal-operational-b05-c-closure-2026-09-20.md). B05-D is closed with the user-run evidence recorded in its [closure record](timeline-temporal-operational-b05-d-closure-2026-09-21.md). B05-E proceeds under the retained contract below.
+This is the B05 entry gate required by the [current roadmap](timeline-temporal-operational-roadmap.md). It fixes the semantic contract and implementation order. B05-A and B05-B are closed with direct PostgreSQL evidence in their [catalog](timeline-temporal-operational-b05-a-closure-2026-09-20.md) and [assignment](timeline-temporal-operational-b05-b-closure-2026-09-20.md) closure records. B05-C is closed with direct PostgreSQL evidence in its [Tag closure record](timeline-temporal-operational-b05-c-closure-2026-09-20.md). B05-D is closed with the user-run evidence recorded in its [closure record](timeline-temporal-operational-b05-d-closure-2026-09-21.md). The whole block is closed by the [B05-E closure record](timeline-temporal-operational-b05-e-closure-2026-09-21.md).
 
 ## 1. Authority and representation
 
