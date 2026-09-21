@@ -203,6 +203,7 @@ B05-B ✅ CLOSED / PROVEN at `_46` (16 selected PostgreSQL tests)
 B05-C ✅ CLOSED / PROVEN at `_47` (26 selected PostgreSQL tests)
 B05-D ✅ CLOSED / PROVEN at `_48` (41 selected web + 24 PostgreSQL/API/catalog tests)
 B05-E ✅ WHOLE-BLOCK CLOSURE / MANUAL WALKTHROUGH COMPLETE
+B05   ✅ CLOSED / PROVEN
 ```
 
 B05-A `_43`–`_45` closed with the user's direct `_45` catalog pass. B05-B `_46` creates typed Activity/Event actor-local primary assignment and immutable acceptance receipts, atomically binds new creates, inventories legacy unassigned items and rejects archived areas as new targets. B05-D `_48` completed real frontend grouping/create migration and Event-only postponed discovery/replan without fabricating a time or converting an Event into an Activity. The user passed generated/client and typecheck gates, 41 selected web tests and 24 selected PostgreSQL/API/catalog tests. B05-E completed the real-stack manual walkthrough: Event postponement rediscovery, Activity return to the Planning Tray, restoration and `+` creation with an active Life Area work. B05 is closed. No CI/Actions are launched.

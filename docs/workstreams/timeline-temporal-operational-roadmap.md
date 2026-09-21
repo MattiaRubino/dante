@@ -222,6 +222,7 @@ B05-B ✅ CLOSED / PROVEN at `_46`
 B05-C ✅ CLOSED / PROVEN at `_47` (26 selected PostgreSQL tests)
 B05-D ✅ CLOSED / PROVEN at `_48` (41 selected web + 24 PostgreSQL/API/catalog tests)
 B05-E ✅ WHOLE-BLOCK CLOSURE / MANUAL WALKTHROUGH COMPLETE
+B05   ✅ CLOSED / PROVEN
 ```
 
 Current action: enter B06 pre-scope. No CI or Actions are launched.

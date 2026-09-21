@@ -15,7 +15,8 @@
 - **B05-B closure:** `docs/workstreams/timeline-temporal-operational-b05-b-closure-2026-09-20.md` ✅
 - **B05-C closure:** `docs/workstreams/timeline-temporal-operational-b05-c-closure-2026-09-20.md` ✅
 - **B05-D closure:** `docs/workstreams/timeline-temporal-operational-b05-d-closure-2026-09-21.md` ✅
-- **Timeline candidate DB overlay:** `docs/database/timeline-temporal-operational.md`
+- **B05-E / whole-B05 closure:** `docs/workstreams/timeline-temporal-operational-b05-e-closure-2026-09-21.md` ✅
+- **Timeline candidate DB overlay: `docs/database/timeline-temporal-operational.md`
 
 The archived semantic freeze remains the binding detailed inventory for the full vertical. This file is the live implementation/proof ledger.
 
@@ -227,7 +228,7 @@ No PASS came from prototype-only fields.
 
 ---
 
-# 5. B05 — Product Organization 🟡 WHOLE-BLOCK CLOSURE OPEN
+# 5. B05 — Product Organization ✅ CLOSED / PROVEN
 
 Execution authority: `timeline-temporal-operational-b05-execution-plan.md`. B05-A LR-12 catalog, B05-B actor-local typed Activity/Event assignments, B05-C Tag catalog/typed secondary edges and B05-D production integration are proven. None is a new Domain owner or an implicit assignment of old rows.
 
@@ -238,7 +239,7 @@ ORG-003  Life Area create               ✅ B05-A proven
 ORG-004..008  rename/reorder/archive/hide/appearance                 ✅ B05-A proven
 ORG-009  primary per-actor item assignment                         ✅ B05-B proven
 ORG-010  separate secondary Tags                                ✅ B05-C proven
-ORG-011  non-collapse with Goal/Plan/Tag/Place/provider calendar  ⬜ verify throughout
+ORG-011  non-collapse with Goal/Plan/Tag/Place/provider calendar  ✅ B05-A..D proven
 ORG-012  real Timeline organization and filtering                ✅ B05-D
 ORG-013  hidden-item scheduling/conflict relevance               ✅ B05-D
 ORG-014  actor-local self-only boundary without invented grants    ✅ B05-B proven / B09 sharing deferred
@@ -276,6 +277,7 @@ B05-B ✅ CLOSED / PROVEN at `_46`
 B05-C ✅ CLOSED / PROVEN at `_47` (26 selected PostgreSQL tests)
 B05-D ✅ CLOSED / PROVEN at `_48` (41 selected web + 24 PostgreSQL/API/catalog tests)
 B05-E ✅ WHOLE-BLOCK CLOSURE / MANUAL WALKTHROUGH COMPLETE
+B05   ✅ CLOSED / PROVEN
 ```
 
 Current gate: B05 ✅ CLOSED / PROVEN. B06 Routine / Recurrence / Occurrence Baseline is next. No CI/Actions dispatched.
