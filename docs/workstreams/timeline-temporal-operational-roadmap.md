@@ -3,9 +3,9 @@
 - **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-21
 - **Branch/workstream:** `feature/timeline-temporal-operational`
 - **Current completed frontier:** B05 ✅ CLOSED / PROVEN
-- **Current block:** B06 Routine / Recurrence / Occurrence Baseline 🟨 IN PROGRESS — B06-A candidate pending direct proof
+- **Current block:** B06 Routine / Recurrence / Occurrence Baseline 🟨 IN PROGRESS — B06-A ✅ CLOSED / B06-B next
 - **Current candidate DB source:** PostgreSQL 18.6 / Alembic `20260921_51`
-- **Candidate expected topology:** `135|5|68|90|263|201|381|0|0|0` (B06-A candidate; pending direct proof)
+- **Candidate expected topology:** `135|5|68|90|263|201|381|0|0|0` (B06-A proven; B06-B not started)
 - **Live progress ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **B04 execution authority:** `docs/workstreams/timeline-temporal-operational-b04-execution-plan.md`
 - **B04-E closure:** `docs/workstreams/timeline-temporal-operational-b04-e-closure-2026-09-19.md`
@@ -76,7 +76,7 @@ B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
 ├─ B04-E Advanced-family applicability           ✅ CLOSED / PROVEN
 └─ B04-F Whole-B04 closure                       ✅ CLOSED / PROVEN
 B05 Product Organization                         ✅ CLOSED / PROVEN
-B06 Routine / Recurrence / Occurrence Baseline   🟨 IN PROGRESS — B06-A
+B06 Routine / Recurrence / Occurrence Baseline   🟨 IN PROGRESS — B06-B
 B07 UI/UX Consolidation v1                       ⬜
 B08 Session Runtime                              ⬜
 B09 Responsibility / Participation               ⬜
@@ -224,6 +224,9 @@ B05-C ✅ CLOSED / PROVEN at `_47` (26 selected PostgreSQL tests)
 B05-D ✅ CLOSED / PROVEN at `_48` (41 selected web + 24 PostgreSQL/API/catalog tests)
 B05-E ✅ WHOLE-BLOCK CLOSURE / MANUAL WALKTHROUGH COMPLETE
 B05   ✅ CLOSED / PROVEN
+B06-A ✅ CLOSED / PROVEN at `_51` (26 selected PostgreSQL/catalog regressions; OpenAPI/client generation + API-client typecheck)
 ```
 
-Current action: B06-A Routine source core. No CI or Actions are launched.
+Closure authority: `timeline-temporal-operational-b06-a-closure-2026-09-21.md`.
+
+Current action: B06-B Recurrence authoring. No CI or Actions are launched.

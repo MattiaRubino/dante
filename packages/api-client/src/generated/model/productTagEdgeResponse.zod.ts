@@ -8,7 +8,7 @@ import * as zod from 'zod/mini';
 
 export const ProductTagEdgeResponse = /*#__PURE__*/ zod.object({
   attached_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-  subject_kind: /*#__PURE__*/ zod.enum(['activity', 'event']),
+  subject_kind: /*#__PURE__*/ zod.enum(['activity', 'event', 'routine']),
   subject_native_ref: /*#__PURE__*/ zod.uuid(),
   tag_ref: /*#__PURE__*/ zod.uuid(),
 });

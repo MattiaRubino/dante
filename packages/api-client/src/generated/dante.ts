@@ -11,6 +11,7 @@ import type {
   AppleNotificationRequest,
   ArchiveProductTagRequest,
   AssignLifeAreaRequest,
+  AssignRoutineLifeAreaRequest,
   AuthHandleAppleCallbackBody,
   AuthenticatedSessionResponse,
   AuthenticationMethodsResponse,
@@ -20,6 +21,7 @@ import type {
   CreateEventRequest,
   CreateLifeAreaRequest,
   CreateProductTagRequest,
+  CreateRoutineRequest,
   CreateScheduledActivityRequest,
   CreateScheduledEventRequest,
   CreateTemporalConstraintRequest,
@@ -68,6 +70,7 @@ import type {
   RecoveryValidationResponse,
   RenameLifeAreaRequest,
   RenameProductTagRequest,
+  RenameRoutineRequest,
   ReorderLifeAreasRequest,
   ReplaceEventAgendaRequest,
   ReplanPostponedEventRequest,
@@ -86,6 +89,12 @@ import type {
   RevisedScheduleNamedZoneResponse,
   RevisedScheduleResponse,
   RevisedTemporalConstraintResponse,
+  RoutineLifeAreaResponse,
+  RoutineMutationRequest,
+  RoutineMutationResponse,
+  RoutineResponse,
+  RoutineTagEffectResponse,
+  RoutineTagOperationRequest,
   ScheduledActivityAbsoluteResponse,
   ScheduledActivityCoarseResponse,
   ScheduledActivityDateSpanResponse,
@@ -5734,6 +5743,587 @@ export const temporalSetLifeAreaVisibility = async (
     status: res.status,
     headers: res.headers,
   } as temporalSetLifeAreaVisibilityResponse;
+};
+
+export type temporalListRoutinesResponse200 = {
+  data: RoutineResponse[];
+  status: 200;
+};
+
+export type temporalListRoutinesResponseSuccess =
+  temporalListRoutinesResponse200 & {
+    headers: Headers;
+  };
+export type temporalListRoutinesResponse = temporalListRoutinesResponseSuccess;
+
+export const getTemporalListRoutinesUrl = () => {
+  return `/api/v1/temporal/routines`;
+};
+
+/**
+ * @summary List Routines
+ */
+export const temporalListRoutines = async (
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListRoutinesResponse> => {
+  const res = await (fetchFn ?? fetch)(getTemporalListRoutinesUrl(), {
+    ...options,
+    method: 'GET',
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListRoutinesResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListRoutinesResponse;
+};
+
+export type temporalCreateRoutineResponse200 = {
+  data: RoutineResponse;
+  status: 200;
+};
+
+export type temporalCreateRoutineResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalCreateRoutineResponseSuccess =
+  temporalCreateRoutineResponse200 & {
+    headers: Headers;
+  };
+export type temporalCreateRoutineResponseError =
+  temporalCreateRoutineResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalCreateRoutineResponse =
+  temporalCreateRoutineResponseSuccess | temporalCreateRoutineResponseError;
+
+export const getTemporalCreateRoutineUrl = () => {
+  return `/api/v1/temporal/routines`;
+};
+
+/**
+ * @summary Create Routine
+ */
+export const temporalCreateRoutine = async (
+  createRoutineRequest: CreateRoutineRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalCreateRoutineResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(getTemporalCreateRoutineUrl(), {
+    ...options,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(createRoutineRequest),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalCreateRoutineResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalCreateRoutineResponse;
+};
+
+export type temporalEndRoutineResponse200 = {
+  data: RoutineMutationResponse;
+  status: 200;
+};
+
+export type temporalEndRoutineResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalEndRoutineResponseSuccess =
+  temporalEndRoutineResponse200 & {
+    headers: Headers;
+  };
+export type temporalEndRoutineResponseError = temporalEndRoutineResponse422 & {
+  headers: Headers;
+};
+
+export type temporalEndRoutineResponse =
+  temporalEndRoutineResponseSuccess | temporalEndRoutineResponseError;
+
+export const getTemporalEndRoutineUrl = (routineRef: string) => {
+  return `/api/v1/temporal/routines/${routineRef}/end`;
+};
+
+/**
+ * @summary End Routine
+ */
+export const temporalEndRoutine = async (
+  routineRef: string,
+  routineMutationRequest: RoutineMutationRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalEndRoutineResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(getTemporalEndRoutineUrl(routineRef), {
+    ...options,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(routineMutationRequest),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalEndRoutineResponse['data'] = body ? JSON.parse(body) : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalEndRoutineResponse;
+};
+
+export type temporalAssignRoutineLifeAreaResponse200 = {
+  data: RoutineLifeAreaResponse;
+  status: 200;
+};
+
+export type temporalAssignRoutineLifeAreaResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalAssignRoutineLifeAreaResponseSuccess =
+  temporalAssignRoutineLifeAreaResponse200 & {
+    headers: Headers;
+  };
+export type temporalAssignRoutineLifeAreaResponseError =
+  temporalAssignRoutineLifeAreaResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalAssignRoutineLifeAreaResponse =
+  | temporalAssignRoutineLifeAreaResponseSuccess
+  | temporalAssignRoutineLifeAreaResponseError;
+
+export const getTemporalAssignRoutineLifeAreaUrl = (routineRef: string) => {
+  return `/api/v1/temporal/routines/${routineRef}/life-area`;
+};
+
+/**
+ * @summary Assign Life Area
+ */
+export const temporalAssignRoutineLifeArea = async (
+  routineRef: string,
+  assignRoutineLifeAreaRequest: AssignRoutineLifeAreaRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalAssignRoutineLifeAreaResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalAssignRoutineLifeAreaUrl(routineRef),
+    {
+      ...options,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(assignRoutineLifeAreaRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalAssignRoutineLifeAreaResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalAssignRoutineLifeAreaResponse;
+};
+
+export type temporalPauseRoutineResponse200 = {
+  data: RoutineMutationResponse;
+  status: 200;
+};
+
+export type temporalPauseRoutineResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalPauseRoutineResponseSuccess =
+  temporalPauseRoutineResponse200 & {
+    headers: Headers;
+  };
+export type temporalPauseRoutineResponseError =
+  temporalPauseRoutineResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalPauseRoutineResponse =
+  temporalPauseRoutineResponseSuccess | temporalPauseRoutineResponseError;
+
+export const getTemporalPauseRoutineUrl = (routineRef: string) => {
+  return `/api/v1/temporal/routines/${routineRef}/pause`;
+};
+
+/**
+ * @summary Pause Routine
+ */
+export const temporalPauseRoutine = async (
+  routineRef: string,
+  routineMutationRequest: RoutineMutationRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalPauseRoutineResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(getTemporalPauseRoutineUrl(routineRef), {
+    ...options,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(routineMutationRequest),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalPauseRoutineResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalPauseRoutineResponse;
+};
+
+export type temporalRenameRoutineResponse200 = {
+  data: RoutineMutationResponse;
+  status: 200;
+};
+
+export type temporalRenameRoutineResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalRenameRoutineResponseSuccess =
+  temporalRenameRoutineResponse200 & {
+    headers: Headers;
+  };
+export type temporalRenameRoutineResponseError =
+  temporalRenameRoutineResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalRenameRoutineResponse =
+  temporalRenameRoutineResponseSuccess | temporalRenameRoutineResponseError;
+
+export const getTemporalRenameRoutineUrl = (routineRef: string) => {
+  return `/api/v1/temporal/routines/${routineRef}/rename`;
+};
+
+/**
+ * @summary Rename Routine
+ */
+export const temporalRenameRoutine = async (
+  routineRef: string,
+  renameRoutineRequest: RenameRoutineRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalRenameRoutineResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalRenameRoutineUrl(routineRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(renameRoutineRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalRenameRoutineResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalRenameRoutineResponse;
+};
+
+export type temporalResumeRoutineResponse200 = {
+  data: RoutineMutationResponse;
+  status: 200;
+};
+
+export type temporalResumeRoutineResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalResumeRoutineResponseSuccess =
+  temporalResumeRoutineResponse200 & {
+    headers: Headers;
+  };
+export type temporalResumeRoutineResponseError =
+  temporalResumeRoutineResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalResumeRoutineResponse =
+  temporalResumeRoutineResponseSuccess | temporalResumeRoutineResponseError;
+
+export const getTemporalResumeRoutineUrl = (routineRef: string) => {
+  return `/api/v1/temporal/routines/${routineRef}/resume`;
+};
+
+/**
+ * @summary Resume Routine
+ */
+export const temporalResumeRoutine = async (
+  routineRef: string,
+  routineMutationRequest: RoutineMutationRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalResumeRoutineResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalResumeRoutineUrl(routineRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(routineMutationRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalResumeRoutineResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalResumeRoutineResponse;
+};
+
+export type temporalAttachRoutineTagResponse200 = {
+  data: RoutineTagEffectResponse;
+  status: 200;
+};
+
+export type temporalAttachRoutineTagResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalAttachRoutineTagResponseSuccess =
+  temporalAttachRoutineTagResponse200 & {
+    headers: Headers;
+  };
+export type temporalAttachRoutineTagResponseError =
+  temporalAttachRoutineTagResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalAttachRoutineTagResponse =
+  | temporalAttachRoutineTagResponseSuccess
+  | temporalAttachRoutineTagResponseError;
+
+export const getTemporalAttachRoutineTagUrl = (
+  routineRef: string,
+  tagRef: string,
+) => {
+  return `/api/v1/temporal/routines/${routineRef}/tags/${tagRef}/attach`;
+};
+
+/**
+ * @summary Attach Tag
+ */
+export const temporalAttachRoutineTag = async (
+  routineRef: string,
+  tagRef: string,
+  routineTagOperationRequest: RoutineTagOperationRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalAttachRoutineTagResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalAttachRoutineTagUrl(routineRef, tagRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(routineTagOperationRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalAttachRoutineTagResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalAttachRoutineTagResponse;
+};
+
+export type temporalDetachRoutineTagResponse200 = {
+  data: RoutineTagEffectResponse;
+  status: 200;
+};
+
+export type temporalDetachRoutineTagResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalDetachRoutineTagResponseSuccess =
+  temporalDetachRoutineTagResponse200 & {
+    headers: Headers;
+  };
+export type temporalDetachRoutineTagResponseError =
+  temporalDetachRoutineTagResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalDetachRoutineTagResponse =
+  | temporalDetachRoutineTagResponseSuccess
+  | temporalDetachRoutineTagResponseError;
+
+export const getTemporalDetachRoutineTagUrl = (
+  routineRef: string,
+  tagRef: string,
+) => {
+  return `/api/v1/temporal/routines/${routineRef}/tags/${tagRef}/detach`;
+};
+
+/**
+ * @summary Detach Tag
+ */
+export const temporalDetachRoutineTag = async (
+  routineRef: string,
+  tagRef: string,
+  routineTagOperationRequest: RoutineTagOperationRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalDetachRoutineTagResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalDetachRoutineTagUrl(routineRef, tagRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(routineTagOperationRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalDetachRoutineTagResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalDetachRoutineTagResponse;
 };
 
 export type reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchResponse200 =

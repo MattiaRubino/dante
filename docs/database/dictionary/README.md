@@ -7,7 +7,7 @@
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Current candidate Alembic source head on `feature/timeline-temporal-operational`:** `20260921_51`
-- **Current candidate expected topology:** `135|5|68|90|263|201|381|0|0|0` (B06-A candidate; pending direct proof)
+- **Current candidate expected topology:** `135|5|68|90|263|201|381|0|0|0` (B06-A proven; B06-B not started)
 - **Frozen CP6 head:** `20260826_08`
 - **Last reconciled:** 2026-09-21
 

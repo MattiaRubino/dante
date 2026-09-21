@@ -957,6 +957,34 @@
         "title": "AssignLifeAreaRequest",
         "type": "object"
       },
+      "AssignRoutineLifeAreaRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_assignment_revision": {
+            "minimum": 1.0,
+            "title": "Expected Assignment Revision",
+            "type": "integer"
+          },
+          "life_area_ref": {
+            "format": "uuid",
+            "title": "Life Area Ref",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "life_area_ref",
+          "expected_assignment_revision"
+        ],
+        "title": "AssignRoutineLifeAreaRequest",
+        "type": "object"
+      },
       "AuthenticatedSessionResponse": {
         "additionalProperties": false,
         "description": "Authenticated bootstrap/session representation.",
@@ -1293,6 +1321,62 @@
         },
         "required": ["operation_id", "name"],
         "title": "CreateProductTagRequest",
+        "type": "object"
+      },
+      "CreateRoutineRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "initial_recurrence_starts_on": {
+            "format": "date",
+            "title": "Initial Recurrence Starts On",
+            "type": "string"
+          },
+          "initial_recurrence_wall_time": {
+            "anyOf": [
+              {
+                "format": "time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Initial Recurrence Wall Time"
+          },
+          "life_area_ref": {
+            "format": "uuid",
+            "title": "Life Area Ref",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "tag_refs": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 100,
+            "title": "Tag Refs",
+            "type": "array"
+          },
+          "title": {
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "title",
+          "life_area_ref",
+          "initial_recurrence_starts_on"
+        ],
+        "title": "CreateRoutineRequest",
         "type": "object"
       },
       "CreateScheduledActivityRequest": {
@@ -2609,7 +2693,7 @@
             "type": "string"
           },
           "subject_kind": {
-            "enum": ["activity", "event"],
+            "enum": ["activity", "event", "routine"],
             "title": "Subject Kind",
             "type": "string"
           },
@@ -3108,6 +3192,31 @@
         },
         "required": ["operation_id", "expected_revision", "name"],
         "title": "RenameProductTagRequest",
+        "type": "object"
+      },
+      "RenameRoutineRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_source_revision": {
+            "minimum": 1.0,
+            "title": "Expected Source Revision",
+            "type": "integer"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "expected_source_revision", "title"],
+        "title": "RenameRoutineRequest",
         "type": "object"
       },
       "ReorderLifeAreasRequest": {
@@ -3983,6 +4092,212 @@
           "recorded_at"
         ],
         "title": "RevisedTemporalConstraintResponse",
+        "type": "object"
+      },
+      "RoutineLifeAreaResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "assigned_at": {
+            "format": "date-time",
+            "title": "Assigned At",
+            "type": "string"
+          },
+          "assignment_revision": {
+            "minimum": 1.0,
+            "title": "Assignment Revision",
+            "type": "integer"
+          },
+          "life_area_ref": {
+            "format": "uuid",
+            "title": "Life Area Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "life_area_ref",
+          "assignment_revision",
+          "assigned_at",
+          "replayed"
+        ],
+        "title": "RoutineLifeAreaResponse",
+        "type": "object"
+      },
+      "RoutineMutationRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_source_revision": {
+            "minimum": 1.0,
+            "title": "Expected Source Revision",
+            "type": "integer"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "expected_source_revision"],
+        "title": "RoutineMutationRequest",
+        "type": "object"
+      },
+      "RoutineMutationResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "accepted_at": {
+            "format": "date-time",
+            "title": "Accepted At",
+            "type": "string"
+          },
+          "lifecycle_state": {
+            "enum": ["active", "paused", "ended"],
+            "title": "Lifecycle State",
+            "type": "string"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "routine_ref": {
+            "format": "uuid",
+            "title": "Routine Ref",
+            "type": "string"
+          },
+          "source_revision": {
+            "minimum": 1.0,
+            "title": "Source Revision",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "routine_ref",
+          "source_revision",
+          "lifecycle_state",
+          "accepted_at",
+          "replayed"
+        ],
+        "title": "RoutineMutationResponse",
+        "type": "object"
+      },
+      "RoutineResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "life_area_assigned_at": {
+            "format": "date-time",
+            "title": "Life Area Assigned At",
+            "type": "string"
+          },
+          "life_area_assignment_revision": {
+            "minimum": 1.0,
+            "title": "Life Area Assignment Revision",
+            "type": "integer"
+          },
+          "life_area_ref": {
+            "format": "uuid",
+            "title": "Life Area Ref",
+            "type": "string"
+          },
+          "lifecycle_changed_at": {
+            "format": "date-time",
+            "title": "Lifecycle Changed At",
+            "type": "string"
+          },
+          "lifecycle_state": {
+            "enum": ["active", "paused", "ended"],
+            "title": "Lifecycle State",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "routine_ref": {
+            "format": "uuid",
+            "title": "Routine Ref",
+            "type": "string"
+          },
+          "source_revision": {
+            "minimum": 1.0,
+            "title": "Source Revision",
+            "type": "integer"
+          },
+          "tag_refs": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Tag Refs",
+            "type": "array"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "routine_ref",
+          "title",
+          "lifecycle_state",
+          "source_revision",
+          "created_at",
+          "updated_at",
+          "lifecycle_changed_at",
+          "life_area_ref",
+          "life_area_assignment_revision",
+          "life_area_assigned_at",
+          "tag_refs"
+        ],
+        "title": "RoutineResponse",
+        "type": "object"
+      },
+      "RoutineTagEffectResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "accepted_at": {
+            "format": "date-time",
+            "title": "Accepted At",
+            "type": "string"
+          },
+          "attached": {
+            "title": "Attached",
+            "type": "boolean"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          }
+        },
+        "required": ["attached", "accepted_at", "replayed"],
+        "title": "RoutineTagEffectResponse",
+        "type": "object"
+      },
+      "RoutineTagOperationRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id"],
+        "title": "RoutineTagOperationRequest",
         "type": "object"
       },
       "ScheduledActivityAbsoluteResponse": {
@@ -17051,6 +17366,443 @@
           }
         },
         "summary": "Set Life Area Visibility",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/routines": {
+      "get": {
+        "operationId": "temporal_list_routines",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RoutineResponse"
+                  },
+                  "title": "Response Temporal List Routines",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Routines",
+        "tags": ["temporal"]
+      },
+      "post": {
+        "operationId": "temporal_create_routine",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRoutineRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoutineResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Routine",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/routines/{routine_ref}/end": {
+      "post": {
+        "operationId": "temporal_end_routine",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "routine_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Routine Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoutineMutationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoutineMutationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "End Routine",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/routines/{routine_ref}/life-area": {
+      "put": {
+        "operationId": "temporal_assign_routine_life_area",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "routine_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Routine Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignRoutineLifeAreaRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoutineLifeAreaResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Assign Life Area",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/routines/{routine_ref}/pause": {
+      "post": {
+        "operationId": "temporal_pause_routine",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "routine_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Routine Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoutineMutationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoutineMutationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Pause Routine",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/routines/{routine_ref}/rename": {
+      "post": {
+        "operationId": "temporal_rename_routine",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "routine_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Routine Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RenameRoutineRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoutineMutationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Rename Routine",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/routines/{routine_ref}/resume": {
+      "post": {
+        "operationId": "temporal_resume_routine",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "routine_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Routine Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoutineMutationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoutineMutationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Resume Routine",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/routines/{routine_ref}/tags/{tag_ref}/attach": {
+      "post": {
+        "operationId": "temporal_attach_routine_tag",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "routine_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Routine Ref",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "tag_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Tag Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoutineTagOperationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoutineTagEffectResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Attach Tag",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/routines/{routine_ref}/tags/{tag_ref}/detach": {
+      "post": {
+        "operationId": "temporal_detach_routine_tag",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "routine_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Routine Ref",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "tag_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Tag Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoutineTagOperationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoutineTagEffectResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Detach Tag",
         "tags": ["temporal"]
       }
     },

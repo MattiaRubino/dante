@@ -87,7 +87,7 @@ B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
 ├─ B04-E Advanced-family applicability           ✅ CLOSED / PROVEN
 └─ B04-F Whole-B04 closure                       ✅ CLOSED / PROVEN
 B05 Product Organization                         ✅ CLOSED / PROVEN
-B06 Routine / Recurrence / Occurrence Baseline   🟨 IN PROGRESS — B06-A
+B06 Routine / Recurrence / Occurrence Baseline   🟨 IN PROGRESS — B06-B
 B07 UI/UX Consolidation v1                       ⬜
 B08 Session Runtime                              ⬜
 B09 Responsibility / Participation               ⬜
@@ -104,7 +104,7 @@ Current candidate persistence authority:
 ```text
 PostgreSQL       18.6
 Alembic source   20260921_51
-Expected topology 135|5|68|90|263|201|381|0|0|0 (B06-A candidate; pending direct proof)
+Expected topology 135|5|68|90|263|201|381|0|0|0 (B06-A proven; B06-B not started)
 ```
 
 ---
@@ -281,4 +281,4 @@ B05-E ✅ WHOLE-BLOCK CLOSURE / MANUAL WALKTHROUGH COMPLETE
 B05   ✅ CLOSED / PROVEN
 ```
 
-Current gate: B05 ✅ CLOSED / PROVEN. B06-A Routine source core is active under the B06 execution plan. No CI/Actions dispatched.
+Current gate: B05 ✅ CLOSED / PROVEN → B06-A ✅ CLOSED / PROVEN (26 selected PostgreSQL/catalog regressions; generated OpenAPI/client and API-client typecheck). B06-B Recurrence authoring is next under the B06 execution plan. No CI/Actions dispatched.

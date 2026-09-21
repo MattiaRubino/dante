@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — B06 Routine / Recurrence / Occurrence Execution Plan
 
-- **Status:** APPROVED EXECUTION PLAN — B06-A active
+- **Status:** B06-A ✅ CLOSED / PROVEN — B06-B next
 - **Date:** 2026-09-21
 - **Branch:** `feature/timeline-temporal-operational`
 - **Entering completed frontier:** B05 ✅ CLOSED / PROVEN at `11b182a`
@@ -122,7 +122,7 @@ No raw CP6 runtime-table write becomes a product API. No generic JSON recurrence
 
 | Slice | Complete owned outcome | Closure proof |
 |---|---|---|
-| **B06-A — Routine source core** | Self-owned Routine identity, source title/lifecycle (`active`, `paused`, `ended`), atomic Life Area/source Tag integration, immutable create/lifecycle receipts and public source reads. Because CP6 forbids a bare Routine owner, creation also atomically establishes a distinct mandatory initial daily floating-local Recurrence companion from caller-supplied start date and optional wall time; it is not a defaulted Schedule or an Occurrence. | PostgreSQL self scope/ACL/CAS/replay/lifecycle and CP6 companion proof, Dictionary/catalog/mapping and Routine API/client proof. |
+| **B06-A — Routine source core** ✅ | Self-owned Routine identity, source title/lifecycle (`active`, `paused`, `ended`), atomic Life Area/source Tag integration, immutable create/lifecycle receipts and public source reads. Because CP6 forbids a bare Routine owner, creation also atomically establishes a distinct mandatory initial daily floating-local Recurrence companion from caller-supplied start date and optional wall time; it is not a defaulted Schedule or an Occurrence. | **PROVEN:** 26 selected direct PostgreSQL/catalog regressions passed; exported OpenAPI/client generation and API-client typecheck passed. Closure: `timeline-temporal-operational-b06-a-closure-2026-09-21.md`. |
 | **B06-B — Recurrence authoring** | Guarded Routine and Event recurrence create/read/revise operations for all four CP6 families; immutable state/history/effective-boundary semantics; explicit DST policy. | Each family, anchors/ranges/DST/zone/quota frame, stale-state and replay proof; OpenAPI/client/frontend authoring parity. |
 | **B06-C — Occurrence checkpoint and scope** | Bounded backend evaluator/checkpoint, canonical materialization, explicit extra, one-instance exception/skip, structural exclusion and this-vs-future reconciliation. | Idempotency/concurrency/Role-13 provenance, virtual-vs-material history and Routine/Event reuse proof. |
 | **B06-D — shared Schedule, Timeline and functional UI** | Occurrence enters the existing shared Schedule capability and bounded Timeline query; real creation/edit/read flows for Routine and recurring Event. | Schedule identity/history regression, no duplicated Timeline items or fake quota time, backend transport and browser refetch proof. |
