@@ -3,7 +3,7 @@
 - **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-21
 - **Branch/workstream:** `feature/timeline-temporal-operational`
 - **Current completed frontier:** B05 ✅ CLOSED / PROVEN
-- **Current block:** B06 Routine / Recurrence / Occurrence Baseline ⬜
+- **Current block:** B06 Routine / Recurrence / Occurrence Baseline 🟨 IN PROGRESS — B06-A candidate pending direct proof
 - **Current candidate DB source:** PostgreSQL 18.6 / Alembic `20260921_49`
 - **Candidate expected topology:** `135|5|68|90|263|201|381|0|0|0` (B06-A candidate; pending direct proof)
 - **Live progress ledger:** `docs/workstreams/timeline-temporal-operational-map.md`

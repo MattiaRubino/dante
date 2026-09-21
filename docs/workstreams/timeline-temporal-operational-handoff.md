@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B04 ✅ CLOSED / PROVEN → B05 ✅ CLOSED / PROVEN → B06 next
+- **Status:** B04 ✅ CLOSED / PROVEN → B05 ✅ CLOSED / PROVEN → B06 🟨 IN PROGRESS (B06-A candidate pending direct proof)
 - **Reconciled:** 2026-09-21
 - **Branch:** `feature/timeline-temporal-operational`
 - **Current roadmap:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
