@@ -21,6 +21,7 @@ from dante.modules.temporal.life_area_assignment_api import (
     router as temporal_life_area_assignment_router,
 )
 from dante.modules.temporal.product_tag_api import router as temporal_product_tag_router
+from dante.modules.temporal.routine_api import router as temporal_routine_router
 from dante.modules.temporal.temporal_constraint_api import (
     router as temporal_constraint_router,
 )
@@ -74,6 +75,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(temporal_event_router)
     app.include_router(temporal_life_area_router)
     app.include_router(temporal_product_tag_router)
+    app.include_router(temporal_routine_router)
     app.include_router(temporal_life_area_assignment_router)
     app.include_router(temporal_constraint_router)
     app.include_router(temporal_constrained_activity_router)

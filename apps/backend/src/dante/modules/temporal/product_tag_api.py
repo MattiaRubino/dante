@@ -74,7 +74,7 @@ class ProductTagMutationResponse(BaseModel):
 
 
 class ProductTagEdgeResponse(BaseModel):
-    subject_kind: Literal["activity", "event"]
+    subject_kind: Literal["activity", "event", "routine"]
     subject_native_ref: UUID
     tag_ref: UUID
     attached_at: datetime

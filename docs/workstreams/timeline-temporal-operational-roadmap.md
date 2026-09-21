@@ -4,8 +4,8 @@
 - **Branch/workstream:** `feature/timeline-temporal-operational`
 - **Current completed frontier:** B05 ✅ CLOSED / PROVEN
 - **Current block:** B06 Routine / Recurrence / Occurrence Baseline ⬜
-- **Current candidate DB source:** PostgreSQL 18.6 / Alembic `20260921_48`
-- **Candidate expected topology:** `129|5|62|90|254|185|366|0|0|0` (B05-D proven)
+- **Current candidate DB source:** PostgreSQL 18.6 / Alembic `20260921_49`
+- **Candidate expected topology:** `135|5|68|90|263|201|381|0|0|0` (B06-A candidate; pending direct proof)
 - **Live progress ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **B04 execution authority:** `docs/workstreams/timeline-temporal-operational-b04-execution-plan.md`
 - **B04-E closure:** `docs/workstreams/timeline-temporal-operational-b04-e-closure-2026-09-19.md`

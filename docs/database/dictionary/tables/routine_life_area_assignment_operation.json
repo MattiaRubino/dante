@@ -1,0 +1,315 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "table:dante.routine_life_area_assignment_operation",
+    "type": "table",
+    "schema": "dante",
+    "name": "routine_life_area_assignment_operation",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Immutable CAS and idempotency receipt for a Routine primary Life Area move.",
+  "classification": {
+    "persistence_role": "routine_life_area_receipt",
+    "canonicality": "state_history",
+    "family": "temporal_operational"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/workstreams/timeline-temporal-operational-b06-execution-plan.md"
+    ],
+    "domain_concepts": [
+      "Routine"
+    ],
+    "logical_families": [
+      "Routine source product organization"
+    ],
+    "reference_families": [
+      "NativeRef"
+    ],
+    "material_facets": []
+  },
+  "implementation": {
+    "introducing_stage": "B06-A-ROUTINE-CORE",
+    "alembic_revision": "20260921_49",
+    "sqlalchemy": {
+      "mode": "orm_row",
+      "module": "dante.platform.database.mappings.routine",
+      "symbol": "RoutineLifeAreaAssignmentOperationRow"
+    },
+    "runtime_acl_stage": "B06-A-ROUTINE-CORE"
+  },
+  "structure": {
+    "columns": [
+      {
+        "name": "self_person_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Routine core self_person_ref.",
+        "semantic_type": "NativeRef",
+        "value_contract": null
+      },
+      {
+        "name": "operation_id",
+        "postgres_type": "text",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Routine core operation_id.",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "intent_fingerprint",
+        "postgres_type": "text",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Routine core intent_fingerprint.",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "routine_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Routine core routine_ref.",
+        "semantic_type": "NativeRef",
+        "value_contract": null
+      },
+      {
+        "name": "life_area_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Routine core life_area_ref.",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "expected_revision",
+        "postgres_type": "bigint",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Routine core expected_revision.",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "accepted_revision",
+        "postgres_type": "bigint",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Routine core accepted_revision.",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "accepted_at",
+        "postgres_type": "timestamp with time zone",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Routine core accepted_at.",
+        "semantic_type": null,
+        "value_contract": null
+      }
+    ],
+    "primary_key": {
+      "name": "pk_routine_life_area_assignment_operation",
+      "columns": [
+        "self_person_ref",
+        "operation_id"
+      ],
+      "reason": "Typed actor-local identity.",
+      "deferrable": false,
+      "initially": "NOT DEFERRABLE",
+      "enforced": true
+    },
+    "foreign_keys": [
+      {
+        "name": "fk_routine_area_op_person",
+        "columns": [
+          "self_person_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "person",
+          "columns": [
+            "person_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "NativeRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Typed guarded relation."
+      },
+      {
+        "name": "fk_routine_area_op_routine",
+        "columns": [
+          "routine_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "routine",
+          "columns": [
+            "routine_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "NativeRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Typed guarded relation."
+      },
+      {
+        "name": "fk_routine_area_op_life_area",
+        "columns": [
+          "life_area_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "life_area",
+          "columns": [
+            "life_area_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": null,
+        "cardinality": "many_to_one",
+        "semantic_reason": "Typed guarded relation."
+      }
+    ],
+    "unique_constraints": [],
+    "check_constraints": [
+      {
+        "name": "ck_routine_area_op_id",
+        "expression_contract": "Database bounded invariant.",
+        "reason": "Guarded Routine command invariant.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_routine_area_op_fingerprint",
+        "expression_contract": "Database bounded invariant.",
+        "reason": "Guarded Routine command invariant.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_routine_area_op_expected",
+        "expression_contract": "Database bounded invariant.",
+        "reason": "Guarded Routine command invariant.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_routine_area_op_accepted",
+        "expression_contract": "Database bounded invariant.",
+        "reason": "Guarded Routine command invariant.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "pk_routine_life_area_assignment_operation",
+        "method": "btree",
+        "unique": true,
+        "keys": [
+          "self_person_ref",
+          "operation_id"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "primary_key",
+        "reason": "Typed actor-local lookup.",
+        "valid": true,
+        "ready": true,
+        "live": true
+      }
+    ],
+    "triggers": [],
+    "table": {
+      "persistence": "permanent",
+      "access_method": "heap",
+      "partitioned": false,
+      "row_security": false,
+      "force_row_security": false,
+      "replica_identity": "default",
+      "reloptions": []
+    },
+    "view": null,
+    "routine": null
+  },
+  "state_history": {
+    "material_state_behavior": "Product/source relation, never an Occurrence or MaterialStateRef.",
+    "current_binding": "Current typed Routine relation.",
+    "chronology": "Receipt rows preserve accepted changes where applicable.",
+    "immutability_policy": "Runtime uses guarded SQL functions only."
+  },
+  "lifecycle": {
+    "retention": "Retain source organization and accepted receipts.",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No runtime deletion."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": []
+  },
+  "proof": {
+    "obligations": [
+      "Typed Routine organization remains independent of recurrence and occurrence."
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b06_routine_core.py"
+    ],
+    "staged_evidence": []
+  }
+}

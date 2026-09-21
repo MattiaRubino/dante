@@ -4,8 +4,8 @@
 - **Reconciled:** 2026-09-21
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
-- **Candidate source head:** `20260921_48` (B05-D proven)
-- **Candidate expected topology:** `129|5|62|90|254|185|366|0|0|0` (B05-D proven)
+- **Candidate source head:** `20260921_49` (B06-A candidate; pending direct proof)
+- **Candidate expected topology:** `135|5|68|90|263|201|381|0|0|0` (B06-A candidate; pending direct proof)
 - **Whole-DB SoR:** `README.md`
 - **Machine-readable authority:** `dictionary/`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
@@ -48,6 +48,7 @@ This file is the human-readable database overlay for Timeline candidate-only per
 20260920_46 B05-B typed actor-local Activity/Event primary Life Area assignment
 20260920_47 B05-C secondary actor-local product Tags and typed item associations
 20260921_48 B05-D actor-scoped postponed Event discovery and governed replan composition
+20260921_49 B06-A Routine source core, lifecycle and typed Life Area/Tag organization
 ```
 
 ## 3. Temporal Constraint authority through B04-E
@@ -118,14 +119,14 @@ B04-E adds no public Temporal HTTP route; OpenAPI/client artifacts intentionally
 ## 6. Current candidate topology
 
 ```text
-Alembic     20260921_48
-Tables      129
+Alembic     20260921_49
+Tables      135
 Views       5
-Routines    60
+Routines    68
 Triggers    90
-Indexes     254
-FKs         185
-CHECKs      366
+Indexes     263
+FKs         201
+CHECKs      381
 Enums       0
 Domains     0
 Sequences   0

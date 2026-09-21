@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from dante.platform.database.references import NativeRef
 
-SubjectKind = Literal["activity", "event"]
+SubjectKind = Literal["activity", "event", "routine"]
 
 
 class ProductTagInputError(ValueError):

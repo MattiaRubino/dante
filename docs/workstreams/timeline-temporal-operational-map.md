@@ -103,8 +103,8 @@ Current candidate persistence authority:
 
 ```text
 PostgreSQL       18.6
-Alembic source   20260921_48
-Expected topology 129|5|62|90|254|185|366|0|0|0 (B05-D proven)
+Alembic source   20260921_49
+Expected topology 135|5|68|90|263|201|381|0|0|0 (B06-A candidate; pending direct proof)
 ```
 
 ---

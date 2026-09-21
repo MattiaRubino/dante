@@ -22,7 +22,7 @@ _TAG_TABLES = (
 
 def test_b05_tag_tables_have_exact_dictionary_structure_and_no_owner_relationships() -> None:
     mapped = {table.name: table for table in MAPPED_TABLES}
-    assert len(mapped) == 129
+    assert len(mapped) == 135
     for name in _TAG_TABLES:
         entry = json.loads((_ROOT / f"{name}.json").read_text(encoding="utf-8"))
         table = mapped[name]

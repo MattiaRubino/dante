@@ -2,30 +2,28 @@
   "$schema": "../schema/object-v1.schema.json",
   "dictionary_version": 1,
   "object": {
-    "key": "routine:dante.list_self_item_tags",
+    "key": "routine:dante.list_self_routine_tags",
     "type": "routine",
     "schema": "dante",
-    "name": "list_self_item_tags",
+    "name": "list_self_routine_tags",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Bounded self-scoped list_self_item_tags product Tag catalog or typed association capability.",
+  "purpose": "Bounded self-scoped B06-A list_self_routine_tags Routine source capability.",
   "classification": {
-    "persistence_role": "list_self_item_tags",
+    "persistence_role": "list_self_routine_tags",
     "canonicality": "capability_surface",
-    "family": "product_organization"
+    "family": "temporal_operational"
   },
   "semantic_traceability": {
     "authority_sources": [
-      "docs/workstreams/timeline-temporal-operational-b05-execution-plan.md",
-      "docs/product/v1-core-domain-glossary.md",
-      "docs/development/backend-cp6-02-postgresql-persistence-constitution.md"
+      "docs/workstreams/timeline-temporal-operational-b06-execution-plan.md"
     ],
-      "domain_concepts": [
-        "Routine"
-      ],
+    "domain_concepts": [
+      "Routine"
+    ],
     "logical_families": [
-      "LR-12 actor-local secondary product organization",
-      "typed item relation"
+      "Routine source lifecycle",
+      "typed product organization"
     ],
     "reference_families": [
       "NativeRef"
@@ -33,14 +31,14 @@
     "material_facets": []
   },
   "implementation": {
-    "introducing_stage": "B05-C-SECONDARY-TAGS",
-    "alembic_revision": "20260920_47",
+    "introducing_stage": "B06-A-ROUTINE-CORE",
+    "alembic_revision": "20260921_49",
     "sqlalchemy": {
       "mode": "none",
       "module": null,
       "symbol": null
     },
-    "runtime_acl_stage": "B05-C-SECONDARY-TAGS"
+    "runtime_acl_stage": "B06-A-ROUTINE-CORE"
   },
   "structure": {
     "columns": [],
@@ -58,7 +56,7 @@
       "argument_types": [
         "uuid"
       ],
-      "return_type": "TABLE(subject_kind text, subject_native_ref uuid, tag_ref uuid, attached_at timestamp with time zone)",
+      "return_type": "TABLE(routine_ref uuid, tag_ref uuid, attached_at timestamptz)",
       "security": "DEFINER",
       "volatility": "STABLE",
       "parallel_safety": "SAFE",
@@ -72,16 +70,16 @@
     }
   },
   "state_history": {
-    "material_state_behavior": "Tag organization is product state, not Domain MaterialStateRef.",
-    "current_binding": "Self actor catalog and independently typed Activity, Event and Routine edges.",
-    "chronology": "Immutable accepted operation receipts survive subsequent changes.",
-    "immutability_policy": "Guarded SQL routine; no direct runtime table mutation."
+    "material_state_behavior": "No MaterialStateRef; source and organization capability only.",
+    "current_binding": "Self-scoped Routine source and typed product edges.",
+    "chronology": "Mutating commands retain immutable idempotency receipts.",
+    "immutability_policy": "Runtime EXECUTE only."
   },
   "lifecycle": {
-    "retention": "Retain accepted commands and archived Tag associations for truthful discovery.",
+    "retention": "Retain Routine source and operation history.",
     "redaction": null,
     "retirement_tombstone": null,
-    "delete_behavior": "No direct raw runtime deletion; forward-only migration."
+    "delete_behavior": "No direct runtime deletion."
   },
   "security": {
     "owner_role": "dante_owner",
@@ -97,11 +95,11 @@
   },
   "proof": {
     "obligations": [
-      "Runtime EXECUTE only; no raw Tag table access.",
-      "Actor isolation, replay and Tag-vs-primary-area semantics verified in PostgreSQL."
+      "Self scope, replay and CAS are enforced in PostgreSQL.",
+      "Routine does not create recurrence, occurrence or Schedule."
     ],
     "test_refs": [
-      "apps/backend/tests/integration/temporal/test_b05_secondary_tags.py",
+      "apps/backend/tests/integration/temporal/test_b06_routine_core.py",
       "apps/backend/tests/integration/database/test_database_current_catalog.py"
     ],
     "staged_evidence": []

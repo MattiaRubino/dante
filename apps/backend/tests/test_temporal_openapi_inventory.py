@@ -115,6 +115,15 @@ _EXPECTED_TEMPORAL_OPERATIONS = {
         "temporal_retire_constraint"
     ),
     ("/api/v1/temporal/activities/constrained", "post"): ("temporal_create_constrained_activity"),
+    ("/api/v1/temporal/routines", "get"): "temporal_list_routines",
+    ("/api/v1/temporal/routines", "post"): "temporal_create_routine",
+    ("/api/v1/temporal/routines/{routine_ref}/rename", "post"): "temporal_rename_routine",
+    ("/api/v1/temporal/routines/{routine_ref}/pause", "post"): "temporal_pause_routine",
+    ("/api/v1/temporal/routines/{routine_ref}/resume", "post"): "temporal_resume_routine",
+    ("/api/v1/temporal/routines/{routine_ref}/end", "post"): "temporal_end_routine",
+    ("/api/v1/temporal/routines/{routine_ref}/life-area", "put"): "temporal_assign_routine_life_area",
+    ("/api/v1/temporal/routines/{routine_ref}/tags/{tag_ref}/attach", "post"): "temporal_attach_routine_tag",
+    ("/api/v1/temporal/routines/{routine_ref}/tags/{tag_ref}/detach", "post"): "temporal_detach_routine_tag",
 }
 
 

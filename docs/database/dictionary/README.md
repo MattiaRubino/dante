@@ -6,8 +6,8 @@
 - **PostgreSQL:** 18.6
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
-- **Current candidate Alembic source head on `feature/timeline-temporal-operational`:** `20260921_48`
-- **Current candidate expected topology:** `129|5|62|90|254|185|366|0|0|0` (B05-D proven)
+- **Current candidate Alembic source head on `feature/timeline-temporal-operational`:** `20260921_49`
+- **Current candidate expected topology:** `135|5|68|90|263|201|381|0|0|0` (B06-A candidate; pending direct proof)
 - **Frozen CP6 head:** `20260826_08`
 - **Last reconciled:** 2026-09-21
 
@@ -31,14 +31,14 @@ A mismatch is a defect. Protected `main` remains integration authority. B05-A `_
 Authoritative counts are in `scope.json`:
 
 ```text
-tables      129
+tables      135
 views         5
-routines     62
+routines     68
 standalone  196
 triggers     90
-indexes      254
-FKs          185
-CHECKs       366
+indexes      263
+FKs          201
+CHECKs       381
 ```
 
 No enum/domain, sequence, materialized view, partitioned table or RLS policy exists in the DANTE business-schema inventory.
@@ -93,7 +93,7 @@ B05-C / 20260920_47
   typed independent Activity/Event many-valued edges and attach/detach receipts
   no primary-area replacement, hierarchy, Goal/Plan or sharing grant
 
-B05-D / 20260921_48
+B06-A / 20260921_49
   actor-scoped postponed Event discovery with no fabricated placement
   Event/Schedule pair assertion and governed Undo + normal replan composition
   no Activity Planning Tray conversion, new Domain owner or Schedule-truth bypass

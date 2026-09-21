@@ -19,8 +19,8 @@ from dante.platform.database.metadata import Base
 
 pytestmark = pytest.mark.postgres
 
-_CURRENT_REVISION = "20260921_48"
-_CURRENT_TOPOLOGY = (129, 5, 62, 90, 254, 185, 366, 0, 0, 0)
+_CURRENT_REVISION = "20260921_49"
+_CURRENT_TOPOLOGY = (135, 5, 68, 90, 263, 201, 381, 0, 0, 0)
 _REPO_ROOT = Path(__file__).resolve().parents[5]
 _DICTIONARY_ROOT = _REPO_ROOT / "docs" / "database" / "dictionary"
 
@@ -160,7 +160,7 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
     assert topology == _CURRENT_TOPOLOGY
     print("DATABASE_CURRENT_TOPOLOGY=" + "|".join(str(value) for value in topology))
     assert current_revision == (_CURRENT_REVISION,)
-    assert (len(tables), len(views), len(routines)) == (129, 5, 62)
+    assert (len(tables), len(views), len(routines)) == (135, 5, 68)
     assert live_tables == set(tables)
     assert live_views == set(views)
     assert live_routines == set(routines)
@@ -183,20 +183,20 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
         "CP6-M07",
     ]
     assert current["standalone_entries"] == {
-        "tables": 129,
+        "tables": 135,
         "views": 5,
-        "routines": 62,
-        "total": 196,
+        "routines": 68,
+        "total": 208,
     }
     assert current["embedded_objects"] == {
         "triggers": 90,
-        "physical_indexes": 254,
+        "physical_indexes": 263,
     }
     assert current["constraints"] == {
-        "foreign_keys": 185,
-        "check_constraints": 366,
+        "foreign_keys": 201,
+        "check_constraints": 381,
     }
-    assert len(MAPPED_TABLES) == len(Base.registry.mappers) == len(Base.metadata.tables) == 129
+    assert len(MAPPED_TABLES) == len(Base.registry.mappers) == len(Base.metadata.tables) == 135
     assert all(len(mapper.relationships) == 0 for mapper in Base.registry.mappers)
     assert set(VIEW_METADATA.tables) == {f"dante.{name}" for name in views}
     assert {table.name for table in MAPPED_TABLES} == set(tables)
