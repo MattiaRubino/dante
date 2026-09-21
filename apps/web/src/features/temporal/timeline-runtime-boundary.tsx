@@ -26,6 +26,7 @@ import type {
 } from './schedule-data-source';
 import {
   invalidateTemporalPlanningRead,
+  invalidateTemporalTimelineRead,
   subscribeTemporalTimelineInvalidation,
 } from './timeline-invalidation';
 import type {
@@ -252,6 +253,7 @@ export function TemporalTimelineRuntimeBoundary({
         operationId: ids.operationId(),
       });
       invalidateTemporalPlanningRead();
+      invalidateTemporalTimelineRead();
       refresh();
       return result;
     },
@@ -267,6 +269,7 @@ export function TemporalTimelineRuntimeBoundary({
         operationId: ids.operationId(),
       });
       invalidateTemporalPlanningRead();
+      invalidateTemporalTimelineRead();
       refresh();
       return result;
     },

@@ -20,6 +20,7 @@ import type {
   TemporalTimelineDataSource,
   TemporalTimelineWindow,
 } from './timeline-read';
+import { subscribeTemporalTimelineInvalidation } from './timeline-invalidation';
 import {
   TemporalTimelineRuntimeBoundary,
   useTemporalTimelineRuntime,
@@ -83,10 +84,7 @@ function UnscheduleProbe() {
   };
   return (
     <>
-      <button
-        type="button"
-        onClick={() => void unscheduleSchedule(request)}
-      >
+      <button type="button" onClick={() => void unscheduleSchedule(request)}>
         unschedule
       </button>
       <button
@@ -208,7 +206,9 @@ describe('TemporalTimelineRuntimeBoundary', () => {
     const reviseSchedule = vi.fn<TemporalScheduleDataSource['reviseSchedule']>(
       (request) => {
         if (request.placement.kind !== 'floating-local-interval') {
-          return Promise.reject(new Error('Expected floating-local placement.'));
+          return Promise.reject(
+            new Error('Expected floating-local placement.'),
+          );
         }
         return Promise.resolve({
           scheduleRef: request.scheduleRef,
@@ -279,6 +279,8 @@ describe('TemporalTimelineRuntimeBoundary', () => {
   });
 
   it('uses fresh operation ids and reloads Timeline once for unschedule and Undo', async () => {
+    const invalidated = vi.fn();
+    const unsubscribe = subscribeTemporalTimelineInvalidation(invalidated);
     const loadWindow = vi.fn<TemporalTimelineDataSource['loadWindow']>(() =>
       Promise.resolve(emptyWindow()),
     );
@@ -335,6 +337,7 @@ describe('TemporalTimelineRuntimeBoundary', () => {
         expectedPlacementMaterialStateRef: MATERIAL_STATE_REF,
       });
       expect(loadWindow).toHaveBeenCalledTimes(2);
+      expect(invalidated).toHaveBeenCalledTimes(1);
     });
 
     fireEvent.click(screen.getByRole('button', { name: 'undo-unschedule' }));
@@ -345,6 +348,8 @@ describe('TemporalTimelineRuntimeBoundary', () => {
         unscheduleOperationId: 'b02-d:operation:1',
       });
       expect(loadWindow).toHaveBeenCalledTimes(3);
+      expect(invalidated).toHaveBeenCalledTimes(2);
     });
+    unsubscribe();
   });
 });
