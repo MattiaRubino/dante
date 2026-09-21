@@ -7,6 +7,7 @@ import {
 import type {
   TemporalEventDataSource,
   TemporalPostponedEventRecord,
+  TemporalPostponedEventDataSource,
   TemporalPostponedEventReplanRequest,
   TemporalScheduledEventCreateRequest,
   TemporalScheduledEventCreateResult,
@@ -430,21 +431,23 @@ function parsePostponedEvent(payload: unknown): TemporalPostponedEventRecord {
     payload.life_area_ref === undefined || payload.life_area_ref === null
       ? null
       : parseUuidV7(payload.life_area_ref, 'life_area_ref');
-  const lifeAreaAssignmentRevision =
+  const rawLifeAreaAssignmentRevision =
     payload.life_area_assignment_revision === undefined ||
     payload.life_area_assignment_revision === null
       ? null
       : payload.life_area_assignment_revision;
   if (
-    lifeAreaAssignmentRevision !== null &&
-    (!Number.isInteger(lifeAreaAssignmentRevision) ||
-      lifeAreaAssignmentRevision < 1)
+    rawLifeAreaAssignmentRevision !== null &&
+    (typeof rawLifeAreaAssignmentRevision !== 'number' ||
+      !Number.isInteger(rawLifeAreaAssignmentRevision) ||
+      rawLifeAreaAssignmentRevision < 1)
   ) {
     throw new TemporalEventRemoteError(
       'protocol',
       'Postponed Event Life Area assignment revision must be a positive integer.',
     );
   }
+  const lifeAreaAssignmentRevision = rawLifeAreaAssignmentRevision;
   return Object.freeze({
     eventRef: parseUuidV7(payload.event_ref, 'event_ref'),
     scheduleRef: parseUuidV7(payload.schedule_ref, 'schedule_ref'),
@@ -666,7 +669,7 @@ function validateReplanRequest(
 export function createRemoteTemporalEventDataSource(
   fetchFn: typeof globalThis.fetch = globalThis.fetch,
   resolveDeviceTimeZone?: DeviceTimeZoneResolver,
-): TemporalEventDataSource {
+): TemporalEventDataSource & TemporalPostponedEventDataSource {
   const webFetch = createWebFetch(fetchFn, resolveDeviceTimeZone);
 
   return Object.freeze({

@@ -78,6 +78,10 @@ export interface TemporalEventDataSource {
     request: TemporalScheduledEventCreateRequest,
     signal?: AbortSignal,
   ): Promise<TemporalScheduledEventCreateResult>;
+}
+
+/** Separate discovery/replan capability: core Event creation clients need not mock it. */
+export interface TemporalPostponedEventDataSource {
   listPostponedEvents(
     signal?: AbortSignal,
   ): Promise<readonly TemporalPostponedEventRecord[]>;
