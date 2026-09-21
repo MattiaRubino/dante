@@ -16,7 +16,8 @@
 - **B05-C closure:** `docs/workstreams/timeline-temporal-operational-b05-c-closure-2026-09-20.md` ✅
 - **B05-D closure:** `docs/workstreams/timeline-temporal-operational-b05-d-closure-2026-09-21.md` ✅
 - **B05-E / whole-B05 closure:** `docs/workstreams/timeline-temporal-operational-b05-e-closure-2026-09-21.md` ✅
-- **Timeline candidate DB overlay: `docs/database/timeline-temporal-operational.md`
+- **B06 execution plan:** `docs/workstreams/timeline-temporal-operational-b06-execution-plan.md` 🟨
+- **Timeline candidate DB overlay:** `docs/database/timeline-temporal-operational.md`
 
 The archived semantic freeze remains the binding detailed inventory for the full vertical. This file is the live implementation/proof ledger.
 
@@ -86,7 +87,7 @@ B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
 ├─ B04-E Advanced-family applicability           ✅ CLOSED / PROVEN
 └─ B04-F Whole-B04 closure                       ✅ CLOSED / PROVEN
 B05 Product Organization                         ✅ CLOSED / PROVEN
-B06 Routine / Recurrence / Occurrence Baseline   ⬜
+B06 Routine / Recurrence / Occurrence Baseline   🟨 IN PROGRESS — B06-A
 B07 UI/UX Consolidation v1                       ⬜
 B08 Session Runtime                              ⬜
 B09 Responsibility / Participation               ⬜
@@ -280,4 +281,4 @@ B05-E ✅ WHOLE-BLOCK CLOSURE / MANUAL WALKTHROUGH COMPLETE
 B05   ✅ CLOSED / PROVEN
 ```
 
-Current gate: B05 ✅ CLOSED / PROVEN. B06 Routine / Recurrence / Occurrence Baseline is next. No CI/Actions dispatched.
+Current gate: B05 ✅ CLOSED / PROVEN. B06-A Routine source core is active under the B06 execution plan. No CI/Actions dispatched.

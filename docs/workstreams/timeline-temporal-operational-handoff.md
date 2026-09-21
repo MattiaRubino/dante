@@ -11,6 +11,7 @@
 - **B05 execution plan / pre-scope:** `docs/workstreams/timeline-temporal-operational-b05-execution-plan.md`
 - **B05-D closure:** `docs/workstreams/timeline-temporal-operational-b05-d-closure-2026-09-21.md`
 - **B05 whole-block closure:** `docs/workstreams/timeline-temporal-operational-b05-e-closure-2026-09-21.md`
+- **B06 execution authority:** `docs/workstreams/timeline-temporal-operational-b06-execution-plan.md`
 - **Timeline candidate DB overlay:** `docs/database/timeline-temporal-operational.md`
 - **CI:** no CI launch is implied or authorized
 

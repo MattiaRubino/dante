@@ -11,6 +11,7 @@
 - **B04-E closure:** `docs/workstreams/timeline-temporal-operational-b04-e-closure-2026-09-19.md`
 - **B04 whole-block closure:** `docs/workstreams/timeline-temporal-operational-b04-f-closure-2026-09-20.md`
 - **B05 execution authority:** `docs/workstreams/timeline-temporal-operational-b05-execution-plan.md`
+- **B06 execution authority:** `docs/workstreams/timeline-temporal-operational-b06-execution-plan.md`
 
 The archived semantic freeze preserves the complete functionality/non-collapse inventory. This document is the current sequencing authority.
 
@@ -75,7 +76,7 @@ B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
 ├─ B04-E Advanced-family applicability           ✅ CLOSED / PROVEN
 └─ B04-F Whole-B04 closure                       ✅ CLOSED / PROVEN
 B05 Product Organization                         ✅ CLOSED / PROVEN
-B06 Routine / Recurrence / Occurrence Baseline   ⬜
+B06 Routine / Recurrence / Occurrence Baseline   🟨 IN PROGRESS — B06-A
 B07 UI/UX Consolidation v1                       ⬜
 B08 Session Runtime                              ⬜
 B09 Responsibility / Participation               ⬜
@@ -225,4 +226,4 @@ B05-E ✅ WHOLE-BLOCK CLOSURE / MANUAL WALKTHROUGH COMPLETE
 B05   ✅ CLOSED / PROVEN
 ```
 
-Current action: enter B06 pre-scope. No CI or Actions are launched.
+Current action: B06-A Routine source core. No CI or Actions are launched.
