@@ -10,7 +10,7 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import dataclass, replace
-from datetime import datetime
+from datetime import date, datetime, time
 from typing import Literal
 from uuid import UUID, uuid7
 
@@ -174,7 +174,9 @@ class RoutineApplication:
         operation_id: str,
         title: str,
         life_area_ref: UUID,
+        starts_on: date,
         tag_refs: tuple[UUID, ...] = (),
+        wall_time: time | None = None,
     ) -> RoutineView:
         key = _bounded(operation_id, 200, "Operation id")
         label = _bounded(title, 300, "Routine title")
@@ -182,7 +184,14 @@ class RoutineApplication:
             raise RoutineInputError("Routine Tags must not contain duplicates.")
         fingerprint = _fingerprint({"version": 1, "kind": "create", "title": label,
                                     "life_area_ref": str(life_area_ref),
-                                    "tag_refs": sorted(str(tag) for tag in tag_refs)})
+                                    "tag_refs": sorted(str(tag) for tag in tag_refs),
+                                    "initial_recurrence": {
+                                        "family": "calendar_wall_clock",
+                                        "pattern": "daily",
+                                        "clock_basis": "floating_local",
+                                        "starts_on": starts_on.isoformat(),
+                                        "wall_time": wall_time.isoformat() if wall_time else None,
+                                    }})
         try:
             async with self._session_factory() as session, session.begin():
                 receipt = (
@@ -190,10 +199,10 @@ class RoutineApplication:
                         text("""SELECT routine_ref,source_revision,life_area_assignment_revision,
                                       accepted_at,replayed
                                  FROM dante.create_self_routine(
-                                   :actor,:operation,:fingerprint,:routine,:title,:area,:tags)"""),
+                                   :actor,:operation,:fingerprint,:routine,:title,:area,:tags,:starts_on,:wall_time)"""),
                         {"actor": self_person_ref, "operation": key, "fingerprint": fingerprint,
                          "routine": uuid7(), "title": label, "area": life_area_ref,
-                         "tags": list(tag_refs)},
+                         "tags": list(tag_refs), "starts_on": starts_on, "wall_time": wall_time},
                     )
                 ).mappings().one()
                 routines = await self._list_in_session(session, self_person_ref)

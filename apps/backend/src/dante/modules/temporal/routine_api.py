@@ -1,13 +1,15 @@
 """Authenticated B06-A Routine source endpoints.
 
-These endpoints expose source identity and product organization only.  They do
-not create recurrence, occurrence, Activity, or Schedule records.
+The source is distinct from its Recurrence.  CP6 nevertheless requires every
+Routine owner to have a current Recurrence companion, so creation atomically
+establishes a caller-specified initial daily floating-local Recurrence.  These
+endpoints do not create an Occurrence, Activity or Schedule.
 """
 
 from __future__ import annotations
 
 from dataclasses import asdict
-from datetime import datetime
+from datetime import date, datetime, time
 from typing import Annotated, Literal
 from uuid import UUID
 
@@ -32,6 +34,8 @@ class CreateRoutineRequest(BaseModel):
     operation_id: str = Field(min_length=1, max_length=200)
     title: str = Field(min_length=1, max_length=300)
     life_area_ref: UUID
+    initial_recurrence_starts_on: date
+    initial_recurrence_wall_time: time | None = None
     tag_refs: list[UUID] = Field(default_factory=list, max_length=100)
 
 
@@ -134,7 +138,7 @@ async def list_routines(context: Context, application: Application, response: Re
 async def create_routine(payload: CreateRoutineRequest, context: MutatingContext, application: Application, response: Response) -> RoutineResponse:
     response.headers["Cache-Control"] = "no-store"
     try:
-        return _view(await application.create(self_person_ref=context.self_person_ref, operation_id=payload.operation_id, title=payload.title, life_area_ref=payload.life_area_ref, tag_refs=tuple(payload.tag_refs)))
+        return _view(await application.create(self_person_ref=context.self_person_ref, operation_id=payload.operation_id, title=payload.title, life_area_ref=payload.life_area_ref, starts_on=payload.initial_recurrence_starts_on, wall_time=payload.initial_recurrence_wall_time, tag_refs=tuple(payload.tag_refs)))
     except _Errors as exc:
         raise _problem(exc) from exc
 

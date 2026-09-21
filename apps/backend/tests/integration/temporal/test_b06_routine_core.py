@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import date, time
 from typing import Any
 
 import psycopg
@@ -34,7 +35,8 @@ async def test_routine_source_lifecycle_primary_area_tags_and_replay(migrated_da
         tag, _ = await tags.create(self_person_ref=alice, operation_id="tag:focus", name="Focus")
         created = await routines.create(
             self_person_ref=alice, operation_id="routine:create", title=" Allenamento ",
-            life_area_ref=studio.life_area_ref, tag_refs=(tag.tag_ref,),
+            life_area_ref=studio.life_area_ref, starts_on=date(2026, 9, 21),
+            wall_time=time(7, 30), tag_refs=(tag.tag_ref,),
         )
         assert created.title == "Allenamento"
         assert created.lifecycle_state == "active"
@@ -43,11 +45,12 @@ async def test_routine_source_lifecycle_primary_area_tags_and_replay(migrated_da
         assert created.tag_refs == (tag.tag_ref,)
         replay = await routines.create(
             self_person_ref=alice, operation_id="routine:create", title="Allenamento",
-            life_area_ref=studio.life_area_ref, tag_refs=(tag.tag_ref,),
+            life_area_ref=studio.life_area_ref, starts_on=date(2026, 9, 21),
+            wall_time=time(7, 30), tag_refs=(tag.tag_ref,),
         )
         assert replay.replayed and replay.routine_ref == created.routine_ref
         with pytest.raises(RoutineOperationReuseError):
-            await routines.create(self_person_ref=alice, operation_id="routine:create", title="Altro", life_area_ref=studio.life_area_ref)
+            await routines.create(self_person_ref=alice, operation_id="routine:create", title="Altro", life_area_ref=studio.life_area_ref, starts_on=date(2026, 9, 21))
 
         paused = await routines.mutate(self_person_ref=alice, operation_id="routine:pause", routine_ref=created.routine_ref, expected_source_revision=1, kind="pause")
         assert paused.lifecycle_state == "paused" and paused.source_revision == 2
@@ -70,6 +73,7 @@ async def test_routine_source_lifecycle_primary_area_tags_and_replay(migrated_da
             connection.execute("SET ROLE dante_owner")
             assert connection.execute("SELECT count(*) FROM dante.occurrence").fetchone() == (0,)
             assert connection.execute("SELECT count(*) FROM dante.schedule").fetchone() == (0,)
+            assert connection.execute("SELECT count(*) FROM dante.routine_recurrence_state WHERE routine_ref=%s", (created.routine_ref,)).fetchone() == (1,)
             assert connection.execute("SELECT count(*) FROM dante.routine_operation WHERE routine_ref=%s", (created.routine_ref,)).fetchone() == (4,)
     finally:
         await runtime.dispose()
@@ -77,4 +81,4 @@ async def test_routine_source_lifecycle_primary_area_tags_and_replay(migrated_da
 
 def test_routine_runtime_has_execute_only_capabilities(migrated_database: Any) -> None:
     with psycopg.connect(host=migrated_database.cluster.host, port=migrated_database.cluster.port, dbname=migrated_database.name, user=migrated_database.cluster.admin_user, password=migrated_database.cluster.admin_password) as connection:
-        assert connection.execute("SELECT has_table_privilege('dante_runtime','dante.routine_intention','SELECT'), has_table_privilege('dante_runtime','dante.routine_operation','INSERT'), has_function_privilege('dante_runtime','dante.create_self_routine(uuid,text,text,uuid,text,uuid,uuid[])','EXECUTE'), has_function_privilege('dante_runtime','dante.list_self_routines(uuid)','EXECUTE')").fetchone() == (False, False, True, True)
+        assert connection.execute("SELECT has_table_privilege('dante_runtime','dante.routine_intention','SELECT'), has_table_privilege('dante_runtime','dante.routine_operation','INSERT'), has_function_privilege('dante_runtime','dante.create_self_routine(uuid,text,text,uuid,text,uuid,uuid[],date,time)','EXECUTE'), has_function_privilege('dante_runtime','dante.list_self_routines(uuid)','EXECUTE')").fetchone() == (False, False, True, True)

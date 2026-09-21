@@ -32,7 +32,7 @@
   },
   "implementation": {
     "introducing_stage": "B06-A-ROUTINE-CORE",
-    "alembic_revision": "20260921_49",
+    "alembic_revision": "20260921_50",
     "sqlalchemy": {
       "mode": "none",
       "module": null,
@@ -60,7 +60,9 @@
         "uuid",
         "text",
         "uuid",
-        "uuid[]"
+        "uuid[]",
+        "date",
+        "time without time zone"
       ],
       "return_type": "TABLE(routine_ref uuid, source_revision bigint, life_area_assignment_revision bigint, accepted_at timestamptz, replayed boolean)",
       "security": "DEFINER",
@@ -76,8 +78,8 @@
     }
   },
   "state_history": {
-    "material_state_behavior": "No MaterialStateRef; source and organization capability only.",
-    "current_binding": "Self-scoped Routine source and typed product edges.",
+    "material_state_behavior": "Creates a distinct initial routine.recurrence MaterialState companion; the Routine source itself is not that state.",
+    "current_binding": "Self-scoped Routine source, typed product edges and exactly one initial current Recurrence companion.",
     "chronology": "Mutating commands retain immutable idempotency receipts.",
     "immutability_policy": "Runtime EXECUTE only."
   },
