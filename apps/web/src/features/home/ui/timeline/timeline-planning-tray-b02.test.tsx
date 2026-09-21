@@ -16,7 +16,10 @@ import {
   type TemporalActivityRecord,
 } from '../../../temporal';
 import { createLocalTemporalCreateRuntime } from '../../../temporal-create';
-import { invalidateTemporalPlanningRead } from '../../../temporal/timeline-invalidation';
+import {
+  invalidateTemporalPlanningRead,
+  invalidateTemporalTimelineRead,
+} from '../../../temporal/timeline-invalidation';
 import { TimelinePlanningTrayB01 } from './timeline-planning-tray-b01';
 
 const ACTIVITY_REF = '0199a8c0-5e71-7bc0-8ad0-a2f403f5617d';
@@ -219,5 +222,29 @@ describe('Timeline B02 canonical Planning Tray placement and invalidation', () =
     expect(
       screen.getByRole('button', { name: `Colloca: ${ACTIVITY.title}` }),
     ).toBeTruthy();
+  });
+
+  it('reloads Planning Tray from the canonical Timeline invalidation after Activity unschedule', async () => {
+    const harness = createHarness(false, false);
+    installTimelineHosts();
+    render(
+      <TimelinePlanningTrayB01
+        items={Object.freeze([])}
+        runtime={harness.runtime}
+        defaultDate={Temporal.PlainDate.from('2026-09-09')}
+      />,
+    );
+    await waitFor(() => expect(harness.loadUnplaced).toHaveBeenCalledTimes(1));
+
+    harness.restoreUnplaced();
+    invalidateTemporalTimelineRead();
+
+    await waitFor(() => expect(harness.loadUnplaced).toHaveBeenCalledTimes(2));
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: 'Apri attività da collocare',
+      }),
+    );
+    expect(await screen.findByText(ACTIVITY.title)).toBeTruthy();
   });
 });

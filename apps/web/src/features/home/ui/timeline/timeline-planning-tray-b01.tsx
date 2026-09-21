@@ -10,7 +10,10 @@ import {
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
-import { subscribeTemporalPlanningInvalidation } from '../../../temporal/timeline-invalidation';
+import {
+  subscribeTemporalPlanningInvalidation,
+  subscribeTemporalTimelineInvalidation,
+} from '../../../temporal/timeline-invalidation';
 import type { TemporalCreateRuntime } from '../../../temporal-create';
 import { timelinePlanningCopy } from './timeline-planning-copy';
 import type { TimelinePlanningTrayItem } from './timeline-planning-tray';
@@ -60,7 +63,8 @@ function readCopy(language: string) {
         confirm: 'Place in Timeline',
         placing: 'Placing…',
         invalidPlacement: 'Choose a valid same-day interval.',
-        placementFailed: 'The Schedule was not accepted. The Activity is still here.',
+        placementFailed:
+          'The Schedule was not accepted. The Activity is still here.',
       })
     : Object.freeze({
         description: 'Attività già esistenti, ma senza uno Schedule accettato.',
@@ -210,13 +214,20 @@ export function TimelinePlanningTrayB01({
     };
   }, [commitRead, failRead, runtime]);
 
-  useEffect(
-    () =>
-      subscribeTemporalPlanningInvalidation(() => {
-        void refresh();
-      }),
-    [refresh],
-  );
+  useEffect(() => {
+    const reload = () => {
+      void refresh();
+    };
+    const unsubscribePlanning = subscribeTemporalPlanningInvalidation(reload);
+    // A Schedule withdrawal changes both Timeline and the derived Activity tray.
+    // Listen to the canonical Timeline read invalidation as well, so every governed
+    // unschedule path refreshes the same remote Activity projection immediately.
+    const unsubscribeTimeline = subscribeTemporalTimelineInvalidation(reload);
+    return () => {
+      unsubscribePlanning();
+      unsubscribeTimeline();
+    };
+  }, [refresh]);
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
@@ -488,7 +499,9 @@ export function TimelinePlanningTrayB01({
                       aria-label={`${b01Copy.place}: ${item.title}`}
                       aria-expanded={placing}
                       onClick={() => {
-                        setPlacingActivityRef(placing ? null : item.activityRef);
+                        setPlacingActivityRef(
+                          placing ? null : item.activityRef,
+                        );
                         setPlacementError(null);
                       }}
                     >
@@ -560,9 +573,7 @@ export function TimelinePlanningTrayB01({
                         {b01Copy.cancel}
                       </button>
                       <button type="submit" disabled={placementPending}>
-                        {placementPending
-                          ? b01Copy.placing
-                          : b01Copy.confirm}
+                        {placementPending ? b01Copy.placing : b01Copy.confirm}
                       </button>
                     </div>
                   </form>
