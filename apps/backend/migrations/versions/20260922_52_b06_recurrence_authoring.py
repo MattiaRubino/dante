@@ -346,7 +346,7 @@ BEGIN
     d.nonexistent_local_time_policy,d.ambiguous_local_time_policy,
     e.elapsed_seconds,e.anchor_mode_code,e.anchor_at,
     q.quota_count,q.period_unit_code,q.period_span,q.frame_code,q.zone_id,q.week_start,
-    cy.cycle_length,cy.position_unit_code,bc.date_value,
+    cy.cycle_length,cy.position_unit_code,ba.date_value,
     ARRAY(SELECT p.generates_expected FROM dante.{prefix}_recurrence_cycle_position p WHERE p.material_state_ref=s.material_state_ref ORDER BY p.position_index)
   FROM dante.{prefix}_recurrence_state s
   JOIN dante.native_current_material_state n ON n.native_owner_ref=s.{owner} AND n.facet_code='{prefix}.recurrence' AND n.material_state_ref=s.material_state_ref

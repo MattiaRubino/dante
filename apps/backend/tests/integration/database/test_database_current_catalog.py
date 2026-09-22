@@ -160,7 +160,7 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
     assert topology == _CURRENT_TOPOLOGY
     print("DATABASE_CURRENT_TOPOLOGY=" + "|".join(str(value) for value in topology))
     assert current_revision == (_CURRENT_REVISION,)
-    assert (len(tables), len(views), len(routines)) == (135, 5, 68)
+    assert (len(tables), len(views), len(routines)) == (139, 5, 73)
     assert live_tables == set(tables)
     assert live_views == set(views)
     assert live_routines == set(routines)
