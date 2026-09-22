@@ -159,6 +159,9 @@ _EXPECTED_TEMPORAL_OPERATIONS = {
         "temporal_create_event_extra_occurrence"
     ),
     ("/api/v1/temporal/occurrences/{occurrence_ref}", "get"): "temporal_get_occurrence",
+    ("/api/v1/temporal/occurrences/{occurrence_ref}/schedule", "post"): (
+        "temporal_establish_occurrence_schedule"
+    ),
     ("/api/v1/temporal/occurrences/{occurrence_ref}/skip", "post"): ("temporal_skip_occurrence"),
     ("/api/v1/temporal/routines/{routine_ref}/occurrences/exclusions", "post"): (
         "temporal_exclude_routine_occurrence_coordinate"

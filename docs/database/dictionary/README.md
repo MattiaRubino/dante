@@ -6,7 +6,7 @@
 - **PostgreSQL:** 18.6
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
-- **Current candidate Alembic source head on `feature/timeline-temporal-operational`:** `20260922_55`
+- **Current candidate Alembic source head on `feature/timeline-temporal-operational`:** `20260922_56`
 - **Current candidate proven topology:** `145|5|87|92|285|223|408|0|0|0` (B06-C proven)
 - **Frozen CP6 head:** `20260826_08`
 - **Last reconciled:** 2026-09-22
@@ -24,7 +24,7 @@ Current checked-out DB Reference
 ≈ direct tests
 ```
 
-A mismatch is a defect. Protected `main` remains integration authority. B06-C `_55` passed the generated/client gate, selected evaluator/API/OpenAPI proof and the selected 41-test PostgreSQL/catalog/ACL gate after its focused repair rerun.
+A mismatch is a defect. Protected `main` remains integration authority. B06-C `_55` passed the generated/client gate, selected evaluator/API/OpenAPI proof and the selected 41-test PostgreSQL/catalog/ACL gate after its focused repair rerun. B06-D `_56` changes only the ownership predicates of four inventoried Schedule routines; no inventory count changes are claimed before local proof.
 
 ## 2. Current checked-out business-schema inventory
 
@@ -107,6 +107,9 @@ B06-C / 20260922_55 (✅ CLOSED / PROVEN)
   bounded execute-only Routine/Event Occurrence checkpoint over immutable history
   canonical materialization/replay, explicit extra, immutable skip and structural exclusion
   62-day half-open horizon + atomic 10,000-Occurrence safety cap; no Schedule/Timeline
+
+B06-D / 20260922_56
+  self-owned Occurrence authorization in shared Schedule establish/revise/unschedule/Undo
 ```
 
 The object tree and `scope.json`, not this prose summary, are structural source of truth.

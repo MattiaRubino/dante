@@ -700,6 +700,38 @@ class TemporalScheduleApplication:
     def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
         self._session_factory = session_factory
 
+    async def establish_schedule(
+        self,
+        *,
+        self_person_ref: NativeRef,
+        operation_id: str,
+        subject_native_ref: NativeRef,
+        placement: SchedulePlacement,
+    ) -> EstablishedScheduleView:
+        """Establish shared Schedule truth for an existing self-owned subject."""
+        if subject_native_ref.version != 7:
+            raise ScheduleInputError("Schedule subject reference must be a canonical UUIDv7 value.")
+        try:
+            async with self._session_factory() as database_session, database_session.begin():
+                return await establish_schedule_in_session(
+                    database_session,
+                    self_person_ref=self_person_ref,
+                    operation_id=operation_id,
+                    subject_native_ref=subject_native_ref,
+                    placement=placement,
+                )
+        except IntegrityError as exc:
+            constraint = _constraint_name(exc)
+            if constraint == "pk_schedule_establish_operation":
+                raise ScheduleOperationIdReuseError() from exc
+            if constraint == "schedule_establish_subject_not_found":
+                raise ScheduleNotFoundError() from exc
+            raise SchedulePersistenceError() from exc
+        except DBAPIError as exc:
+            raise SchedulePersistenceError() from exc
+        except SQLAlchemyError as exc:
+            raise SchedulePersistenceError() from exc
+
     async def revise_schedule(
         self,
         *,

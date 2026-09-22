@@ -8,7 +8,7 @@
     "name": "unschedule_self_schedule",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Bounded SECURITY DEFINER capability that atomically withdraws the exact current placement of one self-owned Activity or Event Schedule, closes its open history episode, records real current absence, and retains the semantic owner, Schedule, MaterialState, and history.",
+  "purpose": "Bounded SECURITY DEFINER capability that atomically withdraws the exact current placement of one self-owned Activity, Event or Occurrence Schedule, closes its open history episode, records real current absence, and retains the semantic owner, Schedule, MaterialState, and history.",
   "classification": {
     "persistence_role": "schedule_unschedule_capability",
     "canonicality": "capability_surface",
@@ -20,12 +20,15 @@
       "docs/workstreams/timeline-temporal-operational-b02-execution-plan.md#5-idempotency-and-concurrency-contract",
       "docs/workstreams/timeline-temporal-operational-b02-execution-plan.md#6-persistence-strategy",
       "docs/workstreams/timeline-temporal-operational-b03-execution-plan.md",
+      "docs/workstreams/timeline-temporal-operational-b06-d-implementation-freeze.md",
       "docs/workstreams/timeline-temporal-operational-map.md",
       "docs/development/backend-cp6-02-postgresql-persistence-constitution.md"
     ],
     "domain_concepts": [
       "Activity",
       "Event",
+      "Routine",
+      "Occurrence",
       "Schedule"
     ],
     "logical_families": [
@@ -111,14 +114,15 @@
     "obligations": [
       "function is dante_owner SECURITY DEFINER with trusted search_path",
       "runtime has EXECUTE only and no direct receipt/current/history DML",
-      "typed self-scope admits only an Activity or Event Schedule belonging to the authenticated self Person",
+      "typed self-scope admits only an Activity, Event or Occurrence Schedule belonging to the authenticated self Person",
       "stale exact expected state conflicts before currentness is withdrawn",
       "accepted unschedule closes history and removes current binding atomically without deleting semantic records",
-      "Activity and Event share the same absence/current-history mechanism rather than owner-specific engines"
+      "Activity, Event and Occurrence share the same absence/current-history mechanism rather than owner-specific engines"
     ],
     "test_refs": [
       "apps/backend/tests/integration/temporal/test_b02_schedule_unschedule_undo.py",
       "apps/backend/tests/integration/temporal/test_b03_shared_schedule_event.py",
+      "apps/backend/tests/integration/temporal/test_b06_occurrence_schedule.py",
       "apps/backend/tests/integration/database/test_current_catalog.py",
       "apps/backend/tests/integration/database/test_migrations.py"
     ],

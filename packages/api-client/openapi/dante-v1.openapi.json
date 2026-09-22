@@ -2499,6 +2499,50 @@
         "title": "EstablishActivityScheduleRequest",
         "type": "object"
       },
+      "EstablishOccurrenceScheduleRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "placement": {
+            "discriminator": {
+              "mapping": {
+                "absolute_interval": "#/components/schemas/dante__modules__temporal__api__AbsoluteIntervalPlacementRequest",
+                "coarse_local_period": "#/components/schemas/CoarseLocalPeriodPlacementRequest",
+                "date_span": "#/components/schemas/DateSpanPlacementRequest",
+                "floating_local_interval": "#/components/schemas/FloatingLocalIntervalPlacementRequest",
+                "named_zone_local_interval": "#/components/schemas/NamedZoneLocalIntervalPlacementRequest"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/DateSpanPlacementRequest"
+              },
+              {
+                "$ref": "#/components/schemas/FloatingLocalIntervalPlacementRequest"
+              },
+              {
+                "$ref": "#/components/schemas/NamedZoneLocalIntervalPlacementRequest"
+              },
+              {
+                "$ref": "#/components/schemas/dante__modules__temporal__api__AbsoluteIntervalPlacementRequest"
+              },
+              {
+                "$ref": "#/components/schemas/CoarseLocalPeriodPlacementRequest"
+              }
+            ],
+            "title": "Placement"
+          }
+        },
+        "required": ["operation_id", "placement"],
+        "title": "EstablishOccurrenceScheduleRequest",
+        "type": "object"
+      },
       "EvaluateTemporalConstraintsRequest": {
         "additionalProperties": false,
         "properties": {
@@ -3085,6 +3129,30 @@
         "title": "NamedZoneLocalIntervalPlacementRequest",
         "type": "object"
       },
+      "OccurrenceAbsoluteSchedulePlacementResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "ends_at": {
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "kind": {
+            "const": "absolute_interval",
+            "default": "absolute_interval",
+            "title": "Kind",
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          }
+        },
+        "required": ["starts_at", "ends_at"],
+        "title": "OccurrenceAbsoluteSchedulePlacementResponse",
+        "type": "object"
+      },
       "OccurrenceCheckpointRequest": {
         "additionalProperties": false,
         "properties": {
@@ -3171,6 +3239,78 @@
         "title": "OccurrenceCheckpointResponse",
         "type": "object"
       },
+      "OccurrenceCoarseSchedulePlacementResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "coarse_local_period",
+            "default": "coarse_local_period",
+            "title": "Kind",
+            "type": "string"
+          },
+          "local_date": {
+            "format": "date",
+            "title": "Local Date",
+            "type": "string"
+          },
+          "period": {
+            "enum": ["morning", "afternoon", "evening"],
+            "title": "Period",
+            "type": "string"
+          }
+        },
+        "required": ["local_date", "period"],
+        "title": "OccurrenceCoarseSchedulePlacementResponse",
+        "type": "object"
+      },
+      "OccurrenceDateSpanSchedulePlacementResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "end_date_exclusive": {
+            "format": "date",
+            "title": "End Date Exclusive",
+            "type": "string"
+          },
+          "kind": {
+            "const": "date_span",
+            "default": "date_span",
+            "title": "Kind",
+            "type": "string"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          }
+        },
+        "required": ["start_date", "end_date_exclusive"],
+        "title": "OccurrenceDateSpanSchedulePlacementResponse",
+        "type": "object"
+      },
+      "OccurrenceFloatingSchedulePlacementResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "ends_local_at": {
+            "format": "date-time",
+            "title": "Ends Local At",
+            "type": "string"
+          },
+          "kind": {
+            "const": "floating_local_interval",
+            "default": "floating_local_interval",
+            "title": "Kind",
+            "type": "string"
+          },
+          "starts_local_at": {
+            "format": "date-time",
+            "title": "Starts Local At",
+            "type": "string"
+          }
+        },
+        "required": ["starts_local_at", "ends_local_at"],
+        "title": "OccurrenceFloatingSchedulePlacementResponse",
+        "type": "object"
+      },
       "OccurrenceMutationResponse": {
         "additionalProperties": false,
         "properties": {
@@ -3189,6 +3329,50 @@
         },
         "required": ["occurrence", "accepted_at", "replayed"],
         "title": "OccurrenceMutationResponse",
+        "type": "object"
+      },
+      "OccurrenceNamedZoneSchedulePlacementResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "ends_local_at": {
+            "format": "date-time",
+            "title": "Ends Local At",
+            "type": "string"
+          },
+          "kind": {
+            "const": "named_zone_local_interval",
+            "default": "named_zone_local_interval",
+            "title": "Kind",
+            "type": "string"
+          },
+          "resolved_end_at": {
+            "format": "date-time",
+            "title": "Resolved End At",
+            "type": "string"
+          },
+          "resolved_start_at": {
+            "format": "date-time",
+            "title": "Resolved Start At",
+            "type": "string"
+          },
+          "starts_local_at": {
+            "format": "date-time",
+            "title": "Starts Local At",
+            "type": "string"
+          },
+          "zone_id": {
+            "title": "Zone Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "starts_local_at",
+          "ends_local_at",
+          "zone_id",
+          "resolved_start_at",
+          "resolved_end_at"
+        ],
+        "title": "OccurrenceNamedZoneSchedulePlacementResponse",
         "type": "object"
       },
       "OccurrenceResponse": {
@@ -3293,6 +3477,69 @@
           "skipped_at"
         ],
         "title": "OccurrenceResponse",
+        "type": "object"
+      },
+      "OccurrenceScheduleResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "occurrence_ref": {
+            "format": "uuid",
+            "title": "Occurrence Ref",
+            "type": "string"
+          },
+          "placement": {
+            "discriminator": {
+              "mapping": {
+                "absolute_interval": "#/components/schemas/OccurrenceAbsoluteSchedulePlacementResponse",
+                "coarse_local_period": "#/components/schemas/OccurrenceCoarseSchedulePlacementResponse",
+                "date_span": "#/components/schemas/OccurrenceDateSpanSchedulePlacementResponse",
+                "floating_local_interval": "#/components/schemas/OccurrenceFloatingSchedulePlacementResponse",
+                "named_zone_local_interval": "#/components/schemas/OccurrenceNamedZoneSchedulePlacementResponse"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/OccurrenceDateSpanSchedulePlacementResponse"
+              },
+              {
+                "$ref": "#/components/schemas/OccurrenceFloatingSchedulePlacementResponse"
+              },
+              {
+                "$ref": "#/components/schemas/OccurrenceNamedZoneSchedulePlacementResponse"
+              },
+              {
+                "$ref": "#/components/schemas/OccurrenceAbsoluteSchedulePlacementResponse"
+              },
+              {
+                "$ref": "#/components/schemas/OccurrenceCoarseSchedulePlacementResponse"
+              }
+            ],
+            "title": "Placement"
+          },
+          "placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Placement Material State Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "occurrence_ref",
+          "schedule_ref",
+          "placement_material_state_ref",
+          "placement"
+        ],
+        "title": "OccurrenceScheduleResponse",
         "type": "object"
       },
       "OrderEntry": {
@@ -19224,6 +19471,58 @@
           }
         },
         "summary": "Get Occurrence",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/occurrences/{occurrence_ref}/schedule": {
+      "post": {
+        "description": "Attach one accepted shared Schedule placement to a canonical Occurrence.",
+        "operationId": "temporal_establish_occurrence_schedule",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "occurrence_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Occurrence Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EstablishOccurrenceScheduleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OccurrenceScheduleResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Establish Occurrence Schedule",
         "tags": ["temporal"]
       }
     },

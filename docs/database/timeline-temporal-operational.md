@@ -4,7 +4,7 @@
 - **Reconciled:** 2026-09-22
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
-- **Candidate source head:** `20260922_55` (B06-C proven)
+- **Candidate source head:** `20260922_56` (B06-D implementation; `_55` proven)
 - **Candidate proven topology:** `145|5|87|92|285|223|408|0|0|0`
 - **Whole-DB SoR:** `README.md`
 - **Machine-readable authority:** `dictionary/`
@@ -172,4 +172,4 @@ DATABASE_CURRENT_TOPOLOGY                         116|5|44|90|233|153|331|0|0|0
 
 ## 8. Next persistence boundary
 
-B06-C `_55` is the proven current branch frontier. It adds the bounded execute-only Routine/Event Occurrence checkpoint, immutable receipt/control state and distinct explicit-extra, skip and structural-exclusion semantics while preserving exact historical governing Recurrence provenance. The next persistence boundary is B06-D shared Schedule and bounded Timeline integration; `_55` creates neither.
+B06-C `_55` is the proven branch frontier. B06-D `_56` widens the four existing self-scoped Schedule mutation capabilities to derive Occurrence ownership through its Routine/Event source; it adds no table, view, routine identity, trigger, index, foreign key or CHECK constraint. The proven topology therefore remains the `_55` value until the user-run B06-D PostgreSQL/catalog gate confirms the unchanged counts. Timeline projection remains the next active implementation boundary.

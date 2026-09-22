@@ -27,6 +27,24 @@ from dante.modules.temporal.occurrence import (
     OccurrenceSourceNotFoundError,
     OccurrenceView,
 )
+from dante.modules.temporal.api import (
+    SchedulePlacementRequest,
+    TemporalScheduleApplicationDependency,
+    _placement_from_request,
+)
+from dante.modules.temporal.schedule import (
+    AbsoluteIntervalPlacement,
+    CoarseLocalPeriodPlacement,
+    DateSpanPlacement,
+    FloatingLocalIntervalPlacement,
+    NamedZoneLocalIntervalPlacement,
+    ScheduleInputError,
+    ScheduleNotFoundError,
+    ScheduleOperationIdReuseError,
+    SchedulePersistenceError,
+    SchedulePlacement,
+)
+from dante.platform.database.references import NativeRef
 from dante.platform.http.problem import ProblemError
 
 router = APIRouter(prefix="/api/v1/temporal", tags=["temporal"])
@@ -51,6 +69,69 @@ class SkipOccurrenceRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     operation_id: str = Field(min_length=1, max_length=200)
     reason: str | None = Field(default=None, max_length=500)
+
+
+class EstablishOccurrenceScheduleRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    operation_id: str = Field(min_length=1, max_length=200)
+    placement: SchedulePlacementRequest
+
+
+class OccurrenceDateSpanSchedulePlacementResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    kind: Literal["date_span"] = "date_span"
+    start_date: date
+    end_date_exclusive: date
+
+
+class OccurrenceFloatingSchedulePlacementResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    kind: Literal["floating_local_interval"] = "floating_local_interval"
+    starts_local_at: datetime
+    ends_local_at: datetime
+
+
+class OccurrenceNamedZoneSchedulePlacementResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    kind: Literal["named_zone_local_interval"] = "named_zone_local_interval"
+    starts_local_at: datetime
+    ends_local_at: datetime
+    zone_id: str
+    resolved_start_at: datetime
+    resolved_end_at: datetime
+
+
+class OccurrenceAbsoluteSchedulePlacementResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    kind: Literal["absolute_interval"] = "absolute_interval"
+    starts_at: datetime
+    ends_at: datetime
+
+
+class OccurrenceCoarseSchedulePlacementResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    kind: Literal["coarse_local_period"] = "coarse_local_period"
+    local_date: date
+    period: Literal["morning", "afternoon", "evening"]
+
+
+OccurrenceSchedulePlacementResponse = Annotated[
+    OccurrenceDateSpanSchedulePlacementResponse
+    | OccurrenceFloatingSchedulePlacementResponse
+    | OccurrenceNamedZoneSchedulePlacementResponse
+    | OccurrenceAbsoluteSchedulePlacementResponse
+    | OccurrenceCoarseSchedulePlacementResponse,
+    Field(discriminator="kind"),
+]
+
+
+class OccurrenceScheduleResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    occurrence_ref: UUID
+    schedule_ref: UUID
+    placement_material_state_ref: UUID
+    placement: OccurrenceSchedulePlacementResponse
+    replayed: bool = False
 
 
 class CalendarOccurrenceCoordinate(BaseModel):
@@ -305,6 +386,108 @@ async def checkpoint_event_occurrences(
     response: Response,
 ) -> OccurrenceCheckpointResponse:
     return await _checkpoint("event", event_ref, payload, context, application, response)
+
+
+def _schedule_placement_response(
+    placement: SchedulePlacement,
+) -> OccurrenceSchedulePlacementResponse:
+    if isinstance(placement, DateSpanPlacement):
+        return OccurrenceDateSpanSchedulePlacementResponse(
+            start_date=placement.start_date,
+            end_date_exclusive=placement.end_date_exclusive,
+        )
+    if isinstance(placement, FloatingLocalIntervalPlacement):
+        return OccurrenceFloatingSchedulePlacementResponse(
+            starts_local_at=placement.starts_local_at,
+            ends_local_at=placement.ends_local_at,
+        )
+    if isinstance(placement, NamedZoneLocalIntervalPlacement):
+        assert placement.resolved_start_at is not None
+        assert placement.resolved_end_at is not None
+        return OccurrenceNamedZoneSchedulePlacementResponse(
+            starts_local_at=placement.starts_local_at,
+            ends_local_at=placement.ends_local_at,
+            zone_id=placement.zone_id,
+            resolved_start_at=placement.resolved_start_at,
+            resolved_end_at=placement.resolved_end_at,
+        )
+    if isinstance(placement, AbsoluteIntervalPlacement):
+        return OccurrenceAbsoluteSchedulePlacementResponse(
+            starts_at=placement.starts_at,
+            ends_at=placement.ends_at,
+        )
+    assert isinstance(placement, CoarseLocalPeriodPlacement)
+    return OccurrenceCoarseSchedulePlacementResponse(
+        local_date=placement.local_date,
+        period=placement.period,
+    )
+
+
+@router.post(
+    "/occurrences/{occurrence_ref}/schedule",
+    response_model=OccurrenceScheduleResponse,
+    status_code=201,
+    operation_id="temporal_establish_occurrence_schedule",
+)
+async def establish_occurrence_schedule(
+    occurrence_ref: UUID,
+    payload: EstablishOccurrenceScheduleRequest,
+    context: MutatingContext,
+    application: TemporalScheduleApplicationDependency,
+    response: Response,
+) -> OccurrenceScheduleResponse:
+    """Attach one accepted shared Schedule placement to a canonical Occurrence."""
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        placement = _placement_from_request(payload.placement)
+        value = await application.establish_schedule(
+            self_person_ref=context.self_person_ref,
+            operation_id=payload.operation_id,
+            subject_native_ref=NativeRef(occurrence_ref),
+            placement=placement,
+        )
+    except ScheduleInputError as exc:
+        raise ProblemError(
+            status=422,
+            code="temporal.occurrence.schedule_invalid",
+            category="validation",
+            title="Invalid Occurrence Schedule",
+            detail=str(exc),
+        ) from exc
+    except ScheduleNotFoundError as exc:
+        raise ProblemError(
+            status=404,
+            code="temporal.occurrence.unavailable",
+            category="not_found",
+            title="Occurrence unavailable",
+            detail="The Occurrence is unavailable in the current self scope.",
+        ) from exc
+    except ScheduleOperationIdReuseError as exc:
+        raise ProblemError(
+            status=409,
+            code="temporal.occurrence.schedule_operation_id_reused",
+            category="conflict",
+            title="Occurrence Schedule operation conflict",
+            detail="Use a new operation id for a different Schedule intent.",
+        ) from exc
+    except SchedulePersistenceError as exc:
+        raise ProblemError(
+            status=503,
+            code="temporal.occurrence.schedule_unavailable",
+            category="service",
+            title="Occurrence Schedule unavailable",
+            detail="Canonical Occurrence Schedule state could not be persisted.",
+            retryable=True,
+        ) from exc
+    if value.replayed:
+        response.status_code = 200
+    return OccurrenceScheduleResponse(
+        occurrence_ref=value.subject_native_ref,
+        schedule_ref=value.schedule_ref,
+        placement_material_state_ref=value.material_state_ref,
+        placement=_schedule_placement_response(value.placement),
+        replayed=value.replayed,
+    )
 
 
 async def _extra(

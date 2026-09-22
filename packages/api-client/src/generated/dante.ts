@@ -27,6 +27,7 @@ import type {
   CreateTemporalConstraintRequest,
   CreatedTemporalConstraintResponse,
   EstablishActivityScheduleRequest,
+  EstablishOccurrenceScheduleRequest,
   EvaluateTemporalConstraintsRequest,
   EventAgendaMutationResponse,
   EventResponse,
@@ -45,6 +46,7 @@ import type {
   OccurrenceCheckpointResponse,
   OccurrenceMutationResponse,
   OccurrenceResponse,
+  OccurrenceScheduleResponse,
   PasskeyAuthenticationCompleteRequest,
   PasskeyBeginRequest,
   PasskeyCeremonyResponse,
@@ -6141,6 +6143,78 @@ export const temporalGetOccurrence = async (
     status: res.status,
     headers: res.headers,
   } as temporalGetOccurrenceResponse;
+};
+
+export type temporalEstablishOccurrenceScheduleResponse201 = {
+  data: OccurrenceScheduleResponse;
+  status: 201;
+};
+
+export type temporalEstablishOccurrenceScheduleResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalEstablishOccurrenceScheduleResponseSuccess =
+  temporalEstablishOccurrenceScheduleResponse201 & {
+    headers: Headers;
+  };
+export type temporalEstablishOccurrenceScheduleResponseError =
+  temporalEstablishOccurrenceScheduleResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalEstablishOccurrenceScheduleResponse =
+  | temporalEstablishOccurrenceScheduleResponseSuccess
+  | temporalEstablishOccurrenceScheduleResponseError;
+
+export const getTemporalEstablishOccurrenceScheduleUrl = (
+  occurrenceRef: string,
+) => {
+  return `/api/v1/temporal/occurrences/${occurrenceRef}/schedule`;
+};
+
+/**
+ * Attach one accepted shared Schedule placement to a canonical Occurrence.
+ * @summary Establish Occurrence Schedule
+ */
+export const temporalEstablishOccurrenceSchedule = async (
+  occurrenceRef: string,
+  establishOccurrenceScheduleRequest: EstablishOccurrenceScheduleRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalEstablishOccurrenceScheduleResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalEstablishOccurrenceScheduleUrl(occurrenceRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(establishOccurrenceScheduleRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalEstablishOccurrenceScheduleResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalEstablishOccurrenceScheduleResponse;
 };
 
 export type temporalSkipOccurrenceResponse200 = {

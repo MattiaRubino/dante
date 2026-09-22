@@ -6,7 +6,7 @@
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
-- **Timeline candidate Alembic head (source):** `20260922_55`
+- **Timeline candidate Alembic head (source):** `20260922_56`
 - **Timeline candidate proven topology:** `145|5|87|92|285|223|408|0|0|0` (B06-C proven)
 - **Timeline candidate DB overlay:** `timeline-temporal-operational.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
@@ -85,6 +85,7 @@ Protected `main` remains integration authority. Candidate truth is never relabel
 20260922_53 B06-B forward-only Recurrence current-state reader repair [PROVEN at _54]
 20260922_54 B06-B forward-only Recurrence selector validation repair [PROVEN]
 20260922_55 B06-C bounded Occurrence checkpoint, explicit extra, skip and structural exclusion [PROVEN]
+20260922_56 B06-D Occurrence authorization in shared Schedule capabilities [IMPLEMENTATION]
 ```
 
 No accepted historical migration was edited, rebased, renumbered or flattened.
@@ -106,7 +107,7 @@ No accepted historical migration was edited, rebased, renumbered or flattened.
 0 RLS policies
 ```
 
-The `_42` topology was read directly from PostgreSQL 18.6 during B04-F closure. `_45` closed B05-A. The user ran 16 selected PostgreSQL tests at `_46`, including whole-catalog reconciliation, closing B05-B. The user ran 26 selected PostgreSQL tests at `_47`, including whole-catalog reconciliation, closing B05-C. The topology is an expected value asserted by the passing catalog test, not a separate manual PostgreSQL inventory.
+The `_42` topology was read directly from PostgreSQL 18.6 during B04-F closure. `_45` closed B05-A. The user ran 16 selected PostgreSQL tests at `_46`, including whole-catalog reconciliation, closing B05-B. The user ran 26 selected PostgreSQL tests at `_47`, including whole-catalog reconciliation, closing B05-C. The topology is an expected value asserted by the passing catalog test, not a separate manual PostgreSQL inventory. `_56` changes four existing routine bodies only, so it does not predict a topology-count change; `_55` remains the latest proven topology until the B06-D PostgreSQL gate runs.
 
 ## 4. Timeline persistence classification
 
@@ -289,4 +290,4 @@ Proof covers duration lifecycle/current/history/CAS/idempotency, hard minimum/ma
 
 ## 7. Current next boundary
 
-B04-F, B05 and B06-C are closed with their recorded proof. `_55` adds the bounded execute-only Occurrence checkpoint and distinct explicit-extra, skip and structural-exclusion controls without creating Schedule or Timeline truth. The next persistence boundary is B06-D shared Schedule/Timeline integration. B04 Schedule truth is unchanged.
+B04-F, B05 and B06-C are closed with their recorded proof. `_55` adds the bounded execute-only Occurrence checkpoint and distinct explicit-extra, skip and structural-exclusion controls. B06-D `_56` now admits self-owned Occurrences to the unchanged shared Schedule engine; bounded Timeline projection remains in implementation.
