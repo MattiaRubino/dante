@@ -1,8 +1,8 @@
 """B06-A self-owned Routine source lifecycle and product organization.
 
-The module intentionally has no recurrence or occurrence command.  A Routine
-is the source that may later govern immutable recurrence states; it is never a
-materialized Activity and it never implies a Schedule by itself.
+Routine remains the source aggregate. B06-B authors its immutable Recurrence
+states through a separate module; neither module materializes an Occurrence,
+Activity or Schedule.
 """
 
 from __future__ import annotations

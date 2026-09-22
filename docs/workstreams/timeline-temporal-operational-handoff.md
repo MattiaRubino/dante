@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B04 ✅ CLOSED / PROVEN → B05 ✅ CLOSED / PROVEN → B06 🟨 IN PROGRESS (B06-A ✅ CLOSED / B06-B next)
+- **Status:** B04 ✅ CLOSED / PROVEN → B05 ✅ CLOSED / PROVEN → B06 🟨 IN PROGRESS (B06-A ✅ CLOSED / B06-B implemented, proof pending)
 - **Reconciled:** 2026-09-21
 - **Branch:** `feature/timeline-temporal-operational`
 - **Current roadmap:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -40,8 +40,8 @@ Current candidate DB:
 
 ```text
 PostgreSQL 18.6
-Alembic source 20260921_51
-Expected topology 135|5|68|90|263|201|381|0|0|0 (B06-A proven; B06-B not started)
+Alembic source 20260922_52
+Expected topology 139|5|73|92|269|209|389|0|0|0 (B06-A proven; B06-B candidate / direct proof pending)
 ```
 
 ## 2. Binding foundation carried forward

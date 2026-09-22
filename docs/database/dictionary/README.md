@@ -6,8 +6,8 @@
 - **PostgreSQL:** 18.6
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
-- **Current candidate Alembic source head on `feature/timeline-temporal-operational`:** `20260921_51`
-- **Current candidate expected topology:** `135|5|68|90|263|201|381|0|0|0` (B06-A proven; B06-B not started)
+- **Current candidate Alembic source head on `feature/timeline-temporal-operational`:** `20260922_52`
+- **Current candidate expected topology:** `139|5|73|92|269|209|389|0|0|0` (B06-A proven; B06-B candidate / direct proof pending)
 - **Frozen CP6 head:** `20260826_08`
 - **Last reconciled:** 2026-09-21
 
@@ -31,14 +31,14 @@ A mismatch is a defect. Protected `main` remains integration authority. B05-A `_
 Authoritative counts are in `scope.json`:
 
 ```text
-tables      135
+tables      139
 views         5
-routines     68
-standalone  196
-triggers     90
-indexes      263
-FKs          201
-CHECKs       381
+routines     73
+standalone  217
+triggers     92
+indexes      269
+FKs          209
+CHECKs       389
 ```
 
 No enum/domain, sequence, materialized view, partitioned table or RLS policy exists in the DANTE business-schema inventory.
@@ -97,6 +97,11 @@ B06-A / 20260921_51
   self-owned Routine source, lifecycle, atomic Life Area/source Tag organization
   CP6-required distinct initial daily floating-local Recurrence companion at create
   no generated Occurrence, Activity, Schedule, fake materialization or Timeline projection
+
+B06-B / 20260922_52 (candidate; direct proof pending)
+  immutable owner-bound Routine/Event Recurrence authoring for all CP6 families
+  state/history CAS + actor-local receipts + explicit named-zone DST disposition
+  no Occurrence generation, Schedule, Timeline or fake Activity materialization
 ```
 
 The object tree and `scope.json`, not this prose summary, are structural source of truth.

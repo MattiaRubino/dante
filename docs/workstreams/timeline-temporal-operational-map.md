@@ -103,8 +103,8 @@ Current candidate persistence authority:
 
 ```text
 PostgreSQL       18.6
-Alembic source   20260921_51
-Expected topology 135|5|68|90|263|201|381|0|0|0 (B06-A proven; B06-B not started)
+Alembic source   20260922_52
+Expected topology 139|5|73|92|269|209|389|0|0|0 (B06-A proven; B06-B candidate / direct proof pending)
 ```
 
 ---
@@ -281,4 +281,4 @@ B05-E ✅ WHOLE-BLOCK CLOSURE / MANUAL WALKTHROUGH COMPLETE
 B05   ✅ CLOSED / PROVEN
 ```
 
-Current gate: B05 ✅ CLOSED / PROVEN → B06-A ✅ CLOSED / PROVEN (26 selected PostgreSQL/catalog regressions; generated OpenAPI/client and API-client typecheck). B06-B Recurrence authoring is next under the B06 execution plan. No CI/Actions dispatched.
+Current gate: B05 ✅ CLOSED / PROVEN → B06-A ✅ CLOSED / PROVEN. B06-B Recurrence authoring is implemented at `_52`: Routine/Event typed immutable state replacement, four CP6 families, explicit named-zone DST policy, owner-specific replay receipt and current/history CAS; direct local proof is pending. No CI/Actions dispatched.

@@ -68,11 +68,14 @@ import type {
   ReauthenticateRequest,
   RecoveryAcceptedResponse,
   RecoveryValidationResponse,
+  RecurrenceMutationResponse,
+  RecurrenceStateResponse,
   RenameLifeAreaRequest,
   RenameProductTagRequest,
   RenameRoutineRequest,
   ReorderLifeAreasRequest,
   ReplaceEventAgendaRequest,
+  ReplaceRecurrenceRequest,
   ReplanPostponedEventRequest,
   RestoredScheduleAbsoluteResponse,
   RestoredScheduleCoarseResponse,
@@ -4856,6 +4859,130 @@ export const replaceEventAgendaApiV1TemporalEventsEventRefAgendaPut = async (
   } as replaceEventAgendaApiV1TemporalEventsEventRefAgendaPutResponse;
 };
 
+export type temporalGetEventRecurrenceResponse200 = {
+  data: RecurrenceStateResponse | null;
+  status: 200;
+};
+
+export type temporalGetEventRecurrenceResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetEventRecurrenceResponseSuccess =
+  temporalGetEventRecurrenceResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetEventRecurrenceResponseError =
+  temporalGetEventRecurrenceResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalGetEventRecurrenceResponse =
+  | temporalGetEventRecurrenceResponseSuccess
+  | temporalGetEventRecurrenceResponseError;
+
+export const getTemporalGetEventRecurrenceUrl = (eventRef: string) => {
+  return `/api/v1/temporal/events/${eventRef}/recurrence`;
+};
+
+/**
+ * @summary Get Event Recurrence
+ */
+export const temporalGetEventRecurrence = async (
+  eventRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetEventRecurrenceResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetEventRecurrenceUrl(eventRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetEventRecurrenceResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetEventRecurrenceResponse;
+};
+
+export type temporalReplaceEventRecurrenceResponse200 = {
+  data: RecurrenceMutationResponse;
+  status: 200;
+};
+
+export type temporalReplaceEventRecurrenceResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalReplaceEventRecurrenceResponseSuccess =
+  temporalReplaceEventRecurrenceResponse200 & {
+    headers: Headers;
+  };
+export type temporalReplaceEventRecurrenceResponseError =
+  temporalReplaceEventRecurrenceResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalReplaceEventRecurrenceResponse =
+  | temporalReplaceEventRecurrenceResponseSuccess
+  | temporalReplaceEventRecurrenceResponseError;
+
+export const getTemporalReplaceEventRecurrenceUrl = (eventRef: string) => {
+  return `/api/v1/temporal/events/${eventRef}/recurrence`;
+};
+
+/**
+ * @summary Replace Event Recurrence
+ */
+export const temporalReplaceEventRecurrence = async (
+  eventRef: string,
+  replaceRecurrenceRequest: ReplaceRecurrenceRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalReplaceEventRecurrenceResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalReplaceEventRecurrenceUrl(eventRef),
+    {
+      ...options,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(replaceRecurrenceRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalReplaceEventRecurrenceResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalReplaceEventRecurrenceResponse;
+};
+
 export type temporalReplanPostponedEventResponse200 = {
   data:
     | ScheduledEventFloatingResponse
@@ -6042,6 +6169,130 @@ export const temporalPauseRoutine = async (
     status: res.status,
     headers: res.headers,
   } as temporalPauseRoutineResponse;
+};
+
+export type temporalGetRoutineRecurrenceResponse200 = {
+  data: RecurrenceStateResponse;
+  status: 200;
+};
+
+export type temporalGetRoutineRecurrenceResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetRoutineRecurrenceResponseSuccess =
+  temporalGetRoutineRecurrenceResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetRoutineRecurrenceResponseError =
+  temporalGetRoutineRecurrenceResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalGetRoutineRecurrenceResponse =
+  | temporalGetRoutineRecurrenceResponseSuccess
+  | temporalGetRoutineRecurrenceResponseError;
+
+export const getTemporalGetRoutineRecurrenceUrl = (routineRef: string) => {
+  return `/api/v1/temporal/routines/${routineRef}/recurrence`;
+};
+
+/**
+ * @summary Get Routine Recurrence
+ */
+export const temporalGetRoutineRecurrence = async (
+  routineRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetRoutineRecurrenceResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetRoutineRecurrenceUrl(routineRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetRoutineRecurrenceResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetRoutineRecurrenceResponse;
+};
+
+export type temporalReplaceRoutineRecurrenceResponse200 = {
+  data: RecurrenceMutationResponse;
+  status: 200;
+};
+
+export type temporalReplaceRoutineRecurrenceResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalReplaceRoutineRecurrenceResponseSuccess =
+  temporalReplaceRoutineRecurrenceResponse200 & {
+    headers: Headers;
+  };
+export type temporalReplaceRoutineRecurrenceResponseError =
+  temporalReplaceRoutineRecurrenceResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalReplaceRoutineRecurrenceResponse =
+  | temporalReplaceRoutineRecurrenceResponseSuccess
+  | temporalReplaceRoutineRecurrenceResponseError;
+
+export const getTemporalReplaceRoutineRecurrenceUrl = (routineRef: string) => {
+  return `/api/v1/temporal/routines/${routineRef}/recurrence`;
+};
+
+/**
+ * @summary Replace Routine Recurrence
+ */
+export const temporalReplaceRoutineRecurrence = async (
+  routineRef: string,
+  replaceRecurrenceRequest: ReplaceRecurrenceRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalReplaceRoutineRecurrenceResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalReplaceRoutineRecurrenceUrl(routineRef),
+    {
+      ...options,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(replaceRecurrenceRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalReplaceRoutineRecurrenceResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalReplaceRoutineRecurrenceResponse;
 };
 
 export type temporalRenameRoutineResponse200 = {

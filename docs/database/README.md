@@ -6,8 +6,8 @@
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
-- **Timeline candidate Alembic head (source):** `20260921_51`
-- **Timeline candidate expected topology:** `135|5|68|90|263|201|381|0|0|0` (B06-A proven; B06-B not started)
+- **Timeline candidate Alembic head (source):** `20260922_52`
+- **Timeline candidate expected topology:** `139|5|73|92|269|209|389|0|0|0` (B06-A proven; B06-B candidate / direct proof pending)
 - **Timeline candidate DB overlay:** `timeline-temporal-operational.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 - **Persistence ADR:** `../decisions/ADR-010-postgresql-persistence-constitution.md`
@@ -81,6 +81,7 @@ Protected `main` remains integration authority. Candidate truth is never relabel
 20260921_49 B06-A Routine source core, lifecycle and typed product organization [candidate superseded by _50]
 20260921_50 B06-A atomic initial Routine/Recurrence companion correction [PROVEN at _51]
 20260921_51 B06-A qualified Routine source/Life Area command repair [PROVEN]
+20260922_52 B06-B immutable Routine/Event Recurrence authoring, receipts and explicit DST policy [candidate]
 ```
 
 No accepted historical migration was edited, rebased, renumbered or flattened.
@@ -88,13 +89,13 @@ No accepted historical migration was edited, rebased, renumbered or flattened.
 ## 3. Current candidate topology
 
 ```text
-135 tables
+139 tables
 5 views
-68 routines
-90 triggers
-263 physical indexes
-201 foreign keys
-381 CHECK constraints
+73 routines
+92 triggers
+269 physical indexes
+209 foreign keys
+389 CHECK constraints
 0 enums/domains
 0 sequences
 0 materialized views

@@ -1118,6 +1118,406 @@
         "title": "AuthenticationProviderMethodResponse",
         "type": "object"
       },
+      "CalendarOrdinalWeekday": {
+        "additionalProperties": false,
+        "properties": {
+          "ordinal": {
+            "maximum": 5.0,
+            "minimum": -5.0,
+            "ne": 0,
+            "title": "Ordinal",
+            "type": "integer"
+          },
+          "weekday_number": {
+            "maximum": 7.0,
+            "minimum": 1.0,
+            "title": "Weekday Number",
+            "type": "integer"
+          }
+        },
+        "required": ["weekday_number", "ordinal"],
+        "title": "CalendarOrdinalWeekday",
+        "type": "object"
+      },
+      "CalendarRecurrenceRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "ambiguous_local_time_policy": {
+            "anyOf": [
+              {
+                "enum": ["earlier", "later"],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ambiguous Local Time Policy"
+          },
+          "clock_basis_code": {
+            "enum": ["floating_local", "named_zone", "absolute_utc"],
+            "title": "Clock Basis Code",
+            "type": "string"
+          },
+          "effective_from": {
+            "format": "date",
+            "title": "Effective From",
+            "type": "string"
+          },
+          "effective_until": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Until"
+          },
+          "expected_occurrence_count": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Occurrence Count"
+          },
+          "family_code": {
+            "const": "calendar_wall_clock",
+            "default": "calendar_wall_clock",
+            "title": "Family Code",
+            "type": "string"
+          },
+          "interval_count": {
+            "maximum": 10000.0,
+            "minimum": 1.0,
+            "title": "Interval Count",
+            "type": "integer"
+          },
+          "month_days": {
+            "items": {
+              "type": "integer"
+            },
+            "maxItems": 62,
+            "title": "Month Days",
+            "type": "array"
+          },
+          "nonexistent_local_time_policy": {
+            "anyOf": [
+              {
+                "const": "skip_civil_candidate",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nonexistent Local Time Policy"
+          },
+          "ordinal_weekdays": {
+            "items": {
+              "$ref": "#/components/schemas/CalendarOrdinalWeekday"
+            },
+            "maxItems": 70,
+            "title": "Ordinal Weekdays",
+            "type": "array"
+          },
+          "pattern_anchor_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pattern Anchor Date"
+          },
+          "pattern_code": {
+            "enum": [
+              "daily",
+              "weekly_weekdays",
+              "monthly_month_days",
+              "monthly_ordinal_weekdays",
+              "yearly_month_days",
+              "anchor_step"
+            ],
+            "title": "Pattern Code",
+            "type": "string"
+          },
+          "range_kind": {
+            "enum": ["open", "until_boundary", "expected_count"],
+            "title": "Range Kind",
+            "type": "string"
+          },
+          "step_unit_code": {
+            "anyOf": [
+              {
+                "enum": ["day", "week", "month", "year"],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Step Unit Code"
+          },
+          "wall_times": {
+            "items": {
+              "format": "time",
+              "type": "string"
+            },
+            "maxItems": 32,
+            "title": "Wall Times",
+            "type": "array"
+          },
+          "weekdays": {
+            "items": {
+              "type": "integer"
+            },
+            "maxItems": 7,
+            "title": "Weekdays",
+            "type": "array"
+          },
+          "year_month_days": {
+            "items": {
+              "$ref": "#/components/schemas/CalendarYearMonthDay"
+            },
+            "maxItems": 372,
+            "title": "Year Month Days",
+            "type": "array"
+          },
+          "zone_id": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Zone Id"
+          }
+        },
+        "required": [
+          "range_kind",
+          "effective_from",
+          "pattern_code",
+          "interval_count",
+          "clock_basis_code"
+        ],
+        "title": "CalendarRecurrenceRequest",
+        "type": "object"
+      },
+      "CalendarRecurrenceResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "ambiguous_local_time_policy": {
+            "anyOf": [
+              {
+                "enum": ["earlier", "later"],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ambiguous Local Time Policy"
+          },
+          "clock_basis_code": {
+            "enum": ["floating_local", "named_zone", "absolute_utc"],
+            "title": "Clock Basis Code",
+            "type": "string"
+          },
+          "effective_from": {
+            "format": "date",
+            "title": "Effective From",
+            "type": "string"
+          },
+          "effective_until": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Until"
+          },
+          "expected_occurrence_count": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Occurrence Count"
+          },
+          "family_code": {
+            "const": "calendar_wall_clock",
+            "default": "calendar_wall_clock",
+            "title": "Family Code",
+            "type": "string"
+          },
+          "interval_count": {
+            "maximum": 10000.0,
+            "minimum": 1.0,
+            "title": "Interval Count",
+            "type": "integer"
+          },
+          "month_days": {
+            "items": {
+              "type": "integer"
+            },
+            "maxItems": 62,
+            "title": "Month Days",
+            "type": "array"
+          },
+          "nonexistent_local_time_policy": {
+            "anyOf": [
+              {
+                "const": "skip_civil_candidate",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nonexistent Local Time Policy"
+          },
+          "ordinal_weekdays": {
+            "items": {
+              "$ref": "#/components/schemas/CalendarOrdinalWeekday"
+            },
+            "maxItems": 70,
+            "title": "Ordinal Weekdays",
+            "type": "array"
+          },
+          "pattern_anchor_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pattern Anchor Date"
+          },
+          "pattern_code": {
+            "enum": [
+              "daily",
+              "weekly_weekdays",
+              "monthly_month_days",
+              "monthly_ordinal_weekdays",
+              "yearly_month_days",
+              "anchor_step"
+            ],
+            "title": "Pattern Code",
+            "type": "string"
+          },
+          "range_kind": {
+            "enum": ["open", "until_boundary", "expected_count"],
+            "title": "Range Kind",
+            "type": "string"
+          },
+          "step_unit_code": {
+            "anyOf": [
+              {
+                "enum": ["day", "week", "month", "year"],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Step Unit Code"
+          },
+          "wall_times": {
+            "items": {
+              "format": "time",
+              "type": "string"
+            },
+            "maxItems": 32,
+            "title": "Wall Times",
+            "type": "array"
+          },
+          "weekdays": {
+            "items": {
+              "type": "integer"
+            },
+            "maxItems": 7,
+            "title": "Weekdays",
+            "type": "array"
+          },
+          "year_month_days": {
+            "items": {
+              "$ref": "#/components/schemas/CalendarYearMonthDay"
+            },
+            "maxItems": 372,
+            "title": "Year Month Days",
+            "type": "array"
+          },
+          "zone_id": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Zone Id"
+          }
+        },
+        "required": [
+          "range_kind",
+          "effective_from",
+          "pattern_code",
+          "interval_count",
+          "clock_basis_code"
+        ],
+        "title": "CalendarRecurrenceResponse",
+        "type": "object"
+      },
+      "CalendarYearMonthDay": {
+        "additionalProperties": false,
+        "properties": {
+          "month_day": {
+            "maximum": 31.0,
+            "minimum": -31.0,
+            "ne": 0,
+            "title": "Month Day",
+            "type": "integer"
+          },
+          "month_number": {
+            "maximum": 12.0,
+            "minimum": 1.0,
+            "title": "Month Number",
+            "type": "integer"
+          }
+        },
+        "required": ["month_number", "month_day"],
+        "title": "CalendarYearMonthDay",
+        "type": "object"
+      },
       "CoarseLocalPeriodPlacementRequest": {
         "additionalProperties": false,
         "properties": {
@@ -1616,6 +2016,166 @@
         "title": "CreatedTemporalConstraintResponse",
         "type": "object"
       },
+      "CyclicRecurrenceRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "cycle_length": {
+            "maximum": 10000.0,
+            "minimum": 1.0,
+            "title": "Cycle Length",
+            "type": "integer"
+          },
+          "effective_from": {
+            "format": "date",
+            "title": "Effective From",
+            "type": "string"
+          },
+          "effective_until": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Until"
+          },
+          "expected_occurrence_count": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Occurrence Count"
+          },
+          "family_code": {
+            "const": "cyclic_positional",
+            "default": "cyclic_positional",
+            "title": "Family Code",
+            "type": "string"
+          },
+          "generates_expected": {
+            "items": {
+              "type": "boolean"
+            },
+            "maxItems": 10000,
+            "minItems": 1,
+            "title": "Generates Expected",
+            "type": "array"
+          },
+          "pattern_anchor_date": {
+            "format": "date",
+            "title": "Pattern Anchor Date",
+            "type": "string"
+          },
+          "position_unit_code": {
+            "enum": ["day", "week"],
+            "title": "Position Unit Code",
+            "type": "string"
+          },
+          "range_kind": {
+            "enum": ["open", "until_boundary", "expected_count"],
+            "title": "Range Kind",
+            "type": "string"
+          }
+        },
+        "required": [
+          "range_kind",
+          "effective_from",
+          "cycle_length",
+          "position_unit_code",
+          "pattern_anchor_date",
+          "generates_expected"
+        ],
+        "title": "CyclicRecurrenceRequest",
+        "type": "object"
+      },
+      "CyclicRecurrenceResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "cycle_length": {
+            "maximum": 10000.0,
+            "minimum": 1.0,
+            "title": "Cycle Length",
+            "type": "integer"
+          },
+          "effective_from": {
+            "format": "date",
+            "title": "Effective From",
+            "type": "string"
+          },
+          "effective_until": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Until"
+          },
+          "expected_occurrence_count": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Occurrence Count"
+          },
+          "family_code": {
+            "const": "cyclic_positional",
+            "default": "cyclic_positional",
+            "title": "Family Code",
+            "type": "string"
+          },
+          "generates_expected": {
+            "items": {
+              "type": "boolean"
+            },
+            "maxItems": 10000,
+            "minItems": 1,
+            "title": "Generates Expected",
+            "type": "array"
+          },
+          "pattern_anchor_date": {
+            "format": "date",
+            "title": "Pattern Anchor Date",
+            "type": "string"
+          },
+          "position_unit_code": {
+            "enum": ["day", "week"],
+            "title": "Position Unit Code",
+            "type": "string"
+          },
+          "range_kind": {
+            "enum": ["open", "until_boundary", "expected_count"],
+            "title": "Range Kind",
+            "type": "string"
+          }
+        },
+        "required": [
+          "range_kind",
+          "effective_from",
+          "cycle_length",
+          "position_unit_code",
+          "pattern_anchor_date",
+          "generates_expected"
+        ],
+        "title": "CyclicRecurrenceResponse",
+        "type": "object"
+      },
       "DateSpanPlacementRequest": {
         "additionalProperties": false,
         "properties": {
@@ -1638,6 +2198,152 @@
         },
         "required": ["start_date", "end_date_exclusive"],
         "title": "DateSpanPlacementRequest",
+        "type": "object"
+      },
+      "ElapsedRecurrenceRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "anchor_at": {
+            "format": "date-time",
+            "title": "Anchor At",
+            "type": "string"
+          },
+          "anchor_mode_code": {
+            "enum": ["fixed_anchor", "previous_expected"],
+            "title": "Anchor Mode Code",
+            "type": "string"
+          },
+          "effective_from": {
+            "format": "date-time",
+            "title": "Effective From",
+            "type": "string"
+          },
+          "effective_until": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Until"
+          },
+          "elapsed_seconds": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,14}|(?=[\\d.]{1,21}0*$)\\d{0,14}\\.\\d{0,6}0*$)",
+                "type": "string"
+              }
+            ],
+            "title": "Elapsed Seconds"
+          },
+          "expected_occurrence_count": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Occurrence Count"
+          },
+          "family_code": {
+            "const": "elapsed_interval",
+            "default": "elapsed_interval",
+            "title": "Family Code",
+            "type": "string"
+          },
+          "range_kind": {
+            "enum": ["open", "until_boundary", "expected_count"],
+            "title": "Range Kind",
+            "type": "string"
+          }
+        },
+        "required": [
+          "range_kind",
+          "effective_from",
+          "elapsed_seconds",
+          "anchor_mode_code",
+          "anchor_at"
+        ],
+        "title": "ElapsedRecurrenceRequest",
+        "type": "object"
+      },
+      "ElapsedRecurrenceResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "anchor_at": {
+            "format": "date-time",
+            "title": "Anchor At",
+            "type": "string"
+          },
+          "anchor_mode_code": {
+            "enum": ["fixed_anchor", "previous_expected"],
+            "title": "Anchor Mode Code",
+            "type": "string"
+          },
+          "effective_from": {
+            "format": "date-time",
+            "title": "Effective From",
+            "type": "string"
+          },
+          "effective_until": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Until"
+          },
+          "elapsed_seconds": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,14}|(?=[\\d.]{1,21}0*$)\\d{0,14}\\.\\d{0,6}0*$)",
+            "title": "Elapsed Seconds",
+            "type": "string"
+          },
+          "expected_occurrence_count": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Occurrence Count"
+          },
+          "family_code": {
+            "const": "elapsed_interval",
+            "default": "elapsed_interval",
+            "title": "Family Code",
+            "type": "string"
+          },
+          "range_kind": {
+            "enum": ["open", "until_boundary", "expected_count"],
+            "title": "Range Kind",
+            "type": "string"
+          }
+        },
+        "required": [
+          "range_kind",
+          "effective_from",
+          "elapsed_seconds",
+          "anchor_mode_code",
+          "anchor_at"
+        ],
+        "title": "ElapsedRecurrenceResponse",
         "type": "object"
       },
       "EstablishActivityScheduleRequest": {
@@ -3029,6 +3735,220 @@
         "title": "ProviderReturnTarget",
         "type": "string"
       },
+      "QuotaRecurrenceRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "effective_from": {
+            "format": "date",
+            "title": "Effective From",
+            "type": "string"
+          },
+          "effective_until": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Until"
+          },
+          "expected_occurrence_count": {
+            "title": "Expected Occurrence Count",
+            "type": "null"
+          },
+          "family_code": {
+            "const": "quota_per_period",
+            "default": "quota_per_period",
+            "title": "Family Code",
+            "type": "string"
+          },
+          "frame_code": {
+            "enum": ["floating_local", "named_zone", "absolute_utc"],
+            "title": "Frame Code",
+            "type": "string"
+          },
+          "pattern_anchor_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pattern Anchor Date"
+          },
+          "period_span": {
+            "maximum": 10000.0,
+            "minimum": 1.0,
+            "title": "Period Span",
+            "type": "integer"
+          },
+          "period_unit_code": {
+            "enum": ["day", "week", "month", "year"],
+            "title": "Period Unit Code",
+            "type": "string"
+          },
+          "quota_count": {
+            "maximum": 10000.0,
+            "minimum": 1.0,
+            "title": "Quota Count",
+            "type": "integer"
+          },
+          "range_kind": {
+            "enum": ["open", "until_boundary"],
+            "title": "Range Kind",
+            "type": "string"
+          },
+          "week_start": {
+            "anyOf": [
+              {
+                "maximum": 7.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Week Start"
+          },
+          "zone_id": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Zone Id"
+          }
+        },
+        "required": [
+          "range_kind",
+          "effective_from",
+          "quota_count",
+          "period_unit_code",
+          "period_span",
+          "frame_code"
+        ],
+        "title": "QuotaRecurrenceRequest",
+        "type": "object"
+      },
+      "QuotaRecurrenceResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "effective_from": {
+            "format": "date",
+            "title": "Effective From",
+            "type": "string"
+          },
+          "effective_until": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Until"
+          },
+          "expected_occurrence_count": {
+            "title": "Expected Occurrence Count",
+            "type": "null"
+          },
+          "family_code": {
+            "const": "quota_per_period",
+            "default": "quota_per_period",
+            "title": "Family Code",
+            "type": "string"
+          },
+          "frame_code": {
+            "enum": ["floating_local", "named_zone", "absolute_utc"],
+            "title": "Frame Code",
+            "type": "string"
+          },
+          "pattern_anchor_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pattern Anchor Date"
+          },
+          "period_span": {
+            "maximum": 10000.0,
+            "minimum": 1.0,
+            "title": "Period Span",
+            "type": "integer"
+          },
+          "period_unit_code": {
+            "enum": ["day", "week", "month", "year"],
+            "title": "Period Unit Code",
+            "type": "string"
+          },
+          "quota_count": {
+            "maximum": 10000.0,
+            "minimum": 1.0,
+            "title": "Quota Count",
+            "type": "integer"
+          },
+          "range_kind": {
+            "enum": ["open", "until_boundary"],
+            "title": "Range Kind",
+            "type": "string"
+          },
+          "week_start": {
+            "anyOf": [
+              {
+                "maximum": 7.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Week Start"
+          },
+          "zone_id": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Zone Id"
+          }
+        },
+        "required": [
+          "range_kind",
+          "effective_from",
+          "quota_count",
+          "period_unit_code",
+          "period_span",
+          "frame_code"
+        ],
+        "title": "QuotaRecurrenceResponse",
+        "type": "object"
+      },
       "ReauthenticateRequest": {
         "additionalProperties": false,
         "description": "Present fresh password evidence for the current AuthSession.",
@@ -3069,6 +3989,98 @@
         },
         "required": ["valid"],
         "title": "RecoveryValidationResponse",
+        "type": "object"
+      },
+      "RecurrenceMutationResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "accepted_at": {
+            "format": "date-time",
+            "title": "Accepted At",
+            "type": "string"
+          },
+          "material_state_ref": {
+            "format": "uuid",
+            "title": "Material State Ref",
+            "type": "string"
+          },
+          "recurrence": {
+            "discriminator": {
+              "mapping": {
+                "calendar_wall_clock": "#/components/schemas/CalendarRecurrenceResponse",
+                "cyclic_positional": "#/components/schemas/CyclicRecurrenceResponse",
+                "elapsed_interval": "#/components/schemas/ElapsedRecurrenceResponse",
+                "quota_per_period": "#/components/schemas/QuotaRecurrenceResponse"
+              },
+              "propertyName": "family_code"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/CalendarRecurrenceResponse"
+              },
+              {
+                "$ref": "#/components/schemas/ElapsedRecurrenceResponse"
+              },
+              {
+                "$ref": "#/components/schemas/QuotaRecurrenceResponse"
+              },
+              {
+                "$ref": "#/components/schemas/CyclicRecurrenceResponse"
+              }
+            ],
+            "title": "Recurrence"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "material_state_ref",
+          "recurrence",
+          "accepted_at",
+          "replayed"
+        ],
+        "title": "RecurrenceMutationResponse",
+        "type": "object"
+      },
+      "RecurrenceStateResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "material_state_ref": {
+            "format": "uuid",
+            "title": "Material State Ref",
+            "type": "string"
+          },
+          "recurrence": {
+            "discriminator": {
+              "mapping": {
+                "calendar_wall_clock": "#/components/schemas/CalendarRecurrenceResponse",
+                "cyclic_positional": "#/components/schemas/CyclicRecurrenceResponse",
+                "elapsed_interval": "#/components/schemas/ElapsedRecurrenceResponse",
+                "quota_per_period": "#/components/schemas/QuotaRecurrenceResponse"
+              },
+              "propertyName": "family_code"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/CalendarRecurrenceResponse"
+              },
+              {
+                "$ref": "#/components/schemas/ElapsedRecurrenceResponse"
+              },
+              {
+                "$ref": "#/components/schemas/QuotaRecurrenceResponse"
+              },
+              {
+                "$ref": "#/components/schemas/CyclicRecurrenceResponse"
+              }
+            ],
+            "title": "Recurrence"
+          }
+        },
+        "required": ["material_state_ref", "recurrence"],
+        "title": "RecurrenceStateResponse",
         "type": "object"
       },
       "RegistrationAuthenticatorResponse": {
@@ -3269,6 +4281,58 @@
         },
         "required": ["operation_id", "expected_revision", "agenda_parts"],
         "title": "ReplaceEventAgendaRequest",
+        "type": "object"
+      },
+      "ReplaceRecurrenceRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_material_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Material State Ref"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "recurrence": {
+            "discriminator": {
+              "mapping": {
+                "calendar_wall_clock": "#/components/schemas/CalendarRecurrenceRequest",
+                "cyclic_positional": "#/components/schemas/CyclicRecurrenceRequest",
+                "elapsed_interval": "#/components/schemas/ElapsedRecurrenceRequest",
+                "quota_per_period": "#/components/schemas/QuotaRecurrenceRequest"
+              },
+              "propertyName": "family_code"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/CalendarRecurrenceRequest"
+              },
+              {
+                "$ref": "#/components/schemas/ElapsedRecurrenceRequest"
+              },
+              {
+                "$ref": "#/components/schemas/QuotaRecurrenceRequest"
+              },
+              {
+                "$ref": "#/components/schemas/CyclicRecurrenceRequest"
+              }
+            ],
+            "title": "Recurrence"
+          }
+        },
+        "required": ["operation_id", "recurrence"],
+        "title": "ReplaceRecurrenceRequest",
         "type": "object"
       },
       "ReplanPostponedEventRequest": {
@@ -16708,6 +17772,104 @@
         "tags": ["temporal"]
       }
     },
+    "/api/v1/temporal/events/{event_ref}/recurrence": {
+      "get": {
+        "operationId": "temporal_get_event_recurrence",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/RecurrenceStateResponse"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Temporal Get Event Recurrence"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Event Recurrence",
+        "tags": ["temporal"]
+      },
+      "put": {
+        "operationId": "temporal_replace_event_recurrence",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReplaceRecurrenceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecurrenceMutationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Replace Event Recurrence",
+        "tags": ["temporal"]
+      }
+    },
     "/api/v1/temporal/events/{event_ref}/schedules/{schedule_ref}/replan": {
       "put": {
         "operationId": "temporal_replan_postponed_event",
@@ -17579,6 +18741,96 @@
           }
         },
         "summary": "Pause Routine",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/routines/{routine_ref}/recurrence": {
+      "get": {
+        "operationId": "temporal_get_routine_recurrence",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "routine_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Routine Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecurrenceStateResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Routine Recurrence",
+        "tags": ["temporal"]
+      },
+      "put": {
+        "operationId": "temporal_replace_routine_recurrence",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "routine_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Routine Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReplaceRecurrenceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecurrenceMutationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Replace Routine Recurrence",
         "tags": ["temporal"]
       }
     },
