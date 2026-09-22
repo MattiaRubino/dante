@@ -301,6 +301,22 @@ def _candidate_local_date(candidate: OccurrenceCoordinate, effective_zone: ZoneI
         return candidate.expected_at.astimezone(effective_zone).date()
     if isinstance(candidate, QuotaCoordinate):
         return candidate.period_start_date
+    if isinstance(candidate, CalendarCoordinate):
+        if candidate.resolved_at is not None:
+            return candidate.resolved_at.astimezone(effective_zone).date()
+        if (
+            candidate.clock_basis_code == "absolute_utc"
+            and candidate.generated_wall_time is not None
+        ):
+            return (
+                datetime.combine(
+                    candidate.generated_date,
+                    candidate.generated_wall_time,
+                    tzinfo=UTC,
+                )
+                .astimezone(effective_zone)
+                .date()
+            )
     return candidate.generated_date
 
 

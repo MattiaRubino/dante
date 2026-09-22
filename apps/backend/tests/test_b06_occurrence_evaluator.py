@@ -80,6 +80,41 @@ def test_future_revision_supersedes_virtual_old_state_at_effective_boundary() ->
     ]
 
 
+def test_revision_boundary_uses_checkpoint_zone_for_named_calendar_candidate() -> None:
+    old = CalendarRecurrence(
+        family_code="calendar_wall_clock",
+        range_kind="open",
+        expected_occurrence_count=None,
+        effective_from=date(2026, 1, 2),
+        effective_until=None,
+        pattern_code="daily",
+        interval_count=1,
+        clock_basis_code="named_zone",
+        zone_id="Europe/Rome",
+        pattern_anchor_date=None,
+        wall_times=(time(0, 30),),
+        weekdays=(),
+        month_days=(),
+        ordinal_weekdays=(),
+        year_month_days=(),
+        nonexistent_local_time_policy="skip_civil_candidate",
+        ambiguous_local_time_policy="earlier",
+    )
+    new = _daily(effective_from=date(2026, 1, 2), wall_time=time(9))
+
+    result = evaluate_recurrence_history(
+        (
+            _history(_OLD, old, 1),
+            _history(_NEW, new, 2),
+        ),
+        start_date=date(2026, 1, 1),
+        end_date_exclusive=date(2026, 1, 3),
+        effective_zone_id="America/New_York",
+    )
+
+    assert [item.governing_recurrence_state_ref for item in result] == [_OLD, _NEW]
+
+
 def test_named_zone_gap_skips_candidate_and_overlap_selects_exactly_one_instant() -> None:
     def named(day: date, policy: str) -> CalendarRecurrence:
         return CalendarRecurrence(
