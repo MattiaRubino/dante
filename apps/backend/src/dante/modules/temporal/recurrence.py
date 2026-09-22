@@ -130,6 +130,15 @@ class RecurrenceMutation:
     replayed: bool
 
 
+def _canonical_json_scalar(value: object) -> str:
+    """Serialize non-JSON temporal and numeric values without representation drift."""
+    if isinstance(value, Decimal):
+        return format(value.normalize(), "f")
+    if isinstance(value, (date, datetime, time)):
+        return value.isoformat()
+    return str(value)
+
+
 def _fingerprint(*, owner: RecurrenceOwner, owner_ref: UUID, expected_state_ref: UUID | None, recurrence: RecurrenceSpec) -> str:
     """A canonical fingerprint, including all fields that change recurrence truth."""
     payload = json.dumps(
@@ -140,7 +149,7 @@ def _fingerprint(*, owner: RecurrenceOwner, owner_ref: UUID, expected_state_ref:
             "expected_material_state_ref": str(expected_state_ref) if expected_state_ref else None,
             "recurrence": asdict(recurrence),
         },
-        default=lambda value: value.isoformat() if isinstance(value, (date, datetime, time, Decimal)) else str(value),
+        default=_canonical_json_scalar,
         ensure_ascii=False,
         sort_keys=True,
         separators=(",", ":"),
