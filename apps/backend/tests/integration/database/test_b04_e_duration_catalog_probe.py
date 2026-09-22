@@ -10,8 +10,8 @@ import pytest
 pytestmark = pytest.mark.postgres
 
 # Current candidate must still preserve the B04-E payload and ACL invariants.
-_EXPECTED_REVISION = "20260922_54"
-_EXPECTED_TOPOLOGY = (139, 5, 73, 92, 269, 209, 389, 0, 0, 0)
+_EXPECTED_REVISION = "20260922_55"
+_EXPECTED_TOPOLOGY = (145, 5, 87, 92, 285, 223, 408, 0, 0, 0)
 
 
 def _admin(database: Any) -> psycopg.Connection[Any]:
@@ -114,12 +114,12 @@ def test_b04_e_duration_catalog_and_acl(migrated_database: Any) -> None:
 
     assert revision == (_EXPECTED_REVISION,)
     assert topology == _EXPECTED_TOPOLOGY
-    print("B04_E_LIVE_TOPOLOGY=" + "|".join(str(value) for value in topology))
     assert "temporal_constraint_duration_state" in tables
     assert "mutate_self_schedule_duration_constraint" in routines
     assert "assert_absolute_schedule_move_hard_admissible" in routines
     assert "ctrg_temporal_constraint_duration_state_rule_totality" in triggers
-    assert family_check is not None and "duration" in family_check[0]
+    assert family_check is not None
+    assert "duration" in family_check[0]
     assert runtime_table_acl == (True, False, False, False)
     assert private_acl == (False, False)
     assert runtime_mutate == (True,)

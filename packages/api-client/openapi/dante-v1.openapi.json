@@ -1118,6 +1118,67 @@
         "title": "AuthenticationProviderMethodResponse",
         "type": "object"
       },
+      "CalendarOccurrenceCoordinate": {
+        "additionalProperties": false,
+        "properties": {
+          "clock_basis_code": {
+            "enum": ["floating_local", "named_zone", "absolute_utc"],
+            "title": "Clock Basis Code",
+            "type": "string"
+          },
+          "family_code": {
+            "const": "calendar_wall_clock",
+            "default": "calendar_wall_clock",
+            "title": "Family Code",
+            "type": "string"
+          },
+          "generated_date": {
+            "format": "date",
+            "title": "Generated Date",
+            "type": "string"
+          },
+          "generated_wall_time": {
+            "anyOf": [
+              {
+                "format": "time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Generated Wall Time"
+          },
+          "resolved_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved At"
+          },
+          "zone_id": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Zone Id"
+          }
+        },
+        "required": ["generated_date", "clock_basis_code"],
+        "title": "CalendarOccurrenceCoordinate",
+        "type": "object"
+      },
       "CalendarOrdinalWeekday": {
         "additionalProperties": false,
         "properties": {
@@ -2020,6 +2081,30 @@
         "title": "CreatedTemporalConstraintResponse",
         "type": "object"
       },
+      "CyclicOccurrenceCoordinate": {
+        "additionalProperties": false,
+        "properties": {
+          "family_code": {
+            "const": "cyclic_positional",
+            "default": "cyclic_positional",
+            "title": "Family Code",
+            "type": "string"
+          },
+          "generated_date": {
+            "format": "date",
+            "title": "Generated Date",
+            "type": "string"
+          },
+          "position_index": {
+            "minimum": 0.0,
+            "title": "Position Index",
+            "type": "integer"
+          }
+        },
+        "required": ["generated_date", "position_index"],
+        "title": "CyclicOccurrenceCoordinate",
+        "type": "object"
+      },
       "CyclicRecurrenceRequest": {
         "additionalProperties": false,
         "properties": {
@@ -2202,6 +2287,25 @@
         },
         "required": ["start_date", "end_date_exclusive"],
         "title": "DateSpanPlacementRequest",
+        "type": "object"
+      },
+      "ElapsedOccurrenceCoordinate": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_at": {
+            "format": "date-time",
+            "title": "Expected At",
+            "type": "string"
+          },
+          "family_code": {
+            "const": "elapsed_interval",
+            "default": "elapsed_interval",
+            "title": "Family Code",
+            "type": "string"
+          }
+        },
+        "required": ["expected_at"],
+        "title": "ElapsedOccurrenceCoordinate",
         "type": "object"
       },
       "ElapsedRecurrenceRequest": {
@@ -2656,6 +2760,20 @@
         "title": "ExistingAccountSignupResponse",
         "type": "object"
       },
+      "ExplicitExtraOccurrenceRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id"],
+        "title": "ExplicitExtraOccurrenceRequest",
+        "type": "object"
+      },
       "FloatingLocalIntervalPlacementRequest": {
         "additionalProperties": false,
         "properties": {
@@ -2965,6 +3083,216 @@
         },
         "required": ["starts_local_at", "ends_local_at", "zone_id"],
         "title": "NamedZoneLocalIntervalPlacementRequest",
+        "type": "object"
+      },
+      "OccurrenceCheckpointRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "effective_zone_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Effective Zone Id",
+            "type": "string"
+          },
+          "end_date_exclusive": {
+            "format": "date",
+            "title": "End Date Exclusive",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "start_date",
+          "end_date_exclusive",
+          "effective_zone_id"
+        ],
+        "title": "OccurrenceCheckpointRequest",
+        "type": "object"
+      },
+      "OccurrenceCheckpointResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "accepted_at": {
+            "format": "date-time",
+            "title": "Accepted At",
+            "type": "string"
+          },
+          "effective_zone_id": {
+            "title": "Effective Zone Id",
+            "type": "string"
+          },
+          "end_date_exclusive": {
+            "format": "date",
+            "title": "End Date Exclusive",
+            "type": "string"
+          },
+          "occurrences": {
+            "items": {
+              "$ref": "#/components/schemas/OccurrenceResponse"
+            },
+            "title": "Occurrences",
+            "type": "array"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "source_native_ref": {
+            "format": "uuid",
+            "title": "Source Native Ref",
+            "type": "string"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source_native_ref",
+          "start_date",
+          "end_date_exclusive",
+          "effective_zone_id",
+          "occurrences",
+          "accepted_at",
+          "replayed"
+        ],
+        "title": "OccurrenceCheckpointResponse",
+        "type": "object"
+      },
+      "OccurrenceMutationResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "accepted_at": {
+            "format": "date-time",
+            "title": "Accepted At",
+            "type": "string"
+          },
+          "occurrence": {
+            "$ref": "#/components/schemas/OccurrenceResponse"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          }
+        },
+        "required": ["occurrence", "accepted_at", "replayed"],
+        "title": "OccurrenceMutationResponse",
+        "type": "object"
+      },
+      "OccurrenceResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "coordinate": {
+            "anyOf": [
+              {
+                "discriminator": {
+                  "mapping": {
+                    "calendar_wall_clock": "#/components/schemas/CalendarOccurrenceCoordinate",
+                    "cyclic_positional": "#/components/schemas/CyclicOccurrenceCoordinate",
+                    "elapsed_interval": "#/components/schemas/ElapsedOccurrenceCoordinate",
+                    "quota_per_period": "#/components/schemas/QuotaOccurrenceCoordinate"
+                  },
+                  "propertyName": "family_code"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/CalendarOccurrenceCoordinate"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ElapsedOccurrenceCoordinate"
+                  },
+                  {
+                    "$ref": "#/components/schemas/QuotaOccurrenceCoordinate"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CyclicOccurrenceCoordinate"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Coordinate"
+          },
+          "governing_recurrence_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Governing Recurrence State Ref"
+          },
+          "occurrence_ref": {
+            "format": "uuid",
+            "title": "Occurrence Ref",
+            "type": "string"
+          },
+          "origin_code": {
+            "enum": ["recurrence_generated", "explicit_extra"],
+            "title": "Origin Code",
+            "type": "string"
+          },
+          "skip_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Skip Reason"
+          },
+          "skipped": {
+            "title": "Skipped",
+            "type": "boolean"
+          },
+          "skipped_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Skipped At"
+          },
+          "source_native_ref": {
+            "format": "uuid",
+            "title": "Source Native Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "occurrence_ref",
+          "source_native_ref",
+          "governing_recurrence_state_ref",
+          "origin_code",
+          "coordinate",
+          "skipped",
+          "skip_reason",
+          "skipped_at"
+        ],
+        "title": "OccurrenceResponse",
         "type": "object"
       },
       "OrderEntry": {
@@ -3738,6 +4066,52 @@
         "enum": ["access", "security"],
         "title": "ProviderReturnTarget",
         "type": "string"
+      },
+      "QuotaOccurrenceCoordinate": {
+        "additionalProperties": false,
+        "properties": {
+          "family_code": {
+            "const": "quota_per_period",
+            "default": "quota_per_period",
+            "title": "Family Code",
+            "type": "string"
+          },
+          "frame_code": {
+            "enum": ["floating_local", "named_zone", "absolute_utc"],
+            "title": "Frame Code",
+            "type": "string"
+          },
+          "period_end_date_exclusive": {
+            "format": "date",
+            "title": "Period End Date Exclusive",
+            "type": "string"
+          },
+          "period_start_date": {
+            "format": "date",
+            "title": "Period Start Date",
+            "type": "string"
+          },
+          "zone_id": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Zone Id"
+          }
+        },
+        "required": [
+          "period_start_date",
+          "period_end_date_exclusive",
+          "frame_code"
+        ],
+        "title": "QuotaOccurrenceCoordinate",
+        "type": "object"
       },
       "QuotaRecurrenceRequest": {
         "additionalProperties": false,
@@ -6480,6 +6854,130 @@
         },
         "required": ["signup_ref", "code"],
         "title": "SignupVerificationRequest",
+        "type": "object"
+      },
+      "SkipOccurrenceRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "required": ["operation_id"],
+        "title": "SkipOccurrenceRequest",
+        "type": "object"
+      },
+      "StructuralExclusionRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "coordinate": {
+            "discriminator": {
+              "mapping": {
+                "calendar_wall_clock": "#/components/schemas/CalendarOccurrenceCoordinate",
+                "cyclic_positional": "#/components/schemas/CyclicOccurrenceCoordinate",
+                "elapsed_interval": "#/components/schemas/ElapsedOccurrenceCoordinate"
+              },
+              "propertyName": "family_code"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/CalendarOccurrenceCoordinate"
+              },
+              {
+                "$ref": "#/components/schemas/ElapsedOccurrenceCoordinate"
+              },
+              {
+                "$ref": "#/components/schemas/CyclicOccurrenceCoordinate"
+              }
+            ],
+            "title": "Coordinate"
+          },
+          "governing_recurrence_state_ref": {
+            "format": "uuid",
+            "title": "Governing Recurrence State Ref",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "governing_recurrence_state_ref",
+          "coordinate"
+        ],
+        "title": "StructuralExclusionRequest",
+        "type": "object"
+      },
+      "StructuralExclusionResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "accepted_at": {
+            "format": "date-time",
+            "title": "Accepted At",
+            "type": "string"
+          },
+          "coordinate": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CalendarOccurrenceCoordinate"
+              },
+              {
+                "$ref": "#/components/schemas/ElapsedOccurrenceCoordinate"
+              },
+              {
+                "$ref": "#/components/schemas/CyclicOccurrenceCoordinate"
+              }
+            ],
+            "title": "Coordinate"
+          },
+          "exclusion_ref": {
+            "format": "uuid",
+            "title": "Exclusion Ref",
+            "type": "string"
+          },
+          "governing_recurrence_state_ref": {
+            "format": "uuid",
+            "title": "Governing Recurrence State Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "source_native_ref": {
+            "format": "uuid",
+            "title": "Source Native Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "exclusion_ref",
+          "source_native_ref",
+          "governing_recurrence_state_ref",
+          "coordinate",
+          "accepted_at",
+          "replayed"
+        ],
+        "title": "StructuralExclusionResponse",
         "type": "object"
       },
       "TagOperationRequest": {
@@ -17776,6 +18274,159 @@
         "tags": ["temporal"]
       }
     },
+    "/api/v1/temporal/events/{event_ref}/occurrences/checkpoint": {
+      "post": {
+        "operationId": "temporal_checkpoint_event_occurrences",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OccurrenceCheckpointRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OccurrenceCheckpointResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Checkpoint Event Occurrences",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/events/{event_ref}/occurrences/exclusions": {
+      "post": {
+        "operationId": "temporal_exclude_event_occurrence_coordinate",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StructuralExclusionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StructuralExclusionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Exclude Event Occurrence Coordinate",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/events/{event_ref}/occurrences/extra": {
+      "post": {
+        "operationId": "temporal_create_event_extra_occurrence",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExplicitExtraOccurrenceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OccurrenceMutationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Event Extra Occurrence",
+        "tags": ["temporal"]
+      }
+    },
     "/api/v1/temporal/events/{event_ref}/recurrence": {
       "get": {
         "operationId": "temporal_get_event_recurrence",
@@ -18535,6 +19186,98 @@
         "tags": ["temporal"]
       }
     },
+    "/api/v1/temporal/occurrences/{occurrence_ref}": {
+      "get": {
+        "operationId": "temporal_get_occurrence",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "occurrence_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Occurrence Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OccurrenceResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Occurrence",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/occurrences/{occurrence_ref}/skip": {
+      "post": {
+        "operationId": "temporal_skip_occurrence",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "occurrence_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Occurrence Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SkipOccurrenceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OccurrenceMutationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Skip Occurrence",
+        "tags": ["temporal"]
+      }
+    },
     "/api/v1/temporal/routines": {
       "get": {
         "operationId": "temporal_list_routines",
@@ -18694,6 +19437,159 @@
           }
         },
         "summary": "Assign Life Area",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/routines/{routine_ref}/occurrences/checkpoint": {
+      "post": {
+        "operationId": "temporal_checkpoint_routine_occurrences",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "routine_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Routine Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OccurrenceCheckpointRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OccurrenceCheckpointResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Checkpoint Routine Occurrences",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/routines/{routine_ref}/occurrences/exclusions": {
+      "post": {
+        "operationId": "temporal_exclude_routine_occurrence_coordinate",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "routine_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Routine Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StructuralExclusionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StructuralExclusionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Exclude Routine Occurrence Coordinate",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/routines/{routine_ref}/occurrences/extra": {
+      "post": {
+        "operationId": "temporal_create_routine_extra_occurrence",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "routine_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Routine Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExplicitExtraOccurrenceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OccurrenceMutationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Routine Extra Occurrence",
         "tags": ["temporal"]
       }
     },

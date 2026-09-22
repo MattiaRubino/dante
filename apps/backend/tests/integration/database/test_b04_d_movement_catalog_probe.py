@@ -10,8 +10,8 @@ import pytest
 pytestmark = pytest.mark.postgres
 
 # Current candidate must still preserve every B04-D table and runtime ACL.
-_EXPECTED_REVISION = "20260922_54"
-_EXPECTED_TOPOLOGY = (139, 5, 73, 92, 269, 209, 389, 0, 0, 0)
+_EXPECTED_REVISION = "20260922_55"
+_EXPECTED_TOPOLOGY = (145, 5, 87, 92, 285, 223, 408, 0, 0, 0)
 
 _B04_D_TABLES = {
     "schedule_movement_policy_state",
@@ -87,7 +87,7 @@ def test_b04_d_revision_and_topology(migrated_database: Any) -> None:
 
     assert revision == (_EXPECTED_REVISION,)
     assert topology == _EXPECTED_TOPOLOGY
-    assert _B04_D_TABLES <= tables
+    assert tables >= _B04_D_TABLES
 
 
 @pytest.mark.postgres

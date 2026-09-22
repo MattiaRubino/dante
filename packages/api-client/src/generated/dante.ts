@@ -31,6 +31,7 @@ import type {
   EventAgendaMutationResponse,
   EventResponse,
   ExistingAccountSignupResponse,
+  ExplicitExtraOccurrenceRequest,
   GetTimelineWindowApiV1TemporalTimelineWindowGetParams,
   GoogleAuthenticationBegunResponse,
   GoogleAuthenticationCompleteRequest,
@@ -40,6 +41,10 @@ import type {
   LifeAreaReorderResponse,
   LifeAreaResponse,
   MutationRequest,
+  OccurrenceCheckpointRequest,
+  OccurrenceCheckpointResponse,
+  OccurrenceMutationResponse,
+  OccurrenceResponse,
   PasskeyAuthenticationCompleteRequest,
   PasskeyBeginRequest,
   PasskeyCeremonyResponse,
@@ -114,6 +119,9 @@ import type {
   SignupRequest,
   SignupResendRequest,
   SignupVerificationRequest,
+  SkipOccurrenceRequest,
+  StructuralExclusionRequest,
+  StructuralExclusionResponse,
   TagOperationRequest,
   TemporalConstraintEvaluationResponse,
   TemporalConstraintListResponse,
@@ -4859,6 +4867,215 @@ export const replaceEventAgendaApiV1TemporalEventsEventRefAgendaPut = async (
   } as replaceEventAgendaApiV1TemporalEventsEventRefAgendaPutResponse;
 };
 
+export type temporalCheckpointEventOccurrencesResponse200 = {
+  data: OccurrenceCheckpointResponse;
+  status: 200;
+};
+
+export type temporalCheckpointEventOccurrencesResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalCheckpointEventOccurrencesResponseSuccess =
+  temporalCheckpointEventOccurrencesResponse200 & {
+    headers: Headers;
+  };
+export type temporalCheckpointEventOccurrencesResponseError =
+  temporalCheckpointEventOccurrencesResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalCheckpointEventOccurrencesResponse =
+  | temporalCheckpointEventOccurrencesResponseSuccess
+  | temporalCheckpointEventOccurrencesResponseError;
+
+export const getTemporalCheckpointEventOccurrencesUrl = (eventRef: string) => {
+  return `/api/v1/temporal/events/${eventRef}/occurrences/checkpoint`;
+};
+
+/**
+ * @summary Checkpoint Event Occurrences
+ */
+export const temporalCheckpointEventOccurrences = async (
+  eventRef: string,
+  occurrenceCheckpointRequest: OccurrenceCheckpointRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalCheckpointEventOccurrencesResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalCheckpointEventOccurrencesUrl(eventRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(occurrenceCheckpointRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalCheckpointEventOccurrencesResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalCheckpointEventOccurrencesResponse;
+};
+
+export type temporalExcludeEventOccurrenceCoordinateResponse200 = {
+  data: StructuralExclusionResponse;
+  status: 200;
+};
+
+export type temporalExcludeEventOccurrenceCoordinateResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalExcludeEventOccurrenceCoordinateResponseSuccess =
+  temporalExcludeEventOccurrenceCoordinateResponse200 & {
+    headers: Headers;
+  };
+export type temporalExcludeEventOccurrenceCoordinateResponseError =
+  temporalExcludeEventOccurrenceCoordinateResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalExcludeEventOccurrenceCoordinateResponse =
+  | temporalExcludeEventOccurrenceCoordinateResponseSuccess
+  | temporalExcludeEventOccurrenceCoordinateResponseError;
+
+export const getTemporalExcludeEventOccurrenceCoordinateUrl = (
+  eventRef: string,
+) => {
+  return `/api/v1/temporal/events/${eventRef}/occurrences/exclusions`;
+};
+
+/**
+ * @summary Exclude Event Occurrence Coordinate
+ */
+export const temporalExcludeEventOccurrenceCoordinate = async (
+  eventRef: string,
+  structuralExclusionRequest: StructuralExclusionRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalExcludeEventOccurrenceCoordinateResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalExcludeEventOccurrenceCoordinateUrl(eventRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(structuralExclusionRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalExcludeEventOccurrenceCoordinateResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalExcludeEventOccurrenceCoordinateResponse;
+};
+
+export type temporalCreateEventExtraOccurrenceResponse200 = {
+  data: OccurrenceMutationResponse;
+  status: 200;
+};
+
+export type temporalCreateEventExtraOccurrenceResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalCreateEventExtraOccurrenceResponseSuccess =
+  temporalCreateEventExtraOccurrenceResponse200 & {
+    headers: Headers;
+  };
+export type temporalCreateEventExtraOccurrenceResponseError =
+  temporalCreateEventExtraOccurrenceResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalCreateEventExtraOccurrenceResponse =
+  | temporalCreateEventExtraOccurrenceResponseSuccess
+  | temporalCreateEventExtraOccurrenceResponseError;
+
+export const getTemporalCreateEventExtraOccurrenceUrl = (eventRef: string) => {
+  return `/api/v1/temporal/events/${eventRef}/occurrences/extra`;
+};
+
+/**
+ * @summary Create Event Extra Occurrence
+ */
+export const temporalCreateEventExtraOccurrence = async (
+  eventRef: string,
+  explicitExtraOccurrenceRequest: ExplicitExtraOccurrenceRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalCreateEventExtraOccurrenceResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalCreateEventExtraOccurrenceUrl(eventRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(explicitExtraOccurrenceRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalCreateEventExtraOccurrenceResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalCreateEventExtraOccurrenceResponse;
+};
+
 export type temporalGetEventRecurrenceResponse200 = {
   data: RecurrenceStateResponse | null;
   status: 200;
@@ -5872,6 +6089,128 @@ export const temporalSetLifeAreaVisibility = async (
   } as temporalSetLifeAreaVisibilityResponse;
 };
 
+export type temporalGetOccurrenceResponse200 = {
+  data: OccurrenceResponse;
+  status: 200;
+};
+
+export type temporalGetOccurrenceResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetOccurrenceResponseSuccess =
+  temporalGetOccurrenceResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetOccurrenceResponseError =
+  temporalGetOccurrenceResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalGetOccurrenceResponse =
+  temporalGetOccurrenceResponseSuccess | temporalGetOccurrenceResponseError;
+
+export const getTemporalGetOccurrenceUrl = (occurrenceRef: string) => {
+  return `/api/v1/temporal/occurrences/${occurrenceRef}`;
+};
+
+/**
+ * @summary Get Occurrence
+ */
+export const temporalGetOccurrence = async (
+  occurrenceRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetOccurrenceResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetOccurrenceUrl(occurrenceRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetOccurrenceResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetOccurrenceResponse;
+};
+
+export type temporalSkipOccurrenceResponse200 = {
+  data: OccurrenceMutationResponse;
+  status: 200;
+};
+
+export type temporalSkipOccurrenceResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalSkipOccurrenceResponseSuccess =
+  temporalSkipOccurrenceResponse200 & {
+    headers: Headers;
+  };
+export type temporalSkipOccurrenceResponseError =
+  temporalSkipOccurrenceResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalSkipOccurrenceResponse =
+  temporalSkipOccurrenceResponseSuccess | temporalSkipOccurrenceResponseError;
+
+export const getTemporalSkipOccurrenceUrl = (occurrenceRef: string) => {
+  return `/api/v1/temporal/occurrences/${occurrenceRef}/skip`;
+};
+
+/**
+ * @summary Skip Occurrence
+ */
+export const temporalSkipOccurrence = async (
+  occurrenceRef: string,
+  skipOccurrenceRequest: SkipOccurrenceRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalSkipOccurrenceResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalSkipOccurrenceUrl(occurrenceRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(skipOccurrenceRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalSkipOccurrenceResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalSkipOccurrenceResponse;
+};
+
 export type temporalListRoutinesResponse200 = {
   data: RoutineResponse[];
   status: 200;
@@ -6104,6 +6443,219 @@ export const temporalAssignRoutineLifeArea = async (
     status: res.status,
     headers: res.headers,
   } as temporalAssignRoutineLifeAreaResponse;
+};
+
+export type temporalCheckpointRoutineOccurrencesResponse200 = {
+  data: OccurrenceCheckpointResponse;
+  status: 200;
+};
+
+export type temporalCheckpointRoutineOccurrencesResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalCheckpointRoutineOccurrencesResponseSuccess =
+  temporalCheckpointRoutineOccurrencesResponse200 & {
+    headers: Headers;
+  };
+export type temporalCheckpointRoutineOccurrencesResponseError =
+  temporalCheckpointRoutineOccurrencesResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalCheckpointRoutineOccurrencesResponse =
+  | temporalCheckpointRoutineOccurrencesResponseSuccess
+  | temporalCheckpointRoutineOccurrencesResponseError;
+
+export const getTemporalCheckpointRoutineOccurrencesUrl = (
+  routineRef: string,
+) => {
+  return `/api/v1/temporal/routines/${routineRef}/occurrences/checkpoint`;
+};
+
+/**
+ * @summary Checkpoint Routine Occurrences
+ */
+export const temporalCheckpointRoutineOccurrences = async (
+  routineRef: string,
+  occurrenceCheckpointRequest: OccurrenceCheckpointRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalCheckpointRoutineOccurrencesResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalCheckpointRoutineOccurrencesUrl(routineRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(occurrenceCheckpointRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalCheckpointRoutineOccurrencesResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalCheckpointRoutineOccurrencesResponse;
+};
+
+export type temporalExcludeRoutineOccurrenceCoordinateResponse200 = {
+  data: StructuralExclusionResponse;
+  status: 200;
+};
+
+export type temporalExcludeRoutineOccurrenceCoordinateResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalExcludeRoutineOccurrenceCoordinateResponseSuccess =
+  temporalExcludeRoutineOccurrenceCoordinateResponse200 & {
+    headers: Headers;
+  };
+export type temporalExcludeRoutineOccurrenceCoordinateResponseError =
+  temporalExcludeRoutineOccurrenceCoordinateResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalExcludeRoutineOccurrenceCoordinateResponse =
+  | temporalExcludeRoutineOccurrenceCoordinateResponseSuccess
+  | temporalExcludeRoutineOccurrenceCoordinateResponseError;
+
+export const getTemporalExcludeRoutineOccurrenceCoordinateUrl = (
+  routineRef: string,
+) => {
+  return `/api/v1/temporal/routines/${routineRef}/occurrences/exclusions`;
+};
+
+/**
+ * @summary Exclude Routine Occurrence Coordinate
+ */
+export const temporalExcludeRoutineOccurrenceCoordinate = async (
+  routineRef: string,
+  structuralExclusionRequest: StructuralExclusionRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalExcludeRoutineOccurrenceCoordinateResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalExcludeRoutineOccurrenceCoordinateUrl(routineRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(structuralExclusionRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalExcludeRoutineOccurrenceCoordinateResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalExcludeRoutineOccurrenceCoordinateResponse;
+};
+
+export type temporalCreateRoutineExtraOccurrenceResponse200 = {
+  data: OccurrenceMutationResponse;
+  status: 200;
+};
+
+export type temporalCreateRoutineExtraOccurrenceResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalCreateRoutineExtraOccurrenceResponseSuccess =
+  temporalCreateRoutineExtraOccurrenceResponse200 & {
+    headers: Headers;
+  };
+export type temporalCreateRoutineExtraOccurrenceResponseError =
+  temporalCreateRoutineExtraOccurrenceResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalCreateRoutineExtraOccurrenceResponse =
+  | temporalCreateRoutineExtraOccurrenceResponseSuccess
+  | temporalCreateRoutineExtraOccurrenceResponseError;
+
+export const getTemporalCreateRoutineExtraOccurrenceUrl = (
+  routineRef: string,
+) => {
+  return `/api/v1/temporal/routines/${routineRef}/occurrences/extra`;
+};
+
+/**
+ * @summary Create Routine Extra Occurrence
+ */
+export const temporalCreateRoutineExtraOccurrence = async (
+  routineRef: string,
+  explicitExtraOccurrenceRequest: ExplicitExtraOccurrenceRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalCreateRoutineExtraOccurrenceResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalCreateRoutineExtraOccurrenceUrl(routineRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(explicitExtraOccurrenceRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalCreateRoutineExtraOccurrenceResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalCreateRoutineExtraOccurrenceResponse;
 };
 
 export type temporalPauseRoutineResponse200 = {

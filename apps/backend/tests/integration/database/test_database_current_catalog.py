@@ -19,8 +19,8 @@ from dante.platform.database.metadata import Base
 
 pytestmark = pytest.mark.postgres
 
-_CURRENT_REVISION = "20260922_54"
-_CURRENT_TOPOLOGY = (139, 5, 73, 92, 269, 209, 389, 0, 0, 0)
+_CURRENT_REVISION = "20260922_55"
+_CURRENT_TOPOLOGY = (145, 5, 87, 92, 285, 223, 408, 0, 0, 0)
 _REPO_ROOT = Path(__file__).resolve().parents[5]
 _DICTIONARY_ROOT = _REPO_ROOT / "docs" / "database" / "dictionary"
 
@@ -158,9 +158,8 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
 
     assert environment == ("180006", "UTF8", "63")
     assert topology == _CURRENT_TOPOLOGY
-    print("DATABASE_CURRENT_TOPOLOGY=" + "|".join(str(value) for value in topology))
     assert current_revision == (_CURRENT_REVISION,)
-    assert (len(tables), len(views), len(routines)) == (139, 5, 73)
+    assert (len(tables), len(views), len(routines)) == (145, 5, 87)
     assert live_tables == set(tables)
     assert live_views == set(views)
     assert live_routines == set(routines)
@@ -183,20 +182,20 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
         "CP6-M07",
     ]
     assert current["standalone_entries"] == {
-        "tables": 139,
+        "tables": 145,
         "views": 5,
-        "routines": 73,
-        "total": 217,
+        "routines": 87,
+        "total": 237,
     }
     assert current["embedded_objects"] == {
         "triggers": 92,
-        "physical_indexes": 269,
+        "physical_indexes": 285,
     }
     assert current["constraints"] == {
-        "foreign_keys": 209,
-        "check_constraints": 389,
+        "foreign_keys": 223,
+        "check_constraints": 408,
     }
-    assert len(MAPPED_TABLES) == len(Base.registry.mappers) == len(Base.metadata.tables) == 139
+    assert len(MAPPED_TABLES) == len(Base.registry.mappers) == len(Base.metadata.tables) == 145
     assert all(len(mapper.relationships) == 0 for mapper in Base.registry.mappers)
     assert set(VIEW_METADATA.tables) == {f"dante.{name}" for name in views}
     assert {table.name for table in MAPPED_TABLES} == set(tables)

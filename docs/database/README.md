@@ -1,13 +1,13 @@
 # DANTE Database System of Record
 
 - **Status:** CURRENT / AUTHORITATIVE DATABASE REFERENCE
-- **Last reconciled:** 2026-09-21
+- **Last reconciled:** 2026-09-22
 - **PostgreSQL:** 18.6
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
-- **Timeline candidate Alembic head (source):** `20260922_54`
-- **Timeline candidate expected topology:** `139|5|73|92|269|209|389|0|0|0` (B06-A/B proven)
+- **Timeline candidate Alembic head (source):** `20260922_55`
+- **Timeline candidate expected topology:** `145|5|87|92|285|223|408|0|0|0` (B06-C candidate; proof pending)
 - **Timeline candidate DB overlay:** `timeline-temporal-operational.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 - **Persistence ADR:** `../decisions/ADR-010-postgresql-persistence-constitution.md`
@@ -84,6 +84,7 @@ Protected `main` remains integration authority. Candidate truth is never relabel
 20260922_52 B06-B immutable Routine/Event Recurrence authoring, receipts and explicit DST policy [PROVEN at _54]
 20260922_53 B06-B forward-only Recurrence current-state reader repair [PROVEN at _54]
 20260922_54 B06-B forward-only Recurrence selector validation repair [PROVEN]
+20260922_55 B06-C bounded Occurrence checkpoint, explicit extra, skip and structural exclusion [CANDIDATE / PROOF PENDING]
 ```
 
 No accepted historical migration was edited, rebased, renumbered or flattened.
@@ -91,13 +92,13 @@ No accepted historical migration was edited, rebased, renumbered or flattened.
 ## 3. Current candidate topology
 
 ```text
-139 tables
+145 tables
 5 views
-73 routines
+87 routines
 92 triggers
-269 physical indexes
-209 foreign keys
-389 CHECK constraints
+285 physical indexes
+223 foreign keys
+408 CHECK constraints
 0 enums/domains
 0 sequences
 0 materialized views

@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — B06 Routine / Recurrence / Occurrence Execution Plan
 
-- **Status:** B06-A/B ✅ CLOSED / PROVEN — B06-C NEXT
+- **Status:** B06-A/B ✅ CLOSED / PROVEN — B06-C IMPLEMENTED CANDIDATE / PROOF PENDING
 - **Date:** 2026-09-21
 - **Branch:** `feature/timeline-temporal-operational`
 - **Entering completed frontier:** B05 ✅ CLOSED / PROVEN at `11b182a`
@@ -88,6 +88,8 @@ source + current/effective Recurrence state
 
 The checkpoint is a mutating, idempotent backend command; the Timeline `GET` remains a read and never performs hidden generation. It accepts a half-open local-date range constrained to the existing Timeline maximum of 62 days, the effective actor timezone and a stable operation id/fingerprint. It locks the exact source recurrence/current-generation namespaces in deterministic order. CP6 Role-13 remains the final DB validator for exact source family, governing MaterialState and coordinate membership/uniqueness.
 
+A single checkpoint is additionally capped at 10,000 evaluated Occurrences. Exceeding that bound rejects and rolls back the whole operation; the caller must narrow the requested horizon. This operational cap does not alter the 62-day semantic range contract.
+
 Repeated or concurrent checkpoints for the same accepted intent return the same canonical Occurrence identities; they cannot insert duplicates. A virtual candidate is identified only by its typed source + governing MaterialState + family coordinate. No generic `VirtualRef` is introduced. The checkpoint may create rows only inside the bounded requested horizon; it never pre-creates an infinite series.
 
 Timeline range semantics are also fixed:
@@ -124,7 +126,7 @@ No raw CP6 runtime-table write becomes a product API. No generic JSON recurrence
 |---|---|---|
 | **B06-A — Routine source core** ✅ | Self-owned Routine identity, source title/lifecycle (`active`, `paused`, `ended`), atomic Life Area/source Tag integration, immutable create/lifecycle receipts and public source reads. Because CP6 forbids a bare Routine owner, creation also atomically establishes a distinct mandatory initial daily floating-local Recurrence companion from caller-supplied start date and optional wall time; it is not a defaulted Schedule or an Occurrence. | **PROVEN:** 26 selected direct PostgreSQL/catalog regressions passed; exported OpenAPI/client generation and API-client typecheck passed. Closure: `timeline-temporal-operational-b06-a-closure-2026-09-21.md`. |
 | **B06-B — Recurrence authoring** ✅ | Guarded Routine and Event recurrence create/read/revise operations for all four CP6 families; immutable state/history/effective-boundary semantics; explicit persisted named-zone DST policy. No Occurrence, Activity/Event instance, Schedule or Timeline materialization. | **PROVEN at `_54`:** `1` canonical fingerprint test + `28` selected PostgreSQL/catalog regressions; prior API contract and API-client typecheck passed. Closure: `timeline-temporal-operational-b06-b-closure-2026-09-22.md`. |
-| **B06-C — Occurrence checkpoint and scope** | Bounded backend evaluator/checkpoint, canonical materialization, explicit extra, one-instance exception/skip, structural exclusion and this-vs-future reconciliation. | Idempotency/concurrency/Role-13 provenance, virtual-vs-material history and Routine/Event reuse proof. |
+| **B06-C — Occurrence checkpoint and scope** 🟨 | Bounded backend evaluator/checkpoint, canonical materialization, explicit extra, one-instance exception/skip, structural exclusion and this-vs-future reconciliation. Candidate implemented at `_55`; direct proof pending. | Idempotency/concurrency/Role-13 provenance, virtual-vs-material history and Routine/Event reuse proof. |
 | **B06-D — shared Schedule, Timeline and functional UI** | Occurrence enters the existing shared Schedule capability and bounded Timeline query; real creation/edit/read flows for Routine and recurring Event. | Schedule identity/history regression, no duplicated Timeline items or fake quota time, backend transport and browser refetch proof. |
 | **B06-E — whole-block closure** | Reconcile all B06 evidence, docs, DB inventory and user walkthrough. | Direct local PostgreSQL/API/frontend regressions plus real-stack manual Routine/Event recurring walkthrough; no CI/Actions. |
 

@@ -1,7 +1,7 @@
 # DANTE Workstream Records
 
 - **Status:** CURRENT INDEX
-- **Last reconciled:** 2026-09-18
+- **Last reconciled:** 2026-09-22
 - **Rule:** current subsystem/workstream files describe present truth; Git/PR/archive preserve chronology
 
 ## 1. Current project state
@@ -20,15 +20,17 @@ Pre-vertical foundation                          CLOSED / INTEGRATED VIA PR #66
 
 Protected-main baseline at temporal selection    Alembic 20260906_18
 Active candidate workstream                      feature/timeline-temporal-operational
-Candidate temporal DB authority                  Alembic 20260917_29
-Candidate temporal topology                      101|5|31|78|198|119|297|0|0|0
+Candidate temporal DB authority                  Alembic 20260922_55
+Candidate temporal topology                      145|5|87|92|285|223|408|0|0|0
 
 Timeline / Temporal-Operational:
 B00 Real Data Spine                              ✅ CLOSED / PROVEN
 B01 Activity Core                                ✅ CLOSED / PROVEN
 B02 Schedule Core                                ✅ CLOSED / PROVEN
 B03 Event Core                                   ✅ CLOSED / PROVEN
-B04 Temporal Constraints + Movement Policy       ⬜ NEXT
+B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
+B05 Product Organization                         ✅ CLOSED / PROVEN
+B06 Routine / Recurrence / Occurrence Baseline   🟨 B06-C CANDIDATE / PROOF PENDING
 B07 UI/UX Consolidation v1                       ⬜ planned after B06
 B15 Whole Vertical Closure                       ⬜ future
 ```
@@ -41,8 +43,9 @@ Use these files for the active vertical:
 
 - `timeline-temporal-operational-roadmap.md` — current ordered roadmap B00–B15;
 - `timeline-temporal-operational-map.md` — current semantic map + live proof ledger;
-- `timeline-temporal-operational-handoff.md` — current handoff/boundary into B04;
-- `timeline-temporal-operational-b03-execution-plan.md` — closed B03 execution authority;
+- `timeline-temporal-operational-handoff.md` — current B06-C proof handoff;
+- `timeline-temporal-operational-b06-execution-plan.md` — current B06 execution authority;
+- `timeline-temporal-operational-b06-c-implementation-freeze.md` — B06-C candidate surface and proof gate;
 - `timeline-temporal-operational-b03-a-closure-2026-09-16.md` — B03-A closure;
 - `timeline-temporal-operational-b03-b-closure-2026-09-17.md` — B03-B closure;
 - `timeline-temporal-operational-b03-c-closure-2026-09-17.md` — B03-C closure;
@@ -82,20 +85,19 @@ B15 Whole Vertical Closure
 ## 3. Current temporal gate
 
 ```text
-B03-A Event canonical core                  ✅ CLOSED / PROVEN
-B03-B Shared Schedule + Event Timeline      ✅ CLOSED / PROVEN
-B03-C Event placement lifecycle             ✅ CLOSED / PROVEN
-B03-D Agenda/internal parts                 ✅ CLOSED / PROVEN
-B03-E Whole-B03 closure                     ✅ CLOSED / PROVEN
-B03 Event Core                              ✅ CLOSED / PROVEN
-B04 Temporal Constraints + Movement Policy  ⬜ NEXT
+B03 Event Core                                   ✅ CLOSED / PROVEN
+B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
+B05 Product Organization                         ✅ CLOSED / PROVEN
+B06-A Routine canonical core                     ✅ CLOSED / PROVEN
+B06-B Recurrence authoring                       ✅ CLOSED / PROVEN
+B06-C Occurrence checkpoint and scope            🟨 CANDIDATE / PROOF PENDING
 ```
 
 Current candidate persistence authority:
 
 ```text
-Alembic  20260917_29
-Topology 101|5|31|78|198|119|297|0|0|0
+Alembic  20260922_55
+Topology 145|5|87|92|285|223|408|0|0|0
 ```
 
 Whole-B03 closure evidence includes:
@@ -111,7 +113,7 @@ manual Event userTest A–F                     PASS
 
 The manual acceptance Agenda rename defect was closed before B03 closure with explicit Save/Cancel behavior and regression coverage. The postponed/TBD rediscovery need is transferred to B05 Product Organization; it does not change B03's correct no-current-Schedule semantics.
 
-The next explicit gate is `APPROVE B04`. CI remains separately authorized.
+The current gate is the direct B06-C evaluator/API/PostgreSQL/catalog proof. CI remains separately authorized and is not launched by this candidate.
 
 ## 4. Global authority
 
