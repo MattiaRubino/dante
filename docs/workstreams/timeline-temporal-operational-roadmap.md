@@ -1,17 +1,18 @@
 # Timeline / Temporal-Operational Vertical — Implementation Roadmap
 
-- **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-21
+- **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-22
 - **Branch/workstream:** `feature/timeline-temporal-operational`
-- **Current completed frontier:** B05 ✅ CLOSED / PROVEN
-- **Current block:** B06 Routine / Recurrence / Occurrence Baseline 🟨 IN PROGRESS — B06-A ✅ CLOSED / B06-B implemented, local proof pending
+- **Current completed frontier:** B06-B ✅ CLOSED / PROVEN
+- **Current block:** B06 Routine / Recurrence / Occurrence Baseline 🟨 IN PROGRESS — B06-A/B ✅ CLOSED / B06-C next
 - **Current candidate DB source:** PostgreSQL 18.6 / Alembic `20260922_54`
-- **Candidate expected topology:** `139|5|73|92|269|209|389|0|0|0` (B06-A proven; B06-B candidate awaiting direct local proof)
+- **Candidate expected topology:** `139|5|73|92|269|209|389|0|0|0` (B06-A/B proven)
 - **Live progress ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **B04 execution authority:** `docs/workstreams/timeline-temporal-operational-b04-execution-plan.md`
 - **B04-E closure:** `docs/workstreams/timeline-temporal-operational-b04-e-closure-2026-09-19.md`
 - **B04 whole-block closure:** `docs/workstreams/timeline-temporal-operational-b04-f-closure-2026-09-20.md`
 - **B05 execution authority:** `docs/workstreams/timeline-temporal-operational-b05-execution-plan.md`
 - **B06 execution authority:** `docs/workstreams/timeline-temporal-operational-b06-execution-plan.md`
+- **B06-B closure:** `docs/workstreams/timeline-temporal-operational-b06-b-closure-2026-09-22.md`
 
 The archived semantic freeze preserves the complete functionality/non-collapse inventory. This document is the current sequencing authority.
 
@@ -76,7 +77,7 @@ B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
 ├─ B04-E Advanced-family applicability           ✅ CLOSED / PROVEN
 └─ B04-F Whole-B04 closure                       ✅ CLOSED / PROVEN
 B05 Product Organization                         ✅ CLOSED / PROVEN
-B06 Routine / Recurrence / Occurrence Baseline   🟨 IN PROGRESS — B06-B proof gate
+B06 Routine / Recurrence / Occurrence Baseline   🟨 IN PROGRESS — B06-C next
 B07 UI/UX Consolidation v1                       ⬜
 B08 Session Runtime                              ⬜
 B09 Responsibility / Participation               ⬜
@@ -225,8 +226,12 @@ B05-D ✅ CLOSED / PROVEN at `_48` (41 selected web + 24 PostgreSQL/API/catalog 
 B05-E ✅ WHOLE-BLOCK CLOSURE / MANUAL WALKTHROUGH COMPLETE
 B05   ✅ CLOSED / PROVEN
 B06-A ✅ CLOSED / PROVEN at `_51` (26 selected PostgreSQL/catalog regressions; OpenAPI/client generation + API-client typecheck)
+B06-B ✅ CLOSED / PROVEN at `_54` (1 fingerprint + 28 PostgreSQL/catalog regressions; API contract/client typecheck)
 ```
 
-Closure authority: `timeline-temporal-operational-b06-a-closure-2026-09-21.md`.
+Closure authorities:
 
-Current action: B06-B direct local proof, then its closure reconciliation. No CI or Actions are launched.
+- `timeline-temporal-operational-b06-a-closure-2026-09-21.md`
+- `timeline-temporal-operational-b06-b-closure-2026-09-22.md`
+
+Current action: B06-C Occurrence checkpoint/scope pre-scope and implementation. No CI or Actions are launched.

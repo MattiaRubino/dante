@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational Vertical — Semantic Work Map / Live Ledger
 
-- **Status:** CURRENT SEMANTIC MAP + LIVE IMPLEMENTATION LEDGER — reconciled 2026-09-21
+- **Status:** CURRENT SEMANTIC MAP + LIVE IMPLEMENTATION LEDGER — reconciled 2026-09-22
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **B04 execution plan:** `docs/workstreams/timeline-temporal-operational-b04-execution-plan.md`
@@ -17,6 +17,8 @@
 - **B05-D closure:** `docs/workstreams/timeline-temporal-operational-b05-d-closure-2026-09-21.md` ✅
 - **B05-E / whole-B05 closure:** `docs/workstreams/timeline-temporal-operational-b05-e-closure-2026-09-21.md` ✅
 - **B06 execution plan:** `docs/workstreams/timeline-temporal-operational-b06-execution-plan.md` 🟨
+- **B06-A closure:** `docs/workstreams/timeline-temporal-operational-b06-a-closure-2026-09-21.md` ✅
+- **B06-B closure:** `docs/workstreams/timeline-temporal-operational-b06-b-closure-2026-09-22.md` ✅
 - **Timeline candidate DB overlay:** `docs/database/timeline-temporal-operational.md`
 
 The archived semantic freeze remains the binding detailed inventory for the full vertical. This file is the live implementation/proof ledger.
@@ -87,7 +89,7 @@ B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
 ├─ B04-E Advanced-family applicability           ✅ CLOSED / PROVEN
 └─ B04-F Whole-B04 closure                       ✅ CLOSED / PROVEN
 B05 Product Organization                         ✅ CLOSED / PROVEN
-B06 Routine / Recurrence / Occurrence Baseline   🟨 IN PROGRESS — B06-B
+B06 Routine / Recurrence / Occurrence Baseline   🟨 IN PROGRESS — B06-C next
 B07 UI/UX Consolidation v1                       ⬜
 B08 Session Runtime                              ⬜
 B09 Responsibility / Participation               ⬜
@@ -104,7 +106,7 @@ Current candidate persistence authority:
 ```text
 PostgreSQL       18.6
 Alembic source   20260922_54
-Expected topology 139|5|73|92|269|209|389|0|0|0 (B06-A proven; B06-B candidate / direct proof pending)
+Expected topology 139|5|73|92|269|209|389|0|0|0 (B06-A/B proven)
 ```
 
 ---
@@ -279,6 +281,8 @@ B05-C ✅ CLOSED / PROVEN at `_47` (26 selected PostgreSQL tests)
 B05-D ✅ CLOSED / PROVEN at `_48` (41 selected web + 24 PostgreSQL/API/catalog tests)
 B05-E ✅ WHOLE-BLOCK CLOSURE / MANUAL WALKTHROUGH COMPLETE
 B05   ✅ CLOSED / PROVEN
+B06-A ✅ CLOSED / PROVEN
+B06-B ✅ CLOSED / PROVEN at `_54` (1 fingerprint + 28 PostgreSQL/catalog regressions)
 ```
 
-Current gate: B05 ✅ CLOSED / PROVEN → B06-A ✅ CLOSED / PROVEN. B06-B Recurrence authoring is implemented at `_52` with forward-only reader and selector repairs `_53`–`_54`: Routine/Event typed immutable state replacement, four CP6 families, explicit named-zone DST policy, owner-specific replay receipt and current/history CAS; direct local proof is pending. No CI/Actions dispatched.
+Current gate: B05 ✅ CLOSED / PROVEN → B06-A/B ✅ CLOSED / PROVEN. B06-B Recurrence authoring is proven at `_54`: Routine/Event typed immutable state replacement, four CP6 families, explicit named-zone DST policy, owner-specific replay receipt, current/history CAS and canonical Decimal-safe fingerprints. B06-C Occurrence checkpoint/scope is next. No CI/Actions dispatched.

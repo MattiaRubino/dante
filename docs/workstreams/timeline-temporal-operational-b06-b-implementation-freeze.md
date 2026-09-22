@@ -1,9 +1,9 @@
 # Timeline / Temporal-Operational — B06-B Recurrence Authoring Freeze
 
-- **Status:** implementation authority — B06-B active
-- **Date:** 2026-09-21
+- **Status:** ✅ CLOSED / PROVEN — retained semantic implementation authority
+- **Date:** 2026-09-22
 - **Predecessor:** B06-A ✅ CLOSED / PROVEN at Alembic `20260921_51`
-- **CI / Actions:** none; direct local proof remains user-run
+- **CI / Actions:** none launched; direct local proof completed by the user
 
 ## 1. Exact semantic boundary
 
@@ -114,3 +114,20 @@ policy persistence; and no Occurrence/Schedule/Activity materialization.
 
 Generated OpenAPI/client, mapping/catalog/dictionary reconciliation and the
 typed remote contract are part of B06-B closure. No CI/Actions are launched.
+
+
+## 8. Closure evidence
+
+B06-B is closed at Alembic `20260922_54` with expected topology
+`139|5|73|92|269|209|389|0|0|0`.
+
+User-run proof:
+
+```text
+1 passed in 0.45s    canonical Decimal-safe idempotency fingerprint
+28 passed in 41.66s PostgreSQL authoring/catalog/ACL/regression selection
+```
+
+The earlier Pydantic API-contract proof passed `2` tests and API-client
+typecheck passed. No CI/Actions were launched. Closure authority:
+`timeline-temporal-operational-b06-b-closure-2026-09-22.md`.
