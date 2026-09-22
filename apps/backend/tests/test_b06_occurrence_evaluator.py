@@ -347,7 +347,7 @@ def test_structural_exclusion_requires_absolute_elapsed_coordinate() -> None:
         _normalize_exclusion_coordinate(
             ElapsedCoordinate(
                 family_code="elapsed_interval",
-                expected_at=datetime(2026, 11, 2, 9),
+                expected_at=datetime(2026, 11, 2, 9, tzinfo=UTC).replace(tzinfo=None),
             )
         )
 
@@ -377,7 +377,7 @@ def test_structural_exclusion_requires_absolute_elapsed_coordinate() -> None:
             generated_wall_time=time(2, 30),
             clock_basis_code="named_zone",
             zone_id="Europe/Rome",
-            resolved_at=datetime(2026, 10, 25, 2, 30),
+            resolved_at=datetime(2026, 10, 25, 2, 30, tzinfo=UTC).replace(tzinfo=None),
         ),
         CalendarCoordinate(
             family_code="calendar_wall_clock",

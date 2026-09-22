@@ -376,13 +376,16 @@ async def test_checkpoint_replay_revision_extra_skip_exclusion_and_event_reuse(
             end_date_exclusive=date(2026, 11, 3),
             effective_zone_id="UTC",
         )
-        assert len(
-            [
-                item
-                for item in quota_checkpoint.occurrences
-                if isinstance(item.coordinate, QuotaCoordinate)
-            ]
-        ) == 2
+        assert (
+            len(
+                [
+                    item
+                    for item in quota_checkpoint.occurrences
+                    if isinstance(item.coordinate, QuotaCoordinate)
+                ]
+            )
+            == 2
+        )
 
         cyclic = await recurrences.replace(
             owner="routine",
@@ -554,8 +557,7 @@ async def test_concurrent_checkpoints_reuse_the_same_canonical_occurrences(
         ) as connection:
             connection.execute("SET ROLE dante_owner")
             assert connection.execute(
-                "SELECT count(*) FROM dante.occurrence_generation "
-                "WHERE source_native_ref=%s",
+                "SELECT count(*) FROM dante.occurrence_generation WHERE source_native_ref=%s",
                 (routine.routine_ref,),
             ).fetchone() == (3,)
     finally:
