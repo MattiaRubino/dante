@@ -173,6 +173,14 @@ async def test_checkpoint_replay_revision_extra_skip_exclusion_and_event_reuse(
             reason="Series changed after this materialized expectation",
         )
         assert skipped.occurrence.skipped
+        skipped_replay = await occurrences.skip(
+            self_person_ref=alice,
+            occurrence_ref=old_third.occurrence_ref,
+            operation_id="skip:old-third",
+            reason="Series changed after this materialized expectation",
+        )
+        assert skipped_replay.replayed
+        assert skipped_replay.occurrence.occurrence_ref == skipped.occurrence.occurrence_ref
         assert (
             await occurrences.get(self_person_ref=alice, occurrence_ref=old_third.occurrence_ref)
         ).skipped
@@ -194,6 +202,16 @@ async def test_checkpoint_replay_revision_extra_skip_exclusion_and_event_reuse(
             coordinate=exclusion_coordinate,
         )
         assert not exclusion.replayed
+        exclusion_replay = await occurrences.exclude(
+            owner="routine",
+            self_person_ref=alice,
+            source_ref=routine.routine_ref,
+            governing_recurrence_state_ref=revised.recurrence.material_state_ref,
+            operation_id="exclude:oct-5",
+            coordinate=exclusion_coordinate,
+        )
+        assert exclusion_replay.replayed
+        assert exclusion_replay.exclusion_ref == exclusion.exclusion_ref
         excluded_checkpoint = await occurrences.checkpoint(
             owner="routine",
             self_person_ref=alice,
@@ -230,6 +248,14 @@ async def test_checkpoint_replay_revision_extra_skip_exclusion_and_event_reuse(
         assert extra.occurrence.origin_code == "explicit_extra"
         assert extra.occurrence.governing_recurrence_state_ref is None
         assert extra.occurrence.coordinate is None
+        extra_replay = await occurrences.create_extra(
+            owner="routine",
+            self_person_ref=alice,
+            source_ref=routine.routine_ref,
+            operation_id="extra:one",
+        )
+        assert extra_replay.replayed
+        assert extra_replay.occurrence.occurrence_ref == extra.occurrence.occurrence_ref
 
         paused = await routines.mutate(
             self_person_ref=alice,
@@ -239,6 +265,14 @@ async def test_checkpoint_replay_revision_extra_skip_exclusion_and_event_reuse(
             kind="pause",
         )
         assert paused.lifecycle_state == "paused"
+        assert (
+            await occurrences.create_extra(
+                owner="routine",
+                self_person_ref=alice,
+                source_ref=routine.routine_ref,
+                operation_id="extra:one",
+            )
+        ).replayed
         assert (
             await occurrences.checkpoint(
                 owner="routine",
@@ -410,6 +444,20 @@ async def test_checkpoint_replay_revision_extra_skip_exclusion_and_event_reuse(
             effective_zone_id="Europe/Rome",
         )
         assert len(event_checkpoint.occurrences) == 1
+        event_reuse = await occurrences.checkpoint(
+            owner="event",
+            self_person_ref=alice,
+            source_ref=event.event_ref,
+            operation_id="event:checkpoint:reuse",
+            start_date=date(2026, 10, 1),
+            end_date_exclusive=date(2026, 10, 2),
+            effective_zone_id="Europe/Rome",
+        )
+        assert not event_reuse.replayed
+        assert (
+            event_reuse.occurrences[0].occurrence_ref
+            == event_checkpoint.occurrences[0].occurrence_ref
+        )
         with pytest.raises(OccurrenceSourceNotFoundError):
             await occurrences.get(
                 self_person_ref=bob,
