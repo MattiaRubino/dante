@@ -7,7 +7,7 @@
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
 - **Timeline candidate Alembic head (source):** `20260922_55`
-- **Timeline candidate expected topology:** `145|5|87|92|285|223|408|0|0|0` (B06-C candidate; proof pending)
+- **Timeline candidate proven topology:** `145|5|87|92|285|223|408|0|0|0` (B06-C proven)
 - **Timeline candidate DB overlay:** `timeline-temporal-operational.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 - **Persistence ADR:** `../decisions/ADR-010-postgresql-persistence-constitution.md`
@@ -84,7 +84,7 @@ Protected `main` remains integration authority. Candidate truth is never relabel
 20260922_52 B06-B immutable Routine/Event Recurrence authoring, receipts and explicit DST policy [PROVEN at _54]
 20260922_53 B06-B forward-only Recurrence current-state reader repair [PROVEN at _54]
 20260922_54 B06-B forward-only Recurrence selector validation repair [PROVEN]
-20260922_55 B06-C bounded Occurrence checkpoint, explicit extra, skip and structural exclusion [CANDIDATE / PROOF PENDING]
+20260922_55 B06-C bounded Occurrence checkpoint, explicit extra, skip and structural exclusion [PROVEN]
 ```
 
 No accepted historical migration was edited, rebased, renumbered or flattened.
@@ -271,6 +271,9 @@ B04 overall                          CLOSED / PROVEN
 B05-A Life Area full lifecycle        CLOSED / PROVEN at `_45`
 B05-B primary assignment             CLOSED / PROVEN at `_46` (16 selected tests)
 B05-C secondary Tags                 CLOSED / PROVEN at `_47` (26 selected tests)
+B06-A Routine core                   CLOSED / PROVEN at `_51`
+B06-B Recurrence authoring           CLOSED / PROVEN at `_54`
+B06-C Occurrence checkpoint          CLOSED / PROVEN at `_55` (41 selected PostgreSQL tests)
 ```
 
 Observed B04-E local evidence:
@@ -286,4 +289,4 @@ Proof covers duration lifecycle/current/history/CAS/idempotency, hard minimum/ma
 
 ## 7. Current next boundary
 
-B04-F and B05 are closed with their recorded proof. `_46` keeps explicit legacy-unassigned Activity/Event items and revokes runtime access to bare create helpers. `_47` adds a distinct Tag catalog and independent many-valued typed Activity/Event edges, with immutable acceptance receipts and bounded runtime functions. `_48` adds a bounded Event-only postponed discovery/replan capability without fabricating placement truth. The user's B05-D gate passed 24 PostgreSQL/API/catalog tests and 41 selected web tests; the B05-E real-stack walkthrough is complete. B04 Schedule truth is unchanged.
+B04-F, B05 and B06-C are closed with their recorded proof. `_55` adds the bounded execute-only Occurrence checkpoint and distinct explicit-extra, skip and structural-exclusion controls without creating Schedule or Timeline truth. The next persistence boundary is B06-D shared Schedule/Timeline integration. B04 Schedule truth is unchanged.

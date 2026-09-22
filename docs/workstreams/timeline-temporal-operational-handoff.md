@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B04 ✅ CLOSED / PROVEN → B05 ✅ CLOSED / PROVEN → B06 🟨 IN PROGRESS (B06-C candidate / proof pending)
+- **Status:** B04 ✅ CLOSED / PROVEN → B05 ✅ CLOSED / PROVEN → B06 🟨 IN PROGRESS (B06-C closed / B06-D next)
 - **Reconciled:** 2026-09-22
 - **Branch:** `feature/timeline-temporal-operational`
 - **Current roadmap:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -15,6 +15,7 @@
 - **B06-A closure:** `docs/workstreams/timeline-temporal-operational-b06-a-closure-2026-09-21.md`
 - **B06-B closure:** `docs/workstreams/timeline-temporal-operational-b06-b-closure-2026-09-22.md`
 - **B06-C implementation freeze:** `docs/workstreams/timeline-temporal-operational-b06-c-implementation-freeze.md`
+- **B06-C closure:** `docs/workstreams/timeline-temporal-operational-b06-c-closure-2026-09-22.md`
 - **Timeline candidate DB overlay:** `docs/database/timeline-temporal-operational.md`
 - **CI:** no CI launch is implied or authorized
 
@@ -34,7 +35,7 @@ B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
 ├─ B04-E Advanced-family applicability           ✅ CLOSED / PROVEN
 └─ B04-F Whole-B04 closure                       ✅ CLOSED / PROVEN
 B05 Product Organization                         ✅ CLOSED / PROVEN
-B06 Routine / Recurrence / Occurrence Baseline   🟨 IN PROGRESS — B06-C proof pending
+B06 Routine / Recurrence / Occurrence Baseline   🟨 IN PROGRESS — B06-D next
 ...
 B15 Whole Vertical Closure                       ⬜
 ```
@@ -44,7 +45,7 @@ Current candidate DB:
 ```text
 PostgreSQL 18.6
 Alembic source 20260922_55
-Expected topology 145|5|87|92|285|223|408|0|0|0 (B06-C candidate; proof pending)
+Proven topology   145|5|87|92|285|223|408|0|0|0 (B06-C proven)
 ```
 
 ## 2. Binding foundation carried forward
@@ -211,14 +212,14 @@ B05-E ✅ WHOLE-BLOCK CLOSURE / MANUAL WALKTHROUGH COMPLETE
 B05   ✅ CLOSED / PROVEN
 B06-A ✅ CLOSED / PROVEN at `_51`
 B06-B ✅ CLOSED / PROVEN at `_54` (1 fingerprint + 28 PostgreSQL/catalog regressions)
-B06-C 🟨 IMPLEMENTED CANDIDATE at `_55` / DIRECT PROOF PENDING
+B06-C ✅ CLOSED / PROVEN at `_55` (22 selected backend + 41 PostgreSQL tests)
 ```
 
 B05-A `_43`–`_45` closed with the user's direct `_45` catalog pass. B05-B `_46` creates typed Activity/Event actor-local primary assignment and immutable acceptance receipts, atomically binds new creates, inventories legacy unassigned items and rejects archived areas as new targets. B05-D `_48` completed real frontend grouping/create migration and Event-only postponed discovery/replan without fabricating a time or converting an Event into an Activity. The user passed generated/client and typecheck gates, 41 selected web tests and 24 selected PostgreSQL/API/catalog tests. B05-E completed the real-stack manual walkthrough: Event postponement rediscovery, Activity return to the Planning Tray, restoration and `+` creation with an active Life Area work. B05 is closed. No CI/Actions are launched.
 
 B06-A is closed at `_51`. B06-B is closed at `_54`: immutable Routine/Event Recurrence authoring covers all four CP6 families, explicit named-zone DST policy, effective boundaries, CAS/replay/collision, owner isolation, current/history and execute-only ACL. User-run proof passed `1` canonical fingerprint test and `28` selected PostgreSQL/catalog regressions; the earlier API contract test and API-client typecheck also passed.
 
-B06-C is implemented as candidate `_55`, not closed: a mutating 62-day half-open checkpoint evaluates immutable history and materializes/reuses canonical Routine/Event Occurrences under source locks and Role-13; explicit extra, skip and structural exclusion remain distinct. Dense checkpoints above 10,000 Occurrences fail atomically. Direct PostgreSQL/catalog and generated-client proof is pending; Schedule/Timeline integration remains B06-D.
+B06-C is closed and proven at `_55`: the mutating 62-day half-open checkpoint evaluates immutable history and materializes/reuses canonical Routine/Event Occurrences under source locks and Role-13; explicit extra, skip and structural exclusion remain distinct. Dense checkpoints above 10,000 Occurrences fail atomically. Generated/client, evaluator/API/OpenAPI and selected PostgreSQL/catalog/ACL gates passed after the cyclic-date projection repair. Schedule/Timeline integration remains B06-D.
 
 User-run proof command for `_48` (completed successfully; organization coverage was then run separately):
 

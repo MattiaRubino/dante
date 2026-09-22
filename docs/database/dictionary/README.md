@@ -7,7 +7,7 @@
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Current candidate Alembic source head on `feature/timeline-temporal-operational`:** `20260922_55`
-- **Current candidate expected topology:** `145|5|87|92|285|223|408|0|0|0` (B06-C candidate; proof pending)
+- **Current candidate proven topology:** `145|5|87|92|285|223|408|0|0|0` (B06-C proven)
 - **Frozen CP6 head:** `20260826_08`
 - **Last reconciled:** 2026-09-22
 
@@ -24,7 +24,7 @@ Current checked-out DB Reference
 ≈ direct tests
 ```
 
-A mismatch is a defect. Protected `main` remains integration authority. B05-A `_45`, B05-B `_46` and B05-C `_47` passed direct PostgreSQL proof (the latter: 26 selected tests).
+A mismatch is a defect. Protected `main` remains integration authority. B06-C `_55` passed the generated/client gate, selected evaluator/API/OpenAPI proof and the selected 41-test PostgreSQL/catalog/ACL gate after its focused repair rerun.
 
 ## 2. Current checked-out business-schema inventory
 
@@ -103,7 +103,7 @@ B06-B / 20260922_52 → 20260922_54 (✅ CLOSED / PROVEN)
   state/history CAS + actor-local receipts + explicit named-zone DST disposition
   no Occurrence generation, Schedule, Timeline or fake Activity materialization
 
-B06-C / 20260922_55 (🟨 CANDIDATE / PROOF PENDING)
+B06-C / 20260922_55 (✅ CLOSED / PROVEN)
   bounded execute-only Routine/Event Occurrence checkpoint over immutable history
   canonical materialization/replay, explicit extra, immutable skip and structural exclusion
   62-day half-open horizon + atomic 10,000-Occurrence safety cap; no Schedule/Timeline

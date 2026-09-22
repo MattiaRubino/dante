@@ -1,11 +1,11 @@
 # Timeline / Temporal-Operational — Candidate Database Overlay
 
 - **Status:** CURRENT CANDIDATE DATABASE AUTHORITY
-- **Reconciled:** 2026-09-21
+- **Reconciled:** 2026-09-22
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
-- **Candidate source head:** `20260922_55` (B06-C candidate; proof pending)
-- **Candidate expected topology:** `145|5|87|92|285|223|408|0|0|0` (B06-C candidate; proof pending)
+- **Candidate source head:** `20260922_55` (B06-C proven)
+- **Candidate proven topology:** `145|5|87|92|285|223|408|0|0|0`
 - **Whole-DB SoR:** `README.md`
 - **Machine-readable authority:** `dictionary/`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
@@ -156,6 +156,9 @@ B04  ✅ CLOSED / PROVEN
 B05-A ✅ CLOSED / PROVEN at `_45`
 B05-B ✅ CLOSED / PROVEN at `_46` (16 selected PostgreSQL tests)
 B05-C ✅ CLOSED / PROVEN at `_47` (26 selected PostgreSQL tests)
+B06-A ✅ CLOSED / PROVEN at `_51`
+B06-B ✅ CLOSED / PROVEN at `_54`
+B06-C ✅ CLOSED / PROVEN at `_55` (41 selected PostgreSQL tests)
 ```
 
 Observed B04-E evidence:
@@ -169,4 +172,4 @@ DATABASE_CURRENT_TOPOLOGY                         116|5|44|90|233|153|331|0|0|0
 
 ## 8. Next persistence boundary
 
-B05-A `_43`–`_45` established the LR-12 catalog and passed the user's direct `_45` catalog proof. `_46` adds two typed actor/item primary-area relations and two immutable assignment-receipt relations. Six guarded routines create/assign/list and inventory legacy unassigned rows. New Activity/Event creation requires a primary area in the same transaction; original unassigned create routines lose direct runtime EXECUTE. Archived targets reject new assignments, existing assignments remain discoverable. Neither B04 Schedule truth nor pre-B05 item rows are rewritten. `_46` passed 16 direct PostgreSQL tests; `_47` passed 26 selected tests. `_48` adds bounded Event-only postponed discovery/replan without fabricating Schedule truth, and B05-D's user-run 24 PostgreSQL/API/catalog plus 41 selected web-test gate passed. B05-E's completed real-stack manual walkthrough closes B05; no persistence topology changes were required.
+B06-C `_55` is the proven current branch frontier. It adds the bounded execute-only Routine/Event Occurrence checkpoint, immutable receipt/control state and distinct explicit-extra, skip and structural-exclusion semantics while preserving exact historical governing Recurrence provenance. The next persistence boundary is B06-D shared Schedule and bounded Timeline integration; `_55` creates neither.

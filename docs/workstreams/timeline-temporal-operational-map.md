@@ -19,7 +19,8 @@
 - **B06 execution plan:** `docs/workstreams/timeline-temporal-operational-b06-execution-plan.md` 🟨
 - **B06-A closure:** `docs/workstreams/timeline-temporal-operational-b06-a-closure-2026-09-21.md` ✅
 - **B06-B closure:** `docs/workstreams/timeline-temporal-operational-b06-b-closure-2026-09-22.md` ✅
-- **B06-C implementation freeze:** `docs/workstreams/timeline-temporal-operational-b06-c-implementation-freeze.md` 🟨
+- **B06-C implementation freeze:** `docs/workstreams/timeline-temporal-operational-b06-c-implementation-freeze.md` ✅
+- **B06-C closure:** `docs/workstreams/timeline-temporal-operational-b06-c-closure-2026-09-22.md` ✅
 - **Timeline candidate DB overlay:** `docs/database/timeline-temporal-operational.md`
 
 The archived semantic freeze remains the binding detailed inventory for the full vertical. This file is the live implementation/proof ledger.
@@ -90,7 +91,7 @@ B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
 ├─ B04-E Advanced-family applicability           ✅ CLOSED / PROVEN
 └─ B04-F Whole-B04 closure                       ✅ CLOSED / PROVEN
 B05 Product Organization                         ✅ CLOSED / PROVEN
-B06 Routine / Recurrence / Occurrence Baseline   🟨 IN PROGRESS — B06-C proof pending
+B06 Routine / Recurrence / Occurrence Baseline   🟨 IN PROGRESS — B06-D next
 B07 UI/UX Consolidation v1                       ⬜
 B08 Session Runtime                              ⬜
 B09 Responsibility / Participation               ⬜
@@ -107,7 +108,7 @@ Current candidate persistence authority:
 ```text
 PostgreSQL       18.6
 Alembic source   20260922_55
-Expected topology 145|5|87|92|285|223|408|0|0|0 (B06-C candidate; proof pending)
+Proven topology   145|5|87|92|285|223|408|0|0|0 (B06-C proven)
 ```
 
 ---
@@ -284,7 +285,7 @@ B05-E ✅ WHOLE-BLOCK CLOSURE / MANUAL WALKTHROUGH COMPLETE
 B05   ✅ CLOSED / PROVEN
 B06-A ✅ CLOSED / PROVEN
 B06-B ✅ CLOSED / PROVEN at `_54` (1 fingerprint + 28 PostgreSQL/catalog regressions)
-B06-C 🟨 IMPLEMENTED CANDIDATE at `_55` / DIRECT PROOF PENDING
+B06-C ✅ CLOSED / PROVEN at `_55` (22 selected backend + 41 PostgreSQL tests)
 ```
 
-Current gate: B05 ✅ CLOSED / PROVEN → B06-A/B ✅ CLOSED / PROVEN → B06-C candidate `_55` / proof pending. The candidate adds the bounded backend checkpoint, effective-history evaluation, canonical Routine/Event Occurrences, explicit extra, immutable skip, structural exclusion, lifecycle stop and execute-only generation surface. The 62-day half-open range is preserved and a 10,000-Occurrence safety cap rejects dense checkpoints atomically. No Schedule, Timeline, fake Activity or CI/Actions is introduced.
+Current gate: B05 ✅ CLOSED / PROVEN → B06-A/B/C ✅ CLOSED / PROVEN → B06-D next. B06-C adds the bounded backend checkpoint, effective-history evaluation, canonical Routine/Event Occurrences, explicit extra, immutable skip, structural exclusion, lifecycle stop and execute-only generation surface. The 62-day half-open range is preserved and a 10,000-Occurrence safety cap rejects dense checkpoints atomically. No Schedule, Timeline, fake Activity or CI/Actions was introduced.

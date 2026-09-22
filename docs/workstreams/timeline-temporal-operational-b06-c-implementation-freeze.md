@@ -1,13 +1,13 @@
 # Timeline / Temporal-Operational — B06-C Occurrence Implementation Freeze
 
-- **Status:** IMPLEMENTED CANDIDATE / DIRECT PROOF PENDING
+- **Status:** ✅ IMPLEMENTED / CLOSED / PROVEN
 - **Date:** 2026-09-22
 - **Branch:** `feature/timeline-temporal-operational`
-- **Candidate migration:** `20260922_55`
-- **Expected topology:** `145|5|87|92|285|223|408|0|0|0`
+- **Migration:** `20260922_55`
+- **Proven topology:** `145|5|87|92|285|223|408|0|0|0`
 - **CI / Actions:** not authorized; proof is user-run against PostgreSQL 18.6
 
-This record freezes the B06-C candidate surface without claiming closure. B06-C becomes proven only after the generated-contract gate and selected direct PostgreSQL/catalog tests pass in the user's local environment.
+This record freezes the proven B06-C surface. Closure evidence is recorded in `timeline-temporal-operational-b06-c-closure-2026-09-22.md`.
 
 ## 1. Delivered boundary
 
@@ -45,14 +45,14 @@ Role-13 continues to validate source ownership, exact governing state/family, ty
 
 B06-C does not establish Schedule placement, Timeline projection, UI flows, Activity copies, Session, Actual or Outcome. Those remain owned by later slices, beginning with B06-D for shared Schedule/Timeline integration.
 
-## 5. Proof required before closure
+## 5. Closure proof
 
-- deterministic evaluator tests, including DST, absolute-vs-civil behavior, 62-day and 10,000-Occurrence bounds;
-- Routine/Event checkpoint replay, empty replay and collision;
-- future-state reconciliation with retained historical materialization;
-- explicit extra, skip and structural exclusion separation;
-- Routine lifecycle stop, self isolation and execute-only ACL;
-- whole catalog/Dictionary/SQLAlchemy reconciliation at `_55`;
-- exported OpenAPI/client generation and API-client typecheck.
+- deterministic evaluator tests, including DST, absolute-vs-civil behavior, 62-day and 10,000-Occurrence bounds — **PASS**;
+- Routine/Event checkpoint replay, empty replay, collision and concurrency — **PASS**;
+- future-state reconciliation with retained historical materialization — **PASS**;
+- explicit extra, skip and structural exclusion separation — **PASS**;
+- Routine lifecycle stop, self isolation and execute-only ACL — **PASS**;
+- whole catalog/Dictionary/SQLAlchemy reconciliation at `_55` — **PASS**;
+- exported OpenAPI/client generation and API-client typecheck — **PASS**.
 
-Until those gates pass, the authoritative state is **B06-C candidate / proof pending**, not closed.
+The user-run gate passed generated/client checks, targeted Ruff/format checks, `22` selected evaluator/API/OpenAPI tests and the selected `41`-test PostgreSQL/catalog/ACL set after the cyclic projection repair and focused `3`-test rerun. B06-C is **CLOSED / PROVEN**.

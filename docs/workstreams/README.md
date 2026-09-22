@@ -30,7 +30,7 @@ B02 Schedule Core                                ✅ CLOSED / PROVEN
 B03 Event Core                                   ✅ CLOSED / PROVEN
 B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
 B05 Product Organization                         ✅ CLOSED / PROVEN
-B06 Routine / Recurrence / Occurrence Baseline   🟨 B06-C CANDIDATE / PROOF PENDING
+B06 Routine / Recurrence / Occurrence Baseline   🟨 B06-C CLOSED / B06-D NEXT
 B07 UI/UX Consolidation v1                       ⬜ planned after B06
 B15 Whole Vertical Closure                       ⬜ future
 ```
@@ -43,9 +43,10 @@ Use these files for the active vertical:
 
 - `timeline-temporal-operational-roadmap.md` — current ordered roadmap B00–B15;
 - `timeline-temporal-operational-map.md` — current semantic map + live proof ledger;
-- `timeline-temporal-operational-handoff.md` — current B06-C proof handoff;
+- `timeline-temporal-operational-handoff.md` — current B06-D handoff;
 - `timeline-temporal-operational-b06-execution-plan.md` — current B06 execution authority;
-- `timeline-temporal-operational-b06-c-implementation-freeze.md` — B06-C candidate surface and proof gate;
+- `timeline-temporal-operational-b06-c-implementation-freeze.md` — proven B06-C surface;
+- `timeline-temporal-operational-b06-c-closure-2026-09-22.md` — B06-C direct closure evidence;
 - `timeline-temporal-operational-b03-a-closure-2026-09-16.md` — B03-A closure;
 - `timeline-temporal-operational-b03-b-closure-2026-09-17.md` — B03-B closure;
 - `timeline-temporal-operational-b03-c-closure-2026-09-17.md` — B03-C closure;
@@ -90,7 +91,7 @@ B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
 B05 Product Organization                         ✅ CLOSED / PROVEN
 B06-A Routine canonical core                     ✅ CLOSED / PROVEN
 B06-B Recurrence authoring                       ✅ CLOSED / PROVEN
-B06-C Occurrence checkpoint and scope            🟨 CANDIDATE / PROOF PENDING
+B06-C Occurrence checkpoint and scope            ✅ CLOSED / PROVEN
 ```
 
 Current candidate persistence authority:
@@ -113,7 +114,7 @@ manual Event userTest A–F                     PASS
 
 The manual acceptance Agenda rename defect was closed before B03 closure with explicit Save/Cancel behavior and regression coverage. The postponed/TBD rediscovery need is transferred to B05 Product Organization; it does not change B03's correct no-current-Schedule semantics.
 
-The current gate is the direct B06-C evaluator/API/PostgreSQL/catalog proof. CI remains separately authorized and is not launched by this candidate.
+The current gate is B06-D shared Schedule, Timeline and functional UI integration. CI remains separately authorized and was not launched for B06-C closure.
 
 ## 4. Global authority
 
