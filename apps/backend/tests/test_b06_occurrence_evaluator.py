@@ -8,6 +8,7 @@ import pytest
 
 from dante.modules.temporal.occurrence import (
     CalendarCoordinate,
+    CyclicCoordinate,
     ElapsedCoordinate,
     OccurrenceCheckpointLimitError,
     OccurrenceInputError,
@@ -17,6 +18,7 @@ from dante.modules.temporal.occurrence import (
 )
 from dante.modules.temporal.recurrence import (
     CalendarRecurrence,
+    CyclicRecurrence,
     ElapsedRecurrence,
     QuotaRecurrence,
 )
@@ -272,3 +274,33 @@ def test_absolute_calendar_coordinate_is_filtered_in_effective_timezone() -> Non
         for item in next_day
         if isinstance(item.coordinate, CalendarCoordinate)
     ] == [date(2026, 10, 25)]
+
+
+def test_cyclic_expected_count_preserves_position_and_half_open_window() -> None:
+    recurrence = CyclicRecurrence(
+        family_code="cyclic_positional",
+        range_kind="expected_count",
+        expected_occurrence_count=3,
+        effective_from=date(2026, 11, 2),
+        effective_until=None,
+        cycle_length=3,
+        position_unit_code="day",
+        pattern_anchor_date=date(2026, 11, 1),
+        generates_expected=(True, False, True),
+    )
+
+    result = evaluate_recurrence_history(
+        (_history(_OLD, recurrence, 1),),
+        start_date=date(2026, 11, 2),
+        end_date_exclusive=date(2026, 11, 8),
+        effective_zone_id="UTC",
+    )
+
+    coordinates = [
+        item.coordinate for item in result if isinstance(item.coordinate, CyclicCoordinate)
+    ]
+    assert [(item.generated_date, item.position_index) for item in coordinates] == [
+        (date(2026, 11, 3), 2),
+        (date(2026, 11, 4), 0),
+        (date(2026, 11, 6), 2),
+    ]

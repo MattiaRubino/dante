@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from datetime import date, time
+from datetime import UTC, date, datetime, time
+from decimal import Decimal
 from typing import Any
 
 import psycopg
@@ -13,13 +14,22 @@ from dante.modules.temporal.event import TemporalEventApplication
 from dante.modules.temporal.life_area import LifeAreaApplication
 from dante.modules.temporal.occurrence import (
     CalendarCoordinate,
+    CyclicCoordinate,
+    ElapsedCoordinate,
     OccurrenceApplication,
     OccurrenceMaterializedConflictError,
     OccurrenceOperationReuseError,
     OccurrenceSourceInactiveError,
     OccurrenceSourceNotFoundError,
+    QuotaCoordinate,
 )
-from dante.modules.temporal.recurrence import CalendarRecurrence, RecurrenceApplication
+from dante.modules.temporal.recurrence import (
+    CalendarRecurrence,
+    CyclicRecurrence,
+    ElapsedRecurrence,
+    QuotaRecurrence,
+    RecurrenceApplication,
+)
 from dante.modules.temporal.routine import RoutineApplication
 from dante.platform.database.runtime import create_database_runtime
 
@@ -263,6 +273,114 @@ async def test_checkpoint_replay_revision_extra_skip_exclusion_and_event_reuse(
             kind="resume",
         )
         assert resumed.lifecycle_state == "active"
+
+        elapsed = await recurrences.replace(
+            owner="routine",
+            self_person_ref=alice,
+            owner_ref=routine.routine_ref,
+            operation_id="recurrence:elapsed",
+            expected_material_state_ref=revised.recurrence.material_state_ref,
+            recurrence=ElapsedRecurrence(
+                family_code="elapsed_interval",
+                range_kind="until_boundary",
+                expected_occurrence_count=None,
+                effective_from=datetime(2026, 11, 1, tzinfo=UTC),
+                effective_until=datetime(2026, 11, 2, tzinfo=UTC),
+                elapsed_seconds=Decimal("21600"),
+                anchor_mode_code="fixed_anchor",
+                anchor_at=datetime(2026, 11, 1, tzinfo=UTC),
+            ),
+        )
+        elapsed_checkpoint = await occurrences.checkpoint(
+            owner="routine",
+            self_person_ref=alice,
+            source_ref=routine.routine_ref,
+            operation_id="checkpoint:elapsed",
+            start_date=date(2026, 11, 1),
+            end_date_exclusive=date(2026, 11, 2),
+            effective_zone_id="UTC",
+        )
+        assert [
+            item.coordinate.expected_at
+            for item in elapsed_checkpoint.occurrences
+            if isinstance(item.coordinate, ElapsedCoordinate)
+        ] == [
+            datetime(2026, 11, 1, 6, tzinfo=UTC),
+            datetime(2026, 11, 1, 12, tzinfo=UTC),
+            datetime(2026, 11, 1, 18, tzinfo=UTC),
+        ]
+
+        quota = await recurrences.replace(
+            owner="routine",
+            self_person_ref=alice,
+            owner_ref=routine.routine_ref,
+            operation_id="recurrence:quota",
+            expected_material_state_ref=elapsed.recurrence.material_state_ref,
+            recurrence=QuotaRecurrence(
+                family_code="quota_per_period",
+                range_kind="open",
+                expected_occurrence_count=None,
+                effective_from=date(2026, 11, 2),
+                effective_until=None,
+                quota_count=2,
+                period_unit_code="day",
+                period_span=1,
+                frame_code="floating_local",
+                zone_id=None,
+                week_start=None,
+                pattern_anchor_date=None,
+            ),
+        )
+        quota_checkpoint = await occurrences.checkpoint(
+            owner="routine",
+            self_person_ref=alice,
+            source_ref=routine.routine_ref,
+            operation_id="checkpoint:quota",
+            start_date=date(2026, 11, 2),
+            end_date_exclusive=date(2026, 11, 3),
+            effective_zone_id="UTC",
+        )
+        assert len(
+            [
+                item
+                for item in quota_checkpoint.occurrences
+                if isinstance(item.coordinate, QuotaCoordinate)
+            ]
+        ) == 2
+
+        cyclic = await recurrences.replace(
+            owner="routine",
+            self_person_ref=alice,
+            owner_ref=routine.routine_ref,
+            operation_id="recurrence:cyclic",
+            expected_material_state_ref=quota.recurrence.material_state_ref,
+            recurrence=CyclicRecurrence(
+                family_code="cyclic_positional",
+                range_kind="open",
+                expected_occurrence_count=None,
+                effective_from=date(2026, 11, 3),
+                effective_until=None,
+                cycle_length=2,
+                position_unit_code="day",
+                pattern_anchor_date=date(2026, 11, 3),
+                generates_expected=(True, False),
+            ),
+        )
+        cyclic_checkpoint = await occurrences.checkpoint(
+            owner="routine",
+            self_person_ref=alice,
+            source_ref=routine.routine_ref,
+            operation_id="checkpoint:cyclic",
+            start_date=date(2026, 11, 3),
+            end_date_exclusive=date(2026, 11, 7),
+            effective_zone_id="UTC",
+        )
+        assert [
+            item.coordinate.generated_date
+            for item in cyclic_checkpoint.occurrences
+            if isinstance(item.coordinate, CyclicCoordinate)
+        ] == [date(2026, 11, 3), date(2026, 11, 5)]
+        assert cyclic.recurrence.material_state_ref != quota.recurrence.material_state_ref
 
         event = (
             await events.create_event(
