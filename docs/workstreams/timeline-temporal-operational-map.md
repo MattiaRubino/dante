@@ -21,6 +21,7 @@
 - **B06-B closure:** `docs/workstreams/timeline-temporal-operational-b06-b-closure-2026-09-22.md` ✅
 - **B06-C implementation freeze:** `docs/workstreams/timeline-temporal-operational-b06-c-implementation-freeze.md` ✅
 - **B06-C closure:** `docs/workstreams/timeline-temporal-operational-b06-c-closure-2026-09-22.md` ✅
+- **B06-D implementation freeze:** `docs/workstreams/timeline-temporal-operational-b06-d-implementation-freeze.md` 🔒
 - **Timeline candidate DB overlay:** `docs/database/timeline-temporal-operational.md`
 
 The archived semantic freeze remains the binding detailed inventory for the full vertical. This file is the live implementation/proof ledger.
@@ -91,7 +92,7 @@ B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
 ├─ B04-E Advanced-family applicability           ✅ CLOSED / PROVEN
 └─ B04-F Whole-B04 closure                       ✅ CLOSED / PROVEN
 B05 Product Organization                         ✅ CLOSED / PROVEN
-B06 Routine / Recurrence / Occurrence Baseline   🟨 IN PROGRESS — B06-D next
+B06 Routine / Recurrence / Occurrence Baseline   🟨 B06-D IMPLEMENTATION IN PROGRESS
 B07 UI/UX Consolidation v1                       ⬜
 B08 Session Runtime                              ⬜
 B09 Responsibility / Participation               ⬜

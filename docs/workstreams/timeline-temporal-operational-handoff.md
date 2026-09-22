@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B04 ✅ CLOSED / PROVEN → B05 ✅ CLOSED / PROVEN → B06 🟨 IN PROGRESS (B06-C closed / B06-D next)
+- **Status:** B04 ✅ CLOSED / PROVEN → B05 ✅ CLOSED / PROVEN → B06-D 🔒 APPROVED / IN PROGRESS
 - **Reconciled:** 2026-09-22
 - **Branch:** `feature/timeline-temporal-operational`
 - **Current roadmap:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -16,6 +16,7 @@
 - **B06-B closure:** `docs/workstreams/timeline-temporal-operational-b06-b-closure-2026-09-22.md`
 - **B06-C implementation freeze:** `docs/workstreams/timeline-temporal-operational-b06-c-implementation-freeze.md`
 - **B06-C closure:** `docs/workstreams/timeline-temporal-operational-b06-c-closure-2026-09-22.md`
+- **B06-D implementation freeze:** `docs/workstreams/timeline-temporal-operational-b06-d-implementation-freeze.md`
 - **Timeline candidate DB overlay:** `docs/database/timeline-temporal-operational.md`
 - **CI:** no CI launch is implied or authorized
 
@@ -35,7 +36,7 @@ B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
 ├─ B04-E Advanced-family applicability           ✅ CLOSED / PROVEN
 └─ B04-F Whole-B04 closure                       ✅ CLOSED / PROVEN
 B05 Product Organization                         ✅ CLOSED / PROVEN
-B06 Routine / Recurrence / Occurrence Baseline   🟨 IN PROGRESS — B06-D next
+B06 Routine / Recurrence / Occurrence Baseline   🟨 B06-D IMPLEMENTATION IN PROGRESS
 ...
 B15 Whole Vertical Closure                       ⬜
 ```

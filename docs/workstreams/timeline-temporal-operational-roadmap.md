@@ -3,7 +3,7 @@
 - **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-22
 - **Branch/workstream:** `feature/timeline-temporal-operational`
 - **Current completed frontier:** B06-C ✅ CLOSED / PROVEN
-- **Current block:** B06 Routine / Recurrence / Occurrence Baseline 🟨 IN PROGRESS — B06-D next
+- **Current block:** B06 Routine / Recurrence / Occurrence Baseline 🟨 B06-D IMPLEMENTATION IN PROGRESS
 - **Current candidate DB source:** PostgreSQL 18.6 / Alembic `20260922_55`
 - **Candidate proven topology:** `145|5|87|92|285|223|408|0|0|0` (B06-C proven)
 - **Live progress ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
@@ -15,6 +15,7 @@
 - **B06-B closure:** `docs/workstreams/timeline-temporal-operational-b06-b-closure-2026-09-22.md`
 - **B06-C implementation freeze:** `docs/workstreams/timeline-temporal-operational-b06-c-implementation-freeze.md`
 - **B06-C closure:** `docs/workstreams/timeline-temporal-operational-b06-c-closure-2026-09-22.md`
+- **B06-D implementation freeze:** `docs/workstreams/timeline-temporal-operational-b06-d-implementation-freeze.md`
 
 The archived semantic freeze preserves the complete functionality/non-collapse inventory. This document is the current sequencing authority.
 
@@ -79,7 +80,7 @@ B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
 ├─ B04-E Advanced-family applicability           ✅ CLOSED / PROVEN
 └─ B04-F Whole-B04 closure                       ✅ CLOSED / PROVEN
 B05 Product Organization                         ✅ CLOSED / PROVEN
-B06 Routine / Recurrence / Occurrence Baseline   🟨 IN PROGRESS — B06-D next
+B06 Routine / Recurrence / Occurrence Baseline   🟨 B06-D IMPLEMENTATION IN PROGRESS
 B07 UI/UX Consolidation v1                       ⬜
 B08 Session Runtime                              ⬜
 B09 Responsibility / Participation               ⬜
@@ -237,5 +238,6 @@ Closure authorities:
 - `timeline-temporal-operational-b06-a-closure-2026-09-21.md`
 - `timeline-temporal-operational-b06-b-closure-2026-09-22.md`
 - `timeline-temporal-operational-b06-c-closure-2026-09-22.md`
+- `timeline-temporal-operational-b06-d-implementation-freeze.md`
 
-Current action: begin B06-D shared Schedule, bounded Timeline projection and functional recurring UI from the proven `_55` frontier. No CI or Actions were launched for B06-C.
+Current action: implement the frozen B06-D shared Schedule, bounded Timeline projection and functional recurring UI from the proven `_55` frontier. No CI or Actions are launched.

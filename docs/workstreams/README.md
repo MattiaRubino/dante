@@ -30,7 +30,7 @@ B02 Schedule Core                                ✅ CLOSED / PROVEN
 B03 Event Core                                   ✅ CLOSED / PROVEN
 B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
 B05 Product Organization                         ✅ CLOSED / PROVEN
-B06 Routine / Recurrence / Occurrence Baseline   🟨 B06-C CLOSED / B06-D NEXT
+B06 Routine / Recurrence / Occurrence Baseline   🟨 B06-D IMPLEMENTATION IN PROGRESS
 B07 UI/UX Consolidation v1                       ⬜ planned after B06
 B15 Whole Vertical Closure                       ⬜ future
 ```
@@ -47,6 +47,7 @@ Use these files for the active vertical:
 - `timeline-temporal-operational-b06-execution-plan.md` — current B06 execution authority;
 - `timeline-temporal-operational-b06-c-implementation-freeze.md` — proven B06-C surface;
 - `timeline-temporal-operational-b06-c-closure-2026-09-22.md` — B06-C direct closure evidence;
+- `timeline-temporal-operational-b06-d-implementation-freeze.md` — approved B06-D Schedule/Timeline/UI boundary;
 - `timeline-temporal-operational-b03-a-closure-2026-09-16.md` — B03-A closure;
 - `timeline-temporal-operational-b03-b-closure-2026-09-17.md` — B03-B closure;
 - `timeline-temporal-operational-b03-c-closure-2026-09-17.md` — B03-C closure;
