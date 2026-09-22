@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from datetime import UTC, date, datetime, time
 from decimal import Decimal
 from typing import Any
@@ -17,6 +18,7 @@ from dante.modules.temporal.occurrence import (
     CyclicCoordinate,
     ElapsedCoordinate,
     OccurrenceApplication,
+    OccurrenceCheckpoint,
     OccurrenceMaterializedConflictError,
     OccurrenceOperationReuseError,
     OccurrenceSourceInactiveError,
@@ -448,3 +450,65 @@ def test_occurrence_runtime_surface_is_execute_only(migrated_database: Any) -> N
             "has_function_privilege('dante_runtime','dante.materialize_self_event_occurrence_candidate(uuid,text,uuid,uuid,text,date,time,text,text,timestamptz,timestamptz,date,date,text,text,integer)','EXECUTE'),"
             "has_function_privilege('dante_runtime','dante.skip_self_occurrence(uuid,text,text,uuid,text)','EXECUTE')"
         ).fetchone() == (False, False, False, False, False, True, True, True)
+
+
+@pytest.mark.asyncio
+async def test_concurrent_checkpoints_reuse_the_same_canonical_occurrences(
+    migrated_database: Any,
+) -> None:
+    alice = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    areas = LifeAreaApplication(runtime.session_factory)
+    routines = RoutineApplication(runtime.session_factory)
+    occurrences = OccurrenceApplication(runtime.session_factory)
+    try:
+        area = (
+            await areas.create(
+                self_person_ref=alice,
+                operation_id="concurrent:area",
+                name="Salute",
+            )
+        ).area
+        routine = await routines.create(
+            self_person_ref=alice,
+            operation_id="concurrent:routine",
+            title="Idratazione",
+            life_area_ref=area.life_area_ref,
+            starts_on=date(2026, 12, 1),
+            wall_time=time(9),
+        )
+
+        async def checkpoint(operation_id: str) -> OccurrenceCheckpoint:
+            return await occurrences.checkpoint(
+                owner="routine",
+                self_person_ref=alice,
+                source_ref=routine.routine_ref,
+                operation_id=operation_id,
+                start_date=date(2026, 12, 1),
+                end_date_exclusive=date(2026, 12, 4),
+                effective_zone_id="Europe/Rome",
+            )
+
+        first, second = await asyncio.gather(
+            checkpoint("concurrent:checkpoint:a"),
+            checkpoint("concurrent:checkpoint:b"),
+        )
+
+        first_refs = {item.occurrence_ref for item in first.occurrences}
+        second_refs = {item.occurrence_ref for item in second.occurrences}
+        assert len(first_refs) == 3
+        assert first_refs == second_refs
+
+        with psycopg.connect(
+            **migrated_database.connection_kwargs(
+                "dante_migrator", migrated_database.cluster.migrator_password
+            )
+        ) as connection:
+            connection.execute("SET ROLE dante_owner")
+            assert connection.execute(
+                "SELECT count(*) FROM dante.occurrence_generation "
+                "WHERE source_native_ref=%s",
+                (routine.routine_ref,),
+            ).fetchone() == (3,)
+    finally:
+        await runtime.dispose()
