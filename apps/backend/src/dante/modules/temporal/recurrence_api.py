@@ -9,7 +9,7 @@ from typing import Annotated, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request, Response
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from dante.context.contracts import DanteContext
 from dante.context.dependencies import require_dante_context, require_mutating_dante_context
@@ -29,13 +29,27 @@ MutatingContext = Annotated[DanteContext, Depends(require_mutating_dante_context
 class CalendarOrdinalWeekday(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     weekday_number: int = Field(ge=1, le=7)
-    ordinal: int = Field(ge=-5, le=5, ne=0)
+    ordinal: int = Field(ge=-5, le=5, json_schema_extra={"not": {"const": 0}})
+
+    @field_validator("ordinal")
+    @classmethod
+    def ordinal_must_not_be_zero(cls, value: int) -> int:
+        if value == 0:
+            raise ValueError("ordinal must not be zero")
+        return value
 
 
 class CalendarYearMonthDay(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     month_number: int = Field(ge=1, le=12)
-    month_day: int = Field(ge=-31, le=31, ne=0)
+    month_day: int = Field(ge=-31, le=31, json_schema_extra={"not": {"const": 0}})
+
+    @field_validator("month_day")
+    @classmethod
+    def month_day_must_not_be_zero(cls, value: int) -> int:
+        if value == 0:
+            raise ValueError("month_day must not be zero")
+        return value
 
 
 class CalendarRecurrenceRequest(BaseModel):

@@ -1124,7 +1124,9 @@
           "ordinal": {
             "maximum": 5.0,
             "minimum": -5.0,
-            "ne": 0,
+            "not": {
+              "const": 0
+            },
             "title": "Ordinal",
             "type": "integer"
           },
@@ -1503,7 +1505,9 @@
           "month_day": {
             "maximum": 31.0,
             "minimum": -31.0,
-            "ne": 0,
+            "not": {
+              "const": 0
+            },
             "title": "Month Day",
             "type": "integer"
           },
