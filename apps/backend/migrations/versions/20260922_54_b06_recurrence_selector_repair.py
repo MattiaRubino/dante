@@ -27,7 +27,7 @@ def _sql(statement: str) -> None:
 def _replace_function(prefix: str, owner: str, owner_scope: str) -> str:
     """Build one strongly-typed owner-specific mutation capability."""
     return rf'''
-CREATE FUNCTION dante.replace_self_{prefix}_recurrence(
+CREATE OR REPLACE FUNCTION dante.replace_self_{prefix}_recurrence(
   requested_self_person_ref uuid, requested_operation_id text, requested_intent_fingerprint text,
   requested_{owner} uuid, requested_expected_material_state_ref uuid,
   requested_family_code text, requested_range_kind text, requested_expected_occurrence_count integer,
