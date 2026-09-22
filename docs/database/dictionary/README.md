@@ -6,10 +6,10 @@
 - **PostgreSQL:** 18.6
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
-- **Current candidate Alembic source head on `feature/timeline-temporal-operational`:** `20260922_52`
+- **Current candidate Alembic source head on `feature/timeline-temporal-operational`:** `20260922_53`
 - **Current candidate expected topology:** `139|5|73|92|269|209|389|0|0|0` (B06-A proven; B06-B candidate / direct proof pending)
 - **Frozen CP6 head:** `20260826_08`
-- **Last reconciled:** 2026-09-21
+- **Last reconciled:** 2026-09-22
 
 ## 1. Purpose
 
@@ -98,7 +98,7 @@ B06-A / 20260921_51
   CP6-required distinct initial daily floating-local Recurrence companion at create
   no generated Occurrence, Activity, Schedule, fake materialization or Timeline projection
 
-B06-B / 20260922_52 (candidate; direct proof pending)
+B06-B / 20260922_52 → 20260922_53 (candidate; direct proof pending)
   immutable owner-bound Routine/Event Recurrence authoring for all CP6 families
   state/history CAS + actor-local receipts + explicit named-zone DST disposition
   no Occurrence generation, Schedule, Timeline or fake Activity materialization
