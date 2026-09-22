@@ -624,7 +624,8 @@ _OCCURRENCE_COLUMNS = """
 def _occurrence_select(where_sql: str) -> str:
     return f"""
   SELECT g.occurrence_ref,g.source_native_ref,g.governing_recurrence_state_ref,
-    g.origin_code,s.family_code,c.generated_date,c.generated_wall_time,
+    g.origin_code,s.family_code,COALESCE(c.generated_date,cy.generated_date),
+    c.generated_wall_time,
     c.clock_basis_code,c.zone_id,c.resolved_at,e.expected_at,
     q.period_start_date,q.period_end_date_exclusive,q.frame_code,q.zone_id,
     cy.position_index,(sk.occurrence_ref IS NOT NULL),sk.reason,sk.skipped_at
