@@ -14,6 +14,7 @@ from dante.modules.temporal.occurrence import (
     OccurrenceInputError,
     QuotaCoordinate,
     RecurrenceHistoryEntry,
+    _normalize_exclusion_coordinate,
     evaluate_recurrence_history,
 )
 from dante.modules.temporal.recurrence import (
@@ -339,3 +340,84 @@ def test_cyclic_expected_count_preserves_position_and_half_open_window() -> None
         (date(2026, 11, 4), 0),
         (date(2026, 11, 6), 2),
     ]
+
+
+def test_structural_exclusion_requires_absolute_elapsed_coordinate() -> None:
+    with pytest.raises(OccurrenceInputError, match="absolute instant"):
+        _normalize_exclusion_coordinate(
+            ElapsedCoordinate(
+                family_code="elapsed_interval",
+                expected_at=datetime(2026, 11, 2, 9),
+            )
+        )
+
+
+@pytest.mark.parametrize(
+    "coordinate",
+    [
+        CalendarCoordinate(
+            family_code="calendar_wall_clock",
+            generated_date=date(2026, 10, 25),
+            generated_wall_time=time(2, 30),
+            clock_basis_code="named_zone",
+            zone_id=None,
+            resolved_at=None,
+        ),
+        CalendarCoordinate(
+            family_code="calendar_wall_clock",
+            generated_date=date(2026, 10, 25),
+            generated_wall_time=time(2, 30),
+            clock_basis_code="floating_local",
+            zone_id="Europe/Rome",
+            resolved_at=None,
+        ),
+        CalendarCoordinate(
+            family_code="calendar_wall_clock",
+            generated_date=date(2026, 10, 25),
+            generated_wall_time=time(2, 30),
+            clock_basis_code="named_zone",
+            zone_id="Europe/Rome",
+            resolved_at=datetime(2026, 10, 25, 2, 30),
+        ),
+        CalendarCoordinate(
+            family_code="calendar_wall_clock",
+            generated_date=date(2026, 10, 25),
+            generated_wall_time=time(2, 30),
+            clock_basis_code="named_zone",
+            zone_id="Europe/Rome",
+            resolved_at=datetime(2026, 10, 25, 3, 30, tzinfo=UTC),
+        ),
+    ],
+)
+def test_structural_exclusion_rejects_incoherent_calendar_coordinate(
+    coordinate: CalendarCoordinate,
+) -> None:
+    with pytest.raises(OccurrenceInputError):
+        _normalize_exclusion_coordinate(coordinate)
+
+
+def test_structural_exclusion_normalizes_valid_overlap_to_civil_identity() -> None:
+    coordinate = CalendarCoordinate(
+        family_code="calendar_wall_clock",
+        generated_date=date(2026, 10, 25),
+        generated_wall_time=time(2, 30),
+        clock_basis_code="named_zone",
+        zone_id="Europe/Rome",
+        resolved_at=datetime(2026, 10, 25, 0, 30, tzinfo=UTC),
+    )
+
+    normalized = _normalize_exclusion_coordinate(coordinate)
+
+    assert isinstance(normalized, CalendarCoordinate)
+    assert normalized.resolved_at is None
+
+
+def test_structural_exclusion_rejects_negative_cycle_position() -> None:
+    with pytest.raises(OccurrenceInputError, match="zero or greater"):
+        _normalize_exclusion_coordinate(
+            CyclicCoordinate(
+                family_code="cyclic_positional",
+                generated_date=date(2026, 11, 2),
+                position_index=-1,
+            )
+        )

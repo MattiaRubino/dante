@@ -196,6 +196,72 @@ def _zone(value: str) -> ZoneInfo:
         raise OccurrenceInputError("Effective timezone must be a valid IANA zone id.") from exc
 
 
+def _normalize_exclusion_coordinate(
+    coordinate: CalendarCoordinate | ElapsedCoordinate | CyclicCoordinate,
+) -> CalendarCoordinate | ElapsedCoordinate | CyclicCoordinate:
+    """Validate a structural coordinate before it crosses the SQL boundary."""
+    if isinstance(coordinate, ElapsedCoordinate):
+        if coordinate.expected_at.tzinfo is None or coordinate.expected_at.utcoffset() is None:
+            raise OccurrenceInputError(
+                "Elapsed exclusion coordinate requires an absolute instant with timezone offset."
+            )
+        return coordinate
+    if isinstance(coordinate, CyclicCoordinate):
+        if coordinate.position_index < 0:
+            raise OccurrenceInputError(
+                "Cyclic exclusion coordinate position must be zero or greater."
+            )
+        return coordinate
+
+    if coordinate.generated_wall_time is not None and coordinate.generated_wall_time.tzinfo:
+        raise OccurrenceInputError(
+            "Calendar exclusion wall time must be a local time without timezone offset."
+        )
+    if coordinate.clock_basis_code == "named_zone":
+        if coordinate.zone_id is None:
+            raise OccurrenceInputError(
+                "Named-zone calendar exclusion coordinate requires an IANA zone id."
+            )
+        zone = _zone(coordinate.zone_id)
+        if coordinate.resolved_at is not None:
+            if (
+                coordinate.generated_wall_time is None
+                or coordinate.resolved_at.tzinfo is None
+                or coordinate.resolved_at.utcoffset() is None
+            ):
+                raise OccurrenceInputError(
+                    "Resolved named-zone exclusion coordinate requires an absolute instant "
+                    "and wall time."
+                )
+            local = coordinate.resolved_at.astimezone(zone)
+            wall = coordinate.generated_wall_time
+            if local.date() != coordinate.generated_date or (
+                local.hour,
+                local.minute,
+                local.second,
+                local.microsecond,
+            ) != (wall.hour, wall.minute, wall.second, wall.microsecond):
+                raise OccurrenceInputError(
+                    "Resolved named-zone exclusion instant does not match its civil coordinate."
+                )
+    elif coordinate.zone_id is not None or coordinate.resolved_at is not None:
+        raise OccurrenceInputError(
+            "Only named-zone calendar exclusion coordinates may carry zone or resolved instant."
+        )
+
+    if coordinate.resolved_at is None:
+        return coordinate
+    # Structural identity is civil; overlap resolution cannot create a second exclusion.
+    return CalendarCoordinate(
+        family_code=coordinate.family_code,
+        generated_date=coordinate.generated_date,
+        generated_wall_time=coordinate.generated_wall_time,
+        clock_basis_code=coordinate.clock_basis_code,
+        zone_id=coordinate.zone_id,
+        resolved_at=None,
+    )
+
+
 def _validate_window(start: date, end: date) -> None:
     days = (end - start).days
     if days < 1 or days > MAX_CHECKPOINT_DAYS:
@@ -1075,16 +1141,7 @@ class OccurrenceApplication:
         coordinate: CalendarCoordinate | ElapsedCoordinate | CyclicCoordinate,
     ) -> OccurrenceExclusion:
         key = _bounded_operation_id(operation_id)
-        if isinstance(coordinate, CalendarCoordinate) and coordinate.resolved_at is not None:
-            # Structural identity is civil; overlap resolution cannot create a second exclusion.
-            coordinate = CalendarCoordinate(
-                family_code=coordinate.family_code,
-                generated_date=coordinate.generated_date,
-                generated_wall_time=coordinate.generated_wall_time,
-                clock_basis_code=coordinate.clock_basis_code,
-                zone_id=coordinate.zone_id,
-                resolved_at=None,
-            )
+        coordinate = _normalize_exclusion_coordinate(coordinate)
         fingerprint = _fingerprint(
             {
                 "kind": "structural_exclusion",
