@@ -40,7 +40,7 @@ Current candidate DB:
 
 ```text
 PostgreSQL 18.6
-Alembic source 20260922_53
+Alembic source 20260922_54
 Expected topology 139|5|73|92|269|209|389|0|0|0 (B06-A proven; B06-B candidate / direct proof pending)
 ```
 

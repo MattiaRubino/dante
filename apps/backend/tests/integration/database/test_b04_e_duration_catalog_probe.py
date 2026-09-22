@@ -10,7 +10,7 @@ import pytest
 pytestmark = pytest.mark.postgres
 
 # Current candidate must still preserve the B04-E payload and ACL invariants.
-_EXPECTED_REVISION = "20260922_53"
+_EXPECTED_REVISION = "20260922_54"
 _EXPECTED_TOPOLOGY = (139, 5, 73, 92, 269, 209, 389, 0, 0, 0)
 
 

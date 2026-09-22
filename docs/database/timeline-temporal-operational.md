@@ -4,7 +4,7 @@
 - **Reconciled:** 2026-09-21
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
-- **Candidate source head:** `20260922_53` (B06-A proven; B06-B candidate / direct proof pending)
+- **Candidate source head:** `20260922_54` (B06-A proven; B06-B candidate / direct proof pending)
 - **Candidate expected topology:** `139|5|73|92|269|209|389|0|0|0` (B06-A proven; B06-B candidate / direct proof pending)
 - **Whole-DB SoR:** `README.md`
 - **Machine-readable authority:** `dictionary/`
@@ -53,6 +53,7 @@ This file is the human-readable database overlay for Timeline candidate-only per
 20260921_51 B06-A qualified Routine source/Life Area command repair
 20260922_52 B06-B immutable Routine/Event Recurrence authoring, owner-specific idempotency and explicit DST policy
 20260922_53 B06-B forward-only Recurrence current-state reader repair
+20260922_54 B06-B forward-only Recurrence selector validation repair
 ```
 
 ## 3. Temporal Constraint authority through B04-E
@@ -123,7 +124,7 @@ B04-E adds no public Temporal HTTP route; OpenAPI/client artifacts intentionally
 ## 6. Current candidate topology
 
 ```text
-Alembic     20260922_53
+Alembic     20260922_54
 Tables      139
 Views       5
 Routines    73
