@@ -10,7 +10,11 @@ from tests.integration.temporal.test_b05_primary_life_area_assignment import _se
 
 from dante.modules.temporal.event import TemporalEventApplication
 from dante.modules.temporal.life_area import LifeAreaApplication
-from dante.modules.temporal.recurrence import CalendarRecurrence, RecurrenceApplication
+from dante.modules.temporal.recurrence import (
+    CalendarRecurrence,
+    RecurrenceApplication,
+    RecurrenceNotFoundError,
+)
 from dante.modules.temporal.recurring_authoring import (
     RecurringAuthoringApplication,
     RecurringAuthoringOperationReuseError,
@@ -107,14 +111,12 @@ async def test_recurring_routine_authoring_is_atomic_replayable_and_self_scoped(
                 recurrence=_weekly(2, 4),
             )
 
-        assert (
+        with pytest.raises(RecurrenceNotFoundError):
             await recurrences.get(
                 owner="routine",
                 self_person_ref=bob,
                 owner_ref=created.source_ref,
             )
-            is None
-        )
     finally:
         await runtime.dispose()
 
@@ -186,13 +188,11 @@ async def test_recurring_event_authoring_commits_source_and_recurrence_together(
             )
 
         assert await events.get_event(self_person_ref=bob, event_ref=event_ref) is None
-        assert (
+        with pytest.raises(RecurrenceNotFoundError):
             await recurrences.get(
                 owner="event",
                 self_person_ref=bob,
                 owner_ref=created.source_ref,
             )
-            is None
-        )
     finally:
         await runtime.dispose()
