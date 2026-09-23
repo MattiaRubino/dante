@@ -1,28 +1,16 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B04 ✅ CLOSED / PROVEN → B05 ✅ CLOSED / PROVEN → B06 ✅ CLOSED / PROVEN → POST-B06 SEQUENCING DECISION
+- **Status:** B06 ✅ CLOSED / PROVEN → B08 SESSION RUNTIME NEXT
 - **Reconciled:** 2026-09-23
 - **Branch:** `feature/timeline-temporal-operational`
 - **Current roadmap:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Current live map/ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
-- **B04 execution authority:** `docs/workstreams/timeline-temporal-operational-b04-execution-plan.md`
-- **B04-E closure:** `docs/workstreams/timeline-temporal-operational-b04-e-closure-2026-09-19.md`
-- **B04 whole-block closure:** `docs/workstreams/timeline-temporal-operational-b04-f-closure-2026-09-20.md`
-- **B05 execution plan / pre-scope:** `docs/workstreams/timeline-temporal-operational-b05-execution-plan.md`
-- **B05-D closure:** `docs/workstreams/timeline-temporal-operational-b05-d-closure-2026-09-21.md`
-- **B05 whole-block closure:** `docs/workstreams/timeline-temporal-operational-b05-e-closure-2026-09-21.md`
-- **B06 execution authority:** `docs/workstreams/timeline-temporal-operational-b06-execution-plan.md`
-- **B06-A closure:** `docs/workstreams/timeline-temporal-operational-b06-a-closure-2026-09-21.md`
-- **B06-B closure:** `docs/workstreams/timeline-temporal-operational-b06-b-closure-2026-09-22.md`
-- **B06-C implementation freeze:** `docs/workstreams/timeline-temporal-operational-b06-c-implementation-freeze.md`
-- **B06-C closure:** `docs/workstreams/timeline-temporal-operational-b06-c-closure-2026-09-22.md`
-- **B06-D implementation freeze:** `docs/workstreams/timeline-temporal-operational-b06-d-implementation-freeze.md`
-- **B06-D closure:** `docs/workstreams/timeline-temporal-operational-b06-d-closure-2026-09-23.md`
+- **Post-B06 scope decision:** `docs/workstreams/timeline-temporal-operational-post-b06-scope-decision-2026-09-23.md`
 - **B06 whole-block closure:** `docs/workstreams/timeline-temporal-operational-b06-e-closure-2026-09-23.md`
 - **Timeline candidate DB overlay:** `docs/database/timeline-temporal-operational.md`
 - **CI:** no CI launch is implied or authorized
 
-## 1. Current workstream position
+## 1. Current position
 
 ```text
 B00 Real Data Spine                              ✅ CLOSED / PROVEN
@@ -31,185 +19,74 @@ B02 Schedule Core                                ✅ CLOSED / PROVEN
 B03 Event Core                                   ✅ CLOSED / PROVEN
 PRE-B04 DB/API GOVERNANCE                        ✅ CLOSED / FROZEN
 B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
-├─ B04-A Temporal Constraint canonical core      ✅ CLOSED / PROVEN
-├─ B04-B Boundary / Deadline                     ✅ CLOSED / PROVEN
-├─ B04-C Windows / Preferences / Evaluation      ✅ CLOSED / PROVEN
-├─ B04-D Movement Policy                         ✅ CLOSED / PROVEN
-├─ B04-E Advanced-family applicability           ✅ CLOSED / PROVEN
-└─ B04-F Whole-B04 closure                       ✅ CLOSED / PROVEN
 B05 Product Organization                         ✅ CLOSED / PROVEN
 B06 Routine / Recurrence / Occurrence Baseline   ✅ CLOSED / PROVEN
-B07 UI/UX Consolidation v1                       ⬜
-B08 Session Runtime                              ⬜
-...
+
+B08 Session Runtime                              ← NEXT
+B09 Responsibility / Participation               ⬜
+B10 Actual / Outcome / Confirmation / Resolution ⬜
+B11 Advanced Recurrence / Conditional / Reminder ⬜
+B12 Replanning / Conflict / Solver               ⬜
+B07 UI/UX Consolidation v1                       ⏸ DEFERRED UNTIL B08–B12 EXIST
 B15 Whole Vertical Closure                       ⬜
 ```
+
+Former B13 Provider/Offline/Multi-device and B14 Analytics/Statistics/Signals are outside this vertical. Their historical identifiers are not reassigned.
 
 Current candidate DB:
 
 ```text
-PostgreSQL 18.6
-Alembic source 20260923_57
-Proven topology 145|5|88|92|285|223|408|0|0|0 (whole B06 proven)
+PostgreSQL      18.6
+Alembic source  20260923_57
+Proven topology 145|5|88|92|285|223|408|0|0|0
 ```
 
-## 2. Binding foundation carried forward
+## 2. Workstream boundary
 
-Permanent distinctions remain:
+This workstream completes the bounded vertical:
 
 ```text
+Home `+`
+→ create/configure canonical temporal things and facets
+→ backend/PostgreSQL truth
+→ Timeline projection/actions
+→ required runtime/reality lifecycle
+→ advanced recurrence/reminders
+→ replanning/conflict/solver proposals
+→ final UI/UX consolidation
+```
+
+It does not own external providers, native/offline, account collaboration or broad analytics.
+
+## 3. Binding distinctions carried forward
+
+```text
+Domain != Logical != Physical != API DTO != ViewModel
+Person != Account != Principal != Actor
+Activity != Event != Routine
+Routine != Recurrence != Occurrence
+Occurrence != Schedule
 Schedule != Temporal Constraint
 Schedule != Movement Policy
 Temporal Constraint != Movement Policy
-Movement Policy != Authority itself
 Movement Policy != solver result
 proposal != accepted effect
-policy revision != Schedule revision
-constraint revision != Schedule revision
-planned Schedule duration != Activity estimated effort
+Schedule != Session != Actual
+Session != Actual != Outcome
+Actual != Outcome != Confirmation
+Responsibility != Participation
+participant != Account identity
+planned/intended != happened
 planned Schedule duration != Session duration
 planned Schedule duration != Actual duration
-hard planning violation != impossible reality
-Schedule != Session != Actual
-Actual != Outcome
-Routine != Recurrence != Occurrence
-Occurrence != Schedule
 projection != canonical truth
+current accepted state != latest row
+Undo != history rewind
 ```
 
 Pre-B04 DB/API same-change governance remains binding for all later blocks.
 
-## 3. B04-A/B/C carried forward
-
-Temporal Constraint is a stable self-owned Activity/Event `ScopedRecordRef` dependent with immutable rule MaterialState/current/history, CAS/idempotency and typed boundary/window/duration semantics.
-
-Accepted boundary matrix:
-
-```text
-earliest_start     → schedule.start
-latest_start       → schedule.start
-latest_completion  → schedule.completion
-```
-
-Accepted window matrix:
-
-```text
-start_within              → schedule.start
-completion_within         → schedule.completion
-full_placement_contained  → schedule.placement
-placement_overlaps        → schedule.placement
-```
-
-Accepted duration matrix:
-
-```text
-minimum → schedule.placement
-maximum → schedule.placement
-```
-
-Evaluation is derived/non-persistent and does not mutate Schedule.
-
-## 4. B04-D carried forward
-
-Movement Policy is a Schedule-owned governance facet:
-
-```text
-facet                     schedule.movement_policy
-automatic_movement_code   blocked | automatic
-acceptance_path_code      direct | confirmation_required
-```
-
-Automatic movement is supplied-candidate governance, not candidate search. A confirmation proposal is not accepted Schedule truth.
-
-## 5. B04-E closure authority
-
-B04-E activated TC-008 planned Schedule duration and closed applicability for TC-009/010/011 without pulling later-owned facts forward.
-
-Candidate chain:
-
-```text
-20260919_39 B04-D closure
-    ↓
-20260919_40 B04-E planned Schedule duration constraints
-    ↓
-20260919_41 B04-E duration runtime-read ACL
-20260920_42 B04-F Schedule hard-constraint guard
-```
-
-Canonical B04-E object/capability:
-
-```text
-temporal_constraint_duration_state
-mutate_self_schedule_duration_constraint(...)
-```
-
-Shared routines extended:
-
-```text
-enforce_temporal_constraint_rule_totality()
-assert_absolute_schedule_move_hard_admissible(...)
-```
-
-Thus hard duration rules participate in canonical application evaluation and in B04-D governed automatic movement.
-
-## 6. B04-E applicability dispositions
-
-```text
-TC-008 min/max planned Schedule duration   IMPLEMENTED / PROVEN
-TC-009 contiguous Session duration         runtime deferred B08
-TC-010 spacing/recovery                    deferred B06/B08/B10 by anchor
-TC-011 relative before/after               deferred until reviewed bounded relation/reference persistence
-```
-
-Forbidden shortcuts remain absent:
-
-```text
-fake Activity/Event last_at
-generic related_id + type
-generic JSON rule payload
-generic semantic Relationship root
-```
-
-## 7. B04-E proof
-
-Observed local proof:
-
-```text
-core duration + movement integration             4 PASS
-application/evaluator/regression                13 PASS / 3 deselected
-whole catalog + Dictionary/SQLAlchemy/Alembic/DB 3 PASS
-DATABASE_CURRENT_TOPOLOGY                         116|5|44|90|233|153|331|0|0|0
-```
-
-No public Temporal HTTP endpoint was added in B04-E; no OpenAPI/client churn is claimed for E.
-
-Closure decision:
-
-```text
-B04-E Advanced-family applicability ✅ CLOSED / PROVEN
-```
-
-## 8. Unsupported / later-owned semantics
-
-The current vertical still does not pull forward:
-
-```text
-Session contiguous-duration runtime
-Actual / Outcome / Confirmation
-arbitrary heterogeneous relative-reference persistence
-solver candidate generation
-optimization/replanning search
-provider/offline synchronization
-multi-actor grants / complete Authority model
-```
-
-## 9. B04/B05 closure carried forward
-
-B04 whole-block authority is `timeline-temporal-operational-b04-f-closure-2026-09-20.md`. B05 whole-block authority is `timeline-temporal-operational-b05-e-closure-2026-09-21.md`.
-
-`Fascia` remains a B02 coarse Schedule placement, not a B04 constraint. Life Area/Tags remain actor-local product organization, not new Domain roots.
-
-## 10. B06 closed authority
+## 4. B06 closed authority
 
 ```text
 B06-A Routine source core                         ✅ CLOSED / PROVEN at `_51`
@@ -220,21 +97,9 @@ B06-E whole-block closure                         ✅ CLOSED / PROVEN at `_57`
 B06 whole block                                   ✅ CLOSED / PROVEN
 ```
 
-B06 reuses the existing Schedule authority for materialized Occurrences. It does not create `occurrence_schedule`, rewrite provenance or convert repeated Activity into Routine. Timeline is checkpoint-before-read; `GET` remains read-only. Expected and scheduled Occurrence projections obey one-item precedence, quota/cyclic truth stays untimed unless explicitly scheduled, and source organization is inherited rather than cloned.
+B06 reuses existing Schedule authority for materialized Occurrences. It does not create a second Schedule owner, rewrite provenance, or materialize repeated Activity copies. Expected and scheduled Occurrence projections obey one-item precedence; source organization is inherited rather than cloned.
 
-The local D proof discovered and closed two least-privilege defects rather than widening runtime grants: `_57` exposes unscheduled expected Occurrences through `list_self_expected_occurrences_in_window(uuid,date,date,text)`, scheduled provenance reuses `get_self_occurrence`, and Routine presentation reuses `list_self_routines`. The proven `_57` topology is `145|5|88|92|285|223|408|0|0|0`.
-
-User-run B06-D evidence:
-
-```text
-focused Occurrence Schedule PostgreSQL test   1 PASS
-backend + catalog gate                       11 PASS
-web TypeScript typecheck                      PASS
-focused web Vitest files                     4 PASS
-focused web Vitest tests                    18 PASS
-```
-
-B06-E then reconciled the prior slice evidence and completed the final local sanity/walkthrough:
+Final B06 evidence includes:
 
 ```text
 generated:check                             PASS
@@ -246,16 +111,98 @@ created Timeline/Event/recurring state      survives F5
 remaining B06 blocker                       none
 ```
 
-Whole-block closure authority is `timeline-temporal-operational-b06-e-closure-2026-09-23.md`.
+## 5. Why B07 is deferred
+
+B07 is deliberately postponed until B08–B12 are implemented. The goal is to avoid repeatedly redesigning `+`, Timeline and editors while their capability vocabulary is still expanding.
+
+During B08–B12, temporary UI is acceptable if it is truthful, accessible enough for the feature, real-stack testable and does not create fake semantics.
+
+B07 later consolidates the complete interaction surface once all vertical capabilities are visible together.
+
+## 6. B08 next boundary — Session Runtime
+
+B08 must begin with authority/pre-scope reconciliation before implementation.
+
+Questions to resolve explicitly:
+
+```text
+which canonical owner(s) can have/start a Session?
+what exact Session identity/lifecycle is already defined by Domain/Logical/Physical?
+what does start/pause/resume/stop mean semantically?
+what is elapsed vs active duration?
+what state is current/history and how is it revised?
+what idempotency/CAS rules apply?
+how does Session attach to Activity/Event/Routine/Occurrence/Schedule without collapse?
+how does Timeline project active/paused/stopped runtime state?
+which B04 TC-009/TC-010 constraints become evaluable now?
+what is explicitly deferred to B10 Actual/Outcome?
+```
+
+Forbidden assumptions:
+
+```text
+scheduled start == actual Session start
+Session end == Actual completion by default
+Session existence == Outcome
+planned duration == Session duration
+```
+
+No migration is pre-authorized. Inspect current physical/database support first and add forward-only DDL only for a proven gap.
+
+## 7. B09 later boundary — Responsibility / Participation
+
+B09 is role semantics around Activity/Event/Routine/Occurrence, not collaboration infrastructure.
+
+A participant/responsible subject may exist as a Person/referent without a DANTE Account. A future account linkage can be added without changing the participation meaning.
+
+Out of scope:
+
+```text
+account-to-account collaboration
+chat
+shared editing
+invitation delivery
+cross-account grants
+```
+
+## 8. B10 later boundary — Actual / Outcome / Confirmation / Resolution
+
+B10 owns happened-reality semantics required to complete the Timeline lifecycle.
+
+```text
+planned/intended != happened
+Session != Actual
+Actual != Outcome
+Outcome != Confirmation
+```
+
+Time passage never proves execution.
+
+## 9. B11 later boundary — Advanced Recurrence / Conditional / Reminder
+
+B11 completes recurrence/reminder semantics needed by `+`, editors and Timeline once later anchors exist. No generic RRULE ontology, opaque JSON rule bag or IFTTT-style canonical engine is authorized.
+
+## 10. B12 later boundary — Replanning / Conflict / Solver
+
+B12 is deterministic-first candidate generation/optimization and Proposal handling.
+
+```text
+canonical truth + constraints/preferences
+→ deterministic solver/candidate generation
+→ Proposal(s)
+→ optional AI interpretation/explanation/ranking assistance
+→ governed acceptance
+→ canonical Schedule mutation
+```
+
+AI is optional support, not scheduling authority.
 
 ## 11. Current gate
 
 ```text
-B04 ✅ CLOSED / PROVEN
-B05 ✅ CLOSED / PROVEN
 B06 ✅ CLOSED / PROVEN at `_57`
-B07 ⬜ NOT STARTED
-B08 ⬜ NOT STARTED
+B07 ⏸ DEFERRED
+B08 ← NEXT / NOT STARTED
 ```
 
-The workstream is intentionally parked at a **post-B06 sequencing decision**. The documented order still places B07 before B08, but no B07 skip/deferral is recorded here. If B07 is deliberately deferred in favor of B08, that decision must be discussed and written into the roadmap/handoff before B08 implementation starts. No CI/Actions are authorized by this handoff.
+Current action: prepare B08 pre-scope from the proven `_57` frontier. Do not start B09+ opportunistically. No CI/Actions are authorized by this handoff.
