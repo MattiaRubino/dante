@@ -1,14 +1,15 @@
 # DANTE Roadmap
 
-- **Status:** CURRENT REPOSITORY ROADMAP — branch candidate reconciled 2026-09-18
+- **Status:** CURRENT REPOSITORY ROADMAP — reconciled 2026-09-23
 - **Pre-vertical integration merge:** `1ecd58145860aebfaaa3dc78933f4ee42698f33` via PR #66
-- **Protected-main baseline at vertical selection:** PostgreSQL 18.6 / Alembic `20260906_18` / topology `89|5|18|77|173|91|272|0|0|0`
+- **Protected-main baseline at temporal selection:** PostgreSQL 18.6 / Alembic `20260906_18` / topology `89|5|18|77|173|91|272|0|0|0`
 - **Active candidate workstream:** `feature/timeline-temporal-operational`
-- **Candidate temporal DB authority:** PostgreSQL 18.6 / Alembic `20260917_29`
-- **Candidate temporal topology:** `101|5|31|78|198|119|297|0|0|0`
+- **Candidate temporal DB authority:** PostgreSQL 18.6 / Alembic `20260923_57`
+- **Candidate temporal topology:** `145|5|88|92|285|223|408|0|0|0`
 - **Temporal roadmap:** `workstreams/timeline-temporal-operational-roadmap.md`
 - **Temporal live map/ledger:** `workstreams/timeline-temporal-operational-map.md`
-- **B03-E / whole-B03 closure:** `workstreams/timeline-temporal-operational-b03-e-closure-2026-09-18.md`
+- **Post-B06 scope/sequencing decision:** `workstreams/timeline-temporal-operational-post-b06-scope-decision-2026-09-23.md`
+- **Whole-B06 closure:** `workstreams/timeline-temporal-operational-b06-e-closure-2026-09-23.md`
 
 `protected-main baseline` and `candidate branch truth` remain deliberately separate. The candidate branch is not protected-main integration until the repository integration gate actually completes.
 
@@ -21,159 +22,153 @@ Product / Domain / Logical / Physical
 Engineering + Frontend + Backend CP1–CP6
         CLOSED / ACCEPTED
               ↓
-Access/Auth + Shared Email + Recovery + Observability + AI foundation
+Access/Auth + Email + Recovery + Observability + AI foundation
         CLOSED / PROTECTED-MAIN INTEGRATED
               ↓
 Home / World Focus + Pre-vertical Foundation
         CLOSED / PROTECTED-MAIN INTEGRATED
               ↓
-TIMELINE / TEMPORAL-OPERATIONAL VERTICAL
+TIMELINE / TEMPORAL-OPERATIONAL `+` → TIMELINE VERTICAL
         B00 Real Data Spine                         ✅ CLOSED / PROVEN
         B01 Activity Core                           ✅ CLOSED / PROVEN
         B02 Schedule Core                           ✅ CLOSED / PROVEN
         B03 Event Core                              ✅ CLOSED / PROVEN
-        B04 Temporal Constraints + Movement Policy  ⬜ NEXT
-        B05 Product Organization                    ⬜
-        B06 Routine / Recurrence / Occurrence       ⬜
-        B07 UI/UX Consolidation v1                  ⬜
-        B08 Session Runtime                         ⬜
-        B09 Responsibility / Participation          ⬜
-        B10 Actual / Outcome / Confirmation         ⬜
-        B11 Advanced Recurrence / Conditional       ⬜
-        B12 Replanning / Solver                     ⬜
-        B13 Provider / Offline / Multi-device       ⬜
-        B14 Analytics / Signals                     ⬜
-        B15 Whole Vertical Closure                  ⬜
+        B04 Temporal Constraints + Movement Policy  ✅ CLOSED / PROVEN
+        B05 Product Organization                    ✅ CLOSED / PROVEN
+        B06 Routine / Recurrence / Occurrence       ✅ CLOSED / PROVEN
+
+        B08 Session Runtime                         ← NEXT
+        B09 Responsibility / Participation
+        B10 Actual / Outcome / Confirmation
+        B11 Advanced Recurrence / Reminder
+        B12 Replanning / Conflict / Solver
+        B07 UI/UX Consolidation v1                  ← DEFERRED
+        B15 Whole Vertical Closure
 ```
 
-The exact temporal capability ledger lives in the temporal roadmap/map. The initial full functionality/logic inventory remains preserved and binding in `workstreams/archive/timeline-temporal-operational-map-ledger-snapshot-2026-09-15.md`.
+Former B13 Provider/Offline/Multi-device and B14 Analytics/Signals are removed from the active vertical sequence. They remain future DANTE backlog concepts outside this workstream and are not B15 blockers.
 
-## 2. Protected-main foundation
+## 2. Active vertical boundary
 
-Protected-main currently includes:
+This workstream does **not** implement all of DANTE. It completes the bounded path:
 
 ```text
-Access/Auth + Shared Email
-PostgreSQL Recovery
-Platform Observability
-AI deterministic low-level foundation
-Home / World Focus reconciliation
-Pre-vertical identity/context/time/scale foundation
+Home `+`
+→ create/configure canonical temporal things/facets
+→ backend/PostgreSQL truth
+→ Timeline representation/actions
+→ required Session/Actual lifecycle
+→ advanced recurrence/reminders
+→ replanning/conflict/solver proposals
+→ final UI/UX consolidation
 ```
 
-The pre-vertical foundation supplied UUIDv7 reuse, backend Clock abstraction, named IANA timezone/DST policy, authenticated Account → DanteContext → self Person mapping, governed device-timezone transport, persistent LOCAL/DEV dogfood and deterministic real-PostgreSQL convergence proof.
+Explicitly outside the current vertical:
+
+```text
+external provider integration (Google Calendar / Outlook / sync)
+native/mobile app
+advanced offline / multi-device sync
+account-to-account collaboration
+chat/shared editing
+broad analytics/statistics/signals vertical
+```
 
 ## 3. Candidate database boundary
 
 Protected-main baseline at temporal selection:
 
 ```text
-Alembic             20260906_18
-Topology            89|5|18|77|173|91|272|0|0|0
+Alembic  20260906_18
+Topology 89|5|18|77|173|91|272|0|0|0
 ```
 
-Current candidate truth after B03 closure:
+Current candidate truth after B06 closure:
 
 ```text
-Alembic             20260917_29
-Tables              101
-Views                 5
-Routines              31
-Triggers              78
-Indexes               198
-Foreign keys          119
-Checks                297
+Alembic      20260923_57
+Tables       145
+Views          5
+Routines       88
+Triggers       92
+Indexes       285
+Foreign keys  223
+Checks        408
 ```
 
-`_28` established shared Activity/Event Schedule authorization. `_29` adds only the narrow Event Agenda aggregate/value/idempotency capability; it does not add a second temporal engine or identity for Agenda parts.
+The candidate remains unmerged branch truth. Historical migrations are immutable; later evolution is forward-only.
 
-B03-E introduced no database migration, so `_29` remains the candidate authority.
-
-This remains candidate-branch truth, not protected-main truth.
-
-## 4. Temporal vertical completed foundation
+## 4. Completed temporal foundation
 
 ### B00 — Real Data Spine ✅
 
-Normal runtime uses authenticated Web → FastAPI/application → PostgreSQL truth with real empty/error behavior and disposable full-stack proof.
+Authenticated Web → application/API → PostgreSQL truth with real reload/empty/error behavior.
 
 ### B01 — Activity Core ✅
 
-Canonical Activity identity, actionable-intention descriptor, idempotent create, unplaced state, Planning Tray projection and reload identity are real.
+Canonical Activity identity, create/read, unplaced state and Planning Tray behavior.
 
 ### B02 — Schedule Core ✅
 
-Schedule is a shared canonical capability activated for Activity across accepted temporal forms, with governed establish/revision/current-history/unschedule/Undo/CAS/idempotency/DST semantics.
+One shared Schedule engine with establish/revise/unschedule/Undo/current-history/CAS/idempotency/DST semantics.
 
-### B03 — Event Core ✅ CLOSED / PROVEN
+### B03 — Event Core ✅
 
-B03 established Event as a distinct canonical originating owner using the shared Schedule capability rather than an Event-specific temporal engine.
+Event remains distinct from Activity and reuses shared Schedule authority.
 
-```text
-B03-A canonical Event identity/expectation/create/read       ✅
-B03-B shared Schedule + timed/all-day/multi-day Timeline     ✅
-B03-C reschedule + postponed/TBD + guarded Undo              ✅
-B03-D ordered Event Agenda/internal parts                    ✅
-B03-E whole-B03 regression/real-stack/manual closure         ✅
-```
+### B04 — Temporal Constraints + Movement Policy ✅
 
-Final B03 proof includes:
+Typed constraints, planned-duration semantics, hard/soft deterministic evaluation and separate governed Movement Policy/proposal behavior.
 
-```text
-real-stack Chromium + Firefox                 2 PASS
-web broad regression                          158 files / 741 PASS
-Temporal PostgreSQL broad regression          24 PASS / 2 deselected
-backend broad                                 494 PASS + sole generated OpenAPI mismatch
-OpenAPI governance after canonical generation 8 PASS
-manual Event userTest A–F                     PASS
-```
+### B05 — Product Organization ✅
 
-The manual Agenda rename defect was closed before acceptance with explicit Save/Cancel plus Enter/Escape behavior. Postponed/TBD Event rediscovery is transferred to B05 Product Organization without changing B03's canonical no-current-Schedule semantics.
+Life Area + secondary Tag organization and postponed/TBD rediscovery without inventing placement truth.
 
-## 5. Next bounded work — B04
+### B06 — Routine / Recurrence / Occurrence ✅
 
-B04 is **Temporal Constraints + Movement Policy**.
+Routine, Recurrence and Occurrence remain distinct; canonical Occurrences reuse shared Schedule; expected/scheduled Timeline precedence and persistent reload behavior are proven.
 
-Before implementation it must reopen and reconcile the relevant Domain / Logical / Physical authority and the archived temporal functionality map.
+## 5. Next — B08 Session Runtime
 
-Required semantic separation starts with:
+B08 is bounded to execution/runtime state needed by the Timeline vertical.
+
+It must preserve:
 
 ```text
-Schedule != Temporal Constraint
-constraint != placement
-movement policy != solver result
-proposal != accepted effect
-planned/intended != happened
+Schedule != Session
+Session != Actual
+planned Schedule duration != Session duration
 ```
 
-B04 must not activate later-owned semantics early.
+No migration is pre-authorized; current Product/Domain/Logical/Physical/DB authority is inspected first.
 
-The next explicit gate is:
+## 6. Later active blocks
 
-```text
-APPROVE B04
-```
+### B09 — Responsibility / Participation
 
-## 6. B05 transfer from B03 manual acceptance
+Role semantics around Activity/Event/Routine/Occurrence. A participant may be a Person/referent without a DANTE Account. No collaboration/chat/shared-editing system is activated.
 
-B05 Product Organization now explicitly owns this discovered need:
+### B10 — Actual / Outcome / Confirmation / Resolution
 
-```text
-provide a discoverable surface for postponed/TBD Events
-so they can later be explicitly rescheduled
-without converting them into Activity Planning Tray items
-and without fabricating date/time truth
-```
+Completes bounded happened-reality lifecycle. Time passage does not prove execution.
 
-This is a product-organization concern, not a reason to weaken Event/Schedule semantics.
+### B11 — Advanced Recurrence / Conditional / Reminder
 
-## 7. UI/UX checkpoint
+Completes recurrence/reminder capabilities needed by `+`, editors and Timeline once required anchors exist.
 
-A dedicated **B07 UI/UX Consolidation v1** remains after B06, when the core planning vocabulary is stable enough for serious consolidation without repeated rebuilds.
+### B12 — Replanning / Conflict / Solver
 
-Later execution/resolution UI is consolidated after B10; final polish remains B15.
+Deterministic-first candidate generation/optimization and governed proposals. AI may assist interpretation/explanation/ranking but is not accepted-Schedule authority.
 
-## 8. Stable semantic boundaries
+### B07 — UI/UX Consolidation v1 — DEFERRED
+
+Executed after B08–B12 so final `+`, editor and Timeline interaction design is consolidated once the capability vocabulary is complete.
+
+### B15 — Whole Vertical Closure
+
+Final whole-vertical semantic/DB/API/client/frontend/real-stack/manual/documentation reconciliation for the bounded `+`/Timeline workstream.
+
+## 7. Stable semantic boundaries
 
 ```text
 Person != Account != Principal != Actor
@@ -182,17 +177,16 @@ Activity != Event != Routine
 Routine != Recurrence != Occurrence
 Occurrence != Schedule
 Schedule != Temporal Constraint
+Schedule != Movement Policy
 Schedule != Session != Actual
-Actual != Outcome
-Event != Availability / Capacity Claim
-Agenda part != Activity/Event/Occurrence/Schedule/Session/Actual by default
-postponed/TBD Event != Planning Tray Activity
-identity != MaterialState != chronology
-planned != happened
+Session != Actual != Outcome
+Actual != Outcome != Confirmation
+Responsibility != Participation
+planned/intended != happened
+proposal != accepted effect
+evaluation != solver decision
 provider identity != DANTE identity
 projection != canonical truth
 ```
 
-UUID ordering is never chronology/currentness authority.
-
-PostgreSQL remains canonical persistence authority. Provider/network I/O remains outside authoritative PostgreSQL transactions. No generic repository/UoW/EAV/Fact/Version/relationship framework is pre-authorized.
+PostgreSQL remains canonical persistence authority. No generic repository/UoW/EAV/Fact/Version/relationship framework is pre-authorized.
