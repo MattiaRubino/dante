@@ -16,13 +16,14 @@
 - **B05-C closure:** `docs/workstreams/timeline-temporal-operational-b05-c-closure-2026-09-20.md` ✅
 - **B05-D closure:** `docs/workstreams/timeline-temporal-operational-b05-d-closure-2026-09-21.md` ✅
 - **B05-E / whole-B05 closure:** `docs/workstreams/timeline-temporal-operational-b05-e-closure-2026-09-21.md` ✅
-- **B06 execution plan:** `docs/workstreams/timeline-temporal-operational-b06-execution-plan.md` 🟨
+- **B06 execution plan:** `docs/workstreams/timeline-temporal-operational-b06-execution-plan.md` ✅
 - **B06-A closure:** `docs/workstreams/timeline-temporal-operational-b06-a-closure-2026-09-21.md` ✅
 - **B06-B closure:** `docs/workstreams/timeline-temporal-operational-b06-b-closure-2026-09-22.md` ✅
 - **B06-C implementation freeze:** `docs/workstreams/timeline-temporal-operational-b06-c-implementation-freeze.md` ✅
 - **B06-C closure:** `docs/workstreams/timeline-temporal-operational-b06-c-closure-2026-09-22.md` ✅
 - **B06-D implementation freeze:** `docs/workstreams/timeline-temporal-operational-b06-d-implementation-freeze.md` ✅
 - **B06-D closure:** `docs/workstreams/timeline-temporal-operational-b06-d-closure-2026-09-23.md` ✅
+- **B06-E / whole-B06 closure:** `docs/workstreams/timeline-temporal-operational-b06-e-closure-2026-09-23.md` ✅
 - **Timeline candidate DB overlay:** `docs/database/timeline-temporal-operational.md`
 
 The archived semantic freeze remains the binding detailed inventory for the full vertical. This file is the live implementation/proof ledger.
@@ -93,7 +94,7 @@ B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
 ├─ B04-E Advanced-family applicability           ✅ CLOSED / PROVEN
 └─ B04-F Whole-B04 closure                       ✅ CLOSED / PROVEN
 B05 Product Organization                         ✅ CLOSED / PROVEN
-B06 Routine / Recurrence / Occurrence Baseline   🟨 B06-E WHOLE-BLOCK CLOSURE
+B06 Routine / Recurrence / Occurrence Baseline   ✅ CLOSED / PROVEN
 B07 UI/UX Consolidation v1                       ⬜
 B08 Session Runtime                              ⬜
 B09 Responsibility / Participation               ⬜
@@ -110,7 +111,7 @@ Current candidate persistence authority:
 ```text
 PostgreSQL       18.6
 Alembic source   20260923_57
-Proven topology  145|5|88|92|285|223|408|0|0|0 (B06-D proven)
+Proven topology  145|5|88|92|285|223|408|0|0|0 (whole B06 proven)
 ```
 
 ---
@@ -259,19 +260,19 @@ The B03-E transferred postponed/TBD Event rediscovery belongs to B05-D: no Activ
 
 ---
 
-# 6. B06 — Routine / Recurrence / Occurrence baseline
+# 6. B06 — Routine / Recurrence / Occurrence baseline ✅ CLOSED / PROVEN
 
 ```text
-B06-A Routine source core                       ✅ CLOSED / PROVEN at `_51`
-B06-B Recurrence authoring                      ✅ CLOSED / PROVEN at `_54`
-B06-C Occurrence checkpoint and scope           ✅ CLOSED / PROVEN at `_55`
+B06-A Routine source core                        ✅ CLOSED / PROVEN at `_51`
+B06-B Recurrence authoring                       ✅ CLOSED / PROVEN at `_54`
+B06-C Occurrence checkpoint and scope            ✅ CLOSED / PROVEN at `_55`
 B06-D shared Schedule / Timeline / functional UI ✅ CLOSED / PROVEN at `_57`
-B06-E whole-block closure                       🟨 NEXT
+B06-E whole-block closure                        ✅ CLOSED / PROVEN at `_57`
 ```
 
-B06-D preserves `Occurrence != Schedule` while allowing one canonical Occurrence to enter the existing shared Schedule engine. Timeline projection is checkpoint-before-read and read-only; expected and scheduled truth never duplicate. `_57` adds one bounded self-scoped execute-only expected-Occurrence read instead of restoring runtime SELECT on private provenance tables. Source organization is inherited rather than cloned per Occurrence.
+B06 preserves `Occurrence != Schedule` while allowing one canonical Occurrence to enter the existing shared Schedule engine. Timeline projection is checkpoint-before-read and read-only; expected and scheduled truth never duplicate. `_57` adds one bounded self-scoped execute-only expected-Occurrence read instead of restoring runtime SELECT on private provenance tables. Source organization is inherited rather than cloned per Occurrence.
 
-User-run final B06-D proof:
+User-run B06-D proof:
 
 ```text
 focused Occurrence Schedule PostgreSQL test   1 PASS
@@ -281,7 +282,19 @@ focused web Vitest files                     4 PASS
 focused web Vitest tests                    18 PASS
 ```
 
-Closure authority: `timeline-temporal-operational-b06-d-closure-2026-09-23.md`.
+Final B06-E proof/reconciliation:
+
+```text
+generated:check                             PASS
+API-client typecheck                        PASS
+web typecheck                               PASS
+focused B06/runtime Vitest                  6 files / 37 tests PASS
+persistent local dogfood real-stack        accepted
+created Timeline/Event/recurring state      survives F5
+remaining B06 blocker                       none
+```
+
+Whole-block closure authority: `timeline-temporal-operational-b06-e-closure-2026-09-23.md`.
 
 ---
 
@@ -303,12 +316,13 @@ B15  whole-vertical closure
 
 ```text
 B04 ✅ CLOSED / PROVEN
-B05   ✅ CLOSED / PROVEN
+B05 ✅ CLOSED / PROVEN
 B06-A ✅ CLOSED / PROVEN at `_51`
-B06-B ✅ CLOSED / PROVEN at `_54` (1 fingerprint + 28 PostgreSQL/catalog regressions)
-B06-C ✅ CLOSED / PROVEN at `_55` (22 selected backend + 41 PostgreSQL tests)
-B06-D ✅ CLOSED / PROVEN at `_57` (11 selected PostgreSQL/catalog tests; web typecheck; 18 focused Vitest tests)
-B06-E 🟨 WHOLE-BLOCK CLOSURE NEXT
+B06-B ✅ CLOSED / PROVEN at `_54`
+B06-C ✅ CLOSED / PROVEN at `_55`
+B06-D ✅ CLOSED / PROVEN at `_57`
+B06-E ✅ CLOSED / PROVEN at `_57`
+B06   ✅ CLOSED / PROVEN
 ```
 
-Current gate: B05 ✅ CLOSED / PROVEN → B06-A/B/C/D ✅ CLOSED / PROVEN → B06-E next. B06 remains open until its whole-block direct regressions, evidence reconciliation and real-stack recurring Routine/Event walkthrough complete. No CI/Actions are launched.
+Current gate: **post-B06 sequencing decision pending**. B07 and B08 remain unstarted; no deliberate B07 skip/deferral is recorded until that choice is discussed explicitly. No CI/Actions are launched.
