@@ -1,11 +1,11 @@
 # Timeline / Temporal-Operational Vertical — Implementation Roadmap
 
-- **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-22
+- **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-23
 - **Branch/workstream:** `feature/timeline-temporal-operational`
-- **Current completed frontier:** B06-C ✅ CLOSED / PROVEN
-- **Current block:** B06 Routine / Recurrence / Occurrence Baseline 🟨 B06-D IMPLEMENTATION IN PROGRESS
-- **Current candidate DB source:** PostgreSQL 18.6 / Alembic `20260922_55`
-- **Candidate proven topology:** `145|5|87|92|285|223|408|0|0|0` (B06-C proven)
+- **Current completed frontier:** B06-D ✅ CLOSED / PROVEN
+- **Current block:** B06 Routine / Recurrence / Occurrence Baseline 🟨 B06-E WHOLE-BLOCK CLOSURE
+- **Current candidate DB source:** PostgreSQL 18.6 / Alembic `20260923_57`
+- **Candidate proven topology:** `145|5|88|92|285|223|408|0|0|0` (B06-D proven)
 - **Live progress ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **B04 execution authority:** `docs/workstreams/timeline-temporal-operational-b04-execution-plan.md`
 - **B04-E closure:** `docs/workstreams/timeline-temporal-operational-b04-e-closure-2026-09-19.md`
@@ -16,6 +16,7 @@
 - **B06-C implementation freeze:** `docs/workstreams/timeline-temporal-operational-b06-c-implementation-freeze.md`
 - **B06-C closure:** `docs/workstreams/timeline-temporal-operational-b06-c-closure-2026-09-22.md`
 - **B06-D implementation freeze:** `docs/workstreams/timeline-temporal-operational-b06-d-implementation-freeze.md`
+- **B06-D closure:** `docs/workstreams/timeline-temporal-operational-b06-d-closure-2026-09-23.md`
 
 The archived semantic freeze preserves the complete functionality/non-collapse inventory. This document is the current sequencing authority.
 
@@ -80,7 +81,7 @@ B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
 ├─ B04-E Advanced-family applicability           ✅ CLOSED / PROVEN
 └─ B04-F Whole-B04 closure                       ✅ CLOSED / PROVEN
 B05 Product Organization                         ✅ CLOSED / PROVEN
-B06 Routine / Recurrence / Occurrence Baseline   🟨 B06-D IMPLEMENTATION IN PROGRESS
+B06 Routine / Recurrence / Occurrence Baseline   🟨 B06-E WHOLE-BLOCK CLOSURE
 B07 UI/UX Consolidation v1                       ⬜
 B08 Session Runtime                              ⬜
 B09 Responsibility / Participation               ⬜
@@ -93,6 +94,8 @@ B15 Whole Vertical Closure                       ⬜
 ```
 
 B05-A is closed with direct `_45` proof. B05-B passed 16 selected PostgreSQL tests at `_46` and is closed; its closure record fixes the retained legacy-unassigned boundary. B05-C passed 26 selected direct PostgreSQL tests at `_47` and is closed. B05-D passed deterministic generated/client/typecheck gates, 41 selected web tests and 24 selected PostgreSQL/API/catalog tests at `_48`. B05-E completed the real-stack manual walkthrough; B05 is closed.
+
+B06-A/B/C are closed at `_51`/`_54`/`_55`. B06-D is closed and proven at `_57`: shared Schedule ownership now includes self-owned Occurrences without a second scheduling model; expected/scheduled Timeline projection is bounded and least-privilege; recurring Create/checkpoint/refetch and one-instance scheduling are wired through canonical backend truth. The final local D gate passed `11` selected PostgreSQL/catalog tests, web typecheck and `18` focused Vitest tests. B06-E now owns whole-block reconciliation and the real-stack recurring Routine/Event walkthrough.
 
 ---
 
@@ -231,6 +234,8 @@ B05   ✅ CLOSED / PROVEN
 B06-A ✅ CLOSED / PROVEN at `_51` (26 selected PostgreSQL/catalog regressions; OpenAPI/client generation + API-client typecheck)
 B06-B ✅ CLOSED / PROVEN at `_54` (1 fingerprint + 28 PostgreSQL/catalog regressions; API contract/client typecheck)
 B06-C ✅ CLOSED / PROVEN at `_55` (22 selected backend + 41 PostgreSQL tests)
+B06-D ✅ CLOSED / PROVEN at `_57` (11 selected PostgreSQL/catalog tests; web typecheck; 18 focused Vitest tests)
+B06-E 🟨 WHOLE-BLOCK CLOSURE NEXT
 ```
 
 Closure authorities:
@@ -238,6 +243,6 @@ Closure authorities:
 - `timeline-temporal-operational-b06-a-closure-2026-09-21.md`
 - `timeline-temporal-operational-b06-b-closure-2026-09-22.md`
 - `timeline-temporal-operational-b06-c-closure-2026-09-22.md`
-- `timeline-temporal-operational-b06-d-implementation-freeze.md`
+- `timeline-temporal-operational-b06-d-closure-2026-09-23.md`
 
-Current action: implement the frozen B06-D shared Schedule, bounded Timeline projection and functional recurring UI from the proven `_55` frontier. No CI or Actions are launched.
+Current action: execute B06-E whole-block proof/reconciliation and real-stack recurring Routine/Event walkthrough from the proven `_57` frontier. No CI or Actions are launched.
