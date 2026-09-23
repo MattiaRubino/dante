@@ -9,14 +9,15 @@ export {
   type TemporalCreateHandoffIntent,
   type TemporalCreateHandoffTarget,
 } from './application/temporal-create-handoff';
-// Compatibility surface: TimelineCreateBridge already imports the B03 factory name.
-// B04 is a strict superset that delegates Event/B03 and unconstrained Activity paths
-// unchanged while activating open/window/deadline Activity authoring.
+export {
+  createB06TemporalCreateRuntime,
+  createB06TemporalCreateRuntime as createB03TemporalCreateRuntime,
+  type B06TemporalCreateRuntimeOptions,
+  type B06TemporalCreateRuntimeOptions as B03TemporalCreateRuntimeOptions,
+} from './application/temporal-create-b06-runtime';
 export {
   createB04TemporalCreateRuntime,
-  createB04TemporalCreateRuntime as createB03TemporalCreateRuntime,
   type B04TemporalCreateRuntimeOptions,
-  type B04TemporalCreateRuntimeOptions as B03TemporalCreateRuntimeOptions,
 } from './application/temporal-create-b04-runtime';
 export {
   createB03TemporalCreateRuntime as createLegacyB03TemporalCreateRuntime,
