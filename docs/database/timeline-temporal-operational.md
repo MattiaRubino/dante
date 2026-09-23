@@ -4,15 +4,15 @@
 - **Reconciled:** 2026-09-23
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
-- **Candidate source head:** `20260923_57` (B06-D repair candidate; proof pending)
-- **Candidate expected topology:** `145|5|88|92|285|223|408|0|0|0`
-- **Latest proven topology:** `145|5|87|92|285|223|408|0|0|0` (B06-C `_55`)
+- **Candidate source head:** `20260923_57` (B06-D proven)
+- **Candidate proven topology:** `145|5|88|92|285|223|408|0|0|0`
 - **Whole-DB SoR:** `README.md`
 - **Machine-readable authority:** `dictionary/`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 - **B04-E closure authority:** `../workstreams/timeline-temporal-operational-b04-e-closure-2026-09-19.md`
 - **B04 whole-block closure authority:** `../workstreams/timeline-temporal-operational-b04-f-closure-2026-09-20.md`
 - **B05 pre-scope (no DDL):** `../workstreams/timeline-temporal-operational-b05-execution-plan.md`
+- **B06-D closure authority:** `../workstreams/timeline-temporal-operational-b06-d-closure-2026-09-23.md`
 
 ## 1. Purpose and authority boundary
 
@@ -57,7 +57,7 @@ This file is the human-readable database overlay for Timeline candidate-only per
 20260922_54 B06-B forward-only Recurrence selector validation repair
 20260922_55 B06-C bounded Occurrence checkpoint and one-instance control surface
 20260922_56 B06-D Occurrence authorization in shared Schedule capabilities
-20260923_57 B06-D bounded execute-only expected-Occurrence Timeline read
+20260923_57 B06-D bounded execute-only expected-Occurrence Timeline read [PROVEN]
 ```
 
 ## 3. Temporal Constraint authority through B04-E
@@ -143,7 +143,7 @@ Materialized/partitioned 0
 RLS         0
 ```
 
-`_57` adds exactly one SECURITY DEFINER read routine. It does not add a table, view, trigger, index, FK, CHECK, enum/domain, sequence, partition or RLS policy. The topology above is therefore the candidate expectation; `_55` remains the latest user-proven topology until the local B06-D gate runs.
+`_57` adds exactly one SECURITY DEFINER read routine. It does not add a table, view, trigger, index, FK, CHECK, enum/domain, sequence, partition or RLS policy. The user-run B06-D backend/catalog gate passed both current-catalog reconciliation tests, so this topology is now proven rather than predicted.
 
 ## 7. Proof state
 
@@ -164,7 +164,7 @@ B05-C ✅ CLOSED / PROVEN at `_47` (26 selected PostgreSQL tests)
 B06-A ✅ CLOSED / PROVEN at `_51`
 B06-B ✅ CLOSED / PROVEN at `_54`
 B06-C ✅ CLOSED / PROVEN at `_55` (41 selected PostgreSQL tests)
-B06-D 🟨 CANDIDATE at `_57` / user-run local proof pending
+B06-D ✅ CLOSED / PROVEN at `_57` (11 selected PostgreSQL/catalog tests; web typecheck; 18 focused Vitest tests)
 ```
 
 Observed B04-E evidence:
@@ -178,4 +178,4 @@ DATABASE_CURRENT_TOPOLOGY                         116|5|44|90|233|153|331|0|0|0
 
 ## 8. Next persistence boundary
 
-B06-C `_55` is the latest proven branch frontier. B06-D `_56` widens the four existing self-scoped Schedule mutation capabilities to derive Occurrence ownership through its Routine/Event source. `_57` closes the runtime read gap without restoring direct provenance-table privileges: scheduled Occurrences compose shared Schedule with `get_self_occurrence`, while unscheduled expected Occurrences are exposed only through `list_self_expected_occurrences_in_window(uuid,date,date,text)`, bounded to a positive half-open window of at most 62 days. B06-D remains open until the user-run local PostgreSQL/web gate confirms the candidate.
+B06-D `_57` is the latest proven candidate database frontier. `_56` widens the existing self-scoped Schedule mutation capabilities to derive Occurrence ownership through its Routine/Event source. `_57` closes the runtime read gap without restoring direct provenance-table privileges: scheduled Occurrences compose shared Schedule with `get_self_occurrence`, while unscheduled expected Occurrences are exposed only through `list_self_expected_occurrences_in_window(uuid,date,date,text)`, bounded to a positive half-open window of at most 62 days. B06-E now owns whole-block reconciliation; it does not imply new persistence unless its proof exposes a real gap.
