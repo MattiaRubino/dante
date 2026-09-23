@@ -80,6 +80,14 @@ export type TimelineCanonicalScheduleBasis =
   | TimelineCanonicalScheduledEventBasis
   | TimelineCanonicalScheduledOccurrenceBasis;
 
+export type TimelineExpectedOccurrenceBasis = Readonly<{
+  occurrenceRef: string;
+  sourceKind: 'routine' | 'event';
+  sourceNativeRef: string;
+  /** Canonical expectation-derived suggestion only; never an accepted Schedule. */
+  suggestedStartTime?: string;
+}>;
+
 export type TimelineEvent = Readonly<{
   id: TimelineEventId;
   startMinute: number;
@@ -112,6 +120,8 @@ export type TimelineAllDayItem = Readonly<{
   appearanceTone?: TimelineSemanticTone;
   /** Canonical Schedule identity retained without inventing a clock interval. */
   canonicalBasis?: TimelineCanonicalScheduleBasis;
+  /** Materialized expected Occurrence that may explicitly enter shared Schedule. */
+  occurrenceBasis?: TimelineExpectedOccurrenceBasis;
   /** Defaults to all-day for legacy/local materialized items. */
   laneKind?: TimelineDateLaneKind;
   /** Present only for accepted coarse-local-period placement. */
