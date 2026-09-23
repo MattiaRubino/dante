@@ -21,6 +21,8 @@ import type {
   CreateEventRequest,
   CreateLifeAreaRequest,
   CreateProductTagRequest,
+  CreateRecurringEventRequest,
+  CreateRecurringRoutineRequest,
   CreateRoutineRequest,
   CreateScheduledActivityRequest,
   CreateScheduledEventRequest,
@@ -79,6 +81,7 @@ import type {
   RecoveryValidationResponse,
   RecurrenceMutationResponse,
   RecurrenceStateResponse,
+  RecurringAuthoringResponse,
   RenameLifeAreaRequest,
   RenameProductTagRequest,
   RenameRoutineRequest,
@@ -6354,6 +6357,136 @@ export const temporalSkipOccurrence = async (
     status: res.status,
     headers: res.headers,
   } as temporalSkipOccurrenceResponse;
+};
+
+export type temporalCreateRecurringEventResponse200 = {
+  data: RecurringAuthoringResponse;
+  status: 200;
+};
+
+export type temporalCreateRecurringEventResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalCreateRecurringEventResponseSuccess =
+  temporalCreateRecurringEventResponse200 & {
+    headers: Headers;
+  };
+export type temporalCreateRecurringEventResponseError =
+  temporalCreateRecurringEventResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalCreateRecurringEventResponse =
+  | temporalCreateRecurringEventResponseSuccess
+  | temporalCreateRecurringEventResponseError;
+
+export const getTemporalCreateRecurringEventUrl = () => {
+  return `/api/v1/temporal/recurring/events`;
+};
+
+/**
+ * @summary Create Recurring Event
+ */
+export const temporalCreateRecurringEvent = async (
+  createRecurringEventRequest: CreateRecurringEventRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalCreateRecurringEventResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(getTemporalCreateRecurringEventUrl(), {
+    ...options,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(createRecurringEventRequest),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalCreateRecurringEventResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalCreateRecurringEventResponse;
+};
+
+export type temporalCreateRecurringRoutineResponse200 = {
+  data: RecurringAuthoringResponse;
+  status: 200;
+};
+
+export type temporalCreateRecurringRoutineResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalCreateRecurringRoutineResponseSuccess =
+  temporalCreateRecurringRoutineResponse200 & {
+    headers: Headers;
+  };
+export type temporalCreateRecurringRoutineResponseError =
+  temporalCreateRecurringRoutineResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalCreateRecurringRoutineResponse =
+  | temporalCreateRecurringRoutineResponseSuccess
+  | temporalCreateRecurringRoutineResponseError;
+
+export const getTemporalCreateRecurringRoutineUrl = () => {
+  return `/api/v1/temporal/recurring/routines`;
+};
+
+/**
+ * @summary Create Recurring Routine
+ */
+export const temporalCreateRecurringRoutine = async (
+  createRecurringRoutineRequest: CreateRecurringRoutineRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalCreateRecurringRoutineResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(getTemporalCreateRecurringRoutineUrl(), {
+    ...options,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(createRecurringRoutineRequest),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalCreateRecurringRoutineResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalCreateRecurringRoutineResponse;
 };
 
 export type temporalListRoutinesResponse200 = {

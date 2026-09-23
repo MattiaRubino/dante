@@ -1788,6 +1788,125 @@
         "title": "CreateProductTagRequest",
         "type": "object"
       },
+      "CreateRecurringEventRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "agenda_parts": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 100,
+            "title": "Agenda Parts",
+            "type": "array"
+          },
+          "life_area_ref": {
+            "format": "uuid",
+            "title": "Life Area Ref",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "recurrence": {
+            "discriminator": {
+              "mapping": {
+                "calendar_wall_clock": "#/components/schemas/CalendarRecurrenceRequest",
+                "cyclic_positional": "#/components/schemas/CyclicRecurrenceRequest",
+                "elapsed_interval": "#/components/schemas/ElapsedRecurrenceRequest",
+                "quota_per_period": "#/components/schemas/QuotaRecurrenceRequest"
+              },
+              "propertyName": "family_code"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/CalendarRecurrenceRequest"
+              },
+              {
+                "$ref": "#/components/schemas/ElapsedRecurrenceRequest"
+              },
+              {
+                "$ref": "#/components/schemas/QuotaRecurrenceRequest"
+              },
+              {
+                "$ref": "#/components/schemas/CyclicRecurrenceRequest"
+              }
+            ],
+            "title": "Recurrence"
+          },
+          "title": {
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "title", "life_area_ref", "recurrence"],
+        "title": "CreateRecurringEventRequest",
+        "type": "object"
+      },
+      "CreateRecurringRoutineRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "life_area_ref": {
+            "format": "uuid",
+            "title": "Life Area Ref",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "recurrence": {
+            "discriminator": {
+              "mapping": {
+                "calendar_wall_clock": "#/components/schemas/CalendarRecurrenceRequest",
+                "cyclic_positional": "#/components/schemas/CyclicRecurrenceRequest",
+                "elapsed_interval": "#/components/schemas/ElapsedRecurrenceRequest",
+                "quota_per_period": "#/components/schemas/QuotaRecurrenceRequest"
+              },
+              "propertyName": "family_code"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/CalendarRecurrenceRequest"
+              },
+              {
+                "$ref": "#/components/schemas/ElapsedRecurrenceRequest"
+              },
+              {
+                "$ref": "#/components/schemas/QuotaRecurrenceRequest"
+              },
+              {
+                "$ref": "#/components/schemas/CyclicRecurrenceRequest"
+              }
+            ],
+            "title": "Recurrence"
+          },
+          "tag_refs": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 100,
+            "title": "Tag Refs",
+            "type": "array"
+          },
+          "title": {
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "title", "life_area_ref", "recurrence"],
+        "title": "CreateRecurringRoutineRequest",
+        "type": "object"
+      },
       "CreateRoutineRequest": {
         "additionalProperties": false,
         "properties": {
@@ -4774,6 +4893,49 @@
         },
         "required": ["material_state_ref", "recurrence"],
         "title": "RecurrenceStateResponse",
+        "type": "object"
+      },
+      "RecurringAuthoringResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "owner_kind": {
+            "enum": ["routine", "event"],
+            "title": "Owner Kind",
+            "type": "string"
+          },
+          "recurrence_material_state_ref": {
+            "format": "uuid",
+            "title": "Recurrence Material State Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "source_ref": {
+            "format": "uuid",
+            "title": "Source Ref",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "owner_kind",
+          "source_ref",
+          "title",
+          "created_at",
+          "recurrence_material_state_ref",
+          "replayed"
+        ],
+        "title": "RecurringAuthoringResponse",
         "type": "object"
       },
       "RegistrationAuthenticatorResponse": {
@@ -20196,6 +20358,84 @@
           }
         },
         "summary": "Skip Occurrence",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/recurring/events": {
+      "post": {
+        "operationId": "temporal_create_recurring_event",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRecurringEventRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecurringAuthoringResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Recurring Event",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/recurring/routines": {
+      "post": {
+        "operationId": "temporal_create_recurring_routine",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRecurringRoutineRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecurringAuthoringResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Recurring Routine",
         "tags": ["temporal"]
       }
     },
