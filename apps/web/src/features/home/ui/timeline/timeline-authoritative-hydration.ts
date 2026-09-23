@@ -3,6 +3,8 @@ import { useEffect, useRef } from 'react';
 
 import { useTemporalTimelineRuntime } from '../../../temporal/timeline-runtime-boundary';
 import type {
+  TemporalTimelineExpectedOccurrenceItem,
+  TemporalTimelineItem,
   TemporalTimelineScheduledActivityItem,
   TemporalTimelineScheduledItem,
 } from '../../../temporal/timeline-read';
@@ -29,7 +31,10 @@ function displayedInterval(
 ): Readonly<{ start: PlainDateTime; end: PlainDateTime }> | null {
   switch (item.temporalForm) {
     case 'floating-local':
-      return Object.freeze({ start: item.startsLocalAt, end: item.endsLocalAt });
+      return Object.freeze({
+        start: item.startsLocalAt,
+        end: item.endsLocalAt,
+      });
     case 'named-zone-local':
     case 'absolute':
       return Object.freeze({
@@ -107,11 +112,131 @@ function canonicalBasis(
       ...shared,
     });
   }
+  if (item.kind === 'scheduled_occurrence') {
+    return Object.freeze({
+      kind: 'scheduled-occurrence' as const,
+      occurrenceRef: item.occurrenceRef,
+      sourceKind: item.sourceKind,
+      sourceNativeRef: item.sourceNativeRef,
+      ...shared,
+    });
+  }
   return Object.freeze({
     kind: 'scheduled-event' as const,
     eventRef: item.eventRef,
     ...shared,
   });
+}
+
+function expectedCalendarProjection(
+  item: TemporalTimelineExpectedOccurrenceItem,
+  effectiveZoneId: string,
+): Readonly<{ dateKey: string; meta?: string }> {
+  const coordinate = item.coordinate;
+  if (coordinate.familyCode !== 'calendar-wall-clock') {
+    throw new TypeError(
+      'Expected calendar projection requires a calendar coordinate.',
+    );
+  }
+  if (coordinate.resolvedAt !== null) {
+    const local = coordinate.resolvedAt.toZonedDateTimeISO(effectiveZoneId);
+    return Object.freeze({
+      dateKey: local.toPlainDate().toString(),
+      meta: local.toPlainTime().toString({ smallestUnit: 'minute' }),
+    });
+  }
+  if (
+    coordinate.clockBasis === 'absolute-utc' &&
+    coordinate.generatedWallTime !== null
+  ) {
+    const local = coordinate.generatedDate
+      .toPlainDateTime(coordinate.generatedWallTime)
+      .toZonedDateTime('UTC')
+      .withTimeZone(effectiveZoneId);
+    return Object.freeze({
+      dateKey: local.toPlainDate().toString(),
+      meta: local.toPlainTime().toString({ smallestUnit: 'minute' }),
+    });
+  }
+  return Object.freeze({
+    dateKey: coordinate.generatedDate.toString(),
+    ...(coordinate.generatedWallTime === null
+      ? {}
+      : {
+          meta: coordinate.generatedWallTime.toString({
+            smallestUnit: 'minute',
+          }),
+        }),
+  });
+}
+
+export function expectedOccurrenceDateLaneItem(
+  item: TemporalTimelineExpectedOccurrenceItem,
+  effectiveZoneId: string,
+  groupId = 'personale',
+): TimelineAllDayItem {
+  const appearance =
+    groupId === 'personale' ? { appearanceTone: 'personal' as const } : {};
+  switch (item.coordinate.familyCode) {
+    case 'calendar-wall-clock': {
+      const projection = expectedCalendarProjection(item, effectiveZoneId);
+      return Object.freeze({
+        id: item.occurrenceRef,
+        startDateKey: projection.dateKey,
+        endDateExclusiveKey: Temporal.PlainDate.from(projection.dateKey)
+          .add({ days: 1 })
+          .toString(),
+        title: item.title,
+        groupId,
+        ...appearance,
+        laneKind: 'expectation' as const,
+        ...(projection.meta === undefined ? {} : { meta: projection.meta }),
+      });
+    }
+    case 'elapsed-interval': {
+      const local =
+        item.coordinate.expectedAt.toZonedDateTimeISO(effectiveZoneId);
+      const date = local.toPlainDate();
+      return Object.freeze({
+        id: item.occurrenceRef,
+        startDateKey: date.toString(),
+        endDateExclusiveKey: date.add({ days: 1 }).toString(),
+        title: item.title,
+        groupId,
+        ...appearance,
+        laneKind: 'expectation' as const,
+        meta: local.toPlainTime().toString({ smallestUnit: 'minute' }),
+      });
+    }
+    case 'quota-per-period':
+      return Object.freeze({
+        id: item.occurrenceRef,
+        startDateKey: item.coordinate.periodStartDate.toString(),
+        endDateExclusiveKey: item.coordinate.periodEndDateExclusive.toString(),
+        title: item.title,
+        groupId,
+        ...appearance,
+        laneKind: 'flexible' as const,
+      });
+    case 'cyclic-positional':
+      return Object.freeze({
+        id: item.occurrenceRef,
+        startDateKey: item.coordinate.generatedDate.toString(),
+        endDateExclusiveKey: item.coordinate.generatedDate
+          .add({ days: 1 })
+          .toString(),
+        title: item.title,
+        groupId,
+        ...appearance,
+        laneKind: 'expectation' as const,
+      });
+  }
+}
+
+function isScheduledItem(
+  item: TemporalTimelineItem,
+): item is TemporalTimelineScheduledItem {
+  return item.kind !== 'expected_occurrence';
 }
 
 export function canonicalScheduledDateLaneItem(
@@ -125,7 +250,9 @@ export function canonicalScheduledDateLaneItem(
       endDateExclusiveKey: item.endDateExclusive.toString(),
       title: item.title,
       groupId,
-      ...(groupId === 'personale' ? { appearanceTone: 'personal' as const } : {}),
+      ...(groupId === 'personale'
+        ? { appearanceTone: 'personal' as const }
+        : {}),
       canonicalBasis: canonicalBasis(item),
       laneKind: 'all-day' as const,
     });
@@ -137,7 +264,9 @@ export function canonicalScheduledDateLaneItem(
       endDateExclusiveKey: item.localDate.add({ days: 1 }).toString(),
       title: item.title,
       groupId,
-      ...(groupId === 'personale' ? { appearanceTone: 'personal' as const } : {}),
+      ...(groupId === 'personale'
+        ? { appearanceTone: 'personal' as const }
+        : {}),
       canonicalBasis: canonicalBasis(item),
       laneKind: 'coarse' as const,
       coarsePeriod: item.period,
@@ -186,7 +315,9 @@ export function canonicalScheduledTimelineEvents(
           endMinute,
           title: item.title,
           groupId,
-          ...(groupId === 'personale' ? { appearanceTone: 'personal' as const } : {}),
+          ...(groupId === 'personale'
+            ? { appearanceTone: 'personal' as const }
+            : {}),
           canonicalBasis: canonicalBasis(item),
           ...(meta === undefined ? {} : { meta }),
         }),
@@ -202,7 +333,9 @@ export function canonicalScheduledTimelineEvent(
 ): Readonly<{ dateKey: string; event: TimelineEvent }> {
   const [projection] = canonicalScheduledTimelineEvents(item);
   if (projection === undefined) {
-    throw new TypeError('Date-lane Schedule placement is not a time-grid event.');
+    throw new TypeError(
+      'Date-lane Schedule placement is not a time-grid event.',
+    );
   }
   return projection;
 }
@@ -239,7 +372,7 @@ export function useAuthoritativeTimelineHydration(
     }>[],
   ) => void,
   onReconcileDateLane: (items: readonly TimelineAllDayItem[]) => void,
-  resolveGroupId?: ((item: TemporalTimelineScheduledItem) => string) | null,
+  resolveGroupId?: ((item: TemporalTimelineItem) => string) | null,
 ): void {
   const { state } = useTemporalTimelineRuntime();
   const reconcileEventsRef = useRef(onReconcileEvents);
@@ -262,13 +395,30 @@ export function useAuthoritativeTimelineHydration(
     }
 
     const items = state.window.kind === 'window' ? state.window.items : [];
+    const scheduledItems = items.filter(isScheduledItem);
     reconcileEventsRef.current(
-      Object.freeze(items.flatMap((item) => canonicalScheduledTimelineEvents(item, resolveGroupId?.(item)))),
+      Object.freeze(
+        scheduledItems.flatMap((item) =>
+          canonicalScheduledTimelineEvents(item, resolveGroupId?.(item)),
+        ),
+      ),
     );
     reconcileDateLaneRef.current(
       Object.freeze(
         items.flatMap((item) => {
-          const projected = canonicalScheduledDateLaneItem(item, resolveGroupId?.(item));
+          if (item.kind === 'expected_occurrence') {
+            return [
+              expectedOccurrenceDateLaneItem(
+                item,
+                state.effectiveZoneId,
+                resolveGroupId?.(item),
+              ),
+            ];
+          }
+          const projected = canonicalScheduledDateLaneItem(
+            item,
+            resolveGroupId?.(item),
+          );
           return projected === null ? [] : [projected];
         }),
       ),

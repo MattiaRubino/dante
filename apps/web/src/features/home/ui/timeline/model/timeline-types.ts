@@ -4,12 +4,7 @@ export type TimelineEventId = string;
 export type TimelineGroupId = string;
 
 export type TimelineSemanticTone =
-  | 'focus'
-  | 'meeting'
-  | 'health'
-  | 'creative'
-  | 'personal'
-  | 'urgent';
+  'focus' | 'meeting' | 'health' | 'creative' | 'personal' | 'urgent';
 
 export type TimelineGroup = Readonly<{
   id: TimelineGroupId;
@@ -68,9 +63,22 @@ export type TimelineCanonicalScheduledEventBasis = Readonly<{
   placement: TimelineCanonicalSchedulePlacement;
 }>;
 
+export type TimelineCanonicalScheduledOccurrenceBasis = Readonly<{
+  kind: 'scheduled-occurrence';
+  occurrenceRef: string;
+  sourceKind: 'routine' | 'event';
+  sourceNativeRef: string;
+  activityRef?: never;
+  eventRef?: never;
+  scheduleRef: string;
+  placementMaterialStateRef: string;
+  placement: TimelineCanonicalSchedulePlacement;
+}>;
+
 export type TimelineCanonicalScheduleBasis =
   | TimelineCanonicalScheduledActivityBasis
-  | TimelineCanonicalScheduledEventBasis;
+  | TimelineCanonicalScheduledEventBasis
+  | TimelineCanonicalScheduledOccurrenceBasis;
 
 export type TimelineEvent = Readonly<{
   id: TimelineEventId;
@@ -90,7 +98,8 @@ export type TimelineEvent = Readonly<{
   subitems?: readonly string[];
 }>;
 
-export type TimelineDateLaneKind = 'all-day' | 'coarse';
+export type TimelineDateLaneKind =
+  'all-day' | 'coarse' | 'expectation' | 'flexible';
 export type TimelineCoarsePeriod = 'morning' | 'afternoon' | 'evening';
 
 export type TimelineAllDayItem = Readonly<{

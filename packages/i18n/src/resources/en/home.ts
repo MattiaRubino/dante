@@ -133,6 +133,8 @@ export const home = {
         label: 'Placement',
         timed: 'Timed',
         allDay: 'All day',
+        expected: 'Expected',
+        flexible: 'Flexible period',
         unscheduled: 'Plan later',
       },
       timeMode: {

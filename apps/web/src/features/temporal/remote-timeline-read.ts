@@ -6,6 +6,10 @@ import {
 } from '../../platform/api/web-fetch';
 import type {
   TemporalTimelineDataSource,
+  TemporalTimelineExpectedOccurrenceItem,
+  TemporalTimelineItem,
+  TemporalTimelineOccurrenceCoordinate,
+  TemporalTimelineScheduledOccurrenceItem,
   TemporalTimelineScheduledItem,
   TemporalTimelineWindow,
   TemporalTimelineWindowRequest,
@@ -17,9 +21,7 @@ const UUID_V7 =
   /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export type TemporalTimelineRemoteFailureKind =
-  | 'transport'
-  | 'http'
-  | 'protocol';
+  'transport' | 'http' | 'protocol';
 
 export class TemporalTimelineRemoteError extends Error {
   constructor(
@@ -115,6 +117,23 @@ function parseLocalDateTime(value: unknown, field: string) {
   }
 }
 
+function parsePlainTime(value: unknown, field: string) {
+  if (typeof value !== 'string') {
+    throw new TemporalTimelineRemoteError(
+      'protocol',
+      `${field} must be a canonical PlainTime string.`,
+    );
+  }
+  try {
+    return Temporal.PlainTime.from(value);
+  } catch {
+    throw new TemporalTimelineRemoteError(
+      'protocol',
+      `${field} must be a canonical PlainTime string.`,
+    );
+  }
+}
+
 function parseInstant(value: unknown, field: string) {
   if (typeof value !== 'string') {
     throw new TemporalTimelineRemoteError(
@@ -163,6 +182,167 @@ function validateWindowRequest(request: TemporalTimelineWindowRequest): void {
   }
 }
 
+function parseOccurrenceCoordinate(
+  payload: unknown,
+): TemporalTimelineOccurrenceCoordinate {
+  if (!isRecord(payload)) {
+    throw new TemporalTimelineRemoteError(
+      'protocol',
+      'Timeline Occurrence coordinate has an unsupported representation.',
+    );
+  }
+
+  switch (payload.family_code) {
+    case 'calendar_wall_clock': {
+      requireExactKeys(
+        payload,
+        [
+          'family_code',
+          'generated_date',
+          'generated_wall_time',
+          'clock_basis_code',
+          'zone_id',
+          'resolved_at',
+        ],
+        'Timeline calendar Occurrence coordinate',
+      );
+      if (
+        payload.clock_basis_code !== 'floating_local' &&
+        payload.clock_basis_code !== 'named_zone' &&
+        payload.clock_basis_code !== 'absolute_utc'
+      ) {
+        throw new TemporalTimelineRemoteError(
+          'protocol',
+          'Timeline calendar Occurrence clock basis is unsupported.',
+        );
+      }
+      const namedZone = payload.clock_basis_code === 'named_zone';
+      if (namedZone !== (typeof payload.zone_id === 'string')) {
+        throw new TemporalTimelineRemoteError(
+          'protocol',
+          'Timeline calendar Occurrence zone does not match its clock basis.',
+        );
+      }
+      return Object.freeze({
+        familyCode: 'calendar-wall-clock' as const,
+        generatedDate: parsePlainDate(payload.generated_date, 'generated_date'),
+        generatedWallTime:
+          payload.generated_wall_time === null
+            ? null
+            : parsePlainTime(
+                payload.generated_wall_time,
+                'generated_wall_time',
+              ),
+        clockBasis:
+          payload.clock_basis_code === 'floating_local'
+            ? ('floating-local' as const)
+            : payload.clock_basis_code === 'named_zone'
+              ? ('named-zone' as const)
+              : ('absolute-utc' as const),
+        zoneId: namedZone ? parseZoneId(payload.zone_id, 'zone_id') : null,
+        resolvedAt:
+          payload.resolved_at === null
+            ? null
+            : parseInstant(payload.resolved_at, 'resolved_at'),
+      });
+    }
+    case 'elapsed_interval':
+      requireExactKeys(
+        payload,
+        ['family_code', 'expected_at'],
+        'Timeline elapsed Occurrence coordinate',
+      );
+      return Object.freeze({
+        familyCode: 'elapsed-interval' as const,
+        expectedAt: parseInstant(payload.expected_at, 'expected_at'),
+      });
+    case 'quota_per_period': {
+      requireExactKeys(
+        payload,
+        [
+          'family_code',
+          'period_start_date',
+          'period_end_date_exclusive',
+          'frame_code',
+          'zone_id',
+        ],
+        'Timeline quota Occurrence coordinate',
+      );
+      if (
+        payload.frame_code !== 'floating_local' &&
+        payload.frame_code !== 'named_zone' &&
+        payload.frame_code !== 'absolute_utc'
+      ) {
+        throw new TemporalTimelineRemoteError(
+          'protocol',
+          'Timeline quota Occurrence frame is unsupported.',
+        );
+      }
+      const periodStartDate = parsePlainDate(
+        payload.period_start_date,
+        'period_start_date',
+      );
+      const periodEndDateExclusive = parsePlainDate(
+        payload.period_end_date_exclusive,
+        'period_end_date_exclusive',
+      );
+      if (
+        Temporal.PlainDate.compare(periodStartDate, periodEndDateExclusive) >= 0
+      ) {
+        throw new TemporalTimelineRemoteError(
+          'protocol',
+          'Timeline quota Occurrence period must be a positive half-open range.',
+        );
+      }
+      const namedZone = payload.frame_code === 'named_zone';
+      if (namedZone !== (typeof payload.zone_id === 'string')) {
+        throw new TemporalTimelineRemoteError(
+          'protocol',
+          'Timeline quota Occurrence zone does not match its frame.',
+        );
+      }
+      return Object.freeze({
+        familyCode: 'quota-per-period' as const,
+        periodStartDate,
+        periodEndDateExclusive,
+        frame:
+          payload.frame_code === 'floating_local'
+            ? ('floating-local' as const)
+            : payload.frame_code === 'named_zone'
+              ? ('named-zone' as const)
+              : ('absolute-utc' as const),
+        zoneId: namedZone ? parseZoneId(payload.zone_id, 'zone_id') : null,
+      });
+    }
+    case 'cyclic_positional':
+      requireExactKeys(
+        payload,
+        ['family_code', 'generated_date', 'position_index'],
+        'Timeline cyclic Occurrence coordinate',
+      );
+      if (
+        typeof payload.position_index !== 'number' ||
+        !Number.isInteger(payload.position_index) ||
+        payload.position_index < 0
+      ) {
+        throw new TemporalTimelineRemoteError(
+          'protocol',
+          'Timeline cyclic Occurrence position must be a non-negative integer.',
+        );
+      }
+      return Object.freeze({
+        familyCode: 'cyclic-positional' as const,
+        generatedDate: parsePlainDate(payload.generated_date, 'generated_date'),
+        positionIndex: payload.position_index,
+      });
+    default:
+      throw new TemporalTimelineRemoteError(
+        'protocol',
+        'Timeline Occurrence coordinate family is unsupported.',
+      );
+  }
+}
+
 type ParsedOwnerIdentity =
   | Readonly<{
       kind: 'scheduled_activity';
@@ -181,7 +361,9 @@ type ParsedOwnerIdentity =
       wireRefKey: 'event_ref';
     }>;
 
-function parseOwnerIdentity(payload: Record<string, unknown>): ParsedOwnerIdentity {
+function parseOwnerIdentity(
+  payload: Record<string, unknown>,
+): ParsedOwnerIdentity {
   if (typeof payload.title !== 'string' || payload.title.trim().length === 0) {
     throw new TemporalTimelineRemoteError(
       'protocol',
@@ -429,6 +611,288 @@ function parseScheduledItem(payload: unknown): TemporalTimelineScheduledItem {
   }
 }
 
+function parseScheduledOccurrence(
+  payload: Record<string, unknown>,
+): TemporalTimelineScheduledOccurrenceItem {
+  requireExactKeys(
+    payload,
+    [
+      'kind',
+      'occurrence_ref',
+      'source_kind',
+      'source_native_ref',
+      'title',
+      'coordinate',
+      'schedule_ref',
+      'placement_material_state_ref',
+      'placement',
+    ],
+    'Scheduled Timeline Occurrence',
+  );
+  if (payload.source_kind !== 'routine' && payload.source_kind !== 'event') {
+    throw new TemporalTimelineRemoteError(
+      'protocol',
+      'Scheduled Timeline Occurrence source kind is unsupported.',
+    );
+  }
+  if (typeof payload.title !== 'string' || payload.title.trim().length === 0) {
+    throw new TemporalTimelineRemoteError(
+      'protocol',
+      'Scheduled Timeline Occurrence title must be a non-empty string.',
+    );
+  }
+  if (!isRecord(payload.placement)) {
+    throw new TemporalTimelineRemoteError(
+      'protocol',
+      'Scheduled Timeline Occurrence placement has an unsupported representation.',
+    );
+  }
+  const common = {
+    kind: 'scheduled_occurrence' as const,
+    occurrenceRef: parseUuidV7(payload.occurrence_ref, 'occurrence_ref'),
+    sourceKind: payload.source_kind,
+    sourceNativeRef: parseUuidV7(
+      payload.source_native_ref,
+      'source_native_ref',
+    ),
+    title: payload.title,
+    coordinate:
+      payload.coordinate === null
+        ? null
+        : parseOccurrenceCoordinate(payload.coordinate),
+    scheduleRef: parseUuidV7(payload.schedule_ref, 'schedule_ref'),
+    placementMaterialStateRef: parseUuidV7(
+      payload.placement_material_state_ref,
+      'placement_material_state_ref',
+    ),
+  };
+  const placement = payload.placement;
+
+  switch (placement.temporal_form) {
+    case 'date_span': {
+      requireExactKeys(
+        placement,
+        ['temporal_form', 'start_date', 'end_date_exclusive'],
+        'Scheduled Timeline Occurrence date-span placement',
+      );
+      const startDate = parsePlainDate(placement.start_date, 'start_date');
+      const endDateExclusive = parsePlainDate(
+        placement.end_date_exclusive,
+        'end_date_exclusive',
+      );
+      if (Temporal.PlainDate.compare(startDate, endDateExclusive) >= 0) {
+        throw new TemporalTimelineRemoteError(
+          'protocol',
+          'Scheduled Timeline Occurrence date span must be positive.',
+        );
+      }
+      return Object.freeze({
+        ...common,
+        temporalForm: 'date-span' as const,
+        startDate,
+        endDateExclusive,
+      });
+    }
+    case 'floating_local': {
+      requireExactKeys(
+        placement,
+        ['temporal_form', 'starts_local_at', 'ends_local_at'],
+        'Scheduled Timeline Occurrence floating placement',
+      );
+      const startsLocalAt = parseLocalDateTime(
+        placement.starts_local_at,
+        'starts_local_at',
+      );
+      const endsLocalAt = parseLocalDateTime(
+        placement.ends_local_at,
+        'ends_local_at',
+      );
+      if (Temporal.PlainDateTime.compare(startsLocalAt, endsLocalAt) >= 0) {
+        throw new TemporalTimelineRemoteError(
+          'protocol',
+          'Scheduled Timeline Occurrence floating placement must be positive.',
+        );
+      }
+      return Object.freeze({
+        ...common,
+        temporalForm: 'floating-local' as const,
+        startsLocalAt,
+        endsLocalAt,
+      });
+    }
+    case 'named_zone_local': {
+      requireExactKeys(
+        placement,
+        [
+          'temporal_form',
+          'starts_local_at',
+          'ends_local_at',
+          'zone_id',
+          'resolved_start_at',
+          'resolved_end_at',
+          'display_starts_local_at',
+          'display_ends_local_at',
+        ],
+        'Scheduled Timeline Occurrence named-zone placement',
+      );
+      const startsLocalAt = parseLocalDateTime(
+        placement.starts_local_at,
+        'starts_local_at',
+      );
+      const endsLocalAt = parseLocalDateTime(
+        placement.ends_local_at,
+        'ends_local_at',
+      );
+      const resolvedStartAt = parseInstant(
+        placement.resolved_start_at,
+        'resolved_start_at',
+      );
+      const resolvedEndAt = parseInstant(
+        placement.resolved_end_at,
+        'resolved_end_at',
+      );
+      if (
+        Temporal.PlainDateTime.compare(startsLocalAt, endsLocalAt) >= 0 ||
+        Temporal.Instant.compare(resolvedStartAt, resolvedEndAt) >= 0
+      ) {
+        throw new TemporalTimelineRemoteError(
+          'protocol',
+          'Scheduled Timeline Occurrence named-zone placement must be positive.',
+        );
+      }
+      return Object.freeze({
+        ...common,
+        temporalForm: 'named-zone-local' as const,
+        startsLocalAt,
+        endsLocalAt,
+        zoneId: parseZoneId(placement.zone_id, 'zone_id'),
+        resolvedStartAt,
+        resolvedEndAt,
+        displayStartsLocalAt: parseLocalDateTime(
+          placement.display_starts_local_at,
+          'display_starts_local_at',
+        ),
+        displayEndsLocalAt: parseLocalDateTime(
+          placement.display_ends_local_at,
+          'display_ends_local_at',
+        ),
+      });
+    }
+    case 'absolute': {
+      requireExactKeys(
+        placement,
+        [
+          'temporal_form',
+          'starts_at',
+          'ends_at',
+          'display_starts_local_at',
+          'display_ends_local_at',
+        ],
+        'Scheduled Timeline Occurrence absolute placement',
+      );
+      const startsAt = parseInstant(placement.starts_at, 'starts_at');
+      const endsAt = parseInstant(placement.ends_at, 'ends_at');
+      if (Temporal.Instant.compare(startsAt, endsAt) >= 0) {
+        throw new TemporalTimelineRemoteError(
+          'protocol',
+          'Scheduled Timeline Occurrence absolute placement must be positive.',
+        );
+      }
+      return Object.freeze({
+        ...common,
+        temporalForm: 'absolute' as const,
+        startsAt,
+        endsAt,
+        displayStartsLocalAt: parseLocalDateTime(
+          placement.display_starts_local_at,
+          'display_starts_local_at',
+        ),
+        displayEndsLocalAt: parseLocalDateTime(
+          placement.display_ends_local_at,
+          'display_ends_local_at',
+        ),
+      });
+    }
+    case 'coarse_local_period':
+      requireExactKeys(
+        placement,
+        ['temporal_form', 'local_date', 'period'],
+        'Scheduled Timeline Occurrence coarse placement',
+      );
+      if (
+        placement.period !== 'morning' &&
+        placement.period !== 'afternoon' &&
+        placement.period !== 'evening'
+      ) {
+        throw new TemporalTimelineRemoteError(
+          'protocol',
+          'Scheduled Timeline Occurrence coarse period is unsupported.',
+        );
+      }
+      return Object.freeze({
+        ...common,
+        temporalForm: 'coarse-local-period' as const,
+        localDate: parsePlainDate(placement.local_date, 'local_date'),
+        period: placement.period,
+      });
+    default:
+      throw new TemporalTimelineRemoteError(
+        'protocol',
+        'Scheduled Timeline Occurrence placement form is unsupported.',
+      );
+  }
+}
+
+function parseExpectedOccurrence(
+  payload: Record<string, unknown>,
+): TemporalTimelineExpectedOccurrenceItem {
+  requireExactKeys(
+    payload,
+    [
+      'kind',
+      'occurrence_ref',
+      'source_kind',
+      'source_native_ref',
+      'title',
+      'coordinate',
+    ],
+    'Expected Timeline Occurrence',
+  );
+  if (payload.source_kind !== 'routine' && payload.source_kind !== 'event') {
+    throw new TemporalTimelineRemoteError(
+      'protocol',
+      'Expected Timeline Occurrence source kind is unsupported.',
+    );
+  }
+  if (typeof payload.title !== 'string' || payload.title.trim().length === 0) {
+    throw new TemporalTimelineRemoteError(
+      'protocol',
+      'Expected Timeline Occurrence title must be a non-empty string.',
+    );
+  }
+  return Object.freeze({
+    kind: 'expected_occurrence' as const,
+    occurrenceRef: parseUuidV7(payload.occurrence_ref, 'occurrence_ref'),
+    sourceKind: payload.source_kind,
+    sourceNativeRef: parseUuidV7(
+      payload.source_native_ref,
+      'source_native_ref',
+    ),
+    title: payload.title,
+    coordinate: parseOccurrenceCoordinate(payload.coordinate),
+  });
+}
+
+function parseTimelineItem(payload: unknown): TemporalTimelineItem {
+  if (isRecord(payload) && payload.kind === 'scheduled_occurrence') {
+    return parseScheduledOccurrence(payload);
+  }
+  if (isRecord(payload) && payload.kind === 'expected_occurrence') {
+    return parseExpectedOccurrence(payload);
+  }
+  return parseScheduledItem(payload);
+}
+
 function parseWindow(payload: unknown): TemporalTimelineWindow {
   if (!isRecord(payload)) {
     throw new TemporalTimelineRemoteError(
@@ -486,7 +950,7 @@ function parseWindow(payload: unknown): TemporalTimelineWindow {
         payload.effective_zone_id,
         'effective_zone_id',
       ),
-      items: Object.freeze(payload.items.map(parseScheduledItem)),
+      items: Object.freeze(payload.items.map(parseTimelineItem)),
     });
   }
 

@@ -64,20 +64,21 @@ export function TimelineAllDayLane({
   }
 
   const language = i18n.resolvedLanguage ?? i18n.language;
-  const hasAllDay = visibleItems.some(
-    (item) => (item.laneKind ?? 'all-day') === 'all-day',
+  const laneLabels = new Set(
+    visibleItems.map((item) => {
+      switch (item.laneKind ?? 'all-day') {
+        case 'coarse':
+          return language.toLowerCase().startsWith('en') ? 'Period' : 'Fascia';
+        case 'expectation':
+          return t(($) => $.common.home.timeline.create.timeSemantics.expected);
+        case 'flexible':
+          return t(($) => $.common.home.timeline.create.timeSemantics.flexible);
+        case 'all-day':
+          return t(($) => $.common.home.timeline.create.timeSemantics.allDay);
+      }
+    }),
   );
-  const hasCoarse = visibleItems.some((item) => item.laneKind === 'coarse');
-  const laneLabel =
-    hasAllDay && hasCoarse
-      ? language.toLowerCase().startsWith('en')
-        ? 'All day · Period'
-        : 'Tutto il giorno · Fascia'
-      : hasCoarse
-        ? language.toLowerCase().startsWith('en')
-          ? 'Period'
-          : 'Fascia'
-        : t(($) => $.common.home.timeline.create.timeSemantics.allDay);
+  const laneLabel = [...laneLabels].join(' · ');
 
   return (
     <section
@@ -101,9 +102,19 @@ export function TimelineAllDayLane({
           const precisionLabel =
             laneKind === 'coarse' && item.coarsePeriod !== undefined
               ? coarsePeriodLabel(item.coarsePeriod, language)
-              : t(($) => $.common.home.timeline.create.timeSemantics.allDay);
+              : laneKind === 'expectation'
+                ? t(($) => $.common.home.timeline.create.timeSemantics.expected)
+                : laneKind === 'flexible'
+                  ? t(
+                      ($) =>
+                        $.common.home.timeline.create.timeSemantics.flexible,
+                    )
+                  : t(
+                      ($) => $.common.home.timeline.create.timeSemantics.allDay,
+                    );
           const basis = item.canonicalBasis;
-          const canUnschedule = basis !== undefined && canonicalActions !== null;
+          const canUnschedule =
+            basis !== undefined && canonicalActions !== null;
           const pending =
             basis !== undefined &&
             canonicalActions?.pendingScheduleRef === basis.scheduleRef;

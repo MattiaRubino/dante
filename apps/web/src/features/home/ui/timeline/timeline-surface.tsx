@@ -193,13 +193,13 @@ export function TimelineSurface({
     [organization.snapshot],
   );
   const resolveGroupId = useCallback(
-    (
-      item: import('../../../temporal/timeline-read').TemporalTimelineScheduledItem,
-    ) =>
+    (item: import('../../../temporal/timeline-read').TemporalTimelineItem) =>
       assignmentBySubject.get(
         item.kind === 'scheduled_activity'
           ? `activity:${item.activityRef}`
-          : `event:${item.eventRef}`,
+          : item.kind === 'scheduled_event'
+            ? `event:${item.eventRef}`
+            : `${item.sourceKind}:${item.sourceNativeRef}`,
       ) ?? LEGACY_UNASSIGNED_GROUP,
     [assignmentBySubject],
   );

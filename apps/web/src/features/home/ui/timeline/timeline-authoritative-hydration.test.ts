@@ -1,10 +1,16 @@
 import { Temporal } from '@dante/time';
 import { describe, expect, it } from 'vitest';
 
-import type { TemporalTimelineScheduledActivityItem } from '../../../temporal/timeline-read';
+import type {
+  TemporalTimelineExpectedOccurrenceItem,
+  TemporalTimelineScheduledActivityItem,
+  TemporalTimelineScheduledOccurrenceItem,
+} from '../../../temporal/timeline-read';
 import {
+  canonicalScheduledTimelineEvent,
   canonicalScheduledActivityTimelineEvent,
   canonicalScheduledActivityTimelineEvents,
+  expectedOccurrenceDateLaneItem,
 } from './timeline-authoritative-hydration';
 
 const ACTIVITY_REF = '0199a8c0-5e71-7bc0-8ad0-a2f403f5617d';
@@ -145,7 +151,8 @@ describe('authoritative Timeline hydration', () => {
     }) satisfies TemporalTimelineScheduledActivityItem;
 
     const namedProjection = canonicalScheduledActivityTimelineEvent(named);
-    const absoluteProjection = canonicalScheduledActivityTimelineEvent(absolute);
+    const absoluteProjection =
+      canonicalScheduledActivityTimelineEvent(absolute);
 
     expect(namedProjection.event.startMinute).toBe(550);
     expect(namedProjection.event.endMinute).toBe(580);
@@ -179,5 +186,55 @@ describe('authoritative Timeline hydration', () => {
 
     expect(canonicalScheduledActivityTimelineEvents(dateSpan)).toEqual([]);
     expect(canonicalScheduledActivityTimelineEvents(coarse)).toEqual([]);
+  });
+
+  it('retains Occurrence identity and source ownership on an accepted Schedule', () => {
+    const item = Object.freeze({
+      kind: 'scheduled_occurrence' as const,
+      occurrenceRef: '0199a8c0-5e74-7bc0-8ad0-a2f403f5617d',
+      sourceKind: 'routine' as const,
+      sourceNativeRef: '0199a8c0-5e75-7bc0-8ad0-a2f403f5617d',
+      scheduleRef: SCHEDULE_REF,
+      placementMaterialStateRef: MATERIAL_STATE_REF,
+      title: 'Farmaco',
+      coordinate: null,
+      temporalForm: 'floating-local' as const,
+      startsLocalAt: Temporal.PlainDateTime.from('2026-09-09T08:00'),
+      endsLocalAt: Temporal.PlainDateTime.from('2026-09-09T08:15'),
+    }) satisfies TemporalTimelineScheduledOccurrenceItem;
+
+    const projection = canonicalScheduledTimelineEvent(item);
+
+    expect(projection.event.canonicalBasis).toMatchObject({
+      kind: 'scheduled-occurrence',
+      occurrenceRef: item.occurrenceRef,
+      sourceKind: 'routine',
+      sourceNativeRef: item.sourceNativeRef,
+      scheduleRef: SCHEDULE_REF,
+    });
+  });
+
+  it('renders quota expectations as flexible date-lane periods without clock geometry', () => {
+    const item = Object.freeze({
+      kind: 'expected_occurrence' as const,
+      occurrenceRef: '0199a8c0-5e74-7bc0-8ad0-a2f403f5617d',
+      sourceKind: 'event' as const,
+      sourceNativeRef: '0199a8c0-5e75-7bc0-8ad0-a2f403f5617d',
+      title: 'Allenamenti',
+      coordinate: Object.freeze({
+        familyCode: 'quota-per-period' as const,
+        periodStartDate: Temporal.PlainDate.from('2026-09-07'),
+        periodEndDateExclusive: Temporal.PlainDate.from('2026-09-14'),
+        frame: 'floating-local' as const,
+        zoneId: null,
+      }),
+    }) satisfies TemporalTimelineExpectedOccurrenceItem;
+
+    expect(expectedOccurrenceDateLaneItem(item, 'Europe/Rome')).toMatchObject({
+      id: item.occurrenceRef,
+      startDateKey: '2026-09-07',
+      endDateExclusiveKey: '2026-09-14',
+      laneKind: 'flexible',
+    });
   });
 });

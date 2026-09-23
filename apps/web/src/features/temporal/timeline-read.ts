@@ -1,4 +1,4 @@
-import type { Instant, PlainDate, PlainDateTime } from '@dante/time';
+import type { Instant, PlainDate, PlainDateTime, PlainTime } from '@dante/time';
 
 export type TemporalTimelineWindowRequest = Readonly<{
   startDate: string;
@@ -60,9 +60,7 @@ type TemporalTimelineAbsoluteFields = Readonly<{
 }>;
 
 export type TemporalTimelineCoarseLocalPeriod =
-  | 'morning'
-  | 'afternoon'
-  | 'evening';
+  'morning' | 'afternoon' | 'evening';
 
 type TemporalTimelineCoarseLocalPeriodFields = Readonly<{
   temporalForm: 'coarse-local-period';
@@ -79,7 +77,8 @@ export type TemporalTimelineNamedZoneLocalActivityItem =
 export type TemporalTimelineAbsoluteActivityItem =
   TemporalTimelineScheduledActivityBase & TemporalTimelineAbsoluteFields;
 export type TemporalTimelineCoarseLocalPeriodActivityItem =
-  TemporalTimelineScheduledActivityBase & TemporalTimelineCoarseLocalPeriodFields;
+  TemporalTimelineScheduledActivityBase &
+    TemporalTimelineCoarseLocalPeriodFields;
 
 export type TemporalTimelineScheduledActivityItem =
   | TemporalTimelineDateSpanActivityItem
@@ -106,21 +105,80 @@ export type TemporalTimelineScheduledEventItem =
   | TemporalTimelineAbsoluteEventItem
   | TemporalTimelineCoarseLocalPeriodEventItem;
 
+export type TemporalTimelineOccurrenceCoordinate =
+  | Readonly<{
+      familyCode: 'calendar-wall-clock';
+      generatedDate: PlainDate;
+      generatedWallTime: PlainTime | null;
+      clockBasis: 'floating-local' | 'named-zone' | 'absolute-utc';
+      zoneId: string | null;
+      resolvedAt: Instant | null;
+    }>
+  | Readonly<{
+      familyCode: 'elapsed-interval';
+      expectedAt: Instant;
+    }>
+  | Readonly<{
+      familyCode: 'quota-per-period';
+      periodStartDate: PlainDate;
+      periodEndDateExclusive: PlainDate;
+      frame: 'floating-local' | 'named-zone' | 'absolute-utc';
+      zoneId: string | null;
+    }>
+  | Readonly<{
+      familyCode: 'cyclic-positional';
+      generatedDate: PlainDate;
+      positionIndex: number;
+    }>;
+
+type TemporalTimelineScheduledOccurrenceBase = Readonly<{
+  kind: 'scheduled_occurrence';
+  occurrenceRef: string;
+  sourceKind: 'routine' | 'event';
+  sourceNativeRef: string;
+  scheduleRef: string;
+  placementMaterialStateRef: string;
+  title: string;
+  coordinate: TemporalTimelineOccurrenceCoordinate | null;
+}>;
+
+export type TemporalTimelineScheduledOccurrenceItem =
+  TemporalTimelineScheduledOccurrenceBase &
+    (
+      | TemporalTimelineDateSpanFields
+      | TemporalTimelineFloatingLocalFields
+      | TemporalTimelineNamedZoneLocalFields
+      | TemporalTimelineAbsoluteFields
+      | TemporalTimelineCoarseLocalPeriodFields
+    );
+
+export type TemporalTimelineExpectedOccurrenceItem = Readonly<{
+  kind: 'expected_occurrence';
+  occurrenceRef: string;
+  sourceKind: 'routine' | 'event';
+  sourceNativeRef: string;
+  title: string;
+  coordinate: TemporalTimelineOccurrenceCoordinate;
+}>;
+
 export type TemporalTimelineScheduledItem =
   | TemporalTimelineScheduledActivityItem
-  | TemporalTimelineScheduledEventItem;
+  | TemporalTimelineScheduledEventItem
+  | TemporalTimelineScheduledOccurrenceItem;
+
+export type TemporalTimelineItem =
+  TemporalTimelineScheduledItem | TemporalTimelineExpectedOccurrenceItem;
 
 export type TemporalTimelineItemsWindow = Readonly<{
   kind: 'window';
   startDate: string;
   endDateExclusive: string;
   effectiveZoneId: string;
-  items: readonly TemporalTimelineScheduledItem[];
+  items: readonly TemporalTimelineItem[];
 }>;
 
 export type TemporalTimelineWindow =
-  | TemporalTimelineEmptyWindow
-  | TemporalTimelineItemsWindow;
+  TemporalTimelineEmptyWindow | TemporalTimelineItemsWindow;
 
 export interface TemporalTimelineDataSource {
   loadWindow(

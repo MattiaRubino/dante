@@ -131,6 +131,8 @@ export const home = {
         label: 'Collocazione',
         timed: 'Orario',
         allDay: 'Tutto il giorno',
+        expected: 'Atteso',
+        flexible: 'Periodo flessibile',
         unscheduled: 'Da pianificare',
       },
       timeMode: {

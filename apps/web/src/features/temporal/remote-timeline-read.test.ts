@@ -198,7 +198,11 @@ describe('remote temporal Timeline data source', () => {
       throw new Error('expected populated Timeline window');
     }
 
-    expect(window.items.map((item) => item.temporalForm)).toEqual([
+    expect(
+      window.items.map((item) =>
+        item.kind === 'expected_occurrence' ? null : item.temporalForm,
+      ),
+    ).toEqual([
       'date-span',
       'named-zone-local',
       'absolute',
@@ -227,6 +231,80 @@ describe('remote temporal Timeline data source', () => {
       '2026-09-09T09:00:00',
     );
     expect(coarse.period).toBe('afternoon');
+  });
+
+  it('preserves scheduled precedence metadata and flexible expected coordinates', async () => {
+    const source = createRemoteTemporalTimelineDataSource(
+      vi.fn<typeof globalThis.fetch>(() =>
+        Promise.resolve(
+          jsonResponse(
+            populated([
+              {
+                kind: 'scheduled_occurrence',
+                occurrence_ref: '01991f2a-4567-7def-8abc-4567890abcde',
+                source_kind: 'routine',
+                source_native_ref: '01991f2a-5678-7efa-9bcd-567890abcdef',
+                title: 'Farmaco',
+                coordinate: {
+                  family_code: 'calendar_wall_clock',
+                  generated_date: '2026-09-09',
+                  generated_wall_time: '08:00:00',
+                  clock_basis_code: 'floating_local',
+                  zone_id: null,
+                  resolved_at: null,
+                },
+                schedule_ref: '01991f2a-6789-7fab-8cde-67890abcdef1',
+                placement_material_state_ref:
+                  '01991f2a-789a-7abc-9def-7890abcdef12',
+                placement: {
+                  temporal_form: 'floating_local',
+                  starts_local_at: '2026-09-09T09:00:00',
+                  ends_local_at: '2026-09-09T09:30:00',
+                },
+              },
+              {
+                kind: 'expected_occurrence',
+                occurrence_ref: '01991f2a-89ab-7bcd-8efa-890abcdef123',
+                source_kind: 'event',
+                source_native_ref: '01991f2a-9abc-7cde-9fab-90abcdef1234',
+                title: 'Allenamenti',
+                coordinate: {
+                  family_code: 'quota_per_period',
+                  period_start_date: '2026-09-07',
+                  period_end_date_exclusive: '2026-09-14',
+                  frame_code: 'floating_local',
+                  zone_id: null,
+                },
+              },
+            ]),
+          ),
+        ),
+      ),
+      () => 'Europe/Rome',
+    );
+
+    const window = await source.loadWindow(WINDOW_REQUEST);
+    if (window.kind !== 'window') {
+      throw new Error('expected populated Timeline window');
+    }
+    const [scheduled, expected] = window.items;
+    expect(scheduled).toMatchObject({
+      kind: 'scheduled_occurrence',
+      sourceKind: 'routine',
+      temporalForm: 'floating-local',
+      coordinate: {
+        familyCode: 'calendar-wall-clock',
+        clockBasis: 'floating-local',
+      },
+    });
+    expect(expected).toMatchObject({
+      kind: 'expected_occurrence',
+      sourceKind: 'event',
+      coordinate: {
+        familyCode: 'quota-per-period',
+        frame: 'floating-local',
+      },
+    });
   });
 
   it('does not replace backend failure with an empty success', async () => {
