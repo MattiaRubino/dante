@@ -8,6 +8,7 @@ import {
 const AREA_REF = '0199a8c0-6e71-7bc0-8ad0-a2f403f5617d';
 const EVENT_REF = '0199a8c0-6e72-7bc0-8ad0-a2f403f5617d';
 const TAG_REF = '0199a8c0-6e73-7bc0-8ad0-a2f403f5617d';
+const ROUTINE_REF = '0199a8c0-6e74-7bc0-8ad0-a2f403f5617d';
 
 function response(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -17,7 +18,7 @@ function response(body: unknown, status = 200): Response {
 }
 
 describe('remote temporal organization data source', () => {
-  it('reads the separate actor-local catalogs and typed relations without inventing an area', async () => {
+  it('reads actor-local catalogs and inherits Routine organization without Occurrence clones', async () => {
     const fetchFn = vi.fn<typeof globalThis.fetch>((input, init) => {
       expect(new Headers(init?.headers).get('X-Dante-Client')).toBe('web');
       switch (input) {
@@ -70,6 +71,25 @@ describe('remote temporal organization data source', () => {
               },
             ]),
           );
+        case '/api/v1/temporal/routines':
+          return Promise.resolve(
+            response([
+              {
+                routine_ref: ROUTINE_REF,
+                title: 'Allenamento',
+                lifecycle_state: 'active',
+                source_revision: 1,
+                created_at: '2026-09-23T08:00:00Z',
+                updated_at: '2026-09-23T08:00:00Z',
+                lifecycle_changed_at: '2026-09-23T08:00:00Z',
+                life_area_ref: AREA_REF,
+                life_area_assignment_revision: 3,
+                life_area_assigned_at: '2026-09-23T08:00:00Z',
+                tag_refs: [TAG_REF],
+                replayed: false,
+              },
+            ]),
+          );
         default:
           throw new Error(`unexpected request ${String(input)}`);
       }
@@ -87,12 +107,27 @@ describe('remote temporal organization data source', () => {
         itemRef: EVENT_REF,
         areaRef: AREA_REF,
       }),
+      expect.objectContaining({
+        kind: 'routine',
+        itemRef: ROUTINE_REF,
+        areaRef: AREA_REF,
+        revision: 3,
+      }),
     ]);
     expect(snapshot.tags).toEqual([expect.objectContaining({ ref: TAG_REF })]);
     expect(snapshot.tagEdges).toEqual([
-      expect.objectContaining({ tagRef: TAG_REF }),
+      expect.objectContaining({
+        kind: 'event',
+        itemRef: EVENT_REF,
+        tagRef: TAG_REF,
+      }),
+      expect.objectContaining({
+        kind: 'routine',
+        itemRef: ROUTINE_REF,
+        tagRef: TAG_REF,
+      }),
     ]);
-    expect(fetchFn).toHaveBeenCalledTimes(5);
+    expect(fetchFn).toHaveBeenCalledTimes(6);
   });
 
   it('uses the governed CSRF boundary for an actor-local Life Area mutation', async () => {
