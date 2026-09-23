@@ -1,7 +1,7 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B04 ✅ CLOSED / PROVEN → B05 ✅ CLOSED / PROVEN → B06-D 🔒 APPROVED / IN PROGRESS
-- **Reconciled:** 2026-09-22
+- **Status:** B04 ✅ CLOSED / PROVEN → B05 ✅ CLOSED / PROVEN → B06-D ✅ CLOSED / PROVEN → B06-E NEXT
+- **Reconciled:** 2026-09-23
 - **Branch:** `feature/timeline-temporal-operational`
 - **Current roadmap:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Current live map/ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
@@ -17,6 +17,7 @@
 - **B06-C implementation freeze:** `docs/workstreams/timeline-temporal-operational-b06-c-implementation-freeze.md`
 - **B06-C closure:** `docs/workstreams/timeline-temporal-operational-b06-c-closure-2026-09-22.md`
 - **B06-D implementation freeze:** `docs/workstreams/timeline-temporal-operational-b06-d-implementation-freeze.md`
+- **B06-D closure:** `docs/workstreams/timeline-temporal-operational-b06-d-closure-2026-09-23.md`
 - **Timeline candidate DB overlay:** `docs/database/timeline-temporal-operational.md`
 - **CI:** no CI launch is implied or authorized
 
@@ -36,7 +37,7 @@ B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
 ├─ B04-E Advanced-family applicability           ✅ CLOSED / PROVEN
 └─ B04-F Whole-B04 closure                       ✅ CLOSED / PROVEN
 B05 Product Organization                         ✅ CLOSED / PROVEN
-B06 Routine / Recurrence / Occurrence Baseline   🟨 B06-D IMPLEMENTATION IN PROGRESS
+B06 Routine / Recurrence / Occurrence Baseline   🟨 B06-E WHOLE-BLOCK CLOSURE
 ...
 B15 Whole Vertical Closure                       ⬜
 ```
@@ -45,8 +46,8 @@ Current candidate DB:
 
 ```text
 PostgreSQL 18.6
-Alembic source 20260922_55
-Proven topology   145|5|87|92|285|223|408|0|0|0 (B06-C proven)
+Alembic source 20260923_57
+Proven topology 145|5|88|92|285|223|408|0|0|0 (B06-D proven)
 ```
 
 ## 2. Binding foundation carried forward
@@ -68,9 +69,12 @@ planned Schedule duration != Actual duration
 hard planning violation != impossible reality
 Schedule != Session != Actual
 Actual != Outcome
+Routine != Recurrence != Occurrence
+Occurrence != Schedule
+projection != canonical truth
 ```
 
-Pre-B04 DB/API same-change governance remains binding for B04-F and later blocks.
+Pre-B04 DB/API same-change governance remains binding for all later blocks.
 
 ## 3. B04-A/B/C carried forward
 
@@ -184,72 +188,58 @@ B04-E Advanced-family applicability ✅ CLOSED / PROVEN
 
 ## 8. Unsupported / later-owned semantics
 
-B04-E does not activate:
+The current vertical still does not pull forward:
 
 ```text
 Session contiguous-duration runtime
-previous Session/Actual/Occurrence spacing runtime
+Actual / Outcome / Confirmation
 arbitrary heterogeneous relative-reference persistence
 solver candidate generation
 optimization/replanning search
+provider/offline synchronization
 multi-actor grants / complete Authority model
 ```
 
-## 9. B04 whole-block closure
+## 9. B04/B05 closure carried forward
 
-Closure authority: `timeline-temporal-operational-b04-f-closure-2026-09-20.md`.
+B04 whole-block authority is `timeline-temporal-operational-b04-f-closure-2026-09-20.md`. B05 whole-block authority is `timeline-temporal-operational-b05-e-closure-2026-09-21.md`.
 
-It records compact final PostgreSQL/web proof, Dictionary/Alembic reconciliation and the accepted real-stack manual hard-window flow. `Fascia` remains a B02 coarse Schedule placement, not a B04 constraint.
+`Fascia` remains a B02 coarse Schedule placement, not a B04 constraint. Life Area/Tags remain actor-local product organization, not new Domain roots.
 
-## 10. Current gate
+## 10. B06 current authority
+
+```text
+B06-A Routine source core                         ✅ CLOSED / PROVEN at `_51`
+B06-B Recurrence authoring                        ✅ CLOSED / PROVEN at `_54`
+B06-C canonical Occurrence checkpoint             ✅ CLOSED / PROVEN at `_55`
+B06-D shared Schedule / Timeline / functional UI  ✅ CLOSED / PROVEN at `_57`
+B06-E whole-block closure                         🟨 NEXT
+```
+
+B06-D reuses the existing Schedule authority for materialized Occurrences. It does not create `occurrence_schedule`, rewrite provenance or convert repeated Activity into Routine. Timeline is checkpoint-before-read; `GET` remains read-only. Expected and scheduled Occurrence projections obey one-item precedence, quota/cyclic truth stays untimed unless explicitly scheduled, and source organization is inherited rather than cloned.
+
+The local D proof discovered and closed two least-privilege defects rather than widening runtime grants: `_57` exposes unscheduled expected Occurrences through `list_self_expected_occurrences_in_window(uuid,date,date,text)`, scheduled provenance reuses `get_self_occurrence`, and Routine presentation reuses `list_self_routines`. The proven `_57` topology is `145|5|88|92|285|223|408|0|0|0`.
+
+User-run final B06-D evidence:
+
+```text
+focused Occurrence Schedule PostgreSQL test   1 PASS
+backend + catalog gate                       11 PASS
+web TypeScript typecheck                      PASS
+focused web Vitest files                     4 PASS
+focused web Vitest tests                    18 PASS
+```
+
+## 11. Current gate
 
 ```text
 B04 ✅ CLOSED / PROVEN
-B05-A ✅ CLOSED / PROVEN at `_45`
-B05-B ✅ CLOSED / PROVEN at `_46` (16 selected PostgreSQL tests)
-B05-C ✅ CLOSED / PROVEN at `_47` (26 selected PostgreSQL tests)
-B05-D ✅ CLOSED / PROVEN at `_48` (41 selected web + 24 PostgreSQL/API/catalog tests)
-B05-E ✅ WHOLE-BLOCK CLOSURE / MANUAL WALKTHROUGH COMPLETE
-B05   ✅ CLOSED / PROVEN
+B05 ✅ CLOSED / PROVEN
 B06-A ✅ CLOSED / PROVEN at `_51`
-B06-B ✅ CLOSED / PROVEN at `_54` (1 fingerprint + 28 PostgreSQL/catalog regressions)
-B06-C ✅ CLOSED / PROVEN at `_55` (22 selected backend + 41 PostgreSQL tests)
+B06-B ✅ CLOSED / PROVEN at `_54`
+B06-C ✅ CLOSED / PROVEN at `_55`
+B06-D ✅ CLOSED / PROVEN at `_57`
+B06-E 🟨 WHOLE-BLOCK CLOSURE NEXT
 ```
 
-B05-A `_43`–`_45` closed with the user's direct `_45` catalog pass. B05-B `_46` creates typed Activity/Event actor-local primary assignment and immutable acceptance receipts, atomically binds new creates, inventories legacy unassigned items and rejects archived areas as new targets. B05-D `_48` completed real frontend grouping/create migration and Event-only postponed discovery/replan without fabricating a time or converting an Event into an Activity. The user passed generated/client and typecheck gates, 41 selected web tests and 24 selected PostgreSQL/API/catalog tests. B05-E completed the real-stack manual walkthrough: Event postponement rediscovery, Activity return to the Planning Tray, restoration and `+` creation with an active Life Area work. B05 is closed. No CI/Actions are launched.
-
-B06-A is closed at `_51`. B06-B is closed at `_54`: immutable Routine/Event Recurrence authoring covers all four CP6 families, explicit named-zone DST policy, effective boundaries, CAS/replay/collision, owner isolation, current/history and execute-only ACL. User-run proof passed `1` canonical fingerprint test and `28` selected PostgreSQL/catalog regressions; the earlier API contract test and API-client typecheck also passed.
-
-B06-C is closed and proven at `_55`: the mutating 62-day half-open checkpoint evaluates immutable history and materializes/reuses canonical Routine/Event Occurrences under source locks and Role-13; explicit extra, skip and structural exclusion remain distinct. Dense checkpoints above 10,000 Occurrences fail atomically. Generated/client, evaluator/API/OpenAPI and selected PostgreSQL/catalog/ACL gates passed after the cyclic-date projection repair. Schedule/Timeline integration remains B06-D.
-
-User-run proof command for `_48` (completed successfully; organization coverage was then run separately):
-
-```bash
-cd ~/projects/dante
-pnpm generated:check
-pnpm --filter @dante/api-client typecheck
-pnpm --filter @dante/web typecheck
-pnpm --filter @dante/web exec vitest run \
-  src/features/temporal/remote-activity-data-source.test.ts \
-  src/features/temporal/remote-event-data-source.test.ts \
-  src/features/temporal/remote-organization.test.ts \
-  src/features/home/ui/timeline/timeline-organization.test.ts \
-  src/features/home/ui/timeline/model/timeline-state.test.ts \
-  src/features/home/ui/timeline/timeline-schedule-forms-b02.test.tsx
-
-cd apps/backend
-uv run --locked pytest -q --no-cov -m postgres \
-  tests/integration/temporal/test_b05_life_area_catalog.py \
-  tests/integration/temporal/test_b05_primary_life_area_assignment.py \
-  tests/integration/temporal/test_b05_secondary_tags.py \
-  tests/integration/temporal/test_b03_event_lifecycle.py \
-  tests/integration/database/test_database_current_catalog.py \
-  tests/integration/database/test_current_catalog.py \
-  tests/integration/database/test_b04_d_movement_catalog_probe.py \
-  tests/integration/database/test_b04_e_duration_catalog_probe.py \
-  tests/integration/temporal/test_b01_activity_core.py \
-  tests/integration/temporal/test_b03_event_core.py \
-  tests/integration/temporal/test_b04_f_constrained_activity_application.py
-```
-
-The user's second `_46` run passed all 16 selected PostgreSQL tests in 26.47s after the importlib-compatible helper fix; B05-B is closed. The user's `_47` run passed all 26 selected direct PostgreSQL tests in 39.12s, closing B05-C actor-local Tags and independent typed Activity/Event many-valued edges. The user then passed B05-D's generated/client/typecheck gates, 41 selected web tests and 24 selected PostgreSQL/API/catalog tests. The completed B05-E real-stack walkthrough closed the remaining product gate; B05 is closed.
+B06-E must reconcile the whole B06 evidence set, run the agreed broad direct local PostgreSQL/API/frontend regression gate, complete a real-stack recurring Routine/Event walkthrough, and publish the whole-B06 closure. It does not authorize CI/Actions and should add no new persistence unless the proof reveals a real gap.
