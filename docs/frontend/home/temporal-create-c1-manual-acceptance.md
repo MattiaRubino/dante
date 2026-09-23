@@ -1,77 +1,47 @@
-# DANTE — Temporal Create C1 Manual Acceptance
+# DANTE — Temporal Create C1 Manual Acceptance — Historical
 
-**Status:** C1 OPEN — FINAL MANUAL ACCEPTANCE NOT YET RUN  
-**Reconciled:** 2026-09-05  
-**Current candidate authority:** current `feature/home-timeline` code/tests and CI  
-**Historical pre-integration evidence:** `1e7b7752b69f006a4b632e2e2d3ef1522d30e95e`, Frontend CI #937 / `33905239085` — FULL GREEN
+**Status:** HISTORICAL PRE-VERTICAL PRODUCT-ACCEPTANCE RECORD — NOT CURRENT TIMELINE GATE  
+**Original phase:** `feature/home-timeline` / reconciled 2026-09-05  
+**Superseded for present-tense sequencing:** 2026-09-23
 
-The historical checkpoint above proves the pre-integration C1 candidate that existed on 2026-09-04. It is not the live CI authority after the branch was reconciled with current `main`.
+This file records the earlier frontend-only C1 manual-acceptance phase. At that checkpoint the final C1 approval token had not been granted and the product team was still evaluating floating Create/Advanced interaction before the real backend Timeline vertical was implemented.
 
-## 1. Current manual process
+That historical `C1 OPEN` state must not be interpreted as the current Timeline workstream gate.
 
-The old pre-refactor acceptance protocol is retired. The user is deliberately validating Create **one UX foundation at a time** before a final closure pass.
+## Phase-time scope retained
 
-Do not convert this into a long checklist during incremental discussion. For each iteration, test only the behavior just agreed.
+The old manual process evaluated a local/manual Create surface including:
 
-Repository integration/merge review and C1 product acceptance are separate gates. A future PR merge does not imply C1 approval.
+```text
+Activity/Event creation UX
+all-day/unplaced behavior
+Planning Tray
+repeat/custom recurrence authoring
+Event Agenda
+Advanced disclosure
+Context vs appearance
+mobile bounds
+Timeline coexistence
+draft close/discard behavior
+```
 
-## 2. Current candidate to inspect
+At that phase, the full recurring series was not yet canonical backend truth. B06 subsequently implemented canonical Routine/Recurrence/Occurrence checkpointing, shared Schedule integration and backend-backed expected/scheduled Timeline projection.
 
-The current manual target is the Create/window coexistence foundation:
+## Current authority
 
-### Desktop simple Create
+For present state read:
 
-- click `+`;
-- panel opens floating at a stable initial position;
-- Timeline/Home is not dimmed/frozen;
-- Timeline can still be scrolled/interacted with;
-- simple panel can be moved;
-- draft remains alive while inspecting Timeline;
-- outside/backdrop does not silently discard;
-- close/Cancel/Escape follow the explicit draft protection contract.
+1. `../../workstreams/timeline-temporal-operational-post-b06-scope-decision-2026-09-23.md`;
+2. `../../workstreams/timeline-temporal-operational-roadmap.md`;
+3. `../../workstreams/timeline-temporal-operational-map.md`;
+4. `current-checkpoint.md`.
 
-### Desktop Advanced
+Current frontier:
 
-- `Opzioni avanzate` opens greater depth as a larger floating surface;
-- it remains inside viewport;
-- Timeline remains usable behind it;
-- internal content can scroll without an intrusive visible scrollbar;
-- back to simple, close and actions remain reachable.
+```text
+B00–B06 ✅ CLOSED / PROVEN
+B08 Session Runtime ← NEXT
+B07 UI/UX Consolidation ⏸ DEFERRED until after B12
+```
 
-### Mobile
-
-- no horizontal overflow;
-- Advanced remains viewport-bounded.
-
-The possible simple-only left pin/dock mode is NOT part of this current test because it is not implemented.
-
-## 3. Known recurrence limitation — do not fail the wrong layer
-
-Choosing a repeating rule correctly authors recurrence intent, but the current local bridge does not generate the full future recurring series.
-
-That future series belongs to backend recurrence evaluation/canonical Occurrences + temporal range query.
-
-Therefore this incremental manual pass should judge recurrence authoring usability, ownership truth and stored intent, not demand browser-generated canonical future cards.
-
-## 4. Final closure pass — later
-
-When the user has finished the incremental visual/functional polish and asks for final C1 acceptance, write/run one coherent pass covering at least:
-
-- normal Activity speed/clarity;
-- normal Event speed/clarity;
-- all-day behavior;
-- unplaced Activity + Planning Tray;
-- Repeat / custom recurrence authoring;
-- Event Agenda;
-- Advanced disclosure;
-- Context vs appearance;
-- mobile;
-- frozen Timeline regression feel;
-- draft close/discard behavior;
-- no fake provider/backend success.
-
-Final manual approval token:
-
-`C1 MANUAL PASS — APPROVED`
-
-Until that exact explicit approval, C1 remains OPEN and C2 remains BLOCKED.
+The historical token `C1 MANUAL PASS — APPROVED` is no longer a blocker for this active workstream. Future manual acceptance is owned by the applicable B08–B12 slices and final deferred B07/B15 closure, not by reviving C1.
