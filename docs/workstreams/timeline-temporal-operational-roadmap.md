@@ -4,7 +4,9 @@
 - **Branch/workstream:** `feature/timeline-temporal-operational`
 - **Vertical boundary:** Home `+` creation/configuration → canonical temporal truth → Timeline projection/actions → bounded lifecycle completion
 - **Current completed frontier:** B06 ✅ CLOSED / PROVEN
-- **Current block:** B08 Session Runtime ← NEXT
+- **Current block:** B08 Session Runtime 🟡 ACTIVE
+- **Current slice:** B08-A Authority reconciliation + implementation freeze ← NEXT
+- **B08 detailed execution plan:** `docs/workstreams/timeline-temporal-operational-b08-execution-plan.md`
 - **Deferred block:** B07 UI/UX Consolidation v1 — execute after B12
 - **Current candidate DB source:** PostgreSQL 18.6 / Alembic `20260923_57`
 - **Candidate proven topology:** `145|5|88|92|285|223|408|0|0|0`
@@ -69,11 +71,18 @@ B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
 B05 Product Organization                         ✅ CLOSED / PROVEN
 B06 Routine / Recurrence / Occurrence Baseline   ✅ CLOSED / PROVEN
 
-B08 Session Runtime                              ← NEXT
-B09 Responsibility / Participation
-B10 Actual / Outcome / Confirmation / Resolution
-B11 Advanced Recurrence / Conditional / Reminder
-B12 Replanning / Conflict / Solver
+B08 Session Runtime                              🟡 ACTIVE
+  B08-A Authority reconciliation + freeze         ← NEXT
+  B08-B Start / Read / End core                   ⬜
+  B08-C Pause / Resume + duration                 ⬜
+  B08-D Timeline runtime integration              ⬜
+  B08-E TC-009 Session-duration reopening         ⬜
+  B08-F Whole-block closure                       ⬜
+
+B09 Responsibility / Participation               ⬜
+B10 Actual / Outcome / Confirmation / Resolution ⬜
+B11 Advanced Recurrence / Conditional / Reminder ⬜
+B12 Replanning / Conflict / Solver               ⬜
 B07 UI/UX Consolidation v1                       ← DEFERRED UNTIL B08–B12 EXIST
 B15 Whole Vertical Closure
 ```
@@ -132,31 +141,94 @@ Topology    145|5|88|92|285|223|408|0|0|0
 
 ---
 
-# 3. B08 — Session Runtime ← NEXT
+# 3. B08 — Session Runtime 🟡 ACTIVE
 
-B08 activates Session only to the extent needed by the `+`/Timeline vertical: a real execution episode connected to the planned/intended item shown in Timeline.
+Detailed authority: `docs/workstreams/timeline-temporal-operational-b08-execution-plan.md`.
 
-Expected bounded work:
-
-```text
-Session identity/lifecycle where required by current authority
-start / pause / resume / stop or semantically accepted equivalent
-Timeline-linked runtime state
-runtime duration semantics
-relevant B04 deferred Session-duration constraints
-reload/current-history/idempotency as required
-API/client/frontend path sufficient for real manual use
-```
+B08 activates Session only to the extent needed by the `+`/Timeline vertical: a real execution episode connected to the intended/expected item shown in Timeline, without collapsing planned Schedule or later Actual/Outcome truth.
 
 Permanent boundaries:
 
 ```text
+Activity != Session
+Occurrence != Session
 Schedule != Session
 Session != Actual
-planned Schedule duration != Session elapsed/active duration
+Session != Outcome
+Session end != Activity completion
+Session end != Occurrence completion
+planned Schedule duration != Session elapsed duration
+Session elapsed duration != Session active duration
 ```
 
-B08 is not a generic workflow/runtime platform.
+Existing CP6 Session substrate is inspected and reused before any new schema is authorized:
+
+```text
+session
+session_timing_state
+session_timing_absolute
+session_timing_elapsed
+session_timing_pause
+session_timing_current_history
+```
+
+Ordered B08 execution:
+
+### B08-A — Authority reconciliation + implementation freeze
+
+Resolve/freeze exact execution targets, Session→context reference representation, lifecycle commands, current/history mutation, concurrent-open policy, idempotency/CAS, API operation inventory, DDL gaps, proof matrix and explicit exclusions.
+
+Candidate baseline to verify:
+
+```text
+Activity     Session target ✅
+Occurrence   Session target ✅
+Routine      direct target  ❌
+Event        ordinary target ❌ baseline
+Schedule     Session owner  ❌
+```
+
+No major runtime implementation starts before B08-A is `CLOSED / FROZEN`.
+
+### B08-B — Start / Read / End core
+
+Establish canonical Session creation/open-read/end for eligible Activity/Occurrence contexts, with self-scope, idempotency, expected-state/concurrency protection and reload-authoritative behavior.
+
+Forbidden effects remain explicit: no fabricated Schedule, completion, Actual or Outcome.
+
+### B08-C — Pause / Resume + truthful duration
+
+Preserve one Session identity across pause/resume, enforce at most one open pause, derive elapsed/paused/active duration truthfully, and prove reload/concurrency semantics.
+
+### B08-D — Timeline runtime integration
+
+Expose truthful START/PAUSE/RESUME/END controls and authoritative running/paused state for eligible Activity/Occurrence surfaces. Browser timer state is presentation only; canonical state lives in backend/PostgreSQL.
+
+### B08-E — TC-009 Session-duration reopening
+
+Reopen the B04-deferred contiguous Session-duration family only after exact Session timing semantics exist. Do not alias Session duration to planned Schedule duration. TC-010 spacing/recovery remains deferred unless B08-A finds an authority requirement.
+
+### B08-F — Whole-block closure
+
+Run relevant local automated gates plus persistent real-stack walkthrough:
+
+```text
+START
+→ F5 still running
+→ PAUSE
+→ F5 still paused
+→ RESUME
+→ END
+→ second START gives new SessionRef
+→ eligible Occurrence path works
+→ Schedule unchanged
+→ no fabricated completion / Actual / Outcome
+→ no duplicate state on reload/navigation
+```
+
+Only B08-F may mark B08 `CLOSED / PROVEN`.
+
+B08 is not a generic workflow/runtime platform and does not own final UI polish, provider/import sync, offline/multi-device timers, analytics, cross-account runtime or B10 happened-reality semantics.
 
 ---
 
@@ -314,14 +386,31 @@ Provider integration, native/offline, broad analytics and collaboration are expl
 
 ---
 
-# 11. Current gate
+# 11. Documentation continuity rule
+
+For B08 and later blocks, every meaningful checkpoint updates the live ledger and handoff. Dated freeze/closure records preserve semantic decisions and proof evidence so a saturated/new chat can restart without reconstructing state from memory.
+
+B08 recovery order:
+
+```text
+1. timeline-temporal-operational-handoff.md
+2. timeline-temporal-operational-map.md
+3. timeline-temporal-operational-b08-execution-plan.md
+4. latest dated B08 freeze/closure record
+5. docs/database/timeline-temporal-operational.md if DB work is involved
+```
+
+---
+
+# 12. Current gate
 
 ```text
 B00–B06 ✅ CLOSED / PROVEN
 B07     ⏸ DEFERRED
-B08     ← NEXT / NOT STARTED
+B08     🟡 ACTIVE
+B08-A   ← NEXT / NOT YET FROZEN
 B09–B12 ⬜ NOT STARTED
 B15     ⬜ NOT STARTED
 ```
 
-Current action: begin B08 pre-scope/authority reconciliation from the proven `_57` frontier. No CI or GitHub Actions are implied or authorized by this roadmap.
+Current action: execute B08-A pre-scope/authority reconciliation from the proven `_57` frontier. No CI or GitHub Actions are implied or authorized by this roadmap.
