@@ -536,9 +536,9 @@ class TemporalTimelineApplication:
             WITH self_source AS (
                 SELECT 'routine'::text AS source_kind,
                        routine.routine_ref AS source_native_ref,
-                       routine.self_person_ref,
+                       CAST(:self_person_ref AS uuid) AS self_person_ref,
                        routine.title
-                  FROM dante.routine_intention AS routine
+                  FROM dante.list_self_routines(:self_person_ref) AS routine
                 UNION ALL
                 SELECT 'event'::text AS source_kind,
                        expectation.event_ref AS source_native_ref,
@@ -713,9 +713,9 @@ class TemporalTimelineApplication:
             WITH self_source AS (
                 SELECT 'routine'::text AS source_kind,
                        routine.routine_ref AS source_native_ref,
-                       routine.self_person_ref,
+                       CAST(:self_person_ref AS uuid) AS self_person_ref,
                        routine.title
-                  FROM dante.routine_intention AS routine
+                  FROM dante.list_self_routines(:self_person_ref) AS routine
                 UNION ALL
                 SELECT 'event'::text AS source_kind,
                        expectation.event_ref AS source_native_ref,
