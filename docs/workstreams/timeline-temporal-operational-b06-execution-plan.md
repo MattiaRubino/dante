@@ -1,11 +1,12 @@
 # Timeline / Temporal-Operational — B06 Routine / Recurrence / Occurrence Execution Plan
 
-- **Status:** B06-A/B/C/D ✅ CLOSED / PROVEN — B06-E WHOLE-BLOCK CLOSURE NEXT
+- **Status:** B06 ✅ CLOSED / PROVEN
 - **Date:** 2026-09-23
 - **Branch:** `feature/timeline-temporal-operational`
 - **Entering completed frontier:** B05 ✅ CLOSED / PROVEN at `11b182a`
 - **Entering candidate DB:** PostgreSQL 18.6 / Alembic `20260921_48` / `129|5|62|90|254|185|366|0|0|0`
 - **Current proven DB frontier:** PostgreSQL 18.6 / Alembic `20260923_57` / `145|5|88|92|285|223|408|0|0|0`
+- **Whole-block closure:** `timeline-temporal-operational-b06-e-closure-2026-09-23.md`
 - **CI / Actions:** not authorized; direct local proof is user-run
 
 This is the B06 authority required by the current roadmap. It activates the already materialized CP6 Routine/Event Recurrence and Occurrence-generation substrate as a product capability. It does **not** reinterpret a repeated Activity as a Routine and does not let the browser manufacture canonical future state.
@@ -129,7 +130,7 @@ No raw CP6 runtime-table write becomes a product API. No generic JSON recurrence
 | **B06-B — Recurrence authoring** ✅ | Guarded Routine and Event recurrence create/read/revise operations for all four CP6 families; immutable state/history/effective-boundary semantics; explicit persisted named-zone DST policy. No Occurrence, Activity/Event instance, Schedule or Timeline materialization. | **PROVEN at `_54`:** `1` canonical fingerprint test + `28` selected PostgreSQL/catalog regressions; prior API contract and API-client typecheck passed. Closure: `timeline-temporal-operational-b06-b-closure-2026-09-22.md`. |
 | **B06-C — Occurrence checkpoint and scope** ✅ | Bounded backend evaluator/checkpoint, canonical materialization, explicit extra, one-instance exception/skip, structural exclusion and this-vs-future reconciliation. | **PROVEN at `_55`:** generated/client gate, `22` selected evaluator/API/OpenAPI tests, selected `41`-test PostgreSQL/catalog/ACL set and focused `3`-test post-fix rerun. Closure: `timeline-temporal-operational-b06-c-closure-2026-09-22.md`. |
 | **B06-D — shared Schedule, Timeline and functional UI** ✅ | Occurrence enters the existing shared Schedule capability and bounded Timeline query; real creation/edit/read flows for Routine and recurring Event; checkpoint-before-read; expected/scheduled precedence; governed `_57` expected-Occurrence read. | **PROVEN at `_57`:** focused Schedule test `1 PASS`; backend/catalog gate `11 PASS`; web typecheck PASS; `4` focused Vitest files / `18` tests PASS. Closure: `timeline-temporal-operational-b06-d-closure-2026-09-23.md`. |
-| **B06-E — whole-block closure** | Reconcile all B06 evidence, docs, DB inventory and user walkthrough. | Direct local PostgreSQL/API/frontend regressions plus real-stack manual Routine/Event recurring walkthrough; no CI/Actions. |
+| **B06-E — whole-block closure** ✅ | Reconcile all B06 evidence, docs, DB inventory and real-stack user walkthrough. | **PROVEN:** aggregate direct A–D evidence; final `generated:check`, API-client typecheck and web typecheck PASS; `6` focused B06/runtime Vitest files / `37` tests PASS; persistent local dogfood real-stack walkthrough accepted with created Timeline/Event/recurring state surviving `F5` and no remaining B06 blocker. Closure: `timeline-temporal-operational-b06-e-closure-2026-09-23.md`. |
 
 Each letter is completed as one whole slice. No artificial `B06-A1/A2/...` delivery split is used.
 
@@ -137,8 +138,8 @@ Each letter is completed as one whole slice. No artificial `B06-A1/A2/...` deliv
 
 Required direct tests cover all four families; named-zone DST gap/overlap; floating/absolute separation; quota without invented time; half-open 62-day range limit; self isolation; lifecycle; CAS; operation-id collision/replay; concurrent duplicate checkpoint prevention; exact CP6 provenance; explicit extra; skip versus structural exclusion; this occurrence versus this-and-future versus source update; revision retention; Routine/Event reuse; Occurrence Schedule and Timeline behavior; generated OpenAPI/client and frontend remote/refetch paths.
 
-B06-D has closed its owned automated integration proof. B06-E now owns whole-block reconciliation and the real-stack recurring Routine/Event walkthrough.
+B06-A/B/C/D established the owned persistence, application, API and frontend proof. B06-E completed the whole-block evidence reconciliation and persistent real-stack user walkthrough. **B06 is therefore CLOSED / PROVEN at `_57`.**
 
-The user runs local PostgreSQL, typecheck, Vitest and real-stack manual proof. No CI/Actions is dispatched by this plan.
+The user ran local PostgreSQL, typecheck, Vitest and real-stack manual proof. No CI/Actions was dispatched by this plan.
 
 B06 stops before Session/Actual/Outcome, responsibility/participation, completion-/anchor-relative recurrence, reminders, solver/replanning, provider/offline synchronization, analytics and the broad B07 UI/UX redesign. B06 UI is limited to the real authoring/read/edit paths needed to prove the capability.
