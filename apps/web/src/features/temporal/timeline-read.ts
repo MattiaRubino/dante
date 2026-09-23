@@ -174,6 +174,7 @@ export type TemporalTimelineExpectedOccurrenceItem = Readonly<{
   sourceNativeRef: string;
   title: string;
   coordinate: TemporalTimelineOccurrenceCoordinate;
+  temporalForm?: never;
 }>;
 
 export type TemporalTimelineScheduledItem =
