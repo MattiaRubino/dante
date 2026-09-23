@@ -5,7 +5,7 @@
 - **Vertical boundary:** Home `+` creation/configuration → canonical temporal truth → Timeline projection/actions → bounded lifecycle completion
 - **Completed frontier:** B06 ✅ CLOSED / PROVEN
 - **Current block:** B08 Session Runtime 🟡 READY TO START
-- **Current slice:** B08-A Authority reconciliation + implementation freeze ← NEXT
+- **Current slice:** B08-A Authority reconciliation + implementation freeze — DECISIONS RECORDED / LOCAL PROOF PENDING
 - **Deferred block:** B07 UI/UX Consolidation v1 — execute after B08–B12
 - **Current DB frontier:** PostgreSQL 18.6 / Alembic `20260923_57`
 - **Proven topology:** `145|5|88|92|285|223|408|0|0|0`
@@ -80,7 +80,7 @@ B05 Product Organization                         ✅ CLOSED / PROVEN
 B06 Routine / Recurrence / Occurrence Baseline   ✅ CLOSED / PROVEN
 
 B08 Session Runtime                              🟡 READY TO START
-  B08-A Authority reconciliation + freeze         ← NEXT
+  B08-A Authority reconciliation + freeze         DECISIONS RECORDED / LOCAL PROOF PENDING
   B08-B Start / Read / End core                   ⬜
   B08-C Pause / Resume + duration                 ⬜
   B08-D Timeline runtime integration              ⬜
@@ -180,7 +180,7 @@ session_timing_pause
 session_timing_current_history
 ```
 
-## B08-A — Authority reconciliation + implementation freeze ← NEXT
+## B08-A — Authority reconciliation + implementation freeze — LOCAL PROOF PENDING
 
 Before implementation, inspect current Domain/Logical/Physical/DB/application/API/frontend authority and freeze only what is needed for B08-B–E:
 
@@ -208,7 +208,7 @@ Event        ordinary target ❌ baseline
 Schedule     Session owner  ❌
 ```
 
-**Exit:** B08-A decisions are recorded in the live map; there is no separate B08-A planning/freeze document.
+**Exit:** the accepted decisions are in the live map. B08-A stays open until its local proof is recorded there. There is no separate B08-A planning document.
 
 ## B08-B — Start / Read / End core
 
@@ -360,9 +360,9 @@ The handoff says where work stopped. The roadmap says what comes next. The map c
 B00–B06 ✅ CLOSED / PROVEN
 B07     ⏸ DEFERRED
 B08     🟡 READY TO START
-B08-A   ← NEXT
+B08-A   DECISIONS RECORDED / LOCAL PROOF PENDING
 B09–B12 ⬜ NOT STARTED
 B15     ⬜ NOT STARTED
 ```
 
-**Current action:** none has started yet inside B08-A. The next implementation/review session begins with B08-A and proceeds one slice at a time.
+**Current action:** B08-A decisions are recorded in the live map. Local proof is still outstanding, so B08-A is not closed and B08-B has not started.

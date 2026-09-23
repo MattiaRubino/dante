@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B08 SESSION RUNTIME 🟡 READY TO START — B08-A NEXT
+- **Status:** B08 SESSION RUNTIME 🟡 — B08-A DECISIONS RECORDED / LOCAL PROOF PENDING
 - **Reconciled:** 2026-09-23
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -29,7 +29,7 @@ B05 Product Organization                         ✅ CLOSED / PROVEN
 B06 Routine / Recurrence / Occurrence Baseline   ✅ CLOSED / PROVEN
 
 B08 Session Runtime                              🟡 READY TO START
-  B08-A Authority reconciliation + freeze         ← NEXT
+  B08-A Authority reconciliation + freeze         DECISIONS RECORDED / LOCAL PROOF PENDING
   B08-B Start / Read / End core                   ⬜
   B08-C Pause / Resume + duration                 ⬜
   B08-D Timeline runtime integration              ⬜
@@ -122,7 +122,7 @@ session_timing_pause
 session_timing_current_history
 ```
 
-**B08-A is next and has not started yet.** It must inspect current Domain/Logical/Physical/DB/application/API/frontend authority and freeze the minimum required decisions:
+**B08-A decisions are recorded in the live map and are not closed.** Local proof has not been executed. The frozen decisions are:
 
 ```text
 eligible Session execution targets
@@ -138,7 +138,7 @@ explicit non-goals
 proof matrix
 ```
 
-Candidate targets to verify rather than assume:
+Baseline subjects, now recorded in the live map:
 
 ```text
 Activity     ✅ candidate
@@ -148,7 +148,7 @@ Event        ❌ ordinary baseline target
 Schedule     ❌ owner/target
 ```
 
-No B08 implementation decision is currently marked accepted in the live ledger.
+The accepted decision text lives in the live map. It is not `CLOSED / FROZEN` until the local B08-A proof is recorded. B08-B has not started. B08-A added no migration, route, or client.
 
 ---
 
@@ -189,9 +189,9 @@ That is sufficient to resume without reconstructing old chats.
 B06 ✅ CLOSED / PROVEN
 B07 ⏸ DEFERRED
 B08 🟡 READY TO START
-B08-A ← NEXT / NOT STARTED
+B08-A DECISIONS RECORDED / LOCAL PROOF PENDING
 ```
 
-**Stop point:** documentation has been simplified and B08-A has not been executed yet.
+**Stop point:** B08-A decisions are in the live map. Local proof has not been run. B08-A is not closed.
 
-**Next action when work resumes:** perform B08-A one piece at a time, record accepted findings in the live map, and only then advance to B08-B. The next piece may be implemented by Cursor and reviewed against the same roadmap/ledger before acceptance.
+**Next action when work resumes:** run the B08-A local proof and record the result in the live map. Do not start B08-B before that proof is accepted.

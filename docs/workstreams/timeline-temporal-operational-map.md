@@ -89,7 +89,7 @@ TC-011 relative before/after        → future bounded relation/reference review
 
 ```text
 B08 Session Runtime                              🟡 READY TO START
-  B08-A Authority reconciliation + freeze         ← NEXT
+  B08-A Authority reconciliation + freeze         DECISIONS RECORDED / LOCAL PROOF PENDING
   B08-B Start / Read / End core                   ⬜
   B08-C Pause / Resume + duration                 ⬜
   B08-D Timeline runtime integration              ⬜
@@ -104,7 +104,7 @@ B07 UI/UX Consolidation v1                       ⏸ DEFERRED
 B15 Whole Vertical Closure                       ⬜
 ```
 
-No B08 implementation slice has been started yet. The next session may be implemented by ChatGPT, Cursor, or another coding tool; this ledger remains the shared authority for what was actually accepted.
+No B08 runtime slice has been started. B08-A decisions are recorded below and stay open until local proof is recorded in this ledger.
 
 ---
 
@@ -147,41 +147,127 @@ Schedule     ❌ owner/target
 
 ---
 
-# 5. B08-A — Authority reconciliation + freeze ← CURRENT NEXT STEP
+# 5. B08-A — Authority reconciliation + freeze
 
-Nothing below is marked accepted until it has been checked against current Domain/Logical/Physical/DB/application authority.
+**Status:** DECISIONS RECORDED / LOCAL PROOF PENDING
 
-```text
-[ ] inspect Session Domain authority
-[ ] inspect Activity / Occurrence / Schedule / Event / Actual boundaries
-[ ] inspect Logical Session/reference contracts
-[ ] inspect Physical PostgreSQL Session mapping
-[ ] inspect current `session*` dictionary/schema objects
-[ ] inspect ORM mappings / runtime ACLs / DB capabilities
-[ ] inspect application/API/OpenAPI/frontend insertion points
-[ ] freeze eligible Session execution targets
-[ ] freeze Session → execution-context representation
-[ ] freeze START / PAUSE / RESUME / END legal transitions
-[ ] freeze current/history mutation model
-[ ] freeze concurrent-open policy
-[ ] freeze idempotency/replay and CAS requirements
-[ ] identify real DDL gaps, if any
-[ ] freeze API operation inventory
-[ ] classify TC-009 reopening
-[ ] keep TC-010 deferred unless authority requires it
-[ ] freeze explicit non-goals
-[ ] freeze proof matrix
-```
+Inspection used `docs/domain/concepts/session.md`, Logical Time/Reality Session disposition, CP6-M03 Session materialization, Dictionary `session` plus `session_timing_*`, SQLAlchemy `identity.SessionRow` and `mappings/session.py`, and the current Temporal OpenAPI inventory. No separate B08-A document is added.
 
-**Exit:** mark B08-A `CLOSED / FROZEN` directly in this ledger, record the accepted decisions below, update handoff, then proceed to B08-B. No separate B08-A document is required.
+B08-A adds no migration, API route, generated client, or frontend behavior. Alembic stays `20260923_57`.
 
 ## Accepted B08-A decisions
 
-_Not started yet._
+### Eligible execution targets
+
+```text
+Activity      baseline Session subject     yes
+Occurrence    baseline Session subject     yes
+Routine       direct Session subject       no
+Event         ordinary baseline subject    no
+Schedule      Session owner or subject     no
+```
+
+Authority: Session is an execution episode of Activity or Occurrence (`docs/domain/concepts/session.md` core model; Logical slice Time/Reality §7). A Routine stays the policy; execution belongs to an Occurrence. An ordinary Event stays Schedule → Actual, and does not receive a Session merely because it occupies time. Schedule remains planned placement.
+
+Spontaneous Session without a prior Activity remains Domain-true and is not a B08 baseline command. B08 must not invent an Activity to host one.
+
+One Activity or Occurrence may have many Sessions. Ending a Session does not complete either subject.
+
+### Representation
+
+```text
+identity     dante.session.session_ref          existing NativeRef shell
+timing       session.timing MaterialState      existing
+subject edge Session → Activity | Occurrence   ABSENT — the only DDL gap
+```
+
+`dante.session` stays an identity shell with only `session_ref`. Do not add a subject column to that shell. Do not store the subject on Schedule. Do not use a `(kind, id)` pair.
+
+B08-B may add one typed association only:
+
+```text
+session_ref          → dante.session
+subject_native_ref   → native_address
+owner_family         activity | occurrence
+cardinality          exactly one subject per Session
+```
+
+The family check uses `native_address.owner_family`, the same discriminator Schedule already uses for Activity, Event, and Occurrence.
+
+### Lifecycle
+
+The Domain defers a lifecycle enum. B08 does not add one. Open, paused, and ended are the existing timing rows.
+
+```text
+START    new session_ref
+         + current absolute session.timing
+         + started_at set, ended_at NULL
+PAUSE    one session_timing_pause with resumed_at NULL
+         Session identity stays open
+RESUME   set resumed_at on that open pause
+         same Session, same timing state
+END      set ended_at on the current absolute timing
+         later START is a new session_ref
+```
+
+`elapsed_only` stays the existing manual retrospective form. Pause rows reference absolute timing, so the timer path does not write `elapsed_only`. A pause duration never splits a Session. END does not write Actual, Outcome, Activity completion, Occurrence completion, or a Schedule change.
+
+Illegal transitions, already enforced or required of B08-B:
+
+```text
+two open pauses on one timing state          reject
+pause or resume on elapsed_only              reject
+pause or resume after ended_at is set        reject
+resume without an open pause                 reject
+second END                                   reject
+```
+
+### Current history, concurrency, CAS
+
+Current timing is `session_timing_current_history`, one open row per `session_ref` (`ux_session_timing_current_history_open`). Corrections are later MaterialStates. B08-B does not implement split/merge.
+
+Overlap of two Sessions is not a database prohibition (`docs/domain/concepts/session.md`). B08 does not add “one open Session per subject”.
+
+B08-B mutations use the existing temporal pattern: self-scope, expected current timing state, operation id distinct from `session_ref`, and an immutable receipt. B08-A adds no receipt table.
+
+### API inventory — not published in B08-A
+
+Later slices publish these operationIds and no others for the baseline timer:
+
+```text
+temporal_start_activity_session
+temporal_start_occurrence_session
+temporal_list_activity_sessions
+temporal_list_occurrence_sessions
+temporal_get_session
+temporal_pause_session
+temporal_resume_session
+temporal_end_session
+```
+
+Subject reads return every Session for that subject, including more than one open Session. They do not invent a single current Session.
+
+### TC-009 and non-goals
+
+TC-009 minimum contiguous Session duration stays B08-E. It is not planned Schedule duration. TC-010 and TC-011 stay deferred.
+
+Out of B08-A, and out of the baseline timer unless a later slice owns them: Actual, Outcome, Confirmation, completion, Schedule mutation, Event Sessions, Routine as subject, spontaneous Session commands, provider import, split/merge, a status enum, pause-threshold splitting, solver, reminders, B07 visual consolidation, and CI.
+
+### Proof owned by B08-A
+
+```text
+dictionary + SQLAlchemy + OpenAPI freeze lock
+live PostgreSQL: revision _57, six Session tables,
+  identity shell unchanged, absolute|elapsed_only,
+  open-pause and open-history uniqueness,
+  no subject edge, no start/pause/resume/end capability
+```
+
+B08-B owns behavioral proof of START/END. B08-C owns pause/resume duration. B08-F owns the real-stack walkthrough.
 
 ## B08-A evidence
 
-_Not started yet._
+_Local proof has not been executed in this session. B08-A is not CLOSED / FROZEN until that proof is recorded here._
 
 ---
 
@@ -248,9 +334,9 @@ A whole-block closure document may be created when B08 closes; intermediate sub-
 B00–B06 ✅ CLOSED / PROVEN
 B07     ⏸ DEFERRED
 B08     🟡 READY TO START
-B08-A   ← NEXT / NOT STARTED
+B08-A   DECISIONS RECORDED / LOCAL PROOF PENDING
 B09–B12 ⬜ NOT STARTED
 B15     ⬜ NOT STARTED
 ```
 
-**Next concrete action:** B08-A authority reconciliation. No code or B08-A decision has been accepted yet.
+**Next concrete action:** run the B08-A local proof. Do not start B08-B and do not mark B08-A `CLOSED / FROZEN` until that proof is recorded in this ledger.
