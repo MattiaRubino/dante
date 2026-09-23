@@ -2,7 +2,8 @@
 
 - **Status:** CURRENT PROTECTED-MAIN TRUTH + ACTIVE CANDIDATE POINTER
 - **Last reconciled:** 2026-09-23
-- **Pre-vertical integration merge:** `1ecd58145860aebfaaa3dc1bd356b90f7a8eb19b` via PR #66
+- **Current protected-main HEAD:** `981f6cf9ad985d0b811bc4172c12a7529fbc9b15` via PR #67 post-merge documentation reconciliation
+- **Pre-vertical implementation integration merge:** `1ecd58145860aebfaaa3dc1bd356b90f7a8eb19b` via PR #66
 - **AI protected-main merge:** `431fb34029baeacc9ef9f721e9626b39ca10dd39` via PR #63
 - **Home/World Focus protected-main merge:** `5258452d7bd4e7a2797922b00035a9068ba41167` via PR #65
 - **Protected-main Alembic:** `20260906_18`
@@ -29,7 +30,9 @@ Platform Observability                       CLOSED / INTEGRATED
 AI deterministic low-level foundation        CLOSED / INTEGRATED VIA PR #63
 Home / World Focus reconciliation            CLOSED / INTEGRATED VIA PR #65
 Pre-vertical foundation                      CLOSED / INTEGRATED VIA PR #66
+Post-merge documentation reconciliation      CLOSED / INTEGRATED VIA PR #67
 
+Protected-main HEAD                          981f6cf9ad985d0b811bc4172c12a7529fbc9b15
 Protected-main Alembic                       20260906_18
 Protected-main topology                      89|5|18|77|173|91|272|0|0|0
 
