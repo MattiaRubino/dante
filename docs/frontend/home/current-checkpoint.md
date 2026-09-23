@@ -1,142 +1,110 @@
 # DANTE — Home / Frontend Current Checkpoint
 
-**Status:** CURRENT FRONTEND CHECKPOINT — MAIN PLATFORM RECONCILED — WORLD FOCUS R3 CLOSED / AUTOMATED QA PASS  
-**Date:** 2026-09-06  
-**Protected-main baseline consumed:** `431fb34029baeacc9ef9f721e9626b39ca10dd39`  
-**Main ancestry merge into feature:** `2547d4a08b5f289ba53676aea194348bb22bd6ce`
+**Status:** CURRENT FRONTEND CHECKPOINT — TEMPORAL CANDIDATE RECONCILED  
+**Reconciled:** 2026-09-23  
+**Protected-main baseline at temporal selection:** Alembic `20260906_18`  
+**Active candidate:** `feature/timeline-temporal-operational` / Alembic `20260923_57`
 
-This is the current navigation checkpoint for Home, AppShell, Timeline, Temporal Create and World Focus. Current code/tests and current CI outrank historical branch labels.
+This is the current navigation checkpoint for Home/AppShell/Timeline/Temporal frontend work. Current code/tests and the active Timeline workstream outrank historical frontend-only C1/T1 labels.
 
-## 1. Integrated platform state
+## 1. Platform state
 
-The reconciled frontend contains the protected-main PostgreSQL/Alembic baseline and current backend/platform capabilities for Access/Auth, Recovery, Email, Observability, OpenAPI/API-client boundaries and Intelligence foundation. Those owners are not frontend reconciliation targets.
+The frontend consumes the integrated platform owners for Access/Auth, Recovery, Email, Observability, OpenAPI/API-client boundaries, Intelligence foundation and the real PostgreSQL backend. Frontend code must not replace those owners with local canonical truth for convenience.
 
-## 2. Home / Temporal state
+## 2. Home / Timeline / Temporal state
 
 ```text
-H0 Whole Home structure        FROZEN
-P1 AppShell / Topbar           FROZEN
-T1 Timeline                    FROZEN
-F0 Temporal application seam   CLOSED / FROZEN
-C1 Manual Temporal Create      OPEN
-C1 MANUAL PASS — APPROVED      NOT GRANTED
-C2 Structured Detail           BLOCKED until C1 closes
+Home/AppShell structural foundation             retained
+Real Data Spine                                 ✅ B00 CLOSED / PROVEN
+Activity Core                                   ✅ B01 CLOSED / PROVEN
+Schedule Core                                   ✅ B02 CLOSED / PROVEN
+Event Core                                      ✅ B03 CLOSED / PROVEN
+Temporal Constraints + Movement Policy          ✅ B04 CLOSED / PROVEN
+Life Area / Tags                                ✅ B05 CLOSED / PROVEN
+Routine / Recurrence / Occurrence               ✅ B06 CLOSED / PROVEN
+
+B08 Session Runtime                             ← NEXT
+B09 Responsibility / Participation              ⬜
+B10 Actual / Outcome / Confirmation              ⬜
+B11 Advanced Recurrence / Reminder              ⬜
+B12 Replanning / Conflict / Solver              ⬜
+B07 UI/UX Consolidation                         ⏸ DEFERRED
+B15 Whole Vertical Closure                      ⬜
 ```
 
-Current Temporal Create capability remains present. Branch integration, automated CI and protected-main merge do not count as manual C1 acceptance.
+The old frontend-only labels:
 
-Permanent Temporal distinctions remain:
+```text
+C1 OPEN
+C1 MANUAL PASS NOT GRANTED
+C2 BLOCKED
+```
+
+are **historical phase-time state**, not current Timeline sequencing authority. B00–B06 replaced the earlier local/pre-backend assumptions with canonical backend/persistence behavior and real recurring Timeline state.
+
+## 3. Current authority
+
+For present Timeline work read:
+
+1. `../../workstreams/timeline-temporal-operational-post-b06-scope-decision-2026-09-23.md`;
+2. `../../workstreams/timeline-temporal-operational-roadmap.md`;
+3. `../../workstreams/timeline-temporal-operational-map.md`;
+4. `../../workstreams/timeline-temporal-operational-handoff.md`;
+5. `../../database/timeline-temporal-operational.md`.
+
+Historical frontend Temporal files remain useful for design rationale only when they do not conflict with the current workstream or executable truth.
+
+## 4. Current vertical boundary
+
+```text
+Home `+`
+→ create/configure canonical state
+→ Timeline projection/actions
+→ required Session/Actual lifecycle
+→ Responsibility/Participation roles
+→ advanced recurrence/reminders
+→ replanning/conflict/solver proposals
+→ final deferred UI/UX consolidation
+```
+
+Out of scope for the active vertical:
+
+```text
+external provider integration
+native/mobile/offline/multi-device
+account-to-account collaboration/chat/shared editing
+broad analytics/statistics/signals
+```
+
+## 5. Deferred B07 behavior
+
+The UI is allowed to remain visually provisional during B08–B12 so capability work is not repeatedly redesigned. Temporary UI still must be truthful, usable for real manual testing, and must not invent canonical/provider/runtime success.
+
+Final consolidation of `+`, editors, Timeline actions, lifecycle controls, responsibility/participation, advanced recurrence/reminders and solver proposals belongs to B07 after B12.
+
+## 6. Permanent temporal distinctions
 
 ```text
 Activity != Event != Routine
-Schedule != Occurrence != Session != Actual
+Routine != Recurrence != Occurrence
+Occurrence != Schedule
+Schedule != Temporal Constraint != Movement Policy
+Schedule != Session != Actual
+Session != Actual != Outcome
+Actual != Outcome != Confirmation
+Responsibility != Participation
 planned/intended != happened
-recurrence specification != generated Occurrence
-Context != appearance
-manual Create != AI/NL/voice
+proposal != accepted effect
 Timeline ViewModel != application model != DTO != DB row
-provider state != canonical DANTE state
+provider identity/state != canonical DANTE identity/state
 ```
 
-T1 current/future authority lives in `timeline-t1-frozen-contract.md`, `temporal-experience-architecture.md` and `temporal-frontend-roadmap.md`; temporary Timeline chat handoffs are retired.
+## 7. World Focus boundary
 
-## 3. World Focus state
+World Focus remains a separate subsystem. Its historical/current contracts are not automatically reopened by Timeline work. Any future World Focus implementation resumes from then-current authority under a separately authorized scope.
 
-```text
-WF0                                      FROZEN / USER AUTHORIZED
-WF-G3                                    LOCKED / USER AUTHORIZED
-B0 / WR0-WR2 / B1 / B2                  CLOSED AS RECORDED
-Workspace Platform                       ENGINEERING CLOSED
-D0                                       ACCEPTED
-D1                                       CLOSED FOR SEQUENCING
-WS0-WS8                                  CLOSED
-POST-WS8 HYGIENE                         CLOSED / APPLIED
-PRE-M0 FALSIFICATION                     CLOSED / PASS
-M0                                       CLOSED
-M1                                       CLOSED / VALIDATED
-POST-M1 SAFETY FALSIFICATION             CLOSED / PASS
-M2                                       CLOSED / VALIDATED
-M3 Adaptive World Composition            CLOSED / VALIDATED
-M3 final hostile closure                 CLOSED / PASS
-M4 Contextual DANTE / D2-D6              CLOSED / VALIDATED
-M4 final hostile closure                 CLOSED / PASS
-main ancestry reconciliation             COMPLETE
-R3 semantic reconciliation               CLOSED / AUTOMATED QA PASS
-M5 complete contrasting Worlds           NOT STARTED
-M6 integrated product/visual/a11y/perf   BLOCKED BY M5
-M7 pre-backend frontend freeze           BLOCKED BY M6
-human/manual visual review               NOT PERFORMED
-```
+## 8. Next product gate
 
-R3 exact-code candidate:
+The next active Timeline gate is **B08 Session Runtime pre-scope** from the proven `_57` frontier.
 
-```text
-HEAD                 e28e29a7ab3a8cd71b0c386ced824385c8c2d9e6
-Backend CI           34023569263 PASS
-Dependency Review    34023569294 PASS
-Frontend CI          34023569317 PASS
-Backend PostgreSQL   PASS
-Frontend Quality     PASS
-Chromium Web E2E     PASS
-frozen Timeline FF   PASS
-Mobile Bundle        PASS
-```
-
-These runs prove that exact SHA. The required checks attached to the final PR head are the protected-main merge authority.
-
-## 4. M4 semantic result preserved by R3
-
-World Focus has one bounded pre-backend DANTE path:
-
-```text
-quiet/global or explicit contextual invoke
--> deterministic mounted conversation
--> bounded contextual ownership
--> standalone validated Insight
--> Proposal
--> required blocking Confirmation
--> local Decision
--> truthful local Receipt
-```
-
-Permanent non-collapses:
-
-```text
-World != canonical Domain owner
-World relevance != authorization
-projection != canonical truth
-reference exists != payload available != current != disclosable != fresh
-Evidence != Provenance != integrity attestation
-AI output != accepted fact
-selected UI/context != authorization
-context reference != canonical truth
-conversation message != Insight
-assistant prose != validated Insight
-Insight != Proposal
-Proposal != Decision
-Decision != effect
-confirmed != executed
-Receipt != canonical/provider/runtime completion
-provider ACK != canonical completion
-Comparison != Decision
-missing trajectory position != zero
-```
-
-## 5. Reconciliation result
-
-R3 deliberately composed rather than choosing `ours` or `theirs` wholesale:
-
-```text
-protected-main authority
-+ frozen M4 World Focus owners
-+ composed shared guards/i18n/docs
-= validated integration candidate
-```
-
-It preserves current-main platform owners while restoring World Focus page/fixture/geometry/E2E ownership, the Signal Stage contract, World structural drift checks and World Focus dependency boundaries.
-
-## 6. Next product gate
-
-R3 is closed. M5 is **not automatically active**. Future World Focus work starts from the then-current protected `main` only after explicit scope authorization.
-
-Human/manual visual acceptance remains **NOT PERFORMED**. C1 remains **OPEN**. No merge or CI result may manufacture either approval.
+No provider integration, native app, collaboration system, broad analytics, Actual semantics or speculative schema expansion is implicitly authorized by B08.
