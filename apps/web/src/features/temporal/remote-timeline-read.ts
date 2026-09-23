@@ -668,7 +668,7 @@ function parseScheduledOccurrence(
   const common = {
     kind: 'scheduled_occurrence' as const,
     occurrenceRef: parseUuidV7(payload.occurrence_ref, 'occurrence_ref'),
-    sourceKind: payload.source_kind,
+    sourceKind: payload.source_kind as 'routine' | 'event',
     sourceNativeRef: parseUuidV7(
       payload.source_native_ref,
       'source_native_ref',
