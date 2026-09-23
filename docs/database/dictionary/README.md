@@ -6,8 +6,9 @@
 - **PostgreSQL:** 18.6
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
-- **Current candidate Alembic source head on `feature/timeline-temporal-operational`:** `20260923_57`
-- **Current candidate proven topology:** `145|5|88|92|285|223|408|0|0|0` (B06-D proven at `_57`)
+- **Current candidate branch:** `feature/timeline-temporal-operational`
+- **Current candidate Alembic source head:** `20260923_57`
+- **Current candidate proven topology:** `145|5|88|92|285|223|408|0|0|0` — whole B06 proven
 - **Frozen CP6 head:** `20260826_08`
 - **Last reconciled:** 2026-09-23
 
@@ -24,7 +25,7 @@ Current checked-out DB Reference
 ≈ direct tests
 ```
 
-A mismatch is a defect. Protected `main` remains integration authority. B06-C `_55` passed its generated/client, evaluator/API/OpenAPI and PostgreSQL/catalog/ACL proof. B06-D `_56` widens only the ownership predicates of the four shared Schedule routines. `_57` adds one bounded self-scoped execute-only expected-Occurrence Timeline read while retaining zero direct runtime table grants on B06-C provenance tables. The user-run B06-D backend/catalog gate passed both whole-catalog reconciliation tests, so `_57` is now proven rather than pending.
+A mismatch is a defect. Protected `main` remains integration authority; candidate branch truth remains explicitly separate until integration.
 
 ## 2. Current checked-out business-schema inventory
 
@@ -51,186 +52,117 @@ B01 / 20260908_19
 
 B02 / 20260909_20 → 20260915_26
   shared Schedule establishment/revision/unschedule/Undo
-  complete accepted placement union
-  DST/source-intent hardening
+  accepted placement forms + DST/source-intent hardening
 
 B03 / 20260916_27 → 20260917_29
   Event expectation/shared Schedule authorization/Agenda
 
-B04-A / 20260918_30 → 20260918_33
-  Temporal Constraint identity, rule MaterialState/current/history,
-  expected-state CAS, idempotency and API activation
+B04 / 20260918_30 → 20260920_42
+  Temporal Constraint core, boundary/window/planned-duration semantics,
+  deterministic evaluation, Movement Policy and Schedule hard-constraint guards
 
-B04-B / 20260919_34
-  absolute earliest/latest-start/latest-completion boundaries
+B05 / 20260920_43 → 20260921_48
+  Life Area lifecycle, typed primary assignment, secondary Tags,
+  postponed Event discovery/replan composition
 
-B04-C / 20260919_35 → 20260919_36
-  absolute windows + deterministic evaluation + runtime read ACL
+B06-A / 20260921_49 → 20260921_51
+  Routine source core, lifecycle and initial Recurrence companion corrections
 
-B04-D / 20260919_37 → 20260919_39
-  Schedule Movement Policy + governed automatic move + proposal/acceptance
+B06-B / 20260922_52 → 20260922_54
+  immutable Routine/Event Recurrence authoring, current/history/CAS,
+  explicit DST policy and current-state reader validation
 
-B04-E / 20260919_40 → 20260919_41
-  planned Schedule duration constraints + runtime read ACL
-  boundary/window/duration evaluation composition
-  hard-duration integration into governed automatic movement
+B06-C / 20260922_55
+  bounded Occurrence checkpoint, explicit extra, skip, structural exclusion,
+  62-day horizon and 10,000-Occurrence checkpoint cap
 
-B04-F / 20260920_42
-  Schedule establish/revise hard-constraint guard
-
-B05-A / 20260920_43 → 20260920_45
-  self-scoped LR-12 Life Area identity, creation and mutation receipts
-  bounded create/list/mutate/reorder, revision, archive, visibility and appearance
-  no NativeRef, item assignment or Tags
-
-B05-B / 20260920_46
-  typed Activity/Event actor-local current primary assignment and immutable receipts
-  bounded create/reassign/list/legacy inventory; direct old create privilege retired
-  no invented legacy default, provider calendar, Domain owner, Tag or sharing grant
-
-B05-C / 20260920_47
-  actor-local secondary Tag catalog, archive and immutable operation receipt
-  typed independent Activity/Event many-valued edges and attach/detach receipts
-  no primary-area replacement, hierarchy, Goal/Plan or sharing grant
-
-B06-A / 20260921_51
-  self-owned Routine source, lifecycle, atomic Life Area/source Tag organization
-  CP6-required distinct initial daily floating-local Recurrence companion at create
-  no generated Occurrence, Activity, Schedule, fake materialization or Timeline projection
-
-B06-B / 20260922_52 → 20260922_54 (✅ CLOSED / PROVEN)
-  immutable owner-bound Routine/Event Recurrence authoring for all CP6 families
-  state/history CAS + actor-local receipts + explicit named-zone DST disposition
-  no Occurrence generation, Schedule, Timeline or fake Activity materialization
-
-B06-C / 20260922_55 (✅ CLOSED / PROVEN)
-  bounded execute-only Routine/Event Occurrence checkpoint over immutable history
-  canonical materialization/replay, explicit extra, immutable skip and structural exclusion
-  62-day half-open horizon + atomic 10,000-Occurrence safety cap; no Schedule/Timeline
-
-B06-D / 20260922_56 → 20260923_57 (✅ CLOSED / PROVEN)
-  self-owned Occurrence authorization in shared Schedule establish/revise/unschedule/Undo
-  bounded execute-only expected-Occurrence Timeline read through `_57`
-  scheduled Occurrence projection composes existing get_self_occurrence with shared Schedule
-  Routine presentation composes existing list_self_routines instead of direct table access
-  no direct runtime SELECT grants on Occurrence provenance or Routine source tables
+B06-D / 20260922_56 → 20260923_57
+  self-owned Occurrence authorization in shared Schedule capabilities
+  bounded execute-only expected-Occurrence Timeline read
+  scheduled Occurrence composition through existing get_self_occurrence + Schedule
+  Routine presentation through existing list_self_routines
 ```
 
-The object tree and `scope.json`, not this prose summary, are structural source of truth.
+B06-E whole-block closure required no new migration. `_57` remains the current candidate database frontier.
 
-## 4. Timeline persistence classification
+The object tree and `scope.json`, not prose summaries, are structural source of truth.
 
-### 4.1 Activity / Schedule / Event
+## 4. Persistence classification
 
-Existing B01–B03 ownership remains unchanged. `dante.schedule` remains the single shared accepted-placement owner.
+### Activity / Event / Routine
 
-### 4.2 Temporal Constraint — B04-A/B/C/E ✅ CLOSED / PROVEN
+Distinct canonical owners. No repeated-Activity shortcut replaces Routine; no Event-specific or Occurrence-specific Schedule engine exists.
 
-Temporal Constraint is a stable `ScopedRecordRef` LR-05 dependent. Boundary, window and duration rule MaterialStates remain independently revisable from Schedule.
+### Schedule
 
-Accepted boundary variants:
+`dante.schedule` remains the single accepted temporal-placement authority reused by Activity/Event/Occurrence where authorized.
 
-```text
-earliest_start     + schedule.start
-latest_start       + schedule.start
-latest_completion  + schedule.completion
-```
+### Temporal Constraint / Movement Policy
 
-Accepted window variants:
-
-```text
-start_within              + schedule.start
-completion_within         + schedule.completion
-full_placement_contained  + schedule.placement
-placement_overlaps        + schedule.placement
-```
-
-Accepted duration variants:
-
-```text
-minimum + schedule.placement
-maximum + schedule.placement
-```
-
-`temporal_constraint_duration_state` is the typed MaterialState payload for TC-008. It stores only exact positive planned placement duration; no generic JSON rule payload exists.
-
-`mutate_self_schedule_duration_constraint(...)` reuses the common Temporal Constraint identity/current/history/idempotency engine. `enforce_temporal_constraint_rule_totality()` now enforces exact family exclusivity across boundary/window/duration payloads.
-
-Runtime SELECT on the duration payload is least privilege and exists only to support the canonical application read/evaluation surface.
-
-### 4.3 Movement Policy — B04-D ✅ CLOSED / PROVEN
-
-Movement Policy remains a typed Schedule-owned material facet:
-
-```text
-schedule.movement_policy
-```
-
-`assert_absolute_schedule_move_hard_admissible(...)` now evaluates current hard boundary, window **and duration** rules. Thus B04-D automation cannot bypass B04-E hard duration constraints.
-
-### 4.4 Advanced-family applicability — B04-E ✅ CLOSED / PROVEN
-
-```text
-TC-008 implemented
-TC-009 runtime deferred B08
-TC-010 runtime deferred B06/B08/B10 by anchor
-TC-011 runtime persistence deferred until reviewed bounded relation/reference support exists
-```
-
-No fake prior-time field, generic relation root, `related_id + type`, or opaque JSON relation payload was introduced.
-
-## 5. Permanent non-collapse
+Constraint and Movement Policy remain independent from accepted Schedule state and from solver output.
 
 ```text
 Schedule != Temporal Constraint
 Schedule != Movement Policy
 Temporal Constraint != Movement Policy
+Movement Policy != solver result
+proposal != accepted effect
+```
+
+### Life Area / Tag
+
+Actor-local product organization structures; not new Domain roots and not generic relationship/EAV mechanisms.
+
+### Recurrence / Occurrence
+
+```text
+Routine != Recurrence != Occurrence
+Occurrence != Schedule
+```
+
+Occurrence provenance remains private. Runtime exposure is through bounded self-scoped capabilities rather than direct table SELECT grants.
+
+## 5. Permanent non-collapse
+
+```text
+Activity != Event != Routine
+Routine != Recurrence != Occurrence
+Occurrence != Schedule
+Schedule != Temporal Constraint
+Schedule != Movement Policy
+Schedule != Session != Actual
+Session != Actual != Outcome
+Actual != Outcome != Confirmation
+Responsibility != Participation
 planned Schedule duration != Activity estimated effort
 planned Schedule duration != Session duration
 planned Schedule duration != Actual duration
-Movement Policy != Authority itself
 Movement Policy != solver result
 proposal != accepted effect
-policy revision != Schedule revision
-constraint revision != Schedule revision
-hard planning violation != impossible reality
-soft preference violation != automatic rejection
 evaluation != solver decision
-violation != automatic mutation
+solver proposal != accepted Schedule
 current accepted state != newest row
 idempotency key != Domain identity
+projection != canonical truth
 ```
 
 ## 6. Proof state
 
 ```text
-B01 Activity Core                    CLOSED / PROVEN
-B02 Schedule Core                    CLOSED / PROVEN
-B03 Event Core                       CLOSED / PROVEN
-B04-A                                CLOSED / PROVEN at 20260918_33
-B04-B                                CLOSED / PROVEN at 20260919_34
-B04-C                                CLOSED / PROVEN at 20260919_36
-B04-D Movement Policy                CLOSED / PROVEN at 20260919_39
-B04-E Advanced-family applicability  CLOSED / PROVEN at 20260919_41
-B04-F Whole-B04 closure              CLOSED / PROVEN at 20260920_42
-B04 overall                          CLOSED / PROVEN
-B05-A Life Area full lifecycle       CLOSED / PROVEN at `_45`
-B05-B primary assignment             CLOSED / PROVEN at `_46` (16 selected tests)
-B05-C secondary Tags                 CLOSED / PROVEN at `_47` (26 selected tests)
-B06-A Routine core                   CLOSED / PROVEN at `_51`
-B06-B Recurrence authoring           CLOSED / PROVEN at `_54`
-B06-C Occurrence checkpoint          CLOSED / PROVEN at `_55`
-B06-D Schedule + Timeline            CLOSED / PROVEN at `_57` (11 selected PostgreSQL/catalog tests; web typecheck; 18 focused Vitest tests)
+B01 Activity Core                     CLOSED / PROVEN
+B02 Schedule Core                     CLOSED / PROVEN
+B03 Event Core                        CLOSED / PROVEN
+B04 overall                           CLOSED / PROVEN through `_42`
+B05 overall                           CLOSED / PROVEN through `_48`
+B06-A Routine core                    CLOSED / PROVEN at `_51`
+B06-B Recurrence authoring            CLOSED / PROVEN at `_54`
+B06-C Occurrence checkpoint           CLOSED / PROVEN at `_55`
+B06-D Schedule + Timeline             CLOSED / PROVEN at `_57`
+B06-E whole-block closure             CLOSED / PROVEN at `_57`
+B06 overall                           CLOSED / PROVEN
 ```
 
-Observed B04-E evidence:
-
-```text
-core duration + movement integration             4 PASS
-application/evaluator/regression                13 PASS / 3 deselected
-whole catalog + B04-E catalog reconciliation     3 PASS
-DATABASE_CURRENT_TOPOLOGY                         116|5|44|90|233|153|331|0|0|0
-```
+Final B06 closure evidence is owned by `../../workstreams/timeline-temporal-operational-b06-e-closure-2026-09-23.md`. Whole-B06 closure did not change the catalog after `_57`.
 
 ## 7. Object contract
 
@@ -257,4 +189,8 @@ extension-owned objects excluded correctly
 
 No real object → no ceremonial Dictionary entry. Every real current DANTE business object requires matching Dictionary/Alembic/SQLAlchemy/current-human-reference/direct-PostgreSQL proof in the same reviewed slice.
 
-B04-F and B05 are closed. `_46`, `_47` and `_48` retain their recorded proof. B06-C `_55` is proven. B06-D `_57` is now source- and proof-reconciled: the final user-run backend/catalog gate passed 11 selected tests including both whole-catalog reconciliation tests, while the web gate passed typecheck and 18 focused Vitest tests. B06-E is the next whole-block closure boundary.
+## 10. Next boundary
+
+B08 Session Runtime is next in the active `+`/Timeline vertical. No Dictionary or schema change is pre-authorized by the block name alone; current CP6/Physical Session structures are inspected before any forward-only DDL is admitted.
+
+Provider integration, native/offline, broad analytics and account collaboration are outside this vertical and must not create speculative Dictionary entries.
