@@ -3,38 +3,34 @@
 - **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-23
 - **Branch/workstream:** `feature/timeline-temporal-operational`
 - **Vertical boundary:** Home `+` creation/configuration → canonical temporal truth → Timeline projection/actions → bounded lifecycle completion
-- **Current completed frontier:** B06 ✅ CLOSED / PROVEN
-- **Current block:** B08 Session Runtime 🟡 ACTIVE
+- **Completed frontier:** B06 ✅ CLOSED / PROVEN
+- **Current block:** B08 Session Runtime 🟡 READY TO START
 - **Current slice:** B08-A Authority reconciliation + implementation freeze ← NEXT
-- **B08 detailed execution plan:** `docs/workstreams/timeline-temporal-operational-b08-execution-plan.md`
-- **Deferred block:** B07 UI/UX Consolidation v1 — execute after B12
-- **Current candidate DB source:** PostgreSQL 18.6 / Alembic `20260923_57`
-- **Candidate proven topology:** `145|5|88|92|285|223|408|0|0|0`
-- **Live progress ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
-- **Post-B06 scope/sequencing authority:** `docs/workstreams/timeline-temporal-operational-post-b06-scope-decision-2026-09-23.md`
-- **B06 whole-block closure:** `docs/workstreams/timeline-temporal-operational-b06-e-closure-2026-09-23.md`
+- **Deferred block:** B07 UI/UX Consolidation v1 — execute after B08–B12
+- **Current DB frontier:** PostgreSQL 18.6 / Alembic `20260923_57`
+- **Proven topology:** `145|5|88|92|285|223|408|0|0|0`
+- **Live execution ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
+- **Continuation handoff:** `docs/workstreams/timeline-temporal-operational-handoff.md`
+- **Post-B06 scope authority:** `docs/workstreams/timeline-temporal-operational-post-b06-scope-decision-2026-09-23.md`
 
-This document is the current sequencing authority. Historical snapshots and closure records preserve phase-time evidence; they do not override this roadmap.
+This document is the single sequencing authority for the remaining Timeline / Temporal-Operational work. It defines **what comes next and in what order**. Detailed discoveries, decisions, implementation evidence and test results are recorded incrementally in the live map/ledger rather than creating a new planning document for every sub-slice.
 
 ---
 
-# 0. Fixed execution contract
+# 0. Execution discipline
+
+For every slice:
 
 ```text
-semantic capability
-→ current Product / Domain / Logical / Physical inspection
-→ current persistence inspection
-→ DDL only if a real gap exists
-→ backend/application operation/query
-→ API/transport when applicable
-→ frontend integration sufficient for real use/proof
-→ automated proof
-→ manual userTest where applicable
-→ live ledger update
-→ documentation reconciliation
+inspect current authority/code/schema
+→ decide the smallest truthful change
+→ implement that slice only
+→ user runs the requested local tests
+→ reconcile docs/evidence
+→ advance to the next slice
 ```
 
-Permanent rules include:
+Rules:
 
 ```text
 Domain != Logical != Physical != API DTO != frontend ViewModel
@@ -55,7 +51,19 @@ idempotency key != Domain identity
 Undo != history rewind
 ```
 
-A block closes only after applicable semantic, persistence, backend, API/client, frontend, proof and documentation gates are reconciled.
+No later slice starts opportunistically while the current one still has unresolved semantic or proof gaps.
+
+## Documentation rule
+
+Keep documentation deliberately small:
+
+```text
+ROADMAP  = ordered plan and block boundaries
+MAP      = live state, accepted decisions, implementation/test evidence
+HANDOFF  = exact current position and next concrete action
+```
+
+Do **not** create a separate planning/freeze file for every A/B/C sub-slice. Update the live map and handoff as work progresses. A historical closure record is created only when a whole major block closes and retaining immutable closure evidence is useful.
 
 ---
 
@@ -71,7 +79,7 @@ B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
 B05 Product Organization                         ✅ CLOSED / PROVEN
 B06 Routine / Recurrence / Occurrence Baseline   ✅ CLOSED / PROVEN
 
-B08 Session Runtime                              🟡 ACTIVE
+B08 Session Runtime                              🟡 READY TO START
   B08-A Authority reconciliation + freeze         ← NEXT
   B08-B Start / Read / End core                   ⬜
   B08-C Pause / Resume + duration                 ⬜
@@ -83,41 +91,43 @@ B09 Responsibility / Participation               ⬜
 B10 Actual / Outcome / Confirmation / Resolution ⬜
 B11 Advanced Recurrence / Conditional / Reminder ⬜
 B12 Replanning / Conflict / Solver               ⬜
-B07 UI/UX Consolidation v1                       ← DEFERRED UNTIL B08–B12 EXIST
-B15 Whole Vertical Closure
+B07 UI/UX Consolidation v1                       ⏸ DEFERRED UNTIL B08–B12 EXIST
+B15 Whole Vertical Closure                       ⬜
 ```
 
-The block identifiers remain stable for historical traceability. Execution order is intentionally non-numeric after B06 because B07 has been deliberately deferred rather than renamed.
+The non-numeric execution order is intentional: B07 stays historically stable but is deferred until the capability vocabulary from B08–B12 exists.
 
-Former B13 Provider/Offline/Multi-device and B14 Analytics/Statistics/Signals are **not active blocks in this vertical**. They are future backlog work outside the bounded `+`/Timeline vertical and are not B15 closure blockers.
+Former B13 Provider/Offline/Multi-device and B14 Analytics/Statistics/Signals are future backlog outside this bounded vertical and are not B15 blockers.
 
 ---
 
 # 2. Completed foundation B00–B06
 
 ## B00 — Real Data Spine ✅
-
-Normal runtime consumes real authenticated Web → FastAPI/application → PostgreSQL truth with real empty/error/reload behavior.
+Real authenticated Web → FastAPI/application → PostgreSQL truth with real empty/error/reload behavior.
 
 ## B01 — Activity Core ✅
-
 Canonical Activity identity, actionable intention, idempotent create/read, unplaced state and Planning Tray projection.
 
 ## B02 — Schedule Core ✅
-
-One shared Schedule engine across accepted owners, with establish/revise/unschedule/Undo/current-history/CAS/idempotency/DST semantics.
+One shared Schedule engine across accepted owners with establish/revise/unschedule/Undo/current-history/CAS/idempotency/DST semantics.
 
 ## B03 — Event Core ✅
-
 Event remains distinct from Activity while reusing shared Schedule authority. Agenda remains Event-internal value truth.
 
 ## B04 — Temporal Constraints + Movement Policy ✅
-
 Typed planning constraints, deterministic hard/soft evaluation, planned-placement duration and governed movement/proposal semantics without collapsing constraint, policy, solver or accepted Schedule.
 
-## B05 — Product Organization ✅
+Deferred families carried forward:
 
-Actor-local Life Area + secondary Tag organization and postponed/TBD rediscovery without inventing placement truth or new Domain owners.
+```text
+TC-009 contiguous Session duration  → B08-E
+TC-010 spacing/recovery             → later anchor-specific reopening
+TC-011 relative before/after        → bounded relation/reference review when activated
+```
+
+## B05 — Product Organization ✅
+Actor-local Life Area + secondary Tags and real Timeline organization without turning organization into Domain ownership.
 
 ## B06 — Routine / Recurrence / Occurrence Baseline ✅
 
@@ -129,9 +139,9 @@ B06-D shared Schedule / Timeline / functional UI ✅
 B06-E whole-block closure                        ✅
 ```
 
-B06 preserves `Routine != Recurrence != Occurrence != Schedule`. Occurrences reuse the existing shared Schedule authority; expected and scheduled projections obey one-item precedence; canonical recurring state survives reload.
+B06 preserves `Routine != Recurrence != Occurrence != Schedule`; expected/scheduled projections do not duplicate one canonical Occurrence; recurring state survives reload.
 
-Candidate persistence frontier after B06:
+Frontier after B06:
 
 ```text
 PostgreSQL 18.6
@@ -141,11 +151,9 @@ Topology    145|5|88|92|285|223|408|0|0|0
 
 ---
 
-# 3. B08 — Session Runtime 🟡 ACTIVE
+# 3. B08 — Session Runtime
 
-Detailed authority: `docs/workstreams/timeline-temporal-operational-b08-execution-plan.md`.
-
-B08 activates Session only to the extent needed by the `+`/Timeline vertical: a real execution episode connected to the intended/expected item shown in Timeline, without collapsing planned Schedule or later Actual/Outcome truth.
+B08 activates actual execution episodes for the Timeline vertical without collapsing planned Schedule or later happened-reality semantics.
 
 Permanent boundaries:
 
@@ -161,7 +169,7 @@ planned Schedule duration != Session elapsed duration
 Session elapsed duration != Session active duration
 ```
 
-Existing CP6 Session substrate is inspected and reused before any new schema is authorized:
+Existing CP6 substrate must be inspected/reused before new schema is authorized:
 
 ```text
 session
@@ -172,45 +180,71 @@ session_timing_pause
 session_timing_current_history
 ```
 
-Ordered B08 execution:
+## B08-A — Authority reconciliation + implementation freeze ← NEXT
 
-### B08-A — Authority reconciliation + implementation freeze
-
-Resolve/freeze exact execution targets, Session→context reference representation, lifecycle commands, current/history mutation, concurrent-open policy, idempotency/CAS, API operation inventory, DDL gaps, proof matrix and explicit exclusions.
-
-Candidate baseline to verify:
+Before implementation, inspect current Domain/Logical/Physical/DB/application/API/frontend authority and freeze only what is needed for B08-B–E:
 
 ```text
-Activity     Session target ✅
-Occurrence   Session target ✅
+eligible Session execution targets
+Session → execution-context representation
+START / PAUSE / RESUME / END lifecycle and legal transitions
+current/history mutation model
+concurrent-open Session policy
+idempotency/replay and CAS requirements
+real DDL gaps, if any
+API operation inventory
+TC-009 exact reopening boundary
+explicit non-goals
+proof matrix
+```
+
+Candidate baseline to verify, not assume:
+
+```text
+Activity     Session target ✅ candidate
+Occurrence   Session target ✅ candidate
 Routine      direct target  ❌
 Event        ordinary target ❌ baseline
 Schedule     Session owner  ❌
 ```
 
-No major runtime implementation starts before B08-A is `CLOSED / FROZEN`.
+**Exit:** B08-A decisions are recorded in the live map; there is no separate B08-A planning/freeze document.
 
-### B08-B — Start / Read / End core
+## B08-B — Start / Read / End core
 
-Establish canonical Session creation/open-read/end for eligible Activity/Occurrence contexts, with self-scope, idempotency, expected-state/concurrency protection and reload-authoritative behavior.
+Implement the smallest canonical vertical:
 
-Forbidden effects remain explicit: no fabricated Schedule, completion, Actual or Outcome.
+```text
+Activity/Occurrence → START Session
+read authoritative open/current Session
+END Session
+reload preserves canonical state
+new START after END → new Session identity
+```
 
-### B08-C — Pause / Resume + truthful duration
+Must include self-scope, idempotency, conflict/concurrency protection and truthful persistence. START/END must not fabricate Schedule, Activity/Occurrence completion, Actual or Outcome.
 
-Preserve one Session identity across pause/resume, enforce at most one open pause, derive elapsed/paused/active duration truthfully, and prove reload/concurrency semantics.
+## B08-C — Pause / Resume + truthful duration
 
-### B08-D — Timeline runtime integration
+Implement one continuous Session identity across:
 
-Expose truthful START/PAUSE/RESUME/END controls and authoritative running/paused state for eligible Activity/Occurrence surfaces. Browser timer state is presentation only; canonical state lives in backend/PostgreSQL.
+```text
+RUNNING → PAUSED → RUNNING → ENDED
+```
 
-### B08-E — TC-009 Session-duration reopening
+Prove at-most-one open pause, invalid-transition conflicts, truthful elapsed/paused/active derivation and reload/concurrency behavior.
 
-Reopen the B04-deferred contiguous Session-duration family only after exact Session timing semantics exist. Do not alias Session duration to planned Schedule duration. TC-010 spacing/recovery remains deferred unless B08-A finds an authority requirement.
+## B08-D — Timeline runtime integration
 
-### B08-F — Whole-block closure
+Expose functional START/PAUSE/RESUME/END behavior for eligible Activity/Occurrence surfaces. Canonical runtime truth remains backend/PostgreSQL; browser timers are presentation only. F5/navigation must rehydrate without changing Schedule or fabricating lifecycle results.
 
-Run relevant local automated gates plus persistent real-stack walkthrough:
+## B08-E — TC-009 Session-duration reopening
+
+Reopen only the B04-deferred contiguous Session-duration family after Session timing semantics exist. Do not alias Session duration to planned Schedule duration. TC-010 remains deferred unless authority requires otherwise.
+
+## B08-F — Whole-block closure
+
+Run applicable local automated gates and the persistent real-stack walkthrough:
 
 ```text
 START
@@ -226,51 +260,23 @@ START
 → no duplicate state on reload/navigation
 ```
 
-Only B08-F may mark B08 `CLOSED / PROVEN`.
+The user runs local tests. No CI/GitHub Actions unless separately authorized.
 
-B08 is not a generic workflow/runtime platform and does not own final UI polish, provider/import sync, offline/multi-device timers, analytics, cross-account runtime or B10 happened-reality semantics.
+Only B08-F may mark B08 `CLOSED / PROVEN`. At that point update roadmap/map/handoff and, if useful for immutable history, create **one B08 whole-block closure record**.
 
 ---
 
 # 4. B09 — Responsibility / Participation
 
-B09 adds the role/participation semantics needed by Activity/Event/Routine/Occurrence creation/editing and Timeline interaction.
+Add the role/participation semantics required by Activity/Event/Routine/Occurrence and Timeline interaction without equating participant identity with a DANTE Account.
 
-A participant/responsible subject may be a Person/referent without being a DANTE Account. Future account linkage may bind the same Person/referent without changing the participation meaning.
-
-Out of scope:
-
-```text
-account-to-account collaboration
-chat/messaging
-shared editing
-cross-account invitation/grant system
-```
-
-Permanent boundaries:
-
-```text
-Responsibility != Participation
-participant != Account identity
-performer change != Occurrence identity change
-```
+Out of scope: cross-account collaboration, chat/messaging, shared editing and invitation/grant infrastructure.
 
 ---
 
 # 5. B10 — Actual / Outcome / Confirmation / Resolution
 
-B10 completes the bounded Timeline lifecycle toward happened reality.
-
-```text
-intended / expected
-→ optionally planned
-→ optionally Session/runtime
-→ Actual / realized fact where justified
-→ Outcome
-→ Confirmation / Observation / Evidence where applicable
-```
-
-Time passage never manufactures execution.
+Complete the bounded Timeline lifecycle toward happened reality while preserving:
 
 ```text
 planned/intended != happened
@@ -279,138 +285,84 @@ Actual != Outcome
 Outcome != Confirmation
 ```
 
+Time passage never manufactures execution.
+
 ---
 
 # 6. B11 — Advanced Recurrence / Conditional / Reminder
 
-B11 completes advanced recurrence/reminder capabilities required by `+`, structured editing and Timeline after B06 baseline.
-
-It may reopen intentionally deferred families once their anchors exist, including completion-relative semantics where justified.
-
-Forbidden shortcuts remain:
-
-```text
-RRULE as canonical ontology
-generic JSON rule bag
-generic IFTTT/automation ontology
-fake Activity materialization
-```
+Complete advanced recurrence/reminder capabilities after B06 baseline and once later anchors exist. No RRULE-as-ontology, generic JSON rule bag, generic IFTTT ontology or fake Activity materialization.
 
 ---
 
 # 7. B12 — Replanning / Conflict / Solver
 
-B12 owns deterministic candidate generation, conflict handling, ranking/optimization and governed replanning proposals over canonical Schedule/Constraint/Recurrence truth.
-
-Target flow:
+Implement deterministic candidate generation/conflict handling/optimization and governed Proposal acceptance over canonical Schedule/Constraint/Recurrence truth.
 
 ```text
-current canonical truth + constraints/preferences
+canonical truth + constraints/preferences
 → deterministic candidate generation / optimization
 → Proposal(s)
-→ optional AI interpretation/explanation/ranking assistance
+→ optional AI interpretation/ranking assistance
 → governed acceptance
 → canonical Schedule mutation
 ```
 
-AI is not scheduling authority and never writes accepted Schedule merely because a model proposed it.
-
-```text
-evaluation != solver decision
-solver proposal != accepted Schedule
-AI output != accepted effect
-```
-
-The selected Physical target already names OR-Tools CP-SAT as the solver candidate; B12 decides the concrete bounded activation based on real needs.
+AI is support, never scheduling authority.
 
 ---
 
 # 8. B07 — UI/UX Consolidation v1 — DEFERRED
 
-B07 is deliberately executed after B08–B12 so final interaction design sees the complete vertical vocabulary instead of being repeatedly rebuilt.
+Execute after B08–B12 so the final interaction design sees the complete vertical vocabulary. During B08–B12 UI may be temporary but must remain truthful, usable and testable.
 
-During B08–B12 the UI may be functional and visually temporary, but must remain truthful, usable and testable.
-
-Deferred B07 consolidates at least:
-
-```text
-Home / Timeline
-`+` Create
-Activity/Event/Routine editors
-Occurrence actions
-Schedule / constraint / recurrence controls
-Session / Actual lifecycle controls
-Responsibility / Participation presentation
-advanced recurrence/reminders
-solver/replanning proposals
-responsive / loading / empty / error / accessibility behavior
-```
-
-B07 changes presentation/interaction; it must not weaken Domain/Logical/Persistence semantics.
+B07 consolidates Home/Timeline, `+`, editors, Occurrence actions, Schedule/constraints/recurrence, Session/Actual lifecycle, Responsibility/Participation, reminders and solver/replanning proposals without weakening canonical semantics for visual convenience.
 
 ---
 
-# 9. Explicitly outside this vertical
-
-The following are future DANTE work, not active blocks here:
-
-```text
-external provider integration (Google Calendar / Outlook / provider sync)
-native mobile app
-advanced offline / multi-device synchronization
-account-to-account collaboration
-chat/shared editing
-broad analytics / statistics / signals vertical
-```
-
-A narrowly derived read value may still be implemented if a specific active block genuinely requires it, but that does not activate a general analytics vertical.
-
----
-
-# 10. B15 — Whole Vertical Closure
+# 9. B15 — Whole Vertical Closure
 
 B15 closes only the bounded vertical:
 
 ```text
 `+` creation/configuration
-→ canonical backend/persistence truth
+→ canonical persistence/backend truth
 → Timeline projection/actions
-→ required Session/Actual lifecycle
-→ Responsibility/Participation roles
+→ Session/Actual lifecycle
+→ Responsibility/Participation
 → advanced recurrence/reminders
 → replanning/conflict/solver proposals
 → final B07 UI/UX consolidation
 ```
 
-Provider integration, native/offline, broad analytics and collaboration are explicitly not B15 blockers.
+External providers, native/offline, broad analytics and account collaboration are not B15 blockers.
 
 ---
 
-# 11. Documentation continuity rule
+# 10. Recovery when a chat saturates
 
-For B08 and later blocks, every meaningful checkpoint updates the live ledger and handoff. Dated freeze/closure records preserve semantic decisions and proof evidence so a saturated/new chat can restart without reconstructing state from memory.
-
-B08 recovery order:
+Read only:
 
 ```text
 1. timeline-temporal-operational-handoff.md
-2. timeline-temporal-operational-map.md
-3. timeline-temporal-operational-b08-execution-plan.md
-4. latest dated B08 freeze/closure record
-5. docs/database/timeline-temporal-operational.md if DB work is involved
+2. timeline-temporal-operational-roadmap.md
+3. timeline-temporal-operational-map.md
+4. docs/database/timeline-temporal-operational.md only when the current slice touches persistence
 ```
+
+The handoff says where work stopped. The roadmap says what comes next. The map contains the accepted decisions and evidence produced so far.
 
 ---
 
-# 12. Current gate
+# 11. Current gate
 
 ```text
 B00–B06 ✅ CLOSED / PROVEN
 B07     ⏸ DEFERRED
-B08     🟡 ACTIVE
-B08-A   ← NEXT / NOT YET FROZEN
+B08     🟡 READY TO START
+B08-A   ← NEXT
 B09–B12 ⬜ NOT STARTED
 B15     ⬜ NOT STARTED
 ```
 
-Current action: execute B08-A pre-scope/authority reconciliation from the proven `_57` frontier. No CI or GitHub Actions are implied or authorized by this roadmap.
+**Current action:** none has started yet inside B08-A. The next implementation/review session begins with B08-A and proceeds one slice at a time.
