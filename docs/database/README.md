@@ -7,13 +7,13 @@
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
 - **Timeline candidate Alembic head (source):** `20260923_57`
-- **Timeline candidate expected topology:** `145|5|88|92|285|223|408|0|0|0` (`_57` candidate; proof pending)
-- **Timeline candidate latest proven topology:** `145|5|87|92|285|223|408|0|0|0` (B06-C proven at `_55`)
+- **Timeline candidate proven topology:** `145|5|88|92|285|223|408|0|0|0` (B06-D proven at `_57`)
 - **Timeline candidate DB overlay:** `timeline-temporal-operational.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 - **Persistence ADR:** `../decisions/ADR-010-postgresql-persistence-constitution.md`
 - **Timeline workstream authority:** `../workstreams/timeline-temporal-operational-map.md`
 - **B04-E closure:** `../workstreams/timeline-temporal-operational-b04-e-closure-2026-09-19.md`
+- **B06-D closure:** `../workstreams/timeline-temporal-operational-b06-d-closure-2026-09-23.md`
 
 ## 1. Authority model
 
@@ -86,8 +86,8 @@ Protected `main` remains integration authority. Candidate truth is never relabel
 20260922_53 B06-B forward-only Recurrence current-state reader repair [PROVEN at _54]
 20260922_54 B06-B forward-only Recurrence selector validation repair [PROVEN]
 20260922_55 B06-C bounded Occurrence checkpoint, explicit extra, skip and structural exclusion [PROVEN]
-20260922_56 B06-D Occurrence authorization in shared Schedule capabilities [IMPLEMENTATION]
-20260923_57 B06-D bounded execute-only expected-Occurrence Timeline read [CANDIDATE / PROOF PENDING]
+20260922_56 B06-D Occurrence authorization in shared Schedule capabilities
+20260923_57 B06-D bounded execute-only expected-Occurrence Timeline read [PROVEN]
 ```
 
 No accepted historical migration was edited, rebased, renumbered or flattened.
@@ -109,7 +109,7 @@ No accepted historical migration was edited, rebased, renumbered or flattened.
 0 RLS policies
 ```
 
-The `_42` topology was read directly from PostgreSQL 18.6 during B04-F closure. `_45` closed B05-A. The user ran 16 selected PostgreSQL tests at `_46`, including whole-catalog reconciliation, closing B05-B. The user ran 26 selected PostgreSQL tests at `_47`, including whole-catalog reconciliation, closing B05-C. `_55` is the latest directly proven B06 topology. `_56` changes existing Schedule capability bodies only; `_57` adds exactly one routine and predicts the 88-routine candidate topology above. `_57` remains proof-pending until the user runs the local B06-D PostgreSQL/catalog gate.
+The `_42` topology was read directly from PostgreSQL 18.6 during B04-F closure. `_45` closed B05-A. The user ran 16 selected PostgreSQL tests at `_46`, including whole-catalog reconciliation, closing B05-B. The user ran 26 selected PostgreSQL tests at `_47`, including whole-catalog reconciliation, closing B05-C. `_55` closed B06-C. `_56` changes existing Schedule capability bodies only; `_57` adds exactly one routine. The user-run B06-D backend/catalog gate passed both whole-catalog reconciliation tests at `_57`, proving the 88-routine topology above.
 
 ## 4. Timeline persistence classification
 
@@ -277,7 +277,7 @@ B05-C secondary Tags                 CLOSED / PROVEN at `_47` (26 selected tests
 B06-A Routine core                   CLOSED / PROVEN at `_51`
 B06-B Recurrence authoring           CLOSED / PROVEN at `_54`
 B06-C Occurrence checkpoint          CLOSED / PROVEN at `_55` (41 selected PostgreSQL tests)
-B06-D Schedule + Timeline integration IN PROGRESS at `_57` / local proof pending
+B06-D Schedule + Timeline integration CLOSED / PROVEN at `_57` (11 selected PostgreSQL/catalog tests; web typecheck; 18 focused Vitest tests)
 ```
 
 Observed B04-E local evidence:
@@ -293,4 +293,4 @@ Proof covers duration lifecycle/current/history/CAS/idempotency, hard minimum/ma
 
 ## 7. Current next boundary
 
-B04-F, B05 and B06-C are closed with their recorded proof. `_56` admits self-owned Occurrences to the unchanged shared Schedule engine. `_57` keeps B06-C provenance tables default-deny and adds one bounded self-scoped execute-only read for currently unscheduled expected Occurrences; scheduled Occurrences are composed through the existing `get_self_occurrence` capability. B06-D remains candidate until the user-run local backend/web gate is green.
+B04-F, B05 and B06-A/B/C/D are closed with their recorded proof. `_56` admits self-owned Occurrences to the unchanged shared Schedule engine. `_57` keeps B06-C provenance tables default-deny and adds one bounded self-scoped execute-only read for currently unscheduled expected Occurrences; scheduled Occurrences are composed through the existing `get_self_occurrence` capability and Routine metadata through `list_self_routines`. B06-E is now the active whole-block closure boundary.
