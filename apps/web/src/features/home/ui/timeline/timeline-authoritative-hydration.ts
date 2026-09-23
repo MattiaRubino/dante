@@ -13,6 +13,7 @@ import type {
   TimelineCanonicalScheduleBasis,
   TimelineCanonicalSchedulePlacement,
   TimelineEvent,
+  TimelineExpectedOccurrenceBasis,
 } from './model/timeline-types';
 
 function minuteOfLocalDay(value: PlainDateTime): number {
@@ -170,6 +171,18 @@ function expectedCalendarProjection(
   });
 }
 
+function expectedOccurrenceBasis(
+  item: TemporalTimelineExpectedOccurrenceItem,
+  suggestedStartTime?: string,
+): TimelineExpectedOccurrenceBasis {
+  return Object.freeze({
+    occurrenceRef: item.occurrenceRef,
+    sourceKind: item.sourceKind,
+    sourceNativeRef: item.sourceNativeRef,
+    ...(suggestedStartTime === undefined ? {} : { suggestedStartTime }),
+  });
+}
+
 export function expectedOccurrenceDateLaneItem(
   item: TemporalTimelineExpectedOccurrenceItem,
   effectiveZoneId: string,
@@ -190,6 +203,7 @@ export function expectedOccurrenceDateLaneItem(
         groupId,
         ...appearance,
         laneKind: 'expectation' as const,
+        occurrenceBasis: expectedOccurrenceBasis(item, projection.meta),
         ...(projection.meta === undefined ? {} : { meta: projection.meta }),
       });
     }
@@ -197,6 +211,9 @@ export function expectedOccurrenceDateLaneItem(
       const local =
         item.coordinate.expectedAt.toZonedDateTimeISO(effectiveZoneId);
       const date = local.toPlainDate();
+      const suggestedStartTime = local
+        .toPlainTime()
+        .toString({ smallestUnit: 'minute' });
       return Object.freeze({
         id: item.occurrenceRef,
         startDateKey: date.toString(),
@@ -205,7 +222,8 @@ export function expectedOccurrenceDateLaneItem(
         groupId,
         ...appearance,
         laneKind: 'expectation' as const,
-        meta: local.toPlainTime().toString({ smallestUnit: 'minute' }),
+        occurrenceBasis: expectedOccurrenceBasis(item, suggestedStartTime),
+        meta: suggestedStartTime,
       });
     }
     case 'quota-per-period':
@@ -217,6 +235,7 @@ export function expectedOccurrenceDateLaneItem(
         groupId,
         ...appearance,
         laneKind: 'flexible' as const,
+        occurrenceBasis: expectedOccurrenceBasis(item),
       });
     case 'cyclic-positional':
       return Object.freeze({
@@ -229,6 +248,7 @@ export function expectedOccurrenceDateLaneItem(
         groupId,
         ...appearance,
         laneKind: 'expectation' as const,
+        occurrenceBasis: expectedOccurrenceBasis(item),
       });
   }
 }
