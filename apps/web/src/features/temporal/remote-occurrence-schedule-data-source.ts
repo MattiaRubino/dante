@@ -168,6 +168,7 @@ export function createRemoteTemporalOccurrenceScheduleDataSource(
       request: TemporalOccurrenceScheduleEstablishRequest,
     ): Promise<TemporalOccurrenceScheduleEstablishResult> {
       const csrfToken = await csrf();
+      const serializedPlacement = serializePlacement(request.placement);
       let response: Response;
       try {
         response = await webFetch(
@@ -182,7 +183,7 @@ export function createRemoteTemporalOccurrenceScheduleDataSource(
             }),
             body: JSON.stringify({
               operation_id: request.operationId,
-              placement: serializePlacement(request.placement),
+              placement: serializedPlacement,
             }),
           },
         );
