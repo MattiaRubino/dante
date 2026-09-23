@@ -168,10 +168,13 @@ export function temporalCreateTimelinePreviewFromFields(
     return null;
   }
 
+  const recurring = fields.eventRecurrence.patternKind !== 'none';
   return projectPlacement(
     'temporal-create-preview',
     fields.title.trim(),
-    buildTemporalCreatePlacement(fields),
+    // Recurrence authors an expected source, not an accepted per-Occurrence
+    // Schedule. Drawing the legacy one-shot duration here would fabricate truth.
+    recurring ? null : buildTemporalCreatePlacement(fields),
     Object.freeze({
       kind: fields.kind,
       contextId: fields.contextId,
