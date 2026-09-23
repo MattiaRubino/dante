@@ -70,6 +70,24 @@ async def test_occurrence_reuses_schedule_identity_history_and_self_scope(
             effective_zone_id="Europe/Rome",
         )
         occurrence_ref = NativeRef(checkpoint.occurrences[0].occurrence_ref)
+        window_checkpoint = await occurrences.checkpoint_window(
+            self_person_ref=alice,
+            operation_id="b06-d:window-checkpoint",
+            start_date=date(2026, 10, 1),
+            end_date_exclusive=date(2026, 10, 2),
+            effective_zone_id="Europe/Rome",
+        )
+        assert window_checkpoint.source_count == 1
+        assert window_checkpoint.occurrence_count == 1
+        assert window_checkpoint.replayed_source_count == 0
+        window_replay = await occurrences.checkpoint_window(
+            self_person_ref=alice,
+            operation_id="b06-d:window-checkpoint",
+            start_date=date(2026, 10, 1),
+            end_date_exclusive=date(2026, 10, 2),
+            effective_zone_id="Europe/Rome",
+        )
+        assert window_replay.replayed_source_count == 1
         window = TimelineWindowQuery(
             start_date=date(2026, 10, 1),
             end_date_exclusive=date(2026, 10, 2),

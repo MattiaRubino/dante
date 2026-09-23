@@ -103,6 +103,67 @@ function UnscheduleProbe() {
 }
 
 describe('TemporalTimelineRuntimeBoundary', () => {
+  it('completes the explicit occurrence checkpoint before reading Timeline truth', async () => {
+    const order: string[] = [];
+    const checkpoint = deferred<{
+      startDate: string;
+      endDateExclusive: string;
+      effectiveZoneId: string;
+      sourceCount: number;
+      occurrenceCount: number;
+      replayedSourceCount: number;
+    }>();
+    const checkpointWindow = vi.fn<
+      NonNullable<TemporalTimelineDataSource['checkpointWindow']>
+    >((request) => {
+      order.push('checkpoint');
+      return checkpoint.promise.then((result) => {
+        order.push('checkpoint-complete');
+        return result;
+      });
+    });
+    const loadWindow = vi.fn<TemporalTimelineDataSource['loadWindow']>(() => {
+      order.push('read');
+      return Promise.resolve(emptyWindow());
+    });
+
+    render(
+      <TemporalTimelineRuntimeBoundary
+        viewedDateIso="2026-09-04"
+        dataSource={{ checkpointWindow, loadWindow }}
+        ids={createDeterministicTemporalIdFactory('b06-d')}
+        mode="production"
+      >
+        <div>product-shell</div>
+      </TemporalTimelineRuntimeBoundary>,
+    );
+
+    expect(checkpointWindow).toHaveBeenCalledWith(
+      {
+        operationId: 'b06-d:operation:1',
+        startDate: '2026-08-28',
+        endDateExclusive: '2026-10-10',
+      },
+      expect.any(AbortSignal),
+    );
+    expect(loadWindow).not.toHaveBeenCalled();
+
+    await act(async () => {
+      checkpoint.resolve({
+        startDate: '2026-08-28',
+        endDateExclusive: '2026-10-10',
+        effectiveZoneId: 'Europe/Rome',
+        sourceCount: 2,
+        occurrenceCount: 7,
+        replayedSourceCount: 0,
+      });
+      await checkpoint.promise;
+    });
+
+    await waitFor(() => expect(loadWindow).toHaveBeenCalledTimes(1));
+    expect(order).toEqual(['checkpoint', 'checkpoint-complete', 'read']);
+  });
+
   it('keeps the product visible while truthfully exposing an in-flight real read', async () => {
     const pending = deferred<TemporalTimelineWindow>();
     const loadWindow = vi.fn<TemporalTimelineDataSource['loadWindow']>(

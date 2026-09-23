@@ -47,6 +47,8 @@ import type {
   OccurrenceMutationResponse,
   OccurrenceResponse,
   OccurrenceScheduleResponse,
+  OccurrenceWindowCheckpointRequest,
+  OccurrenceWindowCheckpointResponse,
   PasskeyAuthenticationCompleteRequest,
   PasskeyBeginRequest,
   PasskeyCeremonyResponse,
@@ -6089,6 +6091,75 @@ export const temporalSetLifeAreaVisibility = async (
     status: res.status,
     headers: res.headers,
   } as temporalSetLifeAreaVisibilityResponse;
+};
+
+export type temporalCheckpointOccurrenceWindowResponse200 = {
+  data: OccurrenceWindowCheckpointResponse;
+  status: 200;
+};
+
+export type temporalCheckpointOccurrenceWindowResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalCheckpointOccurrenceWindowResponseSuccess =
+  temporalCheckpointOccurrenceWindowResponse200 & {
+    headers: Headers;
+  };
+export type temporalCheckpointOccurrenceWindowResponseError =
+  temporalCheckpointOccurrenceWindowResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalCheckpointOccurrenceWindowResponse =
+  | temporalCheckpointOccurrenceWindowResponseSuccess
+  | temporalCheckpointOccurrenceWindowResponseError;
+
+export const getTemporalCheckpointOccurrenceWindowUrl = () => {
+  return `/api/v1/temporal/occurrences/checkpoint`;
+};
+
+/**
+ * Checkpoint every current self recurrence source before a Timeline read.
+ * @summary Checkpoint Occurrence Window
+ */
+export const temporalCheckpointOccurrenceWindow = async (
+  occurrenceWindowCheckpointRequest: OccurrenceWindowCheckpointRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalCheckpointOccurrenceWindowResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalCheckpointOccurrenceWindowUrl(),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(occurrenceWindowCheckpointRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalCheckpointOccurrenceWindowResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalCheckpointOccurrenceWindowResponse;
 };
 
 export type temporalGetOccurrenceResponse200 = {

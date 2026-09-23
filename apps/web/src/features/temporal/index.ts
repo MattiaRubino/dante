@@ -103,6 +103,8 @@ export type {
   TemporalTimelineScheduledItem,
   TemporalTimelineScheduledOccurrenceItem,
   TemporalTimelineWindow,
+  TemporalTimelineWindowCheckpointRequest,
+  TemporalTimelineWindowCheckpointResult,
   TemporalTimelineWindowRequest,
 } from './timeline-read';
 export {

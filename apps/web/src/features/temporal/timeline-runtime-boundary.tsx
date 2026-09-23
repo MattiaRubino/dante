@@ -64,6 +64,7 @@ export type TemporalTimelineRuntimeContextValue = Readonly<{
 type TemporalTimelineReadAttempt = Readonly<{
   request: TemporalTimelineWindowRequest;
   source: TemporalTimelineDataSource;
+  checkpointOperationId: string | null;
   retryRevision: number;
 }>;
 
@@ -177,9 +178,11 @@ export function TemporalTimelineRuntimeBoundary({
         : Object.freeze({
             request,
             source,
+            checkpointOperationId:
+              source.checkpointWindow === undefined ? null : ids.operationId(),
             retryRevision,
           }),
-    [request, retryRevision, source, testMode],
+    [ids, request, retryRevision, source, testMode],
   );
   const [settledState, setSettledState] =
     useState<TemporalTimelineSettledState | null>(null);
@@ -192,8 +195,22 @@ export function TemporalTimelineRuntimeBoundary({
     const controller = new AbortController();
     let active = true;
 
-    void attempt.source
-      .loadWindow(attempt.request, controller.signal)
+    const checkpoint =
+      attempt.source.checkpointWindow === undefined ||
+      attempt.checkpointOperationId === null
+        ? Promise.resolve()
+        : attempt.source
+            .checkpointWindow(
+              {
+                ...attempt.request,
+                operationId: attempt.checkpointOperationId,
+              },
+              controller.signal,
+            )
+            .then(() => undefined);
+
+    void checkpoint
+      .then(() => attempt.source.loadWindow(attempt.request, controller.signal))
       .then((window) => {
         if (!active) {
           return;

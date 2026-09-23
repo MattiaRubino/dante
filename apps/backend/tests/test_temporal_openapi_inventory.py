@@ -152,6 +152,9 @@ _EXPECTED_TEMPORAL_OPERATIONS = {
     ("/api/v1/temporal/events/{event_ref}/occurrences/checkpoint", "post"): (
         "temporal_checkpoint_event_occurrences"
     ),
+    ("/api/v1/temporal/occurrences/checkpoint", "post"): (
+        "temporal_checkpoint_occurrence_window"
+    ),
     ("/api/v1/temporal/routines/{routine_ref}/occurrences/extra", "post"): (
         "temporal_create_routine_extra_occurrence"
     ),

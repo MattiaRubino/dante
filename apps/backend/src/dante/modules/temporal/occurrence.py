@@ -150,6 +150,16 @@ class OccurrenceCheckpoint:
 
 
 @dataclass(frozen=True, slots=True)
+class OccurrenceWindowCheckpoint:
+    start_date: date
+    end_date_exclusive: date
+    effective_zone_id: str
+    source_count: int
+    occurrence_count: int
+    replayed_source_count: int
+
+
+@dataclass(frozen=True, slots=True)
 class OccurrenceMutation:
     occurrence: OccurrenceView
     accepted_at: datetime
@@ -171,6 +181,33 @@ def _bounded_operation_id(value: str) -> str:
     if not result or len(result) > 200:
         raise OccurrenceInputError("Occurrence operation id must contain 1 to 200 characters.")
     return result
+
+
+def _window_source_operation_id(
+    *,
+    root_operation_id: str,
+    owner: OccurrenceOwner,
+    source_ref: UUID,
+    start_date: date,
+    end_date_exclusive: date,
+    effective_zone_id: str,
+) -> str:
+    digest = hashlib.sha256(
+        json.dumps(
+            {
+                "version": 1,
+                "root_operation_id": root_operation_id,
+                "owner": owner,
+                "source_ref": str(source_ref),
+                "start_date": start_date.isoformat(),
+                "end_date_exclusive": end_date_exclusive.isoformat(),
+                "effective_zone_id": effective_zone_id,
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode()
+    ).hexdigest()
+    return f"timeline-window:{digest}"
 
 
 def _fingerprint(payload: dict[str, object]) -> str:
@@ -872,6 +909,85 @@ class OccurrenceApplication:
 
     def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
         self._session_factory = session_factory
+
+    async def checkpoint_window(
+        self,
+        *,
+        self_person_ref: NativeRef,
+        operation_id: str,
+        start_date: date,
+        end_date_exclusive: date,
+        effective_zone_id: str,
+    ) -> OccurrenceWindowCheckpoint:
+        """Explicitly checkpoint every current self recurrence source for one window."""
+        root_operation_id = _bounded_operation_id(operation_id)
+        _validate_window(start_date, end_date_exclusive)
+        zone_id = _zone(effective_zone_id).key
+        statement = text(
+            """
+            WITH self_routine AS (
+                SELECT routine_ref, lifecycle_state
+                  FROM dante.list_self_routines(:actor)
+            )
+            SELECT 'routine'::text AS owner, routine.routine_ref AS source_ref
+              FROM self_routine AS routine
+              JOIN dante.routine_recurrence_current_history AS current
+                ON current.routine_ref = routine.routine_ref
+               AND current.current_until_at IS NULL
+             WHERE routine.lifecycle_state = 'active'
+            UNION ALL
+            SELECT 'event'::text AS owner, expectation.event_ref AS source_ref
+              FROM dante.event_expectation AS expectation
+              JOIN dante.event_recurrence_current_history AS current
+                ON current.event_ref = expectation.event_ref
+               AND current.current_until_at IS NULL
+             WHERE expectation.self_person_ref = :actor
+             ORDER BY owner, source_ref
+            """
+        )
+        try:
+            async with self._session_factory() as session, session.begin():
+                source_rows = (
+                    (await session.execute(statement, {"actor": self_person_ref}))
+                    .mappings()
+                    .all()
+                )
+        except SQLAlchemyError as exc:
+            raise OccurrencePersistenceError() from exc
+
+        checkpoints: list[OccurrenceCheckpoint] = []
+        for row in source_rows:
+            owner = row["owner"]
+            if owner not in {"routine", "event"}:
+                raise OccurrencePersistenceError()
+            source_ref = UUID(str(row["source_ref"]))
+            checkpoints.append(
+                await self.checkpoint(
+                    owner=owner,
+                    self_person_ref=self_person_ref,
+                    source_ref=source_ref,
+                    operation_id=_window_source_operation_id(
+                        root_operation_id=root_operation_id,
+                        owner=owner,
+                        source_ref=source_ref,
+                        start_date=start_date,
+                        end_date_exclusive=end_date_exclusive,
+                        effective_zone_id=zone_id,
+                    ),
+                    start_date=start_date,
+                    end_date_exclusive=end_date_exclusive,
+                    effective_zone_id=zone_id,
+                )
+            )
+
+        return OccurrenceWindowCheckpoint(
+            start_date=start_date,
+            end_date_exclusive=end_date_exclusive,
+            effective_zone_id=zone_id,
+            source_count=len(checkpoints),
+            occurrence_count=sum(len(item.occurrences) for item in checkpoints),
+            replayed_source_count=sum(item.replayed for item in checkpoints),
+        )
 
     async def checkpoint(
         self,

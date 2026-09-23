@@ -12,8 +12,14 @@ from fastapi import Response
 from dante.auth.contracts import Principal
 from dante.context.contracts import DanteContext
 from dante.modules.temporal.api import DateSpanPlacementRequest
+from dante.modules.temporal.occurrence import (
+    OccurrenceApplication,
+    OccurrenceWindowCheckpoint,
+)
 from dante.modules.temporal.occurrence_api import (
     EstablishOccurrenceScheduleRequest,
+    OccurrenceWindowCheckpointRequest,
+    checkpoint_occurrence_window,
     establish_occurrence_schedule,
 )
 from dante.modules.temporal.schedule import (
@@ -72,8 +78,22 @@ class _StaticApplication:
         return self.outcome
 
 
+class _StaticOccurrenceApplication:
+    def __init__(self, outcome: OccurrenceWindowCheckpoint) -> None:
+        self.outcome = outcome
+        self.calls: list[dict[str, object]] = []
+
+    async def checkpoint_window(self, **kwargs: object) -> OccurrenceWindowCheckpoint:
+        self.calls.append(kwargs)
+        return self.outcome
+
+
 def _application(value: _StaticApplication) -> TemporalScheduleApplication:
     return cast(TemporalScheduleApplication, value)
+
+
+def _occurrence_application(value: _StaticOccurrenceApplication) -> OccurrenceApplication:
+    return cast(OccurrenceApplication, value)
 
 
 def _result(*, replayed: bool) -> EstablishedScheduleView:
@@ -88,6 +108,51 @@ def _result(*, replayed: bool) -> EstablishedScheduleView:
         created_at=_CREATED_AT,
         replayed=replayed,
     )
+
+
+@pytest.mark.asyncio
+async def test_occurrence_window_checkpoint_uses_context_zone_and_preserves_counts() -> None:
+    application = _StaticOccurrenceApplication(
+        OccurrenceWindowCheckpoint(
+            start_date=date(2026, 10, 1),
+            end_date_exclusive=date(2026, 10, 8),
+            effective_zone_id="Europe/Rome",
+            source_count=2,
+            occurrence_count=7,
+            replayed_source_count=1,
+        )
+    )
+    response = Response()
+
+    result = await checkpoint_occurrence_window(
+        payload=OccurrenceWindowCheckpointRequest(
+            operation_id="b06-d:timeline-window",
+            start_date=date(2026, 10, 1),
+            end_date_exclusive=date(2026, 10, 8),
+        ),
+        context=_context(),
+        application=_occurrence_application(application),
+        response=response,
+    )
+
+    assert response.headers["Cache-Control"] == "no-store"
+    assert result.model_dump(mode="json") == {
+        "start_date": "2026-10-01",
+        "end_date_exclusive": "2026-10-08",
+        "effective_zone_id": "Europe/Rome",
+        "source_count": 2,
+        "occurrence_count": 7,
+        "replayed_source_count": 1,
+    }
+    assert application.calls == [
+        {
+            "self_person_ref": _SELF_REF,
+            "operation_id": "b06-d:timeline-window",
+            "start_date": date(2026, 10, 1),
+            "end_date_exclusive": date(2026, 10, 8),
+            "effective_zone_id": "Europe/Rome",
+        }
+    ]
 
 
 @pytest.mark.asyncio

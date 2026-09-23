@@ -5,6 +5,21 @@ export type TemporalTimelineWindowRequest = Readonly<{
   endDateExclusive: string;
 }>;
 
+export type TemporalTimelineWindowCheckpointRequest =
+  TemporalTimelineWindowRequest &
+    Readonly<{
+      operationId: string;
+    }>;
+
+export type TemporalTimelineWindowCheckpointResult = Readonly<{
+  startDate: string;
+  endDateExclusive: string;
+  effectiveZoneId: string;
+  sourceCount: number;
+  occurrenceCount: number;
+  replayedSourceCount: number;
+}>;
+
 export type TemporalTimelineEmptyWindow = Readonly<{
   kind: 'empty';
   startDate: string;
@@ -181,6 +196,10 @@ export type TemporalTimelineWindow =
   TemporalTimelineEmptyWindow | TemporalTimelineItemsWindow;
 
 export interface TemporalTimelineDataSource {
+  checkpointWindow?(
+    request: TemporalTimelineWindowCheckpointRequest,
+    signal?: AbortSignal,
+  ): Promise<TemporalTimelineWindowCheckpointResult>;
   loadWindow(
     request: TemporalTimelineWindowRequest,
     signal?: AbortSignal,

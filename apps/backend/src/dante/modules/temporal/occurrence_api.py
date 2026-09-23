@@ -31,6 +31,7 @@ from dante.modules.temporal.occurrence import (
     OccurrenceSourceInactiveError,
     OccurrenceSourceNotFoundError,
     OccurrenceView,
+    OccurrenceWindowCheckpoint,
 )
 from dante.modules.temporal.schedule import (
     AbsoluteIntervalPlacement,
@@ -58,6 +59,23 @@ class OccurrenceCheckpointRequest(BaseModel):
     start_date: date
     end_date_exclusive: date
     effective_zone_id: str = Field(min_length=1, max_length=200)
+
+
+class OccurrenceWindowCheckpointRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    operation_id: str = Field(min_length=1, max_length=200)
+    start_date: date
+    end_date_exclusive: date
+
+
+class OccurrenceWindowCheckpointResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    start_date: date
+    end_date_exclusive: date
+    effective_zone_id: str
+    source_count: int = Field(ge=0)
+    occurrence_count: int = Field(ge=0)
+    replayed_source_count: int = Field(ge=0)
 
 
 class ExplicitExtraOccurrenceRequest(BaseModel):
@@ -386,6 +404,32 @@ async def checkpoint_event_occurrences(
     response: Response,
 ) -> OccurrenceCheckpointResponse:
     return await _checkpoint("event", event_ref, payload, context, application, response)
+
+
+@router.post(
+    "/occurrences/checkpoint",
+    response_model=OccurrenceWindowCheckpointResponse,
+    operation_id="temporal_checkpoint_occurrence_window",
+)
+async def checkpoint_occurrence_window(
+    payload: OccurrenceWindowCheckpointRequest,
+    context: MutatingContext,
+    application: Application,
+    response: Response,
+) -> OccurrenceWindowCheckpointResponse:
+    """Checkpoint every current self recurrence source before a Timeline read."""
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        value: OccurrenceWindowCheckpoint = await application.checkpoint_window(
+            self_person_ref=context.self_person_ref,
+            operation_id=payload.operation_id,
+            start_date=payload.start_date,
+            end_date_exclusive=payload.end_date_exclusive,
+            effective_zone_id=context.effective_zone_id,
+        )
+        return OccurrenceWindowCheckpointResponse(**asdict(value))
+    except _Errors as exc:
+        raise _problem(exc) from exc
 
 
 def _schedule_placement_response(

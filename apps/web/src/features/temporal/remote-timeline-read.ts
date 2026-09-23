@@ -12,10 +12,16 @@ import type {
   TemporalTimelineScheduledOccurrenceItem,
   TemporalTimelineScheduledItem,
   TemporalTimelineWindow,
+  TemporalTimelineWindowCheckpointRequest,
+  TemporalTimelineWindowCheckpointResult,
   TemporalTimelineWindowRequest,
 } from './timeline-read';
 
 const TEMPORAL_TIMELINE_WINDOW_ENDPOINT = '/api/v1/temporal/timeline/window';
+const TEMPORAL_OCCURRENCE_WINDOW_CHECKPOINT_ENDPOINT =
+  '/api/v1/temporal/occurrences/checkpoint';
+const SESSION_ENDPOINT = '/api/v1/auth/session';
+const CSRF_HEADER_NAME = 'X-Dante-CSRF';
 const MAX_TIMELINE_WINDOW_DAYS = 62;
 const UUID_V7 =
   /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -178,6 +184,18 @@ function validateWindowRequest(request: TemporalTimelineWindowRequest): void {
   if (days > MAX_TIMELINE_WINDOW_DAYS) {
     throw new RangeError(
       `Timeline window cannot exceed ${MAX_TIMELINE_WINDOW_DAYS} local days.`,
+    );
+  }
+}
+
+function validateCheckpointRequest(
+  request: TemporalTimelineWindowCheckpointRequest,
+): void {
+  validateWindowRequest(request);
+  const operationId = request.operationId.trim();
+  if (operationId.length === 0 || operationId.length > 200) {
+    throw new RangeError(
+      'Timeline checkpoint operation id must contain 1 to 200 characters.',
     );
   }
 }
@@ -964,6 +982,139 @@ function isAbortError(error: unknown): boolean {
   return error instanceof DOMException && error.name === 'AbortError';
 }
 
+async function fetchTimelineResponse(
+  webFetch: typeof globalThis.fetch,
+  input: RequestInfo | URL,
+  init?: RequestInit,
+): Promise<Response> {
+  try {
+    return await webFetch(input, init);
+  } catch (error) {
+    if (isAbortError(error)) {
+      throw error;
+    }
+    throw new TemporalTimelineRemoteError(
+      'transport',
+      'Temporal Timeline request could not reach DANTE.',
+    );
+  }
+}
+
+async function responsePayload(
+  response: Response,
+  label: string,
+): Promise<unknown> {
+  try {
+    return await response.json();
+  } catch {
+    throw new TemporalTimelineRemoteError(
+      'protocol',
+      `${label} is not valid JSON.`,
+      response.status,
+    );
+  }
+}
+
+async function checkpointCsrfToken(
+  webFetch: typeof globalThis.fetch,
+  signal?: AbortSignal,
+): Promise<string> {
+  const response = await fetchTimelineResponse(
+    webFetch,
+    SESSION_ENDPOINT,
+    signal === undefined ? undefined : { signal },
+  );
+  const payload = await responsePayload(response, 'Auth session response');
+  if (
+    !response.ok ||
+    !isRecord(payload) ||
+    payload.authenticated !== true ||
+    typeof payload.csrf_token !== 'string' ||
+    payload.csrf_token.length === 0
+  ) {
+    throw new TemporalTimelineRemoteError(
+      'http',
+      'Timeline checkpoint requires an authenticated browser session.',
+      response.status,
+    );
+  }
+  return payload.csrf_token;
+}
+
+function checkpointCount(value: unknown, field: string): number {
+  if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 0) {
+    throw new TemporalTimelineRemoteError(
+      'protocol',
+      `${field} must be a non-negative integer.`,
+    );
+  }
+  return value;
+}
+
+function parseWindowCheckpoint(
+  payload: unknown,
+  request: TemporalTimelineWindowCheckpointRequest,
+): TemporalTimelineWindowCheckpointResult {
+  if (!isRecord(payload)) {
+    throw new TemporalTimelineRemoteError(
+      'protocol',
+      'Timeline checkpoint response has an unsupported representation.',
+    );
+  }
+  requireExactKeys(
+    payload,
+    [
+      'start_date',
+      'end_date_exclusive',
+      'effective_zone_id',
+      'source_count',
+      'occurrence_count',
+      'replayed_source_count',
+    ],
+    'Timeline checkpoint response',
+  );
+  const startDate = parsePlainDateKey(payload.start_date, 'start_date');
+  const endDateExclusive = parsePlainDateKey(
+    payload.end_date_exclusive,
+    'end_date_exclusive',
+  );
+  if (
+    startDate !== request.startDate ||
+    endDateExclusive !== request.endDateExclusive
+  ) {
+    throw new TemporalTimelineRemoteError(
+      'protocol',
+      'Timeline checkpoint response does not match the requested window.',
+    );
+  }
+  const sourceCount = checkpointCount(payload.source_count, 'source_count');
+  const occurrenceCount = checkpointCount(
+    payload.occurrence_count,
+    'occurrence_count',
+  );
+  const replayedSourceCount = checkpointCount(
+    payload.replayed_source_count,
+    'replayed_source_count',
+  );
+  if (replayedSourceCount > sourceCount) {
+    throw new TemporalTimelineRemoteError(
+      'protocol',
+      'Timeline checkpoint replay count exceeds its source count.',
+    );
+  }
+  return Object.freeze({
+    startDate,
+    endDateExclusive,
+    effectiveZoneId: parseZoneId(
+      payload.effective_zone_id,
+      'effective_zone_id',
+    ),
+    sourceCount,
+    occurrenceCount,
+    replayedSourceCount,
+  });
+}
+
 export function createRemoteTemporalTimelineDataSource(
   fetchFn: typeof globalThis.fetch = globalThis.fetch,
   resolveDeviceTimeZone?: DeviceTimeZoneResolver,
@@ -971,6 +1122,43 @@ export function createRemoteTemporalTimelineDataSource(
   const webFetch = createWebFetch(fetchFn, resolveDeviceTimeZone);
 
   return Object.freeze({
+    async checkpointWindow(
+      request: TemporalTimelineWindowCheckpointRequest,
+      signal?: AbortSignal,
+    ): Promise<TemporalTimelineWindowCheckpointResult> {
+      validateCheckpointRequest(request);
+      const csrf = await checkpointCsrfToken(webFetch, signal);
+      const response = await fetchTimelineResponse(
+        webFetch,
+        TEMPORAL_OCCURRENCE_WINDOW_CHECKPOINT_ENDPOINT,
+        {
+          method: 'POST',
+          headers: new Headers({
+            'Content-Type': 'application/json',
+            [CSRF_HEADER_NAME]: csrf,
+          }),
+          body: JSON.stringify({
+            operation_id: request.operationId.trim(),
+            start_date: request.startDate,
+            end_date_exclusive: request.endDateExclusive,
+          }),
+          ...(signal === undefined ? {} : { signal }),
+        },
+      );
+      const payload = await responsePayload(
+        response,
+        'Timeline checkpoint response',
+      );
+      if (!response.ok) {
+        throw new TemporalTimelineRemoteError(
+          'http',
+          `Timeline checkpoint failed with HTTP ${response.status}.`,
+          response.status,
+        );
+      }
+      return parseWindowCheckpoint(payload, request);
+    },
+
     async loadWindow(
       request: TemporalTimelineWindowRequest,
       signal?: AbortSignal,
@@ -981,21 +1169,11 @@ export function createRemoteTemporalTimelineDataSource(
         end_date_exclusive: request.endDateExclusive,
       });
 
-      let response: Response;
-      try {
-        response = await webFetch(
-          `${TEMPORAL_TIMELINE_WINDOW_ENDPOINT}?${query.toString()}`,
-          signal === undefined ? undefined : { signal },
-        );
-      } catch (error) {
-        if (isAbortError(error)) {
-          throw error;
-        }
-        throw new TemporalTimelineRemoteError(
-          'transport',
-          'Temporal Timeline request could not reach DANTE.',
-        );
-      }
+      const response = await fetchTimelineResponse(
+        webFetch,
+        `${TEMPORAL_TIMELINE_WINDOW_ENDPOINT}?${query.toString()}`,
+        signal === undefined ? undefined : { signal },
+      );
 
       if (!response.ok) {
         throw new TemporalTimelineRemoteError(
@@ -1005,16 +1183,10 @@ export function createRemoteTemporalTimelineDataSource(
         );
       }
 
-      let payload: unknown;
-      try {
-        payload = await response.json();
-      } catch {
-        throw new TemporalTimelineRemoteError(
-          'protocol',
-          'Temporal Timeline response is not valid JSON.',
-          response.status,
-        );
-      }
+      const payload = await responsePayload(
+        response,
+        'Temporal Timeline response',
+      );
 
       const window = parseWindow(payload);
       if (

@@ -12,6 +12,19 @@ function jsonResponse(body: unknown, status = 200): Response {
   });
 }
 
+function requestJsonBody(
+  init: RequestInit | undefined,
+): Readonly<Record<string, unknown>> {
+  if (typeof init?.body !== 'string') {
+    throw new Error('Expected JSON string request body.');
+  }
+  const parsed = JSON.parse(init.body) as unknown;
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    throw new Error('Expected JSON object request body.');
+  }
+  return parsed as Readonly<Record<string, unknown>>;
+}
+
 const WINDOW_REQUEST = Object.freeze({
   startDate: '2026-09-07',
   endDateExclusive: '2026-09-14',
@@ -36,6 +49,58 @@ function populated(items: readonly unknown[]) {
 }
 
 describe('remote temporal Timeline data source', () => {
+  it('checkpoints the exact window through an authenticated mutating request', async () => {
+    const fetchFn = vi
+      .fn<typeof globalThis.fetch>()
+      .mockResolvedValueOnce(
+        jsonResponse({ authenticated: true, csrf_token: 'csrf-b06-d' }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({
+          start_date: WINDOW_REQUEST.startDate,
+          end_date_exclusive: WINDOW_REQUEST.endDateExclusive,
+          effective_zone_id: 'Europe/Rome',
+          source_count: 2,
+          occurrence_count: 7,
+          replayed_source_count: 0,
+        }),
+      );
+    const source = createRemoteTemporalTimelineDataSource(
+      fetchFn,
+      () => 'Europe/Rome',
+    );
+
+    if (source.checkpointWindow === undefined) {
+      throw new Error('Expected remote Timeline checkpoint capability.');
+    }
+    const result = await source.checkpointWindow({
+      ...WINDOW_REQUEST,
+      operationId: 'b06-d:window:1',
+    });
+
+    expect(result).toEqual({
+      startDate: WINDOW_REQUEST.startDate,
+      endDateExclusive: WINDOW_REQUEST.endDateExclusive,
+      effectiveZoneId: 'Europe/Rome',
+      sourceCount: 2,
+      occurrenceCount: 7,
+      replayedSourceCount: 0,
+    });
+
+    expect(fetchFn).toHaveBeenCalledTimes(2);
+    expect(fetchFn.mock.calls[0]?.[0]).toBe('/api/v1/auth/session');
+    const [url, init] = fetchFn.mock.calls[1] ?? [];
+    expect(url).toBe('/api/v1/temporal/occurrences/checkpoint');
+    expect(init?.method).toBe('POST');
+    expect(init?.credentials).toBe('same-origin');
+    expect(new Headers(init?.headers).get('X-Dante-CSRF')).toBe('csrf-b06-d');
+    expect(requestJsonBody(init)).toEqual({
+      operation_id: 'b06-d:window:1',
+      start_date: WINDOW_REQUEST.startDate,
+      end_date_exclusive: WINDOW_REQUEST.endDateExclusive,
+    });
+  });
+
   it('uses the governed same-origin fetch path and preserves the server effective timezone', async () => {
     const fetchFn = vi.fn<typeof globalThis.fetch>((input, init) => {
       expect(input).toBe(
