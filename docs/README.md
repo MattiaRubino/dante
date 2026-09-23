@@ -1,12 +1,12 @@
 # DANTE Documentation Index
 
 - **Status:** CURRENT NAVIGATION / AUTHORITY INDEX
-- **Last reconciled:** 2026-09-05
-- **Current protected-main tree:** Access/Auth + shared Email Platform + Recovery + Platform Observability + Home/Timeline/Temporal foundation
-- **Protected-main Observability merge:** `b74a806deed68b2729dd04678c0a5674cd572e8a` via PR `#58`
-- **Protected-main Home/Timeline merge:** `9dae13163549ca6d342978876be9582d7ec08610` via PR `#61`
-- **Current AI integration candidate:** PR `#63` from `feature/ai-implementation` / merge pending
-- **Current Alembic:** `20260904_17`
+- **Last reconciled:** 2026-09-23
+- **Protected-main baseline at temporal selection:** PostgreSQL 18.6 / Alembic `20260906_18` / topology `89|5|18|77|173|91|272|0|0|0`
+- **Active candidate workstream:** `feature/timeline-temporal-operational`
+- **Candidate temporal DB authority:** PostgreSQL 18.6 / Alembic `20260923_57`
+- **Candidate temporal topology:** `145|5|88|92|285|223|408|0|0|0`
+- **Current temporal frontier:** B06 ✅ CLOSED / PROVEN → B08 Session Runtime NEXT; B07 deliberately deferred until after B12
 
 ## Authority order
 
@@ -19,31 +19,30 @@
 6. conversation memory
 ```
 
+Candidate branch truth and protected-main truth must remain explicitly distinct until integration.
+
 ## Current lifecycle
 
 ```text
 Product / Domain / Logical / Physical          CLOSED / CURRENT
 Engineering / Frontend / Backend CP1–CP6      CLOSED / ACCEPTED
 PostgreSQL                                     18.6
+Access/Auth + Shared Email                     CLOSED / INTEGRATED
 Recovery                                       CLOSED / INTEGRATED
-Access/Auth M1–M5                              CLOSED / INTEGRATED
-Shared Email Platform                          CLOSED / INTEGRATED / OWNERSHIP VERIFIED
-Apple real external UAT                        BOUNDED DEFERRED
-Alembic                                        20260904_17
-Database                                       88/5/16/76/172/89/270
-Database-local CP07                            PASS
-Application / Email reopen CP08                PASS
-Platform Observability source                  CLOSED / OPERATIONAL PASS
-Platform Observability protected main          CLOSED / INTEGRATED VIA PR #58
-Home / Timeline / Temporal foundation          CLOSED / INTEGRATED VIA PR #61
-Temporal C1 manual acceptance                  OPEN / exact user token still required
-AI low-level deterministic foundation          CLOSED / PASS ON FEATURE / PR #63 MERGE PENDING
-AI production/private-data activation          OFF / NOT CLAIMED
-M6 Native Mobile                               FUTURE / OPTIONAL
-later M7 Access/security maturity              FUTURE
+Platform Observability                         CLOSED / INTEGRATED
+AI deterministic low-level foundation          CLOSED / INTEGRATED
+Home / World Focus                             CLOSED / INTEGRATED
+Pre-vertical foundation                        CLOSED / INTEGRATED
+
+Protected-main Alembic baseline                20260906_18
+Active Timeline candidate                      feature/timeline-temporal-operational
+Candidate Alembic                              20260923_57
+Candidate B00–B06                              CLOSED / PROVEN
+Candidate B08                                  NEXT / NOT STARTED
+Candidate B07                                  DEFERRED until after B12
 ```
 
-Remote-provider and production/cloud recovery remain separate future gates.
+Remote-provider integration, native/offline, account collaboration and broad analytics remain future work outside the current Timeline vertical.
 
 ## Mandatory continuation entry points
 
@@ -52,113 +51,52 @@ Remote-provider and production/cloud recovery remain separate future gates.
 3. `ROADMAP.md`
 4. `development/agent-operating-manual.md`
 5. `development/documentation-lifecycle-policy.md`
-6. legitimate active workstream record, when one exists
+6. active workstream authority, when one exists
 7. subsystem authority relevant to the task
 8. exact current Git refs
 
-## Access/Auth
+## Active Timeline / Temporal-Operational vertical
 
-Access/Auth M1–M5 is integrated and has no active workstream authority file.
+Current authority:
 
-Current subsystem authority:
+1. `workstreams/timeline-temporal-operational-post-b06-scope-decision-2026-09-23.md` — accepted vertical boundary and sequencing;
+2. `workstreams/timeline-temporal-operational-roadmap.md` — current execution roadmap;
+3. `workstreams/timeline-temporal-operational-map.md` — live semantic/proof ledger;
+4. `workstreams/timeline-temporal-operational-handoff.md` — current B08 handoff;
+5. `database/timeline-temporal-operational.md` — candidate DB overlay;
+6. `database/README.md` + `database/dictionary/` — current persistence authority;
+7. B04/B05/B06 execution/closure records — durable evidence.
 
-- `architecture/access-auth-architecture.md`
-- `architecture/access-auth-security-contract.md`
-- `architecture/access-auth-api-contract.md`
-- `architecture/access-auth-testing-contract.md`
-- `architecture/access-auth-m5-contract.md`
-- `architecture/access-auth-m5-persistence-api-contract.md`
-- `database/access-auth.md`
-- `frontend/access.md`
-
-Historical/evidence routing:
-
-- `archive/branches/2026-09-feature-access-auth.md` — consolidated branch history, **NON-AUTHORITATIVE**
-- `workstreams/access-auth-m5-review-2026-09-02.md` — historical validation/UAT evidence
-- `workstreams/access-auth-integration-acceptance-2026-09-04.md` — historical integration/CI/CP07 evidence
-
-## Shared Email Platform
-
-- `architecture/email-platform.md`
-- `architecture/access-auth-email-delivery.md`
-- `decisions/ADR-012-email-delivery-platform.md`
-- `development/email-platform-local-uat.md`
-- `development/email-platform-acceptance-2026-09-03.md`
-
-## Platform Observability
-
-Current/evolving authority:
-
-- `architecture/observability-runtime-contract.md` — signal, privacy, cardinality, failure and ownership contract
-- `development/observability-runbook.md` — setup, validation, incident, rotation and rollback procedures
-- `../infra/observability/README.md` — Alloy/Grafana/LOCAL runtime and source-controlled operational assets
-- `database/dante-postgresql-database-part-12.md` — Section 46 exact `dante_observer` database security contract
-
-Historical/evidence routing:
-
-- `archive/branches/2026-09-feature-platform-observability.md` — single consolidated Platform Observability branch/integration history, **NON-AUTHORITATIVE**
-
-There is no active `workstreams/platform-observability.md` authority. The source workstream and integration branch are closed; Git, PR `#58` and the consolidated branch record retain chronology.
-
-## Home / Timeline / Temporal
-
-Protected `main` includes the Home/Timeline/Temporal integration from PR `#61`.
-
-Current subsystem references include:
-
-- `frontend/home/current-checkpoint.md`
-- `frontend/home/home-structural-contract.md`
-- `frontend/temporal-frontend-roadmap.md`
-- `frontend/temporal-f0-contract.md`
-- `frontend/timeline-t1-frozen-contract.md`
-- `frontend/temporal-create-c1-manual-acceptance.md`
-
-Git integration state and semantic acceptance state are distinct. The PR `#61` merge establishes repository integration; it does **not** manufacture the exact C1 manual approval token. C1 therefore remains open until the required user acceptance is recorded.
-
-## AI / Intelligence / Search
-
-Current branch-local integration truth while PR `#63` remains unmerged:
-
-- `workstreams/ai-implementation.md` — active implementation/integration workstream; authoritative for current branch stage and merge-pending disposition
-- `architecture/dante-ai-implementation-baseline-final.md` — **FROZEN IMPLEMENTATION-ENTRY ARCHITECTURE REFERENCE** accepted before implementation began; its architecture invariants remain applicable, but its acceptance-time status lines such as `Implementation: NONE YET`, provider/model `OPEN`, and `Current next action: I0` are historical entry-state metadata and are **not current implementation-status claims**
-- `architecture/dante-ai-post05-final-mega-acceptance.md` — durable pre-implementation architecture acceptance evidence
-- `architecture/dante-ai-foundation.md` — current semantic/architectural baseline within its bounded AI-00 scope
-
-Historical/superseded implementation-candidate evidence:
-
-- `architecture/dante-ai-implementation-baseline.md` — superseded pre-implementation candidate evidence
-- `architecture/dante-ai-implementation-baseline-v2.md` — superseded pre-implementation candidate evidence
-- `architecture/dante-ai-implementation-baseline-v3.md` — superseded pre-implementation candidate evidence; accepted into the later final baseline/mega-acceptance chain
-
-The historical files above retain the status language that was true at their own checkpoints. They must not be read as present-tense repository implementation status and must not override executable truth, this navigation index, or the active workstream.
-
-Current bounded AI implementation posture on PR `#63`:
+Active vertical boundary:
 
 ```text
-Search deterministic foundation                IMPLEMENTED / NO REAL PRODUCT DATA ADAPTER YET
-Intelligence request-local foundation           IMPLEMENTED
-ModelAccess                                     IMPLEMENTED
-Gemini native Interactions development binding  IMPLEMENTED / DEVELOPMENT ONLY
-Deep reasoning physical binding                 DORMANT
-real Ask DANTE product integration              DEFERRED
-private-data eligibility                        NO
-production activation                           OFF
-AI persistence / DB / Alembic change            NONE
+Home `+`
+→ canonical create/configuration
+→ Timeline representation/actions
+→ required Session/Actual lifecycle
+→ advanced recurrence/reminders
+→ replanning/conflict/solver proposals
+→ final deferred UI/UX consolidation
 ```
 
-`Search` here means DANTE's deterministic internal discovery/query foundation over authorized DANTE data. It is not web search, not a frontend search bar, and not an AI/model dependency. Real product/data Search families remain deferred until an owning capability/data seam exists.
+Explicitly outside this vertical:
 
-After PR `#63` is merged and post-merge acceptance succeeds, branch-local `MERGE PENDING` wording must be retired/reconciled on protected `main` according to the documentation lifecycle policy.
+```text
+external provider integration
+native/mobile/offline/multi-device
+account-to-account collaboration/chat/shared editing
+broad analytics/statistics/signals
+```
 
 ## Database / Recovery
 
 - `database/README.md` — current Database System of Record
-- `database/dictionary/README.md` — machine-readable current contract
-- `database/dante-postgresql-database.md` — current human-readable architecture/reference
-- `database/dante-postgresql-database-part-*.md` — detailed design/reference evidence; historical phase banners do not override current authority
-- `operations/postgres-recovery-runbook.md` — current LOCAL recovery + application/Email reopen operator contract
+- `database/dictionary/README.md` — current machine-readable contract index
+- `database/timeline-temporal-operational.md` — active candidate overlay
+- `database/dante-postgresql-database.md` + continuation parts — detailed human reference
 - `development/backend-cp6-02-postgresql-persistence-constitution.md`
 - `decisions/ADR-010-postgresql-persistence-constitution.md`
+- `operations/postgres-recovery-runbook.md`
 
 Permanent invariant:
 
@@ -171,14 +109,62 @@ current human DB reference
 ≈ direct tests
 ```
 
-## Current integration sequence
+## Frontend / Home
+
+For current Timeline/Temporal implementation status, the active workstream roadmap/map/handoff outrank the old pre-vertical frontend phase documents.
+
+Current frontend navigation:
+
+- `frontend/README.md`
+- `frontend/home/current-checkpoint.md`
+- `frontend/home/home-structural-contract.md`
+- active Timeline/Temporal workstream authority listed above
+
+Dated C1/Home frontend records preserve historical phase evidence and must not be interpreted as current Timeline sequencing when they conflict with the active workstream.
+
+## Access/Auth and shared Email
+
+Current subsystem authority remains under:
+
+- `architecture/access-auth-architecture.md`
+- `architecture/access-auth-security-contract.md`
+- `architecture/access-auth-api-contract.md`
+- `database/access-auth.md`
+- `frontend/access.md`
+- `architecture/email-platform.md`
+- `development/email-platform-local-uat.md`
+
+Historical Access/Auth integration/branch files remain evidence only.
+
+## Platform Observability
+
+Current authority:
+
+- `architecture/observability-runtime-contract.md`
+- `development/observability-runbook.md`
+- `../infra/observability/README.md`
+- PostgreSQL observer contract in the database reference
+
+## AI / Intelligence / Search
+
+The deterministic low-level AI/Search foundation is integrated platform capability. It is not automatically active scheduling authority for the Timeline vertical.
+
+For B12 specifically:
 
 ```text
-Platform Observability protected-main integration via PR #58    CLOSED
-→ Home / Timeline / Temporal integration via PR #61             CLOSED
-→ AI low-level foundation integration via PR #63                MERGE PENDING / REQUIRED CHECKS MUST PASS ON FINAL HEAD
-→ post-merge acceptance + workstream retirement                 REQUIRED AFTER MERGE
-→ future bounded workstreams start from then-current protected main
+deterministic solver/candidate generation first
+AI interpretation/explanation/ranking optional
+AI output != accepted Schedule/effect
 ```
 
-Temporary handoffs do not belong on protected main; current specifications must not become append-only diaries.
+## Documentation lifecycle
+
+```text
+CURRENT/AUTHORITATIVE file
+→ must describe present truth
+
+HISTORICAL / ARCHIVE / dated evidence
+→ preserves phase-time truth and is not rewritten to pretend it was current later
+```
+
+Temporary handoffs must not become competing authorities. Applied migration history is immutable. No PASS is claimed without executed evidence.
