@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational Vertical — Semantic Work Map / Live Ledger
 
-- **Status:** CURRENT SEMANTIC MAP + LIVE IMPLEMENTATION LEDGER — reconciled 2026-09-22
+- **Status:** CURRENT SEMANTIC MAP + LIVE IMPLEMENTATION LEDGER — reconciled 2026-09-23
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **B04 execution plan:** `docs/workstreams/timeline-temporal-operational-b04-execution-plan.md`
@@ -21,7 +21,8 @@
 - **B06-B closure:** `docs/workstreams/timeline-temporal-operational-b06-b-closure-2026-09-22.md` ✅
 - **B06-C implementation freeze:** `docs/workstreams/timeline-temporal-operational-b06-c-implementation-freeze.md` ✅
 - **B06-C closure:** `docs/workstreams/timeline-temporal-operational-b06-c-closure-2026-09-22.md` ✅
-- **B06-D implementation freeze:** `docs/workstreams/timeline-temporal-operational-b06-d-implementation-freeze.md` 🔒
+- **B06-D implementation freeze:** `docs/workstreams/timeline-temporal-operational-b06-d-implementation-freeze.md` ✅
+- **B06-D closure:** `docs/workstreams/timeline-temporal-operational-b06-d-closure-2026-09-23.md` ✅
 - **Timeline candidate DB overlay:** `docs/database/timeline-temporal-operational.md`
 
 The archived semantic freeze remains the binding detailed inventory for the full vertical. This file is the live implementation/proof ledger.
@@ -92,7 +93,7 @@ B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
 ├─ B04-E Advanced-family applicability           ✅ CLOSED / PROVEN
 └─ B04-F Whole-B04 closure                       ✅ CLOSED / PROVEN
 B05 Product Organization                         ✅ CLOSED / PROVEN
-B06 Routine / Recurrence / Occurrence Baseline   🟨 B06-D IMPLEMENTATION IN PROGRESS
+B06 Routine / Recurrence / Occurrence Baseline   🟨 B06-E WHOLE-BLOCK CLOSURE
 B07 UI/UX Consolidation v1                       ⬜
 B08 Session Runtime                              ⬜
 B09 Responsibility / Participation               ⬜
@@ -108,8 +109,8 @@ Current candidate persistence authority:
 
 ```text
 PostgreSQL       18.6
-Alembic source   20260922_55
-Proven topology   145|5|87|92|285|223|408|0|0|0 (B06-C proven)
+Alembic source   20260923_57
+Proven topology  145|5|88|92|285|223|408|0|0|0 (B06-D proven)
 ```
 
 ---
@@ -258,11 +259,35 @@ The B03-E transferred postponed/TBD Event rediscovery belongs to B05-D: no Activ
 
 ---
 
-# 6. Later ownership register
+# 6. B06 — Routine / Recurrence / Occurrence baseline
 
 ```text
-B05  Calendar / Life Area / Tags / product organization
-B06  Routine + Recurrence + Occurrence baseline
+B06-A Routine source core                       ✅ CLOSED / PROVEN at `_51`
+B06-B Recurrence authoring                      ✅ CLOSED / PROVEN at `_54`
+B06-C Occurrence checkpoint and scope           ✅ CLOSED / PROVEN at `_55`
+B06-D shared Schedule / Timeline / functional UI ✅ CLOSED / PROVEN at `_57`
+B06-E whole-block closure                       🟨 NEXT
+```
+
+B06-D preserves `Occurrence != Schedule` while allowing one canonical Occurrence to enter the existing shared Schedule engine. Timeline projection is checkpoint-before-read and read-only; expected and scheduled truth never duplicate. `_57` adds one bounded self-scoped execute-only expected-Occurrence read instead of restoring runtime SELECT on private provenance tables. Source organization is inherited rather than cloned per Occurrence.
+
+User-run final B06-D proof:
+
+```text
+focused Occurrence Schedule PostgreSQL test   1 PASS
+backend + catalog gate                       11 PASS
+web TypeScript typecheck                      PASS
+focused web Vitest files                     4 PASS
+focused web Vitest tests                    18 PASS
+```
+
+Closure authority: `timeline-temporal-operational-b06-d-closure-2026-09-23.md`.
+
+---
+
+# 7. Later ownership register
+
+```text
 B07  UI/UX Consolidation v1
 B08  Session Runtime
 B09  Responsibility / Participation / actor relations
@@ -274,19 +299,16 @@ B14  analytics / statistics / signals
 B15  whole-vertical closure
 ```
 
-# 7. Current gate
+# 8. Current gate
 
 ```text
 B04 ✅ CLOSED / PROVEN
-B05-A ✅ CLOSED / PROVEN
-B05-B ✅ CLOSED / PROVEN at `_46`
-B05-C ✅ CLOSED / PROVEN at `_47` (26 selected PostgreSQL tests)
-B05-D ✅ CLOSED / PROVEN at `_48` (41 selected web + 24 PostgreSQL/API/catalog tests)
-B05-E ✅ WHOLE-BLOCK CLOSURE / MANUAL WALKTHROUGH COMPLETE
 B05   ✅ CLOSED / PROVEN
-B06-A ✅ CLOSED / PROVEN
+B06-A ✅ CLOSED / PROVEN at `_51`
 B06-B ✅ CLOSED / PROVEN at `_54` (1 fingerprint + 28 PostgreSQL/catalog regressions)
 B06-C ✅ CLOSED / PROVEN at `_55` (22 selected backend + 41 PostgreSQL tests)
+B06-D ✅ CLOSED / PROVEN at `_57` (11 selected PostgreSQL/catalog tests; web typecheck; 18 focused Vitest tests)
+B06-E 🟨 WHOLE-BLOCK CLOSURE NEXT
 ```
 
-Current gate: B05 ✅ CLOSED / PROVEN → B06-A/B/C ✅ CLOSED / PROVEN → B06-D next. B06-C adds the bounded backend checkpoint, effective-history evaluation, canonical Routine/Event Occurrences, explicit extra, immutable skip, structural exclusion, lifecycle stop and execute-only generation surface. The 62-day half-open range is preserved and a 10,000-Occurrence safety cap rejects dense checkpoints atomically. No Schedule, Timeline, fake Activity or CI/Actions was introduced.
+Current gate: B05 ✅ CLOSED / PROVEN → B06-A/B/C/D ✅ CLOSED / PROVEN → B06-E next. B06 remains open until its whole-block direct regressions, evidence reconciliation and real-stack recurring Routine/Event walkthrough complete. No CI/Actions are launched.
