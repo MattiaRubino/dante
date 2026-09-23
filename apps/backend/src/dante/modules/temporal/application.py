@@ -89,7 +89,7 @@ class TimelineNamedZoneLocalActivityItem(_TimelineScheduledActivityBase):
 
 @dataclass(frozen=True, slots=True)
 class TimelineAbsoluteActivityItem(_TimelineScheduledActivityBase):
-    """Absolute Activity interval plus request-effective-zone projection."""
+    """Absolute Activity interval plus request-zone projection."""
 
     starts_at: datetime
     ends_at: datetime
@@ -136,7 +136,7 @@ class TimelineNamedZoneLocalEventItem(_TimelineScheduledEventBase):
 
 @dataclass(frozen=True, slots=True)
 class TimelineAbsoluteEventItem(_TimelineScheduledEventBase):
-    """Absolute Event interval plus request-effective-zone projection."""
+    """Absolute Event interval plus request-zone projection."""
 
     starts_at: datetime
     ends_at: datetime
@@ -520,7 +520,7 @@ class TemporalTimelineApplication:
         query: TimelineWindowQuery,
         context: DanteContext,
     ) -> TimelineWindowResult:
-        """Read current Schedule and materialized Occurrence truth in one window."""
+        """Read current Schedule and governed materialized Occurrence truth."""
         start_local_at = datetime.combine(query.start_date, time.min)
         end_local_at = datetime.combine(query.end_date_exclusive, time.min)
         start_instant, _ = local_day_utc_bounds(
@@ -545,6 +545,18 @@ class TemporalTimelineApplication:
                        expectation.self_person_ref,
                        expectation.title
                   FROM dante.event_expectation AS expectation
+            ), scheduled_occurrence AS (
+                SELECT DISTINCT ON (schedule.subject_native_ref)
+                       occurrence.*
+                  FROM dante.schedule AS schedule
+                  JOIN dante.schedule_current_placement AS current
+                    ON current.scoped_owner_ref=schedule.schedule_ref
+                  CROSS JOIN LATERAL dante.get_self_occurrence(
+                      :self_person_ref,
+                      schedule.subject_native_ref
+                  ) AS occurrence
+                 WHERE NOT occurrence.skipped
+                 ORDER BY schedule.subject_native_ref,schedule.schedule_ref
             ), self_subject AS (
                 SELECT 'activity'::text AS owner_kind,
                        intention.activity_ref AS subject_native_ref,
@@ -565,15 +577,15 @@ class TemporalTimelineApplication:
                   FROM dante.event_expectation AS expectation
                 UNION ALL
                 SELECT 'occurrence'::text AS owner_kind,
-                       generation.occurrence_ref AS subject_native_ref,
+                       occurrence.occurrence_ref AS subject_native_ref,
                        source.self_person_ref,
                        source.title,
                        source.source_kind,
                        source.source_native_ref,
-                       generation.occurrence_ref
-                  FROM dante.occurrence_generation AS generation
+                       occurrence.occurrence_ref
+                  FROM scheduled_occurrence AS occurrence
                   JOIN self_source AS source
-                    ON source.source_native_ref = generation.source_native_ref
+                    ON source.source_native_ref=occurrence.source_native_ref
             )
             SELECT subject.owner_kind,
                    subject.subject_native_ref,
@@ -597,103 +609,79 @@ class TemporalTimelineApplication:
                    absolute_payload.ends_at,
                    coarse_payload.local_date AS coarse_local_date,
                    coarse_payload.period_code,
-                   COALESCE(routine_recurrence.family_code, event_recurrence.family_code)
-                       AS family_code,
-                   COALESCE(calendar_coordinate.generated_date, cyclic_coordinate.generated_date)
-                       AS generated_date,
-                   calendar_coordinate.generated_wall_time,
-                   calendar_coordinate.clock_basis_code,
-                   calendar_coordinate.zone_id AS occurrence_zone_id,
-                   calendar_coordinate.resolved_at AS occurrence_resolved_at,
-                   elapsed_coordinate.expected_at,
-                   quota_coordinate.period_start_date,
-                   quota_coordinate.period_end_date_exclusive,
-                   quota_coordinate.frame_code,
-                   quota_coordinate.zone_id AS quota_zone_id,
-                   cyclic_coordinate.position_index
+                   occurrence.family_code,
+                   occurrence.generated_date,
+                   occurrence.generated_wall_time,
+                   occurrence.clock_basis_code,
+                   occurrence.zone_id AS occurrence_zone_id,
+                   occurrence.resolved_at AS occurrence_resolved_at,
+                   occurrence.expected_at,
+                   occurrence.period_start_date,
+                   occurrence.period_end_date_exclusive,
+                   occurrence.frame_code,
+                   occurrence.quota_zone_id,
+                   occurrence.position_index
               FROM self_subject AS subject
               JOIN dante.schedule AS schedule
-                ON schedule.subject_native_ref = subject.subject_native_ref
+                ON schedule.subject_native_ref=subject.subject_native_ref
               JOIN dante.schedule_current_placement AS current
-                ON current.scoped_owner_ref = schedule.schedule_ref
+                ON current.scoped_owner_ref=schedule.schedule_ref
               JOIN dante.schedule_placement_state AS placement
-                ON placement.material_state_ref = current.material_state_ref
-               AND placement.schedule_ref = schedule.schedule_ref
+                ON placement.material_state_ref=current.material_state_ref
+               AND placement.schedule_ref=schedule.schedule_ref
               LEFT JOIN dante.schedule_placement_date_state AS date_payload
-                ON date_payload.material_state_ref = placement.material_state_ref
+                ON date_payload.material_state_ref=placement.material_state_ref
               LEFT JOIN dante.schedule_placement_floating_local_state AS floating_payload
-                ON floating_payload.material_state_ref = placement.material_state_ref
+                ON floating_payload.material_state_ref=placement.material_state_ref
               LEFT JOIN dante.schedule_placement_named_zone_state AS named_payload
-                ON named_payload.material_state_ref = placement.material_state_ref
+                ON named_payload.material_state_ref=placement.material_state_ref
               LEFT JOIN dante.schedule_placement_absolute_state AS absolute_payload
-                ON absolute_payload.material_state_ref = placement.material_state_ref
+                ON absolute_payload.material_state_ref=placement.material_state_ref
               LEFT JOIN dante.schedule_placement_coarse_local_period_state AS coarse_payload
-                ON coarse_payload.material_state_ref = placement.material_state_ref
-              LEFT JOIN dante.occurrence_generation AS generation
-                ON generation.occurrence_ref = subject.occurrence_ref
-              LEFT JOIN dante.routine_recurrence_state AS routine_recurrence
-                ON routine_recurrence.material_state_ref =
-                   generation.governing_recurrence_state_ref
-              LEFT JOIN dante.event_recurrence_state AS event_recurrence
-                ON event_recurrence.material_state_ref =
-                   generation.governing_recurrence_state_ref
-              LEFT JOIN dante.occurrence_generation_calendar AS calendar_coordinate
-                ON calendar_coordinate.occurrence_ref = generation.occurrence_ref
-              LEFT JOIN dante.occurrence_generation_elapsed AS elapsed_coordinate
-                ON elapsed_coordinate.occurrence_ref = generation.occurrence_ref
-              LEFT JOIN dante.occurrence_generation_quota AS quota_coordinate
-                ON quota_coordinate.occurrence_ref = generation.occurrence_ref
-              LEFT JOIN dante.occurrence_generation_cyclic AS cyclic_coordinate
-                ON cyclic_coordinate.occurrence_ref = generation.occurrence_ref
-             WHERE subject.self_person_ref = :self_person_ref
-               AND (
-                    subject.owner_kind <> 'occurrence'
-                    OR NOT EXISTS (
-                        SELECT 1
-                          FROM dante.occurrence_skip AS skip
-                         WHERE skip.occurrence_ref = subject.occurrence_ref
-                    )
-               )
+                ON coarse_payload.material_state_ref=placement.material_state_ref
+              LEFT JOIN scheduled_occurrence AS occurrence
+                ON occurrence.occurrence_ref=subject.occurrence_ref
+             WHERE subject.self_person_ref=:self_person_ref
                AND (
                     subject.owner_kind <> 'occurrence'
                     OR schedule.schedule_ref = (
                         SELECT candidate.schedule_ref
                           FROM dante.schedule AS candidate
                           JOIN dante.schedule_current_placement AS candidate_current
-                            ON candidate_current.scoped_owner_ref = candidate.schedule_ref
-                         WHERE candidate.subject_native_ref = subject.occurrence_ref
+                            ON candidate_current.scoped_owner_ref=candidate.schedule_ref
+                         WHERE candidate.subject_native_ref=subject.occurrence_ref
                          ORDER BY candidate.schedule_ref
                          LIMIT 1
                     )
                )
                AND (
                     (
-                        placement.temporal_form_code = 'date_span'
+                        placement.temporal_form_code='date_span'
                         AND date_payload.date_span
-                            && daterange(:start_date, :end_date_exclusive, '[)')
+                            && daterange(:start_date,:end_date_exclusive,'[)')
                     )
                     OR (
-                        placement.temporal_form_code = 'floating_local'
-                        AND floating_payload.extent_code = 'interval'
+                        placement.temporal_form_code='floating_local'
+                        AND floating_payload.extent_code='interval'
                         AND floating_payload.starts_local_at < :end_local_at
                         AND floating_payload.ends_local_at > :start_local_at
                     )
                     OR (
-                        placement.temporal_form_code = 'named_zone_local'
-                        AND named_payload.extent_code = 'interval'
+                        placement.temporal_form_code='named_zone_local'
+                        AND named_payload.extent_code='interval'
                         AND named_payload.resolved_start_at IS NOT NULL
                         AND named_payload.resolved_end_at IS NOT NULL
                         AND named_payload.resolved_start_at < :end_instant
                         AND named_payload.resolved_end_at > :start_instant
                     )
                     OR (
-                        placement.temporal_form_code = 'absolute'
-                        AND absolute_payload.extent_code = 'interval'
+                        placement.temporal_form_code='absolute'
+                        AND absolute_payload.extent_code='interval'
                         AND absolute_payload.starts_at < :end_instant
                         AND absolute_payload.ends_at > :start_instant
                     )
                     OR (
-                        placement.temporal_form_code = 'coarse_local_period'
+                        placement.temporal_form_code='coarse_local_period'
                         AND coarse_payload.local_date >= :start_date
                         AND coarse_payload.local_date < :end_date_exclusive
                     )
@@ -735,127 +723,40 @@ class TemporalTimelineApplication:
                        expectation.title
                   FROM dante.event_expectation AS expectation
             )
-            SELECT generation.occurrence_ref,
-                   generation.source_native_ref,
+            SELECT occurrence.occurrence_ref,
+                   occurrence.source_native_ref,
                    source.source_kind,
                    source.title,
-                   COALESCE(routine_recurrence.family_code, event_recurrence.family_code)
-                       AS family_code,
-                   COALESCE(calendar_coordinate.generated_date, cyclic_coordinate.generated_date)
-                       AS generated_date,
-                   calendar_coordinate.generated_wall_time,
-                   calendar_coordinate.clock_basis_code,
-                   calendar_coordinate.zone_id AS occurrence_zone_id,
-                   calendar_coordinate.resolved_at AS occurrence_resolved_at,
-                   elapsed_coordinate.expected_at,
-                   quota_coordinate.period_start_date,
-                   quota_coordinate.period_end_date_exclusive,
-                   quota_coordinate.frame_code,
-                   quota_coordinate.zone_id AS quota_zone_id,
-                   cyclic_coordinate.position_index
-              FROM dante.occurrence_generation AS generation
+                   occurrence.family_code,
+                   occurrence.generated_date,
+                   occurrence.generated_wall_time,
+                   occurrence.clock_basis_code,
+                   occurrence.zone_id AS occurrence_zone_id,
+                   occurrence.resolved_at AS occurrence_resolved_at,
+                   occurrence.expected_at,
+                   occurrence.period_start_date,
+                   occurrence.period_end_date_exclusive,
+                   occurrence.frame_code,
+                   occurrence.quota_zone_id,
+                   occurrence.position_index
+              FROM dante.list_self_expected_occurrences_in_window(
+                       :self_person_ref,
+                       :start_date,
+                       :end_date_exclusive,
+                       :effective_zone_id
+                   ) AS occurrence
               JOIN self_source AS source
-                ON source.source_native_ref = generation.source_native_ref
-              LEFT JOIN dante.routine_recurrence_state AS routine_recurrence
-                ON routine_recurrence.material_state_ref =
-                   generation.governing_recurrence_state_ref
-              LEFT JOIN dante.event_recurrence_state AS event_recurrence
-                ON event_recurrence.material_state_ref =
-                   generation.governing_recurrence_state_ref
-              LEFT JOIN dante.occurrence_generation_calendar AS calendar_coordinate
-                ON calendar_coordinate.occurrence_ref = generation.occurrence_ref
-              LEFT JOIN dante.occurrence_generation_elapsed AS elapsed_coordinate
-                ON elapsed_coordinate.occurrence_ref = generation.occurrence_ref
-              LEFT JOIN dante.occurrence_generation_quota AS quota_coordinate
-                ON quota_coordinate.occurrence_ref = generation.occurrence_ref
-              LEFT JOIN dante.occurrence_generation_cyclic AS cyclic_coordinate
-                ON cyclic_coordinate.occurrence_ref = generation.occurrence_ref
-             WHERE source.self_person_ref = :self_person_ref
-               AND generation.origin_code = 'recurrence_generated'
-               AND NOT EXISTS (
-                    SELECT 1
-                      FROM dante.occurrence_skip AS skip
-                     WHERE skip.occurrence_ref = generation.occurrence_ref
-               )
-               AND NOT EXISTS (
-                    SELECT 1
-                      FROM dante.schedule AS schedule
-                      JOIN dante.schedule_current_placement AS current
-                        ON current.scoped_owner_ref = schedule.schedule_ref
-                     WHERE schedule.subject_native_ref = generation.occurrence_ref
-               )
-               AND (
-                    (
-                        calendar_coordinate.occurrence_ref IS NOT NULL
-                        AND calendar_coordinate.resolved_at IS NOT NULL
-                        AND timezone(
-                            CAST(:effective_zone_id AS text),
-                            calendar_coordinate.resolved_at
-                        )::date >= :start_date
-                        AND timezone(
-                            CAST(:effective_zone_id AS text),
-                            calendar_coordinate.resolved_at
-                        )::date < :end_date_exclusive
-                    )
-                    OR (
-                        calendar_coordinate.occurrence_ref IS NOT NULL
-                        AND calendar_coordinate.clock_basis_code = 'absolute_utc'
-                        AND calendar_coordinate.generated_wall_time IS NOT NULL
-                        AND timezone(
-                            CAST(:effective_zone_id AS text),
-                            (calendar_coordinate.generated_date
-                             + calendar_coordinate.generated_wall_time)
-                                AT TIME ZONE 'UTC'
-                        )::date >= :start_date
-                        AND timezone(
-                            CAST(:effective_zone_id AS text),
-                            (calendar_coordinate.generated_date
-                             + calendar_coordinate.generated_wall_time)
-                                AT TIME ZONE 'UTC'
-                        )::date < :end_date_exclusive
-                    )
-                    OR (
-                        calendar_coordinate.occurrence_ref IS NOT NULL
-                        AND calendar_coordinate.resolved_at IS NULL
-                        AND (
-                            calendar_coordinate.clock_basis_code <> 'absolute_utc'
-                            OR calendar_coordinate.generated_wall_time IS NULL
-                        )
-                        AND calendar_coordinate.generated_date >= :start_date
-                        AND calendar_coordinate.generated_date < :end_date_exclusive
-                    )
-                    OR (
-                        elapsed_coordinate.occurrence_ref IS NOT NULL
-                        AND timezone(
-                            CAST(:effective_zone_id AS text),
-                            elapsed_coordinate.expected_at
-                        )::date >= :start_date
-                        AND timezone(
-                            CAST(:effective_zone_id AS text),
-                            elapsed_coordinate.expected_at
-                        )::date < :end_date_exclusive
-                    )
-                    OR (
-                        quota_coordinate.occurrence_ref IS NOT NULL
-                        AND quota_coordinate.period_start_date < :end_date_exclusive
-                        AND quota_coordinate.period_end_date_exclusive > :start_date
-                    )
-                    OR (
-                        cyclic_coordinate.occurrence_ref IS NOT NULL
-                        AND cyclic_coordinate.generated_date >= :start_date
-                        AND cyclic_coordinate.generated_date < :end_date_exclusive
-                    )
-               )
+                ON source.source_native_ref=occurrence.source_native_ref
+               AND source.self_person_ref=:self_person_ref
              ORDER BY COALESCE(
-                          calendar_coordinate.generated_date,
+                          occurrence.generated_date,
                           timezone(
                               CAST(:effective_zone_id AS text),
-                              elapsed_coordinate.expected_at
+                              occurrence.expected_at
                           )::date,
-                          quota_coordinate.period_start_date,
-                          cyclic_coordinate.generated_date
+                          occurrence.period_start_date
                       ),
-                      generation.occurrence_ref
+                      occurrence.occurrence_ref
             """
         )
 
@@ -896,9 +797,12 @@ class TemporalTimelineApplication:
                     .all()
                 )
             scheduled_items = tuple(
-                _item_from_row(row, effective_zone_id=context.effective_zone_id) for row in rows
+                _item_from_row(row, effective_zone_id=context.effective_zone_id)
+                for row in rows
             )
-            expected_items = tuple(_expected_occurrence_from_row(row) for row in expected_rows)
+            expected_items = tuple(
+                _expected_occurrence_from_row(row) for row in expected_rows
+            )
             items = scheduled_items + expected_items
         except (SQLAlchemyError, KeyError, TypeError, ValueError) as exc:
             raise TimelinePersistenceError() from exc
