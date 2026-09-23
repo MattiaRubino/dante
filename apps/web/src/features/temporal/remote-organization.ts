@@ -1,6 +1,6 @@
 import { createWebFetch } from '../../platform/api/web-fetch';
 
-export type OrganizationKind = 'activity' | 'event';
+export type OrganizationKind = 'activity' | 'event' | 'routine';
 export type LifeArea = Readonly<{
   ref: string;
   name: string;
@@ -41,6 +41,11 @@ export type OrganizationSnapshot = Readonly<{
   tagEdges: readonly ProductTagEdge[];
 }>;
 
+type RoutineOrganization = Readonly<{
+  assignment: LifeAreaAssignment;
+  tagEdges: readonly ProductTagEdge[];
+}>;
+
 const UUID_V7 = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export class TemporalOrganizationError extends Error {
@@ -65,7 +70,7 @@ function uuid(value: unknown): string {
 }
 
 function kind(value: unknown): OrganizationKind {
-  if (value !== 'activity' && value !== 'event') {
+  if (value !== 'activity' && value !== 'event' && value !== 'routine') {
     throw new TemporalOrganizationError('Invalid organization item kind.');
   }
   return value;
@@ -158,6 +163,32 @@ function edge(value: unknown): ProductTagEdge {
   });
 }
 
+function routineOrganization(value: unknown): RoutineOrganization {
+  const row = record(value);
+  const routineRef = uuid(row.routine_ref);
+  const rawTags = row.tag_refs;
+  if (!Array.isArray(rawTags)) {
+    throw new TemporalOrganizationError('Invalid Routine Tag collection.');
+  }
+  return Object.freeze({
+    assignment: Object.freeze({
+      kind: 'routine' as const,
+      itemRef: routineRef,
+      areaRef: uuid(row.life_area_ref),
+      revision: revision(row.life_area_assignment_revision),
+    }),
+    tagEdges: Object.freeze(
+      rawTags.map((tagRef) =>
+        Object.freeze({
+          kind: 'routine' as const,
+          itemRef: routineRef,
+          tagRef: uuid(tagRef),
+        }),
+      ),
+    ),
+  });
+}
+
 /** Actor-local LR-12 metadata. Mutations never modify Schedule/conflict truth. */
 export function createRemoteTemporalOrganizationDataSource(
   fetchFn: typeof globalThis.fetch = globalThis.fetch,
@@ -200,17 +231,27 @@ export function createRemoteTemporalOrganizationDataSource(
 
   return Object.freeze({
     async load(): Promise<OrganizationSnapshot> {
-      const [areas, assignments, unassignedItems, tags, edges] = await Promise.all([
+      const [areas, assignments, unassignedItems, tags, edges, routines] = await Promise.all([
         request('/api/v1/temporal/life-areas'),
         request('/api/v1/temporal/life-area-assignments'),
         request('/api/v1/temporal/life-area-assignments/unassigned'),
         request('/api/v1/temporal/tags'),
         request('/api/v1/temporal/tags/assignments'),
+        request('/api/v1/temporal/routines'),
       ]);
+      const routineRows = list(routines, routineOrganization);
       return Object.freeze({
-        areas: list(areas, area), assignments: list(assignments, assignment),
-        unassigned: list(unassignedItems, unassigned), tags: list(tags, tag),
-        tagEdges: list(edges, edge),
+        areas: list(areas, area),
+        assignments: Object.freeze([
+          ...list(assignments, assignment),
+          ...routineRows.map((item) => item.assignment),
+        ]),
+        unassigned: list(unassignedItems, unassigned),
+        tags: list(tags, tag),
+        tagEdges: Object.freeze([
+          ...list(edges, edge),
+          ...routineRows.flatMap((item) => item.tagEdges),
+        ]),
       });
     },
     async createArea(name: string): Promise<LifeArea> {
@@ -246,6 +287,14 @@ export function createRemoteTemporalOrganizationDataSource(
       });
     },
     async assignItem(item: Pick<UnassignedItem, 'kind' | 'itemRef'>, areaRef: string, expectedRevision: number): Promise<void> {
+      if (item.kind === 'routine') {
+        await mutate(`/api/v1/temporal/routines/${item.itemRef}/life-area`, 'PUT', {
+          operation_id: crypto.randomUUID(),
+          life_area_ref: uuid(areaRef),
+          expected_assignment_revision: expectedRevision,
+        });
+        return;
+      }
       await mutate(`/api/v1/temporal/life-area-assignments/${item.kind === 'activity' ? 'activities' : 'events'}/${item.itemRef}`, 'PUT', {
         operation_id: crypto.randomUUID(), life_area_ref: uuid(areaRef),
         expected_assignment_revision: expectedRevision,
@@ -267,6 +316,12 @@ export function createRemoteTemporalOrganizationDataSource(
       });
     },
     async setItemTag(item: Pick<UnassignedItem, 'kind' | 'itemRef'>, tagRef: string, attached: boolean): Promise<void> {
+      if (item.kind === 'routine') {
+        await mutate(`/api/v1/temporal/routines/${item.itemRef}/tags/${uuid(tagRef)}/${attached ? 'attach' : 'detach'}`, 'POST', {
+          operation_id: crypto.randomUUID(),
+        });
+        return;
+      }
       await mutate(`/api/v1/temporal/${item.kind === 'activity' ? 'activities' : 'events'}/${item.itemRef}/tags/${uuid(tagRef)}/${attached ? 'attach' : 'detach'}`, 'POST', {
         operation_id: crypto.randomUUID(),
       });
