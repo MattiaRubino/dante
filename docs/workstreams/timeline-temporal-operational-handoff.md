@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B04 ✅ CLOSED / PROVEN → B05 ✅ CLOSED / PROVEN → B06-D ✅ CLOSED / PROVEN → B06-E NEXT
+- **Status:** B04 ✅ CLOSED / PROVEN → B05 ✅ CLOSED / PROVEN → B06 ✅ CLOSED / PROVEN → POST-B06 SEQUENCING DECISION
 - **Reconciled:** 2026-09-23
 - **Branch:** `feature/timeline-temporal-operational`
 - **Current roadmap:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -18,6 +18,7 @@
 - **B06-C closure:** `docs/workstreams/timeline-temporal-operational-b06-c-closure-2026-09-22.md`
 - **B06-D implementation freeze:** `docs/workstreams/timeline-temporal-operational-b06-d-implementation-freeze.md`
 - **B06-D closure:** `docs/workstreams/timeline-temporal-operational-b06-d-closure-2026-09-23.md`
+- **B06 whole-block closure:** `docs/workstreams/timeline-temporal-operational-b06-e-closure-2026-09-23.md`
 - **Timeline candidate DB overlay:** `docs/database/timeline-temporal-operational.md`
 - **CI:** no CI launch is implied or authorized
 
@@ -37,7 +38,9 @@ B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
 ├─ B04-E Advanced-family applicability           ✅ CLOSED / PROVEN
 └─ B04-F Whole-B04 closure                       ✅ CLOSED / PROVEN
 B05 Product Organization                         ✅ CLOSED / PROVEN
-B06 Routine / Recurrence / Occurrence Baseline   🟨 B06-E WHOLE-BLOCK CLOSURE
+B06 Routine / Recurrence / Occurrence Baseline   ✅ CLOSED / PROVEN
+B07 UI/UX Consolidation v1                       ⬜
+B08 Session Runtime                              ⬜
 ...
 B15 Whole Vertical Closure                       ⬜
 ```
@@ -47,7 +50,7 @@ Current candidate DB:
 ```text
 PostgreSQL 18.6
 Alembic source 20260923_57
-Proven topology 145|5|88|92|285|223|408|0|0|0 (B06-D proven)
+Proven topology 145|5|88|92|285|223|408|0|0|0 (whole B06 proven)
 ```
 
 ## 2. Binding foundation carried forward
@@ -206,21 +209,22 @@ B04 whole-block authority is `timeline-temporal-operational-b04-f-closure-2026-0
 
 `Fascia` remains a B02 coarse Schedule placement, not a B04 constraint. Life Area/Tags remain actor-local product organization, not new Domain roots.
 
-## 10. B06 current authority
+## 10. B06 closed authority
 
 ```text
 B06-A Routine source core                         ✅ CLOSED / PROVEN at `_51`
 B06-B Recurrence authoring                        ✅ CLOSED / PROVEN at `_54`
 B06-C canonical Occurrence checkpoint             ✅ CLOSED / PROVEN at `_55`
 B06-D shared Schedule / Timeline / functional UI  ✅ CLOSED / PROVEN at `_57`
-B06-E whole-block closure                         🟨 NEXT
+B06-E whole-block closure                         ✅ CLOSED / PROVEN at `_57`
+B06 whole block                                   ✅ CLOSED / PROVEN
 ```
 
-B06-D reuses the existing Schedule authority for materialized Occurrences. It does not create `occurrence_schedule`, rewrite provenance or convert repeated Activity into Routine. Timeline is checkpoint-before-read; `GET` remains read-only. Expected and scheduled Occurrence projections obey one-item precedence, quota/cyclic truth stays untimed unless explicitly scheduled, and source organization is inherited rather than cloned.
+B06 reuses the existing Schedule authority for materialized Occurrences. It does not create `occurrence_schedule`, rewrite provenance or convert repeated Activity into Routine. Timeline is checkpoint-before-read; `GET` remains read-only. Expected and scheduled Occurrence projections obey one-item precedence, quota/cyclic truth stays untimed unless explicitly scheduled, and source organization is inherited rather than cloned.
 
 The local D proof discovered and closed two least-privilege defects rather than widening runtime grants: `_57` exposes unscheduled expected Occurrences through `list_self_expected_occurrences_in_window(uuid,date,date,text)`, scheduled provenance reuses `get_self_occurrence`, and Routine presentation reuses `list_self_routines`. The proven `_57` topology is `145|5|88|92|285|223|408|0|0|0`.
 
-User-run final B06-D evidence:
+User-run B06-D evidence:
 
 ```text
 focused Occurrence Schedule PostgreSQL test   1 PASS
@@ -230,16 +234,28 @@ focused web Vitest files                     4 PASS
 focused web Vitest tests                    18 PASS
 ```
 
+B06-E then reconciled the prior slice evidence and completed the final local sanity/walkthrough:
+
+```text
+generated:check                             PASS
+API-client typecheck                        PASS
+web typecheck                               PASS
+focused B06/runtime Vitest                  6 files / 37 tests PASS
+persistent local dogfood real-stack        accepted
+created Timeline/Event/recurring state      survives F5
+remaining B06 blocker                       none
+```
+
+Whole-block closure authority is `timeline-temporal-operational-b06-e-closure-2026-09-23.md`.
+
 ## 11. Current gate
 
 ```text
 B04 ✅ CLOSED / PROVEN
 B05 ✅ CLOSED / PROVEN
-B06-A ✅ CLOSED / PROVEN at `_51`
-B06-B ✅ CLOSED / PROVEN at `_54`
-B06-C ✅ CLOSED / PROVEN at `_55`
-B06-D ✅ CLOSED / PROVEN at `_57`
-B06-E 🟨 WHOLE-BLOCK CLOSURE NEXT
+B06 ✅ CLOSED / PROVEN at `_57`
+B07 ⬜ NOT STARTED
+B08 ⬜ NOT STARTED
 ```
 
-B06-E must reconcile the whole B06 evidence set, run the agreed broad direct local PostgreSQL/API/frontend regression gate, complete a real-stack recurring Routine/Event walkthrough, and publish the whole-B06 closure. It does not authorize CI/Actions and should add no new persistence unless the proof reveals a real gap.
+The workstream is intentionally parked at a **post-B06 sequencing decision**. The documented order still places B07 before B08, but no B07 skip/deferral is recorded here. If B07 is deliberately deferred in favor of B08, that decision must be discussed and written into the roadmap/handoff before B08 implementation starts. No CI/Actions are authorized by this handoff.
