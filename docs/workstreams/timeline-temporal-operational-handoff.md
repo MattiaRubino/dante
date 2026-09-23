@@ -1,14 +1,20 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B06 ✅ CLOSED / PROVEN → B08 SESSION RUNTIME NEXT
+- **Status:** B08 SESSION RUNTIME 🟡 ACTIVE — B08-A AUTHORITY RECONCILIATION NEXT
 - **Reconciled:** 2026-09-23
 - **Branch:** `feature/timeline-temporal-operational`
+- **Exact known remote frontier at handoff update:** `a00555a95661f345c3bfcb57cd1c55cd74a26934`
 - **Current roadmap:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Current live map/ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
+- **B08 detailed execution plan:** `docs/workstreams/timeline-temporal-operational-b08-execution-plan.md`
 - **Post-B06 scope decision:** `docs/workstreams/timeline-temporal-operational-post-b06-scope-decision-2026-09-23.md`
 - **B06 whole-block closure:** `docs/workstreams/timeline-temporal-operational-b06-e-closure-2026-09-23.md`
 - **Timeline candidate DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **CI:** no CI launch is implied or authorized
+- **Current Alembic frontier:** `20260923_57`
+- **Current proven DB topology:** `145|5|88|92|285|223|408|0|0|0`
+- **CI:** no CI/GitHub Actions launch is implied or authorized
+
+This handoff is the first document a fresh chat should read. It records the exact workstream position and next concrete action; detailed B08 sequencing lives in the B08 execution plan.
 
 ## 1. Current position
 
@@ -22,7 +28,14 @@ B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
 B05 Product Organization                         ✅ CLOSED / PROVEN
 B06 Routine / Recurrence / Occurrence Baseline   ✅ CLOSED / PROVEN
 
-B08 Session Runtime                              ← NEXT
+B08 Session Runtime                              🟡 ACTIVE
+  B08-A Authority reconciliation + freeze         ← NEXT
+  B08-B Start / Read / End core                   ⬜
+  B08-C Pause / Resume + duration                 ⬜
+  B08-D Timeline runtime integration              ⬜
+  B08-E TC-009 Session-duration reopening         ⬜
+  B08-F Whole-block closure                       ⬜
+
 B09 Responsibility / Participation               ⬜
 B10 Actual / Outcome / Confirmation / Resolution ⬜
 B11 Advanced Recurrence / Conditional / Reminder ⬜
@@ -32,14 +45,6 @@ B15 Whole Vertical Closure                       ⬜
 ```
 
 Former B13 Provider/Offline/Multi-device and B14 Analytics/Statistics/Signals are outside this vertical. Their historical identifiers are not reassigned.
-
-Current candidate DB:
-
-```text
-PostgreSQL      18.6
-Alembic source  20260923_57
-Proven topology 145|5|88|92|285|223|408|0|0|0
-```
 
 ## 2. Workstream boundary
 
@@ -78,6 +83,9 @@ Responsibility != Participation
 participant != Account identity
 planned/intended != happened
 planned Schedule duration != Session duration
+Session elapsed duration != Session active duration
+Session end != Activity completion
+Session end != Occurrence completion
 planned Schedule duration != Actual duration
 projection != canonical truth
 current accepted state != latest row
@@ -119,90 +127,165 @@ During B08–B12, temporary UI is acceptable if it is truthful, accessible enoug
 
 B07 later consolidates the complete interaction surface once all vertical capabilities are visible together.
 
-## 6. B08 next boundary — Session Runtime
+## 6. B08 execution authority
 
-B08 must begin with authority/pre-scope reconciliation before implementation.
+Detailed plan:
 
-Questions to resolve explicitly:
+`docs/workstreams/timeline-temporal-operational-b08-execution-plan.md`
 
-```text
-which canonical owner(s) can have/start a Session?
-what exact Session identity/lifecycle is already defined by Domain/Logical/Physical?
-what does start/pause/resume/stop mean semantically?
-what is elapsed vs active duration?
-what state is current/history and how is it revised?
-what idempotency/CAS rules apply?
-how does Session attach to Activity/Event/Routine/Occurrence/Schedule without collapse?
-how does Timeline project active/paused/stopped runtime state?
-which B04 TC-009/TC-010 constraints become evaluable now?
-what is explicitly deferred to B10 Actual/Outcome?
-```
-
-Forbidden assumptions:
+B08 activates actual execution episodes while preserving:
 
 ```text
-scheduled start == actual Session start
-Session end == Actual completion by default
-Session existence == Outcome
-planned duration == Session duration
-```
-
-No migration is pre-authorized. Inspect current physical/database support first and add forward-only DDL only for a proven gap.
-
-## 7. B09 later boundary — Responsibility / Participation
-
-B09 is role semantics around Activity/Event/Routine/Occurrence, not collaboration infrastructure.
-
-A participant/responsible subject may exist as a Person/referent without a DANTE Account. A future account linkage can be added without changing the participation meaning.
-
-Out of scope:
-
-```text
-account-to-account collaboration
-chat
-shared editing
-invitation delivery
-cross-account grants
-```
-
-## 8. B10 later boundary — Actual / Outcome / Confirmation / Resolution
-
-B10 owns happened-reality semantics required to complete the Timeline lifecycle.
-
-```text
-planned/intended != happened
+Activity != Session
+Occurrence != Session
+Schedule != Session
 Session != Actual
-Actual != Outcome
-Outcome != Confirmation
+Session != Outcome
 ```
 
-Time passage never proves execution.
-
-## 9. B11 later boundary — Advanced Recurrence / Conditional / Reminder
-
-B11 completes recurrence/reminder semantics needed by `+`, editors and Timeline once later anchors exist. No generic RRULE ontology, opaque JSON rule bag or IFTTT-style canonical engine is authorized.
-
-## 10. B12 later boundary — Replanning / Conflict / Solver
-
-B12 is deterministic-first candidate generation/optimization and Proposal handling.
+Existing CP6 persistence to inspect/reuse before adding DDL:
 
 ```text
-canonical truth + constraints/preferences
-→ deterministic solver/candidate generation
-→ Proposal(s)
-→ optional AI interpretation/explanation/ranking assistance
-→ governed acceptance
-→ canonical Schedule mutation
+session
+session_timing_state
+session_timing_absolute
+session_timing_elapsed
+session_timing_pause
+session_timing_current_history
 ```
 
-AI is optional support, not scheduling authority.
+Candidate baseline to verify in B08-A:
 
-## 11. Current gate
+```text
+Activity     candidate Session target ✅
+Occurrence   candidate Session target ✅
+Routine      direct target            ❌
+Event        ordinary baseline target ❌
+Schedule     Session owner/target     ❌
+```
+
+Schedule is not required for actual execution; B08 must not invent retroactive Schedule truth for an unscheduled execution episode.
+
+## 7. Current slice — B08-A Authority reconciliation + implementation freeze
+
+No major B08 runtime implementation should begin until this slice is frozen.
+
+Required inspection:
+
+```text
+[ ] Session Domain authority in full
+[ ] Activity / Occurrence / Schedule / Event / Actual related boundaries
+[ ] Logical Session/reference contracts
+[ ] Physical PostgreSQL Session mapping
+[ ] every current `session*` dictionary object
+[ ] current ORM mappings / runtime ACLs / DB capabilities
+[ ] current application/API/OpenAPI/frontend insertion points
+```
+
+Required decisions:
+
+```text
+[ ] exact eligible Session execution targets
+[ ] typed Session → Activity / Occurrence execution-context representation
+[ ] exact START / PAUSE / RESUME / END semantics and legal transitions
+[ ] current/history mutation model
+[ ] concurrent-open Session policy
+[ ] idempotency/replay contract
+[ ] expected-current/CAS contract
+[ ] API operation inventory
+[ ] real DDL gap list
+[ ] B04 TC-009 reopening boundary
+[ ] TC-010 deferral confirmation
+[ ] proof matrix
+[ ] explicit B08 exclusions
+```
+
+Exit artifact:
+
+```text
+dated B08-A implementation-freeze record
+B08-A CLOSED / FROZEN
+```
+
+Only then advance to B08-B.
+
+## 8. Ordered remaining B08 slices
+
+```text
+B08-B Start / Read / End core
+B08-C Pause / Resume + truthful runtime duration
+B08-D Timeline runtime integration
+B08-E TC-009 Session-duration reopening
+B08-F Whole-block automated + real-stack closure
+```
+
+B08-F manual target includes:
+
+```text
+START
+→ F5 still running
+→ PAUSE
+→ F5 still paused
+→ RESUME
+→ END
+→ second START = new SessionRef
+→ eligible Occurrence path
+→ Schedule unchanged
+→ no fabricated completion / Actual / Outcome
+→ no duplicate state after reload/navigation
+```
+
+The user runs local tests. Do not launch CI/Actions.
+
+## 9. Explicit B08 non-goals currently carried forward
+
+```text
+Actual / Outcome / Confirmation semantics                 → B10
+automatic completion from Session end                     → forbidden
+ordinary Event actual-occurrence duplication as Session    → excluded baseline
+spontaneous context-free Session product flow              → deferred
+Session split / merge UX                                   → deferred
+provider/import reconciliation                             → future provider work
+native/mobile background timer                             → outside vertical
+advanced offline/multi-device runtime sync                 → outside vertical
+cross-account shared execution                             → outside vertical
+analytics/productivity statistics                          → outside vertical
+final visual polish                                        → B07
+TC-010 spacing/recovery                                     → later reopening
+```
+
+Deferred does not mean semantically prohibited.
+
+## 10. Documentation continuity / chat saturation
+
+At every meaningful checkpoint:
+
+```text
+update live map checkbox/status
+update B08 execution plan if scope/order changes
+create dated freeze/closure record for semantic milestones
+update this handoff with exact next action and accepted evidence
+reconcile DB overlay/dictionary in the same change as schema changes
+push code/docs frequently
+```
+
+Fresh-chat recovery order:
+
+```text
+1. this handoff
+2. timeline-temporal-operational-map.md
+3. timeline-temporal-operational-b08-execution-plan.md
+4. latest dated B08 freeze/closure record
+5. docs/database/timeline-temporal-operational.md when persistence is involved
+```
+
+## 11. Current gate / exact next action
 
 ```text
 B06 ✅ CLOSED / PROVEN at `_57`
 B07 ⏸ DEFERRED
-B08 ← NEXT / NOT STARTED
+B08 🟡 ACTIVE
+B08-A ← NEXT
 ```
 
-Current action: prepare B08 pre-scope from the proven `_57` frontier. Do not start B09+ opportunistically. No CI/Actions are authorized by this handoff.
+**Next concrete action:** inspect and reconcile current Session authority/persistence/application surfaces, resolve the B08-A decision list, then publish the dated B08-A implementation freeze. Do not start B08-B or B09+ opportunistically. No CI/Actions are authorized by this handoff.
