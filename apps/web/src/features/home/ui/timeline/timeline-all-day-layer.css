@@ -179,7 +179,8 @@
   outline-offset: -2px;
 }
 
-.timeline-all-day-item__unschedule {
+.timeline-all-day-item__unschedule,
+.timeline-all-day-item__schedule {
   min-width: 0;
   height: 24px;
   padding: 0 8px;
@@ -195,7 +196,8 @@
   cursor: pointer;
 }
 
-.timeline-all-day-item__unschedule:hover:not(:disabled) {
+.timeline-all-day-item__unschedule:hover:not(:disabled),
+.timeline-all-day-item__schedule:hover:not(:disabled) {
   color: var(--dante-semantic-color-home-text-primary);
   border-color: color-mix(
     in srgb,
@@ -204,12 +206,14 @@
   );
 }
 
-.timeline-all-day-item__unschedule:focus-visible {
+.timeline-all-day-item__unschedule:focus-visible,
+.timeline-all-day-item__schedule:focus-visible {
   outline: 2px solid var(--dante-semantic-color-home-focus-ring);
   outline-offset: 1px;
 }
 
-.timeline-all-day-item__unschedule:disabled {
+.timeline-all-day-item__unschedule:disabled,
+.timeline-all-day-item__schedule:disabled {
   opacity: 0.58;
   cursor: progress;
 }
@@ -246,7 +250,8 @@
     display: none;
   }
 
-  .timeline-all-day-item__unschedule {
+  .timeline-all-day-item__unschedule,
+  .timeline-all-day-item__schedule {
     max-width: 86px;
     overflow: hidden;
     text-overflow: ellipsis;
