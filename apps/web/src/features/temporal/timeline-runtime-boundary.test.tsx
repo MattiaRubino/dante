@@ -184,7 +184,7 @@ describe('TemporalTimelineRuntimeBoundary', () => {
     expect(screen.getByRole('status').textContent).toContain(
       'Caricamento timeline',
     );
-    expect(loadWindow).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(loadWindow).toHaveBeenCalledTimes(1));
 
     await act(async () => {
       pending.resolve(emptyWindow());

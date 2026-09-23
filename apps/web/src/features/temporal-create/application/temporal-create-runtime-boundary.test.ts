@@ -16,6 +16,7 @@ import { createLocalTemporalCreateRuntime } from './temporal-create-runtime';
 const CANONICAL_ACTIVITY_REF = '0199a8c0-5e71-7bc0-8ad0-a2f403f5617d';
 const CANONICAL_SCHEDULE_REF = '0199a8c0-6e72-7cd1-9be1-b3f51406728e';
 const CANONICAL_PLACEMENT_STATE_REF = '0199a8c0-7e73-7de2-8cf2-c4062517839f';
+const CANONICAL_LIFE_AREA_REF = '0199a8c0-8e74-7ee3-8df2-d5073628940a';
 
 function runtimeOptions(seed: string) {
   return {
@@ -36,7 +37,7 @@ function preparedActivity(
       kind: 'activity',
       date: '2026-09-07',
       timeSemantics: 'unscheduled',
-      contextId: 'personale',
+      contextId: CANONICAL_LIFE_AREA_REF,
       timeZoneId: 'Europe/Rome',
     }),
   );
@@ -221,7 +222,7 @@ describe('Temporal Create normal-runtime boundary', () => {
         durationMinutes: 30,
         timeMode: 'floating',
         timeZoneId: 'Europe/Rome',
-        contextId: 'personale',
+        contextId: CANONICAL_LIFE_AREA_REF,
       }),
     );
     if (preparation.status !== 'ready') {
@@ -264,7 +265,7 @@ describe('Temporal Create normal-runtime boundary', () => {
         timeMode: 'zoned',
         timeZoneId: 'Europe/Rome',
         timeDisambiguation: 'later',
-        contextId: 'personale',
+        contextId: CANONICAL_LIFE_AREA_REF,
       }),
     );
     if (preparation.status !== 'ready') {
@@ -313,7 +314,7 @@ describe('Temporal Create normal-runtime boundary', () => {
         date: '2026-09-07',
         timeSemantics: 'coarse',
         coarsePeriod: 'afternoon',
-        contextId: 'personale',
+        contextId: CANONICAL_LIFE_AREA_REF,
       }),
     );
     if (preparation.status !== 'ready') {
@@ -427,7 +428,7 @@ describe('Temporal Create normal-runtime boundary', () => {
         startTime: '15:00',
         timeMode: 'zoned',
         timeZoneId: 'Europe/Rome',
-        contextId: 'personale',
+        contextId: CANONICAL_LIFE_AREA_REF,
       }),
     );
     if (preparation.status !== 'ready') {
@@ -465,7 +466,7 @@ describe('Temporal Create normal-runtime boundary', () => {
       durationMinutes: 30,
       timeMode: 'floating',
       timeZoneId: 'Europe/Rome',
-      contextId: 'personale',
+      contextId: CANONICAL_LIFE_AREA_REF,
     });
     const preparation = runtime.prepare(
       createTemporalCreateFields({
@@ -507,7 +508,7 @@ describe('Temporal Create normal-runtime boundary', () => {
         timeSemantics: 'unscheduled',
         durationMinutes: 60,
         timeZoneId: 'Europe/Rome',
-        contextId: 'personale',
+        contextId: CANONICAL_LIFE_AREA_REF,
       }),
     );
     if (preparation.status !== 'ready') {
