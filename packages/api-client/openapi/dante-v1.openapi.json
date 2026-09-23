@@ -7564,6 +7564,112 @@
         "title": "TimelineAbsoluteEventResponse",
         "type": "object"
       },
+      "TimelineAbsoluteOccurrencePlacementResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "display_ends_local_at": {
+            "examples": ["2026-03-29T01:50:00"],
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
+            "title": "Display Ends Local At",
+            "type": "string"
+          },
+          "display_starts_local_at": {
+            "examples": ["2026-03-29T01:50:00"],
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
+            "title": "Display Starts Local At",
+            "type": "string"
+          },
+          "ends_at": {
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "absolute",
+            "default": "absolute",
+            "title": "Temporal Form",
+            "type": "string"
+          }
+        },
+        "required": [
+          "starts_at",
+          "ends_at",
+          "display_starts_local_at",
+          "display_ends_local_at"
+        ],
+        "title": "TimelineAbsoluteOccurrencePlacementResponse",
+        "type": "object"
+      },
+      "TimelineCalendarOccurrenceCoordinateResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "clock_basis_code": {
+            "enum": ["floating_local", "named_zone", "absolute_utc"],
+            "title": "Clock Basis Code",
+            "type": "string"
+          },
+          "family_code": {
+            "const": "calendar_wall_clock",
+            "default": "calendar_wall_clock",
+            "title": "Family Code",
+            "type": "string"
+          },
+          "generated_date": {
+            "format": "date",
+            "title": "Generated Date",
+            "type": "string"
+          },
+          "generated_wall_time": {
+            "anyOf": [
+              {
+                "format": "time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Generated Wall Time"
+          },
+          "resolved_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved At"
+          },
+          "zone_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Zone Id"
+          }
+        },
+        "required": [
+          "generated_date",
+          "generated_wall_time",
+          "clock_basis_code",
+          "zone_id",
+          "resolved_at"
+        ],
+        "title": "TimelineCalendarOccurrenceCoordinateResponse",
+        "type": "object"
+      },
       "TimelineCoarseLocalPeriodActivityResponse": {
         "additionalProperties": false,
         "description": "Current coarse Activity placement with no manufactured clock boundaries.",
@@ -7678,6 +7784,54 @@
         "title": "TimelineCoarseLocalPeriodEventResponse",
         "type": "object"
       },
+      "TimelineCoarseOccurrencePlacementResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "local_date": {
+            "format": "date",
+            "title": "Local Date",
+            "type": "string"
+          },
+          "period": {
+            "enum": ["morning", "afternoon", "evening"],
+            "title": "Period",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "coarse_local_period",
+            "default": "coarse_local_period",
+            "title": "Temporal Form",
+            "type": "string"
+          }
+        },
+        "required": ["local_date", "period"],
+        "title": "TimelineCoarseOccurrencePlacementResponse",
+        "type": "object"
+      },
+      "TimelineCyclicOccurrenceCoordinateResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "family_code": {
+            "const": "cyclic_positional",
+            "default": "cyclic_positional",
+            "title": "Family Code",
+            "type": "string"
+          },
+          "generated_date": {
+            "format": "date",
+            "title": "Generated Date",
+            "type": "string"
+          },
+          "position_index": {
+            "minimum": 0.0,
+            "title": "Position Index",
+            "type": "integer"
+          }
+        },
+        "required": ["generated_date", "position_index"],
+        "title": "TimelineCyclicOccurrenceCoordinateResponse",
+        "type": "object"
+      },
       "TimelineDateSpanActivityResponse": {
         "additionalProperties": false,
         "description": "Current accepted half-open civil-date Activity Schedule projection.",
@@ -7790,6 +7944,140 @@
           "end_date_exclusive"
         ],
         "title": "TimelineDateSpanEventResponse",
+        "type": "object"
+      },
+      "TimelineDateSpanOccurrencePlacementResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "end_date_exclusive": {
+            "format": "date",
+            "title": "End Date Exclusive",
+            "type": "string"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "date_span",
+            "default": "date_span",
+            "title": "Temporal Form",
+            "type": "string"
+          }
+        },
+        "required": ["start_date", "end_date_exclusive"],
+        "title": "TimelineDateSpanOccurrencePlacementResponse",
+        "type": "object"
+      },
+      "TimelineElapsedOccurrenceCoordinateResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_at": {
+            "format": "date-time",
+            "title": "Expected At",
+            "type": "string"
+          },
+          "family_code": {
+            "const": "elapsed_interval",
+            "default": "elapsed_interval",
+            "title": "Family Code",
+            "type": "string"
+          }
+        },
+        "required": ["expected_at"],
+        "title": "TimelineElapsedOccurrenceCoordinateResponse",
+        "type": "object"
+      },
+      "TimelineExpectedOccurrenceResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "coordinate": {
+            "discriminator": {
+              "mapping": {
+                "calendar_wall_clock": "#/components/schemas/TimelineCalendarOccurrenceCoordinateResponse",
+                "cyclic_positional": "#/components/schemas/TimelineCyclicOccurrenceCoordinateResponse",
+                "elapsed_interval": "#/components/schemas/TimelineElapsedOccurrenceCoordinateResponse",
+                "quota_per_period": "#/components/schemas/TimelineQuotaOccurrenceCoordinateResponse"
+              },
+              "propertyName": "family_code"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/TimelineCalendarOccurrenceCoordinateResponse"
+              },
+              {
+                "$ref": "#/components/schemas/TimelineElapsedOccurrenceCoordinateResponse"
+              },
+              {
+                "$ref": "#/components/schemas/TimelineQuotaOccurrenceCoordinateResponse"
+              },
+              {
+                "$ref": "#/components/schemas/TimelineCyclicOccurrenceCoordinateResponse"
+              }
+            ],
+            "title": "Coordinate"
+          },
+          "kind": {
+            "const": "expected_occurrence",
+            "default": "expected_occurrence",
+            "title": "Kind",
+            "type": "string"
+          },
+          "occurrence_ref": {
+            "format": "uuid",
+            "title": "Occurrence Ref",
+            "type": "string"
+          },
+          "source_kind": {
+            "enum": ["routine", "event"],
+            "title": "Source Kind",
+            "type": "string"
+          },
+          "source_native_ref": {
+            "format": "uuid",
+            "title": "Source Native Ref",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "occurrence_ref",
+          "source_kind",
+          "source_native_ref",
+          "title",
+          "coordinate"
+        ],
+        "title": "TimelineExpectedOccurrenceResponse",
+        "type": "object"
+      },
+      "TimelineFloatingOccurrencePlacementResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "ends_local_at": {
+            "examples": ["2026-03-29T01:50:00"],
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
+            "title": "Ends Local At",
+            "type": "string"
+          },
+          "starts_local_at": {
+            "examples": ["2026-03-29T01:50:00"],
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
+            "title": "Starts Local At",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "floating_local",
+            "default": "floating_local",
+            "title": "Temporal Form",
+            "type": "string"
+          }
+        },
+        "required": ["starts_local_at", "ends_local_at"],
+        "title": "TimelineFloatingOccurrencePlacementResponse",
         "type": "object"
       },
       "TimelineNamedZoneLocalActivityResponse": {
@@ -7972,6 +8260,111 @@
         "title": "TimelineNamedZoneLocalEventResponse",
         "type": "object"
       },
+      "TimelineNamedZoneOccurrencePlacementResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "display_ends_local_at": {
+            "examples": ["2026-03-29T01:50:00"],
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
+            "title": "Display Ends Local At",
+            "type": "string"
+          },
+          "display_starts_local_at": {
+            "examples": ["2026-03-29T01:50:00"],
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
+            "title": "Display Starts Local At",
+            "type": "string"
+          },
+          "ends_local_at": {
+            "examples": ["2026-03-29T01:50:00"],
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
+            "title": "Ends Local At",
+            "type": "string"
+          },
+          "resolved_end_at": {
+            "format": "date-time",
+            "title": "Resolved End At",
+            "type": "string"
+          },
+          "resolved_start_at": {
+            "format": "date-time",
+            "title": "Resolved Start At",
+            "type": "string"
+          },
+          "starts_local_at": {
+            "examples": ["2026-03-29T01:50:00"],
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
+            "title": "Starts Local At",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "named_zone_local",
+            "default": "named_zone_local",
+            "title": "Temporal Form",
+            "type": "string"
+          },
+          "zone_id": {
+            "title": "Zone Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "starts_local_at",
+          "ends_local_at",
+          "zone_id",
+          "resolved_start_at",
+          "resolved_end_at",
+          "display_starts_local_at",
+          "display_ends_local_at"
+        ],
+        "title": "TimelineNamedZoneOccurrencePlacementResponse",
+        "type": "object"
+      },
+      "TimelineQuotaOccurrenceCoordinateResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "family_code": {
+            "const": "quota_per_period",
+            "default": "quota_per_period",
+            "title": "Family Code",
+            "type": "string"
+          },
+          "frame_code": {
+            "enum": ["floating_local", "named_zone", "absolute_utc"],
+            "title": "Frame Code",
+            "type": "string"
+          },
+          "period_end_date_exclusive": {
+            "format": "date",
+            "title": "Period End Date Exclusive",
+            "type": "string"
+          },
+          "period_start_date": {
+            "format": "date",
+            "title": "Period Start Date",
+            "type": "string"
+          },
+          "zone_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Zone Id"
+          }
+        },
+        "required": [
+          "period_start_date",
+          "period_end_date_exclusive",
+          "frame_code",
+          "zone_id"
+        ],
+        "title": "TimelineQuotaOccurrenceCoordinateResponse",
+        "type": "object"
+      },
       "TimelineScheduledActivityResponse": {
         "additionalProperties": false,
         "description": "Current accepted floating-local Schedule projection for one Activity.",
@@ -8090,6 +8483,121 @@
         "title": "TimelineScheduledEventResponse",
         "type": "object"
       },
+      "TimelineScheduledOccurrenceResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "coordinate": {
+            "anyOf": [
+              {
+                "discriminator": {
+                  "mapping": {
+                    "calendar_wall_clock": "#/components/schemas/TimelineCalendarOccurrenceCoordinateResponse",
+                    "cyclic_positional": "#/components/schemas/TimelineCyclicOccurrenceCoordinateResponse",
+                    "elapsed_interval": "#/components/schemas/TimelineElapsedOccurrenceCoordinateResponse",
+                    "quota_per_period": "#/components/schemas/TimelineQuotaOccurrenceCoordinateResponse"
+                  },
+                  "propertyName": "family_code"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/TimelineCalendarOccurrenceCoordinateResponse"
+                  },
+                  {
+                    "$ref": "#/components/schemas/TimelineElapsedOccurrenceCoordinateResponse"
+                  },
+                  {
+                    "$ref": "#/components/schemas/TimelineQuotaOccurrenceCoordinateResponse"
+                  },
+                  {
+                    "$ref": "#/components/schemas/TimelineCyclicOccurrenceCoordinateResponse"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Coordinate"
+          },
+          "kind": {
+            "const": "scheduled_occurrence",
+            "default": "scheduled_occurrence",
+            "title": "Kind",
+            "type": "string"
+          },
+          "occurrence_ref": {
+            "format": "uuid",
+            "title": "Occurrence Ref",
+            "type": "string"
+          },
+          "placement": {
+            "discriminator": {
+              "mapping": {
+                "absolute": "#/components/schemas/TimelineAbsoluteOccurrencePlacementResponse",
+                "coarse_local_period": "#/components/schemas/TimelineCoarseOccurrencePlacementResponse",
+                "date_span": "#/components/schemas/TimelineDateSpanOccurrencePlacementResponse",
+                "floating_local": "#/components/schemas/TimelineFloatingOccurrencePlacementResponse",
+                "named_zone_local": "#/components/schemas/TimelineNamedZoneOccurrencePlacementResponse"
+              },
+              "propertyName": "temporal_form"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/TimelineDateSpanOccurrencePlacementResponse"
+              },
+              {
+                "$ref": "#/components/schemas/TimelineFloatingOccurrencePlacementResponse"
+              },
+              {
+                "$ref": "#/components/schemas/TimelineNamedZoneOccurrencePlacementResponse"
+              },
+              {
+                "$ref": "#/components/schemas/TimelineAbsoluteOccurrencePlacementResponse"
+              },
+              {
+                "$ref": "#/components/schemas/TimelineCoarseOccurrencePlacementResponse"
+              }
+            ],
+            "title": "Placement"
+          },
+          "placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Placement Material State Ref",
+            "type": "string"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "source_kind": {
+            "enum": ["routine", "event"],
+            "title": "Source Kind",
+            "type": "string"
+          },
+          "source_native_ref": {
+            "format": "uuid",
+            "title": "Source Native Ref",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "occurrence_ref",
+          "source_kind",
+          "source_native_ref",
+          "title",
+          "coordinate",
+          "schedule_ref",
+          "placement_material_state_ref",
+          "placement"
+        ],
+        "title": "TimelineScheduledOccurrenceResponse",
+        "type": "object"
+      },
       "TimelineWindowEmptyResponse": {
         "additionalProperties": false,
         "description": "Truthful authenticated Timeline window with no activated current items.",
@@ -8192,6 +8700,12 @@
                       "$ref": "#/components/schemas/TimelineCoarseLocalPeriodEventResponse"
                     }
                   ]
+                },
+                {
+                  "$ref": "#/components/schemas/TimelineScheduledOccurrenceResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/TimelineExpectedOccurrenceResponse"
                 }
               ]
             },

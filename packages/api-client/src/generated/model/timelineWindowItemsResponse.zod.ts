@@ -58,6 +58,41 @@ export const timelineWindowItemsResponseItemsItemTwoFourKindDefault = `scheduled
 export const timelineWindowItemsResponseItemsItemTwoFourTemporalFormDefault = `absolute`;
 export const timelineWindowItemsResponseItemsItemTwoFiveKindDefault = `scheduled_event`;
 export const timelineWindowItemsResponseItemsItemTwoFiveTemporalFormDefault = `coarse_local_period`;
+export const timelineWindowItemsResponseItemsItemThreeCoordinateOneOneFamilyCodeDefault = `calendar_wall_clock`;
+export const timelineWindowItemsResponseItemsItemThreeCoordinateOneTwoFamilyCodeDefault = `elapsed_interval`;
+export const timelineWindowItemsResponseItemsItemThreeCoordinateOneThreeFamilyCodeDefault = `quota_per_period`;
+export const timelineWindowItemsResponseItemsItemThreeCoordinateOneFourFamilyCodeDefault = `cyclic_positional`;
+export const timelineWindowItemsResponseItemsItemThreeCoordinateOneFourPositionIndexMin = 0;
+
+export const timelineWindowItemsResponseItemsItemThreeKindDefault = `scheduled_occurrence`;
+export const timelineWindowItemsResponseItemsItemThreePlacementOneTemporalFormDefault = `date_span`;
+export const timelineWindowItemsResponseItemsItemThreePlacementTwoEndsLocalAtRegExp =
+  new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
+export const timelineWindowItemsResponseItemsItemThreePlacementTwoStartsLocalAtRegExp =
+  new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
+export const timelineWindowItemsResponseItemsItemThreePlacementTwoTemporalFormDefault = `floating_local`;
+export const timelineWindowItemsResponseItemsItemThreePlacementThreeDisplayEndsLocalAtRegExp =
+  new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
+export const timelineWindowItemsResponseItemsItemThreePlacementThreeDisplayStartsLocalAtRegExp =
+  new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
+export const timelineWindowItemsResponseItemsItemThreePlacementThreeEndsLocalAtRegExp =
+  new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
+export const timelineWindowItemsResponseItemsItemThreePlacementThreeStartsLocalAtRegExp =
+  new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
+export const timelineWindowItemsResponseItemsItemThreePlacementThreeTemporalFormDefault = `named_zone_local`;
+export const timelineWindowItemsResponseItemsItemThreePlacementFourDisplayEndsLocalAtRegExp =
+  new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
+export const timelineWindowItemsResponseItemsItemThreePlacementFourDisplayStartsLocalAtRegExp =
+  new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
+export const timelineWindowItemsResponseItemsItemThreePlacementFourTemporalFormDefault = `absolute`;
+export const timelineWindowItemsResponseItemsItemThreePlacementFiveTemporalFormDefault = `coarse_local_period`;
+export const timelineWindowItemsResponseItemsItemFourCoordinateOneFamilyCodeDefault = `calendar_wall_clock`;
+export const timelineWindowItemsResponseItemsItemFourCoordinateTwoFamilyCodeDefault = `elapsed_interval`;
+export const timelineWindowItemsResponseItemsItemFourCoordinateThreeFamilyCodeDefault = `quota_per_period`;
+export const timelineWindowItemsResponseItemsItemFourCoordinateFourFamilyCodeDefault = `cyclic_positional`;
+export const timelineWindowItemsResponseItemsItemFourCoordinateFourPositionIndexMin = 0;
+
+export const timelineWindowItemsResponseItemsItemFourKindDefault = `expected_occurrence`;
 export const timelineWindowItemsResponseKindDefault = `window`;
 export const TimelineWindowItemsResponse = /*#__PURE__*/ zod
   .object({
@@ -451,6 +486,292 @@ export const TimelineWindowItemsResponse = /*#__PURE__*/ zod
               ),
             ),
         ]),
+        /*#__PURE__*/ zod.object({
+          coordinate: /*#__PURE__*/ zod.union([
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod.object({
+                clock_basis_code: /*#__PURE__*/ zod.enum([
+                  'floating_local',
+                  'named_zone',
+                  'absolute_utc',
+                ]),
+                family_code: /*#__PURE__*/ zod
+                  ._default(
+                    /*#__PURE__*/ zod.literal('calendar_wall_clock'),
+                    timelineWindowItemsResponseItemsItemThreeCoordinateOneOneFamilyCodeDefault,
+                  )
+                  .check(/*#__PURE__*/ zod.meta({ title: 'Family Code' })),
+                generated_date: /*#__PURE__*/ zod.iso.date(),
+                generated_wall_time: /*#__PURE__*/ zod.union([
+                  /*#__PURE__*/ zod.iso.time({}),
+                  /*#__PURE__*/ zod.null(),
+                ]),
+                resolved_at: /*#__PURE__*/ zod.union([
+                  /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+                  /*#__PURE__*/ zod.null(),
+                ]),
+                zone_id: /*#__PURE__*/ zod.union([
+                  /*#__PURE__*/ zod.string(),
+                  /*#__PURE__*/ zod.null(),
+                ]),
+              }),
+              /*#__PURE__*/ zod.object({
+                expected_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+                family_code: /*#__PURE__*/ zod
+                  ._default(
+                    /*#__PURE__*/ zod.literal('elapsed_interval'),
+                    timelineWindowItemsResponseItemsItemThreeCoordinateOneTwoFamilyCodeDefault,
+                  )
+                  .check(/*#__PURE__*/ zod.meta({ title: 'Family Code' })),
+              }),
+              /*#__PURE__*/ zod.object({
+                family_code: /*#__PURE__*/ zod
+                  ._default(
+                    /*#__PURE__*/ zod.literal('quota_per_period'),
+                    timelineWindowItemsResponseItemsItemThreeCoordinateOneThreeFamilyCodeDefault,
+                  )
+                  .check(/*#__PURE__*/ zod.meta({ title: 'Family Code' })),
+                frame_code: /*#__PURE__*/ zod.enum([
+                  'floating_local',
+                  'named_zone',
+                  'absolute_utc',
+                ]),
+                period_end_date_exclusive: /*#__PURE__*/ zod.iso.date(),
+                period_start_date: /*#__PURE__*/ zod.iso.date(),
+                zone_id: /*#__PURE__*/ zod.union([
+                  /*#__PURE__*/ zod.string(),
+                  /*#__PURE__*/ zod.null(),
+                ]),
+              }),
+              /*#__PURE__*/ zod.object({
+                family_code: /*#__PURE__*/ zod
+                  ._default(
+                    /*#__PURE__*/ zod.literal('cyclic_positional'),
+                    timelineWindowItemsResponseItemsItemThreeCoordinateOneFourFamilyCodeDefault,
+                  )
+                  .check(/*#__PURE__*/ zod.meta({ title: 'Family Code' })),
+                generated_date: /*#__PURE__*/ zod.iso.date(),
+                position_index: /*#__PURE__*/ zod
+                  .int()
+                  .check(
+                    /*#__PURE__*/ zod.gte(
+                      timelineWindowItemsResponseItemsItemThreeCoordinateOneFourPositionIndexMin,
+                    ),
+                  ),
+              }),
+            ]),
+            /*#__PURE__*/ zod.null(),
+          ]),
+          kind: /*#__PURE__*/ zod
+            ._default(
+              /*#__PURE__*/ zod.literal('scheduled_occurrence'),
+              timelineWindowItemsResponseItemsItemThreeKindDefault,
+            )
+            .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+          occurrence_ref: /*#__PURE__*/ zod.uuid(),
+          placement: /*#__PURE__*/ zod.union([
+            /*#__PURE__*/ zod.object({
+              end_date_exclusive: /*#__PURE__*/ zod.iso.date(),
+              start_date: /*#__PURE__*/ zod.iso.date(),
+              temporal_form: /*#__PURE__*/ zod
+                ._default(
+                  /*#__PURE__*/ zod.literal('date_span'),
+                  timelineWindowItemsResponseItemsItemThreePlacementOneTemporalFormDefault,
+                )
+                .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
+            }),
+            /*#__PURE__*/ zod.object({
+              ends_local_at: /*#__PURE__*/ zod
+                .string()
+                .check(
+                  /*#__PURE__*/ zod.regex(
+                    timelineWindowItemsResponseItemsItemThreePlacementTwoEndsLocalAtRegExp,
+                  ),
+                ),
+              starts_local_at: /*#__PURE__*/ zod
+                .string()
+                .check(
+                  /*#__PURE__*/ zod.regex(
+                    timelineWindowItemsResponseItemsItemThreePlacementTwoStartsLocalAtRegExp,
+                  ),
+                ),
+              temporal_form: /*#__PURE__*/ zod
+                ._default(
+                  /*#__PURE__*/ zod.literal('floating_local'),
+                  timelineWindowItemsResponseItemsItemThreePlacementTwoTemporalFormDefault,
+                )
+                .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
+            }),
+            /*#__PURE__*/ zod.object({
+              display_ends_local_at: /*#__PURE__*/ zod
+                .string()
+                .check(
+                  /*#__PURE__*/ zod.regex(
+                    timelineWindowItemsResponseItemsItemThreePlacementThreeDisplayEndsLocalAtRegExp,
+                  ),
+                ),
+              display_starts_local_at: /*#__PURE__*/ zod
+                .string()
+                .check(
+                  /*#__PURE__*/ zod.regex(
+                    timelineWindowItemsResponseItemsItemThreePlacementThreeDisplayStartsLocalAtRegExp,
+                  ),
+                ),
+              ends_local_at: /*#__PURE__*/ zod
+                .string()
+                .check(
+                  /*#__PURE__*/ zod.regex(
+                    timelineWindowItemsResponseItemsItemThreePlacementThreeEndsLocalAtRegExp,
+                  ),
+                ),
+              resolved_end_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+              resolved_start_at: /*#__PURE__*/ zod.iso.datetime({
+                offset: true,
+              }),
+              starts_local_at: /*#__PURE__*/ zod
+                .string()
+                .check(
+                  /*#__PURE__*/ zod.regex(
+                    timelineWindowItemsResponseItemsItemThreePlacementThreeStartsLocalAtRegExp,
+                  ),
+                ),
+              temporal_form: /*#__PURE__*/ zod
+                ._default(
+                  /*#__PURE__*/ zod.literal('named_zone_local'),
+                  timelineWindowItemsResponseItemsItemThreePlacementThreeTemporalFormDefault,
+                )
+                .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
+              zone_id: /*#__PURE__*/ zod.string(),
+            }),
+            /*#__PURE__*/ zod.object({
+              display_ends_local_at: /*#__PURE__*/ zod
+                .string()
+                .check(
+                  /*#__PURE__*/ zod.regex(
+                    timelineWindowItemsResponseItemsItemThreePlacementFourDisplayEndsLocalAtRegExp,
+                  ),
+                ),
+              display_starts_local_at: /*#__PURE__*/ zod
+                .string()
+                .check(
+                  /*#__PURE__*/ zod.regex(
+                    timelineWindowItemsResponseItemsItemThreePlacementFourDisplayStartsLocalAtRegExp,
+                  ),
+                ),
+              ends_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+              starts_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+              temporal_form: /*#__PURE__*/ zod
+                ._default(
+                  /*#__PURE__*/ zod.literal('absolute'),
+                  timelineWindowItemsResponseItemsItemThreePlacementFourTemporalFormDefault,
+                )
+                .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
+            }),
+            /*#__PURE__*/ zod.object({
+              local_date: /*#__PURE__*/ zod.iso.date(),
+              period: /*#__PURE__*/ zod.enum([
+                'morning',
+                'afternoon',
+                'evening',
+              ]),
+              temporal_form: /*#__PURE__*/ zod
+                ._default(
+                  /*#__PURE__*/ zod.literal('coarse_local_period'),
+                  timelineWindowItemsResponseItemsItemThreePlacementFiveTemporalFormDefault,
+                )
+                .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
+            }),
+          ]),
+          placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
+          schedule_ref: /*#__PURE__*/ zod.uuid(),
+          source_kind: /*#__PURE__*/ zod.enum(['routine', 'event']),
+          source_native_ref: /*#__PURE__*/ zod.uuid(),
+          title: /*#__PURE__*/ zod.string(),
+        }),
+        /*#__PURE__*/ zod.object({
+          coordinate: /*#__PURE__*/ zod.union([
+            /*#__PURE__*/ zod.object({
+              clock_basis_code: /*#__PURE__*/ zod.enum([
+                'floating_local',
+                'named_zone',
+                'absolute_utc',
+              ]),
+              family_code: /*#__PURE__*/ zod
+                ._default(
+                  /*#__PURE__*/ zod.literal('calendar_wall_clock'),
+                  timelineWindowItemsResponseItemsItemFourCoordinateOneFamilyCodeDefault,
+                )
+                .check(/*#__PURE__*/ zod.meta({ title: 'Family Code' })),
+              generated_date: /*#__PURE__*/ zod.iso.date(),
+              generated_wall_time: /*#__PURE__*/ zod.union([
+                /*#__PURE__*/ zod.iso.time({}),
+                /*#__PURE__*/ zod.null(),
+              ]),
+              resolved_at: /*#__PURE__*/ zod.union([
+                /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+                /*#__PURE__*/ zod.null(),
+              ]),
+              zone_id: /*#__PURE__*/ zod.union([
+                /*#__PURE__*/ zod.string(),
+                /*#__PURE__*/ zod.null(),
+              ]),
+            }),
+            /*#__PURE__*/ zod.object({
+              expected_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+              family_code: /*#__PURE__*/ zod
+                ._default(
+                  /*#__PURE__*/ zod.literal('elapsed_interval'),
+                  timelineWindowItemsResponseItemsItemFourCoordinateTwoFamilyCodeDefault,
+                )
+                .check(/*#__PURE__*/ zod.meta({ title: 'Family Code' })),
+            }),
+            /*#__PURE__*/ zod.object({
+              family_code: /*#__PURE__*/ zod
+                ._default(
+                  /*#__PURE__*/ zod.literal('quota_per_period'),
+                  timelineWindowItemsResponseItemsItemFourCoordinateThreeFamilyCodeDefault,
+                )
+                .check(/*#__PURE__*/ zod.meta({ title: 'Family Code' })),
+              frame_code: /*#__PURE__*/ zod.enum([
+                'floating_local',
+                'named_zone',
+                'absolute_utc',
+              ]),
+              period_end_date_exclusive: /*#__PURE__*/ zod.iso.date(),
+              period_start_date: /*#__PURE__*/ zod.iso.date(),
+              zone_id: /*#__PURE__*/ zod.union([
+                /*#__PURE__*/ zod.string(),
+                /*#__PURE__*/ zod.null(),
+              ]),
+            }),
+            /*#__PURE__*/ zod.object({
+              family_code: /*#__PURE__*/ zod
+                ._default(
+                  /*#__PURE__*/ zod.literal('cyclic_positional'),
+                  timelineWindowItemsResponseItemsItemFourCoordinateFourFamilyCodeDefault,
+                )
+                .check(/*#__PURE__*/ zod.meta({ title: 'Family Code' })),
+              generated_date: /*#__PURE__*/ zod.iso.date(),
+              position_index: /*#__PURE__*/ zod
+                .int()
+                .check(
+                  /*#__PURE__*/ zod.gte(
+                    timelineWindowItemsResponseItemsItemFourCoordinateFourPositionIndexMin,
+                  ),
+                ),
+            }),
+          ]),
+          kind: /*#__PURE__*/ zod
+            ._default(
+              /*#__PURE__*/ zod.literal('expected_occurrence'),
+              timelineWindowItemsResponseItemsItemFourKindDefault,
+            )
+            .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+          occurrence_ref: /*#__PURE__*/ zod.uuid(),
+          source_kind: /*#__PURE__*/ zod.enum(['routine', 'event']),
+          source_native_ref: /*#__PURE__*/ zod.uuid(),
+          title: /*#__PURE__*/ zod.string(),
+        }),
       ]),
     ),
     kind: /*#__PURE__*/ zod

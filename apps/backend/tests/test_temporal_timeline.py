@@ -21,8 +21,10 @@ from dante.modules.temporal.application import (
     TimelineAbsoluteActivityItem,
     TimelineCoarseLocalPeriodActivityItem,
     TimelineDateSpanActivityItem,
+    TimelineExpectedOccurrenceItem,
     TimelineFloatingLocalActivityItem,
     TimelineNamedZoneLocalActivityItem,
+    TimelineScheduledOccurrenceItem,
     TimelineWindowResult,
     empty_timeline_window_result,
 )
@@ -31,6 +33,8 @@ from dante.modules.temporal.contracts import (
     TimelineWindowQuery,
     TimelineWindowValidationError,
 )
+from dante.modules.temporal.occurrence import CalendarCoordinate, QuotaCoordinate
+from dante.modules.temporal.schedule import DateSpanPlacement
 from dante.platform.database.references import MaterialStateRef, NativeRef, ScopedRecordRef
 from dante.platform.http.problem import ProblemError
 from dante.platform.time import TimeZoneMode, TimeZonePolicy
@@ -41,6 +45,8 @@ _SELF_PERSON_REF = NativeRef(UUID("0194f7c2-7b6a-7abc-8def-0123456789ab"))
 _ACTIVITY_REF = NativeRef(UUID("0199a8c0-5e71-7bc0-8ad0-a2f403f5617d"))
 _SCHEDULE_REF = ScopedRecordRef(UUID("0199a8c0-6e72-7cd1-9be1-b3f51406728e"))
 _STATE_REF = MaterialStateRef(UUID("0199a8c0-7e73-7de2-8cf2-c4062517839f"))
+_OCCURRENCE_REF = NativeRef(UUID("0199a8c0-8e74-7ef3-9df3-d517362894a0"))
+_SOURCE_REF = NativeRef(UUID("0199a8c0-9e75-7f04-8ae4-e6284739a5b1"))
 
 
 def _context(*, effective_zone_id: str = "Europe/Rome") -> DanteContext:
@@ -248,6 +254,81 @@ async def test_api_emits_each_timeline_form_without_flattening_coarse_or_dates()
     assert items[3]["display_starts_local_at"] == "2026-10-25T00:30:00"
     assert items[4]["period"] == "afternoon"
     assert "starts_local_at" not in items[4]
+
+
+@pytest.mark.asyncio
+async def test_api_keeps_scheduled_and_flexible_occurrence_semantics_distinct() -> None:
+    context = _context()
+    query = TimelineWindowQuery(
+        start_date=date(2026, 10, 25),
+        end_date_exclusive=date(2026, 11, 1),
+    )
+    result = TimelineWindowResult(
+        start_date=query.start_date,
+        end_date_exclusive=query.end_date_exclusive,
+        effective_zone_id=context.effective_zone_id,
+        self_person_ref=context.self_person_ref,
+        items=(
+            TimelineScheduledOccurrenceItem(
+                occurrence_ref=_OCCURRENCE_REF,
+                source_kind="routine",
+                source_native_ref=_SOURCE_REF,
+                title="Farmaco",
+                coordinate=CalendarCoordinate(
+                    family_code="calendar_wall_clock",
+                    generated_date=date(2026, 10, 26),
+                    generated_wall_time=None,
+                    clock_basis_code="floating_local",
+                    zone_id=None,
+                    resolved_at=None,
+                ),
+                schedule_ref=_SCHEDULE_REF,
+                placement_material_state_ref=_STATE_REF,
+                placement=DateSpanPlacement(
+                    start_date=date(2026, 10, 27),
+                    end_date_exclusive=date(2026, 10, 28),
+                ),
+            ),
+            TimelineExpectedOccurrenceItem(
+                occurrence_ref=NativeRef(
+                    UUID("0199a8c0-ae76-7015-9bf5-f739584ab6c2")
+                ),
+                source_kind="event",
+                source_native_ref=NativeRef(
+                    UUID("0199a8c0-be77-7126-8c06-084a695bc7d3")
+                ),
+                title="Allenamenti",
+                coordinate=QuotaCoordinate(
+                    family_code="quota_per_period",
+                    period_start_date=date(2026, 10, 26),
+                    period_end_date_exclusive=date(2026, 11, 2),
+                    frame_code="floating_local",
+                    zone_id=None,
+                ),
+            ),
+        ),
+    )
+
+    api_result = await get_timeline_window(
+        context=context,
+        application=_application(result),
+        response=Response(),
+        start_date=query.start_date,
+        end_date_exclusive=query.end_date_exclusive,
+    )
+    items = api_result.model_dump(mode="json")["items"]
+
+    assert items[0]["kind"] == "scheduled_occurrence"
+    assert items[0]["coordinate"]["generated_date"] == "2026-10-26"
+    assert items[0]["placement"] == {
+        "temporal_form": "date_span",
+        "start_date": "2026-10-27",
+        "end_date_exclusive": "2026-10-28",
+    }
+    assert items[1]["kind"] == "expected_occurrence"
+    assert items[1]["coordinate"]["family_code"] == "quota_per_period"
+    assert "placement" not in items[1]
+    assert "starts_local_at" not in items[1]
 
 
 @pytest.mark.asyncio

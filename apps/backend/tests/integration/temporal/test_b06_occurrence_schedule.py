@@ -7,8 +7,15 @@ from typing import Any
 
 import psycopg
 import pytest
+from tests.integration.temporal.test_b02_schedule_place import _context
 from tests.integration.temporal.test_b05_primary_life_area_assignment import _seed_self
 
+from dante.modules.temporal.application import (
+    TemporalTimelineApplication,
+    TimelineExpectedOccurrenceItem,
+    TimelineScheduledOccurrenceItem,
+)
+from dante.modules.temporal.contracts import TimelineWindowQuery
 from dante.modules.temporal.life_area import LifeAreaApplication
 from dante.modules.temporal.occurrence import OccurrenceApplication
 from dante.modules.temporal.routine import RoutineApplication
@@ -36,6 +43,7 @@ async def test_occurrence_reuses_schedule_identity_history_and_self_scope(
     routines = RoutineApplication(runtime.session_factory)
     occurrences = OccurrenceApplication(runtime.session_factory)
     schedules = TemporalScheduleApplication(runtime.session_factory)
+    timeline = TemporalTimelineApplication(runtime.session_factory)
     try:
         area = (
             await areas.create(
@@ -62,6 +70,15 @@ async def test_occurrence_reuses_schedule_identity_history_and_self_scope(
             effective_zone_id="Europe/Rome",
         )
         occurrence_ref = NativeRef(checkpoint.occurrences[0].occurrence_ref)
+        window = TimelineWindowQuery(
+            start_date=date(2026, 10, 1),
+            end_date_exclusive=date(2026, 10, 2),
+        )
+        expected = await timeline.read_window(query=window, context=_context(alice))
+        assert len(expected.items) == 1
+        assert isinstance(expected.items[0], TimelineExpectedOccurrenceItem)
+        assert expected.items[0].occurrence_ref == occurrence_ref
+
         initial = await schedules.establish_schedule(
             self_person_ref=alice,
             operation_id="b06-d:schedule",
@@ -83,6 +100,11 @@ async def test_occurrence_reuses_schedule_identity_history_and_self_scope(
         assert replay.replayed
         assert replay.schedule_ref == initial.schedule_ref
         assert replay.material_state_ref == initial.material_state_ref
+        scheduled = await timeline.read_window(query=window, context=_context(alice))
+        assert len(scheduled.items) == 1
+        assert isinstance(scheduled.items[0], TimelineScheduledOccurrenceItem)
+        assert scheduled.items[0].occurrence_ref == occurrence_ref
+        assert scheduled.items[0].coordinate == checkpoint.occurrences[0].coordinate
 
         with pytest.raises(ScheduleOperationIdReuseError):
             await schedules.establish_schedule(
@@ -121,6 +143,10 @@ async def test_occurrence_reuses_schedule_identity_history_and_self_scope(
             schedule_ref=initial.schedule_ref,
             expected_material_state_ref=revised.material_state_ref,
         )
+        expected_again = await timeline.read_window(query=window, context=_context(alice))
+        assert len(expected_again.items) == 1
+        assert isinstance(expected_again.items[0], TimelineExpectedOccurrenceItem)
+
         restored = await schedules.undo_unschedule(
             self_person_ref=alice,
             operation_id="b06-d:undo",
@@ -130,6 +156,18 @@ async def test_occurrence_reuses_schedule_identity_history_and_self_scope(
         assert restored.restored_from_material_state_ref == revised.material_state_ref
         assert restored.material_state_ref != revised.material_state_ref
         assert restored.placement == revised.placement
+        restored_window = await timeline.read_window(query=window, context=_context(alice))
+        assert len(restored_window.items) == 1
+        assert isinstance(restored_window.items[0], TimelineScheduledOccurrenceItem)
+
+        await occurrences.skip(
+            self_person_ref=alice,
+            occurrence_ref=occurrence_ref,
+            operation_id="b06-d:skip",
+            reason="Non oggi",
+        )
+        skipped_window = await timeline.read_window(query=window, context=_context(alice))
+        assert skipped_window.items == ()
 
         with psycopg.connect(
             **migrated_database.connection_kwargs(

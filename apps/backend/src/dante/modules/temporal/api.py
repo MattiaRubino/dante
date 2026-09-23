@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, time
 from typing import Annotated, Any, Literal, cast
 from uuid import UUID
 
@@ -31,18 +31,27 @@ from dante.modules.temporal.application import (
     TimelineCoarseLocalPeriodEventItem,
     TimelineDateSpanActivityItem,
     TimelineDateSpanEventItem,
+    TimelineExpectedOccurrenceItem,
     TimelineFloatingLocalActivityItem,
     TimelineFloatingLocalEventItem,
+    TimelineItem,
     TimelineNamedZoneLocalActivityItem,
     TimelineNamedZoneLocalEventItem,
     TimelinePersistenceError,
     TimelineScheduledActivityItem,
     TimelineScheduledEventItem,
-    TimelineScheduledItem,
+    TimelineScheduledOccurrenceItem,
 )
 from dante.modules.temporal.contracts import (
     TimelineWindowQuery,
     TimelineWindowValidationError,
+)
+from dante.modules.temporal.occurrence import (
+    CalendarCoordinate,
+    CyclicCoordinate,
+    ElapsedCoordinate,
+    OccurrenceCoordinate,
+    QuotaCoordinate,
 )
 from dante.modules.temporal.schedule import (
     AbsoluteIntervalPlacement,
@@ -280,8 +289,139 @@ TimelineScheduledEventItemResponse = Annotated[
     Field(discriminator="temporal_form"),
 ]
 
-TimelineScheduledItemResponse = (
-    TimelineScheduledActivityItemResponse | TimelineScheduledEventItemResponse
+
+class TimelineCalendarOccurrenceCoordinateResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    family_code: Literal["calendar_wall_clock"] = "calendar_wall_clock"
+    generated_date: date
+    generated_wall_time: time | None
+    clock_basis_code: Literal["floating_local", "named_zone", "absolute_utc"]
+    zone_id: str | None
+    resolved_at: datetime | None
+
+
+class TimelineElapsedOccurrenceCoordinateResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    family_code: Literal["elapsed_interval"] = "elapsed_interval"
+    expected_at: datetime
+
+
+class TimelineQuotaOccurrenceCoordinateResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    family_code: Literal["quota_per_period"] = "quota_per_period"
+    period_start_date: date
+    period_end_date_exclusive: date
+    frame_code: Literal["floating_local", "named_zone", "absolute_utc"]
+    zone_id: str | None
+
+
+class TimelineCyclicOccurrenceCoordinateResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    family_code: Literal["cyclic_positional"] = "cyclic_positional"
+    generated_date: date
+    position_index: int = Field(ge=0)
+
+
+TimelineOccurrenceCoordinateResponse = Annotated[
+    TimelineCalendarOccurrenceCoordinateResponse
+    | TimelineElapsedOccurrenceCoordinateResponse
+    | TimelineQuotaOccurrenceCoordinateResponse
+    | TimelineCyclicOccurrenceCoordinateResponse,
+    Field(discriminator="family_code"),
+]
+
+
+class TimelineDateSpanOccurrencePlacementResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    temporal_form: Literal["date_span"] = "date_span"
+    start_date: date
+    end_date_exclusive: date
+
+
+class TimelineFloatingOccurrencePlacementResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    temporal_form: Literal["floating_local"] = "floating_local"
+    starts_local_at: LocalDateTimeText
+    ends_local_at: LocalDateTimeText
+
+
+class TimelineNamedZoneOccurrencePlacementResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    temporal_form: Literal["named_zone_local"] = "named_zone_local"
+    starts_local_at: LocalDateTimeText
+    ends_local_at: LocalDateTimeText
+    zone_id: str
+    resolved_start_at: datetime
+    resolved_end_at: datetime
+    display_starts_local_at: LocalDateTimeText
+    display_ends_local_at: LocalDateTimeText
+
+
+class TimelineAbsoluteOccurrencePlacementResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    temporal_form: Literal["absolute"] = "absolute"
+    starts_at: datetime
+    ends_at: datetime
+    display_starts_local_at: LocalDateTimeText
+    display_ends_local_at: LocalDateTimeText
+
+
+class TimelineCoarseOccurrencePlacementResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    temporal_form: Literal["coarse_local_period"] = "coarse_local_period"
+    local_date: date
+    period: Literal["morning", "afternoon", "evening"]
+
+
+TimelineOccurrencePlacementResponse = Annotated[
+    TimelineDateSpanOccurrencePlacementResponse
+    | TimelineFloatingOccurrencePlacementResponse
+    | TimelineNamedZoneOccurrencePlacementResponse
+    | TimelineAbsoluteOccurrencePlacementResponse
+    | TimelineCoarseOccurrencePlacementResponse,
+    Field(discriminator="temporal_form"),
+]
+
+
+class TimelineScheduledOccurrenceResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["scheduled_occurrence"] = "scheduled_occurrence"
+    occurrence_ref: UUID
+    source_kind: Literal["routine", "event"]
+    source_native_ref: UUID
+    title: str
+    coordinate: TimelineOccurrenceCoordinateResponse | None
+    schedule_ref: UUID
+    placement_material_state_ref: UUID
+    placement: TimelineOccurrencePlacementResponse
+
+
+class TimelineExpectedOccurrenceResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["expected_occurrence"] = "expected_occurrence"
+    occurrence_ref: UUID
+    source_kind: Literal["routine", "event"]
+    source_native_ref: UUID
+    title: str
+    coordinate: TimelineOccurrenceCoordinateResponse
+
+
+TimelineItemResponse = (
+    TimelineScheduledActivityItemResponse
+    | TimelineScheduledEventItemResponse
+    | TimelineScheduledOccurrenceResponse
+    | TimelineExpectedOccurrenceResponse
 )
 
 
@@ -294,7 +434,7 @@ class TimelineWindowItemsResponse(BaseModel):
     start_date: date
     end_date_exclusive: date
     effective_zone_id: str
-    items: list[TimelineScheduledItemResponse]
+    items: list[TimelineItemResponse]
 
 
 TimelineWindowResponse = TimelineWindowEmptyResponse | TimelineWindowItemsResponse
@@ -824,7 +964,102 @@ def _timeline_event_item_response(
     raise TypeError("Unsupported Event Timeline item")
 
 
-def _timeline_item_response(item: TimelineScheduledItem) -> TimelineScheduledItemResponse:
+def _timeline_occurrence_coordinate_response(
+    coordinate: OccurrenceCoordinate,
+) -> TimelineOccurrenceCoordinateResponse:
+    if isinstance(coordinate, CalendarCoordinate):
+        return TimelineCalendarOccurrenceCoordinateResponse(
+            generated_date=coordinate.generated_date,
+            generated_wall_time=coordinate.generated_wall_time,
+            clock_basis_code=coordinate.clock_basis_code,
+            zone_id=coordinate.zone_id,
+            resolved_at=coordinate.resolved_at,
+        )
+    if isinstance(coordinate, ElapsedCoordinate):
+        return TimelineElapsedOccurrenceCoordinateResponse(expected_at=coordinate.expected_at)
+    if isinstance(coordinate, QuotaCoordinate):
+        return TimelineQuotaOccurrenceCoordinateResponse(
+            period_start_date=coordinate.period_start_date,
+            period_end_date_exclusive=coordinate.period_end_date_exclusive,
+            frame_code=coordinate.frame_code,
+            zone_id=coordinate.zone_id,
+        )
+    return TimelineCyclicOccurrenceCoordinateResponse(
+        generated_date=coordinate.generated_date,
+        position_index=coordinate.position_index,
+    )
+
+
+def _timeline_occurrence_placement_response(
+    item: TimelineScheduledOccurrenceItem,
+) -> TimelineOccurrencePlacementResponse:
+    placement = item.placement
+    if isinstance(placement, DateSpanPlacement):
+        return TimelineDateSpanOccurrencePlacementResponse(
+            start_date=placement.start_date,
+            end_date_exclusive=placement.end_date_exclusive,
+        )
+    if isinstance(placement, FloatingLocalIntervalPlacement):
+        return TimelineFloatingOccurrencePlacementResponse(
+            starts_local_at=_local_datetime_text(placement.starts_local_at),
+            ends_local_at=_local_datetime_text(placement.ends_local_at),
+        )
+    if isinstance(placement, NamedZoneLocalIntervalPlacement):
+        if (
+            placement.resolved_start_at is None
+            or placement.resolved_end_at is None
+            or item.display_starts_local_at is None
+            or item.display_ends_local_at is None
+        ):
+            raise TypeError("Timeline named-zone Occurrence placement is unresolved")
+        return TimelineNamedZoneOccurrencePlacementResponse(
+            starts_local_at=_local_datetime_text(placement.starts_local_at),
+            ends_local_at=_local_datetime_text(placement.ends_local_at),
+            zone_id=placement.zone_id,
+            resolved_start_at=placement.resolved_start_at,
+            resolved_end_at=placement.resolved_end_at,
+            display_starts_local_at=_local_datetime_text(item.display_starts_local_at),
+            display_ends_local_at=_local_datetime_text(item.display_ends_local_at),
+        )
+    if isinstance(placement, AbsoluteIntervalPlacement):
+        if item.display_starts_local_at is None or item.display_ends_local_at is None:
+            raise TypeError("Timeline absolute Occurrence placement has no display projection")
+        return TimelineAbsoluteOccurrencePlacementResponse(
+            starts_at=placement.starts_at,
+            ends_at=placement.ends_at,
+            display_starts_local_at=_local_datetime_text(item.display_starts_local_at),
+            display_ends_local_at=_local_datetime_text(item.display_ends_local_at),
+        )
+    return TimelineCoarseOccurrencePlacementResponse(
+        local_date=placement.local_date,
+        period=placement.period,
+    )
+
+
+def _timeline_item_response(item: TimelineItem) -> TimelineItemResponse:
+    if isinstance(item, TimelineExpectedOccurrenceItem):
+        return TimelineExpectedOccurrenceResponse(
+            occurrence_ref=item.occurrence_ref,
+            source_kind=item.source_kind,
+            source_native_ref=item.source_native_ref,
+            title=item.title,
+            coordinate=_timeline_occurrence_coordinate_response(item.coordinate),
+        )
+    if isinstance(item, TimelineScheduledOccurrenceItem):
+        return TimelineScheduledOccurrenceResponse(
+            occurrence_ref=item.occurrence_ref,
+            source_kind=item.source_kind,
+            source_native_ref=item.source_native_ref,
+            title=item.title,
+            coordinate=(
+                _timeline_occurrence_coordinate_response(item.coordinate)
+                if item.coordinate is not None
+                else None
+            ),
+            schedule_ref=item.schedule_ref,
+            placement_material_state_ref=item.placement_material_state_ref,
+            placement=_timeline_occurrence_placement_response(item),
+        )
     if isinstance(
         item,
         (
