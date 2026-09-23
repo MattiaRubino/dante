@@ -6,14 +6,14 @@
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
-- **Timeline candidate Alembic head (source):** `20260923_57`
-- **Timeline candidate proven topology:** `145|5|88|92|285|223|408|0|0|0` (B06-D proven at `_57`)
+- **Timeline candidate Alembic head:** `20260923_57`
+- **Timeline candidate proven topology:** `145|5|88|92|285|223|408|0|0|0` — whole B06 proven
 - **Timeline candidate DB overlay:** `timeline-temporal-operational.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 - **Persistence ADR:** `../decisions/ADR-010-postgresql-persistence-constitution.md`
 - **Timeline workstream authority:** `../workstreams/timeline-temporal-operational-map.md`
-- **B04-E closure:** `../workstreams/timeline-temporal-operational-b04-e-closure-2026-09-19.md`
-- **B06-D closure:** `../workstreams/timeline-temporal-operational-b06-d-closure-2026-09-23.md`
+- **Post-B06 scope decision:** `../workstreams/timeline-temporal-operational-post-b06-scope-decision-2026-09-23.md`
+- **Whole-B06 closure:** `../workstreams/timeline-temporal-operational-b06-e-closure-2026-09-23.md`
 
 ## 1. Authority model
 
@@ -57,38 +57,32 @@ Protected `main` remains integration authority. Candidate truth is never relabel
     ↓
 20260919_35 → 20260919_36 B04-C absolute windows / runtime-read ACL
     ↓
-20260919_37 B04-D Schedule Movement Policy core
+20260919_37 → 20260919_39 B04-D Movement Policy / governed move / replay fix
     ↓
-20260919_38 B04-D governed Schedule move + confirmation proposal/acceptance
-    ↓
-20260919_39 B04-D proposal-accept replay fix
-    ↓
-20260919_40 B04-E planned Schedule duration constraints
-    ↓
-20260919_41 B04-E duration runtime-read ACL
+20260919_40 → 20260919_41 B04-E planned Schedule duration + runtime-read ACL
     ↓
 20260920_42 B04-F Schedule hard-constraint guard
     ↓
-20260920_43 B05-A Life Area initial create/list schema
+20260920_43 → 20260920_45 B05-A Life Area lifecycle
     ↓
-20260920_44 B05-A full actor-local Life Area lifecycle
+20260920_46 B05-B typed primary Life Area assignment
     ↓
-20260920_45 B05-A validated receipt CHECK name reconciliation [direct catalog proof PASSED]
+20260920_47 B05-C secondary Tags
     ↓
-20260920_46 B05-B typed primary Life Area assignment [16 direct PostgreSQL tests PASSED]
+20260921_48 B05-D postponed Event discovery/replan composition
     ↓
-20260920_47 B05-C secondary actor-local Tags and typed Activity/Event edges [26 direct PostgreSQL tests PASSED]
-20260921_48 B05-D postponed Event discovery/replan capability [24 PostgreSQL/API/catalog + 41 selected web tests PASSED]
-20260921_49 B06-A Routine source core, lifecycle and typed product organization [candidate superseded by _50]
-20260921_50 B06-A atomic initial Routine/Recurrence companion correction [PROVEN at _51]
-20260921_51 B06-A qualified Routine source/Life Area command repair [PROVEN]
-20260922_52 B06-B immutable Routine/Event Recurrence authoring, receipts and explicit DST policy [PROVEN at _54]
-20260922_53 B06-B forward-only Recurrence current-state reader repair [PROVEN at _54]
-20260922_54 B06-B forward-only Recurrence selector validation repair [PROVEN]
-20260922_55 B06-C bounded Occurrence checkpoint, explicit extra, skip and structural exclusion [PROVEN]
+20260921_49 → 20260921_51 B06-A Routine source/core corrections
+    ↓
+20260922_52 → 20260922_54 B06-B Recurrence authoring/read validation
+    ↓
+20260922_55 B06-C bounded Occurrence checkpoint/control
+    ↓
 20260922_56 B06-D Occurrence authorization in shared Schedule capabilities
-20260923_57 B06-D bounded execute-only expected-Occurrence Timeline read [PROVEN]
+    ↓
+20260923_57 B06-D bounded execute-only expected-Occurrence Timeline read
 ```
+
+`_57` is the current proven candidate database frontier after **whole-B06 closure**. B06-E introduced no further migration.
 
 No accepted historical migration was edited, rebased, renumbered or flattened.
 
@@ -109,188 +103,130 @@ No accepted historical migration was edited, rebased, renumbered or flattened.
 0 RLS policies
 ```
 
-The `_42` topology was read directly from PostgreSQL 18.6 during B04-F closure. `_45` closed B05-A. The user ran 16 selected PostgreSQL tests at `_46`, including whole-catalog reconciliation, closing B05-B. The user ran 26 selected PostgreSQL tests at `_47`, including whole-catalog reconciliation, closing B05-C. `_55` closed B06-C. `_56` changes existing Schedule capability bodies only; `_57` adds exactly one routine. The user-run B06-D backend/catalog gate passed both whole-catalog reconciliation tests at `_57`, proving the 88-routine topology above.
+`_56` changed existing shared Schedule capability ownership predicates. `_57` added exactly one bounded SECURITY DEFINER expected-Occurrence read routine; it did not widen direct runtime table privileges on private Occurrence/Routine provenance tables.
 
 ## 4. Timeline persistence classification
 
 ### B01 Activity
 
-`dante.activity` remains the CP6 Activity NativeRef owner. B01 adds only the typed intention/create control surface.
+`dante.activity` remains the Activity NativeRef owner. Activity can exist unplaced; Activity identity is not Schedule identity.
 
 ### B02 Schedule
 
-`dante.schedule` remains the single shared Schedule owner. Accepted placement truth is MaterialState/current/history and remains distinct from policy, constraint and reality.
+`dante.schedule` remains the single shared accepted-placement authority. Current/history/CAS/idempotency/Undo semantics remain independent from Activity/Event/Routine/Occurrence identity.
 
 ### B03 Event
 
-`dante.event` remains a distinct NativeRef owner while reusing shared Schedule authority. Agenda values remain Event-internal ordered content.
+`dante.event` remains a distinct NativeRef owner while reusing shared Schedule authority. Agenda remains Event-internal ordered value truth.
 
-### B04-A/B/C Temporal Constraint ✅ CLOSED / PROVEN
+### B04 Temporal Constraint / Movement Policy
 
-Temporal Constraint is a stable `ScopedRecordRef` LR-05 dependent, not a NativeRef root and not Schedule placement.
-
-Accepted absolute boundary matrix:
+Temporal Constraint is a stable dependent with typed boundary/window/planned-duration MaterialState semantics. Movement Policy is a separate Schedule-owned governance facet.
 
 ```text
-earliest_start     + schedule.start
-latest_start       + schedule.start
-latest_completion  + schedule.completion
+Schedule != Temporal Constraint
+Schedule != Movement Policy
+Temporal Constraint != Movement Policy
+Movement Policy != solver result
+proposal != accepted effect
 ```
 
-Accepted absolute window matrix:
+Deterministic application evaluation remains derived/non-persistent and does not search for candidate schedules.
+
+### B05 Product Organization
+
+Life Area and secondary Tags are actor-local product organization structures, not new Domain identity owners. Activity/Event typed relations remain explicit; no generic relationship/EAV shortcut is introduced.
+
+### B06 Routine / Recurrence / Occurrence
 
 ```text
-start_within              + schedule.start
-completion_within         + schedule.completion
-full_placement_contained  + schedule.placement
-placement_overlaps        + schedule.placement
+Routine != Recurrence != Occurrence
+Occurrence != Schedule
 ```
 
-Rules retain independent immutable MaterialState/current/history and expected-state CAS. Hard/soft evaluation is derived; evaluation is not solver output and does not mutate Schedule.
+B06 uses owner-specific Routine/Event recurrence truth and canonical Occurrence identity/provenance. Materialized Occurrences reuse the **existing shared Schedule engine** rather than creating an `occurrence_schedule` authority.
 
-### B04-D Movement Policy ✅ CLOSED / PROVEN
-
-Movement Policy is a typed Schedule-owned rule facet, not a new generic entity and not a Temporal Constraint.
+Runtime read remains least privilege:
 
 ```text
-facet                  schedule.movement_policy
-automatic_movement     blocked | automatic
-acceptance_path        direct | confirmation_required
-owner                  accepted Schedule
-scope                  self-Person Activity/Event schedules
+scheduled Occurrence
+→ shared Schedule read + get_self_occurrence
+
+unscheduled expected Occurrence
+→ list_self_expected_occurrences_in_window(...)
+
+Routine presentation
+→ list_self_routines
 ```
 
-Canonical objects:
-
-```text
-schedule_movement_policy_state
-schedule_movement_policy_current_history
-schedule_movement_policy_mutation_operation
-schedule_move_proposal
-schedule_move_request_operation
-schedule_move_accept_operation
-```
-
-Every automatic commit/accept path checks current placement CAS, current Movement Policy basis and current hard Temporal Constraint admissibility before accepted Schedule mutation.
-
-`proposal != accepted effect` remains structural truth.
-
-### B04-E Advanced-family applicability ✅ CLOSED / PROVEN
-
-B04-E activates only **TC-008 planned Schedule duration** and explicitly closes applicability for the remaining advanced families without inventing later-owned truth.
-
-Canonical duration rule:
-
-```text
-subject              Activity | Event
-family               duration
-constrained facet    schedule.placement
-kind                  minimum | maximum
-strength              hard | soft
-value                 positive exact microseconds
-first evaluable form exact absolute Schedule interval
-```
-
-New canonical object/capability:
-
-```text
-temporal_constraint_duration_state
-mutate_self_schedule_duration_constraint(...)
-```
-
-Existing shared integrity/evaluation seams are extended rather than duplicated:
-
-```text
-enforce_temporal_constraint_rule_totality()
-assert_absolute_schedule_move_hard_admissible(...)
-TemporalConstraintApplication
-```
-
-Therefore hard duration rules participate in both canonical evaluation and B04-D automatic-move enforcement.
-
-Permanent distinction:
-
-```text
-planned Schedule duration
-!= Activity estimated effort
-!= Session elapsed/active duration
-!= Actual duration
-```
-
-Applicability dispositions:
-
-```text
-TC-009 contiguous Session duration  → runtime deferred B08
-TC-010 spacing/recovery             → deferred B06/B08/B10 by anchor
-TC-011 relative before/after        → deferred until reviewed bounded reference/relation persistence exists
-```
-
-No fake Activity/Event `last_at`, no generic `related_id + type`, and no generic JSON rule payload were introduced.
-
-B04-E exposed no new public Temporal HTTP endpoint, so OpenAPI/client artifacts did not churn in that slice. B04-F subsequently closed the whole-block public API inventory/snapshot regression.
+No direct runtime SELECT grant on private Occurrence provenance tables is required.
 
 ## 5. Permanent non-collapse invariants
 
 ```text
-Activity != Event
-Event != Schedule
+Activity != Event != Routine
+Routine != Recurrence != Occurrence
+Occurrence != Schedule
 Schedule != Temporal Constraint
 Schedule != Movement Policy
-Temporal Constraint != Movement Policy
-Movement Policy != Authority itself
-Movement Policy != solver result
-proposal != accepted effect
-policy revision != Schedule revision
-constraint revision != Schedule revision
-planned duration != estimated effort
-planned duration != Session duration
-planned duration != Actual duration
-hard planning violation != impossible reality
+Schedule != Session != Actual
+Session != Actual != Outcome
+Actual != Outcome != Confirmation
+Responsibility != Participation
+planned Schedule duration != Activity estimated effort
+planned Schedule duration != Session duration
+planned Schedule duration != Actual duration
 window != placement
 preference != accepted Schedule
 evaluation != solver decision
-violation != automatic mutation
-Schedule != Session != Actual
-Actual != Outcome
+solver proposal != accepted Schedule
 current accepted state != newest row
 idempotency key != Domain identity
+projection != canonical truth
 ```
 
-B12 still owns broad candidate generation / optimization / solver semantics.
+B12 owns deterministic candidate generation/optimization and governed solver proposals. AI does not become canonical scheduling authority.
 
 ## 6. Proof state
 
 ```text
-B01 Activity Core                    CLOSED / PROVEN
-B02 Schedule Core                    CLOSED / PROVEN
-B03 Event Core                       CLOSED / PROVEN
-B04-A                                CLOSED / PROVEN at 20260918_33
-B04-B                                CLOSED / PROVEN at 20260919_34
-B04-C                                CLOSED / PROVEN at 20260919_36
-B04-D Movement Policy                CLOSED / PROVEN at 20260919_39
-B04-E Advanced-family applicability  CLOSED / PROVEN at 20260919_41
-B04-F Whole-B04 closure              CLOSED / PROVEN at 20260920_42
-B04 overall                          CLOSED / PROVEN
-B05-A Life Area full lifecycle       CLOSED / PROVEN at `_45`
-B05-B primary assignment             CLOSED / PROVEN at `_46` (16 selected tests)
-B05-C secondary Tags                 CLOSED / PROVEN at `_47` (26 selected tests)
-B06-A Routine core                   CLOSED / PROVEN at `_51`
-B06-B Recurrence authoring           CLOSED / PROVEN at `_54`
-B06-C Occurrence checkpoint          CLOSED / PROVEN at `_55` (41 selected PostgreSQL tests)
-B06-D Schedule + Timeline integration CLOSED / PROVEN at `_57` (11 selected PostgreSQL/catalog tests; web typecheck; 18 focused Vitest tests)
+B01 Activity Core                     CLOSED / PROVEN
+B02 Schedule Core                     CLOSED / PROVEN
+B03 Event Core                        CLOSED / PROVEN
+B04 overall                           CLOSED / PROVEN at `_42`
+B05 overall                           CLOSED / PROVEN through `_48`
+B06-A Routine core                    CLOSED / PROVEN at `_51`
+B06-B Recurrence authoring            CLOSED / PROVEN at `_54`
+B06-C Occurrence checkpoint           CLOSED / PROVEN at `_55`
+B06-D Schedule + Timeline             CLOSED / PROVEN at `_57`
+B06-E whole-block closure             CLOSED / PROVEN at `_57`
+B06 overall                           CLOSED / PROVEN
 ```
 
-Observed B04-E local evidence:
+Final B06 closure evidence includes generated/client/web sanity plus persistent local dogfood state surviving browser reload as recorded by the B06-E closure document. No additional DDL was needed after `_57`.
+
+## 7. Next persistence boundary — B08
+
+B08 Session Runtime is next, but **no migration is pre-authorized**.
+
+Before any DDL:
 
 ```text
-core duration + movement integration             4 PASS
-application/evaluator/regression                13 PASS / 3 deselected
-whole catalog + B04-E catalog/ACL                3 PASS
-DATABASE_CURRENT_TOPOLOGY                        116|5|44|90|233|153|331|0|0|0
+Product / Domain / Logical Session authority
+→ accepted Physical mapping
+→ existing CP6 Session structures/capabilities
+→ current Alembic/Dictionary/SQLAlchemy/PostgreSQL catalog
+→ identify a concrete semantic gap
 ```
 
-Proof covers duration lifecycle/current/history/CAS/idempotency, hard minimum/maximum behavior, soft violation explanation, boundary/window/duration composition, duration/window infeasibility, automatic-move enforcement, runtime least-privilege ACL and exact Dictionary/SQLAlchemy/Alembic/PostgreSQL parity.
+Only then may a new forward-only migration be introduced.
 
-## 7. Current next boundary
+B08 must preserve:
 
-B04-F, B05 and B06-A/B/C/D are closed with their recorded proof. `_56` admits self-owned Occurrences to the unchanged shared Schedule engine. `_57` keeps B06-C provenance tables default-deny and adds one bounded self-scoped execute-only read for currently unscheduled expected Occurrences; scheduled Occurrences are composed through the existing `get_self_occurrence` capability and Routine metadata through `list_self_routines`. B06-E is now the active whole-block closure boundary.
+```text
+Schedule != Session
+Session != Actual
+planned duration != Session elapsed/active duration
+```
+
+Provider integration, native/offline, broad analytics and account collaboration are outside the current `+`/Timeline vertical and must not drive schema expansion here.
