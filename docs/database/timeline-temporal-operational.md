@@ -1,11 +1,12 @@
 # Timeline / Temporal-Operational — Candidate Database Overlay
 
 - **Status:** CURRENT CANDIDATE DATABASE AUTHORITY
-- **Reconciled:** 2026-09-22
+- **Reconciled:** 2026-09-23
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
-- **Candidate source head:** `20260922_56` (B06-D implementation; `_55` proven)
-- **Candidate proven topology:** `145|5|87|92|285|223|408|0|0|0`
+- **Candidate source head:** `20260923_57` (B06-D repair candidate; proof pending)
+- **Candidate expected topology:** `145|5|88|92|285|223|408|0|0|0`
+- **Latest proven topology:** `145|5|87|92|285|223|408|0|0|0` (B06-C `_55`)
 - **Whole-DB SoR:** `README.md`
 - **Machine-readable authority:** `dictionary/`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
@@ -55,6 +56,8 @@ This file is the human-readable database overlay for Timeline candidate-only per
 20260922_53 B06-B forward-only Recurrence current-state reader repair
 20260922_54 B06-B forward-only Recurrence selector validation repair
 20260922_55 B06-C bounded Occurrence checkpoint and one-instance control surface
+20260922_56 B06-D Occurrence authorization in shared Schedule capabilities
+20260923_57 B06-D bounded execute-only expected-Occurrence Timeline read
 ```
 
 ## 3. Temporal Constraint authority through B04-E
@@ -125,10 +128,10 @@ B04-E adds no public Temporal HTTP route; OpenAPI/client artifacts intentionally
 ## 6. Current candidate topology
 
 ```text
-Alembic     20260922_55
+Alembic     20260923_57
 Tables      145
 Views       5
-Routines    87
+Routines    88
 Triggers    92
 Indexes     285
 FKs         223
@@ -139,6 +142,8 @@ Sequences   0
 Materialized/partitioned 0
 RLS         0
 ```
+
+`_57` adds exactly one SECURITY DEFINER read routine. It does not add a table, view, trigger, index, FK, CHECK, enum/domain, sequence, partition or RLS policy. The topology above is therefore the candidate expectation; `_55` remains the latest user-proven topology until the local B06-D gate runs.
 
 ## 7. Proof state
 
@@ -159,6 +164,7 @@ B05-C ✅ CLOSED / PROVEN at `_47` (26 selected PostgreSQL tests)
 B06-A ✅ CLOSED / PROVEN at `_51`
 B06-B ✅ CLOSED / PROVEN at `_54`
 B06-C ✅ CLOSED / PROVEN at `_55` (41 selected PostgreSQL tests)
+B06-D 🟨 CANDIDATE at `_57` / user-run local proof pending
 ```
 
 Observed B04-E evidence:
@@ -172,4 +178,4 @@ DATABASE_CURRENT_TOPOLOGY                         116|5|44|90|233|153|331|0|0|0
 
 ## 8. Next persistence boundary
 
-B06-C `_55` is the proven branch frontier. B06-D `_56` widens the four existing self-scoped Schedule mutation capabilities to derive Occurrence ownership through its Routine/Event source; it adds no table, view, routine identity, trigger, index, foreign key or CHECK constraint. The proven topology therefore remains the `_55` value until the user-run B06-D PostgreSQL/catalog gate confirms the unchanged counts. Timeline projection remains the next active implementation boundary.
+B06-C `_55` is the latest proven branch frontier. B06-D `_56` widens the four existing self-scoped Schedule mutation capabilities to derive Occurrence ownership through its Routine/Event source. `_57` closes the runtime read gap without restoring direct provenance-table privileges: scheduled Occurrences compose shared Schedule with `get_self_occurrence`, while unscheduled expected Occurrences are exposed only through `list_self_expected_occurrences_in_window(uuid,date,date,text)`, bounded to a positive half-open window of at most 62 days. B06-D remains open until the user-run local PostgreSQL/web gate confirms the candidate.
