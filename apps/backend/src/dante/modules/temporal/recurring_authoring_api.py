@@ -17,11 +17,13 @@ from dante.modules.temporal.event import (
     EventInputError,
     EventLifeAreaUnavailableError,
     EventNotFoundError,
+    EventOperationIdReuseError,
     EventPersistenceError,
 )
 from dante.modules.temporal.recurrence import (
     RecurrenceInputError,
     RecurrenceNotFoundError,
+    RecurrenceOperationReuseError,
     RecurrencePersistenceError,
     RecurrenceStateConflictError,
 )
@@ -34,6 +36,7 @@ from dante.modules.temporal.recurring_authoring import (
 from dante.modules.temporal.routine import (
     RoutineInputError,
     RoutineNotFoundError,
+    RoutineOperationReuseError,
     RoutinePersistenceError,
     RoutineStateConflictError,
 )
@@ -87,7 +90,15 @@ def _problem(exc: Exception) -> ProblemError:
             title="Recurring authoring rejected",
             detail=str(exc),
         )
-    if isinstance(exc, RecurringAuthoringOperationReuseError):
+    if isinstance(
+        exc,
+        (
+            RecurringAuthoringOperationReuseError,
+            RoutineOperationReuseError,
+            EventOperationIdReuseError,
+            RecurrenceOperationReuseError,
+        ),
+    ):
         return ProblemError(
             status=409,
             code="temporal.recurring_authoring.operation_id_reused",
