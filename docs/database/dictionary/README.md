@@ -7,8 +7,7 @@
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Current candidate Alembic source head on `feature/timeline-temporal-operational`:** `20260923_57`
-- **Current candidate expected topology:** `145|5|88|92|285|223|408|0|0|0` (`_57` proof pending)
-- **Current candidate latest proven topology:** `145|5|87|92|285|223|408|0|0|0` (B06-C proven at `_55`)
+- **Current candidate proven topology:** `145|5|88|92|285|223|408|0|0|0` (B06-D proven at `_57`)
 - **Frozen CP6 head:** `20260826_08`
 - **Last reconciled:** 2026-09-23
 
@@ -25,7 +24,7 @@ Current checked-out DB Reference
 ≈ direct tests
 ```
 
-A mismatch is a defect. Protected `main` remains integration authority. B06-C `_55` passed the generated/client gate, selected evaluator/API/OpenAPI proof and the selected 41-test PostgreSQL/catalog/ACL gate after its focused repair rerun. B06-D `_56` changes only the ownership predicates of four inventoried Schedule routines. `_57` adds one bounded self-scoped execute-only expected-Occurrence Timeline read while retaining zero direct runtime table grants on B06-C provenance tables; `_57` remains proof-pending until the user-run local gate.
+A mismatch is a defect. Protected `main` remains integration authority. B06-C `_55` passed its generated/client, evaluator/API/OpenAPI and PostgreSQL/catalog/ACL proof. B06-D `_56` widens only the ownership predicates of the four shared Schedule routines. `_57` adds one bounded self-scoped execute-only expected-Occurrence Timeline read while retaining zero direct runtime table grants on B06-C provenance tables. The user-run B06-D backend/catalog gate passed both whole-catalog reconciliation tests, so `_57` is now proven rather than pending.
 
 ## 2. Current checked-out business-schema inventory
 
@@ -109,11 +108,12 @@ B06-C / 20260922_55 (✅ CLOSED / PROVEN)
   canonical materialization/replay, explicit extra, immutable skip and structural exclusion
   62-day half-open horizon + atomic 10,000-Occurrence safety cap; no Schedule/Timeline
 
-B06-D / 20260922_56 → 20260923_57 (🟨 CANDIDATE / PROOF PENDING)
+B06-D / 20260922_56 → 20260923_57 (✅ CLOSED / PROVEN)
   self-owned Occurrence authorization in shared Schedule establish/revise/unschedule/Undo
   bounded execute-only expected-Occurrence Timeline read through `_57`
   scheduled Occurrence projection composes existing get_self_occurrence with shared Schedule
-  no direct runtime SELECT grants on Occurrence provenance tables
+  Routine presentation composes existing list_self_routines instead of direct table access
+  no direct runtime SELECT grants on Occurrence provenance or Routine source tables
 ```
 
 The object tree and `scope.json`, not this prose summary, are structural source of truth.
@@ -220,7 +220,7 @@ B05-C secondary Tags                 CLOSED / PROVEN at `_47` (26 selected tests
 B06-A Routine core                   CLOSED / PROVEN at `_51`
 B06-B Recurrence authoring           CLOSED / PROVEN at `_54`
 B06-C Occurrence checkpoint          CLOSED / PROVEN at `_55`
-B06-D Schedule + Timeline            IN PROGRESS at `_57` / local proof pending
+B06-D Schedule + Timeline            CLOSED / PROVEN at `_57` (11 selected PostgreSQL/catalog tests; web typecheck; 18 focused Vitest tests)
 ```
 
 Observed B04-E evidence:
@@ -257,4 +257,4 @@ extension-owned objects excluded correctly
 
 No real object → no ceremonial Dictionary entry. Every real current DANTE business object requires matching Dictionary/Alembic/SQLAlchemy/current-human-reference/direct-PostgreSQL proof in the same reviewed slice.
 
-B04-F and B05 are closed. User-run `_46` selected catalog/ACL/application proof passed (16 tests); legacy items remain unassigned until explicitly reconciled. `_47` adds six Tag catalog/typed-edge/receipt tables and six bounded functions, with matching mappings and Dictionary objects. Its direct PostgreSQL proof passed (26 selected tests). `_48` adds the postponed Event discovery/replan routines with matching mapping and Dictionary entries; the B05-D gate passed. The B05-E real-stack walkthrough is complete. B06-D `_57` is source-reconciled but remains proof-pending until the user-run local gate.
+B04-F and B05 are closed. `_46`, `_47` and `_48` retain their recorded proof. B06-C `_55` is proven. B06-D `_57` is now source- and proof-reconciled: the final user-run backend/catalog gate passed 11 selected tests including both whole-catalog reconciliation tests, while the web gate passed typecheck and 18 focused Vitest tests. B06-E is the next whole-block closure boundary.
