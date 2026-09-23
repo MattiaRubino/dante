@@ -1,109 +1,120 @@
 # DANTE — Frontend Documentation Entry Map
 
 **Status:** CURRENT FRONTEND DOCUMENTATION ENTRY POINT  
-**Date:** 2026-09-06
+**Reconciled:** 2026-09-23
 
-This directory contains the durable product, architecture, contract and production-readiness documentation for the materialized frontend. Current code, tests and current CI evidence outrank historical branch notes and dated evidence.
+This directory contains durable product, architecture, contract and production-readiness documentation for the materialized frontend. Current code/tests plus active workstream authority outrank historical branch notes and dated evidence.
 
 ## 1. First read
 
 For current frontend work read:
 
-1. `docs/frontend/home/current-checkpoint.md` — current integrated frontend state;
-2. the workstream-specific current contract/roadmap below;
+1. `docs/frontend/home/current-checkpoint.md` — current frontend navigation checkpoint;
+2. the active bounded workstream authority for the feature being changed;
 3. deeper dated evidence only when rationale or historical proof is needed.
 
-Do not reconstruct current sequencing from archived handoffs or obsolete `NEXT` prose.
+Do not reconstruct current sequencing from old C1/T1 handoffs or obsolete `NEXT` prose.
 
-## 2. AppShell / Home / Temporal
+## 2. Home / Timeline / Temporal — current state
 
-Read:
+The former `feature/home-timeline` C1/T1 frontend roadmap is **historical pre-vertical evidence**. The real backend/persistence Timeline vertical is now owned by:
 
-1. `docs/frontend/home/home-structural-contract.md`;
-2. `docs/frontend/app-shell/p1-global-app-shell.md`;
-3. `docs/frontend/home/temporal-frontend-roadmap.md`;
-4. `docs/frontend/home/temporal-f0-contract.md`;
-5. `docs/frontend/home/timeline-t1-frozen-contract.md`;
-6. `docs/frontend/home/temporal-create-c1-manual-acceptance.md`;
-7. `docs/frontend/home/contract.md`;
-8. `docs/frontend/open-decisions.md`;
-9. `docs/frontend/ui-registry.md`.
+1. `docs/workstreams/timeline-temporal-operational-post-b06-scope-decision-2026-09-23.md`;
+2. `docs/workstreams/timeline-temporal-operational-roadmap.md`;
+3. `docs/workstreams/timeline-temporal-operational-map.md`;
+4. `docs/workstreams/timeline-temporal-operational-handoff.md`.
 
-Current status:
+Current state:
 
 ```text
-H0 Whole Home structure        FROZEN
-P1 AppShell / Topbar           FROZEN
-T1 Timeline                    FROZEN
-F0 Temporal application seam   CLOSED / FROZEN
-C1 Manual Temporal Create      OPEN
-C1 MANUAL PASS                 NOT GRANTED
-C2 Structured Detail           BLOCKED until C1 closes
+Home/AppShell structural foundations              retained
+Timeline/Temporal prototype-era contracts          retained as design/history where still applicable
+Real Data Spine through B06                        ✅ CLOSED / PROVEN
+Activity / Schedule / Event                        ✅ canonical backend-backed
+Constraints / Movement Policy                      ✅ canonical backend-backed
+Life Area / Tags                                    ✅ canonical backend-backed
+Routine / Recurrence / Occurrence                  ✅ canonical backend-backed
+Expected/scheduled recurring Timeline              ✅ real backend-backed
+B08 Session Runtime                                ← NEXT
+B07 final UI/UX consolidation                      ⏸ DEFERRED until after B12
 ```
 
-Branch reconciliation, CI or merge does not manufacture C1 manual product approval.
+The old `C1 OPEN / C2 BLOCKED` labels no longer govern current Timeline sequencing. They describe the earlier frontend-only phase before the real product vertical replaced its local/mock assumptions with canonical backend/persistence behavior.
 
-## 3. World Focus
+## 3. Current vertical boundary
 
-Read in this order:
-
-1. `docs/frontend/home/world-focus-current-checkpoint.md`;
-2. `docs/frontend/home/world-focus-product-contract.md`;
-3. `docs/frontend/home/world-focus-platform-contract.md`;
-4. `docs/frontend/home/world-focus-structural-contract.md`;
-5. `docs/frontend/home/world-focus-geometry-contract.md`;
-6. `docs/frontend/home/world-focus-delivery-methodology.md`;
-7. `docs/frontend/home/world-focus-frontend-roadmap.md`;
-8. `docs/frontend/home/world-focus-evidence-index.md` only for deeper archaeology.
-
-Current engineering status:
+Frontend work in the active Timeline vertical supports:
 
 ```text
-WF0 / WF-G3                       FROZEN / LOCKED
-M0-M3                             CLOSED / VALIDATED
-M4 Contextual DANTE / D2-D6       CLOSED / VALIDATED
-M4 hostile closure                CLOSED / PASS
-protected-main ancestry merge     COMPLETE
-R3 semantic reconciliation        CLOSED / AUTOMATED QA PASS
-M5 contrasting Worlds             NOT STARTED
-M6 visual/a11y/perf               BLOCKED BY M5
-M7 pre-backend freeze             BLOCKED BY M6
-human/manual visual acceptance    NOT PERFORMED
+Home `+`
+→ create/configure canonical temporal state
+→ Timeline representation/actions
+→ Session/Actual lifecycle where owned by later blocks
+→ Responsibility/Participation roles
+→ advanced recurrence/reminders
+→ replanning/solver proposals
+→ final deferred UI/UX consolidation
 ```
 
-R3 exact-code candidate `e28e29a7ab3a8cd71b0c386ced824385c8c2d9e6` passed Backend CI, Dependency Review and Frontend CI on PR #65. Required protected-main checks on the final merge head remain the merge authority; historical run IDs prove only their exact SHA.
-
-The branch candidate becomes protected-main truth only through PR #65 and the repository ruleset. Git/PR state is authoritative for whether that integration has occurred.
-
-## 4. Current platform truth inherited from main
-
-The reconciled frontend consumes protected-main platform truth rather than an old frontend-only snapshot. That includes the current PostgreSQL/Alembic baseline, Access/Auth implementation, Recovery, Email, Observability, OpenAPI/API-client boundaries and Intelligence foundation.
-
-Frontend work must not overwrite those owners for convenience.
-
-Current Access Web capability includes the governed backend integration for email/password, session lifecycle, recovery/reset/reauth, Google and Apple provider flows, passkeys, authenticator management and `/security`. Access UI/model remains behind its application boundary and the governed API client.
-
-## 5. Permanent semantic boundaries
+Explicitly outside the current vertical:
 
 ```text
-frontend view model != backend DTO != Domain != persistence row
-World != Domain owner
-World relevance != authorization
+external provider integration
+native/mobile/offline/multi-device
+account-to-account collaboration/chat/shared editing
+broad analytics/statistics/signals
+```
+
+## 4. Deferred B07 rule
+
+B07 UI/UX Consolidation is intentionally deferred until B08–B12 capabilities exist.
+
+During B08–B12, UI may be utilitarian/temporary but must remain:
+
+```text
+truthful to canonical semantics
+usable for real-stack/manual testing
+accessible enough for the implemented capability
+free of fake persistence/provider/runtime success
+```
+
+Final presentation/interaction cleanup belongs to B07, not to opportunistic redesign inside every capability block.
+
+## 5. Historical frontend temporal evidence
+
+These files remain useful phase-time evidence but are not current sequencing authority:
+
+- `home/temporal-frontend-roadmap.md`;
+- `home/temporal-create-c1-manual-acceptance.md`;
+- dated C1 engineering/finding/rearchitecture records;
+- T1/F0 freeze documents where they describe the earlier frontend-only architecture.
+
+Where an old document says recurrence materialization/provider integration/backend range query is “future”, current executable/workstream truth now decides what has actually been implemented.
+
+## 6. World Focus
+
+World Focus documentation remains separate from the active Timeline vertical. Read its current/durable contracts under `docs/frontend/home/` only when working on that subsystem.
+
+No Timeline block automatically reopens World Focus visual/product work.
+
+## 7. Permanent semantic boundaries
+
+```text
+frontend ViewModel != backend DTO != Domain != persistence row
+Activity != Event != Routine
+Routine != Recurrence != Occurrence
+Occurrence != Schedule
+Schedule != Session != Actual
+Session != Actual != Outcome
+Responsibility != Participation
+planned/intended != happened
+proposal != accepted effect
 projection != canonical truth
-AI output != accepted fact
-assistant prose != Insight
-Insight != Proposal != Decision != effect
-confirmed != executed
-Receipt != provider/runtime/canonical completion
-planned/intended != Actual
-Comparison != Decision
-absence != false
+AI output != accepted fact/effect
 UI hiding != authorization
 ```
 
-World Focus remains pre-backend for its own canonical World/DANTE persistence/effect semantics even though the repository contains real backend platform capability elsewhere.
-
-## 6. Engineering authorities
+## 8. Engineering authorities
 
 For non-trivial frontend work also inspect:
 
@@ -113,11 +124,8 @@ For non-trivial frontend work also inspect:
 - `docs/frontend/terminology.md`;
 - `docs/frontend/localization.md`;
 - `docs/frontend/design-tokens.md`;
-- current `dependency-cruiser.config.mjs`;
-- current GitHub Actions workflows.
+- current dependency boundaries and generated-client governance.
 
-Machine-readable Home and World Focus structural contracts under `prototypes/frontend/shared/contracts/` are blocking CI contracts, not decoration.
+## 9. Lifecycle rule
 
-## 7. Lifecycle rule
-
-Temporary chat/session/live handoffs are not current repository authorities and must not survive into protected `main`. Historical proof belongs in dated evidence, the consolidated branch closure record or Git/PR history. Current product and architecture truth belongs in the current contracts/checkpoints above.
+Current contracts/checkpoints describe present truth. Dated evidence and archived phase documents preserve what was true at their checkpoint and must not compete with the active workstream for present-tense sequencing.
