@@ -12,6 +12,11 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from dante.context.contracts import DanteContext
 from dante.context.dependencies import require_dante_context, require_mutating_dante_context
+from dante.modules.temporal.api import (
+    SchedulePlacementRequest,
+    TemporalScheduleApplicationDependency,
+    _placement_from_request,
+)
 from dante.modules.temporal.occurrence import (
     CalendarCoordinate,
     CyclicCoordinate,
@@ -26,11 +31,6 @@ from dante.modules.temporal.occurrence import (
     OccurrenceSourceInactiveError,
     OccurrenceSourceNotFoundError,
     OccurrenceView,
-)
-from dante.modules.temporal.api import (
-    SchedulePlacementRequest,
-    TemporalScheduleApplicationDependency,
-    _placement_from_request,
 )
 from dante.modules.temporal.schedule import (
     AbsoluteIntervalPlacement,
@@ -402,8 +402,8 @@ def _schedule_placement_response(
             ends_local_at=placement.ends_local_at,
         )
     if isinstance(placement, NamedZoneLocalIntervalPlacement):
-        assert placement.resolved_start_at is not None
-        assert placement.resolved_end_at is not None
+        if placement.resolved_start_at is None or placement.resolved_end_at is None:
+            raise ValueError("accepted named-zone placement is unresolved")
         return OccurrenceNamedZoneSchedulePlacementResponse(
             starts_local_at=placement.starts_local_at,
             ends_local_at=placement.ends_local_at,
@@ -416,11 +416,12 @@ def _schedule_placement_response(
             starts_at=placement.starts_at,
             ends_at=placement.ends_at,
         )
-    assert isinstance(placement, CoarseLocalPeriodPlacement)
-    return OccurrenceCoarseSchedulePlacementResponse(
-        local_date=placement.local_date,
-        period=placement.period,
-    )
+    if isinstance(placement, CoarseLocalPeriodPlacement):
+        return OccurrenceCoarseSchedulePlacementResponse(
+            local_date=placement.local_date,
+            period=placement.period,
+        )
+    raise TypeError(f"unsupported accepted Schedule placement: {type(placement).__name__}")
 
 
 @router.post(
