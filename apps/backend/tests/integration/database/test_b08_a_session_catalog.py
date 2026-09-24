@@ -1,4 +1,4 @@
-"""B08-A PostgreSQL proof for the Session core substrate and bounded capabilities."""
+"""B08 PostgreSQL proof for the Session substrate and bounded capabilities."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ import pytest
 
 pytestmark = pytest.mark.postgres
 
-_EXPECTED_REVISION = "20260924_62"
+_EXPECTED_REVISION = "20260924_64"
 _SESSION_TABLES = frozenset(
     {
         "session",
@@ -33,7 +33,7 @@ def _admin(database: Any) -> psycopg.Connection[Any]:
     )
 
 
-def test_b08_a_session_catalog_reuses_cp6_and_adds_bounded_subject_capabilities(
+def test_b08_session_catalog_reuses_cp6_and_adds_bounded_subject_capabilities(
     migrated_database: Any,
 ) -> None:
     with _admin(migrated_database) as connection:
@@ -156,7 +156,8 @@ def test_b08_a_session_catalog_reuses_cp6_and_adds_bounded_subject_capabilities(
                      'list_self_subject_sessions',
                      'get_self_session',
                      'pause_self_session',
-                     'resume_self_session'
+                     'resume_self_session',
+                     'get_self_session_runtime_metrics'
                    )
                 """
             )
@@ -168,6 +169,7 @@ def test_b08_a_session_catalog_reuses_cp6_and_adds_bounded_subject_capabilities(
             "get_self_session",
             "pause_self_session",
             "resume_self_session",
+            "get_self_session_runtime_metrics",
         }
 
         start_signatures = connection.execute(
@@ -198,6 +200,21 @@ def test_b08_a_session_catalog_reuses_cp6_and_adds_bounded_subject_capabilities(
         assert str(end_signatures[0][0]).endswith(
             "requested_session_ref uuid, requested_expected_material_state_ref uuid, "
             "requested_resulting_material_state_ref uuid"
+        )
+
+        metrics_signature = connection.execute(
+            """
+            SELECT pg_get_function_identity_arguments(procedure.oid)
+              FROM pg_proc AS procedure
+              JOIN pg_namespace AS namespace ON namespace.oid = procedure.pronamespace
+             WHERE namespace.nspname = 'dante'
+               AND procedure.proname = 'get_self_session_runtime_metrics'
+            """
+        ).fetchone()
+        assert metrics_signature is not None
+        assert str(metrics_signature[0]) == (
+            "requested_self_person_ref uuid, requested_session_ref uuid, "
+            "requested_material_state_ref uuid"
         )
 
         result_fk = connection.execute(
