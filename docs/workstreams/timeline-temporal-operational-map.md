@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
-- **Status:** CURRENT LIVE STATE — reconciled 2026-09-23
+- **Status:** CURRENT LIVE STATE — reconciled 2026-09-24
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Continuation handoff:** `docs/workstreams/timeline-temporal-operational-handoff.md`
@@ -9,7 +9,7 @@
 - **Current proven topology:** `145|5|88|92|285|223|408|0|0|0`
 - **CI:** not authorized; local tests are run by the user
 
-This is the **single live work ledger**. It records only current progress, accepted decisions, implementation notes and proof evidence. Do not create a new planning/freeze document for every sub-slice.
+This is the single live implementation/proof ledger. Every active sub-slice is delivered **end-to-end** before the next starts.
 
 ---
 
@@ -78,7 +78,7 @@ remaining B06 blocker                       none
 B04 deferred families carried forward:
 
 ```text
-TC-009 contiguous Session duration  → B08-E
+TC-009 contiguous Session duration  → B08-C
 TC-010 spacing/recovery             → later anchor-specific reopening
 TC-011 relative before/after        → future bounded relation/reference review
 ```
@@ -89,12 +89,10 @@ TC-011 relative before/after        → future bounded relation/reference review
 
 ```text
 B08 Session Runtime                              🟡 READY TO START
-  B08-A Authority reconciliation + freeze         DECISIONS RECORDED / LOCAL PROOF PENDING
-  B08-B Start / Read / End core                   ⬜
-  B08-C Pause / Resume + duration                 ⬜
-  B08-D Timeline runtime integration              ⬜
-  B08-E TC-009 Session-duration reopening         ⬜
-  B08-F Whole-block closure                       ⬜
+  B08-A Session Core End-to-End                   ← NEXT / NOT STARTED
+  B08-B Pause / Resume + Durations End-to-End     ⬜
+  B08-C TC-009 Session Duration End-to-End        ⬜
+  B08-D Whole-block closure                       ⬜
 
 B09 Responsibility / Participation               ⬜
 B10 Actual / Outcome / Confirmation / Resolution ⬜
@@ -104,7 +102,7 @@ B07 UI/UX Consolidation v1                       ⏸ DEFERRED
 B15 Whole Vertical Closure                       ⬜
 ```
 
-No B08 runtime slice has been started. B08-A decisions are recorded below and stay open until local proof is recorded in this ledger.
+No B08 implementation slice is currently closed. Work resumes from B08-A only.
 
 ---
 
@@ -124,7 +122,7 @@ planned Schedule duration != Session elapsed duration
 Session elapsed duration != Session active duration
 ```
 
-Existing CP6 Session substrate to inspect before authorizing new DDL:
+Existing CP6 Session substrate to reuse wherever truthful:
 
 ```text
 session
@@ -135,182 +133,203 @@ session_timing_pause
 session_timing_current_history
 ```
 
-Candidate execution targets to verify in B08-A rather than assume:
+Baseline product subjects to validate at the start of B08-A:
 
 ```text
-Activity     ✅ candidate
-Occurrence   ✅ candidate
-Routine      ❌ direct target
-Event        ❌ ordinary baseline target
-Schedule     ❌ owner/target
+Activity      Session subject     yes
+Occurrence    Session subject     yes
+Routine       direct subject      no
+Event         ordinary subject    no baseline
+Schedule      Session owner       no
 ```
+
+Spontaneous Session without prior Activity remains a possible Domain capability but is outside the B08 baseline product path. B08 must not invent an Activity merely to host one.
 
 ---
 
-# 5. B08-A — Authority reconciliation + freeze
+# 5. B08-A — Session Core End-to-End ← NEXT
 
-**Status:** DECISIONS RECORDED / LOCAL PROOF PENDING
+**Status:** NOT STARTED
 
-Inspection used `docs/domain/concepts/session.md`, Logical Time/Reality Session disposition, CP6-M03 Session materialization, Dictionary `session` plus `session_timing_*`, SQLAlchemy `identity.SessionRow` and `mappings/session.py`, and the current Temporal OpenAPI inventory. No separate B08-A document is added.
-
-B08-A adds no migration, API route, generated client, or frontend behavior. Alembic stays `20260923_57`.
-
-## Accepted B08-A decisions
-
-### Eligible execution targets
+Target product capability:
 
 ```text
-Activity      baseline Session subject     yes
-Occurrence    baseline Session subject     yes
-Routine       direct Session subject       no
-Event         ordinary baseline subject    no
-Schedule      Session owner or subject     no
+Activity   → START Session → authoritative read → END Session
+Occurrence → START Session → authoritative read → END Session
 ```
 
-Authority: Session is an execution episode of Activity or Occurrence (`docs/domain/concepts/session.md` core model; Logical slice Time/Reality §7). A Routine stays the policy; execution belongs to an Occurrence. An ordinary Event stays Schedule → Actual, and does not receive a Session merely because it occupies time. Schedule remains planned placement.
+This is one vertical slice. The authority/schema inspection is the first step of the same slice, not a separate phase.
 
-Spontaneous Session without a prior Activity remains Domain-true and is not a B08 baseline command. B08 must not invent an Activity to host one.
+## B08-A live checklist
 
-One Activity or Occurrence may have many Sessions. Ending a Session does not complete either subject.
-
-### Representation
+### Semantics / authority
 
 ```text
-identity     dante.session.session_ref          existing NativeRef shell
-timing       session.timing MaterialState      existing
-subject edge Session → Activity | Occurrence   ABSENT — the only DDL gap
+[ ] reconcile Session Domain/Logical/Physical authority
+[ ] confirm Activity + Occurrence eligible subjects
+[ ] confirm Routine/Event/Schedule exclusions for baseline
+[ ] freeze START / READ / END semantics
+[ ] confirm END has no completion/Actual/Outcome side effect
 ```
 
-`dante.session` stays an identity shell with only `session_ref`. Do not add a subject column to that shell. Do not store the subject on Schedule. Do not use a `(kind, id)` pair.
-
-B08-B may add one typed association only:
+### Persistence / database
 
 ```text
-session_ref          → dante.session
-subject_native_ref   → native_address
-owner_family         activity | occurrence
-cardinality          exactly one subject per Session
+[ ] inspect current `session*` substrate against the accepted capability
+[ ] choose typed Session → Activity/Occurrence execution-context representation
+[ ] add forward-only Alembic only for real gaps
+[ ] reconcile SQLAlchemy mapping
+[ ] reconcile Dictionary + DB overlay + expected topology
+[ ] self-scope / integrity / current-history behavior proven
+[ ] idempotency / receipt / expected-current / concurrency behavior proven
 ```
 
-The family check uses `native_address.owner_family`, the same discriminator Schedule already uses for Activity, Event, and Occurrence.
-
-### Lifecycle
-
-The Domain defers a lifecycle enum. B08 does not add one. Open, paused, and ended are the existing timing rows.
+### Backend / API / generated client
 
 ```text
-START    new session_ref
-         + current absolute session.timing
-         + started_at set, ended_at NULL
-PAUSE    one session_timing_pause with resumed_at NULL
-         Session identity stays open
-RESUME   set resumed_at on that open pause
-         same Session, same timing state
-END      set ended_at on the current absolute timing
-         later START is a new session_ref
+[ ] Activity START operation
+[ ] Occurrence START operation
+[ ] authoritative Session read/list required by product path
+[ ] END operation
+[ ] stable operationIds / error-conflict contract
+[ ] OpenAPI generated-current
+[ ] generated API client typechecks
 ```
 
-`elapsed_only` stays the existing manual retrospective form. Pause rows reference absolute timing, so the timer path does not write `elapsed_only`. A pause duration never splits a Session. END does not write Actual, Outcome, Activity completion, Occurrence completion, or a Schedule change.
-
-Illegal transitions, already enforced or required of B08-B:
+### Frontend / Timeline
 
 ```text
-two open pauses on one timing state          reject
-pause or resume on elapsed_only              reject
-pause or resume after ended_at is set        reject
-resume without an open pause                 reject
-second END                                   reject
+[ ] functional START control for eligible Activity
+[ ] functional START control for eligible Occurrence
+[ ] authoritative running/open representation
+[ ] functional END control
+[ ] F5/navigation rehydrates canonical state
+[ ] no browser-owned canonical Session state
+[ ] no implicit Schedule mutation
 ```
 
-### Current history, concurrency, CAS
-
-Current timing is `session_timing_current_history`, one open row per `session_ref` (`ux_session_timing_current_history_open`). Corrections are later MaterialStates. B08-B does not implement split/merge.
-
-Overlap of two Sessions is not a database prohibition (`docs/domain/concepts/session.md`). B08 does not add “one open Session per subject”.
-
-B08-B mutations use the existing temporal pattern: self-scope, expected current timing state, operation id distinct from `session_ref`, and an immutable receipt. B08-A adds no receipt table.
-
-### API inventory — not published in B08-A
-
-Later slices publish these operationIds and no others for the baseline timer:
+### Proof / closure
 
 ```text
-temporal_start_activity_session
-temporal_start_occurrence_session
-temporal_list_activity_sessions
-temporal_list_occurrence_sessions
-temporal_get_session
-temporal_pause_session
-temporal_resume_session
-temporal_end_session
+[ ] relevant backend/PostgreSQL local tests PASS
+[ ] relevant web/unit/typecheck gates PASS
+[ ] generated:check PASS when applicable
+[ ] manual Activity START → F5 → END PASS
+[ ] manual Occurrence START → F5 → END PASS
+[ ] second START after END creates a new SessionRef
+[ ] Schedule remains unchanged
+[ ] no Activity/Occurrence completion fabricated
+[ ] no Actual/Outcome fabricated
+[ ] map/handoff/DB docs reconciled
 ```
 
-Subject reads return every Session for that subject, including more than one open Session. They do not invent a single current Session.
-
-### TC-009 and non-goals
-
-TC-009 minimum contiguous Session duration stays B08-E. It is not planned Schedule duration. TC-010 and TC-011 stay deferred.
-
-Out of B08-A, and out of the baseline timer unless a later slice owns them: Actual, Outcome, Confirmation, completion, Schedule mutation, Event Sessions, Routine as subject, spontaneous Session commands, provider import, split/merge, a status enum, pause-threshold splitting, solver, reminders, B07 visual consolidation, and CI.
-
-### Proof owned by B08-A
-
-```text
-dictionary + SQLAlchemy + OpenAPI freeze lock
-live PostgreSQL: revision _57, six Session tables,
-  identity shell unchanged, absolute|elapsed_only,
-  open-pause and open-history uniqueness,
-  no subject edge, no start/pause/resume/end capability
-```
-
-B08-B owns behavioral proof of START/END. B08-C owns pause/resume duration. B08-F owns the real-stack walkthrough.
-
-## B08-A evidence
-
-_Local proof has not been executed in this session. B08-A is not CLOSED / FROZEN until that proof is recorded here._
+Only when every applicable item above is accepted may B08-A become `✅ CLOSED / PROVEN` and B08-B start.
 
 ---
 
-# 6. Later B08 slices
+# 6. B08-B — Pause / Resume + Durations End-to-End
 
-These are deliberately not expanded into separate planning documents. The roadmap defines their scope; when each becomes active, its decisions and evidence are added here.
+**Status:** BLOCKED BY B08-A
 
-```text
-B08-B  Start / Read / End core
-B08-C  Pause / Resume + truthful duration
-B08-D  Timeline runtime integration
-B08-E  TC-009 Session-duration reopening
-B08-F  Whole-block automated + real-stack closure
-```
-
-B08-F manual target:
+Target extension of the proven B08-A path:
 
 ```text
-START
-→ F5 still running
-→ PAUSE
-→ F5 still paused
-→ RESUME
-→ END
-→ second START = new SessionRef
-→ eligible Occurrence path works
-→ Schedule unchanged
-→ no fabricated completion / Actual / Outcome
-→ no duplicate runtime state after reload/navigation
+RUNNING → PAUSED → RUNNING → ENDED
 ```
 
-Only after this may B08 become `CLOSED / PROVEN`.
+Live checklist when activated:
+
+```text
+[ ] authority semantics reconciled
+[ ] persistence/current-history changes complete
+[ ] PAUSE backend/API/client/frontend complete
+[ ] RESUME backend/API/client/frontend complete
+[ ] same SessionRef across pause/resume
+[ ] at most one open pause
+[ ] invalid transition conflicts/fails closed
+[ ] elapsed duration truthful
+[ ] paused duration truthful
+[ ] active duration only from supported facts
+[ ] browser timer remains presentation only
+[ ] F5 while running/paused authoritative
+[ ] concurrency/replay proof
+[ ] automated gates PASS
+[ ] real-stack manual path PASS
+[ ] docs/ledger reconciled
+```
+
+B08-B closes only as a complete end-to-end capability.
 
 ---
 
-# 7. Documentation / chat-saturation rule
+# 7. B08-C — TC-009 Session Duration End-to-End
+
+**Status:** BLOCKED BY B08-B
+
+TC-009 is reopened only after real Session runtime exists.
+
+```text
+[ ] exact contiguous Session-duration semantics frozen
+[ ] elapsed-vs-active applicability frozen
+[ ] typed persistence added only if needed
+[ ] deterministic hard/soft evaluation complete
+[ ] backend/API/client complete where required
+[ ] functional product exposure complete where required
+[ ] violation != automatic mutation preserved
+[ ] automated proof PASS
+[ ] manual proof where applicable PASS
+[ ] docs/ledger reconciled
+```
+
+TC-010 remains deferred unless a direct authority dependency is proven.
+
+---
+
+# 8. B08-D — Whole-block closure
+
+**Status:** BLOCKED BY B08-A/B/C
+
+No new half-feature belongs here. B08-D is whole-block regression, reconciliation and persistent real-stack proof:
+
+```text
+[ ] DB catalog/integrity/topology reconciled
+[ ] B08 backend regression PASS
+[ ] cross-user/fail-closed PASS
+[ ] idempotency/concurrency PASS
+[ ] generated:check PASS
+[ ] API-client typecheck PASS
+[ ] web typecheck PASS
+[ ] focused Session/Timeline Vitest PASS
+[ ] touched B01/B02/B04/B06 regressions PASS
+[ ] Activity START → F5 → PAUSE → F5 → RESUME → END PASS
+[ ] second START → new SessionRef PASS
+[ ] Occurrence path PASS
+[ ] Schedule unchanged PASS
+[ ] no fabricated completion / Actual / Outcome PASS
+[ ] no duplicate state after reload/navigation PASS
+[ ] final docs/handoff reconciled
+```
+
+Only B08-D may mark the whole B08 block `✅ CLOSED / PROVEN`.
+
+---
+
+# 9. Later blocks
+
+B09–B12 follow the same discipline: each sub-capability must travel through semantics → persistence → backend/API/client → real frontend → automated/manual proof → documentation before the next sub-capability starts.
+
+B07 remains deferred until B08–B12 exist; it consolidates presentation rather than rescuing half-implemented capabilities.
+
+---
+
+# 10. Documentation / chat-saturation rule
 
 At a meaningful checkpoint:
 
 ```text
-1. update this ledger with accepted decisions/evidence
+1. update this ledger checkboxes + accepted evidence
 2. update handoff with exact next action
-3. update roadmap only if sequencing or scope changed
+3. update roadmap only if scope/order changes
 4. update DB overlay/dictionary in the same change when persistence changes
 5. push code/docs frequently
 ```
@@ -321,22 +340,21 @@ Fresh-chat recovery order:
 1. timeline-temporal-operational-handoff.md
 2. timeline-temporal-operational-roadmap.md
 3. timeline-temporal-operational-map.md
-4. docs/database/timeline-temporal-operational.md only if the active slice touches DB work
+4. docs/database/timeline-temporal-operational.md only if active work touches DB
 ```
-
-A whole-block closure document may be created when B08 closes; intermediate sub-slices stay in this live ledger.
 
 ---
 
-# 8. Current gate
+# 11. Current gate
 
 ```text
 B00–B06 ✅ CLOSED / PROVEN
 B07     ⏸ DEFERRED
 B08     🟡 READY TO START
-B08-A   DECISIONS RECORDED / LOCAL PROOF PENDING
+B08-A   ← NEXT / NOT STARTED / END-TO-END
+B08-B–D ⬜ BLOCKED BY PRECEDING SLICE
 B09–B12 ⬜ NOT STARTED
 B15     ⬜ NOT STARTED
 ```
 
-**Next concrete action:** run the B08-A local proof. Do not start B08-B and do not mark B08-A `CLOSED / FROZEN` until that proof is recorded in this ledger.
+**Next concrete action:** start B08-A Session Core as one complete end-to-end slice. Do not treat authority, DB, API or frontend as separate roadmap phases.
