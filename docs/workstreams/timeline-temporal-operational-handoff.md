@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B08 SESSION RUNTIME 🟡 — B08-D REGRESSION PREPARED; USER PROOF PENDING
+- **Status:** B08 SESSION RUNTIME 🟡 — B08-D USER WALKTHROUGH FAILED; HTTP FIX PUBLISHED, REPROOF PENDING
 - **Reconciled:** 2026-09-24
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -24,7 +24,7 @@ B08     🟡 IN PROGRESS
 B08-A   ✅ CLOSED / USER-REPORTED VIA B08-B
 B08-B   ✅ CLOSED / USER-REPORTED 2026-09-24
 B08-C   ✅ CLOSED / PROVEN — local automated gate 2026-09-24
-B08-D   🟡 REGRESSION PREPARED — user proof pending
+B08-D   🟡 USER WALKTHROUGH FAILED — Pause/END 422; fix awaits local repro
 B09–B12 ⬜ NOT STARTED
 B15     ⬜ NOT STARTED
 ```
@@ -126,13 +126,13 @@ focused backend unit/API proof: 15 passed
 focused PostgreSQL B08-C/B04/catalog proof: 14 passed
 ```
 
-The single real-stack/manual walkthrough remains owned by B08-D; its observed result is pending.
+The B08-D real-stack walkthrough exposed HTTP 422 on Pause and END despite the displayed five-minute minimum being met. The minimum is a soft read-time evaluation and must not block those commands. A targeted HTTP and authoring fix is published as a candidate; user-run local proof is still required.
 
 ---
 
 # 6. B08-D user-run closure gate
 
-The prepared regression is `test_b08_d_session_workflow.py` (PostgreSQL Activity/Occurrence and TC-009 across A/B/C) plus `session-subject-controls.test.tsx` (browser controls, pause reload and policy display). No B08-D tests have yet been reported as run. Run locally against the branch after pulling the published commit; the assistant does not run tests or activate CI.
+The prepared regression is `test_b08_d_session_workflow.py` (PostgreSQL Activity/Occurrence and TC-009 across A/B/C) plus `session-subject-controls.test.tsx` (browser controls, pause reload and policy display). During the user's real-stack walkthrough, START succeeded, but PAUSE and END returned HTTP 422 (`One or more request fields are invalid.`), including after the soft minimum became satisfied. The HTTP command inherited strict validation that rejected the JSON string for `expected_material_state_ref` before the runtime could evaluate the Session. The candidate fix accepts a valid UUID string for this field, keeps invalid identifiers rejected, and allows arbitrary positive whole-minute minimum values (including 1, 26 and 31) instead of five-minute steps. No B08-D automated test output has yet been reported. Run the following local gate after pulling the published fix; the assistant does not run tests or activate CI.
 
 From repository root:
 
@@ -144,7 +144,8 @@ pnpm --filter @dante/web exec vitest run \
   src/features/temporal/session-subject-controls.test.tsx \
   src/features/temporal/remote-session-data-source.test.ts \
   src/features/temporal-create/application/temporal-create-b04-runtime.test.ts \
-  src/features/temporal-create/model/temporal-create-session.test.ts
+  src/features/temporal-create/model/temporal-create-session.test.ts \
+  src/features/temporal-create/ui/temporal-create-activity-fields.test.tsx
 ```
 
 From `apps/backend`, with the local PostgreSQL integration environment used for B08-C:
@@ -159,7 +160,8 @@ uv run --locked pytest -q --no-cov \
   tests/integration/temporal/test_b08_c_session_minimum_duration.py \
   tests/integration/temporal/test_b08_d_session_workflow.py \
   tests/test_b08_c_session_duration_evaluation.py \
-  tests/test_temporal_constraint_api.py
+  tests/test_temporal_constraint_api.py \
+  tests/test_b08_a_session_authority_freeze.py
 ```
 
 Then perform **one** real-stack walkthrough in the authenticated app; record observed SessionRefs, displayed states and any failure:
@@ -205,4 +207,4 @@ The UI need not expose internal identifiers. Capture SessionRefs and canonical S
 4. docs/database/timeline-temporal-operational.md
 ```
 
-**Exact next action:** User runs the B08-D commands and walkthrough above; capture actual results and close B08 only if both gates pass. Contract: `timeline-temporal-operational-b08-c-implementation-freeze.md`.
+**Exact next action:** User pulls the HTTP and authoring fix, runs the B08-D commands and repeats the walkthrough, including PAUSE and END after reload; capture actual results and close B08 only if both gates pass. Contract: `timeline-temporal-operational-b08-c-implementation-freeze.md`.
