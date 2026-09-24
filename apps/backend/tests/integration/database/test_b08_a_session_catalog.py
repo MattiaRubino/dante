@@ -9,7 +9,7 @@ import pytest
 
 pytestmark = pytest.mark.postgres
 
-_EXPECTED_REVISION = "20260924_59"
+_EXPECTED_REVISION = "20260924_60"
 _SESSION_TABLES = frozenset(
     {
         "session",
@@ -117,9 +117,7 @@ def test_b08_a_session_catalog_reuses_cp6_and_adds_bounded_subject_capabilities(
                    FROM pg_attribute AS subject_column
                   WHERE subject_column.attrelid = relation.oid
                     AND subject_column.attname IN (
-                      'activity_ref',
-                      'occurrence_ref',
-                      'subject_native_ref'
+                      'activity_ref', 'occurrence_ref', 'subject_native_ref'
                     )
                     AND NOT subject_column.attisdropped
                )
@@ -152,8 +150,7 @@ def test_b08_a_session_catalog_reuses_cp6_and_adds_bounded_subject_capabilities(
                 """
                 SELECT procedure.proname
                   FROM pg_proc AS procedure
-                  JOIN pg_namespace AS namespace
-                    ON namespace.oid = procedure.pronamespace
+                  JOIN pg_namespace AS namespace ON namespace.oid = procedure.pronamespace
                  WHERE namespace.nspname = 'dante'
                    AND procedure.proname IN (
                      'start_self_session',
@@ -185,3 +182,33 @@ def test_b08_a_session_catalog_reuses_cp6_and_adds_bounded_subject_capabilities(
             "requested_material_state_ref uuid, requested_subject_family text, "
             "requested_subject_native_ref uuid"
         )
+
+        end_signatures = connection.execute(
+            """
+            SELECT pg_get_function_identity_arguments(procedure.oid)
+              FROM pg_proc AS procedure
+              JOIN pg_namespace AS namespace ON namespace.oid = procedure.pronamespace
+             WHERE namespace.nspname = 'dante'
+               AND procedure.proname = 'end_self_session'
+            """
+        ).fetchall()
+        assert len(end_signatures) == 1
+        assert str(end_signatures[0][0]).endswith(
+            "requested_session_ref uuid, requested_expected_material_state_ref uuid, "
+            "requested_resulting_material_state_ref uuid"
+        )
+
+        result_fk = connection.execute(
+            """
+            SELECT pg_get_constraintdef(constraint_.oid)
+              FROM pg_constraint AS constraint_
+              JOIN pg_class AS relation ON relation.oid = constraint_.conrelid
+              JOIN pg_namespace AS namespace ON namespace.oid = relation.relnamespace
+             WHERE namespace.nspname='dante'
+               AND relation.relname='session_end_operation'
+               AND constraint_.conname='fk_session_end_operation_resulting_state_address'
+            """
+        ).fetchone()
+        assert result_fk is not None
+        assert "resulting_material_state_ref" in str(result_fk[0])
+        assert "material_state_address" in str(result_fk[0])
