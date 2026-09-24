@@ -62,7 +62,7 @@ B08 Session Runtime                              🟡 IN PROGRESS
   B08-A Session Core End-to-End                   ✅ CLOSED / USER-REPORTED
   B08-B Pause / Resume + Durations End-to-End     ✅ CLOSED / USER-REPORTED
   B08-C TC-009 Session Duration End-to-End        ✅ CLOSED / PROVEN — local automated gate 2026-09-24
-  B08-D Whole-block closure                       🟡 NEXT
+  B08-D Whole-block closure                       🟡 REGRESSION PREPARED / USER PROOF PENDING
 
 B09 Responsibility / Participation               ⬜
 B10 Actual / Outcome / Confirmation / Resolution ⬜
@@ -151,7 +151,7 @@ B08-B is closed per user report. `_62` implements Pause/Resume transitions, `_63
 
 B08-C `_65` is closed/proven by the user-run local automated gate: generated/client checks, web typecheck/Vitest, backend unit/API and PostgreSQL catalog/integration proof all passed on 2026-09-24. Its freeze contract is `timeline-temporal-operational-b08-c-implementation-freeze.md`; it adds only the direct Activity soft-minimum Session active-duration subset, with read-time evaluation and no outcome or Schedule side effects.
 
-B08-D is whole-block regression/dogfood closure after A–C; it cannot be used to defer missing proof from an earlier slice.
+B08-D is whole-block regression/dogfood closure after A–C. The prepared PostgreSQL test crosses unplaced Activity Session START → PAUSE → reload → RESUME → END → second START with TC-009 per Session, immutable timing history and no fabricated Schedule/Actual; it also checks an unscheduled Occurrence Session through the same transitions without inherited Activity TC-009. The prepared browser controls test checks reload while paused, exact expected timing state on commands, the pending/violated display and separate subsequent start. These tests have not yet been run by the user. The single real-stack walkthrough and its observations are also pending; see handoff for the gate.
 
 ---
 
@@ -164,9 +164,9 @@ B08     🟡 IN PROGRESS
 B08-A   ✅ CLOSED / USER-REPORTED VIA B08-B
 B08-B   ✅ CLOSED / USER-REPORTED
 B08-C   ✅ CLOSED / PROVEN — local automated gate 2026-09-24
-B08-D   🟡 NEXT — WHOLE-BLOCK CLOSURE
+B08-D   🟡 REGRESSION PREPARED — USER PROOF PENDING
 B09–B12 ⬜ NOT STARTED
 B15     ⬜ NOT STARTED
 ```
 
-**Next concrete action:** B08-D whole-block regression/dogfood closure and the one real-stack walkthrough.
+**Next concrete action:** User runs B08-D automated regression and one real-stack walkthrough; then record actual evidence and decide closure.

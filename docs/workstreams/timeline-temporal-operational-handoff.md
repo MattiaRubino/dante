@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B08 SESSION RUNTIME 🟡 — B08-C CLOSED / PROVEN; B08-D NEXT
+- **Status:** B08 SESSION RUNTIME 🟡 — B08-D REGRESSION PREPARED; USER PROOF PENDING
 - **Reconciled:** 2026-09-24
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -24,7 +24,7 @@ B08     🟡 IN PROGRESS
 B08-A   ✅ CLOSED / USER-REPORTED VIA B08-B
 B08-B   ✅ CLOSED / USER-REPORTED 2026-09-24
 B08-C   ✅ CLOSED / PROVEN — local automated gate 2026-09-24
-B08-D   🟡 NEXT — whole-block closure
+B08-D   🟡 REGRESSION PREPARED — user proof pending
 B09–B12 ⬜ NOT STARTED
 B15     ⬜ NOT STARTED
 ```
@@ -126,24 +126,67 @@ focused backend unit/API proof: 15 passed
 focused PostgreSQL B08-C/B04/catalog proof: 14 passed
 ```
 
-The single real-stack/manual walkthrough remains intentionally owned by B08-D:
-
-```text
-1. create/use an Activity with no Schedule
-2. START Session from Planning Tray
-3. verify Activity is still unplaced / no Schedule fabricated
-4. F5 → same Session still running
-5. END → Session closes
-6. START again → new SessionRef
-7. scheduled Activity START/F5/END
-8. eligible Occurrence START/F5/END
-9. verify Schedule unchanged
-10. verify no completion / Actual / Outcome appeared
-```
+The single real-stack/manual walkthrough remains owned by B08-D; its observed result is pending.
 
 ---
 
-# 6. Collaboration discipline
+# 6. B08-D user-run closure gate
+
+The prepared regression is `test_b08_d_session_workflow.py` (PostgreSQL Activity/Occurrence and TC-009 across A/B/C) plus `session-subject-controls.test.tsx` (browser controls, pause reload and policy display). No B08-D tests have yet been reported as run. Run locally against the branch after pulling the published commit; the assistant does not run tests or activate CI.
+
+From repository root:
+
+```bash
+pnpm generated:check
+pnpm --filter @dante/api-client typecheck
+pnpm --filter @dante/web typecheck
+pnpm --filter @dante/web exec vitest run \
+  src/features/temporal/session-subject-controls.test.tsx \
+  src/features/temporal/remote-session-data-source.test.ts \
+  src/features/temporal-create/application/temporal-create-b04-runtime.test.ts \
+  src/features/temporal-create/model/temporal-create-session.test.ts
+```
+
+From `apps/backend`, with the local PostgreSQL integration environment used for B08-C:
+
+```bash
+uv run --locked pytest -q --no-cov \
+  tests/integration/database/test_b08_a_session_catalog.py \
+  tests/integration/database/test_current_catalog.py \
+  tests/integration/database/test_database_current_catalog.py \
+  tests/integration/temporal/test_b08_a_session_runtime.py \
+  tests/integration/temporal/test_b08_b_session_pause_resume.py \
+  tests/integration/temporal/test_b08_c_session_minimum_duration.py \
+  tests/integration/temporal/test_b08_d_session_workflow.py \
+  tests/test_b08_c_session_duration_evaluation.py \
+  tests/test_temporal_constraint_api.py
+```
+
+Then perform **one** real-stack walkthrough in the authenticated app; record observed SessionRefs, displayed states and any failure:
+
+```text
+1. Create a splittable Activity with an active Session minimum longer than the
+   walkthrough (e.g. 45 minutes); leave the Activity without Schedule.
+2. In Planning Tray START; inspect its SessionRef and the pending TC-009 minimum.
+   Reload (F5): same SessionRef, running, Activity still unplaced.
+3. PAUSE and reload: same SessionRef, paused, active time stops growing;
+   Termina is unavailable. RESUME and reload: same SessionRef, running.
+4. END before the threshold: same SessionRef, violated soft minimum; no block.
+   Reload: ended state persists. START again: a distinct SessionRef with a fresh
+   pending evaluation, not a sum of the two Sessions.
+5. On a scheduled Activity, START → reload → PAUSE → RESUME → END. Its accepted
+   Schedule placement stays the same; Session time is not placement time.
+6. On an eligible Occurrence, START → reload → PAUSE → RESUME → END.
+   No inherited Activity TC-009 appears; the Occurrence remains unresolved.
+7. Confirm no fabricated Schedule for the unplaced Activity or Occurrence,
+   no Activity completion, and no Actual or Outcome from any Session END.
+```
+
+The UI need not expose internal identifiers. Capture SessionRefs and canonical Schedule/Actual/Outcome evidence through authenticated API or DB inspection where the UI does not show them. Mark B08-D and B08 closed only after receiving the user's actual automated outputs and walkthrough observations; record evidence in map/roadmap/handoff without claiming unobserved results.
+
+---
+
+# 7. Collaboration discipline
 
 - user runs tests locally; assistant does not run them
 - no CI/GitHub Actions unless explicitly authorized
@@ -153,7 +196,7 @@ The single real-stack/manual walkthrough remains intentionally owned by B08-D:
 
 ---
 
-# 7. Fresh-chat recovery
+# 8. Fresh-chat recovery
 
 ```text
 1. this handoff
@@ -162,4 +205,4 @@ The single real-stack/manual walkthrough remains intentionally owned by B08-D:
 4. docs/database/timeline-temporal-operational.md
 ```
 
-**Exact next action:** B08-D whole-block regression/dogfood and its one real-stack walkthrough. Contract: `timeline-temporal-operational-b08-c-implementation-freeze.md`.
+**Exact next action:** User runs the B08-D commands and walkthrough above; capture actual results and close B08 only if both gates pass. Contract: `timeline-temporal-operational-b08-c-implementation-freeze.md`.

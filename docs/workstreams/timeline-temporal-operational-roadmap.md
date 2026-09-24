@@ -5,7 +5,7 @@
 - **Vertical boundary:** Home `+` creation/configuration → canonical temporal truth → Timeline projection/actions → bounded lifecycle completion
 - **Completed frontier:** B06 ✅ CLOSED / PROVEN
 - **Current block:** B08 Session Runtime 🟡 IN PROGRESS
-- **Current slice:** B08-D Whole-block closure — B08-C local automated proof recorded
+- **Current slice:** B08-D Whole-block closure — regression prepared; user-run proof pending
 - **Deferred block:** B07 UI/UX Consolidation v1 — execute after B08–B12
 - **Current candidate DB frontier:** PostgreSQL 18.6 / Alembic `20260924_65` — B08-C local proof recorded
 - **Candidate topology B08-C local proof recorded:** `150|5|99|93|292|236|418|0|0|0`
@@ -81,7 +81,7 @@ B08 Session Runtime                              🟡 IN PROGRESS
   B08-A Session Core End-to-End                   ✅ CLOSED / USER-REPORTED
   B08-B Pause / Resume + Durations End-to-End     ✅ CLOSED / USER-REPORTED
   B08-C TC-009 Session Duration End-to-End        ✅ CLOSED / PROVEN — local automated gate 2026-09-24
-  B08-D Whole-block closure                       🟡 NEXT
+  B08-D Whole-block closure                       🟡 REGRESSION PREPARED / USER PROOF PENDING
 
 B09 Responsibility / Participation               ⬜
 B10 Actual / Outcome / Confirmation / Resolution ⬜
@@ -220,7 +220,7 @@ Implementation contract: `timeline-temporal-operational-b08-c-implementation-fre
 
 ## B08-D — Whole-block closure
 
-Whole B08 regression/dogfood closure after A–C. It adds no half-capability and cannot compensate for an unproven earlier slice.
+Whole B08 regression/dogfood closure after A–C. The integrated backend Activity/Occurrence workflow and frontend Session controls regression are prepared. No migration, runtime capability or generated contract changes belong to this slice. The user runs the local automated gate and the single real-stack walkthrough; preserve actual results in the live map before declaring B08-D or B08 closed. See the handoff for exact commands and walkthrough.
 
 ---
 
@@ -262,9 +262,9 @@ B08     🟡 IN PROGRESS
 B08-A   ✅ CLOSED / USER-REPORTED VIA B08-B DEPENDENCY
 B08-B   ✅ CLOSED / USER-REPORTED 2026-09-24
 B08-C   ✅ CLOSED / PROVEN — local automated gate 2026-09-24
-B08-D   🟡 NEXT — WHOLE-BLOCK CLOSURE
+B08-D   🟡 REGRESSION PREPARED — USER PROOF PENDING
 B09–B12 ⬜ NOT STARTED
 B15     ⬜ NOT STARTED
 ```
 
-**Current action:** B08-D whole-block regression/dogfood and the one real-stack walkthrough.
+**Current action:** User-run B08-D automated regression and the one real-stack walkthrough; record evidence before closure.
