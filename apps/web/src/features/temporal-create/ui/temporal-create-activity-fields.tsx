@@ -34,21 +34,7 @@ export function TemporalCreateActivityFields({
     onPatch({ execution: { ...execution, ...patch } });
   const chooseSessionMode = (
     sessionMode: TemporalCreateFields['execution']['sessionMode'],
-  ) => {
-    if (sessionMode === 'splittable' && !unplaced) {
-      onPatch({
-        timeSemantics: 'unscheduled',
-        scheduling: {
-          ...scheduling,
-          constraintKind: 'none',
-          fallbackPolicy: 'inherit',
-        },
-        execution: { ...execution, sessionMode },
-      });
-      return;
-    }
-    patchExecution({ sessionMode });
-  };
+  ) => patchExecution({ sessionMode });
 
   return (
     <>
