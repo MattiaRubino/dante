@@ -422,7 +422,16 @@ describe('temporal create session', () => {
     expect(
       validateTemporalCreateFields(invalid).map((issue) => issue.code),
     ).toContain('temporal.create.minimum_session.invalid');
-    expect(validateTemporalCreateFields(valid)).toEqual([]);
+    for (const minutes of [1, 26, 31]) {
+      expect(
+        validateTemporalCreateFields(
+          createTemporalCreateFields({
+            ...valid,
+            execution: { ...valid.execution, minSessionMinutes: minutes },
+          }),
+        ),
+      ).toEqual([]);
+    }
     expect(validateTemporalCreateFields(minimumMayExceedEstimatedEffort)).toEqual(
       [],
     );
