@@ -214,11 +214,9 @@ class SessionApplication:
 
     async def _rows(self, statement: str, parameters: dict[str, object]) -> list[RowMapping]:
         try:
-            async with self._session_factory() as database_session:
+            async with self._session_factory() as database_session, database_session.begin():
                 result = await database_session.execute(text(statement), parameters)
-                rows = list(result.mappings().all())
-                await database_session.commit()
-                return rows
+                return list(result.mappings().all())
         except IntegrityError as exc:
             self._raise_known(exc)
             raise SessionPersistenceError("Session command was rejected.") from exc
