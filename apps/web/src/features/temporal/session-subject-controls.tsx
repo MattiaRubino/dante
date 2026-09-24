@@ -25,6 +25,13 @@ function formatDuration(seconds: number): string {
   return `${minutes}:${String(remainingSeconds).padStart(2, '0')}`;
 }
 
+function rejectionMessage(fallback: string, error: unknown): string {
+  if (error instanceof Error && error.message.trim()) {
+    return `${fallback} ${error.message}`;
+  }
+  return fallback;
+}
+
 export function SessionSubjectControls({
   kind,
   subjectRef,
@@ -66,13 +73,18 @@ export function SessionSubjectControls({
   // Canonical Session listing is oldest-first; show the newest ended policy result.
   const durationSession = openSession ?? sessions[sessions.length - 1] ?? null;
 
+  const recoverAfterRejection = (fallback: string, error: unknown) =>
+    reload()
+      .catch(() => undefined)
+      .then(() => setMessage(rejectionMessage(fallback, error)));
+
   const start = () => {
     setPending(true);
     void source
       .start(kind, subjectRef, operationId())
       .then(() => reload())
       .then(() => setMessage(`Sessione avviata · ${label}`))
-      .catch(() => setMessage('Avvio sessione rifiutato.'))
+      .catch((error: unknown) => recoverAfterRejection('Avvio sessione rifiutato.', error))
       .finally(() => setPending(false));
   };
 
@@ -85,7 +97,9 @@ export function SessionSubjectControls({
       .end(openSession.sessionRef, openSession.timingMaterialStateRef, operationId())
       .then(() => reload())
       .then(() => setMessage(`Sessione chiusa · ${label}`))
-      .catch(() => setMessage('Chiusura sessione rifiutata.'))
+      .catch((error: unknown) =>
+        recoverAfterRejection('Chiusura sessione rifiutata.', error),
+      )
       .finally(() => setPending(false));
   };
 
@@ -98,7 +112,9 @@ export function SessionSubjectControls({
       .pause(openSession.sessionRef, openSession.timingMaterialStateRef, operationId())
       .then(() => reload())
       .then(() => setMessage('Sessione in pausa · ' + label))
-      .catch(() => setMessage('Pausa sessione rifiutata.'))
+      .catch((error: unknown) =>
+        recoverAfterRejection('Pausa sessione rifiutata.', error),
+      )
       .finally(() => setPending(false));
   };
 
@@ -111,7 +127,9 @@ export function SessionSubjectControls({
       .resume(openSession.sessionRef, openSession.timingMaterialStateRef, operationId())
       .then(() => reload())
       .then(() => setMessage('Sessione ripresa · ' + label))
-      .catch(() => setMessage('Ripresa sessione rifiutata.'))
+      .catch((error: unknown) =>
+        recoverAfterRejection('Ripresa sessione rifiutata.', error),
+      )
       .finally(() => setPending(false));
   };
 

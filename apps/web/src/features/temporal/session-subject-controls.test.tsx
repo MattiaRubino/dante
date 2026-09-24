@@ -143,6 +143,33 @@ describe('SessionSubjectControls B08-D whole workflow', () => {
       .toContain('in corso');
   });
 
+
+  it('reloads canonical state and exposes the conflict when this view is stale', async () => {
+    const started = session();
+    const paused = session({
+      timingMaterialStateRef: 'timing-paused',
+      paused: true,
+      elapsedSeconds: 90,
+      pausedSeconds: 30,
+      activeSeconds: 60,
+    });
+    source.list.mockResolvedValueOnce([started]).mockResolvedValue([paused]);
+    source.pause.mockRejectedValue(
+      new Error('Session pause conflicts with current timing.'),
+    );
+
+    render(
+      <SessionSubjectControls kind="activity" subjectRef={activityRef} label="Focus" />,
+    );
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Pausa' })).toBeTruthy());
+
+    fireEvent.click(screen.getByRole('button', { name: 'Pausa' }));
+
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Riprendi' })).toBeTruthy());
+    expect(screen.getByRole('status').textContent)
+      .toContain('Session pause conflicts with current timing.');
+  });
+
   it('keeps an Occurrence Session free of the direct Activity TC-009 badge', async () => {
     source.list.mockResolvedValue([
       session({ subjectNativeRef: occurrenceRef, durationEvaluations: [] }),
