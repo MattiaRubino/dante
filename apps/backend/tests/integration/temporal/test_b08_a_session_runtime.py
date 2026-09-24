@@ -62,6 +62,14 @@ async def test_b08_a_activity_session_is_scoped_idempotent_and_does_not_fabricat
                 life_area_ref=area.life_area_ref,
             )
         ).activity
+        other_activity = (
+            await activities.create_activity(
+                self_person_ref=alice,
+                operation_id="b08-a:activity-other",
+                title="Different B08 proof",
+                life_area_ref=area.life_area_ref,
+            )
+        ).activity
 
         started = await sessions.start(
             self_person_ref=alice,
@@ -81,6 +89,14 @@ async def test_b08_a_activity_session_is_scoped_idempotent_and_does_not_fabricat
         assert replay.replayed
         assert replay.session_ref == started.session_ref
         assert replay.timing_material_state_ref == started.timing_material_state_ref
+
+        with pytest.raises(SessionOperationReuseError):
+            await sessions.start(
+                self_person_ref=alice,
+                operation_id="b08-a:activity-start",
+                subject_kind="activity",
+                subject_native_ref=other_activity.activity_ref,
+            )
 
         listed = await sessions.list_for_subject(
             self_person_ref=alice,
@@ -142,14 +158,6 @@ async def test_b08_a_activity_session_is_scoped_idempotent_and_does_not_fabricat
         )
         assert restarted.session_ref != started.session_ref
         assert restarted.open
-
-        with pytest.raises(SessionOperationReuseError):
-            await sessions.start(
-                self_person_ref=alice,
-                operation_id="b08-a:activity-restart",
-                subject_kind="occurrence",
-                subject_native_ref=activity.activity_ref,
-            )
 
         with _admin(migrated_database) as connection:
             schedule_count, actual_count, subject_count = connection.execute(
