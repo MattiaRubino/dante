@@ -1,0 +1,1 @@
+{"object":{"key":"routine:dante.resume_self_session","name":"resume_self_session"},"semantic_traceability":{"domain_concepts":["Session","resume","idempotency"]},"implementation":{"postgresql":{"signature":"dante.resume_self_session(uuid,text,text,uuid,uuid,uuid)"}}}

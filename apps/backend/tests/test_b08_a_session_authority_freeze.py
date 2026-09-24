@@ -78,7 +78,7 @@ def test_b08_a_sqlalchemy_session_mappings_match_the_delivered_substrate() -> No
     assert any(index.name == "ux_session_timing_current_history_open" for index in history.indexes)
 
 
-def test_b08_a_publishes_only_the_session_core_http_operations() -> None:
+def test_b08_a_b_session_http_operations_are_explicit() -> None:
     document = openapi_document()
     paths = document["paths"]
     assert isinstance(paths, dict)
@@ -92,4 +92,6 @@ def test_b08_a_publishes_only_the_session_core_http_operations() -> None:
         "/api/v1/temporal/occurrences/{occurrence_ref}/sessions",
         "/api/v1/temporal/sessions/{session_ref}",
         "/api/v1/temporal/sessions/{session_ref}/end",
+        "/api/v1/temporal/sessions/{session_ref}/pause",
+        "/api/v1/temporal/sessions/{session_ref}/resume",
     }

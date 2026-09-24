@@ -17,6 +17,7 @@ const openSession = {
   ended_at: null,
   open: true,
   replayed: false,
+  paused: false,
 } as const;
 
 describe('remote session data source', () => {
@@ -89,6 +90,28 @@ describe('remote session data source', () => {
     const ended = await source.end(SESSION, STATE, 'op-end');
     expect(ended.open).toBe(false);
     expect(ended.endedAt).toBe('2026-09-24T08:00:00Z');
+  });
+
+  it('pauses and resumes with the authoritative MaterialStateRef', async () => {
+    const fetchFn = vi.fn<typeof fetch>(async (input, init) => {
+      const url = String(input);
+      if (url.endsWith('/api/v1/auth/session')) {
+        return Response.json({ authenticated: true, csrf_token: 'csrf' });
+      }
+      expect(init?.method).toBe('POST');
+      expect(JSON.parse(String(init?.body))).toEqual({
+        operation_id: 'op-transition',
+        expected_material_state_ref: STATE,
+      });
+      if (url.endsWith('/pause')) {
+        return Response.json({ ...openSession, paused: true });
+      }
+      expect(url).toBe('/api/v1/temporal/sessions/' + SESSION + '/resume');
+      return Response.json(openSession);
+    });
+    const source = createRemoteTemporalSessionDataSource(fetchFn);
+    expect((await source.pause(SESSION, STATE, 'op-transition')).paused).toBe(true);
+    expect((await source.resume(SESSION, STATE, 'op-transition')).paused).toBe(false);
   });
 
   it('preserves the canonical HTTP problem code for conflicts', async () => {

@@ -1,0 +1,1 @@
+{"object":{"key":"routine:dante._transition_self_session","name":"_transition_self_session"},"semantic_traceability":{"domain_concepts":["Session","immutable timing transition"]},"implementation":{"postgresql":{"signature":"dante._transition_self_session(text,uuid,text,text,uuid,uuid,uuid)"}}}

@@ -26,7 +26,7 @@ def upgrade() -> None:
             sa.Column("self_person_ref", sa.Uuid(), nullable=False),
             sa.Column("operation_id", sa.Text(), nullable=False),
             sa.Column("intent_fingerprint", sa.Text(), nullable=False),
-            sa.Column("session_ref", sa.Uuid(), nullable=False, unique=True),
+            sa.Column("session_ref", sa.Uuid(), nullable=False),
             sa.Column("expected_material_state_ref", sa.Uuid(), nullable=False),
             sa.Column("resulting_material_state_ref", sa.Uuid(), nullable=False),
             sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),

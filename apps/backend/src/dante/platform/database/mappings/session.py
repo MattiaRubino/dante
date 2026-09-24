@@ -275,7 +275,7 @@ class SessionStartOperationRow(Base):
     self_person_ref: Mapped[NativeRef] = mapped_column(primary_key=True)
     operation_id: Mapped[str] = mapped_column(Text, primary_key=True)
     intent_fingerprint: Mapped[str] = mapped_column(Text, nullable=False)
-    session_ref: Mapped[NativeRef] = mapped_column(nullable=False, unique=True)
+    session_ref: Mapped[NativeRef] = mapped_column(nullable=False)
     subject_native_ref: Mapped[NativeRef] = mapped_column(nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 

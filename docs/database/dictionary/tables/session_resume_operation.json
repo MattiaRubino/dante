@@ -1,0 +1,14 @@
+{
+  "object": {"key": "table:dante.session_resume_operation", "name": "session_resume_operation"},
+  "semantic_traceability": {"domain_concepts": ["Session", "Session resume", "idempotent operation receipt"]},
+  "structure": {
+    "columns": [{"name":"self_person_ref"},{"name":"operation_id"},{"name":"intent_fingerprint"},{"name":"session_ref"},{"name":"expected_material_state_ref"},{"name":"resulting_material_state_ref"},{"name":"created_at"}],
+    "primary_key": {"name":"pk_session_resume_operation"},
+    "unique_constraints": [],
+    "check_constraints": [{"name":"ck_session_resume_operation_operation_id"},{"name":"ck_session_resume_operation_fingerprint"}],
+    "foreign_keys": [{"name":"fk_session_resume_operation_self_person_ref_person"},{"name":"fk_session_resume_operation_session_ref_session"},{"name":"fk_session_resume_operation_resulting_state_address"}],
+    "indexes": [],
+    "triggers": []
+  },
+  "implementation": {"sqlalchemy": {"module":"dante.platform.database.mappings.session","symbol":"SessionResumeOperationRow"}}
+}

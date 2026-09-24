@@ -19,8 +19,8 @@ from dante.platform.database.metadata import Base
 
 pytestmark = pytest.mark.postgres
 
-_CURRENT_REVISION = "20260924_61"
-_CURRENT_TOPOLOGY = (148, 5, 94, 93, 290, 230, 414, 0, 0, 0)
+_CURRENT_REVISION = "20260924_62"
+_CURRENT_TOPOLOGY = (150, 5, 98, 93, 292, 236, 418, 0, 0, 0)
 _REPO_ROOT = Path(__file__).resolve().parents[5]
 _DICTIONARY_ROOT = _REPO_ROOT / "docs" / "database" / "dictionary"
 
@@ -159,7 +159,7 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
     assert environment == ("180006", "UTF8", "63")
     assert topology == _CURRENT_TOPOLOGY
     assert current_revision == (_CURRENT_REVISION,)
-    assert (len(tables), len(views), len(routines)) == (148, 5, 94)
+    assert (len(tables), len(views), len(routines)) == (150, 5, 98)
     assert live_tables == set(tables)
     assert live_views == set(views)
     assert live_routines == set(routines)
@@ -182,20 +182,20 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
         "CP6-M07",
     ]
     assert current["standalone_entries"] == {
-        "tables": 148,
+        "tables": 150,
         "views": 5,
-        "routines": 94,
-        "total": 247,
+        "routines": 98,
+        "total": 253,
     }
     assert current["embedded_objects"] == {
         "triggers": 93,
-        "physical_indexes": 290,
+        "physical_indexes": 292,
     }
     assert current["constraints"] == {
-        "foreign_keys": 230,
-        "check_constraints": 414,
+        "foreign_keys": 236,
+        "check_constraints": 418,
     }
-    assert len(MAPPED_TABLES) == len(Base.registry.mappers) == len(Base.metadata.tables) == 148
+    assert len(MAPPED_TABLES) == len(Base.registry.mappers) == len(Base.metadata.tables) == 150
     assert all(len(mapper.relationships) == 0 for mapper in Base.registry.mappers)
     assert set(VIEW_METADATA.tables) == {f"dante.{name}" for name in views}
     assert {table.name for table in MAPPED_TABLES} == set(tables)

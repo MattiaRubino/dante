@@ -9,7 +9,7 @@ import pytest
 
 pytestmark = pytest.mark.postgres
 
-_EXPECTED_REVISION = "20260924_61"
+_EXPECTED_REVISION = "20260924_62"
 _SESSION_TABLES = frozenset(
     {
         "session",
@@ -136,9 +136,7 @@ def test_b08_a_session_catalog_reuses_cp6_and_adds_bounded_subject_capabilities(
              WHERE namespace.nspname = 'dante'
                AND procedure.proname IN (
                  'start_self_activity_session',
-                 'start_self_occurrence_session',
-                 'pause_self_session',
-                 'resume_self_session'
+                 'start_self_occurrence_session'
                )
             """
         ).fetchall()
@@ -156,7 +154,9 @@ def test_b08_a_session_catalog_reuses_cp6_and_adds_bounded_subject_capabilities(
                      'start_self_session',
                      'end_self_session',
                      'list_self_subject_sessions',
-                     'get_self_session'
+                     'get_self_session',
+                     'pause_self_session',
+                     'resume_self_session'
                    )
                 """
             )
@@ -166,6 +166,8 @@ def test_b08_a_session_catalog_reuses_cp6_and_adds_bounded_subject_capabilities(
             "end_self_session",
             "list_self_subject_sessions",
             "get_self_session",
+            "pause_self_session",
+            "resume_self_session",
         }
 
         start_signatures = connection.execute(

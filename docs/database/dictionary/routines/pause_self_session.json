@@ -1,0 +1,1 @@
+{"object":{"key":"routine:dante.pause_self_session","name":"pause_self_session"},"semantic_traceability":{"domain_concepts":["Session","pause","idempotency"]},"implementation":{"postgresql":{"signature":"dante.pause_self_session(uuid,text,text,uuid,uuid,uuid)"}}}
