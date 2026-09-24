@@ -182,20 +182,20 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
         "CP6-M07",
     ]
     assert current["standalone_entries"] == {
-        "tables": 145,
+        "tables": 148,
         "views": 5,
-        "routines": 88,
-        "total": 238,
+        "routines": 94,
+        "total": 247,
     }
     assert current["embedded_objects"] == {
-        "triggers": 92,
-        "physical_indexes": 285,
+        "triggers": 93,
+        "physical_indexes": 290,
     }
     assert current["constraints"] == {
-        "foreign_keys": 223,
-        "check_constraints": 408,
+        "foreign_keys": 229,
+        "check_constraints": 414,
     }
-    assert len(MAPPED_TABLES) == len(Base.registry.mappers) == len(Base.metadata.tables) == 145
+    assert len(MAPPED_TABLES) == len(Base.registry.mappers) == len(Base.metadata.tables) == 148
     assert all(len(mapper.relationships) == 0 for mapper in Base.registry.mappers)
     assert set(VIEW_METADATA.tables) == {f"dante.{name}" for name in views}
     assert {table.name for table in MAPPED_TABLES} == set(tables)
