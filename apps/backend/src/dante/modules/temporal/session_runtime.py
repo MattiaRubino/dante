@@ -1,4 +1,4 @@
-"""B08-A Session start, read, and end over the existing Session timing substrate."""
+"""B08 Session runtime over the existing immutable timing substrate."""
 
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ SubjectKind = Literal["activity", "occurrence"]
 
 
 class SessionInputError(ValueError):
-    """The Session command is outside the B08-A contract."""
+    """The Session command is outside the B08 contract."""
 
 
 class SessionNotFoundError(LookupError):
@@ -37,7 +37,7 @@ class SessionOperationReuseError(RuntimeError):
 
 
 class SessionEndConflictError(RuntimeError):
-    """The expected current timing state is no longer open."""
+    """The expected current timing state cannot be ended."""
 
 
 class SessionPauseConflictError(RuntimeError):
@@ -54,7 +54,7 @@ class SessionPersistenceError(RuntimeError):
 
 @dataclass(frozen=True, slots=True)
 class SessionView:
-    """Authoritative Session projection. Ended means this episode stopped."""
+    """Authoritative Session projection derived from canonical timing facts."""
 
     session_ref: NativeRef
     subject_native_ref: NativeRef
@@ -63,6 +63,10 @@ class SessionView:
     ended_at: datetime | None
     replayed: bool = False
     paused: bool = False
+    evaluated_at: datetime | None = None
+    elapsed_seconds: float = 0.0
+    paused_seconds: float = 0.0
+    active_seconds: float = 0.0
 
     @property
     def open(self) -> bool:
@@ -100,7 +104,7 @@ def _view(row: RowMapping, *, replayed: bool) -> SessionView:
 
 
 class SessionApplication:
-    """Self-scoped immutable Session transitions."""
+    """Self-scoped immutable Session transitions and fact-derived runtime reads."""
 
     def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
         self._session_factory = session_factory
@@ -124,7 +128,7 @@ class SessionApplication:
                 "subject_native_ref": str(subject_native_ref),
             }
         )
-        return await self._call(
+        view = await self._call(
             """
             SELECT session_ref, subject_native_ref, timing_material_state_ref,
                    started_at, ended_at, replayed
@@ -143,6 +147,7 @@ class SessionApplication:
                 "subject": subject_native_ref,
             },
         )
+        return await self._hydrate(self_person_ref, view)
 
     async def end(
         self,
@@ -161,11 +166,8 @@ class SessionApplication:
                 "expected_material_state_ref": str(expected_material_state_ref),
             }
         )
-        # The resulting MaterialStateRef is deliberately not part of the intent
-        # fingerprint: retries may allocate a fresh candidate, while the database
-        # replays the exact state recorded by the accepted operation receipt.
         resulting_state_ref = new_material_state_ref()
-        return await self._call(
+        view = await self._call(
             """
             SELECT session_ref, subject_native_ref, timing_material_state_ref,
                    started_at, ended_at, replayed
@@ -183,6 +185,7 @@ class SessionApplication:
                 "resulting_state": resulting_state_ref,
             },
         )
+        return await self._hydrate(self_person_ref, view)
 
     async def pause(
         self,
@@ -192,16 +195,14 @@ class SessionApplication:
         session_ref: NativeRef,
         expected_material_state_ref: MaterialStateRef,
     ) -> SessionView:
-        return replace(
-            await self._transition(
-                "pause",
-                self_person_ref,
-                operation_id,
-                session_ref,
-                expected_material_state_ref,
-            ),
-            paused=True,
+        view = await self._transition(
+            "pause",
+            self_person_ref,
+            operation_id,
+            session_ref,
+            expected_material_state_ref,
         )
+        return await self._hydrate(self_person_ref, view)
 
     async def resume(
         self,
@@ -211,16 +212,14 @@ class SessionApplication:
         session_ref: NativeRef,
         expected_material_state_ref: MaterialStateRef,
     ) -> SessionView:
-        return replace(
-            await self._transition(
-                "resume",
-                self_person_ref,
-                operation_id,
-                session_ref,
-                expected_material_state_ref,
-            ),
-            paused=False,
+        view = await self._transition(
+            "resume",
+            self_person_ref,
+            operation_id,
+            session_ref,
+            expected_material_state_ref,
         )
+        return await self._hydrate(self_person_ref, view)
 
     async def _transition(
         self,
@@ -269,12 +268,7 @@ class SessionApplication:
         )
         hydrated: list[SessionView] = []
         for view in views:
-            hydrated.append(
-                replace(
-                    view,
-                    paused=await self._is_paused(self_person_ref, view.session_ref),
-                )
-            )
+            hydrated.append(await self._hydrate(self_person_ref, view))
         return tuple(hydrated)
 
     async def get(
@@ -288,14 +282,38 @@ class SessionApplication:
             """,
             {"actor": self_person_ref, "session_ref": session_ref},
         )
-        return replace(view, paused=await self._is_paused(self_person_ref, session_ref))
+        return await self._hydrate(self_person_ref, view)
 
-    async def _is_paused(self, self_person_ref: NativeRef, session_ref: NativeRef) -> bool:
+    async def _hydrate(
+        self, self_person_ref: NativeRef, view: SessionView
+    ) -> SessionView:
         rows = await self._rows(
-            "SELECT dante.session_is_paused(:actor, :session_ref) AS paused",
-            {"actor": self_person_ref, "session_ref": session_ref},
+            """
+            SELECT paused, evaluated_at, elapsed_seconds, paused_seconds, active_seconds
+              FROM dante.get_self_session_runtime_metrics(
+                :actor, :session_ref, :material_state_ref
+              )
+            """,
+            {
+                "actor": self_person_ref,
+                "session_ref": view.session_ref,
+                "material_state_ref": view.timing_material_state_ref,
+            },
         )
-        return bool(rows[0]["paused"]) if rows else False
+        if not rows:
+            raise SessionNotFoundError("Session is not in the authenticated self scope.")
+        row = rows[0]
+        evaluated_at = row["evaluated_at"]
+        if not isinstance(evaluated_at, datetime):
+            raise SessionPersistenceError("Session runtime metrics are invalid.")
+        return replace(
+            view,
+            paused=bool(row["paused"]),
+            evaluated_at=evaluated_at,
+            elapsed_seconds=float(row["elapsed_seconds"]),
+            paused_seconds=float(row["paused_seconds"]),
+            active_seconds=float(row["active_seconds"]),
+        )
 
     async def _call(self, statement: str, parameters: dict[str, object]) -> SessionView:
         rows = await self._rows(statement, parameters)
