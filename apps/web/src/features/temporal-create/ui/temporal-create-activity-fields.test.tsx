@@ -50,7 +50,7 @@ describe('TemporalCreateActivityFields', () => {
     });
   });
 
-  it('moves a timed Activity to Da collocare when Session minimum is enabled', () => {
+  it('keeps a timed Activity scheduled when Session minimum is enabled', () => {
     const onPatch = vi.fn();
     const fields = createTemporalCreateFields({
       kind: 'activity',
@@ -74,12 +74,6 @@ describe('TemporalCreateActivityFields', () => {
     });
 
     expect(onPatch).toHaveBeenCalledWith({
-      timeSemantics: 'unscheduled',
-      scheduling: {
-        ...fields.scheduling,
-        constraintKind: 'none',
-        fallbackPolicy: 'inherit',
-      },
       execution: { ...fields.execution, sessionMode: 'splittable' },
     });
   });
