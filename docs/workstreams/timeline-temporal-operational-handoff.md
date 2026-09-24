@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B08 SESSION RUNTIME 🟡 — B08-D PAUSE/RESUME/END WORK IN DOGFOOD; PLACEMENT UI FIX AWAITS REPROOF
+- **Status:** B08 SESSION RUNTIME ✅ CLOSED — user-reported local gate and real-app walkthrough complete
 - **Reconciled:** 2026-09-24
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -20,11 +20,11 @@ Read this first after a context reset.
 ```text
 B00–B06 ✅ CLOSED / PROVEN
 B07     ⏸ DEFERRED
-B08     🟡 IN PROGRESS
+B08     ✅ CLOSED / USER-REPORTED 2026-09-24
 B08-A   ✅ CLOSED / USER-REPORTED VIA B08-B
 B08-B   ✅ CLOSED / USER-REPORTED 2026-09-24
 B08-C   ✅ CLOSED / PROVEN — local automated gate 2026-09-24
-B08-D   🟡 PAUSE/RESUME/END WORK; scheduling and duration UI fix awaits local repro
+B08-D   ✅ CLOSED / USER-REPORTED — automated gate and real-app walkthrough
 B09–B12 ⬜ NOT STARTED
 B15     ⬜ NOT STARTED
 ```
@@ -132,7 +132,9 @@ The user confirmed Pause, Resume and END now work in the real app after the HTTP
 
 # 6. B08-D user-run closure gate
 
-The prepared regression is `test_b08_d_session_workflow.py` (PostgreSQL Activity/Occurrence and TC-009 across A/B/C) plus `session-subject-controls.test.tsx` (browser controls, pause reload and policy display). During the user's real-stack walkthrough, START succeeded, but PAUSE and END returned HTTP 422 (`One or more request fields are invalid.`), including after the soft minimum became satisfied. The HTTP command inherited strict validation that rejected the JSON string for `expected_material_state_ref` before the runtime could evaluate the Session. The candidate fix accepts a valid UUID string for this field, keeps invalid identifiers rejected, and allows arbitrary positive whole-minute minimum values (including 1, 26 and 31) instead of five-minute steps. The user confirmed Pause, Resume and END in the real app after the HTTP fix, but reported all timed Session Activities in Da collocare and a five-minute Schedule-duration input step. The follow-up candidate keeps the explicitly selected date/time, establishes an actual Schedule after creating the constrained Activity, reports a separate Schedule failure as a persisted unplaced Activity, and removes the artificial duration step. No B08-D automated test output has yet been reported. Run the following local gate after pulling the published fix; the assistant does not run tests or activate CI.
+B08-D is closed from the user's local output and real-app confirmation on 2026-09-24. The focused Web suite passed **58 tests** and the backend PostgreSQL/unit/API command passed **31 tests**. Generated sources and API-client typecheck passed. The first web typecheck exposed six TypeScript errors in the Planning Tray compatibility prop and the post-Schedule projection narrowing; they were repaired in commits `711abed2` and `5cde1039`. The user then confirmed the follow-up typecheck and dogfood pass.
+
+The real-app walkthrough now confirms: START, PAUSE, RESUME and END work; a timed splittable Activity keeps its selected date/time and appears in Timeline; an unplaced Activity remains in Da collocare; and Schedule duration accepts whole-minute values, including 30, without the prior 26/31 five-minute-step warning. TC-009 remains soft and does not block transitions.
 
 From repository root:
 
@@ -207,4 +209,4 @@ The UI need not expose internal identifiers. Capture SessionRefs and canonical S
 4. docs/database/timeline-temporal-operational.md
 ```
 
-**Exact next action:** User pulls the scheduling/duration UI fix, runs the B08-D commands and repeats the walkthrough, including a timed splittable Activity with a 26/31-minute Schedule, a genuinely unplaced Activity, and PAUSE/RESUME/END after reload; capture actual results and close B08 only if all gates pass. Contract: `timeline-temporal-operational-b08-c-implementation-freeze.md`.
+**Exact next action:** Begin B09 Responsibility / Participation from the B08-closed frontier. Contract history remains in `timeline-temporal-operational-b08-c-implementation-freeze.md`.
