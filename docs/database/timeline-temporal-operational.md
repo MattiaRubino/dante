@@ -4,8 +4,8 @@
 - **Reconciled:** 2026-09-23
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
-- **Candidate source head:** `20260923_57`
-- **Candidate proven topology:** `145|5|88|92|285|223|408|0|0|0`
+- **Candidate source head:** `20260924_58`
+- **Candidate topology awaiting local proof:** `148|5|94|93|290|229|414|0|0|0`
 - **Whole-DB SoR:** `README.md`
 - **Machine-readable authority:** `dictionary/`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`

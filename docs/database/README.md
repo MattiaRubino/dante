@@ -6,8 +6,8 @@
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
-- **Timeline candidate Alembic head:** `20260923_57`
-- **Timeline candidate proven topology:** `145|5|88|92|285|223|408|0|0|0` — whole B06 proven
+- **Timeline candidate Alembic head:** `20260924_58`
+- **Timeline candidate topology awaiting local proof:** `148|5|94|93|290|229|414|0|0|0`
 - **Timeline candidate DB overlay:** `timeline-temporal-operational.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 - **Persistence ADR:** `../decisions/ADR-010-postgresql-persistence-constitution.md`

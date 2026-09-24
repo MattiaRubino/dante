@@ -12,6 +12,8 @@ import {
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
+import { SessionSubjectControls } from '../../../temporal/session-subject-controls';
+
 import {
   buildCalendarMonthGrid,
   buildCalendarYearPage,
@@ -805,6 +807,9 @@ type EventDetailDialogProps = Readonly<{
   opener: HTMLElement | null;
   canUnschedule: boolean;
   pending: boolean;
+  sessionSubject?:
+    | Readonly<{ kind: 'activity' | 'occurrence'; ref: string }>
+    | null;
   onUnschedule: () => void;
   onClose: () => void;
 }>;
@@ -814,6 +819,7 @@ export function EventDetailDialog({
   opener,
   canUnschedule,
   pending,
+  sessionSubject = null,
   onUnschedule,
   onClose,
 }: EventDetailDialogProps) {
@@ -898,6 +904,13 @@ export function EventDetailDialog({
           {t(($) => $.common.home.timeline.detail.aiNote)}
         </div>
         <div className="timeline-event-modal__actions">
+          {sessionSubject === null ? null : (
+            <SessionSubjectControls
+              kind={sessionSubject.kind}
+              subjectRef={sessionSubject.ref}
+              label={detail.title}
+            />
+          )}
           {canUnschedule ? (
             <button
               ref={unscheduleButtonRef}

@@ -1,0 +1,113 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "routine:dante.start_self_session",
+    "type": "routine",
+    "schema": "dante",
+    "name": "start_self_session",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Start one absolute Session for a self-owned Activity or Occurrence.",
+  "classification": {
+    "persistence_role": "session_capability",
+    "canonicality": "capability_surface",
+    "family": "session"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/domain/concepts/session.md",
+      "docs/workstreams/timeline-temporal-operational-roadmap.md"
+    ],
+    "domain_concepts": [
+      "Session"
+    ],
+    "logical_families": [
+      "Session"
+    ],
+    "reference_families": [
+      "NativeRef",
+      "MaterialStateRef"
+    ],
+    "material_facets": [
+      "session.timing"
+    ]
+  },
+  "implementation": {
+    "introducing_stage": "B08-A",
+    "alembic_revision": "20260924_58",
+    "sqlalchemy": {
+      "mode": "none",
+      "module": null,
+      "symbol": null
+    },
+    "runtime_acl_stage": "B08-A"
+  },
+  "structure": {
+    "columns": [],
+    "primary_key": null,
+    "foreign_keys": [],
+    "unique_constraints": [],
+    "check_constraints": [],
+    "indexes": [],
+    "triggers": [],
+    "table": null,
+    "view": null,
+    "routine": {
+      "routine_kind": "function",
+      "language": "plpgsql",
+      "argument_types": [
+        "uuid",
+        "text",
+        "text",
+        "uuid",
+        "uuid",
+        "uuid"
+      ],
+      "return_type": "TABLE(session_ref uuid, subject_native_ref uuid, timing_material_state_ref uuid, started_at timestamp with time zone, ended_at timestamp with time zone, replayed boolean)",
+      "security": "DEFINER",
+      "volatility": "VOLATILE",
+      "parallel_safety": "UNSAFE",
+      "leakproof": false,
+      "function_search_path": [
+        "pg_catalog",
+        "dante",
+        "pg_temp"
+      ],
+      "direct_runtime_execute": true
+    }
+  },
+  "state_history": {
+    "material_state_behavior": null,
+    "current_binding": null,
+    "chronology": null,
+    "immutability_policy": "Capability only."
+  },
+  "lifecycle": {
+    "retention": "B08-A Session core.",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No runtime deletion."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": [
+      {
+        "grantee": "dante_runtime",
+        "privilege": "EXECUTE",
+        "columns": [],
+        "grant_option": false
+      }
+    ]
+  },
+  "proof": {
+    "obligations": [
+      "self scope"
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/database/test_b08_a_session_catalog.py"
+    ],
+    "staged_evidence": []
+  }
+}

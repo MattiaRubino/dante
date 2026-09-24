@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { createRemoteTemporalOccurrenceScheduleDataSource } from '../../../temporal/remote-occurrence-schedule-data-source';
+import { SessionSubjectControls } from '../../../temporal/session-subject-controls';
 import { invalidateTemporalTimelineRead } from '../../../temporal/timeline-invalidation';
 import {
   timelineAllDayItemsForVisibleDate,
@@ -261,6 +262,24 @@ export function TimelineAllDayLane({
                   {endsHere ? '' : '›'}
                 </span>
               </button>
+              {item.canonicalBasis?.kind === 'scheduled-activity' ? (
+                <SessionSubjectControls
+                  kind="activity"
+                  subjectRef={item.canonicalBasis.activityRef}
+                  label={item.title}
+                />
+              ) : item.canonicalBasis?.kind === 'scheduled-occurrence' ||
+                item.occurrenceBasis !== undefined ? (
+                <SessionSubjectControls
+                  kind="occurrence"
+                  subjectRef={
+                    item.canonicalBasis?.kind === 'scheduled-occurrence'
+                      ? item.canonicalBasis.occurrenceRef
+                      : (item.occurrenceBasis?.occurrenceRef ?? '')
+                  }
+                  label={item.title}
+                />
+              ) : null}
               {item.occurrenceBasis !== undefined ? (
                 <button
                   className="timeline-all-day-item__schedule"

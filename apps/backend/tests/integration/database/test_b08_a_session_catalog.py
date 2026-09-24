@@ -9,7 +9,7 @@ import pytest
 
 pytestmark = pytest.mark.postgres
 
-_EXPECTED_REVISION = "20260923_57"
+_EXPECTED_REVISION = "20260924_58"
 _SESSION_TABLES = frozenset(
     {
         "session",
@@ -123,7 +123,7 @@ def test_b08_a_session_catalog_remains_the_cp6_substrate(migrated_database: Any)
                )
             """
         ).fetchall()
-        assert subject_edges == []
+        assert {row[0] for row in subject_edges} == {"session_execution_subject"}
 
         capabilities = connection.execute(
             """
@@ -141,3 +141,27 @@ def test_b08_a_session_catalog_remains_the_cp6_substrate(migrated_database: Any)
             """
         ).fetchall()
         assert capabilities == []
+        present = {
+            row[0]
+            for row in connection.execute(
+                """
+                SELECT procedure.proname
+                  FROM pg_proc AS procedure
+                  JOIN pg_namespace AS namespace
+                    ON namespace.oid = procedure.pronamespace
+                 WHERE namespace.nspname = 'dante'
+                   AND procedure.proname IN (
+                     'start_self_session',
+                     'end_self_session',
+                     'list_self_subject_sessions',
+                     'get_self_session'
+                   )
+                """
+            )
+        }
+        assert present == {
+            "start_self_session",
+            "end_self_session",
+            "list_self_subject_sessions",
+            "get_self_session",
+        }

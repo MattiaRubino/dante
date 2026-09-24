@@ -168,6 +168,20 @@ _EXPECTED_TEMPORAL_OPERATIONS = {
         "temporal_establish_occurrence_schedule"
     ),
     ("/api/v1/temporal/occurrences/{occurrence_ref}/skip", "post"): ("temporal_skip_occurrence"),
+    ("/api/v1/temporal/activities/{activity_ref}/sessions", "post"): (
+        "temporal_start_activity_session"
+    ),
+    ("/api/v1/temporal/occurrences/{occurrence_ref}/sessions", "post"): (
+        "temporal_start_occurrence_session"
+    ),
+    ("/api/v1/temporal/activities/{activity_ref}/sessions", "get"): (
+        "temporal_list_activity_sessions"
+    ),
+    ("/api/v1/temporal/occurrences/{occurrence_ref}/sessions", "get"): (
+        "temporal_list_occurrence_sessions"
+    ),
+    ("/api/v1/temporal/sessions/{session_ref}", "get"): "temporal_get_session",
+    ("/api/v1/temporal/sessions/{session_ref}/end", "post"): "temporal_end_session",
     ("/api/v1/temporal/routines/{routine_ref}/occurrences/exclusions", "post"): (
         "temporal_exclude_routine_occurrence_coordinate"
     ),

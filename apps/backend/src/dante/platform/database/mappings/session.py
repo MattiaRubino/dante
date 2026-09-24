@@ -202,3 +202,118 @@ class SessionTimingCurrentHistoryRow(Base):
     material_state_ref: Mapped[MaterialStateRef] = mapped_column(nullable=False)
     current_from_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), primary_key=True)
     current_until_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class SessionExecutionSubjectRow(Base):
+    """Typed Session subject. Activity or Occurrence only."""
+
+    __tablename__ = "session_execution_subject"
+    __table_args__ = (
+        CheckConstraint(
+            "uuid_extract_version(session_ref) IS NOT DISTINCT FROM 7",
+            name="session_uuidv7",
+        ),
+        CheckConstraint(
+            "uuid_extract_version(subject_native_ref) IS NOT DISTINCT FROM 7",
+            name="subject_uuidv7",
+        ),
+        ForeignKeyConstraint(
+            ["session_ref"],
+            ["dante.session.session_ref"],
+            name="fk_session_execution_subject_session_ref_session",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
+        ),
+        ForeignKeyConstraint(
+            ["subject_native_ref"],
+            ["dante.native_address.native_ref"],
+            name="fk_session_execution_subject_subject_native_ref_native_address",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
+        ),
+    )
+
+    session_ref: Mapped[NativeRef] = mapped_column(primary_key=True)
+    subject_native_ref: Mapped[NativeRef] = mapped_column(nullable=False)
+
+
+class SessionStartOperationRow(Base):
+    """Immutable start receipt. The operation id is not the Session identity."""
+
+    __tablename__ = "session_start_operation"
+    __table_args__ = (
+        CheckConstraint(
+            "operation_id=btrim(operation_id) AND operation_id<>'' "
+            "AND char_length(operation_id)<=200",
+            name="operation_id",
+        ),
+        CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name="fingerprint"),
+        ForeignKeyConstraint(
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
+            name="fk_session_start_operation_self_person_ref_person",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
+        ),
+        ForeignKeyConstraint(
+            ["session_ref"],
+            ["dante.session.session_ref"],
+            name="fk_session_start_operation_session_ref_session",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
+        ),
+    )
+
+    self_person_ref: Mapped[NativeRef] = mapped_column(primary_key=True)
+    operation_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    intent_fingerprint: Mapped[str] = mapped_column(Text, nullable=False)
+    session_ref: Mapped[NativeRef] = mapped_column(nullable=False, unique=True)
+    subject_native_ref: Mapped[NativeRef] = mapped_column(nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class SessionEndOperationRow(Base):
+    """Immutable end receipt bound to the expected current timing state."""
+
+    __tablename__ = "session_end_operation"
+    __table_args__ = (
+        CheckConstraint(
+            "operation_id=btrim(operation_id) AND operation_id<>'' "
+            "AND char_length(operation_id)<=200",
+            name="operation_id",
+        ),
+        CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name="fingerprint"),
+        ForeignKeyConstraint(
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
+            name="fk_session_end_operation_self_person_ref_person",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
+        ),
+        ForeignKeyConstraint(
+            ["session_ref"],
+            ["dante.session.session_ref"],
+            name="fk_session_end_operation_session_ref_session",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
+        ),
+    )
+
+    self_person_ref: Mapped[NativeRef] = mapped_column(primary_key=True)
+    operation_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    intent_fingerprint: Mapped[str] = mapped_column(Text, nullable=False)
+    session_ref: Mapped[NativeRef] = mapped_column(nullable=False, unique=True)
+    expected_material_state_ref: Mapped[MaterialStateRef] = mapped_column(nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

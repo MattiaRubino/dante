@@ -5,7 +5,7 @@
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Continuation handoff:** `docs/workstreams/timeline-temporal-operational-handoff.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Current Alembic frontier:** `20260923_57`
+- **Current Alembic frontier:** `20260924_58`
 - **Current proven topology:** `145|5|88|92|285|223|408|0|0|0`
 - **CI:** not authorized; local tests are run by the user
 
@@ -89,7 +89,7 @@ TC-011 relative before/after        → future bounded relation/reference review
 
 ```text
 B08 Session Runtime                              🟡 READY TO START
-  B08-A Session Core End-to-End                   ← NEXT / NOT STARTED
+  B08-A Session Core End-to-End                   IMPLEMENTED / LOCAL PROOF PENDING
   B08-B Pause / Resume + Durations End-to-End     ⬜
   B08-C TC-009 Session Duration End-to-End        ⬜
   B08-D Whole-block closure                       ⬜
@@ -149,7 +149,7 @@ Spontaneous Session without prior Activity remains a possible Domain capability 
 
 # 5. B08-A — Session Core End-to-End ← NEXT
 
-**Status:** NOT STARTED
+**Status:** IMPLEMENTED / LOCAL PROOF PENDING
 
 Target product capability:
 
@@ -351,10 +351,10 @@ Fresh-chat recovery order:
 B00–B06 ✅ CLOSED / PROVEN
 B07     ⏸ DEFERRED
 B08     🟡 READY TO START
-B08-A   ← NEXT / NOT STARTED / END-TO-END
+B08-A   IMPLEMENTED / LOCAL PROOF PENDING
 B08-B–D ⬜ BLOCKED BY PRECEDING SLICE
 B09–B12 ⬜ NOT STARTED
 B15     ⬜ NOT STARTED
 ```
 
-**Next concrete action:** start B08-A Session Core as one complete end-to-end slice. Do not treat authority, DB, API or frontend as separate roadmap phases.
+**Next concrete action:** run the B08-A local automated proof and the manual Activity and Occurrence START → reload → END paths. Do not mark B08-A closed and do not start B08-B.

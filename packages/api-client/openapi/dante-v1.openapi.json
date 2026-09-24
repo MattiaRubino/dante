@@ -7173,6 +7173,95 @@
         "title": "ScheduledEventNamedZoneResponse",
         "type": "object"
       },
+      "SessionCommand": {
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id"],
+        "title": "SessionCommand",
+        "type": "object"
+      },
+      "SessionEndCommand": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_material_state_ref": {
+            "format": "uuid",
+            "title": "Expected Material State Ref",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "expected_material_state_ref"],
+        "title": "SessionEndCommand",
+        "type": "object"
+      },
+      "SessionResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "ended_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended At"
+          },
+          "open": {
+            "title": "Open",
+            "type": "boolean"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "session_ref": {
+            "format": "uuid",
+            "title": "Session Ref",
+            "type": "string"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          },
+          "subject_native_ref": {
+            "format": "uuid",
+            "title": "Subject Native Ref",
+            "type": "string"
+          },
+          "timing_material_state_ref": {
+            "format": "uuid",
+            "title": "Timing Material State Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "session_ref",
+          "subject_native_ref",
+          "timing_material_state_ref",
+          "started_at",
+          "ended_at",
+          "open",
+          "replayed"
+        ],
+        "title": "SessionResponse",
+        "type": "object"
+      },
       "SignInRequest": {
         "additionalProperties": false,
         "description": "Bounded first-party email/password signin request.",
@@ -18663,6 +18752,100 @@
         "tags": ["temporal"]
       }
     },
+    "/api/v1/temporal/activities/{activity_ref}/sessions": {
+      "get": {
+        "operationId": "temporal_list_activity_sessions",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SessionResponse"
+                  },
+                  "title": "Response Temporal List Activity Sessions",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Activity Sessions",
+        "tags": ["temporal"]
+      },
+      "post": {
+        "operationId": "temporal_start_activity_session",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Start Activity Session",
+        "tags": ["temporal"]
+      }
+    },
     "/api/v1/temporal/activities/{activity_ref}/tags/{tag_ref}/attach": {
       "post": {
         "operationId": "temporal_attach_activity_tag",
@@ -20310,6 +20493,100 @@
         "tags": ["temporal"]
       }
     },
+    "/api/v1/temporal/occurrences/{occurrence_ref}/sessions": {
+      "get": {
+        "operationId": "temporal_list_occurrence_sessions",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "occurrence_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Occurrence Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SessionResponse"
+                  },
+                  "title": "Response Temporal List Occurrence Sessions",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Occurrence Sessions",
+        "tags": ["temporal"]
+      },
+      "post": {
+        "operationId": "temporal_start_occurrence_session",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "occurrence_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Occurrence Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Start Occurrence Session",
+        "tags": ["temporal"]
+      }
+    },
     "/api/v1/temporal/occurrences/{occurrence_ref}/skip": {
       "post": {
         "operationId": "temporal_skip_occurrence",
@@ -21323,6 +21600,98 @@
           }
         },
         "summary": "Undo Schedule Unschedule",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/sessions/{session_ref}": {
+      "get": {
+        "operationId": "temporal_get_session",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Session Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Session",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/sessions/{session_ref}/end": {
+      "post": {
+        "operationId": "temporal_end_session",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Session Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionEndCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "End Session",
         "tags": ["temporal"]
       }
     },

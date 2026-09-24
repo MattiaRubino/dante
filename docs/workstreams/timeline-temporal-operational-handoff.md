@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B08 SESSION RUNTIME 🟡 READY TO START — B08-A SESSION CORE E2E NEXT
+- **Status:** B08 SESSION RUNTIME 🟡 — B08-A IMPLEMENTED / LOCAL PROOF PENDING
 - **Reconciled:** 2026-09-24
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -8,7 +8,7 @@
 - **Post-B06 scope decision:** `docs/workstreams/timeline-temporal-operational-post-b06-scope-decision-2026-09-23.md`
 - **B06 whole-block closure:** `docs/workstreams/timeline-temporal-operational-b06-e-closure-2026-09-23.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Current Alembic frontier:** `20260923_57`
+- **Current Alembic frontier:** `20260924_58`
 - **Current proven DB topology:** `145|5|88|92|285|223|408|0|0|0`
 - **CI:** no CI/GitHub Actions unless explicitly authorized; the user runs local tests
 
@@ -29,7 +29,7 @@ B05 Product Organization                         ✅ CLOSED / PROVEN
 B06 Routine / Recurrence / Occurrence Baseline   ✅ CLOSED / PROVEN
 
 B08 Session Runtime                              🟡 READY TO START
-  B08-A Session Core End-to-End                   ← NEXT / NOT STARTED
+  B08-A Session Core End-to-End                   IMPLEMENTED / LOCAL PROOF PENDING
   B08-B Pause / Resume + Durations End-to-End     ⬜
   B08-C TC-009 Session Duration End-to-End        ⬜
   B08-D Whole-block closure                       ⬜
@@ -120,7 +120,7 @@ remaining B06 blocker                       none
 
 # 5. Exact next slice — B08-A Session Core End-to-End
 
-B08-A has **not started**. Its target is one complete real product path:
+B08-A is implemented and is **not closed**. Its target is one complete real product path:
 
 ```text
 Activity   → START Session → authoritative read → END Session
@@ -230,7 +230,7 @@ Read in this order:
 B06 ✅ CLOSED / PROVEN
 B07 ⏸ DEFERRED
 B08 🟡 READY TO START
-B08-A ← SESSION CORE END-TO-END / NOT STARTED
+B08-A IMPLEMENTED / LOCAL PROOF PENDING
 ```
 
-**Next action when work resumes:** implement B08-A as one end-to-end slice. Start with the authority/schema check, then continue through persistence, backend, API/client, frontend, tests, manual proof and docs before moving to B08-B.
+**Next action when work resumes:** run the B08-A local proof and the manual START → reload → END path. Do not mark B08-A closed and do not start B08-B until that proof is accepted.

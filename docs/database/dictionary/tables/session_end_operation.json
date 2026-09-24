@@ -1,0 +1,280 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "table:dante.session_end_operation",
+    "type": "table",
+    "schema": "dante",
+    "name": "session_end_operation",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Immutable self-scoped receipt for one Session end.",
+  "classification": {
+    "persistence_role": "session_control",
+    "canonicality": "control",
+    "family": "session"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/domain/concepts/session.md",
+      "docs/workstreams/timeline-temporal-operational-roadmap.md"
+    ],
+    "domain_concepts": [
+      "Session"
+    ],
+    "logical_families": [
+      "Session"
+    ],
+    "reference_families": [
+      "NativeRef"
+    ],
+    "material_facets": []
+  },
+  "implementation": {
+    "introducing_stage": "B08-A",
+    "alembic_revision": "20260924_58",
+    "sqlalchemy": {
+      "mode": "orm_row",
+      "module": "dante.platform.database.mappings.session",
+      "symbol": "SessionEndOperationRow"
+    },
+    "runtime_acl_stage": "B08-A"
+  },
+  "structure": {
+    "columns": [
+      {
+        "name": "self_person_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Authenticated self Person.",
+        "semantic_type": "NativeRef",
+        "value_contract": "Existing Person."
+      },
+      {
+        "name": "operation_id",
+        "postgres_type": "text",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Caller idempotency id.",
+        "semantic_type": null,
+        "value_contract": "Trimmed, 1 to 200 characters."
+      },
+      {
+        "name": "intent_fingerprint",
+        "postgres_type": "text",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "SHA-256 of the end intent.",
+        "semantic_type": null,
+        "value_contract": "64 lowercase hex characters."
+      },
+      {
+        "name": "session_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Ended Session.",
+        "semantic_type": "NativeRef",
+        "value_contract": "Existing Session."
+      },
+      {
+        "name": "expected_material_state_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Expected current timing state.",
+        "semantic_type": "MaterialStateRef",
+        "value_contract": "CAS token."
+      },
+      {
+        "name": "created_at",
+        "postgres_type": "timestamp with time zone",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Receipt instant.",
+        "semantic_type": null,
+        "value_contract": "Same transaction as the end."
+      }
+    ],
+    "primary_key": {
+      "name": "pk_session_end_operation",
+      "columns": [
+        "self_person_ref",
+        "operation_id"
+      ],
+      "reason": "Stable identity for this B08-A object.",
+      "deferrable": false,
+      "initially": "NOT DEFERRABLE",
+      "enforced": true
+    },
+    "foreign_keys": [
+      {
+        "name": "fk_session_end_operation_self_person_ref_person",
+        "columns": [
+          "self_person_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "person",
+          "columns": [
+            "person_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "NativeRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Receipt is scoped to the self Person."
+      },
+      {
+        "name": "fk_session_end_operation_session_ref_session",
+        "columns": [
+          "session_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "session",
+          "columns": [
+            "session_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "NativeRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Receipt names the ended Session."
+      }
+    ],
+    "unique_constraints": [
+      {
+        "name": "uq_session_end_operation_session_ref",
+        "columns": [
+          "session_ref"
+        ],
+        "reason": "One end receipt per Session in B08-A.",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true
+      }
+    ],
+    "check_constraints": [
+      {
+        "name": "ck_session_end_operation_operation_id",
+        "expression_contract": "operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200",
+        "reason": "Bounded operation id.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_session_end_operation_fingerprint",
+        "expression_contract": "intent_fingerprint ~ '^[0-9a-f]{64}$'",
+        "reason": "Canonical fingerprint.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "pk_session_end_operation",
+        "method": "btree",
+        "unique": true,
+        "keys": [
+          "self_person_ref",
+          "operation_id"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "primary_key",
+        "reason": "Idempotency lookup.",
+        "valid": true,
+        "ready": true,
+        "live": true
+      },
+      {
+        "name": "uq_session_end_operation_session_ref",
+        "method": "btree",
+        "unique": true,
+        "keys": [
+          "session_ref"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "unique_constraint",
+        "reason": "One end receipt per Session.",
+        "valid": true,
+        "ready": true,
+        "live": true
+      }
+    ],
+    "triggers": [],
+    "table": {
+      "persistence": "permanent",
+      "access_method": "heap",
+      "partitioned": false,
+      "row_security": false,
+      "force_row_security": false,
+      "replica_identity": "default",
+      "reloptions": []
+    },
+    "view": null,
+    "routine": null
+  },
+  "state_history": {
+    "material_state_behavior": null,
+    "current_binding": null,
+    "chronology": "created_at is receipt time where present; UUID order is not chronology.",
+    "immutability_policy": "Receipts are insert-only. The subject edge is immutable for B08-A."
+  },
+  "lifecycle": {
+    "retention": "Retained with the Session it supports.",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No runtime DELETE."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": []
+  },
+  "proof": {
+    "obligations": [
+      "B08-A self scope",
+      "Activity or Occurrence subject only"
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/database/test_b08_a_session_catalog.py"
+    ],
+    "staged_evidence": []
+  }
+}

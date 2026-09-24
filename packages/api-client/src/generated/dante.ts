@@ -120,6 +120,9 @@ import type {
   ScheduledEventDateSpanResponse,
   ScheduledEventFloatingResponse,
   ScheduledEventNamedZoneResponse,
+  SessionCommand,
+  SessionEndCommand,
+  SessionResponse,
   SignInRequest,
   SignupAuthenticatedResponse,
   SignupCreatedResponse,
@@ -4027,6 +4030,130 @@ export const establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedule
     } as establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostResponse;
   };
 
+export type temporalListActivitySessionsResponse200 = {
+  data: SessionResponse[];
+  status: 200;
+};
+
+export type temporalListActivitySessionsResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalListActivitySessionsResponseSuccess =
+  temporalListActivitySessionsResponse200 & {
+    headers: Headers;
+  };
+export type temporalListActivitySessionsResponseError =
+  temporalListActivitySessionsResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalListActivitySessionsResponse =
+  | temporalListActivitySessionsResponseSuccess
+  | temporalListActivitySessionsResponseError;
+
+export const getTemporalListActivitySessionsUrl = (activityRef: string) => {
+  return `/api/v1/temporal/activities/${activityRef}/sessions`;
+};
+
+/**
+ * @summary List Activity Sessions
+ */
+export const temporalListActivitySessions = async (
+  activityRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListActivitySessionsResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalListActivitySessionsUrl(activityRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListActivitySessionsResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListActivitySessionsResponse;
+};
+
+export type temporalStartActivitySessionResponse200 = {
+  data: SessionResponse;
+  status: 200;
+};
+
+export type temporalStartActivitySessionResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalStartActivitySessionResponseSuccess =
+  temporalStartActivitySessionResponse200 & {
+    headers: Headers;
+  };
+export type temporalStartActivitySessionResponseError =
+  temporalStartActivitySessionResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalStartActivitySessionResponse =
+  | temporalStartActivitySessionResponseSuccess
+  | temporalStartActivitySessionResponseError;
+
+export const getTemporalStartActivitySessionUrl = (activityRef: string) => {
+  return `/api/v1/temporal/activities/${activityRef}/sessions`;
+};
+
+/**
+ * @summary Start Activity Session
+ */
+export const temporalStartActivitySession = async (
+  activityRef: string,
+  sessionCommand: SessionCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalStartActivitySessionResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalStartActivitySessionUrl(activityRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(sessionCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalStartActivitySessionResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalStartActivitySessionResponse;
+};
+
 export type temporalAttachActivityTagResponse200 = {
   data: ProductTagEffectResponse;
   status: 200;
@@ -6291,6 +6418,130 @@ export const temporalEstablishOccurrenceSchedule = async (
   } as temporalEstablishOccurrenceScheduleResponse;
 };
 
+export type temporalListOccurrenceSessionsResponse200 = {
+  data: SessionResponse[];
+  status: 200;
+};
+
+export type temporalListOccurrenceSessionsResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalListOccurrenceSessionsResponseSuccess =
+  temporalListOccurrenceSessionsResponse200 & {
+    headers: Headers;
+  };
+export type temporalListOccurrenceSessionsResponseError =
+  temporalListOccurrenceSessionsResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalListOccurrenceSessionsResponse =
+  | temporalListOccurrenceSessionsResponseSuccess
+  | temporalListOccurrenceSessionsResponseError;
+
+export const getTemporalListOccurrenceSessionsUrl = (occurrenceRef: string) => {
+  return `/api/v1/temporal/occurrences/${occurrenceRef}/sessions`;
+};
+
+/**
+ * @summary List Occurrence Sessions
+ */
+export const temporalListOccurrenceSessions = async (
+  occurrenceRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListOccurrenceSessionsResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalListOccurrenceSessionsUrl(occurrenceRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListOccurrenceSessionsResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListOccurrenceSessionsResponse;
+};
+
+export type temporalStartOccurrenceSessionResponse200 = {
+  data: SessionResponse;
+  status: 200;
+};
+
+export type temporalStartOccurrenceSessionResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalStartOccurrenceSessionResponseSuccess =
+  temporalStartOccurrenceSessionResponse200 & {
+    headers: Headers;
+  };
+export type temporalStartOccurrenceSessionResponseError =
+  temporalStartOccurrenceSessionResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalStartOccurrenceSessionResponse =
+  | temporalStartOccurrenceSessionResponseSuccess
+  | temporalStartOccurrenceSessionResponseError;
+
+export const getTemporalStartOccurrenceSessionUrl = (occurrenceRef: string) => {
+  return `/api/v1/temporal/occurrences/${occurrenceRef}/sessions`;
+};
+
+/**
+ * @summary Start Occurrence Session
+ */
+export const temporalStartOccurrenceSession = async (
+  occurrenceRef: string,
+  sessionCommand: SessionCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalStartOccurrenceSessionResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalStartOccurrenceSessionUrl(occurrenceRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(sessionCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalStartOccurrenceSessionResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalStartOccurrenceSessionResponse;
+};
+
 export type temporalSkipOccurrenceResponse200 = {
   data: OccurrenceMutationResponse;
   status: 200;
@@ -7638,6 +7889,116 @@ export const undoScheduleUnscheduleApiV1TemporalSchedulesScheduleRefUnscheduleUn
       headers: res.headers,
     } as undoScheduleUnscheduleApiV1TemporalSchedulesScheduleRefUnscheduleUndoPostResponse;
   };
+
+export type temporalGetSessionResponse200 = {
+  data: SessionResponse;
+  status: 200;
+};
+
+export type temporalGetSessionResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetSessionResponseSuccess =
+  temporalGetSessionResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetSessionResponseError = temporalGetSessionResponse422 & {
+  headers: Headers;
+};
+
+export type temporalGetSessionResponse =
+  temporalGetSessionResponseSuccess | temporalGetSessionResponseError;
+
+export const getTemporalGetSessionUrl = (sessionRef: string) => {
+  return `/api/v1/temporal/sessions/${sessionRef}`;
+};
+
+/**
+ * @summary Get Session
+ */
+export const temporalGetSession = async (
+  sessionRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetSessionResponse> => {
+  const res = await (fetchFn ?? fetch)(getTemporalGetSessionUrl(sessionRef), {
+    ...options,
+    method: 'GET',
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetSessionResponse['data'] = body ? JSON.parse(body) : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetSessionResponse;
+};
+
+export type temporalEndSessionResponse200 = {
+  data: SessionResponse;
+  status: 200;
+};
+
+export type temporalEndSessionResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalEndSessionResponseSuccess =
+  temporalEndSessionResponse200 & {
+    headers: Headers;
+  };
+export type temporalEndSessionResponseError = temporalEndSessionResponse422 & {
+  headers: Headers;
+};
+
+export type temporalEndSessionResponse =
+  temporalEndSessionResponseSuccess | temporalEndSessionResponseError;
+
+export const getTemporalEndSessionUrl = (sessionRef: string) => {
+  return `/api/v1/temporal/sessions/${sessionRef}/end`;
+};
+
+/**
+ * @summary End Session
+ */
+export const temporalEndSession = async (
+  sessionRef: string,
+  sessionEndCommand: SessionEndCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalEndSessionResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(getTemporalEndSessionUrl(sessionRef), {
+    ...options,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(sessionEndCommand),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalEndSessionResponse['data'] = body ? JSON.parse(body) : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalEndSessionResponse;
+};
 
 export type temporalListProductTagsResponse200 = {
   data: ProductTagResponse[];

@@ -61,15 +61,9 @@ def test_b08_a_reuses_the_existing_session_dictionary_substrate() -> None:
         assert isinstance(indexes, list)
         assert any(index["name"] == index_name and index["unique"] is True for index in indexes)
 
-    assert not (_DICTIONARY_TABLES / "session_execution_subject.json").exists()
-    for path in _DICTIONARY_TABLES.glob("*.json"):
-        if path.stem in {"session", *_SESSION_TABLES}:
-            continue
-        entry = json.loads(path.read_text(encoding="utf-8"))
-        column_names = {column["name"] for column in entry["structure"]["columns"]}
-        assert "session_ref" not in column_names or not column_names.intersection(
-            {"activity_ref", "occurrence_ref", "subject_native_ref"}
-        )
+    subject = _table("session_execution_subject")
+    subject_columns = [column["name"] for column in subject["structure"]["columns"]]
+    assert subject_columns == ["session_ref", "subject_native_ref"]
 
 
 def test_b08_a_sqlalchemy_session_mappings_match_the_frozen_substrate() -> None:
@@ -88,7 +82,14 @@ def test_b08_a_adds_no_session_http_operations() -> None:
     document = openapi_document()
     paths = document["paths"]
     assert isinstance(paths, dict)
-    session_paths = [
-        path for path in paths if path.startswith("/api/v1/temporal/") and "session" in path
-    ]
-    assert session_paths == []
+    session_paths = {
+        path
+        for path in paths
+        if path.startswith("/api/v1/temporal/") and "session" in path
+    }
+    assert session_paths == {
+        "/api/v1/temporal/activities/{activity_ref}/sessions",
+        "/api/v1/temporal/occurrences/{occurrence_ref}/sessions",
+        "/api/v1/temporal/sessions/{session_ref}",
+        "/api/v1/temporal/sessions/{session_ref}/end",
+    }
