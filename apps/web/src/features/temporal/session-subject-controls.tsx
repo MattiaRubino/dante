@@ -74,6 +74,32 @@ export function SessionSubjectControls({
       .finally(() => setPending(false));
   };
 
+  const pause = () => {
+    if (openSession === null) {
+      return;
+    }
+    setPending(true);
+    void source
+      .pause(openSession.sessionRef, openSession.timingMaterialStateRef, operationId())
+      .then(() => reload())
+      .then(() => setMessage('Sessione in pausa · ' + label))
+      .catch(() => setMessage('Pausa sessione rifiutata.'))
+      .finally(() => setPending(false));
+  };
+
+  const resume = () => {
+    if (openSession === null) {
+      return;
+    }
+    setPending(true);
+    void source
+      .resume(openSession.sessionRef, openSession.timingMaterialStateRef, operationId())
+      .then(() => reload())
+      .then(() => setMessage('Sessione ripresa · ' + label))
+      .catch(() => setMessage('Ripresa sessione rifiutata.'))
+      .finally(() => setPending(false));
+  };
+
   return (
     <div className="timeline-session-controls" data-timeline-session-subject={subjectRef}>
       {openSession === null ? (
@@ -81,9 +107,22 @@ export function SessionSubjectControls({
           Avvia
         </button>
       ) : (
-        <button type="button" disabled={pending} onClick={end}>
-          Termina
-        </button>
+        <>
+          {openSession.paused ? (
+            <button type="button" disabled={pending} onClick={resume}>
+              Riprendi
+            </button>
+          ) : (
+            <>
+              <button type="button" disabled={pending} onClick={pause}>
+                Pausa
+              </button>
+              <button type="button" disabled={pending} onClick={end}>
+                Termina
+              </button>
+            </>
+          )}
+        </>
       )}
       {message === null ? null : <span role="status">{message}</span>}
     </div>

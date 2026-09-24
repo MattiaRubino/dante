@@ -13,6 +13,7 @@ export type TemporalSessionView = Readonly<{
   endedAt: string | null;
   open: boolean;
   replayed: boolean;
+  paused: boolean;
 }>;
 
 export class TemporalSessionRemoteError extends Error {
@@ -44,7 +45,11 @@ function uuid(value: unknown, field: string): string {
 function view(value: unknown): TemporalSessionView {
   const payload = record(value);
   const ended = payload.ended_at;
-  if (typeof payload.open !== 'boolean' || typeof payload.replayed !== 'boolean') {
+  if (
+    typeof payload.open !== 'boolean' ||
+    typeof payload.replayed !== 'boolean' ||
+    typeof payload.paused !== 'boolean'
+  ) {
     throw new TemporalSessionRemoteError('protocol', 'Invalid Session state.');
   }
   if (ended !== null && typeof ended !== 'string') {
@@ -64,6 +69,7 @@ function view(value: unknown): TemporalSessionView {
     endedAt: ended,
     open: payload.open,
     replayed: payload.replayed,
+    paused: payload.paused,
   });
 }
 
@@ -148,6 +154,30 @@ export function createRemoteTemporalSessionDataSource(
     ): Promise<TemporalSessionView> {
       return view(
         await send(`/api/v1/temporal/sessions/${encodeURIComponent(sessionRef)}/end`, 'POST', {
+          operation_id: operationId,
+          expected_material_state_ref: expectedMaterialStateRef,
+        }),
+      );
+    },
+    async pause(
+      sessionRef: string,
+      expectedMaterialStateRef: string,
+      operationId: string,
+    ): Promise<TemporalSessionView> {
+      return view(
+        await send('/api/v1/temporal/sessions/' + encodeURIComponent(sessionRef) + '/pause', 'POST', {
+          operation_id: operationId,
+          expected_material_state_ref: expectedMaterialStateRef,
+        }),
+      );
+    },
+    async resume(
+      sessionRef: string,
+      expectedMaterialStateRef: string,
+      operationId: string,
+    ): Promise<TemporalSessionView> {
+      return view(
+        await send('/api/v1/temporal/sessions/' + encodeURIComponent(sessionRef) + '/resume', 'POST', {
           operation_id: operationId,
           expected_material_state_ref: expectedMaterialStateRef,
         }),

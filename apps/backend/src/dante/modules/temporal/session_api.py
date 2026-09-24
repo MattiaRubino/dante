@@ -17,7 +17,9 @@ from dante.modules.temporal.session_runtime import (
     SessionInputError,
     SessionNotFoundError,
     SessionOperationReuseError,
+    SessionPauseConflictError,
     SessionPersistenceError,
+    SessionResumeConflictError,
     SessionView,
 )
 from dante.platform.database.references import MaterialStateRef, NativeRef
@@ -35,6 +37,7 @@ class SessionCommand(BaseModel):
 class SessionEndCommand(SessionCommand):
     expected_material_state_ref: UUID
 
+SessionTransitionCommand = SessionEndCommand
 
 class SessionResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -46,6 +49,7 @@ class SessionResponse(BaseModel):
     ended_at: datetime | None
     open: bool
     replayed: bool
+    paused: bool
 
 
 def _application(request: Request) -> SessionApplication:
@@ -66,6 +70,7 @@ def _response(view: SessionView) -> SessionResponse:
         ended_at=view.ended_at,
         open=view.open,
         replayed=view.replayed,
+        paused=view.paused,
     )
 
 
@@ -101,6 +106,16 @@ def _problem(exc: Exception) -> ProblemError:
             category="conflict",
             title="Session end conflict",
             detail=str(exc),
+        )
+    if isinstance(exc, SessionPauseConflictError):
+        return ProblemError(
+            status=409, code="temporal.session.pause_conflict", category="conflict",
+            title="Session pause conflict", detail=str(exc),
+        )
+    if isinstance(exc, SessionResumeConflictError):
+        return ProblemError(
+            status=409, code="temporal.session.resume_conflict", category="conflict",
+            title="Session resume conflict", detail=str(exc),
         )
     return ProblemError(
         status=409,
@@ -256,3 +271,57 @@ async def end_session(
         raise _problem(exc) from exc
     response.status_code = 200 if view.replayed else 200
     return _response(view)
+
+
+async def _transition(
+    command: Literal["pause", "resume"],
+    session_ref: UUID,
+    payload: SessionTransitionCommand,
+    context: MutatingContext,
+    application: Application,
+) -> SessionResponse:
+    try:
+        view = await getattr(application, command)(
+            self_person_ref=context.self_person_ref,
+            operation_id=payload.operation_id,
+            session_ref=NativeRef(session_ref),
+            expected_material_state_ref=MaterialStateRef(payload.expected_material_state_ref),
+        )
+    except (
+        SessionInputError,
+        SessionNotFoundError,
+        SessionOperationReuseError,
+        SessionPauseConflictError,
+        SessionResumeConflictError,
+        SessionPersistenceError,
+    ) as exc:
+        raise _problem(exc) from exc
+    return _response(view)
+
+
+@router.post(
+    "/sessions/{session_ref}/pause",
+    response_model=SessionResponse,
+    operation_id="temporal_pause_session",
+)
+async def pause_session(
+    session_ref: UUID,
+    payload: SessionTransitionCommand,
+    context: MutatingContext,
+    application: Application,
+) -> SessionResponse:
+    return await _transition("pause", session_ref, payload, context, application)
+
+
+@router.post(
+    "/sessions/{session_ref}/resume",
+    response_model=SessionResponse,
+    operation_id="temporal_resume_session",
+)
+async def resume_session(
+    session_ref: UUID,
+    payload: SessionTransitionCommand,
+    context: MutatingContext,
+    application: Application,
+) -> SessionResponse:
+    return await _transition("resume", session_ref, payload, context, application)

@@ -327,3 +327,38 @@ class SessionEndOperationRow(Base):
     expected_material_state_ref: Mapped[MaterialStateRef] = mapped_column(nullable=False)
     resulting_material_state_ref: Mapped[MaterialStateRef] = mapped_column(nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class _SessionTransitionOperationRow(Base):
+    """Shared immutable receipt shape; concrete tables represent one transition."""
+
+    __abstract__ = True
+    self_person_ref: Mapped[NativeRef] = mapped_column(primary_key=True)
+    operation_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    intent_fingerprint: Mapped[str] = mapped_column(Text, nullable=False)
+    session_ref: Mapped[NativeRef] = mapped_column(nullable=False, unique=True)
+    expected_material_state_ref: Mapped[MaterialStateRef] = mapped_column(nullable=False)
+    resulting_material_state_ref: Mapped[MaterialStateRef] = mapped_column(nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class SessionPauseOperationRow(_SessionTransitionOperationRow):
+    __tablename__ = "session_pause_operation"
+    __table_args__ = (
+        CheckConstraint("operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200", name="operation_id"),
+        CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name="fingerprint"),
+        ForeignKeyConstraint(["self_person_ref"], ["dante.person.person_ref"], name="fk_session_pause_operation_self_person_ref_person"),
+        ForeignKeyConstraint(["session_ref"], ["dante.session.session_ref"], name="fk_session_pause_operation_session_ref_session"),
+        ForeignKeyConstraint(["resulting_material_state_ref"], ["dante.material_state_address.material_state_ref"], name="fk_session_pause_operation_resulting_state_address"),
+    )
+
+
+class SessionResumeOperationRow(_SessionTransitionOperationRow):
+    __tablename__ = "session_resume_operation"
+    __table_args__ = (
+        CheckConstraint("operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200", name="operation_id"),
+        CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name="fingerprint"),
+        ForeignKeyConstraint(["self_person_ref"], ["dante.person.person_ref"], name="fk_session_resume_operation_self_person_ref_person"),
+        ForeignKeyConstraint(["session_ref"], ["dante.session.session_ref"], name="fk_session_resume_operation_session_ref_session"),
+        ForeignKeyConstraint(["resulting_material_state_ref"], ["dante.material_state_address.material_state_ref"], name="fk_session_resume_operation_resulting_state_address"),
+    )

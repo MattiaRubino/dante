@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime
 from typing import Literal
 from uuid import UUID
@@ -39,6 +39,12 @@ class SessionOperationReuseError(RuntimeError):
 class SessionEndConflictError(RuntimeError):
     """The expected current timing state is no longer open."""
 
+class SessionPauseConflictError(RuntimeError):
+    """The Session is already paused or its state is stale."""
+
+class SessionResumeConflictError(RuntimeError):
+    """The Session is not paused or its state is stale."""
+
 
 class SessionPersistenceError(RuntimeError):
     """Canonical Session persistence could not complete safely."""
@@ -54,6 +60,7 @@ class SessionView:
     started_at: datetime
     ended_at: datetime | None
     replayed: bool = False
+    paused: bool = False
 
     @property
     def open(self) -> bool:
@@ -91,7 +98,7 @@ def _view(row: RowMapping, *, replayed: bool) -> SessionView:
 
 
 class SessionApplication:
-    """Self-scoped Session core. Pause and duration stay outside this slice."""
+    """Self-scoped immutable Session transitions."""
 
     def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
         self._session_factory = session_factory
@@ -175,10 +182,68 @@ class SessionApplication:
             },
         )
 
+    async def pause(
+        self,
+        *,
+        self_person_ref: NativeRef,
+        operation_id: str,
+        session_ref: NativeRef,
+        expected_material_state_ref: MaterialStateRef,
+    ) -> SessionView:
+        return replace(await self._transition(
+            "pause", self_person_ref, operation_id, session_ref, expected_material_state_ref
+        ), paused=True)
+
+    async def resume(
+        self,
+        *,
+        self_person_ref: NativeRef,
+        operation_id: str,
+        session_ref: NativeRef,
+        expected_material_state_ref: MaterialStateRef,
+    ) -> SessionView:
+        return replace(await self._transition(
+            "resume", self_person_ref, operation_id, session_ref, expected_material_state_ref
+        ), paused=False)
+
+    async def _transition(
+        self,
+        command: Literal["pause", "resume"],
+        self_person_ref: NativeRef,
+        operation_id: str,
+        session_ref: NativeRef,
+        expected_material_state_ref: MaterialStateRef,
+    ) -> SessionView:
+        normalized = _normalize_operation_id(operation_id)
+        fingerprint = _fingerprint(
+            {
+                "version": "1",
+                "command": command,
+                "session_ref": str(session_ref),
+                "expected_material_state_ref": str(expected_material_state_ref),
+            }
+        )
+        return await self._call(
+            f"""SELECT session_ref, subject_native_ref, timing_material_state_ref,
+                       started_at, ended_at, replayed
+                  FROM dante.{command}_self_session(
+                    :actor, :operation_id, :fingerprint, :session_ref,
+                    :expected_state, :resulting_state
+                  )""",
+            {
+                "actor": self_person_ref,
+                "operation_id": normalized,
+                "fingerprint": fingerprint,
+                "session_ref": session_ref,
+                "expected_state": expected_material_state_ref,
+                "resulting_state": new_material_state_ref(),
+            },
+        )
+
     async def list_for_subject(
         self, *, self_person_ref: NativeRef, subject_native_ref: NativeRef
     ) -> tuple[SessionView, ...]:
-        return await self._call_many(
+        views = await self._call_many(
             """
             SELECT session_ref, subject_native_ref, timing_material_state_ref,
                    started_at, ended_at
@@ -186,11 +251,15 @@ class SessionApplication:
             """,
             {"actor": self_person_ref, "subject": subject_native_ref},
         )
+        return tuple(
+            replace(view, paused=await self._is_paused(self_person_ref, view.session_ref))
+            for view in views
+        )
 
     async def get(
         self, *, self_person_ref: NativeRef, session_ref: NativeRef
     ) -> SessionView:
-        return await self._call(
+        view = await self._call(
             """
             SELECT session_ref, subject_native_ref, timing_material_state_ref,
                    started_at, ended_at
@@ -198,6 +267,14 @@ class SessionApplication:
             """,
             {"actor": self_person_ref, "session_ref": session_ref},
         )
+        return replace(view, paused=await self._is_paused(self_person_ref, session_ref))
+
+    async def _is_paused(self, self_person_ref: NativeRef, session_ref: NativeRef) -> bool:
+        rows = await self._rows(
+            "SELECT dante.session_is_paused(:actor, :session_ref) AS paused",
+            {"actor": self_person_ref, "session_ref": session_ref},
+        )
+        return bool(rows[0]["paused"]) if rows else False
 
     async def _call(self, statement: str, parameters: dict[str, object]) -> SessionView:
         rows = await self._rows(statement, parameters)
@@ -232,5 +309,9 @@ class SessionApplication:
             raise SessionOperationReuseError("Session operation id was reused.") from exc
         if name == "session_end_conflict" or "conflicts with current timing" in message:
             raise SessionEndConflictError("Session end conflicts with current timing.") from exc
+        if name == "session_pause_conflict":
+            raise SessionPauseConflictError("Session pause conflicts with current timing.") from exc
+        if name == "session_resume_conflict":
+            raise SessionResumeConflictError("Session resume conflicts with current timing.") from exc
         if name == "session_subject_unavailable" or "unavailable" in message:
             raise SessionNotFoundError("Session subject unavailable.") from exc
