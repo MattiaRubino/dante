@@ -191,35 +191,38 @@ async function executeKind(
 }
 
 describe('B04 Temporal Create runtime', () => {
-  it('persists a splittable Activity minimum as a soft Session active-duration rule', async () => {
-    const sources = runtimeWithSources();
-    const baseline = flexibleFields('open');
-    const fields = createTemporalCreateFields({
-      ...baseline,
-      execution: Object.freeze({
-        ...baseline.execution,
-        sessionMode: 'splittable',
-        minSessionMinutes: 45,
-      }),
-    });
-    const prepared = sources.runtime.prepare(fields);
-    if (prepared.status !== 'ready') {
-      throw new Error('Expected Session minimum preparation to be ready.');
-    }
-    const execution = await sources.runtime.execute(prepared.prepared);
-    expect(execution.result.status).toBe('applied');
-    expect(sources.createActivity).not.toHaveBeenCalled();
-    const rules = sources.createConstrainedActivity.mock.calls[0]?.[0].rules;
-    expect(rules).toEqual([
-      {
-        family: 'duration',
-        durationKind: 'minimum',
-        constrainedFacet: 'session.active_duration',
-        strength: 'soft',
-        durationMicroseconds: 45 * 60 * 1_000_000,
-      },
-    ]);
-  });
+  it.each([1, 26, 31, 45])(
+    'persists a %i-minute splittable Activity minimum as a soft Session active-duration rule',
+    async (minutes) => {
+      const sources = runtimeWithSources();
+      const baseline = flexibleFields('open');
+      const fields = createTemporalCreateFields({
+        ...baseline,
+        execution: Object.freeze({
+          ...baseline.execution,
+          sessionMode: 'splittable',
+          minSessionMinutes: minutes,
+        }),
+      });
+      const prepared = sources.runtime.prepare(fields);
+      if (prepared.status !== 'ready') {
+        throw new Error('Expected Session minimum preparation to be ready.');
+      }
+      const execution = await sources.runtime.execute(prepared.prepared);
+      expect(execution.result.status).toBe('applied');
+      expect(sources.createActivity).not.toHaveBeenCalled();
+      const rules = sources.createConstrainedActivity.mock.calls[0]?.[0].rules;
+      expect(rules).toEqual([
+        {
+          family: 'duration',
+          durationKind: 'minimum',
+          constrainedFacet: 'session.active_duration',
+          strength: 'soft',
+          durationMicroseconds: minutes * 60 * 1_000_000,
+        },
+      ]);
+    },
+  );
 
   it('authors bounded-window as one hard absolute containment rule', async () => {
     const { execution, createConstrainedActivity, createActivity } =
