@@ -621,7 +621,9 @@ export function createRemoteTemporalActivityDataSource(
         ...(signal === undefined ? {} : { signal }),
       });
       const payload = await requireOk(response, 'Create Activity response');
-      return parseActivity(payload, { allowReplay: true });
+      const result = parseActivity(payload, { allowReplay: true });
+      invalidateTemporalTimelineRead();
+      return result;
     },
 
     async createScheduledActivity(
