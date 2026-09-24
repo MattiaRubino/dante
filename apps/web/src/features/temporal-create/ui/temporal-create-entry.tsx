@@ -104,7 +104,7 @@ export function TemporalCreateEntry({
   onBeforeOpen,
   creationEnabled = true,
 }: TemporalCreateEntryProps) {
-  const { t } = useTranslation('common');
+  const { t, i18n } = useTranslation('common');
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const focusReturnRef = useRef<HTMLElement | null>(null);
   const composerDragRef = useRef<ComposerDrag | null>(null);
@@ -454,6 +454,20 @@ export function TemporalCreateEntry({
     try {
       const execution = await runtime.execute(preparation.prepared);
       if (execution.result.status === 'applied' && execution.effect) {
+        if (
+          preparation.prepared.command.payload.placement !== null &&
+          execution.effect.projection.placement === null
+        ) {
+          preparedRef.current = null;
+          setSession(discardTemporalCreateSession(freshFields(defaultDate)));
+          setLifecycle('failed');
+          setFailureMessage(
+            i18n.language.toLowerCase().startsWith('en')
+              ? 'Activity created, but its Schedule was not confirmed. Check Timeline and To place.'
+              : 'Attività creata, ma lo Schedule non è confermato. Controlla Timeline e Da collocare.',
+          );
+          return;
+        }
         const focusHandled = execution.effect.undoAvailable
           ? onApplied(execution.effect)
           : false;
