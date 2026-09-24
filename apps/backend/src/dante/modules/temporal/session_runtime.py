@@ -120,7 +120,8 @@ class SessionApplication:
             SELECT session_ref, subject_native_ref, timing_material_state_ref,
                    started_at, ended_at, replayed
               FROM dante.start_self_session(
-                :actor, :operation_id, :fingerprint, :session_ref, :state_ref, :subject
+                :actor, :operation_id, :fingerprint, :session_ref, :state_ref,
+                :subject_kind, :subject
               )
             """,
             {
@@ -129,6 +130,7 @@ class SessionApplication:
                 "fingerprint": fingerprint,
                 "session_ref": new_native_ref(),
                 "state_ref": new_material_state_ref(),
+                "subject_kind": subject_kind,
                 "subject": subject_native_ref,
             },
         )
