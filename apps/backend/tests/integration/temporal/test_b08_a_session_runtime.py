@@ -130,7 +130,8 @@ async def test_b08_a_activity_session_is_scoped_idempotent_and_does_not_fabricat
         )
         assert not ended.open
         assert ended.ended_at is not None
-        assert ended.timing_material_state_ref == started.timing_material_state_ref
+        assert ended.timing_material_state_ref != started.timing_material_state_ref
+        assert ended.started_at == started.started_at
 
         end_replay = await sessions.end(
             self_person_ref=alice,
@@ -140,6 +141,7 @@ async def test_b08_a_activity_session_is_scoped_idempotent_and_does_not_fabricat
         )
         assert end_replay.replayed
         assert end_replay.session_ref == started.session_ref
+        assert end_replay.timing_material_state_ref == ended.timing_material_state_ref
         assert end_replay.ended_at == ended.ended_at
 
         with pytest.raises(SessionEndConflictError):
@@ -149,6 +151,41 @@ async def test_b08_a_activity_session_is_scoped_idempotent_and_does_not_fabricat
                 session_ref=started.session_ref,
                 expected_material_state_ref=started.timing_material_state_ref,
             )
+
+        with _admin(migrated_database) as connection:
+            immutable_proof = connection.execute(
+                """
+                SELECT
+                  (SELECT ended_at FROM dante.session_timing_absolute
+                    WHERE material_state_ref=%s),
+                  (SELECT started_at FROM dante.session_timing_absolute
+                    WHERE material_state_ref=%s),
+                  (SELECT ended_at FROM dante.session_timing_absolute
+                    WHERE material_state_ref=%s),
+                  (SELECT material_state_ref FROM dante.native_current_material_state
+                    WHERE native_owner_ref=%s AND facet_code='session.timing'),
+                  (SELECT count(*) FROM dante.session_timing_current_history
+                    WHERE session_ref=%s),
+                  (SELECT resulting_material_state_ref FROM dante.session_end_operation
+                    WHERE self_person_ref=%s AND operation_id='b08-a:activity-end')
+                """,
+                (
+                    started.timing_material_state_ref,
+                    ended.timing_material_state_ref,
+                    ended.timing_material_state_ref,
+                    started.session_ref,
+                    started.session_ref,
+                    alice,
+                ),
+            ).fetchone()
+        assert immutable_proof == (
+            None,
+            started.started_at,
+            ended.ended_at,
+            ended.timing_material_state_ref,
+            2,
+            ended.timing_material_state_ref,
+        )
 
         restarted = await sessions.start(
             self_person_ref=alice,
@@ -244,6 +281,7 @@ async def test_b08_a_occurrence_session_uses_the_occurrence_identity_without_sch
         )
         assert not ended.open
         assert ended.ended_at is not None
+        assert ended.timing_material_state_ref != started.timing_material_state_ref
 
         canonical_occurrence = await occurrences.get(
             self_person_ref=alice,
@@ -252,15 +290,18 @@ async def test_b08_a_occurrence_session_uses_the_occurrence_identity_without_sch
         assert not canonical_occurrence.skipped
 
         with _admin(migrated_database) as connection:
-            schedule_count, actual_count = connection.execute(
+            schedule_count, actual_count, historical_old_end = connection.execute(
                 """
                 SELECT
                   (SELECT count(*) FROM dante.schedule WHERE subject_native_ref=%s),
-                  (SELECT count(*) FROM dante.actual WHERE subject_native_ref=%s)
+                  (SELECT count(*) FROM dante.actual WHERE subject_native_ref=%s),
+                  (SELECT ended_at FROM dante.session_timing_absolute
+                    WHERE material_state_ref=%s)
                 """,
-                (occurrence_ref, occurrence_ref),
+                (occurrence_ref, occurrence_ref, started.timing_material_state_ref),
             ).fetchone()
         assert schedule_count == 0
         assert actual_count == 0
+        assert historical_old_end is None
     finally:
         await runtime.dispose()
