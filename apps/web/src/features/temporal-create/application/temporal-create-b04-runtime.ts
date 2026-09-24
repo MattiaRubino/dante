@@ -114,7 +114,7 @@ function b04FlexibleActivityIntentSupported(
     specification.scheduling.fallbackPolicy === 'inherit' &&
     (sameStructuredIntent(specification.execution, baseline.execution) ||
       (specification.execution.sessionMode === 'splittable' &&
-        specification.execution.minSessionMinutes >= 5 &&
+        specification.execution.minSessionMinutes >= 1 &&
         specification.execution.maxSessions === baseline.execution.maxSessions &&
         specification.execution.partialAllowed === baseline.execution.partialAllowed &&
         specification.execution.finishEarlyAllowed === baseline.execution.finishEarlyAllowed &&
