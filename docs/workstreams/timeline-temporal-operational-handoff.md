@@ -1,14 +1,13 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B08 SESSION RUNTIME ✅ CLOSED — user-reported local gate and real-app walkthrough complete
+- **Status:** B08 SESSION RUNTIME ✅ CLOSED — B09 Responsibility / Participation is next
 - **Reconciled:** 2026-09-24
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Live execution ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
 - **Current candidate Alembic frontier:** `20260924_65`
-- **Candidate topology B08-C local proof recorded:** `150|5|99|93|292|236|418|0|0|0`
-- **Last proven candidate DB frontier:** B08-C / `20260924_65`
+- **Last proven candidate DB frontier:** B08-C / `20260924_65` / `150|5|99|93|292|236|418|0|0|0`
 - **CI:** no CI/GitHub Actions unless explicitly authorized; user runs local tests
 
 Read this first after a context reset.
@@ -19,194 +18,216 @@ Read this first after a context reset.
 
 ```text
 B00–B06 ✅ CLOSED / PROVEN
-B07     ⏸ DEFERRED
 B08     ✅ CLOSED / USER-REPORTED 2026-09-24
-B08-A   ✅ CLOSED / USER-REPORTED VIA B08-B
-B08-B   ✅ CLOSED / USER-REPORTED 2026-09-24
-B08-C   ✅ CLOSED / PROVEN — local automated gate 2026-09-24
-B08-D   ✅ CLOSED / USER-REPORTED — automated gate and real-app walkthrough
-B09–B12 ⬜ NOT STARTED
+B09     ⬜ NEXT
+B10     ⬜ NOT STARTED
+B11     ⬜ NOT STARTED
+B13     ⬜ NOT STARTED
+B12     ⬜ NOT STARTED
+B14     ⬜ NOT STARTED
+B07     ⏸ DEFERRED UNTIL B14
 B15     ⬜ NOT STARTED
 ```
 
-B08-A and B08-B are treated as closed based on the user’s B08-B closure report. Exact test logs are not committed; preserve consolidated evidence in B08-D.
+Execution order after B08 is deliberately:
+
+```text
+B09 → B10 → B11 → B13 → B12 → B14 → B07 → B15
+```
+
+Historical identifiers are not renumbered. B13 and B14 are the only new compact blocks introduced by the post-B08 Create audit; all other missing Create behavior belongs to existing B09–B12 ownership.
 
 ---
 
-# 2. Why B08-A was reopened
+# 2. B08 closure truth
 
-The first B08-A closure was premature. Audit found two real defects:
+B08 closed from the user's local automated output and real-app walkthrough on 2026-09-24.
+
+Migration chain:
 
 ```text
-1. START endpoint family was not enforced at the DB boundary.
-   Activity route could pass an Occurrence NativeRef and vice versa.
-
-2. END mutated session_timing_absolute in place.
-   That violated the MaterialState immutability contract and made replay depend
-   on whatever timing state happened to be current later.
+_58 typed Session subject + START/READ/END
+_59 exact Activity/Occurrence subject-family enforcement
+_60 immutable END MaterialState + exact replay receipt
+_62 pause/resume
+_63 transition replay repair
+_64 runtime metrics
+_65 Activity TC-009 soft minimum on one Session active duration
 ```
 
-Both are repaired forward-only; no applied migration was edited.
-
----
-
-# 3. Current B08-A source truth
+Recorded evidence:
 
 ```text
-20260924_58
-  Session execution subject + bounded START/LIST/GET/END
-
-20260924_59
-  start_self_session(..., requested_subject_family, requested_subject_native_ref)
-  exact Activity/Occurrence family check against native_address.owner_family
-
-20260924_60
-  end_self_session(..., expected_state, requested_resulting_state)
-  END creates a new immutable session.timing MaterialState
-  expected state remains unchanged historical truth
-  native current binding + history advance atomically
-  session_end_operation stores resulting_material_state_ref
-  replay returns the exact produced state
-  any candidate `_58` in-place END data is repaired forward-only
+generated/client checks PASS
+focused Web suite: 58 PASS
+backend PostgreSQL/unit/API command: 31 PASS
+follow-up Web typecheck: user-confirmed PASS
+real app: START / PAUSE / RESUME / END confirmed
+real app: timed splittable Activity remains timed and scheduled
+real app: genuinely unplaced Activity remains in Da collocare
+real app: whole-minute Schedule duration accepted without 26/31 step bug
 ```
 
-Topology expected at `_60`:
+Raw local output is not committed; retain the distinction between user-reported proof and repository-captured evidence.
+
+Permanent B08 boundaries:
 
 ```text
-148 tables
-5 views
-94 routines
-93 triggers
-290 indexes
-230 FKs
-414 CHECKs
-0 enum/domain/sequence/materialized/partitioned/RLS
-```
-
----
-
-# 4. Product path now present
-
-```text
-Activity   → START → read/reload → END
-Occurrence → START → read/reload → END
-```
-
-Also present:
-
-```text
-scheduled Activity/Occurrence Session controls on Timeline
-unplaced Activity Session controls in Planning Tray
-```
-
-An unplaced Activity may start a Session directly. **Never create a fake Schedule to enable START.**
-
-Permanent forbidden effects:
-
-```text
-START does not create Schedule
+START does not create fake Schedule
 END does not complete Activity
 END does not resolve Occurrence
-END does not create Actual
-END does not create Outcome
+END does not create Actual or Outcome
+pause does not create a new Session
+Session elapsed != active duration
+TC-009 does not aggregate Sessions, count pauses, block transitions or mutate Schedule/Actual/Outcome
 ```
 
 ---
 
-# 5. B08-C proof record
+# 3. Roadmap amendment after Create audit
 
-The user completed the focused local gate on 2026-09-24:
+The Home `+` audit found two structural omissions, not a reason to create many extra phases.
+
+## B13 — Work Structure / Decomposition / Dependencies
+
+Needed for cases such as:
 
 ```text
-`pnpm generated:check` PASS
-API-client typecheck PASS
-web typecheck PASS
-focused Session/Create Vitest: 35 passed
-focused backend unit/API proof: 15 passed
-focused PostgreSQL B08-C/B04/catalog proof: 14 passed
+English lesson → speaking / writing / grammar
+work item → internal steps
+Plan → several independently meaningful Activities
+Activity A → dependency → Activity B
 ```
 
-The user confirmed Pause, Resume and END now work in the real app after the HTTP fix. Further dogfood exposed two UI defects: selecting a splittable Session silently converted a timed Activity to unplaced, and the Planning Tray Schedule duration used a five-minute input step (26 minutes admitted, 30 minutes rejected with 26/31 as nearby valid values). A follow-up candidate preserves explicit timed placement, establishes its accepted Schedule after constrained Activity creation, uses one-minute controls and reads the Planning Tray from canonical unplaced Activities. User-run reproof is pending.
-
----
-
-# 6. B08-D user-run closure gate
-
-B08-D is closed from the user's local output and real-app confirmation on 2026-09-24. The focused Web suite passed **58 tests** and the backend PostgreSQL/unit/API command passed **31 tests**. Generated sources and API-client typecheck passed. The first web typecheck exposed six TypeScript errors in the Planning Tray compatibility prop and the post-Schedule projection narrowing; they were repaired in commits `711abed2` and `5cde1039`. The user then confirmed the follow-up typecheck and dogfood pass.
-
-The real-app walkthrough now confirms: START, PAUSE, RESUME and END work; a timed splittable Activity keeps its selected date/time and appears in Timeline; an unplaced Activity remains in Da collocare; and Schedule duration accepts whole-minute values, including 30, without the prior 26/31 five-minute-step warning. TC-009 remains soft and does not block transitions.
-
-From repository root:
-
-```bash
-pnpm generated:check
-pnpm --filter @dante/api-client typecheck
-pnpm --filter @dante/web typecheck
-pnpm --filter @dante/web exec vitest run \
-  src/features/temporal/session-subject-controls.test.tsx \
-  src/features/temporal/remote-session-data-source.test.ts \
-  src/features/temporal-create/application/temporal-create-b04-runtime.test.ts \
-  src/features/temporal-create/model/temporal-create-session.test.ts \
-  src/features/temporal-create/ui/temporal-create-activity-fields.test.tsx
-```
-
-From `apps/backend`, with the local PostgreSQL integration environment used for B08-C:
-
-```bash
-uv run --locked pytest -q --no-cov \
-  tests/integration/database/test_b08_a_session_catalog.py \
-  tests/integration/database/test_current_catalog.py \
-  tests/integration/database/test_database_current_catalog.py \
-  tests/integration/temporal/test_b08_a_session_runtime.py \
-  tests/integration/temporal/test_b08_b_session_pause_resume.py \
-  tests/integration/temporal/test_b08_c_session_minimum_duration.py \
-  tests/integration/temporal/test_b08_d_session_workflow.py \
-  tests/test_b08_c_session_duration_evaluation.py \
-  tests/test_temporal_constraint_api.py \
-  tests/test_b08_a_session_authority_freeze.py
-```
-
-Then perform **one** real-stack walkthrough in the authenticated app; record observed SessionRefs, displayed states and any failure:
+B13 must distinguish:
 
 ```text
-1. Create a splittable Activity with an active Session minimum longer than the
-   walkthrough (e.g. 45 minutes); leave the Activity without Schedule.
-2. In Planning Tray START; inspect its SessionRef and the pending TC-009 minimum.
-   Reload (F5): same SessionRef, running, Activity still unplaced.
-3. PAUSE and reload: same SessionRef, paused, active time stops growing;
-   Termina is unavailable. RESUME and reload: same SessionRef, running.
-4. END before the threshold: same SessionRef, violated soft minimum; no block.
-   Reload: ended state persists. START again: a distinct SessionRef with a fresh
-   pending evaluation, not a sum of the two Sessions.
-5. On a scheduled Activity, START → reload → PAUSE → RESUME → END. Its accepted
-   Schedule placement stays the same; Session time is not placement time.
-6. On an eligible Occurrence, START → reload → PAUSE → RESUME → END.
-   No inherited Activity TC-009 appears; the Occurrence remains unresolved.
-7. Confirm no fabricated Schedule for the unplaced Activity or Occurrence,
-   no Activity completion, and no Actual or Outcome from any Session END.
+internal Step != Activity
+composite work != generic sub-item hierarchy
+Dependency != hierarchy
+ordering != dependency
+child Schedule != parent Schedule
+child Session != parent Session
 ```
 
-The UI need not expose internal identifiers. Capture SessionRefs and canonical Schedule/Actual/Outcome evidence through authenticated API or DB inspection where the UI does not show them. Mark B08-D and B08 closed only after receiving the user's actual automated outputs and walkthrough observations; record evidence in map/roadmap/handoff without claiming unobserved results.
+It also owns the temporal execution-structure foundation already latent in Create where appropriate: maximum Session count, merge compatibility, spacing and preparation/recovery rules.
+
+B13 executes before B12 so replanning/solver logic sees real dependency structure rather than inventing it later.
+
+## B14 — Temporal Create Completeness Gate
+
+B14 is a gate, not a new feature vertical.
+
+Every editable Home `+` field must be exactly one of:
+
+```text
+A. canonically persisted and behaviorally proven
+B. truthful handoff to the owning vertical/capability
+C. explicitly presentation/read-only
+D. hidden/removed until supported
+```
+
+Never leave:
+
+```text
+editable field → value collected → silently ignored or normally rejected because implementation is absent
+```
+
+B14 audits Notes, appearance override, Tags, confirmation/reminder, execution policy and rich Event fields. It does not pull Work/Content/provider functionality into the Temporal kernel merely because the UI once exposed a field.
 
 ---
 
-# 7. Collaboration discipline
+# 4. B09 start contract — Responsibility / Participation
 
-- user runs tests locally; assistant does not run them
+B09 starts now. The goal is the smallest coherent actor/person layer needed by the temporal vertical, not collaboration infrastructure.
+
+Permanent boundaries:
+
+```text
+Person != Account
+Responsibility != Participation
+participant != responsible actor != organizer/owner
+shared Event truth != actor-specific participation truth
+participation/attendance != Event Actual
+another person's state != something DANTE controls by default
+provider attendee != canonical Person identity by default
+```
+
+Before implementing persistence, inspect and reuse the existing Product / Domain / Logical / Physical authority for Person, Responsibility and Participation. Do not create a generic participant JSON/blob or a polymorphic shortcut when typed ownership/relations already exist.
+
+B09 must also reconcile the existing Home `+` required/optional participant fields: if B09 owns their semantics they become truthful canonical authoring; otherwise they must be deferred/hidden rather than pretending to persist.
+
+B09 closes only when the same-change obligations are satisfied where applicable:
+
+```text
+Logical/Physical authority
+→ forward-only Alembic
+→ SQLAlchemy
+→ Dictionary + scope.json
+→ direct PostgreSQL proof
+→ backend/application
+→ HTTP/OpenAPI/generated client if public
+→ frontend Create/Timeline surface if part of B09
+→ user-run local proof
+→ roadmap/map/handoff evidence
+```
+
+---
+
+# 5. Reserved ownership after B09
+
+```text
+B10
+  Actual / Outcome / Confirmation / Resolution
+  confirmation policy
+  partial completion / finish-early realization semantics
+  Expected outcome != Outcome
+
+B11
+  advanced recurrence / conditional behavior
+  truthful resolution of the Create reminder field
+
+B13
+  internal steps / composition / dependencies
+  execution-structure policy foundation
+
+B12
+  preferred windows / movement / fallback
+  conflict detection and dependency-aware replanning
+  deterministic solver proposals
+
+B14
+  field-by-field Create truthfulness gate
+
+B07
+  final UI/UX consolidation only after B14
+
+B15
+  whole-vertical regression + semantic red-team closure
+```
+
+---
+
+# 6. Collaboration discipline
+
+- user runs tests locally; assistant prepares exact commands
 - no CI/GitHub Actions unless explicitly authorized
 - push changes frequently
-- current docs must distinguish candidate truth from proven/protected-main truth
-- B07 later consolidates UI; interim B08 UI only needs to be truthful and functional
+- do not edit historical migrations; use forward-only repair
+- distinguish candidate truth from proven/protected-main truth
+- generated API client is generated from OpenAPI, never manually edited
+- B07 is presentation consolidation, not a place to invent missing semantics
 
 ---
 
-# 8. Fresh-chat recovery
+# 7. Fresh-chat recovery
 
 ```text
 1. this handoff
 2. timeline-temporal-operational-roadmap.md
 3. timeline-temporal-operational-map.md
 4. docs/database/timeline-temporal-operational.md
+5. current Logical Model / PostgreSQL blueprint sections relevant to B09
 ```
 
-**Exact next action:** Begin B09 Responsibility / Participation from the B08-closed frontier. Contract history remains in `timeline-temporal-operational-b08-c-implementation-freeze.md`.
+**Exact next action:** Inspect existing Responsibility / Participation / Person authority and persistence substrate, freeze the smallest coherent B09 contract, then implement it vertically.
