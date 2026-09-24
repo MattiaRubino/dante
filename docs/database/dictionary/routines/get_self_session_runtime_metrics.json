@@ -1,0 +1,1 @@
+{"object":{"key":"routine:dante.get_self_session_runtime_metrics","name":"get_self_session_runtime_metrics"},"semantic_traceability":{"domain_concepts":["Session","elapsed duration","paused duration","active duration"]},"implementation":{"postgresql":{"signature":"dante.get_self_session_runtime_metrics(uuid,uuid,uuid)"}}}
