@@ -1,6 +1,6 @@
 # B08-C — TC-009 Session Minimum Duration
 
-- **Status:** implementation contract for the B08-C candidate
+- **Status:** CLOSED / PROVEN implementation contract — local automated gate 2026-09-24
 - **Reconciled:** 2026-09-24
 - **Branch:** `feature/timeline-temporal-operational`
 - **Prior frontier:** B08-B / Alembic `20260924_64`
@@ -81,4 +81,4 @@ Timeline/Create UI displays the configured minimum and current evaluation
 no Activity completion, Actual, Outcome or Schedule mutation is fabricated
 ```
 
-Automated and real-stack proof remains user-run. The checked-out candidate is not marked proven until that evidence is recorded.
+The user-run local automated gate passed on 2026-09-24: generated/client checks, web typecheck/Vitest, backend unit/API and PostgreSQL catalog/integration proof. The one real-stack/manual walkthrough remains B08-D scope.

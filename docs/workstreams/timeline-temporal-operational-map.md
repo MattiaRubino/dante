@@ -6,8 +6,8 @@
 - **Continuation handoff:** `docs/workstreams/timeline-temporal-operational-handoff.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
 - **Current candidate Alembic frontier:** `20260924_65`
-- **Candidate topology awaiting proof:** `150|5|99|93|292|236|418|0|0|0`
-- **Last user-reported proven candidate DB frontier:** B08-B / `20260924_64` / `150|5|99|93|292|236|418|0|0|0` (raw local proof logs not committed)
+- **Candidate topology B08-C local proof recorded:** `150|5|99|93|292|236|418|0|0|0`
+- **Last proven candidate DB frontier:** B08-C / `20260924_65` / `150|5|99|93|292|236|418|0|0|0` (raw local proof logs not committed)
 - **Protected-main baseline:** `20260906_18`; see `docs/database/README.md`
 - **CI:** not authorized; local tests are run by the user
 
@@ -61,8 +61,8 @@ Accepted B06 evidence remains the last fully proven frontier. B08 candidate work
 B08 Session Runtime                              🟡 IN PROGRESS
   B08-A Session Core End-to-End                   ✅ CLOSED / USER-REPORTED
   B08-B Pause / Resume + Durations End-to-End     ✅ CLOSED / USER-REPORTED
-  B08-C TC-009 Session Duration End-to-End        🟡 IMPLEMENTED / USER PROOF PENDING
-  B08-D Whole-block closure                       ⬜ BLOCKED
+  B08-C TC-009 Session Duration End-to-End        ✅ CLOSED / PROVEN — local automated gate 2026-09-24
+  B08-D Whole-block closure                       🟡 NEXT
 
 B09 Responsibility / Participation               ⬜
 B10 Actual / Outcome / Confirmation / Resolution ⬜
@@ -142,14 +142,14 @@ The user reported B08-B closed on 2026-09-24. That sequencing implies B08-A’s 
 ```text
 B08-A: closed for sequencing by user-reported B08-B completion
 B08-B: closed per user report; code frontier `_64`
-B08-C: candidate source at `_65`, not yet user-proven
+B08-C: `_65` closed/proven by user-run local automated gate on 2026-09-24
 ```
 
 # 6. B08-B / C / D
 
 B08-B is closed per user report. `_62` implements Pause/Resume transitions, `_63` repairs replay, and `_64` derives elapsed/paused/active metrics from facts.
 
-B08-C is the current candidate at `_65`; its freeze contract is `timeline-temporal-operational-b08-c-implementation-freeze.md`. It adds only the direct Activity soft-minimum Session active-duration subset, with read-time evaluation and no outcome or Schedule side effects.
+B08-C `_65` is closed/proven by the user-run local automated gate: generated/client checks, web typecheck/Vitest, backend unit/API and PostgreSQL catalog/integration proof all passed on 2026-09-24. Its freeze contract is `timeline-temporal-operational-b08-c-implementation-freeze.md`; it adds only the direct Activity soft-minimum Session active-duration subset, with read-time evaluation and no outcome or Schedule side effects.
 
 B08-D is whole-block regression/dogfood closure after A–C; it cannot be used to defer missing proof from an earlier slice.
 
@@ -163,10 +163,10 @@ B07     ⏸ DEFERRED
 B08     🟡 IN PROGRESS
 B08-A   ✅ CLOSED / USER-REPORTED VIA B08-B
 B08-B   ✅ CLOSED / USER-REPORTED
-B08-C   🟡 IMPLEMENTED / USER PROOF PENDING
-B08-D   ⬜ WHOLE-BLOCK CLOSURE
+B08-C   ✅ CLOSED / PROVEN — local automated gate 2026-09-24
+B08-D   🟡 NEXT — WHOLE-BLOCK CLOSURE
 B09–B12 ⬜ NOT STARTED
 B15     ⬜ NOT STARTED
 ```
 
-**Next concrete action:** user runs B08-C `_65` focused proof and B08-D whole-block regression/dogfood closure.
+**Next concrete action:** B08-D whole-block regression/dogfood closure and the one real-stack walkthrough.

@@ -184,7 +184,7 @@ B08-A `_58` base implementation       implemented
 B08-A `_59` family repair             implemented
 B08-A `_60` immutable-END repair      implemented
 B08-A/B automated + real-stack proof ✅ CLOSED PER USER-REPORTED B08-B DEPENDENCY
-B08-C `_65` automated + real-stack    ⬜ user proof required
+B08-C `_65` local automated proof     ✅ CLOSED / PROVEN 2026-09-24
 ```
 
-B08-A/B are treated as closed based on the user’s B08-B closure report; their exact test logs are not committed. B08-C `_65` is the current candidate source truth and awaits user-run proof.
+B08-A/B are treated as closed based on the user’s B08-B closure report; their exact test logs are not committed. B08-C `_65` passed the user-run generated/client, web, backend unit/API and PostgreSQL catalog/integration gates on 2026-09-24. The single real-stack walkthrough remains B08-D scope.

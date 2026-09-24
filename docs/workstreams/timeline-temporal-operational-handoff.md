@@ -1,14 +1,14 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B08 SESSION RUNTIME 🟡 — B08-C IMPLEMENTED / USER PROOF PENDING
+- **Status:** B08 SESSION RUNTIME 🟡 — B08-C CLOSED / PROVEN; B08-D NEXT
 - **Reconciled:** 2026-09-24
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Live execution ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
 - **Current candidate Alembic frontier:** `20260924_65`
-- **Candidate topology awaiting proof:** `150|5|99|93|292|236|418|0|0|0`
-- **Last user-reported proven candidate DB frontier:** B08-B / `20260924_64`
+- **Candidate topology B08-C local proof recorded:** `150|5|99|93|292|236|418|0|0|0`
+- **Last proven candidate DB frontier:** B08-C / `20260924_65`
 - **CI:** no CI/GitHub Actions unless explicitly authorized; user runs local tests
 
 Read this first after a context reset.
@@ -23,8 +23,8 @@ B07     ⏸ DEFERRED
 B08     🟡 IN PROGRESS
 B08-A   ✅ CLOSED / USER-REPORTED VIA B08-B
 B08-B   ✅ CLOSED / USER-REPORTED 2026-09-24
-B08-C   🟡 IMPLEMENTED / USER PROOF PENDING
-B08-D   ⬜ WHOLE-BLOCK CLOSURE
+B08-C   ✅ CLOSED / PROVEN — local automated gate 2026-09-24
+B08-D   🟡 NEXT — whole-block closure
 B09–B12 ⬜ NOT STARTED
 B15     ⬜ NOT STARTED
 ```
@@ -113,24 +113,20 @@ END does not create Outcome
 
 ---
 
-# 5. Exact proof to run next
+# 5. B08-C proof record
 
-From the repo after pulling the branch, user runs the focused automated bundle. Required gates include:
+The user completed the focused local gate on 2026-09-24:
 
 ```text
-Alembic upgrade to `20260924_65`
-B08-A Session catalog proof
-B08-A Activity/Occurrence runtime proof
-whole current DB catalog/Dictionary proof
-relevant Session API/OpenAPI proof
-generated:check
-API-client typecheck
-web typecheck
-remote Session datasource Vitest
-relevant Timeline/Planning Tray focused Vitest
+`pnpm generated:check` PASS
+API-client typecheck PASS
+web typecheck PASS
+focused Session/Create Vitest: 35 passed
+focused backend unit/API proof: 15 passed
+focused PostgreSQL B08-C/B04/catalog proof: 14 passed
 ```
 
-Then real-stack manual proof:
+The single real-stack/manual walkthrough remains intentionally owned by B08-D:
 
 ```text
 1. create/use an Activity with no Schedule
@@ -143,13 +139,6 @@ Then real-stack manual proof:
 8. eligible Occurrence START/F5/END
 9. verify Schedule unchanged
 10. verify no completion / Actual / Outcome appeared
-```
-
-Only after accepted evidence:
-
-```text
-B08-A ✅ CLOSED / PROVEN
-B08-B ← NEXT
 ```
 
 ---
@@ -173,4 +162,4 @@ B08-B ← NEXT
 4. docs/database/timeline-temporal-operational.md
 ```
 
-**Exact next action:** user runs the B08-C `_65` proof bundle, then B08-D whole-block closure. Contract: `timeline-temporal-operational-b08-c-implementation-freeze.md`.
+**Exact next action:** B08-D whole-block regression/dogfood and its one real-stack walkthrough. Contract: `timeline-temporal-operational-b08-c-implementation-freeze.md`.

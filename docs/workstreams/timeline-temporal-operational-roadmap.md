@@ -5,10 +5,10 @@
 - **Vertical boundary:** Home `+` creation/configuration → canonical temporal truth → Timeline projection/actions → bounded lifecycle completion
 - **Completed frontier:** B06 ✅ CLOSED / PROVEN
 - **Current block:** B08 Session Runtime 🟡 IN PROGRESS
-- **Current slice:** B08-C TC-009 Session Duration End-to-End — implemented; user-run proof pending
+- **Current slice:** B08-D Whole-block closure — B08-C local automated proof recorded
 - **Deferred block:** B07 UI/UX Consolidation v1 — execute after B08–B12
-- **Current candidate DB frontier:** PostgreSQL 18.6 / Alembic `20260924_65`
-- **Candidate topology awaiting proof:** `150|5|99|93|292|236|418|0|0|0`
+- **Current candidate DB frontier:** PostgreSQL 18.6 / Alembic `20260924_65` — B08-C local proof recorded
+- **Candidate topology B08-C local proof recorded:** `150|5|99|93|292|236|418|0|0|0`
 - **Live execution ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **Continuation handoff:** `docs/workstreams/timeline-temporal-operational-handoff.md`
 
@@ -80,8 +80,8 @@ B06 Routine / Recurrence / Occurrence Baseline   ✅ CLOSED / PROVEN
 B08 Session Runtime                              🟡 IN PROGRESS
   B08-A Session Core End-to-End                   ✅ CLOSED / USER-REPORTED
   B08-B Pause / Resume + Durations End-to-End     ✅ CLOSED / USER-REPORTED
-  B08-C TC-009 Session Duration End-to-End        🟡 IMPLEMENTED / USER PROOF PENDING
-  B08-D Whole-block closure                       ⬜
+  B08-C TC-009 Session Duration End-to-End        ✅ CLOSED / PROVEN — local automated gate 2026-09-24
+  B08-D Whole-block closure                       🟡 NEXT
 
 B09 Responsibility / Participation               ⬜
 B10 Actual / Outcome / Confirmation / Resolution ⬜
@@ -214,9 +214,9 @@ RUNNING → PAUSED → RUNNING → ENDED
 
 Must preserve Session identity, enforce one open pause, reject invalid/concurrent transitions deterministically, rehydrate running/paused state after reload, and derive duration only from captured facts. Browser timers are presentation only.
 
-## B08-C — TC-009 Session Duration End-to-End — CURRENT
+## B08-C — TC-009 Session Duration End-to-End — CLOSED / PROVEN
 
-Implementation contract: `timeline-temporal-operational-b08-c-implementation-freeze.md`. The candidate persists the Create Activity splittable minimum as a soft `duration / session.active_duration` rule, evaluates one Activity-owned Session’s active time, and reports pending/satisfied/violated at read time. Pauses are excluded, Session identities are never aggregated, and evaluation never blocks an actual transition or mutates Schedule/completion/Actual/Outcome. Source and generated OpenAPI/API-client files are at Alembic `_65`; user-run automated and real-stack proof remains pending.
+Implementation contract: `timeline-temporal-operational-b08-c-implementation-freeze.md`. The candidate persists the Create Activity splittable minimum as a soft `duration / session.active_duration` rule, evaluates one Activity-owned Session’s active time, and reports pending/satisfied/violated at read time. Pauses are excluded, Session identities are never aggregated, and evaluation never blocks an actual transition or mutates Schedule/completion/Actual/Outcome. Source and generated OpenAPI/API-client files are at Alembic `_65`. On 2026-09-24 the user passed generated/client checks, web typecheck/Vitest, backend unit/API and PostgreSQL catalog/integration proof. The one real-stack walkthrough remains B08-D scope.
 
 ## B08-D — Whole-block closure
 
@@ -261,10 +261,10 @@ B07     ⏸ DEFERRED
 B08     🟡 IN PROGRESS
 B08-A   ✅ CLOSED / USER-REPORTED VIA B08-B DEPENDENCY
 B08-B   ✅ CLOSED / USER-REPORTED 2026-09-24
-B08-C   🟡 IMPLEMENTED / USER PROOF PENDING
-B08-D   ⬜ WHOLE-BLOCK CLOSURE
+B08-C   ✅ CLOSED / PROVEN — local automated gate 2026-09-24
+B08-D   🟡 NEXT — WHOLE-BLOCK CLOSURE
 B09–B12 ⬜ NOT STARTED
 B15     ⬜ NOT STARTED
 ```
 
-**Current action:** user runs the B08-C `_65` proof bundle and B08-D whole-block regression/dogfood.
+**Current action:** B08-D whole-block regression/dogfood and the one real-stack walkthrough.

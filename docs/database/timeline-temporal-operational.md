@@ -1,11 +1,11 @@
 # Timeline / Temporal-Operational — Candidate Database Overlay
 
-- **Status:** CURRENT CANDIDATE DATABASE AUTHORITY — B08-C implementation, awaiting user proof
+- **Status:** CURRENT CANDIDATE DATABASE AUTHORITY — B08-C local proof recorded; B08-D whole-block closure next
 - **Reconciled:** 2026-09-24
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
 - **Candidate source head:** `20260924_65`
-- **Candidate topology awaiting B08-C proof:** `150|5|99|93|292|236|418|0|0|0`
+- **Candidate topology B08-C local proof recorded:** `150|5|99|93|292|236|418|0|0|0`
 - **Whole-DB SoR:** `README.md`
 - **Machine-readable authority:** `dictionary/`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
@@ -159,7 +159,7 @@ Session START on an unplaced Activity is valid and must not fabricate Schedule.
 Deferred constraint families remain:
 
 ```text
-TC-009 Session active-duration minimum → activated in B08-C `_65`; user proof pending
+TC-009 Session active-duration minimum → activated and locally proven in B08-C `_65`
 TC-010 spacing/recovery             → later anchor-specific reopening
 TC-011 relative before/after        → future bounded relation/reference review
 ```
@@ -173,10 +173,10 @@ B08-A `_59` subject-family repair     implemented
 B08-A `_60` immutable-END repair      implemented
 B08-A automated + real-stack proof ✅ CLOSED PER USER-REPORTED B08-B DEPENDENCY
 B08-B pause/resume + metric proof   ✅ CLOSED PER USER REPORT
-B08-C `_65` proof                   ⬜ user rerun required
+B08-C `_65` local automated proof   ✅ CLOSED / PROVEN 2026-09-24
 ```
 
-B08-A and B08-B are treated as closed based on the user’s B08-B closure report; the original local logs are not stored here. B08-C `_65` is candidate source truth awaiting user-run proof, not protected-main or proven integrated truth.
+B08-A and B08-B are treated as closed based on the user’s B08-B closure report; the original local logs are not stored here. B08-C `_65` passed the user-run local generated/client, web, backend unit/API and PostgreSQL catalog/integration gates on 2026-09-24. It remains candidate branch truth until protected-main integration; B08-D owns the one real-stack walkthrough.
 
 
 ## 7. B08-B / B08-C candidate database semantics
