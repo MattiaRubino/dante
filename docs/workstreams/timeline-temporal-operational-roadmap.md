@@ -1,11 +1,11 @@
 # Timeline / Temporal-Operational Vertical — Implementation Roadmap
 
-- **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-23
+- **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-24
 - **Branch/workstream:** `feature/timeline-temporal-operational`
 - **Vertical boundary:** Home `+` creation/configuration → canonical temporal truth → Timeline projection/actions → bounded lifecycle completion
 - **Completed frontier:** B06 ✅ CLOSED / PROVEN
 - **Current block:** B08 Session Runtime 🟡 READY TO START
-- **Current slice:** B08-A Authority reconciliation + implementation freeze — DECISIONS RECORDED / LOCAL PROOF PENDING
+- **Current slice:** B08-A Session Core End-to-End ← NEXT
 - **Deferred block:** B07 UI/UX Consolidation v1 — execute after B08–B12
 - **Current DB frontier:** PostgreSQL 18.6 / Alembic `20260923_57`
 - **Proven topology:** `145|5|88|92|285|223|408|0|0|0`
@@ -13,24 +13,30 @@
 - **Continuation handoff:** `docs/workstreams/timeline-temporal-operational-handoff.md`
 - **Post-B06 scope authority:** `docs/workstreams/timeline-temporal-operational-post-b06-scope-decision-2026-09-23.md`
 
-This document is the single sequencing authority for the remaining Timeline / Temporal-Operational work. It defines **what comes next and in what order**. Detailed discoveries, decisions, implementation evidence and test results are recorded incrementally in the live map/ledger rather than creating a new planning document for every sub-slice.
+This document is the sequencing authority for the remaining Timeline / Temporal-Operational work.
 
 ---
 
-# 0. Execution discipline
+# 0. Execution discipline — every slice is end-to-end
 
-For every slice:
+Every implementation slice must be completed vertically before the next slice starts:
 
 ```text
-inspect current authority/code/schema
-→ decide the smallest truthful change
-→ implement that slice only
-→ user runs the requested local tests
-→ reconcile docs/evidence
-→ advance to the next slice
+current Product / Domain / Logical / Physical authority
+→ persistence / Alembic / Dictionary when required
+→ backend / application
+→ HTTP API / OpenAPI
+→ generated API client
+→ frontend / real product surface
+→ local automated proof
+→ real-stack manual proof where user behavior matters
+→ documentation / live-ledger reconciliation
+→ only then advance
 ```
 
-Rules:
+A slice is **not** complete because one technical layer is finished. Do not create sequences such as “all DB first”, “all backend second”, or “frontend later”. Temporary UI is acceptable before B07, but the active capability must already be usable and testable end-to-end.
+
+Permanent rules include:
 
 ```text
 Domain != Logical != Physical != API DTO != frontend ViewModel
@@ -51,8 +57,6 @@ idempotency key != Domain identity
 Undo != history rewind
 ```
 
-No later slice starts opportunistically while the current one still has unresolved semantic or proof gaps.
-
 ## Documentation rule
 
 Keep documentation deliberately small:
@@ -63,7 +67,7 @@ MAP      = live state, accepted decisions, implementation/test evidence
 HANDOFF  = exact current position and next concrete action
 ```
 
-Do **not** create a separate planning/freeze file for every A/B/C sub-slice. Update the live map and handoff as work progresses. A historical closure record is created only when a whole major block closes and retaining immutable closure evidence is useful.
+Do not create a separate planning/freeze file for every sub-slice. Update the live map and handoff as work progresses. A historical closure record is created only when a whole major block closes and retaining immutable evidence is useful.
 
 ---
 
@@ -80,12 +84,10 @@ B05 Product Organization                         ✅ CLOSED / PROVEN
 B06 Routine / Recurrence / Occurrence Baseline   ✅ CLOSED / PROVEN
 
 B08 Session Runtime                              🟡 READY TO START
-  B08-A Authority reconciliation + freeze         DECISIONS RECORDED / LOCAL PROOF PENDING
-  B08-B Start / Read / End core                   ⬜
-  B08-C Pause / Resume + duration                 ⬜
-  B08-D Timeline runtime integration              ⬜
-  B08-E TC-009 Session-duration reopening         ⬜
-  B08-F Whole-block closure                       ⬜
+  B08-A Session Core End-to-End                   ← NEXT
+  B08-B Pause / Resume + Durations End-to-End     ⬜
+  B08-C TC-009 Session Duration End-to-End        ⬜
+  B08-D Whole-block closure                       ⬜
 
 B09 Responsibility / Participation               ⬜
 B10 Actual / Outcome / Confirmation / Resolution ⬜
@@ -121,7 +123,7 @@ Typed planning constraints, deterministic hard/soft evaluation, planned-placemen
 Deferred families carried forward:
 
 ```text
-TC-009 contiguous Session duration  → B08-E
+TC-009 contiguous Session duration  → B08-C
 TC-010 spacing/recovery             → later anchor-specific reopening
 TC-011 relative before/after        → bounded relation/reference review when activated
 ```
@@ -169,7 +171,7 @@ planned Schedule duration != Session elapsed duration
 Session elapsed duration != Session active duration
 ```
 
-Existing CP6 substrate must be inspected/reused before new schema is authorized:
+Existing CP6 substrate is reused wherever truthful:
 
 ```text
 session
@@ -180,71 +182,96 @@ session_timing_pause
 session_timing_current_history
 ```
 
-## B08-A — Authority reconciliation + implementation freeze — LOCAL PROOF PENDING
+## B08-A — Session Core End-to-End ← NEXT
 
-Before implementation, inspect current Domain/Logical/Physical/DB/application/API/frontend authority and freeze only what is needed for B08-B–E:
-
-```text
-eligible Session execution targets
-Session → execution-context representation
-START / PAUSE / RESUME / END lifecycle and legal transitions
-current/history mutation model
-concurrent-open Session policy
-idempotency/replay and CAS requirements
-real DDL gaps, if any
-API operation inventory
-TC-009 exact reopening boundary
-explicit non-goals
-proof matrix
-```
-
-Candidate baseline to verify, not assume:
+Deliver one complete real product capability before moving on:
 
 ```text
-Activity     Session target ✅ candidate
-Occurrence   Session target ✅ candidate
-Routine      direct target  ❌
-Event        ordinary target ❌ baseline
-Schedule     Session owner  ❌
+Activity   → START Session → authoritative read → END Session
+Occurrence → START Session → authoritative read → END Session
 ```
 
-**Exit:** the accepted decisions are in the live map. B08-A stays open until its local proof is recorded there. There is no separate B08-A planning document.
+The slice starts by reconciling current Domain/Logical/Physical/DB authority and freezing only the decisions needed for this capability. Then it continues through every required layer in the same slice.
 
-## B08-B — Start / Read / End core
-
-Implement the smallest canonical vertical:
+B08-A owns, where required:
 
 ```text
-Activity/Occurrence → START Session
-read authoritative open/current Session
-END Session
-reload preserves canonical state
-new START after END → new Session identity
+typed Session → Activity / Occurrence execution-context persistence
+forward-only Alembic + Dictionary/DB overlay reconciliation
+Session creation/start/end current-history semantics
+self-scope / fail-closed ownership
+idempotency and materially-different replay conflict
+expected-current/CAS and concurrency behavior
+backend/application operations
+HTTP API + stable operationIds
+OpenAPI + generated client
+functional Timeline/product controls for eligible Activity/Occurrence
+F5/navigation authoritative rehydration
+backend/database integration tests
+frontend focused tests/typecheck/generated-current checks
+real-stack manual START → reload → END proof
+documentation/map/handoff update
 ```
 
-Must include self-scope, idempotency, conflict/concurrency protection and truthful persistence. START/END must not fabricate Schedule, Activity/Occurrence completion, Actual or Outcome.
+Forbidden effects:
 
-## B08-C — Pause / Resume + truthful duration
+```text
+START does not fabricate Schedule
+END does not complete Activity
+END does not resolve Occurrence
+END does not create Actual
+END does not create Outcome
+```
 
-Implement one continuous Session identity across:
+B08-A is `CLOSED / PROVEN` only when this whole path is working end-to-end. No B08-B work starts earlier.
+
+## B08-B — Pause / Resume + Durations End-to-End
+
+Extend the already proven B08-A product path end-to-end:
 
 ```text
 RUNNING → PAUSED → RUNNING → ENDED
 ```
 
-Prove at-most-one open pause, invalid-transition conflicts, truthful elapsed/paused/active derivation and reload/concurrency behavior.
+The same slice owns all required persistence/backend/API/client/frontend changes plus proof for:
 
-## B08-D — Timeline runtime integration
+```text
+PAUSE preserves Session identity
+RESUME preserves Session identity
+at most one open pause
+invalid transition conflicts/fails closed
+truthful elapsed duration
+truthful paused duration
+active duration only when supported by captured facts
+F5 while running/paused rehydrates authoritative state
+concurrent transitions are deterministic/conflict-safe
+browser timer is presentation only
+```
 
-Expose functional START/PAUSE/RESUME/END behavior for eligible Activity/Occurrence surfaces. Canonical runtime truth remains backend/PostgreSQL; browser timers are presentation only. F5/navigation must rehydrate without changing Schedule or fabricating lifecycle results.
+B08-B closes only after the real product path is manually usable and the applicable local automated gates pass.
 
-## B08-E — TC-009 Session-duration reopening
+## B08-C — TC-009 Session Duration End-to-End
 
-Reopen only the B04-deferred contiguous Session-duration family after Session timing semantics exist. Do not alias Session duration to planned Schedule duration. TC-010 remains deferred unless authority requires otherwise.
+Reopen the B04-deferred contiguous Session-duration capability as one complete slice.
 
-## B08-F — Whole-block closure
+First freeze the exact Session fact/facet and elapsed-vs-active semantics; then implement every required layer together:
 
-Run applicable local automated gates and the persistent real-stack walkthrough:
+```text
+semantic contract
+→ typed persistence only if a real gap exists
+→ deterministic hard/soft evaluation
+→ backend/API/client
+→ functional product exposure where required by the vertical
+→ automated proof
+→ manual proof where applicable
+→ docs/ledger reconciliation
+```
+
+Do not alias Session duration to planned Schedule duration. A violation remains an evaluation result, not an automatic mutation. TC-010 remains deferred unless current authority establishes a direct dependency.
+
+## B08-D — Whole-block closure
+
+B08-D does not add a new half-capability. It hardens and closes the already end-to-end B08-A/B/C work with regression, catalog/integrity reconciliation and the persistent real-stack walkthrough:
 
 ```text
 START
@@ -262,13 +289,13 @@ START
 
 The user runs local tests. No CI/GitHub Actions unless separately authorized.
 
-Only B08-F may mark B08 `CLOSED / PROVEN`. At that point update roadmap/map/handoff and, if useful for immutable history, create **one B08 whole-block closure record**.
+Only B08-D may mark the whole B08 block `CLOSED / PROVEN`.
 
 ---
 
 # 4. B09 — Responsibility / Participation
 
-Add the role/participation semantics required by Activity/Event/Routine/Occurrence and Timeline interaction without equating participant identity with a DANTE Account.
+B09 is also implemented as end-to-end capability slices, not by technical layer. It adds only the role/participation semantics required by Activity/Event/Routine/Occurrence and Timeline interaction without equating participant identity with a DANTE Account.
 
 Out of scope: cross-account collaboration, chat/messaging, shared editing and invitation/grant infrastructure.
 
@@ -285,13 +312,13 @@ Actual != Outcome
 Outcome != Confirmation
 ```
 
-Time passage never manufactures execution.
+Time passage never manufactures execution. Each sub-capability is delivered end-to-end before the next one begins.
 
 ---
 
 # 6. B11 — Advanced Recurrence / Conditional / Reminder
 
-Complete advanced recurrence/reminder capabilities after B06 baseline and once later anchors exist. No RRULE-as-ontology, generic JSON rule bag, generic IFTTT ontology or fake Activity materialization.
+Complete advanced recurrence/reminder capabilities after B06 baseline and once later anchors exist. No RRULE-as-ontology, generic JSON rule bag, generic IFTTT ontology or fake Activity materialization. Each accepted family is implemented end-to-end.
 
 ---
 
@@ -308,13 +335,13 @@ canonical truth + constraints/preferences
 → canonical Schedule mutation
 ```
 
-AI is support, never scheduling authority.
+AI is support, never scheduling authority. Solver slices must themselves be complete end-to-end product paths.
 
 ---
 
 # 8. B07 — UI/UX Consolidation v1 — DEFERRED
 
-Execute after B08–B12 so the final interaction design sees the complete vertical vocabulary. During B08–B12 UI may be temporary but must remain truthful, usable and testable.
+Execute after B08–B12 so the final interaction design sees the complete vertical vocabulary. During B08–B12 UI may be visually temporary, but every capability must already be truthful, usable and testable end-to-end.
 
 B07 consolidates Home/Timeline, `+`, editors, Occurrence actions, Schedule/constraints/recurrence, Session/Actual lifecycle, Responsibility/Participation, reminders and solver/replanning proposals without weakening canonical semantics for visual convenience.
 
@@ -350,7 +377,7 @@ Read only:
 4. docs/database/timeline-temporal-operational.md only when the current slice touches persistence
 ```
 
-The handoff says where work stopped. The roadmap says what comes next. The map contains the accepted decisions and evidence produced so far.
+The handoff says where work stopped. The roadmap says what comes next. The map contains accepted decisions, checkboxes and evidence.
 
 ---
 
@@ -360,9 +387,10 @@ The handoff says where work stopped. The roadmap says what comes next. The map c
 B00–B06 ✅ CLOSED / PROVEN
 B07     ⏸ DEFERRED
 B08     🟡 READY TO START
-B08-A   DECISIONS RECORDED / LOCAL PROOF PENDING
+B08-A   ← NEXT — SESSION CORE END-TO-END / NOT STARTED
+B08-B–D ⬜ BLOCKED UNTIL PRECEDING END-TO-END SLICE CLOSES
 B09–B12 ⬜ NOT STARTED
 B15     ⬜ NOT STARTED
 ```
 
-**Current action:** B08-A decisions are recorded in the live map. Local proof is still outstanding, so B08-A is not closed and B08-B has not started.
+**Current action:** start B08-A as one complete Session Core end-to-end slice. Do not split implementation by technical layer and do not begin B08-B until B08-A is fully proven.
