@@ -110,6 +110,7 @@ function canonicalActivities(
 }
 
 export function TimelinePlanningTrayB01({
+  items: _items,
   runtime,
   defaultDate,
   onBeforeOpen,
