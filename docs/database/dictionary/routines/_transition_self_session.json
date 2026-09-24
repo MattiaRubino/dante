@@ -1,1 +1,70 @@
-{"object":{"key":"routine:dante._transition_self_session","name":"_transition_self_session"},"semantic_traceability":{"domain_concepts":["Session","immutable timing transition"]},"implementation":{"postgresql":{"signature":"dante._transition_self_session(text,uuid,text,text,uuid,uuid,uuid)"}}}
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "routine:dante._transition_self_session",
+    "type": "routine",
+    "schema": "dante",
+    "name": "_transition_self_session",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Owner-only helper implementing immutable Session pause/resume timing-state replacement, CAS, self-scope and idempotent receipts.",
+  "classification": {
+    "persistence_role": "session_capability",
+    "canonicality": "capability_surface",
+    "family": "session"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/domain/concepts/session.md",
+      "docs/workstreams/timeline-temporal-operational-roadmap.md",
+      "docs/development/backend-cp6-02-postgresql-persistence-constitution.md"
+    ],
+    "domain_concepts": ["Session", "Session pause", "Session resume"],
+    "logical_families": ["Session"],
+    "reference_families": ["NativeRef", "MaterialStateRef"],
+    "material_facets": ["session.timing"]
+  },
+  "implementation": {
+    "introducing_stage": "B08-B",
+    "alembic_revision": "20260924_63",
+    "sqlalchemy": {"mode":"none","module":null,"symbol":null},
+    "runtime_acl_stage": "B08-B"
+  },
+  "structure": {
+    "columns": [],
+    "primary_key": null,
+    "foreign_keys": [],
+    "unique_constraints": [],
+    "check_constraints": [],
+    "indexes": [],
+    "triggers": [],
+    "table": null,
+    "view": null,
+    "routine": {
+      "routine_kind": "function",
+      "language": "plpgsql",
+      "argument_types": ["text","uuid","text","text","uuid","uuid","uuid"],
+      "return_type": "TABLE(session_ref uuid, subject_native_ref uuid, timing_material_state_ref uuid, started_at timestamp with time zone, ended_at timestamp with time zone, replayed boolean)",
+      "security": "DEFINER",
+      "volatility": "VOLATILE",
+      "parallel_safety": "UNSAFE",
+      "leakproof": false,
+      "function_search_path": ["pg_catalog","dante","pg_temp"],
+      "direct_runtime_execute": false
+    }
+  },
+  "state_history": {
+    "material_state_behavior": "Copies the current immutable session.timing payload into a new MaterialStateRef and changes only the pause/resume fact required by the requested transition.",
+    "current_binding": "Advances native_current_material_state and session_timing_current_history atomically after expected-current CAS.",
+    "chronology": "statement_timestamp is the accepted transition instant; UUID order is not chronology.",
+    "immutability_policy": "Never mutates prior timing payload rows in place."
+  },
+  "lifecycle": {"retention":"Internal B08-B transition helper retained with schema history.","redaction":null,"retirement_tombstone":null,"delete_behavior":"No runtime deletion."},
+  "security": {"owner_role":"dante_owner","default_deny_non_owner":true,"expected_grants":[]},
+  "proof": {
+    "obligations": ["self scope","expected-current CAS","one open pause maximum","idempotent replay","immutable timing history","no direct runtime execute"],
+    "test_refs": ["apps/backend/tests/integration/temporal/test_b08_b_session_pause_resume.py","apps/backend/tests/integration/database/test_database_current_catalog.py"],
+    "staged_evidence": []
+  }
+}
