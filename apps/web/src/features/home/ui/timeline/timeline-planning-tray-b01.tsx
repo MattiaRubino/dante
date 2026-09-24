@@ -10,6 +10,7 @@ import {
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
+import { SessionSubjectControls } from '../../../temporal/session-subject-controls';
 import {
   subscribeTemporalPlanningInvalidation,
   subscribeTemporalTimelineInvalidation,
@@ -509,6 +510,12 @@ export function TimelinePlanningTrayB01({
                     </button>
                   </span>
                 </div>
+
+                <SessionSubjectControls
+                  kind="activity"
+                  subjectRef={item.activityRef}
+                  label={item.title}
+                />
 
                 {placing ? (
                   <form
