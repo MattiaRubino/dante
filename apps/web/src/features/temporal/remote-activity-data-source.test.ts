@@ -75,10 +75,14 @@ describe('remote temporal Activity data source', () => {
       () => 'Europe/Rome',
     );
 
+    const invalidation = vi.fn();
+    const unsubscribe = subscribeTemporalTimelineInvalidation(invalidation);
     const result = await source.createActivity({
       operationId: ' operation:b01-web-1 ',
       title: ' Prima Activity ',
     });
+    unsubscribe();
+    expect(invalidation).toHaveBeenCalledOnce();
 
     expect(result.activity.activityRef).toBe(ACTIVITY.activity_ref);
     expect(result.activity.title).toBe('Prima Activity');
