@@ -96,8 +96,6 @@ export function TemporalCreateCoreFields({
   const typeRegistry = temporalCreateTypeRegistry();
   const recurrenceOwner: Exclude<TemporalCreateRecurrenceOwner, null> =
     fields.kind === 'event' ? 'event' : 'routine';
-  const sessionMinimumRequiresUnplaced =
-    fields.kind === 'activity' && fields.execution.sessionMode === 'splittable';
   const patchEvent = (patch: Partial<TemporalCreateFields['event']>) =>
     onPatch({ event: { ...fields.event, ...patch } });
 
@@ -252,7 +250,6 @@ export function TemporalCreateCoreFields({
             role="radio"
             aria-checked={fields.timeSemantics === 'timed'}
             className={fields.timeSemantics === 'timed' ? 'is-active' : ''}
-            disabled={sessionMinimumRequiresUnplaced}
             onClick={() => changeTimeSemantics('timed')}
           >
             {fields.kind === 'activity'
@@ -264,7 +261,6 @@ export function TemporalCreateCoreFields({
             role="radio"
             aria-checked={fields.timeSemantics === 'all-day'}
             className={fields.timeSemantics === 'all-day' ? 'is-active' : ''}
-            disabled={sessionMinimumRequiresUnplaced}
             onClick={() => changeTimeSemantics('all-day')}
           >
             {fields.kind === 'activity'
@@ -278,8 +274,7 @@ export function TemporalCreateCoreFields({
                 role="radio"
                 aria-checked={fields.timeSemantics === 'coarse'}
                 className={fields.timeSemantics === 'coarse' ? 'is-active' : ''}
-                disabled={sessionMinimumRequiresUnplaced}
-                onClick={() => changeTimeSemantics('coarse')}
+                    onClick={() => changeTimeSemantics('coarse')}
               >
                 {copy.activity.coarse}
               </button>
@@ -298,14 +293,6 @@ export function TemporalCreateCoreFields({
           ) : null}
         </div>
       </fieldset>
-      {sessionMinimumRequiresUnplaced ? (
-        <p className="temporal-create-session-minimum-note">
-          {t(
-            ($) =>
-              $.common.home.timeline.create.execution.minimumRequiresUnplaced,
-          )}
-        </p>
-      ) : null}
       {renderError('timeSemantics')}
 
       {fields.kind === 'activity' && fields.timeSemantics === 'timed' ? (
@@ -328,7 +315,7 @@ export function TemporalCreateCoreFields({
               <input
                 data-create-path="startTime"
                 type="time"
-                step="300"
+                step="60"
                 value={fields.startTime}
                 onChange={(event) =>
                   onPatch({ startTime: event.currentTarget.value })
@@ -341,7 +328,7 @@ export function TemporalCreateCoreFields({
               <input
                 data-create-path="endTime"
                 type="time"
-                step="300"
+                step="60"
                 value={end.time}
                 onChange={(event) =>
                   patchEnd(end.date, event.currentTarget.value)
