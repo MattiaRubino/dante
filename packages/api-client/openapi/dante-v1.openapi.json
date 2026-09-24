@@ -7209,6 +7209,16 @@
       "SessionResponse": {
         "additionalProperties": false,
         "properties": {
+          "active_seconds": {
+            "minimum": 0.0,
+            "title": "Active Seconds",
+            "type": "number"
+          },
+          "elapsed_seconds": {
+            "minimum": 0.0,
+            "title": "Elapsed Seconds",
+            "type": "number"
+          },
           "ended_at": {
             "anyOf": [
               {
@@ -7221,9 +7231,23 @@
             ],
             "title": "Ended At"
           },
+          "evaluated_at": {
+            "format": "date-time",
+            "title": "Evaluated At",
+            "type": "string"
+          },
           "open": {
             "title": "Open",
             "type": "boolean"
+          },
+          "paused": {
+            "title": "Paused",
+            "type": "boolean"
+          },
+          "paused_seconds": {
+            "minimum": 0.0,
+            "title": "Paused Seconds",
+            "type": "number"
           },
           "replayed": {
             "title": "Replayed",
@@ -7257,7 +7281,12 @@
           "started_at",
           "ended_at",
           "open",
-          "replayed"
+          "replayed",
+          "paused",
+          "evaluated_at",
+          "elapsed_seconds",
+          "paused_seconds",
+          "active_seconds"
         ],
         "title": "SessionResponse",
         "type": "object"
@@ -21692,6 +21721,108 @@
           }
         },
         "summary": "End Session",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/sessions/{session_ref}/pause": {
+      "post": {
+        "operationId": "temporal_pause_session",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Session Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionEndCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Pause Session",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/sessions/{session_ref}/resume": {
+      "post": {
+        "operationId": "temporal_resume_session",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Session Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionEndCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Resume Session",
         "tags": ["temporal"]
       }
     },

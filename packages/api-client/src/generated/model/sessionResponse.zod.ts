@@ -6,12 +6,29 @@
  */
 import * as zod from 'zod/mini';
 
+export const sessionResponseActiveSecondsMin = 0;
+
+export const sessionResponseElapsedSecondsMin = 0;
+
+export const sessionResponsePausedSecondsMin = 0;
+
 export const SessionResponse = /*#__PURE__*/ zod.object({
+  active_seconds: /*#__PURE__*/ zod
+    .number()
+    .check(/*#__PURE__*/ zod.gte(sessionResponseActiveSecondsMin)),
+  elapsed_seconds: /*#__PURE__*/ zod
+    .number()
+    .check(/*#__PURE__*/ zod.gte(sessionResponseElapsedSecondsMin)),
   ended_at: /*#__PURE__*/ zod.union([
     /*#__PURE__*/ zod.iso.datetime({ offset: true }),
     /*#__PURE__*/ zod.null(),
   ]),
+  evaluated_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
   open: /*#__PURE__*/ zod.boolean(),
+  paused: /*#__PURE__*/ zod.boolean(),
+  paused_seconds: /*#__PURE__*/ zod
+    .number()
+    .check(/*#__PURE__*/ zod.gte(sessionResponsePausedSecondsMin)),
   replayed: /*#__PURE__*/ zod.boolean(),
   session_ref: /*#__PURE__*/ zod.uuid(),
   started_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
