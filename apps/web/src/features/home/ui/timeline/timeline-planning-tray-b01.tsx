@@ -17,12 +17,10 @@ import {
 } from '../../../temporal/timeline-invalidation';
 import type { TemporalCreateRuntime } from '../../../temporal-create';
 import { timelinePlanningCopy } from './timeline-planning-copy';
-import type { TimelinePlanningTrayItem } from './timeline-planning-tray';
 
 import './timeline-planning-tray.css';
 
 type TimelineB01PlanningTrayProps = Readonly<{
-  items: readonly TimelinePlanningTrayItem[];
   runtime: TemporalCreateRuntime;
   defaultDate: PlainDate;
   onBeforeOpen?: (() => void) | undefined;
@@ -112,7 +110,6 @@ function canonicalActivities(
 }
 
 export function TimelinePlanningTrayB01({
-  items,
   runtime,
   defaultDate,
   onBeforeOpen,
@@ -142,25 +139,7 @@ export function TimelinePlanningTrayB01({
   >([]);
   const [panelStyle, setPanelStyle] = useState<CSSProperties | undefined>();
 
-  const mergedItems = useMemo(() => {
-    const byProjectionId = new Map<string, CanonicalPlanningActivity>();
-    for (const item of remoteItems) {
-      byProjectionId.set(item.projectionId, item);
-    }
-    for (const item of items) {
-      if (!byProjectionId.has(item.id)) {
-        byProjectionId.set(
-          item.id,
-          Object.freeze({
-            projectionId: item.id,
-            activityRef: item.id,
-            title: item.title,
-          }),
-        );
-      }
-    }
-    return Object.freeze([...byProjectionId.values()]);
-  }, [items, remoteItems]);
+  const mergedItems = remoteItems;
 
   const filteredItems = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase();
@@ -557,7 +536,7 @@ export function TimelinePlanningTrayB01({
                         type="number"
                         min={1}
                         max={1440}
-                        step={5}
+                        step={1}
                         value={durationMinutes}
                         disabled={placementPending}
                         onChange={(event) =>
