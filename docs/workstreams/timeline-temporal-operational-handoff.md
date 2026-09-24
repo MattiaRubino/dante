@@ -1,7 +1,7 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B08 SESSION RUNTIME 🟡 — B08-A DECISIONS RECORDED / LOCAL PROOF PENDING
-- **Reconciled:** 2026-09-23
+- **Status:** B08 SESSION RUNTIME 🟡 READY TO START — B08-A SESSION CORE E2E NEXT
+- **Reconciled:** 2026-09-24
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Live execution ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
@@ -12,7 +12,7 @@
 - **Current proven DB topology:** `145|5|88|92|285|223|408|0|0|0`
 - **CI:** no CI/GitHub Actions unless explicitly authorized; the user runs local tests
 
-This is the first document to read after a chat/context reset. It intentionally stays short. The roadmap owns sequencing; the live map owns detailed current decisions/evidence.
+This is the first document to read after a chat/context reset. Roadmap owns sequencing; map owns detailed live checkboxes/decisions/evidence.
 
 ---
 
@@ -29,12 +29,10 @@ B05 Product Organization                         ✅ CLOSED / PROVEN
 B06 Routine / Recurrence / Occurrence Baseline   ✅ CLOSED / PROVEN
 
 B08 Session Runtime                              🟡 READY TO START
-  B08-A Authority reconciliation + freeze         DECISIONS RECORDED / LOCAL PROOF PENDING
-  B08-B Start / Read / End core                   ⬜
-  B08-C Pause / Resume + duration                 ⬜
-  B08-D Timeline runtime integration              ⬜
-  B08-E TC-009 Session-duration reopening         ⬜
-  B08-F Whole-block closure                       ⬜
+  B08-A Session Core End-to-End                   ← NEXT / NOT STARTED
+  B08-B Pause / Resume + Durations End-to-End     ⬜
+  B08-C TC-009 Session Duration End-to-End        ⬜
+  B08-D Whole-block closure                       ⬜
 
 B09 Responsibility / Participation               ⬜
 B10 Actual / Outcome / Confirmation / Resolution ⬜
@@ -48,7 +46,28 @@ Former B13 Provider/Offline/Multi-device and B14 Analytics/Statistics/Signals ar
 
 ---
 
-# 2. Binding boundaries carried forward
+# 2. Binding execution discipline
+
+Every sub-slice is a complete vertical capability:
+
+```text
+semantic authority
+→ persistence / Alembic / Dictionary if required
+→ backend/application
+→ API/OpenAPI
+→ generated client
+→ frontend / real Timeline surface
+→ local automated proof
+→ real-stack manual proof where applicable
+→ docs/ledger reconciliation
+→ then next slice
+```
+
+Do not split the roadmap by technical layer. Frontend cannot be postponed to a later “integration slice”; each active capability must already be usable end-to-end. B07 later owns final UI/UX consolidation, not implementation rescue.
+
+---
+
+# 3. Binding semantic boundaries
 
 ```text
 Domain != Logical != Physical != API DTO != ViewModel
@@ -74,7 +93,7 @@ Pre-B04 DB/API same-change governance remains binding.
 
 ---
 
-# 3. B06 closed authority
+# 4. B06 closed authority
 
 ```text
 B06-A Routine source core                         ✅ at `_51`
@@ -99,19 +118,18 @@ remaining B06 blocker                       none
 
 ---
 
-# 4. B08 next step
+# 5. Exact next slice — B08-A Session Core End-to-End
 
-B08 activates actual execution episodes while preserving:
+B08-A has **not started**. Its target is one complete real product path:
 
 ```text
-Activity != Session
-Occurrence != Session
-Schedule != Session
-Session != Actual
-Session != Outcome
+Activity   → START Session → authoritative read → END Session
+Occurrence → START Session → authoritative read → END Session
 ```
 
-Existing CP6 persistence that must be inspected/reused before adding DDL:
+The first step inside B08-A is to recheck/freeze the needed Domain/Logical/Physical/DB decisions. That is not a standalone roadmap phase.
+
+Existing CP6 Session persistence to inspect/reuse:
 
 ```text
 session
@@ -122,53 +140,78 @@ session_timing_pause
 session_timing_current_history
 ```
 
-**B08-A decisions are recorded in the live map and are not closed.** Local proof has not been executed. The frozen decisions are:
+Baseline subject boundary to validate at the start of B08-A:
 
 ```text
-eligible Session execution targets
-Session → execution-context representation
-START / PAUSE / RESUME / END lifecycle
-current/history mutation model
-concurrent-open policy
-idempotency/replay + CAS requirements
-real DDL gaps
-API operation inventory
-TC-009 reopening boundary
-explicit non-goals
-proof matrix
+Activity     ✅ Session subject
+Occurrence   ✅ Session subject
+Routine      ❌ direct Session subject
+Event        ❌ ordinary baseline Session subject
+Schedule     ❌ Session owner/subject
 ```
 
-Baseline subjects, now recorded in the live map:
+B08-A itself owns every required layer: typed execution-context persistence, migration/dictionary if needed, backend, API/OpenAPI/generated client, functional Timeline controls, automated tests, manual START→reload→END proof and documentation reconciliation.
+
+Forbidden effects remain:
 
 ```text
-Activity     ✅ candidate
-Occurrence   ✅ candidate
-Routine      ❌ direct target
-Event        ❌ ordinary baseline target
-Schedule     ❌ owner/target
+START does not fabricate Schedule
+END does not complete Activity
+END does not resolve Occurrence
+END does not create Actual
+END does not create Outcome
 ```
 
-The accepted decision text lives in the live map. It is not `CLOSED / FROZEN` until the local B08-A proof is recorded. B08-B has not started. B08-A added no migration, route, or client.
+No B08-B work begins before B08-A is fully `CLOSED / PROVEN`.
 
 ---
 
-# 5. Documentation model
+# 6. Remaining B08 order
+
+```text
+B08-A Session Core End-to-End                   ← NEXT
+B08-B Pause / Resume + Durations End-to-End
+B08-C TC-009 Session Duration End-to-End
+B08-D Whole-block closure / regression
+```
+
+B08-D manual whole-block target eventually includes:
+
+```text
+START
+→ F5 still running
+→ PAUSE
+→ F5 still paused
+→ RESUME
+→ END
+→ second START = new SessionRef
+→ eligible Occurrence path
+→ Schedule unchanged
+→ no fabricated completion / Actual / Outcome
+→ no duplicate state after reload/navigation
+```
+
+The user runs local tests. Do not launch CI/Actions.
+
+---
+
+# 7. Documentation model
 
 Keep only three live documents:
 
 ```text
 ROADMAP  → order and scope
-MAP      → current decisions, implementation notes, tests/evidence
+MAP      → current checkboxes, decisions, implementation notes, tests/evidence
 HANDOFF  → exact restart point
 ```
 
-Do not create one planning/freeze file for every B08-A/B/C/etc. When a slice closes, record it in the live map and update this handoff. Create at most one whole-block B08 closure record when B08 itself is fully proven.
+Do not create planning/freeze files for each A/B/C slice. When a slice progresses, update the live map and this handoff. A whole-block B08 closure record may be created when B08 itself closes.
 
 When persistence changes, reconcile DB overlay/dictionary in the same change.
 
 ---
 
-# 6. Fresh-chat recovery
+# 8. Fresh-chat recovery
 
 Read in this order:
 
@@ -176,22 +219,18 @@ Read in this order:
 1. this handoff
 2. timeline-temporal-operational-roadmap.md
 3. timeline-temporal-operational-map.md
-4. docs/database/timeline-temporal-operational.md only when current work touches persistence
+4. docs/database/timeline-temporal-operational.md only when active work touches persistence
 ```
-
-That is sufficient to resume without reconstructing old chats.
 
 ---
 
-# 7. Exact next action
+# 9. Exact stop point
 
 ```text
 B06 ✅ CLOSED / PROVEN
 B07 ⏸ DEFERRED
 B08 🟡 READY TO START
-B08-A DECISIONS RECORDED / LOCAL PROOF PENDING
+B08-A ← SESSION CORE END-TO-END / NOT STARTED
 ```
 
-**Stop point:** B08-A decisions are in the live map. Local proof has not been run. B08-A is not closed.
-
-**Next action when work resumes:** run the B08-A local proof and record the result in the live map. Do not start B08-B before that proof is accepted.
+**Next action when work resumes:** implement B08-A as one end-to-end slice. Start with the authority/schema check, then continue through persistence, backend, API/client, frontend, tests, manual proof and docs before moving to B08-B.
