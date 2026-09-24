@@ -8,6 +8,7 @@ import type {
   TemporalConstrainedActivityDataSource,
 } from './activity-data-source';
 import { TemporalActivityRemoteError } from './remote-activity-data-source';
+import { invalidateTemporalTimelineRead } from './timeline-invalidation';
 
 const SESSION_ENDPOINT = '/api/v1/auth/session';
 const CONSTRAINED_ACTIVITY_ENDPOINT = '/api/v1/temporal/activities/constrained';
@@ -252,7 +253,9 @@ export function createRemoteTemporalConstrainedActivityDataSource(
           problemCode(payload),
         );
       }
-      return parseResponse(payload);
+      const result = parseResponse(payload);
+      invalidateTemporalTimelineRead();
+      return result;
     },
   });
 }
