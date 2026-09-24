@@ -31,7 +31,7 @@ from dante.modules.temporal.temporal_constraint_api import (
     ReviseTemporalConstraintRequest,
     SessionMinimumDurationRuleRequest,
     _rule_from_request,
-    _rule_request,
+    _rule_request as _temporal_rule_request,
     create_temporal_constraint,
     get_temporal_constraint,
     list_temporal_constraints_by_subject,
@@ -57,7 +57,7 @@ def test_session_duration_rule_api_round_trip_keeps_the_bounded_semantics() -> N
     )
     rule = _rule_from_request(payload)
     assert rule == SessionMinimumDurationRule(duration_microseconds=2_700_000_000)
-    serialized = _rule_request(rule=rule)
+    serialized = _temporal_rule_request(rule)
     assert serialized.model_dump() == payload.model_dump()
 
 
