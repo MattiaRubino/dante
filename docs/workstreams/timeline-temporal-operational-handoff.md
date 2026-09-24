@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B08 SESSION RUNTIME 🟡 — B08-D USER WALKTHROUGH FAILED; HTTP FIX PUBLISHED, REPROOF PENDING
+- **Status:** B08 SESSION RUNTIME 🟡 — B08-D PAUSE/RESUME/END WORK IN DOGFOOD; PLACEMENT UI FIX AWAITS REPROOF
 - **Reconciled:** 2026-09-24
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -24,7 +24,7 @@ B08     🟡 IN PROGRESS
 B08-A   ✅ CLOSED / USER-REPORTED VIA B08-B
 B08-B   ✅ CLOSED / USER-REPORTED 2026-09-24
 B08-C   ✅ CLOSED / PROVEN — local automated gate 2026-09-24
-B08-D   🟡 USER WALKTHROUGH FAILED — Pause/END 422; fix awaits local repro
+B08-D   🟡 PAUSE/RESUME/END WORK; scheduling and duration UI fix awaits local repro
 B09–B12 ⬜ NOT STARTED
 B15     ⬜ NOT STARTED
 ```
@@ -126,13 +126,13 @@ focused backend unit/API proof: 15 passed
 focused PostgreSQL B08-C/B04/catalog proof: 14 passed
 ```
 
-The B08-D real-stack walkthrough exposed HTTP 422 on Pause and END despite the displayed five-minute minimum being met. The minimum is a soft read-time evaluation and must not block those commands. A targeted HTTP and authoring fix is published as a candidate; user-run local proof is still required.
+The user confirmed Pause, Resume and END now work in the real app after the HTTP fix. Further dogfood exposed two UI defects: selecting a splittable Session silently converted a timed Activity to unplaced, and the Planning Tray Schedule duration used a five-minute input step (26 minutes admitted, 30 minutes rejected with 26/31 as nearby valid values). A follow-up candidate preserves explicit timed placement, establishes its accepted Schedule after constrained Activity creation, uses one-minute controls and reads the Planning Tray from canonical unplaced Activities. User-run reproof is pending.
 
 ---
 
 # 6. B08-D user-run closure gate
 
-The prepared regression is `test_b08_d_session_workflow.py` (PostgreSQL Activity/Occurrence and TC-009 across A/B/C) plus `session-subject-controls.test.tsx` (browser controls, pause reload and policy display). During the user's real-stack walkthrough, START succeeded, but PAUSE and END returned HTTP 422 (`One or more request fields are invalid.`), including after the soft minimum became satisfied. The HTTP command inherited strict validation that rejected the JSON string for `expected_material_state_ref` before the runtime could evaluate the Session. The candidate fix accepts a valid UUID string for this field, keeps invalid identifiers rejected, and allows arbitrary positive whole-minute minimum values (including 1, 26 and 31) instead of five-minute steps. No B08-D automated test output has yet been reported. Run the following local gate after pulling the published fix; the assistant does not run tests or activate CI.
+The prepared regression is `test_b08_d_session_workflow.py` (PostgreSQL Activity/Occurrence and TC-009 across A/B/C) plus `session-subject-controls.test.tsx` (browser controls, pause reload and policy display). During the user's real-stack walkthrough, START succeeded, but PAUSE and END returned HTTP 422 (`One or more request fields are invalid.`), including after the soft minimum became satisfied. The HTTP command inherited strict validation that rejected the JSON string for `expected_material_state_ref` before the runtime could evaluate the Session. The candidate fix accepts a valid UUID string for this field, keeps invalid identifiers rejected, and allows arbitrary positive whole-minute minimum values (including 1, 26 and 31) instead of five-minute steps. The user confirmed Pause, Resume and END in the real app after the HTTP fix, but reported all timed Session Activities in Da collocare and a five-minute Schedule-duration input step. The follow-up candidate keeps the explicitly selected date/time, establishes an actual Schedule after creating the constrained Activity, reports a separate Schedule failure as a persisted unplaced Activity, and removes the artificial duration step. No B08-D automated test output has yet been reported. Run the following local gate after pulling the published fix; the assistant does not run tests or activate CI.
 
 From repository root:
 
@@ -207,4 +207,4 @@ The UI need not expose internal identifiers. Capture SessionRefs and canonical S
 4. docs/database/timeline-temporal-operational.md
 ```
 
-**Exact next action:** User pulls the HTTP and authoring fix, runs the B08-D commands and repeats the walkthrough, including PAUSE and END after reload; capture actual results and close B08 only if both gates pass. Contract: `timeline-temporal-operational-b08-c-implementation-freeze.md`.
+**Exact next action:** User pulls the scheduling/duration UI fix, runs the B08-D commands and repeats the walkthrough, including a timed splittable Activity with a 26/31-minute Schedule, a genuinely unplaced Activity, and PAUSE/RESUME/END after reload; capture actual results and close B08 only if all gates pass. Contract: `timeline-temporal-operational-b08-c-implementation-freeze.md`.
