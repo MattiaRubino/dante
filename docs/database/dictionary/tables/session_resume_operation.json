@@ -7,7 +7,7 @@
     "unique_constraints": [],
     "check_constraints": [{"name":"ck_session_resume_operation_operation_id"},{"name":"ck_session_resume_operation_fingerprint"}],
     "foreign_keys": [{"name":"fk_session_resume_operation_self_person_ref_person"},{"name":"fk_session_resume_operation_session_ref_session"},{"name":"fk_session_resume_operation_resulting_state_address"}],
-    "indexes": [],
+    "indexes": [{"name":"pk_session_resume_operation"}],
     "triggers": []
   },
   "implementation": {"sqlalchemy": {"module":"dante.platform.database.mappings.session","symbol":"SessionResumeOperationRow"}}
