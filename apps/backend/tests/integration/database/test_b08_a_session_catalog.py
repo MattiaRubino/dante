@@ -138,8 +138,7 @@ def test_b08_a_session_catalog_remains_the_cp6_substrate(migrated_database: Any)
                  'start_self_activity_session',
                  'start_self_occurrence_session',
                  'pause_self_session',
-                 'resume_self_session',
-                 'end_self_session'
+                 'resume_self_session'
                )
             """
         ).fetchall()

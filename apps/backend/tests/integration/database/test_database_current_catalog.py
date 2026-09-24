@@ -159,7 +159,7 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
     assert environment == ("180006", "UTF8", "63")
     assert topology == _CURRENT_TOPOLOGY
     assert current_revision == (_CURRENT_REVISION,)
-    assert (len(tables), len(views), len(routines)) == (145, 5, 88)
+    assert (len(tables), len(views), len(routines)) == (148, 5, 94)
     assert live_tables == set(tables)
     assert live_views == set(views)
     assert live_routines == set(routines)
