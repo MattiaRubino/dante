@@ -39,8 +39,10 @@ class SessionOperationReuseError(RuntimeError):
 class SessionEndConflictError(RuntimeError):
     """The expected current timing state is no longer open."""
 
+
 class SessionPauseConflictError(RuntimeError):
     """The Session is already paused or its state is stale."""
+
 
 class SessionResumeConflictError(RuntimeError):
     """The Session is not paused or its state is stale."""
@@ -190,9 +192,16 @@ class SessionApplication:
         session_ref: NativeRef,
         expected_material_state_ref: MaterialStateRef,
     ) -> SessionView:
-        return replace(await self._transition(
-            "pause", self_person_ref, operation_id, session_ref, expected_material_state_ref
-        ), paused=True)
+        return replace(
+            await self._transition(
+                "pause",
+                self_person_ref,
+                operation_id,
+                session_ref,
+                expected_material_state_ref,
+            ),
+            paused=True,
+        )
 
     async def resume(
         self,
@@ -202,9 +211,16 @@ class SessionApplication:
         session_ref: NativeRef,
         expected_material_state_ref: MaterialStateRef,
     ) -> SessionView:
-        return replace(await self._transition(
-            "resume", self_person_ref, operation_id, session_ref, expected_material_state_ref
-        ), paused=False)
+        return replace(
+            await self._transition(
+                "resume",
+                self_person_ref,
+                operation_id,
+                session_ref,
+                expected_material_state_ref,
+            ),
+            paused=False,
+        )
 
     async def _transition(
         self,
@@ -251,10 +267,15 @@ class SessionApplication:
             """,
             {"actor": self_person_ref, "subject": subject_native_ref},
         )
-        return tuple(
-            replace(view, paused=await self._is_paused(self_person_ref, view.session_ref))
-            for view in views
-        )
+        hydrated: list[SessionView] = []
+        for view in views:
+            hydrated.append(
+                replace(
+                    view,
+                    paused=await self._is_paused(self_person_ref, view.session_ref),
+                )
+            )
+        return tuple(hydrated)
 
     async def get(
         self, *, self_person_ref: NativeRef, session_ref: NativeRef
