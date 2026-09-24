@@ -197,7 +197,6 @@ class SessionApplication:
               FROM dante.get_self_session(:actor, :session_ref)
             """,
             {"actor": self_person_ref, "session_ref": session_ref},
-            many=False,
         )
 
     async def _call(self, statement: str, parameters: dict[str, object]) -> SessionView:
