@@ -34,7 +34,7 @@ def _row(*, active_seconds: Decimal) -> dict[str, object]:
         "constraint_ref": _CONSTRAINT_REF,
         "constraint_material_state_ref": _CONSTRAINT_STATE_REF,
         "strength_code": "soft",
-        "duration_microseconds": 45 * 60 * 1_000_000,
+        "duration_microseconds": 45 * 1_000_000,
         "active_seconds": active_seconds,
     }
 

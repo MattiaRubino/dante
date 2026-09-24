@@ -57,7 +57,7 @@ def test_session_duration_rule_api_round_trip_keeps_the_bounded_semantics() -> N
     )
     rule = _rule_from_request(payload)
     assert rule == SessionMinimumDurationRule(duration_microseconds=2_700_000_000)
-    serialized = _rule_request(rule)
+    serialized = _rule_request(rule=rule)
     assert serialized.model_dump() == payload.model_dump()
 
 

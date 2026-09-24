@@ -146,7 +146,7 @@ function absoluteInstant(
 function constraintRules(
   specification: TemporalCreateFields,
 ): readonly TemporalActivityConstraintRuleInput[] {
-  const schedulingRules: TemporalActivityConstraintRuleInput[] = (() => {
+  const schedulingRules: readonly TemporalActivityConstraintRuleInput[] = (() => {
     switch (specification.scheduling.constraintKind) {
       case 'open':
         return Object.freeze([]);

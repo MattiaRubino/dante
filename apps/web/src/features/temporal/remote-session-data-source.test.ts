@@ -87,7 +87,9 @@ describe('remote session data source', () => {
 
   it('parses canonical Session duration evaluations', async () => {
     const fetchFn = vi.fn<typeof fetch>(async () =>
-      Response.json({ ...openSession, duration_evaluations: [minimumEvaluation] }),
+      Response.json([
+        { ...openSession, duration_evaluations: [minimumEvaluation] },
+      ]),
     );
     const source = createRemoteTemporalSessionDataSource(fetchFn);
     const listed = await source.list('activity', SUBJECT);
