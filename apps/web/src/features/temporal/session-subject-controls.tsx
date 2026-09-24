@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import './session-subject-controls.css';
+
 import {
   createRemoteTemporalSessionDataSource,
   type SessionSubjectKind,

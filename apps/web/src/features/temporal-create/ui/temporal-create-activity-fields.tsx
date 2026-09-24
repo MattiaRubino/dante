@@ -32,6 +32,23 @@ export function TemporalCreateActivityFields({
   ) => onPatch({ scheduling: { ...scheduling, ...patch } });
   const patchExecution = (patch: Partial<TemporalCreateFields['execution']>) =>
     onPatch({ execution: { ...execution, ...patch } });
+  const chooseSessionMode = (
+    sessionMode: TemporalCreateFields['execution']['sessionMode'],
+  ) => {
+    if (sessionMode === 'splittable' && !unplaced) {
+      onPatch({
+        timeSemantics: 'unscheduled',
+        scheduling: {
+          ...scheduling,
+          constraintKind: 'none',
+          fallbackPolicy: 'inherit',
+        },
+        execution: { ...execution, sessionMode },
+      });
+      return;
+    }
+    patchExecution({ sessionMode });
+  };
 
   return (
     <>
@@ -363,10 +380,10 @@ export function TemporalCreateActivityFields({
             <select
               value={execution.sessionMode}
               onChange={(event) =>
-                patchExecution({
-                  sessionMode: event.currentTarget
+                chooseSessionMode(
+                  event.currentTarget
                     .value as TemporalCreateFields['execution']['sessionMode'],
-                })
+                )
               }
             >
               <option value="indivisible">

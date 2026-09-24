@@ -188,6 +188,8 @@ export const home = {
         indivisible: 'Una sessione',
         splittable: 'Divisibile in sessioni',
         minimumSession: 'Sessione minima (min)',
+        minimumRequiresUnplaced:
+          'Il minimo per Sessione richiede Da collocare. Dopo Aggiungi, colloca l’Activity dalla card.',
         maximumSessions: 'Numero massimo di sessioni',
         noMaximum: 'Nessun massimo',
         preparation: 'Preparazione',

@@ -482,7 +482,7 @@ export function TimelinePlanningTrayB01({
             return (
               <article
                 key={item.projectionId}
-                className="timeline-planning-card"
+                className="timeline-planning-card timeline-planning-card--session"
                 data-timeline-planning-item={item.projectionId}
                 data-temporal-activity-ref={item.activityRef}
                 data-timeline-tone="personal"
