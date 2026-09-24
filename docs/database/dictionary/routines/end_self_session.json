@@ -8,7 +8,7 @@
     "name": "end_self_session",
     "ownership_class": "dante_owned"
   },
-  "purpose": "End one open Session when the expected current timing state still matches.",
+  "purpose": "End one open self-owned Session by replacing its current immutable timing MaterialState under exact expected-current CAS and recording the exact produced MaterialStateRef for replay.",
   "classification": {
     "persistence_role": "session_capability",
     "canonicality": "capability_surface",
@@ -17,30 +17,18 @@
   "semantic_traceability": {
     "authority_sources": [
       "docs/domain/concepts/session.md",
+      "docs/development/backend-cp6-02-postgresql-persistence-constitution.md",
       "docs/workstreams/timeline-temporal-operational-roadmap.md"
     ],
-    "domain_concepts": [
-      "Session"
-    ],
-    "logical_families": [
-      "Session"
-    ],
-    "reference_families": [
-      "NativeRef",
-      "MaterialStateRef"
-    ],
-    "material_facets": [
-      "session.timing"
-    ]
+    "domain_concepts": ["Session"],
+    "logical_families": ["Session"],
+    "reference_families": ["NativeRef", "MaterialStateRef"],
+    "material_facets": ["session.timing"]
   },
   "implementation": {
     "introducing_stage": "B08-A",
-    "alembic_revision": "20260924_58",
-    "sqlalchemy": {
-      "mode": "none",
-      "module": null,
-      "symbol": null
-    },
+    "alembic_revision": "20260924_60",
+    "sqlalchemy": {"mode": "none", "module": null, "symbol": null},
     "runtime_acl_stage": "B08-A"
   },
   "structure": {
@@ -56,31 +44,21 @@
     "routine": {
       "routine_kind": "function",
       "language": "plpgsql",
-      "argument_types": [
-        "uuid",
-        "text",
-        "text",
-        "uuid",
-        "uuid"
-      ],
+      "argument_types": ["uuid", "text", "text", "uuid", "uuid", "uuid"],
       "return_type": "TABLE(session_ref uuid, subject_native_ref uuid, timing_material_state_ref uuid, started_at timestamp with time zone, ended_at timestamp with time zone, replayed boolean)",
       "security": "DEFINER",
       "volatility": "VOLATILE",
       "parallel_safety": "UNSAFE",
       "leakproof": false,
-      "function_search_path": [
-        "pg_catalog",
-        "dante",
-        "pg_temp"
-      ],
+      "function_search_path": ["pg_catalog", "dante", "pg_temp"],
       "direct_runtime_execute": true
     }
   },
   "state_history": {
-    "material_state_behavior": null,
-    "current_binding": null,
-    "chronology": null,
-    "immutability_policy": "Capability only."
+    "material_state_behavior": "Creates a new immutable absolute session.timing MaterialState carrying the captured END fact; the expected state is not mutated.",
+    "current_binding": "CAS advances native_current_material_state and session_timing_current_history from expected state to produced state atomically.",
+    "chronology": "The accepted END instant closes the previous current-history interval and opens the produced ended state.",
+    "immutability_policy": "Capability never UPDATEs session_timing_absolute payload data."
   },
   "lifecycle": {
     "retention": "B08-A Session core.",
@@ -92,20 +70,20 @@
     "owner_role": "dante_owner",
     "default_deny_non_owner": true,
     "expected_grants": [
-      {
-        "grantee": "dante_runtime",
-        "privilege": "EXECUTE",
-        "columns": [],
-        "grant_option": false
-      }
+      {"grantee": "dante_runtime", "privilege": "EXECUTE", "columns": [], "grant_option": false}
     ]
   },
   "proof": {
     "obligations": [
-      "self scope"
+      "self scope",
+      "expected-current CAS",
+      "immutable MaterialState replacement",
+      "exact produced-state replay",
+      "no Schedule/Actual/Outcome fabrication"
     ],
     "test_refs": [
-      "apps/backend/tests/integration/database/test_b08_a_session_catalog.py"
+      "apps/backend/tests/integration/database/test_b08_a_session_catalog.py",
+      "apps/backend/tests/integration/temporal/test_b08_a_session_runtime.py"
     ],
     "staged_evidence": []
   }
