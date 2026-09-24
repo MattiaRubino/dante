@@ -1,1 +1,33 @@
-{"object":{"key":"routine:dante.session_is_paused","name":"session_is_paused"},"semantic_traceability":{"domain_concepts":["Session","authoritative paused state"]},"implementation":{"postgresql":{"signature":"dante.session_is_paused(uuid,uuid)"}}}
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "routine:dante.session_is_paused",
+    "type": "routine",
+    "schema": "dante",
+    "name": "session_is_paused",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Read whether one self-owned Session is currently paused from the authoritative current session.timing state.",
+  "classification": {"persistence_role":"session_capability","canonicality":"capability_surface","family":"session"},
+  "semantic_traceability": {
+    "authority_sources": ["docs/domain/concepts/session.md","docs/workstreams/timeline-temporal-operational-roadmap.md"],
+    "domain_concepts": ["Session", "authoritative paused state"],
+    "logical_families": ["Session"],
+    "reference_families": ["NativeRef", "MaterialStateRef"],
+    "material_facets": ["session.timing"]
+  },
+  "implementation": {"introducing_stage":"B08-B","alembic_revision":"20260924_62","sqlalchemy":{"mode":"none","module":null,"symbol":null},"runtime_acl_stage":"B08-B"},
+  "structure": {
+    "columns": [],"primary_key":null,"foreign_keys":[],"unique_constraints":[],"check_constraints":[],"indexes":[],"triggers":[],"table":null,"view":null,
+    "routine": {
+      "routine_kind":"function","language":"sql","argument_types":["uuid","uuid"],"return_type":"boolean",
+      "security":"DEFINER","volatility":"STABLE","parallel_safety":"SAFE","leakproof":false,
+      "function_search_path":["pg_catalog","dante","pg_temp"],"direct_runtime_execute":true
+    }
+  },
+  "state_history": {"material_state_behavior":null,"current_binding":"Reads only the current open session_timing_current_history binding.","chronology":"Paused means the current immutable timing state contains one pause row with resumed_at NULL.","immutability_policy":"Read-only capability."},
+  "lifecycle": {"retention":"Bounded Session runtime read capability.","redaction":null,"retirement_tombstone":null,"delete_behavior":"No runtime deletion."},
+  "security": {"owner_role":"dante_owner","default_deny_non_owner":true,"expected_grants":[{"grantee":"dante_runtime","privilege":"EXECUTE","columns":[],"grant_option":false}]},
+  "proof": {"obligations":["self scope","authoritative current-state read","no browser-local pause truth"],"test_refs":["apps/backend/tests/integration/temporal/test_b08_b_session_pause_resume.py","apps/backend/tests/integration/database/test_database_current_catalog.py"],"staged_evidence":[]}
+}
