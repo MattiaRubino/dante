@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B08 SESSION RUNTIME 🟡 — B08-A IMPLEMENTED / LOCAL PROOF PENDING
+- **Status:** B08 SESSION RUNTIME 🟡 — B08-A ✅ CLOSED / PROVEN — B08-B NEXT
 - **Reconciled:** 2026-09-24
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -29,8 +29,8 @@ B05 Product Organization                         ✅ CLOSED / PROVEN
 B06 Routine / Recurrence / Occurrence Baseline   ✅ CLOSED / PROVEN
 
 B08 Session Runtime                              🟡 READY TO START
-  B08-A Session Core End-to-End                   IMPLEMENTED / LOCAL PROOF PENDING
-  B08-B Pause / Resume + Durations End-to-End     ⬜
+  B08-A Session Core End-to-End                   ✅ CLOSED / PROVEN
+  B08-B Pause / Resume + Durations End-to-End     ← NEXT
   B08-C TC-009 Session Duration End-to-End        ⬜
   B08-D Whole-block closure                       ⬜
 
@@ -120,7 +120,7 @@ remaining B06 blocker                       none
 
 # 5. Exact next slice — B08-A Session Core End-to-End
 
-B08-A is implemented and is **not closed**. Its target is one complete real product path:
+B08-A is **CLOSED / PROVEN** on the local automated proof. The real-stack walkthrough is B08-D, not a gate for this slice. The delivered path is:
 
 ```text
 Activity   → START Session → authoritative read → END Session
@@ -150,7 +150,7 @@ Event        ❌ ordinary baseline Session subject
 Schedule     ❌ Session owner/subject
 ```
 
-B08-A itself owns every required layer: typed execution-context persistence, migration/dictionary if needed, backend, API/OpenAPI/generated client, functional Timeline controls, automated tests, manual START→reload→END proof and documentation reconciliation.
+B08-A itself owns every required layer: typed execution-context persistence, migration/dictionary, backend, API/OpenAPI/generated client, functional Timeline controls and the automated tests below. The manual START → reload → END walkthrough belongs to B08-D.
 
 Forbidden effects remain:
 
@@ -169,8 +169,8 @@ No B08-B work begins before B08-A is fully `CLOSED / PROVEN`.
 # 6. Remaining B08 order
 
 ```text
-B08-A Session Core End-to-End                   ← NEXT
-B08-B Pause / Resume + Durations End-to-End
+B08-A Session Core End-to-End                   ✅ CLOSED / PROVEN
+B08-B Pause / Resume + Durations End-to-End     ← NEXT
 B08-C TC-009 Session Duration End-to-End
 B08-D Whole-block closure / regression
 ```
@@ -230,7 +230,20 @@ Read in this order:
 B06 ✅ CLOSED / PROVEN
 B07 ⏸ DEFERRED
 B08 🟡 READY TO START
-B08-A IMPLEMENTED / LOCAL PROOF PENDING
+B08-A ✅ CLOSED / PROVEN on local automated proof
+B08-B ← NEXT
 ```
 
-**Next action when work resumes:** run the B08-A local proof and the manual START → reload → END path. Do not mark B08-A closed and do not start B08-B until that proof is accepted.
+Accepted B08-A automated evidence, run by the user from `apps/backend` unless noted:
+
+```text
+freeze + OpenAPI inventory                         6 PASS
+generated:check                                    PASS
+API-client typecheck                               PASS
+web typecheck                                      PASS
+Session data-source Vitest                         1 PASS
+Session catalog + current Dictionary catalog       2 PASS
+real-stack manual walkthrough                      B08-D
+```
+
+**Next action when work resumes:** implement B08-B. Do not run the Session manual walkthrough before the end of B08.

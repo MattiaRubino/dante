@@ -5,7 +5,7 @@
 - **Vertical boundary:** Home `+` creation/configuration → canonical temporal truth → Timeline projection/actions → bounded lifecycle completion
 - **Completed frontier:** B06 ✅ CLOSED / PROVEN
 - **Current block:** B08 Session Runtime 🟡 READY TO START
-- **Current slice:** B08-A Session Core End-to-End — IMPLEMENTED / LOCAL PROOF PENDING
+- **Current slice:** B08-B Pause / Resume + Durations End-to-End ← NEXT
 - **Deferred block:** B07 UI/UX Consolidation v1 — execute after B08–B12
 - **Current DB frontier:** PostgreSQL 18.6 / Alembic `20260924_58`
 - **Proven topology:** `145|5|88|92|285|223|408|0|0|0`
@@ -84,8 +84,8 @@ B05 Product Organization                         ✅ CLOSED / PROVEN
 B06 Routine / Recurrence / Occurrence Baseline   ✅ CLOSED / PROVEN
 
 B08 Session Runtime                              🟡 READY TO START
-  B08-A Session Core End-to-End                   IMPLEMENTED / LOCAL PROOF PENDING
-  B08-B Pause / Resume + Durations End-to-End     ⬜
+  B08-A Session Core End-to-End                   ✅ CLOSED / PROVEN
+  B08-B Pause / Resume + Durations End-to-End     ← NEXT
   B08-C TC-009 Session Duration End-to-End        ⬜
   B08-D Whole-block closure                       ⬜
 
@@ -209,7 +209,7 @@ functional Timeline/product controls for eligible Activity/Occurrence
 F5/navigation authoritative rehydration
 backend/database integration tests
 frontend focused tests/typecheck/generated-current checks
-real-stack manual START → reload → END proof
+real-stack manual START → reload → END proof   deferred to B08-D
 documentation/map/handoff update
 ```
 
@@ -223,7 +223,7 @@ END does not create Actual
 END does not create Outcome
 ```
 
-B08-A is `CLOSED / PROVEN` only when this whole path is working end-to-end. No B08-B work starts earlier.
+B08-A is `CLOSED / PROVEN` on the local automated proof. No B08-B work starts from an unproven catalog, but the manual walkthrough waits until B08-D.
 
 ## B08-B — Pause / Resume + Durations End-to-End
 
@@ -387,10 +387,11 @@ The handoff says where work stopped. The roadmap says what comes next. The map c
 B00–B06 ✅ CLOSED / PROVEN
 B07     ⏸ DEFERRED
 B08     🟡 READY TO START
-B08-A   IMPLEMENTED / LOCAL PROOF PENDING
-B08-B–D ⬜ BLOCKED UNTIL PRECEDING END-TO-END SLICE CLOSES
+B08-A   ✅ CLOSED / PROVEN
+B08-B   ← NEXT
+B08-C–D ⬜ BLOCKED UNTIL PRECEDING END-TO-END SLICE CLOSES
 B09–B12 ⬜ NOT STARTED
 B15     ⬜ NOT STARTED
 ```
 
-**Current action:** B08-A is implemented and waiting for local proof. Do not mark it closed and do not begin B08-B until that proof is accepted.
+**Current action:** start B08-B. The Session manual walkthrough is B08-D.

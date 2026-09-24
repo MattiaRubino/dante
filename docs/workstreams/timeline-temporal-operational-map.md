@@ -89,8 +89,8 @@ TC-011 relative before/after        → future bounded relation/reference review
 
 ```text
 B08 Session Runtime                              🟡 READY TO START
-  B08-A Session Core End-to-End                   IMPLEMENTED / LOCAL PROOF PENDING
-  B08-B Pause / Resume + Durations End-to-End     ⬜
+  B08-A Session Core End-to-End                   ✅ CLOSED / PROVEN
+  B08-B Pause / Resume + Durations End-to-End     ← NEXT
   B08-C TC-009 Session Duration End-to-End        ⬜
   B08-D Whole-block closure                       ⬜
 
@@ -102,7 +102,7 @@ B07 UI/UX Consolidation v1                       ⏸ DEFERRED
 B15 Whole Vertical Closure                       ⬜
 ```
 
-No B08 implementation slice is currently closed. Work resumes from B08-A only.
+B08-A is closed on local automated proof. B08-B is next. The real-stack Session walkthrough remains B08-D.
 
 ---
 
@@ -147,9 +147,9 @@ Spontaneous Session without prior Activity remains a possible Domain capability 
 
 ---
 
-# 5. B08-A — Session Core End-to-End ← NEXT
+# 5. B08-A — Session Core End-to-End ✅ CLOSED / PROVEN
 
-**Status:** IMPLEMENTED / LOCAL PROOF PENDING
+**Status:** ✅ CLOSED / PROVEN on local automated proof. Real-stack manual proof is B08-D.
 
 Target product capability:
 
@@ -211,11 +211,11 @@ This is one vertical slice. The authority/schema inspection is the first step of
 ### Proof / closure
 
 ```text
-[ ] relevant backend/PostgreSQL local tests PASS
-[ ] relevant web/unit/typecheck gates PASS
-[ ] generated:check PASS when applicable
-[ ] manual Activity START → F5 → END PASS
-[ ] manual Occurrence START → F5 → END PASS
+[x] relevant backend/PostgreSQL local tests PASS
+[x] relevant web/unit/typecheck gates PASS
+[x] generated:check PASS when applicable
+[ ] manual Activity START → F5 → END          owned by B08-D
+[ ] manual Occurrence START → F5 → END        owned by B08-D
 [ ] second START after END creates a new SessionRef
 [ ] Schedule remains unchanged
 [ ] no Activity/Occurrence completion fabricated
@@ -223,7 +223,7 @@ This is one vertical slice. The authority/schema inspection is the first step of
 [ ] map/handoff/DB docs reconciled
 ```
 
-Only when every applicable item above is accepted may B08-A become `✅ CLOSED / PROVEN` and B08-B start.
+B08-A is `CLOSED / PROVEN` on the automated proof below. The manual walkthrough does not block B08-B.
 
 ---
 
@@ -351,10 +351,11 @@ Fresh-chat recovery order:
 B00–B06 ✅ CLOSED / PROVEN
 B07     ⏸ DEFERRED
 B08     🟡 READY TO START
-B08-A   IMPLEMENTED / LOCAL PROOF PENDING
-B08-B–D ⬜ BLOCKED BY PRECEDING SLICE
+B08-A   ✅ CLOSED / PROVEN
+B08-B   ← NEXT
+B08-C–D ⬜ BLOCKED BY PRECEDING SLICE
 B09–B12 ⬜ NOT STARTED
 B15     ⬜ NOT STARTED
 ```
 
-**Next concrete action:** run the B08-A local automated proof and the manual Activity and Occurrence START → reload → END paths. Do not mark B08-A closed and do not start B08-B.
+**Next concrete action:** implement B08-B. The Activity and Occurrence START → reload → END walkthrough is part of B08-D, not a precondition for B08-B.
