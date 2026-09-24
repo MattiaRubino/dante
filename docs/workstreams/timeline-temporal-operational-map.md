@@ -62,7 +62,7 @@ B08 Session Runtime                              🟡 IN PROGRESS
   B08-A Session Core End-to-End                   ✅ CLOSED / USER-REPORTED
   B08-B Pause / Resume + Durations End-to-End     ✅ CLOSED / USER-REPORTED
   B08-C TC-009 Session Duration End-to-End        ✅ CLOSED / PROVEN — local automated gate 2026-09-24
-  B08-D Whole-block closure                       🟡 USER WALKTHROUGH FAILED / FIX AWAITS LOCAL REPRO
+  B08-D Whole-block closure                       🟡 SESSION TRANSITIONS WORK / PLACEMENT FIX AWAITS REPRO
 
 B09 Responsibility / Participation               ⬜
 B10 Actual / Outcome / Confirmation / Resolution ⬜
@@ -151,7 +151,7 @@ B08-B is closed per user report. `_62` implements Pause/Resume transitions, `_63
 
 B08-C `_65` is closed/proven by the user-run local automated gate: generated/client checks, web typecheck/Vitest, backend unit/API and PostgreSQL catalog/integration proof all passed on 2026-09-24. Its freeze contract is `timeline-temporal-operational-b08-c-implementation-freeze.md`; it adds only the direct Activity soft-minimum Session active-duration subset, with read-time evaluation and no outcome or Schedule side effects.
 
-B08-D is whole-block regression/dogfood closure after A–C. The prepared PostgreSQL test crosses unplaced Activity Session START → PAUSE → reload → RESUME → END → second START with TC-009 per Session, immutable timing history and no fabricated Schedule/Actual; it also checks an unscheduled Occurrence Session through the same transitions without inherited Activity TC-009. The prepared browser controls test checks reload while paused, exact expected timing state on commands, the pending/violated display and separate subsequent start. These tests have not yet been reported as run by the user. The real-stack walkthrough showed START succeed, then PAUSE and END fail with HTTP 422 even after the soft five-minute minimum was satisfied. The HTTP command's strict UUID validation rejected the JSON string `expected_material_state_ref` before Session execution. The candidate fix accepts valid UUID strings for this field and lets users author positive whole-minute minima without a five-minute step (for example, 1, 26 or 31). Repeat the full local gate and real-stack walkthrough; see handoff. B08-D remains open.
+B08-D is whole-block regression/dogfood closure after A–C. The prepared PostgreSQL test crosses unplaced Activity Session START → PAUSE → reload → RESUME → END → second START with TC-009 per Session, immutable timing history and no fabricated Schedule/Actual; it also checks an unscheduled Occurrence Session through the same transitions without inherited Activity TC-009. The prepared browser controls test checks reload while paused, exact expected timing state on commands, the pending/violated display and separate subsequent start. These tests have not yet been reported as run by the user. The real-stack walkthrough showed START succeed, then PAUSE and END fail with HTTP 422 even after the soft five-minute minimum was satisfied. The HTTP command's strict UUID validation rejected the JSON string `expected_material_state_ref` before Session execution. The candidate fix accepts valid UUID strings for this field and lets users author positive whole-minute minima without a five-minute step (for example, 1, 26 or 31). The user later confirmed Pause, Resume and END now work. A follow-up dogfood run exposed a forced conversion of timed splittable Activity into Da collocare and a Planning Tray duration input with five-minute steps (26/31 nearest-value warning). The candidate fix preserves explicitly selected timed placement, establishes the accepted Schedule after constrained Activity creation, keeps partial Schedule failure explicit, and uses whole-minute duration controls; the tray now reads canonical unplaced Activities without local ghosts. Repeat the local gate and real-stack walkthrough; see handoff. B08-D remains open.
 
 ---
 
@@ -164,9 +164,9 @@ B08     🟡 IN PROGRESS
 B08-A   ✅ CLOSED / USER-REPORTED VIA B08-B
 B08-B   ✅ CLOSED / USER-REPORTED
 B08-C   ✅ CLOSED / PROVEN — local automated gate 2026-09-24
-B08-D   🟡 REAL-STACK 422 OBSERVED — FIX AWAITS LOCAL REPRO
+B08-D   🟡 PAUSE/RESUME/END WORK — PLACEMENT UI FIX AWAITS LOCAL REPRO
 B09–B12 ⬜ NOT STARTED
 B15     ⬜ NOT STARTED
 ```
 
-**Next concrete action:** User pulls the candidate HTTP and authoring fix, runs B08-D automated regression and repeats the real-stack walkthrough; then record actual evidence and decide closure.
+**Next concrete action:** User pulls the candidate scheduling/duration UI fix, runs B08-D automated regression and repeats the real-stack walkthrough with timed and unplaced splittable Activities; then record actual evidence and decide closure.
