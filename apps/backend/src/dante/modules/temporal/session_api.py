@@ -1,4 +1,4 @@
-"""B08-A HTTP surface for Session start, read, and end."""
+"""B08 HTTP surface for Session runtime commands and authoritative reads."""
 
 from __future__ import annotations
 
@@ -37,7 +37,9 @@ class SessionCommand(BaseModel):
 class SessionEndCommand(SessionCommand):
     expected_material_state_ref: UUID
 
+
 SessionTransitionCommand = SessionEndCommand
+
 
 class SessionResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -50,6 +52,10 @@ class SessionResponse(BaseModel):
     open: bool
     replayed: bool
     paused: bool
+    evaluated_at: datetime
+    elapsed_seconds: float = Field(ge=0)
+    paused_seconds: float = Field(ge=0)
+    active_seconds: float = Field(ge=0)
 
 
 def _application(request: Request) -> SessionApplication:
@@ -62,6 +68,8 @@ MutatingContext = Annotated[DanteContext, Depends(require_mutating_dante_context
 
 
 def _response(view: SessionView) -> SessionResponse:
+    if view.evaluated_at is None:
+        raise SessionPersistenceError("Session runtime metrics are unavailable.")
     return SessionResponse(
         session_ref=view.session_ref,
         subject_native_ref=view.subject_native_ref,
@@ -71,6 +79,10 @@ def _response(view: SessionView) -> SessionResponse:
         open=view.open,
         replayed=view.replayed,
         paused=view.paused,
+        evaluated_at=view.evaluated_at,
+        elapsed_seconds=view.elapsed_seconds,
+        paused_seconds=view.paused_seconds,
+        active_seconds=view.active_seconds,
     )
 
 
@@ -109,13 +121,19 @@ def _problem(exc: Exception) -> ProblemError:
         )
     if isinstance(exc, SessionPauseConflictError):
         return ProblemError(
-            status=409, code="temporal.session.pause_conflict", category="conflict",
-            title="Session pause conflict", detail=str(exc),
+            status=409,
+            code="temporal.session.pause_conflict",
+            category="conflict",
+            title="Session pause conflict",
+            detail=str(exc),
         )
     if isinstance(exc, SessionResumeConflictError):
         return ProblemError(
-            status=409, code="temporal.session.resume_conflict", category="conflict",
-            title="Session resume conflict", detail=str(exc),
+            status=409,
+            code="temporal.session.resume_conflict",
+            category="conflict",
+            title="Session resume conflict",
+            detail=str(exc),
         )
     return ProblemError(
         status=409,
@@ -269,7 +287,7 @@ async def end_session(
         SessionPersistenceError,
     ) as exc:
         raise _problem(exc) from exc
-    response.status_code = 200 if view.replayed else 200
+    response.status_code = 200
     return _response(view)
 
 
