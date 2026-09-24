@@ -998,7 +998,7 @@ export function validateTemporalCreateFields(
     if (fields.execution.sessionMode === 'splittable') {
       if (
         !Number.isInteger(fields.execution.minSessionMinutes) ||
-        fields.execution.minSessionMinutes < 5 ||
+        fields.execution.minSessionMinutes < 1 ||
         !Number.isSafeInteger(
           fields.execution.minSessionMinutes * 60 * 1_000_000,
         )
