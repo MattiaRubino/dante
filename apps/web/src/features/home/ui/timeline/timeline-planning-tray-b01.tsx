@@ -17,10 +17,13 @@ import {
 } from '../../../temporal/timeline-invalidation';
 import type { TemporalCreateRuntime } from '../../../temporal-create';
 import { timelinePlanningCopy } from './timeline-planning-copy';
+import type { TimelinePlanningTrayItem } from './timeline-planning-tray';
 
 import './timeline-planning-tray.css';
 
 type TimelineB01PlanningTrayProps = Readonly<{
+  /** Compatibility prop; canonical items come from the runtime. */
+  items?: readonly TimelinePlanningTrayItem[];
   runtime: TemporalCreateRuntime;
   defaultDate: PlainDate;
   onBeforeOpen?: (() => void) | undefined;
