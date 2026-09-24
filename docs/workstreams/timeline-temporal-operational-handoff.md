@@ -1,249 +1,175 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B08 SESSION RUNTIME 🟡 — B08-A ✅ CLOSED / PROVEN — B08-B NEXT
+- **Status:** B08 SESSION RUNTIME 🟡 — B08-A SOURCE REPAIRED / AWAITING USER PROOF
 - **Reconciled:** 2026-09-24
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Live execution ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
-- **Post-B06 scope decision:** `docs/workstreams/timeline-temporal-operational-post-b06-scope-decision-2026-09-23.md`
-- **B06 whole-block closure:** `docs/workstreams/timeline-temporal-operational-b06-e-closure-2026-09-23.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Current Alembic frontier:** `20260924_58`
-- **Current proven DB topology:** `145|5|88|92|285|223|408|0|0|0`
-- **CI:** no CI/GitHub Actions unless explicitly authorized; the user runs local tests
+- **Current candidate Alembic frontier:** `20260924_60`
+- **Candidate topology awaiting proof:** `148|5|94|93|290|230|414|0|0|0`
+- **Last proven DB frontier:** B06 / `20260923_57`
+- **CI:** no CI/GitHub Actions unless explicitly authorized; user runs local tests
 
-This is the first document to read after a chat/context reset. Roadmap owns sequencing; map owns detailed live checkboxes/decisions/evidence.
-
----
-
-# 1. Current position
-
-```text
-B00 Real Data Spine                              ✅ CLOSED / PROVEN
-B01 Activity Core                                ✅ CLOSED / PROVEN
-B02 Schedule Core                                ✅ CLOSED / PROVEN
-B03 Event Core                                   ✅ CLOSED / PROVEN
-PRE-B04 DB/API GOVERNANCE                        ✅ CLOSED / FROZEN
-B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
-B05 Product Organization                         ✅ CLOSED / PROVEN
-B06 Routine / Recurrence / Occurrence Baseline   ✅ CLOSED / PROVEN
-
-B08 Session Runtime                              🟡 READY TO START
-  B08-A Session Core End-to-End                   ✅ CLOSED / PROVEN
-  B08-B Pause / Resume + Durations End-to-End     ← NEXT
-  B08-C TC-009 Session Duration End-to-End        ⬜
-  B08-D Whole-block closure                       ⬜
-
-B09 Responsibility / Participation               ⬜
-B10 Actual / Outcome / Confirmation / Resolution ⬜
-B11 Advanced Recurrence / Conditional / Reminder ⬜
-B12 Replanning / Conflict / Solver               ⬜
-B07 UI/UX Consolidation v1                       ⏸ DEFERRED
-B15 Whole Vertical Closure                       ⬜
-```
-
-Former B13 Provider/Offline/Multi-device and B14 Analytics/Statistics/Signals are outside this vertical.
+Read this first after a context reset.
 
 ---
 
-# 2. Binding execution discipline
-
-Every sub-slice is a complete vertical capability:
+# 1. Exact current position
 
 ```text
-semantic authority
-→ persistence / Alembic / Dictionary if required
-→ backend/application
-→ API/OpenAPI
-→ generated client
-→ frontend / real Timeline surface
-→ local automated proof
-→ real-stack manual proof where applicable
-→ docs/ledger reconciliation
-→ then next slice
+B00–B06 ✅ CLOSED / PROVEN
+B07     ⏸ DEFERRED
+B08     🟡 IN PROGRESS
+B08-A   🟡 IMPLEMENTED / REPAIRED / AWAITING PROOF
+B08-B   ⬜ BLOCKED BY B08-A
+B08-C-D ⬜ BLOCKED
+B09–B12 ⬜ NOT STARTED
+B15     ⬜ NOT STARTED
 ```
 
-Do not split the roadmap by technical layer. Frontend cannot be postponed to a later “integration slice”; each active capability must already be usable end-to-end. B07 later owns final UI/UX consolidation, not implementation rescue.
+Do **not** start B08-B before B08-A local + manual proof passes.
 
 ---
 
-# 3. Binding semantic boundaries
+# 2. Why B08-A was reopened
+
+The first B08-A closure was premature. Audit found two real defects:
 
 ```text
-Domain != Logical != Physical != API DTO != ViewModel
-Activity != Event != Routine
-Routine != Recurrence != Occurrence
-Occurrence != Schedule
-Schedule != Temporal Constraint != Movement Policy
-Schedule != Session != Actual
-Session != Actual != Outcome
-Actual != Outcome != Confirmation
-Responsibility != Participation
-planned/intended != happened
-planned Schedule duration != Session duration
-Session elapsed duration != Session active duration
-Session end != Activity completion
-Session end != Occurrence completion
-projection != canonical truth
-current accepted state != latest row
-Undo != history rewind
+1. START endpoint family was not enforced at the DB boundary.
+   Activity route could pass an Occurrence NativeRef and vice versa.
+
+2. END mutated session_timing_absolute in place.
+   That violated the MaterialState immutability contract and made replay depend
+   on whatever timing state happened to be current later.
 ```
 
-Pre-B04 DB/API same-change governance remains binding.
+Both are repaired forward-only; no applied migration was edited.
 
 ---
 
-# 4. B06 closed authority
+# 3. Current B08-A source truth
 
 ```text
-B06-A Routine source core                         ✅ at `_51`
-B06-B Recurrence authoring                        ✅ at `_54`
-B06-C canonical Occurrence checkpoint             ✅ at `_55`
-B06-D shared Schedule / Timeline / functional UI  ✅ at `_57`
-B06-E whole-block closure                         ✅ at `_57`
-B06 whole block                                   ✅ CLOSED / PROVEN
+20260924_58
+  Session execution subject + bounded START/LIST/GET/END
+
+20260924_59
+  start_self_session(..., requested_subject_family, requested_subject_native_ref)
+  exact Activity/Occurrence family check against native_address.owner_family
+
+20260924_60
+  end_self_session(..., expected_state, requested_resulting_state)
+  END creates a new immutable session.timing MaterialState
+  expected state remains unchanged historical truth
+  native current binding + history advance atomically
+  session_end_operation stores resulting_material_state_ref
+  replay returns the exact produced state
+  any candidate `_58` in-place END data is repaired forward-only
 ```
 
-Accepted final evidence:
+Topology expected at `_60`:
 
 ```text
-generated:check                             PASS
-API-client typecheck                        PASS
-web typecheck                               PASS
-focused B06/runtime Vitest                  6 files / 37 tests PASS
-persistent local dogfood real-stack        accepted
-created Timeline/Event/recurring state      survives F5
-remaining B06 blocker                       none
+148 tables
+5 views
+94 routines
+93 triggers
+290 indexes
+230 FKs
+414 CHECKs
+0 enum/domain/sequence/materialized/partitioned/RLS
 ```
 
 ---
 
-# 5. Exact next slice — B08-A Session Core End-to-End
-
-B08-A is **CLOSED / PROVEN** on the local automated proof. The real-stack walkthrough is B08-D, not a gate for this slice. The delivered path is:
+# 4. Product path now present
 
 ```text
-Activity   → START Session → authoritative read → END Session
-Occurrence → START Session → authoritative read → END Session
+Activity   → START → read/reload → END
+Occurrence → START → read/reload → END
 ```
 
-The first step inside B08-A is to recheck/freeze the needed Domain/Logical/Physical/DB decisions. That is not a standalone roadmap phase.
-
-Existing CP6 Session persistence to inspect/reuse:
+Also present:
 
 ```text
-session
-session_timing_state
-session_timing_absolute
-session_timing_elapsed
-session_timing_pause
-session_timing_current_history
+scheduled Activity/Occurrence Session controls on Timeline
+unplaced Activity Session controls in Planning Tray
 ```
 
-Baseline subject boundary to validate at the start of B08-A:
+An unplaced Activity may start a Session directly. **Never create a fake Schedule to enable START.**
+
+Permanent forbidden effects:
 
 ```text
-Activity     ✅ Session subject
-Occurrence   ✅ Session subject
-Routine      ❌ direct Session subject
-Event        ❌ ordinary baseline Session subject
-Schedule     ❌ Session owner/subject
-```
-
-B08-A itself owns every required layer: typed execution-context persistence, migration/dictionary, backend, API/OpenAPI/generated client, functional Timeline controls and the automated tests below. The manual START → reload → END walkthrough belongs to B08-D.
-
-Forbidden effects remain:
-
-```text
-START does not fabricate Schedule
+START does not create Schedule
 END does not complete Activity
 END does not resolve Occurrence
 END does not create Actual
 END does not create Outcome
 ```
 
-No B08-B work begins before B08-A is fully `CLOSED / PROVEN`.
+---
+
+# 5. Exact proof to run next
+
+From the repo after pulling the branch, user runs the focused automated bundle. Required gates include:
+
+```text
+Alembic upgrade to `20260924_60`
+B08-A Session catalog proof
+B08-A Activity/Occurrence runtime proof
+whole current DB catalog/Dictionary proof
+relevant Session API/OpenAPI proof
+generated:check
+API-client typecheck
+web typecheck
+remote Session datasource Vitest
+relevant Timeline/Planning Tray focused Vitest
+```
+
+Then real-stack manual proof:
+
+```text
+1. create/use an Activity with no Schedule
+2. START Session from Planning Tray
+3. verify Activity is still unplaced / no Schedule fabricated
+4. F5 → same Session still running
+5. END → Session closes
+6. START again → new SessionRef
+7. scheduled Activity START/F5/END
+8. eligible Occurrence START/F5/END
+9. verify Schedule unchanged
+10. verify no completion / Actual / Outcome appeared
+```
+
+Only after accepted evidence:
+
+```text
+B08-A ✅ CLOSED / PROVEN
+B08-B ← NEXT
+```
 
 ---
 
-# 6. Remaining B08 order
+# 6. Collaboration discipline
 
-```text
-B08-A Session Core End-to-End                   ✅ CLOSED / PROVEN
-B08-B Pause / Resume + Durations End-to-End     ← NEXT
-B08-C TC-009 Session Duration End-to-End
-B08-D Whole-block closure / regression
-```
-
-B08-D manual whole-block target eventually includes:
-
-```text
-START
-→ F5 still running
-→ PAUSE
-→ F5 still paused
-→ RESUME
-→ END
-→ second START = new SessionRef
-→ eligible Occurrence path
-→ Schedule unchanged
-→ no fabricated completion / Actual / Outcome
-→ no duplicate state after reload/navigation
-```
-
-The user runs local tests. Do not launch CI/Actions.
+- user runs tests locally; assistant does not run them
+- no CI/GitHub Actions unless explicitly authorized
+- push changes frequently
+- current docs must distinguish candidate truth from proven/protected-main truth
+- B07 later consolidates UI; interim B08 UI only needs to be truthful and functional
 
 ---
 
-# 7. Documentation model
-
-Keep only three live documents:
-
-```text
-ROADMAP  → order and scope
-MAP      → current checkboxes, decisions, implementation notes, tests/evidence
-HANDOFF  → exact restart point
-```
-
-Do not create planning/freeze files for each A/B/C slice. When a slice progresses, update the live map and this handoff. A whole-block B08 closure record may be created when B08 itself closes.
-
-When persistence changes, reconcile DB overlay/dictionary in the same change.
-
----
-
-# 8. Fresh-chat recovery
-
-Read in this order:
+# 7. Fresh-chat recovery
 
 ```text
 1. this handoff
 2. timeline-temporal-operational-roadmap.md
 3. timeline-temporal-operational-map.md
-4. docs/database/timeline-temporal-operational.md only when active work touches persistence
+4. docs/database/timeline-temporal-operational.md
 ```
 
----
-
-# 9. Exact stop point
-
-```text
-B06 ✅ CLOSED / PROVEN
-B07 ⏸ DEFERRED
-B08 🟡 READY TO START
-B08-A ✅ CLOSED / PROVEN on local automated proof
-B08-B ← NEXT
-```
-
-Accepted B08-A automated evidence, run by the user from `apps/backend` unless noted:
-
-```text
-freeze + OpenAPI inventory                         6 PASS
-generated:check                                    PASS
-API-client typecheck                               PASS
-web typecheck                                      PASS
-Session data-source Vitest                         1 PASS
-Session catalog + current Dictionary catalog       2 PASS
-real-stack manual walkthrough                      B08-D
-```
-
-**Next action when work resumes:** implement B08-B. Do not run the Session manual walkthrough before the end of B08.
+**Exact next action:** user proof of repaired B08-A at `_60`; no B08-B implementation before that.
