@@ -123,7 +123,10 @@ def test_b08_a_session_catalog_remains_the_cp6_substrate(migrated_database: Any)
                )
             """
         ).fetchall()
-        assert {row[0] for row in subject_edges} == {"session_execution_subject"}
+        assert {row[0] for row in subject_edges} == {
+            "session_execution_subject",
+            "session_start_operation",
+        }
 
         capabilities = connection.execute(
             """
