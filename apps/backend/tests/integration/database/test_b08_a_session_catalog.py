@@ -1,4 +1,4 @@
-"""B08-A PostgreSQL proof that Session substrate is unchanged and still unlinked."""
+"""B08-A PostgreSQL proof for the Session core substrate and bounded capabilities."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ import pytest
 
 pytestmark = pytest.mark.postgres
 
-_EXPECTED_REVISION = "20260924_58"
+_EXPECTED_REVISION = "20260924_59"
 _SESSION_TABLES = frozenset(
     {
         "session",
@@ -33,7 +33,9 @@ def _admin(database: Any) -> psycopg.Connection[Any]:
     )
 
 
-def test_b08_a_session_catalog_remains_the_cp6_substrate(migrated_database: Any) -> None:
+def test_b08_a_session_catalog_reuses_cp6_and_adds_bounded_subject_capabilities(
+    migrated_database: Any,
+) -> None:
     with _admin(migrated_database) as connection:
         revision = connection.execute("SELECT version_num FROM dante.alembic_version").fetchone()
         assert revision is not None
@@ -128,7 +130,7 @@ def test_b08_a_session_catalog_remains_the_cp6_substrate(migrated_database: Any)
             "session_start_operation",
         }
 
-        capabilities = connection.execute(
+        absent = connection.execute(
             """
             SELECT procedure.proname
               FROM pg_proc AS procedure
@@ -142,7 +144,8 @@ def test_b08_a_session_catalog_remains_the_cp6_substrate(migrated_database: Any)
                )
             """
         ).fetchall()
-        assert capabilities == []
+        assert absent == []
+
         present = {
             row[0]
             for row in connection.execute(
@@ -167,3 +170,18 @@ def test_b08_a_session_catalog_remains_the_cp6_substrate(migrated_database: Any)
             "list_self_subject_sessions",
             "get_self_session",
         }
+
+        start_signatures = connection.execute(
+            """
+            SELECT pg_get_function_identity_arguments(procedure.oid)
+              FROM pg_proc AS procedure
+              JOIN pg_namespace AS namespace ON namespace.oid = procedure.pronamespace
+             WHERE namespace.nspname = 'dante'
+               AND procedure.proname = 'start_self_session'
+            """
+        ).fetchall()
+        assert len(start_signatures) == 1
+        assert str(start_signatures[0][0]).endswith(
+            "requested_material_state_ref uuid, requested_subject_family text, "
+            "requested_subject_native_ref uuid"
+        )
