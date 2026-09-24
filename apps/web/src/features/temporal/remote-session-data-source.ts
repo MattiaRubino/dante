@@ -14,6 +14,10 @@ export type TemporalSessionView = Readonly<{
   open: boolean;
   replayed: boolean;
   paused: boolean;
+  evaluatedAt: string;
+  elapsedSeconds: number;
+  pausedSeconds: number;
+  activeSeconds: number;
 }>;
 
 export class TemporalSessionRemoteError extends Error {
@@ -42,6 +46,13 @@ function uuid(value: unknown, field: string): string {
   return value.toLowerCase();
 }
 
+function nonNegativeNumber(value: unknown, field: string): number {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) {
+    throw new TemporalSessionRemoteError('protocol', `${field} must be non-negative.`);
+  }
+  return value;
+}
+
 function view(value: unknown): TemporalSessionView {
   const payload = record(value);
   const ended = payload.ended_at;
@@ -55,8 +66,14 @@ function view(value: unknown): TemporalSessionView {
   if (ended !== null && typeof ended !== 'string') {
     throw new TemporalSessionRemoteError('protocol', 'Invalid Session end.');
   }
-  if (typeof payload.started_at !== 'string') {
-    throw new TemporalSessionRemoteError('protocol', 'Invalid Session start.');
+  if (typeof payload.started_at !== 'string' || typeof payload.evaluated_at !== 'string') {
+    throw new TemporalSessionRemoteError('protocol', 'Invalid Session timing.');
+  }
+  const elapsedSeconds = nonNegativeNumber(payload.elapsed_seconds, 'elapsed_seconds');
+  const pausedSeconds = nonNegativeNumber(payload.paused_seconds, 'paused_seconds');
+  const activeSeconds = nonNegativeNumber(payload.active_seconds, 'active_seconds');
+  if (pausedSeconds > elapsedSeconds + 0.001 || activeSeconds > elapsedSeconds + 0.001) {
+    throw new TemporalSessionRemoteError('protocol', 'Invalid Session duration totals.');
   }
   return Object.freeze({
     sessionRef: uuid(payload.session_ref, 'session_ref'),
@@ -70,6 +87,10 @@ function view(value: unknown): TemporalSessionView {
     open: payload.open,
     replayed: payload.replayed,
     paused: payload.paused,
+    evaluatedAt: payload.evaluated_at,
+    elapsedSeconds,
+    pausedSeconds,
+    activeSeconds,
   });
 }
 
