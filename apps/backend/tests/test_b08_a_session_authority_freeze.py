@@ -1,4 +1,4 @@
-"""B08-A lock: Session authority is frozen without new persistence or HTTP surface."""
+"""B08-A authority lock for Session identity, timing, subject edge, and HTTP surface."""
 
 from __future__ import annotations
 
@@ -31,8 +31,8 @@ def _table(name: str) -> dict[str, Any]:
     return payload
 
 
-def test_b08_a_reuses_the_existing_session_dictionary_substrate() -> None:
-    """The freeze reuses CP6 Session identity and timing. It does not add a subject edge."""
+def test_b08_a_reuses_session_timing_and_adds_only_the_typed_subject_edge() -> None:
+    """B08-A keeps the CP6 identity/timing substrate and adds a bounded subject edge."""
     session = _table("session")
     structure = session["structure"]
     assert isinstance(structure, dict)
@@ -66,9 +66,10 @@ def test_b08_a_reuses_the_existing_session_dictionary_substrate() -> None:
     assert subject_columns == ["session_ref", "subject_native_ref"]
 
 
-def test_b08_a_sqlalchemy_session_mappings_match_the_frozen_substrate() -> None:
+def test_b08_a_sqlalchemy_session_mappings_match_the_delivered_substrate() -> None:
     mapped = {table.name for table in MAPPED_TABLES}
     assert set(_SESSION_TABLES) <= mapped
+    assert "session_execution_subject" in mapped
     pause = next(table for table in MAPPED_TABLES if table.name == "session_timing_pause")
     history = next(
         table for table in MAPPED_TABLES if table.name == "session_timing_current_history"
@@ -77,8 +78,7 @@ def test_b08_a_sqlalchemy_session_mappings_match_the_frozen_substrate() -> None:
     assert any(index.name == "ux_session_timing_current_history_open" for index in history.indexes)
 
 
-def test_b08_a_adds_no_session_http_operations() -> None:
-    """B08-B owns the frozen route inventory. B08-A must not publish it early."""
+def test_b08_a_publishes_only_the_session_core_http_operations() -> None:
     document = openapi_document()
     paths = document["paths"]
     assert isinstance(paths, dict)
