@@ -35,7 +35,7 @@ class SessionCommand(BaseModel):
 
 
 class SessionEndCommand(SessionCommand):
-    expected_material_state_ref: UUID
+    expected_material_state_ref: UUID = Field(strict=False)
 
 
 SessionTransitionCommand = SessionEndCommand
