@@ -152,12 +152,17 @@ class SessionApplication:
                 "expected_material_state_ref": str(expected_material_state_ref),
             }
         )
+        # The resulting MaterialStateRef is deliberately not part of the intent
+        # fingerprint: retries may allocate a fresh candidate, while the database
+        # replays the exact state recorded by the accepted operation receipt.
+        resulting_state_ref = new_material_state_ref()
         return await self._call(
             """
             SELECT session_ref, subject_native_ref, timing_material_state_ref,
                    started_at, ended_at, replayed
               FROM dante.end_self_session(
-                :actor, :operation_id, :fingerprint, :session_ref, :expected_state
+                :actor, :operation_id, :fingerprint, :session_ref,
+                :expected_state, :resulting_state
               )
             """,
             {
@@ -166,6 +171,7 @@ class SessionApplication:
                 "fingerprint": fingerprint,
                 "session_ref": session_ref,
                 "expected_state": expected_material_state_ref,
+                "resulting_state": resulting_state_ref,
             },
         )
 
