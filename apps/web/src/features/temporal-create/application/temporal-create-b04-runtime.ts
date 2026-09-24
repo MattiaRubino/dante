@@ -742,8 +742,8 @@ class B04TemporalCreateRuntime implements TemporalCreateRuntime {
           prepared.metadata,
           placement,
         );
-        if (scheduled.result.status === 'applied' && scheduled.effect) {
-          const accepted = scheduled.effect.projection;
+        const accepted = scheduled.effect?.projection;
+        if (scheduled.result.status === 'applied' && accepted !== null && accepted !== undefined) {
           return Object.freeze({
             result: appliedResult(prepared.operationId, accepted),
             effect: this.createEffect(prepared, activity, accepted),
