@@ -11,7 +11,10 @@ import pytest
 from pydantic import ValidationError
 
 from dante.bootstrap.openapi_export import openapi_document
-from dante.modules.temporal.session_api import SessionEndCommand, SessionTransitionCommand
+from dante.modules.temporal.session_api import (
+    SessionEndCommand,
+    SessionTransitionCommand,
+)
 from dante.platform.database.mappings import MAPPED_TABLES
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -131,6 +134,8 @@ def test_session_transitions_accept_json_uuid_string_and_reject_invalid_refs() -
         validated = command.model_validate(payload)
         assert validated.expected_material_state_ref == UUID(material_state_ref)
         with pytest.raises(ValidationError):
-            command.model_validate({**payload, "expected_material_state_ref": "not-a-uuid"})
+            command.model_validate(
+                {**payload, "expected_material_state_ref": "not-a-uuid"}
+            )
         with pytest.raises(ValidationError):
             command.model_validate({**payload, "unexpected_field": True})
