@@ -12,6 +12,17 @@ function operationId(): string {
   return crypto.randomUUID();
 }
 
+function formatDuration(seconds: number): string {
+  const total = Math.max(0, Math.floor(seconds));
+  const hours = Math.floor(total / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  const remainingSeconds = total % 60;
+  if (hours > 0) {
+    return `${hours}:${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+  }
+  return `${minutes}:${String(remainingSeconds).padStart(2, '0')}`;
+}
+
 export function SessionSubjectControls({
   kind,
   subjectRef,
@@ -122,6 +133,11 @@ export function SessionSubjectControls({
               </button>
             </>
           )}
+          <span className="timeline-session-duration" aria-label="Durata sessione">
+            Attiva {formatDuration(openSession.activeSeconds)} · Pausa{' '}
+            {formatDuration(openSession.pausedSeconds)} · Totale{' '}
+            {formatDuration(openSession.elapsedSeconds)}
+          </span>
         </>
       )}
       {message === null ? null : <span role="status">{message}</span>}
