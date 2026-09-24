@@ -1,1 +1,34 @@
-{"object":{"key":"routine:dante.get_self_session_runtime_metrics","name":"get_self_session_runtime_metrics"},"semantic_traceability":{"domain_concepts":["Session","elapsed duration","paused duration","active duration"]},"implementation":{"postgresql":{"signature":"dante.get_self_session_runtime_metrics(uuid,uuid,uuid)"}}}
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "routine:dante.get_self_session_runtime_metrics",
+    "type": "routine",
+    "schema": "dante",
+    "name": "get_self_session_runtime_metrics",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Derive authoritative Session paused state and elapsed, paused, and active durations from canonical timing facts for one self-owned timing MaterialState.",
+  "classification": {"persistence_role":"session_capability","canonicality":"capability_surface","family":"session"},
+  "semantic_traceability": {
+    "authority_sources": ["docs/domain/concepts/session.md","docs/workstreams/timeline-temporal-operational-roadmap.md"],
+    "domain_concepts": ["Session", "elapsed duration", "paused duration", "active duration"],
+    "logical_families": ["Session"],
+    "reference_families": ["NativeRef", "MaterialStateRef"],
+    "material_facets": ["session.timing"]
+  },
+  "implementation": {"introducing_stage":"B08-B","alembic_revision":"20260924_64","sqlalchemy":{"mode":"none","module":null,"symbol":null},"runtime_acl_stage":"B08-B"},
+  "structure": {
+    "columns": [],"primary_key":null,"foreign_keys":[],"unique_constraints":[],"check_constraints":[],"indexes":[],"triggers":[],"table":null,"view":null,
+    "routine": {
+      "routine_kind":"function","language":"sql","argument_types":["uuid","uuid","uuid"],
+      "return_type":"TABLE(paused boolean, evaluated_at timestamp with time zone, elapsed_seconds numeric, paused_seconds numeric, active_seconds numeric)",
+      "security":"DEFINER","volatility":"STABLE","parallel_safety":"SAFE","leakproof":false,
+      "function_search_path":["pg_catalog","dante","pg_temp"],"direct_runtime_execute":true
+    }
+  },
+  "state_history": {"material_state_behavior":null,"current_binding":"Accepts an explicit timing MaterialStateRef and derives metrics from its absolute interval and pause facts without mutating currentness.","chronology":"For open current state, evaluation ends at statement_timestamp; for historical/replaced or ended states it ends at the canonical closing instant.","immutability_policy":"Pure fact-derived read; no timing payload mutation."},
+  "lifecycle": {"retention":"Bounded Session runtime read capability.","redaction":null,"retirement_tombstone":null,"delete_behavior":"No runtime deletion."},
+  "security": {"owner_role":"dante_owner","default_deny_non_owner":true,"expected_grants":[{"grantee":"dante_runtime","privilege":"EXECUTE","columns":[],"grant_option":false}]},
+  "proof": {"obligations":["self scope","elapsed >= paused >= 0","active = elapsed - paused","running duration advances from canonical time","paused duration excludes resumed time"],"test_refs":["apps/backend/tests/integration/temporal/test_b08_b_session_pause_resume.py","apps/backend/tests/integration/database/test_database_current_catalog.py"],"staged_evidence":[]}
+}
