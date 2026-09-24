@@ -939,7 +939,6 @@ export function TimelineCreateBridge({
         />
       ) : (
         <TimelinePlanningTrayB01
-          items={planningItems}
           runtime={runtime}
           defaultDate={defaultDate}
           onBeforeOpen={onBeforeOpen}
