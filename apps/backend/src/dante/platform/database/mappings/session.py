@@ -281,7 +281,7 @@ class SessionStartOperationRow(Base):
 
 
 class SessionEndOperationRow(Base):
-    """Immutable end receipt bound to the expected current timing state."""
+    """Immutable end receipt bound to expected and produced timing states."""
 
     __tablename__ = "session_end_operation"
     __table_args__ = (
@@ -309,6 +309,15 @@ class SessionEndOperationRow(Base):
             ondelete="NO ACTION",
             deferrable=False,
         ),
+        ForeignKeyConstraint(
+            ["resulting_material_state_ref"],
+            ["dante.material_state_address.material_state_ref"],
+            name="fk_session_end_operation_resulting_state_address",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
+        ),
     )
 
     self_person_ref: Mapped[NativeRef] = mapped_column(primary_key=True)
@@ -316,4 +325,5 @@ class SessionEndOperationRow(Base):
     intent_fingerprint: Mapped[str] = mapped_column(Text, nullable=False)
     session_ref: Mapped[NativeRef] = mapped_column(nullable=False, unique=True)
     expected_material_state_ref: Mapped[MaterialStateRef] = mapped_column(nullable=False)
+    resulting_material_state_ref: Mapped[MaterialStateRef] = mapped_column(nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
