@@ -46,8 +46,11 @@ function runtimeWithSources() {
     TemporalActivityDataSource['establishActivitySchedule']
   >((request) => {
     const placement = request.placement;
-    if (placement.kind !== 'absolute-interval') {
-      throw new Error('Expected B04 hard-constrained placement to be absolute.');
+    if (
+      placement.kind !== 'absolute-interval' &&
+      placement.kind !== 'floating-local-interval'
+    ) {
+      throw new Error('Expected a supported B04 placement.');
     }
     return Promise.resolve(
       Object.freeze({
@@ -223,6 +226,89 @@ describe('B04 Temporal Create runtime', () => {
       ]);
     },
   );
+
+  it.each([26, 31])(
+    'creates a %i-minute timed Activity with both a Session minimum and an accepted Schedule',
+    async (minutes) => {
+      const sources = runtimeWithSources();
+      const initial = createTemporalCreateFields({
+        title: 'Scheduled session',
+        date: '2026-10-20',
+        startTime: '21:00',
+        durationMinutes: minutes,
+        timeSemantics: 'timed',
+        contextId: 'personale',
+      });
+      const fields = createTemporalCreateFields({
+        ...initial,
+        execution: {
+          ...initial.execution,
+          sessionMode: 'splittable',
+          minSessionMinutes: 1,
+        },
+      });
+      const prepared = sources.runtime.prepare(fields);
+      if (prepared.status !== 'ready') {
+        throw new Error('Expected timed Session Activity preparation.');
+      }
+
+      const execution = await sources.runtime.execute(prepared.prepared);
+      expect(execution.result.status).toBe('applied');
+      expect(sources.createConstrainedActivity).toHaveBeenCalledTimes(1);
+      expect(sources.establishActivitySchedule).toHaveBeenCalledTimes(1);
+      const request = sources.establishActivitySchedule.mock.calls[0]?.[0];
+      expect(request?.activityRef).toBe(ACTIVITY_REF);
+      expect(request?.placement.kind).toBe('floating-local-interval');
+      if (request?.placement.kind !== 'floating-local-interval') {
+        throw new Error('Expected the requested local interval.');
+      }
+      expect(request.placement.startsLocalAt.toString()).toBe(
+        '2026-10-20T21:00:00',
+      );
+      expect(request.placement.endsLocalAt.toString()).toBe(
+        Temporal.PlainDateTime.from('2026-10-20T21:00:00')
+          .add({ minutes })
+          .toString(),
+      );
+      expect(execution.effect?.projection.placement?.kind).toBe('floating-local');
+      expect(sources.createConstrainedActivity.mock.calls[0]?.[0].rules).toEqual([
+        {
+          family: 'duration',
+          durationKind: 'minimum',
+          constrainedFacet: 'session.active_duration',
+          strength: 'soft',
+          durationMicroseconds: 60 * 1_000_000,
+        },
+      ]);
+    },
+  );
+
+  it('keeps a committed Activity unplaced when its separate Schedule command fails', async () => {
+    const sources = runtimeWithSources();
+    sources.establishActivitySchedule.mockRejectedValueOnce(
+      new Error('Schedule rejected'),
+    );
+    const initial = createTemporalCreateFields({
+      title: 'Retain after failure',
+      date: '2026-10-20',
+      timeSemantics: 'timed',
+      contextId: 'personale',
+    });
+    const fields = createTemporalCreateFields({
+      ...initial,
+      execution: { ...initial.execution, sessionMode: 'splittable' },
+    });
+    const prepared = sources.runtime.prepare(fields);
+    if (prepared.status !== 'ready') {
+      throw new Error('Expected timed Session Activity preparation.');
+    }
+
+    const execution = await sources.runtime.execute(prepared.prepared);
+    expect(sources.createConstrainedActivity).toHaveBeenCalledTimes(1);
+    expect(sources.establishActivitySchedule).toHaveBeenCalledTimes(1);
+    expect(execution.result.status).toBe('applied');
+    expect(execution.effect?.projection.placement).toBeNull();
+  });
 
   it('authors bounded-window as one hard absolute containment rule', async () => {
     const { execution, createConstrainedActivity, createActivity } =
