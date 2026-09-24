@@ -1,11 +1,11 @@
 # Timeline / Temporal-Operational — Candidate Database Overlay
 
-- **Status:** CURRENT CANDIDATE DATABASE AUTHORITY — B08-A repair awaiting user proof
+- **Status:** CURRENT CANDIDATE DATABASE AUTHORITY — B08-A repaired, awaiting user proof
 - **Reconciled:** 2026-09-24
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
-- **Candidate source head:** `20260924_59`
-- **Candidate topology awaiting B08-A proof:** `148|5|94|93|290|229|414|0|0|0`
+- **Candidate source head:** `20260924_60`
+- **Candidate topology awaiting B08-A proof:** `148|5|94|93|290|230|414|0|0|0`
 - **Whole-DB SoR:** `README.md`
 - **Machine-readable authority:** `dictionary/`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
@@ -13,16 +13,14 @@
 
 ## 1. Authority boundary
 
-This file is the human-readable persistence overlay for the Timeline candidate branch. Candidate truth becomes protected-main truth only after the required local proof and protected-main integration/readback.
-
-Permanent chain:
+This is candidate-branch database truth, not protected-main truth. The authority chain remains:
 
 ```text
 Product / Domain / Logical / Physical
 → PostgreSQL Persistence Constitution
-→ this candidate overlay + Dictionary
+→ candidate overlay + Dictionary
 → Alembic
-→ SQLAlchemy mappings
+→ SQLAlchemy
 → live PostgreSQL
 → direct proof
 ```
@@ -32,41 +30,37 @@ Product / Domain / Logical / Physical
 ```text
 20260906_18 protected-main baseline
     ↓
-20260908_19 B01 Activity core
+20260908_19 B01 Activity
     ↓
-20260909_20 → 20260915_26 B02 Schedule core / closure
+20260909_20 → 20260915_26 B02 Schedule
     ↓
-20260916_27 → 20260917_29 B03 Event core / closure
+20260916_27 → 20260917_29 B03 Event
     ↓
 20260918_30 → 20260920_42 B04 Temporal Constraint + Movement Policy
     ↓
 20260920_43 → 20260921_48 B05 Product Organization
     ↓
-20260921_49 → 20260921_51 B06-A Routine source/core
+20260921_49 → 20260923_57 B06 Routine / Recurrence / Occurrence
     ↓
-20260922_52 → 20260922_54 B06-B Recurrence authoring/read
-    ↓
-20260922_55 B06-C bounded Occurrence checkpoint/control
-    ↓
-20260922_56 → 20260923_57 B06-D shared Schedule + expected-Occurrence Timeline read
-    ↓
-20260924_58 B08-A Session subject + START/READ/END capability
+20260924_58 B08-A Session subject + START/READ/END
     ↓
 20260924_59 B08-A exact Activity/Occurrence subject-family repair
+    ↓
+20260924_60 B08-A immutable END MaterialState repair
 ```
 
-`_59` is forward-only and replaces the permissive six-argument Session-start capability introduced by `_58`; it does not add another semantic owner or another timing system.
+`_59` and `_60` are forward-only repairs of contracts introduced by `_58`.
 
 ## 3. Current candidate topology
 
 ```text
-Alembic     20260924_59
+Alembic     20260924_60
 Tables      148
 Views       5
 Routines    94
 Triggers    93
 Indexes     290
-FKs         229
+FKs         230
 CHECKs      414
 Enums       0
 Domains     0
@@ -75,11 +69,11 @@ Materialized/partitioned 0
 RLS         0
 ```
 
-The counts are unchanged by `_59`: one start routine signature is replaced by another.
+`_60` adds one FK from the Session END receipt to the exact resulting `MaterialStateRef`; it replaces the END routine signature without adding another routine.
 
 ## 4. B08-A Session persistence
 
-B08-A reuses the CP6 Session identity/timing family:
+B08-A reuses the existing CP6 Session identity/timing substrate:
 
 ```text
 session
@@ -90,26 +84,22 @@ session_timing_pause
 session_timing_current_history
 ```
 
-`_58` adds only the bounded execution-context/command persistence required by the product path:
+B08-A adds only:
 
 ```text
 session_execution_subject
 session_start_operation
 session_end_operation
-```
 
-and bounded runtime capabilities:
-
-```text
 start_self_session
 end_self_session
 list_self_subject_sessions
 get_self_session
 ```
 
-Runtime receives no direct DML on the private Session tables. Writes stay behind `SECURITY DEFINER` self-scoped capabilities.
+Runtime has no direct DML on those private command/subject tables. Mutation remains behind bounded self-scoped `SECURITY DEFINER` capabilities.
 
-### Exact execution-subject contract
+### Exact subject contract
 
 ```text
 Activity   → Session subject ✅
@@ -119,19 +109,25 @@ Event      → ordinary baseline Session subject ❌
 Schedule   → Session subject/owner ❌
 ```
 
-`_59` requires `requested_subject_family IN ('activity','occurrence')` and verifies that it exactly matches `native_address.owner_family` before Session creation. Therefore an Activity endpoint cannot create a Session over an Occurrence ref and vice versa.
+`_59` requires the requested family to be `activity` or `occurrence` and to match `native_address.owner_family` exactly before any Session write.
 
-### Session timing lifecycle policy
+### Immutable Session timing contract
 
-The accepted CP6 Session timing aggregate is a live execution tracker. During one timer episode, the current absolute timing MaterialState may evolve through captured lifecycle facts:
+A `session.timing` MaterialState payload is immutable. Capturing END is therefore a state transition, not an UPDATE of the old payload:
 
 ```text
-START → started_at known, ended_at NULL
-PAUSE / RESUME → pause rows on the same absolute timing state
-END → ended_at established on that live timing state
+START
+→ MaterialState S1 { started_at, ended_at = NULL }
+→ S1 current
+
+END(expected=S1)
+→ MaterialState S2 { same started_at, ended_at = accepted END instant }
+→ close S1 current-history interval
+→ S2 current
+→ END receipt binds expected=S1 and resulting=S2
 ```
 
-This is a narrow Session-timing lifecycle rule, not permission to mutate arbitrary MaterialStates in place. A later semantic correction/replacement of an already recorded Session timing belongs to a new MaterialState/current-history binding.
+The replay of an accepted END returns the exact `resulting_material_state_ref` recorded in its receipt even if later lifecycle work changes the Session's current state. `_60` also repairs any candidate `_58` END receipts by splitting the previously mutated payload into truthful historical and current MaterialStates.
 
 Permanent boundaries remain:
 
@@ -139,16 +135,18 @@ Permanent boundaries remain:
 Schedule != Session
 Session != Actual
 Session != Outcome
-Session end != Activity completion
-Session end != Occurrence completion
+Session END != Activity completion
+Session END != Occurrence completion
 planned Schedule duration != Session elapsed/active duration
 ```
 
+Session START on an unplaced Activity is valid and must not fabricate Schedule.
+
 ## 5. Existing temporal authority remains unchanged
 
-`dante.schedule` remains the single accepted-placement authority. Session START never fabricates Schedule and Session END never rewrites Schedule.
+`dante.schedule` remains the sole accepted-placement authority. B08-A neither requires nor manufactures Schedule. It also creates no Actual or Outcome.
 
-B04 Temporal Constraint / Movement Policy remains closed/proven. Deferred families:
+Deferred constraint families remain:
 
 ```text
 TC-009 contiguous Session duration  → B08-C
@@ -159,18 +157,13 @@ TC-011 relative before/after        → future bounded relation/reference review
 ## 6. Proof state
 
 ```text
-B01 ✅ CLOSED / PROVEN
-B02 ✅ CLOSED / PROVEN
-B03 ✅ CLOSED / PROVEN
-B04 ✅ CLOSED / PROVEN through `_42`
-B05 ✅ CLOSED / PROVEN through `_48`
-B06 ✅ CLOSED / PROVEN through `_57`
-
-B08-A `_58` implementation            implemented
-B08-A `_59` family-contract repair     implemented
-B08-A automated proof                  ⬜ user rerun required
-B08-A real-stack Activity proof        ⬜ required
-B08-A real-stack Occurrence proof      ⬜ required
+B01–B06                              ✅ CLOSED / PROVEN
+B08-A `_58` base implementation       implemented
+B08-A `_59` subject-family repair     implemented
+B08-A `_60` immutable-END repair      implemented
+B08-A automated proof                ⬜ user rerun required
+B08-A real-stack Activity proof      ⬜ required
+B08-A real-stack Occurrence proof    ⬜ required
 ```
 
-Until those B08-A gates pass, `_59` is **candidate source truth, not proven candidate closure** and B08-B stays blocked.
+Until those B08-A gates pass, `_60` is **candidate source truth, not proven closure**. B08-B remains blocked.
