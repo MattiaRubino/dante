@@ -8,7 +8,7 @@
     "name": "session_end_operation",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Immutable self-scoped receipt for one Session end.",
+  "purpose": "Immutable self-scoped receipt for one Session end, binding both the exact expected timing MaterialStateRef and the exact immutable timing MaterialStateRef produced by the accepted command.",
   "classification": {
     "persistence_role": "session_control",
     "canonicality": "control",
@@ -17,7 +17,8 @@
   "semantic_traceability": {
     "authority_sources": [
       "docs/domain/concepts/session.md",
-      "docs/workstreams/timeline-temporal-operational-roadmap.md"
+      "docs/workstreams/timeline-temporal-operational-roadmap.md",
+      "docs/development/backend-cp6-02-postgresql-persistence-constitution.md"
     ],
     "domain_concepts": [
       "Session"
@@ -26,13 +27,16 @@
       "Session"
     ],
     "reference_families": [
-      "NativeRef"
+      "NativeRef",
+      "MaterialStateRef"
     ],
-    "material_facets": []
+    "material_facets": [
+      "session.timing"
+    ]
   },
   "implementation": {
     "introducing_stage": "B08-A",
-    "alembic_revision": "20260924_58",
+    "alembic_revision": "20260924_60",
     "sqlalchemy": {
       "mode": "orm_row",
       "module": "dante.platform.database.mappings.session",
@@ -46,10 +50,7 @@
         "name": "self_person_ref",
         "postgres_type": "uuid",
         "nullable": false,
-        "default": {
-          "kind": "none",
-          "expression": null
-        },
+        "default": {"kind": "none", "expression": null},
         "meaning": "Authenticated self Person.",
         "semantic_type": "NativeRef",
         "value_contract": "Existing Person."
@@ -58,10 +59,7 @@
         "name": "operation_id",
         "postgres_type": "text",
         "nullable": false,
-        "default": {
-          "kind": "none",
-          "expression": null
-        },
+        "default": {"kind": "none", "expression": null},
         "meaning": "Caller idempotency id.",
         "semantic_type": null,
         "value_contract": "Trimmed, 1 to 200 characters."
@@ -70,10 +68,7 @@
         "name": "intent_fingerprint",
         "postgres_type": "text",
         "nullable": false,
-        "default": {
-          "kind": "none",
-          "expression": null
-        },
+        "default": {"kind": "none", "expression": null},
         "meaning": "SHA-256 of the end intent.",
         "semantic_type": null,
         "value_contract": "64 lowercase hex characters."
@@ -82,10 +77,7 @@
         "name": "session_ref",
         "postgres_type": "uuid",
         "nullable": false,
-        "default": {
-          "kind": "none",
-          "expression": null
-        },
+        "default": {"kind": "none", "expression": null},
         "meaning": "Ended Session.",
         "semantic_type": "NativeRef",
         "value_contract": "Existing Session."
@@ -94,22 +86,25 @@
         "name": "expected_material_state_ref",
         "postgres_type": "uuid",
         "nullable": false,
-        "default": {
-          "kind": "none",
-          "expression": null
-        },
-        "meaning": "Expected current timing state.",
+        "default": {"kind": "none", "expression": null},
+        "meaning": "Exact open timing MaterialStateRef that had to be current for this END to be accepted.",
         "semantic_type": "MaterialStateRef",
-        "value_contract": "CAS token."
+        "value_contract": "CAS token naming the immutable pre-END timing state."
+      },
+      {
+        "name": "resulting_material_state_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {"kind": "none", "expression": null},
+        "meaning": "Exact immutable timing MaterialStateRef produced by the accepted END command.",
+        "semantic_type": "MaterialStateRef",
+        "value_contract": "Existing dante.material_state_address row owned by this Session for facet session.timing."
       },
       {
         "name": "created_at",
         "postgres_type": "timestamp with time zone",
         "nullable": false,
-        "default": {
-          "kind": "none",
-          "expression": null
-        },
+        "default": {"kind": "none", "expression": null},
         "meaning": "Receipt instant.",
         "semantic_type": null,
         "value_contract": "Same transaction as the end."
@@ -117,11 +112,8 @@
     ],
     "primary_key": {
       "name": "pk_session_end_operation",
-      "columns": [
-        "self_person_ref",
-        "operation_id"
-      ],
-      "reason": "Stable identity for this B08-A object.",
+      "columns": ["self_person_ref", "operation_id"],
+      "reason": "Stable actor-local idempotency identity for this B08-A command.",
       "deferrable": false,
       "initially": "NOT DEFERRABLE",
       "enforced": true
@@ -129,16 +121,8 @@
     "foreign_keys": [
       {
         "name": "fk_session_end_operation_self_person_ref_person",
-        "columns": [
-          "self_person_ref"
-        ],
-        "target": {
-          "schema": "dante",
-          "table": "person",
-          "columns": [
-            "person_ref"
-          ]
-        },
+        "columns": ["self_person_ref"],
+        "target": {"schema": "dante", "table": "person", "columns": ["person_ref"]},
         "on_delete": "NO ACTION",
         "on_update": "NO ACTION",
         "match_type": "SIMPLE",
@@ -152,16 +136,8 @@
       },
       {
         "name": "fk_session_end_operation_session_ref_session",
-        "columns": [
-          "session_ref"
-        ],
-        "target": {
-          "schema": "dante",
-          "table": "session",
-          "columns": [
-            "session_ref"
-          ]
-        },
+        "columns": ["session_ref"],
+        "target": {"schema": "dante", "table": "session", "columns": ["session_ref"]},
         "on_delete": "NO ACTION",
         "on_update": "NO ACTION",
         "match_type": "SIMPLE",
@@ -172,15 +148,28 @@
         "reference_family": "NativeRef",
         "cardinality": "many_to_one",
         "semantic_reason": "Receipt names the ended Session."
+      },
+      {
+        "name": "fk_session_end_operation_resulting_state_address",
+        "columns": ["resulting_material_state_ref"],
+        "target": {"schema": "dante", "table": "material_state_address", "columns": ["material_state_ref"]},
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "MaterialStateRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Idempotent replay must return the exact timing state produced by the accepted END, independent of later current-state changes."
       }
     ],
     "unique_constraints": [
       {
         "name": "uq_session_end_operation_session_ref",
-        "columns": [
-          "session_ref"
-        ],
-        "reason": "One end receipt per Session in B08-A.",
+        "columns": ["session_ref"],
+        "reason": "B08-A accepts one END command per Session episode.",
         "deferrable": false,
         "initially": "NOT DEFERRABLE",
         "enforced": true
@@ -209,10 +198,7 @@
         "name": "pk_session_end_operation",
         "method": "btree",
         "unique": true,
-        "keys": [
-          "self_person_ref",
-          "operation_id"
-        ],
+        "keys": ["self_person_ref", "operation_id"],
         "predicate": null,
         "include": [],
         "source": "primary_key",
@@ -225,13 +211,11 @@
         "name": "uq_session_end_operation_session_ref",
         "method": "btree",
         "unique": true,
-        "keys": [
-          "session_ref"
-        ],
+        "keys": ["session_ref"],
         "predicate": null,
         "include": [],
         "source": "unique_constraint",
-        "reason": "One end receipt per Session.",
+        "reason": "One END receipt per Session.",
         "valid": true,
         "ready": true,
         "live": true
@@ -251,10 +235,10 @@
     "routine": null
   },
   "state_history": {
-    "material_state_behavior": null,
-    "current_binding": null,
-    "chronology": "created_at is receipt time where present; UUID order is not chronology.",
-    "immutability_policy": "Receipts are insert-only. The subject edge is immutable for B08-A."
+    "material_state_behavior": "The receipt names, but does not own, immutable session.timing MaterialStates.",
+    "current_binding": "END advances native_current_material_state from expected_material_state_ref to resulting_material_state_ref in the same transaction.",
+    "chronology": "created_at is the accepted END instant; Session timing current-history carries currentness chronology.",
+    "immutability_policy": "Receipts are insert-only. END never updates the protected timing payload in place."
   },
   "lifecycle": {
     "retention": "Retained with the Session it supports.",
@@ -270,10 +254,13 @@
   "proof": {
     "obligations": [
       "B08-A self scope",
-      "Activity or Occurrence subject only"
+      "exact expected-current CAS",
+      "immutable timing-state replacement",
+      "exact resulting-state idempotent replay"
     ],
     "test_refs": [
-      "apps/backend/tests/integration/database/test_b08_a_session_catalog.py"
+      "apps/backend/tests/integration/database/test_b08_a_session_catalog.py",
+      "apps/backend/tests/integration/temporal/test_b08_a_session_runtime.py"
     ],
     "staged_evidence": []
   }
