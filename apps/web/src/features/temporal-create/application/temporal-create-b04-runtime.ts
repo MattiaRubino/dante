@@ -86,9 +86,13 @@ function b04FlexibleActivityIntentSupported(
   const constraintKind = b04ConstraintKind(specification);
   const hasSessionMinimum =
     specification.execution.sessionMode === 'splittable';
+  const placedSessionMinimum =
+    constraintKind === null &&
+    hasSessionMinimum &&
+    prepared.command.payload.placement !== null;
   if (
     prepared.metadata.kind !== 'activity' ||
-    prepared.command.payload.placement !== null ||
+    (prepared.command.payload.placement !== null && !placedSessionMinimum) ||
     (import.meta.env.MODE !== 'test' && !isCanonicalLifeAreaRef(prepared.metadata.contextId)) ||
     (constraintKind === null && !hasSessionMinimum) ||
     specification.scheduling.constraintKind === 'preferred-window' ||
@@ -108,7 +112,8 @@ function b04FlexibleActivityIntentSupported(
   });
 
   return (
-    specification.durationMinutes === baseline.durationMinutes &&
+    (specification.durationMinutes === baseline.durationMinutes ||
+      placedSessionMinimum) &&
     specification.scheduling.movementPolicy ===
       baseline.scheduling.movementPolicy &&
     specification.scheduling.fallbackPolicy === 'inherit' &&
@@ -730,6 +735,23 @@ class B04TemporalCreateRuntime implements TemporalCreateRuntime {
       const activity = created.activity;
       const projection = activityProjection(activity, prepared.operationId);
       this.remember(activity.activityRef, prepared.metadata, projection);
+      const placement = prepared.command.payload.placement;
+      if (placement !== null) {
+        const scheduled = await this.establish(
+          activity.activityRef,
+          prepared.metadata,
+          placement,
+        );
+        if (scheduled.result.status === 'applied' && scheduled.effect) {
+          const accepted = scheduled.effect.projection;
+          return Object.freeze({
+            result: appliedResult(prepared.operationId, accepted),
+            effect: this.createEffect(prepared, activity, accepted),
+          });
+        }
+        // Creation committed even if the separate Schedule command failed.
+        // Report the persisted unplaced Activity so retry cannot duplicate it.
+      }
       return Object.freeze({
         result: appliedResult(prepared.operationId, projection),
         effect: this.createEffect(prepared, activity, projection),
