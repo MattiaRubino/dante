@@ -43,37 +43,20 @@
       "physical_indexes": 290
     },
     "constraints": {
-      "foreign_keys": 229,
+      "foreign_keys": 230,
       "check_constraints": 414
     }
   },
   "technical_foundation": {
-    "excluded_tables": [
-      "dante.alembic_version"
-    ],
-    "roles": [
-      "dante_owner",
-      "dante_migrator",
-      "dante_runtime",
-      "dante_observer"
-    ]
+    "excluded_tables": ["dante.alembic_version"],
+    "roles": ["dante_owner", "dante_migrator", "dante_runtime", "dante_observer"]
   },
   "extension_owned": {
-    "postgis": {
-      "version_policy": "foundation dependency; current repository baseline 3.6.4"
-    },
-    "vector": {
-      "version_policy": "foundation dependency; current repository baseline 0.8.6"
-    },
-    "pg_trgm": {
-      "version_policy": "foundation dependency; extension-owned objects excluded from DANTE object entries"
-    },
-    "unaccent": {
-      "version_policy": "foundation dependency; extension-owned objects excluded from DANTE object entries"
-    },
-    "pg_stat_statements": {
-      "version_policy": "foundation dependency; extension-owned objects excluded from DANTE object entries"
-    }
+    "postgis": {"version_policy": "foundation dependency; current repository baseline 3.6.4"},
+    "vector": {"version_policy": "foundation dependency; current repository baseline 0.8.6"},
+    "pg_trgm": {"version_policy": "foundation dependency; extension-owned objects excluded from DANTE object entries"},
+    "unaccent": {"version_policy": "foundation dependency; extension-owned objects excluded from DANTE object entries"},
+    "pg_stat_statements": {"version_policy": "foundation dependency; extension-owned objects excluded from DANTE object entries"}
   },
   "materialization_rules": {
     "object_entries_only_with_real_objects": true,
