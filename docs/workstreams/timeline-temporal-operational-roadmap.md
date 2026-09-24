@@ -4,8 +4,8 @@
 - **Branch/workstream:** `feature/timeline-temporal-operational`
 - **Vertical boundary:** Home `+` creation/configuration → canonical temporal truth → Timeline projection/actions → bounded lifecycle completion
 - **Completed frontier:** B06 ✅ CLOSED / PROVEN
-- **Current block:** B08 Session Runtime 🟡 IN PROGRESS
-- **Current slice:** B08-D Whole-block closure — regression prepared; user-run proof pending
+- **Current block:** B09 Responsibility / Participation ⬜ NOT STARTED
+- **Last closed block:** B08 Session Runtime ✅ CLOSED / USER-REPORTED 2026-09-24
 - **Deferred block:** B07 UI/UX Consolidation v1 — execute after B08–B12
 - **Current candidate DB frontier:** PostgreSQL 18.6 / Alembic `20260924_65` — B08-C local proof recorded
 - **Candidate topology B08-C local proof recorded:** `150|5|99|93|292|236|418|0|0|0`
@@ -77,11 +77,11 @@ B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
 B05 Product Organization                         ✅ CLOSED / PROVEN
 B06 Routine / Recurrence / Occurrence Baseline   ✅ CLOSED / PROVEN
 
-B08 Session Runtime                              🟡 IN PROGRESS
+B08 Session Runtime                              ✅ CLOSED / USER-REPORTED 2026-09-24
   B08-A Session Core End-to-End                   ✅ CLOSED / USER-REPORTED
   B08-B Pause / Resume + Durations End-to-End     ✅ CLOSED / USER-REPORTED
   B08-C TC-009 Session Duration End-to-End        ✅ CLOSED / PROVEN — local automated gate 2026-09-24
-  B08-D Whole-block closure                       🟡 REGRESSION PREPARED / USER PROOF PENDING
+  B08-D Whole-block closure                       ✅ CLOSED / USER-REPORTED — automated gate and dogfood
 
 B09 Responsibility / Participation               ⬜
 B10 Actual / Outcome / Confirmation / Resolution ⬜
@@ -220,7 +220,7 @@ Implementation contract: `timeline-temporal-operational-b08-c-implementation-fre
 
 ## B08-D — Whole-block closure
 
-Whole B08 regression/dogfood closure after A–C. The integrated backend Activity/Occurrence workflow and frontend Session controls regression are prepared. No migration, runtime capability or generated contract changes belong to this slice. The user runs the local automated gate and the single real-stack walkthrough; preserve actual results in the live map before declaring B08-D or B08 closed. See the handoff for exact commands and walkthrough.
+B08-D closed on 2026-09-24 from the user's local and dogfood evidence: generated/client checks passed, focused Web suite passed 58 tests, backend PostgreSQL/unit/API command passed 31 tests, the post-fix Web typecheck passed by user confirmation, and the real app confirms timed and unplaced Activity placement plus START/PAUSE/RESUME/END. The precise repair history and observed results are recorded in the map and handoff.
 
 ---
 
@@ -258,13 +258,13 @@ Execute after B08–B12 so final Home/Timeline/`+`/editors/actions/navigation ar
 ```text
 B00–B06 ✅ CLOSED / PROVEN
 B07     ⏸ DEFERRED
-B08     🟡 IN PROGRESS
+B08     ✅ CLOSED / USER-REPORTED 2026-09-24
 B08-A   ✅ CLOSED / USER-REPORTED VIA B08-B DEPENDENCY
 B08-B   ✅ CLOSED / USER-REPORTED 2026-09-24
 B08-C   ✅ CLOSED / PROVEN — local automated gate 2026-09-24
-B08-D   🟡 REGRESSION PREPARED — USER PROOF PENDING
+B08-D   ✅ CLOSED / USER-REPORTED — automated gate and dogfood
 B09–B12 ⬜ NOT STARTED
 B15     ⬜ NOT STARTED
 ```
 
-**Current action:** User-run B08-D automated regression and the one real-stack walkthrough; record evidence before closure.
+**Current action:** Define and implement B09 Responsibility / Participation.
