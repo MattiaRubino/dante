@@ -36,6 +36,12 @@ export const createConstrainedActivityRequestRulesItemSevenConstrainedFacetDefau
 export const createConstrainedActivityRequestRulesItemSevenFamilyDefault = `window`;
 export const createConstrainedActivityRequestRulesItemSevenRelationshipDefault = `placement_overlaps`;
 export const createConstrainedActivityRequestRulesItemSevenTemporalFormDefault = `absolute`;
+export const createConstrainedActivityRequestRulesItemEightConstrainedFacetDefault = `session.active_duration`;
+export const createConstrainedActivityRequestRulesItemEightDurationKindDefault = `minimum`;
+export const createConstrainedActivityRequestRulesItemEightDurationMicrosecondsExclusiveMin = 0;
+
+export const createConstrainedActivityRequestRulesItemEightFamilyDefault = `duration`;
+export const createConstrainedActivityRequestRulesItemEightStrengthDefault = `soft`;
 export const createConstrainedActivityRequestRulesMax = 4;
 
 export const createConstrainedActivityRequestTitleMax = 300;
@@ -254,6 +260,39 @@ export const CreateConstrainedActivityRequest = /*#__PURE__*/ zod
               )
               .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
           }),
+          /*#__PURE__*/ zod.object({
+            constrained_facet: /*#__PURE__*/ zod
+              ._default(
+                /*#__PURE__*/ zod.literal('session.active_duration'),
+                createConstrainedActivityRequestRulesItemEightConstrainedFacetDefault,
+              )
+              .check(/*#__PURE__*/ zod.meta({ title: 'Constrained Facet' })),
+            duration_kind: /*#__PURE__*/ zod
+              ._default(
+                /*#__PURE__*/ zod.literal('minimum'),
+                createConstrainedActivityRequestRulesItemEightDurationKindDefault,
+              )
+              .check(/*#__PURE__*/ zod.meta({ title: 'Duration Kind' })),
+            duration_microseconds: /*#__PURE__*/ zod
+              .int()
+              .check(
+                /*#__PURE__*/ zod.gt(
+                  createConstrainedActivityRequestRulesItemEightDurationMicrosecondsExclusiveMin,
+                ),
+              ),
+            family: /*#__PURE__*/ zod
+              ._default(
+                /*#__PURE__*/ zod.literal('duration'),
+                createConstrainedActivityRequestRulesItemEightFamilyDefault,
+              )
+              .check(/*#__PURE__*/ zod.meta({ title: 'Family' })),
+            strength: /*#__PURE__*/ zod
+              ._default(
+                /*#__PURE__*/ zod.literal('soft'),
+                createConstrainedActivityRequestRulesItemEightStrengthDefault,
+              )
+              .check(/*#__PURE__*/ zod.meta({ title: 'Strength' })),
+          }),
         ]),
       )
       .check(/*#__PURE__*/ zod.minLength(1))
@@ -269,7 +308,7 @@ export const CreateConstrainedActivityRequest = /*#__PURE__*/ zod
   })
   .check(
     /*#__PURE__*/ zod.describe(
-      'Atomic unplaced Activity plus 1..4 public B04 boundary\/window rules.',
+      'Atomic unplaced Activity plus bounded Temporal Constraint rules.',
     ),
   );
 

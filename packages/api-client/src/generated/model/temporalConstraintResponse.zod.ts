@@ -34,6 +34,9 @@ export const temporalConstraintResponseCurrentRuleSevenConstrainedFacetDefault =
 export const temporalConstraintResponseCurrentRuleSevenFamilyDefault = `window`;
 export const temporalConstraintResponseCurrentRuleSevenRelationshipDefault = `placement_overlaps`;
 export const temporalConstraintResponseCurrentRuleSevenTemporalFormDefault = `absolute`;
+export const temporalConstraintResponseCurrentRuleEightDurationMicrosecondsExclusiveMin = 0;
+
+export const temporalConstraintResponseCurrentRuleEightFamilyDefault = `duration`;
 export const TemporalConstraintResponse = /*#__PURE__*/ zod.object({
   constraint_ref: /*#__PURE__*/ zod.uuid(),
   current_rule: /*#__PURE__*/ zod.union([
@@ -243,6 +246,28 @@ export const TemporalConstraintResponse = /*#__PURE__*/ zod.object({
           temporalConstraintResponseCurrentRuleSevenTemporalFormDefault,
         )
         .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
+    }),
+    /*#__PURE__*/ zod.object({
+      constrained_facet: /*#__PURE__*/ zod.enum([
+        'schedule.placement',
+        'session.active_duration',
+      ]),
+      duration_kind: /*#__PURE__*/ zod.enum(['minimum', 'maximum']),
+      duration_microseconds: /*#__PURE__*/ zod
+        .int()
+        .check(
+          /*#__PURE__*/ zod.gt(
+            temporalConstraintResponseCurrentRuleEightDurationMicrosecondsExclusiveMin,
+          ),
+        ),
+      family: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('duration'),
+          temporalConstraintResponseCurrentRuleEightFamilyDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Family' })),
+      material_state_ref: /*#__PURE__*/ zod.uuid(),
+      strength: /*#__PURE__*/ zod.enum(['hard', 'soft']),
     }),
     /*#__PURE__*/ zod.null(),
   ]),

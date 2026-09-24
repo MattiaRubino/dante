@@ -36,6 +36,12 @@ export const constrainedActivityResponseConstraintsItemRuleSevenConstrainedFacet
 export const constrainedActivityResponseConstraintsItemRuleSevenFamilyDefault = `window`;
 export const constrainedActivityResponseConstraintsItemRuleSevenRelationshipDefault = `placement_overlaps`;
 export const constrainedActivityResponseConstraintsItemRuleSevenTemporalFormDefault = `absolute`;
+export const constrainedActivityResponseConstraintsItemRuleEightConstrainedFacetDefault = `session.active_duration`;
+export const constrainedActivityResponseConstraintsItemRuleEightDurationKindDefault = `minimum`;
+export const constrainedActivityResponseConstraintsItemRuleEightDurationMicrosecondsExclusiveMin = 0;
+
+export const constrainedActivityResponseConstraintsItemRuleEightFamilyDefault = `duration`;
+export const constrainedActivityResponseConstraintsItemRuleEightStrengthDefault = `soft`;
 export const constrainedActivityResponseReplayedDefault = false;
 export const ConstrainedActivityResponse = /*#__PURE__*/ zod.object({
   activity: /*#__PURE__*/ zod
@@ -274,6 +280,39 @@ export const ConstrainedActivityResponse = /*#__PURE__*/ zod.object({
               constrainedActivityResponseConstraintsItemRuleSevenTemporalFormDefault,
             )
             .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
+        }),
+        /*#__PURE__*/ zod.object({
+          constrained_facet: /*#__PURE__*/ zod
+            ._default(
+              /*#__PURE__*/ zod.literal('session.active_duration'),
+              constrainedActivityResponseConstraintsItemRuleEightConstrainedFacetDefault,
+            )
+            .check(/*#__PURE__*/ zod.meta({ title: 'Constrained Facet' })),
+          duration_kind: /*#__PURE__*/ zod
+            ._default(
+              /*#__PURE__*/ zod.literal('minimum'),
+              constrainedActivityResponseConstraintsItemRuleEightDurationKindDefault,
+            )
+            .check(/*#__PURE__*/ zod.meta({ title: 'Duration Kind' })),
+          duration_microseconds: /*#__PURE__*/ zod
+            .int()
+            .check(
+              /*#__PURE__*/ zod.gt(
+                constrainedActivityResponseConstraintsItemRuleEightDurationMicrosecondsExclusiveMin,
+              ),
+            ),
+          family: /*#__PURE__*/ zod
+            ._default(
+              /*#__PURE__*/ zod.literal('duration'),
+              constrainedActivityResponseConstraintsItemRuleEightFamilyDefault,
+            )
+            .check(/*#__PURE__*/ zod.meta({ title: 'Family' })),
+          strength: /*#__PURE__*/ zod
+            ._default(
+              /*#__PURE__*/ zod.literal('soft'),
+              constrainedActivityResponseConstraintsItemRuleEightStrengthDefault,
+            )
+            .check(/*#__PURE__*/ zod.meta({ title: 'Strength' })),
         }),
       ]),
       subject_kind: /*#__PURE__*/ zod.enum(['activity', 'event']),

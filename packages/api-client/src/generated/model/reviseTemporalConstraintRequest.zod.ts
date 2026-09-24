@@ -36,6 +36,12 @@ export const reviseTemporalConstraintRequestRuleSevenConstrainedFacetDefault = `
 export const reviseTemporalConstraintRequestRuleSevenFamilyDefault = `window`;
 export const reviseTemporalConstraintRequestRuleSevenRelationshipDefault = `placement_overlaps`;
 export const reviseTemporalConstraintRequestRuleSevenTemporalFormDefault = `absolute`;
+export const reviseTemporalConstraintRequestRuleEightConstrainedFacetDefault = `session.active_duration`;
+export const reviseTemporalConstraintRequestRuleEightDurationKindDefault = `minimum`;
+export const reviseTemporalConstraintRequestRuleEightDurationMicrosecondsExclusiveMin = 0;
+
+export const reviseTemporalConstraintRequestRuleEightFamilyDefault = `duration`;
+export const reviseTemporalConstraintRequestRuleEightStrengthDefault = `soft`;
 export const ReviseTemporalConstraintRequest = /*#__PURE__*/ zod.object({
   expected_material_state_ref: /*#__PURE__*/ zod.uuid(),
   operation_id: /*#__PURE__*/ zod
@@ -246,6 +252,39 @@ export const ReviseTemporalConstraintRequest = /*#__PURE__*/ zod.object({
           reviseTemporalConstraintRequestRuleSevenTemporalFormDefault,
         )
         .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
+    }),
+    /*#__PURE__*/ zod.object({
+      constrained_facet: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('session.active_duration'),
+          reviseTemporalConstraintRequestRuleEightConstrainedFacetDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Constrained Facet' })),
+      duration_kind: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('minimum'),
+          reviseTemporalConstraintRequestRuleEightDurationKindDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Duration Kind' })),
+      duration_microseconds: /*#__PURE__*/ zod
+        .int()
+        .check(
+          /*#__PURE__*/ zod.gt(
+            reviseTemporalConstraintRequestRuleEightDurationMicrosecondsExclusiveMin,
+          ),
+        ),
+      family: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('duration'),
+          reviseTemporalConstraintRequestRuleEightFamilyDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Family' })),
+      strength: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('soft'),
+          reviseTemporalConstraintRequestRuleEightStrengthDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Strength' })),
     }),
   ]),
 });

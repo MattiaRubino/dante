@@ -999,7 +999,9 @@ export function validateTemporalCreateFields(
       if (
         !Number.isInteger(fields.execution.minSessionMinutes) ||
         fields.execution.minSessionMinutes < 5 ||
-        fields.execution.minSessionMinutes > fields.durationMinutes
+        !Number.isSafeInteger(
+          fields.execution.minSessionMinutes * 60 * 1_000_000,
+        )
       ) {
         issues.push(
           temporalValidationIssue('temporal.create.minimum_session.invalid', [

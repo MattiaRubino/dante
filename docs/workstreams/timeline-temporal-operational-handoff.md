@@ -1,14 +1,14 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B08 SESSION RUNTIME 🟡 — B08-A SOURCE REPAIRED / AWAITING USER PROOF
+- **Status:** B08 SESSION RUNTIME 🟡 — B08-C IMPLEMENTED / USER PROOF PENDING
 - **Reconciled:** 2026-09-24
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Live execution ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Current candidate Alembic frontier:** `20260924_60`
-- **Candidate topology awaiting proof:** `148|5|94|93|290|230|414|0|0|0`
-- **Last proven DB frontier:** B06 / `20260923_57`
+- **Current candidate Alembic frontier:** `20260924_65`
+- **Candidate topology awaiting proof:** `150|5|99|93|292|236|418|0|0|0`
+- **Last user-reported proven candidate DB frontier:** B08-B / `20260924_64`
 - **CI:** no CI/GitHub Actions unless explicitly authorized; user runs local tests
 
 Read this first after a context reset.
@@ -21,14 +21,15 @@ Read this first after a context reset.
 B00–B06 ✅ CLOSED / PROVEN
 B07     ⏸ DEFERRED
 B08     🟡 IN PROGRESS
-B08-A   🟡 IMPLEMENTED / REPAIRED / AWAITING PROOF
-B08-B   ⬜ BLOCKED BY B08-A
-B08-C-D ⬜ BLOCKED
+B08-A   ✅ CLOSED / USER-REPORTED VIA B08-B
+B08-B   ✅ CLOSED / USER-REPORTED 2026-09-24
+B08-C   🟡 IMPLEMENTED / USER PROOF PENDING
+B08-D   ⬜ WHOLE-BLOCK CLOSURE
 B09–B12 ⬜ NOT STARTED
 B15     ⬜ NOT STARTED
 ```
 
-Do **not** start B08-B before B08-A local + manual proof passes.
+B08-A and B08-B are treated as closed based on the user’s B08-B closure report. Exact test logs are not committed; preserve consolidated evidence in B08-D.
 
 ---
 
@@ -117,7 +118,7 @@ END does not create Outcome
 From the repo after pulling the branch, user runs the focused automated bundle. Required gates include:
 
 ```text
-Alembic upgrade to `20260924_60`
+Alembic upgrade to `20260924_65`
 B08-A Session catalog proof
 B08-A Activity/Occurrence runtime proof
 whole current DB catalog/Dictionary proof
@@ -172,4 +173,4 @@ B08-B ← NEXT
 4. docs/database/timeline-temporal-operational.md
 ```
 
-**Exact next action:** user proof of repaired B08-A at `_60`; no B08-B implementation before that.
+**Exact next action:** user runs the B08-C `_65` proof bundle, then B08-D whole-block closure. Contract: `timeline-temporal-operational-b08-c-implementation-freeze.md`.

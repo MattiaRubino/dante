@@ -15,6 +15,8 @@ from dante.modules.temporal.temporal_constraint import (
     AbsoluteBoundaryRule,
     AbsoluteIntervalPlacement,
     AbsoluteWindowRule,
+    SessionMinimumDurationRule,
+    ScheduleDurationRule,
     CreatedTemporalConstraintView,
     RevisedTemporalConstraintView,
     RetiredTemporalConstraintView,
@@ -114,6 +116,15 @@ class AbsolutePlacementOverlapsWindowRuleRequest(BaseModel):
     ends_at: datetime
 
 
+class SessionMinimumDurationRuleRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    family: Literal["duration"] = "duration"
+    duration_kind: Literal["minimum"] = "minimum"
+    constrained_facet: Literal["session.active_duration"] = "session.active_duration"
+    strength: Literal["soft"] = "soft"
+    duration_microseconds: int = Field(gt=0)
+
+
 TemporalConstraintRuleRequest = (
     AbsoluteEarliestStartRuleRequest
     | AbsoluteLatestStartRuleRequest
@@ -122,6 +133,7 @@ TemporalConstraintRuleRequest = (
     | AbsoluteCompletionWithinWindowRuleRequest
     | AbsoluteFullPlacementContainedWindowRuleRequest
     | AbsolutePlacementOverlapsWindowRuleRequest
+    | SessionMinimumDurationRuleRequest
 )
 
 
@@ -177,6 +189,17 @@ class AbsolutePlacementOverlapsWindowCurrentRuleResponse(
     material_state_ref: UUID
 
 
+class TemporalConstraintCurrentDurationRuleResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    family: Literal["duration"] = "duration"
+    duration_kind: Literal["minimum", "maximum"]
+    constrained_facet: Literal["schedule.placement", "session.active_duration"]
+    strength: Literal["hard", "soft"]
+    duration_microseconds: int = Field(gt=0)
+    material_state_ref: UUID
+
+
 TemporalConstraintCurrentRuleResponse = (
     AbsoluteEarliestStartCurrentRuleResponse
     | AbsoluteLatestStartCurrentRuleResponse
@@ -185,6 +208,7 @@ TemporalConstraintCurrentRuleResponse = (
     | AbsoluteCompletionWithinWindowCurrentRuleResponse
     | AbsoluteFullPlacementContainedWindowCurrentRuleResponse
     | AbsolutePlacementOverlapsWindowCurrentRuleResponse
+    | TemporalConstraintCurrentDurationRuleResponse
 )
 
 
@@ -286,6 +310,10 @@ TemporalConstraintApplicationDependency = Annotated[
 
 
 def _rule_from_request(payload: TemporalConstraintRuleRequest) -> TemporalConstraintRule:
+    if isinstance(payload, SessionMinimumDurationRuleRequest):
+        return SessionMinimumDurationRule(
+            duration_microseconds=payload.duration_microseconds,
+        )
     if isinstance(
         payload,
         (
@@ -311,6 +339,14 @@ def _rule_from_request(payload: TemporalConstraintRuleRequest) -> TemporalConstr
 
 
 def _rule_request(rule: TemporalConstraintRule) -> TemporalConstraintRuleRequest:
+    if isinstance(rule, SessionMinimumDurationRule):
+        return SessionMinimumDurationRuleRequest(
+            duration_microseconds=rule.duration_microseconds,
+        )
+    if isinstance(rule, ScheduleDurationRule):
+        raise TemporalConstraintInputError(
+            "Schedule duration API request is not activated on this route."
+        )
     if isinstance(rule, AbsoluteWindowRule):
         common = {
             "strength": rule.strength,
@@ -360,6 +396,14 @@ def _current_rule_response(
         if current_rule.relationship == "full_placement_contained":
             return AbsoluteFullPlacementContainedWindowCurrentRuleResponse(**common)
         return AbsolutePlacementOverlapsWindowCurrentRuleResponse(**common)
+    if current_rule.family == "duration":
+        return TemporalConstraintCurrentDurationRuleResponse(
+            material_state_ref=current_rule.material_state_ref,
+            duration_kind=current_rule.duration_kind,
+            constrained_facet=current_rule.constrained_facet,
+            strength=current_rule.strength,
+            duration_microseconds=current_rule.duration_microseconds,
+        )
     common = {
         "material_state_ref": current_rule.material_state_ref,
         "strength": current_rule.strength,

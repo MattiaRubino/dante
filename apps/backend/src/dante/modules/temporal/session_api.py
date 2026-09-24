@@ -41,6 +41,16 @@ class SessionEndCommand(SessionCommand):
 SessionTransitionCommand = SessionEndCommand
 
 
+class SessionDurationEvaluationResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    constraint_ref: UUID
+    material_state_ref: UUID
+    minimum_duration_microseconds: int = Field(gt=0)
+    strength: Literal["soft"]
+    evaluation: Literal["pending", "satisfied", "violated"]
+
+
 class SessionResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -56,6 +66,7 @@ class SessionResponse(BaseModel):
     elapsed_seconds: float = Field(ge=0)
     paused_seconds: float = Field(ge=0)
     active_seconds: float = Field(ge=0)
+    duration_evaluations: list[SessionDurationEvaluationResponse]
 
 
 def _application(request: Request) -> SessionApplication:
@@ -83,6 +94,16 @@ def _response(view: SessionView) -> SessionResponse:
         elapsed_seconds=view.elapsed_seconds,
         paused_seconds=view.paused_seconds,
         active_seconds=view.active_seconds,
+        duration_evaluations=[
+            SessionDurationEvaluationResponse(
+                constraint_ref=evaluation.constraint_ref,
+                material_state_ref=evaluation.material_state_ref,
+                minimum_duration_microseconds=evaluation.minimum_duration_microseconds,
+                strength=evaluation.strength,
+                evaluation=evaluation.evaluation,
+            )
+            for evaluation in view.duration_evaluations
+        ],
     )
 
 

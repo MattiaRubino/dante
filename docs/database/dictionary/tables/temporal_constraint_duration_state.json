@@ -8,7 +8,7 @@
     "name": "temporal_constraint_duration_state",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Typed payload for B04-E planned Schedule duration Temporal Constraints, recording an exact positive minimum or maximum duration for schedule.placement without collapsing planned duration into estimated effort, Session, or Actual time.",
+  "purpose": "Typed payload for exact minimum or maximum duration Temporal Constraints. B04-E uses schedule.placement for planned Schedule duration; B08-C adds soft minimum session.active_duration for one Activity-owned Session, evaluated against active time only.",
   "classification": {
     "persistence_role": "typed_material_state_payload",
     "canonicality": "canonical",
@@ -20,15 +20,29 @@
       "docs/workstreams/timeline-temporal-operational-b04-execution-plan.md",
       "docs/domain/concepts/temporal-constraint.md",
       "docs/logical-model/slices/time-reality-v1.md",
-      "docs/development/backend-cp6-02-postgresql-persistence-constitution.md"
+      "docs/development/backend-cp6-02-postgresql-persistence-constitution.md",
+      "docs/workstreams/timeline-temporal-operational-b08-c-implementation-freeze.md"
     ],
-    "domain_concepts": ["Temporal Constraint", "Schedule", "Duration"],
-    "logical_families": ["Temporal Constraint", "Duration Rule", "LR-05"],
-    "reference_families": ["MaterialStateRef"],
-    "material_facets": ["temporal_constraint.rule"]
+    "domain_concepts": [
+      "Temporal Constraint",
+      "Schedule",
+      "Duration",
+      "Session"
+    ],
+    "logical_families": [
+      "Temporal Constraint",
+      "Duration Rule",
+      "LR-05"
+    ],
+    "reference_families": [
+      "MaterialStateRef"
+    ],
+    "material_facets": [
+      "temporal_constraint.rule"
+    ]
   },
   "implementation": {
-    "introducing_stage": "B04-E-DURATION",
+    "introducing_stage": "B04-E-DURATION / B08-C-SESSION-MINIMUM",
     "alembic_revision": "20260919_40",
     "sqlalchemy": {
       "mode": "orm_row",
@@ -43,7 +57,10 @@
         "name": "material_state_ref",
         "postgres_type": "uuid",
         "nullable": false,
-        "default": {"kind": "none", "expression": null},
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
         "meaning": "MaterialStateRef of the Temporal Constraint rule revision owning this duration payload.",
         "semantic_type": "MaterialStateRef",
         "value_contract": "Exactly one duration payload row for every activated duration rule state."
@@ -52,7 +69,10 @@
         "name": "duration_kind_code",
         "postgres_type": "text",
         "nullable": false,
-        "default": {"kind": "none", "expression": null},
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
         "meaning": "Whether the exact planned Schedule placement duration is bounded from below or above.",
         "semantic_type": null,
         "value_contract": "One of minimum or maximum."
@@ -61,15 +81,20 @@
         "name": "duration_microseconds",
         "postgres_type": "bigint",
         "nullable": false,
-        "default": {"kind": "none", "expression": null},
-        "meaning": "Positive exact elapsed duration threshold for the planned Schedule placement.",
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Positive exact duration threshold for the selected constrained temporal facet.",
         "semantic_type": null,
-        "value_contract": "Positive integer microseconds; no fabricated precision for coarse/date placement forms."
+        "value_contract": "Positive integer microseconds. schedule.placement means planned Schedule placement duration; session.active_duration means one Session’s active time after excluding captured pauses."
       }
     ],
     "primary_key": {
       "name": "pk_temporal_constraint_duration_state",
-      "columns": ["material_state_ref"],
+      "columns": [
+        "material_state_ref"
+      ],
       "reason": "At most one duration payload per Temporal Constraint rule MaterialState.",
       "deferrable": false,
       "initially": "NOT DEFERRABLE",
@@ -78,8 +103,16 @@
     "foreign_keys": [
       {
         "name": "fk_temporal_constraint_duration_state_constraint_state",
-        "columns": ["material_state_ref"],
-        "target": {"schema": "dante", "table": "temporal_constraint_state", "columns": ["material_state_ref"]},
+        "columns": [
+          "material_state_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "temporal_constraint_state",
+          "columns": [
+            "material_state_ref"
+          ]
+        },
         "on_delete": "NO ACTION",
         "on_update": "NO ACTION",
         "match_type": "SIMPLE",
@@ -97,7 +130,7 @@
       {
         "name": "ck_temporal_constraint_duration_state_kind",
         "expression_contract": "duration_kind_code IN ('minimum','maximum')",
-        "reason": "B04-E activates only explicit minimum and maximum planned Schedule duration semantics.",
+        "reason": "The shared typed duration payload supports explicit minimum and maximum kinds; B08-C further narrows its admitted Session facet to minimum.",
         "enforced": true,
         "validated": true,
         "no_inherit": false
@@ -116,7 +149,9 @@
         "name": "pk_temporal_constraint_duration_state",
         "method": "btree",
         "unique": true,
-        "keys": ["material_state_ref"],
+        "keys": [
+          "material_state_ref"
+        ],
         "predicate": null,
         "include": [],
         "source": "primary_key",
@@ -130,7 +165,11 @@
       {
         "name": "ctrg_temporal_constraint_duration_state_rule_totality",
         "routine": "dante.enforce_temporal_constraint_rule_totality",
-        "events": ["INSERT", "UPDATE", "DELETE"],
+        "events": [
+          "INSERT",
+          "UPDATE",
+          "DELETE"
+        ],
         "timing": "AFTER",
         "orientation": "ROW",
         "constraint_trigger": true,
@@ -141,7 +180,7 @@
         "when_condition": null,
         "arguments": [],
         "invariant_role": "temporal_constraint_rule_totality",
-        "reason": "Require exactly one duration payload, no boundary/window payload, and schedule.placement as the constrained facet."
+        "reason": "Require exactly one duration payload and enforce family/kind/facet/strength/subject totality: Schedule placement minimum/maximum, or direct Activity Session active-duration soft minimum only."
       }
     ],
     "table": {
@@ -157,7 +196,7 @@
     "routine": null
   },
   "state_history": {
-    "material_state_behavior": "Immutable typed payload owned one-to-one by the Temporal Constraint rule MaterialState.",
+    "material_state_behavior": "Immutable typed payload owned one-to-one by the Temporal Constraint rule MaterialState. Planned Schedule duration and active Session duration share the bounded duration payload without aliasing their facts.",
     "current_binding": "Currentness is inherited from the owning temporal_constraint_state through the shared scoped current binding.",
     "chronology": "No chronology is inferred from the duration value; current-history episodes remain authoritative.",
     "immutability_policy": "Runtime has SELECT-only read access after B04-E read activation; changed duration rules append a new MaterialState."
@@ -172,7 +211,12 @@
     "owner_role": "dante_owner",
     "default_deny_non_owner": true,
     "expected_grants": [
-      {"grantee": "dante_runtime", "privilege": "SELECT", "columns": [], "grant_option": false}
+      {
+        "grantee": "dante_runtime",
+        "privilege": "SELECT",
+        "columns": [],
+        "grant_option": false
+      }
     ]
   },
   "proof": {
@@ -182,7 +226,10 @@
       "duration family constrains schedule.placement only",
       "typed payload totality excludes simultaneous boundary/window payloads",
       "runtime direct DML remains forbidden while SELECT supports canonical current-rule reads",
-      "automatic movement cannot bypass current hard duration rules"
+      "automatic movement cannot bypass current hard duration rules",
+      "session.active_duration compares only one Session active duration and excludes paused intervals",
+      "separate Session identities are not aggregated",
+      "an open under-threshold Session is pending; an ended under-threshold Session is violated without blocking END"
     ],
     "test_refs": [
       "apps/backend/tests/integration/temporal/test_b04_duration_constraint_core.py",

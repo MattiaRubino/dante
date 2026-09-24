@@ -112,4 +112,5 @@ def test_b08_session_http_operations_and_duration_contract_are_explicit() -> Non
         "elapsed_seconds",
         "paused_seconds",
         "active_seconds",
+        "duration_evaluations",
     } <= required

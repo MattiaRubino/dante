@@ -61,6 +61,8 @@ export function SessionSubjectControls({
   }, [kind, subjectRef]);
 
   const openSession = sessions.find((session) => session.open) ?? null;
+  // Canonical Session listing is oldest-first; show the newest ended policy result.
+  const durationSession = openSession ?? sessions[sessions.length - 1] ?? null;
 
   const start = () => {
     setPending(true);
@@ -141,6 +143,20 @@ export function SessionSubjectControls({
         </>
       )}
       {message === null ? null : <span role="status">{message}</span>}
+      {durationSession?.durationEvaluations.map((item) => (
+        <span
+          className="timeline-session-duration-policy"
+          data-session-duration-evaluation={item.evaluation}
+          key={item.constraintRef}
+        >
+          Minimo attivo {formatDuration(item.minimumDurationMicroseconds / 1_000_000)} ·{' '}
+          {item.evaluation === 'pending'
+            ? 'in corso'
+            : item.evaluation === 'satisfied'
+              ? 'raggiunto'
+              : 'non raggiunto'}
+        </span>
+      ))}
     </div>
   );
 }

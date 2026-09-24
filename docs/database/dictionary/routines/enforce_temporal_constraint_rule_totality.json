@@ -8,7 +8,7 @@
     "name": "enforce_temporal_constraint_rule_totality",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Enforce one complete typed Temporal Constraint payload, selecting exactly one boundary, window or duration family and the exact family-specific kind/relationship to constrained-facet matrix.",
+  "purpose": "Enforce one complete typed Temporal Constraint payload, selecting exactly one boundary, window or duration family and the exact family-specific kind/relationship/facet/strength/subject matrix, including the B08-C Session minimum subset.",
   "classification": {
     "persistence_role": "integrity_trigger_function",
     "canonicality": "integrity",
@@ -22,17 +22,39 @@
       "docs/workstreams/timeline-temporal-operational-b04-e-implementation-freeze.md",
       "docs/workstreams/timeline-temporal-operational-b04-execution-plan.md",
       "docs/domain/concepts/temporal-constraint.md",
-      "docs/development/backend-cp6-02-postgresql-persistence-constitution.md"
+      "docs/development/backend-cp6-02-postgresql-persistence-constitution.md",
+      "docs/workstreams/timeline-temporal-operational-b08-c-implementation-freeze.md"
     ],
-    "domain_concepts": ["Temporal Constraint", "Deadline", "Window", "Preference", "Duration"],
-    "logical_families": ["Temporal Constraint", "Boundary Rule", "Window Rule", "Duration Rule", "LR-05"],
-    "reference_families": ["MaterialStateRef"],
-    "material_facets": ["temporal_constraint.rule"]
+    "domain_concepts": [
+      "Temporal Constraint",
+      "Deadline",
+      "Window",
+      "Preference",
+      "Duration",
+      "Session"
+    ],
+    "logical_families": [
+      "Temporal Constraint",
+      "Boundary Rule",
+      "Window Rule",
+      "Duration Rule",
+      "LR-05"
+    ],
+    "reference_families": [
+      "MaterialStateRef"
+    ],
+    "material_facets": [
+      "temporal_constraint.rule"
+    ]
   },
   "implementation": {
     "introducing_stage": "B04-A-CONSTRAINT",
     "alembic_revision": "20260918_30",
-    "sqlalchemy": {"mode": "none", "module": null, "symbol": null},
+    "sqlalchemy": {
+      "mode": "none",
+      "module": null,
+      "symbol": null
+    },
     "runtime_acl_stage": "B04-A-CONSTRAINT"
   },
   "structure": {
@@ -54,7 +76,11 @@
       "volatility": "VOLATILE",
       "parallel_safety": "UNSAFE",
       "leakproof": false,
-      "function_search_path": ["pg_catalog", "dante", "pg_temp"],
+      "function_search_path": [
+        "pg_catalog",
+        "dante",
+        "pg_temp"
+      ],
       "direct_runtime_execute": false
     }
   },
@@ -89,7 +115,10 @@
       "placement_overlaps + schedule.placement is admitted",
       "duration family requires exactly one positive minimum/maximum payload and schedule.placement",
       "every other family/kind-or-relationship/facet combination fails closed",
-      "runtime cannot execute the validator directly"
+      "runtime cannot execute the validator directly",
+      "boundary and window relations retain exact Schedule facet pairings",
+      "duration admits Schedule placement min/max or direct Activity session.active_duration soft minimum only",
+      "duration payload is mutually exclusive with boundary/window payloads"
     ],
     "test_refs": [
       "apps/backend/tests/integration/temporal/test_b04_temporal_constraint_core.py",

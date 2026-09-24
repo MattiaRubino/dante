@@ -11,7 +11,7 @@ import pytest
 
 _DURATION_SQL = """
 SELECT constraint_ref,subject_native_ref,material_state_ref,active,created_at,replayed
-FROM dante.mutate_self_schedule_duration_constraint(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+FROM dante.mutate_self_temporal_duration_constraint(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
 """
 
 _POLICY_SQL = """

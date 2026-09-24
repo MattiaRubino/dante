@@ -47,6 +47,15 @@ function parseInstant(value: unknown, field: string) {
 }
 
 function serializeRule(rule: TemporalActivityConstraintRuleInput) {
+  if (rule.family === 'duration') {
+    return {
+      family: 'duration',
+      duration_kind: rule.durationKind,
+      constrained_facet: rule.constrainedFacet,
+      strength: rule.strength,
+      duration_microseconds: rule.durationMicroseconds,
+    } as const;
+  }
   if (rule.family === 'window') {
     return {
       family: 'window',

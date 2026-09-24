@@ -5,9 +5,10 @@
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Continuation handoff:** `docs/workstreams/timeline-temporal-operational-handoff.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Current candidate Alembic frontier:** `20260924_60`
-- **Candidate topology awaiting proof:** `148|5|94|93|290|230|414|0|0|0`
-- **Last proven DB frontier:** B06 / `20260923_57` / `145|5|88|92|285|223|408|0|0|0`
+- **Current candidate Alembic frontier:** `20260924_65`
+- **Candidate topology awaiting proof:** `150|5|99|93|292|236|418|0|0|0`
+- **Last user-reported proven candidate DB frontier:** B08-B / `20260924_64` / `150|5|99|93|292|236|418|0|0|0` (raw local proof logs not committed)
+- **Protected-main baseline:** `20260906_18`; see `docs/database/README.md`
 - **CI:** not authorized; local tests are run by the user
 
 ---
@@ -58,9 +59,9 @@ Accepted B06 evidence remains the last fully proven frontier. B08 candidate work
 
 ```text
 B08 Session Runtime                              🟡 IN PROGRESS
-  B08-A Session Core End-to-End                   🟡 IMPLEMENTED / AWAITING PROOF
-  B08-B Pause / Resume + Durations End-to-End     ⬜ BLOCKED
-  B08-C TC-009 Session Duration End-to-End        ⬜ BLOCKED
+  B08-A Session Core End-to-End                   ✅ CLOSED / USER-REPORTED
+  B08-B Pause / Resume + Durations End-to-End     ✅ CLOSED / USER-REPORTED
+  B08-C TC-009 Session Duration End-to-End        🟡 IMPLEMENTED / USER PROOF PENDING
   B08-D Whole-block closure                       ⬜ BLOCKED
 
 B09 Responsibility / Participation               ⬜
@@ -71,7 +72,7 @@ B07 UI/UX Consolidation v1                       ⏸ DEFERRED
 B15 Whole Vertical Closure                       ⬜
 ```
 
-B08-A was previously marked closed too early. Audit found two real contract gaps; both are now repaired in source, but closure waits for the user-run proof below.
+The user reported B08-B closed on 2026-09-24. This implies its B08-A prerequisite was accepted. Earlier local proof output was not committed to the repository; the B08-D closure record must preserve the full proof evidence.
 
 ---
 
@@ -134,52 +135,21 @@ END does not create Outcome
 
 ---
 
-# 5. B08-A proof gate — NOT YET ACCEPTED
+# 5. B08-A / B08-B closure evidence — USER-REPORTED
 
-User-run automated gates:
-
-```text
-[ ] Alembic upgrade reaches `20260924_60`
-[ ] test_b08_a_session_catalog.py PASS
-[ ] test_b08_a_session_runtime.py PASS
-[ ] test_database_current_catalog.py PASS
-[ ] test_current_catalog.py PASS
-[ ] relevant API tests PASS
-[ ] generated:check PASS
-[ ] API-client typecheck PASS
-[ ] web typecheck PASS
-[ ] remote-session-data-source focused Vitest PASS
-[ ] relevant Timeline/Planning Tray focused Vitest PASS
-```
-
-Real-stack gate:
+The user reported B08-B closed on 2026-09-24. That sequencing implies B08-A’s required automated and real-stack gates were accepted. The exact command output and walkthrough observations are not present in the repository; B08-D must record the consolidated evidence.
 
 ```text
-[ ] unplaced Activity: START works while Activity stays without Schedule
-[ ] F5: same running Session is rehydrated
-[ ] END: Session closes
-[ ] second START: new SessionRef
-[ ] scheduled Activity path works
-[ ] eligible Occurrence START → F5 → END works
-[ ] Schedule state is unchanged by Session actions
-[ ] no fabricated Activity/Occurrence completion
-[ ] no Actual/Outcome fabricated
+B08-A: closed for sequencing by user-reported B08-B completion
+B08-B: closed per user report; code frontier `_64`
+B08-C: candidate source at `_65`, not yet user-proven
 ```
-
-Only after both groups pass:
-
-```text
-B08-A → ✅ CLOSED / PROVEN
-B08-B → NEXT
-```
-
----
 
 # 6. B08-B / C / D
 
-B08-B remains blocked until B08-A proof. When activated it owns `RUNNING → PAUSED → RUNNING → ENDED`, same Session identity, one open pause maximum, authoritative reload, deterministic transition conflicts and durations derived from facts rather than browser state.
+B08-B is closed per user report. `_62` implements Pause/Resume transitions, `_63` repairs replay, and `_64` derives elapsed/paused/active metrics from facts.
 
-B08-C reopens TC-009 against truthful Session duration semantics; planned Schedule duration remains separate.
+B08-C is the current candidate at `_65`; its freeze contract is `timeline-temporal-operational-b08-c-implementation-freeze.md`. It adds only the direct Activity soft-minimum Session active-duration subset, with read-time evaluation and no outcome or Schedule side effects.
 
 B08-D is whole-block regression/dogfood closure after A–C; it cannot be used to defer missing proof from an earlier slice.
 
@@ -191,11 +161,12 @@ B08-D is whole-block regression/dogfood closure after A–C; it cannot be used t
 B00–B06 ✅ CLOSED / PROVEN
 B07     ⏸ DEFERRED
 B08     🟡 IN PROGRESS
-B08-A   🟡 SOURCE REPAIRED / AWAITING USER PROOF
-B08-B   ⬜ BLOCKED
-B08-C-D ⬜ BLOCKED
+B08-A   ✅ CLOSED / USER-REPORTED VIA B08-B
+B08-B   ✅ CLOSED / USER-REPORTED
+B08-C   🟡 IMPLEMENTED / USER PROOF PENDING
+B08-D   ⬜ WHOLE-BLOCK CLOSURE
 B09–B12 ⬜ NOT STARTED
 B15     ⬜ NOT STARTED
 ```
 
-**Next concrete action:** user pulls the branch and runs the B08-A proof bundle; then execute the real-stack walkthrough and record evidence before advancing.
+**Next concrete action:** user runs B08-C `_65` focused proof and B08-D whole-block regression/dogfood closure.

@@ -22,12 +22,16 @@ from dante.modules.temporal.temporal_constraint import (
     TemporalConstraintOperationIdReuseError,
     TemporalConstraintStateConflictError,
     TemporalConstraintView,
+    SessionMinimumDurationRule,
 )
 from dante.modules.temporal.temporal_constraint_api import (
     AbsoluteEarliestStartRuleRequest,
     CreateTemporalConstraintRequest,
     RetireTemporalConstraintRequest,
     ReviseTemporalConstraintRequest,
+    SessionMinimumDurationRuleRequest,
+    _rule_from_request,
+    _rule_request,
     create_temporal_constraint,
     get_temporal_constraint,
     list_temporal_constraints_by_subject,
@@ -45,6 +49,16 @@ _STATE_REF = MaterialStateRef(UUID("0199a8c0-7e73-7de2-8cf2-c4062517839f"))
 _NEXT_STATE_REF = MaterialStateRef(UUID("0199a8c0-8e74-7ef3-9d03-d517362894a0"))
 _RECORDED_AT = datetime(2026, 9, 18, 16, 0, tzinfo=UTC)
 _BOUNDARY_AT = datetime(2026, 9, 24, 8, 0, tzinfo=UTC)
+
+
+def test_session_duration_rule_api_round_trip_keeps_the_bounded_semantics() -> None:
+    payload = SessionMinimumDurationRuleRequest(
+        duration_microseconds=2_700_000_000,
+    )
+    rule = _rule_from_request(payload)
+    assert rule == SessionMinimumDurationRule(duration_microseconds=2_700_000_000)
+    serialized = _rule_request(rule)
+    assert serialized.model_dump() == payload.model_dump()
 
 
 def _context() -> DanteContext:

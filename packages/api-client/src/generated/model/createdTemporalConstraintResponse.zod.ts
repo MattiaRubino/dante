@@ -35,6 +35,12 @@ export const createdTemporalConstraintResponseRuleSevenConstrainedFacetDefault =
 export const createdTemporalConstraintResponseRuleSevenFamilyDefault = `window`;
 export const createdTemporalConstraintResponseRuleSevenRelationshipDefault = `placement_overlaps`;
 export const createdTemporalConstraintResponseRuleSevenTemporalFormDefault = `absolute`;
+export const createdTemporalConstraintResponseRuleEightConstrainedFacetDefault = `session.active_duration`;
+export const createdTemporalConstraintResponseRuleEightDurationKindDefault = `minimum`;
+export const createdTemporalConstraintResponseRuleEightDurationMicrosecondsExclusiveMin = 0;
+
+export const createdTemporalConstraintResponseRuleEightFamilyDefault = `duration`;
+export const createdTemporalConstraintResponseRuleEightStrengthDefault = `soft`;
 export const CreatedTemporalConstraintResponse = /*#__PURE__*/ zod.object({
   constraint_ref: /*#__PURE__*/ zod.uuid(),
   material_state_ref: /*#__PURE__*/ zod.uuid(),
@@ -243,6 +249,39 @@ export const CreatedTemporalConstraintResponse = /*#__PURE__*/ zod.object({
           createdTemporalConstraintResponseRuleSevenTemporalFormDefault,
         )
         .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
+    }),
+    /*#__PURE__*/ zod.object({
+      constrained_facet: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('session.active_duration'),
+          createdTemporalConstraintResponseRuleEightConstrainedFacetDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Constrained Facet' })),
+      duration_kind: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('minimum'),
+          createdTemporalConstraintResponseRuleEightDurationKindDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Duration Kind' })),
+      duration_microseconds: /*#__PURE__*/ zod
+        .int()
+        .check(
+          /*#__PURE__*/ zod.gt(
+            createdTemporalConstraintResponseRuleEightDurationMicrosecondsExclusiveMin,
+          ),
+        ),
+      family: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('duration'),
+          createdTemporalConstraintResponseRuleEightFamilyDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Family' })),
+      strength: /*#__PURE__*/ zod
+        ._default(
+          /*#__PURE__*/ zod.literal('soft'),
+          createdTemporalConstraintResponseRuleEightStrengthDefault,
+        )
+        .check(/*#__PURE__*/ zod.meta({ title: 'Strength' })),
     }),
   ]),
   subject_kind: /*#__PURE__*/ zod.enum(['activity', 'event']),

@@ -20,12 +20,28 @@
       "docs/workstreams/timeline-temporal-operational-b04-b-implementation-freeze.md",
       "docs/workstreams/timeline-temporal-operational-b04-c-implementation-freeze.md",
       "docs/workstreams/timeline-temporal-operational-b04-execution-plan.md",
-      "docs/development/backend-cp6-02-postgresql-persistence-constitution.md"
+      "docs/development/backend-cp6-02-postgresql-persistence-constitution.md",
+      "docs/workstreams/timeline-temporal-operational-b08-c-implementation-freeze.md"
     ],
-    "domain_concepts": ["Temporal Constraint", "Window", "Preference", "Deadline"],
-    "logical_families": ["Temporal Constraint", "MaterialState", "LR-05"],
-    "reference_families": ["MaterialStateRef", "ScopedRecordRef"],
-    "material_facets": ["temporal_constraint.rule"]
+    "domain_concepts": [
+      "Temporal Constraint",
+      "Window",
+      "Preference",
+      "Deadline",
+      "Session"
+    ],
+    "logical_families": [
+      "Temporal Constraint",
+      "MaterialState",
+      "LR-05"
+    ],
+    "reference_families": [
+      "MaterialStateRef",
+      "ScopedRecordRef"
+    ],
+    "material_facets": [
+      "temporal_constraint.rule"
+    ]
   },
   "implementation": {
     "introducing_stage": "B04-A-CONSTRAINT",
@@ -43,7 +59,10 @@
         "name": "material_state_ref",
         "postgres_type": "uuid",
         "nullable": false,
-        "default": {"kind": "none", "expression": null},
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
         "meaning": "Immutable identity of this Temporal Constraint rule revision.",
         "semantic_type": "MaterialStateRef",
         "value_contract": "Application-issued UUIDv7 represented in material_state_address under facet temporal_constraint.rule."
@@ -52,7 +71,10 @@
         "name": "constraint_ref",
         "postgres_type": "uuid",
         "nullable": false,
-        "default": {"kind": "none", "expression": null},
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
         "meaning": "Stable Temporal Constraint owner of this rule revision.",
         "semantic_type": "ScopedRecordRef",
         "value_contract": "Existing temporal_constraint.constraint_ref."
@@ -61,16 +83,22 @@
         "name": "family_code",
         "postgres_type": "text",
         "nullable": false,
-        "default": {"kind": "none", "expression": null},
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
         "meaning": "Typed rule-family discriminator.",
         "semantic_type": null,
-        "value_contract": "B04-C admits exactly boundary or window."
+        "value_contract": "One of boundary, window or duration."
       },
       {
         "name": "strength_code",
         "postgres_type": "text",
         "nullable": false,
-        "default": {"kind": "none", "expression": null},
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
         "meaning": "Whether the rule is hard or soft.",
         "semantic_type": null,
         "value_contract": "One of hard,soft. Hard expresses validity requirement; soft expresses preference."
@@ -79,15 +107,20 @@
         "name": "constrained_facet_code",
         "postgres_type": "text",
         "nullable": false,
-        "default": {"kind": "none", "expression": null},
-        "meaning": "Temporal Schedule facet constrained by this typed rule.",
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Temporal facet constrained by this typed rule.",
         "semantic_type": null,
-        "value_contract": "B04-C admits schedule.start, schedule.completion or schedule.placement; deferred typed-rule totality restricts each family/kind/relationship to the exact admitted facet."
+        "value_contract": "B04 admits schedule.start, schedule.completion or schedule.placement; B08-C additionally admits session.active_duration only for a soft minimum duration rule directly owned by an Activity."
       }
     ],
     "primary_key": {
       "name": "pk_temporal_constraint_state",
-      "columns": ["material_state_ref"],
+      "columns": [
+        "material_state_ref"
+      ],
       "reason": "One Temporal Constraint rule envelope per immutable MaterialStateRef.",
       "deferrable": false,
       "initially": "NOT DEFERRABLE",
@@ -96,8 +129,16 @@
     "foreign_keys": [
       {
         "name": "fk_temporal_constraint_state_material_state_address",
-        "columns": ["material_state_ref"],
-        "target": {"schema": "dante", "table": "material_state_address", "columns": ["material_state_ref"]},
+        "columns": [
+          "material_state_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "material_state_address",
+          "columns": [
+            "material_state_ref"
+          ]
+        },
         "on_delete": "NO ACTION",
         "on_update": "NO ACTION",
         "match_type": "SIMPLE",
@@ -111,8 +152,16 @@
       },
       {
         "name": "fk_temporal_constraint_state_constraint_ref_temporal_constraint",
-        "columns": ["constraint_ref"],
-        "target": {"schema": "dante", "table": "temporal_constraint", "columns": ["constraint_ref"]},
+        "columns": [
+          "constraint_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "temporal_constraint",
+          "columns": [
+            "constraint_ref"
+          ]
+        },
         "on_delete": "NO ACTION",
         "on_update": "NO ACTION",
         "match_type": "SIMPLE",
@@ -128,7 +177,10 @@
     "unique_constraints": [
       {
         "name": "uq_temporal_constraint_state_constraint_material",
-        "columns": ["constraint_ref", "material_state_ref"],
+        "columns": [
+          "constraint_ref",
+          "material_state_ref"
+        ],
         "reason": "Provide the exact owner+state key used by current-history and mutation-receipt integrity.",
         "deferrable": false,
         "initially": "NOT DEFERRABLE",
@@ -138,8 +190,8 @@
     "check_constraints": [
       {
         "name": "ck_temporal_constraint_state_family",
-        "expression_contract": "family_code IN ('boundary','window')",
-        "reason": "B04-C activates only the typed boundary and window families; no generic rule family fallback is accepted.",
+        "expression_contract": "family_code IN ('boundary','window','duration')",
+        "reason": "B04 admits typed boundary, window and Schedule duration families; B08-C activates only the typed Session active-duration minimum subset of duration.",
         "enforced": true,
         "validated": true,
         "no_inherit": false
@@ -154,8 +206,8 @@
       },
       {
         "name": "ck_temporal_constraint_state_constrained_facet",
-        "expression_contract": "constrained_facet_code IN ('schedule.start','schedule.completion','schedule.placement')",
-        "reason": "B04-C admits only the Schedule facts required by the frozen boundary/window relation matrices.",
+        "expression_contract": "constrained_facet_code IN ('schedule.start','schedule.completion','schedule.placement','session.active_duration')",
+        "reason": "B04 admits Schedule facets; B08-C admits session.active_duration only with the exact soft minimum typed payload and direct Activity ownership, enforced by deferred totality and mutation capability.",
         "enforced": true,
         "validated": true,
         "no_inherit": false
@@ -166,7 +218,9 @@
         "name": "pk_temporal_constraint_state",
         "method": "btree",
         "unique": true,
-        "keys": ["material_state_ref"],
+        "keys": [
+          "material_state_ref"
+        ],
         "predicate": null,
         "include": [],
         "source": "primary_key",
@@ -179,7 +233,10 @@
         "name": "uq_temporal_constraint_state_constraint_material",
         "method": "btree",
         "unique": true,
-        "keys": ["constraint_ref", "material_state_ref"],
+        "keys": [
+          "constraint_ref",
+          "material_state_ref"
+        ],
         "predicate": null,
         "include": [],
         "source": "unique_constraint",
@@ -192,7 +249,9 @@
         "name": "ix_temporal_constraint_state_constraint_ref",
         "method": "btree",
         "unique": false,
-        "keys": ["constraint_ref"],
+        "keys": [
+          "constraint_ref"
+        ],
         "predicate": null,
         "include": [],
         "source": "explicit_index",
@@ -206,7 +265,11 @@
       {
         "name": "ctrg_temporal_constraint_state_state_totality",
         "routine": "dante.enforce_material_state_totality",
-        "events": ["INSERT", "UPDATE", "DELETE"],
+        "events": [
+          "INSERT",
+          "UPDATE",
+          "DELETE"
+        ],
         "timing": "AFTER",
         "orientation": "ROW",
         "constraint_trigger": true,
@@ -222,7 +285,11 @@
       {
         "name": "ctrg_temporal_constraint_state_rule_totality",
         "routine": "dante.enforce_temporal_constraint_rule_totality",
-        "events": ["INSERT", "UPDATE", "DELETE"],
+        "events": [
+          "INSERT",
+          "UPDATE",
+          "DELETE"
+        ],
         "timing": "AFTER",
         "orientation": "ROW",
         "constraint_trigger": true,
@@ -233,7 +300,7 @@
         "when_condition": null,
         "arguments": [],
         "invariant_role": "temporal_constraint_rule_totality",
-        "reason": "Require exactly one complete admitted boundary or window payload, exclude mixed-family payloads, and enforce the exact kind/relationship-to-facet matrix by transaction end."
+        "reason": "Require exactly one complete admitted boundary, window or duration payload, exclude mixed-family payloads, and enforce the exact kind/relationship-to-facet matrix by transaction end."
       }
     ],
     "table": {
@@ -264,7 +331,12 @@
     "owner_role": "dante_owner",
     "default_deny_non_owner": true,
     "expected_grants": [
-      {"grantee": "dante_runtime", "privilege": "SELECT", "columns": [], "grant_option": false}
+      {
+        "grantee": "dante_runtime",
+        "privilege": "SELECT",
+        "columns": [],
+        "grant_option": false
+      }
     ]
   },
   "proof": {
@@ -275,7 +347,9 @@
       "constrained Schedule facet is exactly start, completion or placement",
       "boundary kind/facet and window relationship/facet combinations remain bounded by deferred totality",
       "revision is append-only rather than in-place mutation",
-      "cross-family boundary+window payload combinations are rejected"
+      "cross-family boundary+window payload combinations are rejected",
+      "session.active_duration is admitted only for a soft minimum duration rule on a directly owned Activity",
+      "Schedule placement evaluation excludes session.active_duration rules"
     ],
     "test_refs": [
       "apps/backend/tests/integration/temporal/test_b04_temporal_constraint_core.py",

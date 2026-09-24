@@ -43,6 +43,7 @@ TemporalConstraintFacet = Literal[
     "schedule.start",
     "schedule.completion",
     "schedule.placement",
+    "session.active_duration",
 ]
 TemporalConstraintFamily = Literal["boundary", "window", "duration"]
 MutationKind = Literal["create", "revise", "retire"]
@@ -201,11 +202,33 @@ class ScheduleDurationRule:
             )
 
 
+@dataclass(frozen=True, slots=True)
+class SessionMinimumDurationRule:
+    """B08-C soft minimum over one Session's active execution duration."""
+
+    duration_microseconds: int
+    duration_kind: Literal["minimum"] = "minimum"
+    constrained_facet: Literal["session.active_duration"] = "session.active_duration"
+    strength: Literal["soft"] = "soft"
+
+    def __post_init__(self) -> None:
+        if (
+            self.duration_kind != "minimum"
+            or self.constrained_facet != "session.active_duration"
+            or self.strength != "soft"
+            or self.duration_microseconds <= 0
+        ):
+            raise TemporalConstraintInputError(
+                "Session minimum duration must be a positive exact duration."
+            )
+
+
 TemporalConstraintRule = (
     AbsoluteBoundaryRule
     | AbsoluteEarliestStartRule
     | AbsoluteWindowRule
     | ScheduleDurationRule
+    | SessionMinimumDurationRule
 )
 
 
@@ -237,7 +260,7 @@ class TemporalConstraintCurrentDurationRuleView:
     material_state_ref: MaterialStateRef
     family: Literal["duration"]
     duration_kind: TemporalConstraintDurationKind
-    constrained_facet: Literal["schedule.placement"]
+    constrained_facet: Literal["schedule.placement", "session.active_duration"]
     strength: TemporalConstraintStrength
     duration_microseconds: int
 
@@ -460,7 +483,7 @@ _MUTATE_WINDOW_SQL = text(
 _MUTATE_DURATION_SQL = text(
     """
     SELECT constraint_ref, subject_native_ref, material_state_ref, active, created_at, replayed
-      FROM dante.mutate_self_schedule_duration_constraint(
+      FROM dante.mutate_self_temporal_duration_constraint(
            :self_person_ref,:operation_id,:intent_fingerprint,:mutation_kind,
            :subject_native_ref,:constraint_ref,:expected_material_state_ref,
            :resulting_material_state_ref,:duration_kind_code,:constrained_facet_code,
@@ -498,7 +521,7 @@ def _hash(payload: Mapping[str, str]) -> str:
 def _rule_family(rule: TemporalConstraintRule) -> TemporalConstraintFamily:
     if isinstance(rule, AbsoluteWindowRule):
         return "window"
-    if isinstance(rule, ScheduleDurationRule):
+    if isinstance(rule, (ScheduleDurationRule, SessionMinimumDurationRule)):
         return "duration"
     return "boundary"
 
@@ -514,7 +537,7 @@ def _rule_payload(rule: TemporalConstraintRule) -> dict[str, str]:
             "starts_at": rule.starts_at.isoformat(timespec="microseconds"),
             "ends_at": rule.ends_at.isoformat(timespec="microseconds"),
         }
-    if isinstance(rule, ScheduleDurationRule):
+    if isinstance(rule, (ScheduleDurationRule, SessionMinimumDurationRule)):
         return {
             "family": "duration",
             "duration_kind": rule.duration_kind,
@@ -684,18 +707,24 @@ def _constraint_from_row(row: RowMapping) -> TemporalConstraintView:
         duration_microseconds_value = row["duration_microseconds"]
         if (
             duration_kind_value not in {"minimum", "maximum"}
-            or facet_value != "schedule.placement"
+            or facet_value not in {"schedule.placement", "session.active_duration"}
             or not isinstance(duration_microseconds_value, int)
             or duration_microseconds_value <= 0
+            or (
+                facet_value == "session.active_duration"
+                and (duration_kind_value != "minimum" or strength_value != "soft")
+            )
         ):
             raise TemporalConstraintPersistenceError(
-                "Stored current duration rule is outside the activated B04-E shape."
+                "Stored current duration rule is outside the activated B04-E/B08-C shape."
             )
         current_rule = TemporalConstraintCurrentDurationRuleView(
             material_state_ref=material_state_ref,
             family="duration",
             duration_kind=cast(TemporalConstraintDurationKind, str(duration_kind_value)),
-            constrained_facet="schedule.placement",
+            constrained_facet=cast(
+                Literal["schedule.placement", "session.active_duration"], str(facet_value)
+            ),
             strength=cast(TemporalConstraintStrength, str(strength_value)),
             duration_microseconds=duration_microseconds_value,
         )
@@ -808,7 +837,11 @@ async def _mutate_in_session(
             "ends_at": None if window_rule is None else window_rule.ends_at,
         }
     elif family == "duration":
-        duration_rule = rule if isinstance(rule, ScheduleDurationRule) else None
+        duration_rule = (
+            rule
+            if isinstance(rule, (ScheduleDurationRule, SessionMinimumDurationRule))
+            else None
+        )
         statement = _MUTATE_DURATION_SQL
         parameters = {
             **common,
@@ -878,6 +911,10 @@ def _evaluate_current_rule(
         )
 
     if isinstance(rule, TemporalConstraintCurrentDurationRuleView):
+        if rule.constrained_facet != "schedule.placement":
+            raise TemporalConstraintPersistenceError(
+                "Session duration rule cannot be evaluated against Schedule placement."
+            )
         duration_microseconds = int(
             (placement.ends_at - placement.starts_at).total_seconds() * 1_000_000
         )
@@ -1083,6 +1120,10 @@ class TemporalConstraintApplication:
                 )
                 if subject_kind is None:
                     raise TemporalConstraintNotFoundError()
+                if isinstance(rule, SessionMinimumDurationRule) and subject_kind != "activity":
+                    raise TemporalConstraintInputError(
+                        "Session active-duration constraints apply only to an Activity."
+                    )
                 row = await _mutate_in_session(
                     database_session,
                     family=family,
@@ -1144,6 +1185,10 @@ class TemporalConstraintApplication:
                 if identity is None:
                     raise TemporalConstraintNotFoundError()
                 subject_native_ref, subject_kind = identity
+                if isinstance(rule, SessionMinimumDurationRule) and subject_kind != "activity":
+                    raise TemporalConstraintInputError(
+                        "Session active-duration constraints apply only to an Activity."
+                    )
                 row = await _mutate_in_session(
                     database_session,
                     family=family,
@@ -1324,7 +1369,14 @@ class TemporalConstraintApplication:
             subject_native_ref=subject_native_ref,
         )
         active = [value for value in constraints if value.current_rule is not None]
-        items = tuple(_evaluate_current_rule(value, placement) for value in active)
+        items = tuple(
+            _evaluate_current_rule(value, placement)
+            for value in active
+            if not (
+                isinstance(value.current_rule, TemporalConstraintCurrentDurationRuleView)
+                and value.current_rule.constrained_facet == "session.active_duration"
+            )
+        )
         hard_set_status = _hard_set_status(active)
         if any(item.strength == "hard" and item.evaluation == "not_evaluable" for item in items):
             status: ConstraintSetEvaluationStatus = "not_evaluable"

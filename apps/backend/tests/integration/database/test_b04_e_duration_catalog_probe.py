@@ -10,8 +10,8 @@ import pytest
 pytestmark = pytest.mark.postgres
 
 # Current candidate must still preserve the B04-E payload and ACL invariants.
-_EXPECTED_REVISION = "20260922_55"
-_EXPECTED_TOPOLOGY = (145, 5, 87, 92, 285, 223, 408, 0, 0, 0)
+_EXPECTED_REVISION = "20260924_65"
+_EXPECTED_TOPOLOGY = (150, 5, 99, 93, 292, 236, 418, 0, 0, 0)
 
 
 def _admin(database: Any) -> psycopg.Connection[Any]:
@@ -97,7 +97,7 @@ def test_b04_e_duration_catalog_and_acl(migrated_database: Any) -> None:
             """
             SELECT has_function_privilege(
               'dante_runtime',
-              'dante.mutate_self_schedule_duration_constraint(uuid,text,text,text,uuid,uuid,uuid,uuid,text,text,text,bigint)',
+              'dante.mutate_self_temporal_duration_constraint(uuid,text,text,text,uuid,uuid,uuid,uuid,text,text,text,bigint)',
               'EXECUTE'
             )
             """
@@ -115,7 +115,7 @@ def test_b04_e_duration_catalog_and_acl(migrated_database: Any) -> None:
     assert revision == (_EXPECTED_REVISION,)
     assert topology == _EXPECTED_TOPOLOGY
     assert "temporal_constraint_duration_state" in tables
-    assert "mutate_self_schedule_duration_constraint" in routines
+    assert "mutate_self_temporal_duration_constraint" in routines
     assert "assert_absolute_schedule_move_hard_admissible" in routines
     assert "ctrg_temporal_constraint_duration_state_rule_totality" in triggers
     assert family_check is not None

@@ -399,7 +399,7 @@ describe('temporal create session', () => {
       execution: {
         ...baseline.execution,
         sessionMode: 'splittable',
-        minSessionMinutes: 120,
+        minSessionMinutes: 0,
       },
     });
     const valid = createTemporalCreateFields({
@@ -409,11 +409,23 @@ describe('temporal create session', () => {
         minSessionMinutes: 30,
       },
     });
+    const minimumMayExceedEstimatedEffort = createTemporalCreateFields({
+      ...baseline,
+      durationMinutes: 90,
+      execution: {
+        ...baseline.execution,
+        sessionMode: 'splittable',
+        minSessionMinutes: 120,
+      },
+    });
 
     expect(
       validateTemporalCreateFields(invalid).map((issue) => issue.code),
     ).toContain('temporal.create.minimum_session.invalid');
     expect(validateTemporalCreateFields(valid)).toEqual([]);
+    expect(validateTemporalCreateFields(minimumMayExceedEstimatedEffort)).toEqual(
+      [],
+    );
   });
 
   it('validates all four CP6 Event recurrence families', () => {

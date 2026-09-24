@@ -22,6 +22,7 @@ from dante.modules.temporal.activity import (
 from dante.modules.temporal.temporal_constraint import (
     AbsoluteBoundaryRule,
     AbsoluteWindowRule,
+    SessionMinimumDurationRule,
     CreatedTemporalConstraintView,
     TemporalConstraintInputError,
     TemporalConstraintOperationIdReuseError,
@@ -112,8 +113,16 @@ def _rule_payload(rule: TemporalConstraintRule) -> dict[str, str]:
             "temporal_form": "absolute",
             "boundary_at": rule.boundary_at.isoformat(timespec="microseconds"),
         }
+    if isinstance(rule, SessionMinimumDurationRule):
+        return {
+            "family": "duration",
+            "duration_kind": rule.duration_kind,
+            "constrained_facet": rule.constrained_facet,
+            "strength": rule.strength,
+            "duration_microseconds": str(rule.duration_microseconds),
+        }
     raise ConstrainedActivityInputError(
-        "Atomic constrained Activity authoring admits only public B04 boundary/window rules."
+        "Atomic constrained Activity authoring admits only public B04 rules and B08-C Session minimum duration."
     )
 
 
@@ -224,7 +233,7 @@ class ConstrainedActivityApplication:
                 "Atomic constrained Activity authoring requires 1 to 4 rules."
             )
         # Force the bounded public rule union and its value-level validation before opening
-        # the transaction. Duration and later-owned families are intentionally not admitted here.
+        # the transaction.
         for rule in rules:
             _rule_payload(rule)
 

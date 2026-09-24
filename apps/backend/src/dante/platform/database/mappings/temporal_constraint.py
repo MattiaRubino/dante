@@ -75,10 +75,10 @@ class TemporalConstraintStateRow(Base):
             "material_state_ref",
             name="uq_temporal_constraint_state_constraint_material",
         ),
-        CheckConstraint("family_code IN ('boundary','window')", name="family"),
+        CheckConstraint("family_code IN ('boundary','window','duration')", name="family"),
         CheckConstraint("strength_code IN ('hard','soft')", name="strength"),
         CheckConstraint(
-            "constrained_facet_code IN ('schedule.start','schedule.completion','schedule.placement')",
+            "constrained_facet_code IN ('schedule.start','schedule.completion','schedule.placement','session.active_duration')",
             name="constrained_facet",
         ),
         Index("ix_temporal_constraint_state_constraint_ref", "constraint_ref"),

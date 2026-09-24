@@ -35,7 +35,7 @@ MutatingDanteContextDependency = Annotated[
 
 
 class CreateConstrainedActivityRequest(BaseModel):
-    """Atomic unplaced Activity plus 1..4 public B04 boundary/window rules."""
+    """Atomic unplaced Activity plus bounded Temporal Constraint rules."""
 
     model_config = ConfigDict(extra="forbid")
 

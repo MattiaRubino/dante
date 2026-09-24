@@ -5,6 +5,14 @@ const UUID_V7 =
 
 export type SessionSubjectKind = 'activity' | 'occurrence';
 
+export type TemporalSessionDurationEvaluation = Readonly<{
+  constraintRef: string;
+  materialStateRef: string;
+  minimumDurationMicroseconds: number;
+  strength: 'soft';
+  evaluation: 'pending' | 'satisfied' | 'violated';
+}>;
+
 export type TemporalSessionView = Readonly<{
   sessionRef: string;
   subjectNativeRef: string;
@@ -18,6 +26,7 @@ export type TemporalSessionView = Readonly<{
   elapsedSeconds: number;
   pausedSeconds: number;
   activeSeconds: number;
+  durationEvaluations: readonly TemporalSessionDurationEvaluation[];
 }>;
 
 export class TemporalSessionRemoteError extends Error {
@@ -51,6 +60,32 @@ function nonNegativeNumber(value: unknown, field: string): number {
     throw new TemporalSessionRemoteError('protocol', `${field} must be non-negative.`);
   }
   return value;
+}
+
+function durationEvaluations(value: unknown): readonly TemporalSessionDurationEvaluation[] {
+  if (!Array.isArray(value)) {
+    throw new TemporalSessionRemoteError('protocol', 'Invalid Session duration evaluations.');
+  }
+  return Object.freeze(value.map((item) => {
+    const payload = record(item);
+    const strength = payload.strength;
+    const evaluation = payload.evaluation;
+    const threshold = payload.minimum_duration_microseconds;
+    if (
+      strength !== 'soft' ||
+      (evaluation !== 'pending' && evaluation !== 'satisfied' && evaluation !== 'violated') ||
+      typeof threshold !== 'number' || !Number.isSafeInteger(threshold) || threshold <= 0
+    ) {
+      throw new TemporalSessionRemoteError('protocol', 'Invalid Session duration evaluation.');
+    }
+    return Object.freeze({
+      constraintRef: uuid(payload.constraint_ref, 'constraint_ref'),
+      materialStateRef: uuid(payload.material_state_ref, 'material_state_ref'),
+      minimumDurationMicroseconds: threshold,
+      strength,
+      evaluation,
+    });
+  }));
 }
 
 function view(value: unknown): TemporalSessionView {
@@ -91,6 +126,7 @@ function view(value: unknown): TemporalSessionView {
     elapsedSeconds,
     pausedSeconds,
     activeSeconds,
+    durationEvaluations: durationEvaluations(payload.duration_evaluations),
   });
 }
 

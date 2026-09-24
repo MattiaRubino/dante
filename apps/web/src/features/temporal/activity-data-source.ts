@@ -44,6 +44,13 @@ export type TemporalActivityConstraintRuleInput =
       strength: 'hard' | 'soft';
       startsAt: Instant;
       endsAt: Instant;
+    }>
+  | Readonly<{
+      family: 'duration';
+      durationKind: 'minimum';
+      constrainedFacet: 'session.active_duration';
+      strength: 'soft';
+      durationMicroseconds: number;
     }>;
 
 export type TemporalConstrainedActivityCreateRequest = Readonly<{

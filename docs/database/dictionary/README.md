@@ -7,10 +7,10 @@
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Current candidate branch:** `feature/timeline-temporal-operational`
-- **Current candidate Alembic source head:** `20260924_58`
-- **Current candidate topology awaiting local proof:** `148|5|94|93|290|229|414|0|0|0`
+- **Current candidate Alembic source head:** `20260924_65`
+- **Current candidate topology awaiting B08-C user proof:** `150|5|99|93|292|236|418|0|0|0`
 - **Frozen CP6 head:** `20260826_08`
-- **Last reconciled:** 2026-09-23
+- **Last reconciled:** 2026-09-24
 
 ## 1. Purpose
 
@@ -32,14 +32,14 @@ A mismatch is a defect. Protected `main` remains integration authority; candidat
 Authoritative counts are in `scope.json`:
 
 ```text
-tables      145
+tables      150
 views         5
-routines     88
-standalone  238
-triggers     92
-indexes      285
-FKs          223
-CHECKs       408
+routines     99
+standalone  254
+triggers     93
+indexes      292
+FKs          236
+CHECKs       418
 ```
 
 No enum/domain, sequence, materialized view, partitioned table or RLS policy exists in the DANTE business-schema inventory.
@@ -81,9 +81,18 @@ B06-D / 20260922_56 → 20260923_57
   bounded execute-only expected-Occurrence Timeline read
   scheduled Occurrence composition through existing get_self_occurrence + Schedule
   Routine presentation through existing list_self_routines
+
+B08-A / 20260924_58 → 20260924_61
+  Session execution subject, immutable START/END transitions, exact Activity/Occurrence subject family
+
+B08-B / 20260924_62 → 20260924_64
+  Pause/Resume replay-safe transitions and elapsed/paused/active runtime metrics
+
+B08-C / 20260924_65
+  TC-009 direct Activity Session active-duration soft minimum; existing duration mutation routine forward-renamed, no object-count delta
 ```
 
-B06-E whole-block closure required no new migration. `_57` remains the current candidate database frontier.
+B06-E whole-block closure required no new migration. `_57` remains the last proven B06 checkpoint; later B08 candidate migrations continue through `_65`.
 
 The object tree and `scope.json`, not prose summaries, are structural source of truth.
 
@@ -160,6 +169,8 @@ B06-C Occurrence checkpoint           CLOSED / PROVEN at `_55`
 B06-D Schedule + Timeline             CLOSED / PROVEN at `_57`
 B06-E whole-block closure             CLOSED / PROVEN at `_57`
 B06 overall                           CLOSED / PROVEN
+B08-A/B                              CLOSED / USER-REPORTED
+B08-C                                CANDIDATE `_65` / USER PROOF PENDING
 ```
 
 Final B06 closure evidence is owned by `../../workstreams/timeline-temporal-operational-b06-e-closure-2026-09-23.md`. Whole-B06 closure did not change the catalog after `_57`.
@@ -194,3 +205,5 @@ No real object → no ceremonial Dictionary entry. Every real current DANTE busi
 B08 Session Runtime is next in the active `+`/Timeline vertical. No Dictionary or schema change is pre-authorized by the block name alone; current CP6/Physical Session structures are inspected before any forward-only DDL is admitted.
 
 Provider integration, native/offline, broad analytics and account collaboration are outside this vertical and must not create speculative Dictionary entries.
+
+B08-C / 20260924_65 reuses existing Temporal Constraint duration tables and mutation capability. It adds no physical object count; the current facet CHECK and deferred totality/mutation functions admit only the Activity-owned soft-minimum Session active-duration subset.

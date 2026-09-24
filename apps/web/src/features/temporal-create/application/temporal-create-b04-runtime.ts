@@ -84,11 +84,14 @@ function b04FlexibleActivityIntentSupported(
 ): boolean {
   const specification = prepared.metadata.specification;
   const constraintKind = b04ConstraintKind(specification);
+  const hasSessionMinimum =
+    specification.execution.sessionMode === 'splittable';
   if (
     prepared.metadata.kind !== 'activity' ||
     prepared.command.payload.placement !== null ||
     (import.meta.env.MODE !== 'test' && !isCanonicalLifeAreaRef(prepared.metadata.contextId)) ||
-    constraintKind === null ||
+    (constraintKind === null && !hasSessionMinimum) ||
+    specification.scheduling.constraintKind === 'preferred-window' ||
     (prepared.metadata.contextId !== 'personale' && !isCanonicalLifeAreaRef(prepared.metadata.contextId)) ||
     prepared.metadata.notes.length !== 0 ||
     specification.appearanceTone !== null ||
@@ -109,7 +112,16 @@ function b04FlexibleActivityIntentSupported(
     specification.scheduling.movementPolicy ===
       baseline.scheduling.movementPolicy &&
     specification.scheduling.fallbackPolicy === 'inherit' &&
-    sameStructuredIntent(specification.execution, baseline.execution) &&
+    (sameStructuredIntent(specification.execution, baseline.execution) ||
+      (specification.execution.sessionMode === 'splittable' &&
+        specification.execution.minSessionMinutes >= 5 &&
+        specification.execution.maxSessions === baseline.execution.maxSessions &&
+        specification.execution.partialAllowed === baseline.execution.partialAllowed &&
+        specification.execution.finishEarlyAllowed === baseline.execution.finishEarlyAllowed &&
+        specification.execution.mergeCompatible === baseline.execution.mergeCompatible &&
+        specification.execution.preparationMinutes === baseline.execution.preparationMinutes &&
+        specification.execution.recoveryMinutes === baseline.execution.recoveryMinutes &&
+        specification.execution.spacingMinutes === baseline.execution.spacingMinutes)) &&
     sameStructuredIntent(
       specification.eventRecurrence,
       baseline.eventRecurrence,
@@ -134,56 +146,72 @@ function absoluteInstant(
 function constraintRules(
   specification: TemporalCreateFields,
 ): readonly TemporalActivityConstraintRuleInput[] {
-  switch (specification.scheduling.constraintKind) {
-    case 'open':
-      return Object.freeze([]);
-    case 'bounded-window':
-      return Object.freeze([
-        Object.freeze({
-          family: 'window' as const,
-          relationship: 'full_placement_contained' as const,
-          constrainedFacet: 'schedule.placement' as const,
-          strength: 'hard' as const,
-          startsAt: absoluteInstant(
-            specification.scheduling.windowStartDate,
-            specification.scheduling.windowStartTime,
-            specification,
-          ),
-          endsAt: absoluteInstant(
-            specification.scheduling.windowEndDate,
-            specification.scheduling.windowEndTime,
-            specification,
-          ),
-        }),
-      ]);
-    case 'deadline':
-      return Object.freeze([
-        Object.freeze({
-          family: 'boundary' as const,
-          boundaryKind: 'earliest_start' as const,
-          constrainedFacet: 'schedule.start' as const,
-          strength: 'hard' as const,
-          boundaryAt: absoluteInstant(
-            specification.scheduling.earliestStartDate,
-            specification.scheduling.earliestStartTime,
-            specification,
-          ),
-        }),
-        Object.freeze({
-          family: 'boundary' as const,
-          boundaryKind: 'latest_completion' as const,
-          constrainedFacet: 'schedule.completion' as const,
-          strength: 'hard' as const,
-          boundaryAt: absoluteInstant(
-            specification.scheduling.deadlineDate,
-            specification.scheduling.deadlineTime,
-            specification,
-          ),
-        }),
-      ]);
-    default:
-      return Object.freeze([]);
+  const schedulingRules: TemporalActivityConstraintRuleInput[] = (() => {
+    switch (specification.scheduling.constraintKind) {
+      case 'open':
+        return Object.freeze([]);
+      case 'bounded-window':
+        return Object.freeze([
+          Object.freeze({
+            family: 'window' as const,
+            relationship: 'full_placement_contained' as const,
+            constrainedFacet: 'schedule.placement' as const,
+            strength: 'hard' as const,
+            startsAt: absoluteInstant(
+              specification.scheduling.windowStartDate,
+              specification.scheduling.windowStartTime,
+              specification,
+            ),
+            endsAt: absoluteInstant(
+              specification.scheduling.windowEndDate,
+              specification.scheduling.windowEndTime,
+              specification,
+            ),
+          }),
+        ]);
+      case 'deadline':
+        return Object.freeze([
+          Object.freeze({
+            family: 'boundary' as const,
+            boundaryKind: 'earliest_start' as const,
+            constrainedFacet: 'schedule.start' as const,
+            strength: 'hard' as const,
+            boundaryAt: absoluteInstant(
+              specification.scheduling.earliestStartDate,
+              specification.scheduling.earliestStartTime,
+              specification,
+            ),
+          }),
+          Object.freeze({
+            family: 'boundary' as const,
+            boundaryKind: 'latest_completion' as const,
+            constrainedFacet: 'schedule.completion' as const,
+            strength: 'hard' as const,
+            boundaryAt: absoluteInstant(
+              specification.scheduling.deadlineDate,
+              specification.scheduling.deadlineTime,
+              specification,
+            ),
+          }),
+        ]);
+      default:
+        return Object.freeze([]);
+    }
+  })();
+  const rules = [...schedulingRules];
+  if (specification.execution.sessionMode === 'splittable') {
+    rules.push(
+      Object.freeze({
+        family: 'duration' as const,
+        durationKind: 'minimum' as const,
+        constrainedFacet: 'session.active_duration' as const,
+        strength: 'soft' as const,
+        durationMicroseconds:
+          specification.execution.minSessionMinutes * 60 * 1_000_000,
+      }),
+    );
   }
+  return Object.freeze(rules);
 }
 
 function activityProjection(
@@ -659,7 +687,9 @@ class B04TemporalCreateRuntime implements TemporalCreateRuntime {
     }
 
     const constraintKind = b04ConstraintKind(prepared.metadata.specification);
-    if (constraintKind === null) {
+    const hasSessionMinimum =
+      prepared.metadata.specification.execution.sessionMode === 'splittable';
+    if (constraintKind === null && !hasSessionMinimum) {
       if (prepared.metadata.specification.scheduling.constraintKind === 'preferred-window') {
         return Object.freeze({
           result: unavailableResult(
@@ -685,7 +715,7 @@ class B04TemporalCreateRuntime implements TemporalCreateRuntime {
     try {
       const rules = constraintRules(prepared.metadata.specification);
       const created =
-        constraintKind === 'open'
+        rules.length === 0
           ? await this.activitySource.createActivity({
               operationId: prepared.operationId,
               title: prepared.command.payload.title,

@@ -5,10 +5,10 @@
 - **Vertical boundary:** Home `+` creation/configuration → canonical temporal truth → Timeline projection/actions → bounded lifecycle completion
 - **Completed frontier:** B06 ✅ CLOSED / PROVEN
 - **Current block:** B08 Session Runtime 🟡 IN PROGRESS
-- **Current slice:** B08-A Session Core End-to-End — repaired, awaiting local + real-stack proof
+- **Current slice:** B08-C TC-009 Session Duration End-to-End — implemented; user-run proof pending
 - **Deferred block:** B07 UI/UX Consolidation v1 — execute after B08–B12
-- **Current candidate DB frontier:** PostgreSQL 18.6 / Alembic `20260924_60`
-- **Candidate topology awaiting proof:** `148|5|94|93|290|230|414|0|0|0`
+- **Current candidate DB frontier:** PostgreSQL 18.6 / Alembic `20260924_65`
+- **Candidate topology awaiting proof:** `150|5|99|93|292|236|418|0|0|0`
 - **Live execution ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **Continuation handoff:** `docs/workstreams/timeline-temporal-operational-handoff.md`
 
@@ -78,9 +78,9 @@ B05 Product Organization                         ✅ CLOSED / PROVEN
 B06 Routine / Recurrence / Occurrence Baseline   ✅ CLOSED / PROVEN
 
 B08 Session Runtime                              🟡 IN PROGRESS
-  B08-A Session Core End-to-End                   🟡 IMPLEMENTED / AWAITING PROOF
-  B08-B Pause / Resume + Durations End-to-End     ⬜ BLOCKED BY B08-A
-  B08-C TC-009 Session Duration End-to-End        ⬜
+  B08-A Session Core End-to-End                   ✅ CLOSED / USER-REPORTED
+  B08-B Pause / Resume + Durations End-to-End     ✅ CLOSED / USER-REPORTED
+  B08-C TC-009 Session Duration End-to-End        🟡 IMPLEMENTED / USER PROOF PENDING
   B08-D Whole-block closure                       ⬜
 
 B09 Responsibility / Participation               ⬜
@@ -144,7 +144,7 @@ session_timing_pause
 session_timing_current_history
 ```
 
-## B08-A — Session Core End-to-End — CURRENT
+## B08-A — Session Core End-to-End — CLOSED PER USER-REPORTED B08-B DEPENDENCY
 
 Required product path:
 
@@ -187,9 +187,9 @@ END does not create Actual
 END does not create Outcome
 ```
 
-### B08-A closure gate
+### B08-A closure evidence
 
-B08-A is **not** closed merely because code is pushed. Before B08-B:
+The user reported B08-B closed on 2026-09-24, which presupposes the B08-A gate passed. Detailed command output is not stored in this repository; retain that evidence as user-reported until the B08-D whole-block record is written. The original gate was:
 
 ```text
 1. migration/catalog/Dictionary/backend focused tests PASS locally
@@ -202,11 +202,11 @@ B08-A is **not** closed merely because code is pushed. Before B08-B:
 8. docs/map/handoff receive the proven evidence
 ```
 
-Only then mark `B08-A ✅ CLOSED / PROVEN` and advance to B08-B.
+B08-A is treated as closed for sequencing based on the user-reported B08-B closure; B08-D will capture the whole-block proof record.
 
-## B08-B — Pause / Resume + Durations End-to-End
+## B08-B — Pause / Resume + Durations End-to-End — CLOSED PER USER REPORT
 
-After B08-A closure:
+Implemented by `_62` transition persistence, `_63` replay repair and `_64` runtime metrics. The user reported the slice closed on 2026-09-24; raw local test output is not in this repository. Runtime duration comes from canonical Session facts: elapsed, captured paused intervals and active remainder. Browser timers remain presentation only.
 
 ```text
 RUNNING → PAUSED → RUNNING → ENDED
@@ -214,9 +214,9 @@ RUNNING → PAUSED → RUNNING → ENDED
 
 Must preserve Session identity, enforce one open pause, reject invalid/concurrent transitions deterministically, rehydrate running/paused state after reload, and derive duration only from captured facts. Browser timers are presentation only.
 
-## B08-C — TC-009 Session Duration End-to-End
+## B08-C — TC-009 Session Duration End-to-End — CURRENT
 
-Reopen TC-009 against truthful Session facts. Never alias planned Schedule duration to Session elapsed/active duration. Evaluation is not automatic mutation.
+Implementation contract: `timeline-temporal-operational-b08-c-implementation-freeze.md`. The candidate persists the Create Activity splittable minimum as a soft `duration / session.active_duration` rule, evaluates one Activity-owned Session’s active time, and reports pending/satisfied/violated at read time. Pauses are excluded, Session identities are never aggregated, and evaluation never blocks an actual transition or mutates Schedule/completion/Actual/Outcome. Source and generated OpenAPI/API-client files are at Alembic `_65`; user-run automated and real-stack proof remains pending.
 
 ## B08-D — Whole-block closure
 
@@ -259,11 +259,12 @@ Execute after B08–B12 so final Home/Timeline/`+`/editors/actions/navigation ar
 B00–B06 ✅ CLOSED / PROVEN
 B07     ⏸ DEFERRED
 B08     🟡 IN PROGRESS
-B08-A   🟡 IMPLEMENTED / AWAITING USER LOCAL + MANUAL PROOF
-B08-B   ⬜ BLOCKED
-B08-C-D ⬜ BLOCKED
+B08-A   ✅ CLOSED / USER-REPORTED VIA B08-B DEPENDENCY
+B08-B   ✅ CLOSED / USER-REPORTED 2026-09-24
+B08-C   🟡 IMPLEMENTED / USER PROOF PENDING
+B08-D   ⬜ WHOLE-BLOCK CLOSURE
 B09–B12 ⬜ NOT STARTED
 B15     ⬜ NOT STARTED
 ```
 
-**Current action:** prove the repaired B08-A at Alembic `_60`; do not start B08-B first.
+**Current action:** user runs the B08-C `_65` proof bundle and B08-D whole-block regression/dogfood.

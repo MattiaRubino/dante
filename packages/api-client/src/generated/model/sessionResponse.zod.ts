@@ -8,6 +8,8 @@ import * as zod from 'zod/mini';
 
 export const sessionResponseActiveSecondsMin = 0;
 
+export const sessionResponseDurationEvaluationsItemMinimumDurationMicrosecondsExclusiveMin = 0;
+
 export const sessionResponseElapsedSecondsMin = 0;
 
 export const sessionResponsePausedSecondsMin = 0;
@@ -16,6 +18,23 @@ export const SessionResponse = /*#__PURE__*/ zod.object({
   active_seconds: /*#__PURE__*/ zod
     .number()
     .check(/*#__PURE__*/ zod.gte(sessionResponseActiveSecondsMin)),
+  duration_evaluations: /*#__PURE__*/ zod.array(
+    /*#__PURE__*/ zod.object({
+      constraint_ref: /*#__PURE__*/ zod.uuid(),
+      evaluation: /*#__PURE__*/ zod.enum(['pending', 'satisfied', 'violated']),
+      material_state_ref: /*#__PURE__*/ zod.uuid(),
+      minimum_duration_microseconds: /*#__PURE__*/ zod
+        .int()
+        .check(
+          /*#__PURE__*/ zod.gt(
+            sessionResponseDurationEvaluationsItemMinimumDurationMicrosecondsExclusiveMin,
+          ),
+        ),
+      strength: /*#__PURE__*/ zod
+        .literal('soft')
+        .check(/*#__PURE__*/ zod.meta({ title: 'Strength' })),
+    }),
+  ),
   elapsed_seconds: /*#__PURE__*/ zod
     .number()
     .check(/*#__PURE__*/ zod.gte(sessionResponseElapsedSecondsMin)),

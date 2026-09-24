@@ -6,8 +6,8 @@
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
-- **Timeline candidate Alembic head:** `20260924_60`
-- **Timeline candidate topology awaiting local proof:** `148|5|94|93|290|230|414|0|0|0`
+- **Timeline candidate Alembic head:** `20260924_65`
+- **Timeline candidate topology awaiting local proof:** `150|5|99|93|292|236|418|0|0|0`
 - **Timeline candidate DB overlay:** `timeline-temporal-operational.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 - **Persistence ADR:** `../decisions/ADR-010-postgresql-persistence-constitution.md`
@@ -60,6 +60,14 @@ Protected `main` remains integration authority. Candidate truth is never relabel
 20260924_59 B08-A exact Activity/Occurrence subject-family repair
     ↓
 20260924_60 B08-A immutable Session END MaterialState repair
+    ↓
+20260924_61 B08-A END qualification
+    ↓
+20260924_62 → 20260924_63 B08-B pause/resume + replay repair
+    ↓
+20260924_64 B08-B runtime metrics
+    ↓
+20260924_65 B08-C Session active-duration TC-009
 ```
 
 No accepted historical migration was edited, rebased, renumbered or flattened. `_59` and `_60` are forward-only repairs.
@@ -67,13 +75,13 @@ No accepted historical migration was edited, rebased, renumbered or flattened. `
 ## 3. Current candidate topology
 
 ```text
-148 tables
+150 tables
 5 views
-94 routines
+99 routines
 93 triggers
-290 physical indexes
-230 foreign keys
-414 CHECK constraints
+292 physical indexes
+236 foreign keys
+418 CHECK constraints
 0 enums/domains
 0 sequences
 0 materialized views
@@ -81,7 +89,7 @@ No accepted historical migration was edited, rebased, renumbered or flattened. `
 0 RLS policies
 ```
 
-The `_60` delta is one FK on `session_end_operation.resulting_material_state_ref`; the END routine signature is replaced rather than duplicated.
+The `_60` delta is one FK on `session_end_operation.resulting_material_state_ref`; the END routine signature is replaced rather than duplicated. `_61`–`_64` add B08-A/B Session lifecycle and metrics. `_65` changes no object counts and activates B08-C using the existing duration tables and governed mutation routine.
 
 ## 4. Timeline persistence classification
 
@@ -175,8 +183,8 @@ B01–B06                              CLOSED / PROVEN
 B08-A `_58` base implementation       implemented
 B08-A `_59` family repair             implemented
 B08-A `_60` immutable-END repair      implemented
-B08-A automated local proof          ⬜ user rerun required
-B08-A real-stack product proof       ⬜ required
+B08-A/B automated + real-stack proof ✅ CLOSED PER USER-REPORTED B08-B DEPENDENCY
+B08-C `_65` automated + real-stack    ⬜ user proof required
 ```
 
-Therefore `_60` is current **candidate source truth**, not yet a `CLOSED / PROVEN` B08-A closure. B08-B remains blocked until those gates pass.
+B08-A/B are treated as closed based on the user’s B08-B closure report; their exact test logs are not committed. B08-C `_65` is the current candidate source truth and awaits user-run proof.

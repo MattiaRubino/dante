@@ -1,11 +1,11 @@
 # Timeline / Temporal-Operational — Candidate Database Overlay
 
-- **Status:** CURRENT CANDIDATE DATABASE AUTHORITY — B08-A repaired, awaiting user proof
+- **Status:** CURRENT CANDIDATE DATABASE AUTHORITY — B08-C implementation, awaiting user proof
 - **Reconciled:** 2026-09-24
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
-- **Candidate source head:** `20260924_60`
-- **Candidate topology awaiting B08-A proof:** `148|5|94|93|290|230|414|0|0|0`
+- **Candidate source head:** `20260924_65`
+- **Candidate topology awaiting B08-C proof:** `150|5|99|93|292|236|418|0|0|0`
 - **Whole-DB SoR:** `README.md`
 - **Machine-readable authority:** `dictionary/`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
@@ -47,6 +47,16 @@ Product / Domain / Logical / Physical
 20260924_59 B08-A exact Activity/Occurrence subject-family repair
     ↓
 20260924_60 B08-A immutable END MaterialState repair
+    ↓
+20260924_61 B08-A END qualification
+    ↓
+20260924_62 B08-B pause/resume immutable transitions
+    ↓
+20260924_63 B08-B transition replay repair
+    ↓
+20260924_64 B08-B elapsed/paused/active runtime metrics
+    ↓
+20260924_65 B08-C TC-009 Session active-duration rule
 ```
 
 `_59` and `_60` are forward-only repairs of contracts introduced by `_58`.
@@ -54,14 +64,14 @@ Product / Domain / Logical / Physical
 ## 3. Current candidate topology
 
 ```text
-Alembic     20260924_60
-Tables      148
+Alembic     20260924_65
+Tables      150
 Views       5
-Routines    94
+Routines    99
 Triggers    93
-Indexes     290
-FKs         230
-CHECKs      414
+Indexes     292
+FKs         236
+CHECKs      418
 Enums       0
 Domains     0
 Sequences   0
@@ -69,7 +79,7 @@ Materialized/partitioned 0
 RLS         0
 ```
 
-`_60` adds one FK from the Session END receipt to the exact resulting `MaterialStateRef`; it replaces the END routine signature without adding another routine.
+`_60` adds one FK from the Session END receipt to the exact resulting `MaterialStateRef`; it replaces the END routine signature without adding another routine. `_61`–`_64` extend B08-A/B Session lifecycle and metrics. `_65` changes no object counts: it widens the existing constrained-facet CHECK, replaces deferred totality, and forward-renames/replaces the duration mutation routine; routine counts stay flat.
 
 ## 4. B08-A Session persistence
 
@@ -149,7 +159,7 @@ Session START on an unplaced Activity is valid and must not fabricate Schedule.
 Deferred constraint families remain:
 
 ```text
-TC-009 contiguous Session duration  → B08-C
+TC-009 Session active-duration minimum → activated in B08-C `_65`; user proof pending
 TC-010 spacing/recovery             → later anchor-specific reopening
 TC-011 relative before/after        → future bounded relation/reference review
 ```
@@ -161,9 +171,20 @@ B01–B06                              ✅ CLOSED / PROVEN
 B08-A `_58` base implementation       implemented
 B08-A `_59` subject-family repair     implemented
 B08-A `_60` immutable-END repair      implemented
-B08-A automated proof                ⬜ user rerun required
-B08-A real-stack Activity proof      ⬜ required
-B08-A real-stack Occurrence proof    ⬜ required
+B08-A automated + real-stack proof ✅ CLOSED PER USER-REPORTED B08-B DEPENDENCY
+B08-B pause/resume + metric proof   ✅ CLOSED PER USER REPORT
+B08-C `_65` proof                   ⬜ user rerun required
 ```
 
-Until those B08-A gates pass, `_60` is **candidate source truth, not proven closure**. B08-B remains blocked.
+B08-A and B08-B are treated as closed based on the user’s B08-B closure report; the original local logs are not stored here. B08-C `_65` is candidate source truth awaiting user-run proof, not protected-main or proven integrated truth.
+
+
+## 7. B08-B / B08-C candidate database semantics
+
+B08-B `_62`–`_64` reuses the CP6 Session timing substrate and returns elapsed, paused and active seconds from canonical timing and pause facts. It adds no parallel Session table. The user reported B08-B closed on 2026-09-24.
+
+B08-C `_65` activates `duration / session.active_duration` only for a soft minimum rule directly owned by an Activity. It reuses `temporal_constraint_state`, `temporal_constraint_duration_state`, the existing current-history envelope and the existing duration mutation capability. DB totality admits Schedule placement minimum/maximum as before, or Session active-duration minimum + soft + Activity only. No new object is added.
+
+Runtime Session reads query only the authenticated Activity’s current duration rule and compare it to that one Session’s `active_seconds`; paused time is excluded. An open under-threshold Session is pending; an ended under-threshold Session is violated. Schedule evaluation excludes this facet. The evaluation is not persisted and never blocks Pause/Resume/End or creates Schedule/completion/Actual/Outcome.
+
+Dictionary, SQLAlchemy mapping and migration `_65` define the same `session.active_duration` facet contract. The B08-C freeze specifies the exact admitted subset and proof obligations.

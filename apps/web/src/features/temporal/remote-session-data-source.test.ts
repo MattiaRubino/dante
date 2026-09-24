@@ -22,6 +22,15 @@ const openSession = {
   elapsed_seconds: 1800,
   paused_seconds: 300,
   active_seconds: 1500,
+  duration_evaluations: [],
+} as const;
+
+const minimumEvaluation = {
+  constraint_ref: '01991f2a-1234-7abc-8def-1234567890ae',
+  material_state_ref: '01991f2a-1234-7abc-8def-1234567890af',
+  minimum_duration_microseconds: 2_700_000_000,
+  strength: 'soft',
+  evaluation: 'pending',
 } as const;
 
 describe('remote session data source', () => {
@@ -74,6 +83,23 @@ describe('remote session data source', () => {
     expect(listed[0]?.sessionRef).toBe(SESSION);
     expect(listed[0]?.evaluatedAt).toBe('2026-09-24T07:30:00Z');
     expect(fetchFn).toHaveBeenCalledTimes(1);
+  });
+
+  it('parses canonical Session duration evaluations', async () => {
+    const fetchFn = vi.fn<typeof fetch>(async () =>
+      Response.json({ ...openSession, duration_evaluations: [minimumEvaluation] }),
+    );
+    const source = createRemoteTemporalSessionDataSource(fetchFn);
+    const listed = await source.list('activity', SUBJECT);
+    expect(listed[0]?.durationEvaluations).toEqual([
+      {
+        constraintRef: minimumEvaluation.constraint_ref,
+        materialStateRef: minimumEvaluation.material_state_ref,
+        minimumDurationMicroseconds: minimumEvaluation.minimum_duration_microseconds,
+        strength: 'soft',
+        evaluation: 'pending',
+      },
+    ]);
   });
 
   it('ends a Session with the expected timing MaterialStateRef', async () => {

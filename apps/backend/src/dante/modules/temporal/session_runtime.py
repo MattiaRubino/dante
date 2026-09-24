@@ -6,6 +6,7 @@ import hashlib
 import json
 from dataclasses import dataclass, replace
 from datetime import datetime
+from decimal import Decimal
 from typing import Literal
 from uuid import UUID
 
@@ -17,6 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from dante.platform.database.references import (
     MaterialStateRef,
     NativeRef,
+    ScopedRecordRef,
     new_material_state_ref,
     new_native_ref,
 )
@@ -53,6 +55,17 @@ class SessionPersistenceError(RuntimeError):
 
 
 @dataclass(frozen=True, slots=True)
+class SessionDurationEvaluation:
+    """Current direct Activity rule evaluated against this Session's active time."""
+
+    constraint_ref: ScopedRecordRef
+    material_state_ref: MaterialStateRef
+    minimum_duration_microseconds: int
+    strength: Literal["soft"]
+    evaluation: Literal["pending", "satisfied", "violated"]
+
+
+@dataclass(frozen=True, slots=True)
 class SessionView:
     """Authoritative Session projection derived from canonical timing facts."""
 
@@ -67,6 +80,7 @@ class SessionView:
     elapsed_seconds: float = 0.0
     paused_seconds: float = 0.0
     active_seconds: float = 0.0
+    duration_evaluations: tuple[SessionDurationEvaluation, ...] = ()
 
     @property
     def open(self) -> bool:
@@ -289,15 +303,45 @@ class SessionApplication:
     ) -> SessionView:
         rows = await self._rows(
             """
-            SELECT paused, evaluated_at, elapsed_seconds, paused_seconds, active_seconds
+            SELECT metrics.paused,
+                   metrics.evaluated_at,
+                   metrics.elapsed_seconds,
+                   metrics.paused_seconds,
+                   metrics.active_seconds,
+                   constraint_row.constraint_ref,
+                   state.material_state_ref AS constraint_material_state_ref,
+                   state.strength_code,
+                   duration_state.duration_microseconds
               FROM dante.get_self_session_runtime_metrics(
                 :actor, :session_ref, :material_state_ref
-              )
+              ) AS metrics
+              LEFT JOIN dante.temporal_constraint AS constraint_row
+                ON constraint_row.subject_native_ref=:subject_native_ref
+              LEFT JOIN dante.native_address AS subject_address
+                ON subject_address.native_ref=constraint_row.subject_native_ref
+               AND subject_address.owner_family='activity'
+              LEFT JOIN dante.activity_intention AS activity
+                ON activity.activity_ref=constraint_row.subject_native_ref
+               AND activity.self_person_ref=:actor
+              LEFT JOIN dante.scoped_current_material_state AS current
+                ON current.scoped_owner_ref=constraint_row.constraint_ref
+               AND current.facet_code='temporal_constraint.rule'
+               AND activity.activity_ref IS NOT NULL
+              LEFT JOIN dante.temporal_constraint_state AS state
+                ON state.constraint_ref=constraint_row.constraint_ref
+               AND state.material_state_ref=current.material_state_ref
+               AND state.family_code='duration'
+               AND state.constrained_facet_code='session.active_duration'
+              LEFT JOIN dante.temporal_constraint_duration_state AS duration_state
+                ON duration_state.material_state_ref=state.material_state_ref
+               AND duration_state.duration_kind_code='minimum'
+             ORDER BY constraint_row.constraint_ref
             """,
             {
                 "actor": self_person_ref,
                 "session_ref": view.session_ref,
                 "material_state_ref": view.timing_material_state_ref,
+                "subject_native_ref": view.subject_native_ref,
             },
         )
         if not rows:
@@ -313,7 +357,55 @@ class SessionApplication:
             elapsed_seconds=float(row["elapsed_seconds"]),
             paused_seconds=float(row["paused_seconds"]),
             active_seconds=float(row["active_seconds"]),
+            duration_evaluations=self._duration_evaluations(
+                rows=rows,
+                session=view,
+            ),
         )
+
+    @staticmethod
+    def _duration_evaluations(
+        *,
+        rows: list[RowMapping],
+        session: SessionView,
+    ) -> tuple[SessionDurationEvaluation, ...]:
+        # Rule reads and metrics share one PostgreSQL statement snapshot. An
+        # Occurrence gets no inherited rule because only direct Activity ownership joins.
+        result: list[SessionDurationEvaluation] = []
+        for row in rows:
+            if row["duration_microseconds"] is None:
+                continue
+            strength = row["strength_code"]
+            threshold = row["duration_microseconds"]
+            active_seconds = row["active_seconds"]
+            if (
+                strength != "soft"
+                or not isinstance(threshold, int)
+                or threshold <= 0
+                or not isinstance(active_seconds, (int, Decimal))
+                or active_seconds < 0
+            ):
+                raise SessionPersistenceError("Stored Session duration constraint is invalid.")
+            met = active_seconds * 1_000_000 >= threshold
+            evaluation: Literal["pending", "satisfied", "violated"] = (
+                "satisfied"
+                if met
+                else "pending"
+                if session.open
+                else "violated"
+            )
+            result.append(
+                SessionDurationEvaluation(
+                    constraint_ref=ScopedRecordRef(UUID(str(row["constraint_ref"]))),
+                    material_state_ref=MaterialStateRef(
+                        UUID(str(row["constraint_material_state_ref"]))
+                    ),
+                    minimum_duration_microseconds=threshold,
+                    strength="soft",
+                    evaluation=evaluation,
+                )
+            )
+        return tuple(result)
 
     async def _call(self, statement: str, parameters: dict[str, object]) -> SessionView:
         rows = await self._rows(statement, parameters)
