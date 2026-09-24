@@ -18,6 +18,10 @@ const openSession = {
   open: true,
   replayed: false,
   paused: false,
+  evaluated_at: '2026-09-24T07:30:00Z',
+  elapsed_seconds: 1800,
+  paused_seconds: 300,
+  active_seconds: 1500,
 } as const;
 
 describe('remote session data source', () => {
@@ -37,6 +41,9 @@ describe('remote session data source', () => {
     const started = await source.start('activity', SUBJECT, 'op-1');
     expect(started.open).toBe(true);
     expect(started.sessionRef).toBe(SESSION);
+    expect(started.elapsedSeconds).toBe(1800);
+    expect(started.pausedSeconds).toBe(300);
+    expect(started.activeSeconds).toBe(1500);
   });
 
   it('starts an Occurrence Session through the occurrence endpoint', async () => {
@@ -65,6 +72,7 @@ describe('remote session data source', () => {
     const listed = await source.list('activity', SUBJECT);
     expect(listed).toHaveLength(1);
     expect(listed[0]?.sessionRef).toBe(SESSION);
+    expect(listed[0]?.evaluatedAt).toBe('2026-09-24T07:30:00Z');
     expect(fetchFn).toHaveBeenCalledTimes(1);
   });
 
@@ -83,6 +91,10 @@ describe('remote session data source', () => {
       return Response.json({
         ...openSession,
         ended_at: '2026-09-24T08:00:00Z',
+        evaluated_at: '2026-09-24T08:00:00Z',
+        elapsed_seconds: 3600,
+        paused_seconds: 300,
+        active_seconds: 3300,
         open: false,
       });
     });
@@ -90,6 +102,7 @@ describe('remote session data source', () => {
     const ended = await source.end(SESSION, STATE, 'op-end');
     expect(ended.open).toBe(false);
     expect(ended.endedAt).toBe('2026-09-24T08:00:00Z');
+    expect(ended.activeSeconds).toBe(3300);
   });
 
   it('pauses and resumes with the authoritative MaterialStateRef', async () => {
@@ -110,8 +123,20 @@ describe('remote session data source', () => {
       return Response.json(openSession);
     });
     const source = createRemoteTemporalSessionDataSource(fetchFn);
-    expect((await source.pause(SESSION, STATE, 'op-transition')).paused).toBe(true);
+    const paused = await source.pause(SESSION, STATE, 'op-transition');
+    expect(paused.paused).toBe(true);
+    expect(paused.elapsedSeconds).toBe(paused.activeSeconds + paused.pausedSeconds);
     expect((await source.resume(SESSION, STATE, 'op-transition')).paused).toBe(false);
+  });
+
+  it('rejects malformed duration totals at the transport boundary', async () => {
+    const fetchFn = vi.fn<typeof fetch>(async () =>
+      Response.json({ ...openSession, paused_seconds: 1900 }),
+    );
+    const source = createRemoteTemporalSessionDataSource(fetchFn);
+    await expect(source.list('activity', SUBJECT)).rejects.toMatchObject({
+      kind: 'protocol',
+    });
   });
 
   it('preserves the canonical HTTP problem code for conflicts', async () => {
