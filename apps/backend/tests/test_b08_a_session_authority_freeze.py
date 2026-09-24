@@ -5,8 +5,13 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from typing import Any
+from uuid import UUID
+
+import pytest
+from pydantic import ValidationError
 
 from dante.bootstrap.openapi_export import openapi_document
+from dante.modules.temporal.session_api import SessionEndCommand, SessionTransitionCommand
 from dante.platform.database.mappings import MAPPED_TABLES
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -114,3 +119,18 @@ def test_b08_session_http_operations_and_duration_contract_are_explicit() -> Non
         "active_seconds",
         "duration_evaluations",
     } <= required
+
+
+def test_session_transitions_accept_json_uuid_string_and_reject_invalid_refs() -> None:
+    material_state_ref = "0199a8c0-7e73-7de2-8cf2-c4062517839f"
+    payload = {
+        "operation_id": "session-transition-json",
+        "expected_material_state_ref": material_state_ref,
+    }
+    for command in (SessionTransitionCommand, SessionEndCommand):
+        validated = command.model_validate(payload)
+        assert validated.expected_material_state_ref == UUID(material_state_ref)
+        with pytest.raises(ValidationError):
+            command.model_validate({**payload, "expected_material_state_ref": "not-a-uuid"})
+        with pytest.raises(ValidationError):
+            command.model_validate({**payload, "unexpected_field": True})
