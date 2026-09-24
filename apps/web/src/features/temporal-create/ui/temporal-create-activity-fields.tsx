@@ -405,8 +405,8 @@ export function TemporalCreateActivityFields({
               <input
                 data-create-path="execution.minSessionMinutes"
                 type="number"
-                min="5"
-                step="5"
+                min="1"
+                step="1"
                 value={execution.minSessionMinutes}
                 onChange={(event) =>
                   patchExecution({
