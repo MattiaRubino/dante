@@ -75,6 +75,8 @@ MAPPED_TABLES: tuple[Table, ...] = cast(
         responsibility_participation.ActivityResponsibilityOperationRow.__table__,
         responsibility_participation.EventResponsibilityOperationRow.__table__,
         responsibility_participation.EventExpectedParticipationOperationRow.__table__,
+        responsibility_participation.PersonReferentCatalogRow.__table__,
+        responsibility_participation.PersonReferentOperationRow.__table__,
         routine.RoutineIntentionRow.__table__,
         routine.RoutineOperationRow.__table__,
         routine.RoutineLifeAreaAssignmentRow.__table__,
