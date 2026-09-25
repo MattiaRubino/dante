@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKeyConstraint, Index, Text
+from sqlalchemy import BigInteger, CheckConstraint, DateTime, ForeignKeyConstraint, Index, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from dante.platform.database.metadata import Base
@@ -223,4 +223,60 @@ class EventExpectedParticipationOperationRow(Base):
     event_ref: Mapped[NativeRef] = mapped_column(nullable=False)
     participant_person_ref: Mapped[NativeRef] = mapped_column(nullable=False)
     requirement_code: Mapped[str | None] = mapped_column(Text)
+    accepted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class PersonReferentCatalogRow(Base):
+    """Owner-local display label for a native, possibly non-Account Person."""
+
+    __tablename__ = "person_referent_catalog"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["self_person_ref"], ["dante.person.person_ref"],
+            name="fk_person_referent_catalog_self_person",
+        ),
+        ForeignKeyConstraint(
+            ["person_ref"], ["dante.person.person_ref"],
+            name="fk_person_referent_catalog_person",
+        ),
+        CheckConstraint("btrim(display_label)<>'' AND char_length(display_label)<=100", name="label"),
+        CheckConstraint("revision>=1", name="revision"),
+    )
+
+    self_person_ref: Mapped[NativeRef] = mapped_column(primary_key=True)
+    person_ref: Mapped[NativeRef] = mapped_column(primary_key=True)
+    display_label: Mapped[str] = mapped_column(Text, nullable=False)
+    revision: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class PersonReferentOperationRow(Base):
+    """Immutable receipt for a local referent create or label correction."""
+
+    __tablename__ = "person_referent_operation"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["self_person_ref", "person_ref"],
+            ["dante.person_referent_catalog.self_person_ref",
+             "dante.person_referent_catalog.person_ref"],
+            name="fk_person_referent_operation_catalog",
+        ),
+        CheckConstraint(
+            "operation_id=btrim(operation_id) AND operation_id<>'' "
+            "AND char_length(operation_id)<=200", name="id",
+        ),
+        CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name="fingerprint"),
+        CheckConstraint("operation_kind IN ('create','rename')", name="kind"),
+        CheckConstraint("btrim(display_label)<>'' AND char_length(display_label)<=100", name="label"),
+        CheckConstraint("resulting_revision>=1", name="revision"),
+    )
+
+    self_person_ref: Mapped[NativeRef] = mapped_column(primary_key=True)
+    operation_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    intent_fingerprint: Mapped[str] = mapped_column(Text, nullable=False)
+    operation_kind: Mapped[str] = mapped_column(Text, nullable=False)
+    person_ref: Mapped[NativeRef] = mapped_column(nullable=False)
+    display_label: Mapped[str] = mapped_column(Text, nullable=False)
+    resulting_revision: Mapped[int] = mapped_column(BigInteger, nullable=False)
     accepted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
