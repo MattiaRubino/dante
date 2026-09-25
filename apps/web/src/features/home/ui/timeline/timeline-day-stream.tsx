@@ -243,13 +243,8 @@ function TimelineEventCard({
         <button
           className="timeline-event-card__title"
           type="button"
-          tabIndex={inlineActionsEnabled ? 0 : -1}
           onClick={(clickEvent) => {
             clickEvent.stopPropagation();
-            if (!inlineActionsEnabled) {
-              onFocusEvent(event.id);
-              return;
-            }
             onOpenEventDetail(event, clickEvent.currentTarget);
           }}
         >
@@ -1249,7 +1244,7 @@ export function TimelineDayStream({
             return;
           }
 
-          if (!focusedEvent || pointerIsInsideFocusedCard(target)) {
+          if (!focusedEvent || targetCard !== null || pointerIsInsideFocusedCard(target)) {
             return;
           }
           clickEvent.stopPropagation();
