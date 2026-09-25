@@ -2,7 +2,7 @@
 
 - **Branch:** `feature/timeline-temporal-operational`
 - **Baseline:** B09-C proven at Alembic `20260925_69`, topology `158|5|109|93|303|254|433`
-- **State:** IMPLEMENTATION CANDIDATE — B09-D automated and user real-app proof pending
+- **State:** AUTOMATED PROOF PASSED — user real-app proof pending
 - **Scope:** B09-A typed roles + B09-B guarded authoring + B09-C owner-local non-Account Persons
 
 ## Accepted contract
@@ -29,7 +29,7 @@ The added API/PostgreSQL test `tests/integration/temporal/test_b09_d_whole_block
 
 The UI test extends `responsibility-controls.test.tsx` with a created Person, label correction, persisted Responsibility and expected Participation, followed by both removals.
 
-**Automated B09-D result:** PENDING USER-RUN LOCAL TESTS. Report the actual commands, counts and any repairs before marking this proof PASS. Re-run the focused suite after any code repair.
+**Automated B09-D result (user-run, 2026-09-25):** web typecheck exit 0; focused responsibility controls and remote source tests 8 passed across 2 files (exit 0); focused PostgreSQL B09-D/B09-C/B09-B/B09-A/current-catalog suite 18 passed (exit 0). The checkout reported no changes in `git status --short`. These results validate the candidate branch only.
 
 ## User real-app verification — required before whole-B09 closure
 
