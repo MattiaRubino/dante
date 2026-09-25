@@ -120,6 +120,7 @@ MAPPED_TABLES: tuple[Table, ...] = cast(
         actual.ActualRealizationTimingRow.__table__,
         actual.ActualRealizationSessionBasisRow.__table__,
         actual.ActualRealizationCurrentHistoryRow.__table__,
+        actual.ActualRealizationOperationRow.__table__,
         session.SessionTimingStateRow.__table__,
         session.SessionTimingAbsoluteRow.__table__,
         session.SessionTimingElapsedRow.__table__,
