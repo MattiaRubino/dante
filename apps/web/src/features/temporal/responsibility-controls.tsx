@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import './responsibility-controls.css';
 
@@ -10,7 +10,6 @@ import {
   type TemporalResponsibilityView,
 } from './remote-responsibility-data-source';
 
-const source = createRemoteTemporalResponsibilityDataSource();
 
 function operationId(): string {
   return crypto.randomUUID();
@@ -34,6 +33,11 @@ export function ResponsibilityControls({
   kind: ResponsibilitySubjectKind;
   subjectRef: string;
 }>) {
+  const source = useMemo(
+    () => createRemoteTemporalResponsibilityDataSource(globalThis.fetch),
+    [],
+  );
+
   const [responsibility, setResponsibility] =
     useState<TemporalResponsibilityView | null>(null);
   const [participation, setParticipation] = useState<
