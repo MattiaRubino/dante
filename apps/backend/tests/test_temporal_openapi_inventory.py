@@ -16,7 +16,7 @@ _PRE_B04_TEMPORAL_OPERATIONS = {
     ("/api/v1/temporal/timeline/window", "get"): (
         "get_timeline_window_api_v1_temporal_timeline_window_get"
     ),
-    ("/api/v1/temporal/activities", "post"): ("create_activity_api_v1_temporal_activities_post"),
+    ("/api/v1/temporal/activities", "post"): "create_activity_api_v1_temporal_activities_post",
     ("/api/v1/temporal/activities/scheduled", "post"): (
         "create_scheduled_activity_api_v1_temporal_activities_scheduled_post"
     ),
@@ -38,7 +38,7 @@ _PRE_B04_TEMPORAL_OPERATIONS = {
     ("/api/v1/temporal/activities/{activity_ref}", "get"): (
         "get_activity_api_v1_temporal_activities__activity_ref__get"
     ),
-    ("/api/v1/temporal/events", "post"): ("create_event_api_v1_temporal_events_post"),
+    ("/api/v1/temporal/events", "post"): "create_event_api_v1_temporal_events_post",
     ("/api/v1/temporal/events/scheduled", "post"): (
         "create_scheduled_event_api_v1_temporal_events_scheduled_post"
     ),
@@ -56,68 +56,34 @@ _PRE_B04_TEMPORAL_OPERATIONS = {
 _EXPECTED_TEMPORAL_OPERATIONS = {
     **_PRE_B04_TEMPORAL_OPERATIONS,
     ("/api/v1/temporal/events/postponed", "get"): "temporal_list_postponed_events",
-    (
-        "/api/v1/temporal/events/{event_ref}/schedules/{schedule_ref}/replan",
-        "put",
-    ): "temporal_replan_postponed_event",
+    ("/api/v1/temporal/events/{event_ref}/schedules/{schedule_ref}/replan", "put"): "temporal_replan_postponed_event",
     ("/api/v1/temporal/life-areas", "post"): "temporal_create_life_area",
     ("/api/v1/temporal/life-areas", "get"): "temporal_list_life_areas",
     ("/api/v1/temporal/life-areas/order", "put"): "temporal_reorder_life_areas",
     ("/api/v1/temporal/life-areas/{life_area_ref}/name", "patch"): "temporal_rename_life_area",
     ("/api/v1/temporal/life-areas/{life_area_ref}/archive", "post"): "temporal_archive_life_area",
-    (
-        "/api/v1/temporal/life-areas/{life_area_ref}/visibility",
-        "put",
-    ): "temporal_set_life_area_visibility",
-    (
-        "/api/v1/temporal/life-areas/{life_area_ref}/appearance",
-        "put",
-    ): "temporal_set_life_area_appearance",
+    ("/api/v1/temporal/life-areas/{life_area_ref}/visibility", "put"): "temporal_set_life_area_visibility",
+    ("/api/v1/temporal/life-areas/{life_area_ref}/appearance", "put"): "temporal_set_life_area_appearance",
     ("/api/v1/temporal/life-area-assignments", "get"): "temporal_list_life_area_assignments",
     ("/api/v1/temporal/tags", "post"): "temporal_create_product_tag",
     ("/api/v1/temporal/tags", "get"): "temporal_list_product_tags",
     ("/api/v1/temporal/tags/{tag_ref}/name", "put"): "temporal_rename_product_tag",
     ("/api/v1/temporal/tags/{tag_ref}/archive", "post"): "temporal_archive_product_tag",
     ("/api/v1/temporal/tags/assignments", "get"): "temporal_list_item_tags",
-    (
-        "/api/v1/temporal/activities/{activity_ref}/tags/{tag_ref}/attach",
-        "post",
-    ): "temporal_attach_activity_tag",
-    (
-        "/api/v1/temporal/activities/{activity_ref}/tags/{tag_ref}/detach",
-        "post",
-    ): "temporal_detach_activity_tag",
-    (
-        "/api/v1/temporal/events/{event_ref}/tags/{tag_ref}/attach",
-        "post",
-    ): "temporal_attach_event_tag",
-    (
-        "/api/v1/temporal/events/{event_ref}/tags/{tag_ref}/detach",
-        "post",
-    ): "temporal_detach_event_tag",
-    (
-        "/api/v1/temporal/life-area-assignments/unassigned",
-        "get",
-    ): "temporal_list_unassigned_life_area_items",
-    (
-        "/api/v1/temporal/life-area-assignments/activities/{activity_ref}",
-        "put",
-    ): "temporal_assign_activity_life_area",
-    (
-        "/api/v1/temporal/life-area-assignments/events/{event_ref}",
-        "put",
-    ): "temporal_assign_event_life_area",
+    ("/api/v1/temporal/activities/{activity_ref}/tags/{tag_ref}/attach", "post"): "temporal_attach_activity_tag",
+    ("/api/v1/temporal/activities/{activity_ref}/tags/{tag_ref}/detach", "post"): "temporal_detach_activity_tag",
+    ("/api/v1/temporal/events/{event_ref}/tags/{tag_ref}/attach", "post"): "temporal_attach_event_tag",
+    ("/api/v1/temporal/events/{event_ref}/tags/{tag_ref}/detach", "post"): "temporal_detach_event_tag",
+    ("/api/v1/temporal/life-area-assignments/unassigned", "get"): "temporal_list_unassigned_life_area_items",
+    ("/api/v1/temporal/life-area-assignments/activities/{activity_ref}", "put"): "temporal_assign_activity_life_area",
+    ("/api/v1/temporal/life-area-assignments/events/{event_ref}", "put"): "temporal_assign_event_life_area",
     ("/api/v1/temporal/constraints", "post"): "temporal_create_constraint",
-    ("/api/v1/temporal/constraints", "get"): ("temporal_list_constraints_by_subject"),
-    ("/api/v1/temporal/constraints/evaluate", "post"): ("temporal_evaluate_constraints"),
-    ("/api/v1/temporal/constraints/{constraint_ref}", "get"): ("temporal_get_constraint"),
-    ("/api/v1/temporal/constraints/{constraint_ref}/rule", "patch"): (
-        "temporal_revise_constraint_rule"
-    ),
-    ("/api/v1/temporal/constraints/{constraint_ref}/retire", "post"): (
-        "temporal_retire_constraint"
-    ),
-    ("/api/v1/temporal/activities/constrained", "post"): ("temporal_create_constrained_activity"),
+    ("/api/v1/temporal/constraints", "get"): "temporal_list_constraints_by_subject",
+    ("/api/v1/temporal/constraints/evaluate", "post"): "temporal_evaluate_constraints",
+    ("/api/v1/temporal/constraints/{constraint_ref}", "get"): "temporal_get_constraint",
+    ("/api/v1/temporal/constraints/{constraint_ref}/rule", "patch"): "temporal_revise_constraint_rule",
+    ("/api/v1/temporal/constraints/{constraint_ref}/retire", "post"): "temporal_retire_constraint",
+    ("/api/v1/temporal/activities/constrained", "post"): "temporal_create_constrained_activity",
     ("/api/v1/temporal/routines", "get"): "temporal_list_routines",
     ("/api/v1/temporal/routines", "post"): "temporal_create_routine",
     ("/api/v1/temporal/recurring/routines", "post"): "temporal_create_recurring_routine",
@@ -126,134 +92,56 @@ _EXPECTED_TEMPORAL_OPERATIONS = {
     ("/api/v1/temporal/routines/{routine_ref}/pause", "post"): "temporal_pause_routine",
     ("/api/v1/temporal/routines/{routine_ref}/resume", "post"): "temporal_resume_routine",
     ("/api/v1/temporal/routines/{routine_ref}/end", "post"): "temporal_end_routine",
-    (
-        "/api/v1/temporal/routines/{routine_ref}/life-area",
-        "put",
-    ): "temporal_assign_routine_life_area",
-    (
-        "/api/v1/temporal/routines/{routine_ref}/tags/{tag_ref}/attach",
-        "post",
-    ): "temporal_attach_routine_tag",
-    (
-        "/api/v1/temporal/routines/{routine_ref}/tags/{tag_ref}/detach",
-        "post",
-    ): "temporal_detach_routine_tag",
-    ("/api/v1/temporal/routines/{routine_ref}/recurrence", "get"): (
-        "temporal_get_routine_recurrence"
-    ),
-    ("/api/v1/temporal/routines/{routine_ref}/recurrence", "put"): (
-        "temporal_replace_routine_recurrence"
-    ),
-    ("/api/v1/temporal/events/{event_ref}/recurrence", "get"): ("temporal_get_event_recurrence"),
-    ("/api/v1/temporal/events/{event_ref}/recurrence", "put"): (
-        "temporal_replace_event_recurrence"
-    ),
-    ("/api/v1/temporal/routines/{routine_ref}/occurrences/checkpoint", "post"): (
-        "temporal_checkpoint_routine_occurrences"
-    ),
-    ("/api/v1/temporal/events/{event_ref}/occurrences/checkpoint", "post"): (
-        "temporal_checkpoint_event_occurrences"
-    ),
-    ("/api/v1/temporal/occurrences/checkpoint", "post"): (
-        "temporal_checkpoint_occurrence_window"
-    ),
-    ("/api/v1/temporal/routines/{routine_ref}/occurrences/extra", "post"): (
-        "temporal_create_routine_extra_occurrence"
-    ),
-    ("/api/v1/temporal/events/{event_ref}/occurrences/extra", "post"): (
-        "temporal_create_event_extra_occurrence"
-    ),
+    ("/api/v1/temporal/routines/{routine_ref}/life-area", "put"): "temporal_assign_routine_life_area",
+    ("/api/v1/temporal/routines/{routine_ref}/tags/{tag_ref}/attach", "post"): "temporal_attach_routine_tag",
+    ("/api/v1/temporal/routines/{routine_ref}/tags/{tag_ref}/detach", "post"): "temporal_detach_routine_tag",
+    ("/api/v1/temporal/routines/{routine_ref}/recurrence", "get"): "temporal_get_routine_recurrence",
+    ("/api/v1/temporal/routines/{routine_ref}/recurrence", "put"): "temporal_replace_routine_recurrence",
+    ("/api/v1/temporal/events/{event_ref}/recurrence", "get"): "temporal_get_event_recurrence",
+    ("/api/v1/temporal/events/{event_ref}/recurrence", "put"): "temporal_replace_event_recurrence",
+    ("/api/v1/temporal/routines/{routine_ref}/occurrences/checkpoint", "post"): "temporal_checkpoint_routine_occurrences",
+    ("/api/v1/temporal/events/{event_ref}/occurrences/checkpoint", "post"): "temporal_checkpoint_event_occurrences",
+    ("/api/v1/temporal/occurrences/checkpoint", "post"): "temporal_checkpoint_occurrence_window",
+    ("/api/v1/temporal/routines/{routine_ref}/occurrences/extra", "post"): "temporal_create_routine_extra_occurrence",
+    ("/api/v1/temporal/events/{event_ref}/occurrences/extra", "post"): "temporal_create_event_extra_occurrence",
     ("/api/v1/temporal/occurrences/{occurrence_ref}", "get"): "temporal_get_occurrence",
-    ("/api/v1/temporal/occurrences/{occurrence_ref}/schedule", "post"): (
-        "temporal_establish_occurrence_schedule"
-    ),
-    ("/api/v1/temporal/occurrences/{occurrence_ref}/skip", "post"): ("temporal_skip_occurrence"),
-    ("/api/v1/temporal/activities/{activity_ref}/sessions", "post"): (
-        "temporal_start_activity_session"
-    ),
-    ("/api/v1/temporal/occurrences/{occurrence_ref}/sessions", "post"): (
-        "temporal_start_occurrence_session"
-    ),
-    ("/api/v1/temporal/activities/{activity_ref}/sessions", "get"): (
-        "temporal_list_activity_sessions"
-    ),
-    ("/api/v1/temporal/occurrences/{occurrence_ref}/sessions", "get"): (
-        "temporal_list_occurrence_sessions"
-    ),
+    ("/api/v1/temporal/occurrences/{occurrence_ref}/schedule", "post"): "temporal_establish_occurrence_schedule",
+    ("/api/v1/temporal/occurrences/{occurrence_ref}/skip", "post"): "temporal_skip_occurrence",
+    ("/api/v1/temporal/activities/{activity_ref}/sessions", "post"): "temporal_start_activity_session",
+    ("/api/v1/temporal/occurrences/{occurrence_ref}/sessions", "post"): "temporal_start_occurrence_session",
+    ("/api/v1/temporal/activities/{activity_ref}/sessions", "get"): "temporal_list_activity_sessions",
+    ("/api/v1/temporal/occurrences/{occurrence_ref}/sessions", "get"): "temporal_list_occurrence_sessions",
     ("/api/v1/temporal/sessions/{session_ref}", "get"): "temporal_get_session",
-    ("/api/v1/temporal/activities/{activity_ref}/responsibility", "put"): (
-        "temporal_set_activity_responsibility"
-    ),
-    ("/api/v1/temporal/activities/{activity_ref}/responsibility", "get"): (
-        "temporal_get_activity_responsibility"
-    ),
-    ("/api/v1/temporal/events/{event_ref}/responsibility", "put"): (
-        "temporal_set_event_responsibility"
-    ),
-    ("/api/v1/temporal/events/{event_ref}/responsibility", "get"): (
-        "temporal_get_event_responsibility"
-    ),
-    ("/api/v1/temporal/events/{event_ref}/expected-participation", "put"): (
-        "temporal_set_event_expected_participation"
-    ),
-    ("/api/v1/temporal/events/{event_ref}/expected-participation", "get"): (
-        "temporal_list_event_expected_participation"
-    ),
-    ("/api/v1/temporal/person-referents", "get"): (
-        "temporal_list_person_referents"
-    ),
-    ("/api/v1/temporal/person-referents", "post"): (
-        "temporal_create_person_referent"
-    ),
-    ("/api/v1/temporal/person-referents/{person_ref}", "patch"): (
-        "temporal_rename_person_referent"
-    ),
+    ("/api/v1/temporal/activities/{activity_ref}/responsibility", "put"): "temporal_set_activity_responsibility",
+    ("/api/v1/temporal/activities/{activity_ref}/responsibility", "get"): "temporal_get_activity_responsibility",
+    ("/api/v1/temporal/events/{event_ref}/responsibility", "put"): "temporal_set_event_responsibility",
+    ("/api/v1/temporal/events/{event_ref}/responsibility", "get"): "temporal_get_event_responsibility",
+    ("/api/v1/temporal/events/{event_ref}/expected-participation", "put"): "temporal_set_event_expected_participation",
+    ("/api/v1/temporal/events/{event_ref}/expected-participation", "get"): "temporal_list_event_expected_participation",
+    ("/api/v1/temporal/person-referents", "get"): "temporal_list_person_referents",
+    ("/api/v1/temporal/person-referents", "post"): "temporal_create_person_referent",
+    ("/api/v1/temporal/person-referents/{person_ref}", "patch"): "temporal_rename_person_referent",
     ("/api/v1/temporal/sessions/{session_ref}/end", "post"): "temporal_end_session",
     ("/api/v1/temporal/sessions/{session_ref}/pause", "post"): "temporal_pause_session",
     ("/api/v1/temporal/sessions/{session_ref}/resume", "post"): "temporal_resume_session",
-    ("/api/v1/temporal/routines/{routine_ref}/occurrences/exclusions", "post"): (
-        "temporal_exclude_routine_occurrence_coordinate"
-    ),
-    ("/api/v1/temporal/events/{event_ref}/occurrences/exclusions", "post"): (
-        "temporal_exclude_event_occurrence_coordinate"
-    ),
-    ("/api/v1/temporal/activities/{activity_ref}/actual", "post"): (
-        "temporal_record_activity_actual"
-    ),
-    ("/api/v1/temporal/activities/{activity_ref}/actual", "get"): (
-        "temporal_get_activity_actual"
-    ),
-    ("/api/v1/temporal/events/{event_ref}/actual", "post"): (
-        "temporal_record_event_actual"
-    ),
-    ("/api/v1/temporal/events/{event_ref}/actual", "get"): (
-        "temporal_get_event_actual"
-    ),
-    ("/api/v1/temporal/occurrences/{occurrence_ref}/actual", "post"): (
-        "temporal_record_occurrence_actual"
-    ),
-    ("/api/v1/temporal/occurrences/{occurrence_ref}/actual", "get"): (
-        "temporal_get_occurrence_actual"
-    ),
-    ("/api/v1/temporal/actuals/{actual_ref}/history", "get"): (
-        "temporal_list_actual_history"
-    ),
-    ("/api/v1/temporal/actuals/{actual_ref}/outcomes", "post"): (
-        "temporal_record_actual_outcome"
-    ),
-    ("/api/v1/temporal/actuals/{actual_ref}/outcomes/{vocabulary_code}", "get"): (
-        "temporal_get_actual_outcome"
-    ),
-    ("/api/v1/temporal/outcomes/{outcome_ref}/history", "get"): (
-        "temporal_list_outcome_history"
-    ),
+    ("/api/v1/temporal/routines/{routine_ref}/occurrences/exclusions", "post"): "temporal_exclude_routine_occurrence_coordinate",
+    ("/api/v1/temporal/events/{event_ref}/occurrences/exclusions", "post"): "temporal_exclude_event_occurrence_coordinate",
+    ("/api/v1/temporal/activities/{activity_ref}/actual", "post"): "temporal_record_activity_actual",
+    ("/api/v1/temporal/activities/{activity_ref}/actual", "get"): "temporal_get_activity_actual",
+    ("/api/v1/temporal/events/{event_ref}/actual", "post"): "temporal_record_event_actual",
+    ("/api/v1/temporal/events/{event_ref}/actual", "get"): "temporal_get_event_actual",
+    ("/api/v1/temporal/occurrences/{occurrence_ref}/actual", "post"): "temporal_record_occurrence_actual",
+    ("/api/v1/temporal/occurrences/{occurrence_ref}/actual", "get"): "temporal_get_occurrence_actual",
+    ("/api/v1/temporal/actuals/{actual_ref}/history", "get"): "temporal_list_actual_history",
+    ("/api/v1/temporal/actuals/{actual_ref}/outcomes/{vocabulary_code}", "post"): "temporal_record_actual_outcome",
+    ("/api/v1/temporal/actuals/{actual_ref}/outcomes/{vocabulary_code}", "get"): "temporal_get_actual_outcome",
+    ("/api/v1/temporal/outcomes/{outcome_ref}/history", "get"): "temporal_list_outcome_history",
 }
 
 
 def _temporal_operations(document: dict[str, Any]) -> dict[tuple[str, str], str]:
     paths = cast(dict[str, Any], document["paths"])
     inventory: dict[tuple[str, str], str] = {}
-
     for path, raw_path_item in paths.items():
         if not path.startswith("/api/v1/temporal/"):
             continue
@@ -262,16 +150,13 @@ def _temporal_operations(document: dict[str, Any]) -> dict[tuple[str, str], str]
             if method not in _HTTP_METHODS:
                 continue
             operation = cast(dict[str, Any], raw_operation)
-            operation_id = cast(str, operation["operationId"])
-            inventory[(path, method)] = operation_id
-
+            inventory[(path, method)] = cast(str, operation["operationId"])
     return inventory
 
 
 def test_complete_temporal_operation_inventory_and_operation_ids_are_frozen() -> None:
     """No Temporal endpoint may be lost, duplicated or silently renamed."""
     actual = _temporal_operations(openapi_document())
-
     assert actual == _EXPECTED_TEMPORAL_OPERATIONS
     assert len(set(actual.values())) == len(actual)
 
@@ -279,7 +164,6 @@ def test_complete_temporal_operation_inventory_and_operation_ids_are_frozen() ->
 def test_post_b03_temporal_operations_use_explicit_semantic_operation_ids() -> None:
     """Only the frozen pre-B04 surface may retain implicit FastAPI operationIds."""
     actual = _temporal_operations(openapi_document())
-
     for key, operation_id in actual.items():
         if key in _PRE_B04_TEMPORAL_OPERATIONS:
             assert operation_id == _PRE_B04_TEMPORAL_OPERATIONS[key]
