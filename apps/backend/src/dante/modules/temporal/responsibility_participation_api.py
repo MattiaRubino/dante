@@ -13,6 +13,7 @@ from dante.context.contracts import DanteContext
 from dante.context.dependencies import require_dante_context, require_mutating_dante_context
 from dante.modules.temporal.responsibility_participation import (
     ExpectedParticipationView,
+    PersonReferentView,
     ParticipationRequirement,
     ResponsibilityConflictError,
     ResponsibilityInputError,
@@ -32,16 +33,14 @@ router = APIRouter(prefix="/api/v1/temporal", tags=["temporal"])
 class SetResponsibilityRequest(BaseModel):
     """Set, replace or clear the single current Responsibility holder.
 
-    The holder is a bounded intent rather than a raw reference: the server
-    resolves it against the authenticated context. A later Person-referent
-    slice widens the vocabulary without changing this contract's meaning.
+    The holder is self or a Person admitted by the local referent catalog.
     """
 
     model_config = ConfigDict(extra="forbid", strict=True)
 
     operation_id: str = Field(min_length=1, max_length=200)
-    holder: Literal["self"] | None = None
-    expected_holder: Literal["self"] | None = None
+    holder: str | None = None
+    expected_holder: str | None = None
 
 
 class SetExpectedParticipationRequest(BaseModel):
@@ -50,9 +49,56 @@ class SetExpectedParticipationRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True)
 
     operation_id: str = Field(min_length=1, max_length=200)
-    participant: Literal["self"]
+    participant: str
     requirement_code: Literal["required", "optional"] | None = None
     expected_requirement_code: Literal["required", "optional"] | None = None
+
+
+class CreatePersonReferentRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    operation_id: str = Field(min_length=1, max_length=200)
+    display_label: str = Field(min_length=1, max_length=100)
+
+
+class RenamePersonReferentRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    operation_id: str = Field(min_length=1, max_length=200)
+    expected_revision: int = Field(ge=1)
+    display_label: str = Field(min_length=1, max_length=100)
+
+
+class PersonReferentResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    person_ref: UUID
+    display_label: str
+    revision: int
+    replayed: bool
+
+
+def _person(view: PersonReferentView) -> PersonReferentResponse:
+    return PersonReferentResponse(
+        person_ref=view.person_ref,
+        display_label=view.display_label,
+        revision=view.revision,
+        replayed=view.replayed,
+    )
+
+
+def _person_ref(value: str | None, self_ref: NativeRef) -> NativeRef | None:
+    if value is None:
+        return None
+    if value == "self":
+        return self_ref
+    try:
+        parsed = UUID(value)
+    except (TypeError, ValueError) as exc:
+        raise ResponsibilityInputError("Person reference must be self or UUIDv7.") from exc
+    if parsed.version != 7 or str(parsed) != value.lower():
+        raise ResponsibilityInputError("Person reference must be self or UUIDv7.")
+    return NativeRef(parsed)
 
 
 class ResponsibilityResponse(BaseModel):
@@ -178,10 +224,10 @@ async def _set_responsibility(
             subject_kind=subject_kind,
             subject_native_ref=NativeRef(subject_ref),
             responsible_person_ref=(
-                None if payload.holder is None else context.self_person_ref
+                _person_ref(payload.holder, context.self_person_ref)
             ),
             expected_responsible_person_ref=(
-                None if payload.expected_holder is None else context.self_person_ref
+                _person_ref(payload.expected_holder, context.self_person_ref)
             ),
         )
     except _ERRORS as exc:
@@ -279,11 +325,14 @@ async def set_event_expected_participation(
     requirement: ParticipationRequirement | None = payload.requirement_code
     expected: ParticipationRequirement | None = payload.expected_requirement_code
     try:
+        participant_ref = _person_ref(payload.participant, context.self_person_ref)
+        if participant_ref is None:
+            raise ResponsibilityInputError("A participant Person is required.")
         view = await application.set_expected_participation(
             self_person_ref=context.self_person_ref,
             operation_id=payload.operation_id,
             event_ref=NativeRef(event_ref),
-            participant_person_ref=context.self_person_ref,
+            participant_person_ref=participant_ref,
             requirement_code=requirement,
             expected_requirement_code=expected,
         )
@@ -313,3 +362,65 @@ async def list_event_expected_participation(
     return [
         _participation(view, self_person_ref=context.self_person_ref) for view in views
     ]
+
+
+@router.get(
+    "/person-referents",
+    response_model=list[PersonReferentResponse],
+    operation_id="temporal_list_person_referents",
+)
+async def list_person_referents(
+    context: Context, application: Application
+) -> list[PersonReferentResponse]:
+    try:
+        return [
+            _person(view) for view in await application.list_person_referents(
+                self_person_ref=context.self_person_ref
+            )
+        ]
+    except _ERRORS as exc:
+        raise _problem(exc) from exc
+
+
+@router.post(
+    "/person-referents",
+    response_model=PersonReferentResponse,
+    status_code=201,
+    operation_id="temporal_create_person_referent",
+)
+async def create_person_referent(
+    payload: CreatePersonReferentRequest,
+    context: MutatingContext,
+    application: Application,
+) -> PersonReferentResponse:
+    try:
+        return _person(await application.create_person_referent(
+            self_person_ref=context.self_person_ref,
+            operation_id=payload.operation_id,
+            display_label=payload.display_label,
+        ))
+    except _ERRORS as exc:
+        raise _problem(exc) from exc
+
+
+@router.patch(
+    "/person-referents/{person_ref}",
+    response_model=PersonReferentResponse,
+    operation_id="temporal_rename_person_referent",
+)
+async def rename_person_referent(
+    person_ref: UUID,
+    payload: RenamePersonReferentRequest,
+    context: MutatingContext,
+    application: Application,
+) -> PersonReferentResponse:
+    try:
+        return _person(await application.rename_person_referent(
+            self_person_ref=context.self_person_ref,
+            operation_id=payload.operation_id,
+            person_ref=NativeRef(person_ref),
+            expected_revision=payload.expected_revision,
+            display_label=payload.display_label,
+        ))
+    except _ERRORS as exc:
+        raise _problem(exc) from exc
