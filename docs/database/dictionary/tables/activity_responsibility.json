@@ -1,0 +1,41 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {"key": "table:dante.activity_responsibility", "type": "table", "schema": "dante", "name": "activity_responsibility", "ownership_class": "dante_owned"},
+  "purpose": "Current direct single-holder Responsibility relation from an Activity to a Person in the bounded B09 temporal subset.",
+  "classification": {"persistence_role": "activity_responsibility", "canonicality": "relation", "family": "responsibility"},
+  "semantic_traceability": {
+    "authority_sources": ["docs/domain/concepts/responsibility.md", "docs/domain/concepts/responsibility-part-2.md", "docs/domain/concepts/responsibility-part-3.md", "docs/workstreams/timeline-temporal-operational-roadmap.md"],
+    "domain_concepts": ["Activity", "Responsibility", "Person"],
+    "logical_families": ["LR-03 specific typed relation"],
+    "reference_families": ["NativeRef"],
+    "material_facets": []
+  },
+  "implementation": {"introducing_stage": "B09-A", "alembic_revision": "20260925_66", "sqlalchemy": {"mode": "orm_row", "module": "dante.platform.database.mappings.responsibility_participation", "symbol": "ActivityResponsibilityRow"}, "runtime_acl_stage": "B09-A"},
+  "structure": {
+    "columns": [
+      {"name": "activity_ref", "postgres_type": "uuid", "nullable": false, "default": {"kind": "none", "expression": null}, "meaning": "Canonical Activity whose current accountability is described.", "semantic_type": "NativeRef", "value_contract": "Existing Activity NativeRef."},
+      {"name": "responsible_person_ref", "postgres_type": "uuid", "nullable": false, "default": {"kind": "none", "expression": null}, "meaning": "Person currently bearing Responsibility in the activated simple-holder subset; Account identity is not required.", "semantic_type": "NativeRef", "value_contract": "Existing Person NativeRef."},
+      {"name": "established_at", "postgres_type": "timestamp with time zone", "nullable": false, "default": {"kind": "none", "expression": null}, "meaning": "Server-side accepted instant supplied by the future guarded B09-B operation.", "semantic_type": null, "value_contract": null}
+    ],
+    "primary_key": {"name": "pk_activity_responsibility", "columns": ["activity_ref"], "reason": "B09 activates one current simple Responsibility holder per Activity; joint/collective semantics remain deferred rather than guessed.", "deferrable": false, "initially": "NOT DEFERRABLE", "enforced": true},
+    "foreign_keys": [
+      {"name": "fk_activity_responsibility_activity", "columns": ["activity_ref"], "target": {"schema": "dante", "table": "activity", "columns": ["activity_ref"]}, "on_delete": "NO ACTION", "on_update": "NO ACTION", "match_type": "SIMPLE", "deferrable": false, "initially": "NOT DEFERRABLE", "enforced": true, "validated": true, "reference_family": "NativeRef", "cardinality": "one_to_one_current_relation", "semantic_reason": "Responsibility changes do not change Activity identity."},
+      {"name": "fk_activity_responsibility_person", "columns": ["responsible_person_ref"], "target": {"schema": "dante", "table": "person", "columns": ["person_ref"]}, "on_delete": "NO ACTION", "on_update": "NO ACTION", "match_type": "SIMPLE", "deferrable": false, "initially": "NOT DEFERRABLE", "enforced": true, "validated": true, "reference_family": "NativeRef", "cardinality": "many_to_one", "semantic_reason": "B09 activates Person as the eligible holder subset; Person != Account and Responsibility != performer/participant."}
+    ],
+    "unique_constraints": [],
+    "check_constraints": [],
+    "indexes": [
+      {"name": "pk_activity_responsibility", "method": "btree", "unique": true, "keys": ["activity_ref"], "predicate": null, "include": [], "source": "primary_key", "reason": "One current simple holder per Activity in B09.", "valid": true, "ready": true, "live": true},
+      {"name": "ix_activity_responsibility_person_activity", "method": "btree", "unique": false, "keys": ["responsible_person_ref", "activity_ref"], "predicate": null, "include": [], "source": "explicit_index", "reason": "Reverse lookup of Activities currently borne by a Person.", "valid": true, "ready": true, "live": true}
+    ],
+    "triggers": [],
+    "table": {"persistence": "permanent", "access_method": "heap", "partitioned": false, "row_security": false, "force_row_security": false, "replica_identity": "default", "reloptions": []},
+    "view": null,
+    "routine": null
+  },
+  "state_history": {"material_state_behavior": "Not Domain MaterialState; current direct semantic relation only.", "current_binding": "At most one current simple Responsibility Person for an Activity in B09.", "chronology": "No product mutation exists in B09-A; B09-B must add governed operation/history semantics before reassignment is exposed.", "immutability_policy": "No direct runtime writes in B09-A."},
+  "lifecycle": {"retention": "Absence means no current Responsibility assertion in this activated subset, not explicit open/unassigned state.", "redaction": null, "retirement_tombstone": null, "delete_behavior": "Runtime raw DELETE is denied; no reassignment surface exists in B09-A."},
+  "security": {"owner_role": "dante_owner", "default_deny_non_owner": true, "expected_grants": []},
+  "proof": {"obligations": ["Responsibility remains distinct from requester, expected performer, actual performer, Participation and Authority.", "Holder is a Person NativeRef and does not require an Account.", "Joint/collective/open/transfer semantics are not fabricated by the simple B09-A persistence subset."], "test_refs": ["apps/backend/tests/integration/temporal/test_b09_responsibility_participation_persistence.py", "apps/backend/tests/integration/database/test_database_current_catalog.py"], "staged_evidence": []}
+}
