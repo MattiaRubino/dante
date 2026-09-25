@@ -1,4 +1,4 @@
-"""B10-B PostgreSQL proof for contextual Outcome authoring and current/history truth."""
+"""B10-B PostgreSQL proof for canonical Outcome disposition and history truth."""
 
 from __future__ import annotations
 
@@ -34,7 +34,7 @@ def _admin(database: Any) -> psycopg.Connection[Any]:
 
 
 @pytest.mark.asyncio
-async def test_b10_b_outcome_is_contextual_append_only_idempotent_and_actual_is_unchanged(
+async def test_b10_b_outcome_is_append_only_idempotent_and_pinned_to_exact_actual_state(
     migrated_database: Any,
 ) -> None:
     alice = _seed_self(migrated_database)
@@ -56,7 +56,7 @@ async def test_b10_b_outcome_is_contextual_append_only_idempotent_and_actual_is_
             await activities.create_activity(
                 self_person_ref=alice,
                 operation_id="b10-b:activity",
-                title="Contextual result",
+                title="Contextual disposition",
                 life_area_ref=area.life_area_ref,
             )
         ).activity
@@ -73,32 +73,28 @@ async def test_b10_b_outcome_is_contextual_append_only_idempotent_and_actual_is_
             await outcomes.get_for_actual(
                 self_person_ref=alice,
                 actual_ref=actual.actual_ref,
-                vocabulary_code="work.execution",
             )
 
         first = await outcomes.record(
             self_person_ref=alice,
             operation_id="b10-b:outcome:first",
             actual_ref=actual.actual_ref,
-            vocabulary_code="work.execution",
+            actual_realization_material_state_ref=actual.material_state_ref,
             expected_material_state_ref=None,
-            result_code="completed",
-            note="Initial accepted result",
+            disposition_code="work.completed",
         )
         assert first.actual_ref == actual.actual_ref
-        assert first.vocabulary_code == "work.execution"
-        assert first.result_code == "completed"
-        assert first.note == "Initial accepted result"
+        assert first.actual_realization_material_state_ref == actual.material_state_ref
+        assert first.disposition_code == "work.completed"
         assert not first.replayed
 
         replay = await outcomes.record(
             self_person_ref=alice,
             operation_id="b10-b:outcome:first",
             actual_ref=actual.actual_ref,
-            vocabulary_code="work.execution",
+            actual_realization_material_state_ref=actual.material_state_ref,
             expected_material_state_ref=None,
-            result_code="completed",
-            note="Initial accepted result",
+            disposition_code="work.completed",
         )
         assert replay.replayed
         assert replay.outcome_ref == first.outcome_ref
@@ -109,32 +105,29 @@ async def test_b10_b_outcome_is_contextual_append_only_idempotent_and_actual_is_
                 self_person_ref=alice,
                 operation_id="b10-b:outcome:first",
                 actual_ref=actual.actual_ref,
-                vocabulary_code="work.execution",
+                actual_realization_material_state_ref=actual.material_state_ref,
                 expected_material_state_ref=first.material_state_ref,
-                result_code="partial",
-                note=None,
+                disposition_code="work.partial",
             )
 
         corrected = await outcomes.record(
             self_person_ref=alice,
             operation_id="b10-b:outcome:correct",
             actual_ref=actual.actual_ref,
-            vocabulary_code="work.execution",
+            actual_realization_material_state_ref=actual.material_state_ref,
             expected_material_state_ref=first.material_state_ref,
-            result_code="partial",
-            note="Corrected result",
+            disposition_code="work.partial",
         )
         assert corrected.outcome_ref == first.outcome_ref
         assert corrected.material_state_ref != first.material_state_ref
-        assert corrected.result_code == "partial"
+        assert corrected.disposition_code == "work.partial"
 
         current = await outcomes.get_for_actual(
             self_person_ref=alice,
             actual_ref=actual.actual_ref,
-            vocabulary_code="work.execution",
         )
         assert current.material_state_ref == corrected.material_state_ref
-        assert current.result_code == "partial"
+        assert current.disposition_code == "work.partial"
 
         history = await outcomes.history(
             self_person_ref=alice,
@@ -152,48 +145,58 @@ async def test_b10_b_outcome_is_contextual_append_only_idempotent_and_actual_is_
                 self_person_ref=alice,
                 operation_id="b10-b:outcome:stale",
                 actual_ref=actual.actual_ref,
-                vocabulary_code="work.execution",
+                actual_realization_material_state_ref=actual.material_state_ref,
                 expected_material_state_ref=first.material_state_ref,
-                result_code="completed",
-                note=None,
+                disposition_code="work.completed",
             )
 
         with pytest.raises(OutcomeNotFoundError):
             await outcomes.get_for_actual(
                 self_person_ref=bob,
                 actual_ref=actual.actual_ref,
-                vocabulary_code="work.execution",
             )
 
-        other_vocabulary = await outcomes.record(
+        corrected_actual = await actuals.record(
             self_person_ref=alice,
-            operation_id="b10-b:outcome:quality",
-            actual_ref=actual.actual_ref,
-            vocabulary_code="work.quality",
-            expected_material_state_ref=None,
-            result_code="accepted",
-            note=None,
-        )
-        assert other_vocabulary.outcome_ref != first.outcome_ref
-
-        actual_after = await actuals.get_for_subject(
-            self_person_ref=alice,
+            operation_id="b10-b:actual:correct",
             subject_kind="activity",
             subject_native_ref=activity.activity_ref,
+            realization_occurred=False,
+            expected_material_state_ref=actual.material_state_ref,
         )
-        assert actual_after.material_state_ref == actual.material_state_ref
-        assert actual_after.realization_occurred is True
+        assert corrected_actual.material_state_ref != actual.material_state_ref
+
+        with pytest.raises(OutcomeCurrentConflictError):
+            await outcomes.record(
+                self_person_ref=alice,
+                operation_id="b10-b:outcome:old-actual-basis",
+                actual_ref=actual.actual_ref,
+                actual_realization_material_state_ref=actual.material_state_ref,
+                expected_material_state_ref=corrected.material_state_ref,
+                disposition_code="work.cancelled",
+            )
+
+        rebased = await outcomes.record(
+            self_person_ref=alice,
+            operation_id="b10-b:outcome:new-actual-basis",
+            actual_ref=actual.actual_ref,
+            actual_realization_material_state_ref=corrected_actual.material_state_ref,
+            expected_material_state_ref=corrected.material_state_ref,
+            disposition_code="work.cancelled",
+        )
+        assert rebased.outcome_ref == first.outcome_ref
+        assert rebased.actual_realization_material_state_ref == corrected_actual.material_state_ref
 
         with _admin(migrated_database) as connection:
             proof = connection.execute(
                 """
                 SELECT
                   (SELECT count(*) FROM dante.outcome WHERE actual_ref=%s),
-                  (SELECT count(*) FROM dante.outcome_result_state WHERE outcome_ref=%s),
-                  (SELECT count(*) FROM dante.outcome_result_current_history WHERE outcome_ref=%s),
+                  (SELECT count(*) FROM dante.outcome_disposition_state WHERE outcome_ref=%s),
+                  (SELECT count(*) FROM dante.outcome_disposition_current_history WHERE outcome_ref=%s),
                   (SELECT material_state_ref
                      FROM dante.scoped_current_material_state
-                    WHERE scoped_owner_ref=%s AND facet_code='outcome.result'),
+                    WHERE scoped_owner_ref=%s AND facet_code='outcome.disposition'),
                   (SELECT count(*) FROM dante.actual_realization_state WHERE actual_ref=%s)
                 """,
                 (
@@ -204,6 +207,6 @@ async def test_b10_b_outcome_is_contextual_append_only_idempotent_and_actual_is_
                     actual.actual_ref,
                 ),
             ).fetchone()
-        assert proof == (2, 2, 2, corrected.material_state_ref, 1)
+        assert proof == (1, 3, 3, rebased.material_state_ref, 2)
     finally:
         await runtime.dispose()
