@@ -10,7 +10,6 @@ import {
   type TemporalResponsibilityView,
 } from './remote-responsibility-data-source';
 
-
 function operationId(): string {
   return crypto.randomUUID();
 }
