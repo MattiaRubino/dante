@@ -1,0 +1,28 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {"key": "routine:dante.list_self_actual_session_bases", "type": "routine", "schema": "dante", "name": "list_self_actual_session_bases", "ownership_class": "dante_owned"},
+  "purpose": "List the exact Session timing MaterialStates cited as evidence by one self-owned Actual realization state.",
+  "classification": {"persistence_role": "actual_capability", "canonicality": "capability_surface", "family": "actual"},
+  "semantic_traceability": {
+    "authority_sources": ["docs/domain/concepts/actual.md", "docs/workstreams/timeline-temporal-operational-b10-scope-freeze.md"],
+    "domain_concepts": ["Actual", "Session"],
+    "logical_families": ["Actual", "Session"],
+    "reference_families": ["ScopedRecordRef", "MaterialStateRef", "NativeRef"],
+    "material_facets": ["actual.realization", "session.timing"]
+  },
+  "implementation": {"introducing_stage": "B10-A", "alembic_revision": "20260925_70", "sqlalchemy": {"mode": "none", "module": null, "symbol": null}, "runtime_acl_stage": "B10-A"},
+  "structure": {
+    "columns": [], "primary_key": null, "foreign_keys": [], "unique_constraints": [], "check_constraints": [], "indexes": [], "triggers": [], "table": null, "view": null,
+    "routine": {
+      "routine_kind": "function", "language": "sql", "argument_types": ["uuid", "uuid", "uuid"],
+      "return_type": "TABLE(session_ref uuid, session_timing_material_state_ref uuid)",
+      "security": "DEFINER", "volatility": "STABLE", "parallel_safety": "SAFE", "leakproof": false,
+      "function_search_path": ["pg_catalog", "dante", "pg_temp"], "direct_runtime_execute": true
+    }
+  },
+  "state_history": {"material_state_behavior": "Reads immutable Session-evidence links recorded with one Actual realization state.", "current_binding": null, "chronology": "Evidence points to the exact cited Session timing MaterialState, not a later Session state.", "immutability_policy": "Read-only evidence surface."},
+  "lifecycle": {"retention": "Retained with Actual realization history.", "redaction": null, "retirement_tombstone": null, "delete_behavior": "No mutation."},
+  "security": {"owner_role": "dante_owner", "default_deny_non_owner": true, "expected_grants": [{"grantee": "dante_runtime", "privilege": "EXECUTE", "columns": [], "grant_option": false}]},
+  "proof": {"obligations": ["Session basis is optional", "basis is exact evidence for the same subject", "Session != Actual"], "test_refs": ["apps/backend/tests/integration/temporal/test_b10_a_actual_realization.py"], "staged_evidence": []}
+}
