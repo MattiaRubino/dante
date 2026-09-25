@@ -6,19 +6,17 @@ const UUID_V7 =
 export type TemporalOutcomeView = Readonly<{
   outcomeRef: string;
   actualRef: string;
-  vocabularyCode: string;
+  actualRealizationMaterialStateRef: string;
   materialStateRef: string;
-  resultCode: string;
-  note: string | null;
+  dispositionCode: string;
   replayed: boolean;
 }>;
 
 export type RecordOutcomeCommand = Readonly<{
   operationId: string;
-  vocabularyCode: string;
+  actualRealizationMaterialStateRef: string;
   expectedMaterialStateRef: string | null;
-  resultCode: string;
-  note: string | null;
+  dispositionCode: string;
 }>;
 
 export class TemporalOutcomeRemoteError extends Error {
@@ -50,20 +48,20 @@ function uuid(value: unknown, field: string): string {
 function view(value: unknown): TemporalOutcomeView {
   const payload = record(value);
   if (
-    typeof payload.vocabulary_code !== 'string' ||
-    typeof payload.result_code !== 'string' ||
-    typeof payload.replayed !== 'boolean' ||
-    (payload.note !== null && typeof payload.note !== 'string')
+    typeof payload.disposition_code !== 'string' ||
+    typeof payload.replayed !== 'boolean'
   ) {
-    throw new TemporalOutcomeRemoteError('protocol', 'Invalid Outcome state.');
+    throw new TemporalOutcomeRemoteError('protocol', 'Invalid Outcome disposition state.');
   }
   return Object.freeze({
     outcomeRef: uuid(payload.outcome_ref, 'outcome_ref'),
     actualRef: uuid(payload.actual_ref, 'actual_ref'),
-    vocabularyCode: payload.vocabulary_code,
+    actualRealizationMaterialStateRef: uuid(
+      payload.actual_realization_material_state_ref,
+      'actual_realization_material_state_ref',
+    ),
     materialStateRef: uuid(payload.material_state_ref, 'material_state_ref'),
-    resultCode: payload.result_code,
-    note: payload.note as string | null,
+    dispositionCode: payload.disposition_code,
     replayed: payload.replayed,
   });
 }
@@ -107,9 +105,9 @@ export function createRemoteTemporalOutcomeDataSource(
   }
 
   return Object.freeze({
-    async get(actualRef: string, vocabularyCode: string): Promise<TemporalOutcomeView | null> {
+    async get(actualRef: string): Promise<TemporalOutcomeView | null> {
       const response = await webFetch(
-        `/api/v1/temporal/actuals/${encodeURIComponent(actualRef)}/outcomes/${encodeURIComponent(vocabularyCode)}`,
+        `/api/v1/temporal/actuals/${encodeURIComponent(actualRef)}/outcome`,
       );
       if (!response.ok) {
         const error = await problem(response);
@@ -127,16 +125,16 @@ export function createRemoteTemporalOutcomeDataSource(
         'X-Dante-CSRF': await csrf(),
       });
       const response = await webFetch(
-        `/api/v1/temporal/actuals/${encodeURIComponent(actualRef)}/outcomes`,
+        `/api/v1/temporal/actuals/${encodeURIComponent(actualRef)}/outcome`,
         {
           method: 'POST',
           headers,
           body: JSON.stringify({
             operation_id: command.operationId,
-            vocabulary_code: command.vocabularyCode,
+            actual_realization_material_state_ref:
+              command.actualRealizationMaterialStateRef,
             expected_material_state_ref: command.expectedMaterialStateRef,
-            result_code: command.resultCode,
-            note: command.note,
+            disposition_code: command.dispositionCode,
           }),
         },
       );
