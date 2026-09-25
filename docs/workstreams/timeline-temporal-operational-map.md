@@ -5,10 +5,10 @@
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Continuation handoff:** `docs/workstreams/timeline-temporal-operational-handoff.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Current candidate Alembic frontier:** `20260925_68`
-- **Last proven candidate DB frontier:** B09-B / `20260925_68` / `156|5|106|93|301|251|426`
+- **Current candidate Alembic frontier:** `20260925_69`
+- **Last proven candidate DB frontier:** B09-C / `20260925_69` / `158|5|109|93|303|254|433`
 - **Completed functional frontier:** B08 Session Runtime ✅ CLOSED / USER-REPORTED 2026-09-24
-- **Current implementation cursor:** B09-C candidate awaiting local proof; B09-D pending; B09-A/B closed
+- **Current implementation cursor:** B09-A/B/C closed; B09-D pending
 - **CI:** not authorized; local tests are run by the user
 
 ---
@@ -67,7 +67,7 @@ B08 Session Runtime                              ✅ CLOSED / USER-REPORTED 2026
 B09 Responsibility / Participation               🟨 IN PROGRESS
   B09-A typed persistence substrate               ✅ CLOSED / PROVEN 2026-09-25
   B09-B guarded mutation + application surface    ✅ CLOSED / PROVEN 2026-09-25
-  B09-C non-Account Person referents              🟨 CANDIDATE — local proof pending
+  B09-C non-Account Person referents              ✅ CLOSED / PROVEN 2026-09-25
   B09-D B09 whole-block closure                    ⬜ PENDING — exact scope to reconcile
 ```
 
@@ -78,7 +78,7 @@ B09-A is a persistence closure only. It does **not** close B09 as a whole and do
 # 3. Remaining execution order
 
 ```text
-B09-C non-Account Person referents                 🟨 CANDIDATE — local proof pending
+B09-C non-Account Person referents                 ✅ CLOSED / PROVEN 2026-09-25
 B09-D B09 whole-block closure                     ⬜ PENDING
 B10 Actual / Outcome / Confirmation / Resolution ⬜
 B11 Advanced Recurrence / Conditional / Reminder ⬜
@@ -220,13 +220,13 @@ Candidate implementation on `20260925_67`:
 [x] Timeline detail authoring for self Responsibility / self expected Participation
 [x] negative automated proof: expected Participation does not establish Actual attendance
 [x] user-run local automated proof 2026-09-25: web 4 passed; backend 18 passed
-[ ] B09 whole-block closure (B09-C and B09-D pending)
+[ ] B09 whole-block closure (B09-D pending)
 [→] real-stack validation deferred to B15 whole-vertical closure
 ```
 
 Home `+` required/optional participant textareas remain B14. They are free-text emails, not Person refs. B09-B does not invent email-to-Person identity.
 
-B09-C candidate at `20260925_69` adds guarded creation, list and label correction for owner-local native Persons without Accounts. The admissibility seam accepts self or a Person in this owner's catalog. Timeline role controls now choose that Person explicitly; expected participation remains an intention only. Database Dictionary and mappings represent two default-deny tables, three capabilities and the widened helper. Source-derived target `158|5|109|93|303|254|433` has not yet been proved on local PostgreSQL. The user runs the automated gate; real-stack walkthrough remains B15.
+B09-C is closed and proven at `20260925_69`: guarded creation, list and label correction for owner-local native Persons without Accounts. The admissibility seam accepts self or a Person in this owner's catalog. Timeline role controls select that Person explicitly; expected participation remains an intention only. Dictionary and mappings cover two default-deny tables, three capabilities and the widened helper. User-run proof on 2026-09-25: generated:check PASS (321 files), both typechecks PASS, web 7 passed, backend OpenAPI/API 11 passed, PostgreSQL B09-C/B09-B/catalog regressions 18 passed; physical topology `158|5|109|93|303|254|433` proven. Generated client commit `875aaf48`. Real-stack walkthrough remains B15.
 
 Permanent B09 boundaries:
 
@@ -313,7 +313,7 @@ B08     ✅ CLOSED / USER-REPORTED 2026-09-24
 B09     🟨 IN PROGRESS
   B09-A ✅ CLOSED / PROVEN 2026-09-25
   B09-B ✅ CLOSED / PROVEN 2026-09-25
-  B09-C 🟨 CANDIDATE — local proof pending
+  B09-C ✅ CLOSED / PROVEN 2026-09-25
   B09-D ⬜ PENDING — scope to reconcile
 B10     ⬜ NOT STARTED
 B11     ⬜ NOT STARTED
@@ -324,4 +324,4 @@ B07     ⏸ DEFERRED UNTIL B14
 B15     ⬜ NOT STARTED
 ```
 
-**Next concrete action:** complete generated client and local automated B09-C proof, then reconcile B09-D deliverables against the accepted scope. B10 follows B09-D; user real-stack validation remains B15 scope.
+**Next concrete action:** reconcile B09-D deliverables against the accepted scope and implement the whole-block closure. B10 follows B09-D; user real-stack validation remains B15 scope.
