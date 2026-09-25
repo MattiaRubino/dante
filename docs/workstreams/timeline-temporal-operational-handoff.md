@@ -1,13 +1,13 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B08 SESSION RUNTIME ✅ CLOSED — B09 Responsibility / Participation is next
-- **Reconciled:** 2026-09-24
+- **Status:** B09-A ✅ CLOSED / PROVEN — B09-B guarded Responsibility / Participation mutation is next
+- **Reconciled:** 2026-09-25
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Live execution ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Current candidate Alembic frontier:** `20260924_65`
-- **Last proven candidate DB frontier:** B08-C / `20260924_65` / `150|5|99|93|292|236|418|0|0|0`
+- **Current candidate Alembic frontier:** `20260925_66`
+- **Last proven candidate DB frontier:** B09-A / `20260925_66` / `153|5|99|93|298|242|419`
 - **CI:** no CI/GitHub Actions unless explicitly authorized; user runs local tests
 
 Read this first after a context reset.
@@ -19,7 +19,9 @@ Read this first after a context reset.
 ```text
 B00–B06 ✅ CLOSED / PROVEN
 B08     ✅ CLOSED / USER-REPORTED 2026-09-24
-B09     ⬜ NEXT
+B09     🟨 IN PROGRESS
+  B09-A ✅ CLOSED / PROVEN 2026-09-25
+  B09-B ⬜ NEXT
 B10     ⬜ NOT STARTED
 B11     ⬜ NOT STARTED
 B13     ⬜ NOT STARTED
@@ -29,13 +31,13 @@ B07     ⏸ DEFERRED UNTIL B14
 B15     ⬜ NOT STARTED
 ```
 
-Execution order after B08 is deliberately:
+Execution order remains:
 
 ```text
 B09 → B10 → B11 → B13 → B12 → B14 → B07 → B15
 ```
 
-Historical identifiers are not renumbered. B13 and B14 are the only new compact blocks introduced by the post-B08 Create audit; all other missing Create behavior belongs to existing B09–B12 ownership.
+Historical identifiers are not renumbered.
 
 ---
 
@@ -55,21 +57,6 @@ _64 runtime metrics
 _65 Activity TC-009 soft minimum on one Session active duration
 ```
 
-Recorded evidence:
-
-```text
-generated/client checks PASS
-focused Web suite: 58 PASS
-backend PostgreSQL/unit/API command: 31 PASS
-follow-up Web typecheck: user-confirmed PASS
-real app: START / PAUSE / RESUME / END confirmed
-real app: timed splittable Activity remains timed and scheduled
-real app: genuinely unplaced Activity remains in Da collocare
-real app: whole-minute Schedule duration accepted without 26/31 step bug
-```
-
-Raw local output is not committed; retain the distinction between user-reported proof and repository-captured evidence.
-
 Permanent B08 boundaries:
 
 ```text
@@ -84,9 +71,118 @@ TC-009 does not aggregate Sessions, count pauses, block transitions or mutate Sc
 
 ---
 
-# 3. Roadmap amendment after Create audit
+# 3. B09-A closure truth
 
-The Home `+` audit found two structural omissions, not a reason to create many extra phases.
+B09-A was implemented in commit `aba642bc8a722eeb822b7bbfa34644b59ca19cad` and locally proven by the user on 2026-09-25.
+
+Alembic:
+
+```text
+20260925_66
+revises 20260924_65
+forward-only
+```
+
+Typed persistence introduced:
+
+```text
+event_expected_participation
+  event_ref → Event
+  participant_person_ref → Person
+  requirement_code ∈ {required, optional}
+
+activity_responsibility
+  activity_ref → Activity
+  responsible_person_ref → Person
+
+event_responsibility
+  event_ref → Event
+  responsible_person_ref → Person
+```
+
+The persistence substrate proves the intended B09-A boundaries:
+
+```text
+Person != Account
+Responsibility != Participation
+required/optional expected Participation is not attendance
+Activity Responsibility != Event Responsibility by storage ownership
+runtime cannot mutate/read the new tables directly
+```
+
+The B09-A PostgreSQL test also proves that participant Persons need no `account_application_context` row, invalid `requirement_code='accepted'` is rejected, and the simple current Responsibility subset enforces one holder per Activity/Event.
+
+User-run command result on 2026-09-25:
+
+```text
+tests/integration/temporal/test_b09_responsibility_participation_persistence.py
+tests/integration/database/test_current_catalog.py
+tests/integration/database/test_database_current_catalog.py
+
+10 passed in 18.33s
+```
+
+Current proven candidate frontier:
+
+```text
+Alembic  20260925_66
+Topology 153|5|99|93|298|242|419
+```
+
+B09-A deliberately does not claim:
+
+```text
+invitation workflow
+accept/decline/tentative response history
+Actual Participation / attendance
+attendance intervals
+Responsibility transfer / claim / hand-off
+public API mutation
+Home + / Timeline authoring integration
+provider attendee identity or authority over another person's external calendar/task state
+```
+
+Those remain outside B09-A by design.
+
+---
+
+# 4. B09-B exact next contract
+
+B09-B owns guarded mutation/application behavior over the `_66` relation substrate.
+
+Start from these rules:
+
+```text
+raw relation tables are not runtime mutation surfaces
+Person identity is independent from Account identity
+Responsibility != Participation
+expected Participation != response != Actual Participation
+expected Participation does not establish Event Actual
+Responsibility does not imply attendance
+participant authoring does not grant control over another person's calendar/task system
+```
+
+B09-B should add only the smallest truthful authoring operations needed by the temporal product surface. It must reuse the existing typed tables rather than introducing generic participant JSON or polymorphic relation storage.
+
+Same-change obligations where applicable:
+
+```text
+forward-only Alembic/routines if DB mutation capability is added
+→ SQLAlchemy/Dictionary/scope/catalog reconciliation
+→ backend/application service
+→ HTTP API with stable temporal_* operationId if public
+→ OpenAPI export
+→ generated api-client
+→ Home + / Timeline integration only for fields B09 truthfully owns
+→ focused local PostgreSQL/unit/web proof
+→ map/roadmap/handoff B09 closure evidence
+```
+
+B09 must not cross into B10 by inventing attendance/Actual semantics merely to make a UI field work.
+
+---
+
+# 5. Roadmap amendment after Create audit
 
 ## B13 — Work Structure / Decomposition / Dependencies
 
@@ -110,13 +206,9 @@ child Schedule != parent Schedule
 child Session != parent Session
 ```
 
-It also owns the temporal execution-structure foundation already latent in Create where appropriate: maximum Session count, merge compatibility, spacing and preparation/recovery rules.
-
-B13 executes before B12 so replanning/solver logic sees real dependency structure rather than inventing it later.
+B13 executes before B12 so replanning/solver logic sees real dependency structure.
 
 ## B14 — Temporal Create Completeness Gate
-
-B14 is a gate, not a new feature vertical.
 
 Every editable Home `+` field must be exactly one of:
 
@@ -133,48 +225,9 @@ Never leave:
 editable field → value collected → silently ignored or normally rejected because implementation is absent
 ```
 
-B14 audits Notes, appearance override, Tags, confirmation/reminder, execution policy and rich Event fields. It does not pull Work/Content/provider functionality into the Temporal kernel merely because the UI once exposed a field.
-
 ---
 
-# 4. B09 start contract — Responsibility / Participation
-
-B09 starts now. The goal is the smallest coherent actor/person layer needed by the temporal vertical, not collaboration infrastructure.
-
-Permanent boundaries:
-
-```text
-Person != Account
-Responsibility != Participation
-participant != responsible actor != organizer/owner
-shared Event truth != actor-specific participation truth
-participation/attendance != Event Actual
-another person's state != something DANTE controls by default
-provider attendee != canonical Person identity by default
-```
-
-Before implementing persistence, inspect and reuse the existing Product / Domain / Logical / Physical authority for Person, Responsibility and Participation. Do not create a generic participant JSON/blob or a polymorphic shortcut when typed ownership/relations already exist.
-
-B09 must also reconcile the existing Home `+` required/optional participant fields: if B09 owns their semantics they become truthful canonical authoring; otherwise they must be deferred/hidden rather than pretending to persist.
-
-B09 closes only when the same-change obligations are satisfied where applicable:
-
-```text
-Logical/Physical authority
-→ forward-only Alembic
-→ SQLAlchemy
-→ Dictionary + scope.json
-→ direct PostgreSQL proof
-→ backend/application
-→ HTTP/OpenAPI/generated client if public
-→ frontend Create/Timeline surface if part of B09
-→ user-run local proof
-→ roadmap/map/handoff evidence
-```
-
----
-
-# 5. Reserved ownership after B09
+# 6. Reserved ownership after B09
 
 ```text
 B10
@@ -208,7 +261,7 @@ B15
 
 ---
 
-# 6. Collaboration discipline
+# 7. Collaboration discipline
 
 - user runs tests locally; assistant prepares exact commands
 - no CI/GitHub Actions unless explicitly authorized
@@ -220,14 +273,15 @@ B15
 
 ---
 
-# 7. Fresh-chat recovery
+# 8. Fresh-chat recovery
 
 ```text
 1. this handoff
 2. timeline-temporal-operational-roadmap.md
 3. timeline-temporal-operational-map.md
 4. docs/database/timeline-temporal-operational.md
-5. current Logical Model / PostgreSQL blueprint sections relevant to B09
+5. B09-A migration/mapping/test
+6. current Logical Model / PostgreSQL blueprint sections relevant to Responsibility / Participation
 ```
 
-**Exact next action:** Inspect existing Responsibility / Participation / Person authority and persistence substrate, freeze the smallest coherent B09 contract, then implement it vertically.
+**Exact next action:** implement B09-B guarded current Responsibility and expected Event Participation mutation/application behavior on top of proven `_66`, then locally prove it without introducing Actual attendance semantics.
