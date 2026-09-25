@@ -1,8 +1,10 @@
 # Timeline / Temporal-Operational — B10-B alignment checkpoint
 
-Status: **AUTOMATED PROOF GREEN / AWAITING GENERATED ARTIFACT COMMIT — 2026-09-25**
+Status: **CLOSED / PROVEN — 2026-09-25**
 
-This checkpoint records the canonical B10-B state after reconciling the branch against the published Alembic chain, repairing the first user-local acceptance failures, and completing the user-local PostgreSQL re-proof. It is a continuation aid and candidate handoff, not closure evidence until the generated API artifacts are committed.
+This checkpoint records the canonical B10-B state after reconciling the branch against the published Alembic chain, repairing the first user-local acceptance failures, completing the user-local PostgreSQL re-proof, and committing deterministic generated API artifacts.
+
+Closure evidence: `docs/workstreams/timeline-temporal-operational-b10-b-closure-2026-09-25.md`.
 
 ## Canonical persistence frontier
 
@@ -15,9 +17,9 @@ The published B10-B migration chain is immutable:
 20260925_78  forward-only Outcome MaterialState totality-dispatch repair
 ```
 
-`20260925_78` is the current B10-B persistence candidate. Do not edit `_75` through `_78`; any later persistence correction must be a new forward-only revision.
+`20260925_78` is the proven B10-B persistence frontier. Do not edit `_75` through `_78`; any later persistence correction must be a new forward-only revision.
 
-Candidate Dictionary topology:
+Proven Dictionary topology:
 
 ```text
 163|5|119|93|317|268|440
@@ -60,9 +62,9 @@ material_state_ref
 
 `disposition_code` is contextual. B10-B does not introduce one universal completed/failed/skipped/etc. Outcome enum.
 
-## Candidate surfaces reconciled
+## Proven surfaces
 
-The current branch has been reconciled through `_78` across:
+The proven vertical is reconciled across:
 
 ```text
 apps/backend/src/dante/platform/database/mappings/outcome.py
@@ -78,6 +80,8 @@ apps/web/src/features/temporal/outcome-controls.tsx
 apps/web/src/features/temporal/outcome-controls.test.tsx
 docs/database/dictionary/**
 docs/database/dictionary/scope.json
+packages/api-client/openapi/dante-v1.openapi.json
+packages/api-client/src/generated/**
 ```
 
 The runtime/API contract uses:
@@ -131,18 +135,18 @@ POSTGRES TEST EXIT: 0
 
 The re-proof covered focused B10-B Outcome application/API, B10-A Actual regression, B09 whole-block regression, and both current-catalog checks.
 
-## Remaining acceptance work
-
-Feature implementation and automated proof are complete. The only remaining acceptance work is generated-artifact finalization:
+Generated determinism was then re-run locally by the user:
 
 ```text
-1. user runs pnpm generated:check against the already generated local artifacts;
-2. if deterministic, user commits/pushes only the generated OpenAPI/client artifacts;
-3. closure docs are reconciled and B10-B is marked CLOSED / PROVEN;
-4. then prepare the B10-C modification gate.
+PASS: generated sources are deterministic and current (335 files)
+GENERATED CHECK EXIT: 0
 ```
 
-Generated artifacts must be produced through repository tooling and must never be hand-edited.
+Generated OpenAPI/Orval Outcome artifacts were committed and pushed at:
+
+```text
+58757fbb  feat(api-client): generate B10-B Outcome contracts
+```
 
 ## Deferred by B10-B
 
@@ -163,15 +167,15 @@ integrated real-app B10 walkthrough (belongs to B10-E)
 
 ```text
 B10-A  CLOSED / PROVEN
-B10-B  AUTOMATED PROOF GREEN / AWAITING GENERATED ARTIFACT COMMIT
+B10-B  CLOSED / PROVEN
+B10-C  NEXT — Confirmation
 ```
 
-No CI/GitHub Actions are authorized or used. The user runs the acceptance gate locally.
+No CI/GitHub Actions were authorized or used. The user ran the acceptance gates locally.
 
 ## Exact continuation cursor
 
-1. run `pnpm generated:check` against the already generated local artifacts;
-2. if the check fails, repair determinism without starting B10-C;
-3. if green, commit/push the generated artifacts only;
-4. reconcile roadmap/map/handoff/DB closure evidence, mark B10-B CLOSED / PROVEN and prepare the B10-C modification gate;
-5. do not perform the integrated real-app proof before B10-E.
+1. B10-B is closed; do not reopen Outcome semantics without new evidence;
+2. prepare the B10-C modification gate against current Product / Domain / Logical / Physical authority for Confirmation;
+3. do not implement B10-C until the user approves that gate;
+4. do not perform the integrated real-app proof before B10-E.
