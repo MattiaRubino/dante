@@ -159,7 +159,7 @@
         "semantic_reason": "Receipt identifies the stable Actual owner affected by the command."
       },
       {
-        "name": "fk_actual_realization_operation_subject_native_ref_native_address",
+        "name": "fk_actual_realization_operation_subject_native_ref_native",
         "columns": ["subject_native_ref"],
         "target": {"schema": "dante", "table": "native_address", "columns": ["native_ref"]},
         "on_delete": "NO ACTION",
