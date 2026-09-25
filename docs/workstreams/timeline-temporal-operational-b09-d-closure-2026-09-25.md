@@ -2,7 +2,7 @@
 
 - **Branch:** `feature/timeline-temporal-operational`
 - **Baseline:** B09-C proven at Alembic `20260925_69`, topology `158|5|109|93|303|254|433`
-- **State:** AUTOMATED PROOF PASSED — user real-app walkthrough reported failures; fix pending user retest
+- **State:** CLOSED / PROVEN — automated gate and user real-app walkthrough passed
 - **Scope:** B09-A typed roles + B09-B guarded authoring + B09-C owner-local non-Account Persons
 
 ## Accepted contract
@@ -33,9 +33,7 @@ The UI test extends `responsibility-controls.test.tsx` with a created Person, la
 
 ## User real-app verification — required before whole-B09 closure
 
-**State:** USER WALKTHROUGH IN PROGRESS / NOT PASSED. On 2026-09-25 the user ran `run-access-auth-stack.py` with `DANTE_E2E_CONTROL_ID=temporal-b08-d-usertest` and reported: Event detail showed an Agenda read failure; a created Person remained available but appeared not to become the responsible holder; when Timeline cards were visible/expanded, clicking another card's title did not reliably open its detail. Screenshot evidence shows the Person in the selector and expected Participation as optional while the holder reads “Nessun responsabile”. This is consistent with the separate Responsibility and Participation operations, but does not prove whether the user attempted the separate assignment command. B15 will still perform the separate whole-vertical regression.
-
-The follow-up web fix accepts the backend's `life_area_ref` and `life_area_assignment_revision` in canonical Event Agenda reads; allows the title of another card to open its detail even when focus is on a different card; and explains after Person creation that “Assegna” is a separate command. The user must retest the actual Responsibility assignment, including its readback after a refresh. Any failure message or Network response from that assignment is needed if it remains rejected. These changes are unproven until the user runs the focused web gate and real-app walkthrough again.
+**State:** PASSED / USER-REPORTED 2026-09-25. The user reran the real stack after the Agenda read, card-title interaction and Person-assignment clarity repairs, then reported that everything works. The walkthrough therefore proves the expected Timeline flow: Event detail/Agenda opens; a local Person can be created and assigned as current Responsibility; expected Participation remains independently editable; and Timeline cards open by title. B15 still owns the separate whole-vertical regression.
 
 Run the app using the existing `run-access-auth-stack.py` local workflow, then:
 
@@ -50,4 +48,4 @@ Record observed behavior and any failure precisely. No screenshot or test output
 
 ## Closure decision
 
-B09-D and B09 as a whole close only after focused automated proof and the user's real-app result are recorded. The local candidate branch remains separate from protected-main integration. B10 follows whole-B09 closure.
+Focused automated proof and the user real-app result are recorded. B09-D and B09 are closed on this candidate branch. The local candidate branch remains separate from protected-main integration. B10 follows B09.
