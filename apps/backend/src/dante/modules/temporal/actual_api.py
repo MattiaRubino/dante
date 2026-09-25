@@ -27,6 +27,8 @@ from dante.platform.http.problem import ProblemError
 
 router = APIRouter(prefix="/api/v1/temporal", tags=["temporal"])
 
+SubjectKind = Literal["activity", "event", "occurrence"]
+
 
 class ActualTimingInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -202,7 +204,7 @@ def _problem(exc: Exception) -> ProblemError:
 
 
 async def _record(
-    subject_kind: Literal["activity", "event", "occurrence"],
+    subject_kind: SubjectKind,
     subject_ref: UUID,
     payload: ActualRealizationCommand,
     context: MutatingContext,
@@ -249,6 +251,7 @@ async def _record(
 
 
 async def _get(
+    subject_kind: SubjectKind,
     subject_ref: UUID,
     context: Context,
     application: Application,
@@ -256,9 +259,15 @@ async def _get(
     try:
         view = await application.get_for_subject(
             self_person_ref=context.self_person_ref,
+            subject_kind=subject_kind,
             subject_native_ref=NativeRef(subject_ref),
         )
-    except (ActualNotFoundError, ActualAmbiguousSubjectError, ActualPersistenceError) as exc:
+    except (
+        ActualInputError,
+        ActualNotFoundError,
+        ActualAmbiguousSubjectError,
+        ActualPersistenceError,
+    ) as exc:
         raise _problem(exc) from exc
     return _response(view)
 
@@ -286,7 +295,7 @@ async def record_activity_actual(
 async def get_activity_actual(
     activity_ref: UUID, context: Context, application: Application
 ) -> ActualRealizationResponse:
-    return await _get(activity_ref, context, application)
+    return await _get("activity", activity_ref, context, application)
 
 
 @router.post(
@@ -312,7 +321,7 @@ async def record_event_actual(
 async def get_event_actual(
     event_ref: UUID, context: Context, application: Application
 ) -> ActualRealizationResponse:
-    return await _get(event_ref, context, application)
+    return await _get("event", event_ref, context, application)
 
 
 @router.post(
@@ -338,7 +347,7 @@ async def record_occurrence_actual(
 async def get_occurrence_actual(
     occurrence_ref: UUID, context: Context, application: Application
 ) -> ActualRealizationResponse:
-    return await _get(occurrence_ref, context, application)
+    return await _get("occurrence", occurrence_ref, context, application)
 
 
 @router.get(
