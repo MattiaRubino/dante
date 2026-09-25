@@ -94,8 +94,8 @@ B08-C / 20260924_65
 B09-A / 20260925_66
   typed current Responsibility and expected Event Participation relations
 
-B09-B / 20260925_67
-  guarded authoring receipts and SECURITY DEFINER capabilities over the B09-A relations
+B09-B / 20260925_67 → 20260925_68
+  guarded authoring receipts and SECURITY DEFINER capabilities over the B09-A relations; `_68` forward-repairs qualified Event Participation function bodies without an object-count delta
 ```
 
 B06-E whole-block closure required no new migration. `_57` remains the last proven B06 checkpoint; later B08 candidate migrations continue through `_65`.
