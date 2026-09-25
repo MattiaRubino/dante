@@ -217,6 +217,27 @@ _EXPECTED_TEMPORAL_OPERATIONS = {
     ("/api/v1/temporal/events/{event_ref}/occurrences/exclusions", "post"): (
         "temporal_exclude_event_occurrence_coordinate"
     ),
+    ("/api/v1/temporal/activities/{activity_ref}/actual", "post"): (
+        "temporal_record_activity_actual"
+    ),
+    ("/api/v1/temporal/activities/{activity_ref}/actual", "get"): (
+        "temporal_get_activity_actual"
+    ),
+    ("/api/v1/temporal/events/{event_ref}/actual", "post"): (
+        "temporal_record_event_actual"
+    ),
+    ("/api/v1/temporal/events/{event_ref}/actual", "get"): (
+        "temporal_get_event_actual"
+    ),
+    ("/api/v1/temporal/occurrences/{occurrence_ref}/actual", "post"): (
+        "temporal_record_occurrence_actual"
+    ),
+    ("/api/v1/temporal/occurrences/{occurrence_ref}/actual", "get"): (
+        "temporal_get_occurrence_actual"
+    ),
+    ("/api/v1/temporal/actuals/{actual_ref}/history", "get"): (
+        "temporal_list_actual_history"
+    ),
 }
 
 
