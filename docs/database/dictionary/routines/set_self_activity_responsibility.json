@@ -8,7 +8,7 @@
     "name": "set_self_activity_responsibility",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Set, replace or clear the single current Activity Responsibility holder under self scope, expected-holder check and immutable receipt.",
+  "purpose": "Set, replace or clear the single current Activity Responsibility holder under self scope, expected-holder check and immutable receipt. B09-C allows a non-Account Person only through an owner-scoped, guarded referent catalog.",
   "classification": {
     "persistence_role": "responsibility_capability",
     "canonicality": "capability_surface",
@@ -106,10 +106,12 @@
     "obligations": [
       "self scope",
       "expected-holder conflict",
-      "idempotent replay"
+      "idempotent replay",
+      "B09-C locally registered non-Account Person is admissible; unrelated Persons remain denied."
     ],
     "test_refs": [
-      "apps/backend/tests/integration/temporal/test_b09_b_responsibility_authoring.py"
+      "apps/backend/tests/integration/temporal/test_b09_b_responsibility_authoring.py",
+      "apps/backend/tests/integration/temporal/test_b09_c_person_referents.py"
     ],
     "staged_evidence": []
   }
