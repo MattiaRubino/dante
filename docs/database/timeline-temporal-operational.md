@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Candidate Database Overlay
 
-- **Status:** CURRENT CANDIDATE DATABASE AUTHORITY — B09-B locally proven at `_68`
+- **Status:** CURRENT CANDIDATE DATABASE AUTHORITY — B09-B database/API proof locally passed at `_68`; Timeline walkthrough pending for block closure
 - **Reconciled:** 2026-09-25
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
@@ -183,10 +183,10 @@ B08-A automated + real-stack proof ✅ CLOSED PER USER-REPORTED B08-B DEPENDENCY
 B08-B pause/resume + metric proof   ✅ CLOSED PER USER REPORT
 B08-C `_65` local automated proof   ✅ CLOSED / PROVEN 2026-09-24
 B09-A `_66` persistence             ✅ CLOSED / PROVEN 2026-09-25
-B09-B `_67`–`_68` authoring        ✅ CLOSED / PROVEN 2026-09-25
+B09-B `_67`–`_68` authoring        🟨 AUTOMATED PROOF COMPLETE / Timeline walkthrough pending
 ```
 
-B08-A and B08-B are treated as closed based on the user’s B08-B closure report; the original local logs are not stored here. B08-C `_65` passed the user-run local generated/client, web, backend unit/API and PostgreSQL catalog/integration gates on 2026-09-24. It remains candidate branch truth until protected-main integration; B08-D owns the one real-stack walkthrough.
+B08-A and B08-B are treated as closed based on the user’s B08-B closure report; the original local logs are not stored here. B08-C `_65` passed the user-run local generated/client, web, backend unit/API and PostgreSQL catalog/integration gates on 2026-09-24. It remains candidate branch truth until protected-main integration; B08-D owns the one real-stack walkthrough. B09-B `_67`–`_68` has passed its database/API automated proof but remains open until its new Timeline authoring controls are exercised on the real stack.
 
 
 ## 7. B08-B / B08-C candidate database semantics
