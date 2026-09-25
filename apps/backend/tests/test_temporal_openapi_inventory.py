@@ -199,6 +199,15 @@ _EXPECTED_TEMPORAL_OPERATIONS = {
     ("/api/v1/temporal/events/{event_ref}/expected-participation", "get"): (
         "temporal_list_event_expected_participation"
     ),
+    ("/api/v1/temporal/person-referents", "get"): (
+        "temporal_list_person_referents"
+    ),
+    ("/api/v1/temporal/person-referents", "post"): (
+        "temporal_create_person_referent"
+    ),
+    ("/api/v1/temporal/person-referents/{person_ref}", "patch"): (
+        "temporal_rename_person_referent"
+    ),
     ("/api/v1/temporal/sessions/{session_ref}/end", "post"): "temporal_end_session",
     ("/api/v1/temporal/sessions/{session_ref}/pause", "post"): "temporal_pause_session",
     ("/api/v1/temporal/sessions/{session_ref}/resume", "post"): "temporal_resume_session",
