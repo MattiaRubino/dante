@@ -37,7 +37,7 @@ The UI test extends `responsibility-controls.test.tsx` with a created Person, la
 
 Run the app using the existing local backend/web workflow, then:
 
-1. Create an Activity and an Event in a Life Area. Open each in Timeline; neither needs a Session or Actual.
+1. Create an Activity and an Event in a Life Area, place both on Timeline and open each detail; neither needs a Session or Actual.
 2. Create a Person named Anna from the role controls. Confirm Anna appears as a selectable Person after a refresh, without signing Anna in.
 3. Assign Anna Responsibility for the Activity and Event. Refresh both: the holder remains Anna. Correct Anna's local name and confirm both labels follow the correction.
 4. On the Event set Anna's expected Participation to required, switch it to optional and refresh. Confirm Responsibility stays unchanged. Remove expected Participation and confirm the Event shows none after refresh.
