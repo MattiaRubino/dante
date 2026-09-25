@@ -7,7 +7,7 @@
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Current candidate branch:** `feature/timeline-temporal-operational`
-- **Current candidate Alembic source head:** `20260925_68`
+- **Current candidate Alembic source head:** `20260925_69`
 - **Last proven candidate topology:** B09-B / `20260925_68` / `156|5|106|93|301|251|426`
 - **Frozen CP6 head:** `20260826_08`
 - **Last reconciled:** 2026-09-25
@@ -32,14 +32,14 @@ A mismatch is a defect. Protected `main` remains integration authority; candidat
 Authoritative counts are in `scope.json`:
 
 ```text
-tables      156
+tables      158
 views         5
-routines    106
-standalone  267
+routines    109
+standalone  272
 triggers     93
-indexes     301
-FKs         251
-CHECKs      426
+indexes     303
+FKs         254
+CHECKs      433
 ```
 
 No enum/domain, sequence, materialized view, partitioned table or RLS policy exists in the DANTE business-schema inventory.
@@ -96,6 +96,9 @@ B09-A / 20260925_66
 
 B09-B / 20260925_67 → 20260925_68
   guarded authoring receipts and SECURITY DEFINER capabilities over the B09-A relations; `_68` forward-repairs qualified Event Participation function bodies without an object-count delta
+
+B09-C / 20260925_69
+  owner-local Person referent catalog and create/rename receipts, three bounded capabilities and widened guarded Person admissibility; local PostgreSQL proof pending
 ```
 
 B06-E whole-block closure required no new migration. `_57` remains the last proven B06 checkpoint; later B08 candidate migrations continue through `_65`.
@@ -208,7 +211,7 @@ No real object → no ceremonial Dictionary entry. Every real current DANTE busi
 
 ## 10. Next boundary
 
-B08 Session Runtime is next in the active `+`/Timeline vertical. No Dictionary or schema change is pre-authorized by the block name alone; current CP6/Physical Session structures are inspected before any forward-only DDL is admitted.
+B09-C is the current candidate Person-referent implementation. B09-D remains pending; B10 follows B09-D. The source-derived `_69` catalog counts require the user's local PostgreSQL proof before B09-C closure.
 
 Provider integration, native/offline, broad analytics and account collaboration are outside this vertical and must not create speculative Dictionary entries.
 
