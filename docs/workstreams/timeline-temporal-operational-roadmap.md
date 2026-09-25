@@ -1,11 +1,11 @@
 # Timeline / Temporal-Operational Vertical — Implementation Roadmap
 
-- **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-24
+- **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-25
 - **Branch/workstream:** `feature/timeline-temporal-operational`
 - **Vertical boundary:** Home `+` creation/configuration → canonical temporal truth → Timeline projection/actions → bounded lifecycle completion
 - **Completed functional frontier:** B08 Session Runtime ✅ CLOSED / USER-REPORTED 2026-09-24
-- **Current block:** B09 Responsibility / Participation ⬜ NOT STARTED
-- **Last proven candidate DB frontier:** B08-C / PostgreSQL 18.6 / Alembic `20260924_65` / topology `150|5|99|93|292|236|418|0|0|0`
+- **Current block:** B09 Responsibility / Participation 🟨 IN PROGRESS — B09-A CLOSED / PROVEN, B09-B NEXT
+- **Last proven candidate DB frontier:** B09-A / PostgreSQL 18.6 / Alembic `20260925_66` / topology `153|5|99|93|298|242|419`
 - **Deferred block:** B07 UI/UX Consolidation v1 — execute only after the functional/create-completeness sequence below
 - **Live execution ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **Continuation handoff:** `docs/workstreams/timeline-temporal-operational-handoff.md`
@@ -91,7 +91,9 @@ B08 Session Runtime                              ✅ CLOSED / USER-REPORTED 2026
   B08-C TC-009 Session Duration End-to-End        ✅ CLOSED / PROVEN — local automated gate 2026-09-24
   B08-D Whole-block closure                       ✅ CLOSED / USER-REPORTED — automated gate and dogfood
 
-B09 Responsibility / Participation               ⬜ NEXT
+B09 Responsibility / Participation               🟨 IN PROGRESS
+  B09-A typed persistence substrate               ✅ CLOSED / PROVEN 2026-09-25
+  B09-B guarded mutation + application surface    ⬜ NEXT
 B10 Actual / Outcome / Confirmation / Resolution ⬜
 B11 Advanced Recurrence / Conditional / Reminder ⬜
 B13 Work Structure / Decomposition / Dependencies⬜
@@ -101,7 +103,7 @@ B07 UI/UX Consolidation v1                       ⏸ DEFERRED UNTIL B14
 B15 Whole Vertical Closure                       ⬜
 ```
 
-Execution sequence after B08:
+Execution sequence after B08 remains:
 
 ```text
 B09 → B10 → B11 → B13 → B12 → B14 → B07 → B15
@@ -113,9 +115,9 @@ External providers, native/offline/multi-device and account collaboration remain
 
 ---
 
-# 2. Completed foundation B00–B06
+# 2. Completed foundation B00–B08
 
-B00–B06 are closed/proven. Their permanent boundary at the B08 entry point is:
+B00–B06 and B08 are closed. Permanent temporal boundaries at the B09 entry point include:
 
 ```text
 Activity may exist without Schedule
@@ -124,67 +126,17 @@ Routine != Recurrence != Occurrence
 Occurrence != Schedule
 Schedule is the shared accepted-placement authority
 Life Area / Tags are product organization, not Domain ownership
-```
-
-Proven B06 frontier:
-
-```text
-Alembic  20260923_57
-Topology 145|5|88|92|285|223|408|0|0|0
-```
-
----
-
-# 3. B08 — Session Runtime — CLOSED
-
-B08 activated execution episodes without collapsing planned Schedule or later happened-reality semantics.
-
-```text
-Activity != Session
-Occurrence != Session
-Schedule != Session
 Session != Actual
-Session != Outcome
-Session END != Activity completion
-Session END != Occurrence completion
-planned Schedule duration != Session elapsed duration
-Session elapsed duration != Session active duration
+Session END != completion
 ```
 
-Implemented candidate chain:
-
-```text
-_58 typed Session subject + bounded START/READ/END
-_59 exact Activity-vs-Occurrence family enforcement
-_60 immutable END MaterialState transition + exact replay receipt
-_62 pause/resume persistence
-_63 transition replay repair
-_64 runtime metrics
-_65 direct Activity soft minimum on Session active duration + read-time evaluation
-```
-
-B08-D closed on 2026-09-24 from the user's local and dogfood evidence: generated/client checks passed, focused Web suite passed 58 tests, backend PostgreSQL/unit/API command passed 31 tests, the post-fix Web typecheck passed by user confirmation, and the real app confirms timed and unplaced Activity placement plus START/PAUSE/RESUME/END. Detailed repair history and observed results remain in the map and handoff.
-
-Forbidden effects remain permanent:
-
-```text
-START does not fabricate Schedule
-END does not complete Activity
-END does not resolve Occurrence
-END does not create Actual
-END does not create Outcome
-TC-009 evaluation does not block transitions or mutate Schedule/Actual/Outcome
-```
+B08 proven/user-reported candidate chain ends at `20260924_65`.
 
 ---
 
-# 4. Remaining functional blocks
-
-## B09 — Responsibility / Participation
+# 3. B09 — Responsibility / Participation — IN PROGRESS
 
 B09 adds actor/person semantics around temporal subjects without introducing account collaboration infrastructure.
-
-It owns the truthful Temporal subset of participant/responsibility authoring, including the existing Event create fields where they can be represented canonically.
 
 Required boundaries:
 
@@ -193,11 +145,58 @@ Person != Account
 Responsibility != Participation
 participant != responsible actor != organizer/owner
 shared Event truth != actor-specific participation truth
+expected/response Participation != Actual Participation
 participation/attendance state != Event Actual
 another person's participation != DANTE authority over that person's calendar/task system
 ```
 
 Do not add a generic participant JSON/blob or make provider attendee identity canonical ontology.
+
+## B09-A — typed persistence substrate — CLOSED / PROVEN
+
+`20260925_66` adds exactly three typed direct/current relation tables:
+
+```text
+event_expected_participation(Event, Person, required|optional)
+activity_responsibility(Activity, Person)
+event_responsibility(Event, Person)
+```
+
+B09-A deliberately stops before guarded mutation/application/API/frontend and before Actual attendance semantics.
+
+Local user-run proof on 2026-09-25:
+
+```text
+pytest focused B09-A persistence + both current-catalog suites
+10 passed
+```
+
+Proven candidate DB frontier:
+
+```text
+Alembic  20260925_66
+Topology 153|5|99|93|298|242|419
+```
+
+## B09-B — NEXT
+
+B09-B owns the guarded mutation/application layer over the B09-A substrate and, where public, the API/OpenAPI/generated-client/product surface.
+
+It must preserve:
+
+```text
+raw relation tables are not runtime mutation surfaces
+Person identity is not Account identity
+expected Participation does not establish acceptance/attendance/Actual
+Responsibility does not imply Participation
+participant authoring does not grant control over another person's calendar/task system
+```
+
+B09 closes only after the B09-A substrate is connected through bounded mutation semantics to the required real product surface and locally proven.
+
+---
+
+# 4. Remaining functional blocks
 
 ## B10 — Actual / Outcome / Confirmation / Resolution
 
@@ -218,23 +217,11 @@ B10 also owns the canonical behavior behind the existing Create confirmation pol
 
 B11 extends recurrence and conditional/reminder behavior without RRULE-as-ontology, fake Activity materialization or an unjustified universal Reminder owner.
 
-The existing editable Create reminder field must leave B11 either:
-
-```text
-canonically supported by its correct owner/capability
-OR
-truthfully handed off to the owning vertical
-OR
-hidden until that capability exists
-```
-
-B14 will verify the final result; B11 must not leave a knowingly fake editable field behind.
+The existing editable Create reminder field must leave B11 either canonically supported, truthfully handed off, or hidden until that capability exists.
 
 ## B13 — Work Structure / Decomposition / Dependencies
 
-B13 is the one missing functional block identified by the create-flow audit. It is intentionally compact and must not become a generic project-management ontology.
-
-It distinguishes three different concepts:
+B13 distinguishes:
 
 ```text
 1. INTERNAL STEP
@@ -253,7 +240,7 @@ It distinguishes three different concepts:
 
 Examples such as `English lesson → speaking/writing/grammar` must be representable either as internal steps or as independently meaningful Activities; the UI must not force both cases into one generic `sub_item` model.
 
-B13 also closes the temporal execution-structure foundation already exposed by Create where semantically appropriate: maximum Session count, merge compatibility, spacing, preparation/recovery and related structure rules. It does not turn those policies into Session history or completion truth.
+B13 also closes the temporal execution-structure foundation already exposed by Create where semantically appropriate: maximum Session count, merge compatibility, spacing, preparation/recovery and related structure rules.
 
 Permanent boundaries:
 
@@ -269,7 +256,7 @@ all children resolved != parent Actual unless an explicit policy establishes tha
 
 ## B12 — Replanning / Conflict / Solver
 
-B12 is deterministic-first replanning/conflict/solver and owns the still-latent planning semantics exposed by Create: preferred windows, movement policies, fallback policies and dependency-aware replanning.
+B12 is deterministic-first replanning/conflict/solver and owns preferred windows, movement policies, fallback policies and dependency-aware replanning.
 
 ```text
 canonical truth + constraints/preferences + B13 dependencies
@@ -294,8 +281,6 @@ AI != scheduling authority
 
 # 5. B14 — Temporal Create Completeness Gate
 
-B14 is a gate, not a new product mega-feature. It closes the mismatch discovered by auditing Home `+`.
-
 For every editable field visible in Create, exactly one must be true:
 
 ```text
@@ -305,7 +290,7 @@ C. explicitly presentation/read-only
 D. hidden/removed until supported
 ```
 
-Forbidden state:
+Forbidden:
 
 ```text
 editable field
@@ -313,33 +298,21 @@ editable field
 → normal submit silently ignores it or rejects it only because backend support is absent
 ```
 
-The gate explicitly audits the current latent surface, including:
+The gate audits Notes, appearance override, Tags, confirmation/reminder policy, execution-structure policy, Event location/availability/visibility, Event purpose/expected outcome/decision requirement, required/optional participants, resources/pre-read and conference/provider fields.
 
-```text
-Notes
-appearance override
-Tags
-confirmation/reminder policy
-execution-structure policy
-Event location / availability / visibility
-Event purpose / expected outcome / decision requirement
-required/optional participants
-resources / pre-read / conference integration
-```
-
-B14 does **not** force every field into the Temporal kernel. Fields owned by Work, Content, provider integrations or another vertical may remain handoffs or be hidden. The requirement is truthful ownership, not maximal scope.
+B14 does not force every field into the Temporal kernel. Truthful ownership matters more than maximal scope.
 
 ---
 
 # 6. B07 — UI/UX Consolidation v1 — DEFERRED
 
-Execute after B14 so final Home/Timeline/`+`/editors/actions/navigation are designed once against a truthful functional vocabulary. B07 does not create missing semantics; it consolidates presentation and interaction after those semantics are either implemented, handed off or removed from the editable surface.
+Execute after B14 so final Home/Timeline/`+`/editors/actions/navigation are designed once against a truthful functional vocabulary. B07 does not create missing semantics.
 
 ---
 
 # 7. B15 — Whole Vertical Closure
 
-B15 is the final cross-block closure. It reconciles migrations/catalog/Dictionary, backend/API/client, frontend, negative invariants, local automated proof, required real-stack walkthroughs and the live documentation ledger.
+B15 reconciles migrations/catalog/Dictionary, backend/API/client, frontend, negative invariants, local automated proof, required real-stack walkthroughs and the live documentation ledger.
 
 B15 must include a red-team semantic audit for accidental collapses such as:
 
@@ -350,6 +323,8 @@ Occurrence == Schedule
 Schedule == Session
 Session END == completion/Actual
 Expected outcome == Outcome
+Responsibility == Participation
+Participant == Account
 Step == Activity
 Dependency == hierarchy
 editable Create field == assumed canonical support
@@ -362,7 +337,9 @@ editable Create field == assumed canonical support
 ```text
 B00–B06 ✅ CLOSED / PROVEN
 B08     ✅ CLOSED / USER-REPORTED 2026-09-24
-B09     ⬜ NEXT
+B09     🟨 IN PROGRESS
+  B09-A ✅ CLOSED / PROVEN 2026-09-25
+  B09-B ⬜ NEXT
 B10     ⬜ NOT STARTED
 B11     ⬜ NOT STARTED
 B13     ⬜ NOT STARTED
@@ -372,4 +349,4 @@ B07     ⏸ DEFERRED UNTIL B14
 B15     ⬜ NOT STARTED
 ```
 
-**Current action:** Define and implement B09 Responsibility / Participation from the B08-closed frontier.
+**Current action:** implement B09-B guarded Responsibility / expected Participation authoring from the proven `_66` substrate.
