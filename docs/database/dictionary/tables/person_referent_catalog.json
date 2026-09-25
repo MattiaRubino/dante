@@ -1,0 +1,260 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "table:dante.person_referent_catalog",
+    "type": "table",
+    "schema": "dante",
+    "name": "person_referent_catalog",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Owner-local label and admissibility link for a native Person without requiring Account identity.",
+  "classification": {
+    "persistence_role": "person_referent_catalog",
+    "canonicality": "relation",
+    "family": "person_referent"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/domain/concepts/person.md",
+      "docs/workstreams/timeline-temporal-operational-map.md",
+      "docs/logical-model/slices/relationships-multi-actor-governance-v1.md"
+    ],
+    "domain_concepts": [
+      "Person",
+      "Responsibility",
+      "Participation"
+    ],
+    "logical_families": [
+      "LR-01 native identity owner",
+      "LR-03 specific typed relation"
+    ],
+    "reference_families": [
+      "NativeRef"
+    ],
+    "material_facets": []
+  },
+  "implementation": {
+    "introducing_stage": "B09-C",
+    "alembic_revision": "20260925_69",
+    "sqlalchemy": {
+      "mode": "orm_row",
+      "module": "dante.platform.database.mappings.responsibility_participation",
+      "symbol": "PersonReferentCatalogRow"
+    },
+    "runtime_acl_stage": "B09-C"
+  },
+  "structure": {
+    "columns": [
+      {
+        "name": "self_person_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Owner self Person.",
+        "semantic_type": "NativeRef",
+        "value_contract": null
+      },
+      {
+        "name": "person_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Native Person represented in the local catalog.",
+        "semantic_type": "NativeRef",
+        "value_contract": null
+      },
+      {
+        "name": "display_label",
+        "postgres_type": "text",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Owner-local presentation label; not a global Person name.",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "revision",
+        "postgres_type": "bigint",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Current label revision.",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "created_at",
+        "postgres_type": "timestamp with time zone",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Server creation instant.",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "updated_at",
+        "postgres_type": "timestamp with time zone",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Last accepted label correction.",
+        "semantic_type": null,
+        "value_contract": null
+      }
+    ],
+    "primary_key": {
+      "name": "pk_person_referent_catalog",
+      "columns": [
+        "self_person_ref",
+        "person_ref"
+      ],
+      "reason": "One owner-scoped native Person reference or operation id.",
+      "deferrable": false,
+      "initially": "NOT DEFERRABLE",
+      "enforced": true
+    },
+    "foreign_keys": [
+      {
+        "name": "fk_person_referent_catalog_self_person",
+        "columns": [
+          "self_person_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "person",
+          "columns": [
+            "person_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "NativeRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Bounded self Person or existing native referent; no Account is required."
+      },
+      {
+        "name": "fk_person_referent_catalog_person",
+        "columns": [
+          "person_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "person",
+          "columns": [
+            "person_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "NativeRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Bounded self Person or existing native referent; no Account is required."
+      }
+    ],
+    "unique_constraints": [],
+    "check_constraints": [
+      {
+        "name": "ck_person_referent_catalog_label",
+        "expression_contract": "btrim(display_label)<>'' AND char_length(display_label)<=100",
+        "reason": "Bounded local label, operation or revision.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_person_referent_catalog_revision",
+        "expression_contract": "revision>=1",
+        "reason": "Bounded local label, operation or revision.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "pk_person_referent_catalog",
+        "method": "btree",
+        "unique": true,
+        "keys": [
+          "self_person_ref",
+          "person_ref"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "primary_key",
+        "reason": "Primary-key owner-scoped lookup.",
+        "valid": true,
+        "ready": true,
+        "live": true
+      }
+    ],
+    "triggers": [],
+    "table": {
+      "persistence": "permanent",
+      "access_method": "heap",
+      "partitioned": false,
+      "row_security": false,
+      "force_row_security": false,
+      "replica_identity": "default",
+      "reloptions": []
+    },
+    "view": null,
+    "routine": null
+  },
+  "state_history": {
+    "material_state_behavior": "Not Domain MaterialState; Person identity is the native referent.",
+    "current_binding": "Owner-local current display label and permission to reference Person.",
+    "chronology": "Server-accepted operation receipt retains the label used at acceptance.",
+    "immutability_policy": "Mutations only through bounded SECURITY DEFINER capabilities; operation receipts immutable."
+  },
+  "lifecycle": {
+    "retention": "Retain identity and accepted references; a local label correction does not rewrite Person identity.",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No direct runtime DELETE; downgrade refuses data loss."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": []
+  },
+  "proof": {
+    "obligations": [
+      "No Account required for referenced Person.",
+      "Self-only catalog visibility and no raw runtime mutation.",
+      "Idempotent create/rename with revision checks."
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b09_c_person_referents.py",
+      "apps/backend/tests/integration/database/test_database_current_catalog.py"
+    ],
+    "staged_evidence": []
+  }
+}
