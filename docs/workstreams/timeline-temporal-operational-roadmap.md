@@ -134,7 +134,7 @@ B08 proven/user-reported candidate chain ends at `20260924_65`.
 
 ---
 
-# 3. B09 — Responsibility / Participation — IN PROGRESS
+# 3. B09 — Responsibility / Participation — CLOSED / PROVEN
 
 B09 adds actor/person semantics around temporal subjects without introducing account collaboration infrastructure.
 
