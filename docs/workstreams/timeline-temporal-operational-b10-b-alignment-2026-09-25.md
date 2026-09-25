@@ -1,8 +1,8 @@
 # Timeline / Temporal-Operational — B10-B alignment checkpoint
 
-Status: **IN PROGRESS / NOT YET PROVEN — 2026-09-25**
+Status: **IMPLEMENTATION CANDIDATE READY / AWAITING USER LOCAL PROOF — 2026-09-25**
 
-This checkpoint records the canonical B10-B state after reconciling the branch against the published Alembic chain. It is a continuation aid, not closure evidence.
+This checkpoint records the canonical B10-B state after reconciling the branch against the published Alembic chain. It is a continuation aid and candidate handoff, not closure evidence.
 
 ## Canonical persistence frontier
 
@@ -14,6 +14,12 @@ The published B10-B migration chain is immutable:
 ```
 
 `20260925_76` is the binding B10-B persistence contract. Do not edit `_75` or `_76`; any later persistence correction must be a new forward-only revision.
+
+Candidate Dictionary topology:
+
+```text
+163|5|119|93|317|268|443
+```
 
 The canonical model after `_76` is:
 
@@ -50,9 +56,9 @@ material_state_ref
 
 `disposition_code` is contextual. B10-B does not introduce one universal completed/failed/skipped/etc. Outcome enum.
 
-## Reconciliation completed in this checkpoint
+## Candidate surfaces reconciled
 
-The branch had drifted back toward the transient `_75` vocabulary/result representation even though `_76` was already the published forward repair. The following implementation surfaces were realigned to `_76` without rewriting published migrations:
+The current branch has been reconciled to `_76` across:
 
 ```text
 apps/backend/src/dante/platform/database/mappings/outcome.py
@@ -60,9 +66,17 @@ apps/backend/src/dante/platform/database/mappings/addressing.py
 apps/backend/src/dante/platform/database/mappings/__init__.py
 apps/backend/src/dante/modules/temporal/outcome_runtime.py
 apps/backend/src/dante/modules/temporal/outcome_api.py
+apps/backend/tests/integration/temporal/test_b10_b_outcome.py
+apps/backend/tests/integration/temporal/test_b10_b_outcome_api.py
+apps/backend/tests/test_temporal_openapi_inventory.py
+apps/web/src/features/temporal/remote-outcome-data-source.ts
+apps/web/src/features/temporal/outcome-controls.tsx
+apps/web/src/features/temporal/outcome-controls.test.tsx
+docs/database/dictionary/**
+docs/database/dictionary/scope.json
 ```
 
-The runtime/API contract now uses:
+The runtime/API contract uses:
 
 ```text
 actual_ref
@@ -81,21 +95,22 @@ GET  /api/v1/temporal/actuals/{actual_ref}/outcome
 GET  /api/v1/temporal/outcomes/{outcome_ref}/history
 ```
 
-## Still open before B10-B can be called complete
+History ordering is canonical oldest-to-newest (`current_from_at ASC`), matching the focused B10-B application/API proof.
 
-The following surfaces may still reflect the old transient `_75` vocabulary/result model and must be reconciled against this checkpoint before B10-B closure:
+## Remaining acceptance work
+
+The implementation candidate is coherent. The remaining work is acceptance, not more feature implementation:
 
 ```text
-OpenAPI export / snapshots
-packages/api-client generated output — generator only, never hand-edit
-web Outcome remote data source
-web Outcome author/correct/read controls
-B10-B backend/API/web/PostgreSQL tests
-Database Dictionary / scope / database overlay
-roadmap/map status ledger
+1. user pulls the current branch;
+2. user runs pnpm api:generate locally so OpenAPI/Orval reflect the current Outcome API;
+3. generated determinism + API-client/web typechecks run locally;
+4. focused B10-B web/OpenAPI/PostgreSQL tests and B10-A/B09/B08/catalog regressions run locally;
+5. generated artifacts are committed only after the local gate is green;
+6. only then reconcile closure docs and mark B10-B CLOSED / PROVEN.
 ```
 
-Do not infer that those surfaces are correct merely because files already exist. Compare them to `_76` and this checkpoint first.
+Generated artifacts must be produced through repository tooling and must never be hand-edited.
 
 ## Deferred by B10-B
 
@@ -114,24 +129,18 @@ integrated real-app B10 walkthrough (belongs to B10-E)
 
 ## Proof status
 
-No acceptance claim is made by this checkpoint. The user explicitly did not request a local test cycle during this alignment pass. Therefore:
-
 ```text
 B10-A  CLOSED / PROVEN
-B10-B  IN PROGRESS / UNPROVEN
+B10-B  IMPLEMENTATION CANDIDATE READY / AWAITING USER LOCAL PROOF
 ```
 
-No CI/GitHub Actions were used.
+No CI/GitHub Actions are authorized or used. The user runs the acceptance gate locally.
 
 ## Exact continuation cursor
 
-On the next continuation:
-
-1. read this checkpoint and the approved B10-B scope;
-2. re-fetch branch HEAD before any write;
-3. treat `20260925_76` as the canonical B10-B persistence contract;
-4. reconcile OpenAPI/generated client through the repository generator, never by hand;
-5. reconcile the web Outcome surface from vocabulary/result to disposition + exact Actual realization basis;
-6. reconcile Dictionary/database docs and B10-B focused tests;
-7. only after the full candidate is coherent may a user-run local gate be proposed;
-8. do not mark B10-B CLOSED / PROVEN without that later evidence.
+1. pull the branch;
+2. regenerate OpenAPI/client locally with repository tooling;
+3. run the single B10-B local automated gate;
+4. if failures appear, repair them without starting B10-C;
+5. if green, commit generated artifacts, reconcile roadmap/map/handoff/DB closure evidence, mark B10-B CLOSED / PROVEN and prepare the B10-C modification gate;
+6. do not perform the integrated real-app proof before B10-E.
