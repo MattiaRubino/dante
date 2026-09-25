@@ -8,7 +8,7 @@
 - **Current candidate Alembic frontier:** `20260925_69`
 - **Last proven candidate DB frontier:** B09-C / `20260925_69` / `158|5|109|93|303|254|433`
 - **Completed functional frontier:** B08 Session Runtime ✅ CLOSED / USER-REPORTED 2026-09-24
-- **Current implementation cursor:** B09-A/B/C closed; B09-D pending
+- **Current implementation cursor:** B09-A/B/C closed; B09-D integration candidate awaiting automated and user real-app proof
 - **CI:** not authorized; local tests are run by the user
 
 ---
@@ -68,7 +68,7 @@ B09 Responsibility / Participation               🟨 IN PROGRESS
   B09-A typed persistence substrate               ✅ CLOSED / PROVEN 2026-09-25
   B09-B guarded mutation + application surface    ✅ CLOSED / PROVEN 2026-09-25
   B09-C non-Account Person referents              ✅ CLOSED / PROVEN 2026-09-25
-  B09-D B09 whole-block closure                    ⬜ PENDING — exact scope to reconcile
+  B09-D B09 whole-block closure                    🟨 CANDIDATE — proof pending
 ```
 
 B09-A is a persistence closure only. It does **not** close B09 as a whole and does not claim API/frontend or Actual-attendance semantics.
@@ -79,7 +79,7 @@ B09-A is a persistence closure only. It does **not** close B09 as a whole and do
 
 ```text
 B09-C non-Account Person referents                 ✅ CLOSED / PROVEN 2026-09-25
-B09-D B09 whole-block closure                     ⬜ PENDING
+B09-D B09 whole-block closure                     🟨 CANDIDATE — proof pending
 B10 Actual / Outcome / Confirmation / Resolution ⬜
 B11 Advanced Recurrence / Conditional / Reminder ⬜
 B13 Work Structure / Decomposition / Dependencies⬜
@@ -226,7 +226,9 @@ Candidate implementation on `20260925_67`:
 
 Home `+` required/optional participant textareas remain B14. They are free-text emails, not Person refs. B09-B does not invent email-to-Person identity.
 
-B09-C is closed and proven at `20260925_69`: guarded creation, list and label correction for owner-local native Persons without Accounts. The admissibility seam accepts self or a Person in this owner's catalog. Timeline role controls select that Person explicitly; expected participation remains an intention only. Dictionary and mappings cover two default-deny tables, three capabilities and the widened helper. User-run proof on 2026-09-25: generated:check PASS (321 files), both typechecks PASS, web 7 passed, backend OpenAPI/API 11 passed, PostgreSQL B09-C/B09-B/catalog regressions 18 passed; physical topology `158|5|109|93|303|254|433` proven. Generated client commit `875aaf48`. Real-stack walkthrough remains B15.
+B09-C is closed and proven at `20260925_69`: guarded creation, list and label correction for owner-local native Persons without Accounts. The admissibility seam accepts self or a Person in this owner's catalog. Timeline role controls select that Person explicitly; expected participation remains an intention only. Dictionary and mappings cover two default-deny tables, three capabilities and the widened helper. User-run proof on 2026-09-25: generated:check PASS (321 files), both typechecks PASS, web 7 passed, backend OpenAPI/API 11 passed, PostgreSQL B09-C/B09-B/catalog regressions 18 passed; physical topology `158|5|109|93|303|254|433` proven. Generated client commit `875aaf48`. The user now requests a B09-specific real-app walkthrough during B09-D; B15 still owns whole-vertical regression.
+
+B09-D integration candidate: one new authenticated API/PostgreSQL test and an extended Timeline controls test cover Person creation and label correction, both Responsibility owners, expected Event Participation, removal, isolation and no Actual/Session. Results are pending the user's local run. The required real-app script and closure evidence live in `timeline-temporal-operational-b09-d-closure-2026-09-25.md`.
 
 Permanent B09 boundaries:
 
@@ -314,7 +316,7 @@ B09     🟨 IN PROGRESS
   B09-A ✅ CLOSED / PROVEN 2026-09-25
   B09-B ✅ CLOSED / PROVEN 2026-09-25
   B09-C ✅ CLOSED / PROVEN 2026-09-25
-  B09-D ⬜ PENDING — scope to reconcile
+  B09-D 🟨 CANDIDATE — automated + real-app proof pending
 B10     ⬜ NOT STARTED
 B11     ⬜ NOT STARTED
 B13     ⬜ NOT STARTED
@@ -324,4 +326,4 @@ B07     ⏸ DEFERRED UNTIL B14
 B15     ⬜ NOT STARTED
 ```
 
-**Next concrete action:** reconcile B09-D deliverables against the accepted scope and implement the whole-block closure. B10 follows B09-D; user real-stack validation remains B15 scope.
+**Next concrete action:** execute the B09-D automated gate and the user's real-app Timeline walkthrough; close B09 on confirmed evidence. B15 retains whole-vertical validation; B10 follows B09.
