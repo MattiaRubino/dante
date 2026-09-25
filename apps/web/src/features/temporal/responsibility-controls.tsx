@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import './responsibility-controls.css';
 
+import { ActualRealizationControls } from './actual-realization-controls';
 import {
   createRemoteTemporalResponsibilityDataSource,
   type ParticipationRequirement,
@@ -79,7 +80,9 @@ export function ResponsibilityControls({
         }
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [kind, source, subjectRef]);
 
   const run = (action: () => Promise<unknown>, failure: string) => {
@@ -93,20 +96,24 @@ export function ResponsibilityControls({
   };
 
   const labelFor = (ref: string | null, isSelf = false) =>
-    isSelf ? 'tu' :
-    people.find((person) => person.personRef === ref)?.displayLabel ??
-    'referente non disponibile';
+    isSelf
+      ? 'tu'
+      : (people.find((person) => person.personRef === ref)?.displayLabel ??
+        'referente non disponibile');
 
-  const holder = responsibility?.responsiblePersonRef === null ||
-    responsibility === null ? null :
-    responsibility.responsibleIsSelf ? 'self' :
-    responsibility.responsiblePersonRef;
-  const selectedParticipation = participation.find((item) =>
-    selectedPerson === 'self' ? item.participantIsSelf :
-    item.participantPersonRef === selectedPerson,
-  ) ?? null;
-  const selectedLabel = selectedPerson === 'self' ? 'me' :
-    labelFor(selectedPerson);
+  const holder =
+    responsibility?.responsiblePersonRef === null || responsibility === null
+      ? null
+      : responsibility.responsibleIsSelf
+        ? 'self'
+        : responsibility.responsiblePersonRef;
+  const selectedParticipation =
+    participation.find((item) =>
+      selectedPerson === 'self'
+        ? item.participantIsSelf
+        : item.participantPersonRef === selectedPerson,
+    ) ?? null;
+  const selectedLabel = selectedPerson === 'self' ? 'me' : labelFor(selectedPerson);
   const selectedIsHolder = holder !== null && holder === selectedPerson;
 
   return (
@@ -116,11 +123,12 @@ export function ResponsibilityControls({
     >
       <strong>Responsabilità</strong>
       <p data-timeline-responsibility-state>
-        {holder === null ? 'Nessun responsabile' :
-          `Responsabile: ${labelFor(
-            responsibility?.responsiblePersonRef ?? null,
-            responsibility?.responsibleIsSelf,
-          )}`}
+        {holder === null
+          ? 'Nessun responsabile'
+          : `Responsabile: ${labelFor(
+              responsibility?.responsiblePersonRef ?? null,
+              responsibility?.responsibleIsSelf,
+            )}`}
       </p>
       <label className="timeline-responsibility-controls__person">
         Persona
@@ -142,20 +150,25 @@ export function ResponsibilityControls({
         type="button"
         disabled={pending || responsibility === null}
         data-timeline-responsibility-toggle
-        onClick={() => run(
-          () => source.setResponsibility(kind, subjectRef, {
-            operationId: operationId(),
-            holder: selectedIsHolder ? null : selectedPerson,
-            expectedHolder: holder,
-          }),
-          selectedIsHolder
-            ? 'Rimozione responsabilità rifiutata.'
-            : 'Assegnazione responsabilità rifiutata.',
-        )}
+        onClick={() =>
+          run(
+            () =>
+              source.setResponsibility(kind, subjectRef, {
+                operationId: operationId(),
+                holder: selectedIsHolder ? null : selectedPerson,
+                expectedHolder: holder,
+              }),
+            selectedIsHolder
+              ? 'Rimozione responsabilità rifiutata.'
+              : 'Assegnazione responsabilità rifiutata.',
+          )
+        }
       >
-        {selectedIsHolder ? 'Rimuovi responsabilità' :
-          selectedPerson === 'self' ? 'Assegna a me' :
-          `Assegna a ${selectedLabel}`}
+        {selectedIsHolder
+          ? 'Rimuovi responsabilità'
+          : selectedPerson === 'self'
+            ? 'Assegna a me'
+            : `Assegna a ${selectedLabel}`}
       </button>
 
       <div className="timeline-responsibility-controls__catalog">
@@ -173,14 +186,14 @@ export function ResponsibilityControls({
         <button
           type="button"
           disabled={pending || !personLabel.trim()}
-          onClick={() => run(async () => {
-            const created = await source.createPersonReferent(
-              operationId(), personLabel,
-            );
-            setSelectedPerson(created.personRef);
-            setPersonLabel('');
-            setPersonCreated(true);
-          }, 'Creazione persona rifiutata.')}
+          onClick={() =>
+            run(async () => {
+              const created = await source.createPersonReferent(operationId(), personLabel);
+              setSelectedPerson(created.personRef);
+              setPersonLabel('');
+              setPersonCreated(true);
+            }, 'Creazione persona rifiutata.')
+          }
         >
           Aggiungi persona
         </button>
@@ -188,89 +201,105 @@ export function ResponsibilityControls({
           <button
             type="button"
             disabled={pending || !personLabel.trim()}
-            onClick={() => run(async () => {
-              const selected = people.find((person) =>
-                person.personRef === selectedPerson);
-              if (selected === undefined) return;
-              await source.renamePersonReferent(
-                selected.personRef, operationId(), selected.revision, personLabel,
-              );
-              setPersonLabel('');
-            }, 'Modifica nome rifiutata.')}
+            onClick={() =>
+              run(async () => {
+                const selected = people.find((person) => person.personRef === selectedPerson);
+                if (selected === undefined) return;
+                await source.renamePersonReferent(
+                  selected.personRef,
+                  operationId(),
+                  selected.revision,
+                  personLabel,
+                );
+                setPersonLabel('');
+              }, 'Modifica nome rifiutata.')
+            }
           >
             Correggi nome
           </button>
         )}
       </div>
       {personCreated ? (
-        <p role="status">Persona aggiunta. Per assegnarle la responsabilità, premi “Assegna a {selectedLabel}”.</p>
+        <p role="status">
+          Persona aggiunta. Per assegnarle la responsabilità, premi “Assegna a{' '}
+          {selectedLabel}”.
+        </p>
       ) : null}
 
       {kind === 'event' ? (
-        <div className="timeline-responsibility-controls__participation">
-          <strong>Partecipazione attesa all’Event</strong>
-          <p data-timeline-participation-state>
-            {selectedParticipation === null
-              ? 'Partecipazione attesa: non indicata'
-              : `Partecipazione attesa: ${
-                  selectedParticipation.requirementCode === 'required'
-                    ? 'obbligatoria' : 'facoltativa'
-                }`}
-          </p>
-          {participation.length > 0 ? (
-            <ul aria-label="Persone con partecipazione attesa">
-              {participation.map((item) => (
-                <li key={item.participantPersonRef}>
-                  {labelFor(item.participantPersonRef, item.participantIsSelf)}:
-                  {' '}{item.requirementCode === 'required' ?
-                    'obbligatoria' : 'facoltativa'}
-                </li>
-              ))}
-            </ul>
-          ) : null}
-          {(['required', 'optional'] as const).map(
-            (requirement: ParticipationRequirement) => (
+        <>
+          <div className="timeline-responsibility-controls__participation">
+            <strong>Partecipazione attesa all’Event</strong>
+            <p data-timeline-participation-state>
+              {selectedParticipation === null
+                ? 'Partecipazione attesa: non indicata'
+                : `Partecipazione attesa: ${
+                    selectedParticipation.requirementCode === 'required'
+                      ? 'obbligatoria'
+                      : 'facoltativa'
+                  }`}
+            </p>
+            {participation.length > 0 ? (
+              <ul aria-label="Persone con partecipazione attesa">
+                {participation.map((item) => (
+                  <li key={item.participantPersonRef}>
+                    {labelFor(item.participantPersonRef, item.participantIsSelf)}:{' '}
+                    {item.requirementCode === 'required' ? 'obbligatoria' : 'facoltativa'}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            {(['required', 'optional'] as const).map(
+              (requirement: ParticipationRequirement) => (
+                <button
+                  key={requirement}
+                  type="button"
+                  disabled={
+                    pending || selectedParticipation?.requirementCode === requirement
+                  }
+                  data-timeline-participation-set={requirement}
+                  onClick={() =>
+                    run(
+                      () =>
+                        source.setExpectedParticipation(subjectRef, {
+                          operationId: operationId(),
+                          participant: selectedPerson,
+                          requirementCode: requirement,
+                          expectedRequirementCode:
+                            selectedParticipation?.requirementCode ?? null,
+                        }),
+                      'Aggiornamento partecipazione rifiutato.',
+                    )
+                  }
+                >
+                  {requirement === 'required' ? 'Obbligatoria' : 'Facoltativa'}
+                </button>
+              ),
+            )}
+            {selectedParticipation === null ? null : (
               <button
-                key={requirement}
                 type="button"
-                disabled={pending ||
-                  selectedParticipation?.requirementCode === requirement}
-                data-timeline-participation-set={requirement}
-                onClick={() => run(
-                  () => source.setExpectedParticipation(subjectRef, {
-                    operationId: operationId(),
-                    participant: selectedPerson,
-                    requirementCode: requirement,
-                    expectedRequirementCode:
-                      selectedParticipation?.requirementCode ?? null,
-                  }),
-                  'Aggiornamento partecipazione rifiutato.',
-                )}
+                disabled={pending}
+                data-timeline-participation-remove
+                onClick={() =>
+                  run(
+                    () =>
+                      source.setExpectedParticipation(subjectRef, {
+                        operationId: operationId(),
+                        participant: selectedPerson,
+                        requirementCode: null,
+                        expectedRequirementCode: selectedParticipation.requirementCode,
+                      }),
+                    'Rimozione partecipazione rifiutata.',
+                  )
+                }
               >
-                {requirement === 'required' ? 'Obbligatoria' : 'Facoltativa'}
+                Rimuovi partecipazione
               </button>
-            ),
-          )}
-          {selectedParticipation === null ? null : (
-            <button
-              type="button"
-              disabled={pending}
-              data-timeline-participation-remove
-              onClick={() => run(
-                () => source.setExpectedParticipation(subjectRef, {
-                  operationId: operationId(),
-                  participant: selectedPerson,
-                  requirementCode: null,
-                  expectedRequirementCode:
-                    selectedParticipation.requirementCode,
-                }),
-                'Rimozione partecipazione rifiutata.',
-              )}
-            >
-              Rimuovi partecipazione
-            </button>
-          )}
-        </div>
+            )}
+          </div>
+          <ActualRealizationControls kind="event" subjectRef={subjectRef} />
+        </>
       ) : null}
       {message === null ? null : <span role="alert">{message}</span>}
     </div>
