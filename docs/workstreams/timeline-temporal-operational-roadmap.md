@@ -3,8 +3,9 @@
 - **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-25
 - **Branch/workstream:** `feature/timeline-temporal-operational`
 - **Vertical boundary:** Home `+` creation/configuration → canonical temporal truth → Timeline projection/actions → bounded lifecycle completion
-- **Completed functional frontier:** B08 Session Runtime ✅ CLOSED / USER-REPORTED 2026-09-24
-- **Current block:** B09 Responsibility / Participation ✅ CLOSED / USER-REPORTED 2026-09-25
+- **Completed functional frontier:** B09 Responsibility / Participation ✅ CLOSED / USER-REPORTED 2026-09-25
+- **Current block:** B10 Actual / Outcome / Confirmation / Resolution — IN PROGRESS; B10-A candidate prepared, local acceptance pending
+- **Current candidate DB frontier:** B10-A / PostgreSQL 18.6 / Alembic `20260925_71`
 - **Last proven candidate DB frontier:** B09-C / PostgreSQL 18.6 / Alembic `20260925_69` / topology `158|5|109|93|303|254|433`
 - **Deferred block:** B07 UI/UX Consolidation v1 — execute only after the functional/create-completeness sequence below
 - **Live execution ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
@@ -95,8 +96,9 @@ B09 Responsibility / Participation               ✅ CLOSED / USER-REPORTED 2026
   B09-A typed persistence substrate               ✅ CLOSED / PROVEN 2026-09-25
   B09-B guarded mutation + application surface    ✅ CLOSED / PROVEN 2026-09-25
   B09-C non-Account Person referents              ✅ CLOSED / PROVEN 2026-09-25
-  B09-D B09 whole-block closure                    ✅ CLOSED / USER-REPORTED 2026-09-25
-B10 Actual / Outcome / Confirmation / Resolution ⬜
+  B09-D B09 whole-block closure                   ✅ CLOSED / USER-REPORTED 2026-09-25
+B10 Actual / Outcome / Confirmation / Resolution 🟨 IN PROGRESS
+  B10-A Actual / realization core                 🟨 CANDIDATE PREPARED — user local gate pending
 B11 Advanced Recurrence / Conditional / Reminder ⬜
 B13 Work Structure / Decomposition / Dependencies⬜
 B12 Replanning / Conflict / Solver               ⬜
@@ -117,9 +119,9 @@ External providers, native/offline/multi-device and account collaboration remain
 
 ---
 
-# 2. Completed foundation B00–B08
+# 2. Completed foundation B00–B09
 
-B00–B06 and B08 are closed. Permanent temporal boundaries at the B09 entry point include:
+B00–B06, B08 and B09 are closed. Permanent temporal boundaries at the B10 entry point include:
 
 ```text
 Activity may exist without Schedule
@@ -128,15 +130,17 @@ Routine != Recurrence != Occurrence
 Occurrence != Schedule
 Schedule is the shared accepted-placement authority
 Life Area / Tags are product organization, not Domain ownership
+Person != Account != Actor
+Responsibility != Participation
 Session != Actual
 Session END != completion
 ```
 
-B08 proven/user-reported candidate chain ends at `20260924_65`.
+B09 proven/user-reported candidate frontier ends at `20260925_69`.
 
 ---
 
-# 3. B09 — Responsibility / Participation — IN PROGRESS
+# 3. B09 — Responsibility / Participation — CLOSED / PROVEN
 
 B09 adds actor/person semantics around temporal subjects without introducing account collaboration infrastructure.
 
@@ -197,7 +201,7 @@ participant authoring does not grant control over another person's calendar/task
 
 Home `+` required/optional participant textareas remain B14. Timeline detail is the truthful B09 authoring surface.
 
-User-run local automated proof on 2026-09-25: generated check and both typechecks passed, web responsibility controls 4 passed, backend B09-B/B09-A/catalog/OpenAPI 18 passed. B09-B alone closes on this evidence; B09-C and B09-D remain, and real-stack testing is deferred to B15 whole-vertical closure.
+User-run local automated proof on 2026-09-25: generated check and both typechecks passed, web responsibility controls 4 passed, backend B09-B/B09-A/catalog/OpenAPI 18 passed. B09-B alone closes on this evidence; B09-C and B09-D followed before whole B09 closure.
 
 ## B09-C — CLOSED / PROVEN
 
@@ -209,9 +213,7 @@ B09-D integrates the proven A/B/C surfaces. The API/PostgreSQL gate exercises ow
 
 ---
 
-# 4. Remaining functional blocks
-
-## B10 — Actual / Outcome / Confirmation / Resolution
+# 4. B10 — Actual / Outcome / Confirmation / Resolution — IN PROGRESS
 
 B10 adds realization/reconciliation semantics while preserving:
 
@@ -225,6 +227,27 @@ no Actual != known non-realization/failure
 ```
 
 B10 also owns the canonical behavior behind the existing Create confirmation policy and execution intents whose meaning depends on realized results, notably partial completion and finish-early semantics. Fast outcomes such as completed/partial/skipped/not-completed/postponed/replaced/cancelled must be represented without collapsing Actual, Outcome and Confirmation.
+
+## B10-A — Actual / realization core — CANDIDATE PREPARED / LOCAL GATE PENDING
+
+Scope authority: `docs/workstreams/timeline-temporal-operational-b10-scope-freeze.md`.
+
+Candidate implementation now reaches Alembic `20260925_71` and spans PostgreSQL, SQLAlchemy/Dictionary alignment, backend application, public Activity/Event/Occurrence Actual API, OpenAPI inventory, Timeline web authoring and focused automated proofs. `20260925_70` activates guarded self-scoped append-only Actual realization authoring/current/history over the existing CP6 substrate; `20260925_71` hardens exact Activity/Event/Occurrence family authority in PostgreSQL.
+
+Permanent B10-A boundaries:
+
+```text
+Session END != Actual
+absence of Actual = unknown
+known realization_occurred=false != absence of Actual
+current accepted realization != latest row
+Session evidence does not share Actual identity
+Actual != Outcome != Confirmation
+```
+
+The generated client is not hand-edited. B10-A remains open until the user runs `pnpm api:generate` and the local automated acceptance gate successfully. Manual real-app B10 validation remains deferred to the integrated end-of-B10 walkthrough.
+
+Later B10 semantics — Outcome, Confirmation, result vocabulary, partial/finish-early behavior and reconciliation/resolution behavior — remain outside B10-A and must not be inferred from this candidate.
 
 ## B11 — Advanced Recurrence / Conditional / Reminder
 
@@ -355,7 +378,8 @@ B09     ✅ CLOSED / USER-REPORTED 2026-09-25
   B09-B ✅ CLOSED / PROVEN 2026-09-25
   B09-C ✅ CLOSED / PROVEN 2026-09-25
   B09-D ✅ CLOSED / USER-REPORTED 2026-09-25
-B10     ⬜ NOT STARTED
+B10     🟨 IN PROGRESS
+  B10-A 🟨 CANDIDATE PREPARED — generated client + user local gate pending
 B11     ⬜ NOT STARTED
 B13     ⬜ NOT STARTED
 B12     ⬜ NOT STARTED
@@ -364,4 +388,4 @@ B07     ⏸ DEFERRED UNTIL B14
 B15     ⬜ NOT STARTED
 ```
 
-**Current action:** start B10 Actual / Outcome / Confirmation / Resolution. B09-D passed web typecheck, 8 web tests, 18 PostgreSQL tests and the user real-app walkthrough. B15 retains the separate whole-vertical regression.
+**Current action:** run the B10-A local acceptance gate. The gate starts by regenerating OpenAPI/Orval through `pnpm api:generate`, then runs generated/client, backend PostgreSQL/API/OpenAPI and focused web regressions. The user runs this gate locally; CI/GitHub Actions are not used. Only a passing user-reported gate permits B10-A closure and advancement to later B10 semantics.
