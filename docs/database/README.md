@@ -97,7 +97,7 @@ No accepted historical migration was edited, rebased, renumbered or flattened. `
 0 RLS policies
 ```
 
-User-run PostgreSQL proof on 2026-09-25 established B09-C `_69` at `158|5|109|93|303|254|433`, including exact Dictionary/SQLAlchemy/Alembic/catalog checks. Generated client, typechecks, web and backend API/OpenAPI tests also passed. B09-D adds no database objects; its integrated automated proof passed; the user real-app proof is pending. B15 still owns whole-vertical closure.
+User-run PostgreSQL proof on 2026-09-25 established B09-C `_69` at `158|5|109|93|303|254|433`, including exact Dictionary/SQLAlchemy/Alembic/catalog checks. Generated client, typechecks, web and backend API/OpenAPI tests also passed. B09-D adds no database objects; its integrated automated proof and user real-app walkthrough passed on 2026-09-25. B09 is closed on this candidate branch. B15 still owns whole-vertical closure.
 
 ## 4. Timeline persistence classification
 
@@ -200,7 +200,7 @@ B08-C `_65` local automated proof     ✅ CLOSED / PROVEN 2026-09-24
 B09-A `_66` persistence               ✅ CLOSED / PROVEN 2026-09-25
 B09-B `_67`–`_68` authoring          ✅ CLOSED / PROVEN 2026-09-25
 B09-C `_69` Person referents           ✅ CLOSED / PROVEN 2026-09-25
-B09-D whole-block integration          AUTOMATED PASS / NO DB DELTA — real-app proof pending
+B09-D whole-block integration          CLOSED / NO DB DELTA — user-reported 2026-09-25
 ```
 
 B08-A/B are treated as closed based on the user’s B08-B closure report; their exact test logs are not committed. B08-C `_65` passed the user-run generated/client, web, backend unit/API and PostgreSQL catalog/integration gates on 2026-09-24. The complete vertical real-stack walkthrough remains B15 scope.
