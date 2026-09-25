@@ -1,12 +1,13 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B09 ✅ CLOSED / USER-REPORTED 2026-09-25 — B15 remains whole-vertical
+- **Status:** B10 IN PROGRESS — B10-A Actual / realization candidate prepared; generated client + user-run local gate pending
 - **Reconciled:** 2026-09-25
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Live execution ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
+- **B10 scope authority:** `docs/workstreams/timeline-temporal-operational-b10-scope-freeze.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Current candidate Alembic frontier:** `20260925_69`
+- **Current candidate Alembic frontier:** `20260925_71`
 - **Last proven candidate DB frontier:** B09-C / `20260925_69` / `158|5|109|93|303|254|433`
 - **CI:** no CI/GitHub Actions unless explicitly authorized; user runs local tests
 
@@ -24,7 +25,8 @@ B09     ✅ CLOSED / USER-REPORTED 2026-09-25
   B09-B ✅ CLOSED / PROVEN 2026-09-25
   B09-C ✅ CLOSED / PROVEN 2026-09-25
   B09-D ✅ CLOSED / USER-REPORTED 2026-09-25
-B10     ⬜ NOT STARTED
+B10     🟨 IN PROGRESS
+  B10-A 🟨 CANDIDATE PREPARED — generated client + user local gate pending
 B11     ⬜ NOT STARTED
 B13     ⬜ NOT STARTED
 B12     ⬜ NOT STARTED
@@ -43,7 +45,37 @@ Historical identifiers are not renumbered.
 
 ---
 
-# 2. B08 closure truth
+# 2. Permanent semantic boundaries at the B10 cursor
+
+```text
+Person != Account != Actor
+Activity != Event != Routine
+Routine != Recurrence != Occurrence
+Occurrence != Schedule
+Schedule != Session != Actual
+Session != Actual != Outcome
+Actual != Outcome != Confirmation
+Expected outcome != Outcome
+Responsibility != Participation
+planned/intended != happened
+projection != canonical truth
+current accepted state != latest row
+MaterialState != mutable runtime object
+idempotency key != Domain identity
+Undo != history rewind
+Step != Activity
+Plan != Activity
+Dependency != hierarchy
+ordering != dependency
+```
+
+PostgreSQL remains canonical authority. API, generated client, frontend, provider, solver and AI are projections/capabilities over that authority and may not create a second truth model.
+
+---
+
+# 3. Closed frontier truth
+
+## B08 — Session Runtime
 
 B08 closed from the user's local automated output and real-app walkthrough on 2026-09-24.
 
@@ -71,213 +103,197 @@ Session elapsed != active duration
 TC-009 does not aggregate Sessions, count pauses, block transitions or mutate Schedule/Actual/Outcome
 ```
 
----
+## B09 — Responsibility / Participation
 
-# 3. B09-A closure truth
+B09 closed on the user's local automated gates and B09-specific real-app walkthrough on 2026-09-25.
 
-B09-A was implemented in commit `aba642bc8a722eeb822b7bbfa34644b59ca19cad` and locally proven by the user on 2026-09-25.
-
-Alembic:
+Persistence/application sequence:
 
 ```text
-20260925_66
-revises 20260924_65
-forward-only
+_66 typed Event expected Participation + Activity/Event Responsibility
+_67 guarded authoring/read capabilities
+_68 Event Participation SQL ambiguity repair
+_69 owner-local native non-Account Person referents
 ```
 
-Typed persistence introduced:
-
-```text
-event_expected_participation
-  event_ref → Event
-  participant_person_ref → Person
-  requirement_code ∈ {required, optional}
-
-activity_responsibility
-  activity_ref → Activity
-  responsible_person_ref → Person
-
-event_responsibility
-  event_ref → Event
-  responsible_person_ref → Person
-```
-
-The persistence substrate proves the intended B09-A boundaries:
+Permanent B09 boundaries:
 
 ```text
 Person != Account
 Responsibility != Participation
-required/optional expected Participation is not attendance
-Activity Responsibility != Event Responsibility by storage ownership
-runtime cannot mutate/read the new tables directly
+participant != responsible actor != organizer/owner
+expected Participation != Actual Participation / attendance
+participation/attendance != Event Actual
+owner-local Person label != universal identity
+another person's participation != authority over that person's calendar/task system
 ```
 
-The B09-A PostgreSQL test also proves that participant Persons need no `account_application_context` row, invalid `requirement_code='accepted'` is rejected, and the simple current Responsibility subset enforces one holder per Activity/Event.
-
-User-run command result on 2026-09-25:
+Proven B09-C topology remains:
 
 ```text
-tests/integration/temporal/test_b09_responsibility_participation_persistence.py
-tests/integration/database/test_current_catalog.py
-tests/integration/database/test_database_current_catalog.py
-
-10 passed in 18.33s
+Alembic  20260925_69
+Topology 158|5|109|93|303|254|433
 ```
 
-Current proven candidate frontier:
-
-```text
-Alembic  20260925_66
-Topology 153|5|99|93|298|242|419
-```
-
-B09-A deliberately does not claim:
-
-```text
-invitation workflow
-accept/decline/tentative response history
-Actual Participation / attendance
-attendance intervals
-Responsibility transfer / claim / hand-off
-public API mutation
-Home + / Timeline authoring integration
-provider attendee identity or authority over another person's external calendar/task state
-```
-
-Those remain outside B09-A by design.
+B09-D integrated proof and the user-reported real-app walkthrough are recorded in `timeline-temporal-operational-b09-d-closure-2026-09-25.md`.
 
 ---
 
-# 4A. B09-C closure — CLOSED / PROVEN
+# 4. B10-A active truth — Actual / realization core
 
-Approved scope: a native non-Account Person referenced through an owner-local catalog. Migration `20260925_69` adds catalog and immutable create/rename receipts, atomic Person + NativeAddress creation, three guarded capabilities and widened `_self_referenceable_person`. Current Responsibility and expected Event Participation remain distinct; Timeline supports selecting and labeling owner-local Persons. The user ran the B09-C automated gate on 2026-09-25: generated:check PASS (321 files); API-client and web typechecks PASS; web controls/source 7 passed; backend OpenAPI/API 11 passed; PostgreSQL B09-C, B09-B and catalog regressions 18 passed. Database topology `158|5|109|93|303|254|433` is proven against Dictionary, SQLAlchemy and Alembic; generated client commit `875aaf48`. B09-D integrated proof is now in progress; the user requested a B09-specific real-app walkthrough before B09 closure. B15 retains whole-vertical regression.
+Scope authority: `timeline-temporal-operational-b10-scope-freeze.md`.
 
-# 4B. B09-D integrated closure — CLOSED / PROVEN
+B10-A is one vertical block. It is **not closed yet** and is not split into independently closable A1/A2/A3/A4/A5 phases.
 
-The accepted B09-D work is an integrated cross-layer proof of the already implemented B09-A/B/C contract, with no new schema or invitation/attendance semantics. `test_b09_d_whole_block.py` covers two Accounts, one non-Account Person, owner-local catalog, replay and revision guards, Activity/Event Responsibility, expected Event Participation, readback/removal, isolation and zero Actual/Session. The web test covers creation, label correction and both role removals. The user's local automated run passed (web typecheck, 8 web tests, 18 PostgreSQL tests). After the Agenda read, card-title interaction and Person-assignment clarity repairs, the user reported the real-app Timeline walkthrough working on 2026-09-25. B09 is closed on this candidate branch. See `timeline-temporal-operational-b09-d-closure-2026-09-25.md`.
-
-# 4. B09-B closure truth
-
-B09-B adds guarded authoring over the `_66` relation substrate. `_68` qualifies Event column references inside the Participation functions. The user ran the local automated proof on 2026-09-25. This closes B09-B only: B09-C and B09-D remain. Real-stack validation remains the B15 whole-vertical test scope.
+Canonical owner and state:
 
 ```text
-generated:check PASS
-api-client typecheck PASS
-web typecheck PASS
-responsibility-controls.test.tsx: 4 passed
-pytest B09-B + B09-A persistence + both catalog suites + OpenAPI inventory: 18 passed in 25.22s
+dante.actual
+  actual_ref
+  subject_native_ref  → Activity | Event | Occurrence NativeRef
+
+actual_realization_state
+  append-only MaterialState
+  realization_occurred boolean
+
+actual_realization_timing
+  optional instant | start_only | interval
+
+actual_realization_session_basis
+  exact session_ref + exact session_timing_material_state_ref
+
+scoped_current_material_state + actual_realization_current_history
+  explicit accepted-current binding/history
 ```
 
-Implemented by Alembic `20260925_67`:
+Critical meaning:
 
 ```text
-activity_responsibility_operation
-event_responsibility_operation
-event_expected_participation_operation
-
-_self_referenceable_person
-set_self_activity_responsibility
-set_self_event_responsibility
-set_self_event_expected_participation
-get_self_activity_responsibility
-get_self_event_responsibility
-list_self_event_expected_participation
+Session END != Actual
+Session may be evidence for Actual without sharing Actual identity
+absence of Actual = unknown
+absence of Actual != realization_occurred=false
+Actual != Outcome != Confirmation
+current accepted realization != latest row
 ```
 
-Public surface:
+## Implemented candidate
+
+Forward-only migrations:
 
 ```text
-PUT/GET /api/v1/temporal/activities/{activity_ref}/responsibility
-PUT/GET /api/v1/temporal/events/{event_ref}/responsibility
-PUT/GET /api/v1/temporal/events/{event_ref}/expected-participation
+20260925_70
+  guarded self-scoped Actual realization record/current/history capability
+  idempotent immutable operation receipt
+  append-only MaterialState/current advancement
+  timing and exact Session-timing-state basis validation
+
+20260925_71
+  exact subject-family hardening at PostgreSQL authority boundary
+  Activity UUID cannot be accepted through Event/Occurrence capability and vice versa
+  revision-70 generic function remains internal, runtime receives only family-bound signatures
 ```
 
-Preserved rules:
+Both revisions are now published and immutable. Any acceptance repair requires a new forward-only revision after `_71`.
+
+Backend/API candidate:
 
 ```text
-raw relation tables are not runtime mutation surfaces
-Person identity is independent from Account identity
-the public holder/participant vocabulary is only "self" in this slice
-_self_referenceable_person is the single later widening seam
-Responsibility != Participation
-expected Participation != response != Actual Participation
-expected Participation does not establish Event Actual
-Responsibility does not imply attendance
-participant authoring does not grant control over another person's calendar/task system
+ActualApplication.record(...)
+ActualApplication.get_for_subject(...)
+ActualApplication.history(...)
+
+POST/GET /api/v1/temporal/activities/{activity_ref}/actual
+POST/GET /api/v1/temporal/events/{event_ref}/actual
+POST/GET /api/v1/temporal/occurrences/{occurrence_ref}/actual
+GET      /api/v1/temporal/actuals/{actual_ref}/history
 ```
 
-Home `+` required/optional participant textareas remain B14. They collect free-text emails, not Person refs; B09-B does not invent email-to-Person identity. Timeline detail is the truthful B09 authoring surface for self Responsibility and self expected Participation.
+OpenAPI inventory freezes all seven operations with stable `temporal_*` operationIds.
 
-User-run commands that passed:
+Timeline candidate:
 
 ```text
-cd apps/backend
-pytest tests/integration/temporal/test_b09_b_responsibility_authoring.py \
-  tests/integration/temporal/test_b09_responsibility_participation_persistence.py \
-  tests/integration/database/test_current_catalog.py \
-  tests/integration/database/test_database_current_catalog.py \
-  tests/test_temporal_openapi_inventory.py
+Activity / Occurrence → Actual controls alongside Session controls
+Event                 → Actual controls alongside Responsibility/Participation
 
-cd apps/web
-pnpm exec vitest run src/features/temporal/responsibility-controls.test.tsx
+UI states:
+  no Actual                     → Stato reale: sconosciuto
+  realization_occurred=true     → Stato reale: avvenuto
+  realization_occurred=false    → Stato reale: non avvenuto
 ```
+
+The minimal web authoring surface intentionally writes the realization boolean only. Backend/API support optional timing and exact Session bases, but the web does not invent a timing/evidence UX before it is product-designed.
+
+Focused tests are committed for:
+
+```text
+PostgreSQL/application:
+  append-only current/history
+  exact Session timing-state evidence
+  idempotent replay + operation reuse rejection
+  stale-current compare-and-set rejection
+  Activity/Occurrence family enforcement
+  cross-self isolation
+  Session existence does not fabricate Actual
+
+Public API:
+  Event unknown-before-write
+  CSRF
+  first write + replay
+  operation-id reuse conflict
+  exact family rejection
+  history
+
+Web:
+  unknown != false
+  first write expected-current=None
+  later compare-and-set uses current MaterialState
+  stale rejection reloads authoritative state
+```
+
+No assistant-run test result exists for B10-A. Do not describe this candidate as proven until the user supplies local results.
 
 ---
 
-# 5. Roadmap amendment after Create audit
+# 5. Generated client rule
 
-## B13 — Work Structure / Decomposition / Dependencies
+`packages/api-client/src/generated/*` and the exported OpenAPI file are generated artifacts and are never edited manually.
 
-Needed for cases such as:
-
-```text
-English lesson → speaking / writing / grammar
-work item → internal steps
-Plan → several independently meaningful Activities
-Activity A → dependency → Activity B
-```
-
-B13 must distinguish:
+Canonical command:
 
 ```text
-internal Step != Activity
-composite work != generic sub-item hierarchy
-Dependency != hierarchy
-ordering != dependency
-child Schedule != parent Schedule
-child Session != parent Session
+pnpm api:generate
 ```
 
-B13 executes before B12 so replanning/solver logic sees real dependency structure.
-
-## B14 — Temporal Create Completeness Gate
-
-Every editable Home `+` field must be exactly one of:
-
-```text
-A. canonically persisted and behaviorally proven
-B. truthful handoff to the owning vertical/capability
-C. explicitly presentation/read-only
-D. hidden/removed until supported
-```
-
-Never leave:
-
-```text
-editable field → value collected → silently ignored or normally rejected because implementation is absent
-```
+`tooling/generate-api-client.mjs` exports OpenAPI from the backend and runs Orval. This generation is the first step of the user-run B10-A gate. The branch currently contains source/API changes; the generated B10-A client remains pending until that command is run locally.
 
 ---
 
-# 6. Remaining B09 and reserved ownership afterward
+# 6. Deferred B10 semantics
+
+B10-A must not absorb later realization/result semantics:
 
 ```text
-B10
-  Actual / Outcome / Confirmation / Resolution
-  confirmation policy
-  partial completion / finish-early realization semantics
-  Expected outcome != Outcome
+Outcome
+Confirmation
+partial/completed/skipped/not-completed/postponed/replaced/cancelled result vocabulary
+finish-early result behavior
+automatic Session→Actual inference
+automatic Actual→Outcome inference
+automatic Outcome→Confirmation inference
+confirmation policy behind Home +
+broad measurement/result UX
+solver/provider/AI authority over realized facts
+```
 
+These remain later B10 work. `Expected outcome != Outcome` stays binding.
+
+---
+
+# 7. Roadmap ownership after B10
+
+```text
 B11
   advanced recurrence / conditional behavior
   truthful resolution of the Create reminder field
@@ -303,27 +319,31 @@ B15
 
 ---
 
-# 7. Collaboration discipline
+# 8. Collaboration discipline
 
 - user runs tests locally; assistant prepares exact commands
 - no CI/GitHub Actions unless explicitly authorized
 - push changes frequently
 - do not edit historical migrations; use forward-only repair
-- distinguish candidate truth from proven/protected-main truth
+- distinguish candidate truth from user-proven truth
 - generated API client is generated from OpenAPI, never manually edited
+- PostgreSQL remains the only canonical authority
 - B07 is presentation consolidation, not a place to invent missing semantics
 
 ---
 
-# 8. Fresh-chat recovery
+# 9. Fresh-chat recovery
 
 ```text
 1. this handoff
 2. timeline-temporal-operational-roadmap.md
 3. timeline-temporal-operational-map.md
-4. docs/database/timeline-temporal-operational.md
-5. B09-A migration/mapping/test
-6. current Logical Model / PostgreSQL blueprint sections relevant to Responsibility / Participation
+4. timeline-temporal-operational-b10-scope-freeze.md
+5. migrations 20260925_70 and 20260925_71
+6. apps/backend/src/dante/modules/temporal/actual_runtime.py
+7. apps/backend/src/dante/modules/temporal/actual_api.py
+8. B10-A backend/API/web tests
+9. docs/database/timeline-temporal-operational.md + Actual Dictionary/mappings
 ```
 
-**Exact next action:** start B10 Actual / Outcome / Confirmation / Resolution. B15 remains the whole-vertical regression.
+**Exact next action:** the user runs the single local B10-A acceptance command: pull the branch, regenerate OpenAPI/Orval with `pnpm api:generate`, run generated/client checks, focused backend PostgreSQL/API/OpenAPI tests and focused web tests/typecheck. B10-A remains open until that user-reported gate passes.
