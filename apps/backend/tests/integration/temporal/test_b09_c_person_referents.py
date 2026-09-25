@@ -140,6 +140,13 @@ async def test_local_person_can_hold_responsibility_and_expected_event_participa
             expected_responsible_person_ref=None,
         )
         assert result.responsible_person_ref == person.person_ref
+        event_holder = await app.set_responsibility(
+            self_person_ref=alice, operation_id="c:event-assign",
+            subject_kind="event", subject_native_ref=event.event_ref,
+            responsible_person_ref=person.person_ref,
+            expected_responsible_person_ref=None,
+        )
+        assert event_holder.responsible_person_ref == person.person_ref
         expectation = await app.set_expected_participation(
             self_person_ref=alice, operation_id="c:expect", event_ref=event.event_ref,
             participant_person_ref=person.person_ref, requirement_code="required",
