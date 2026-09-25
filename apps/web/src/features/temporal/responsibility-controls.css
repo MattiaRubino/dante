@@ -1,0 +1,56 @@
+.timeline-responsibility-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.timeline-responsibility-controls > button,
+.timeline-responsibility-controls__participation > button {
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  color: #eaf0f8;
+  background: rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.timeline-responsibility-controls > button:hover:not(:disabled),
+.timeline-responsibility-controls__participation > button:hover:not(:disabled) {
+  border-color: rgba(255, 140, 86, 0.72);
+  background: rgba(255, 140, 86, 0.14);
+}
+
+.timeline-responsibility-controls > button:disabled,
+.timeline-responsibility-controls__participation > button:disabled {
+  cursor: wait;
+  opacity: 0.58;
+}
+
+.timeline-responsibility-controls p,
+.timeline-responsibility-controls > [role='status'] {
+  flex: 1 1 100%;
+  min-width: 0;
+  margin: 0;
+  color: #b9c6d5;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.timeline-responsibility-controls__participation {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  flex: 1 1 100%;
+  min-width: 0;
+}
+
+.timeline-responsibility-controls > [role='status'] {
+  color: #8fa0b5;
+}

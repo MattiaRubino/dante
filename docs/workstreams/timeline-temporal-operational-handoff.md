@@ -1,13 +1,14 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B09-A ✅ CLOSED / PROVEN — B09-B guarded Responsibility / Participation mutation is next
+- **Status:** B09-B implemented on the candidate — awaiting user-run local proof; not CLOSED
 - **Reconciled:** 2026-09-25
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Live execution ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Current candidate Alembic frontier:** `20260925_66`
+- **Current candidate Alembic frontier:** `20260925_67`
 - **Last proven candidate DB frontier:** B09-A / `20260925_66` / `153|5|99|93|298|242|419`
+- **Candidate topology awaiting B09-B local proof:** `156|5|106|93|301|251|426`
 - **CI:** no CI/GitHub Actions unless explicitly authorized; user runs local tests
 
 Read this first after a context reset.
@@ -21,7 +22,7 @@ B00–B06 ✅ CLOSED / PROVEN
 B08     ✅ CLOSED / USER-REPORTED 2026-09-24
 B09     🟨 IN PROGRESS
   B09-A ✅ CLOSED / PROVEN 2026-09-25
-  B09-B ⬜ NEXT
+  B09-B 🟨 IMPLEMENTED / AWAITING LOCAL PROOF
 B10     ⬜ NOT STARTED
 B11     ⬜ NOT STARTED
 B13     ⬜ NOT STARTED
@@ -146,15 +147,41 @@ Those remain outside B09-A by design.
 
 ---
 
-# 4. B09-B exact next contract
+# 4. B09-B candidate contract — implemented, not proven
 
-B09-B owns guarded mutation/application behavior over the `_66` relation substrate.
+B09-B adds guarded authoring over the `_66` relation substrate. It is candidate implementation only until the user runs the local proof below.
 
-Start from these rules:
+Implemented by Alembic `20260925_67`:
+
+```text
+activity_responsibility_operation
+event_responsibility_operation
+event_expected_participation_operation
+
+_self_referenceable_person
+set_self_activity_responsibility
+set_self_event_responsibility
+set_self_event_expected_participation
+get_self_activity_responsibility
+get_self_event_responsibility
+list_self_event_expected_participation
+```
+
+Public surface:
+
+```text
+PUT/GET /api/v1/temporal/activities/{activity_ref}/responsibility
+PUT/GET /api/v1/temporal/events/{event_ref}/responsibility
+PUT/GET /api/v1/temporal/events/{event_ref}/expected-participation
+```
+
+Preserved rules:
 
 ```text
 raw relation tables are not runtime mutation surfaces
 Person identity is independent from Account identity
+the public holder/participant vocabulary is only "self" in this slice
+_self_referenceable_person is the single later widening seam
 Responsibility != Participation
 expected Participation != response != Actual Participation
 expected Participation does not establish Event Actual
@@ -162,23 +189,21 @@ Responsibility does not imply attendance
 participant authoring does not grant control over another person's calendar/task system
 ```
 
-B09-B should add only the smallest truthful authoring operations needed by the temporal product surface. It must reuse the existing typed tables rather than introducing generic participant JSON or polymorphic relation storage.
+Home `+` required/optional participant textareas remain B14. They collect free-text emails, not Person refs; B09-B does not invent email-to-Person identity. Timeline detail is the truthful B09 authoring surface for self Responsibility and self expected Participation.
 
-Same-change obligations where applicable:
+Do not mark B09-B CLOSED or PROVEN from this implementation. User-run commands:
 
 ```text
-forward-only Alembic/routines if DB mutation capability is added
-→ SQLAlchemy/Dictionary/scope/catalog reconciliation
-→ backend/application service
-→ HTTP API with stable temporal_* operationId if public
-→ OpenAPI export
-→ generated api-client
-→ Home + / Timeline integration only for fields B09 truthfully owns
-→ focused local PostgreSQL/unit/web proof
-→ map/roadmap/handoff B09 closure evidence
-```
+cd apps/backend
+pytest tests/integration/temporal/test_b09_b_responsibility_authoring.py \
+  tests/integration/temporal/test_b09_responsibility_participation_persistence.py \
+  tests/integration/database/test_current_catalog.py \
+  tests/integration/database/test_database_current_catalog.py \
+  tests/test_temporal_openapi_inventory.py
 
-B09 must not cross into B10 by inventing attendance/Actual semantics merely to make a UI field work.
+cd apps/web
+pnpm exec vitest run src/features/temporal/responsibility-controls.test.tsx
+```
 
 ---
 
@@ -284,4 +309,4 @@ B15
 6. current Logical Model / PostgreSQL blueprint sections relevant to Responsibility / Participation
 ```
 
-**Exact next action:** implement B09-B guarded current Responsibility and expected Event Participation mutation/application behavior on top of proven `_66`, then locally prove it without introducing Actual attendance semantics.
+**Exact next action:** user runs the B09-B local proof commands in section 4. Do not close B09-B without that output. B10 remains blocked until B09-B is proven.

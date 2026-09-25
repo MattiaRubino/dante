@@ -33,30 +33,47 @@
       "CP6-M07"
     ],
     "standalone_entries": {
-      "tables": 153,
+      "tables": 156,
       "views": 5,
-      "routines": 99,
-      "total": 257
+      "routines": 106,
+      "total": 267
     },
     "embedded_objects": {
       "triggers": 93,
-      "physical_indexes": 298
+      "physical_indexes": 301
     },
     "constraints": {
-      "foreign_keys": 242,
-      "check_constraints": 419
+      "foreign_keys": 251,
+      "check_constraints": 426
     }
   },
   "technical_foundation": {
-    "excluded_tables": ["dante.alembic_version"],
-    "roles": ["dante_owner", "dante_migrator", "dante_runtime", "dante_observer"]
+    "excluded_tables": [
+      "dante.alembic_version"
+    ],
+    "roles": [
+      "dante_owner",
+      "dante_migrator",
+      "dante_runtime",
+      "dante_observer"
+    ]
   },
   "extension_owned": {
-    "postgis": {"version_policy": "foundation dependency; current repository baseline 3.6.4"},
-    "vector": {"version_policy": "foundation dependency; current repository baseline 0.8.6"},
-    "pg_trgm": {"version_policy": "foundation dependency; extension-owned objects excluded from DANTE object entries"},
-    "unaccent": {"version_policy": "foundation dependency; extension-owned objects excluded from DANTE object entries"},
-    "pg_stat_statements": {"version_policy": "foundation dependency; extension-owned objects excluded from DANTE object entries"}
+    "postgis": {
+      "version_policy": "foundation dependency; current repository baseline 3.6.4"
+    },
+    "vector": {
+      "version_policy": "foundation dependency; current repository baseline 0.8.6"
+    },
+    "pg_trgm": {
+      "version_policy": "foundation dependency; extension-owned objects excluded from DANTE object entries"
+    },
+    "unaccent": {
+      "version_policy": "foundation dependency; extension-owned objects excluded from DANTE object entries"
+    },
+    "pg_stat_statements": {
+      "version_policy": "foundation dependency; extension-owned objects excluded from DANTE object entries"
+    }
   },
   "materialization_rules": {
     "object_entries_only_with_real_objects": true,

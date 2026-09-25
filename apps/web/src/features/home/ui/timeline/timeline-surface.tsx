@@ -1387,6 +1387,16 @@ export function TimelineSurface({
           }
           return null;
         })()}
+        responsibilitySubject={(() => {
+          const basis = detailState?.event.canonicalBasis;
+          if (basis?.kind === 'scheduled-activity') {
+            return { kind: 'activity' as const, ref: basis.activityRef };
+          }
+          if (basis?.kind === 'scheduled-event') {
+            return { kind: 'event' as const, ref: basis.eventRef };
+          }
+          return null;
+        })()}
         onUnschedule={() => {
           const basis = detailState?.event.canonicalBasis;
           if (basis !== undefined) {

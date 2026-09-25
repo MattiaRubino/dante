@@ -1,0 +1,280 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "table:dante.activity_responsibility_operation",
+    "type": "table",
+    "schema": "dante",
+    "name": "activity_responsibility_operation",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Immutable self-scoped receipt for one guarded Activity Responsibility authoring command, including an explicit clear.",
+  "classification": {
+    "persistence_role": "operation_idempotency_control",
+    "canonicality": "control",
+    "family": "responsibility_participation"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/workstreams/timeline-temporal-operational-handoff.md",
+      "docs/workstreams/timeline-temporal-operational-map.md",
+      "docs/domain/concepts/person.md"
+    ],
+    "domain_concepts": [
+      "Responsibility",
+      "Participation",
+      "Person"
+    ],
+    "logical_families": [
+      "application operation idempotency control"
+    ],
+    "reference_families": [
+      "NativeRef"
+    ],
+    "material_facets": []
+  },
+  "implementation": {
+    "introducing_stage": "B09-B",
+    "alembic_revision": "20260925_67",
+    "sqlalchemy": {
+      "mode": "orm_row",
+      "module": "dante.platform.database.mappings.responsibility_participation",
+      "symbol": "ActivityResponsibilityOperationRow"
+    },
+    "runtime_acl_stage": "B09-B"
+  },
+  "structure": {
+    "columns": [
+      {
+        "name": "self_person_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Authenticated self Person that scopes the operation id.",
+        "semantic_type": "NativeRef",
+        "value_contract": "Existing Person."
+      },
+      {
+        "name": "operation_id",
+        "postgres_type": "text",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Caller idempotency identity.",
+        "semantic_type": null,
+        "value_contract": "Trimmed, 1 to 200 characters."
+      },
+      {
+        "name": "intent_fingerprint",
+        "postgres_type": "text",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "SHA-256 of the normalized authoring intent.",
+        "semantic_type": null,
+        "value_contract": "64 lowercase hexadecimal characters."
+      },
+      {
+        "name": "activity_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "The activity whose Responsibility was authored.",
+        "semantic_type": "NativeRef",
+        "value_contract": "Existing activity owned by the self Person."
+      },
+      {
+        "name": "responsible_person_ref",
+        "postgres_type": "uuid",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Accepted holder, or NULL when the command cleared Responsibility.",
+        "semantic_type": "NativeRef",
+        "value_contract": "NULL means the accepted effect was removal."
+      },
+      {
+        "name": "accepted_at",
+        "postgres_type": "timestamp with time zone",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Acceptance instant.",
+        "semantic_type": null,
+        "value_contract": "Recorded in the same transaction as the relation change."
+      }
+    ],
+    "primary_key": {
+      "name": "pk_activity_responsibility_operation",
+      "columns": [
+        "self_person_ref",
+        "operation_id"
+      ],
+      "reason": "Self-scoped operation identity is the idempotency arbiter.",
+      "deferrable": false,
+      "initially": "NOT DEFERRABLE",
+      "enforced": true
+    },
+    "foreign_keys": [
+      {
+        "name": "fk_activity_responsibility_op_self_person",
+        "columns": [
+          "self_person_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "person",
+          "columns": [
+            "person_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "NativeRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Idempotency is scoped to an existing self Person."
+      },
+      {
+        "name": "fk_activity_responsibility_op_subject",
+        "columns": [
+          "activity_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "activity",
+          "columns": [
+            "activity_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "NativeRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "The receipt names one existing activity."
+      },
+      {
+        "name": "fk_activity_responsibility_op_person",
+        "columns": [
+          "responsible_person_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "person",
+          "columns": [
+            "person_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "NativeRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "A recorded holder must be an existing Person."
+      }
+    ],
+    "unique_constraints": [],
+    "check_constraints": [
+      {
+        "name": "ck_activity_responsibility_operation_operation_id",
+        "expression_contract": "operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200",
+        "reason": "One bounded normalized operation identity.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_activity_responsibility_operation_fingerprint",
+        "expression_contract": "intent_fingerprint ~ '^[0-9a-f]{64}$'",
+        "reason": "Canonical fingerprint representation for replay comparison.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "pk_activity_responsibility_operation",
+        "method": "btree",
+        "unique": true,
+        "keys": [
+          "self_person_ref",
+          "operation_id"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "primary_key",
+        "reason": "Idempotency lookup and locking.",
+        "valid": true,
+        "ready": true,
+        "live": true
+      }
+    ],
+    "triggers": [],
+    "table": {
+      "persistence": "permanent",
+      "access_method": "heap",
+      "partitioned": false,
+      "row_security": false,
+      "force_row_security": false,
+      "replica_identity": "default",
+      "reloptions": []
+    },
+    "view": null,
+    "routine": null
+  },
+  "state_history": {
+    "material_state_behavior": null,
+    "current_binding": "Technical receipt; not a Domain MaterialState current binding.",
+    "chronology": "accepted_at records acceptance; UUID order is not chronology.",
+    "immutability_policy": "Insert-only. Replay compares the stored fingerprint."
+  },
+  "lifecycle": {
+    "retention": "Retained while safe replay of B09-B authoring is required.",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No runtime DELETE; downgrade refuses when receipts exist."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": []
+  },
+  "proof": {
+    "obligations": [
+      "self-scoped replay",
+      "reuse with different intent rejected"
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b09_b_responsibility_authoring.py"
+    ],
+    "staged_evidence": []
+  }
+}

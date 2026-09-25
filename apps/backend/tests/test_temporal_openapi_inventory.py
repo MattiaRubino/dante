@@ -181,6 +181,24 @@ _EXPECTED_TEMPORAL_OPERATIONS = {
         "temporal_list_occurrence_sessions"
     ),
     ("/api/v1/temporal/sessions/{session_ref}", "get"): "temporal_get_session",
+    ("/api/v1/temporal/activities/{activity_ref}/responsibility", "put"): (
+        "temporal_set_activity_responsibility"
+    ),
+    ("/api/v1/temporal/activities/{activity_ref}/responsibility", "get"): (
+        "temporal_get_activity_responsibility"
+    ),
+    ("/api/v1/temporal/events/{event_ref}/responsibility", "put"): (
+        "temporal_set_event_responsibility"
+    ),
+    ("/api/v1/temporal/events/{event_ref}/responsibility", "get"): (
+        "temporal_get_event_responsibility"
+    ),
+    ("/api/v1/temporal/events/{event_ref}/expected-participation", "put"): (
+        "temporal_set_event_expected_participation"
+    ),
+    ("/api/v1/temporal/events/{event_ref}/expected-participation", "get"): (
+        "temporal_list_event_expected_participation"
+    ),
     ("/api/v1/temporal/sessions/{session_ref}/end", "post"): "temporal_end_session",
     ("/api/v1/temporal/routines/{routine_ref}/occurrences/exclusions", "post"): (
         "temporal_exclude_routine_occurrence_coordinate"

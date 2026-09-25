@@ -1,11 +1,12 @@
 # Timeline / Temporal-Operational — Candidate Database Overlay
 
-- **Status:** CURRENT CANDIDATE DATABASE AUTHORITY — B08-C local proof recorded; B08-D whole-block closure next
-- **Reconciled:** 2026-09-24
+- **Status:** CURRENT CANDIDATE DATABASE AUTHORITY — B09-A proven; B09-B `_67` awaiting local proof
+- **Reconciled:** 2026-09-25
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
-- **Candidate source head:** `20260924_65`
-- **Candidate topology B08-C local proof recorded:** `150|5|99|93|292|236|418|0|0|0`
+- **Candidate source head:** `20260925_67`
+- **Last proven candidate topology:** B09-A / `20260925_66` / `153|5|99|93|298|242|419`
+- **Candidate topology awaiting B09-B local proof:** `156|5|106|93|301|251|426`
 - **Whole-DB SoR:** `README.md`
 - **Machine-readable authority:** `dictionary/`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
@@ -57,6 +58,10 @@ Product / Domain / Logical / Physical
 20260924_64 B08-B elapsed/paused/active runtime metrics
     ↓
 20260924_65 B08-C TC-009 Session active-duration rule
+    ↓
+20260925_66 B09-A Responsibility / Participation persistence
+    ↓
+20260925_67 B09-B guarded Responsibility / Participation authoring
 ```
 
 `_59` and `_60` are forward-only repairs of contracts introduced by `_58`.
@@ -64,20 +69,22 @@ Product / Domain / Logical / Physical
 ## 3. Current candidate topology
 
 ```text
-Alembic     20260924_65
-Tables      150
+Alembic     20260925_67
+Tables      156
 Views       5
-Routines    99
+Routines    106
 Triggers    93
-Indexes     292
-FKs         236
-CHECKs      418
+Indexes     301
+FKs         251
+CHECKs      426
 Enums       0
 Domains     0
 Sequences   0
 Materialized/partitioned 0
 RLS         0
 ```
+
+Last proven candidate remains `_66` / `153|5|99|93|298|242|419`. `_67` is implemented and not yet user-proven.
 
 `_60` adds one FK from the Session END receipt to the exact resulting `MaterialStateRef`; it replaces the END routine signature without adding another routine. `_61`–`_64` extend B08-A/B Session lifecycle and metrics. `_65` changes no object counts: it widens the existing constrained-facet CHECK, replaces deferred totality, and forward-renames/replaces the duration mutation routine; routine counts stay flat.
 
@@ -174,6 +181,8 @@ B08-A `_60` immutable-END repair      implemented
 B08-A automated + real-stack proof ✅ CLOSED PER USER-REPORTED B08-B DEPENDENCY
 B08-B pause/resume + metric proof   ✅ CLOSED PER USER REPORT
 B08-C `_65` local automated proof   ✅ CLOSED / PROVEN 2026-09-24
+B09-A `_66` persistence             ✅ CLOSED / PROVEN 2026-09-25
+B09-B `_67` authoring               🟨 IMPLEMENTED / AWAITING LOCAL PROOF
 ```
 
 B08-A and B08-B are treated as closed based on the user’s B08-B closure report; the original local logs are not stored here. B08-C `_65` passed the user-run local generated/client, web, backend unit/API and PostgreSQL catalog/integration gates on 2026-09-24. It remains candidate branch truth until protected-main integration; B08-D owns the one real-stack walkthrough.
@@ -188,3 +197,22 @@ B08-C `_65` activates `duration / session.active_duration` only for a soft minim
 Runtime Session reads query only the authenticated Activity’s current duration rule and compare it to that one Session’s `active_seconds`; paused time is excluded. An open under-threshold Session is pending; an ended under-threshold Session is violated. Schedule evaluation excludes this facet. The evaluation is not persisted and never blocks Pause/Resume/End or creates Schedule/completion/Actual/Outcome.
 
 Dictionary, SQLAlchemy mapping and migration `_65` define the same `session.active_duration` facet contract. The B08-C freeze specifies the exact admitted subset and proof obligations.
+
+## 8. B09 candidate database semantics
+
+B09-A `_66` adds current typed relations only:
+
+```text
+event_expected_participation
+activity_responsibility
+event_responsibility
+```
+
+B09-B `_67` keeps those tables default-deny and adds insert-only operation receipts plus SECURITY DEFINER capabilities. Current holder/requirement rows may change; accepted commands are append-only receipts. `_self_referenceable_person` is INVOKER, not runtime-executable, and today admits only the caller's self Person.
+
+```text
+Responsibility != Participation
+expected Participation != Actual / attendance
+Person != Account
+public holder/participant vocabulary = self only
+```

@@ -4,8 +4,9 @@
 - **Branch/workstream:** `feature/timeline-temporal-operational`
 - **Vertical boundary:** Home `+` creation/configuration → canonical temporal truth → Timeline projection/actions → bounded lifecycle completion
 - **Completed functional frontier:** B08 Session Runtime ✅ CLOSED / USER-REPORTED 2026-09-24
-- **Current block:** B09 Responsibility / Participation 🟨 IN PROGRESS — B09-A CLOSED / PROVEN, B09-B NEXT
+- **Current block:** B09 Responsibility / Participation 🟨 IN PROGRESS — B09-A CLOSED / PROVEN, B09-B IMPLEMENTED / AWAITING LOCAL PROOF
 - **Last proven candidate DB frontier:** B09-A / PostgreSQL 18.6 / Alembic `20260925_66` / topology `153|5|99|93|298|242|419`
+- **Candidate topology awaiting B09-B local proof:** `20260925_67` / `156|5|106|93|301|251|426`
 - **Deferred block:** B07 UI/UX Consolidation v1 — execute only after the functional/create-completeness sequence below
 - **Live execution ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **Continuation handoff:** `docs/workstreams/timeline-temporal-operational-handoff.md`
@@ -93,7 +94,7 @@ B08 Session Runtime                              ✅ CLOSED / USER-REPORTED 2026
 
 B09 Responsibility / Participation               🟨 IN PROGRESS
   B09-A typed persistence substrate               ✅ CLOSED / PROVEN 2026-09-25
-  B09-B guarded mutation + application surface    ⬜ NEXT
+  B09-B guarded mutation + application surface    🟨 IMPLEMENTED / AWAITING LOCAL PROOF
 B10 Actual / Outcome / Confirmation / Resolution ⬜
 B11 Advanced Recurrence / Conditional / Reminder ⬜
 B13 Work Structure / Decomposition / Dependencies⬜
@@ -178,21 +179,24 @@ Alembic  20260925_66
 Topology 153|5|99|93|298|242|419
 ```
 
-## B09-B — NEXT
+## B09-B — IMPLEMENTED / AWAITING LOCAL PROOF
 
-B09-B owns the guarded mutation/application layer over the B09-A substrate and, where public, the API/OpenAPI/generated-client/product surface.
+B09-B owns the guarded mutation/application layer over the B09-A substrate and the public API/OpenAPI/generated-client/Timeline surface.
 
-It must preserve:
+It preserves:
 
 ```text
 raw relation tables are not runtime mutation surfaces
 Person identity is not Account identity
+the public holder/participant vocabulary is only "self" in this slice
 expected Participation does not establish acceptance/attendance/Actual
 Responsibility does not imply Participation
 participant authoring does not grant control over another person's calendar/task system
 ```
 
-B09 closes only after the B09-A substrate is connected through bounded mutation semantics to the required real product surface and locally proven.
+Home `+` required/optional participant textareas remain B14. Timeline detail is the truthful B09 authoring surface.
+
+B09 closes only after this candidate is locally proven. Do not treat the implementation itself as proof.
 
 ---
 
@@ -339,7 +343,7 @@ B00–B06 ✅ CLOSED / PROVEN
 B08     ✅ CLOSED / USER-REPORTED 2026-09-24
 B09     🟨 IN PROGRESS
   B09-A ✅ CLOSED / PROVEN 2026-09-25
-  B09-B ⬜ NEXT
+  B09-B 🟨 IMPLEMENTED / AWAITING LOCAL PROOF
 B10     ⬜ NOT STARTED
 B11     ⬜ NOT STARTED
 B13     ⬜ NOT STARTED
@@ -349,4 +353,4 @@ B07     ⏸ DEFERRED UNTIL B14
 B15     ⬜ NOT STARTED
 ```
 
-**Current action:** implement B09-B guarded Responsibility / expected Participation authoring from the proven `_66` substrate.
+**Current action:** user runs the B09-B local proof commands in the handoff. Do not close B09-B without that output.

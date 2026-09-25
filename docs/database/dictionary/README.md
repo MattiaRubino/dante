@@ -7,10 +7,11 @@
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Current candidate branch:** `feature/timeline-temporal-operational`
-- **Current candidate Alembic source head:** `20260924_65`
-- **Current candidate topology awaiting B08-C user proof:** `150|5|99|93|292|236|418|0|0|0`
+- **Current candidate Alembic source head:** `20260925_67`
+- **Last proven candidate topology:** B09-A / `20260925_66` / `153|5|99|93|298|242|419`
+- **Current candidate topology awaiting B09-B local proof:** `156|5|106|93|301|251|426`
 - **Frozen CP6 head:** `20260826_08`
-- **Last reconciled:** 2026-09-24
+- **Last reconciled:** 2026-09-25
 
 ## 1. Purpose
 
@@ -32,14 +33,14 @@ A mismatch is a defect. Protected `main` remains integration authority; candidat
 Authoritative counts are in `scope.json`:
 
 ```text
-tables      150
+tables      156
 views         5
-routines     99
-standalone  254
+routines    106
+standalone  267
 triggers     93
-indexes      292
-FKs          236
-CHECKs       418
+indexes     301
+FKs         251
+CHECKs      426
 ```
 
 No enum/domain, sequence, materialized view, partitioned table or RLS policy exists in the DANTE business-schema inventory.
@@ -90,6 +91,12 @@ B08-B / 20260924_62 → 20260924_64
 
 B08-C / 20260924_65
   TC-009 direct Activity Session active-duration soft minimum; existing duration mutation routine forward-renamed, no object-count delta
+
+B09-A / 20260925_66
+  typed current Responsibility and expected Event Participation relations
+
+B09-B / 20260925_67
+  guarded authoring receipts and SECURITY DEFINER capabilities over the B09-A relations
 ```
 
 B06-E whole-block closure required no new migration. `_57` remains the last proven B06 checkpoint; later B08 candidate migrations continue through `_65`.

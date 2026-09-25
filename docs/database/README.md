@@ -1,13 +1,14 @@
 # DANTE Database System of Record
 
 - **Status:** CURRENT / AUTHORITATIVE DATABASE REFERENCE
-- **Last reconciled:** 2026-09-24
+- **Last reconciled:** 2026-09-25
 - **PostgreSQL:** 18.6
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
-- **Timeline candidate Alembic head:** `20260924_65`
-- **Timeline candidate topology awaiting local proof:** `150|5|99|93|292|236|418|0|0|0`
+- **Timeline candidate Alembic head:** `20260925_67`
+- **Last proven candidate topology:** B09-A / `20260925_66` / `153|5|99|93|298|242|419`
+- **Timeline candidate topology awaiting B09-B local proof:** `156|5|106|93|301|251|426`
 - **Timeline candidate DB overlay:** `timeline-temporal-operational.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 - **Persistence ADR:** `../decisions/ADR-010-postgresql-persistence-constitution.md`
@@ -68,6 +69,10 @@ Protected `main` remains integration authority. Candidate truth is never relabel
 20260924_64 B08-B runtime metrics
     ↓
 20260924_65 B08-C Session active-duration TC-009
+    ↓
+20260925_66 B09-A Responsibility / Participation persistence
+    ↓
+20260925_67 B09-B guarded Responsibility / Participation authoring
 ```
 
 No accepted historical migration was edited, rebased, renumbered or flattened. `_59` and `_60` are forward-only repairs.
@@ -75,13 +80,13 @@ No accepted historical migration was edited, rebased, renumbered or flattened. `
 ## 3. Current candidate topology
 
 ```text
-150 tables
+156 tables
 5 views
-99 routines
+106 routines
 93 triggers
-292 physical indexes
-236 foreign keys
-418 CHECK constraints
+301 physical indexes
+251 foreign keys
+426 CHECK constraints
 0 enums/domains
 0 sequences
 0 materialized views
@@ -89,7 +94,7 @@ No accepted historical migration was edited, rebased, renumbered or flattened. `
 0 RLS policies
 ```
 
-The `_60` delta is one FK on `session_end_operation.resulting_material_state_ref`; the END routine signature is replaced rather than duplicated. `_61`–`_64` add B08-A/B Session lifecycle and metrics. `_65` changes no object counts and activates B08-C using the existing duration tables and governed mutation routine.
+Last proven candidate topology remains B09-A `_66` / `153|5|99|93|298|242|419`. `_67` is the B09-B candidate and awaits user-run local proof.
 
 ## 4. Timeline persistence classification
 
@@ -185,6 +190,8 @@ B08-A `_59` family repair             implemented
 B08-A `_60` immutable-END repair      implemented
 B08-A/B automated + real-stack proof ✅ CLOSED PER USER-REPORTED B08-B DEPENDENCY
 B08-C `_65` local automated proof     ✅ CLOSED / PROVEN 2026-09-24
+B09-A `_66` persistence               ✅ CLOSED / PROVEN 2026-09-25
+B09-B `_67` authoring                 🟨 IMPLEMENTED / AWAITING LOCAL PROOF
 ```
 
 B08-A/B are treated as closed based on the user’s B08-B closure report; their exact test logs are not committed. B08-C `_65` passed the user-run generated/client, web, backend unit/API and PostgreSQL catalog/integration gates on 2026-09-24. The single real-stack walkthrough remains B08-D scope.

@@ -2932,6 +2932,63 @@
         "title": "ExistingAccountSignupResponse",
         "type": "object"
       },
+      "ExpectedParticipationResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "established_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Established At"
+          },
+          "event_ref": {
+            "format": "uuid",
+            "title": "Event Ref",
+            "type": "string"
+          },
+          "participant_is_self": {
+            "title": "Participant Is Self",
+            "type": "boolean"
+          },
+          "participant_person_ref": {
+            "format": "uuid",
+            "title": "Participant Person Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "requirement_code": {
+            "anyOf": [
+              {
+                "enum": ["required", "optional"],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requirement Code"
+          }
+        },
+        "required": [
+          "event_ref",
+          "participant_person_ref",
+          "participant_is_self",
+          "requirement_code",
+          "established_at",
+          "replayed"
+        ],
+        "title": "ExpectedParticipationResponse",
+        "type": "object"
+      },
       "ExplicitExtraOccurrenceRequest": {
         "additionalProperties": false,
         "properties": {
@@ -5249,6 +5306,63 @@
         "title": "ReplanPostponedEventRequest",
         "type": "object"
       },
+      "ResponsibilityResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "established_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Established At"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "responsible_is_self": {
+            "title": "Responsible Is Self",
+            "type": "boolean"
+          },
+          "responsible_person_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Responsible Person Ref"
+          },
+          "subject_kind": {
+            "enum": ["activity", "event"],
+            "title": "Subject Kind",
+            "type": "string"
+          },
+          "subject_native_ref": {
+            "format": "uuid",
+            "title": "Subject Native Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "subject_kind",
+          "subject_native_ref",
+          "responsible_person_ref",
+          "responsible_is_self",
+          "established_at",
+          "replayed"
+        ],
+        "title": "ResponsibilityResponse",
+        "type": "object"
+      },
       "RestoredScheduleAbsoluteResponse": {
         "additionalProperties": false,
         "properties": {
@@ -7388,6 +7502,89 @@
           "duration_evaluations"
         ],
         "title": "SessionResponse",
+        "type": "object"
+      },
+      "SetExpectedParticipationRequest": {
+        "additionalProperties": false,
+        "description": "Set, change or remove one Person's expected involvement in one Event.",
+        "properties": {
+          "expected_requirement_code": {
+            "anyOf": [
+              {
+                "enum": ["required", "optional"],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Requirement Code"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "participant": {
+            "const": "self",
+            "title": "Participant",
+            "type": "string"
+          },
+          "requirement_code": {
+            "anyOf": [
+              {
+                "enum": ["required", "optional"],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requirement Code"
+          }
+        },
+        "required": ["operation_id", "participant"],
+        "title": "SetExpectedParticipationRequest",
+        "type": "object"
+      },
+      "SetResponsibilityRequest": {
+        "additionalProperties": false,
+        "description": "Set, replace or clear the single current Responsibility holder.\n\nThe holder is a bounded intent rather than a raw reference: the server\nresolves it against the authenticated context. A later Person-referent\nslice widens the vocabulary without changing this contract's meaning.",
+        "properties": {
+          "expected_holder": {
+            "anyOf": [
+              {
+                "const": "self",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Holder"
+          },
+          "holder": {
+            "anyOf": [
+              {
+                "const": "self",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Holder"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id"],
+        "title": "SetResponsibilityRequest",
         "type": "object"
       },
       "SignInRequest": {
@@ -18850,6 +19047,96 @@
         "tags": ["temporal"]
       }
     },
+    "/api/v1/temporal/activities/{activity_ref}/responsibility": {
+      "get": {
+        "operationId": "temporal_get_activity_responsibility",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponsibilityResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Activity Responsibility",
+        "tags": ["temporal"]
+      },
+      "put": {
+        "operationId": "temporal_set_activity_responsibility",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetResponsibilityRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponsibilityResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Activity Responsibility",
+        "tags": ["temporal"]
+      }
+    },
     "/api/v1/temporal/activities/{activity_ref}/schedule": {
       "post": {
         "operationId": "establish_activity_schedule_api_v1_temporal_activities__activity_ref__schedule_post",
@@ -19624,6 +19911,100 @@
         "tags": ["temporal"]
       }
     },
+    "/api/v1/temporal/events/{event_ref}/expected-participation": {
+      "get": {
+        "operationId": "temporal_list_event_expected_participation",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ExpectedParticipationResponse"
+                  },
+                  "title": "Response Temporal List Event Expected Participation",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Event Expected Participation",
+        "tags": ["temporal"]
+      },
+      "put": {
+        "operationId": "temporal_set_event_expected_participation",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetExpectedParticipationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpectedParticipationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Event Expected Participation",
+        "tags": ["temporal"]
+      }
+    },
     "/api/v1/temporal/events/{event_ref}/occurrences/checkpoint": {
       "post": {
         "operationId": "temporal_checkpoint_event_occurrences",
@@ -19872,6 +20253,96 @@
           }
         },
         "summary": "Replace Event Recurrence",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/events/{event_ref}/responsibility": {
+      "get": {
+        "operationId": "temporal_get_event_responsibility",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponsibilityResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Event Responsibility",
+        "tags": ["temporal"]
+      },
+      "put": {
+        "operationId": "temporal_set_event_responsibility",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetResponsibilityRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponsibilityResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Event Responsibility",
         "tags": ["temporal"]
       }
     },

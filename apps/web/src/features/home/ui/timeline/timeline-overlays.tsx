@@ -12,6 +12,7 @@ import {
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
+import { ResponsibilityControls } from '../../../temporal/responsibility-controls';
 import { SessionSubjectControls } from '../../../temporal/session-subject-controls';
 
 import {
@@ -810,6 +811,9 @@ type EventDetailDialogProps = Readonly<{
   sessionSubject?:
     | Readonly<{ kind: 'activity' | 'occurrence'; ref: string }>
     | null;
+  responsibilitySubject?:
+    | Readonly<{ kind: 'activity' | 'event'; ref: string }>
+    | null;
   onUnschedule: () => void;
   onClose: () => void;
 }>;
@@ -820,6 +824,7 @@ export function EventDetailDialog({
   canUnschedule,
   pending,
   sessionSubject = null,
+  responsibilitySubject = null,
   onUnschedule,
   onClose,
 }: EventDetailDialogProps) {
@@ -904,6 +909,12 @@ export function EventDetailDialog({
           {t(($) => $.common.home.timeline.detail.aiNote)}
         </div>
         <div className="timeline-event-modal__actions">
+          {responsibilitySubject === null ? null : (
+            <ResponsibilityControls
+              kind={responsibilitySubject.kind}
+              subjectRef={responsibilitySubject.ref}
+            />
+          )}
           {sessionSubject === null ? null : (
             <SessionSubjectControls
               kind={sessionSubject.kind}

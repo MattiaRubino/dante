@@ -34,6 +34,7 @@ import type {
   EventAgendaMutationResponse,
   EventResponse,
   ExistingAccountSignupResponse,
+  ExpectedParticipationResponse,
   ExplicitExtraOccurrenceRequest,
   GetTimelineWindowApiV1TemporalTimelineWindowGetParams,
   GoogleAuthenticationBegunResponse,
@@ -89,6 +90,7 @@ import type {
   ReplaceEventAgendaRequest,
   ReplaceRecurrenceRequest,
   ReplanPostponedEventRequest,
+  ResponsibilityResponse,
   RestoredScheduleAbsoluteResponse,
   RestoredScheduleCoarseResponse,
   RestoredScheduleDateSpanResponse,
@@ -123,6 +125,8 @@ import type {
   SessionCommand,
   SessionEndCommand,
   SessionResponse,
+  SetExpectedParticipationRequest,
+  SetResponsibilityRequest,
   SignInRequest,
   SignupAuthenticatedResponse,
   SignupCreatedResponse,
@@ -3951,6 +3955,134 @@ export const getActivityApiV1TemporalActivitiesActivityRefGet = async (
   } as getActivityApiV1TemporalActivitiesActivityRefGetResponse;
 };
 
+export type temporalGetActivityResponsibilityResponse200 = {
+  data: ResponsibilityResponse;
+  status: 200;
+};
+
+export type temporalGetActivityResponsibilityResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetActivityResponsibilityResponseSuccess =
+  temporalGetActivityResponsibilityResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetActivityResponsibilityResponseError =
+  temporalGetActivityResponsibilityResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalGetActivityResponsibilityResponse =
+  | temporalGetActivityResponsibilityResponseSuccess
+  | temporalGetActivityResponsibilityResponseError;
+
+export const getTemporalGetActivityResponsibilityUrl = (
+  activityRef: string,
+) => {
+  return `/api/v1/temporal/activities/${activityRef}/responsibility`;
+};
+
+/**
+ * @summary Get Activity Responsibility
+ */
+export const temporalGetActivityResponsibility = async (
+  activityRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetActivityResponsibilityResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetActivityResponsibilityUrl(activityRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetActivityResponsibilityResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetActivityResponsibilityResponse;
+};
+
+export type temporalSetActivityResponsibilityResponse200 = {
+  data: ResponsibilityResponse;
+  status: 200;
+};
+
+export type temporalSetActivityResponsibilityResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalSetActivityResponsibilityResponseSuccess =
+  temporalSetActivityResponsibilityResponse200 & {
+    headers: Headers;
+  };
+export type temporalSetActivityResponsibilityResponseError =
+  temporalSetActivityResponsibilityResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalSetActivityResponsibilityResponse =
+  | temporalSetActivityResponsibilityResponseSuccess
+  | temporalSetActivityResponsibilityResponseError;
+
+export const getTemporalSetActivityResponsibilityUrl = (
+  activityRef: string,
+) => {
+  return `/api/v1/temporal/activities/${activityRef}/responsibility`;
+};
+
+/**
+ * @summary Set Activity Responsibility
+ */
+export const temporalSetActivityResponsibility = async (
+  activityRef: string,
+  setResponsibilityRequest: SetResponsibilityRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalSetActivityResponsibilityResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalSetActivityResponsibilityUrl(activityRef),
+    {
+      ...options,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(setResponsibilityRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalSetActivityResponsibilityResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalSetActivityResponsibilityResponse;
+};
+
 export type establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostResponse201 =
   {
     data:
@@ -5001,6 +5133,134 @@ export const replaceEventAgendaApiV1TemporalEventsEventRefAgendaPut = async (
   } as replaceEventAgendaApiV1TemporalEventsEventRefAgendaPutResponse;
 };
 
+export type temporalListEventExpectedParticipationResponse200 = {
+  data: ExpectedParticipationResponse[];
+  status: 200;
+};
+
+export type temporalListEventExpectedParticipationResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalListEventExpectedParticipationResponseSuccess =
+  temporalListEventExpectedParticipationResponse200 & {
+    headers: Headers;
+  };
+export type temporalListEventExpectedParticipationResponseError =
+  temporalListEventExpectedParticipationResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalListEventExpectedParticipationResponse =
+  | temporalListEventExpectedParticipationResponseSuccess
+  | temporalListEventExpectedParticipationResponseError;
+
+export const getTemporalListEventExpectedParticipationUrl = (
+  eventRef: string,
+) => {
+  return `/api/v1/temporal/events/${eventRef}/expected-participation`;
+};
+
+/**
+ * @summary List Event Expected Participation
+ */
+export const temporalListEventExpectedParticipation = async (
+  eventRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListEventExpectedParticipationResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalListEventExpectedParticipationUrl(eventRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListEventExpectedParticipationResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListEventExpectedParticipationResponse;
+};
+
+export type temporalSetEventExpectedParticipationResponse200 = {
+  data: ExpectedParticipationResponse;
+  status: 200;
+};
+
+export type temporalSetEventExpectedParticipationResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalSetEventExpectedParticipationResponseSuccess =
+  temporalSetEventExpectedParticipationResponse200 & {
+    headers: Headers;
+  };
+export type temporalSetEventExpectedParticipationResponseError =
+  temporalSetEventExpectedParticipationResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalSetEventExpectedParticipationResponse =
+  | temporalSetEventExpectedParticipationResponseSuccess
+  | temporalSetEventExpectedParticipationResponseError;
+
+export const getTemporalSetEventExpectedParticipationUrl = (
+  eventRef: string,
+) => {
+  return `/api/v1/temporal/events/${eventRef}/expected-participation`;
+};
+
+/**
+ * @summary Set Event Expected Participation
+ */
+export const temporalSetEventExpectedParticipation = async (
+  eventRef: string,
+  setExpectedParticipationRequest: SetExpectedParticipationRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalSetEventExpectedParticipationResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalSetEventExpectedParticipationUrl(eventRef),
+    {
+      ...options,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(setExpectedParticipationRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalSetEventExpectedParticipationResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalSetEventExpectedParticipationResponse;
+};
+
 export type temporalCheckpointEventOccurrencesResponse200 = {
   data: OccurrenceCheckpointResponse;
   status: 200;
@@ -5332,6 +5592,130 @@ export const temporalReplaceEventRecurrence = async (
     status: res.status,
     headers: res.headers,
   } as temporalReplaceEventRecurrenceResponse;
+};
+
+export type temporalGetEventResponsibilityResponse200 = {
+  data: ResponsibilityResponse;
+  status: 200;
+};
+
+export type temporalGetEventResponsibilityResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetEventResponsibilityResponseSuccess =
+  temporalGetEventResponsibilityResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetEventResponsibilityResponseError =
+  temporalGetEventResponsibilityResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalGetEventResponsibilityResponse =
+  | temporalGetEventResponsibilityResponseSuccess
+  | temporalGetEventResponsibilityResponseError;
+
+export const getTemporalGetEventResponsibilityUrl = (eventRef: string) => {
+  return `/api/v1/temporal/events/${eventRef}/responsibility`;
+};
+
+/**
+ * @summary Get Event Responsibility
+ */
+export const temporalGetEventResponsibility = async (
+  eventRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetEventResponsibilityResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetEventResponsibilityUrl(eventRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetEventResponsibilityResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetEventResponsibilityResponse;
+};
+
+export type temporalSetEventResponsibilityResponse200 = {
+  data: ResponsibilityResponse;
+  status: 200;
+};
+
+export type temporalSetEventResponsibilityResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalSetEventResponsibilityResponseSuccess =
+  temporalSetEventResponsibilityResponse200 & {
+    headers: Headers;
+  };
+export type temporalSetEventResponsibilityResponseError =
+  temporalSetEventResponsibilityResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalSetEventResponsibilityResponse =
+  | temporalSetEventResponsibilityResponseSuccess
+  | temporalSetEventResponsibilityResponseError;
+
+export const getTemporalSetEventResponsibilityUrl = (eventRef: string) => {
+  return `/api/v1/temporal/events/${eventRef}/responsibility`;
+};
+
+/**
+ * @summary Set Event Responsibility
+ */
+export const temporalSetEventResponsibility = async (
+  eventRef: string,
+  setResponsibilityRequest: SetResponsibilityRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalSetEventResponsibilityResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalSetEventResponsibilityUrl(eventRef),
+    {
+      ...options,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(setResponsibilityRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalSetEventResponsibilityResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalSetEventResponsibilityResponse;
 };
 
 export type temporalReplanPostponedEventResponse200 = {
