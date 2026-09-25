@@ -8,7 +8,7 @@
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Current candidate branch:** `feature/timeline-temporal-operational`
 - **Current candidate Alembic source head:** `20260925_69`
-- **Last proven candidate topology:** B09-B / `20260925_68` / `156|5|106|93|301|251|426`
+- **Last proven candidate topology:** B09-C / `20260925_69` / `158|5|109|93|303|254|433`
 - **Frozen CP6 head:** `20260826_08`
 - **Last reconciled:** 2026-09-25
 
@@ -98,7 +98,7 @@ B09-B / 20260925_67 → 20260925_68
   guarded authoring receipts and SECURITY DEFINER capabilities over the B09-A relations; `_68` forward-repairs qualified Event Participation function bodies without an object-count delta
 
 B09-C / 20260925_69
-  owner-local Person referent catalog and create/rename receipts, three bounded capabilities and widened guarded Person admissibility; local PostgreSQL proof pending
+  owner-local Person referent catalog and create/rename receipts, three bounded capabilities and widened guarded Person admissibility; user-run PostgreSQL/catalog proof passed 2026-09-25
 ```
 
 B06-E whole-block closure required no new migration. `_57` remains the last proven B06 checkpoint; later B08 candidate migrations continue through `_65`.
@@ -183,7 +183,7 @@ B08-C                                CLOSED / PROVEN `_65` — user-run local au
 B08-D                                CLOSED / USER-REPORTED
 B09-A                                CLOSED / PROVEN `_66`
 B09-B                                CLOSED / PROVEN `_68`
-B09-C                                CANDIDATE `_69` / LOCAL PROOF PENDING
+B09-C                                CLOSED / PROVEN `_69` — user-run local gate 2026-09-25
 ```
 
 Final B06 closure evidence is owned by `../../workstreams/timeline-temporal-operational-b06-e-closure-2026-09-23.md`. Whole-B06 closure did not change the catalog after `_57`.
@@ -215,7 +215,7 @@ No real object → no ceremonial Dictionary entry. Every real current DANTE busi
 
 ## 10. Next boundary
 
-B09-C is the current candidate Person-referent implementation. B09-D remains pending; B10 follows B09-D. The source-derived `_69` catalog counts require the user's local PostgreSQL proof before B09-C closure.
+B09-C Person-referent implementation is closed on the user-run 2026-09-25 PostgreSQL catalog proof: `_69` topology `158|5|109|93|303|254|433`, reconciled with Dictionary and SQLAlchemy. B09-D remains pending; B10 follows B09-D.
 
 Provider integration, native/offline, broad analytics and account collaboration are outside this vertical and must not create speculative Dictionary entries.
 
