@@ -740,6 +740,280 @@
         "title": "ActivityResponse",
         "type": "object"
       },
+      "ActualRealizationCommand": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_material_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Material State Ref"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "realization_occurred": {
+            "title": "Realization Occurred",
+            "type": "boolean"
+          },
+          "session_bases": {
+            "items": {
+              "$ref": "#/components/schemas/ActualSessionBasisInput"
+            },
+            "title": "Session Bases",
+            "type": "array"
+          },
+          "timing": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ActualTimingInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": ["operation_id", "realization_occurred"],
+        "title": "ActualRealizationCommand",
+        "type": "object"
+      },
+      "ActualRealizationHistoryResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "actual_ref": {
+            "format": "uuid",
+            "title": "Actual Ref",
+            "type": "string"
+          },
+          "current_from_at": {
+            "format": "date-time",
+            "title": "Current From At",
+            "type": "string"
+          },
+          "current_until_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Until At"
+          },
+          "material_state_ref": {
+            "format": "uuid",
+            "title": "Material State Ref",
+            "type": "string"
+          },
+          "realization_occurred": {
+            "title": "Realization Occurred",
+            "type": "boolean"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "session_bases": {
+            "items": {
+              "$ref": "#/components/schemas/ActualSessionBasisResponse"
+            },
+            "title": "Session Bases",
+            "type": "array"
+          },
+          "subject_native_ref": {
+            "format": "uuid",
+            "title": "Subject Native Ref",
+            "type": "string"
+          },
+          "timing": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ActualTimingResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "actual_ref",
+          "subject_native_ref",
+          "material_state_ref",
+          "realization_occurred",
+          "timing",
+          "session_bases",
+          "replayed",
+          "current_from_at",
+          "current_until_at"
+        ],
+        "title": "ActualRealizationHistoryResponse",
+        "type": "object"
+      },
+      "ActualRealizationResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "actual_ref": {
+            "format": "uuid",
+            "title": "Actual Ref",
+            "type": "string"
+          },
+          "material_state_ref": {
+            "format": "uuid",
+            "title": "Material State Ref",
+            "type": "string"
+          },
+          "realization_occurred": {
+            "title": "Realization Occurred",
+            "type": "boolean"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "session_bases": {
+            "items": {
+              "$ref": "#/components/schemas/ActualSessionBasisResponse"
+            },
+            "title": "Session Bases",
+            "type": "array"
+          },
+          "subject_native_ref": {
+            "format": "uuid",
+            "title": "Subject Native Ref",
+            "type": "string"
+          },
+          "timing": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ActualTimingResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "actual_ref",
+          "subject_native_ref",
+          "material_state_ref",
+          "realization_occurred",
+          "timing",
+          "session_bases",
+          "replayed"
+        ],
+        "title": "ActualRealizationResponse",
+        "type": "object"
+      },
+      "ActualSessionBasisInput": {
+        "additionalProperties": false,
+        "properties": {
+          "session_ref": {
+            "format": "uuid",
+            "title": "Session Ref",
+            "type": "string"
+          },
+          "session_timing_material_state_ref": {
+            "format": "uuid",
+            "title": "Session Timing Material State Ref",
+            "type": "string"
+          }
+        },
+        "required": ["session_ref", "session_timing_material_state_ref"],
+        "title": "ActualSessionBasisInput",
+        "type": "object"
+      },
+      "ActualSessionBasisResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "session_ref": {
+            "format": "uuid",
+            "title": "Session Ref",
+            "type": "string"
+          },
+          "session_timing_material_state_ref": {
+            "format": "uuid",
+            "title": "Session Timing Material State Ref",
+            "type": "string"
+          }
+        },
+        "required": ["session_ref", "session_timing_material_state_ref"],
+        "title": "ActualSessionBasisResponse",
+        "type": "object"
+      },
+      "ActualTimingInput": {
+        "additionalProperties": false,
+        "properties": {
+          "ended_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended At"
+          },
+          "extent_code": {
+            "enum": ["instant", "start_only", "interval"],
+            "title": "Extent Code",
+            "type": "string"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          }
+        },
+        "required": ["extent_code", "started_at"],
+        "title": "ActualTimingInput",
+        "type": "object"
+      },
+      "ActualTimingResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "ended_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended At"
+          },
+          "extent_code": {
+            "enum": ["instant", "start_only", "interval"],
+            "title": "Extent Code",
+            "type": "string"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          }
+        },
+        "required": ["extent_code", "started_at", "ended_at"],
+        "title": "ActualTimingResponse",
+        "type": "object"
+      },
       "AppearanceLifeAreaRequest": {
         "additionalProperties": false,
         "properties": {
@@ -19118,6 +19392,96 @@
         "tags": ["temporal"]
       }
     },
+    "/api/v1/temporal/activities/{activity_ref}/actual": {
+      "get": {
+        "operationId": "temporal_get_activity_actual",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActualRealizationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Activity Actual",
+        "tags": ["temporal"]
+      },
+      "post": {
+        "operationId": "temporal_record_activity_actual",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActualRealizationCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActualRealizationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Record Activity Actual",
+        "tags": ["temporal"]
+      }
+    },
     "/api/v1/temporal/activities/{activity_ref}/responsibility": {
       "get": {
         "operationId": "temporal_get_activity_responsibility",
@@ -19499,6 +19863,51 @@
           }
         },
         "summary": "Detach Activity Tag",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/actuals/{actual_ref}/history": {
+      "get": {
+        "operationId": "temporal_list_actual_history",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "actual_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Actual Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ActualRealizationHistoryResponse"
+                  },
+                  "title": "Response Temporal List Actual History",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Actual History",
         "tags": ["temporal"]
       }
     },
@@ -19928,6 +20337,96 @@
           }
         },
         "summary": "Get Event",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/events/{event_ref}/actual": {
+      "get": {
+        "operationId": "temporal_get_event_actual",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActualRealizationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Event Actual",
+        "tags": ["temporal"]
+      },
+      "post": {
+        "operationId": "temporal_record_event_actual",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActualRealizationCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActualRealizationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Record Event Actual",
         "tags": ["temporal"]
       }
     },
@@ -21156,6 +21655,96 @@
           }
         },
         "summary": "Get Occurrence",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/occurrences/{occurrence_ref}/actual": {
+      "get": {
+        "operationId": "temporal_get_occurrence_actual",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "occurrence_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Occurrence Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActualRealizationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Occurrence Actual",
+        "tags": ["temporal"]
+      },
+      "post": {
+        "operationId": "temporal_record_occurrence_actual",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "occurrence_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Occurrence Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActualRealizationCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActualRealizationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Record Occurrence Actual",
         "tags": ["temporal"]
       }
     },

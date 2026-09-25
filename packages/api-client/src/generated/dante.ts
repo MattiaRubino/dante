@@ -6,6 +6,9 @@
  */
 import type {
   ActivityResponse,
+  ActualRealizationCommand,
+  ActualRealizationHistoryResponse,
+  ActualRealizationResponse,
   AppearanceLifeAreaRequest,
   AppleAuthenticationBegunResponse,
   AppleNotificationRequest,
@@ -3958,6 +3961,130 @@ export const getActivityApiV1TemporalActivitiesActivityRefGet = async (
   } as getActivityApiV1TemporalActivitiesActivityRefGetResponse;
 };
 
+export type temporalGetActivityActualResponse200 = {
+  data: ActualRealizationResponse;
+  status: 200;
+};
+
+export type temporalGetActivityActualResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetActivityActualResponseSuccess =
+  temporalGetActivityActualResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetActivityActualResponseError =
+  temporalGetActivityActualResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalGetActivityActualResponse =
+  | temporalGetActivityActualResponseSuccess
+  | temporalGetActivityActualResponseError;
+
+export const getTemporalGetActivityActualUrl = (activityRef: string) => {
+  return `/api/v1/temporal/activities/${activityRef}/actual`;
+};
+
+/**
+ * @summary Get Activity Actual
+ */
+export const temporalGetActivityActual = async (
+  activityRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetActivityActualResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetActivityActualUrl(activityRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetActivityActualResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetActivityActualResponse;
+};
+
+export type temporalRecordActivityActualResponse200 = {
+  data: ActualRealizationResponse;
+  status: 200;
+};
+
+export type temporalRecordActivityActualResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalRecordActivityActualResponseSuccess =
+  temporalRecordActivityActualResponse200 & {
+    headers: Headers;
+  };
+export type temporalRecordActivityActualResponseError =
+  temporalRecordActivityActualResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalRecordActivityActualResponse =
+  | temporalRecordActivityActualResponseSuccess
+  | temporalRecordActivityActualResponseError;
+
+export const getTemporalRecordActivityActualUrl = (activityRef: string) => {
+  return `/api/v1/temporal/activities/${activityRef}/actual`;
+};
+
+/**
+ * @summary Record Activity Actual
+ */
+export const temporalRecordActivityActual = async (
+  activityRef: string,
+  actualRealizationCommand: ActualRealizationCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalRecordActivityActualResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalRecordActivityActualUrl(activityRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(actualRealizationCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalRecordActivityActualResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalRecordActivityActualResponse;
+};
+
 export type temporalGetActivityResponsibilityResponse200 = {
   data: ResponsibilityResponse;
   status: 200;
@@ -4433,6 +4560,61 @@ export const temporalDetachActivityTag = async (
     status: res.status,
     headers: res.headers,
   } as temporalDetachActivityTagResponse;
+};
+
+export type temporalListActualHistoryResponse200 = {
+  data: ActualRealizationHistoryResponse[];
+  status: 200;
+};
+
+export type temporalListActualHistoryResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalListActualHistoryResponseSuccess =
+  temporalListActualHistoryResponse200 & {
+    headers: Headers;
+  };
+export type temporalListActualHistoryResponseError =
+  temporalListActualHistoryResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalListActualHistoryResponse =
+  | temporalListActualHistoryResponseSuccess
+  | temporalListActualHistoryResponseError;
+
+export const getTemporalListActualHistoryUrl = (actualRef: string) => {
+  return `/api/v1/temporal/actuals/${actualRef}/history`;
+};
+
+/**
+ * @summary List Actual History
+ */
+export const temporalListActualHistory = async (
+  actualRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListActualHistoryResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalListActualHistoryUrl(actualRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListActualHistoryResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListActualHistoryResponse;
 };
 
 export type temporalListConstraintsBySubjectResponse200 = {
@@ -5062,6 +5244,126 @@ export const getEventApiV1TemporalEventsEventRefGet = async (
     status: res.status,
     headers: res.headers,
   } as getEventApiV1TemporalEventsEventRefGetResponse;
+};
+
+export type temporalGetEventActualResponse200 = {
+  data: ActualRealizationResponse;
+  status: 200;
+};
+
+export type temporalGetEventActualResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetEventActualResponseSuccess =
+  temporalGetEventActualResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetEventActualResponseError =
+  temporalGetEventActualResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalGetEventActualResponse =
+  temporalGetEventActualResponseSuccess | temporalGetEventActualResponseError;
+
+export const getTemporalGetEventActualUrl = (eventRef: string) => {
+  return `/api/v1/temporal/events/${eventRef}/actual`;
+};
+
+/**
+ * @summary Get Event Actual
+ */
+export const temporalGetEventActual = async (
+  eventRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetEventActualResponse> => {
+  const res = await (fetchFn ?? fetch)(getTemporalGetEventActualUrl(eventRef), {
+    ...options,
+    method: 'GET',
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetEventActualResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetEventActualResponse;
+};
+
+export type temporalRecordEventActualResponse200 = {
+  data: ActualRealizationResponse;
+  status: 200;
+};
+
+export type temporalRecordEventActualResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalRecordEventActualResponseSuccess =
+  temporalRecordEventActualResponse200 & {
+    headers: Headers;
+  };
+export type temporalRecordEventActualResponseError =
+  temporalRecordEventActualResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalRecordEventActualResponse =
+  | temporalRecordEventActualResponseSuccess
+  | temporalRecordEventActualResponseError;
+
+export const getTemporalRecordEventActualUrl = (eventRef: string) => {
+  return `/api/v1/temporal/events/${eventRef}/actual`;
+};
+
+/**
+ * @summary Record Event Actual
+ */
+export const temporalRecordEventActual = async (
+  eventRef: string,
+  actualRealizationCommand: ActualRealizationCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalRecordEventActualResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalRecordEventActualUrl(eventRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(actualRealizationCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalRecordEventActualResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalRecordEventActualResponse;
 };
 
 export type replaceEventAgendaApiV1TemporalEventsEventRefAgendaPutResponse200 =
@@ -6731,6 +7033,130 @@ export const temporalGetOccurrence = async (
     status: res.status,
     headers: res.headers,
   } as temporalGetOccurrenceResponse;
+};
+
+export type temporalGetOccurrenceActualResponse200 = {
+  data: ActualRealizationResponse;
+  status: 200;
+};
+
+export type temporalGetOccurrenceActualResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetOccurrenceActualResponseSuccess =
+  temporalGetOccurrenceActualResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetOccurrenceActualResponseError =
+  temporalGetOccurrenceActualResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalGetOccurrenceActualResponse =
+  | temporalGetOccurrenceActualResponseSuccess
+  | temporalGetOccurrenceActualResponseError;
+
+export const getTemporalGetOccurrenceActualUrl = (occurrenceRef: string) => {
+  return `/api/v1/temporal/occurrences/${occurrenceRef}/actual`;
+};
+
+/**
+ * @summary Get Occurrence Actual
+ */
+export const temporalGetOccurrenceActual = async (
+  occurrenceRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetOccurrenceActualResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetOccurrenceActualUrl(occurrenceRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetOccurrenceActualResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetOccurrenceActualResponse;
+};
+
+export type temporalRecordOccurrenceActualResponse200 = {
+  data: ActualRealizationResponse;
+  status: 200;
+};
+
+export type temporalRecordOccurrenceActualResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalRecordOccurrenceActualResponseSuccess =
+  temporalRecordOccurrenceActualResponse200 & {
+    headers: Headers;
+  };
+export type temporalRecordOccurrenceActualResponseError =
+  temporalRecordOccurrenceActualResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalRecordOccurrenceActualResponse =
+  | temporalRecordOccurrenceActualResponseSuccess
+  | temporalRecordOccurrenceActualResponseError;
+
+export const getTemporalRecordOccurrenceActualUrl = (occurrenceRef: string) => {
+  return `/api/v1/temporal/occurrences/${occurrenceRef}/actual`;
+};
+
+/**
+ * @summary Record Occurrence Actual
+ */
+export const temporalRecordOccurrenceActual = async (
+  occurrenceRef: string,
+  actualRealizationCommand: ActualRealizationCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalRecordOccurrenceActualResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalRecordOccurrenceActualUrl(occurrenceRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(actualRealizationCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalRecordOccurrenceActualResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalRecordOccurrenceActualResponse;
 };
 
 export type temporalEstablishOccurrenceScheduleResponse201 = {
