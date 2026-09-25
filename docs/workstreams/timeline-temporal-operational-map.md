@@ -8,7 +8,7 @@
 - **Current candidate Alembic frontier:** `20260925_69`
 - **Last proven candidate DB frontier:** B09-C / `20260925_69` / `158|5|109|93|303|254|433`
 - **Completed functional frontier:** B08 Session Runtime ✅ CLOSED / USER-REPORTED 2026-09-24
-- **Current implementation cursor:** B09-A/B/C closed; B09-D automated proof passed, user real-app proof pending
+- **Current implementation cursor:** B09 closed — B09-D automated proof and user real-app walkthrough passed
 - **CI:** not authorized; local tests are run by the user
 
 ---
@@ -64,11 +64,11 @@ B08 Session Runtime                              ✅ CLOSED / USER-REPORTED 2026
   B08-B Pause / Resume + Durations End-to-End     ✅ CLOSED / USER-REPORTED
   B08-C TC-009 Session Duration End-to-End        ✅ CLOSED / PROVEN — local automated gate
   B08-D Whole-block closure                       ✅ CLOSED / USER-REPORTED — automated gate and dogfood
-B09 Responsibility / Participation               🟨 IN PROGRESS
+B09 Responsibility / Participation               ✅ CLOSED / USER-REPORTED 2026-09-25
   B09-A typed persistence substrate               ✅ CLOSED / PROVEN 2026-09-25
   B09-B guarded mutation + application surface    ✅ CLOSED / PROVEN 2026-09-25
   B09-C non-Account Person referents              ✅ CLOSED / PROVEN 2026-09-25
-  B09-D B09 whole-block closure                    🟨 AUTOMATED PASS — real-app proof pending
+  B09-D B09 whole-block closure                    ✅ CLOSED / USER-REPORTED 2026-09-25
 ```
 
 B09-A is a persistence closure only. It does **not** close B09 as a whole and does not claim API/frontend or Actual-attendance semantics.
@@ -79,7 +79,7 @@ B09-A is a persistence closure only. It does **not** close B09 as a whole and do
 
 ```text
 B09-C non-Account Person referents                 ✅ CLOSED / PROVEN 2026-09-25
-B09-D B09 whole-block closure                     🟨 AUTOMATED PASS — real-app proof pending
+B09-D B09 whole-block closure                     ✅ CLOSED / USER-REPORTED 2026-09-25
 B10 Actual / Outcome / Confirmation / Resolution ⬜
 B11 Advanced Recurrence / Conditional / Reminder ⬜
 B13 Work Structure / Decomposition / Dependencies⬜
@@ -220,7 +220,7 @@ Candidate implementation on `20260925_67`:
 [x] Timeline detail authoring for self Responsibility / self expected Participation
 [x] negative automated proof: expected Participation does not establish Actual attendance
 [x] user-run local automated proof 2026-09-25: web 4 passed; backend 18 passed
-[ ] B09 whole-block closure (B09-D pending)
+[ ] B09 whole-block closure
 [→] real-stack validation deferred to B15 whole-vertical closure
 ```
 
@@ -228,7 +228,7 @@ Home `+` required/optional participant textareas remain B14. They are free-text 
 
 B09-C is closed and proven at `20260925_69`: guarded creation, list and label correction for owner-local native Persons without Accounts. The admissibility seam accepts self or a Person in this owner's catalog. Timeline role controls select that Person explicitly; expected participation remains an intention only. Dictionary and mappings cover two default-deny tables, three capabilities and the widened helper. User-run proof on 2026-09-25: generated:check PASS (321 files), both typechecks PASS, web 7 passed, backend OpenAPI/API 11 passed, PostgreSQL B09-C/B09-B/catalog regressions 18 passed; physical topology `158|5|109|93|303|254|433` proven. Generated client commit `875aaf48`. The user now requests a B09-specific real-app walkthrough during B09-D; B15 still owns whole-vertical regression.
 
-B09-D integration candidate: one new authenticated API/PostgreSQL test and an extended Timeline controls test cover Person creation and label correction, both Responsibility owners, expected Event Participation, removal, isolation and no Actual/Session. The user's local run passed: web typecheck, 8 focused web tests, and 18 focused PostgreSQL tests. The required real-app script and closure evidence live in `timeline-temporal-operational-b09-d-closure-2026-09-25.md`.
+B09-D integration candidate: one new authenticated API/PostgreSQL test and an extended Timeline controls test cover Person creation and label correction, both Responsibility owners, expected Event Participation, removal, isolation and no Actual/Session. The user's local run passed: web typecheck, 8 focused web tests, and 18 focused PostgreSQL tests. The user reported the real-app walkthrough working on 2026-09-25; the closure evidence lives in `timeline-temporal-operational-b09-d-closure-2026-09-25.md`.
 
 Permanent B09 boundaries:
 
@@ -312,11 +312,11 @@ editable UI → collected value → silently ignored or routinely rejected becau
 ```text
 B00–B06 ✅ CLOSED / PROVEN
 B08     ✅ CLOSED / USER-REPORTED 2026-09-24
-B09     🟨 IN PROGRESS
+B09     ✅ CLOSED / USER-REPORTED 2026-09-25
   B09-A ✅ CLOSED / PROVEN 2026-09-25
   B09-B ✅ CLOSED / PROVEN 2026-09-25
   B09-C ✅ CLOSED / PROVEN 2026-09-25
-  B09-D 🟨 AUTOMATED PASS — real-app proof pending
+  B09-D ✅ CLOSED / USER-REPORTED 2026-09-25
 B10     ⬜ NOT STARTED
 B11     ⬜ NOT STARTED
 B13     ⬜ NOT STARTED
@@ -326,4 +326,4 @@ B07     ⏸ DEFERRED UNTIL B14
 B15     ⬜ NOT STARTED
 ```
 
-**Next concrete action:** collect the user's real-app Timeline walkthrough; close B09 on confirmed evidence. The B09-D automated gate passed. B15 retains whole-vertical validation; B10 follows B09.
+**Next concrete action:** start B10 Actual / Outcome / Confirmation / Resolution. B09-D passed automated proof and the user real-app walkthrough. B15 retains whole-vertical validation.
