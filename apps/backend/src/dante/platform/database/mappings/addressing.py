@@ -51,7 +51,7 @@ class MaterialStateAddressRow(Base):
             name="one_owner",
         ),
         CheckConstraint(
-            "facet_code IN ('schedule.placement','schedule.movement_policy','actual.realization','session.timing','routine.recurrence','event.recurrence','temporal_constraint.rule','outcome.disposition')",
+            "facet_code IN ('schedule.placement','schedule.movement_policy','actual.realization','session.timing','routine.recurrence','event.recurrence','temporal_constraint.rule','outcome.result')",
             name="facet_code",
         ),
         ForeignKeyConstraint(
@@ -140,7 +140,7 @@ class ScopedCurrentMaterialStateRow(Base):
             name="uq_scoped_current_material_state_material_state_ref",
         ),
         CheckConstraint(
-            "facet_code IN ('schedule.placement','actual.realization','temporal_constraint.rule','outcome.disposition')",
+            "facet_code IN ('schedule.placement','actual.realization','temporal_constraint.rule','outcome.result')",
             name="facet_code",
         ),
         ForeignKeyConstraint(
