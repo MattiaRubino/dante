@@ -1,4 +1,4 @@
-"""B10-B HTTP surface for explicit contextual Outcome authoring and reads."""
+"""B10-B HTTP surface for explicit contextual Outcome disposition authoring and reads."""
 
 from __future__ import annotations
 
@@ -30,9 +30,9 @@ class OutcomeCommand(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     operation_id: str = Field(min_length=1, max_length=200)
+    actual_realization_material_state_ref: UUID = Field(strict=False)
     expected_material_state_ref: UUID | None = Field(default=None, strict=False)
-    result_code: str = Field(min_length=1, max_length=100)
-    note: str | None = Field(default=None, min_length=1, max_length=2000)
+    disposition_code: str = Field(min_length=1, max_length=120)
 
 
 class OutcomeResponse(BaseModel):
@@ -40,10 +40,9 @@ class OutcomeResponse(BaseModel):
 
     outcome_ref: UUID
     actual_ref: UUID
-    vocabulary_code: str
+    actual_realization_material_state_ref: UUID
     material_state_ref: UUID
-    result_code: str
-    note: str | None
+    disposition_code: str
     replayed: bool
 
 
@@ -65,10 +64,9 @@ def _response(view: OutcomeView) -> OutcomeResponse:
     return OutcomeResponse(
         outcome_ref=view.outcome_ref,
         actual_ref=view.actual_ref,
-        vocabulary_code=view.vocabulary_code,
+        actual_realization_material_state_ref=view.actual_realization_material_state_ref,
         material_state_ref=view.material_state_ref,
-        result_code=view.result_code,
-        note=view.note,
+        disposition_code=view.disposition_code,
         replayed=view.replayed,
     )
 
@@ -127,13 +125,12 @@ def _problem(exc: Exception) -> ProblemError:
 
 
 @router.post(
-    "/actuals/{actual_ref}/outcomes/{vocabulary_code}",
+    "/actuals/{actual_ref}/outcome",
     response_model=OutcomeResponse,
     operation_id="temporal_record_actual_outcome",
 )
 async def record_actual_outcome(
     actual_ref: UUID,
-    vocabulary_code: str,
     payload: OutcomeCommand,
     context: MutatingContext,
     application: Application,
@@ -144,14 +141,15 @@ async def record_actual_outcome(
             self_person_ref=context.self_person_ref,
             operation_id=payload.operation_id,
             actual_ref=ScopedRecordRef(actual_ref),
-            vocabulary_code=vocabulary_code,
+            actual_realization_material_state_ref=MaterialStateRef(
+                payload.actual_realization_material_state_ref
+            ),
             expected_material_state_ref=(
                 MaterialStateRef(payload.expected_material_state_ref)
                 if payload.expected_material_state_ref is not None
                 else None
             ),
-            result_code=payload.result_code,
-            note=payload.note,
+            disposition_code=payload.disposition_code,
         )
     except (
         OutcomeInputError,
@@ -166,13 +164,12 @@ async def record_actual_outcome(
 
 
 @router.get(
-    "/actuals/{actual_ref}/outcomes/{vocabulary_code}",
+    "/actuals/{actual_ref}/outcome",
     response_model=OutcomeResponse,
     operation_id="temporal_get_actual_outcome",
 )
 async def get_actual_outcome(
     actual_ref: UUID,
-    vocabulary_code: str,
     context: Context,
     application: Application,
 ) -> OutcomeResponse:
@@ -180,7 +177,6 @@ async def get_actual_outcome(
         view = await application.get_for_actual(
             self_person_ref=context.self_person_ref,
             actual_ref=ScopedRecordRef(actual_ref),
-            vocabulary_code=vocabulary_code,
         )
     except (OutcomeInputError, OutcomeNotFoundError, OutcomePersistenceError) as exc:
         raise _problem(exc) from exc
