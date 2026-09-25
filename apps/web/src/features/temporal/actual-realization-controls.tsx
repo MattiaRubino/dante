@@ -94,6 +94,15 @@ export function ActualRealizationControls({
         ? 'Stato reale: avvenuto'
         : 'Stato reale: non avvenuto';
 
+  const messageNode =
+    message === null ? null : message.startsWith('Aggiornamento') ? (
+      <span role="alert">{message}</span>
+    ) : message.startsWith('Stato reale registrato') ? (
+      <span role="status">{message}</span>
+    ) : (
+      <span>{message}</span>
+    );
+
   return (
     <div
       className="timeline-actual-controls"
@@ -123,11 +132,7 @@ export function ActualRealizationControls({
         “Sconosciuto” significa che non è ancora stato registrato un Actual; non equivale a
         “non avvenuto”.
       </small>
-      {message === null ? null : (
-        <span role={message.startsWith('Aggiornamento') || message.startsWith('Stato reale non') ? 'alert' : 'status'}>
-          {message}
-        </span>
-      )}
+      {messageNode}
     </div>
   );
 }
