@@ -6,7 +6,7 @@
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
-- **Timeline candidate Alembic head:** `20260925_68`
+- **Timeline candidate Alembic head:** `20260925_69`
 - **Last proven candidate topology:** B09-B / `20260925_68` / `156|5|106|93|301|251|426`
 - **Timeline candidate DB overlay:** `timeline-temporal-operational.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
@@ -74,6 +74,8 @@ Protected `main` remains integration authority. Candidate truth is never relabel
 20260925_67 B09-B guarded Responsibility / Participation authoring
     ↓
 20260925_68 B09-B qualify Event column references inside authoring functions
+    ↓
+20260925_69 B09-C local Person referents and guarded identity creation
 ```
 
 No accepted historical migration was edited, rebased, renumbered or flattened. `_59` and `_60` are forward-only repairs.
@@ -81,13 +83,13 @@ No accepted historical migration was edited, rebased, renumbered or flattened. `
 ## 3. Current candidate topology
 
 ```text
-156 tables
+158 tables
 5 views
-106 routines
+109 routines
 93 triggers
-301 physical indexes
-251 foreign keys
-426 CHECK constraints
+303 physical indexes
+254 foreign keys
+433 CHECK constraints
 0 enums/domains
 0 sequences
 0 materialized views
@@ -95,7 +97,7 @@ No accepted historical migration was edited, rebased, renumbered or flattened. `
 0 RLS policies
 ```
 
-Last proven candidate topology is B09-B `_68` / `156|5|106|93|301|251|426`. The B09-B database/API automated proof passed; real-stack validation is deferred to B15 whole-vertical closure.
+Last proven PostgreSQL topology is B09-B `_68` / `156|5|106|93|301|251|426`. B09-C `_69` source-derived target is `158|5|109|93|303|254|433`; direct PostgreSQL proof is pending. The B09-B database/API automated proof passed; real-stack validation is deferred to B15 whole-vertical closure.
 
 ## 4. Timeline persistence classification
 
@@ -160,6 +162,10 @@ Runtime never updates protected `session_timing_absolute` payload in place after
 
 Session START on an unplaced Activity is valid and does not fabricate Schedule. Session END creates no Activity completion, Occurrence resolution, Actual or Outcome.
 
+### B09-C Person referents — candidate
+
+`_69` adds an owner-local Person referent catalog and immutable create/rename receipts. Guarded creation atomically inserts a UUIDv7 Person, native address and local label. A label is not global Person identity; an Account is not required. The existing admissibility seam accepts self or a Person in the owner's catalog. Local PostgreSQL proof is pending.
+
 ## 5. Permanent non-collapse invariants
 
 ```text
@@ -193,6 +199,7 @@ B08-A/B automated + real-stack proof ✅ CLOSED PER USER-REPORTED B08-B DEPENDEN
 B08-C `_65` local automated proof     ✅ CLOSED / PROVEN 2026-09-24
 B09-A `_66` persistence               ✅ CLOSED / PROVEN 2026-09-25
 B09-B `_67`–`_68` authoring          ✅ CLOSED / PROVEN 2026-09-25
+B09-C `_69` Person referents           CANDIDATE / LOCAL PROOF PENDING
 ```
 
 B08-A/B are treated as closed based on the user’s B08-B closure report; their exact test logs are not committed. B08-C `_65` passed the user-run generated/client, web, backend unit/API and PostgreSQL catalog/integration gates on 2026-09-24. The single real-stack walkthrough remains B08-D scope.
