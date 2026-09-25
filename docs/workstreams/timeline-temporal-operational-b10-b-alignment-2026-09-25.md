@@ -1,8 +1,8 @@
 # Timeline / Temporal-Operational — B10-B alignment checkpoint
 
-Status: **IMPLEMENTATION CANDIDATE REPAIRED / AWAITING USER LOCAL POSTGRESQL RE-PROOF — 2026-09-25**
+Status: **AUTOMATED PROOF GREEN / AWAITING GENERATED ARTIFACT COMMIT — 2026-09-25**
 
-This checkpoint records the canonical B10-B state after reconciling the branch against the published Alembic chain and repairing the first user-local acceptance failures. It is a continuation aid and candidate handoff, not closure evidence.
+This checkpoint records the canonical B10-B state after reconciling the branch against the published Alembic chain, repairing the first user-local acceptance failures, and completing the user-local PostgreSQL re-proof. It is a continuation aid and candidate handoff, not closure evidence until the generated API artifacts are committed.
 
 ## Canonical persistence frontier
 
@@ -101,7 +101,7 @@ GET  /api/v1/temporal/outcomes/{outcome_ref}/history
 
 History ordering is canonical oldest-to-newest (`current_from_at ASC`), matching the focused B10-B application/API proof.
 
-## First local gate and repairs
+## Local automated proof
 
 The first user-local B10-B gate proved the non-PostgreSQL surfaces:
 
@@ -113,25 +113,33 @@ web tests            14/14 PASS
 OpenAPI inventory    3/3 PASS
 ```
 
-The PostgreSQL gate exposed two bounded persistence defects:
+The PostgreSQL gate then exposed two bounded persistence defects:
 
 ```text
 1. the shared CP6 ScopedAddress owner dispatcher did not yet admit scoped_family='outcome';
 2. the shared MaterialState totality dispatcher did not yet admit facet='outcome.disposition'.
 ```
 
-They are repaired forward-only by `_77` and `_78`. The same gate also exposed a stale Dictionary topology count (`443` CHECKs); PostgreSQL and the exact Dictionary object set materialize `440`, so scope/current-catalog snapshots are reconciled to `440` rather than inventing three constraints.
+They were repaired forward-only by `_77` and `_78`. The same gate also exposed a stale Dictionary topology count (`443` CHECKs); PostgreSQL and the exact Dictionary object set materialize `440`, so scope/current-catalog snapshots were reconciled to `440` rather than inventing three constraints.
+
+The user-local PostgreSQL re-proof after `_77/_78` is green:
+
+```text
+13 passed in 26.18s
+POSTGRES TEST EXIT: 0
+```
+
+The re-proof covered focused B10-B Outcome application/API, B10-A Actual regression, B09 whole-block regression, and both current-catalog checks.
 
 ## Remaining acceptance work
 
-The implementation candidate is coherent. The remaining work is acceptance, not more feature implementation:
+Feature implementation and automated proof are complete. The only remaining acceptance work is generated-artifact finalization:
 
 ```text
-1. user pulls the repaired branch;
-2. user reruns the focused B10-B PostgreSQL/regression/catalog gate;
-3. if PostgreSQL is green, user runs the correct generated determinism command: pnpm generated:check;
-4. generated artifacts already produced locally are committed only after the local gate is green;
-5. only then reconcile closure docs and mark B10-B CLOSED / PROVEN.
+1. user runs pnpm generated:check against the already generated local artifacts;
+2. if deterministic, user commits/pushes only the generated OpenAPI/client artifacts;
+3. closure docs are reconciled and B10-B is marked CLOSED / PROVEN;
+4. then prepare the B10-C modification gate.
 ```
 
 Generated artifacts must be produced through repository tooling and must never be hand-edited.
@@ -155,16 +163,15 @@ integrated real-app B10 walkthrough (belongs to B10-E)
 
 ```text
 B10-A  CLOSED / PROVEN
-B10-B  IMPLEMENTATION CANDIDATE REPAIRED / AWAITING USER LOCAL POSTGRESQL RE-PROOF
+B10-B  AUTOMATED PROOF GREEN / AWAITING GENERATED ARTIFACT COMMIT
 ```
 
 No CI/GitHub Actions are authorized or used. The user runs the acceptance gate locally.
 
 ## Exact continuation cursor
 
-1. pull the branch;
-2. rerun the focused B10-B PostgreSQL/regression/catalog gate;
-3. if failures appear, repair them without starting B10-C;
-4. if green, run `pnpm generated:check` against the already generated local artifacts;
-5. commit generated artifacts, reconcile roadmap/map/handoff/DB closure evidence, mark B10-B CLOSED / PROVEN and prepare the B10-C modification gate;
-6. do not perform the integrated real-app proof before B10-E.
+1. run `pnpm generated:check` against the already generated local artifacts;
+2. if the check fails, repair determinism without starting B10-C;
+3. if green, commit/push the generated artifacts only;
+4. reconcile roadmap/map/handoff/DB closure evidence, mark B10-B CLOSED / PROVEN and prepare the B10-C modification gate;
+5. do not perform the integrated real-app proof before B10-E.
