@@ -161,6 +161,8 @@ function parseEvent(payload: unknown): TemporalEventDetailRecord {
       'agenda_revision',
       'agenda_parts',
       'created_at',
+      'life_area_ref',
+      'life_area_assignment_revision',
       'replayed',
     ],
     'Event response',
