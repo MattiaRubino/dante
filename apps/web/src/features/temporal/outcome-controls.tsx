@@ -12,6 +12,8 @@ import {
   type TemporalOutcomeView,
 } from './remote-outcome-data-source';
 
+const CONTEXT_CODE = /^[a-z][a-z0-9._-]{0,99}$/;
+
 function operationId(): string {
   return crypto.randomUUID();
 }
@@ -40,35 +42,51 @@ export function OutcomeControls({
   );
   const [actual, setActual] = useState<TemporalActualView | null>(null);
   const [outcome, setOutcome] = useState<TemporalOutcomeView | null>(null);
-  const [dispositionCode, setDispositionCode] = useState('');
+  const [vocabularyCode, setVocabularyCode] = useState('');
+  const [resultCode, setResultCode] = useState('');
+  const [note, setNote] = useState('');
   const [loaded, setLoaded] = useState(false);
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  const reload = async () => {
+  const normalizedVocabulary = vocabularyCode.trim();
+  const vocabularyValid = CONTEXT_CODE.test(normalizedVocabulary);
+  const normalizedResult = resultCode.trim();
+  const resultValid = CONTEXT_CODE.test(normalizedResult);
+
+  const reload = async (vocabulary = normalizedVocabulary) => {
     const currentActual = await actualSource.get(kind, subjectRef);
     setActual(currentActual);
     setLoaded(true);
-    if (currentActual === null) {
+    if (currentActual === null || !CONTEXT_CODE.test(vocabulary)) {
       setOutcome(null);
-      setDispositionCode('');
-      return { actual: null, outcome: null } as const;
+      return { actual: currentActual, outcome: null } as const;
     }
-    const currentOutcome = await outcomeSource.get(currentActual.actualRef);
+    const currentOutcome = await outcomeSource.get(currentActual.actualRef, vocabulary);
     setOutcome(currentOutcome);
-    setDispositionCode(currentOutcome?.dispositionCode ?? '');
+    if (currentOutcome !== null) {
+      setResultCode(currentOutcome.resultCode);
+      setNote(currentOutcome.note ?? '');
+    }
     return { actual: currentActual, outcome: currentOutcome } as const;
   };
 
   const load = () => {
+    if (!vocabularyValid) {
+      setLoaded(true);
+      setMessage('Inserisci un vocabulary code valido prima di caricare Outcome.');
+      return;
+    }
     setPending(true);
     setMessage(null);
-    void reload()
+    void reload(normalizedVocabulary)
       .then(({ actual: currentActual, outcome: currentOutcome }) => {
         if (currentActual === null) {
           setMessage('Outcome non disponibile: registra prima lo stato reale.');
         } else if (currentOutcome === null) {
-          setMessage('Nessun Outcome registrato per questo Actual.');
+          setResultCode('');
+          setNote('');
+          setMessage('Nessun Outcome registrato per questo Actual e vocabolario.');
         } else {
           setMessage('Outcome corrente caricato.');
         }
@@ -81,8 +99,7 @@ export function OutcomeControls({
   };
 
   const save = () => {
-    const disposition = dispositionCode.trim();
-    if (!disposition) return;
+    if (!vocabularyValid || !resultValid) return;
     setPending(true);
     setMessage(null);
     void actualSource
@@ -96,19 +113,21 @@ export function OutcomeControls({
           return;
         }
         setActual(currentActual);
-        const saved = await outcomeSource.record(currentActual.actualRef, {
+        const saved = await outcomeSource.record(currentActual.actualRef, normalizedVocabulary, {
           operationId: operationId(),
-          actualRealizationMaterialStateRef: currentActual.materialStateRef,
           expectedMaterialStateRef: outcome?.materialStateRef ?? null,
-          dispositionCode: disposition,
+          resultCode: normalizedResult,
+          note: note.trim() || null,
         });
         setOutcome(saved);
         setLoaded(true);
-        setDispositionCode(saved.dispositionCode);
+        setVocabularyCode(saved.vocabularyCode);
+        setResultCode(saved.resultCode);
+        setNote(saved.note ?? '');
         setMessage('Outcome registrato.');
       })
       .catch((error: unknown) =>
-        reload()
+        reload(normalizedVocabulary)
           .catch(() => undefined)
           .then(() => setMessage(rejection('Aggiornamento Outcome rifiutato.', error))),
       )
@@ -119,43 +138,70 @@ export function OutcomeControls({
     <div className="timeline-outcome-controls" data-timeline-outcome-subject={subjectRef}>
       <strong>Outcome</strong>
       <small>
-        Outcome descrive il risultato o la disposizione di questo Actual. Il codice è
-        contestuale al dominio: non esiste uno stato Outcome universale.
+        Outcome descrive un risultato contestuale di questo Actual. Vocabolario e risultato
+        appartengono al dominio: non esiste uno stato Outcome universale.
       </small>
-      <button type="button" disabled={pending} data-timeline-outcome-load onClick={load}>
+      {actual === null && loaded ? (
+        <p data-timeline-outcome-state>Outcome: non disponibile senza Actual</p>
+      ) : null}
+      <label>
+        Vocabolario
+        <input
+          aria-label="Vocabolario Outcome"
+          value={vocabularyCode}
+          disabled={pending}
+          maxLength={100}
+          placeholder="es. workout.execution"
+          onChange={(event) => {
+            setVocabularyCode(event.currentTarget.value);
+            setOutcome(null);
+            setLoaded(false);
+          }}
+        />
+      </label>
+      <button
+        type="button"
+        disabled={pending || !vocabularyValid}
+        data-timeline-outcome-load
+        onClick={load}
+      >
         Carica Outcome
       </button>
-      {loaded ? (
-        actual === null ? (
-          <p data-timeline-outcome-state>Outcome: non disponibile senza Actual</p>
-        ) : (
-          <>
-            <p data-timeline-outcome-state>
-              {outcome === null
-                ? 'Outcome: non registrato'
-                : `Outcome: ${outcome.dispositionCode}`}
-            </p>
-            <label>
-              Disposizione
-              <input
-                aria-label="Disposizione Outcome"
-                value={dispositionCode}
-                disabled={pending}
-                maxLength={120}
-                placeholder="es. decision.deferred"
-                onChange={(event) => setDispositionCode(event.currentTarget.value)}
-              />
-            </label>
-            <button
-              type="button"
-              disabled={pending || !dispositionCode.trim()}
-              data-timeline-outcome-save
-              onClick={save}
-            >
-              {outcome === null ? 'Registra Outcome' : 'Correggi Outcome'}
-            </button>
-          </>
-        )
+      {loaded && actual !== null && vocabularyValid ? (
+        <>
+          <p data-timeline-outcome-state>
+            {outcome === null ? 'Outcome: non registrato' : `Outcome: ${outcome.resultCode}`}
+          </p>
+          <label>
+            Risultato
+            <input
+              aria-label="Risultato Outcome"
+              value={resultCode}
+              disabled={pending}
+              maxLength={100}
+              placeholder="es. completed"
+              onChange={(event) => setResultCode(event.currentTarget.value)}
+            />
+          </label>
+          <label>
+            Nota opzionale
+            <textarea
+              aria-label="Nota Outcome"
+              value={note}
+              disabled={pending}
+              maxLength={2000}
+              onChange={(event) => setNote(event.currentTarget.value)}
+            />
+          </label>
+          <button
+            type="button"
+            disabled={pending || !resultValid}
+            data-timeline-outcome-save
+            onClick={save}
+          >
+            {outcome === null ? 'Registra Outcome' : 'Correggi Outcome'}
+          </button>
+        </>
       ) : null}
       {message === null ? null : (
         <span role={message.startsWith('Aggiornamento') ? 'alert' : 'status'}>{message}</span>
