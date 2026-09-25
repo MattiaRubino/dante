@@ -2,7 +2,16 @@
 
 from datetime import datetime
 
-from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKeyConstraint, Index, Text, text
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    DateTime,
+    ForeignKeyConstraint,
+    Index,
+    Text,
+    UniqueConstraint,
+    text,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from dante.platform.database.metadata import Base
@@ -186,3 +195,66 @@ class ActualRealizationCurrentHistoryRow(Base):
     material_state_ref: Mapped[MaterialStateRef] = mapped_column(nullable=False)
     current_from_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), primary_key=True)
     current_until_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class ActualRealizationOperationRow(Base):
+    """Immutable B10-A command receipt; operation id is not Actual identity."""
+
+    __tablename__ = "actual_realization_operation"
+    __table_args__ = (
+        CheckConstraint(
+            "operation_id=btrim(operation_id) AND operation_id<>'' "
+            "AND char_length(operation_id)<=200",
+            name="operation_id",
+        ),
+        CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name="fingerprint"),
+        ForeignKeyConstraint(
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
+            name="fk_actual_realization_operation_self_person_ref_person",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
+        ),
+        ForeignKeyConstraint(
+            ["actual_ref"],
+            ["dante.actual.actual_ref"],
+            name="fk_actual_realization_operation_actual_ref_actual",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
+        ),
+        ForeignKeyConstraint(
+            ["subject_native_ref"],
+            ["dante.native_address.native_ref"],
+            name="fk_actual_realization_operation_subject_native_ref_native_address",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
+        ),
+        ForeignKeyConstraint(
+            ["resulting_material_state_ref"],
+            ["dante.actual_realization_state.material_state_ref"],
+            name="fk_actual_realization_operation_resulting_state",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
+        ),
+        UniqueConstraint(
+            "resulting_material_state_ref",
+            name="uq_actual_realization_operation_resulting_state",
+        ),
+    )
+
+    self_person_ref: Mapped[NativeRef] = mapped_column(primary_key=True)
+    operation_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    intent_fingerprint: Mapped[str] = mapped_column(Text, nullable=False)
+    actual_ref: Mapped[ScopedRecordRef] = mapped_column(nullable=False)
+    subject_native_ref: Mapped[NativeRef] = mapped_column(nullable=False)
+    expected_material_state_ref: Mapped[MaterialStateRef | None] = mapped_column(nullable=True)
+    resulting_material_state_ref: Mapped[MaterialStateRef] = mapped_column(nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
