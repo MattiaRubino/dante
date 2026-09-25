@@ -31,21 +31,22 @@
       "CP6-M05",
       "CP6-M06",
       "CP6-M07",
-      "B10-A"
+      "B10-A",
+      "B10-B"
     ],
     "standalone_entries": {
-      "tables": 159,
+      "tables": 163,
       "views": 5,
-      "routines": 115,
-      "total": 279
+      "routines": 119,
+      "total": 287
     },
     "embedded_objects": {
       "triggers": 93,
-      "physical_indexes": 305
+      "physical_indexes": 316
     },
     "constraints": {
-      "foreign_keys": 258,
-      "check_constraints": 435
+      "foreign_keys": 268,
+      "check_constraints": 443
     }
   },
   "technical_foundation": {
