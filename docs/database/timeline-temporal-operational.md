@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Candidate Database Overlay
 
-- **Status:** CURRENT CANDIDATE DATABASE AUTHORITY — B09-C `_69` PostgreSQL proof passed 2026-09-25; B09-D automated proof passed, real-app proof pending
+- **Status:** CURRENT CANDIDATE DATABASE AUTHORITY — B09-C `_69` PostgreSQL proof passed 2026-09-25; B09-D automated and user real-app proof passed
 - **Reconciled:** 2026-09-25
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
@@ -187,7 +187,7 @@ B08-C `_65` local automated proof   ✅ CLOSED / PROVEN 2026-09-24
 B09-A `_66` persistence             ✅ CLOSED / PROVEN 2026-09-25
 B09-B `_67`–`_68` authoring        ✅ CLOSED / PROVEN 2026-09-25
 B09-C `_69` Person referents        ✅ CLOSED / PROVEN 2026-09-25
-B09-D whole-block integration        AUTOMATED PASS / NO DB DELTA — real-app proof pending
+B09-D whole-block integration        CLOSED / NO DB DELTA — user-reported 2026-09-25
 ```
 
 B08-A and B08-B are treated as closed based on the user’s B08-B closure report; the original local logs are not stored here. B08-C `_65` passed the user-run local generated/client, web, backend unit/API and PostgreSQL catalog/integration gates on 2026-09-24. It remains candidate branch truth until protected-main integration; The complete vertical real-stack walkthrough belongs to B15. B09-B `_67`–`_68` is closed on its automated proof; real-stack validation is deferred to B15 whole-vertical closure.
@@ -225,4 +225,4 @@ public holder/participant vocabulary = self or owner-local registered Person
 
 ## B09-C proven persistence
 
-`_69` atomically creates a native UUIDv7 Person and its native address with one owner-local label and receipt. A single catalog entry identifies a Person referentially admitted for B09-B's existing Responsibility and expected Event Participation functions; no Account, invitation or Actual is created. The bounded rename operation changes only the owner-local label under revision CAS. Current-state tables and history receipts remain distinct. User-run PostgreSQL verification on 2026-09-25 passed the B09-C/B09-B catalog and temporal regressions (18 tests) at `158|5|109|93|303|254|433`; API/client/typechecks and 7 web tests also passed. B09-D adds no DB object. Its integrated automated proof passed; the user B09-specific real-app proof remains pending; B15 retains whole-vertical regression.
+`_69` atomically creates a native UUIDv7 Person and its native address with one owner-local label and receipt. A single catalog entry identifies a Person referentially admitted for B09-B's existing Responsibility and expected Event Participation functions; no Account, invitation or Actual is created. The bounded rename operation changes only the owner-local label under revision CAS. Current-state tables and history receipts remain distinct. User-run PostgreSQL verification on 2026-09-25 passed the B09-C/B09-B catalog and temporal regressions (18 tests) at `158|5|109|93|303|254|433`; API/client/typechecks and 7 web tests also passed. B09-D adds no DB object. Its integrated automated proof and user B09-specific real-app walkthrough passed on 2026-09-25; B09 is closed on this candidate branch. B15 retains whole-vertical regression.
