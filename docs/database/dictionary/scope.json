@@ -46,7 +46,7 @@
     },
     "constraints": {
       "foreign_keys": 268,
-      "check_constraints": 443
+      "check_constraints": 440
     }
   },
   "technical_foundation": {
