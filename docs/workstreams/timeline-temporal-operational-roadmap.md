@@ -4,7 +4,7 @@
 - **Branch/workstream:** `feature/timeline-temporal-operational`
 - **Vertical boundary:** Home `+` creation/configuration → canonical temporal truth → Timeline projection/actions → bounded lifecycle completion
 - **Completed functional frontier:** B08 Session Runtime ✅ CLOSED / USER-REPORTED 2026-09-24
-- **Current block:** B09 Responsibility / Participation 🟨 IN PROGRESS — B09-A/B/C closed; B09-D integration candidate awaiting automated and user real-app proof
+- **Current block:** B09 Responsibility / Participation 🟨 IN PROGRESS — B09-A/B/C closed; B09-D automated proof passed, user real-app proof pending
 - **Last proven candidate DB frontier:** B09-C / PostgreSQL 18.6 / Alembic `20260925_69` / topology `158|5|109|93|303|254|433`
 - **Deferred block:** B07 UI/UX Consolidation v1 — execute only after the functional/create-completeness sequence below
 - **Live execution ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
@@ -95,7 +95,7 @@ B09 Responsibility / Participation               🟨 IN PROGRESS
   B09-A typed persistence substrate               ✅ CLOSED / PROVEN 2026-09-25
   B09-B guarded mutation + application surface    ✅ CLOSED / PROVEN 2026-09-25
   B09-C non-Account Person referents              ✅ CLOSED / PROVEN 2026-09-25
-  B09-D B09 whole-block closure                    🟨 CANDIDATE — automated and user real-app proof pending
+  B09-D B09 whole-block closure                    🟨 AUTOMATED PASS — user real-app proof pending
 B10 Actual / Outcome / Confirmation / Resolution ⬜
 B11 Advanced Recurrence / Conditional / Reminder ⬜
 B13 Work Structure / Decomposition / Dependencies⬜
@@ -203,7 +203,7 @@ User-run local automated proof on 2026-09-25: generated check and both typecheck
 
 B09-C introduces self-scoped Person referents without Account identity. Native Person creation includes NativeAddress and owner-local label with immutable create/rename receipts; the existing B09-B guarded role mutations admit only self or a locally registered Person. Timeline controls permit selection, creation and local-name correction for Activity/Event Responsibility and expected Event Participation. The label is local presentation, not universal human identity; no invitation, response, Actual, cross-account grant or collaboration is implied. The user-run automated proof on 2026-09-25 passed: generated:check (321 deterministic files), API-client and web typechecks, 7 web tests, 11 backend OpenAPI/API tests, and 18 PostgreSQL B09-C/B09-B/catalog regression tests. The generated client is committed at `875aaf48`; proven Alembic head is `20260925_69` and topology `158|5|109|93|303|254|433`.
 
-## B09-D — IN PROGRESS / PROOF PENDING
+## B09-D — AUTOMATED PASS / REAL-APP PROOF PENDING
 
 B09-D integrates the proven A/B/C surfaces. The API/PostgreSQL gate exercises owner-local Person creation, replay, rename, Activity/Event Responsibility, expected Event Participation, removal, cross-actor isolation and absence of Actual/Session. The web gate exercises creation, local-name correction, assignment and removal. The user's real-app Timeline walkthrough is required before B09 closes; the separate whole-vertical walkthrough remains in B15. Evidence and exact manual steps are recorded in `timeline-temporal-operational-b09-d-closure-2026-09-25.md`. No new persistence or collaboration semantics are introduced.
 
@@ -354,7 +354,7 @@ B09     🟨 IN PROGRESS
   B09-A ✅ CLOSED / PROVEN 2026-09-25
   B09-B ✅ CLOSED / PROVEN 2026-09-25
   B09-C ✅ CLOSED / PROVEN 2026-09-25
-  B09-D 🟨 CANDIDATE — proof pending
+  B09-D 🟨 AUTOMATED PASS — real-app proof pending
 B10     ⬜ NOT STARTED
 B11     ⬜ NOT STARTED
 B13     ⬜ NOT STARTED
@@ -364,4 +364,4 @@ B07     ⏸ DEFERRED UNTIL B14
 B15     ⬜ NOT STARTED
 ```
 
-**Current action:** run B09-D automated tests, repair any proven defect, then obtain the user's real-app Timeline walkthrough before closing B09. B15 retains the separate whole-vertical regression; B10 follows closed B09.
+**Current action:** obtain the user's real-app Timeline walkthrough before closing B09; B09-D automated tests passed (web typecheck, 8 web tests, 18 PostgreSQL tests). B15 retains the separate whole-vertical regression; B10 follows closed B09.
