@@ -7,7 +7,7 @@
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
 - **Timeline candidate Alembic head:** `20260925_69`
-- **Last proven candidate topology:** B09-B / `20260925_68` / `156|5|106|93|301|251|426`
+- **Last proven candidate topology:** B09-C / `20260925_69` / `158|5|109|93|303|254|433`
 - **Timeline candidate DB overlay:** `timeline-temporal-operational.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 - **Persistence ADR:** `../decisions/ADR-010-postgresql-persistence-constitution.md`
@@ -97,7 +97,7 @@ No accepted historical migration was edited, rebased, renumbered or flattened. `
 0 RLS policies
 ```
 
-Last proven PostgreSQL topology is B09-B `_68` / `156|5|106|93|301|251|426`. B09-C `_69` source-derived target is `158|5|109|93|303|254|433`; direct PostgreSQL proof is pending. The B09-B database/API automated proof passed; real-stack validation is deferred to B15 whole-vertical closure.
+User-run PostgreSQL proof on 2026-09-25 established B09-C `_69` at `158|5|109|93|303|254|433`, including exact Dictionary/SQLAlchemy/Alembic/catalog checks. Generated client, typechecks, web and backend API/OpenAPI tests also passed. Real-stack validation is deferred to B15 whole-vertical closure.
 
 ## 4. Timeline persistence classification
 
@@ -162,9 +162,9 @@ Runtime never updates protected `session_timing_absolute` payload in place after
 
 Session START on an unplaced Activity is valid and does not fabricate Schedule. Session END creates no Activity completion, Occurrence resolution, Actual or Outcome.
 
-### B09-C Person referents — candidate
+### B09-C Person referents — closed / proven
 
-`_69` adds an owner-local Person referent catalog and immutable create/rename receipts. Guarded creation atomically inserts a UUIDv7 Person, native address and local label. A label is not global Person identity; an Account is not required. The existing admissibility seam accepts self or a Person in the owner's catalog. Local PostgreSQL proof is pending.
+`_69` adds an owner-local Person referent catalog and immutable create/rename receipts. Guarded creation atomically inserts a UUIDv7 Person, native address and local label. A label is not global Person identity; an Account is not required. The existing admissibility seam accepts self or a Person in the owner's catalog. Local PostgreSQL proof passed on 2026-09-25 (18 focused/regression tests).
 
 ## 5. Permanent non-collapse invariants
 
@@ -199,7 +199,7 @@ B08-A/B automated + real-stack proof ✅ CLOSED PER USER-REPORTED B08-B DEPENDEN
 B08-C `_65` local automated proof     ✅ CLOSED / PROVEN 2026-09-24
 B09-A `_66` persistence               ✅ CLOSED / PROVEN 2026-09-25
 B09-B `_67`–`_68` authoring          ✅ CLOSED / PROVEN 2026-09-25
-B09-C `_69` Person referents           CANDIDATE / LOCAL PROOF PENDING
+B09-C `_69` Person referents           ✅ CLOSED / PROVEN 2026-09-25
 ```
 
 B08-A/B are treated as closed based on the user’s B08-B closure report; their exact test logs are not committed. B08-C `_65` passed the user-run generated/client, web, backend unit/API and PostgreSQL catalog/integration gates on 2026-09-24. The complete vertical real-stack walkthrough remains B15 scope.
