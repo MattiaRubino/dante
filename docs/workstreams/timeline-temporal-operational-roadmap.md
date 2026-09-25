@@ -4,8 +4,10 @@
 - **Branch/workstream:** `feature/timeline-temporal-operational`
 - **Vertical boundary:** Home `+` creation/configuration → canonical temporal truth → Timeline projection/actions → bounded lifecycle completion
 - **Completed functional frontier:** B10-A Actual / realization core ✅ CLOSED / PROVEN 2026-09-25
-- **Current block:** B10 Actual / Outcome / Confirmation / Resolution — IN PROGRESS; B10-B Outcome next
-- **Current / last proven candidate DB frontier:** B10-A / PostgreSQL 18.6 / Alembic `20260925_74` / topology `159|5|115|93|305|258|435`
+- **Current block:** B10 Actual / Outcome / Confirmation / Resolution — IN PROGRESS; B10-B Outcome IN PROGRESS / UNPROVEN
+- **Last proven DB frontier:** B10-A / PostgreSQL 18.6 / Alembic `20260925_74` / topology `159|5|115|93|305|258|435`
+- **Current B10-B migration frontier:** `20260925_76` — implemented, not yet user-proven
+- **B10-B continuation checkpoint:** `docs/workstreams/timeline-temporal-operational-b10-b-alignment-2026-09-25.md`
 - **Deferred block:** B07 UI/UX Consolidation v1 — execute only after the functional/create-completeness sequence below
 - **Live execution ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **Continuation handoff:** `docs/workstreams/timeline-temporal-operational-handoff.md`
@@ -100,7 +102,7 @@ B09 Responsibility / Participation               ✅ CLOSED / USER-REPORTED 2026
 
 B10 Actual / Outcome / Confirmation / Resolution 🟨 IN PROGRESS
   B10-A Actual / realization core                 ✅ CLOSED / PROVEN 2026-09-25
-  B10-B Outcome                                   ⬜ NEXT — gate approval required before implementation
+  B10-B Outcome                                   🟨 IN PROGRESS / UNPROVEN
   B10-C Confirmation                              ⬜
   B10-D Reconciliation / resolution workflow      ⬜
   B10-E Final integration + acceptance            ⬜ — includes integrated real-app proof
@@ -283,19 +285,45 @@ The earlier generation/client/web/OpenAPI parts of the same B10-A gate were also
 
 Manual real-app B10 validation remains intentionally deferred to B10-E.
 
-## B10-B — Outcome — NEXT
+## B10-B — Outcome — IN PROGRESS / UNPROVEN
 
-B10-B owns result/disposition semantics and must preserve:
+Approved scope: `docs/workstreams/timeline-temporal-operational-b10-b-scope-2026-09-25.md`.
+Current alignment checkpoint: `docs/workstreams/timeline-temporal-operational-b10-b-alignment-2026-09-25.md`.
+
+B10-B owns contextual result/disposition semantics and preserves:
 
 ```text
 Actual != Outcome
 Expected outcome != Outcome
-Outcome does not retroactively redefine Session
-Outcome does not become Confirmation
+Outcome != Confirmation
+Outcome != Observation
+Outcome does not retroactively redefine Session or Actual
 absence of Outcome != implicit success/failure
+current accepted Outcome state != latest row
+idempotency receipt != Outcome identity
 ```
 
-Before implementation, the user approves a gate that describes only the proposed changes/files/areas. B10-B is then implemented as one complete block, followed by one user-run local automated gate. No manual real-app proof is required until B10-E.
+Published persistence chain:
+
+```text
+20260925_75 initial Outcome capability
+20260925_76 forward-only Outcome disposition reconciliation
+```
+
+Both revisions are immutable. `_76` is the binding current physical contract:
+
+```text
+one stable Outcome per Actual
+OutcomeDisposition MaterialState != Outcome identity
+facet = outcome.disposition
+exact actual_realization_material_state_ref on every disposition state
+contextual disposition_code, not one universal Outcome enum
+explicit accepted-current history
+```
+
+The SQLAlchemy mapping/addressing registration plus temporal Outcome runtime/API have been realigned to `_76`. The remaining B10-B work is to reconcile OpenAPI/generated client, web Outcome data/control surfaces, focused tests and Database/Dictionary ledgers that may still encode the superseded `_75` vocabulary/result shape. Generated artifacts must be regenerated through repository tooling, never hand-edited.
+
+B10-B remains unproven until a later user-run local acceptance gate. The user explicitly did not request tests during the current alignment pass. No manual real-app proof is required until B10-E.
 
 ## B10-C — Confirmation
 
@@ -440,7 +468,7 @@ B09     ✅ CLOSED / USER-REPORTED 2026-09-25
   B09-D ✅ CLOSED / USER-REPORTED 2026-09-25
 B10     🟨 IN PROGRESS
   B10-A ✅ CLOSED / PROVEN 2026-09-25
-  B10-B ⬜ NEXT — gate approval required
+  B10-B 🟨 IN PROGRESS / UNPROVEN
   B10-C ⬜
   B10-D ⬜
   B10-E ⬜ — integrated manual proof at end
@@ -452,4 +480,4 @@ B07     ⏸ DEFERRED UNTIL B14
 B15     ⬜ NOT STARTED
 ```
 
-**Current action:** approve the B10-B Outcome change/file gate. After approval, implement B10-B as one complete block and hand the user one local automated test command. No CI/GitHub Actions and no manual real-app proof before B10-E.
+**Current action:** continue B10-B from the canonical `_76` Outcome disposition contract by reconciling OpenAPI/generated client and web Outcome surfaces, then focused tests and Database/Dictionary ledgers. Do not start B10-C, do not hand-edit generated artifacts, and do not use CI/GitHub Actions.
