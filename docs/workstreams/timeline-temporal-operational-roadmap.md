@@ -4,7 +4,7 @@
 - **Branch/workstream:** `feature/timeline-temporal-operational`
 - **Vertical boundary:** Home `+` creation/configuration → canonical temporal truth → Timeline projection/actions → bounded lifecycle completion
 - **Completed functional frontier:** B08 Session Runtime ✅ CLOSED / USER-REPORTED 2026-09-24
-- **Current block:** B09 Responsibility / Participation ✅ CLOSED / PROVEN 2026-09-25
+- **Current block:** B09 Responsibility / Participation 🟨 IN PROGRESS — B09-A/B closed; B09-C next, B09-D pending
 - **Last proven candidate DB frontier:** B09-B / PostgreSQL 18.6 / Alembic `20260925_68` / topology `156|5|106|93|301|251|426`
 - **Deferred block:** B07 UI/UX Consolidation v1 — execute only after the functional/create-completeness sequence below
 - **Live execution ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
@@ -91,9 +91,11 @@ B08 Session Runtime                              ✅ CLOSED / USER-REPORTED 2026
   B08-C TC-009 Session Duration End-to-End        ✅ CLOSED / PROVEN — local automated gate 2026-09-24
   B08-D Whole-block closure                       ✅ CLOSED / USER-REPORTED — automated gate and dogfood
 
-B09 Responsibility / Participation               ✅ CLOSED / PROVEN 2026-09-25
+B09 Responsibility / Participation               🟨 IN PROGRESS
   B09-A typed persistence substrate               ✅ CLOSED / PROVEN 2026-09-25
   B09-B guarded mutation + application surface    ✅ CLOSED / PROVEN 2026-09-25
+  B09-C remaining Responsibility / Participation  ⬜ NEXT — exact scope to reconcile
+  B09-D B09 whole-block closure                    ⬜ AFTER B09-C — exact scope to reconcile
 B10 Actual / Outcome / Confirmation / Resolution ⬜
 B11 Advanced Recurrence / Conditional / Reminder ⬜
 B13 Work Structure / Decomposition / Dependencies⬜
@@ -134,7 +136,7 @@ B08 proven/user-reported candidate chain ends at `20260924_65`.
 
 ---
 
-# 3. B09 — Responsibility / Participation — CLOSED / PROVEN
+# 3. B09 — Responsibility / Participation — IN PROGRESS
 
 B09 adds actor/person semantics around temporal subjects without introducing account collaboration infrastructure.
 
@@ -195,7 +197,11 @@ participant authoring does not grant control over another person's calendar/task
 
 Home `+` required/optional participant textareas remain B14. Timeline detail is the truthful B09 authoring surface.
 
-User-run local automated proof on 2026-09-25: generated check and both typechecks passed, web responsibility controls 4 passed, backend B09-B/B09-A/catalog/OpenAPI 18 passed. B09-B closes on this evidence; the real-stack walkthrough is deferred to B15 whole-vertical closure.
+User-run local automated proof on 2026-09-25: generated check and both typechecks passed, web responsibility controls 4 passed, backend B09-B/B09-A/catalog/OpenAPI 18 passed. B09-B alone closes on this evidence; B09-C and B09-D remain, and real-stack testing is deferred to B15 whole-vertical closure.
+
+## B09-C / B09-D — NOT STARTED
+
+B09-C is the next Responsibility / Participation slice; B09-D is the subsequent whole-block closure. Their precise deliverables must be reconciled with the accepted B09 scope in `timeline-temporal-operational-post-b06-scope-decision-2026-09-23.md` and the current Product / Domain / Logical / Physical authority before implementation. The current roadmap does not define those deliverables: B09-B's bounded `self` surface must not be treated as proof that all B09 product flows are complete. Neither slice is covered by B09-B's tests. B15 retains the user's end-of-vertical real-stack test.
 
 ---
 
@@ -340,9 +346,11 @@ editable Create field == assumed canonical support
 ```text
 B00–B06 ✅ CLOSED / PROVEN
 B08     ✅ CLOSED / USER-REPORTED 2026-09-24
-B09     ✅ CLOSED / PROVEN 2026-09-25
+B09     🟨 IN PROGRESS
   B09-A ✅ CLOSED / PROVEN 2026-09-25
   B09-B ✅ CLOSED / PROVEN 2026-09-25
+  B09-C ⬜ NEXT — scope to reconcile
+  B09-D ⬜ AFTER B09-C — scope to reconcile
 B10     ⬜ NOT STARTED
 B11     ⬜ NOT STARTED
 B13     ⬜ NOT STARTED
@@ -352,4 +360,4 @@ B07     ⏸ DEFERRED UNTIL B14
 B15     ⬜ NOT STARTED
 ```
 
-**Current action:** B09 is closed. Begin B10; real-stack validation remains B15 scope.
+**Current action:** reconcile the exact B09-C/B09-D scope against the accepted authority, then proceed with B09-C. B10 follows B09-D; the user's real-stack test remains B15 scope.
