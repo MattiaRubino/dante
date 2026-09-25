@@ -1,4 +1,4 @@
-"""B10-B public API proof for contextual Outcome over canonical Actual."""
+"""B10-B public API proof for canonical Outcome disposition over Actual."""
 
 from __future__ import annotations
 
@@ -23,11 +23,11 @@ pytestmark = pytest.mark.postgres
 pytest_plugins = ("tests.integration.temporal.test_b01_activity_core",)
 
 
-def _actual_command(operation_id: str) -> dict[str, object]:
+def _actual_command(operation_id: str, *, expected: str | None = None, occurred: bool = True) -> dict[str, object]:
     return {
         "operation_id": operation_id,
-        "expected_material_state_ref": None,
-        "realization_occurred": True,
+        "expected_material_state_ref": expected,
+        "realization_occurred": occurred,
         "timing": None,
         "session_bases": [],
     }
@@ -36,19 +36,19 @@ def _actual_command(operation_id: str) -> dict[str, object]:
 def _outcome_command(
     operation_id: str,
     *,
-    result_code: str,
+    actual_state_ref: str,
+    disposition_code: str,
     expected: str | None = None,
-    note: str | None = None,
 ) -> dict[str, object]:
     return {
         "operation_id": operation_id,
+        "actual_realization_material_state_ref": actual_state_ref,
         "expected_material_state_ref": expected,
-        "result_code": result_code,
-        "note": note,
+        "disposition_code": disposition_code,
     }
 
 
-def test_b10_b_outcome_is_contextual_idempotent_correctable_and_actual_scoped(
+def test_b10_b_outcome_is_idempotent_correctable_and_actual_state_scoped(
     migrated_database: Any,
     activity_hibp_stub_url: str,
 ) -> None:
@@ -74,8 +74,10 @@ def test_b10_b_outcome_is_contextual_idempotent_correctable_and_actual_scoped(
             headers=mutation_headers,
         )
         assert actual.status_code == 201
-        actual_ref = actual.json()["actual_ref"]
-        path = f"/api/v1/temporal/actuals/{actual_ref}/outcomes/meeting.decision"
+        actual_body = actual.json()
+        actual_ref = actual_body["actual_ref"]
+        actual_state_ref = actual_body["material_state_ref"]
+        path = f"/api/v1/temporal/actuals/{actual_ref}/outcome"
 
         unknown = client.get(path, headers=_base_headers())
         assert unknown.status_code == 404
@@ -83,7 +85,11 @@ def test_b10_b_outcome_is_contextual_idempotent_correctable_and_actual_scoped(
 
         missing_csrf = client.post(
             path,
-            json=_outcome_command("b10b:no-csrf", result_code="decision.deferred"),
+            json=_outcome_command(
+                "b10b:no-csrf",
+                actual_state_ref=actual_state_ref,
+                disposition_code="decision.deferred",
+            ),
             headers=_base_headers(),
         )
         assert missing_csrf.status_code == 403
@@ -93,17 +99,16 @@ def test_b10_b_outcome_is_contextual_idempotent_correctable_and_actual_scoped(
             path,
             json=_outcome_command(
                 "b10b:create",
-                result_code="decision.deferred",
-                note="Awaiting external input",
+                actual_state_ref=actual_state_ref,
+                disposition_code="decision.deferred",
             ),
             headers=mutation_headers,
         )
         assert created.status_code == 201
         first = created.json()
         assert first["actual_ref"] == actual_ref
-        assert first["vocabulary_code"] == "meeting.decision"
-        assert first["result_code"] == "decision.deferred"
-        assert first["note"] == "Awaiting external input"
+        assert first["actual_realization_material_state_ref"] == actual_state_ref
+        assert first["disposition_code"] == "decision.deferred"
         assert first["replayed"] is False
 
         current = client.get(path, headers=_base_headers())
@@ -115,8 +120,8 @@ def test_b10_b_outcome_is_contextual_idempotent_correctable_and_actual_scoped(
             path,
             json=_outcome_command(
                 "b10b:create",
-                result_code="decision.deferred",
-                note="Awaiting external input",
+                actual_state_ref=actual_state_ref,
+                disposition_code="decision.deferred",
             ),
             headers=mutation_headers,
         )
@@ -128,7 +133,8 @@ def test_b10_b_outcome_is_contextual_idempotent_correctable_and_actual_scoped(
             path,
             json=_outcome_command(
                 "b10b:create",
-                result_code="decision.reached",
+                actual_state_ref=actual_state_ref,
+                disposition_code="decision.reached",
                 expected=first["material_state_ref"],
             ),
             headers=mutation_headers,
@@ -140,7 +146,8 @@ def test_b10_b_outcome_is_contextual_idempotent_correctable_and_actual_scoped(
             path,
             json=_outcome_command(
                 "b10b:correct",
-                result_code="decision.reached",
+                actual_state_ref=actual_state_ref,
+                disposition_code="decision.reached",
                 expected=first["material_state_ref"],
             ),
             headers=mutation_headers,
@@ -149,13 +156,14 @@ def test_b10_b_outcome_is_contextual_idempotent_correctable_and_actual_scoped(
         second = corrected.json()
         assert second["outcome_ref"] == first["outcome_ref"]
         assert second["material_state_ref"] != first["material_state_ref"]
-        assert second["result_code"] == "decision.reached"
+        assert second["disposition_code"] == "decision.reached"
 
         stale = client.post(
             path,
             json=_outcome_command(
                 "b10b:stale",
-                result_code="decision.deferred",
+                actual_state_ref=actual_state_ref,
+                disposition_code="decision.deferred",
                 expected=first["material_state_ref"],
             ),
             headers=mutation_headers,
@@ -169,14 +177,48 @@ def test_b10_b_outcome_is_contextual_idempotent_correctable_and_actual_scoped(
         )
         assert history.status_code == 200
         rows = history.json()
-        assert [row["result_code"] for row in rows] == [
+        assert [row["disposition_code"] for row in rows] == [
             "decision.deferred",
             "decision.reached",
         ]
         assert rows[0]["current_until_at"] is not None
         assert rows[1]["current_until_at"] is None
 
-        final = client.get(path, headers=_base_headers())
-        assert final.status_code == 200
-        assert final.json()["material_state_ref"] == second["material_state_ref"]
-        assert final.json()["result_code"] == "decision.reached"
+        corrected_actual = client.post(
+            f"/api/v1/temporal/events/{event_ref}/actual",
+            json=_actual_command(
+                "b10b:event:actual:correct",
+                expected=actual_state_ref,
+                occurred=False,
+            ),
+            headers=mutation_headers,
+        )
+        assert corrected_actual.status_code == 201
+        new_actual_state_ref = corrected_actual.json()["material_state_ref"]
+
+        old_basis = client.post(
+            path,
+            json=_outcome_command(
+                "b10b:old-basis",
+                actual_state_ref=actual_state_ref,
+                disposition_code="decision.cancelled",
+                expected=second["material_state_ref"],
+            ),
+            headers=mutation_headers,
+        )
+        assert old_basis.status_code == 409
+        assert old_basis.json()["code"] == "temporal.outcome.current_conflict"
+
+        rebased = client.post(
+            path,
+            json=_outcome_command(
+                "b10b:new-basis",
+                actual_state_ref=new_actual_state_ref,
+                disposition_code="decision.cancelled",
+                expected=second["material_state_ref"],
+            ),
+            headers=mutation_headers,
+        )
+        assert rebased.status_code == 201
+        assert rebased.json()["outcome_ref"] == first["outcome_ref"]
+        assert rebased.json()["actual_realization_material_state_ref"] == new_actual_state_ref
