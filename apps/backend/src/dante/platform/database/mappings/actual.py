@@ -229,7 +229,7 @@ class ActualRealizationOperationRow(Base):
         ForeignKeyConstraint(
             ["subject_native_ref"],
             ["dante.native_address.native_ref"],
-            name="fk_actual_realization_operation_subject_native_ref_native_address",
+            name="fk_actual_realization_operation_subject_native_ref_native",
             match="SIMPLE",
             onupdate="NO ACTION",
             ondelete="NO ACTION",
