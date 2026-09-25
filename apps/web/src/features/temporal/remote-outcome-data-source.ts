@@ -2,23 +2,22 @@ import { createWebFetch } from '../../platform/api/web-fetch';
 
 const UUID_V7 =
   /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const CONTEXT_CODE = /^[a-z][a-z0-9._-]{0,99}$/;
+const DISPOSITION_CODE = /^[a-z0-9][a-z0-9._:-]{0,119}$/;
 
 export type TemporalOutcomeView = Readonly<{
   outcomeRef: string;
   actualRef: string;
-  vocabularyCode: string;
+  actualRealizationMaterialStateRef: string;
   materialStateRef: string;
-  resultCode: string;
-  note: string | null;
+  dispositionCode: string;
   replayed: boolean;
 }>;
 
 export type RecordOutcomeCommand = Readonly<{
   operationId: string;
+  actualRealizationMaterialStateRef: string;
   expectedMaterialStateRef: string | null;
-  resultCode: string;
-  note: string | null;
+  dispositionCode: string;
 }>;
 
 export class TemporalOutcomeRemoteError extends Error {
@@ -47,28 +46,27 @@ function uuid(value: unknown, field: string): string {
   return value.toLowerCase();
 }
 
-function contextualCode(value: unknown, field: string): string {
-  if (typeof value !== 'string' || !CONTEXT_CODE.test(value)) {
-    throw new TemporalOutcomeRemoteError('protocol', `${field} must be a contextual code.`);
+function dispositionCode(value: unknown): string {
+  if (typeof value !== 'string' || !DISPOSITION_CODE.test(value)) {
+    throw new TemporalOutcomeRemoteError('protocol', 'Invalid Outcome disposition_code.');
   }
   return value;
 }
 
 function view(value: unknown): TemporalOutcomeView {
   const payload = record(value);
-  if (
-    typeof payload.replayed !== 'boolean' ||
-    (payload.note !== null && typeof payload.note !== 'string')
-  ) {
-    throw new TemporalOutcomeRemoteError('protocol', 'Invalid Outcome result state.');
+  if (typeof payload.replayed !== 'boolean') {
+    throw new TemporalOutcomeRemoteError('protocol', 'Invalid Outcome replay state.');
   }
   return Object.freeze({
     outcomeRef: uuid(payload.outcome_ref, 'outcome_ref'),
     actualRef: uuid(payload.actual_ref, 'actual_ref'),
-    vocabularyCode: contextualCode(payload.vocabulary_code, 'vocabulary_code'),
+    actualRealizationMaterialStateRef: uuid(
+      payload.actual_realization_material_state_ref,
+      'actual_realization_material_state_ref',
+    ),
     materialStateRef: uuid(payload.material_state_ref, 'material_state_ref'),
-    resultCode: contextualCode(payload.result_code, 'result_code'),
-    note: payload.note as string | null,
+    dispositionCode: dispositionCode(payload.disposition_code),
     replayed: payload.replayed,
   });
 }
@@ -111,22 +109,10 @@ export function createRemoteTemporalOutcomeDataSource(
     );
   }
 
-  function assertVocabularyCode(vocabularyCode: string): string {
-    const normalized = vocabularyCode.trim();
-    if (normalized !== vocabularyCode || !CONTEXT_CODE.test(normalized)) {
-      throw new TemporalOutcomeRemoteError(
-        'protocol',
-        'Outcome vocabulary_code must be a contextual code.',
-      );
-    }
-    return normalized;
-  }
-
   return Object.freeze({
-    async get(actualRef: string, vocabularyCode: string): Promise<TemporalOutcomeView | null> {
-      const vocabulary = assertVocabularyCode(vocabularyCode);
+    async get(actualRef: string): Promise<TemporalOutcomeView | null> {
       const response = await webFetch(
-        `/api/v1/temporal/actuals/${encodeURIComponent(actualRef)}/outcomes/${encodeURIComponent(vocabulary)}`,
+        `/api/v1/temporal/actuals/${encodeURIComponent(actualRef)}/outcome`,
       );
       if (!response.ok) {
         const error = await problem(response);
@@ -140,24 +126,28 @@ export function createRemoteTemporalOutcomeDataSource(
 
     async record(
       actualRef: string,
-      vocabularyCode: string,
       command: RecordOutcomeCommand,
     ): Promise<TemporalOutcomeView> {
-      const vocabulary = assertVocabularyCode(vocabularyCode);
+      if (!DISPOSITION_CODE.test(command.dispositionCode)) {
+        throw new TemporalOutcomeRemoteError(
+          'protocol',
+          'Outcome disposition_code must be a contextual code.',
+        );
+      }
       const headers = new Headers({
         'Content-Type': 'application/json',
         'X-Dante-CSRF': await csrf(),
       });
       const response = await webFetch(
-        `/api/v1/temporal/actuals/${encodeURIComponent(actualRef)}/outcomes/${encodeURIComponent(vocabulary)}`,
+        `/api/v1/temporal/actuals/${encodeURIComponent(actualRef)}/outcome`,
         {
           method: 'POST',
           headers,
           body: JSON.stringify({
             operation_id: command.operationId,
+            actual_realization_material_state_ref: command.actualRealizationMaterialStateRef,
             expected_material_state_ref: command.expectedMaterialStateRef,
-            result_code: command.resultCode,
-            note: command.note,
+            disposition_code: command.dispositionCode,
           }),
         },
       );
