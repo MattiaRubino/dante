@@ -1,14 +1,13 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B09-B implemented on the candidate — awaiting user-run local proof; not CLOSED
+- **Status:** B09-B ✅ CLOSED / PROVEN — user-run local proof 2026-09-25
 - **Reconciled:** 2026-09-25
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Live execution ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Current candidate Alembic frontier:** `20260925_67`
-- **Last proven candidate DB frontier:** B09-A / `20260925_66` / `153|5|99|93|298|242|419`
-- **Candidate topology awaiting B09-B local proof:** `156|5|106|93|301|251|426`
+- **Current candidate Alembic frontier:** `20260925_68`
+- **Last proven candidate DB frontier:** B09-B / `20260925_68` / `156|5|106|93|301|251|426`
 - **CI:** no CI/GitHub Actions unless explicitly authorized; user runs local tests
 
 Read this first after a context reset.
@@ -22,7 +21,7 @@ B00–B06 ✅ CLOSED / PROVEN
 B08     ✅ CLOSED / USER-REPORTED 2026-09-24
 B09     🟨 IN PROGRESS
   B09-A ✅ CLOSED / PROVEN 2026-09-25
-  B09-B 🟨 IMPLEMENTED / AWAITING LOCAL PROOF
+  B09-B ✅ CLOSED / PROVEN 2026-09-25
 B10     ⬜ NOT STARTED
 B11     ⬜ NOT STARTED
 B13     ⬜ NOT STARTED
@@ -147,9 +146,17 @@ Those remain outside B09-A by design.
 
 ---
 
-# 4. B09-B candidate contract — implemented, not proven
+# 4. B09-B closure truth
 
-B09-B adds guarded authoring over the `_66` relation substrate. It is candidate implementation only until the user runs the local proof below.
+B09-B adds guarded authoring over the `_66` relation substrate. `_68` qualifies Event column references inside the Participation functions. The user ran the local proof on 2026-09-25.
+
+```text
+generated:check PASS
+api-client typecheck PASS
+web typecheck PASS
+responsibility-controls.test.tsx: 4 passed
+pytest B09-B + B09-A persistence + both catalog suites + OpenAPI inventory: 18 passed in 25.22s
+```
 
 Implemented by Alembic `20260925_67`:
 
@@ -191,7 +198,7 @@ participant authoring does not grant control over another person's calendar/task
 
 Home `+` required/optional participant textareas remain B14. They collect free-text emails, not Person refs; B09-B does not invent email-to-Person identity. Timeline detail is the truthful B09 authoring surface for self Responsibility and self expected Participation.
 
-Do not mark B09-B CLOSED or PROVEN from this implementation. User-run commands:
+User-run commands that passed:
 
 ```text
 cd apps/backend
@@ -309,4 +316,4 @@ B15
 6. current Logical Model / PostgreSQL blueprint sections relevant to Responsibility / Participation
 ```
 
-**Exact next action:** user runs the B09-B local proof commands in section 4. Do not close B09-B without that output. B10 remains blocked until B09-B is proven.
+**Exact next action:** B09 is closed. B10 Actual / Outcome / Confirmation / Resolution is next. Do not invent attendance semantics inside B09.

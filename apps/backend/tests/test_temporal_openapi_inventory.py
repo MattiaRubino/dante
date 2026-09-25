@@ -200,6 +200,8 @@ _EXPECTED_TEMPORAL_OPERATIONS = {
         "temporal_list_event_expected_participation"
     ),
     ("/api/v1/temporal/sessions/{session_ref}/end", "post"): "temporal_end_session",
+    ("/api/v1/temporal/sessions/{session_ref}/pause", "post"): "temporal_pause_session",
+    ("/api/v1/temporal/sessions/{session_ref}/resume", "post"): "temporal_resume_session",
     ("/api/v1/temporal/routines/{routine_ref}/occurrences/exclusions", "post"): (
         "temporal_exclude_routine_occurrence_coordinate"
     ),

@@ -6,9 +6,8 @@
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
-- **Timeline candidate Alembic head:** `20260925_67`
-- **Last proven candidate topology:** B09-A / `20260925_66` / `153|5|99|93|298|242|419`
-- **Timeline candidate topology awaiting B09-B local proof:** `156|5|106|93|301|251|426`
+- **Timeline candidate Alembic head:** `20260925_68`
+- **Last proven candidate topology:** B09-B / `20260925_68` / `156|5|106|93|301|251|426`
 - **Timeline candidate DB overlay:** `timeline-temporal-operational.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 - **Persistence ADR:** `../decisions/ADR-010-postgresql-persistence-constitution.md`
@@ -73,6 +72,8 @@ Protected `main` remains integration authority. Candidate truth is never relabel
 20260925_66 B09-A Responsibility / Participation persistence
     ↓
 20260925_67 B09-B guarded Responsibility / Participation authoring
+    ↓
+20260925_68 B09-B qualify Event column references inside authoring functions
 ```
 
 No accepted historical migration was edited, rebased, renumbered or flattened. `_59` and `_60` are forward-only repairs.
@@ -191,7 +192,7 @@ B08-A `_60` immutable-END repair      implemented
 B08-A/B automated + real-stack proof ✅ CLOSED PER USER-REPORTED B08-B DEPENDENCY
 B08-C `_65` local automated proof     ✅ CLOSED / PROVEN 2026-09-24
 B09-A `_66` persistence               ✅ CLOSED / PROVEN 2026-09-25
-B09-B `_67` authoring                 🟨 IMPLEMENTED / AWAITING LOCAL PROOF
+B09-B `_67`–`_68` authoring          ✅ CLOSED / PROVEN 2026-09-25
 ```
 
 B08-A/B are treated as closed based on the user’s B08-B closure report; their exact test logs are not committed. B08-C `_65` passed the user-run generated/client, web, backend unit/API and PostgreSQL catalog/integration gates on 2026-09-24. The single real-stack walkthrough remains B08-D scope.

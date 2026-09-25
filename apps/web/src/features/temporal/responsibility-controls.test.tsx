@@ -1,5 +1,5 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ResponsibilityControls } from './responsibility-controls';
 
@@ -31,6 +31,11 @@ function participation(requirement: 'required' | 'optional' | null) {
 }
 
 describe('responsibility controls', () => {
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+  });
+
   it('assigns Responsibility to the actor without sending a Person reference', async () => {
     let holder: string | null = null;
     const bodies: unknown[] = [];

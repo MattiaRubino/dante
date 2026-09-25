@@ -1,12 +1,11 @@
 # Timeline / Temporal-Operational — Candidate Database Overlay
 
-- **Status:** CURRENT CANDIDATE DATABASE AUTHORITY — B09-A proven; B09-B `_67` awaiting local proof
+- **Status:** CURRENT CANDIDATE DATABASE AUTHORITY — B09-B locally proven at `_68`
 - **Reconciled:** 2026-09-25
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
-- **Candidate source head:** `20260925_67`
-- **Last proven candidate topology:** B09-A / `20260925_66` / `153|5|99|93|298|242|419`
-- **Candidate topology awaiting B09-B local proof:** `156|5|106|93|301|251|426`
+- **Candidate source head:** `20260925_68`
+- **Last proven candidate topology:** B09-B / `20260925_68` / `156|5|106|93|301|251|426`
 - **Whole-DB SoR:** `README.md`
 - **Machine-readable authority:** `dictionary/`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
@@ -62,6 +61,8 @@ Product / Domain / Logical / Physical
 20260925_66 B09-A Responsibility / Participation persistence
     ↓
 20260925_67 B09-B guarded Responsibility / Participation authoring
+    ↓
+20260925_68 B09-B qualify Event column references inside authoring functions
 ```
 
 `_59` and `_60` are forward-only repairs of contracts introduced by `_58`.
@@ -69,7 +70,7 @@ Product / Domain / Logical / Physical
 ## 3. Current candidate topology
 
 ```text
-Alembic     20260925_67
+Alembic     20260925_68
 Tables      156
 Views       5
 Routines    106
@@ -182,7 +183,7 @@ B08-A automated + real-stack proof ✅ CLOSED PER USER-REPORTED B08-B DEPENDENCY
 B08-B pause/resume + metric proof   ✅ CLOSED PER USER REPORT
 B08-C `_65` local automated proof   ✅ CLOSED / PROVEN 2026-09-24
 B09-A `_66` persistence             ✅ CLOSED / PROVEN 2026-09-25
-B09-B `_67` authoring               🟨 IMPLEMENTED / AWAITING LOCAL PROOF
+B09-B `_67`–`_68` authoring        ✅ CLOSED / PROVEN 2026-09-25
 ```
 
 B08-A and B08-B are treated as closed based on the user’s B08-B closure report; the original local logs are not stored here. B08-C `_65` passed the user-run local generated/client, web, backend unit/API and PostgreSQL catalog/integration gates on 2026-09-24. It remains candidate branch truth until protected-main integration; B08-D owns the one real-stack walkthrough.
