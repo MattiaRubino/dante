@@ -1,0 +1,33 @@
+.timeline-actual-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.timeline-actual-controls > strong {
+  flex-basis: 100%;
+}
+
+.timeline-actual-controls > p {
+  margin: 0;
+  min-width: 0;
+}
+
+.timeline-actual-controls__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.timeline-actual-controls > small {
+  flex-basis: 100%;
+  color: #8fa0b5;
+  line-height: 1.35;
+}
+
+.timeline-actual-controls > [role='status'],
+.timeline-actual-controls > [role='alert'] {
+  flex-basis: 100%;
+}
