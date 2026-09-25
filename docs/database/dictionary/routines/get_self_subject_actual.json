@@ -1,0 +1,28 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {"key": "routine:dante.get_self_subject_actual", "type": "routine", "schema": "dante", "name": "get_self_subject_actual", "ownership_class": "dante_owned"},
+  "purpose": "Read the current accepted Actual realization for one exact self-owned Activity, Event or Occurrence subject; no row means unknown.",
+  "classification": {"persistence_role": "actual_capability", "canonicality": "capability_surface", "family": "actual"},
+  "semantic_traceability": {
+    "authority_sources": ["docs/domain/concepts/actual.md", "docs/workstreams/timeline-temporal-operational-b10-scope-freeze.md"],
+    "domain_concepts": ["Actual"],
+    "logical_families": ["Actual"],
+    "reference_families": ["NativeRef", "ScopedRecordRef", "MaterialStateRef"],
+    "material_facets": ["actual.realization"]
+  },
+  "implementation": {"introducing_stage": "B10-A", "alembic_revision": "20260925_73", "sqlalchemy": {"mode": "none", "module": null, "symbol": null}, "runtime_acl_stage": "B10-A"},
+  "structure": {
+    "columns": [], "primary_key": null, "foreign_keys": [], "unique_constraints": [], "check_constraints": [], "indexes": [], "triggers": [], "table": null, "view": null,
+    "routine": {
+      "routine_kind": "function", "language": "plpgsql", "argument_types": ["uuid", "text", "uuid"],
+      "return_type": "TABLE(actual_ref uuid, subject_native_ref uuid, material_state_ref uuid, realization_occurred boolean, extent_code text, started_at timestamp with time zone, ended_at timestamp with time zone)",
+      "security": "DEFINER", "volatility": "STABLE", "parallel_safety": "SAFE", "leakproof": false,
+      "function_search_path": ["pg_catalog", "dante", "pg_temp"], "direct_runtime_execute": true
+    }
+  },
+  "state_history": {"material_state_behavior": "Reads the current accepted realization state only.", "current_binding": "Resolved through dante.actual_current_realization.", "chronology": "No latest-row semantics.", "immutability_policy": "Read-only capability."},
+  "lifecycle": {"retention": "B10-A Actual capability.", "redaction": null, "retirement_tombstone": null, "delete_behavior": "No mutation."},
+  "security": {"owner_role": "dante_owner", "default_deny_non_owner": true, "expected_grants": [{"grantee": "dante_runtime", "privilege": "EXECUTE", "columns": [], "grant_option": false}]},
+  "proof": {"obligations": ["no Actual means unknown", "exact subject family", "self scope", "current accepted state is not latest row"], "test_refs": ["apps/backend/tests/integration/temporal/test_b10_a_actual_realization.py", "apps/backend/tests/integration/temporal/test_b10_a_actual_api.py"], "staged_evidence": []}
+}
