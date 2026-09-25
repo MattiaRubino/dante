@@ -1,4 +1,4 @@
-"""B10-B Outcome disposition application capability over canonical PostgreSQL truth."""
+"""B10-B Outcome application capability over canonical PostgreSQL truth."""
 
 from __future__ import annotations
 
@@ -16,12 +16,13 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from dante.platform.database.references import (
     MaterialStateRef,
+    NativeRef,
     ScopedRecordRef,
     new_material_state_ref,
     new_scoped_record_ref,
 )
 
-_DISPOSITION_CODE = re.compile(r"^[a-z0-9][a-z0-9._:-]{0,119}$")
+_CONTEXT_CODE = re.compile(r"^[a-z][a-z0-9._-]{0,99}$")
 
 
 class OutcomeInputError(ValueError):
@@ -37,7 +38,7 @@ class OutcomeOperationReuseError(RuntimeError):
 
 
 class OutcomeCurrentConflictError(RuntimeError):
-    """The caller's Actual basis or expected current Outcome state is stale."""
+    """The caller's expected current Outcome state is stale."""
 
 
 class OutcomePersistenceError(RuntimeError):
@@ -48,9 +49,10 @@ class OutcomePersistenceError(RuntimeError):
 class OutcomeView:
     outcome_ref: ScopedRecordRef
     actual_ref: ScopedRecordRef
-    actual_realization_material_state_ref: MaterialStateRef
+    vocabulary_code: str
     material_state_ref: MaterialStateRef
-    disposition_code: str
+    result_code: str
+    note: str | None
     replayed: bool = False
     current_from_at: datetime | None = None
     current_until_at: datetime | None = None
@@ -63,12 +65,21 @@ def _normalize_operation_id(value: str) -> str:
     return normalized
 
 
-def _normalize_disposition_code(value: str) -> str:
+def _normalize_context_code(value: str, *, label: str) -> str:
     normalized = value.strip()
-    if normalized != value or not _DISPOSITION_CODE.fullmatch(normalized):
+    if normalized != value or not _CONTEXT_CODE.fullmatch(normalized):
         raise OutcomeInputError(
-            "Outcome disposition_code must be a trimmed contextual code of at most 120 characters."
+            f"Outcome {label} must be a trimmed contextual code of at most 100 characters."
         )
+    return normalized
+
+
+def _normalize_note(value: str | None) -> str | None:
+    if value is None:
+        return None
+    normalized = value.strip()
+    if normalized != value or not normalized or len(normalized) > 2000:
+        raise OutcomeInputError("Outcome note must contain 1 to 2000 trimmed characters.")
     return normalized
 
 
@@ -87,11 +98,10 @@ def _view(row: RowMapping, *, replayed: bool = False) -> OutcomeView:
     return OutcomeView(
         outcome_ref=ScopedRecordRef(UUID(str(row["outcome_ref"]))),
         actual_ref=ScopedRecordRef(UUID(str(row["actual_ref"]))),
-        actual_realization_material_state_ref=MaterialStateRef(
-            UUID(str(row["actual_realization_material_state_ref"]))
-        ),
+        vocabulary_code=str(row["vocabulary_code"]),
         material_state_ref=MaterialStateRef(UUID(str(row["material_state_ref"]))),
-        disposition_code=str(row["disposition_code"]),
+        result_code=str(row["result_code"]),
+        note=str(row["note"]) if row["note"] is not None else None,
         replayed=replayed,
         current_from_at=(
             row["current_from_at"]
@@ -107,7 +117,7 @@ def _view(row: RowMapping, *, replayed: bool = False) -> OutcomeView:
 
 
 class OutcomeApplication:
-    """Self-scoped append-only Outcome disposition commands and authoritative reads."""
+    """Self-scoped append-only contextual Outcome commands and authoritative reads."""
 
     def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
         self._session_factory = session_factory
@@ -115,39 +125,41 @@ class OutcomeApplication:
     async def record(
         self,
         *,
-        self_person_ref: UUID,
+        self_person_ref: NativeRef,
         operation_id: str,
         actual_ref: ScopedRecordRef,
-        actual_realization_material_state_ref: MaterialStateRef,
+        vocabulary_code: str,
         expected_material_state_ref: MaterialStateRef | None,
-        disposition_code: str,
+        result_code: str,
+        note: str | None = None,
     ) -> OutcomeView:
         normalized_operation_id = _normalize_operation_id(operation_id)
-        normalized_disposition = _normalize_disposition_code(disposition_code)
+        normalized_vocabulary = _normalize_context_code(vocabulary_code, label="vocabulary_code")
+        normalized_result = _normalize_context_code(result_code, label="result_code")
+        normalized_note = _normalize_note(note)
         fingerprint = _fingerprint(
             {
-                "version": "2",
-                "command": "record_actual_outcome_disposition",
+                "version": "1",
+                "command": "record_actual_outcome",
                 "actual_ref": str(actual_ref),
-                "actual_realization_material_state_ref": str(
-                    actual_realization_material_state_ref
-                ),
+                "vocabulary_code": normalized_vocabulary,
                 "expected_material_state_ref": (
                     str(expected_material_state_ref)
                     if expected_material_state_ref is not None
                     else None
                 ),
-                "disposition_code": normalized_disposition,
+                "result_code": normalized_result,
+                "note": normalized_note,
             }
         )
         rows = await self._rows(
             """
-            SELECT outcome_ref, actual_ref, actual_realization_material_state_ref,
-                   material_state_ref, disposition_code, replayed
+            SELECT outcome_ref, actual_ref, vocabulary_code,
+                   material_state_ref, result_code, note, replayed
               FROM dante.record_self_actual_outcome(
                 :actor, :operation_id, :fingerprint, :actual_ref,
-                :actual_realization_state_ref, :outcome_ref, :state_ref,
-                :expected_state, :disposition_code
+                :vocabulary_code, :outcome_ref, :state_ref,
+                :expected_state, :result_code, :note
               )
             """,
             {
@@ -155,11 +167,12 @@ class OutcomeApplication:
                 "operation_id": normalized_operation_id,
                 "fingerprint": fingerprint,
                 "actual_ref": actual_ref,
-                "actual_realization_state_ref": actual_realization_material_state_ref,
+                "vocabulary_code": normalized_vocabulary,
                 "outcome_ref": new_scoped_record_ref(),
                 "state_ref": new_material_state_ref(),
                 "expected_state": expected_material_state_ref,
-                "disposition_code": normalized_disposition,
+                "result_code": normalized_result,
+                "note": normalized_note,
             },
         )
         if not rows:
@@ -169,31 +182,39 @@ class OutcomeApplication:
     async def get_for_actual(
         self,
         *,
-        self_person_ref: UUID,
+        self_person_ref: NativeRef,
         actual_ref: ScopedRecordRef,
+        vocabulary_code: str,
     ) -> OutcomeView:
+        normalized_vocabulary = _normalize_context_code(vocabulary_code, label="vocabulary_code")
         rows = await self._rows(
             """
-            SELECT outcome_ref, actual_ref, actual_realization_material_state_ref,
-                   material_state_ref, disposition_code
-              FROM dante.get_self_actual_outcome(:actor, :actual_ref)
+            SELECT outcome_ref, actual_ref, vocabulary_code,
+                   material_state_ref, result_code, note
+              FROM dante.get_self_actual_outcome(:actor, :actual_ref, :vocabulary_code)
             """,
-            {"actor": self_person_ref, "actual_ref": actual_ref},
+            {
+                "actor": self_person_ref,
+                "actual_ref": actual_ref,
+                "vocabulary_code": normalized_vocabulary,
+            },
         )
         if not rows:
-            raise OutcomeNotFoundError("No Outcome is established for this Actual.")
+            raise OutcomeNotFoundError(
+                "No Outcome is established for this Actual and vocabulary."
+            )
         return _view(rows[0])
 
     async def history(
         self,
         *,
-        self_person_ref: UUID,
+        self_person_ref: NativeRef,
         outcome_ref: ScopedRecordRef,
     ) -> tuple[OutcomeView, ...]:
         rows = await self._rows(
             """
-            SELECT outcome_ref, actual_ref, actual_realization_material_state_ref,
-                   material_state_ref, disposition_code,
+            SELECT outcome_ref, actual_ref, vocabulary_code,
+                   material_state_ref, result_code, note,
                    current_from_at, current_until_at
               FROM dante.list_self_outcome_history(:actor, :outcome_ref)
             """,
@@ -222,16 +243,15 @@ class OutcomeApplication:
         message = str(getattr(exc, "orig", exc))
         if name == "outcome_operation_reused" or "operation id reused" in message:
             raise OutcomeOperationReuseError("Outcome operation id was reused.") from exc
-        if name in {"outcome_current_conflict", "outcome_actual_current_conflict"} or (
-            "expected current state" in message
-            or "realization basis is not current" in message
-        ):
-            raise OutcomeCurrentConflictError("Outcome current state or Actual basis is stale.") from exc
+        if name == "outcome_current_conflict" or "expected current state" in message:
+            raise OutcomeCurrentConflictError("Outcome current state is stale.") from exc
         if name == "outcome_actual_unavailable" or "Outcome Actual unavailable" in message:
             raise OutcomeNotFoundError("Outcome Actual unavailable.") from exc
         if name in {
-            "ck_outcome_disposition_operation_operation_id",
-            "ck_outcome_disposition_operation_fingerprint",
-            "ck_outcome_disposition_state_code",
+            "ck_outcome_result_operation_operation_id",
+            "ck_outcome_result_operation_fingerprint",
+            "ck_outcome_vocabulary_code",
+            "ck_outcome_result_state_result_code",
+            "ck_outcome_result_state_note",
         }:
             raise OutcomeInputError("Outcome payload was rejected.") from exc
