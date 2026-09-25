@@ -59,6 +59,32 @@ The persistence design must:
 - preserve self-scope/auth and consequential-write idempotency patterns already proven in B08-B10-A;
 - keep Confirmation/authority/provenance semantics outside B10-B.
 
+## Current implementation checkpoint
+
+B10-B persistence has now advanced through the immutable published revisions:
+
+```text
+20260925_75  initial Outcome capability
+20260925_76  forward-only canonical Outcome disposition reconciliation
+```
+
+`20260925_76` is the binding physical contract. It resolves the temporary `_75` vocabulary/result shape into:
+
+```text
+one stable Outcome per Actual
+OutcomeDisposition MaterialState
+facet = outcome.disposition
+exact actual_realization_material_state_ref on every disposition state
+explicit accepted-current history
+disposition operation receipt separate from Domain identity
+```
+
+The SQLAlchemy mapping/addressing registration and temporal Outcome application/API have been realigned to that `_76` contract. The detailed continuation/evidence record is:
+
+`docs/workstreams/timeline-temporal-operational-b10-b-alignment-2026-09-25.md`
+
+This does **not** close B10-B. OpenAPI/generated client, web Outcome projection/authoring, tests and Database/Dictionary ledger surfaces still require reconciliation before a complete candidate exists.
+
 ## Explicitly deferred
 
 B10-B does not implement:
@@ -75,3 +101,5 @@ B10-B does not implement:
 ## Acceptance rule
 
 Implementation is not marked CLOSED merely because files are committed. Once the full B10-B candidate is ready, the assistant provides one unified local command. The user executes generation/check/typecheck/web/backend/PostgreSQL acceptance locally. Only a green user-run gate moves B10-B to CLOSED / PROVEN.
+
+During the 2026-09-25 alignment pass the user explicitly did not request tests, so B10-B remains **IN PROGRESS / UNPROVEN** and no acceptance command is required yet.
