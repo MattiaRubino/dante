@@ -39,8 +39,8 @@ class SetResponsibilityRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True)
 
     operation_id: str = Field(min_length=1, max_length=200)
-    holder: str | None = None
-    expected_holder: str | None = None
+    holder: str | None = Field(default=None, max_length=36)
+    expected_holder: str | None = Field(default=None, max_length=36)
 
 
 class SetExpectedParticipationRequest(BaseModel):
@@ -49,7 +49,7 @@ class SetExpectedParticipationRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True)
 
     operation_id: str = Field(min_length=1, max_length=200)
-    participant: str
+    participant: str = Field(min_length=4, max_length=36)
     requirement_code: Literal["required", "optional"] | None = None
     expected_requirement_code: Literal["required", "optional"] | None = None
 
