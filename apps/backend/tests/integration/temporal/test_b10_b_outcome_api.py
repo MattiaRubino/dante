@@ -42,7 +42,6 @@ def _outcome_command(
 ) -> dict[str, object]:
     return {
         "operation_id": operation_id,
-        "vocabulary_code": "meeting.decision",
         "expected_material_state_ref": expected,
         "result_code": result_code,
         "note": note,
@@ -62,7 +61,6 @@ def test_b10_b_outcome_is_contextual_idempotent_correctable_and_actual_scoped(
         csrf = _signin(client, email)
         mutation_headers = {**_base_headers(), CSRF_HEADER_NAME: csrf}
         area = api_test_life_area(client, mutation_headers)
-
         event = client.post(
             "/api/v1/temporal/events",
             json={"operation_id": "b10b:event", "title": "Decision meeting", "life_area_ref": area},
@@ -70,7 +68,6 @@ def test_b10_b_outcome_is_contextual_idempotent_correctable_and_actual_scoped(
         )
         assert event.status_code == 201
         event_ref = event.json()["event_ref"]
-
         actual = client.post(
             f"/api/v1/temporal/events/{event_ref}/actual",
             json=_actual_command("b10b:event:actual"),
@@ -78,16 +75,14 @@ def test_b10_b_outcome_is_contextual_idempotent_correctable_and_actual_scoped(
         )
         assert actual.status_code == 201
         actual_ref = actual.json()["actual_ref"]
+        path = f"/api/v1/temporal/actuals/{actual_ref}/outcomes/meeting.decision"
 
-        get_path = f"/api/v1/temporal/actuals/{actual_ref}/outcomes/meeting.decision"
-        post_path = f"/api/v1/temporal/actuals/{actual_ref}/outcomes"
-
-        unknown = client.get(get_path, headers=_base_headers())
+        unknown = client.get(path, headers=_base_headers())
         assert unknown.status_code == 404
         assert unknown.json()["code"] == "temporal.outcome.not_found"
 
         missing_csrf = client.post(
-            post_path,
+            path,
             json=_outcome_command("b10b:no-csrf", result_code="decision.deferred"),
             headers=_base_headers(),
         )
@@ -95,7 +90,7 @@ def test_b10_b_outcome_is_contextual_idempotent_correctable_and_actual_scoped(
         assert missing_csrf.json()["code"] == "security.csrf_failed"
 
         created = client.post(
-            post_path,
+            path,
             json=_outcome_command(
                 "b10b:create",
                 result_code="decision.deferred",
@@ -111,13 +106,13 @@ def test_b10_b_outcome_is_contextual_idempotent_correctable_and_actual_scoped(
         assert first["note"] == "Awaiting external input"
         assert first["replayed"] is False
 
-        current = client.get(get_path, headers=_base_headers())
+        current = client.get(path, headers=_base_headers())
         assert current.status_code == 200
         assert current.json()["outcome_ref"] == first["outcome_ref"]
         assert current.json()["material_state_ref"] == first["material_state_ref"]
 
         replay = client.post(
-            post_path,
+            path,
             json=_outcome_command(
                 "b10b:create",
                 result_code="decision.deferred",
@@ -130,7 +125,7 @@ def test_b10_b_outcome_is_contextual_idempotent_correctable_and_actual_scoped(
         assert replay.json()["material_state_ref"] == first["material_state_ref"]
 
         reused = client.post(
-            post_path,
+            path,
             json=_outcome_command(
                 "b10b:create",
                 result_code="decision.reached",
@@ -142,7 +137,7 @@ def test_b10_b_outcome_is_contextual_idempotent_correctable_and_actual_scoped(
         assert reused.json()["code"] == "temporal.outcome.operation_id_reused"
 
         corrected = client.post(
-            post_path,
+            path,
             json=_outcome_command(
                 "b10b:correct",
                 result_code="decision.reached",
@@ -157,7 +152,7 @@ def test_b10_b_outcome_is_contextual_idempotent_correctable_and_actual_scoped(
         assert second["result_code"] == "decision.reached"
 
         stale = client.post(
-            post_path,
+            path,
             json=_outcome_command(
                 "b10b:stale",
                 result_code="decision.deferred",
@@ -181,7 +176,7 @@ def test_b10_b_outcome_is_contextual_idempotent_correctable_and_actual_scoped(
         assert rows[0]["current_until_at"] is not None
         assert rows[1]["current_until_at"] is None
 
-        final = client.get(get_path, headers=_base_headers())
+        final = client.get(path, headers=_base_headers())
         assert final.status_code == 200
         assert final.json()["material_state_ref"] == second["material_state_ref"]
         assert final.json()["result_code"] == "decision.reached"
