@@ -179,7 +179,11 @@ B06-D Schedule + Timeline             CLOSED / PROVEN at `_57`
 B06-E whole-block closure             CLOSED / PROVEN at `_57`
 B06 overall                           CLOSED / PROVEN
 B08-A/B                              CLOSED / USER-REPORTED
-B08-C                                CANDIDATE `_65` / USER PROOF PENDING
+B08-C                                CLOSED / PROVEN `_65` — user-run local automated gate
+B08-D                                CLOSED / USER-REPORTED
+B09-A                                CLOSED / PROVEN `_66`
+B09-B                                CLOSED / PROVEN `_68`
+B09-C                                CANDIDATE `_69` / LOCAL PROOF PENDING
 ```
 
 Final B06 closure evidence is owned by `../../workstreams/timeline-temporal-operational-b06-e-closure-2026-09-23.md`. Whole-B06 closure did not change the catalog after `_57`.
