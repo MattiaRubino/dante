@@ -50,7 +50,7 @@ BEGIN
       CONSTRAINT='person_referent_invalid_input', MESSAGE='Invalid Person referent request';
   END IF;
   PERFORM pg_advisory_xact_lock(
-    hashtextextended(requested_self_person_ref::text || ':person-referent:' || op_id,0)
+    hashtextextended(requested_self_person_ref::text || '|person-referent|' || op_id,0)
   );
   SELECT o.intent_fingerprint, o.person_ref, o.display_label, o.resulting_revision,
          o.operation_kind INTO receipt
@@ -132,7 +132,7 @@ BEGIN
       CONSTRAINT='person_referent_invalid_input', MESSAGE='Invalid Person referent request';
   END IF;
   PERFORM pg_advisory_xact_lock(
-    hashtextextended(requested_self_person_ref::text || ':person-referent:' || op_id,0)
+    hashtextextended(requested_self_person_ref::text || '|person-referent|' || op_id,0)
   );
   SELECT o.intent_fingerprint,o.person_ref,o.display_label,o.resulting_revision,
          o.operation_kind INTO receipt
