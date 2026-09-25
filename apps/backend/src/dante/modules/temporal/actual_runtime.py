@@ -189,13 +189,15 @@ class ActualApplication:
             SELECT actual_ref, subject_native_ref, material_state_ref,
                    realization_occurred, extent_code, started_at, ended_at, replayed
               FROM dante.record_self_actual_realization(
-                :actor, :operation_id, :fingerprint, :actual_ref, :state_ref,
-                :subject, :expected_state, :occurred, :extent, :started_at, :ended_at,
+                :actor, :subject_kind, :operation_id, :fingerprint,
+                :actual_ref, :state_ref, :subject, :expected_state,
+                :occurred, :extent, :started_at, :ended_at,
                 CAST(:session_refs AS uuid[]), CAST(:session_state_refs AS uuid[])
               )
             """,
             {
                 "actor": self_person_ref,
+                "subject_kind": subject_kind,
                 "operation_id": normalized,
                 "fingerprint": fingerprint,
                 "actual_ref": new_scoped_record_ref(),
@@ -216,15 +218,25 @@ class ActualApplication:
         return await self._with_bases(self_person_ref, view)
 
     async def get_for_subject(
-        self, *, self_person_ref: NativeRef, subject_native_ref: NativeRef
+        self,
+        *,
+        self_person_ref: NativeRef,
+        subject_kind: ActualSubjectKind,
+        subject_native_ref: NativeRef,
     ) -> ActualRealizationView:
+        if subject_kind not in {"activity", "event", "occurrence"}:
+            raise ActualInputError("Actual subjects are Activity, Event and Occurrence only.")
         rows = await self._rows(
             """
             SELECT actual_ref, subject_native_ref, material_state_ref,
                    realization_occurred, extent_code, started_at, ended_at
-              FROM dante.get_self_subject_actual(:actor, :subject)
+              FROM dante.get_self_subject_actual(:actor, :subject_kind, :subject)
             """,
-            {"actor": self_person_ref, "subject": subject_native_ref},
+            {
+                "actor": self_person_ref,
+                "subject_kind": subject_kind,
+                "subject": subject_native_ref,
+            },
         )
         if not rows:
             raise ActualNotFoundError("No Actual is established for this subject.")
@@ -332,7 +344,9 @@ class ActualApplication:
             raise ActualCurrentConflictError("Actual current realization is stale.") from exc
         if name == "actual_subject_ambiguous" or "more than one realization owner" in message:
             raise ActualAmbiguousSubjectError("Actual subject is ambiguous.") from exc
-        if name == "actual_subject_unavailable" or "subject unavailable" in message:
+        if name in {"actual_subject_unavailable", "actual_subject_family_unavailable"} or (
+            "subject unavailable" in message
+        ):
             raise ActualNotFoundError("Actual subject unavailable.") from exc
         if name in {
             "actual_non_realization_payload",
