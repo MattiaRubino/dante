@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B09 🟨 IN PROGRESS — B09-A/B/C closed; B09-D integration candidate awaiting automated and user real-app proof; B15 remains whole-vertical
+- **Status:** B09 🟨 IN PROGRESS — B09-A/B/C closed; B09-D automated proof passed, user real-app proof pending; B15 remains whole-vertical
 - **Reconciled:** 2026-09-25
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -23,7 +23,7 @@ B09     🟨 IN PROGRESS
   B09-A ✅ CLOSED / PROVEN 2026-09-25
   B09-B ✅ CLOSED / PROVEN 2026-09-25
   B09-C ✅ CLOSED / PROVEN 2026-09-25
-  B09-D 🟨 CANDIDATE — automated + real-app proof pending
+  B09-D 🟨 AUTOMATED PASS — real-app proof pending
 B10     ⬜ NOT STARTED
 B11     ⬜ NOT STARTED
 B13     ⬜ NOT STARTED
@@ -152,9 +152,9 @@ Those remain outside B09-A by design.
 
 Approved scope: a native non-Account Person referenced through an owner-local catalog. Migration `20260925_69` adds catalog and immutable create/rename receipts, atomic Person + NativeAddress creation, three guarded capabilities and widened `_self_referenceable_person`. Current Responsibility and expected Event Participation remain distinct; Timeline supports selecting and labeling owner-local Persons. The user ran the B09-C automated gate on 2026-09-25: generated:check PASS (321 files); API-client and web typechecks PASS; web controls/source 7 passed; backend OpenAPI/API 11 passed; PostgreSQL B09-C, B09-B and catalog regressions 18 passed. Database topology `158|5|109|93|303|254|433` is proven against Dictionary, SQLAlchemy and Alembic; generated client commit `875aaf48`. B09-D integrated proof is now in progress; the user requested a B09-specific real-app walkthrough before B09 closure. B15 retains whole-vertical regression.
 
-# 4B. B09-D integrated candidate — local and real-app proof pending
+# 4B. B09-D integrated candidate — automated proof passed, real-app proof pending
 
-The accepted B09-D work is an integrated cross-layer proof of the already implemented B09-A/B/C contract, with no new schema or invitation/attendance semantics. `test_b09_d_whole_block.py` covers two Accounts, one non-Account Person, owner-local catalog, replay and revision guards, Activity/Event Responsibility, expected Event Participation, readback/removal, isolation and zero Actual/Session. The web test covers creation, label correction and both role removals. The user runs automated tests locally and then the real-app Timeline walkthrough; neither is marked PASS until results arrive. See `timeline-temporal-operational-b09-d-closure-2026-09-25.md`.
+The accepted B09-D work is an integrated cross-layer proof of the already implemented B09-A/B/C contract, with no new schema or invitation/attendance semantics. `test_b09_d_whole_block.py` covers two Accounts, one non-Account Person, owner-local catalog, replay and revision guards, Activity/Event Responsibility, expected Event Participation, readback/removal, isolation and zero Actual/Session. The web test covers creation, label correction and both role removals. The user's local automated run passed (web typecheck, 8 web tests, 18 PostgreSQL tests); the real-app Timeline walkthrough remains pending. See `timeline-temporal-operational-b09-d-closure-2026-09-25.md`.
 
 # 4. B09-B closure truth
 
@@ -326,4 +326,4 @@ B15
 6. current Logical Model / PostgreSQL blueprint sections relevant to Responsibility / Participation
 ```
 
-**Exact next action:** run the integrated B09-D automated suite, repair confirmed defects, and collect the user's real-app Timeline result before closing B09. B15 remains the whole-vertical regression; B10 follows B09.
+**Exact next action:** collect the user's real-app Timeline result before closing B09. The integrated B09-D automated suite passed. B15 remains the whole-vertical regression; B10 follows B09.
