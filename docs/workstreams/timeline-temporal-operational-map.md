@@ -8,7 +8,7 @@
 - **Current candidate Alembic frontier:** `20260925_68`
 - **Last proven candidate DB frontier:** B09-B / `20260925_68` / `156|5|106|93|301|251|426`
 - **Completed functional frontier:** B08 Session Runtime ✅ CLOSED / USER-REPORTED 2026-09-24
-- **Current implementation cursor:** B10 Actual / Outcome / Confirmation / Resolution is next; B09 ✅ CLOSED / PROVEN
+- **Current implementation cursor:** B09-C next; B09-D still pending; B09-A/B closed
 - **CI:** not authorized; local tests are run by the user
 
 ---
@@ -64,9 +64,11 @@ B08 Session Runtime                              ✅ CLOSED / USER-REPORTED 2026
   B08-B Pause / Resume + Durations End-to-End     ✅ CLOSED / USER-REPORTED
   B08-C TC-009 Session Duration End-to-End        ✅ CLOSED / PROVEN — local automated gate
   B08-D Whole-block closure                       ✅ CLOSED / USER-REPORTED — automated gate and dogfood
-B09 Responsibility / Participation               ✅ CLOSED / PROVEN 2026-09-25
+B09 Responsibility / Participation               🟨 IN PROGRESS
   B09-A typed persistence substrate               ✅ CLOSED / PROVEN 2026-09-25
   B09-B guarded mutation + application surface    ✅ CLOSED / PROVEN 2026-09-25
+  B09-C remaining Responsibility / Participation  ⬜ NEXT — exact scope to reconcile
+  B09-D B09 whole-block closure                    ⬜ AFTER B09-C — exact scope to reconcile
 ```
 
 B09-A is a persistence closure only. It does **not** close B09 as a whole and does not claim API/frontend or Actual-attendance semantics.
@@ -76,6 +78,8 @@ B09-A is a persistence closure only. It does **not** close B09 as a whole and do
 # 3. Remaining execution order
 
 ```text
+B09-C Responsibility / Participation continuation ⬜ NEXT
+B09-D B09 whole-block closure                     ⬜ AFTER B09-C
 B10 Actual / Outcome / Confirmation / Resolution ⬜
 B11 Advanced Recurrence / Conditional / Reminder ⬜
 B13 Work Structure / Decomposition / Dependencies⬜
@@ -216,7 +220,7 @@ Candidate implementation on `20260925_67`:
 [x] Timeline detail authoring for self Responsibility / self expected Participation
 [x] negative automated proof: expected Participation does not establish Actual attendance
 [x] user-run local automated proof 2026-09-25: web 4 passed; backend 18 passed
-[x] B09 whole-block closure reconciliation
+[ ] B09 whole-block closure (B09-C and B09-D pending)
 [→] real-stack validation deferred to B15 whole-vertical closure
 ```
 
@@ -304,9 +308,11 @@ editable UI → collected value → silently ignored or routinely rejected becau
 ```text
 B00–B06 ✅ CLOSED / PROVEN
 B08     ✅ CLOSED / USER-REPORTED 2026-09-24
-B09     ✅ CLOSED / PROVEN 2026-09-25
+B09     🟨 IN PROGRESS
   B09-A ✅ CLOSED / PROVEN 2026-09-25
   B09-B ✅ CLOSED / PROVEN 2026-09-25
+  B09-C ⬜ NEXT — scope to reconcile
+  B09-D ⬜ AFTER B09-C — scope to reconcile
 B10     ⬜ NOT STARTED
 B11     ⬜ NOT STARTED
 B13     ⬜ NOT STARTED
@@ -316,4 +322,4 @@ B07     ⏸ DEFERRED UNTIL B14
 B15     ⬜ NOT STARTED
 ```
 
-**Next concrete action:** start B10 Actual / Outcome / Confirmation / Resolution. Real-stack validation remains B15 whole-vertical scope; B09 does not own attendance.
+**Next concrete action:** reconcile the exact B09-C/B09-D deliverables against the accepted B09 scope and domain/logical/physical authority, then implement B09-C. B10 follows B09-D; user real-stack validation remains B15 scope.
