@@ -42,7 +42,7 @@
     },
     "embedded_objects": {
       "triggers": 93,
-      "physical_indexes": 316
+      "physical_indexes": 317
     },
     "constraints": {
       "foreign_keys": 268,
