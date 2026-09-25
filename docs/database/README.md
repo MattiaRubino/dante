@@ -202,4 +202,4 @@ B09-B `_67`–`_68` authoring          ✅ CLOSED / PROVEN 2026-09-25
 B09-C `_69` Person referents           CANDIDATE / LOCAL PROOF PENDING
 ```
 
-B08-A/B are treated as closed based on the user’s B08-B closure report; their exact test logs are not committed. B08-C `_65` passed the user-run generated/client, web, backend unit/API and PostgreSQL catalog/integration gates on 2026-09-24. The single real-stack walkthrough remains B08-D scope.
+B08-A/B are treated as closed based on the user’s B08-B closure report; their exact test logs are not committed. B08-C `_65` passed the user-run generated/client, web, backend unit/API and PostgreSQL catalog/integration gates on 2026-09-24. The complete vertical real-stack walkthrough remains B15 scope.
