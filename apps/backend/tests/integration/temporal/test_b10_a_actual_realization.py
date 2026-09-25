@@ -158,12 +158,13 @@ async def test_b10_a_activity_actual_is_append_only_idempotent_and_session_basis
             self_person_ref=alice,
             actual_ref=occurred.actual_ref,
         )
+        # Canonical history is newest-first by current_from_at.
         assert [item.material_state_ref for item in history] == [
-            not_occurred.material_state_ref,
             occurred.material_state_ref,
+            not_occurred.material_state_ref,
         ]
-        assert history[0].current_until_at is not None
-        assert history[1].current_until_at is None
+        assert history[0].current_until_at is None
+        assert history[1].current_until_at is not None
 
         with pytest.raises(ActualCurrentConflictError):
             await actuals.record(
