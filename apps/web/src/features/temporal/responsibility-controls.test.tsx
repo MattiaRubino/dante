@@ -41,6 +41,7 @@ describe('responsibility controls', () => {
     const bodies: unknown[] = [];
     const fetchFn = vi.fn<Fetch>(async (input, init) => {
       const url = String(input);
+      if (url.endsWith('/person-referents')) return Response.json([]);
       if (url.endsWith('/api/v1/auth/session')) {
         return Response.json({ authenticated: true, csrf_token: 'csrf' });
       }
@@ -77,6 +78,7 @@ describe('responsibility controls', () => {
     const bodies: unknown[] = [];
     const fetchFn = vi.fn<Fetch>(async (input, init) => {
       const url = String(input);
+      if (url.endsWith('/person-referents')) return Response.json([]);
       if (url.endsWith('/api/v1/auth/session')) {
         return Response.json({ authenticated: true, csrf_token: 'csrf' });
       }
@@ -113,6 +115,7 @@ describe('responsibility controls', () => {
   it('reports a rejected command instead of showing an optimistic state', async () => {
     const fetchFn = vi.fn<Fetch>(async (input, init) => {
       const url = String(input);
+      if (url.endsWith('/person-referents')) return Response.json([]);
       if (url.endsWith('/api/v1/auth/session')) {
         return Response.json({ authenticated: true, csrf_token: 'csrf' });
       }
@@ -145,6 +148,7 @@ describe('responsibility controls', () => {
   it('does not offer Event Participation controls on an Activity', async () => {
     const fetchFn = vi.fn<Fetch>(async (input) => {
       const url = String(input);
+      if (url.endsWith('/person-referents')) return Response.json([]);
       if (url.endsWith('/api/v1/auth/session')) {
         return Response.json({ authenticated: true, csrf_token: 'csrf' });
       }
@@ -165,4 +169,65 @@ describe('responsibility controls', () => {
     expect(screen.queryByText('Obbligatoria')).toBeNull();
     vi.unstubAllGlobals();
   });
+  it('uses a local Person referent for responsibility and expected Event participation', async () => {
+    const OTHER = '01991f2a-1234-7abc-8def-1234567890ad';
+    const commands: Array<Record<string, unknown>> = [];
+    let holder: string | null = null;
+    let requirement: 'required' | 'optional' | null = null;
+    const fetchFn = vi.fn<Fetch>(async (input, init) => {
+      const url = String(input);
+      if (url.endsWith('/api/v1/auth/session')) {
+        return Response.json({ authenticated: true, csrf_token: 'csrf' });
+      }
+      if (url.endsWith('/person-referents')) {
+        return Response.json([{
+          person_ref: OTHER, display_label: 'Anna',
+          revision: 1, replayed: false,
+        }]);
+      }
+      if (url.endsWith('/expected-participation')) {
+        if (init?.method === 'PUT') {
+          const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+          commands.push(body);
+          requirement = body.requirement_code as 'required' | 'optional';
+        }
+        return Response.json(
+          init?.method === 'PUT'
+            ? participation(requirement)
+            : requirement === null
+              ? []
+              : [{
+                  ...participation(requirement),
+                  participant_person_ref: OTHER,
+                  participant_is_self: false,
+                }],
+        );
+      }
+      if (init?.method === 'PUT') {
+        const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+        commands.push(body);
+        holder = OTHER;
+      }
+      return Response.json({
+        ...responsibility(holder),
+        responsible_is_self: false,
+      });
+    });
+    vi.stubGlobal('fetch', fetchFn);
+    render(<ResponsibilityControls kind="event" subjectRef={EVENT} />);
+    await screen.findByRole('option', { name: 'Anna' });
+    fireEvent.change(screen.getByRole('combobox', {
+      name: 'Persona per responsabilità o partecipazione',
+    }), { target: { value: OTHER } });
+    fireEvent.click(screen.getByText('Assegna a Anna'));
+    await screen.findByText('Responsabile: Anna');
+    fireEvent.click(screen.getByText('Obbligatoria'));
+    await waitFor(() => expect(commands).toHaveLength(2));
+    expect(commands[0]).toMatchObject({ holder: OTHER, expected_holder: null });
+    expect(commands[1]).toMatchObject({
+      participant: OTHER, requirement_code: 'required',
+      expected_requirement_code: null,
+    });
+  });
+
 });
