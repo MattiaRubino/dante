@@ -133,8 +133,8 @@ _EXPECTED_TEMPORAL_OPERATIONS = {
     ("/api/v1/temporal/occurrences/{occurrence_ref}/actual", "post"): "temporal_record_occurrence_actual",
     ("/api/v1/temporal/occurrences/{occurrence_ref}/actual", "get"): "temporal_get_occurrence_actual",
     ("/api/v1/temporal/actuals/{actual_ref}/history", "get"): "temporal_list_actual_history",
-    ("/api/v1/temporal/actuals/{actual_ref}/outcomes/{vocabulary_code}", "post"): "temporal_record_actual_outcome",
-    ("/api/v1/temporal/actuals/{actual_ref}/outcomes/{vocabulary_code}", "get"): "temporal_get_actual_outcome",
+    ("/api/v1/temporal/actuals/{actual_ref}/outcome", "post"): "temporal_record_actual_outcome",
+    ("/api/v1/temporal/actuals/{actual_ref}/outcome", "get"): "temporal_get_actual_outcome",
     ("/api/v1/temporal/outcomes/{outcome_ref}/history", "get"): "temporal_list_outcome_history",
 }
 
