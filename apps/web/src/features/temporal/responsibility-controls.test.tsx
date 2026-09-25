@@ -137,7 +137,7 @@ describe('responsibility controls', () => {
 
     fireEvent.click(screen.getByText('Assegna a me'));
     await waitFor(() => {
-      expect(screen.getByRole('status').textContent).toContain(
+      expect(screen.getByRole('alert').textContent).toContain(
         'Responsibility holder changed since it was read.',
       );
     });
@@ -301,6 +301,10 @@ describe('responsibility controls', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: 'Aggiungi persona' }));
     await screen.findByRole('option', { name: 'Anna' });
+    expect(screen.getByRole('status').textContent).toContain(
+      'Per assegnarle la responsabilità, premi “Assegna a Anna”.',
+    );
+    expect(screen.getByText('Nessun responsabile')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Assegna a Anna' }));
     await screen.findByText('Responsabile: Anna');
 
