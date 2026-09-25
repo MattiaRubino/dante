@@ -22,6 +22,7 @@ from dante.modules.temporal.life_area_assignment_api import (
     router as temporal_life_area_assignment_router,
 )
 from dante.modules.temporal.occurrence_api import router as temporal_occurrence_router
+from dante.modules.temporal.outcome_api import router as temporal_outcome_router
 from dante.modules.temporal.product_tag_api import router as temporal_product_tag_router
 from dante.modules.temporal.recurrence_api import router as temporal_recurrence_router
 from dante.modules.temporal.recurring_authoring_api import (
@@ -89,6 +90,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(temporal_responsibility_router)
     app.include_router(temporal_session_router)
     app.include_router(temporal_actual_router)
+    app.include_router(temporal_outcome_router)
     app.include_router(temporal_recurrence_router)
     app.include_router(temporal_recurring_authoring_router)
     app.include_router(temporal_occurrence_router)
