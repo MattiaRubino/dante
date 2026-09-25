@@ -5,10 +5,10 @@
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Continuation handoff:** `docs/workstreams/timeline-temporal-operational-handoff.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Current candidate Alembic frontier:** `20260925_69`
+- **Current candidate Alembic frontier:** `20260925_71`
 - **Last proven candidate DB frontier:** B09-C / `20260925_69` / `158|5|109|93|303|254|433`
-- **Completed functional frontier:** B08 Session Runtime ✅ CLOSED / USER-REPORTED 2026-09-24
-- **Current implementation cursor:** B09 closed — B09-D automated proof and user real-app walkthrough passed
+- **Completed functional frontier:** B09 Responsibility / Participation ✅ CLOSED / USER-REPORTED 2026-09-25
+- **Current implementation cursor:** B10-A Actual / realization core — candidate prepared; generated client + user-run local gate pending
 - **CI:** not authorized; local tests are run by the user
 
 ---
@@ -68,19 +68,18 @@ B09 Responsibility / Participation               ✅ CLOSED / USER-REPORTED 2026
   B09-A typed persistence substrate               ✅ CLOSED / PROVEN 2026-09-25
   B09-B guarded mutation + application surface    ✅ CLOSED / PROVEN 2026-09-25
   B09-C non-Account Person referents              ✅ CLOSED / PROVEN 2026-09-25
-  B09-D B09 whole-block closure                    ✅ CLOSED / USER-REPORTED 2026-09-25
+  B09-D B09 whole-block closure                   ✅ CLOSED / USER-REPORTED 2026-09-25
 ```
 
-B09-A is a persistence closure only. It does **not** close B09 as a whole and does not claim API/frontend or Actual-attendance semantics.
+B10-A is not part of the closed frontier until the user-run local acceptance gate passes.
 
 ---
 
 # 3. Remaining execution order
 
 ```text
-B09-C non-Account Person referents                 ✅ CLOSED / PROVEN 2026-09-25
-B09-D B09 whole-block closure                     ✅ CLOSED / USER-REPORTED 2026-09-25
-B10 Actual / Outcome / Confirmation / Resolution ⬜
+B10 Actual / Outcome / Confirmation / Resolution 🟨 IN PROGRESS
+  B10-A Actual / realization core                 🟨 CANDIDATE PREPARED — local gate pending
 B11 Advanced Recurrence / Conditional / Reminder ⬜
 B13 Work Structure / Decomposition / Dependencies⬜
 B12 Replanning / Conflict / Solver               ⬜
@@ -149,7 +148,7 @@ Raw local test logs are not committed; do not upgrade user-reported items to rep
 
 ---
 
-# 5. B09 live contract — Responsibility / Participation
+# 5. B09 closure record — Responsibility / Participation
 
 B09 adds the smallest coherent actor/person layer needed by the temporal vertical, without introducing account collaboration infrastructure.
 
@@ -209,7 +208,7 @@ Those omissions are intentional semantic boundaries, not failed B09-A requiremen
 
 B09-B owns guarded mutation/application behavior over the B09-A substrate. It does not expose the new tables as direct runtime mutation surfaces.
 
-Candidate implementation on `20260925_67`:
+Implemented on `20260925_67`/`_68`:
 
 ```text
 [x] bounded guarded operations for current Responsibility and expected Event Participation
@@ -220,15 +219,17 @@ Candidate implementation on `20260925_67`:
 [x] Timeline detail authoring for self Responsibility / self expected Participation
 [x] negative automated proof: expected Participation does not establish Actual attendance
 [x] user-run local automated proof 2026-09-25: web 4 passed; backend 18 passed
-[ ] B09 whole-block closure
-[→] real-stack validation deferred to B15 whole-vertical closure
 ```
 
 Home `+` required/optional participant textareas remain B14. They are free-text emails, not Person refs. B09-B does not invent email-to-Person identity.
 
-B09-C is closed and proven at `20260925_69`: guarded creation, list and label correction for owner-local native Persons without Accounts. The admissibility seam accepts self or a Person in this owner's catalog. Timeline role controls select that Person explicitly; expected participation remains an intention only. Dictionary and mappings cover two default-deny tables, three capabilities and the widened helper. User-run proof on 2026-09-25: generated:check PASS (321 files), both typechecks PASS, web 7 passed, backend OpenAPI/API 11 passed, PostgreSQL B09-C/B09-B/catalog regressions 18 passed; physical topology `158|5|109|93|303|254|433` proven. Generated client commit `875aaf48`. The user now requests a B09-specific real-app walkthrough during B09-D; B15 still owns whole-vertical regression.
+## B09-C — CLOSED / PROVEN
 
-B09-D integration candidate: one new authenticated API/PostgreSQL test and an extended Timeline controls test cover Person creation and label correction, both Responsibility owners, expected Event Participation, removal, isolation and no Actual/Session. The user's local run passed: web typecheck, 8 focused web tests, and 18 focused PostgreSQL tests. The user reported the real-app walkthrough working on 2026-09-25; the closure evidence lives in `timeline-temporal-operational-b09-d-closure-2026-09-25.md`.
+B09-C closed and proven at `20260925_69`: guarded creation, list and label correction for owner-local native Persons without Accounts. The admissibility seam accepts self or a Person in this owner's catalog. Timeline role controls select that Person explicitly; expected participation remains an intention only. Dictionary and mappings cover two default-deny tables, three capabilities and the widened helper. User-run proof on 2026-09-25: generated:check PASS (321 files), both typechecks PASS, web 7 passed, backend OpenAPI/API 11 passed, PostgreSQL B09-C/B09-B/catalog regressions 18 passed; physical topology `158|5|109|93|303|254|433` proven. Generated client commit `875aaf48`.
+
+## B09-D — CLOSED / USER-REPORTED
+
+B09-D integrated proof covers Person creation and label correction, both Responsibility owners, expected Event Participation, removal, isolation and no Actual/Session. The user's local run passed: web typecheck, 8 focused web tests, and 18 focused PostgreSQL tests. The user reported the real-app walkthrough working on 2026-09-25; the closure evidence lives in `timeline-temporal-operational-b09-d-closure-2026-09-25.md`.
 
 Permanent B09 boundaries:
 
@@ -245,18 +246,77 @@ provider attendee != canonical Person identity by default
 
 ---
 
-# 6. Reserved contracts for B10–B14
+# 6. B10 live contract — Actual / Outcome / Confirmation / Resolution
 
-These are scope anchors, not implementation checkmarks.
+Scope authority for the active slice: `docs/workstreams/timeline-temporal-operational-b10-scope-freeze.md`.
 
-## B10 — Actual / Outcome / Confirmation / Resolution
+## B10-A — Actual / realization core — CANDIDATE PREPARED
+
+Candidate database chain:
 
 ```text
-[ ] Actual/Outcome/Confirmation/Resolution semantics
+20260925_70 guarded self-scoped Actual realization authoring/current/history
+20260925_71 exact Activity/Event/Occurrence family hardening at PostgreSQL boundary
+```
+
+Candidate capability:
+
+```text
+Activity    → explicit Actual current realization
+Event       → explicit Actual current realization
+Occurrence  → explicit Actual current realization
+
+Actual owner                = stable scoped owner for subject_native_ref
+Actual realization state    = append-only MaterialState
+current accepted state      = explicit scoped current binding/history
+optional timing             = instant | start_only | interval
+optional Session evidence   = exact Session + exact Session timing MaterialState
+```
+
+Implemented candidate evidence now in the branch:
+
+```text
+[x] PostgreSQL guarded capability over canonical CP6 Actual substrate
+[x] exact subject-family enforcement at PostgreSQL boundary
+[x] public-write idempotency receipts
+[x] append-only state/current-history behavior
+[x] backend application current/history surface
+[x] Activity/Event/Occurrence POST+GET Actual routes
+[x] Actual history route
+[x] OpenAPI inventory frozen for all seven operations
+[x] Timeline minimal Actual authoring for Activity/Event/Occurrence
+[x] absence rendered as unknown, not false/non-realization
+[x] focused PostgreSQL/application test committed
+[x] focused Event public API test committed
+[x] focused web Actual test committed
+[ ] generated OpenAPI/Orval client regenerated locally through repository generator
+[ ] user-run local automated acceptance gate
+```
+
+Permanent B10-A boundaries:
+
+```text
+Session END != Actual
+Session evidence != Actual identity
+absence of Actual = unknown
+absence of Actual != realization_occurred=false
+Actual != Outcome != Confirmation
+current accepted state != latest row
+idempotency key != Actual identity
+provider/AI/solver != canonical realization authority
+```
+
+The assistant does not run this gate. The user runs it locally; CI/GitHub Actions remain unauthorized. A passing gate is required before B10-A enters the closed frontier.
+
+Later B10 work remains deliberately unimplemented here:
+
+```text
+[ ] Outcome semantics
+[ ] Confirmation semantics
+[ ] canonical partial/completed/skipped/not-completed/postponed/replaced/cancelled result vocabulary
+[ ] finish-early behavior
 [ ] confirmation policy behind Home +
-[ ] partial completion / finish-early realization semantics
-[ ] Expected outcome != Outcome
-[ ] Session END != completion/Actual
+[ ] integrated reconciliation/resolution behavior
 ```
 
 ## B11 — Advanced Recurrence / Conditional / Reminder
@@ -317,7 +377,8 @@ B09     ✅ CLOSED / USER-REPORTED 2026-09-25
   B09-B ✅ CLOSED / PROVEN 2026-09-25
   B09-C ✅ CLOSED / PROVEN 2026-09-25
   B09-D ✅ CLOSED / USER-REPORTED 2026-09-25
-B10     ⬜ NOT STARTED
+B10     🟨 IN PROGRESS
+  B10-A 🟨 CANDIDATE PREPARED — generated client + user local gate pending
 B11     ⬜ NOT STARTED
 B13     ⬜ NOT STARTED
 B12     ⬜ NOT STARTED
@@ -326,4 +387,4 @@ B07     ⏸ DEFERRED UNTIL B14
 B15     ⬜ NOT STARTED
 ```
 
-**Next concrete action:** start B10 Actual / Outcome / Confirmation / Resolution. B09-D passed automated proof and the user real-app walkthrough. B15 retains whole-vertical validation.
+**Next concrete action:** user runs the B10-A local acceptance command. It regenerates OpenAPI/Orval through `pnpm api:generate`, then validates generated/client, backend PostgreSQL/API/OpenAPI and focused web regressions. Only after the user reports a passing gate does B10-A close.
