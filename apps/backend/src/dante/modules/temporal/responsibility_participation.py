@@ -14,7 +14,7 @@ from sqlalchemy.engine import RowMapping
 from sqlalchemy.exc import DBAPIError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from dante.platform.database.references import NativeRef
+from dante.platform.database.references import NativeRef, new_native_ref
 
 ResponsibilitySubjectKind = Literal["activity", "event"]
 ParticipationRequirement = Literal["required", "optional"]
@@ -52,6 +52,16 @@ class ResponsibilityView:
 
 
 @dataclass(frozen=True, slots=True)
+class PersonReferentView:
+    """A locally labelled native Person; label is not global Person identity."""
+
+    person_ref: NativeRef
+    display_label: str
+    revision: int
+    replayed: bool = False
+
+
+@dataclass(frozen=True, slots=True)
 class ExpectedParticipationView:
     """Current expected involvement of one Person in one Event."""
 
@@ -81,13 +91,15 @@ def _optional_ref(value: object) -> NativeRef | None:
 def _map_error(exc: DBAPIError) -> Exception:
     diagnostic = getattr(exc.orig, "diag", None)
     constraint = getattr(diagnostic, "constraint_name", None)
-    if constraint in {"responsibility_operation_reused", "participation_operation_reused"}:
+    if constraint in {"responsibility_operation_reused", "participation_operation_reused", "person_referent_operation_reused"}:
         return ResponsibilityOperationReuseError("Operation id was reused.")
     if constraint in {
         "responsibility_subject_unavailable",
         "responsibility_person_unavailable",
         "participation_event_unavailable",
         "participation_person_unavailable",
+        "person_referent_unavailable",
+        "person_referent_self_unavailable",
     }:
         return ResponsibilityNotFoundError("Subject or Person is unavailable to this actor.")
     if constraint in {
@@ -95,6 +107,8 @@ def _map_error(exc: DBAPIError) -> Exception:
         "responsibility_no_change",
         "participation_expected_requirement_conflict",
         "participation_no_change",
+        "person_referent_revision_conflict",
+        "person_referent_no_change",
     }:
         return ResponsibilityConflictError("The current state does not match the request.")
     return ResponsibilityPersistenceError("Authoring command was rejected.")
@@ -235,6 +249,83 @@ class ResponsibilityParticipationApplication:
             {"actor": self_person_ref, "event": event_ref},
         )
         return tuple(self._participation(row) for row in rows)
+
+    async def create_person_referent(
+        self, *, self_person_ref: NativeRef, operation_id: str, display_label: str
+    ) -> PersonReferentView:
+        label = display_label.strip()
+        if not label or len(label) > 100:
+            raise ResponsibilityInputError("Person label must contain 1 to 100 characters.")
+        normalized = _operation_id(operation_id)
+        rows = await self._rows(
+            """
+            SELECT person_ref,display_label,revision,replayed
+              FROM dante.create_self_person_referent(
+                :actor,:key,:fingerprint,:person,:label
+              )
+            """,
+            {
+                "actor": self_person_ref,
+                "key": normalized,
+                "fingerprint": _fingerprint(
+                    {"version": "1", "command": "create_person_referent", "label": label}
+                ),
+                "person": new_native_ref(),
+                "label": label,
+            },
+        )
+        if not rows:
+            raise ResponsibilityPersistenceError("Person creation returned no result.")
+        return self._person_referent(rows[0])
+
+    async def list_person_referents(
+        self, *, self_person_ref: NativeRef
+    ) -> tuple[PersonReferentView, ...]:
+        rows = await self._rows(
+            "SELECT person_ref,display_label,revision FROM dante.list_self_person_referents(:actor)",
+            {"actor": self_person_ref},
+        )
+        return tuple(self._person_referent(row) for row in rows)
+
+    async def rename_person_referent(
+        self, *, self_person_ref: NativeRef, operation_id: str,
+        person_ref: NativeRef, expected_revision: int, display_label: str
+    ) -> PersonReferentView:
+        label = display_label.strip()
+        if not label or len(label) > 100 or expected_revision < 1:
+            raise ResponsibilityInputError("Invalid Person label or expected revision.")
+        rows = await self._rows(
+            """
+            SELECT person_ref,display_label,revision,replayed
+              FROM dante.rename_self_person_referent(
+                :actor,:key,:fingerprint,:person,:expected,:label
+              )
+            """,
+            {
+                "actor": self_person_ref,
+                "key": _operation_id(operation_id),
+                "fingerprint": _fingerprint({
+                    "version": "1", "command": "rename_person_referent",
+                    "person_ref": str(person_ref),
+                    "expected_revision": str(expected_revision), "label": label,
+                }),
+                "person": person_ref,
+                "expected": expected_revision,
+                "label": label,
+            },
+        )
+        if not rows:
+            raise ResponsibilityPersistenceError("Person rename returned no result.")
+        return self._person_referent(rows[0])
+
+    @staticmethod
+    def _person_referent(row: RowMapping) -> PersonReferentView:
+        return PersonReferentView(
+            person_ref=NativeRef(UUID(str(row["person_ref"]))),
+            display_label=str(row["display_label"]),
+            revision=int(row["revision"]),
+            replayed=bool(row["replayed"]) if "replayed" in row else False,
+        )
 
     @staticmethod
     def _responsibility(
