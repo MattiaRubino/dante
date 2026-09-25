@@ -8,7 +8,7 @@
 - **Current candidate Alembic frontier:** `20260925_68`
 - **Last proven candidate DB frontier:** B09-B / `20260925_68` / `156|5|106|93|301|251|426`
 - **Completed functional frontier:** B08 Session Runtime ✅ CLOSED / USER-REPORTED 2026-09-24
-- **Current implementation cursor:** B09-C next; B09-D still pending; B09-A/B closed
+- **Current implementation cursor:** B09-C candidate awaiting local proof; B09-D pending; B09-A/B closed
 - **CI:** not authorized; local tests are run by the user
 
 ---
@@ -67,8 +67,8 @@ B08 Session Runtime                              ✅ CLOSED / USER-REPORTED 2026
 B09 Responsibility / Participation               🟨 IN PROGRESS
   B09-A typed persistence substrate               ✅ CLOSED / PROVEN 2026-09-25
   B09-B guarded mutation + application surface    ✅ CLOSED / PROVEN 2026-09-25
-  B09-C remaining Responsibility / Participation  ⬜ NEXT — exact scope to reconcile
-  B09-D B09 whole-block closure                    ⬜ AFTER B09-C — exact scope to reconcile
+  B09-C non-Account Person referents              🟨 CANDIDATE — local proof pending
+  B09-D B09 whole-block closure                    ⬜ PENDING — exact scope to reconcile
 ```
 
 B09-A is a persistence closure only. It does **not** close B09 as a whole and does not claim API/frontend or Actual-attendance semantics.
@@ -78,8 +78,8 @@ B09-A is a persistence closure only. It does **not** close B09 as a whole and do
 # 3. Remaining execution order
 
 ```text
-B09-C Responsibility / Participation continuation ⬜ NEXT
-B09-D B09 whole-block closure                     ⬜ AFTER B09-C
+B09-C non-Account Person referents                 🟨 CANDIDATE — local proof pending
+B09-D B09 whole-block closure                     ⬜ PENDING
 B10 Actual / Outcome / Confirmation / Resolution ⬜
 B11 Advanced Recurrence / Conditional / Reminder ⬜
 B13 Work Structure / Decomposition / Dependencies⬜
@@ -226,6 +226,8 @@ Candidate implementation on `20260925_67`:
 
 Home `+` required/optional participant textareas remain B14. They are free-text emails, not Person refs. B09-B does not invent email-to-Person identity.
 
+B09-C candidate at `20260925_69` adds guarded creation, list and label correction for owner-local native Persons without Accounts. The admissibility seam accepts self or a Person in this owner's catalog. Timeline role controls now choose that Person explicitly; expected participation remains an intention only. Database Dictionary and mappings represent two default-deny tables, three capabilities and the widened helper. Source-derived target `158|5|109|93|303|254|433` has not yet been proved on local PostgreSQL. The user runs the automated gate; real-stack walkthrough remains B15.
+
 Permanent B09 boundaries:
 
 ```text
@@ -311,8 +313,8 @@ B08     ✅ CLOSED / USER-REPORTED 2026-09-24
 B09     🟨 IN PROGRESS
   B09-A ✅ CLOSED / PROVEN 2026-09-25
   B09-B ✅ CLOSED / PROVEN 2026-09-25
-  B09-C ⬜ NEXT — scope to reconcile
-  B09-D ⬜ AFTER B09-C — scope to reconcile
+  B09-C 🟨 CANDIDATE — local proof pending
+  B09-D ⬜ PENDING — scope to reconcile
 B10     ⬜ NOT STARTED
 B11     ⬜ NOT STARTED
 B13     ⬜ NOT STARTED
@@ -322,4 +324,4 @@ B07     ⏸ DEFERRED UNTIL B14
 B15     ⬜ NOT STARTED
 ```
 
-**Next concrete action:** reconcile the exact B09-C/B09-D deliverables against the accepted B09 scope and domain/logical/physical authority, then implement B09-C. B10 follows B09-D; user real-stack validation remains B15 scope.
+**Next concrete action:** complete generated client and local automated B09-C proof, then reconcile B09-D deliverables against the accepted scope. B10 follows B09-D; user real-stack validation remains B15 scope.
