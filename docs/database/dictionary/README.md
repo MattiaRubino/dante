@@ -215,7 +215,7 @@ No real object → no ceremonial Dictionary entry. Every real current DANTE busi
 
 ## 10. Next boundary
 
-B09-C Person-referent implementation is closed on the user-run 2026-09-25 PostgreSQL catalog proof: `_69` topology `158|5|109|93|303|254|433`, reconciled with Dictionary and SQLAlchemy. B09-D has no schema/Dictionary delta; integrated tests passed; the user's B09 real-app walkthrough is pending. B10 follows closed B09.
+B09-C Person-referent implementation is closed on the user-run 2026-09-25 PostgreSQL catalog proof: `_69` topology `158|5|109|93|303|254|433`, reconciled with Dictionary and SQLAlchemy. B09-D has no schema/Dictionary delta; integrated tests and the user's B09 real-app walkthrough passed on 2026-09-25. B09 is closed; B10 follows.
 
 Provider integration, native/offline, broad analytics and account collaboration are outside this vertical and must not create speculative Dictionary entries.
 
