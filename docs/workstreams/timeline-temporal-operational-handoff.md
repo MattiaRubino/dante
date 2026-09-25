@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B09 ✅ CLOSED / PROVEN — B09-B automated local proof recorded 2026-09-25; real-stack testing remains B15 scope
+- **Status:** B09 🟨 IN PROGRESS — B09-A/B closed; B09-C next, B09-D pending; real-stack testing remains B15 scope
 - **Reconciled:** 2026-09-25
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -19,9 +19,11 @@ Read this first after a context reset.
 ```text
 B00–B06 ✅ CLOSED / PROVEN
 B08     ✅ CLOSED / USER-REPORTED 2026-09-24
-B09     ✅ CLOSED / PROVEN 2026-09-25
+B09     🟨 IN PROGRESS
   B09-A ✅ CLOSED / PROVEN 2026-09-25
   B09-B ✅ CLOSED / PROVEN 2026-09-25
+  B09-C ⬜ NEXT — exact scope to reconcile
+  B09-D ⬜ AFTER B09-C — exact scope to reconcile
 B10     ⬜ NOT STARTED
 B11     ⬜ NOT STARTED
 B13     ⬜ NOT STARTED
@@ -148,7 +150,7 @@ Those remain outside B09-A by design.
 
 # 4. B09-B closure truth
 
-B09-B adds guarded authoring over the `_66` relation substrate. `_68` qualifies Event column references inside the Participation functions. The user ran the local automated proof on 2026-09-25. B09-B closes on that automated evidence; real-stack validation remains the B15 whole-vertical test scope.
+B09-B adds guarded authoring over the `_66` relation substrate. `_68` qualifies Event column references inside the Participation functions. The user ran the local automated proof on 2026-09-25. This closes B09-B only: B09-C and B09-D remain. Real-stack validation remains the B15 whole-vertical test scope.
 
 ```text
 generated:check PASS
@@ -259,7 +261,7 @@ editable field → value collected → silently ignored or normally rejected bec
 
 ---
 
-# 6. Reserved ownership after B09
+# 6. Remaining B09 and reserved ownership afterward
 
 ```text
 B10
@@ -316,4 +318,4 @@ B15
 6. current Logical Model / PostgreSQL blueprint sections relevant to Responsibility / Participation
 ```
 
-**Exact next action:** begin B10 Actual / Outcome / Confirmation / Resolution. Do not invent attendance semantics inside B09; real-stack validation remains B15 scope.
+**Exact next action:** reconcile the deliverables of B09-C and B09-D against `timeline-temporal-operational-post-b06-scope-decision-2026-09-23.md` plus the accepted Product / Domain / Logical / Physical authority; then begin B09-C. B10 follows B09-D. The user's real-stack test stays in B15; do not invent attendance semantics inside B09.
