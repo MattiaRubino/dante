@@ -1,0 +1,27 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {"key": "routine:dante._actual_subject_owned_as", "type": "routine", "schema": "dante", "name": "_actual_subject_owned_as", "ownership_class": "dante_owned"},
+  "purpose": "Internal self-scope predicate that also proves the exact requested Actual subject family.",
+  "classification": {"persistence_role": "actual_capability_helper", "canonicality": "capability_internal", "family": "actual"},
+  "semantic_traceability": {
+    "authority_sources": ["docs/domain/concepts/actual.md", "docs/workstreams/timeline-temporal-operational-b10-scope-freeze.md"],
+    "domain_concepts": ["Actual"],
+    "logical_families": ["Actual"],
+    "reference_families": ["NativeRef"],
+    "material_facets": ["actual.realization"]
+  },
+  "implementation": {"introducing_stage": "B10-A", "alembic_revision": "20260925_71", "sqlalchemy": {"mode": "none", "module": null, "symbol": null}, "runtime_acl_stage": "B10-A"},
+  "structure": {
+    "columns": [], "primary_key": null, "foreign_keys": [], "unique_constraints": [], "check_constraints": [], "indexes": [], "triggers": [], "table": null, "view": null,
+    "routine": {
+      "routine_kind": "function", "language": "sql", "argument_types": ["uuid", "text", "uuid"], "return_type": "boolean",
+      "security": "INVOKER", "volatility": "STABLE", "parallel_safety": "SAFE", "leakproof": false,
+      "function_search_path": ["pg_catalog", "dante", "pg_temp"], "direct_runtime_execute": false
+    }
+  },
+  "state_history": {"material_state_behavior": null, "current_binding": null, "chronology": null, "immutability_policy": "Internal capability helper only."},
+  "lifecycle": {"retention": "B10-A Actual capability.", "redaction": null, "retirement_tombstone": null, "delete_behavior": "No independent lifecycle."},
+  "security": {"owner_role": "dante_owner", "default_deny_non_owner": true, "expected_grants": []},
+  "proof": {"obligations": ["Activity, Event and Occurrence route families cannot be confused"], "test_refs": ["apps/backend/tests/integration/temporal/test_b10_a_actual_realization.py", "apps/backend/tests/integration/temporal/test_b10_a_actual_api.py"], "staged_evidence": []}
+}
