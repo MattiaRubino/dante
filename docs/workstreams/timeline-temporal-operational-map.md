@@ -1,14 +1,14 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
-- **Status:** CURRENT LIVE STATE — reconciled 2026-09-24
+- **Status:** CURRENT LIVE STATE — reconciled 2026-09-25
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Continuation handoff:** `docs/workstreams/timeline-temporal-operational-handoff.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Current candidate Alembic frontier:** `20260924_65`
-- **Last proven candidate DB frontier:** B08-C / `20260924_65` / `150|5|99|93|292|236|418|0|0|0`
+- **Current candidate Alembic frontier:** `20260925_66`
+- **Last proven candidate DB frontier:** B09-A / `20260925_66` / `153|5|99|93|298|242|419`
 - **Completed functional frontier:** B08 Session Runtime ✅ CLOSED / USER-REPORTED 2026-09-24
-- **Current implementation cursor:** B09 Responsibility / Participation
+- **Current implementation cursor:** B09-B guarded Responsibility / Participation mutation + application surface
 - **CI:** not authorized; local tests are run by the user
 
 ---
@@ -64,16 +64,19 @@ B08 Session Runtime                              ✅ CLOSED / USER-REPORTED 2026
   B08-B Pause / Resume + Durations End-to-End     ✅ CLOSED / USER-REPORTED
   B08-C TC-009 Session Duration End-to-End        ✅ CLOSED / PROVEN — local automated gate
   B08-D Whole-block closure                       ✅ CLOSED / USER-REPORTED — automated gate and dogfood
+B09 Responsibility / Participation               🟨 IN PROGRESS
+  B09-A typed persistence substrate               ✅ CLOSED / PROVEN 2026-09-25
+  B09-B guarded mutation + application surface    ⬜ NEXT
 ```
 
-B08 is the completed functional frontier. B08-C `_65` remains the latest candidate DB/catalog proof explicitly recorded in this ledger; that distinction must not be blurred.
+B09-A is a persistence closure only. It does **not** close B09 as a whole and does not claim API/frontend or Actual-attendance semantics.
 
 ---
 
 # 3. Remaining execution order
 
 ```text
-B09 Responsibility / Participation               ⬜ NEXT
+B09-B Responsibility / Participation authoring   ⬜ NEXT
 B10 Actual / Outcome / Confirmation / Resolution ⬜
 B11 Advanced Recurrence / Conditional / Reminder ⬜
 B13 Work Structure / Decomposition / Dependencies⬜
@@ -89,7 +92,7 @@ Sequence authority:
 B09 → B10 → B11 → B13 → B12 → B14 → B07 → B15
 ```
 
-B13 and B14 are the only new compact blocks added by the post-B08 Create audit. Existing gaps are assigned to B09–B12 rather than exploded into additional micro-blocks.
+B13 and B14 are compact blocks added by the post-B08 Create audit. Existing gaps stay assigned to B09–B12 rather than being exploded into micro-verticals.
 
 ---
 
@@ -112,24 +115,6 @@ Implemented migration chain:
 20260924_63 transition replay repair
 20260924_64 runtime metrics
 20260924_65 Activity-owned soft minimum on Session active duration
-```
-
-Application/API/client/frontend state:
-
-```text
-[x] backend Session START/LIST/GET/END
-[x] Activity and Occurrence subject routes
-[x] exact subject-family enforcement at DB boundary
-[x] immutable END timing history
-[x] pause/resume on same Session identity
-[x] elapsed/paused/active duration from canonical facts
-[x] Timeline Session controls for scheduled Activity/Occurrence
-[x] Planning Tray Session controls for unplaced Activity
-[x] START on unplaced Activity requires no Schedule
-[x] B08-C direct Activity TC-009 soft-minimum evaluation
-[x] whole-minute Schedule duration controls after dogfood repair
-[x] timed splittable Activity keeps accepted placement
-[x] genuinely unplaced Activity remains in Da collocare
 ```
 
 Permanent forbidden effects:
@@ -157,30 +142,96 @@ real app: START / PAUSE / RESUME / END confirmed
 real app: timed/unplaced placement semantics confirmed
 ```
 
-Raw local test logs are not committed; do not upgrade those user-reported items to repository-captured evidence retroactively.
+Raw local test logs are not committed; do not upgrade user-reported items to repository-captured evidence retroactively.
 
 ---
 
 # 5. B09 live contract — Responsibility / Participation
 
-B09 starts from existing Product/Domain/Logical/Physical authority; no new universal collaboration ontology is allowed.
+B09 adds the smallest coherent actor/person layer needed by the temporal vertical, without introducing account collaboration infrastructure.
 
-Capabilities to prove before B09 receives `[x]`:
+## B09-A — typed persistence substrate — CLOSED / PROVEN
+
+Implemented by Alembic `20260925_66`:
 
 ```text
-[ ] identify exact existing Responsibility / Participation owners and relations
-[ ] preserve Person != Account and participant != account identity
-[ ] preserve Responsibility != Participation
-[ ] preserve shared Event truth != actor-specific participation truth
-[ ] model the smallest useful Activity/Event temporal subset without generic JSON/polymorphic shortcuts
-[ ] make Home `+` required/optional participant fields truthful where B09 owns them, or remove/defer them
-[ ] keep another person's state outside DANTE authority unless explicitly represented/authorized
-[ ] align migration → SQLAlchemy → Dictionary/scope → API/OpenAPI/client → frontend where applicable
-[ ] user-run local automated proof
-[ ] map/roadmap/handoff closure evidence
+event_expected_participation
+  Event → Person
+  requirement_code ∈ {required, optional}
+
+activity_responsibility
+  Activity → responsible Person
+
+event_responsibility
+  Event → responsible Person
 ```
 
-B09 must not infer Event Actual, attendance truth or completion merely from invitation/participation state.
+B09-A proves:
+
+```text
+[x] Person-backed relations work without Account identity
+[x] Responsibility and Participation are separate typed relations
+[x] required/optional expected Event participation is bounded explicitly
+[x] Activity Responsibility and Event Responsibility remain separate typed owners
+[x] invalid participation requirement values are rejected by PostgreSQL
+[x] one current simple responsible Person per Activity/Event in this B09-A subset
+[x] runtime has no raw SELECT/INSERT/UPDATE/DELETE privilege on the new relation tables
+[x] Alembic ↔ SQLAlchemy ↔ Dictionary/scope ↔ catalog remain reconciled
+[x] local PostgreSQL gate supplied by user: 10 passed on 2026-09-25
+```
+
+Proven B09-A candidate frontier:
+
+```text
+Alembic  20260925_66
+Topology 153|5|99|93|298|242|419
+```
+
+B09-A deliberately does **not** implement:
+
+```text
+invitation workflow / response history
+accepted / declined / tentative semantics
+Actual Participation / attendance
+attendance intervals
+Responsibility transfer / claim / hand-off workflow
+public API authoring
+Home + / Timeline authoring UI
+provider attendee identity or calendar control
+```
+
+Those omissions are intentional semantic boundaries, not failed B09-A requirements.
+
+## B09-B — NEXT
+
+B09-B owns guarded mutation/application behavior over the B09-A substrate. It must not expose the new tables as direct runtime mutation surfaces.
+
+Required next proof:
+
+```text
+[ ] bounded guarded operations for current Responsibility and expected Event Participation
+[ ] exact authorization/self-context rules without Person=Account collapse
+[ ] idempotency/replay behavior where mutation is public/consequential
+[ ] backend/application service
+[ ] HTTP/OpenAPI/generated client if public
+[ ] truthful Home + participant/responsibility authoring where B09 owns the fields
+[ ] negative proof: expected Participation does not establish Actual attendance/Event Actual
+[ ] user-run local automated proof
+[ ] B09 whole-block closure reconciliation
+```
+
+Permanent B09 boundaries:
+
+```text
+Person != Account
+Responsibility != Participation
+participant != responsible actor != organizer/owner
+shared Event truth != actor-specific participation truth
+expected/response Participation != Actual Participation
+participation/attendance != Event Actual
+another person's participation != DANTE authority over that person's calendar/task system
+provider attendee != canonical Person identity by default
+```
 
 ---
 
@@ -192,7 +243,7 @@ These are scope anchors, not implementation checkmarks.
 
 ```text
 [ ] Actual/Outcome/Confirmation/Resolution semantics
-[ ] confirmation policy behind Home `+`
+[ ] confirmation policy behind Home +
 [ ] partial completion / finish-early realization semantics
 [ ] Expected outcome != Outcome
 [ ] Session END != completion/Actual
@@ -202,7 +253,7 @@ These are scope anchors, not implementation checkmarks.
 
 ```text
 [ ] advanced recurrence/conditional behavior
-[ ] resolve Home `+` reminder field through canonical support, truthful handoff or hiding
+[ ] resolve Home + reminder field through canonical support, truthful handoff or hiding
 [ ] no universal fake Reminder owner merely to satisfy UI
 ```
 
@@ -238,8 +289,6 @@ Every editable Create field must be one of:
 [ ] hidden/removed until supported
 ```
 
-The gate audits at least Notes, appearance override, Tags, confirmation/reminder, execution structure, Event location/availability/visibility, purpose/expected outcome/decision requirement, participants, resources/pre-read and conference/provider fields.
-
 Forbidden:
 
 ```text
@@ -253,7 +302,9 @@ editable UI → collected value → silently ignored or routinely rejected becau
 ```text
 B00–B06 ✅ CLOSED / PROVEN
 B08     ✅ CLOSED / USER-REPORTED 2026-09-24
-B09     ⬜ NEXT
+B09     🟨 IN PROGRESS
+  B09-A ✅ CLOSED / PROVEN 2026-09-25
+  B09-B ⬜ NEXT
 B10     ⬜ NOT STARTED
 B11     ⬜ NOT STARTED
 B13     ⬜ NOT STARTED
@@ -263,4 +314,4 @@ B07     ⏸ DEFERRED UNTIL B14
 B15     ⬜ NOT STARTED
 ```
 
-**Next concrete action:** Begin B09 Responsibility / Participation from the B08-closed frontier.
+**Next concrete action:** implement B09-B guarded Responsibility / expected Participation mutations and their application/public surface without crossing into B10 Actual-attendance semantics.
