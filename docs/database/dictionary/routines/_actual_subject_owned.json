@@ -3,7 +3,7 @@
   "dictionary_version": 1,
   "object": {"key": "routine:dante._actual_subject_owned", "type": "routine", "schema": "dante", "name": "_actual_subject_owned", "ownership_class": "dante_owned"},
   "purpose": "Internal self-scope predicate for an Actual-eligible Activity, Event or Occurrence NativeRef.",
-  "classification": {"persistence_role": "actual_capability_helper", "canonicality": "capability_internal", "family": "actual"},
+  "classification": {"persistence_role": "actual_capability_helper", "canonicality": "capability_surface", "family": "actual"},
   "semantic_traceability": {
     "authority_sources": ["docs/domain/concepts/actual.md", "docs/workstreams/timeline-temporal-operational-b10-scope-freeze.md"],
     "domain_concepts": ["Actual"],
