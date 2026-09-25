@@ -53,20 +53,24 @@ def _native(connection: psycopg.Connection[Any], table: str, ref: object) -> Non
 
 def test_b09_a_relations_keep_person_roles_typed_and_distinct(migrated_database: Any) -> None:
     event_ref = uuid7()
+    invalid_event_ref = uuid7()
     activity_ref = uuid7()
     required_person = uuid7()
     optional_person = uuid7()
+    invalid_person = uuid7()
 
     with _owner(migrated_database) as connection:
         _native(connection, "event", event_ref)
+        _native(connection, "event", invalid_event_ref)
         _native(connection, "activity", activity_ref)
         _native(connection, "person", required_person)
         _native(connection, "person", optional_person)
+        _native(connection, "person", invalid_person)
 
         assert connection.execute(
             "SELECT count(*) FROM dante.account_application_context "
-            "WHERE self_person_ref IN (%s,%s)",
-            (required_person, optional_person),
+            "WHERE self_person_ref IN (%s,%s,%s)",
+            (required_person, optional_person, invalid_person),
         ).fetchone() == (0,)
 
         connection.execute(
@@ -109,7 +113,7 @@ def test_b09_a_relations_keep_person_roles_typed_and_distinct(migrated_database:
                 "INSERT INTO dante.event_expected_participation "
                 "(event_ref,participant_person_ref,requirement_code,established_at) "
                 "VALUES (%s,%s,'accepted',statement_timestamp())",
-                (event_ref, uuid7()),
+                (invalid_event_ref, invalid_person),
             )
 
         with pytest.raises(errors.UniqueViolation):
