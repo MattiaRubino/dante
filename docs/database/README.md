@@ -95,7 +95,7 @@ No accepted historical migration was edited, rebased, renumbered or flattened. `
 0 RLS policies
 ```
 
-Last proven candidate topology is B09-B `_68` / `156|5|106|93|301|251|426`. The B09-B database/API automated proof passed; its Timeline real-stack walkthrough remains a workstream-level closure requirement.
+Last proven candidate topology is B09-B `_68` / `156|5|106|93|301|251|426`. The B09-B database/API automated proof passed; real-stack validation is deferred to B15 whole-vertical closure.
 
 ## 4. Timeline persistence classification
 
@@ -192,7 +192,7 @@ B08-A `_60` immutable-END repair      implemented
 B08-A/B automated + real-stack proof ✅ CLOSED PER USER-REPORTED B08-B DEPENDENCY
 B08-C `_65` local automated proof     ✅ CLOSED / PROVEN 2026-09-24
 B09-A `_66` persistence               ✅ CLOSED / PROVEN 2026-09-25
-B09-B `_67`–`_68` authoring          🟨 AUTOMATED PROOF COMPLETE / Timeline walkthrough pending
+B09-B `_67`–`_68` authoring          ✅ CLOSED / PROVEN 2026-09-25
 ```
 
 B08-A/B are treated as closed based on the user’s B08-B closure report; their exact test logs are not committed. B08-C `_65` passed the user-run generated/client, web, backend unit/API and PostgreSQL catalog/integration gates on 2026-09-24. The single real-stack walkthrough remains B08-D scope.
