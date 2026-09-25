@@ -1,0 +1,29 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {"key": "routine:dante.record_self_actual_realization", "type": "routine", "schema": "dante", "name": "record_self_actual_realization", "ownership_class": "dante_owned"},
+  "purpose": "Canonical idempotent self-scoped Actual realization write capability for an exact Activity, Event or Occurrence family.",
+  "classification": {"persistence_role": "actual_capability", "canonicality": "capability_surface", "family": "actual"},
+  "semantic_traceability": {
+    "authority_sources": ["docs/domain/concepts/actual.md", "docs/workstreams/timeline-temporal-operational-b10-scope-freeze.md"],
+    "domain_concepts": ["Actual"],
+    "logical_families": ["Actual"],
+    "reference_families": ["NativeRef", "ScopedRecordRef", "MaterialStateRef"],
+    "material_facets": ["actual.realization"]
+  },
+  "implementation": {"introducing_stage": "B10-A", "alembic_revision": "20260925_73", "sqlalchemy": {"mode": "none", "module": null, "symbol": null}, "runtime_acl_stage": "B10-A"},
+  "structure": {
+    "columns": [], "primary_key": null, "foreign_keys": [], "unique_constraints": [], "check_constraints": [], "indexes": [], "triggers": [], "table": null, "view": null,
+    "routine": {
+      "routine_kind": "function", "language": "plpgsql",
+      "argument_types": ["uuid", "text", "text", "text", "uuid", "uuid", "uuid", "uuid", "boolean", "text", "timestamp with time zone", "timestamp with time zone", "uuid[]", "uuid[]"],
+      "return_type": "TABLE(actual_ref uuid, subject_native_ref uuid, material_state_ref uuid, realization_occurred boolean, extent_code text, started_at timestamp with time zone, ended_at timestamp with time zone, replayed boolean)",
+      "security": "DEFINER", "volatility": "VOLATILE", "parallel_safety": "UNSAFE", "leakproof": false,
+      "function_search_path": ["pg_catalog", "dante", "pg_temp"], "direct_runtime_execute": true
+    }
+  },
+  "state_history": {"material_state_behavior": "Appends one immutable Actual realization MaterialState per accepted correction.", "current_binding": "Advances scoped_current_material_state for facet actual.realization and preserves current-history episodes.", "chronology": "Currentness is determined by accepted current binding/history, never latest-row order.", "immutability_policy": "Historical Actual realization MaterialState rows are never mutated."},
+  "lifecycle": {"retention": "Retained with Actual realization history.", "redaction": null, "retirement_tombstone": null, "delete_behavior": "No runtime delete capability."},
+  "security": {"owner_role": "dante_owner", "default_deny_non_owner": true, "expected_grants": [{"grantee": "dante_runtime", "privilege": "EXECUTE", "columns": [], "grant_option": false}]},
+  "proof": {"obligations": ["self scope", "exact subject family", "idempotent replay", "append-only correction", "Session evidence is exact and optional", "no Actual remains unknown"], "test_refs": ["apps/backend/tests/integration/temporal/test_b10_a_actual_realization.py", "apps/backend/tests/integration/temporal/test_b10_a_actual_api.py"], "staged_evidence": []}
+}
