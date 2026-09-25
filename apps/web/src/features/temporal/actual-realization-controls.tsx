@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import './actual-realization-controls.css';
 
+import { OutcomeControls } from './outcome-controls';
 import {
   createRemoteTemporalActualDataSource,
   type ActualSubjectKind,
@@ -133,6 +134,7 @@ export function ActualRealizationControls({
         “non avvenuto”.
       </small>
       {messageNode}
+      <OutcomeControls kind={kind} subjectRef={subjectRef} />
     </div>
   );
 }
