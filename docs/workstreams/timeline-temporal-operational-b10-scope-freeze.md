@@ -25,33 +25,37 @@ PostgreSQL remains the only canonical authority. API/UI/provider/AI/runtime proj
 
 B10-A exposes the already-modelled `Actual` realization semantics as an explicit temporal capability. It does **not** collapse Actual into Session or Schedule and it does **not** introduce Outcome or Confirmation semantics early.
 
+### Canonical owner
+
+`dante.actual` is the stable scoped Actual owner. Its subject is `subject_native_ref`, not an Activity-only foreign key. The existing NativeRef eligibility contract bounds the subject family to the canonical eligible native families (currently Activity, Event and Occurrence). B10-A must preserve that heterogeneous subject model and must not replace it with an `activity_id` shortcut.
+
 ### Write surface
 
 The minimum accepted write surface is append-only realization state:
 
-1. record an Actual realization for one `activity_id`;
-2. optionally bind the realization to a `session_id` through the canonical session-basis relation;
-3. record one realization-state fact with explicit `recorded_at` and `recorded_by`;
-4. record realization timing (`started_at`, `ended_at`) as a separate fact when supplied;
-5. support explicit correction/supersession by appending a new accepted state/timing fact rather than mutating or deleting history.
+1. create or address an Actual owner for one eligible `subject_native_ref`;
+2. append one `actual_realization_state` MaterialState carrying `realization_occurred`;
+3. optionally append `actual_realization_timing` (`extent_code`, `started_at`, `ended_at`) for that state;
+4. optionally record one or more `actual_realization_session_basis` rows. A basis is not merely a Session id: it preserves both `session_ref` and the exact `session_timing_material_state_ref` used as historical evidence;
+5. change accepted/current realization by appending a new state and advancing the canonical current binding/history rather than mutating historical MaterialState payloads.
 
-The capability must preserve the database rule that an Actual may be supported by zero or more Session records, while Session and Actual retain separate identities.
+The capability must preserve the database rule that an Actual may be supported by zero or more Session/timing-state bases, while Session and Actual retain separate identities.
 
 ### Read surface
 
-Reads must expose canonical current accepted realization state, not "the latest row" by accident. Existing canonical current projections/views are the preferred read authority where they encode that rule.
+Reads must expose canonical current accepted realization state, not "the latest row" by accident. `dante.actual_current_realization` is the bounded current capability surface over `scoped_current_material_state` for facet `actual.realization`; historical chronology remains separate.
 
 At minimum a caller must be able to retrieve:
 
-- Actual identity and `activity_id`;
-- current accepted realization state;
+- `actual_ref` and `subject_native_ref`;
+- current accepted realization `material_state_ref` and `realization_occurred`;
 - current accepted realization timing when present;
-- canonical session-basis references when present;
-- immutable historical facts separately from the current projection when the API exposes history.
+- exact Session/timing-state basis references when present;
+- immutable historical facts separately from the current projection when history is exposed.
 
 ### State vocabulary
 
-The implementation must use the existing canonical realization-state vocabulary already defined by the database/domain contract. It must not invent UI-only synonyms that become persistence values.
+The canonical realization payload is the existing `realization_occurred` boolean plus the optional timing extent contract (`instant`, `start_only`, `interval`). B10-A must not invent a second status enum or UI persistence vocabulary.
 
 ### Idempotency
 
@@ -59,7 +63,7 @@ Command idempotency is required at the public write boundary. Reusing an idempot
 
 ### Authorization and actor semantics
 
-`Person != Account != Actor` remains binding. `recorded_by` / accepted-by fields represent the canonical Actor reference expected by persistence; API authentication identity must be resolved through the existing access/auth boundary rather than written as a Person or Account shortcut.
+`Person != Account != Actor` remains binding. Where canonical MaterialState/current-binding functions require actor/audit references, API authentication identity must be resolved through the existing access/auth boundary rather than written as a Person or Account shortcut.
 
 ## 3. Explicitly deferred from B10-A
 
@@ -94,6 +98,8 @@ All Alembic revisions already published on the branch are immutable. If B10-A1 f
 B10-A is not closed merely because an endpoint exists. Closure requires evidence that:
 
 - persistence and current-state semantics are canonical and append-only;
+- heterogeneous NativeRef subject semantics are preserved;
+- Session basis preserves the exact timing-state evidence, not only Session identity;
 - `Schedule != Session != Actual` is preserved in code and API;
 - `Actual != Outcome != Confirmation` is preserved in code, API and UI;
 - auth Actor resolution and idempotency behave correctly;
