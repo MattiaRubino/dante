@@ -8,7 +8,7 @@
     "name": "_self_referenceable_person",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Single admissibility seam for a Person an actor may reference; today only the actor's own self Person.",
+  "purpose": "Admit the self Person or a native Person explicitly present in this owner's local referent catalog.",
   "classification": {
     "persistence_role": "responsibility_capability",
     "canonicality": "capability_surface",
@@ -81,7 +81,7 @@
     "immutability_policy": "Capability surface; relation tables stay default-deny."
   },
   "lifecycle": {
-    "retention": "B09-B authoring capability.",
+    "retention": "B09-C widens the original B09-B admissibility seam without creating Account authority.",
     "redaction": null,
     "retirement_tombstone": null,
     "delete_behavior": "No runtime deletion."
@@ -93,12 +93,13 @@
   },
   "proof": {
     "obligations": [
-      "self scope",
-      "expected-holder conflict",
-      "idempotent replay"
+      "Self Person remains referenceable.",
+      "Only owner-local registered Persons are referenceable.",
+      "Unrelated Persons and other users' private catalog links are denied."
     ],
     "test_refs": [
-      "apps/backend/tests/integration/temporal/test_b09_b_responsibility_authoring.py"
+      "apps/backend/tests/integration/temporal/test_b09_b_responsibility_authoring.py",
+      "apps/backend/tests/integration/temporal/test_b09_c_person_referents.py"
     ],
     "staged_evidence": []
   }
