@@ -189,7 +189,7 @@ B09-B `_67`–`_68` authoring        ✅ CLOSED / PROVEN 2026-09-25
 B09-C `_69` Person referents        CANDIDATE / LOCAL PROOF PENDING
 ```
 
-B08-A and B08-B are treated as closed based on the user’s B08-B closure report; the original local logs are not stored here. B08-C `_65` passed the user-run local generated/client, web, backend unit/API and PostgreSQL catalog/integration gates on 2026-09-24. It remains candidate branch truth until protected-main integration; B08-D owns the one real-stack walkthrough. B09-B `_67`–`_68` is closed on its automated proof; real-stack validation is deferred to B15 whole-vertical closure.
+B08-A and B08-B are treated as closed based on the user’s B08-B closure report; the original local logs are not stored here. B08-C `_65` passed the user-run local generated/client, web, backend unit/API and PostgreSQL catalog/integration gates on 2026-09-24. It remains candidate branch truth until protected-main integration; The complete vertical real-stack walkthrough belongs to B15. B09-B `_67`–`_68` is closed on its automated proof; real-stack validation is deferred to B15 whole-vertical closure.
 
 
 ## 7. B08-B / B08-C candidate database semantics
