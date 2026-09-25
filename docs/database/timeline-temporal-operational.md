@@ -1,10 +1,10 @@
 # Timeline / Temporal-Operational — Candidate Database Overlay
 
-- **Status:** CURRENT CANDIDATE DATABASE AUTHORITY — B09-B locally proven at `_68`; real-stack validation deferred to B15 whole-vertical closure
+- **Status:** CURRENT CANDIDATE DATABASE AUTHORITY — B09-C `_69` source materialized; PostgreSQL proof pending; real-stack validation deferred to B15
 - **Reconciled:** 2026-09-25
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
-- **Candidate source head:** `20260925_68`
+- **Candidate source head:** `20260925_69`
 - **Last proven candidate topology:** B09-B / `20260925_68` / `156|5|106|93|301|251|426`
 - **Whole-DB SoR:** `README.md`
 - **Machine-readable authority:** `dictionary/`
@@ -63,6 +63,8 @@ Product / Domain / Logical / Physical
 20260925_67 B09-B guarded Responsibility / Participation authoring
     ↓
 20260925_68 B09-B qualify Event column references inside authoring functions
+    ↓
+20260925_69 B09-C owner-local Person referents
 ```
 
 `_59` and `_60` are forward-only repairs of contracts introduced by `_58`.
@@ -70,14 +72,14 @@ Product / Domain / Logical / Physical
 ## 3. Current candidate topology
 
 ```text
-Alembic     20260925_68
-Tables      156
+Alembic     20260925_69
+Tables      158
 Views       5
-Routines    106
+Routines    109
 Triggers    93
-Indexes     301
-FKs         251
-CHECKs      426
+Indexes     303
+FKs         254
+CHECKs      433
 Enums       0
 Domains     0
 Sequences   0
@@ -184,6 +186,7 @@ B08-B pause/resume + metric proof   ✅ CLOSED PER USER REPORT
 B08-C `_65` local automated proof   ✅ CLOSED / PROVEN 2026-09-24
 B09-A `_66` persistence             ✅ CLOSED / PROVEN 2026-09-25
 B09-B `_67`–`_68` authoring        ✅ CLOSED / PROVEN 2026-09-25
+B09-C `_69` Person referents        CANDIDATE / LOCAL PROOF PENDING
 ```
 
 B08-A and B08-B are treated as closed based on the user’s B08-B closure report; the original local logs are not stored here. B08-C `_65` passed the user-run local generated/client, web, backend unit/API and PostgreSQL catalog/integration gates on 2026-09-24. It remains candidate branch truth until protected-main integration; B08-D owns the one real-stack walkthrough. B09-B `_67`–`_68` is closed on its automated proof; real-stack validation is deferred to B15 whole-vertical closure.
@@ -209,7 +212,7 @@ activity_responsibility
 event_responsibility
 ```
 
-B09-B `_67` keeps those tables default-deny and adds insert-only operation receipts plus SECURITY DEFINER capabilities. Current holder/requirement rows may change; accepted commands are append-only receipts. `_self_referenceable_person` is INVOKER, not runtime-executable, and today admits only the caller's self Person.
+B09-B `_67` keeps those tables default-deny and adds insert-only operation receipts plus SECURITY DEFINER capabilities. Current holder/requirement rows may change; accepted commands are append-only receipts. `_self_referenceable_person` is INVOKER, not runtime-executable, and `_69` admits the caller's self Person or an owner-local registered Person. The owner's label is presentation, not Person identity; `person_referent_catalog` and immutable operation receipts stay default-deny.
 
 ```text
 Responsibility != Participation
@@ -217,3 +220,8 @@ expected Participation != Actual / attendance
 Person != Account
 public holder/participant vocabulary = self only
 ```
+
+
+## B09-C candidate persistence
+
+`_69` atomically creates a native UUIDv7 Person and its native address with one owner-local label and receipt. A single catalog entry identifies a Person referentially admitted for B09-B's existing Responsibility and expected Event Participation functions; no Account, invitation or Actual is created. The bounded rename operation changes only the owner-local label under revision CAS. Current-state tables and history receipts remain distinct. Source-derived catalog target is `158|5|109|93|303|254|433`; direct PostgreSQL verification remains pending.
