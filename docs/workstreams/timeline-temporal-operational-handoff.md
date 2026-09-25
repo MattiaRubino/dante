@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B09 🟨 IN PROGRESS — B09-A/B/C closed; B09-D pending; real-stack testing remains B15 scope
+- **Status:** B09 🟨 IN PROGRESS — B09-A/B/C closed; B09-D integration candidate awaiting automated and user real-app proof; B15 remains whole-vertical
 - **Reconciled:** 2026-09-25
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -23,7 +23,7 @@ B09     🟨 IN PROGRESS
   B09-A ✅ CLOSED / PROVEN 2026-09-25
   B09-B ✅ CLOSED / PROVEN 2026-09-25
   B09-C ✅ CLOSED / PROVEN 2026-09-25
-  B09-D ⬜ PENDING — exact scope to reconcile
+  B09-D 🟨 CANDIDATE — automated + real-app proof pending
 B10     ⬜ NOT STARTED
 B11     ⬜ NOT STARTED
 B13     ⬜ NOT STARTED
@@ -150,7 +150,11 @@ Those remain outside B09-A by design.
 
 # 4A. B09-C closure — CLOSED / PROVEN
 
-Approved scope: a native non-Account Person referenced through an owner-local catalog. Migration `20260925_69` adds catalog and immutable create/rename receipts, atomic Person + NativeAddress creation, three guarded capabilities and widened `_self_referenceable_person`. Current Responsibility and expected Event Participation remain distinct; Timeline supports selecting and labeling owner-local Persons. The user ran the B09-C automated gate on 2026-09-25: generated:check PASS (321 files); API-client and web typechecks PASS; web controls/source 7 passed; backend OpenAPI/API 11 passed; PostgreSQL B09-C, B09-B and catalog regressions 18 passed. Database topology `158|5|109|93|303|254|433` is proven against Dictionary, SQLAlchemy and Alembic; generated client commit `875aaf48`. B09-D scope remains to be reconciled; real-stack walkthrough stays in B15.
+Approved scope: a native non-Account Person referenced through an owner-local catalog. Migration `20260925_69` adds catalog and immutable create/rename receipts, atomic Person + NativeAddress creation, three guarded capabilities and widened `_self_referenceable_person`. Current Responsibility and expected Event Participation remain distinct; Timeline supports selecting and labeling owner-local Persons. The user ran the B09-C automated gate on 2026-09-25: generated:check PASS (321 files); API-client and web typechecks PASS; web controls/source 7 passed; backend OpenAPI/API 11 passed; PostgreSQL B09-C, B09-B and catalog regressions 18 passed. Database topology `158|5|109|93|303|254|433` is proven against Dictionary, SQLAlchemy and Alembic; generated client commit `875aaf48`. B09-D integrated proof is now in progress; the user requested a B09-specific real-app walkthrough before B09 closure. B15 retains whole-vertical regression.
+
+# 4B. B09-D integrated candidate — local and real-app proof pending
+
+The accepted B09-D work is an integrated cross-layer proof of the already implemented B09-A/B/C contract, with no new schema or invitation/attendance semantics. `test_b09_d_whole_block.py` covers two Accounts, one non-Account Person, owner-local catalog, replay and revision guards, Activity/Event Responsibility, expected Event Participation, readback/removal, isolation and zero Actual/Session. The web test covers creation, label correction and both role removals. The user runs automated tests locally and then the real-app Timeline walkthrough; neither is marked PASS until results arrive. See `timeline-temporal-operational-b09-d-closure-2026-09-25.md`.
 
 # 4. B09-B closure truth
 
@@ -322,4 +326,4 @@ B15
 6. current Logical Model / PostgreSQL blueprint sections relevant to Responsibility / Participation
 ```
 
-**Exact next action:** reconcile B09-D deliverables against the accepted authority and implement the whole-block closure. B10 follows B09-D. The user's real-stack test stays in B15; do not invent attendance semantics inside B09.
+**Exact next action:** run the integrated B09-D automated suite, repair confirmed defects, and collect the user's real-app Timeline result before closing B09. B15 remains the whole-vertical regression; B10 follows B09.
