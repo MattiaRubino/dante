@@ -8,6 +8,9 @@ import * as zod from 'zod/mini';
 
 export const setExpectedParticipationRequestOperationIdMax = 200;
 
+export const setExpectedParticipationRequestParticipantMin = 4;
+export const setExpectedParticipationRequestParticipantMax = 36;
+
 export const SetExpectedParticipationRequest = /*#__PURE__*/ zod
   .object({
     expected_requirement_code: /*#__PURE__*/ zod.optional(
@@ -25,8 +28,17 @@ export const SetExpectedParticipationRequest = /*#__PURE__*/ zod
         ),
       ),
     participant: /*#__PURE__*/ zod
-      .literal('self')
-      .check(/*#__PURE__*/ zod.meta({ title: 'Participant' })),
+      .string()
+      .check(
+        /*#__PURE__*/ zod.minLength(
+          setExpectedParticipationRequestParticipantMin,
+        ),
+      )
+      .check(
+        /*#__PURE__*/ zod.maxLength(
+          setExpectedParticipationRequestParticipantMax,
+        ),
+      ),
     requirement_code: /*#__PURE__*/ zod.optional(
       /*#__PURE__*/ zod.union([
         /*#__PURE__*/ zod.enum(['required', 'optional']),

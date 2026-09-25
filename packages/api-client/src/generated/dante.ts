@@ -20,6 +20,7 @@ import type {
   CreateConstrainedActivityRequest,
   CreateEventRequest,
   CreateLifeAreaRequest,
+  CreatePersonReferentRequest,
   CreateProductTagRequest,
   CreateRecurringEventRequest,
   CreateRecurringRoutineRequest,
@@ -62,6 +63,7 @@ import type {
   PasswordRecoveryRequest,
   PasswordRecoveryValidationRequest,
   PasswordResetRequest,
+  PersonReferentResponse,
   PostponedEventResponse,
   ProblemDetails,
   ProductTagEdgeResponse,
@@ -84,6 +86,7 @@ import type {
   RecurrenceStateResponse,
   RecurringAuthoringResponse,
   RenameLifeAreaRequest,
+  RenamePersonReferentRequest,
   RenameProductTagRequest,
   RenameRoutineRequest,
   ReorderLifeAreasRequest,
@@ -6992,6 +6995,180 @@ export const temporalSkipOccurrence = async (
     status: res.status,
     headers: res.headers,
   } as temporalSkipOccurrenceResponse;
+};
+
+export type temporalListPersonReferentsResponse200 = {
+  data: PersonReferentResponse[];
+  status: 200;
+};
+
+export type temporalListPersonReferentsResponseSuccess =
+  temporalListPersonReferentsResponse200 & {
+    headers: Headers;
+  };
+export type temporalListPersonReferentsResponse =
+  temporalListPersonReferentsResponseSuccess;
+
+export const getTemporalListPersonReferentsUrl = () => {
+  return `/api/v1/temporal/person-referents`;
+};
+
+/**
+ * @summary List Person Referents
+ */
+export const temporalListPersonReferents = async (
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListPersonReferentsResponse> => {
+  const res = await (fetchFn ?? fetch)(getTemporalListPersonReferentsUrl(), {
+    ...options,
+    method: 'GET',
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListPersonReferentsResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListPersonReferentsResponse;
+};
+
+export type temporalCreatePersonReferentResponse201 = {
+  data: PersonReferentResponse;
+  status: 201;
+};
+
+export type temporalCreatePersonReferentResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalCreatePersonReferentResponseSuccess =
+  temporalCreatePersonReferentResponse201 & {
+    headers: Headers;
+  };
+export type temporalCreatePersonReferentResponseError =
+  temporalCreatePersonReferentResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalCreatePersonReferentResponse =
+  | temporalCreatePersonReferentResponseSuccess
+  | temporalCreatePersonReferentResponseError;
+
+export const getTemporalCreatePersonReferentUrl = () => {
+  return `/api/v1/temporal/person-referents`;
+};
+
+/**
+ * @summary Create Person Referent
+ */
+export const temporalCreatePersonReferent = async (
+  createPersonReferentRequest: CreatePersonReferentRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalCreatePersonReferentResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(getTemporalCreatePersonReferentUrl(), {
+    ...options,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(createPersonReferentRequest),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalCreatePersonReferentResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalCreatePersonReferentResponse;
+};
+
+export type temporalRenamePersonReferentResponse200 = {
+  data: PersonReferentResponse;
+  status: 200;
+};
+
+export type temporalRenamePersonReferentResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalRenamePersonReferentResponseSuccess =
+  temporalRenamePersonReferentResponse200 & {
+    headers: Headers;
+  };
+export type temporalRenamePersonReferentResponseError =
+  temporalRenamePersonReferentResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalRenamePersonReferentResponse =
+  | temporalRenamePersonReferentResponseSuccess
+  | temporalRenamePersonReferentResponseError;
+
+export const getTemporalRenamePersonReferentUrl = (personRef: string) => {
+  return `/api/v1/temporal/person-referents/${personRef}`;
+};
+
+/**
+ * @summary Rename Person Referent
+ */
+export const temporalRenamePersonReferent = async (
+  personRef: string,
+  renamePersonReferentRequest: RenamePersonReferentRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalRenamePersonReferentResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalRenamePersonReferentUrl(personRef),
+    {
+      ...options,
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(renamePersonReferentRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalRenamePersonReferentResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalRenamePersonReferentResponse;
 };
 
 export type temporalCreateRecurringEventResponse200 = {

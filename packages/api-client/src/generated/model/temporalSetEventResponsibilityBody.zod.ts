@@ -6,19 +6,35 @@
  */
 import * as zod from 'zod/mini';
 
+export const temporalSetEventResponsibilityBodyExpectedHolderOneMax = 36;
+
+export const temporalSetEventResponsibilityBodyHolderOneMax = 36;
+
 export const temporalSetEventResponsibilityBodyOperationIdMax = 200;
 
 export const TemporalSetEventResponsibilityBody = /*#__PURE__*/ zod
   .object({
     expected_holder: /*#__PURE__*/ zod.optional(
       /*#__PURE__*/ zod.union([
-        /*#__PURE__*/ zod.literal('self'),
+        /*#__PURE__*/ zod
+          .string()
+          .check(
+            /*#__PURE__*/ zod.maxLength(
+              temporalSetEventResponsibilityBodyExpectedHolderOneMax,
+            ),
+          ),
         /*#__PURE__*/ zod.null(),
       ]),
     ),
     holder: /*#__PURE__*/ zod.optional(
       /*#__PURE__*/ zod.union([
-        /*#__PURE__*/ zod.literal('self'),
+        /*#__PURE__*/ zod
+          .string()
+          .check(
+            /*#__PURE__*/ zod.maxLength(
+              temporalSetEventResponsibilityBodyHolderOneMax,
+            ),
+          ),
         /*#__PURE__*/ zod.null(),
       ]),
     ),
@@ -33,7 +49,7 @@ export const TemporalSetEventResponsibilityBody = /*#__PURE__*/ zod
   })
   .check(
     /*#__PURE__*/ zod.describe(
-      "Set, replace or clear the single current Responsibility holder.\n\nThe holder is a bounded intent rather than a raw reference: the server\nresolves it against the authenticated context. A later Person-referent\nslice widens the vocabulary without changing this contract's meaning.",
+      'Set, replace or clear the single current Responsibility holder.\n\nThe holder is self or a Person admitted by the local referent catalog.',
     ),
   );
 

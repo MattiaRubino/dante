@@ -8,6 +8,9 @@ import * as zod from 'zod/mini';
 
 export const temporalSetEventExpectedParticipationBodyOperationIdMax = 200;
 
+export const temporalSetEventExpectedParticipationBodyParticipantMin = 4;
+export const temporalSetEventExpectedParticipationBodyParticipantMax = 36;
+
 export const TemporalSetEventExpectedParticipationBody = /*#__PURE__*/ zod
   .object({
     expected_requirement_code: /*#__PURE__*/ zod.optional(
@@ -25,8 +28,17 @@ export const TemporalSetEventExpectedParticipationBody = /*#__PURE__*/ zod
         ),
       ),
     participant: /*#__PURE__*/ zod
-      .literal('self')
-      .check(/*#__PURE__*/ zod.meta({ title: 'Participant' })),
+      .string()
+      .check(
+        /*#__PURE__*/ zod.minLength(
+          temporalSetEventExpectedParticipationBodyParticipantMin,
+        ),
+      )
+      .check(
+        /*#__PURE__*/ zod.maxLength(
+          temporalSetEventExpectedParticipationBodyParticipantMax,
+        ),
+      ),
     requirement_code: /*#__PURE__*/ zod.optional(
       /*#__PURE__*/ zod.union([
         /*#__PURE__*/ zod.enum(['required', 'optional']),

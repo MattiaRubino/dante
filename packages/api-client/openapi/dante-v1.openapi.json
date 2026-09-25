@@ -1771,6 +1771,26 @@
         "title": "CreateLifeAreaRequest",
         "type": "object"
       },
+      "CreatePersonReferentRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "display_label": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Display Label",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "display_label"],
+        "title": "CreatePersonReferentRequest",
+        "type": "object"
+      },
       "CreateProductTagRequest": {
         "additionalProperties": false,
         "properties": {
@@ -4063,6 +4083,31 @@
         "title": "PasswordResetRequest",
         "type": "object"
       },
+      "PersonReferentResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "display_label": {
+            "title": "Display Label",
+            "type": "string"
+          },
+          "person_ref": {
+            "format": "uuid",
+            "title": "Person Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "revision": {
+            "title": "Revision",
+            "type": "integer"
+          }
+        },
+        "required": ["person_ref", "display_label", "revision", "replayed"],
+        "title": "PersonReferentResponse",
+        "type": "object"
+      },
       "PostponedEventResponse": {
         "additionalProperties": false,
         "properties": {
@@ -5100,6 +5145,31 @@
         },
         "required": ["operation_id", "expected_revision", "name"],
         "title": "RenameLifeAreaRequest",
+        "type": "object"
+      },
+      "RenamePersonReferentRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "display_label": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Display Label",
+            "type": "string"
+          },
+          "expected_revision": {
+            "minimum": 1.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "expected_revision", "display_label"],
+        "title": "RenamePersonReferentRequest",
         "type": "object"
       },
       "RenameProductTagRequest": {
@@ -7527,7 +7597,8 @@
             "type": "string"
           },
           "participant": {
-            "const": "self",
+            "maxLength": 36,
+            "minLength": 4,
             "title": "Participant",
             "type": "string"
           },
@@ -7550,12 +7621,12 @@
       },
       "SetResponsibilityRequest": {
         "additionalProperties": false,
-        "description": "Set, replace or clear the single current Responsibility holder.\n\nThe holder is a bounded intent rather than a raw reference: the server\nresolves it against the authenticated context. A later Person-referent\nslice widens the vocabulary without changing this contract's meaning.",
+        "description": "Set, replace or clear the single current Responsibility holder.\n\nThe holder is self or a Person admitted by the local referent catalog.",
         "properties": {
           "expected_holder": {
             "anyOf": [
               {
-                "const": "self",
+                "maxLength": 36,
                 "type": "string"
               },
               {
@@ -7567,7 +7638,7 @@
           "holder": {
             "anyOf": [
               {
-                "const": "self",
+                "maxLength": 36,
                 "type": "string"
               },
               {
@@ -21282,6 +21353,117 @@
           }
         },
         "summary": "Skip Occurrence",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/person-referents": {
+      "get": {
+        "operationId": "temporal_list_person_referents",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PersonReferentResponse"
+                  },
+                  "title": "Response Temporal List Person Referents",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Person Referents",
+        "tags": ["temporal"]
+      },
+      "post": {
+        "operationId": "temporal_create_person_referent",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePersonReferentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonReferentResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Person Referent",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/person-referents/{person_ref}": {
+      "patch": {
+        "operationId": "temporal_rename_person_referent",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "person_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Person Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RenamePersonReferentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonReferentResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Rename Person Referent",
         "tags": ["temporal"]
       }
     },
