@@ -25,7 +25,7 @@ _MIGRATOR = "dante_migrator"
 
 
 def _sql(statement: str) -> None:
-    op.execute(sa.text(statement))
+    op.get_bind().exec_driver_sql(statement)
 
 
 def upgrade() -> None:
