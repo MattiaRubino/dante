@@ -4107,6 +4107,152 @@
         "title": "OrderEntry",
         "type": "object"
       },
+      "OutcomeCommand": {
+        "additionalProperties": false,
+        "properties": {
+          "actual_realization_material_state_ref": {
+            "format": "uuid",
+            "title": "Actual Realization Material State Ref",
+            "type": "string"
+          },
+          "disposition_code": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Disposition Code",
+            "type": "string"
+          },
+          "expected_material_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Material State Ref"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "actual_realization_material_state_ref",
+          "disposition_code"
+        ],
+        "title": "OutcomeCommand",
+        "type": "object"
+      },
+      "OutcomeHistoryResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "actual_realization_material_state_ref": {
+            "format": "uuid",
+            "title": "Actual Realization Material State Ref",
+            "type": "string"
+          },
+          "actual_ref": {
+            "format": "uuid",
+            "title": "Actual Ref",
+            "type": "string"
+          },
+          "current_from_at": {
+            "format": "date-time",
+            "title": "Current From At",
+            "type": "string"
+          },
+          "current_until_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Until At"
+          },
+          "disposition_code": {
+            "title": "Disposition Code",
+            "type": "string"
+          },
+          "material_state_ref": {
+            "format": "uuid",
+            "title": "Material State Ref",
+            "type": "string"
+          },
+          "outcome_ref": {
+            "format": "uuid",
+            "title": "Outcome Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "outcome_ref",
+          "actual_ref",
+          "actual_realization_material_state_ref",
+          "material_state_ref",
+          "disposition_code",
+          "replayed",
+          "current_from_at",
+          "current_until_at"
+        ],
+        "title": "OutcomeHistoryResponse",
+        "type": "object"
+      },
+      "OutcomeResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "actual_realization_material_state_ref": {
+            "format": "uuid",
+            "title": "Actual Realization Material State Ref",
+            "type": "string"
+          },
+          "actual_ref": {
+            "format": "uuid",
+            "title": "Actual Ref",
+            "type": "string"
+          },
+          "disposition_code": {
+            "title": "Disposition Code",
+            "type": "string"
+          },
+          "material_state_ref": {
+            "format": "uuid",
+            "title": "Material State Ref",
+            "type": "string"
+          },
+          "outcome_ref": {
+            "format": "uuid",
+            "title": "Outcome Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "outcome_ref",
+          "actual_ref",
+          "actual_realization_material_state_ref",
+          "material_state_ref",
+          "disposition_code",
+          "replayed"
+        ],
+        "title": "OutcomeResponse",
+        "type": "object"
+      },
       "PasskeyAuthenticationCompleteRequest": {
         "additionalProperties": false,
         "description": "Complete username-less passkey authentication.",
@@ -19911,6 +20057,96 @@
         "tags": ["temporal"]
       }
     },
+    "/api/v1/temporal/actuals/{actual_ref}/outcome": {
+      "get": {
+        "operationId": "temporal_get_actual_outcome",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "actual_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Actual Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutcomeResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Actual Outcome",
+        "tags": ["temporal"]
+      },
+      "post": {
+        "operationId": "temporal_record_actual_outcome",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "actual_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Actual Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OutcomeCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutcomeResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Record Actual Outcome",
+        "tags": ["temporal"]
+      }
+    },
     "/api/v1/temporal/constraints": {
       "get": {
         "operationId": "temporal_list_constraints_by_subject",
@@ -21942,6 +22178,51 @@
           }
         },
         "summary": "Skip Occurrence",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/outcomes/{outcome_ref}/history": {
+      "get": {
+        "operationId": "temporal_list_outcome_history",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "outcome_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Outcome Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/OutcomeHistoryResponse"
+                  },
+                  "title": "Response Temporal List Outcome History",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Outcome History",
         "tags": ["temporal"]
       }
     },

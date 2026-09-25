@@ -56,6 +56,9 @@ import type {
   OccurrenceScheduleResponse,
   OccurrenceWindowCheckpointRequest,
   OccurrenceWindowCheckpointResponse,
+  OutcomeCommand,
+  OutcomeHistoryResponse,
+  OutcomeResponse,
   PasskeyAuthenticationCompleteRequest,
   PasskeyBeginRequest,
   PasskeyCeremonyResponse,
@@ -4617,6 +4620,130 @@ export const temporalListActualHistory = async (
   } as temporalListActualHistoryResponse;
 };
 
+export type temporalGetActualOutcomeResponse200 = {
+  data: OutcomeResponse;
+  status: 200;
+};
+
+export type temporalGetActualOutcomeResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetActualOutcomeResponseSuccess =
+  temporalGetActualOutcomeResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetActualOutcomeResponseError =
+  temporalGetActualOutcomeResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalGetActualOutcomeResponse =
+  | temporalGetActualOutcomeResponseSuccess
+  | temporalGetActualOutcomeResponseError;
+
+export const getTemporalGetActualOutcomeUrl = (actualRef: string) => {
+  return `/api/v1/temporal/actuals/${actualRef}/outcome`;
+};
+
+/**
+ * @summary Get Actual Outcome
+ */
+export const temporalGetActualOutcome = async (
+  actualRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetActualOutcomeResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetActualOutcomeUrl(actualRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetActualOutcomeResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetActualOutcomeResponse;
+};
+
+export type temporalRecordActualOutcomeResponse200 = {
+  data: OutcomeResponse;
+  status: 200;
+};
+
+export type temporalRecordActualOutcomeResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalRecordActualOutcomeResponseSuccess =
+  temporalRecordActualOutcomeResponse200 & {
+    headers: Headers;
+  };
+export type temporalRecordActualOutcomeResponseError =
+  temporalRecordActualOutcomeResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalRecordActualOutcomeResponse =
+  | temporalRecordActualOutcomeResponseSuccess
+  | temporalRecordActualOutcomeResponseError;
+
+export const getTemporalRecordActualOutcomeUrl = (actualRef: string) => {
+  return `/api/v1/temporal/actuals/${actualRef}/outcome`;
+};
+
+/**
+ * @summary Record Actual Outcome
+ */
+export const temporalRecordActualOutcome = async (
+  actualRef: string,
+  outcomeCommand: OutcomeCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalRecordActualOutcomeResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalRecordActualOutcomeUrl(actualRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(outcomeCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalRecordActualOutcomeResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalRecordActualOutcomeResponse;
+};
+
 export type temporalListConstraintsBySubjectResponse200 = {
   data: TemporalConstraintListResponse;
   status: 200;
@@ -7421,6 +7548,61 @@ export const temporalSkipOccurrence = async (
     status: res.status,
     headers: res.headers,
   } as temporalSkipOccurrenceResponse;
+};
+
+export type temporalListOutcomeHistoryResponse200 = {
+  data: OutcomeHistoryResponse[];
+  status: 200;
+};
+
+export type temporalListOutcomeHistoryResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalListOutcomeHistoryResponseSuccess =
+  temporalListOutcomeHistoryResponse200 & {
+    headers: Headers;
+  };
+export type temporalListOutcomeHistoryResponseError =
+  temporalListOutcomeHistoryResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalListOutcomeHistoryResponse =
+  | temporalListOutcomeHistoryResponseSuccess
+  | temporalListOutcomeHistoryResponseError;
+
+export const getTemporalListOutcomeHistoryUrl = (outcomeRef: string) => {
+  return `/api/v1/temporal/outcomes/${outcomeRef}/history`;
+};
+
+/**
+ * @summary List Outcome History
+ */
+export const temporalListOutcomeHistory = async (
+  outcomeRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListOutcomeHistoryResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalListOutcomeHistoryUrl(outcomeRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListOutcomeHistoryResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListOutcomeHistoryResponse;
 };
 
 export type temporalListPersonReferentsResponse200 = {
