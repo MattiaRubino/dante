@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B09-B ✅ CLOSED / PROVEN — user-run local proof 2026-09-25
+- **Status:** B09-B 🟨 LOCAL AUTOMATED PROOF COMPLETE — Timeline real-stack walkthrough pending
 - **Reconciled:** 2026-09-25
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -21,7 +21,7 @@ B00–B06 ✅ CLOSED / PROVEN
 B08     ✅ CLOSED / USER-REPORTED 2026-09-24
 B09     🟨 IN PROGRESS
   B09-A ✅ CLOSED / PROVEN 2026-09-25
-  B09-B ✅ CLOSED / PROVEN 2026-09-25
+  B09-B 🟨 AUTOMATED PROOF COMPLETE / REAL-STACK WALKTHROUGH PENDING
 B10     ⬜ NOT STARTED
 B11     ⬜ NOT STARTED
 B13     ⬜ NOT STARTED
@@ -146,9 +146,9 @@ Those remain outside B09-A by design.
 
 ---
 
-# 4. B09-B closure truth
+# 4. B09-B automated proof — real-stack walkthrough pending
 
-B09-B adds guarded authoring over the `_66` relation substrate. `_68` qualifies Event column references inside the Participation functions. The user ran the local proof on 2026-09-25.
+B09-B adds guarded authoring over the `_66` relation substrate. `_68` qualifies Event column references inside the Participation functions. The user ran the local automated proof on 2026-09-25; the Timeline authoring surface still requires the real-stack walkthrough required by the execution discipline before B09-B can close.
 
 ```text
 generated:check PASS
@@ -316,4 +316,4 @@ B15
 6. current Logical Model / PostgreSQL blueprint sections relevant to Responsibility / Participation
 ```
 
-**Exact next action:** B09 is closed. B10 Actual / Outcome / Confirmation / Resolution is next. Do not invent attendance semantics inside B09.
+**Exact next action:** run the B09-B real-stack Timeline walkthrough, then record its result and close B09 only if it is clean. Verify a scheduled Activity can assign/remove self Responsibility; a scheduled Event can assign/remove self Responsibility and change/remove self expected Participation; closing and reopening the detail reloads canonical state; none of these actions creates Session, Actual, Outcome or attendance semantics. Do not invent attendance semantics inside B09.
