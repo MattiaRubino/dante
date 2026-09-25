@@ -1,14 +1,16 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B10 IN PROGRESS — B10-A Actual / realization candidate prepared; generated client + user-run local gate pending
+- **Status:** B10 IN PROGRESS — B10-A CLOSED / PROVEN; B10-B Outcome gate pending
 - **Reconciled:** 2026-09-25
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Live execution ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **B10 scope authority:** `docs/workstreams/timeline-temporal-operational-b10-scope-freeze.md`
+- **B10-A closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-a-closure-2026-09-25.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Current candidate Alembic frontier:** `20260925_71`
-- **Last proven candidate DB frontier:** B09-C / `20260925_69` / `158|5|109|93|303|254|433`
+- **Current / last proven candidate Alembic frontier:** `20260925_74`
+- **Current / last proven topology:** `159|5|115|93|305|258|435`
+- **Generated B10-A client commit:** `780c612dfbb48457784f0ef61cb2394c760f9e3d`
 - **CI:** no CI/GitHub Actions unless explicitly authorized; user runs local tests
 
 Read this first after a context reset.
@@ -21,12 +23,12 @@ Read this first after a context reset.
 B00–B06 ✅ CLOSED / PROVEN
 B08     ✅ CLOSED / USER-REPORTED 2026-09-24
 B09     ✅ CLOSED / USER-REPORTED 2026-09-25
-  B09-A ✅ CLOSED / PROVEN 2026-09-25
-  B09-B ✅ CLOSED / PROVEN 2026-09-25
-  B09-C ✅ CLOSED / PROVEN 2026-09-25
-  B09-D ✅ CLOSED / USER-REPORTED 2026-09-25
 B10     🟨 IN PROGRESS
-  B10-A 🟨 CANDIDATE PREPARED — generated client + user local gate pending
+  B10-A ✅ CLOSED / PROVEN 2026-09-25
+  B10-B ⬜ NEXT — Outcome gate approval pending
+  B10-C ⬜ Confirmation
+  B10-D ⬜ Reconciliation / resolution workflow
+  B10-E ⬜ Final integration + single real-app proof
 B11     ⬜ NOT STARTED
 B13     ⬜ NOT STARTED
 B12     ⬜ NOT STARTED
@@ -41,11 +43,21 @@ Execution order remains:
 B09 → B10 → B11 → B13 → B12 → B14 → B07 → B15
 ```
 
-Historical identifiers are not renumbered.
+Within B10 the agreed execution discipline is:
+
+```text
+B10-A whole block → user local automated gate → close
+B10-B whole block → user local automated gate → close
+B10-C whole block → user local automated gate → close
+B10-D whole block → user local automated gate → close
+B10-E integration/regression → user local automated gate → one real-app proof → close B10
+```
+
+Do not split A/B/C/D into user-facing micro-subphases. Do not request manual real-app testing before B10-E.
 
 ---
 
-# 2. Permanent semantic boundaries at the B10 cursor
+# 2. Permanent semantic boundaries at the B10-B cursor
 
 ```text
 Person != Account != Actor
@@ -79,18 +91,6 @@ PostgreSQL remains canonical authority. API, generated client, frontend, provide
 
 B08 closed from the user's local automated output and real-app walkthrough on 2026-09-24.
 
-Migration chain:
-
-```text
-_58 typed Session subject + START/READ/END
-_59 exact Activity/Occurrence subject-family enforcement
-_60 immutable END MaterialState + exact replay receipt
-_62 pause/resume
-_63 transition replay repair
-_64 runtime metrics
-_65 Activity TC-009 soft minimum on one Session active duration
-```
-
 Permanent B08 boundaries:
 
 ```text
@@ -107,15 +107,6 @@ TC-009 does not aggregate Sessions, count pauses, block transitions or mutate Sc
 
 B09 closed on the user's local automated gates and B09-specific real-app walkthrough on 2026-09-25.
 
-Persistence/application sequence:
-
-```text
-_66 typed Event expected Participation + Activity/Event Responsibility
-_67 guarded authoring/read capabilities
-_68 Event Participation SQL ambiguity repair
-_69 owner-local native non-Account Person referents
-```
-
 Permanent B09 boundaries:
 
 ```text
@@ -128,24 +119,15 @@ owner-local Person label != universal identity
 another person's participation != authority over that person's calendar/task system
 ```
 
-Proven B09-C topology remains:
-
-```text
-Alembic  20260925_69
-Topology 158|5|109|93|303|254|433
-```
-
-B09-D integrated proof and the user-reported real-app walkthrough are recorded in `timeline-temporal-operational-b09-d-closure-2026-09-25.md`.
+B09-D closure evidence: `timeline-temporal-operational-b09-d-closure-2026-09-25.md`.
 
 ---
 
-# 4. B10-A active truth — Actual / realization core
+# 4. B10-A closed truth — Actual / realization core
 
-Scope authority: `timeline-temporal-operational-b10-scope-freeze.md`.
+B10-A is one closed vertical block. It is not split into independently closable A1/A2/A3/A4/A5 phases.
 
-B10-A is one vertical block. It is **not closed yet** and is not split into independently closable A1/A2/A3/A4/A5 phases.
-
-Canonical owner and state:
+Canonical owner/state:
 
 ```text
 dante.actual
@@ -177,121 +159,128 @@ Actual != Outcome != Confirmation
 current accepted realization != latest row
 ```
 
-## Implemented candidate
-
-Forward-only migrations:
+Final migration chain:
 
 ```text
-20260925_70
-  guarded self-scoped Actual realization record/current/history capability
-  idempotent immutable operation receipt
-  append-only MaterialState/current advancement
-  timing and exact Session-timing-state basis validation
-
-20260925_71
-  exact subject-family hardening at PostgreSQL authority boundary
-  Activity UUID cannot be accepted through Event/Occurrence capability and vice versa
-  revision-70 generic function remains internal, runtime receives only family-bound signatures
+20260925_70 guarded self-scoped Actual realization authoring/read + idempotency receipt
+20260925_71 exact Activity/Event/Occurrence subject-family authority
+20260925_72 CP6 Actual/scoped-address owner creation-order repair
+20260925_73 canonical family-aware write/read signatures
+20260925_74 current-history qualification + canonical bounded receipt FK name
 ```
 
-Both revisions are now published and immutable. Any acceptance repair requires a new forward-only revision after `_71`.
-
-Backend/API candidate:
+Final proven frontier:
 
 ```text
-ActualApplication.record(...)
-ActualApplication.get_for_subject(...)
-ActualApplication.history(...)
+Alembic  20260925_74
+Topology 159|5|115|93|305|258|435
+```
 
+Public surface:
+
+```text
 POST/GET /api/v1/temporal/activities/{activity_ref}/actual
 POST/GET /api/v1/temporal/events/{event_ref}/actual
 POST/GET /api/v1/temporal/occurrences/{occurrence_ref}/actual
 GET      /api/v1/temporal/actuals/{actual_ref}/history
 ```
 
-OpenAPI inventory freezes all seven operations with stable `temporal_*` operationIds.
-
-Timeline candidate:
+Timeline states:
 
 ```text
-Activity / Occurrence → Actual controls alongside Session controls
-Event                 → Actual controls alongside Responsibility/Participation
-
-UI states:
-  no Actual                     → Stato reale: sconosciuto
-  realization_occurred=true     → Stato reale: avvenuto
-  realization_occurred=false    → Stato reale: non avvenuto
+no Actual                     → Stato reale: sconosciuto
+realization_occurred=true     → Stato reale: avvenuto
+realization_occurred=false    → Stato reale: non avvenuto
 ```
 
-The minimal web authoring surface intentionally writes the realization boolean only. Backend/API support optional timing and exact Session bases, but the web does not invent a timing/evidence UX before it is product-designed.
+The minimal web authoring surface writes realization truth without inventing Outcome or Confirmation semantics.
 
-Focused tests are committed for:
+User-run final local PostgreSQL/application/catalog acceptance on 2026-09-25:
 
 ```text
-PostgreSQL/application:
-  append-only current/history
-  exact Session timing-state evidence
-  idempotent replay + operation reuse rejection
-  stale-current compare-and-set rejection
-  Activity/Occurrence family enforcement
-  cross-self isolation
-  Session existence does not fabricate Actual
-
-Public API:
-  Event unknown-before-write
-  CSRF
-  first write + replay
-  operation-id reuse conflict
-  exact family rejection
-  history
-
-Web:
-  unknown != false
-  first write expected-current=None
-  later compare-and-set uses current MaterialState
-  stale rejection reloads authoritative state
+14 passed in 25.06s
+POSTGRES TEST EXIT: 0
 ```
 
-No assistant-run test result exists for B10-A. Do not describe this candidate as proven until the user supplies local results.
+Earlier generation/client/web/OpenAPI steps were already green. Generated OpenAPI/Orval artifacts were committed and pushed as:
+
+```text
+780c612dfbb48457784f0ef61cb2394c760f9e3d
+feat(api-client): generate B10-A Actual contracts
+```
+
+No CI/GitHub Actions were used. No B10-A manual real-app proof was performed; by explicit policy that proof belongs to B10-E.
 
 ---
 
-# 5. Generated client rule
+# 5. B10-B next truth — Outcome
+
+B10-B has not started. Before touching implementation, present a gate containing only the proposed changes/files/areas. The user approves that modification surface first.
+
+B10-B must derive exact Outcome semantics from current repository Product/Domain/Logical/Physical authority before adding persistence. Do not infer a generic status model from UI labels alone.
+
+Binding boundaries:
+
+```text
+Actual != Outcome
+Expected outcome != Outcome
+Outcome != Confirmation
+Session END != Outcome
+absence of Outcome != implicit success/failure
+```
+
+Potential result vocabulary such as:
+
+```text
+completed
+partial
+skipped
+not-completed
+postponed
+replaced
+cancelled
+```
+
+is not automatically a flat enum. Verify existing domain/DB authority and current semantics before selecting the physical representation.
+
+Finish-early / partial-completion behavior belongs to B10-B only where repository authority supports it. Confirmation remains B10-C. Reconciliation workflow remains B10-D.
+
+---
+
+# 6. Generated client rule
 
 `packages/api-client/src/generated/*` and the exported OpenAPI file are generated artifacts and are never edited manually.
 
-Canonical command:
+Canonical generator:
 
 ```text
 pnpm api:generate
 ```
 
-`tooling/generate-api-client.mjs` exports OpenAPI from the backend and runs Orval. This generation is the first step of the user-run B10-A gate. The branch currently contains source/API changes; the generated B10-A client remains pending until that command is run locally.
+For B10-B, generation happens only after backend/OpenAPI work is complete. User runs the final local gate; assistant does not run tests.
 
 ---
 
-# 6. Deferred B10 semantics
-
-B10-A must not absorb later realization/result semantics:
+# 7. Later B10 semantics
 
 ```text
-Outcome
-Confirmation
-partial/completed/skipped/not-completed/postponed/replaced/cancelled result vocabulary
-finish-early result behavior
-automatic Session→Actual inference
-automatic Actual→Outcome inference
-automatic Outcome→Confirmation inference
-confirmation policy behind Home +
-broad measurement/result UX
-solver/provider/AI authority over realized facts
-```
+B10-C Confirmation
+  Confirmation != Actual
+  Confirmation != Outcome
 
-These remain later B10 work. `Expected outcome != Outcome` stays binding.
+B10-D reconciliation / resolution workflow
+  do not invent a generic Resolution ontology entity without repository authority
+
+B10-E final integration + acceptance
+  run final automated regressions
+  perform the single real-app B10 walkthrough
+  reconcile docs
+  close B10
+```
 
 ---
 
-# 7. Roadmap ownership after B10
+# 8. Roadmap ownership after B10
 
 ```text
 B11
@@ -319,31 +308,33 @@ B15
 
 ---
 
-# 8. Collaboration discipline
+# 9. Collaboration discipline
 
 - user runs tests locally; assistant prepares exact commands
 - no CI/GitHub Actions unless explicitly authorized
 - push changes frequently
-- do not edit historical migrations; use forward-only repair
+- published migrations are immutable; use forward-only repair
 - distinguish candidate truth from user-proven truth
 - generated API client is generated from OpenAPI, never manually edited
 - PostgreSQL remains the only canonical authority
+- gate = proposed modification/file surface for user approval, not acceptance criteria
 - B07 is presentation consolidation, not a place to invent missing semantics
 
 ---
 
-# 9. Fresh-chat recovery
+# 10. Fresh-chat recovery
 
 ```text
 1. this handoff
 2. timeline-temporal-operational-roadmap.md
 3. timeline-temporal-operational-map.md
 4. timeline-temporal-operational-b10-scope-freeze.md
-5. migrations 20260925_70 and 20260925_71
-6. apps/backend/src/dante/modules/temporal/actual_runtime.py
-7. apps/backend/src/dante/modules/temporal/actual_api.py
-8. B10-A backend/API/web tests
-9. docs/database/timeline-temporal-operational.md + Actual Dictionary/mappings
+5. timeline-temporal-operational-b10-a-closure-2026-09-25.md
+6. migrations 20260925_70 → 20260925_74
+7. apps/backend/src/dante/modules/temporal/actual_runtime.py
+8. apps/backend/src/dante/modules/temporal/actual_api.py
+9. B10-A backend/API/web tests
+10. docs/database/timeline-temporal-operational.md + Actual Dictionary/mappings
 ```
 
-**Exact next action:** the user runs the single local B10-A acceptance command: pull the branch, regenerate OpenAPI/Orval with `pnpm api:generate`, run generated/client checks, focused backend PostgreSQL/API/OpenAPI tests and focused web tests/typecheck. B10-A remains open until that user-reported gate passes.
+**Exact next action:** present and obtain approval for the B10-B Outcome change/file gate. Do not implement B10-B before that approval.
