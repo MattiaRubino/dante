@@ -24,6 +24,13 @@ export type TemporalExpectedParticipationView = Readonly<{
   replayed: boolean;
 }>;
 
+export type TemporalPersonReferent = Readonly<{
+  personRef: string;
+  displayLabel: string;
+  revision: number;
+  replayed: boolean;
+}>;
+
 export class TemporalResponsibilityRemoteError extends Error {
   constructor(
     readonly kind: 'transport' | 'http' | 'protocol' | 'authentication',
@@ -141,6 +148,29 @@ function participation(value: unknown): TemporalExpectedParticipationView {
   });
 }
 
+function personReferent(value: unknown): TemporalPersonReferent {
+  const payload = record(value);
+  if (
+    typeof payload.display_label !== 'string' ||
+    !payload.display_label.trim() ||
+    typeof payload.revision !== 'number' ||
+    !Number.isInteger(payload.revision) ||
+    payload.revision < 1 ||
+    typeof payload.replayed !== 'boolean'
+  ) {
+    throw new TemporalResponsibilityRemoteError(
+      'protocol',
+      'Invalid Person referent response.',
+    );
+  }
+  return Object.freeze({
+    personRef: uuid(payload.person_ref, 'person_ref'),
+    displayLabel: payload.display_label,
+    revision: payload.revision,
+    replayed: payload.replayed,
+  });
+}
+
 export function createRemoteTemporalResponsibilityDataSource(
   fetchFn: typeof globalThis.fetch = globalThis.fetch,
 ) {
@@ -166,11 +196,11 @@ export function createRemoteTemporalResponsibilityDataSource(
 
   async function send(
     path: string,
-    method: 'GET' | 'PUT',
+    method: 'GET' | 'PUT' | 'POST' | 'PATCH',
     body?: unknown,
   ): Promise<unknown> {
     const headers = new Headers();
-    if (method === 'PUT') {
+    if (method !== 'GET') {
       headers.set('Content-Type', 'application/json');
       headers.set('X-Dante-CSRF', await csrf());
     }
@@ -200,6 +230,38 @@ export function createRemoteTemporalResponsibilityDataSource(
   }
 
   return Object.freeze({
+    async listPersonReferents(): Promise<TemporalPersonReferent[]> {
+      const value = await send('/api/v1/temporal/person-referents', 'GET');
+      if (!Array.isArray(value)) {
+        throw new TemporalResponsibilityRemoteError('protocol', 'Person referents must be a list.');
+      }
+      return value.map(personReferent);
+    },
+    async createPersonReferent(
+      operationId: string,
+      displayLabel: string,
+    ): Promise<TemporalPersonReferent> {
+      return personReferent(await send('/api/v1/temporal/person-referents', 'POST', {
+        operation_id: operationId,
+        display_label: displayLabel,
+      }));
+    },
+    async renamePersonReferent(
+      personRef: string,
+      operationId: string,
+      expectedRevision: number,
+      displayLabel: string,
+    ): Promise<TemporalPersonReferent> {
+      return personReferent(await send(
+        `/api/v1/temporal/person-referents/${encodeURIComponent(personRef)}`,
+        'PATCH',
+        {
+          operation_id: operationId,
+          expected_revision: expectedRevision,
+          display_label: displayLabel,
+        },
+      ));
+    },
     async getResponsibility(
       kind: ResponsibilitySubjectKind,
       subjectRef: string,
@@ -211,8 +273,8 @@ export function createRemoteTemporalResponsibilityDataSource(
       subjectRef: string,
       command: Readonly<{
         operationId: string;
-        holder: 'self' | null;
-        expectedHolder: 'self' | null;
+        holder: string | null;
+        expectedHolder: string | null;
       }>,
     ): Promise<TemporalResponsibilityView> {
       return responsibility(
@@ -242,6 +304,7 @@ export function createRemoteTemporalResponsibilityDataSource(
       eventRef: string,
       command: Readonly<{
         operationId: string;
+        participant?: string;
         requirementCode: ParticipationRequirement | null;
         expectedRequirementCode: ParticipationRequirement | null;
       }>,
@@ -252,7 +315,7 @@ export function createRemoteTemporalResponsibilityDataSource(
           'PUT',
           {
             operation_id: command.operationId,
-            participant: 'self',
+            participant: command.participant ?? 'self',
             requirement_code: command.requirementCode,
             expected_requirement_code: command.expectedRequirementCode,
           },
