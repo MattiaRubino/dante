@@ -1,8 +1,8 @@
 # Timeline / Temporal-Operational — B10-B alignment checkpoint
 
-Status: **IMPLEMENTATION CANDIDATE READY / AWAITING USER LOCAL PROOF — 2026-09-25**
+Status: **IMPLEMENTATION CANDIDATE REPAIRED / AWAITING USER LOCAL POSTGRESQL RE-PROOF — 2026-09-25**
 
-This checkpoint records the canonical B10-B state after reconciling the branch against the published Alembic chain. It is a continuation aid and candidate handoff, not closure evidence.
+This checkpoint records the canonical B10-B state after reconciling the branch against the published Alembic chain and repairing the first user-local acceptance failures. It is a continuation aid and candidate handoff, not closure evidence.
 
 ## Canonical persistence frontier
 
@@ -11,17 +11,21 @@ The published B10-B migration chain is immutable:
 ```text
 20260925_75  initial Outcome capability
 20260925_76  forward-only Outcome disposition reconciliation
+20260925_77  forward-only Outcome ScopedAddress owner-dispatch repair
+20260925_78  forward-only Outcome MaterialState totality-dispatch repair
 ```
 
-`20260925_76` is the binding B10-B persistence contract. Do not edit `_75` or `_76`; any later persistence correction must be a new forward-only revision.
+`20260925_78` is the current B10-B persistence candidate. Do not edit `_75` through `_78`; any later persistence correction must be a new forward-only revision.
 
 Candidate Dictionary topology:
 
 ```text
-163|5|119|93|317|268|443
+163|5|119|93|317|268|440
 ```
 
-The canonical model after `_76` is:
+`_77` and `_78` replace shared integrity routine bodies only; they do not add standalone objects or change this topology.
+
+The canonical model after `_78` is:
 
 ```text
 Actual != Outcome
@@ -58,7 +62,7 @@ material_state_ref
 
 ## Candidate surfaces reconciled
 
-The current branch has been reconciled to `_76` across:
+The current branch has been reconciled through `_78` across:
 
 ```text
 apps/backend/src/dante/platform/database/mappings/outcome.py
@@ -97,17 +101,37 @@ GET  /api/v1/temporal/outcomes/{outcome_ref}/history
 
 History ordering is canonical oldest-to-newest (`current_from_at ASC`), matching the focused B10-B application/API proof.
 
+## First local gate and repairs
+
+The first user-local B10-B gate proved the non-PostgreSQL surfaces:
+
+```text
+API generation       PASS
+API client typecheck PASS
+web typecheck        PASS
+web tests            14/14 PASS
+OpenAPI inventory    3/3 PASS
+```
+
+The PostgreSQL gate exposed two bounded persistence defects:
+
+```text
+1. the shared CP6 ScopedAddress owner dispatcher did not yet admit scoped_family='outcome';
+2. the shared MaterialState totality dispatcher did not yet admit facet='outcome.disposition'.
+```
+
+They are repaired forward-only by `_77` and `_78`. The same gate also exposed a stale Dictionary topology count (`443` CHECKs); PostgreSQL and the exact Dictionary object set materialize `440`, so scope/current-catalog snapshots are reconciled to `440` rather than inventing three constraints.
+
 ## Remaining acceptance work
 
 The implementation candidate is coherent. The remaining work is acceptance, not more feature implementation:
 
 ```text
-1. user pulls the current branch;
-2. user runs pnpm api:generate locally so OpenAPI/Orval reflect the current Outcome API;
-3. generated determinism + API-client/web typechecks run locally;
-4. focused B10-B web/OpenAPI/PostgreSQL tests and B10-A/B09/B08/catalog regressions run locally;
-5. generated artifacts are committed only after the local gate is green;
-6. only then reconcile closure docs and mark B10-B CLOSED / PROVEN.
+1. user pulls the repaired branch;
+2. user reruns the focused B10-B PostgreSQL/regression/catalog gate;
+3. if PostgreSQL is green, user runs the correct generated determinism command: pnpm generated:check;
+4. generated artifacts already produced locally are committed only after the local gate is green;
+5. only then reconcile closure docs and mark B10-B CLOSED / PROVEN.
 ```
 
 Generated artifacts must be produced through repository tooling and must never be hand-edited.
@@ -131,7 +155,7 @@ integrated real-app B10 walkthrough (belongs to B10-E)
 
 ```text
 B10-A  CLOSED / PROVEN
-B10-B  IMPLEMENTATION CANDIDATE READY / AWAITING USER LOCAL PROOF
+B10-B  IMPLEMENTATION CANDIDATE REPAIRED / AWAITING USER LOCAL POSTGRESQL RE-PROOF
 ```
 
 No CI/GitHub Actions are authorized or used. The user runs the acceptance gate locally.
@@ -139,8 +163,8 @@ No CI/GitHub Actions are authorized or used. The user runs the acceptance gate l
 ## Exact continuation cursor
 
 1. pull the branch;
-2. regenerate OpenAPI/client locally with repository tooling;
-3. run the single B10-B local automated gate;
-4. if failures appear, repair them without starting B10-C;
-5. if green, commit generated artifacts, reconcile roadmap/map/handoff/DB closure evidence, mark B10-B CLOSED / PROVEN and prepare the B10-C modification gate;
+2. rerun the focused B10-B PostgreSQL/regression/catalog gate;
+3. if failures appear, repair them without starting B10-C;
+4. if green, run `pnpm generated:check` against the already generated local artifacts;
+5. commit generated artifacts, reconcile roadmap/map/handoff/DB closure evidence, mark B10-B CLOSED / PROVEN and prepare the B10-C modification gate;
 6. do not perform the integrated real-app proof before B10-E.
