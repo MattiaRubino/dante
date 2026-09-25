@@ -4,11 +4,13 @@
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Continuation handoff:** `docs/workstreams/timeline-temporal-operational-handoff.md`
+- **B10-B alignment checkpoint:** `docs/workstreams/timeline-temporal-operational-b10-b-alignment-2026-09-25.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Current / last proven candidate Alembic frontier:** `20260925_74`
-- **Current / last proven candidate DB topology:** `159|5|115|93|305|258|435`
+- **Last proven Alembic frontier:** `20260925_74`
+- **Last proven DB topology:** `159|5|115|93|305|258|435`
+- **Current B10-B migration frontier:** `20260925_76` — implemented, not yet user-proven
 - **Completed functional frontier:** B10-A Actual / realization core ✅ CLOSED / PROVEN 2026-09-25
-- **Current implementation cursor:** B10-B Outcome — gate approval pending
+- **Current implementation cursor:** B10-B Outcome — IN PROGRESS / UNPROVEN
 - **CI:** not authorized; local tests are run by the user
 
 ---
@@ -25,6 +27,8 @@ Schedule != Session != Actual
 Session != Actual != Outcome
 Actual != Outcome != Confirmation
 Expected outcome != Outcome
+Outcome != Observation
+Outcome != lifecycle / operational state
 Responsibility != Participation
 participant != responsible actor != organizer/owner
 participant != Account identity
@@ -81,7 +85,7 @@ B10-A closure evidence: `timeline-temporal-operational-b10-a-closure-2026-09-25.
 ```text
 B10 Actual / Outcome / Confirmation / Resolution 🟨 IN PROGRESS
   B10-A Actual / realization core                 ✅ CLOSED / PROVEN
-  B10-B Outcome                                   ⬜ NEXT — gate approval pending
+  B10-B Outcome                                   🟨 IN PROGRESS / UNPROVEN
   B10-C Confirmation                              ⬜
   B10-D Reconciliation / resolution workflow      ⬜
   B10-E Final integration + acceptance            ⬜ — manual real-app proof here
@@ -273,21 +277,69 @@ provider/AI/solver != canonical realization authority
 
 No manual real-app proof was performed for B10-A; by explicit execution policy it belongs to B10-E.
 
-## B10-B — Outcome — NEXT
+## B10-B — Outcome — IN PROGRESS / UNPROVEN
 
-B10-B has not started. Its gate must first freeze only the planned modification surface. The implementation must derive the Outcome model from existing Product/Domain/Logical/Physical authority before adding schema.
+Approved scope: `docs/workstreams/timeline-temporal-operational-b10-b-scope-2026-09-25.md`.
+Alignment checkpoint: `docs/workstreams/timeline-temporal-operational-b10-b-alignment-2026-09-25.md`.
 
-Required boundaries entering the gate:
+Published persistence chain:
+
+```text
+20260925_75 initial Outcome capability
+20260925_76 forward-only Outcome disposition reconciliation
+```
+
+`_75` and `_76` are published and immutable. `_76` is the binding physical contract. The branch had temporarily drifted back toward `_75` vocabulary/result semantics and has been realigned without rewriting either migration.
+
+Canonical B10-B model:
 
 ```text
 Actual != Outcome
 Expected outcome != Outcome
 Outcome != Confirmation
+Outcome != Observation
+one stable Outcome identity per Actual
+Outcome disposition MaterialState != Outcome identity
+facet = outcome.disposition
+exact actual_realization_material_state_ref on every disposition state
+contextual disposition_code, not one universal Outcome status enum
+current accepted Outcome state != latest row
+idempotency receipt != Outcome identity
 absence of Outcome != success/failure
 Session END != Outcome
 ```
 
-Result vocabulary such as completed/partial/skipped/not-completed/postponed/replaced/cancelled and any finish-early interaction belongs to B10-B only if the repository authority supports that exact representation. Do not invent generic status semantics merely from UI labels.
+Current aligned implementation surfaces:
+
+```text
+apps/backend/src/dante/platform/database/mappings/outcome.py
+apps/backend/src/dante/platform/database/mappings/addressing.py
+apps/backend/src/dante/platform/database/mappings/__init__.py
+apps/backend/src/dante/modules/temporal/outcome_runtime.py
+apps/backend/src/dante/modules/temporal/outcome_api.py
+```
+
+Current public route shape:
+
+```text
+POST /api/v1/temporal/actuals/{actual_ref}/outcome
+GET  /api/v1/temporal/actuals/{actual_ref}/outcome
+GET  /api/v1/temporal/outcomes/{outcome_ref}/history
+```
+
+Still open before B10-B candidate completion:
+
+```text
+[ ] OpenAPI export / contract snapshots aligned to disposition model
+[ ] generated API client regenerated through repository tooling only
+[ ] web Outcome remote data source aligned from old vocabulary/result shape
+[ ] web Outcome read/author/correct controls aligned to exact Actual realization basis
+[ ] B10-B backend/API/PostgreSQL/web tests reconciled
+[ ] Database Dictionary/scope and DB overlay/frontier reconciled
+[ ] final candidate evidence; later user-run local gate before CLOSED / PROVEN
+```
+
+The user explicitly did not request tests during the current alignment pass. No acceptance claim is made. No manual real-app proof occurs before B10-E.
 
 Later B10:
 
@@ -344,7 +396,7 @@ B08     ✅ CLOSED / USER-REPORTED 2026-09-24
 B09     ✅ CLOSED / USER-REPORTED 2026-09-25
 B10     🟨 IN PROGRESS
   B10-A ✅ CLOSED / PROVEN 2026-09-25
-  B10-B ⬜ NEXT — gate approval pending
+  B10-B 🟨 IN PROGRESS / UNPROVEN
   B10-C ⬜
   B10-D ⬜
   B10-E ⬜ — user real-app proof here
@@ -356,4 +408,4 @@ B07     ⏸ DEFERRED UNTIL B14
 B15     ⬜ NOT STARTED
 ```
 
-**Next concrete action:** review and approve the B10-B Outcome change/file gate. After approval, B10-B is implemented completely before the user runs its single local automated test command.
+**Next concrete action:** continue B10-B from `_76` by reconciling OpenAPI/generated client and web Outcome surfaces, then focused tests and Database/Dictionary ledgers. Do not start B10-C. No CI/GitHub Actions.
