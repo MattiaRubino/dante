@@ -8,7 +8,7 @@
 - **Current candidate Alembic frontier:** `20260925_68`
 - **Last proven candidate DB frontier:** B09-B / `20260925_68` / `156|5|106|93|301|251|426`
 - **Completed functional frontier:** B08 Session Runtime ✅ CLOSED / USER-REPORTED 2026-09-24
-- **Current implementation cursor:** B09-B implemented; awaiting user-run local proof
+- **Current implementation cursor:** B09-B local automated proof complete; Timeline real-stack walkthrough pending
 - **CI:** not authorized; local tests are run by the user
 
 ---
@@ -66,7 +66,7 @@ B08 Session Runtime                              ✅ CLOSED / USER-REPORTED 2026
   B08-D Whole-block closure                       ✅ CLOSED / USER-REPORTED — automated gate and dogfood
 B09 Responsibility / Participation               🟨 IN PROGRESS
   B09-A typed persistence substrate               ✅ CLOSED / PROVEN 2026-09-25
-  B09-B guarded mutation + application surface    ✅ CLOSED / PROVEN 2026-09-25
+  B09-B guarded mutation + application surface    🟨 AUTOMATED PROOF COMPLETE / REAL-STACK WALKTHROUGH PENDING
 ```
 
 B09-A is a persistence closure only. It does **not** close B09 as a whole and does not claim API/frontend or Actual-attendance semantics.
@@ -76,7 +76,7 @@ B09-A is a persistence closure only. It does **not** close B09 as a whole and do
 # 3. Remaining execution order
 
 ```text
-B09-B Responsibility / Participation authoring   ✅ CLOSED / PROVEN 2026-09-25
+B09-B Responsibility / Participation authoring   🟨 AUTOMATED PROOF COMPLETE / REAL-STACK WALKTHROUGH PENDING
 B10 Actual / Outcome / Confirmation / Resolution ⬜
 B11 Advanced Recurrence / Conditional / Reminder ⬜
 B13 Work Structure / Decomposition / Dependencies⬜
@@ -202,7 +202,7 @@ provider attendee identity or calendar control
 
 Those omissions are intentional semantic boundaries, not failed B09-A requirements.
 
-## B09-B — CLOSED / PROVEN
+## B09-B — AUTOMATED PROOF COMPLETE / REAL-STACK WALKTHROUGH PENDING
 
 B09-B owns guarded mutation/application behavior over the B09-A substrate. It does not expose the new tables as direct runtime mutation surfaces.
 
@@ -217,7 +217,8 @@ Candidate implementation on `20260925_67`:
 [x] Timeline detail authoring for self Responsibility / self expected Participation
 [x] negative automated proof: expected Participation does not establish Actual attendance
 [x] user-run local automated proof 2026-09-25: web 4 passed; backend 18 passed
-[x] B09 whole-block closure reconciliation
+[ ] user real-stack Timeline walkthrough
+[ ] B09 whole-block closure reconciliation
 ```
 
 Home `+` required/optional participant textareas remain B14. They are free-text emails, not Person refs. B09-B does not invent email-to-Person identity.
@@ -306,7 +307,7 @@ B00–B06 ✅ CLOSED / PROVEN
 B08     ✅ CLOSED / USER-REPORTED 2026-09-24
 B09     🟨 IN PROGRESS
   B09-A ✅ CLOSED / PROVEN 2026-09-25
-  B09-B ✅ CLOSED / PROVEN 2026-09-25
+  B09-B 🟨 AUTOMATED PROOF COMPLETE / REAL-STACK WALKTHROUGH PENDING
 B10     ⬜ NOT STARTED
 B11     ⬜ NOT STARTED
 B13     ⬜ NOT STARTED
@@ -316,4 +317,4 @@ B07     ⏸ DEFERRED UNTIL B14
 B15     ⬜ NOT STARTED
 ```
 
-**Next concrete action:** start B10 Actual / Outcome / Confirmation / Resolution. B09 does not own attendance.
+**Next concrete action:** user runs the B09-B real-stack Timeline walkthrough, then B09 can close if it is clean. Verify self Responsibility and self expected Participation mutations reload canonically and create no Session, Actual, Outcome or attendance state.
