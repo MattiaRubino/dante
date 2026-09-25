@@ -155,7 +155,7 @@ describe('TimelineSurface production parity', () => {
     expect(endMinute.value).toBe('05');
   });
 
-  it('consumes the first outside-card interaction only to clear the current focus', () => {
+  it('lets a different card receive a click while another card is focused', () => {
     const { container } = renderTimeline();
     const focusedCard = container.querySelector<HTMLElement>(
       '[data-timeline-event="7"]',
@@ -181,15 +181,16 @@ describe('TimelineSurface production parity', () => {
       screen.queryByRole('dialog', { name: 'Modifica orario' }),
     ).toBeNull();
     expect(focusedCard?.classList.contains('is-focused')).toBe(false);
-    expect(targetCard?.classList.contains('is-focused')).toBe(false);
+    expect(targetCard?.classList.contains('is-focused')).toBe(true);
 
-    const enabledTargetTime = screen.getByRole('button', {
-      name: 'Modifica orario di Promemoria',
-    });
-    expect(enabledTargetTime.tabIndex).toBe(0);
-    fireEvent.click(enabledTargetTime);
+    const targetTitle = targetCard?.querySelector<HTMLButtonElement>(
+      '.timeline-event-card__title',
+    );
+    expect(targetTitle).toBeTruthy();
+    expect(targetTitle?.tabIndex).toBe(0);
+    fireEvent.click(targetTitle as HTMLButtonElement);
     expect(
-      screen.getByRole('dialog', { name: 'Modifica orario' }),
+      screen.getByRole('dialog'),
     ).toBeTruthy();
 
     fireEvent.keyDown(document, { key: 'Escape' });
@@ -197,6 +198,23 @@ describe('TimelineSurface production parity', () => {
     expect(focusedCard?.classList.contains('is-focused')).toBe(true);
     fireEvent.click(grid as HTMLElement);
     expect(focusedCard?.classList.contains('is-focused')).toBe(false);
+  });
+
+  it('opens a card title directly while a different card is focused', () => {
+    const { container } = renderTimeline();
+    const focusedCard = container.querySelector<HTMLElement>(
+      '[data-timeline-event="7"]',
+    );
+    const targetTitle = container.querySelector<HTMLButtonElement>(
+      '[data-timeline-event="12"] .timeline-event-card__title',
+    );
+    expect(focusedCard).toBeTruthy();
+    expect(targetTitle).toBeTruthy();
+    fireEvent.click(focusedCard as HTMLElement);
+    expect(focusedCard?.classList.contains('is-focused')).toBe(true);
+
+    fireEvent.click(targetTitle as HTMLButtonElement);
+    expect(screen.getByRole('dialog')).toBeTruthy();
   });
 
   it('remains stable while repeatedly crossing an overlap boundary with focus changes', () => {
