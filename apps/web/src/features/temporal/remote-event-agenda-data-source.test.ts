@@ -21,6 +21,8 @@ function eventResponse(revision = 2, agendaParts: readonly string[] = ['A', 'B']
     agenda_revision: revision,
     agenda_parts: agendaParts,
     created_at: '2026-09-17T10:00:00Z',
+    life_area_ref: EVENT_REF,
+    life_area_assignment_revision: 1,
     replayed: false,
   } as const;
 }
