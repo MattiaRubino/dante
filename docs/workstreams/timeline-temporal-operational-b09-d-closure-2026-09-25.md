@@ -2,7 +2,7 @@
 
 - **Branch:** `feature/timeline-temporal-operational`
 - **Baseline:** B09-C proven at Alembic `20260925_69`, topology `158|5|109|93|303|254|433`
-- **State:** AUTOMATED PROOF PASSED — user real-app proof pending
+- **State:** AUTOMATED PROOF PASSED — user real-app walkthrough reported failures; fix pending user retest
 - **Scope:** B09-A typed roles + B09-B guarded authoring + B09-C owner-local non-Account Persons
 
 ## Accepted contract
@@ -33,9 +33,11 @@ The UI test extends `responsibility-controls.test.tsx` with a created Person, la
 
 ## User real-app verification — required before whole-B09 closure
 
-**State:** PENDING USER REPORT. The user explicitly requested this verification at the end of B09-D before closing B09. B15 will still perform the separate whole-vertical regression.
+**State:** USER WALKTHROUGH IN PROGRESS / NOT PASSED. On 2026-09-25 the user ran `run-access-auth-stack.py` with `DANTE_E2E_CONTROL_ID=temporal-b08-d-usertest` and reported: Event detail showed an Agenda read failure; a created Person remained available but appeared not to become the responsible holder; when Timeline cards were visible/expanded, clicking another card's title did not reliably open its detail. Screenshot evidence shows the Person in the selector and expected Participation as optional while the holder reads “Nessun responsabile”. This is consistent with the separate Responsibility and Participation operations, but does not prove whether the user attempted the separate assignment command. B15 will still perform the separate whole-vertical regression.
 
-Run the app using the existing local backend/web workflow, then:
+The follow-up web fix accepts the backend's `life_area_ref` and `life_area_assignment_revision` in canonical Event Agenda reads; allows the title of another card to open its detail even when focus is on a different card; and explains after Person creation that “Assegna” is a separate command. The user must retest the actual Responsibility assignment, including its readback after a refresh. Any failure message or Network response from that assignment is needed if it remains rejected. These changes are unproven until the user runs the focused web gate and real-app walkthrough again.
+
+Run the app using the existing `run-access-auth-stack.py` local workflow, then:
 
 1. Create an Activity and an Event in a Life Area, place both on Timeline and open each detail; neither needs a Session or Actual.
 2. Create a Person named Anna from the role controls. Confirm Anna appears as a selectable Person after a refresh, without signing Anna in.
