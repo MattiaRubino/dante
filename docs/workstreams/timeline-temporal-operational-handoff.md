@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B09 🟨 IN PROGRESS — B09-A/B closed; B09-C next, B09-D pending; real-stack testing remains B15 scope
+- **Status:** B09 🟨 IN PROGRESS — B09-A/B closed; B09-C candidate awaiting local proof, B09-D pending; real-stack testing remains B15 scope
 - **Reconciled:** 2026-09-25
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -22,8 +22,8 @@ B08     ✅ CLOSED / USER-REPORTED 2026-09-24
 B09     🟨 IN PROGRESS
   B09-A ✅ CLOSED / PROVEN 2026-09-25
   B09-B ✅ CLOSED / PROVEN 2026-09-25
-  B09-C ⬜ NEXT — exact scope to reconcile
-  B09-D ⬜ AFTER B09-C — exact scope to reconcile
+  B09-C 🟨 CANDIDATE — local proof pending
+  B09-D ⬜ PENDING — exact scope to reconcile
 B10     ⬜ NOT STARTED
 B11     ⬜ NOT STARTED
 B13     ⬜ NOT STARTED
@@ -147,6 +147,10 @@ provider attendee identity or authority over another person's external calendar/
 Those remain outside B09-A by design.
 
 ---
+
+# 4A. B09-C implementation candidate — local proof pending
+
+Approved scope: a native non-Account Person referenced through an owner-local catalog. Source migration `20260925_69` adds catalog and immutable create/rename receipts, atomic Person + NativeAddress creation, three guarded capabilities and widened `_self_referenceable_person`. Current Responsibility and expected Event Participation remain distinct; Timeline supports selecting and labeling owner-local Persons. Source-derived target topology `158|5|109|93|303|254|433` is unproven until the user's PostgreSQL gate. API OpenAPI/client generated artifacts and generated check must be reconciled before B09-C closure. B09-D scope remains unconfirmed; real-stack walkthrough stays in B15.
 
 # 4. B09-B closure truth
 
@@ -318,4 +322,4 @@ B15
 6. current Logical Model / PostgreSQL blueprint sections relevant to Responsibility / Participation
 ```
 
-**Exact next action:** reconcile the deliverables of B09-C and B09-D against `timeline-temporal-operational-post-b06-scope-decision-2026-09-23.md` plus the accepted Product / Domain / Logical / Physical authority; then begin B09-C. B10 follows B09-D. The user's real-stack test stays in B15; do not invent attendance semantics inside B09.
+**Exact next action:** finish B09-C generated client and local automated proof; then reconcile B09-D deliverables against the accepted authority. B10 follows B09-D. The user's real-stack test stays in B15; do not invent attendance semantics inside B09.
