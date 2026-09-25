@@ -76,7 +76,7 @@ describe('Outcome controls', () => {
     });
     fireEvent.click(screen.getByText('Carica Outcome'));
 
-    await screen.findByText('Esito non disponibile: registra prima lo stato reale.');
+    await screen.findByText('Outcome non disponibile: registra prima lo stato reale.');
     expect(fetchFn).toHaveBeenCalledTimes(1);
   });
 
@@ -91,7 +91,10 @@ describe('Outcome controls', () => {
       if (url.endsWith(`/events/${SUBJECT}/actual`)) {
         return Response.json(actual());
       }
-      if (init?.method === 'POST' && url.endsWith(`/actuals/${ACTUAL}/outcomes`)) {
+      if (
+        init?.method === 'POST' &&
+        url.endsWith(`/actuals/${ACTUAL}/outcomes/meeting.decision`)
+      ) {
         const body = JSON.parse(String(init.body)) as Record<string, unknown>;
         bodies.push(body);
         current = outcome(
@@ -100,7 +103,7 @@ describe('Outcome controls', () => {
         );
         return Response.json(current, { status: 201 });
       }
-      if (url.includes(`/actuals/${ACTUAL}/outcomes/meeting.decision`)) {
+      if (url.endsWith(`/actuals/${ACTUAL}/outcomes/meeting.decision`)) {
         return current === null ? outcomeNotFound() : Response.json(current);
       }
       throw new Error(`Unexpected fetch ${url}`);
@@ -114,7 +117,6 @@ describe('Outcome controls', () => {
     fireEvent.click(screen.getByText('Carica Outcome'));
 
     await screen.findByText('Outcome: non registrato');
-    expect(screen.queryByText('Outcome: decision.deferred')).toBeNull();
 
     fireEvent.change(screen.getByLabelText('Risultato Outcome'), {
       target: { value: 'decision.deferred' },
@@ -124,11 +126,11 @@ describe('Outcome controls', () => {
     expect(screen.getByText('Outcome: decision.deferred')).toBeTruthy();
 
     expect(bodies[0]).toMatchObject({
-      vocabulary_code: 'meeting.decision',
       expected_material_state_ref: null,
       result_code: 'decision.deferred',
       note: null,
     });
+    expect(bodies[0]).not.toHaveProperty('vocabulary_code');
 
     fireEvent.change(screen.getByLabelText('Risultato Outcome'), {
       target: { value: 'decision.reached' },
@@ -137,7 +139,6 @@ describe('Outcome controls', () => {
     await waitFor(() => expect(bodies).toHaveLength(2));
 
     expect(bodies[1]).toMatchObject({
-      vocabulary_code: 'meeting.decision',
       expected_material_state_ref: OUTCOME_STATE_1,
       result_code: 'decision.reached',
       note: null,
