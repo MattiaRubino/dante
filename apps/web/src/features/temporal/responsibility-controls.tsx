@@ -44,6 +44,7 @@ export function ResponsibilityControls({
   const [personLabel, setPersonLabel] = useState('');
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [personCreated, setPersonCreated] = useState(false);
 
   const reload = useCallback(async () => {
     const [current, referents] = await Promise.all([
@@ -84,6 +85,7 @@ export function ResponsibilityControls({
   const run = (action: () => Promise<unknown>, failure: string) => {
     setPending(true);
     setMessage(null);
+    setPersonCreated(false);
     void action()
       .then(() => reload())
       .catch((error: unknown) => setMessage(rejection(failure, error)))
@@ -112,6 +114,7 @@ export function ResponsibilityControls({
       className="timeline-responsibility-controls"
       data-timeline-responsibility-subject={subjectRef}
     >
+      <strong>Responsabilità</strong>
       <p data-timeline-responsibility-state>
         {holder === null ? 'Nessun responsabile' :
           `Responsabile: ${labelFor(
@@ -176,6 +179,7 @@ export function ResponsibilityControls({
             );
             setSelectedPerson(created.personRef);
             setPersonLabel('');
+            setPersonCreated(true);
           }, 'Creazione persona rifiutata.')}
         >
           Aggiungi persona
@@ -198,9 +202,13 @@ export function ResponsibilityControls({
           </button>
         )}
       </div>
+      {personCreated ? (
+        <p role="status">Persona aggiunta. Per assegnarle la responsabilità, premi “Assegna a {selectedLabel}”.</p>
+      ) : null}
 
       {kind === 'event' ? (
         <div className="timeline-responsibility-controls__participation">
+          <strong>Partecipazione attesa all’Event</strong>
           <p data-timeline-participation-state>
             {selectedParticipation === null
               ? 'Partecipazione attesa: non indicata'
@@ -264,7 +272,7 @@ export function ResponsibilityControls({
           )}
         </div>
       ) : null}
-      {message === null ? null : <span role="status">{message}</span>}
+      {message === null ? null : <span role="alert">{message}</span>}
     </div>
   );
 }
