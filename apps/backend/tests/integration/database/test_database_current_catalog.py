@@ -19,8 +19,8 @@ from dante.platform.database.metadata import Base
 
 pytestmark = pytest.mark.postgres
 
-_CURRENT_REVISION = "20260925_75"
-_CURRENT_TOPOLOGY = (163, 5, 119, 93, 316, 268, 443, 0, 0, 0)
+_CURRENT_REVISION = "20260925_76"
+_CURRENT_TOPOLOGY = (163, 5, 119, 93, 317, 268, 443, 0, 0, 0)
 _REPO_ROOT = Path(__file__).resolve().parents[5]
 _DICTIONARY_ROOT = _REPO_ROOT / "docs" / "database" / "dictionary"
 
@@ -191,7 +191,7 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
     }
     assert current["embedded_objects"] == {
         "triggers": 93,
-        "physical_indexes": 316,
+        "physical_indexes": 317,
     }
     assert current["constraints"] == {
         "foreign_keys": 268,
