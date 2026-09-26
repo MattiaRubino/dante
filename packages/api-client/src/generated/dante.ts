@@ -7670,19 +7670,63 @@ export type temporalRecordOutcomeConfirmationResponse200 = {
   status: 200;
 };
 
+export type temporalRecordOutcomeConfirmationResponse201 = {
+  data: ConfirmationResponse;
+  status: 201;
+};
+
+export type temporalRecordOutcomeConfirmationResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type temporalRecordOutcomeConfirmationResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type temporalRecordOutcomeConfirmationResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type temporalRecordOutcomeConfirmationResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type temporalRecordOutcomeConfirmationResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
 export type temporalRecordOutcomeConfirmationResponse422 = {
-  data: HTTPValidationError;
+  data: ProblemDetails;
   status: 422;
 };
 
-export type temporalRecordOutcomeConfirmationResponseSuccess =
-  temporalRecordOutcomeConfirmationResponse200 & {
-    headers: Headers;
-  };
-export type temporalRecordOutcomeConfirmationResponseError =
-  temporalRecordOutcomeConfirmationResponse422 & {
-    headers: Headers;
-  };
+export type temporalRecordOutcomeConfirmationResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type temporalRecordOutcomeConfirmationResponseSuccess = (
+  | temporalRecordOutcomeConfirmationResponse200
+  | temporalRecordOutcomeConfirmationResponse201
+) & {
+  headers: Headers;
+};
+export type temporalRecordOutcomeConfirmationResponseError = (
+  | temporalRecordOutcomeConfirmationResponse400
+  | temporalRecordOutcomeConfirmationResponse401
+  | temporalRecordOutcomeConfirmationResponse403
+  | temporalRecordOutcomeConfirmationResponse404
+  | temporalRecordOutcomeConfirmationResponse409
+  | temporalRecordOutcomeConfirmationResponse422
+  | temporalRecordOutcomeConfirmationResponse500
+) & {
+  headers: Headers;
+};
 
 export type temporalRecordOutcomeConfirmationResponse =
   | temporalRecordOutcomeConfirmationResponseSuccess
