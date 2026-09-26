@@ -4,7 +4,7 @@ Status: **CLOSED / PROVEN — 2026-09-26**
 
 B10-C materializes contextual Confirmation as a distinct optional attestation after Outcome.
 
-A post-closure review on 2026-09-26 found one public-contract documentation gap only: the runtime already returned `201` for creation and `200` for idempotent replay, while the generated OpenAPI artifact described the POST success only as `200`. Persistence and Confirmation semantics were not reopened. Source + regression test now document the complete HTTP response contract; generated OpenAPI/Orval artifacts must be refreshed through repository tooling before B10-D starts.
+A post-closure review on 2026-09-26 found one public-contract documentation gap only: the runtime already returned `201` for creation and `200` for idempotent replay, while the generated OpenAPI artifact described the POST success only as `200`. Persistence and Confirmation semantics were not reopened. Source, OpenAPI, generated Orval artifacts and regression proof are now reconciled; B10-D is no longer blocked by B10-C artifact synchronization.
 
 ## Proven boundaries
 
@@ -106,24 +106,48 @@ Regression slice, 2026-09-26:
 
 That slice covered B10-A Actual, B09 Responsibility/Participation, and B08 Session.
 
+Post-closure public-contract hardening gate, 2026-09-26:
+
+```text
+pnpm api:generate                         PASS
+pnpm generated:check                     PASS — 339 files deterministic/current
+pnpm --filter @dante/api-client typecheck PASS
+B10-C OpenAPI contract + Temporal inventory 4 passed in 2.54s
+```
+
 No CI/GitHub Actions were used. Acceptance proof was executed locally by the user.
 
 ## Generated client and post-closure hardening
 
-Original generated B10-C artifacts were committed at:
+Original generated B10-C artifacts:
 
 ```text
 30f15adf  feat(api-client): generate B10-C Confirmation contracts
 ```
 
-Post-closure source hardening:
+Post-closure source/test hardening:
 
 ```text
 1f4c3415  fix(temporal): document B10-C confirmation HTTP outcomes
 58947b45  test(temporal): freeze B10-C confirmation response contract
+5d8e1b8e  test(temporal): fix B10-C problem media type assertion
 ```
 
-The generated OpenAPI/Orval files are intentionally **not hand-edited**. They must be regenerated through `pnpm api:generate`, checked for determinism, and committed before the B10-D gate begins.
+Generated OpenAPI/Orval reconciliation produced only by repository tooling:
+
+```text
+57303315  feat(api-client): refresh B10-C response contracts
+```
+
+The generated client now exposes:
+
+```text
+200 ConfirmationResponse  idempotent replay
+201 ConfirmationResponse  creation
+400/401/403/404/409/422/500 ProblemDetails
+```
+
+Generated files were not hand-edited.
 
 ## Deferred
 
@@ -145,6 +169,6 @@ The integrated manual real-app proof remains deferred to B10-E.
 B10-A  CLOSED / PROVEN
 B10-B  CLOSED / PROVEN
 B10-C  CLOSED / PROVEN
-B10-C  post-closure public-contract hardening awaiting generated refresh
-B10-D  BLOCKED until that generated refresh is deterministic and committed
+B10-C  post-closure public-contract hardening CLOSED / PROVEN
+B10-D  NEXT — modification gate / reconciliation-resolution workflow
 ```
