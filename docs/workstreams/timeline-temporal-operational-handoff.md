@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B10 IN PROGRESS — B10-A/B10-B/B10-C CLOSED / PROVEN; B10-C post-closure OpenAPI hardening awaiting generated refresh; B10-D not started
+- **Status:** B10 IN PROGRESS — B10-A/B10-B/B10-C CLOSED / PROVEN; B10-C post-closure OpenAPI hardening CLOSED / PROVEN; B10-D modification gate active
 - **Reconciled:** 2026-09-26
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -12,7 +12,8 @@
 - **B10-C closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-c-closure-2026-09-26.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
 - **Last proven persistence frontier:** B10-C / Alembic `20260925_79` / topology `167|5|123|93|329|279|446`
-- **Original generated B10-C client:** `30f15adf` — 339 files
+- **Generated B10-C client baseline:** `30f15adf` — 339 files
+- **Post-closure generated response-contract refresh:** `57303315` — deterministic/current; local contract gate 4 passed
 - **CI:** no CI/GitHub Actions unless explicitly authorized; user runs local tests
 
 Read this first after a context reset. Repository HEAD remains the source of truth; re-fetch it before any write.
@@ -29,9 +30,9 @@ B10     🟨 IN PROGRESS
   B10-A ✅ CLOSED / PROVEN 2026-09-25
   B10-B ✅ CLOSED / PROVEN 2026-09-25
   B10-C ✅ CLOSED / PROVEN 2026-09-26
-          ↳ post-closure OpenAPI response hardening committed
-          ↳ generated OpenAPI/Orval refresh still required
-  B10-D ⛔ DO NOT START until generated refresh is checked + committed
+          ↳ post-closure OpenAPI response hardening CLOSED / PROVEN
+          ↳ generated refresh 57303315; local contract gate 4 passed in 2.54s
+  B10-D 🟨 ACTIVE — modification gate / reconciliation-resolution workflow
   B10-E ⬜ Final integration + single real-app proof
 B11     ⬜ NOT STARTED
 B13     ⬜ NOT STARTED
@@ -162,26 +163,7 @@ GET  /api/v1/temporal/confirmations/{confirmation_ref}/history
 
 Proven persistence frontier: `20260925_79` / `167|5|123|93|329|279|446`.
 
----
-
-# 4. B10-C post-closure contract hardening
-
-Review found no persistence/domain defect. The defect was only that runtime truth and generated OpenAPI response truth diverged:
-
-```text
-runtime new Confirmation  -> 201
-runtime replay            -> 200
-old generated OpenAPI     -> documented success only as 200
-```
-
-Committed source hardening:
-
-```text
-1f4c3415  fix(temporal): document B10-C confirmation HTTP outcomes [skip ci]
-58947b45  test(temporal): freeze B10-C confirmation response contract [skip ci]
-```
-
-The route now declares:
+Post-closure public contract is also proven:
 
 ```text
 201 ConfirmationResponse  creation
@@ -189,41 +171,30 @@ The route now declares:
 400/401/403/404/409/422/500 ProblemDetails
 ```
 
-No migration after `_79` is required.
-
-Generated files are intentionally stale until the user runs repository generation locally. Never hand-edit them.
+Generated refresh: `57303315`. Final local contract gate: `4 passed in 2.54s`.
 
 ---
 
-# 5. Exact immediate action before B10-D
+# 4. B10-D active modification gate
 
-From the user's worktree:
+B10-D is reconciliation / resolution workflow. No B10-D persistence or API implementation is accepted yet.
+
+Before implementation, read and reconcile current Product / Domain / Logical / Physical / Database authority. The gate must answer, from repository authority rather than chat assumptions:
 
 ```text
-cd ~/projects/dante
-git pull --ff-only origin feature/timeline-temporal-operational
-
-pnpm api:generate
-pnpm generated:check
-pnpm --filter @dante/api-client typecheck
-
-cd apps/backend
-uv run --locked pytest -q --no-cov \
-  tests/test_b10_c_openapi_contract.py \
-  tests/test_temporal_openapi_inventory.py
+what exactly is being reconciled
+whether reconciliation is a process, decision, state, relationship or combination
+what an accepted resolution changes canonically
+what conflicting evidence/history must remain immutable
+who may propose vs who may accept an effect
+whether authority is actor-/context-/purpose-scoped
+whether any new persistent entity is justified
+whether a new MaterialState facet is justified
+what identity/current-history/idempotency rules follow
+what public API and UI are permitted before B10-E
 ```
 
-If green, commit/push only the generated OpenAPI/client changes produced by the generator, with `[skip ci]` if desired. Do not edit generated files manually.
-
-After that, re-fetch HEAD and reconcile this handoff/closure generated-commit reference. Only then prepare B10-D.
-
----
-
-# 6. B10-D boundary
-
-B10-D is reconciliation / resolution workflow. It is **not started**.
-
-Before implementation, prepare a modification gate against current Product / Domain / Logical / Physical authority. B10-D must preserve:
+B10-D must preserve at least:
 
 ```text
 Confirmation != Decision / Approval / Authority
@@ -236,17 +207,17 @@ no generic Resolution ontology entity unless current authority justifies it
 AI/provider does not become canonical authority
 ```
 
-Do not start coding B10-D from old chat assumptions or stale pre-`_78` Outcome documents.
+Do not code from old chat assumptions or stale pre-`_78` Outcome documents.
 
 ---
 
-# 7. B10-E boundary
+# 5. B10-E boundary
 
 The integrated real-app/manual B10 walkthrough remains intentionally deferred to B10-E after B10-D is closed.
 
 ---
 
-# 8. Collaboration discipline
+# 6. Collaboration discipline
 
 - user runs tests locally; assistant does not use CI/GitHub Actions
 - push coherent checkpoints frequently with `[skip ci]`
