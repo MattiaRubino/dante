@@ -3,10 +3,11 @@
 - **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-26
 - **Branch/workstream:** `feature/timeline-temporal-operational`
 - **Vertical boundary:** Home `+` creation/configuration → canonical temporal truth → Timeline projection/actions → bounded lifecycle completion
-- **Completed functional frontier:** B10-D Reconciliation ✅ CLOSED / PROVEN 2026-09-26
-- **Current block:** B10-E final integration + acceptance
+- **Completed functional frontier:** B10 ✅ CLOSED 2026-09-26
+- **Current block:** B11 Advanced Recurrence / Conditional / Reminder
 - **Last proven persistence frontier:** B10-D / Alembic `20260926_80`
 - **B10-D closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-d-closure-2026-09-26.md`
+- **B10-E closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-e-closure-2026-09-26.md`
 - **Deferred block:** B07 UI/UX Consolidation v1 — execute only after B14
 - **Live execution ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **Continuation handoff:** `docs/workstreams/timeline-temporal-operational-handoff.md`
@@ -82,14 +83,14 @@ B06 Routine / Recurrence / Occurrence Baseline   ✅ CLOSED / PROVEN
 B08 Session Runtime                              ✅ CLOSED / USER-REPORTED 2026-09-24
 B09 Responsibility / Participation               ✅ CLOSED / USER-REPORTED 2026-09-25
 
-B10 Actual / Outcome / Confirmation / Resolution 🟨 IN PROGRESS
+B10 Actual / Outcome / Confirmation / Resolution ✅ CLOSED 2026-09-26
   B10-A Actual / realization core                 ✅ CLOSED / PROVEN 2026-09-25
   B10-B Outcome                                   ✅ CLOSED / PROVEN 2026-09-25
   B10-C Confirmation                              ✅ CLOSED / PROVEN 2026-09-26
   B10-D Reconciliation / resolution workflow      ✅ CLOSED / PROVEN 2026-09-26
-  B10-E Final integration + acceptance            🟨 NEXT
+  B10-E Final integration + acceptance            ✅ CLOSED / USER-REPORTED ACCEPTANCE 2026-09-26
 
-B11 Advanced Recurrence / Conditional / Reminder ⬜
+B11 Advanced Recurrence / Conditional / Reminder 🟨 NEXT
 B13 Work Structure / Decomposition / Dependencies⬜
 B12 Replanning / Conflict / Solver               ⬜
 B14 Temporal Create Completeness Gate             ⬜
@@ -128,9 +129,9 @@ B09 adds typed Person/Responsibility/expected Participation behavior without col
 
 ---
 
-# 3. B10 — Actual / Outcome / Confirmation / Reconciliation
+# 3. B10 — Actual / Outcome / Confirmation / Reconciliation — CLOSED
 
-B10 adds realized/reconciled truth while preserving:
+B10 added realized/reconciled truth while preserving:
 
 ```text
 planned/intended != happened
@@ -142,8 +143,6 @@ Reconciliation != universal truth
 Expected outcome != Outcome
 no Actual != known non-realization/failure
 ```
-
-The integrated real-app/manual proof was intentionally deferred until B10-E.
 
 ## B10-A — Actual / realization core — CLOSED / PROVEN
 
@@ -261,50 +260,37 @@ web typecheck                                       PASS
 Confirmation + Reconciliation web controls         6 passed / 2 files
 generated check                                     PASS — 345 files deterministic/current
 api-client typecheck                                PASS
-B10-D/B10-C/OpenAPI inventory backend gate          6 passed in 3.07s
+B10-D/B10-C/OpenAPI inventory backend gate          6 passed
 ```
 
 No CI/GitHub Actions were used.
 
-## B10-E — Final integration + acceptance — NEXT
+## B10-E — Final integration + acceptance — CLOSED / USER-REPORTED ACCEPTANCE
 
-B10-E integrates A/B/C/D and closes the whole B10 block.
+Closure evidence: `docs/workstreams/timeline-temporal-operational-b10-e-closure-2026-09-26.md`.
 
-Required chain:
+B10-E integrated the chain:
 
 ```text
 Session → Actual → Outcome → Confirmation → Reconciliation
 ```
 
-Required work:
+Repository integration coverage was added in:
 
 ```text
-1. prepare focused whole-B10 automated regression gate
-2. run user-local automated gate
-3. perform one integrated real-app/manual walkthrough
-4. verify negative cross-layer invariants
-5. reconcile closure docs
-6. mark whole B10 CLOSED
+apps/backend/tests/integration/temporal/test_b10_e_whole_block.py
+apps/web/src/features/temporal/timeline-truth-inspector.test.tsx
 ```
 
-Negative invariants include:
+The B10 truth inspector is mounted from the canonical Home timeline runtime. The user performed the requested integrated real-app walkthrough and reported the flow working, including correction boundaries and reload persistence.
 
-```text
-Session END does not fabricate Actual
-Actual does not fabricate Outcome
-Outcome does not fabricate Confirmation
-Confirmation does not grant resolution authority
-Reconciliation does not rewrite prior Outcome/Confirmation history
-absence at any layer is not silently interpreted as a negative fact
-```
+The B10-E-specific automated tests were added but were not separately reported as user-run at closure time; closure therefore records B10-E precisely as `USER-REPORTED ACCEPTANCE`, while B10-A through B10-D retain their `PROVEN` classifications.
 
-B10-E should not invent new ontology/persistence merely to complete acceptance. If integration exposes a real defect, fix it forward-only and re-prove the affected boundary.
-
-After B10-E closes, advance directly to B11.
+Whole B10 is now CLOSED. Advance directly to B11.
 
 ---
 
-# 4. B11 — Advanced Recurrence / Conditional / Reminder
+# 4. B11 — Advanced Recurrence / Conditional / Reminder — NEXT
 
 B11 extends recurrence and conditional/reminder behavior without RRULE-as-ontology, fake Activity materialization or an unjustified universal Reminder owner.
 
@@ -315,6 +301,8 @@ canonically supported
 truthfully handed off
 or hidden until supported
 ```
+
+Before implementation, reconcile the current B06 recurrence baseline with the relevant Domain / Logical / Physical / Database authority and inspect existing reminder/conditional UI/API intent.
 
 ---
 
