@@ -207,10 +207,10 @@ describe('Reconciliation controls', () => {
       target: { value: 'select' },
     });
     expect(screen.getByText('select richiede esattamente una Confirmation selezionata.')).toBeTruthy();
-    expect(screen.getByText('Registra Reconciliation')).toBeDisabled();
+    expect((screen.getByText('Registra Reconciliation') as HTMLButtonElement).disabled).toBe(true);
 
     fireEvent.click(screen.getByLabelText(`Seleziona Confirmation ${CONFIRMATION_A}`));
-    expect(screen.getByText('Registra Reconciliation')).not.toBeDisabled();
+    expect((screen.getByText('Registra Reconciliation') as HTMLButtonElement).disabled).toBe(false);
     fireEvent.click(screen.getByText('Registra Reconciliation'));
     await screen.findByText('Reconciliation registrata.');
 
