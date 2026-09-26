@@ -5492,6 +5492,277 @@
         "title": "ReauthenticateRequest",
         "type": "object"
       },
+      "ReconciliationCommand": {
+        "additionalProperties": false,
+        "properties": {
+          "action_code": {
+            "enum": [
+              "unresolved",
+              "select",
+              "accept_multiple",
+              "defer",
+              "escalate"
+            ],
+            "title": "Action Code",
+            "type": "string"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/ReconciliationEvidenceCommand"
+            },
+            "title": "Evidence",
+            "type": "array"
+          },
+          "expected_material_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Material State Ref"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "outcome_disposition_material_state_ref": {
+            "format": "uuid",
+            "title": "Outcome Disposition Material State Ref",
+            "type": "string"
+          },
+          "purpose_code": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Purpose Code",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "outcome_disposition_material_state_ref",
+          "purpose_code",
+          "action_code"
+        ],
+        "title": "ReconciliationCommand",
+        "type": "object"
+      },
+      "ReconciliationEvidenceCommand": {
+        "additionalProperties": false,
+        "properties": {
+          "confirmation_attestation_material_state_ref": {
+            "format": "uuid",
+            "title": "Confirmation Attestation Material State Ref",
+            "type": "string"
+          },
+          "confirmation_ref": {
+            "format": "uuid",
+            "title": "Confirmation Ref",
+            "type": "string"
+          },
+          "role_code": {
+            "enum": ["considered", "selected"],
+            "title": "Role Code",
+            "type": "string"
+          }
+        },
+        "required": [
+          "confirmation_ref",
+          "confirmation_attestation_material_state_ref",
+          "role_code"
+        ],
+        "title": "ReconciliationEvidenceCommand",
+        "type": "object"
+      },
+      "ReconciliationEvidenceResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "confirmation_attestation_material_state_ref": {
+            "format": "uuid",
+            "title": "Confirmation Attestation Material State Ref",
+            "type": "string"
+          },
+          "confirmation_ref": {
+            "format": "uuid",
+            "title": "Confirmation Ref",
+            "type": "string"
+          },
+          "role_code": {
+            "enum": ["considered", "selected"],
+            "title": "Role Code",
+            "type": "string"
+          }
+        },
+        "required": [
+          "confirmation_ref",
+          "confirmation_attestation_material_state_ref",
+          "role_code"
+        ],
+        "title": "ReconciliationEvidenceResponse",
+        "type": "object"
+      },
+      "ReconciliationHistoryResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "action_code": {
+            "enum": [
+              "unresolved",
+              "select",
+              "accept_multiple",
+              "defer",
+              "escalate"
+            ],
+            "title": "Action Code",
+            "type": "string"
+          },
+          "current_from_at": {
+            "format": "date-time",
+            "title": "Current From At",
+            "type": "string"
+          },
+          "current_until_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Until At"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/ReconciliationEvidenceResponse"
+            },
+            "title": "Evidence",
+            "type": "array"
+          },
+          "material_state_ref": {
+            "format": "uuid",
+            "title": "Material State Ref",
+            "type": "string"
+          },
+          "outcome_disposition_material_state_ref": {
+            "format": "uuid",
+            "title": "Outcome Disposition Material State Ref",
+            "type": "string"
+          },
+          "outcome_ref": {
+            "format": "uuid",
+            "title": "Outcome Ref",
+            "type": "string"
+          },
+          "purpose_code": {
+            "title": "Purpose Code",
+            "type": "string"
+          },
+          "reconciliation_ref": {
+            "format": "uuid",
+            "title": "Reconciliation Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "resolved_by_person_ref": {
+            "format": "uuid",
+            "title": "Resolved By Person Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reconciliation_ref",
+          "outcome_ref",
+          "outcome_disposition_material_state_ref",
+          "purpose_code",
+          "material_state_ref",
+          "action_code",
+          "resolved_by_person_ref",
+          "evidence",
+          "replayed",
+          "current_from_at",
+          "current_until_at"
+        ],
+        "title": "ReconciliationHistoryResponse",
+        "type": "object"
+      },
+      "ReconciliationResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "action_code": {
+            "enum": [
+              "unresolved",
+              "select",
+              "accept_multiple",
+              "defer",
+              "escalate"
+            ],
+            "title": "Action Code",
+            "type": "string"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/ReconciliationEvidenceResponse"
+            },
+            "title": "Evidence",
+            "type": "array"
+          },
+          "material_state_ref": {
+            "format": "uuid",
+            "title": "Material State Ref",
+            "type": "string"
+          },
+          "outcome_disposition_material_state_ref": {
+            "format": "uuid",
+            "title": "Outcome Disposition Material State Ref",
+            "type": "string"
+          },
+          "outcome_ref": {
+            "format": "uuid",
+            "title": "Outcome Ref",
+            "type": "string"
+          },
+          "purpose_code": {
+            "title": "Purpose Code",
+            "type": "string"
+          },
+          "reconciliation_ref": {
+            "format": "uuid",
+            "title": "Reconciliation Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "resolved_by_person_ref": {
+            "format": "uuid",
+            "title": "Resolved By Person Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reconciliation_ref",
+          "outcome_ref",
+          "outcome_disposition_material_state_ref",
+          "purpose_code",
+          "material_state_ref",
+          "action_code",
+          "resolved_by_person_ref",
+          "evidence",
+          "replayed"
+        ],
+        "title": "ReconciliationResponse",
+        "type": "object"
+      },
       "RecoveryAcceptedResponse": {
         "additionalProperties": false,
         "description": "Neutral recovery-initiation acknowledgement.",
@@ -22620,6 +22891,180 @@
         "tags": ["temporal"]
       }
     },
+    "/api/v1/temporal/outcomes/{outcome_ref}/reconciliations": {
+      "get": {
+        "operationId": "temporal_list_outcome_reconciliations",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "outcome_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Outcome Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ReconciliationResponse"
+                  },
+                  "title": "Response Temporal List Outcome Reconciliations",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Outcome unavailable."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Outcome Reconciliations",
+        "tags": ["temporal"]
+      },
+      "post": {
+        "operationId": "temporal_record_outcome_reconciliation",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "outcome_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Outcome Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReconciliationCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReconciliationResponse"
+                }
+              }
+            },
+            "description": "Idempotent replay of the already accepted reconciliation command."
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReconciliationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request."
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Authentication required."
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Mutation request rejected by security policy."
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Outcome target unavailable."
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Operation reuse, stale current state, or persistence conflict."
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Reconciliation payload rejected."
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unexpected server error."
+          }
+        },
+        "summary": "Record Outcome Reconciliation",
+        "tags": ["temporal"]
+      }
+    },
     "/api/v1/temporal/person-referents": {
       "get": {
         "operationId": "temporal_list_person_referents",
@@ -22728,6 +23173,61 @@
           }
         },
         "summary": "Rename Person Referent",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/reconciliations/{reconciliation_ref}/history": {
+      "get": {
+        "operationId": "temporal_list_outcome_reconciliation_history",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "reconciliation_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Reconciliation Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ReconciliationHistoryResponse"
+                  },
+                  "title": "Response Temporal List Outcome Reconciliation History",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Reconciliation unavailable."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Outcome Reconciliation History",
         "tags": ["temporal"]
       }
     },

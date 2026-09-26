@@ -89,6 +89,9 @@ import type {
   ProviderLinkRequiredResponse,
   ProviderLinkResponse,
   ReauthenticateRequest,
+  ReconciliationCommand,
+  ReconciliationHistoryResponse,
+  ReconciliationResponse,
   RecoveryAcceptedResponse,
   RecoveryValidationResponse,
   RecurrenceMutationResponse,
@@ -7833,6 +7836,185 @@ export const temporalListOutcomeHistory = async (
   } as temporalListOutcomeHistoryResponse;
 };
 
+export type temporalListOutcomeReconciliationsResponse200 = {
+  data: ReconciliationResponse[];
+  status: 200;
+};
+
+export type temporalListOutcomeReconciliationsResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type temporalListOutcomeReconciliationsResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalListOutcomeReconciliationsResponseSuccess =
+  temporalListOutcomeReconciliationsResponse200 & {
+    headers: Headers;
+  };
+export type temporalListOutcomeReconciliationsResponseError = (
+  | temporalListOutcomeReconciliationsResponse404
+  | temporalListOutcomeReconciliationsResponse422
+) & {
+  headers: Headers;
+};
+
+export type temporalListOutcomeReconciliationsResponse =
+  | temporalListOutcomeReconciliationsResponseSuccess
+  | temporalListOutcomeReconciliationsResponseError;
+
+export const getTemporalListOutcomeReconciliationsUrl = (
+  outcomeRef: string,
+) => {
+  return `/api/v1/temporal/outcomes/${outcomeRef}/reconciliations`;
+};
+
+/**
+ * @summary List Outcome Reconciliations
+ */
+export const temporalListOutcomeReconciliations = async (
+  outcomeRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListOutcomeReconciliationsResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalListOutcomeReconciliationsUrl(outcomeRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListOutcomeReconciliationsResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListOutcomeReconciliationsResponse;
+};
+
+export type temporalRecordOutcomeReconciliationResponse200 = {
+  data: ReconciliationResponse;
+  status: 200;
+};
+
+export type temporalRecordOutcomeReconciliationResponse201 = {
+  data: ReconciliationResponse;
+  status: 201;
+};
+
+export type temporalRecordOutcomeReconciliationResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type temporalRecordOutcomeReconciliationResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type temporalRecordOutcomeReconciliationResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type temporalRecordOutcomeReconciliationResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type temporalRecordOutcomeReconciliationResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type temporalRecordOutcomeReconciliationResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type temporalRecordOutcomeReconciliationResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type temporalRecordOutcomeReconciliationResponseSuccess = (
+  | temporalRecordOutcomeReconciliationResponse200
+  | temporalRecordOutcomeReconciliationResponse201
+) & {
+  headers: Headers;
+};
+export type temporalRecordOutcomeReconciliationResponseError = (
+  | temporalRecordOutcomeReconciliationResponse400
+  | temporalRecordOutcomeReconciliationResponse401
+  | temporalRecordOutcomeReconciliationResponse403
+  | temporalRecordOutcomeReconciliationResponse404
+  | temporalRecordOutcomeReconciliationResponse409
+  | temporalRecordOutcomeReconciliationResponse422
+  | temporalRecordOutcomeReconciliationResponse500
+) & {
+  headers: Headers;
+};
+
+export type temporalRecordOutcomeReconciliationResponse =
+  | temporalRecordOutcomeReconciliationResponseSuccess
+  | temporalRecordOutcomeReconciliationResponseError;
+
+export const getTemporalRecordOutcomeReconciliationUrl = (
+  outcomeRef: string,
+) => {
+  return `/api/v1/temporal/outcomes/${outcomeRef}/reconciliations`;
+};
+
+/**
+ * @summary Record Outcome Reconciliation
+ */
+export const temporalRecordOutcomeReconciliation = async (
+  outcomeRef: string,
+  reconciliationCommand: ReconciliationCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalRecordOutcomeReconciliationResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalRecordOutcomeReconciliationUrl(outcomeRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(reconciliationCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalRecordOutcomeReconciliationResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalRecordOutcomeReconciliationResponse;
+};
+
 export type temporalListPersonReferentsResponse200 = {
   data: PersonReferentResponse[];
   status: 200;
@@ -8005,6 +8187,70 @@ export const temporalRenamePersonReferent = async (
     status: res.status,
     headers: res.headers,
   } as temporalRenamePersonReferentResponse;
+};
+
+export type temporalListOutcomeReconciliationHistoryResponse200 = {
+  data: ReconciliationHistoryResponse[];
+  status: 200;
+};
+
+export type temporalListOutcomeReconciliationHistoryResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type temporalListOutcomeReconciliationHistoryResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalListOutcomeReconciliationHistoryResponseSuccess =
+  temporalListOutcomeReconciliationHistoryResponse200 & {
+    headers: Headers;
+  };
+export type temporalListOutcomeReconciliationHistoryResponseError = (
+  | temporalListOutcomeReconciliationHistoryResponse404
+  | temporalListOutcomeReconciliationHistoryResponse422
+) & {
+  headers: Headers;
+};
+
+export type temporalListOutcomeReconciliationHistoryResponse =
+  | temporalListOutcomeReconciliationHistoryResponseSuccess
+  | temporalListOutcomeReconciliationHistoryResponseError;
+
+export const getTemporalListOutcomeReconciliationHistoryUrl = (
+  reconciliationRef: string,
+) => {
+  return `/api/v1/temporal/reconciliations/${reconciliationRef}/history`;
+};
+
+/**
+ * @summary List Outcome Reconciliation History
+ */
+export const temporalListOutcomeReconciliationHistory = async (
+  reconciliationRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListOutcomeReconciliationHistoryResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalListOutcomeReconciliationHistoryUrl(reconciliationRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListOutcomeReconciliationHistoryResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListOutcomeReconciliationHistoryResponse;
 };
 
 export type temporalCreateRecurringEventResponse200 = {
