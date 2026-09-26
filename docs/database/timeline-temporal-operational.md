@@ -1,11 +1,11 @@
 # Timeline / Temporal-Operational — Candidate Database Overlay
 
-- **Status:** CURRENT CANDIDATE DATABASE AUTHORITY — B10-C `_79` locally proven
+- **Status:** CURRENT CANDIDATE DATABASE AUTHORITY — B10-D `_80` locally proven
 - **Reconciled:** 2026-09-26
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
-- **Candidate source head:** `20260925_79`
-- **Last proven candidate topology:** B10-C / `20260925_79` / `167|5|123|93|329|279|446`
+- **Candidate source head / proven persistence frontier:** `20260926_80`
+- **Last explicitly recorded whole-topology count:** B10-C `_79` / `167|5|123|93|329|279|446`
 - **Whole-DB SoR:** `README.md`
 - **Machine-readable authority:** `dictionary/`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
@@ -24,6 +24,10 @@ Product / Domain / Logical / Physical
 → live PostgreSQL
 → direct proof
 ```
+
+PostgreSQL remains canonical. API/client/frontend/provider/AI are projections and do not create a second truth model.
+
+Published migrations are immutable. Any persistence correction is forward-only.
 
 ## 2. Candidate evolution
 
@@ -46,53 +50,48 @@ Product / Domain / Logical / Physical
     ↓
 20260925_66 → 20260925_69 B09 Responsibility / Participation
     ↓
-20260925_70 B10-A guarded Actual realization authoring/read
-    ↓
-20260925_71 B10-A exact Activity/Event/Occurrence subject-family authority
-    ↓
-20260925_72 B10-A CP6 Actual/scoped-address owner-creation-order repair
-    ↓
-20260925_73 B10-A canonical family-aware function signatures
-    ↓
-20260925_74 B10-A current-history qualification + bounded receipt FK name
+20260925_70 → 20260925_74 B10-A Actual
     ↓
 20260925_75 → 20260925_78 B10-B Outcome
     ↓
 20260925_79 B10-C Confirmation
+    ↓
+20260926_80 B10-D Reconciliation
 ```
 
-Published migrations remain immutable. `_72`–`_74` and `_76`–`_78` are forward-only acceptance repairs. `_79` is the B10-C candidate.
+## 3. Proven frontier and topology discipline
 
-## 3. Current candidate topology
+B10-D functional persistence frontier is:
 
 ```text
-Alembic     20260925_79 candidate / 20260925_78 proven
-Tables      167
-Views       5
-Routines    123
-Triggers    93
-Indexes     329
-FKs         279
-CHECKs      446
-Enums       0
-Domains     0
-Sequences   0
-Materialized/partitioned 0
-RLS         0
+Alembic 20260926_80
 ```
 
-User-run local PostgreSQL/application/catalog proof on 2026-09-25 passed at `_74`:
+The B10-D closure proof did not include a newly recorded whole-database topology tuple. Therefore this overlay does **not** invent one. The last explicitly recorded whole-topology tuple remains the B10-C `_79` value:
 
 ```text
-14 passed in 25.06s
-POSTGRES TEST EXIT: 0
+167|5|123|93|329|279|446
 ```
 
-The passing gate included B10-A realization/application/API behavior, B08 Session regression, B09 whole-block regression, current catalog reconciliation and whole-database cross-representation reconciliation.
+When a later catalog/topology gate records the `_80` tuple, update this document from evidence rather than arithmetic inference.
 
-## 4. Session persistence remains distinct
+## 4. Permanent persistence boundaries
 
-B08 reuses the existing CP6 Session identity/timing substrate:
+```text
+Schedule != Session != Actual
+Session != Actual != Outcome
+Actual != Outcome != Confirmation
+Confirmation != Reconciliation
+current accepted state != latest row
+MaterialState != mutable runtime object
+idempotency operation receipt != Domain identity
+```
+
+`dante.schedule` remains accepted-placement authority. Session timing does not establish Actual. Actual does not establish Outcome. Outcome does not establish Confirmation. Confirmation does not grant reconciliation authority.
+
+## 5. B08 Session persistence remains distinct
+
+B08 reuses the CP6 Session timing substrate:
 
 ```text
 session
@@ -103,54 +102,17 @@ session_timing_pause
 session_timing_current_history
 ```
 
-Permanent boundaries remain:
-
 ```text
-Schedule != Session
-Session != Actual
-Session != Outcome
-Session END != Activity completion
-Session END != Occurrence completion
-planned Schedule duration != Session elapsed/active duration
+START does not fabricate Schedule
+END does not create Actual
+END does not create Outcome
+pause does not create a new Session
+planned Schedule duration != Session active duration
 ```
 
-Session START on an unplaced Activity remains valid and does not fabricate Schedule. Session END does not establish Actual or Outcome.
+## 6. B09 Responsibility / Participation persistence
 
-## 5. Existing Schedule authority remains unchanged
-
-`dante.schedule` remains the sole accepted-placement authority. Actual realization is not a placement authority and does not mutate Schedule.
-
-Deferred constraint families remain:
-
-```text
-TC-009 Session active-duration minimum → activated/proven in B08-C `_65`
-TC-010 spacing/recovery             → later anchor-specific reopening
-TC-011 relative before/after        → future bounded relation/reference review
-```
-
-## 6. Proof state
-
-```text
-B01–B06                              ✅ CLOSED / PROVEN
-B08                                  ✅ CLOSED / USER-REPORTED / PROVEN SUBBLOCKS
-B09-A `_66` persistence             ✅ CLOSED / PROVEN 2026-09-25
-B09-B `_67`–`_68` authoring        ✅ CLOSED / PROVEN 2026-09-25
-B09-C `_69` Person referents        ✅ CLOSED / PROVEN 2026-09-25
-B09-D whole-block integration        ✅ CLOSED / USER-REPORTED 2026-09-25
-B10-A `_70`–`_74` Actual core       ✅ CLOSED / PROVEN 2026-09-25
-```
-
-B10-A closure evidence is recorded in `../workstreams/timeline-temporal-operational-b10-a-closure-2026-09-25.md`. No B10-A real-app proof is required at this point; the integrated B10 real-app proof is deferred to B10-E.
-
-## 7. B08-B / B08-C candidate database semantics
-
-B08-B `_62`–`_64` reuses the CP6 Session timing substrate and returns elapsed, paused and active seconds from canonical timing and pause facts. It adds no parallel Session table.
-
-B08-C `_65` activates `duration / session.active_duration` only for a soft minimum rule directly owned by an Activity. It reuses `temporal_constraint_state`, `temporal_constraint_duration_state`, the existing current-history envelope and the existing duration mutation capability. The evaluation is not persisted and never blocks Pause/Resume/End or creates Schedule/completion/Actual/Outcome.
-
-## 8. B09 candidate database semantics
-
-B09-A `_66` adds typed current relations:
+Typed current relations introduced by B09:
 
 ```text
 event_expected_participation
@@ -158,21 +120,17 @@ activity_responsibility
 event_responsibility
 ```
 
-B09-B `_67` keeps those tables default-deny and adds guarded mutation/read capabilities plus immutable operation receipts. `_69` admits the caller's self Person or an owner-local registered Person without creating Account identity.
+B09-B guarded mutation keeps raw relation tables out of the runtime mutation surface. B09-C admits self or owner-local registered Person referents without collapsing Person into Account.
 
 ```text
-Responsibility != Participation
-expected Participation != Actual / attendance
 Person != Account
+Responsibility != Participation
+expected Participation != Actual attendance
 ```
 
-B09-D adds no new DB object.
+## 7. B10-A Actual — CLOSED / PROVEN
 
-## 9. B10-A Actual candidate database semantics — CLOSED / PROVEN
-
-B10-A activates explicit realization over the existing CP6 Actual substrate rather than creating a parallel reality model.
-
-Canonical owner/state family:
+Canonical family:
 
 ```text
 actual
@@ -181,142 +139,179 @@ actual_realization_timing
 actual_realization_session_basis
 actual_realization_current_history
 actual_current_realization
-```
-
-B10-A adds exactly one new persistent control table:
-
-```text
 actual_realization_operation
+facet: actual.realization
 ```
 
-That table is an immutable self-scoped idempotency receipt. `operation_id` is not Actual identity.
-
-Canonical guarded capability names at `_74`:
+Exact subject contract:
 
 ```text
-_actual_subject_owned
-_actual_subject_owned_as
-record_self_actual_realization
-get_self_subject_actual
-list_self_actual_history
-list_self_actual_session_bases
-```
-
-The Dictionary intentionally models one canonical routine per PostgreSQL `proname`. `_73` removed the hidden generic overloads introduced during the first acceptance iteration so live PostgreSQL and Dictionary remain exactly reconcilable.
-
-### Exact subject contract
-
-```text
-Activity   → Actual subject ✅
-Event      → Actual subject ✅
-Occurrence → Actual subject ✅
-Routine    → direct Actual subject ❌
-Schedule   → Actual subject/owner ❌
+Activity   → Actual ✅
+Event      → Actual ✅
+Occurrence → Actual ✅
+Routine    → direct Actual ❌
+Schedule   → Actual identity ❌
 Session    → Actual identity ❌
 ```
 
-`_71` requires the requested family to match `native_address.owner_family` exactly before authoring or reading subject Actual.
-
-### Actual realization contract
-
 ```text
-Actual owner identity is stable per accepted subject realization context.
-Realization state is append-only MaterialState truth.
-Current accepted realization is explicit scoped current binding/history.
-No Actual means unknown.
-realization_occurred=false means known non-realization.
+absence of Actual = unknown
+realization_occurred=false = known non-realization
+Session evidence != Actual identity
+current accepted realization != latest row
 ```
 
-Optional realized timing is bounded to:
+Proven frontier:
 
 ```text
-instant
-start_only
-interval
-```
-
-Optional Session basis stores both:
-
-```text
-session_ref
-session_timing_material_state_ref
-```
-
-and is accepted only when that exact Session timing state is evidence for the same subject.
-
-### Runtime ACL
-
-Runtime receives no raw mutation surface for the Actual realization family. Consequential mutation is behind `SECURITY DEFINER` capability functions. Actual realization tables/views retain only the read privileges required by the application where applicable.
-
-### Acceptance repairs
-
-The user-run local gate exposed and closed real database defects without weakening proof:
-
-```text
-_72  CP6 owner/scoped-address insert order
-_73  exact Dictionary/live routine representation by removing hidden overloads
-_74  PL/pgSQL output-column ambiguity in current-history correction
-_74  canonical FK name below PostgreSQL identifier-length limit
-```
-
-Final proven B10-A topology remains:
-
-```text
+20260925_74
 159|5|115|93|305|258|435
 ```
 
-### Permanent B10-A boundaries
+## 8. B10-B Outcome — CLOSED / PROVEN
+
+Canonical family:
 
 ```text
-Schedule != Session != Actual
-Session END != Actual
-Session evidence != Actual identity
-Actual != Outcome != Confirmation
-Expected outcome != Outcome
-absence of Actual != known non-realization
-current accepted state != latest row
-provider/AI/solver != realization authority
-```
-
-## 10. B10-B Outcome — CLOSED / PROVEN
-
-Proven chain `_75`–`_78`. Proven topology `163|5|119|93|317|268|440`.
-
-```text
-dante.outcome
-dante.outcome_disposition_state
-dante.outcome_disposition_current_history
-dante.outcome_disposition_operation
+outcome
+outcome_disposition_state
+outcome_disposition_current_history
+outcome_disposition_operation
 facet: outcome.disposition
 ```
 
 ```text
-one Outcome per Actual
+one stable Outcome per Actual
 disposition pinned to exact Actual realization MaterialState
+Actual correction does not reinterpret older Outcome disposition
 current accepted Outcome state != latest row
-Outcome != Confirmation
 ```
 
-## 11. B10-C Confirmation — CLOSED / PROVEN
+The initial `_75` vocabulary/result representation is superseded by `_76`–`_78` and must not be reintroduced.
 
-Proven revision `_79`. Proven topology `167|5|123|93|329|279|446`.
+Proven frontier:
 
 ```text
-dante.confirmation
-dante.confirmation_attestation_state
-dante.confirmation_attestation_current_history
-dante.confirmation_attestation_operation
+20260925_78
+163|5|119|93|317|268|440
+```
+
+## 9. B10-C Confirmation — CLOSED / PROVEN
+
+Canonical family:
+
+```text
+confirmation
+confirmation_attestation_state
+confirmation_attestation_current_history
+confirmation_attestation_operation
 facet: confirmation.attestation
 ```
 
+Stable identity:
+
 ```text
-Confirmation != Outcome
-0..N Confirmation per exact Outcome disposition MaterialState
-identity = (target MS, confirmer, purpose)
-stance_code is contextual, not confirmed=true
-Outcome correction does not transfer old Confirmation
+(outcome_disposition_material_state_ref, confirmer_person_ref, purpose_code)
 ```
 
-## 12. Next database cursor
+```text
+0..N Confirmation per exact Outcome disposition MaterialState
+stance_code is contextual, not confirmed=true
+absence of Confirmation != false
+Outcome correction does not transfer Confirmation
+```
 
-B10-C `_79` is locally proven. Do not start B10-D until the user approves that gate. Do not invent a generic Resolution entity.
+Proven frontier:
+
+```text
+20260925_79
+167|5|123|93|329|279|446
+```
+
+## 10. B10-D Reconciliation — CLOSED / PROVEN
+
+Forward-only revision:
+
+```text
+20260926_80
+```
+
+Canonical family:
+
+```text
+outcome_reconciliation
+outcome_reconciliation_state
+outcome_reconciliation_evidence
+outcome_reconciliation_current_history
+outcome_reconciliation_operation
+facet: outcome.reconciliation
+```
+
+Stable identity:
+
+```text
+(outcome_disposition_material_state_ref, purpose_code)
+```
+
+Resolver authority:
+
+```text
+Outcome owner is the only resolver in B10-D
+Confirmation participation does not grant resolution authority
+resolved_by_person_ref is state data, not owner identity
+```
+
+Exact evidence pinning:
+
+```text
+confirmation_ref
+confirmation_attestation_material_state_ref
+role_code = considered | selected
+```
+
+Every evidence state must belong to the exact Outcome disposition MaterialState being reconciled.
+
+```text
+Confirmation correction does not reinterpret prior reconciliation
+Outcome correction does not transfer reconciliation
+reconciliation correction appends a new MaterialState
+prior evidence/history remains immutable
+expected_material_state_ref guards current-state correction
+operation receipt != reconciliation identity
+```
+
+Approved action codes:
+
+```text
+unresolved
+select
+accept_multiple
+defer
+escalate
+```
+
+B10-D local persistence/runtime/API proof:
+
+```text
+4 passed in 14.94s
+```
+
+Final generated/client/web/OpenAPI closure proof:
+
+```text
+web typecheck PASS
+web controls 6/6 PASS
+generated check PASS — 345 files deterministic/current
+api-client typecheck PASS
+backend B10-D/B10-C/OpenAPI inventory 6/6 PASS in 3.07s
+```
+
+Closure evidence: `../workstreams/timeline-temporal-operational-b10-d-closure-2026-09-26.md`.
+
+## 11. Current database cursor
+
+B10-D `_80` is locally proven and closed. **B10-E is integration/acceptance**, not a planned new persistence family.
+
+Do not add a generic Resolution, Decision, Verification or Provenance database owner merely to complete B10-E.
+
+If the integrated B10-E proof exposes a real persistence defect, repair it with a new forward-only migration and re-run the affected database/catalog gates.
