@@ -21,7 +21,7 @@ from dante.modules.temporal.confirmation_runtime import (
     ConfirmationView,
 )
 from dante.platform.database.references import MaterialStateRef, ScopedRecordRef
-from dante.platform.http.problem import ProblemError
+from dante.platform.http.problem import ProblemDetails, ProblemError
 
 router = APIRouter(prefix="/api/v1/temporal", tags=["temporal"])
 
@@ -53,6 +53,21 @@ class ConfirmationResponse(BaseModel):
 class ConfirmationHistoryResponse(ConfirmationResponse):
     current_from_at: datetime
     current_until_at: datetime | None
+
+
+_CONFIRMATION_WRITE_RESPONSES = {
+    200: {
+        "model": ConfirmationResponse,
+        "description": "Idempotent replay of the already accepted Confirmation command.",
+    },
+    400: {"model": ProblemDetails, "description": "Malformed request."},
+    401: {"model": ProblemDetails, "description": "Authentication required."},
+    403: {"model": ProblemDetails, "description": "Mutation request rejected by security policy."},
+    404: {"model": ProblemDetails, "description": "Outcome target unavailable."},
+    409: {"model": ProblemDetails, "description": "Operation reuse, stale current state, or persistence conflict."},
+    422: {"model": ProblemDetails, "description": "Confirmation payload rejected."},
+    500: {"model": ProblemDetails, "description": "Unexpected server error."},
+}
 
 
 def _application(request: Request) -> ConfirmationApplication:
@@ -134,6 +149,8 @@ def _problem(exc: Exception) -> ProblemError:
 @router.post(
     "/outcomes/{outcome_ref}/confirmations",
     response_model=ConfirmationResponse,
+    status_code=201,
+    responses=_CONFIRMATION_WRITE_RESPONSES,
     operation_id="temporal_record_outcome_confirmation",
 )
 async def record_outcome_confirmation(
