@@ -1,8 +1,16 @@
 # Timeline / Temporal-Operational — B10 scope freeze
 
-Status: **B10-A / B10-B / B10-C / B10-D CLOSED / PROVEN; B10-E NEXT**.
+Status: **B10 CLOSED 2026-09-26**.
 
-This document is the current B10 semantic and execution authority. It freezes the proven Actual → Outcome → Confirmation → Reconciliation chain without redefining the canonical Domain / Logical / Physical model.
+```text
+B10-A Actual          CLOSED / PROVEN
+B10-B Outcome         CLOSED / PROVEN
+B10-C Confirmation    CLOSED / PROVEN
+B10-D Reconciliation  CLOSED / PROVEN
+B10-E Integration     CLOSED / USER-REPORTED ACCEPTANCE
+```
+
+This document is the closed B10 semantic authority. It freezes the Actual → Outcome → Confirmation → Reconciliation chain without redefining the canonical Domain / Logical / Physical model.
 
 ## 1. Permanent B10 boundaries
 
@@ -32,15 +40,7 @@ Undo != history rewind
 
 PostgreSQL remains canonical authority. API, generated client, frontend, provider, solver and AI are projections/capabilities and may not create a second truth model.
 
-## 2. Proven execution frontier
-
-```text
-B10-A Actual          CLOSED / PROVEN  2026-09-25
-B10-B Outcome         CLOSED / PROVEN  2026-09-25
-B10-C Confirmation    CLOSED / PROVEN  2026-09-26
-B10-D Reconciliation  CLOSED / PROVEN  2026-09-26
-B10-E Integration     NEXT
-```
+## 2. Closed execution frontier
 
 Persistence frontier:
 
@@ -241,7 +241,7 @@ web typecheck PASS
 Confirmation + Reconciliation web tests 6/6 PASS
 pnpm generated:check PASS
 @dante/api-client typecheck PASS
-B10-D/B10-C/OpenAPI inventory backend tests 6/6 PASS in 3.07s
+B10-D/B10-C/OpenAPI inventory backend tests 6/6 PASS
 ```
 
 Earlier PostgreSQL/runtime/API + direct B10-C regression proof:
@@ -253,17 +253,17 @@ Earlier PostgreSQL/runtime/API + direct B10-C regression proof:
 Scope authority: `timeline-temporal-operational-b10-d-scope-2026-09-26.md`.
 Closure evidence: `timeline-temporal-operational-b10-d-closure-2026-09-26.md`.
 
-## 7. B10-E boundary — NEXT
+## 7. B10-E — Final integration / acceptance — CLOSED / USER-REPORTED ACCEPTANCE
 
-B10-E is integration/acceptance of already-proven A/B/C/D behavior. It does not create a new semantic layer merely to make the walkthrough pass.
+B10-E integrated already-proven A/B/C/D behavior; it did not create a new semantic layer.
 
-Required integrated chain:
+Integrated chain:
 
 ```text
 Session → Actual → Outcome → Confirmation → Reconciliation
 ```
 
-Required negative invariants include:
+Negative invariants retained:
 
 ```text
 Session END does not fabricate Actual
@@ -274,16 +274,18 @@ Reconciliation does not rewrite Outcome or Confirmation history
 absence at any layer is not silently converted into a negative fact
 ```
 
-B10-E owns:
+Repository integration coverage was added in:
 
 ```text
-focused whole-B10 automated regression
-single integrated real-app/manual walkthrough
-documentation reconciliation
-whole-B10 close decision
+apps/backend/tests/integration/temporal/test_b10_e_whole_block.py
+apps/web/src/features/temporal/timeline-truth-inspector.test.tsx
 ```
 
-After B10-E closes, advance to B11.
+The truth inspector is mounted from the canonical Home timeline runtime. The user performed the integrated real-app walkthrough on 2026-09-26 and reported the flow working, including correction/no-transfer behavior and reload persistence.
+
+The B10-E-specific automated tests were not separately reported as user-run at closure time; do not relabel them as locally proven. Closure evidence: `timeline-temporal-operational-b10-e-closure-2026-09-26.md`.
+
+Whole B10 is CLOSED. The next implementation block is B11.
 
 ## 8. Explicitly outside B10
 
