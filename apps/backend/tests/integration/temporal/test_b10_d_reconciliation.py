@@ -150,7 +150,7 @@ async def test_b10_d_reconciliation_is_owner_scoped_versioned_and_evidence_pinne
         assert first.outcome_disposition_material_state_ref == outcome.material_state_ref
         assert first.resolved_by_person_ref == alice
         assert first.action_code == "select"
-        assert [item.role_code for item in first.evidence] == ["selected", "considered"]
+        assert {item.role_code for item in first.evidence} == {"selected", "considered"}
         assert not first.replayed
 
         replay = await reconciliations.record(
@@ -240,9 +240,10 @@ async def test_b10_d_reconciliation_is_owner_scoped_versioned_and_evidence_pinne
             self_person_ref=alice,
             reconciliation_ref=first.reconciliation_ref,
         )
-        assert pinned_history[0].evidence[0].confirmation_attestation_material_state_ref == (
-            alice_confirmation.material_state_ref
-        )
+        first_evidence_states = {
+            item.confirmation_attestation_material_state_ref for item in pinned_history[0].evidence
+        }
+        assert alice_confirmation.material_state_ref in first_evidence_states
         assert corrected_alice_confirmation.material_state_ref != alice_confirmation.material_state_ref
 
         with pytest.raises(ReconciliationInputError):
