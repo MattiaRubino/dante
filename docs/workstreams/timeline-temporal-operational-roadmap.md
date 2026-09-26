@@ -455,4 +455,4 @@ B07     ⏸ DEFERRED UNTIL B14
 B15     ⬜ NOT STARTED
 ```
 
-**Current action:** the B10-C local gate is green. Commit the generated client only when the user asks. Do not start B10-D until the user approves that gate. Do not hand-edit generated artifacts. Do not use CI/GitHub Actions.
+**Current action:** B10-C is closed at `20260925_79` / `30f15adf`. Do not start B10-D until the user approves that gate. Do not hand-edit generated artifacts. Do not use CI/GitHub Actions.

@@ -181,4 +181,4 @@ Published Alembic revisions remain immutable. `20260925_70` through `20260925_75
 
 ## 11. Current action
 
-**Current action:** B10-C local proof is green and closure docs are reconciled. Commit the generated client only when the user asks. Do not perform the manual real-app proof yet. Do not start B10-D until the user approves that gate.
+**Current action:** B10-C is closed. Generated client is `30f15adf`. Do not perform the manual real-app proof yet. Do not start B10-D until the user approves that gate.

@@ -67,7 +67,11 @@ focused backend/API/web tests
 generated OpenAPI/Orval client artifacts in the worktree
 ```
 
-Generated artifacts passed the local determinism check. They are not committed in this closure record.
+Generated artifacts passed the local determinism check and were committed at:
+
+```text
+30f15adf  feat(api-client): generate B10-C Confirmation contracts
+```
 
 ## User-local automated proof
 

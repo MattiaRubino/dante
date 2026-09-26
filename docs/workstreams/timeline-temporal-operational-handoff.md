@@ -12,7 +12,7 @@
 - **B10-C closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-c-closure-2026-09-26.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
 - **Last proven frontier:** B10-C / Alembic `20260925_79` / topology `167|5|123|93|329|279|446`
-- **Generated client:** regenerated locally and checked (339 files); not yet committed
+- **Generated client:** `30f15adf` — 339 files
 - **CI:** no CI/GitHub Actions unless explicitly authorized; user runs local tests
 
 Read this first after a context reset. Repository HEAD remains the source of truth; re-fetch it before any write.
@@ -81,7 +81,7 @@ B10-C is CLOSED / PROVEN. B10-B remains CLOSED / PROVEN at `20260925_78` / `163|
 ```text
 Alembic  20260925_79
 Topology 167|5|123|93|329|279|446
-Generated check 339 files, uncommitted
+Generated client commit 30f15adf
 ```
 
 ```text
@@ -140,7 +140,7 @@ GET  /api/v1/temporal/confirmations/{confirmation_ref}/history
 
 Write records confirmer as authenticated self and does not require Outcome ownership. List is Outcome-owner scoped and returns 0..N. History is visible to confirmer or Outcome owner.
 
-Generated OpenAPI/Orval artifacts were regenerated locally and passed the determinism check. They remain uncommitted. Never hand-edit generated files.
+Generated OpenAPI/Orval artifacts were regenerated locally, passed the determinism check, and are committed at `30f15adf`. Never hand-edit generated files.
 
 ---
 
@@ -200,4 +200,4 @@ integrated real-app walkthrough
 10. docs/database/timeline-temporal-operational.md + Dictionary/scope
 ```
 
-**Exact next action:** the generated Confirmation client is in the worktree and checked. Commit it only when the user asks. Do not start B10-D until the user approves that gate.
+**Exact next action:** B10-C is closed. Do not start B10-D until the user approves that gate.

@@ -102,7 +102,7 @@ POSTGRES TEST EXIT: 0
 
 The accepted B10-A vertical also passed repository generation/check, API-client typecheck, web typecheck, focused web tests and OpenAPI inventory during the same local acceptance cycle. Generated OpenAPI/Orval artifacts are committed at `780c612d`. No CI/GitHub Actions were used.
 
-User-run local proof on 2026-09-26 established B10-C `_79` at `167|5|123|93|329|279|446`. That cycle passed generation/check (339 files), API-client typecheck, web typecheck, focused web tests, OpenAPI inventory, B10-C Confirmation, and B10-B/B10-A/B09/B08/current-catalog regressions. Generated OpenAPI/Orval artifacts are in the worktree and are not committed. No CI/GitHub Actions were used.
+User-run local proof on 2026-09-26 established B10-C `_79` at `167|5|123|93|329|279|446`. That cycle passed generation/check (339 files), API-client typecheck, web typecheck, focused web tests, OpenAPI inventory, B10-C Confirmation, and B10-B/B10-A/B09/B08/current-catalog regressions. Generated OpenAPI/Orval artifacts are committed at `30f15adf`. No CI/GitHub Actions were used.
 
 ## 4. Timeline persistence classification
 

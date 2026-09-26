@@ -323,7 +323,7 @@ GET  /api/v1/temporal/outcomes/{outcome_ref}/confirmations
 GET  /api/v1/temporal/confirmations/{confirmation_ref}/history
 ```
 
-Generated client was regenerated locally and checked at 339 files. It is not committed.
+Generated client commit: `30f15adf` (339 files).
 
 Later B10:
 
@@ -391,4 +391,4 @@ B07     ⏸ DEFERRED UNTIL B14
 B15     ⬜ NOT STARTED
 ```
 
-**Next concrete action:** commit the generated Confirmation client only when the user asks. Do not start B10-D until the user approves that gate. No CI/GitHub Actions.
+**Next concrete action:** B10-C is closed. Do not start B10-D until the user approves that gate. No CI/GitHub Actions.
