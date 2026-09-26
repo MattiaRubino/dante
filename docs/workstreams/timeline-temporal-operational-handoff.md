@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B10 IN PROGRESS — B10-A/B10-B/B10-C CLOSED / PROVEN; B10-C post-closure OpenAPI hardening CLOSED / PROVEN; B10-D modification gate active
+- **Status:** B10 IN PROGRESS — B10-A/B10-B/B10-C CLOSED / PROVEN; B10-D persistence/runtime/API locally proven; generated-client gate active
 - **Reconciled:** 2026-09-26
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -10,10 +10,11 @@
 - **B10-B closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-b-closure-2026-09-25.md`
 - **B10-C scope:** `docs/workstreams/timeline-temporal-operational-b10-c-scope-2026-09-25.md`
 - **B10-C closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-c-closure-2026-09-26.md`
+- **B10-D scope:** `docs/workstreams/timeline-temporal-operational-b10-d-scope-2026-09-26.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Last proven persistence frontier:** B10-C / Alembic `20260925_79` / topology `167|5|123|93|329|279|446`
-- **Generated B10-C client baseline:** `30f15adf` — 339 files
-- **Post-closure generated response-contract refresh:** `57303315` — deterministic/current; local contract gate 4 passed
+- **Last locally proven persistence frontier:** B10-D / Alembic `20260926_80`
+- **B10-C generated client baseline:** `57303315`
+- **B10-D generated client:** pending repository generation tooling
 - **CI:** no CI/GitHub Actions unless explicitly authorized; user runs local tests
 
 Read this first after a context reset. Repository HEAD remains the source of truth; re-fetch it before any write.
@@ -30,9 +31,13 @@ B10     🟨 IN PROGRESS
   B10-A ✅ CLOSED / PROVEN 2026-09-25
   B10-B ✅ CLOSED / PROVEN 2026-09-25
   B10-C ✅ CLOSED / PROVEN 2026-09-26
-          ↳ post-closure OpenAPI response hardening CLOSED / PROVEN
-          ↳ generated refresh 57303315; local contract gate 4 passed in 2.54s
-  B10-D 🟨 ACTIVE — modification gate / reconciliation-resolution workflow
+          ↳ post-closure OpenAPI hardening + generated refresh CLOSED / PROVEN
+  B10-D 🟨 ACTIVE
+          D1 scope freeze                 ✅
+          D2 persistence + backend core   ✅ local PostgreSQL proof
+          D3 public API/generated client  🟨 OpenAPI source frozen; generated refresh next
+          D4 web controls                 ⬜
+          D5 focused regression closure   ⬜
   B10-E ⬜ Final integration + single real-app proof
 B11     ⬜ NOT STARTED
 B13     ⬜ NOT STARTED
@@ -65,6 +70,8 @@ Outcome != Observation
 Outcome != lifecycle / operational state
 Confirmation != Authority != Verification
 Confirmation != Decision / Approval
+Reconciliation != universal truth
+Reconciliation != Confirmation != Outcome
 Responsibility != Participation
 planned/intended != happened
 projection != canonical truth
@@ -163,7 +170,7 @@ GET  /api/v1/temporal/confirmations/{confirmation_ref}/history
 
 Proven persistence frontier: `20260925_79` / `167|5|123|93|329|279|446`.
 
-Post-closure public contract is also proven:
+Public contract:
 
 ```text
 201 ConfirmationResponse  creation
@@ -171,43 +178,101 @@ Post-closure public contract is also proven:
 400/401/403/404/409/422/500 ProblemDetails
 ```
 
-Generated refresh: `57303315`. Final local contract gate: `4 passed in 2.54s`.
+Generated refresh: `57303315`.
+
+## B10-D — Reconciliation
+
+Approved scope:
+
+```text
+identity = (outcome_disposition_material_state_ref, purpose_code)
+Outcome owner is the only resolver in this slice
+Confirmation participation does not grant resolution authority
+evidence pins exact Confirmation attestation MaterialStates
+Outcome correction does not transfer reconciliation
+Confirmation correction does not reinterpret old reconciliation
+current accepted reconciliation state != latest arbitrary row
+```
+
+Physical family in `_80`:
+
+```text
+dante.outcome_reconciliation
+dante.outcome_reconciliation_state
+dante.outcome_reconciliation_evidence
+dante.outcome_reconciliation_current_history
+dante.outcome_reconciliation_operation
+facet: outcome.reconciliation
+```
+
+Public routes:
+
+```text
+POST /api/v1/temporal/outcomes/{outcome_ref}/reconciliations
+GET  /api/v1/temporal/outcomes/{outcome_ref}/reconciliations
+GET  /api/v1/temporal/reconciliations/{reconciliation_ref}/history
+```
+
+Actions:
+
+```text
+unresolved
+select
+accept_multiple
+defer
+escalate
+```
+
+Local proof executed by user on 2026-09-26:
+
+```text
+B10-D persistence test
+B10-D API test
+B10-C persistence regression
+B10-C API regression
+
+4 passed in 14.94s
+```
+
+Therefore `_80` + reconciliation runtime/API + direct Confirmation regression are locally proven. Do not mark B10-D CLOSED yet.
 
 ---
 
-# 4. B10-D active modification gate
+# 4. Exact next step — D3 generated client
 
-B10-D is reconciliation / resolution workflow. No B10-D persistence or API implementation is accepted yet.
-
-Before implementation, read and reconcile current Product / Domain / Logical / Physical / Database authority. The gate must answer, from repository authority rather than chat assumptions:
+Source OpenAPI contract is now frozen by:
 
 ```text
-what exactly is being reconciled
-whether reconciliation is a process, decision, state, relationship or combination
-what an accepted resolution changes canonically
-what conflicting evidence/history must remain immutable
-who may propose vs who may accept an effect
-whether authority is actor-/context-/purpose-scoped
-whether any new persistent entity is justified
-whether a new MaterialState facet is justified
-what identity/current-history/idempotency rules follow
-what public API and UI are permitted before B10-E
+apps/backend/tests/test_b10_d_openapi_contract.py
+apps/backend/tests/test_temporal_openapi_inventory.py
 ```
 
-B10-D must preserve at least:
+Required next gate:
 
 ```text
-Confirmation != Decision / Approval / Authority
-conflicting Confirmation history is not deleted
-Outcome history is not rewritten as reconciliation
-Actual history is not rewritten as reconciliation
-latest row != accepted resolution
-proposal != accepted effect
-no generic Resolution ontology entity unless current authority justifies it
-AI/provider does not become canonical authority
+1. pull current branch
+2. run B10-D OpenAPI/inventory tests
+3. run pnpm api:generate
+4. run pnpm generated:check
+5. run @dante/api-client typecheck
+6. inspect generated diff for reconciliation models/operations
+7. commit ONLY generated OpenAPI/client artifacts
+8. push generated checkpoint
 ```
 
-Do not code from old chat assumptions or stale pre-`_78` Outcome documents.
+Generated files must never be manually edited.
+
+Expected generated operations:
+
+```text
+temporalRecordOutcomeReconciliation
+temporalListOutcomeReconciliations
+temporalListOutcomeReconciliationHistory
+```
+
+The exact generated symbol casing is determined by Orval; verify actual output instead of guessing file names.
+
+After generated refresh is proven and pushed, advance to **D4 web controls**. Do not perform the integrated manual B10 walkthrough before B10-E.
 
 ---
 
