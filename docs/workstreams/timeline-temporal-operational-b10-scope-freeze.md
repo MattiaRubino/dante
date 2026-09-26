@@ -1,184 +1,277 @@
 # Timeline / Temporal-Operational — B10 scope freeze
 
-Status: **B10-A/B10-B/B10-C CLOSED / PROVEN; B10-D not started**.
+Status: **B10-A / B10-B / B10-C CLOSED / PROVEN; B10-D not started**.
 
-This document freezes the accepted B10-A semantics and the implementation candidate for B10-B without changing the canonical Domain / Logical / Physical boundaries.
+This document is the current B10 semantic and execution authority. It freezes the proven Actual → Outcome → Confirmation chain without redefining the canonical Domain / Logical / Physical model.
 
-## 1. Canonical semantic boundaries
+A post-closure B10-C OpenAPI hardening was added on 2026-09-26 so the public contract describes `201` creation, `200` idempotent replay and bounded ProblemDetails failures. Source + regression test are committed; generated OpenAPI/Orval artifacts must be refreshed only through repository generation tooling before B10-D starts.
 
-The following distinctions are invariants, not implementation details:
-
-- `Schedule != Session != Actual`
-- `Session != Actual != Outcome`
-- `Actual != Outcome != Confirmation`
-- `Expected outcome != Outcome`
-- `planned/intended != happened`
-- `proposal != accepted effect`
-- `projection != canonical truth`
-- `current accepted state != latest row`
-- `MaterialState != mutable runtime object`
-- `idempotency key != Domain identity`
-- `Undo != history rewind`
-
-PostgreSQL remains the only canonical authority. API/UI/provider/AI/runtime projections may expose or propose facts, but may not become an alternative source of truth.
-
-## 2. B10-A — Actual / realization core — CLOSED / PROVEN
-
-B10-A was executed and accepted as one complete vertical block. `dante.actual` is the stable scoped owner for Activity, Event or Occurrence reality. Realization corrections append immutable MaterialStates and advance explicit current/history bindings. Session remains evidence only and never manufactures Actual.
-
-Final proven B10-A frontier:
+## 1. Permanent B10 boundaries
 
 ```text
-Alembic  20260925_74
-Topology 159|5|115|93|305|258|435
+Schedule != Session != Actual
+Session != Actual != Outcome
+Actual != Outcome != Confirmation
+Expected outcome != Outcome
+Outcome != Observation
+Outcome != lifecycle / operational state
+Confirmation != Authority
+Confirmation != Verification
+Confirmation != Decision / Approval
+Confirmation != universal truth
+planned/intended != happened
+proposal != accepted effect
+projection != canonical truth
+current accepted state != latest row
+MaterialState != mutable runtime object
+idempotency key != Domain identity
+Undo != history rewind
 ```
 
-The user-run acceptance on 2026-09-25 completed with `14 passed` and `POSTGRES TEST EXIT: 0`, after generation/check, client typecheck, web typecheck, focused web tests and OpenAPI inventory had also passed. No CI/GitHub Actions were used.
+PostgreSQL remains canonical authority. API, generated client, frontend, provider, solver and AI are projections/capabilities and may not create a second truth model.
+
+## 2. Proven execution frontier
+
+```text
+B10-A Actual         CLOSED / PROVEN  2026-09-25
+B10-B Outcome        CLOSED / PROVEN  2026-09-25
+B10-C Confirmation   CLOSED / PROVEN  2026-09-26
+B10-D Reconciliation NOT STARTED
+B10-E Integration    NOT STARTED
+```
+
+Persistence frontier:
+
+```text
+20260925_74  B10-A Actual
+20260925_75  initial B10-B Outcome capability
+20260925_76  canonical Outcome disposition reconciliation
+20260925_77  Outcome ScopedAddress owner-dispatch repair
+20260925_78  Outcome MaterialState totality-dispatch repair
+20260925_79  B10-C Confirmation capability + dispatch
+```
+
+Published revisions are immutable. Any future persistence correction uses a new forward-only migration.
+
+Current proven database frontier:
+
+```text
+Alembic  20260925_79
+Topology 167|5|123|93|329|279|446
+```
+
+## 3. B10-A — Actual / realization core — CLOSED / PROVEN
+
+Actual is the stable scoped reality owner for Activity, Event or Occurrence realization.
+
+```text
+Session END != Actual
+absence of Actual = unknown
+known realization_occurred=false != absence of Actual
+Session evidence != Actual identity
+current accepted realization != latest row
+Actual != Outcome != Confirmation
+```
+
+Canonical family:
+
+```text
+dante.actual
+dante.actual_realization_state
+dante.actual_realization_current_history
+dante.actual_realization_operation
+facet: actual.realization
+```
+
+Public surface:
+
+```text
+POST/GET /api/v1/temporal/activities/{activity_ref}/actual
+POST/GET /api/v1/temporal/events/{event_ref}/actual
+POST/GET /api/v1/temporal/occurrences/{occurrence_ref}/actual
+GET      /api/v1/temporal/actuals/{actual_ref}/history
+```
+
+Proven frontier: `20260925_74` / topology `159|5|115|93|305|258|435`.
 
 Closure evidence: `timeline-temporal-operational-b10-a-closure-2026-09-25.md`.
 
-## 3. B10-B — Outcome implementation candidate
+## 4. B10-B — Outcome disposition — CLOSED / PROVEN
 
-B10-B materializes Outcome as a distinct contextual result owner downstream of one canonical Actual.
+The temporary `_75` vocabulary/result representation is superseded. **Do not reintroduce** `vocabulary_code`, `result_code`, `outcome.result`, Outcome identity per vocabulary, or `/outcomes/{vocabulary_code}` routes.
 
-### Identity and context
-
-`dante.outcome` is keyed by a stable `outcome_ref` and belongs to exactly one `(actual_ref, vocabulary_code)` pair. The `vocabulary_code` identifies the domain-specific result vocabulary. It is not a universal Outcome enum.
-
-A single Actual may therefore have multiple Outcome owners when separate contextual vocabularies are genuinely required, while ordinary corrections within one vocabulary retain the same Outcome identity.
-
-### Result state
-
-The accepted material facet is `outcome.result`.
-
-Each immutable `outcome_result_state` carries:
-
-- `material_state_ref`;
-- `outcome_ref`;
-- contextual `result_code`;
-- optional bounded `note`.
-
-B10-B does not define a global completed/partial/skipped taxonomy. A code such as `decision.reached` or `completed` is meaningful only under the explicitly supplied vocabulary/domain contract.
-
-### Currentness and history
-
-Current accepted Outcome state is selected explicitly through `scoped_current_material_state` and `outcome_result_current_history`; it is never inferred from row recency. Corrections append a new MaterialState, close the previous current-history interval and advance the current binding.
-
-The canonical history capability currently returns chronology oldest-to-newest by `current_from_at`.
-
-### Absence
-
-No Outcome for an `(Actual, vocabulary)` means no result has been established for that context. Absence is not success, failure, skipped, incomplete or confirmed.
-
-An Outcome cannot be established without an owned canonical Actual. Session end and Actual occurrence do not automatically create Outcome.
-
-### Idempotency and scope
-
-`outcome_result_operation` protects consequential writes. Same operation id plus same intent replays the accepted result; reuse for another intent is rejected. Expected-current MaterialState provides optimistic correction conflict detection.
-
-Authorization remains self-scoped through the owned Actual. Raw Outcome mutation is not a second runtime authority.
-
-## 4. B10-B candidate persistence
-
-Candidate forward-only migration:
+Canonical model:
 
 ```text
-20260925_75  contextual Outcome owner/result/current-history/operation capability
+one stable Outcome per Actual
+Outcome identity != disposition MaterialState
+Outcome disposition is contextual, not a universal enum
+Outcome disposition is pinned to one exact Actual realization MaterialState
+Actual correction does not reinterpret an older Outcome disposition
+current accepted Outcome state != latest row
+idempotency receipt != Outcome identity
+absence of Outcome != success / failure / skipped
+Outcome != Confirmation
 ```
 
-Candidate database frontier, awaiting the user's local proof:
+Canonical physical family:
 
 ```text
-Alembic  20260925_75
-Topology 163|5|119|93|316|268|443
+dante.outcome
+dante.outcome_disposition_state
+dante.outcome_disposition_current_history
+dante.outcome_disposition_operation
+facet: outcome.disposition
 ```
 
-Last proven database frontier remains B10-A `_74` until the B10-B local gate passes.
-
-The `_75` candidate adds:
-
-- `dante.outcome`;
-- `dante.outcome_result_state`;
-- `dante.outcome_result_current_history`;
-- `dante.outcome_result_operation`;
-- scoped family `outcome`;
-- material facet `outcome.result`;
-- guarded `_outcome_actual_owned`, `record_self_actual_outcome`, `get_self_actual_outcome` and `list_self_outcome_history` capabilities;
-- SQLAlchemy mapping, Dictionary/scope and catalog representation.
-
-## 5. B10-B candidate application/API surface
-
-Backend `OutcomeApplication` exposes:
-
-- record/correct one contextual Outcome by `(actual_ref, vocabulary_code)`;
-- retrieve current accepted Outcome;
-- retrieve immutable current-history chronology;
-- idempotent replay, operation-reuse rejection and expected-current conflict handling.
-
-Public HTTP candidate:
+Each disposition state carries:
 
 ```text
-POST /api/v1/temporal/actuals/{actual_ref}/outcomes/{vocabulary_code}
-GET  /api/v1/temporal/actuals/{actual_ref}/outcomes/{vocabulary_code}
+outcome_ref
+actual_realization_material_state_ref
+material_state_ref
+disposition_code
+```
+
+Public surface:
+
+```text
+POST /api/v1/temporal/actuals/{actual_ref}/outcome
+GET  /api/v1/temporal/actuals/{actual_ref}/outcome
 GET  /api/v1/temporal/outcomes/{outcome_ref}/history
 ```
 
-Operation IDs:
+Write contract:
 
 ```text
-temporal_record_actual_outcome
-temporal_get_actual_outcome
-temporal_list_outcome_history
+operation_id
+actual_realization_material_state_ref
+expected_material_state_ref
+disposition_code
 ```
 
-The write body carries `operation_id`, optional `expected_material_state_ref`, `result_code` and optional `note`; the vocabulary is part of the resource path and is not duplicated in the payload.
+Proven frontier: `20260925_78` / topology `163|5|119|93|317|268|440`.
 
-## 6. B10-B candidate Timeline surface
+Generated B10-B client: `58757fbb`.
 
-The Timeline keeps Actual and Outcome distinct. The Outcome control is rendered downstream of the existing Actual control for Activity, Event and Occurrence subjects.
+Closure evidence: `timeline-temporal-operational-b10-b-closure-2026-09-25.md`.
 
-The user explicitly selects a contextual vocabulary, loads the current Outcome for that `(Actual, vocabulary)`, and may register or correct `result_code` plus an optional note. The surface never creates an Outcome when Actual is absent and never treats an ended Session or `realization_occurred=true` as a result.
+## 5. B10-C — Confirmation — CLOSED / PROVEN
 
-## 7. B10-B proof surface awaiting local execution
-
-Focused candidate proof now includes:
+Confirmation is an optional contextual attestation by one confirmer toward one exact Outcome disposition MaterialState for one purpose.
 
 ```text
-apps/backend/tests/integration/temporal/test_b10_b_outcome.py
-apps/backend/tests/integration/temporal/test_b10_b_outcome_api.py
-apps/web/src/features/temporal/outcome-controls.test.tsx
-apps/backend/tests/test_temporal_openapi_inventory.py
-apps/backend/tests/integration/database/test_database_current_catalog.py
+Confirmation != Outcome
+Confirmation != Authority != Verification
+absence of Confirmation != false / rejected / untrusted
+0..N Confirmation per exact Outcome disposition MaterialState
+identity = (target Outcome MS, confirmer Person, purpose)
+stance_code is contextual, not confirmed=true
+Outcome correction does not transfer old Confirmation
+contrasting Confirmations from different actors remain representable
+current accepted Confirmation state != latest row
+idempotency receipt != Confirmation identity
+no automatic Confirmation from Outcome / Actual / Session / click
 ```
 
-The local gate must also retain B10-A/B09/B08 regressions. The user runs the tests locally; the assistant does not run CI or GitHub Actions.
+Canonical physical family:
 
-Generated OpenAPI/Orval artifacts are intentionally regenerated locally only after this candidate source contract is stable, then committed before B10-B is marked closed.
+```text
+dante.confirmation
+dante.confirmation_attestation_state
+dante.confirmation_attestation_current_history
+dante.confirmation_attestation_operation
+facet: confirmation.attestation
+```
 
-## 8. Explicitly deferred from B10-B
+Public surface:
 
-B10-B does not introduce:
+```text
+POST /api/v1/temporal/outcomes/{outcome_ref}/confirmations
+GET  /api/v1/temporal/outcomes/{outcome_ref}/confirmations
+GET  /api/v1/temporal/confirmations/{confirmation_ref}/history
+```
 
-- Confirmation;
-- automatic confirmation from Outcome;
-- automatic Outcome from Actual or Session;
-- a global Outcome status enum;
-- B10-D reconciliation/resolution workflow;
-- solver/provider/AI authority over canonical result facts;
-- the integrated manual/real-app B10 walkthrough.
+Write body:
 
-## 9. Remaining B10 execution rule
+```text
+operation_id
+outcome_disposition_material_state_ref
+expected_material_state_ref
+purpose_code
+stance_code
+```
 
-B10-C and B10-D are each implemented as one complete major block. The user runs one local automated gate only after the whole block is ready.
+The authenticated self is the confirmer. Writing a Confirmation does not mutate the Outcome and does not itself establish Authority or universal truth.
 
-The integrated real-app/manual B10 walkthrough is performed once at B10-E after the whole B10 chain is integrated.
+List access remains Outcome-owner scoped. Confirmation history is available to the confirmer or the Outcome owner under the bounded B10-C capability.
 
-No GitHub Actions/CI are used unless the user explicitly authorizes them.
+Proven frontier: `20260925_79` / topology `167|5|123|93|329|279|446`.
 
-## 10. Forward-only rule
+Original generated B10-C client: `30f15adf` (339 files). After the 2026-09-26 response-contract hardening, generated artifacts must be refreshed through `pnpm api:generate`; never hand-edit generated sources.
 
-Published Alembic revisions remain immutable. `20260925_70` through `20260925_75` form the current candidate history. Any repair discovered by the local B10-B gate uses a new forward-only revision after `_75`.
+Closure evidence: `timeline-temporal-operational-b10-c-closure-2026-09-26.md`.
 
-## 11. Current action
+## 6. B10-C post-closure public-contract hardening
 
-**Current action:** B10-C is closed. Generated client is `30f15adf`. Do not perform the manual real-app proof yet. Do not start B10-D until the user approves that gate.
+Runtime behavior already proven by the B10-C API gate is:
+
+```text
+new Confirmation       -> HTTP 201
+idempotent replay      -> HTTP 200
+malformed/auth/security/not-found/conflict/validation/unexpected
+                      -> bounded ProblemDetails responses
+```
+
+The original generated OpenAPI artifact described the POST success only as `200`. Source has now been hardened so OpenAPI explicitly carries creation/replay/failure response truth, with a dedicated regression test.
+
+This hardening changes no Confirmation persistence semantics and requires no migration after `_79`.
+
+Until generated OpenAPI/Orval artifacts are refreshed and committed, do not start B10-D.
+
+## 7. B10-D boundary — not started
+
+B10-D owns reconciliation / resolution workflow after Actual, Outcome and Confirmation are all distinct canonical layers.
+
+It must not silently introduce:
+
+```text
+Confirmation = Decision / Authority
+latest row = accepted resolution
+conflicting Confirmation deletion
+Outcome rewrite as reconciliation
+Actual rewrite as reconciliation
+generic Resolution ontology entity without accepted Domain evidence
+provider / AI authority over canonical truth
+```
+
+B10-D scope must be prepared against current Domain / Logical / Physical authority before implementation.
+
+## 8. B10-E boundary
+
+The single integrated real-app/manual B10 walkthrough remains deferred to B10-E after B10-D is complete.
+
+No separate B10-C manual proof is required now.
+
+## 9. Collaboration and generation discipline
+
+```text
+user runs local tests
+do not use GitHub Actions / CI
+published migrations are immutable
+fix persistence forward-only
+generated API client comes only from repository generator
+never hand-edit packages/api-client/src/generated/*
+PostgreSQL remains canonical truth
+```
+
+## 10. Exact continuation
+
+```text
+1. pull the current branch;
+2. regenerate OpenAPI/Orval from source through repository tooling;
+3. run generated determinism + focused B10-C OpenAPI contract check;
+4. commit/push generated artifacts only if deterministic;
+5. reconcile the post-closure hardening checkpoint;
+6. then prepare the B10-D modification gate.
+```
