@@ -136,6 +136,9 @@ _EXPECTED_TEMPORAL_OPERATIONS = {
     ("/api/v1/temporal/actuals/{actual_ref}/outcome", "post"): "temporal_record_actual_outcome",
     ("/api/v1/temporal/actuals/{actual_ref}/outcome", "get"): "temporal_get_actual_outcome",
     ("/api/v1/temporal/outcomes/{outcome_ref}/history", "get"): "temporal_list_outcome_history",
+    ("/api/v1/temporal/outcomes/{outcome_ref}/confirmations", "post"): "temporal_record_outcome_confirmation",
+    ("/api/v1/temporal/outcomes/{outcome_ref}/confirmations", "get"): "temporal_list_outcome_confirmations",
+    ("/api/v1/temporal/confirmations/{confirmation_ref}/history", "get"): "temporal_list_confirmation_history",
 }
 
 

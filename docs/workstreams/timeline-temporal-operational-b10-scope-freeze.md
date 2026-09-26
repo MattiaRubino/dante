@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — B10 scope freeze
 
-Status: **B10-A CLOSED / PROVEN; B10-B Outcome implementation candidate ready and awaiting the user's local automated proof**.
+Status: **B10-A/B10-B/B10-C CLOSED / PROVEN; B10-D not started**.
 
 This document freezes the accepted B10-A semantics and the implementation candidate for B10-B without changing the canonical Domain / Logical / Physical boundaries.
 
@@ -181,4 +181,4 @@ Published Alembic revisions remain immutable. `20260925_70` through `20260925_75
 
 ## 11. Current action
 
-**Current action:** run the single B10-B local automated proof after pulling the candidate and regenerating the API client locally. Do not perform the manual real-app proof yet. If the gate is green, commit the generated client, reconcile closure docs and move the cursor to B10-C Confirmation.
+**Current action:** B10-C local proof is green and closure docs are reconciled. Commit the generated client only when the user asks. Do not perform the manual real-app proof yet. Do not start B10-D until the user approves that gate.

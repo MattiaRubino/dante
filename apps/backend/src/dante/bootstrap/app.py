@@ -13,6 +13,7 @@ from dante.auth.m5_provider_api import router as auth_m5_provider_router
 from dante.bootstrap.lifespan import lifespan
 from dante.modules.temporal.actual_api import router as temporal_actual_router
 from dante.modules.temporal.api import router as temporal_router
+from dante.modules.temporal.confirmation_api import router as temporal_confirmation_router
 from dante.modules.temporal.constrained_activity_api import (
     router as temporal_constrained_activity_router,
 )
@@ -91,6 +92,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(temporal_session_router)
     app.include_router(temporal_actual_router)
     app.include_router(temporal_outcome_router)
+    app.include_router(temporal_confirmation_router)
     app.include_router(temporal_recurrence_router)
     app.include_router(temporal_recurring_authoring_router)
     app.include_router(temporal_occurrence_router)

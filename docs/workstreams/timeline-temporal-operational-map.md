@@ -1,16 +1,17 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
-- **Status:** CURRENT LIVE STATE — reconciled 2026-09-25
+- **Status:** CURRENT LIVE STATE — reconciled 2026-09-26
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Continuation handoff:** `docs/workstreams/timeline-temporal-operational-handoff.md`
-- **B10-B alignment checkpoint:** `docs/workstreams/timeline-temporal-operational-b10-b-alignment-2026-09-25.md`
+- **B10-C approved scope:** `docs/workstreams/timeline-temporal-operational-b10-c-scope-2026-09-25.md`
+- **B10-B closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-b-closure-2026-09-25.md`
+- **B10-C closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-c-closure-2026-09-26.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Last proven Alembic frontier:** `20260925_74`
-- **Last proven DB topology:** `159|5|115|93|305|258|435`
-- **Current B10-B migration frontier:** `20260925_76` — implemented, not yet user-proven
-- **Completed functional frontier:** B10-A Actual / realization core ✅ CLOSED / PROVEN 2026-09-25
-- **Current implementation cursor:** B10-B Outcome — IN PROGRESS / UNPROVEN
+- **Last proven Alembic frontier:** `20260925_79`
+- **Last proven DB topology:** `167|5|123|93|329|279|446`
+- **Completed functional frontier:** B10-C Confirmation ✅ CLOSED / PROVEN 2026-09-26
+- **Current implementation cursor:** B10-D reconciliation / resolution workflow — not started
 - **CI:** not authorized; local tests are run by the user
 
 ---
@@ -74,9 +75,12 @@ B09 Responsibility / Participation               ✅ CLOSED / USER-REPORTED 2026
   B09-C non-Account Person referents              ✅ CLOSED / PROVEN 2026-09-25
   B09-D B09 whole-block closure                   ✅ CLOSED / USER-REPORTED 2026-09-25
 B10-A Actual / realization core                  ✅ CLOSED / PROVEN 2026-09-25
+B10-B Outcome                                    ✅ CLOSED / PROVEN 2026-09-25
 ```
 
 B10-A closure evidence: `timeline-temporal-operational-b10-a-closure-2026-09-25.md`.
+B10-B closure evidence: `timeline-temporal-operational-b10-b-closure-2026-09-25.md`.
+B10-C closure evidence: `timeline-temporal-operational-b10-c-closure-2026-09-26.md`.
 
 ---
 
@@ -85,9 +89,9 @@ B10-A closure evidence: `timeline-temporal-operational-b10-a-closure-2026-09-25.
 ```text
 B10 Actual / Outcome / Confirmation / Resolution 🟨 IN PROGRESS
   B10-A Actual / realization core                 ✅ CLOSED / PROVEN
-  B10-B Outcome                                   🟨 IN PROGRESS / UNPROVEN
-  B10-C Confirmation                              ⬜
-  B10-D Reconciliation / resolution workflow      ⬜
+  B10-B Outcome                                   ✅ CLOSED / PROVEN
+  B10-C Confirmation                              ✅ CLOSED / PROVEN
+  B10-D Reconciliation / resolution workflow      ⬜ NEXT — not started
   B10-E Final integration + acceptance            ⬜ — manual real-app proof here
 B11 Advanced Recurrence / Conditional / Reminder ⬜
 B13 Work Structure / Decomposition / Dependencies⬜
@@ -277,74 +281,53 @@ provider/AI/solver != canonical realization authority
 
 No manual real-app proof was performed for B10-A; by explicit execution policy it belongs to B10-E.
 
-## B10-B — Outcome — IN PROGRESS / UNPROVEN
+## B10-B — Outcome — CLOSED / PROVEN
 
-Approved scope: `docs/workstreams/timeline-temporal-operational-b10-b-scope-2026-09-25.md`.
-Alignment checkpoint: `docs/workstreams/timeline-temporal-operational-b10-b-alignment-2026-09-25.md`.
-
-Published persistence chain:
+Closure evidence: `timeline-temporal-operational-b10-b-closure-2026-09-25.md`.
 
 ```text
-20260925_75 initial Outcome capability
-20260925_76 forward-only Outcome disposition reconciliation
+Alembic  20260925_78
+Topology 163|5|119|93|317|268|440
+Generated 335 files at 58757fbb
 ```
 
-`_75` and `_76` are published and immutable. `_76` is the binding physical contract. The branch had temporarily drifted back toward `_75` vocabulary/result semantics and has been realigned without rewriting either migration.
+## B10-C — Confirmation — CLOSED / PROVEN
 
-Canonical B10-B model:
+Closure evidence: `timeline-temporal-operational-b10-c-closure-2026-09-26.md`.
+
+Published persistence:
 
 ```text
-Actual != Outcome
-Expected outcome != Outcome
-Outcome != Confirmation
-Outcome != Observation
-one stable Outcome identity per Actual
-Outcome disposition MaterialState != Outcome identity
-facet = outcome.disposition
-exact actual_realization_material_state_ref on every disposition state
-contextual disposition_code, not one universal Outcome status enum
-current accepted Outcome state != latest row
-idempotency receipt != Outcome identity
-absence of Outcome != success/failure
-Session END != Outcome
+20260925_79 Confirmation owner/attestation/current-history/operation
+            + confirmation scoped family and confirmation.attestation facet
+            + ScopedAddress / MaterialState totality dispatch
 ```
 
-Current aligned implementation surfaces:
+Proven topology: `167|5|123|93|329|279|446`.
 
 ```text
-apps/backend/src/dante/platform/database/mappings/outcome.py
-apps/backend/src/dante/platform/database/mappings/addressing.py
-apps/backend/src/dante/platform/database/mappings/__init__.py
-apps/backend/src/dante/modules/temporal/outcome_runtime.py
-apps/backend/src/dante/modules/temporal/outcome_api.py
+Confirmation != Outcome
+0..N Confirmation per exact Outcome disposition MaterialState
+identity = (target MS, confirmer, purpose)
+stance_code is contextual, not confirmed=true
+Outcome correction does not transfer old Confirmation
+current accepted Confirmation state != latest row
+no automatic Confirmation
 ```
 
-Current public route shape:
+Public routes:
 
 ```text
-POST /api/v1/temporal/actuals/{actual_ref}/outcome
-GET  /api/v1/temporal/actuals/{actual_ref}/outcome
-GET  /api/v1/temporal/outcomes/{outcome_ref}/history
+POST /api/v1/temporal/outcomes/{outcome_ref}/confirmations
+GET  /api/v1/temporal/outcomes/{outcome_ref}/confirmations
+GET  /api/v1/temporal/confirmations/{confirmation_ref}/history
 ```
 
-Still open before B10-B candidate completion:
-
-```text
-[ ] OpenAPI export / contract snapshots aligned to disposition model
-[ ] generated API client regenerated through repository tooling only
-[ ] web Outcome remote data source aligned from old vocabulary/result shape
-[ ] web Outcome read/author/correct controls aligned to exact Actual realization basis
-[ ] B10-B backend/API/PostgreSQL/web tests reconciled
-[ ] Database Dictionary/scope and DB overlay/frontier reconciled
-[ ] final candidate evidence; later user-run local gate before CLOSED / PROVEN
-```
-
-The user explicitly did not request tests during the current alignment pass. No acceptance claim is made. No manual real-app proof occurs before B10-E.
+Generated client was regenerated locally and checked at 339 files. It is not committed.
 
 Later B10:
 
 ```text
-B10-C Confirmation
 B10-D reconciliation / resolution workflow
 B10-E final integration + automated regression + single real-app B10 walkthrough
 ```
@@ -396,9 +379,9 @@ B08     ✅ CLOSED / USER-REPORTED 2026-09-24
 B09     ✅ CLOSED / USER-REPORTED 2026-09-25
 B10     🟨 IN PROGRESS
   B10-A ✅ CLOSED / PROVEN 2026-09-25
-  B10-B 🟨 IN PROGRESS / UNPROVEN
-  B10-C ⬜
-  B10-D ⬜
+  B10-B ✅ CLOSED / PROVEN 2026-09-25
+  B10-C ✅ CLOSED / PROVEN 2026-09-26
+  B10-D ⬜ NEXT — not started
   B10-E ⬜ — user real-app proof here
 B11     ⬜ NOT STARTED
 B13     ⬜ NOT STARTED
@@ -408,4 +391,4 @@ B07     ⏸ DEFERRED UNTIL B14
 B15     ⬜ NOT STARTED
 ```
 
-**Next concrete action:** continue B10-B from `_76` by reconciling OpenAPI/generated client and web Outcome surfaces, then focused tests and Database/Dictionary ledgers. Do not start B10-C. No CI/GitHub Actions.
+**Next concrete action:** commit the generated Confirmation client only when the user asks. Do not start B10-D until the user approves that gate. No CI/GitHub Actions.

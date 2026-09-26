@@ -1,13 +1,13 @@
 # DANTE Database System of Record
 
 - **Status:** CURRENT / AUTHORITATIVE DATABASE REFERENCE
-- **Last reconciled:** 2026-09-25
+- **Last reconciled:** 2026-09-26
 - **PostgreSQL:** 18.6
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
-- **Timeline candidate Alembic head:** `20260925_74`
-- **Last proven candidate topology:** B10-A / `20260925_74` / `159|5|115|93|305|258|435`
+- **Timeline candidate Alembic head:** `20260925_79`
+- **Last proven candidate topology:** B10-C / `20260925_79` / `167|5|123|93|329|279|446`
 - **Timeline candidate DB overlay:** `timeline-temporal-operational.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 - **Persistence ADR:** `../decisions/ADR-010-postgresql-persistence-constitution.md`
@@ -68,20 +68,24 @@ Protected `main` remains integration authority. Candidate truth is never relabel
 20260925_73 B10-A canonical family-aware Actual function signatures
     ↓
 20260925_74 B10-A current-history qualification + canonical receipt FK name
+    ↓
+20260925_75 → 20260925_78 B10-B Outcome disposition
+    ↓
+20260925_79 B10-C Confirmation attestation
 ```
 
-No accepted historical migration was edited, rebased, renumbered or flattened. B10-A acceptance repairs `_72`–`_74` are forward-only.
+No accepted historical migration was edited, rebased, renumbered or flattened. B10-A/B10-B acceptance repairs are forward-only. `_79` is the proven B10-C candidate head.
 
 ## 3. Current candidate topology
 
 ```text
-159 tables
+167 tables
 5 views
-115 routines
+123 routines
 93 triggers
-305 physical indexes
-258 foreign keys
-435 CHECK constraints
+329 physical indexes
+279 foreign keys
+446 CHECK constraints
 0 enums/domains
 0 sequences
 0 materialized views
@@ -97,6 +101,8 @@ POSTGRES TEST EXIT: 0
 ```
 
 The accepted B10-A vertical also passed repository generation/check, API-client typecheck, web typecheck, focused web tests and OpenAPI inventory during the same local acceptance cycle. Generated OpenAPI/Orval artifacts are committed at `780c612d`. No CI/GitHub Actions were used.
+
+User-run local proof on 2026-09-26 established B10-C `_79` at `167|5|123|93|329|279|446`. That cycle passed generation/check (339 files), API-client typecheck, web typecheck, focused web tests, OpenAPI inventory, B10-C Confirmation, and B10-B/B10-A/B09/B08/current-catalog regressions. Generated OpenAPI/Orval artifacts are in the worktree and are not committed. No CI/GitHub Actions were used.
 
 ## 4. Timeline persistence classification
 
@@ -227,13 +233,15 @@ B09-B `_67`–`_68` authoring         ✅ CLOSED / PROVEN 2026-09-25
 B09-C `_69` Person referents         ✅ CLOSED / PROVEN 2026-09-25
 B09-D whole-block integration         ✅ CLOSED / USER-REPORTED 2026-09-25
 B10-A `_70`–`_74` Actual core        ✅ CLOSED / PROVEN 2026-09-25
+B10-B `_75`–`_78` Outcome            ✅ CLOSED / PROVEN 2026-09-25
+B10-C `_79` Confirmation             ✅ CLOSED / PROVEN 2026-09-26
 ```
 
-B10-A closure evidence is recorded in `../workstreams/timeline-temporal-operational-b10-a-closure-2026-09-25.md`. The integrated B10 real-app walkthrough remains deferred until B10-E.
+B10-A closure evidence is recorded in `../workstreams/timeline-temporal-operational-b10-a-closure-2026-09-25.md`. B10-B closure evidence is recorded in `../workstreams/timeline-temporal-operational-b10-b-closure-2026-09-25.md`. B10-C closure evidence is recorded in `../workstreams/timeline-temporal-operational-b10-c-closure-2026-09-26.md`. The integrated B10 real-app walkthrough remains deferred until B10-E.
 
 ## 7. Current database cursor
 
-B10-B Outcome is next but has not started. Before any schema change, inspect current Product/Domain/Logical/Physical Outcome authority and obtain user approval for the proposed change/file gate.
+B10-C Confirmation is proven at `_79`. Do not start B10-D until the user approves that gate.
 
 Do not infer a generic Outcome status enum from UI labels alone.
 

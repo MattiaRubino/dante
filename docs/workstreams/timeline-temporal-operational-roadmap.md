@@ -1,13 +1,12 @@
 # Timeline / Temporal-Operational Vertical — Implementation Roadmap
 
-- **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-25
+- **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-26
 - **Branch/workstream:** `feature/timeline-temporal-operational`
 - **Vertical boundary:** Home `+` creation/configuration → canonical temporal truth → Timeline projection/actions → bounded lifecycle completion
-- **Completed functional frontier:** B10-A Actual / realization core ✅ CLOSED / PROVEN 2026-09-25
-- **Current block:** B10 Actual / Outcome / Confirmation / Resolution — IN PROGRESS; B10-B Outcome IN PROGRESS / UNPROVEN
-- **Last proven DB frontier:** B10-A / PostgreSQL 18.6 / Alembic `20260925_74` / topology `159|5|115|93|305|258|435`
-- **Current B10-B migration frontier:** `20260925_76` — implemented, not yet user-proven
-- **B10-B continuation checkpoint:** `docs/workstreams/timeline-temporal-operational-b10-b-alignment-2026-09-25.md`
+- **Completed functional frontier:** B10-C Confirmation ✅ CLOSED / PROVEN 2026-09-26
+- **Current block:** B10 Actual / Outcome / Confirmation / Resolution — IN PROGRESS; B10-D not started
+- **Last proven DB frontier:** B10-C / PostgreSQL 18.6 / Alembic `20260925_79` / topology `167|5|123|93|329|279|446`
+- **B10-C approved scope:** `docs/workstreams/timeline-temporal-operational-b10-c-scope-2026-09-25.md`
 - **Deferred block:** B07 UI/UX Consolidation v1 — execute only after the functional/create-completeness sequence below
 - **Live execution ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **Continuation handoff:** `docs/workstreams/timeline-temporal-operational-handoff.md`
@@ -102,9 +101,9 @@ B09 Responsibility / Participation               ✅ CLOSED / USER-REPORTED 2026
 
 B10 Actual / Outcome / Confirmation / Resolution 🟨 IN PROGRESS
   B10-A Actual / realization core                 ✅ CLOSED / PROVEN 2026-09-25
-  B10-B Outcome                                   🟨 IN PROGRESS / UNPROVEN
-  B10-C Confirmation                              ⬜
-  B10-D Reconciliation / resolution workflow      ⬜
+  B10-B Outcome                                   ✅ CLOSED / PROVEN
+  B10-C Confirmation                              ✅ CLOSED / PROVEN 2026-09-26
+  B10-D Reconciliation / resolution workflow      ⬜ NEXT — not started
   B10-E Final integration + acceptance            ⬜ — includes integrated real-app proof
 
 B11 Advanced Recurrence / Conditional / Reminder ⬜
@@ -285,49 +284,25 @@ The earlier generation/client/web/OpenAPI parts of the same B10-A gate were also
 
 Manual real-app B10 validation remains intentionally deferred to B10-E.
 
-## B10-B — Outcome — IN PROGRESS / UNPROVEN
+## B10-B — Outcome — CLOSED / PROVEN
 
-Approved scope: `docs/workstreams/timeline-temporal-operational-b10-b-scope-2026-09-25.md`.
-Current alignment checkpoint: `docs/workstreams/timeline-temporal-operational-b10-b-alignment-2026-09-25.md`.
-
-B10-B owns contextual result/disposition semantics and preserves:
+Closure evidence: `docs/workstreams/timeline-temporal-operational-b10-b-closure-2026-09-25.md`.
 
 ```text
-Actual != Outcome
-Expected outcome != Outcome
-Outcome != Confirmation
-Outcome != Observation
-Outcome does not retroactively redefine Session or Actual
-absence of Outcome != implicit success/failure
-current accepted Outcome state != latest row
-idempotency receipt != Outcome identity
+Alembic  20260925_78
+Topology 163|5|119|93|317|268|440
 ```
 
-Published persistence chain:
+## B10-C — Confirmation — CLOSED / PROVEN
+
+Closure evidence: `docs/workstreams/timeline-temporal-operational-b10-c-closure-2026-09-26.md`.
 
 ```text
-20260925_75 initial Outcome capability
-20260925_76 forward-only Outcome disposition reconciliation
+Alembic  20260925_79
+Topology 167|5|123|93|329|279|446
 ```
 
-Both revisions are immutable. `_76` is the binding current physical contract:
-
-```text
-one stable Outcome per Actual
-OutcomeDisposition MaterialState != Outcome identity
-facet = outcome.disposition
-exact actual_realization_material_state_ref on every disposition state
-contextual disposition_code, not one universal Outcome enum
-explicit accepted-current history
-```
-
-The SQLAlchemy mapping/addressing registration plus temporal Outcome runtime/API have been realigned to `_76`. The remaining B10-B work is to reconcile OpenAPI/generated client, web Outcome data/control surfaces, focused tests and Database/Dictionary ledgers that may still encode the superseded `_75` vocabulary/result shape. Generated artifacts must be regenerated through repository tooling, never hand-edited.
-
-B10-B remains unproven until a later user-run local acceptance gate. The user explicitly did not request tests during the current alignment pass. No manual real-app proof is required until B10-E.
-
-## B10-C — Confirmation
-
-B10-C introduces Confirmation only after Outcome exists as a separate semantic layer. Confirmation may attest/accept/reconcile truth but must not collapse into Actual or Outcome.
+Confirmation attests a specific Outcome MaterialState for a purpose. It does not collapse into Actual, Outcome, Authority, Verification or universal truth. No manual real-app proof until B10-E.
 
 ## B10-D — Reconciliation / resolution workflow
 
@@ -468,9 +443,9 @@ B09     ✅ CLOSED / USER-REPORTED 2026-09-25
   B09-D ✅ CLOSED / USER-REPORTED 2026-09-25
 B10     🟨 IN PROGRESS
   B10-A ✅ CLOSED / PROVEN 2026-09-25
-  B10-B 🟨 IN PROGRESS / UNPROVEN
-  B10-C ⬜
-  B10-D ⬜
+  B10-B ✅ CLOSED / PROVEN 2026-09-25
+  B10-C ✅ CLOSED / PROVEN 2026-09-26
+  B10-D ⬜ NEXT — not started
   B10-E ⬜ — integrated manual proof at end
 B11     ⬜ NOT STARTED
 B13     ⬜ NOT STARTED
@@ -480,4 +455,4 @@ B07     ⏸ DEFERRED UNTIL B14
 B15     ⬜ NOT STARTED
 ```
 
-**Current action:** continue B10-B from the canonical `_76` Outcome disposition contract by reconciling OpenAPI/generated client and web Outcome surfaces, then focused tests and Database/Dictionary ledgers. Do not start B10-C, do not hand-edit generated artifacts, and do not use CI/GitHub Actions.
+**Current action:** the B10-C local gate is green. Commit the generated client only when the user asks. Do not start B10-D until the user approves that gate. Do not hand-edit generated artifacts. Do not use CI/GitHub Actions.

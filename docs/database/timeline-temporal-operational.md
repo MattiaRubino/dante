@@ -1,11 +1,11 @@
 # Timeline / Temporal-Operational — Candidate Database Overlay
 
-- **Status:** CURRENT CANDIDATE DATABASE AUTHORITY — B10-A `_74` locally proven 2026-09-25
-- **Reconciled:** 2026-09-25
+- **Status:** CURRENT CANDIDATE DATABASE AUTHORITY — B10-C `_79` locally proven
+- **Reconciled:** 2026-09-26
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
-- **Candidate source head:** `20260925_74`
-- **Last proven candidate topology:** B10-A / `20260925_74` / `159|5|115|93|305|258|435`
+- **Candidate source head:** `20260925_79`
+- **Last proven candidate topology:** B10-C / `20260925_79` / `167|5|123|93|329|279|446`
 - **Whole-DB SoR:** `README.md`
 - **Machine-readable authority:** `dictionary/`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
@@ -55,21 +55,25 @@ Product / Domain / Logical / Physical
 20260925_73 B10-A canonical family-aware function signatures
     ↓
 20260925_74 B10-A current-history qualification + bounded receipt FK name
+    ↓
+20260925_75 → 20260925_78 B10-B Outcome
+    ↓
+20260925_79 B10-C Confirmation
 ```
 
-Published migrations remain immutable. `_72`–`_74` are forward-only acceptance repairs over the B10-A capability introduced by `_70`–`_71`.
+Published migrations remain immutable. `_72`–`_74` and `_76`–`_78` are forward-only acceptance repairs. `_79` is the B10-C candidate.
 
 ## 3. Current candidate topology
 
 ```text
-Alembic     20260925_74
-Tables      159
+Alembic     20260925_79 candidate / 20260925_78 proven
+Tables      167
 Views       5
-Routines    115
+Routines    123
 Triggers    93
-Indexes     305
-FKs         258
-CHECKs      435
+Indexes     329
+FKs         279
+CHECKs      446
 Enums       0
 Domains     0
 Sequences   0
@@ -255,7 +259,7 @@ _74  PL/pgSQL output-column ambiguity in current-history correction
 _74  canonical FK name below PostgreSQL identifier-length limit
 ```
 
-Final topology remains:
+Final proven B10-A topology remains:
 
 ```text
 159|5|115|93|305|258|435
@@ -274,18 +278,45 @@ current accepted state != latest row
 provider/AI/solver != realization authority
 ```
 
-## 10. Next database cursor
+## 10. B10-B Outcome — CLOSED / PROVEN
 
-B10-B Outcome is next but has not started. Before any persistence change, its Product/Domain/Logical/Physical authority must be inspected and the user must approve the proposed change/file gate.
-
-Do not infer a generic Outcome status enum solely from UI language. In particular:
+Proven chain `_75`–`_78`. Proven topology `163|5|119|93|317|268|440`.
 
 ```text
-Actual != Outcome
-Expected outcome != Outcome
-Outcome != Confirmation
-Session END != Outcome
-absence of Outcome != success/failure
+dante.outcome
+dante.outcome_disposition_state
+dante.outcome_disposition_current_history
+dante.outcome_disposition_operation
+facet: outcome.disposition
 ```
 
-Any completed/partial/skipped/not-completed/postponed/replaced/cancelled vocabulary and finish-early behavior must be mapped only after verifying the repository's current Outcome semantics.
+```text
+one Outcome per Actual
+disposition pinned to exact Actual realization MaterialState
+current accepted Outcome state != latest row
+Outcome != Confirmation
+```
+
+## 11. B10-C Confirmation — CLOSED / PROVEN
+
+Proven revision `_79`. Proven topology `167|5|123|93|329|279|446`.
+
+```text
+dante.confirmation
+dante.confirmation_attestation_state
+dante.confirmation_attestation_current_history
+dante.confirmation_attestation_operation
+facet: confirmation.attestation
+```
+
+```text
+Confirmation != Outcome
+0..N Confirmation per exact Outcome disposition MaterialState
+identity = (target MS, confirmer, purpose)
+stance_code is contextual, not confirmed=true
+Outcome correction does not transfer old Confirmation
+```
+
+## 12. Next database cursor
+
+B10-C `_79` is locally proven. Do not start B10-D until the user approves that gate. Do not invent a generic Resolution entity.

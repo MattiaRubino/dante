@@ -1,0 +1,20 @@
+.timeline-confirmation-controls {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+}
+
+.timeline-confirmation-controls label {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.timeline-confirmation-controls input {
+  min-width: 0;
+}
+
+.timeline-confirmation-controls small {
+  opacity: 0.75;
+}

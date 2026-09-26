@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import './actual-realization-controls.css';
 
+import { ConfirmationControls } from './confirmation-controls';
 import { OutcomeControls } from './outcome-controls';
 import {
   createRemoteTemporalActualDataSource,
@@ -135,6 +136,7 @@ export function ActualRealizationControls({
       </small>
       {messageNode}
       <OutcomeControls kind={kind} subjectRef={subjectRef} />
+      <ConfirmationControls kind={kind} subjectRef={subjectRef} />
     </div>
   );
 }
