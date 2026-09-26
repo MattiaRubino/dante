@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B10 IN PROGRESS — B10-A/B10-B/B10-C/B10-D CLOSED / PROVEN; B10-E NEXT
+- **Status:** B10 CLOSED — B11 NEXT
 - **Reconciled:** 2026-09-26
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -8,10 +8,11 @@
 - **B10 scope authority:** `docs/workstreams/timeline-temporal-operational-b10-scope-freeze.md`
 - **B10-D scope:** `docs/workstreams/timeline-temporal-operational-b10-d-scope-2026-09-26.md`
 - **B10-D closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-d-closure-2026-09-26.md`
+- **B10-E closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-e-closure-2026-09-26.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
 - **Last proven persistence frontier:** B10-D / Alembic `20260926_80`
 - **B10-D generated client:** `cebfb557196d3fc0f412262a1d12feae9291b875`
-- **Final B10-D web HEAD proven locally:** `901139234fb418e95effd1aced6124d23b270117`
+- **B10 real-app acceptance:** USER-REPORTED PASS 2026-09-26
 - **CI:** no CI/GitHub Actions unless explicitly authorized; user runs local tests
 
 Read this first after a context reset. Repository HEAD remains the source of truth; re-fetch it before any write.
@@ -24,13 +25,13 @@ Read this first after a context reset. Repository HEAD remains the source of tru
 B00–B06 ✅ CLOSED / PROVEN
 B08     ✅ CLOSED / USER-REPORTED 2026-09-24
 B09     ✅ CLOSED / USER-REPORTED 2026-09-25
-B10     🟨 IN PROGRESS
+B10     ✅ CLOSED 2026-09-26
   B10-A ✅ CLOSED / PROVEN 2026-09-25
   B10-B ✅ CLOSED / PROVEN 2026-09-25
   B10-C ✅ CLOSED / PROVEN 2026-09-26
   B10-D ✅ CLOSED / PROVEN 2026-09-26
-  B10-E 🟨 NEXT — final integration + single real-app proof
-B11     ⬜ NOT STARTED
+  B10-E ✅ CLOSED / USER-REPORTED ACCEPTANCE 2026-09-26
+B11     🟨 NEXT — Advanced Recurrence / Conditional / Reminder
 B13     ⬜ NOT STARTED
 B12     ⬜ NOT STARTED
 B14     ⬜ NOT STARTED
@@ -77,7 +78,7 @@ PostgreSQL is canonical authority. API, generated client, frontend, provider, so
 
 ---
 
-# 3. Proven B10 chain
+# 3. Closed B10 chain
 
 ## B10-A — Actual
 
@@ -121,12 +122,7 @@ absence of Confirmation != false
 Outcome correction does not transfer Confirmation
 ```
 
-Generated public-contract hardening is closed; B10-C is fully proven.
-
-## B10-D — Reconciliation — CLOSED / PROVEN
-
-Scope authority: `timeline-temporal-operational-b10-d-scope-2026-09-26.md`.
-Closure evidence: `timeline-temporal-operational-b10-d-closure-2026-09-26.md`.
+## B10-D — Reconciliation
 
 Canonical identity:
 
@@ -181,14 +177,14 @@ Generated client commit:
 cebfb557196d3fc0f412262a1d12feae9291b875
 ```
 
-Final user-run D5 gate on 2026-09-26:
+User-run B10-D closure gates on 2026-09-26:
 
 ```text
 web typecheck                                  PASS
 web Confirmation + Reconciliation             6 passed / 2 files
 pnpm generated:check                          PASS — 345 files deterministic/current
 @dante/api-client typecheck                   PASS
-B10-D/B10-C/OpenAPI inventory backend gate    6 passed in 3.07s
+B10-D/B10-C/OpenAPI inventory backend gate    6 passed
 ```
 
 Earlier `_80` persistence/runtime/API + B10-C regression gate:
@@ -197,44 +193,58 @@ Earlier `_80` persistence/runtime/API + B10-C regression gate:
 4 passed in 14.94s
 ```
 
-No CI/GitHub Actions were used.
+## B10-E — Final integration + acceptance
 
----
-
-# 4. Exact next step — B10-E
-
-B10-E is now the only active B10 cursor.
-
-Goal:
-
-```text
-A/B/C/D integration
-→ focused whole-B10 automated regression
-→ one integrated real-app/manual walkthrough
-→ documentation reconciliation
-→ close whole B10
-```
-
-The manual proof was deliberately deferred until now. Do not add new ontology or persistence merely for B10-E unless the integrated proof exposes a real defect.
-
-B10-E must verify the coherent chain without collapsing layers:
+Repository integration coverage now exists for the explicit chain:
 
 ```text
 Session → Actual → Outcome → Confirmation → Reconciliation
 ```
 
-and negative invariants such as:
+Files:
 
 ```text
-Session END does not fabricate Actual
-Actual does not fabricate Outcome
-Outcome does not fabricate Confirmation
-Confirmation does not grant resolution authority
-Reconciliation does not rewrite prior Outcome/Confirmation history
-absence at any layer is not silently interpreted as a negative fact
+apps/backend/tests/integration/temporal/test_b10_e_whole_block.py
+apps/web/src/features/temporal/timeline-truth-inspector.test.tsx
 ```
 
-After B10-E closes, advance directly to B11.
+The B10 truth inspector is mounted from the canonical Home timeline runtime. The user performed the requested integrated real-app walkthrough on 2026-09-26 and reported that the flow appeared to work end-to-end.
+
+Closure classification is intentionally precise:
+
+```text
+B10-A..D = CLOSED / PROVEN
+B10-E    = CLOSED / USER-REPORTED ACCEPTANCE
+B10      = CLOSED
+```
+
+The B10-E-specific automated tests were added to the repository but were not separately reported as user-run at closure time; do not rewrite history by labeling them locally proven.
+
+---
+
+# 4. Exact next step — B11
+
+B11 is now the only active implementation cursor.
+
+Theme:
+
+```text
+Advanced Recurrence / Conditional / Reminder
+```
+
+B11 must extend the existing Routine / Recurrence / Occurrence baseline without collapsing:
+
+```text
+Routine != Recurrence != Occurrence
+Occurrence != Schedule
+RRULE-like representation != ontology
+reminder intent != hidden ignored Create field
+conditional behavior != implicit mutation
+```
+
+Before implementation, re-read the B11-relevant Domain / Logical / Physical / Database authority and inspect the current reminder/conditional Create surface. The editable reminder intent must leave B11 either canonically supported, truthfully handed off, or hidden until supported.
+
+Do not reopen B10 semantics unless B11 uncovers concrete contradictory evidence.
 
 ---
 
@@ -245,5 +255,5 @@ After B10-E closes, advance directly to B11.
 - published migrations are immutable; persistence fixes are forward-only
 - generated API client comes only from repository generator
 - PostgreSQL remains canonical truth
-- distinguish proven persistence/domain semantics from projection synchronization
-- B10-E is integration/acceptance, not permission to invent a second truth model
+- distinguish proven persistence/domain semantics from user-reported product acceptance
+- repository HEAD is source of truth before any write
