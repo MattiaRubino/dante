@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B10 IN PROGRESS — B10-A/B10-B/B10-C CLOSED / PROVEN; B10-D not started
+- **Status:** B10 IN PROGRESS — B10-A/B10-B/B10-C CLOSED / PROVEN; B10-C post-closure OpenAPI hardening awaiting generated refresh; B10-D not started
 - **Reconciled:** 2026-09-26
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -8,11 +8,11 @@
 - **B10 scope authority:** `docs/workstreams/timeline-temporal-operational-b10-scope-freeze.md`
 - **B10-A closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-a-closure-2026-09-25.md`
 - **B10-B closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-b-closure-2026-09-25.md`
-- **B10-C approved scope:** `docs/workstreams/timeline-temporal-operational-b10-c-scope-2026-09-25.md`
+- **B10-C scope:** `docs/workstreams/timeline-temporal-operational-b10-c-scope-2026-09-25.md`
 - **B10-C closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-c-closure-2026-09-26.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Last proven frontier:** B10-C / Alembic `20260925_79` / topology `167|5|123|93|329|279|446`
-- **Generated client:** `30f15adf` — 339 files
+- **Last proven persistence frontier:** B10-C / Alembic `20260925_79` / topology `167|5|123|93|329|279|446`
+- **Original generated B10-C client:** `30f15adf` — 339 files
 - **CI:** no CI/GitHub Actions unless explicitly authorized; user runs local tests
 
 Read this first after a context reset. Repository HEAD remains the source of truth; re-fetch it before any write.
@@ -29,7 +29,9 @@ B10     🟨 IN PROGRESS
   B10-A ✅ CLOSED / PROVEN 2026-09-25
   B10-B ✅ CLOSED / PROVEN 2026-09-25
   B10-C ✅ CLOSED / PROVEN 2026-09-26
-  B10-D ⬜ NEXT — reconciliation / resolution workflow, not started
+          ↳ post-closure OpenAPI response hardening committed
+          ↳ generated OpenAPI/Orval refresh still required
+  B10-D ⛔ DO NOT START until generated refresh is checked + committed
   B10-E ⬜ Final integration + single real-app proof
 B11     ⬜ NOT STARTED
 B13     ⬜ NOT STARTED
@@ -61,6 +63,7 @@ Expected outcome != Outcome
 Outcome != Observation
 Outcome != lifecycle / operational state
 Confirmation != Authority != Verification
+Confirmation != Decision / Approval
 Responsibility != Participation
 planned/intended != happened
 projection != canonical truth
@@ -74,15 +77,59 @@ PostgreSQL is canonical authority. API, generated client, frontend, provider, so
 
 ---
 
-# 3. Last proven frontier — B10-C Confirmation
+# 3. Proven B10 chain
 
-B10-C is CLOSED / PROVEN. B10-B remains CLOSED / PROVEN at `20260925_78` / `163|5|119|93|317|268|440`.
+## B10-A — Actual
 
 ```text
-Alembic  20260925_79
-Topology 167|5|123|93|329|279|446
-Generated client commit 30f15adf
+Alembic  20260925_74
+Topology 159|5|115|93|305|258|435
 ```
+
+Core truth:
+
+```text
+Session END != Actual
+absence of Actual = unknown
+known realization_occurred=false != absence of Actual
+current accepted realization != latest row
+Actual != Outcome != Confirmation
+```
+
+## B10-B — Outcome
+
+Canonical current persistence is `_76`–`_78`, not the temporary `_75` vocabulary/result shape.
+
+```text
+one stable Outcome per Actual
+facet: outcome.disposition
+Outcome disposition pinned to exact Actual realization MaterialState
+current accepted Outcome state != latest row
+Outcome != Confirmation
+```
+
+Physical family:
+
+```text
+dante.outcome
+dante.outcome_disposition_state
+dante.outcome_disposition_current_history
+dante.outcome_disposition_operation
+```
+
+Public routes:
+
+```text
+POST /api/v1/temporal/actuals/{actual_ref}/outcome
+GET  /api/v1/temporal/actuals/{actual_ref}/outcome
+GET  /api/v1/temporal/outcomes/{outcome_ref}/history
+```
+
+Proven frontier: `20260925_78` / `163|5|119|93|317|268|440`.
+
+Never reintroduce `vocabulary_code`, `result_code`, `outcome.result` or Outcome identity per vocabulary.
+
+## B10-C — Confirmation
 
 ```text
 Confirmation != Outcome
@@ -92,35 +139,10 @@ stance_code is contextual, not confirmed=true
 Outcome correction does not transfer old Confirmation
 current accepted Confirmation state != latest row
 absence of Confirmation != false
-```
-
----
-
-# 4. Proven B10-C truth — Confirmation
-
-B10-C is CLOSED / PROVEN. Closure evidence: `docs/workstreams/timeline-temporal-operational-b10-c-closure-2026-09-26.md`.
-
-Published immutable B10-B chain remains `_75`–`_78`. B10-C adds:
-
-```text
-20260925_79  Confirmation capability + scoped family/facet + dispatch
-```
-
-Canonical B10-C model:
-
-```text
-Confirmation != Outcome
-0..N Confirmation per Outcome disposition MaterialState
-pin = exact outcome_disposition_material_state_ref
-identity = (target MS, confirmer, purpose)
-stance_code is contextual, not confirmed=true
-Outcome correction does not move old Confirmation
-current accepted Confirmation state != latest row
-idempotency receipt != Confirmation identity
 no automatic Confirmation
 ```
 
-Canonical physical family:
+Physical family:
 
 ```text
 dante.confirmation
@@ -138,66 +160,98 @@ GET  /api/v1/temporal/outcomes/{outcome_ref}/confirmations
 GET  /api/v1/temporal/confirmations/{confirmation_ref}/history
 ```
 
-Write records confirmer as authenticated self and does not require Outcome ownership. List is Outcome-owner scoped and returns 0..N. History is visible to confirmer or Outcome owner.
-
-Generated OpenAPI/Orval artifacts were regenerated locally, passed the determinism check, and are committed at `30f15adf`. Never hand-edit generated files.
+Proven persistence frontier: `20260925_79` / `167|5|123|93|329|279|446`.
 
 ---
 
-# 5. B10-C surfaces in this candidate
+# 4. B10-C post-closure contract hardening
+
+Review found no persistence/domain defect. The defect was only that runtime truth and generated OpenAPI response truth diverged:
 
 ```text
-apps/backend/migrations/versions/20260925_79_b10_c_confirmation_capability.py
-apps/backend/src/dante/platform/database/mappings/confirmation.py
-apps/backend/src/dante/platform/database/mappings/addressing.py
-apps/backend/src/dante/modules/temporal/confirmation_runtime.py
-apps/backend/src/dante/modules/temporal/confirmation_api.py
-docs/database/dictionary/**
-apps/web/src/features/temporal/remote-confirmation-data-source.ts
-apps/web/src/features/temporal/confirmation-controls.tsx
-apps/backend/tests/integration/temporal/test_b10_c_confirmation.py
-apps/backend/tests/integration/temporal/test_b10_c_confirmation_api.py
-apps/web/src/features/temporal/confirmation-controls.test.tsx
+runtime new Confirmation  -> 201
+runtime replay            -> 200
+old generated OpenAPI     -> documented success only as 200
 ```
 
----
-
-# 6. B10-C explicitly does not own
+Committed source hardening:
 
 ```text
-B10-D reconciliation / resolution workflow
-generic Resolution ontology entity
-automatic Outcome -> Confirmation
-AI/provider as human confirmer or canonical authority
-integrated real-app walkthrough
+1f4c3415  fix(temporal): document B10-C confirmation HTTP outcomes [skip ci]
+58947b45  test(temporal): freeze B10-C confirmation response contract [skip ci]
 ```
+
+The route now declares:
+
+```text
+201 ConfirmationResponse  creation
+200 ConfirmationResponse  idempotent replay
+400/401/403/404/409/422/500 ProblemDetails
+```
+
+No migration after `_79` is required.
+
+Generated files are intentionally stale until the user runs repository generation locally. Never hand-edit them.
 
 ---
 
-# 7. Proof / collaboration discipline
+# 5. Exact immediate action before B10-D
+
+From the user's worktree:
+
+```text
+cd ~/projects/dante
+git pull --ff-only origin feature/timeline-temporal-operational
+
+pnpm api:generate
+pnpm generated:check
+pnpm --filter @dante/api-client typecheck
+
+cd apps/backend
+uv run --locked pytest -q --no-cov \
+  tests/test_b10_c_openapi_contract.py \
+  tests/test_temporal_openapi_inventory.py
+```
+
+If green, commit/push only the generated OpenAPI/client changes produced by the generator, with `[skip ci]` if desired. Do not edit generated files manually.
+
+After that, re-fetch HEAD and reconcile this handoff/closure generated-commit reference. Only then prepare B10-D.
+
+---
+
+# 6. B10-D boundary
+
+B10-D is reconciliation / resolution workflow. It is **not started**.
+
+Before implementation, prepare a modification gate against current Product / Domain / Logical / Physical authority. B10-D must preserve:
+
+```text
+Confirmation != Decision / Approval / Authority
+conflicting Confirmation history is not deleted
+Outcome history is not rewritten as reconciliation
+Actual history is not rewritten as reconciliation
+latest row != accepted resolution
+proposal != accepted effect
+no generic Resolution ontology entity unless current authority justifies it
+AI/provider does not become canonical authority
+```
+
+Do not start coding B10-D from old chat assumptions or stale pre-`_78` Outcome documents.
+
+---
+
+# 7. B10-E boundary
+
+The integrated real-app/manual B10 walkthrough remains intentionally deferred to B10-E after B10-D is closed.
+
+---
+
+# 8. Collaboration discipline
 
 - user runs tests locally; assistant does not use CI/GitHub Actions
-- published migrations are immutable; fixes are forward-only
-- distinguish implemented/candidate truth from user-proven truth
-- generated API client comes from OpenAPI generator only
-- do not request manual real-app testing before B10-E
-- do not start B10-D until the user approves that gate
-
----
-
-# 8. Fresh-chat recovery order
-
-```text
-1. docs/workstreams/timeline-temporal-operational-handoff.md
-2. docs/workstreams/timeline-temporal-operational-b10-c-closure-2026-09-26.md
-3. docs/workstreams/timeline-temporal-operational-b10-b-closure-2026-09-25.md
-4. docs/workstreams/timeline-temporal-operational-roadmap.md
-5. docs/workstreams/timeline-temporal-operational-map.md
-6. docs/domain/concepts/confirmation.md + confirmation-part-2.md
-7. migration 20260925_79
-8. confirmation mappings / runtime / API
-9. web Confirmation data source + controls
-10. docs/database/timeline-temporal-operational.md + Dictionary/scope
-```
-
-**Exact next action:** B10-C is closed. Do not start B10-D until the user approves that gate.
+- push coherent checkpoints frequently with `[skip ci]`
+- published migrations are immutable; persistence fixes are forward-only
+- generated API client comes only from repo generator
+- PostgreSQL remains canonical truth
+- distinguish proven persistence/domain semantics from generated-artifact synchronization
+- no manual real-app proof before B10-E
