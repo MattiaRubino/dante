@@ -5,10 +5,11 @@
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Continuation handoff:** `docs/workstreams/timeline-temporal-operational-handoff.md`
 - **B10-D closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-d-closure-2026-09-26.md`
+- **B10-E closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-e-closure-2026-09-26.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
 - **Last proven persistence frontier:** `20260926_80`
-- **Completed functional frontier:** B10-D Reconciliation ✅ CLOSED / PROVEN 2026-09-26
-- **Current implementation cursor:** B10-E final integration + acceptance
+- **Completed functional frontier:** B10 ✅ CLOSED 2026-09-26
+- **Current implementation cursor:** B11 Advanced Recurrence / Conditional / Reminder
 - **CI:** not authorized; local tests are run by the user
 
 ---
@@ -61,10 +62,12 @@ B05 Product Organization                         ✅ CLOSED / PROVEN
 B06 Routine / Recurrence / Occurrence Baseline   ✅ CLOSED / PROVEN
 B08 Session Runtime                              ✅ CLOSED / USER-REPORTED 2026-09-24
 B09 Responsibility / Participation               ✅ CLOSED / USER-REPORTED 2026-09-25
-B10-A Actual / realization core                  ✅ CLOSED / PROVEN 2026-09-25
-B10-B Outcome                                    ✅ CLOSED / PROVEN 2026-09-25
-B10-C Confirmation                               ✅ CLOSED / PROVEN 2026-09-26
-B10-D Reconciliation / resolution workflow       ✅ CLOSED / PROVEN 2026-09-26
+B10 Actual / Outcome / Confirmation / Reconciliation ✅ CLOSED 2026-09-26
+  B10-A Actual / realization core                ✅ CLOSED / PROVEN 2026-09-25
+  B10-B Outcome                                  ✅ CLOSED / PROVEN 2026-09-25
+  B10-C Confirmation                             ✅ CLOSED / PROVEN 2026-09-26
+  B10-D Reconciliation / resolution workflow     ✅ CLOSED / PROVEN 2026-09-26
+  B10-E Final integration + acceptance           ✅ CLOSED / USER-REPORTED ACCEPTANCE 2026-09-26
 ```
 
 B10 closure evidence:
@@ -74,6 +77,7 @@ B10-A timeline-temporal-operational-b10-a-closure-2026-09-25.md
 B10-B timeline-temporal-operational-b10-b-closure-2026-09-25.md
 B10-C timeline-temporal-operational-b10-c-closure-2026-09-26.md
 B10-D timeline-temporal-operational-b10-d-closure-2026-09-26.md
+B10-E timeline-temporal-operational-b10-e-closure-2026-09-26.md
 ```
 
 ---
@@ -81,8 +85,7 @@ B10-D timeline-temporal-operational-b10-d-closure-2026-09-26.md
 # 3. Active execution order
 
 ```text
-B10-E Final integration + acceptance            🟨 NEXT
-B11 Advanced Recurrence / Conditional / Reminder ⬜
+B11 Advanced Recurrence / Conditional / Reminder 🟨 NEXT
 B13 Work Structure / Decomposition / Dependencies⬜
 B12 Replanning / Conflict / Solver               ⬜
 B14 Temporal Create Completeness Gate             ⬜
@@ -103,14 +106,14 @@ B10-A Actual          ✅
 → B10-B Outcome       ✅
 → B10-C Confirmation  ✅
 → B10-D Reconciliation✅
-→ B10-E integration + user real-app proof  🟨
+→ B10-E integration + user real-app proof ✅
 ```
 
-No CI/GitHub Actions. The user runs local automated gates. The integrated B10 real-app proof belongs only to B10-E.
+No CI/GitHub Actions. The user runs local automated gates. B10-E acceptance was user-reported from the integrated real-app walkthrough; the newly added B10-E-specific automated tests were not separately reported as user-run at closure time.
 
 ---
 
-# 4. B10 proven chain
+# 4. B10 closed chain
 
 ## B10-A — Actual
 
@@ -210,7 +213,7 @@ web typecheck PASS
 web controls 6/6 PASS
 api-client typecheck PASS
 generated check PASS
-backend B10-D/B10-C/OpenAPI inventory 6/6 PASS in 3.07s
+backend B10-D/B10-C/OpenAPI inventory 6/6 PASS
 ```
 
 Earlier PostgreSQL/runtime/API proof:
@@ -219,40 +222,53 @@ Earlier PostgreSQL/runtime/API proof:
 4 passed in 14.94s
 ```
 
-Therefore B10-D is closed/proven. No manual B10 proof was performed before B10-E.
+## B10-E — Integration / acceptance
+
+Repository integration coverage:
+
+```text
+apps/backend/tests/integration/temporal/test_b10_e_whole_block.py
+apps/web/src/features/temporal/timeline-truth-inspector.test.tsx
+```
+
+The real Home timeline runtime mounts the B10 truth inspector. The user performed the integrated walkthrough and reported the chain working, including Outcome correction without implicit transfer of old Confirmation/Reconciliation.
+
+Classification:
+
+```text
+B10-E CLOSED / USER-REPORTED ACCEPTANCE
+B10   CLOSED
+```
 
 ---
 
-# 5. Current gate — B10-E
+# 5. Current gate — B11
 
-B10-E owns only final integration and acceptance of the already-built chain:
+B11 is now active.
 
-```text
-Session → Actual → Outcome → Confirmation → Reconciliation
-```
-
-Required proof categories:
+Scope theme:
 
 ```text
-[ ] whole-B10 focused automated regression
-[ ] one integrated real-app/manual walkthrough
-[ ] verify no automatic cross-layer fabrication
-[ ] verify correction/history boundaries remain intact
-[ ] reconcile closure docs / roadmap / map / handoff
-[ ] close whole B10
+Advanced Recurrence / Conditional / Reminder
 ```
 
-Do not add a generic Resolution entity, generic Decision engine, Verification model or broader authorization model merely to finish B10-E.
+B11 must extend the existing B06 Routine / Recurrence / Occurrence baseline without collapsing:
 
-After B10-E closes, advance directly to B11.
+```text
+Routine != Recurrence != Occurrence
+Occurrence != Schedule
+RRULE-like representation != ontology
+conditional behavior != hidden mutation
+reminder intent != silently ignored editable Create field
+```
+
+The editable Create reminder intent must leave B11 either canonically supported, truthfully handed off, or hidden until supported.
+
+Before implementation, re-read the relevant Domain / Logical / Physical / Database authority and inspect the current reminder/conditional Create surface.
 
 ---
 
 # 6. Later blocks
-
-## B11 — Advanced Recurrence / Conditional / Reminder
-
-Advanced recurrence, conditional behavior and reminder semantics. Existing editable reminder intent must become canonically supported, truthfully handed off or hidden.
 
 ## B13 — Work Structure / Decomposition / Dependencies
 
