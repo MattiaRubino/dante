@@ -1,8 +1,8 @@
 # Timeline / Temporal-Operational — B10-D reconciliation scope
 
-Status: **APPROVED / IN PROGRESS** — gate approved 2026-09-26.
+Status: **APPROVED / IN PROGRESS** — gate approved 2026-09-26; persistence/backend proof green 2026-09-26.
 
-This document freezes the B10-D modification contract before persistence/API/UI implementation. It extends the proven Actual → Outcome → Confirmation chain without introducing a generic ontology-level `Resolution` or a second truth model.
+This document freezes the B10-D modification contract. It extends the proven Actual → Outcome → Confirmation chain without introducing a generic ontology-level `Resolution` or a second truth model.
 
 ## 1. Semantic purpose
 
@@ -35,7 +35,7 @@ Resolver identity is state data, not reconciliation identity. This deliberately 
 
 ## 3. Stable identity
 
-B10-D introduces a narrowly scoped Outcome-reconciliation owner only if persisted history is required. The approved stable identity is:
+B10-D persists a narrowly scoped Outcome-reconciliation owner with identity:
 
 ```text
 (outcome_disposition_material_state_ref, purpose_code)
@@ -59,7 +59,7 @@ action_code
 resolved_by_person_ref
 ```
 
-Approved contextual actions for this slice:
+Approved contextual actions:
 
 ```text
 unresolved
@@ -99,11 +99,12 @@ A later Confirmation correction does not reinterpret an older reconciliation sta
 
 Evidence is normalized relational data; no canonical JSON-array truth column is introduced.
 
-## 6. Persistence candidate
+## 6. Implemented persistence
 
-The approved B10-D persistence shape is a new forward-only revision after `_79`, expected as `_80` if implementation validation does not expose a contradiction:
+B10-D persistence is implemented by forward-only Alembic revision:
 
 ```text
+20260926_80
 dante.outcome_reconciliation
 dante.outcome_reconciliation_state
 dante.outcome_reconciliation_evidence
@@ -112,15 +113,15 @@ dante.outcome_reconciliation_operation
 facet: outcome.reconciliation
 ```
 
-The revision must also extend, in the same migration, the required ScopedAddress family/facet/current-state/CP6 MaterialState owner-dispatch and totality contracts. `_79` and all earlier published revisions remain immutable.
+`_80` extends the required ScopedAddress family/facet/current-state/CP6 MaterialState owner-dispatch and totality contracts. `_79` and all earlier published revisions remain immutable.
 
 Corrections append a new MaterialState, close the prior current-history interval, preserve prior evidence rows, and require an exact `expected_material_state_ref`.
 
-Idempotency operation receipts remain separate from Domain identity and include a complete intent fingerprint, including normalized evidence intent.
+Idempotency operation receipts remain separate from Domain identity and include the normalized evidence intent in the fingerprint.
 
 ## 7. Public capability
 
-Minimal public surface:
+Implemented public surface:
 
 ```text
 POST /api/v1/temporal/outcomes/{outcome_ref}/reconciliations
@@ -128,7 +129,7 @@ GET  /api/v1/temporal/outcomes/{outcome_ref}/reconciliations
 GET  /api/v1/temporal/reconciliations/{reconciliation_ref}/history
 ```
 
-Candidate write contract:
+Write contract:
 
 ```text
 operation_id
@@ -144,7 +145,7 @@ evidence[]:
 
 The authenticated self must own the Outcome to write, list, or read reconciliation history in the first B10-D slice.
 
-Creation/replay follows the established B10 pattern:
+Creation/replay contract:
 
 ```text
 201 new accepted reconciliation state
@@ -152,9 +153,23 @@ Creation/replay follows the established B10 pattern:
 409 operation reuse or stale expected-current state
 ```
 
-## 8. Required invariants / proof cases
+## 8. Proof status
 
-The implementation proof must cover at least:
+Local PostgreSQL proof executed by the user on 2026-09-26:
+
+```text
+uv run --locked pytest -q --no-cov -m postgres \
+  tests/integration/temporal/test_b10_d_reconciliation.py \
+  tests/integration/temporal/test_b10_d_reconciliation_api.py \
+  tests/integration/temporal/test_b10_c_confirmation.py \
+  tests/integration/temporal/test_b10_c_confirmation_api.py
+
+4 passed in 14.94s
+```
+
+This proves the B10-D persistence/runtime/API slice together with direct B10-C regression coverage. It does **not** yet close B10-D: generated OpenAPI/client, web controls and final focused regression remain pending.
+
+The implementation proof covers:
 
 ```text
 empty owner-scoped list
@@ -172,13 +187,11 @@ Outcome correction does not transfer old reconciliation
 unresolved action
 select requires exactly one selected evidence
 accept_multiple requires at least two selected evidence
-defer/escalate select nothing
 history chronology and one open current interval
-current accepted reconciliation state != latest arbitrary row
-no universal `resolved=true` / `truth=true` boolean
-OpenAPI inventory/response contract
-ScopedAddress/MaterialState/CP6 totality remains valid
+no universal resolved=true / truth=true boolean
 ```
+
+OpenAPI inventory/response tests are now source-frozen; generated artifact refresh remains pending.
 
 ## 9. Explicitly out of scope
 
@@ -202,11 +215,11 @@ B10-A CLOSED / PROVEN
 B10-B CLOSED / PROVEN
 B10-C CLOSED / PROVEN
 B10-D APPROVED / IN PROGRESS
-  D1 scope freeze                 <- this document
-  D2 persistence + backend core   <- next
-  D3 public API/generated client
-  D4 web controls
-  D5 focused regression closure
+  D1 scope freeze                 ✅
+  D2 persistence + backend core   ✅ local PostgreSQL proof 4/4
+  D3 public API/generated client  🟨 source/OpenAPI contract frozen; generated refresh next
+  D4 web controls                 ⬜
+  D5 focused regression closure   ⬜
 B10-E final integration + one real-app proof
 ```
 
