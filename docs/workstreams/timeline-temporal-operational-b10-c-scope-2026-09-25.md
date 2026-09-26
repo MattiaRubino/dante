@@ -1,8 +1,10 @@
 # Timeline / Temporal-Operational — B10-C Confirmation scope
 
-Status: **APPROVED / CLOSED / PROVEN 2026-09-26** — closure evidence: `timeline-temporal-operational-b10-c-closure-2026-09-26.md`
+Status: **APPROVED / CLOSED / PROVEN 2026-09-26** — closure evidence: `timeline-temporal-operational-b10-c-closure-2026-09-26.md`.
 
-B10-C is executed as one complete vertical block after proven B10-B. The user runs one local automated gate only after this candidate is ready. No GitHub Actions/CI. No real-app proof before B10-E.
+Post-closure note: the 2026-09-26 review found an OpenAPI response-description gap only. Confirmation semantics/persistence remain proven at `_79`; source + regression test now document `201` creation, `200` idempotent replay and bounded ProblemDetails failures. Generated OpenAPI/Orval artifacts must be refreshed through repository tooling before B10-D starts.
+
+B10-C was executed as one complete vertical block after proven B10-B. The user ran the local automated gate; no GitHub Actions/CI were used. No real-app proof is required before B10-E.
 
 ## Canonical entry frontier
 
@@ -53,7 +55,7 @@ Forward-only revision:
              + MaterialState totality dispatch
 ```
 
-Candidate topology:
+Proven topology:
 
 ```text
 167|5|123|93|329|279|446
@@ -87,6 +89,14 @@ temporal_list_confirmation_history
 
 Write body: `operation_id`, `outcome_disposition_material_state_ref`, optional `expected_material_state_ref`, `purpose_code`, `stance_code`.
 
+POST runtime contract:
+
+```text
+new accepted Confirmation  -> 201
+idempotent replay          -> 200
+bounded failures           -> ProblemDetails
+```
+
 ## Timeline
 
 Confirmation controls sit beside Outcome. Visible states:
@@ -109,6 +119,18 @@ AI/provider as human confirmer or canonical authority
 real-app proof before B10-E
 ```
 
-## Local gate
+## Local proof
 
-The user runs one local automated gate covering generation/check, typechecks, focused web tests, OpenAPI inventory, B10-C PostgreSQL/API tests, and B10-B/A/B09/B08/current-catalog regressions. This document does not claim PASS.
+The user-run B10-C gate passed on 2026-09-26. Closure evidence records:
+
+```text
+API generation        PASS
+generated check       PASS (339 files)
+API client typecheck  PASS
+web typecheck         PASS
+web tests             8/8 PASS
+PostgreSQL slice      19 passed
+regression slice      19 passed
+```
+
+The subsequent OpenAPI hardening adds no persistence semantics and does not reopen `_79`. It requires only regeneration/determinism plus the focused OpenAPI contract test before B10-D begins.
