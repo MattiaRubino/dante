@@ -4,6 +4,7 @@ import './actual-realization-controls.css';
 
 import { ConfirmationControls } from './confirmation-controls';
 import { OutcomeControls } from './outcome-controls';
+import { ReconciliationControls } from './reconciliation-controls';
 import {
   createRemoteTemporalActualDataSource,
   type ActualSubjectKind,
@@ -137,6 +138,7 @@ export function ActualRealizationControls({
       {messageNode}
       <OutcomeControls kind={kind} subjectRef={subjectRef} />
       <ConfirmationControls kind={kind} subjectRef={subjectRef} />
+      <ReconciliationControls kind={kind} subjectRef={subjectRef} />
     </div>
   );
 }
