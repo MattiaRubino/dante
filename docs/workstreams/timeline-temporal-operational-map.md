@@ -4,14 +4,11 @@
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Continuation handoff:** `docs/workstreams/timeline-temporal-operational-handoff.md`
-- **B10-C approved scope:** `docs/workstreams/timeline-temporal-operational-b10-c-scope-2026-09-25.md`
-- **B10-B closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-b-closure-2026-09-25.md`
-- **B10-C closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-c-closure-2026-09-26.md`
+- **B10-D closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-d-closure-2026-09-26.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Last proven Alembic frontier:** `20260925_79`
-- **Last proven DB topology:** `167|5|123|93|329|279|446`
-- **Completed functional frontier:** B10-C Confirmation ✅ CLOSED / PROVEN 2026-09-26
-- **Current implementation cursor:** B10-D reconciliation / resolution workflow — not started
+- **Last proven persistence frontier:** `20260926_80`
+- **Completed functional frontier:** B10-D Reconciliation ✅ CLOSED / PROVEN 2026-09-26
+- **Current implementation cursor:** B10-E final integration + acceptance
 - **CI:** not authorized; local tests are run by the user
 
 ---
@@ -30,25 +27,23 @@ Actual != Outcome != Confirmation
 Expected outcome != Outcome
 Outcome != Observation
 Outcome != lifecycle / operational state
+Confirmation != Authority != Verification
+Confirmation != Decision / Approval
+Reconciliation != universal truth
+Reconciliation != Confirmation != Outcome
 Responsibility != Participation
 participant != responsible actor != organizer/owner
-participant != Account identity
-shared Event truth != actor-specific participation truth
 planned/intended != happened
 Step != Activity
 Plan != Activity
 Dependency != hierarchy
 ordering != dependency
-child Schedule != parent Schedule
-child Session != parent Session
 proposal != accepted effect
 projection != canonical truth
 current accepted state != latest row
 MaterialState payload != mutable runtime record
 idempotency key != Domain identity
 Undo != history rewind
-estimated effort != scheduled duration != Session duration
-editable Create intent != canonical persistence
 ```
 
 ---
@@ -65,34 +60,28 @@ B04 Temporal Constraints + Movement Policy       ✅ CLOSED / PROVEN
 B05 Product Organization                         ✅ CLOSED / PROVEN
 B06 Routine / Recurrence / Occurrence Baseline   ✅ CLOSED / PROVEN
 B08 Session Runtime                              ✅ CLOSED / USER-REPORTED 2026-09-24
-  B08-A Session Core End-to-End                   ✅ CLOSED / USER-REPORTED
-  B08-B Pause / Resume + Durations End-to-End     ✅ CLOSED / USER-REPORTED
-  B08-C TC-009 Session Duration End-to-End        ✅ CLOSED / PROVEN
-  B08-D Whole-block closure                       ✅ CLOSED / USER-REPORTED
 B09 Responsibility / Participation               ✅ CLOSED / USER-REPORTED 2026-09-25
-  B09-A typed persistence substrate               ✅ CLOSED / PROVEN 2026-09-25
-  B09-B guarded mutation + application surface    ✅ CLOSED / PROVEN 2026-09-25
-  B09-C non-Account Person referents              ✅ CLOSED / PROVEN 2026-09-25
-  B09-D B09 whole-block closure                   ✅ CLOSED / USER-REPORTED 2026-09-25
 B10-A Actual / realization core                  ✅ CLOSED / PROVEN 2026-09-25
 B10-B Outcome                                    ✅ CLOSED / PROVEN 2026-09-25
+B10-C Confirmation                               ✅ CLOSED / PROVEN 2026-09-26
+B10-D Reconciliation / resolution workflow       ✅ CLOSED / PROVEN 2026-09-26
 ```
 
-B10-A closure evidence: `timeline-temporal-operational-b10-a-closure-2026-09-25.md`.
-B10-B closure evidence: `timeline-temporal-operational-b10-b-closure-2026-09-25.md`.
-B10-C closure evidence: `timeline-temporal-operational-b10-c-closure-2026-09-26.md`.
+B10 closure evidence:
+
+```text
+B10-A timeline-temporal-operational-b10-a-closure-2026-09-25.md
+B10-B timeline-temporal-operational-b10-b-closure-2026-09-25.md
+B10-C timeline-temporal-operational-b10-c-closure-2026-09-26.md
+B10-D timeline-temporal-operational-b10-d-closure-2026-09-26.md
+```
 
 ---
 
-# 3. Remaining execution order
+# 3. Active execution order
 
 ```text
-B10 Actual / Outcome / Confirmation / Resolution 🟨 IN PROGRESS
-  B10-A Actual / realization core                 ✅ CLOSED / PROVEN
-  B10-B Outcome                                   ✅ CLOSED / PROVEN
-  B10-C Confirmation                              ✅ CLOSED / PROVEN
-  B10-D Reconciliation / resolution workflow      ⬜ NEXT — not started
-  B10-E Final integration + acceptance            ⬜ — manual real-app proof here
+B10-E Final integration + acceptance            🟨 NEXT
 B11 Advanced Recurrence / Conditional / Reminder ⬜
 B13 Work Structure / Decomposition / Dependencies⬜
 B12 Replanning / Conflict / Solver               ⬜
@@ -110,285 +99,182 @@ B09 → B10 → B11 → B13 → B12 → B14 → B07 → B15
 Within B10:
 
 ```text
-B10-A Actual
-→ B10-B Outcome
-→ B10-C Confirmation
-→ B10-D reconciliation workflow
-→ B10-E final integration + user real-app proof
+B10-A Actual          ✅
+→ B10-B Outcome       ✅
+→ B10-C Confirmation  ✅
+→ B10-D Reconciliation✅
+→ B10-E integration + user real-app proof  🟨
 ```
 
-A/B/C/D are each implemented as one coherent block. The user runs one local automated gate only after the whole major block is ready. No CI/GitHub Actions. No manual real-app proof until B10-E.
+No CI/GitHub Actions. The user runs local automated gates. The integrated B10 real-app proof belongs only to B10-E.
 
 ---
 
-# 4. B08 closure record
+# 4. B10 proven chain
 
-Target path proven/accepted for B08:
-
-```text
-Activity   → START Session → authoritative read/reload → PAUSE/RESUME → END
-Occurrence → START Session → authoritative read/reload → PAUSE/RESUME → END
-```
-
-Implemented migration chain:
+## B10-A — Actual
 
 ```text
-20260924_58 typed Session subject + START/READ/END
-20260924_59 exact Activity/Occurrence subject-family enforcement
-20260924_60 immutable END MaterialState + exact replay receipt
-20260924_62 pause/resume persistence
-20260924_63 transition replay repair
-20260924_64 runtime metrics
-20260924_65 Activity-owned soft minimum on Session active duration
+20260925_74
+159|5|115|93|305|258|435
 ```
-
-Permanent forbidden effects:
-
-```text
-START does not fabricate Schedule
-END does not complete Activity
-END does not resolve Occurrence
-END does not create Actual
-END does not create Outcome
-pause does not create a new Session
-TC-009 does not aggregate separate Sessions
-TC-009 excludes pauses
-TC-009 does not block transition or mutate Schedule/Actual/Outcome
-```
-
-B08-D evidence recorded from the user's local run on 2026-09-24:
-
-```text
-generated/client checks PASS
-focused Web suite: 58 PASS
-backend PostgreSQL/unit/API command: 31 PASS
-follow-up Web typecheck: user-confirmed PASS
-real app: START / PAUSE / RESUME / END confirmed
-real app: timed/unplaced placement semantics confirmed
-```
-
----
-
-# 5. B09 closure record — Responsibility / Participation
-
-B09 adds the smallest coherent actor/person layer needed by the temporal vertical, without introducing account collaboration infrastructure.
-
-## B09-A — typed persistence substrate — CLOSED / PROVEN
-
-Implemented by Alembic `20260925_66`:
-
-```text
-event_expected_participation(Event, Person, required|optional)
-activity_responsibility(Activity, Person)
-event_responsibility(Event, Person)
-```
-
-Local user-run proof on 2026-09-25: 10 focused PostgreSQL tests passed.
-
-## B09-B — CLOSED / PROVEN
-
-B09-B owns guarded mutation/application behavior over the B09-A substrate. It preserves Person != Account, Responsibility != Participation and expected Participation != Actual attendance. Home `+` free-text participant fields remain B14.
-
-User-run local automated proof on 2026-09-25: web 4 passed; backend B09-B/B09-A/catalog/OpenAPI 18 passed.
-
-## B09-C — CLOSED / PROVEN
-
-B09-C closed at `20260925_69`: guarded creation/list/local label correction for owner-local native Persons without Accounts. User-run proof passed generated/client checks, both typechecks, 7 web tests, 11 backend OpenAPI/API tests and 18 PostgreSQL B09-C/B09-B/catalog regressions. Proven topology `158|5|109|93|303|254|433`; generated client commit `875aaf48`.
-
-## B09-D — CLOSED / USER-REPORTED
-
-B09-D integrated proof covers Person creation and correction, Responsibility, expected Event Participation, removal, isolation and absence of Actual/Session. User real-app walkthrough passed on 2026-09-25. Evidence: `timeline-temporal-operational-b09-d-closure-2026-09-25.md`.
-
-Permanent B09 boundaries:
-
-```text
-Person != Account
-Responsibility != Participation
-expected Participation != Actual Participation
-participation/attendance != Event Actual
-owner-local Person label != universal identity
-provider attendee != canonical Person identity by default
-```
-
----
-
-# 6. B10 live contract — Actual / Outcome / Confirmation / Resolution
-
-Scope authority: `docs/workstreams/timeline-temporal-operational-b10-scope-freeze.md`.
-
-## B10-A — Actual / realization core — CLOSED / PROVEN
-
-Final database chain:
-
-```text
-20260925_70 guarded self-scoped Actual realization authoring/current/history
-20260925_71 exact Activity/Event/Occurrence family hardening
-20260925_72 CP6 Actual/scoped-address owner creation order repair
-20260925_73 canonical family-aware write/read signatures
-20260925_74 current-history qualification + canonical receipt FK name
-```
-
-Proven capability:
-
-```text
-Activity    → explicit Actual current realization
-Event       → explicit Actual current realization
-Occurrence  → explicit Actual current realization
-
-Actual owner                = stable scoped owner for subject_native_ref
-Actual realization state    = append-only MaterialState
-current accepted state      = explicit scoped current binding/history
-optional timing             = instant | start_only | interval
-optional Session evidence   = exact Session + exact Session timing MaterialState
-```
-
-Closure evidence:
-
-```text
-[x] PostgreSQL guarded capability over canonical CP6 Actual substrate
-[x] exact subject-family enforcement
-[x] public-write idempotency receipts
-[x] append-only state/current-history behavior
-[x] backend application current/history surface
-[x] Activity/Event/Occurrence POST+GET Actual routes
-[x] Actual history route
-[x] OpenAPI inventory for all seven operations
-[x] Timeline minimal Actual authoring for Activity/Event/Occurrence
-[x] absence rendered as unknown, not false/non-realization
-[x] generated OpenAPI/Orval committed at 780c612d
-[x] final user-run PostgreSQL/application/catalog gate: 14 passed / exit 0
-```
-
-Proven frontier:
-
-```text
-Alembic  20260925_74
-Topology 159|5|115|93|305|258|435
-```
-
-Permanent B10-A boundaries:
 
 ```text
 Session END != Actual
-Session evidence != Actual identity
 absence of Actual = unknown
-absence of Actual != realization_occurred=false
-Actual != Outcome != Confirmation
-current accepted state != latest row
-idempotency key != Actual identity
-provider/AI/solver != canonical realization authority
+known realization_occurred=false != absence
+Session evidence != Actual identity
 ```
 
-No manual real-app proof was performed for B10-A; by explicit execution policy it belongs to B10-E.
-
-## B10-B — Outcome — CLOSED / PROVEN
-
-Closure evidence: `timeline-temporal-operational-b10-b-closure-2026-09-25.md`.
+## B10-B — Outcome
 
 ```text
-Alembic  20260925_78
-Topology 163|5|119|93|317|268|440
-Generated 335 files at 58757fbb
+20260925_78
+163|5|119|93|317|268|440
+facet: outcome.disposition
+one Outcome per Actual
 ```
 
-## B10-C — Confirmation — CLOSED / PROVEN
+Outcome disposition is pinned to one exact Actual realization MaterialState. The temporary `_75` vocabulary/result identity is superseded and must not return.
 
-Closure evidence: `timeline-temporal-operational-b10-c-closure-2026-09-26.md`.
-
-Published persistence:
+## B10-C — Confirmation
 
 ```text
-20260925_79 Confirmation owner/attestation/current-history/operation
-            + confirmation scoped family and confirmation.attestation facet
-            + ScopedAddress / MaterialState totality dispatch
+20260925_79
+167|5|123|93|329|279|446
+facet: confirmation.attestation
 ```
-
-Proven topology: `167|5|123|93|329|279|446`.
 
 ```text
-Confirmation != Outcome
-0..N Confirmation per exact Outcome disposition MaterialState
-identity = (target MS, confirmer, purpose)
-stance_code is contextual, not confirmed=true
-Outcome correction does not transfer old Confirmation
-current accepted Confirmation state != latest row
-no automatic Confirmation
+identity = (target Outcome MaterialState, confirmer Person, purpose)
+absence of Confirmation != false
+Confirmation != Authority / Verification / Decision
 ```
 
-Public routes:
+## B10-D — Reconciliation
+
+Persistence frontier:
 
 ```text
-POST /api/v1/temporal/outcomes/{outcome_ref}/confirmations
-GET  /api/v1/temporal/outcomes/{outcome_ref}/confirmations
-GET  /api/v1/temporal/confirmations/{confirmation_ref}/history
+20260926_80
 ```
 
-Generated client commit: `30f15adf` (339 files).
-
-Later B10:
+Canonical family:
 
 ```text
-B10-D reconciliation / resolution workflow
-B10-E final integration + automated regression + single real-app B10 walkthrough
+outcome_reconciliation
+outcome_reconciliation_state
+outcome_reconciliation_evidence
+outcome_reconciliation_current_history
+outcome_reconciliation_operation
+facet: outcome.reconciliation
 ```
+
+Canonical identity:
+
+```text
+(outcome_disposition_material_state_ref, purpose_code)
+```
+
+Authority:
+
+```text
+Outcome owner is resolver
+can confirm != can resolve
+resolver identity is state data
+```
+
+Evidence pins exact Confirmation attestation MaterialStates. Corrections are append-only/current-history transitions and do not reinterpret older evidence.
+
+Actions:
+
+```text
+unresolved
+select
+accept_multiple
+defer
+escalate
+```
+
+Generated client:
+
+```text
+cebfb557196d3fc0f412262a1d12feae9291b875
+345 generated files deterministic/current
+```
+
+Final user-run B10-D gate:
+
+```text
+web typecheck PASS
+web controls 6/6 PASS
+api-client typecheck PASS
+generated check PASS
+backend B10-D/B10-C/OpenAPI inventory 6/6 PASS in 3.07s
+```
+
+Earlier PostgreSQL/runtime/API proof:
+
+```text
+4 passed in 14.94s
+```
+
+Therefore B10-D is closed/proven. No manual B10 proof was performed before B10-E.
 
 ---
 
-# 7. Later blocks
+# 5. Current gate — B10-E
+
+B10-E owns only final integration and acceptance of the already-built chain:
+
+```text
+Session → Actual → Outcome → Confirmation → Reconciliation
+```
+
+Required proof categories:
+
+```text
+[ ] whole-B10 focused automated regression
+[ ] one integrated real-app/manual walkthrough
+[ ] verify no automatic cross-layer fabrication
+[ ] verify correction/history boundaries remain intact
+[ ] reconcile closure docs / roadmap / map / handoff
+[ ] close whole B10
+```
+
+Do not add a generic Resolution entity, generic Decision engine, Verification model or broader authorization model merely to finish B10-E.
+
+After B10-E closes, advance directly to B11.
+
+---
+
+# 6. Later blocks
 
 ## B11 — Advanced Recurrence / Conditional / Reminder
 
-```text
-[ ] advanced recurrence/conditional behavior
-[ ] resolve Home + reminder field through canonical support, truthful handoff or hiding
-[ ] no universal fake Reminder owner merely to satisfy UI
-```
+Advanced recurrence, conditional behavior and reminder semantics. Existing editable reminder intent must become canonically supported, truthfully handed off or hidden.
 
 ## B13 — Work Structure / Decomposition / Dependencies
 
 ```text
-[ ] internal Step != Activity
-[ ] composite work uses real independent Activities where they have independent lifecycle
-[ ] typed Dependency != hierarchy / ordering
-[ ] max Session count / merge / spacing / preparation-recovery structure policy where temporal
-[ ] no generic SubActivity/GenericItem ontology
+Step != Activity
+Plan != Activity
+Dependency != hierarchy
+ordering != dependency
 ```
 
 ## B12 — Replanning / Conflict / Solver
 
-```text
-[ ] preferred-window semantics
-[ ] movement policy semantics
-[ ] fallback policy semantics
-[ ] dependency-aware replanning using B13
-[ ] Proposal != accepted Schedule
-[ ] solver UNKNOWN != INFEASIBLE
-```
+Deterministic-first replanning over canonical truth/constraints/dependencies. Proposal != accepted Schedule; solver UNKNOWN != INFEASIBLE; AI != scheduling authority.
 
 ## B14 — Temporal Create Completeness Gate
 
-Every editable Create field must be canonically persisted/proven, truthfully handed off, presentation-only, or hidden until supported.
+Every editable Create field must be canonically supported/proven, truthfully handed off, presentation-only, or hidden.
 
----
+## B07 — UI/UX Consolidation v1
 
-# 8. Current gate
+Deferred until B14 so final UI consolidation operates over truthful functional vocabulary.
 
-```text
-B00–B06 ✅ CLOSED / PROVEN
-B08     ✅ CLOSED / USER-REPORTED 2026-09-24
-B09     ✅ CLOSED / USER-REPORTED 2026-09-25
-B10     🟨 IN PROGRESS
-  B10-A ✅ CLOSED / PROVEN 2026-09-25
-  B10-B ✅ CLOSED / PROVEN 2026-09-25
-  B10-C ✅ CLOSED / PROVEN 2026-09-26
-  B10-D ⬜ NEXT — not started
-  B10-E ⬜ — user real-app proof here
-B11     ⬜ NOT STARTED
-B13     ⬜ NOT STARTED
-B12     ⬜ NOT STARTED
-B14     ⬜ NOT STARTED
-B07     ⏸ DEFERRED UNTIL B14
-B15     ⬜ NOT STARTED
-```
+## B15 — Whole Vertical Closure
 
-**Next concrete action:** B10-C is closed. Do not start B10-D until the user approves that gate. No CI/GitHub Actions.
+Final whole-vertical reconciliation, regressions and dogfood after all functional/create/UI blocks are complete.
