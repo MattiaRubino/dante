@@ -18,6 +18,9 @@ import type {
   AuthHandleAppleCallbackBody,
   AuthenticatedSessionResponse,
   AuthenticationMethodsResponse,
+  ConfirmationCommand,
+  ConfirmationHistoryResponse,
+  ConfirmationResponse,
   ConstrainedActivityResponse,
   CreateActivityRequest,
   CreateConstrainedActivityRequest,
@@ -4744,6 +4747,63 @@ export const temporalRecordActualOutcome = async (
   } as temporalRecordActualOutcomeResponse;
 };
 
+export type temporalListConfirmationHistoryResponse200 = {
+  data: ConfirmationHistoryResponse[];
+  status: 200;
+};
+
+export type temporalListConfirmationHistoryResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalListConfirmationHistoryResponseSuccess =
+  temporalListConfirmationHistoryResponse200 & {
+    headers: Headers;
+  };
+export type temporalListConfirmationHistoryResponseError =
+  temporalListConfirmationHistoryResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalListConfirmationHistoryResponse =
+  | temporalListConfirmationHistoryResponseSuccess
+  | temporalListConfirmationHistoryResponseError;
+
+export const getTemporalListConfirmationHistoryUrl = (
+  confirmationRef: string,
+) => {
+  return `/api/v1/temporal/confirmations/${confirmationRef}/history`;
+};
+
+/**
+ * @summary List Confirmation History
+ */
+export const temporalListConfirmationHistory = async (
+  confirmationRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListConfirmationHistoryResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalListConfirmationHistoryUrl(confirmationRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListConfirmationHistoryResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListConfirmationHistoryResponse;
+};
+
 export type temporalListConstraintsBySubjectResponse200 = {
   data: TemporalConstraintListResponse;
   status: 200;
@@ -7548,6 +7608,130 @@ export const temporalSkipOccurrence = async (
     status: res.status,
     headers: res.headers,
   } as temporalSkipOccurrenceResponse;
+};
+
+export type temporalListOutcomeConfirmationsResponse200 = {
+  data: ConfirmationResponse[];
+  status: 200;
+};
+
+export type temporalListOutcomeConfirmationsResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalListOutcomeConfirmationsResponseSuccess =
+  temporalListOutcomeConfirmationsResponse200 & {
+    headers: Headers;
+  };
+export type temporalListOutcomeConfirmationsResponseError =
+  temporalListOutcomeConfirmationsResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalListOutcomeConfirmationsResponse =
+  | temporalListOutcomeConfirmationsResponseSuccess
+  | temporalListOutcomeConfirmationsResponseError;
+
+export const getTemporalListOutcomeConfirmationsUrl = (outcomeRef: string) => {
+  return `/api/v1/temporal/outcomes/${outcomeRef}/confirmations`;
+};
+
+/**
+ * @summary List Outcome Confirmations
+ */
+export const temporalListOutcomeConfirmations = async (
+  outcomeRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListOutcomeConfirmationsResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalListOutcomeConfirmationsUrl(outcomeRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListOutcomeConfirmationsResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListOutcomeConfirmationsResponse;
+};
+
+export type temporalRecordOutcomeConfirmationResponse200 = {
+  data: ConfirmationResponse;
+  status: 200;
+};
+
+export type temporalRecordOutcomeConfirmationResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalRecordOutcomeConfirmationResponseSuccess =
+  temporalRecordOutcomeConfirmationResponse200 & {
+    headers: Headers;
+  };
+export type temporalRecordOutcomeConfirmationResponseError =
+  temporalRecordOutcomeConfirmationResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalRecordOutcomeConfirmationResponse =
+  | temporalRecordOutcomeConfirmationResponseSuccess
+  | temporalRecordOutcomeConfirmationResponseError;
+
+export const getTemporalRecordOutcomeConfirmationUrl = (outcomeRef: string) => {
+  return `/api/v1/temporal/outcomes/${outcomeRef}/confirmations`;
+};
+
+/**
+ * @summary Record Outcome Confirmation
+ */
+export const temporalRecordOutcomeConfirmation = async (
+  outcomeRef: string,
+  confirmationCommand: ConfirmationCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalRecordOutcomeConfirmationResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalRecordOutcomeConfirmationUrl(outcomeRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(confirmationCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalRecordOutcomeConfirmationResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalRecordOutcomeConfirmationResponse;
 };
 
 export type temporalListOutcomeHistoryResponse200 = {

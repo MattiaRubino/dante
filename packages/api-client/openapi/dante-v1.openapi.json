@@ -1881,6 +1881,191 @@
         "title": "CoarseLocalPeriodPlacementRequest",
         "type": "object"
       },
+      "ConfirmationCommand": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_material_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Material State Ref"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "outcome_disposition_material_state_ref": {
+            "format": "uuid",
+            "title": "Outcome Disposition Material State Ref",
+            "type": "string"
+          },
+          "purpose_code": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Purpose Code",
+            "type": "string"
+          },
+          "stance_code": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Stance Code",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "outcome_disposition_material_state_ref",
+          "purpose_code",
+          "stance_code"
+        ],
+        "title": "ConfirmationCommand",
+        "type": "object"
+      },
+      "ConfirmationHistoryResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "confirmation_ref": {
+            "format": "uuid",
+            "title": "Confirmation Ref",
+            "type": "string"
+          },
+          "confirmer_is_self": {
+            "title": "Confirmer Is Self",
+            "type": "boolean"
+          },
+          "confirmer_person_ref": {
+            "format": "uuid",
+            "title": "Confirmer Person Ref",
+            "type": "string"
+          },
+          "current_from_at": {
+            "format": "date-time",
+            "title": "Current From At",
+            "type": "string"
+          },
+          "current_until_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Until At"
+          },
+          "material_state_ref": {
+            "format": "uuid",
+            "title": "Material State Ref",
+            "type": "string"
+          },
+          "outcome_disposition_material_state_ref": {
+            "format": "uuid",
+            "title": "Outcome Disposition Material State Ref",
+            "type": "string"
+          },
+          "outcome_ref": {
+            "format": "uuid",
+            "title": "Outcome Ref",
+            "type": "string"
+          },
+          "purpose_code": {
+            "title": "Purpose Code",
+            "type": "string"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "stance_code": {
+            "title": "Stance Code",
+            "type": "string"
+          }
+        },
+        "required": [
+          "confirmation_ref",
+          "outcome_ref",
+          "outcome_disposition_material_state_ref",
+          "confirmer_person_ref",
+          "purpose_code",
+          "material_state_ref",
+          "stance_code",
+          "confirmer_is_self",
+          "replayed",
+          "current_from_at",
+          "current_until_at"
+        ],
+        "title": "ConfirmationHistoryResponse",
+        "type": "object"
+      },
+      "ConfirmationResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "confirmation_ref": {
+            "format": "uuid",
+            "title": "Confirmation Ref",
+            "type": "string"
+          },
+          "confirmer_is_self": {
+            "title": "Confirmer Is Self",
+            "type": "boolean"
+          },
+          "confirmer_person_ref": {
+            "format": "uuid",
+            "title": "Confirmer Person Ref",
+            "type": "string"
+          },
+          "material_state_ref": {
+            "format": "uuid",
+            "title": "Material State Ref",
+            "type": "string"
+          },
+          "outcome_disposition_material_state_ref": {
+            "format": "uuid",
+            "title": "Outcome Disposition Material State Ref",
+            "type": "string"
+          },
+          "outcome_ref": {
+            "format": "uuid",
+            "title": "Outcome Ref",
+            "type": "string"
+          },
+          "purpose_code": {
+            "title": "Purpose Code",
+            "type": "string"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "stance_code": {
+            "title": "Stance Code",
+            "type": "string"
+          }
+        },
+        "required": [
+          "confirmation_ref",
+          "outcome_ref",
+          "outcome_disposition_material_state_ref",
+          "confirmer_person_ref",
+          "purpose_code",
+          "material_state_ref",
+          "stance_code",
+          "confirmer_is_self",
+          "replayed"
+        ],
+        "title": "ConfirmationResponse",
+        "type": "object"
+      },
       "ConstrainedActivityResponse": {
         "additionalProperties": false,
         "properties": {
@@ -20147,6 +20332,51 @@
         "tags": ["temporal"]
       }
     },
+    "/api/v1/temporal/confirmations/{confirmation_ref}/history": {
+      "get": {
+        "operationId": "temporal_list_confirmation_history",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "confirmation_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Confirmation Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ConfirmationHistoryResponse"
+                  },
+                  "title": "Response Temporal List Confirmation History",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Confirmation History",
+        "tags": ["temporal"]
+      }
+    },
     "/api/v1/temporal/constraints": {
       "get": {
         "operationId": "temporal_list_constraints_by_subject",
@@ -22178,6 +22408,100 @@
           }
         },
         "summary": "Skip Occurrence",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/outcomes/{outcome_ref}/confirmations": {
+      "get": {
+        "operationId": "temporal_list_outcome_confirmations",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "outcome_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Outcome Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ConfirmationResponse"
+                  },
+                  "title": "Response Temporal List Outcome Confirmations",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Outcome Confirmations",
+        "tags": ["temporal"]
+      },
+      "post": {
+        "operationId": "temporal_record_outcome_confirmation",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "outcome_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Outcome Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmationCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfirmationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Record Outcome Confirmation",
         "tags": ["temporal"]
       }
     },
