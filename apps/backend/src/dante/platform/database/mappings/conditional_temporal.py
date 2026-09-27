@@ -4,6 +4,7 @@ from datetime import datetime
 
 from sqlalchemy import CheckConstraint, DateTime, ForeignKeyConstraint, Index, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.schema import conv
 
 from dante.platform.database.metadata import Base
 from dante.platform.database.references import MaterialStateRef, NativeRef, ScopedRecordRef
@@ -151,7 +152,7 @@ class ConditionalTemporalOperationRow(Base):
         CheckConstraint(
             "operation_id=btrim(operation_id) AND operation_id<>'' "
             "AND char_length(operation_id)<=200",
-            name="operation_id",
+            name=conv("ck_conditional_temporal_operation_id"),
         ),
         CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name="fingerprint"),
         CheckConstraint("operation_kind IN ('create','evaluate')", name="kind"),

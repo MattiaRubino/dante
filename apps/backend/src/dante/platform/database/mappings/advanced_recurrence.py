@@ -4,6 +4,7 @@ from datetime import datetime
 
 from sqlalchemy import CheckConstraint, DateTime, ForeignKeyConstraint, Index, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.schema import conv
 
 from dante.platform.database.metadata import Base
 from dante.platform.database.references import MaterialStateRef, NativeRef
@@ -141,19 +142,19 @@ class AdvancedRecurrenceCheckpointOperationRow(Base):
     __table_args__ = (
         CheckConstraint(
             "operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200",
-            name="operation_id",
+            name=conv("ck_advanced_recurrence_checkpoint_operation_id"),
         ),
         CheckConstraint(
             "intent_fingerprint ~ '^[0-9a-f]{64}$'",
-            name="fingerprint",
+            name=conv("ck_advanced_recurrence_checkpoint_fingerprint"),
         ),
         CheckConstraint(
             "source_family IN ('routine','event')",
-            name="source_family",
+            name=conv("ck_advanced_recurrence_checkpoint_source_family"),
         ),
         CheckConstraint(
             "isfinite(start_at) AND isfinite(end_at_exclusive) AND end_at_exclusive>start_at AND end_at_exclusive-start_at<=interval '62 days'",
-            name="window",
+            name=conv("ck_advanced_recurrence_checkpoint_window"),
         ),
         ForeignKeyConstraint(
             ["self_person_ref"],
