@@ -273,7 +273,9 @@ B11-C has the approved narrow Schedule-relative self Reminder scope at `timeline
 
 B11-D now verifies A/B/C together through `timeline-temporal-operational-b11-d-scope-2026-09-27.md`. Its local automated gate precedes the integrated real-app test. The latter remains the final whole-B11 acceptance gate.
 
-The isolated integrated PostgreSQL test passed locally at `82f763af` (`1 passed in 7.20s`). B11-D also wires typed Routine Recurrence through Timeline Occurrences and keeps Occurrence Actual/Condition separate; Reminder uncertain-write retry has dedicated web coverage. The complete local commands and pending results are in `timeline-temporal-operational-b11-d-gate-2026-09-27.md`.
+The isolated integrated PostgreSQL test passed locally at `82f763af` (`1 passed in 7.20s`). B11-D also wires typed Routine Recurrence through Timeline Occurrences and keeps Occurrence Actual/Condition separate; Reminder uncertain-write retry has dedicated web coverage. The complete local commands and reported results are in `timeline-temporal-operational-b11-d-gate-2026-09-27.md`.
+
+The full local gate then reported OpenAPI 7, PostgreSQL 14, generated check 364, client/web typechecks, and web 24 passed. Ruff's only failure was the B11-D test import order, fixed at `c685d519`; repeat that one lint command before D closure. Whole-B11 real-app acceptance still follows D.
 
 ---
 

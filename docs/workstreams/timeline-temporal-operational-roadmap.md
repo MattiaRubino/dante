@@ -315,7 +315,9 @@ B11-C is a narrow self-personal Reminder configuration on an accepted Schedule w
 
 B11-D is the next whole-block automated integration gate; scope is `timeline-temporal-operational-b11-d-scope-2026-09-27.md`. It verifies A/B/C together on one canonical chain and then runs focused regressions. The integrated real-app walkthrough is performed after D, immediately before whole-B11 closure.
 
-The B11-D backend integration test passed its first isolated local run (`1 passed in 7.20s`); the complete gate is assembled in `timeline-temporal-operational-b11-d-gate-2026-09-27.md` and awaits the user-run local results. The Timeline inspector now routes Routine/Event Recurrence through the selected Occurrence's source while Actual/Condition remain on the Occurrence, and Reminder retry uses its existing canonical operation contract.
+The B11-D backend integration test passed its first isolated local run (`1 passed in 7.20s`); the complete gate is recorded in `timeline-temporal-operational-b11-d-gate-2026-09-27.md`. The Timeline inspector routes Routine/Event Recurrence through the selected Occurrence's source while Actual/Condition remain on the Occurrence, and Reminder retry uses its existing canonical operation contract.
+
+The user-run full gate passed OpenAPI 7, PostgreSQL 14, deterministic generation 364, both typechecks and web 24. Ruff found one import-order error in the new B11-D test, corrected at `c685d519`; its local rerun remains before D closure. No real-app walkthrough has been run for B11.
 
 ---
 

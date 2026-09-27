@@ -2,7 +2,7 @@
 
 - **Date:** 2026-09-27
 - **Branch:** `feature/timeline-temporal-operational`
-- **Status:** READY FOR USER-RUN LOCAL GATE; results pending
+- **Status:** FUNCTIONAL GATE PASSED LOCALLY; Ruff import-order rerun pending
 - **Scope:** `timeline-temporal-operational-b11-d-scope-2026-09-27.md`
 - **Real-app walkthrough:** after this gate, before whole-B11 closure
 
@@ -49,3 +49,19 @@ pnpm --filter @dante/web exec vitest run \
 ```
 
 Record the actual local results before marking B11-D closed. Only then run the final integrated real-app walkthrough and decide whole-B11 closure.
+
+## Reported local results
+
+The user pulled `13f860a1` and ran the complete command set on 2026-09-27:
+
+```text
+B11-A/B/C OpenAPI contract                    7 passed
+B11-A/B/C/D + exact catalog PostgreSQL       14 passed
+Generated sources                            PASS; 364 files deterministic/current
+API client typecheck                          PASS
+Web typecheck                                 PASS
+Web focused gate                             6 files, 24 passed
+Ruff B11-D test                               FAIL I001 (import order only)
+```
+
+The sole Ruff finding moved the `tests.integration..._seed_self` import into the third-party group; that exact fix was published at `c685d519`. Repeat only Ruff against that commit. The preceding PostgreSQL/OpenAPI/web/client results do not need to be rerun for an import-order-only edit. The `react-i18next` warning was non-failing.
