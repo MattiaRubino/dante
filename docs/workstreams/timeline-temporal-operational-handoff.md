@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B11 IN PROGRESS — B11-C BACKEND CHECKPOINT; B11-B CATALOG RECONCILIATION OPEN
+- **Status:** B11 IN PROGRESS — B11-C BACKEND/WEB CHECKPOINT; B11-B CATALOG RECONCILIATION OPEN
 - **Reconciled:** 2026-09-27
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -35,7 +35,7 @@ B10     ✅ CLOSED 2026-09-26
 B11     🟨 IN PROGRESS — Advanced Recurrence / Conditional / Reminder
   B11-A ✅ CLOSED / PROVEN — `_81`, local gates reported passed
   B11-B 🟨 FOCUSED AUTOMATED GATE PROVEN — `_82`–`_85`; Dictionary/catalog still open
-  B11-C 🟨 BACKEND CHECKPOINT — `_86` / API; Dictionary, client, web, local proof open
+  B11-C 🟨 BACKEND/WEB CHECKPOINT — `_86` / API / Create / Timeline; Dictionary, client, local proof open
 B13     ⬜ NOT STARTED
 B12     ⬜ NOT STARTED
 B14     ⬜ NOT STARTED
@@ -248,7 +248,7 @@ reminder intent != hidden ignored Create field
 conditional behavior != implicit mutation
 ```
 
-B11-C scope is `timeline-temporal-operational-b11-c-scope-2026-09-27.md`: one personal Reminder per self Person/Schedule, append-only configuration state, exact-start admissibility, pending/due/unavailable read, no delivery claim. Candidate `_86`/SQLAlchemy/guarded functions/API/OpenAPI were published at `9878b441`; continue with generated client, Create/existing-Schedule web, Dictionary and local PostgreSQL/catalog gates. The whole-B11 real-app walkthrough occurs before B11 closure.
+B11-C scope is `timeline-temporal-operational-b11-c-scope-2026-09-27.md`: one personal Reminder per self Person/Schedule, append-only configuration state, exact-start admissibility, pending/due/unavailable read, no delivery claim. Candidate `_86`/SQLAlchemy/guarded functions/API/OpenAPI were published at `9878b441`; existing-Schedule controls at `9d806355`; Create two-command partial retry at `e9a0f760`. Continue with generated client, Dictionary and local PostgreSQL/web/catalog gates. The whole-B11 real-app walkthrough occurs before B11 closure.
 
 Do not reopen B10 semantics unless B11 uncovers concrete contradictory evidence.
 

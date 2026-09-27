@@ -94,7 +94,7 @@ B10 Actual / Outcome / Confirmation / Resolution ✅ CLOSED 2026-09-26
 B11 Advanced Recurrence / Conditional / Reminder 🟨 IN PROGRESS
   B11-A Advanced Recurrence                    ✅ CLOSED / PROVEN (user-run local gates)
   B11-B Conditional Temporal Behavior         🟨 AUTOMATED GATE PROVEN / catalog reconciliation open
-  B11-C Schedule-relative personal Reminder   🟨 BACKEND CHECKPOINT `_86` / vertical + proof open
+  B11-C Schedule-relative personal Reminder   🟨 BACKEND/WEB CHECKPOINT / client + catalog + proof open
 B13 Work Structure / Decomposition / Dependencies⬜
 B12 Replanning / Conflict / Solver               ⬜
 B14 Temporal Create Completeness Gate             ⬜
@@ -310,7 +310,7 @@ B11-A extends the B06 elapsed recurrence baseline with completion-relative and a
 
 The Dictionary and whole-catalog proof still declare `_79`, and the candidate DB overlay previously stopped at `_80`. Reconcile those against PostgreSQL before declaring B11-B vertically closed. Do not infer a topology tuple from migration arithmetic.
 
-B11-C is approved as a narrow self-personal Reminder configuration on an accepted Schedule with an exact start instant; see `timeline-temporal-operational-b11-c-scope-2026-09-27.md`. Candidate `_86` persistence/backend/API and focused tests are published at `9878b441`; local PostgreSQL proof, Dictionary/catalog reconciliation, generated client, Create/existing-Schedule web and integrated acceptance are still open. Delivery and generic automation remain excluded.
+B11-C is approved as a narrow self-personal Reminder configuration on an accepted Schedule with an exact start instant; see `timeline-temporal-operational-b11-c-scope-2026-09-27.md`. Candidate `_86` persistence/backend/API and focused tests are published at `9878b441`; existing-Schedule and Create web checkpoints are `9d806355` and `e9a0f760`. Local PostgreSQL/web proof, Dictionary/catalog reconciliation, generated client and integrated acceptance are still open. Delivery and generic automation remain excluded.
 
 ---
 

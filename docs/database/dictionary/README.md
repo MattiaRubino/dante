@@ -1,16 +1,16 @@
 # DANTE Database Dictionary
 
-- **Status:** CURRENT / MATERIALIZED FOR CHECKED-OUT REPOSITORY STATE
+- **Status:** RECONCILIATION OPEN — materialized entries and measured topology stop at B10-C `_79`
 - **Schema version:** 1
 - **Serialization:** JSON
 - **PostgreSQL:** 18.6
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Current candidate branch:** `feature/timeline-temporal-operational`
-- **Current candidate Alembic source head:** `20260925_69`
-- **Last proven candidate topology:** B09-C / `20260925_69` / `158|5|109|93|303|254|433`
+- **Current candidate Alembic source head:** `20260927_86` (B11-C candidate, PostgreSQL proof pending)
+- **Last measured whole-catalog topology:** B10-C / `20260925_79` / `167|5|123|93|329|279|446`
 - **Frozen CP6 head:** `20260826_08`
-- **Last reconciled:** 2026-09-25
+- **Last reconciled:** B10-C `_79`; B10-D/B11-A/B/C objects pending
 
 ## 1. Purpose
 
@@ -29,17 +29,17 @@ A mismatch is a defect. Protected `main` remains integration authority; candidat
 
 ## 2. Current checked-out business-schema inventory
 
-Authoritative counts are in `scope.json`:
+The last reconciled counts are in `scope.json`. They do not describe the current `_86` migration source head:
 
 ```text
-tables      158
+tables      167
 views         5
-routines    109
-standalone  272
+routines    123
+standalone  295
 triggers     93
-indexes     303
-FKs         254
-CHECKs      433
+indexes     329
+FKs         279
+CHECKs      446
 ```
 
 No enum/domain, sequence, materialized view, partitioned table or RLS policy exists in the DANTE business-schema inventory.
@@ -101,9 +101,9 @@ B09-C / 20260925_69
   owner-local Person referent catalog and create/rename receipts, three bounded capabilities and widened guarded Person admissibility; user-run PostgreSQL/catalog proof passed 2026-09-25
 ```
 
-B06-E whole-block closure required no new migration. `_57` remains the last proven B06 checkpoint; later B08 candidate migrations continue through `_65`.
+B06-E whole-block closure required no new migration. B10-C `_79` remains the last measured whole-catalog checkpoint. Source migrations continue through `_86`: B10-D Reconciliation `_80`, B11-A advanced Recurrence `_81`, B11-B conditional temporal `_82`–`_85`, and candidate B11-C personal Schedule Reminder `_86`. Their Dictionary entries and live catalog proof remain open; see `../timeline-temporal-operational.md` and `../../workstreams/timeline-temporal-operational-handoff.md`.
 
-The object tree and `scope.json`, not prose summaries, are structural source of truth.
+The object tree and `scope.json` are structural source of truth only through `_79`. Do not infer `_86` totals from migration source counts; reconcile with a direct PostgreSQL catalog measurement.
 
 ## 4. Persistence classification
 
