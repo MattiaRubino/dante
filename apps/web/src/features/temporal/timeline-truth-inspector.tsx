@@ -13,6 +13,7 @@ export type TimelineTruthSubject = Readonly<{
   kind: 'activity' | 'event' | 'occurrence';
   ref: string;
   title: string;
+  recurrenceOwner: Readonly<{ kind: 'routine' | 'event'; ref: string }> | null;
 }>;
 
 export function timelineTruthSubjects(
@@ -29,6 +30,7 @@ export function timelineTruthSubjects(
             kind: 'activity' as const,
             ref: item.activityRef,
             title: item.title,
+            recurrenceOwner: null,
           } satisfies TimelineTruthSubject)
         : item.kind === 'scheduled_event'
           ? ({
@@ -36,12 +38,17 @@ export function timelineTruthSubjects(
               kind: 'event' as const,
               ref: item.eventRef,
               title: item.title,
+              recurrenceOwner: { kind: 'event' as const, ref: item.eventRef },
             } satisfies TimelineTruthSubject)
           : ({
               key: `occurrence:${item.occurrenceRef}`,
               kind: 'occurrence' as const,
               ref: item.occurrenceRef,
               title: item.title,
+              recurrenceOwner: {
+                kind: item.sourceKind,
+                ref: item.sourceNativeRef,
+              },
             } satisfies TimelineTruthSubject);
     subjects.set(subject.key, subject);
   }
@@ -89,11 +96,23 @@ export function TimelineTruthInspector() {
             ))}
           </select>
         </label>
-        <ActualRealizationControls kind={selected.kind} subjectRef={selected.ref} />
-        <ConditionalTemporalControls kind={selected.kind} subjectRef={selected.ref} />
-        {selected.kind === 'event' ? (
-          <AdvancedRecurrenceControls sourceRef={selected.ref} />
-        ) : null}
+        <ActualRealizationControls
+          key={`actual:${selected.key}`}
+          kind={selected.kind}
+          subjectRef={selected.ref}
+        />
+        <ConditionalTemporalControls
+          key={`condition:${selected.key}`}
+          kind={selected.kind}
+          subjectRef={selected.ref}
+        />
+        {selected.recurrenceOwner === null ? null : (
+          <AdvancedRecurrenceControls
+            key={`${selected.recurrenceOwner.kind}:${selected.recurrenceOwner.ref}`}
+            ownerKind={selected.recurrenceOwner.kind}
+            sourceRef={selected.recurrenceOwner.ref}
+          />
+        )}
       </div>
     </details>
   );

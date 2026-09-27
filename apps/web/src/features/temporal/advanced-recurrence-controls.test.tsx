@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AdvancedRecurrenceControls } from './advanced-recurrence-controls';
 
 const EVENT = '01991f2a-1234-7abc-8def-1234567890ab';
+const ROUTINE = '01991f2a-1234-7abc-8def-1234567890b1';
 const STATE_1 = '01991f2a-1234-7abc-8def-1234567890ac';
 const STATE_2 = '01991f2a-1234-7abc-8def-1234567890ad';
 const ANCHOR = '01991f2a-1234-7abc-8def-1234567890ae';
@@ -34,10 +35,11 @@ function unavailable() {
 function advanced(
   materialStateRef: string,
   mode: 'previous_completion' | 'anchor_stream',
+  ownerKind: 'routine' | 'event' = 'event',
 ) {
   return {
-    owner_kind: 'event',
-    source_ref: EVENT,
+    owner_kind: ownerKind,
+    source_ref: ownerKind === 'routine' ? ROUTINE : EVENT,
     material_state_ref: materialStateRef,
     range_kind: 'open',
     expected_occurrence_count: null,
@@ -77,7 +79,7 @@ describe('Advanced Recurrence controls', () => {
     });
     vi.stubGlobal('fetch', fetchFn);
 
-    render(<AdvancedRecurrenceControls sourceRef={EVENT} />);
+    render(<AdvancedRecurrenceControls ownerKind="event" sourceRef={EVENT} />);
     await screen.findByText('Recurrence avanzata: non configurata');
 
     fireEvent.change(screen.getByLabelText('Ritardo Recurrence avanzata in secondi'), {
@@ -120,7 +122,7 @@ describe('Advanced Recurrence controls', () => {
     });
     vi.stubGlobal('fetch', fetchFn);
 
-    render(<AdvancedRecurrenceControls sourceRef={EVENT} />);
+    render(<AdvancedRecurrenceControls ownerKind="event" sourceRef={EVENT} />);
     await screen.findByText('Recurrence avanzata: non configurata');
 
     fireEvent.change(screen.getByLabelText('Regola Recurrence avanzata'), {
@@ -148,5 +150,41 @@ describe('Advanced Recurrence controls', () => {
       anchor_source_family: 'routine',
       anchor_source_native_ref: ANCHOR,
     });
+  });
+
+  it('authors a Routine recurrence through the Routine owner endpoint', async () => {
+    const writes: Array<{ url: string; body: Record<string, unknown> }> = [];
+    const fetchFn = vi.fn<Fetch>(async (input, init) => {
+      const url = String(input);
+      if (url.endsWith('/api/v1/auth/session')) {
+        return Response.json({ authenticated: true, csrf_token: 'csrf' });
+      }
+      if (url.endsWith(`/routines/${ROUTINE}/recurrence`)) {
+        return Response.json(recurrence(STATE_1));
+      }
+      if (init?.method === 'PUT' && url.endsWith(`/routines/${ROUTINE}/advanced-recurrence`)) {
+        writes.push({ url, body: JSON.parse(String(init.body)) as Record<string, unknown> });
+        return Response.json(advanced(STATE_2, 'previous_completion', 'routine'), {
+          status: 201,
+        });
+      }
+      return unavailable();
+    });
+    vi.stubGlobal('fetch', fetchFn);
+
+    render(<AdvancedRecurrenceControls ownerKind="routine" sourceRef={ROUTINE} />);
+    await screen.findByText('Recurrence avanzata: non configurata');
+    fireEvent.change(screen.getByLabelText('Ritardo Recurrence avanzata in secondi'), {
+      target: { value: '3600' },
+    });
+    fireEvent.click(screen.getByText('Salva Recurrence avanzata'));
+
+    await screen.findByText('Recurrence avanzata salvata.');
+    expect(writes).toHaveLength(1);
+    expect(writes[0]?.body).toMatchObject({
+      expected_material_state_ref: STATE_1,
+      anchor_mode_code: 'previous_completion',
+    });
+    expect(writes[0]?.url).toContain(`/routines/${ROUTINE}/advanced-recurrence`);
   });
 });

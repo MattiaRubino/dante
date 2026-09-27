@@ -6,6 +6,7 @@ import {
   createRemoteTemporalAdvancedRecurrenceDataSource,
   type AdvancedRecurrenceAnchorMode,
   type AdvancedRecurrenceAnchorSourceKind,
+  type AdvancedRecurrenceOwnerKind,
   type AdvancedRecurrenceView,
 } from './remote-advanced-recurrence-data-source';
 
@@ -29,7 +30,10 @@ function initialDateTime(): string {
   return localDateTime(new Date().toISOString());
 }
 
-export function AdvancedRecurrenceControls({ sourceRef }: Readonly<{ sourceRef: string }>) {
+export function AdvancedRecurrenceControls({
+  ownerKind,
+  sourceRef,
+}: Readonly<{ ownerKind: AdvancedRecurrenceOwnerKind; sourceRef: string }>) {
   const source = useMemo(
     () => createRemoteTemporalAdvancedRecurrenceDataSource(globalThis.fetch),
     [],
@@ -60,15 +64,15 @@ export function AdvancedRecurrenceControls({ sourceRef }: Readonly<{ sourceRef: 
   }, []);
 
   const reload = useCallback(async () => {
-    const result = await source.load('event', sourceRef);
+    const result = await source.load(ownerKind, sourceRef);
     applyLoaded(result.advanced, result.currentMaterialStateRef);
     return result;
-  }, [applyLoaded, source, sourceRef]);
+  }, [applyLoaded, ownerKind, source, sourceRef]);
 
   useEffect(() => {
     let cancelled = false;
     void source
-      .load('event', sourceRef)
+      .load(ownerKind, sourceRef)
       .then((result) => {
         if (!cancelled) applyLoaded(result.advanced, result.currentMaterialStateRef);
       })
@@ -81,11 +85,11 @@ export function AdvancedRecurrenceControls({ sourceRef }: Readonly<{ sourceRef: 
     return () => {
       cancelled = true;
     };
-  }, [applyLoaded, source, sourceRef]);
+  }, [applyLoaded, ownerKind, source, sourceRef]);
 
   const save = () => {
     if (currentStateRef === null) {
-      setMessage('Questo Event non ha una Recurrence canonica da convertire.');
+      setMessage('Questa sorgente non ha una Recurrence canonica da convertire.');
       return;
     }
     if (!delay.trim() || Number(delay) <= 0) {
@@ -105,7 +109,7 @@ export function AdvancedRecurrenceControls({ sourceRef }: Readonly<{ sourceRef: 
     setPending(true);
     setMessage(null);
     void source
-      .replace('event', sourceRef, {
+      .replace(ownerKind, sourceRef, {
         operationId: operationId(),
         expectedMaterialStateRef: currentStateRef,
         effectiveFrom: instant.toISOString(),
@@ -129,7 +133,7 @@ export function AdvancedRecurrenceControls({ sourceRef }: Readonly<{ sourceRef: 
   const state = !loaded
     ? 'Recurrence avanzata: caricamento…'
     : currentStateRef === null
-      ? 'Recurrence avanzata: Event non ricorrente'
+      ? 'Recurrence avanzata: sorgente non ricorrente'
       : advanced === null
         ? 'Recurrence avanzata: non configurata'
         : advanced.anchorModeCode === 'previous_completion'
@@ -137,7 +141,7 @@ export function AdvancedRecurrenceControls({ sourceRef }: Readonly<{ sourceRef: 
           : `Recurrence avanzata: anchor stream · ${advanced.elapsedSeconds}s`;
 
   return (
-    <section className="timeline-advanced-recurrence" data-advanced-recurrence-event={sourceRef}>
+    <section className="timeline-advanced-recurrence" data-advanced-recurrence-owner={`${ownerKind}:${sourceRef}`}>
       <strong>Recurrence avanzata</strong>
       <p data-advanced-recurrence-state>{state}</p>
       <label>

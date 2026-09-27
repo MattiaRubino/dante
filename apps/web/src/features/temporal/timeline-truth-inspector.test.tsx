@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { Temporal } from '@dante/time';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -14,6 +14,8 @@ import type {
 
 const ACTIVITY = '01991f2a-1234-7abc-8def-1234567890ab';
 const EVENT = '01991f2a-1234-7abc-8def-1234567890ac';
+const ROUTINE = '01991f2a-1234-7abc-8def-1234567890b1';
+const OCCURRENCE = '01991f2a-1234-7abc-8def-1234567890b2';
 const SCHEDULE_A = '01991f2a-1234-7abc-8def-1234567890ad';
 const SCHEDULE_B = '01991f2a-1234-7abc-8def-1234567890ae';
 const STATE_A = '01991f2a-1234-7abc-8def-1234567890af';
@@ -46,6 +48,17 @@ function windowFixture(): TemporalTimelineWindow {
         startDate: Temporal.PlainDate.from('2026-09-26'),
         endDateExclusive: Temporal.PlainDate.from('2026-09-27'),
       },
+      {
+        kind: 'expected_occurrence',
+        occurrenceRef: OCCURRENCE,
+        sourceKind: 'routine',
+        sourceNativeRef: ROUTINE,
+        title: 'Routine completata',
+        coordinate: {
+          familyCode: 'elapsed-interval',
+          expectedAt: Temporal.Instant.from('2026-09-26T11:00:00Z'),
+        },
+      },
     ],
   };
 }
@@ -63,12 +76,21 @@ describe('Timeline truth inspector', () => {
         kind: 'activity',
         ref: ACTIVITY,
         title: 'Allenamento',
+        recurrenceOwner: null,
       },
       {
         key: `event:${EVENT}`,
         kind: 'event',
         ref: EVENT,
         title: 'Cena',
+        recurrenceOwner: { kind: 'event', ref: EVENT },
+      },
+      {
+        key: `occurrence:${OCCURRENCE}`,
+        kind: 'occurrence',
+        ref: OCCURRENCE,
+        title: 'Routine completata',
+        recurrenceOwner: { kind: 'routine', ref: ROUTINE },
       },
     ]);
   });
@@ -111,5 +133,66 @@ describe('Timeline truth inspector', () => {
     expect(screen.getByText('Confirmation', { selector: 'strong' })).toBeTruthy();
     expect(screen.getByText('Reconciliation', { selector: 'strong' })).toBeTruthy();
     expect(screen.getByText('Condizione Actual', { selector: 'strong' })).toBeTruthy();
+  });
+
+  it('keeps Condition on the Occurrence and Recurrence on its Routine source', async () => {
+    const fetchFn = vi.fn<typeof globalThis.fetch>(async () =>
+      Response.json(
+        {
+          code: 'temporal.not_found',
+          category: 'not_found',
+          title: 'Not found',
+          detail: 'Canonical state is unavailable.',
+        },
+        { status: 404 },
+      ),
+    );
+    vi.stubGlobal('fetch', fetchFn);
+    render(
+      <TemporalTimelineRuntimeBoundary
+        viewedDateIso="2026-09-26"
+        dataSource={{ loadWindow: async () => windowFixture() }}
+        mode="development"
+      >
+        <TimelineTruthInspector />
+      </TemporalTimelineRuntimeBoundary>,
+    );
+
+    const picker = await screen.findByLabelText('Elemento per stato reale');
+    fireEvent.change(picker, { target: { value: `occurrence:${OCCURRENCE}` } });
+    await waitFor(() => {
+      expect(
+        document.querySelector(
+          `[data-advanced-recurrence-owner="routine:${ROUTINE}"]`,
+        ),
+      ).toBeTruthy();
+      expect(
+        fetchFn.mock.calls.some(([input]) =>
+          String(input).includes(`/routines/${ROUTINE}/recurrence`),
+        ),
+      ).toBe(true);
+      expect(
+        fetchFn.mock.calls.some(([input]) =>
+          String(input).includes('subject_kind=occurrence') &&
+          String(input).includes(OCCURRENCE),
+        ),
+      ).toBe(true);
+    });
+    expect(screen.getByText('Condizione Actual', { selector: 'strong' })).toBeTruthy();
+    fireEvent.change(picker, { target: { value: `event:${EVENT}` } });
+    await waitFor(() => {
+      expect(
+        document.querySelector(`[data-advanced-recurrence-owner="event:${EVENT}"]`),
+      ).toBeTruthy();
+      expect(
+        document.querySelector(`[data-advanced-recurrence-owner="routine:${ROUTINE}"]`),
+      ).toBeNull();
+      expect(
+        fetchFn.mock.calls.some(([input]) =>
+          String(input).includes('subject_kind=event') &&
+          String(input).includes(EVENT),
+        ),
+      ).toBe(true);
+    });
   });
 });
