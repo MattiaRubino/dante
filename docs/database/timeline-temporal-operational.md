@@ -1,10 +1,10 @@
 # Timeline / Temporal-Operational — Candidate Database Overlay
 
-- **Status:** CURRENT CANDIDATE DATABASE OVERLAY — B11-B `_85` source head; catalog reconciliation open
+- **Status:** CURRENT CANDIDATE DATABASE OVERLAY — B11-C `_86` source head; catalog reconciliation open
 - **Reconciled:** 2026-09-27
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
-- **Candidate migration source head:** `20260927_85`
+- **Candidate migration source head:** `20260927_86`
 - **Focused local proof frontier:** B11-B `_85` (not a whole-catalog count)
 - **Last explicitly recorded whole-topology count:** B10-C `_79` / `167|5|123|93|329|279|446`
 - **Whole-DB SoR:** `README.md`
@@ -62,6 +62,8 @@ Published migrations are immutable. Any persistence correction is forward-only.
 20260926_81 B11-A advanced elapsed Recurrence
     ↓
 20260927_82 → 20260927_85 B11-B conditional temporal intent/evaluation and forward-only read/qualification repairs
+    ↓
+20260927_86 B11-C personal Schedule Reminder candidate
 ```
 
 ## 3. Proven frontier and topology discipline
@@ -78,7 +80,7 @@ Neither the B10-D nor B11-A/B closure proof recorded a newly measured whole-data
 167|5|123|93|329|279|446
 ```
 
-The Dictionary and catalog-test revision still point at `_79`; reconcile all real objects and ACLs through `_85` (and the following B11-C migration) before claiming whole-catalog agreement. Update this document from measured evidence rather than arithmetic inference.
+The Dictionary and catalog-test revision still point at `_79`; reconcile all real objects and ACLs through `_86` before claiming whole-catalog agreement. Update this document from measured evidence rather than arithmetic inference.
 
 ## 4. Permanent persistence boundaries
 
@@ -323,4 +325,4 @@ Revisions `_82`–`_85` add `conditional_temporal_intent`, `conditional_temporal
 
 ## 13. Current database cursor
 
-B11-C is the approved next forward-only persistence step after `_85`. Reconcile the Dictionary and current catalog with the actual B10-D/B11-A/B/C objects and their PostgreSQL ACLs. Do not promote the `_79` topology to a later revision without a direct catalog measurement.
+B11-C `_86` is a forward-only candidate after `_85`: stable `schedule_reminder` owner keyed by self Person and Schedule, append-only `schedule_reminder_configuration_state` with shared MaterialState address/current binding, `schedule_reminder_current_history`, and `schedule_reminder_operation` for CAS/idempotency. Guarded PostgreSQL functions resolve self ownership, the accepted exact-start interval (absolute or resolved named-zone), and the derived due/disposition. Runtime has execute grants on the bounded get/configure functions but no direct table DML. The migration and focused test are published; PostgreSQL proof is pending. This adds no delivery/notification job and no Actual mutation. Reconcile the Dictionary and current catalog with the actual B10-D/B11-A/B/C objects and their PostgreSQL ACLs. Do not promote the `_79` topology to a later revision without a direct catalog measurement.

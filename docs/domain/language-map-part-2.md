@@ -424,9 +424,9 @@ No universal Planning Item kernel primitive is accepted.
 
 ## Reminder
 
-**Status:** PRODUCT CAPABILITY / DOMAIN REVIEW DEFERRED
+**Status:** B11-C BOUNDED PERSONAL SCHEDULE CAPABILITY / BROADER DOMAIN REVIEW DEFERRED
 
-Reminder is not automatically Activity. Reminder/Trigger/notification semantics require dedicated review.
+The accepted B11-C slice is a self-personal Reminder configuration attached to one stable, self-owned Schedule with an accepted exact-start interval. It has its own identity and append-only enabled/lead MaterialState. A due instant is derived from the accepted current Schedule start; `pending`, `due`, and `unavailable` are read-time presentation, not delivery or Actual history. Schedule revision changes the derived time and withdrawal makes it unavailable. It does not create Activity, Event, Routine, Occurrence, Session, Actual, Outcome, Confirmation, or a generic trigger/policy root. Delivery, recurring unscheduled reminders, shared assignment, and notification acknowledgement require separate review. See `../workstreams/timeline-temporal-operational-b11-c-scope-2026-09-27.md`.
 
 ## Calendar / Life Area
 
@@ -565,4 +565,3 @@ Account != Principal by default
 ```
 
 Account lifecycle must not automatically erase native Person identity or historical Actor/Responsibility/Participation attribution.
-

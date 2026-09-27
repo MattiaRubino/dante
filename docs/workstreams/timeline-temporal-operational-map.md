@@ -7,7 +7,7 @@
 - **B10-D closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-d-closure-2026-09-26.md`
 - **B10-E closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-e-closure-2026-09-26.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Current persistence source frontier:** `20260927_85` (B11-B)
+- **Current persistence source frontier:** `20260927_86` (B11-C candidate)
 - **Last measured whole-catalog topology:** B10-C `_79` / `167|5|123|93|329|279|446`
 - **Completed functional frontier:** B10 ✅ CLOSED; B11-A ✅ CLOSED / PROVEN
 - **Current implementation cursor:** B11-C Reminder; B11-B catalog/documentation reconciliation open
@@ -89,7 +89,7 @@ B10-E timeline-temporal-operational-b10-e-closure-2026-09-26.md
 B11 Advanced Recurrence / Conditional / Reminder 🟨 IN PROGRESS
   B11-A advanced elapsed Recurrence               ✅ CLOSED / PROVEN (user-run local gates)
   B11-B actual_realization Condition              🟨 LOCAL AUTOMATED GATE PROVEN / catalog open
-  B11-C Schedule-relative personal Reminder       🟨 SCOPE APPROVED / implementation open
+  B11-C Schedule-relative personal Reminder       🟨 BACKEND CHECKPOINT `_86` / vertical + proof open
 B13 Work Structure / Decomposition / Dependencies⬜
 B12 Replanning / Conflict / Solver               ⬜
 B14 Temporal Create Completeness Gate             ⬜
@@ -268,7 +268,7 @@ reminder intent != silently ignored editable Create field
 
 The editable Create reminder intent must leave B11 either canonically supported, truthfully handed off, or hidden until supported.
 
-B11-C has the approved narrow Schedule-relative self Reminder scope at `timeline-temporal-operational-b11-c-scope-2026-09-27.md`. The next code step is forward-only `_86` persistence and guarded self capabilities, followed by API/generated client/web and the Dictionary/catalog reconciliation. The integrated real-app test occurs before whole-B11 closure.
+B11-C has the approved narrow Schedule-relative self Reminder scope at `timeline-temporal-operational-b11-c-scope-2026-09-27.md`. Commit `9878b441` publishes candidate forward-only `_86`, guarded self functions, mapping, API, OpenAPI inventory and focused tests. The migration is not locally PostgreSQL-proven yet; generated client, Create/existing-Schedule web, Dictionary/catalog and local proof remain open. The integrated real-app test occurs before whole-B11 closure.
 
 ---
 

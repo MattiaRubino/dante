@@ -383,6 +383,10 @@ Schedule != movement Authority/policy
 
 The same time range can represent different semantics; geometry alone does not classify it.
 
+### 6.5 B11-C personal Schedule Reminder
+
+One self Person may attach a stable personal Reminder identity to an accepted self-owned Schedule whose current interval has an absolute or resolved named-zone start. Its configuration has an immutable enabled/lead MaterialState and an explicit current binding/history. The due instant is a read-time derivation from the current accepted Schedule start minus 0–10080 minutes. A Schedule revision changes that derivation; withdrawal makes it unavailable while retaining both histories. A due read does not record delivery, execution, Actual, Outcome, or Confirmation. Floating, coarse, date-only, and absent Schedule placements provide no exact reminder start. This is the bounded B11-C slice, not a universal Reminder superclass; see `../workstreams/timeline-temporal-operational-b11-c-scope-2026-09-27.md`.
+
 ---
 
 ## 7. Session
