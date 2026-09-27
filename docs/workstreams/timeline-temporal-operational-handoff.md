@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B11 IN PROGRESS — B11-C BACKEND/WEB CHECKPOINT; B11-B CATALOG RECONCILIATION OPEN
+- **Status:** B11 IN PROGRESS — B11-C FOCUSED GATE PROVEN; exact catalog rerun open
 - **Reconciled:** 2026-09-27
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -10,8 +10,8 @@
 - **B10-D closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-d-closure-2026-09-26.md`
 - **B10-E closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-e-closure-2026-09-26.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Current migration source head:** B11-C / Alembic `20260927_86` (unproven candidate)
-- **Last measured whole-catalog topology:** B10-C `_79` / `167|5|123|93|329|279|446`
+- **Current migration source head:** B11-C / Alembic `20260927_86`
+- **Measured whole-catalog topology:** B11-C `_86` / `184|5|144|100|370|323|480|0|0|0`
 - **B10-D generated client:** `cebfb557196d3fc0f412262a1d12feae9291b875`
 - **B10 real-app acceptance:** USER-REPORTED PASS 2026-09-26
 - **CI:** no CI/GitHub Actions unless explicitly authorized; user runs local tests
@@ -34,8 +34,8 @@ B10     ✅ CLOSED 2026-09-26
   B10-E ✅ CLOSED / USER-REPORTED ACCEPTANCE 2026-09-26
 B11     🟨 IN PROGRESS — Advanced Recurrence / Conditional / Reminder
   B11-A ✅ CLOSED / PROVEN — `_81`, local gates reported passed
-  B11-B 🟨 FOCUSED AUTOMATED GATE PROVEN — `_82`–`_85`; Dictionary/catalog still open
-  B11-C 🟨 BACKEND/WEB CHECKPOINT — `_86` / API / Create / Timeline; Dictionary, client, local proof open
+  B11-B 🟨 FOCUSED AUTOMATED GATE PROVEN — `_82`–`_85`; exact catalog rerun open
+  B11-C 🟨 FOCUSED GATE PROVEN — `_86` / API / Create / Timeline; exact catalog rerun open
 B13     ⬜ NOT STARTED
 B12     ⬜ NOT STARTED
 B14     ⬜ NOT STARTED
@@ -230,7 +230,7 @@ The B10-E-specific automated tests were added to the repository but were not sep
 
 B11-A and the B11-B technical gate have been implemented. B11-B's generated client at `e79f6870` is locally verified (361 deterministic generated files; client/web typecheck; web 3, OpenAPI 6, PostgreSQL 4 passed). The scope and evidence are `timeline-temporal-operational-b11-b-scope-2026-09-27.md` and `timeline-temporal-operational-b11-b-proof-2026-09-27.md`.
 
-The Dictionary scope and `test_database_current_catalog.py` still claim B10-C `_79` although the migration source head is `_86`. Do not label B11-B fully closed or invent the whole-topology count. Reconcile Dictionary/DB reference from the live catalog and perform the local catalog gate. The candidate overlay must describe the `_80`–`_86` evolution truthfully.
+The `_86` PostgreSQL probe measured `184|5|144|100|370|323|480|0|0|0`. Dictionary scope and both current-catalog tests now target `_86`. The first exact gate passed 8 tests and failed 2 on five mismatched CHECK names. Those names were repaired in `a332a592` to match the published migrations, and the 21 new routine signatures were reconciled to their SQL definitions. Rerun the exact local catalog gate before marking B11-B/C vertically closed.
 
 Theme:
 
@@ -248,7 +248,7 @@ reminder intent != hidden ignored Create field
 conditional behavior != implicit mutation
 ```
 
-B11-C scope is `timeline-temporal-operational-b11-c-scope-2026-09-27.md`: one personal Reminder per self Person/Schedule, append-only configuration state, exact-start admissibility, pending/due/unavailable read, no delivery claim. Candidate `_86`/SQLAlchemy/guarded functions/API/OpenAPI were published at `9878b441`; existing-Schedule controls at `9d806355`; Create two-command partial retry at `e9a0f760`. Continue with generated client, Dictionary and local PostgreSQL/web/catalog gates. The whole-B11 real-app walkthrough occurs before B11 closure.
+B11-C scope is `timeline-temporal-operational-b11-c-scope-2026-09-27.md`: one personal Reminder per self Person/Schedule, append-only configuration state, exact-start admissibility, pending/due/unavailable read, no delivery claim. `_86`/SQLAlchemy/guarded functions/API/OpenAPI were published at `9878b441`; existing-Schedule controls at `9d806355`; Create two-command partial retry at `e9a0f760`; generated client at `d0378e17`. Focused local backend (5), web (16), generation and typechecks passed. The `_86` catalog probe passed; exact catalog rerun is the remaining B11-C gate. The whole-B11 real-app walkthrough occurs before B11 closure.
 
 Do not reopen B10 semantics unless B11 uncovers concrete contradictory evidence.
 

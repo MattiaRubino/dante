@@ -8,9 +8,9 @@
 - **B10-E closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-e-closure-2026-09-26.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
 - **Current persistence source frontier:** `20260927_86` (B11-C candidate)
-- **Last measured whole-catalog topology:** B10-C `_79` / `167|5|123|93|329|279|446`
+- **Measured whole-catalog topology:** B11-C `_86` / `184|5|144|100|370|323|480|0|0|0`
 - **Completed functional frontier:** B10 ✅ CLOSED; B11-A ✅ CLOSED / PROVEN
-- **Current implementation cursor:** B11-C Reminder; B11-B catalog/documentation reconciliation open
+- **Current implementation cursor:** B11-C exact catalog rerun after CHECK-name repair
 - **CI:** not authorized; local tests are run by the user
 
 ---
@@ -88,8 +88,8 @@ B10-E timeline-temporal-operational-b10-e-closure-2026-09-26.md
 ```text
 B11 Advanced Recurrence / Conditional / Reminder 🟨 IN PROGRESS
   B11-A advanced elapsed Recurrence               ✅ CLOSED / PROVEN (user-run local gates)
-  B11-B actual_realization Condition              🟨 LOCAL AUTOMATED GATE PROVEN / catalog open
-  B11-C Schedule-relative personal Reminder       🟨 BACKEND/WEB CHECKPOINT / client + catalog + proof open
+  B11-B actual_realization Condition              🟨 LOCAL AUTOMATED GATE PROVEN / exact catalog rerun open
+  B11-C Schedule-relative personal Reminder       🟨 FOCUSED GATE PROVEN / exact catalog rerun open
 B13 Work Structure / Decomposition / Dependencies⬜
 B12 Replanning / Conflict / Solver               ⬜
 B14 Temporal Create Completeness Gate             ⬜
@@ -248,7 +248,7 @@ B10   CLOSED
 
 # 5. Current gate — B11
 
-B11 is active. B11-A completion-relative and anchor-stream-relative recurrence uses `_81` and is locally proven. B11-B bounded `actual_realization` Condition uses `_82`–`_85`; its focused local gate passed at generated client `e79f6870` (PostgreSQL 4, OpenAPI 6, web 3, deterministic generation 361 files, client/web typechecks). The evidence is in `timeline-temporal-operational-b11-b-proof-2026-09-27.md`. Its Dictionary and whole-catalog gate are still open, so do not call the full B11-B vertical closed yet.
+B11 is active. B11-A completion-relative and anchor-stream-relative recurrence uses `_81` and is locally proven. B11-B bounded `actual_realization` Condition uses `_82`–`_85`; its focused local gate passed at generated client `e79f6870` (PostgreSQL 4, OpenAPI 6, web 3, deterministic generation 361 files, client/web typechecks). The evidence is in `timeline-temporal-operational-b11-b-proof-2026-09-27.md`. The shared `_86` catalog probe measured `184|5|144|100|370|323|480|0|0|0`; exact cross-representation proof awaits rerun after CHECK-name repair.
 
 Scope theme:
 
@@ -268,7 +268,7 @@ reminder intent != silently ignored editable Create field
 
 The editable Create reminder intent must leave B11 either canonically supported, truthfully handed off, or hidden until supported.
 
-B11-C has the approved narrow Schedule-relative self Reminder scope at `timeline-temporal-operational-b11-c-scope-2026-09-27.md`. Commit `9878b441` publishes candidate forward-only `_86`, guarded self functions, mapping, API, OpenAPI inventory and focused tests. Commits `9d806355` and `e9a0f760` add existing-Schedule controls and the Create two-command partial retry path. PostgreSQL, web/typecheck and generated client local proof remain open; the Dictionary/catalog still stops at `_79`. The integrated real-app test occurs before whole-B11 closure.
+B11-C has the approved narrow Schedule-relative self Reminder scope at `timeline-temporal-operational-b11-c-scope-2026-09-27.md`. Commit `9878b441` publishes forward-only `_86`, guarded self functions, mapping, API, OpenAPI inventory and focused tests. Commits `9d806355` and `e9a0f760` add existing-Schedule controls and the Create two-command partial retry path. Generated client `d0378e17` and focused local backend 5/web 16 gate passed; the `_86` topology probe passed. The first exact catalog run passed 8 tests and exposed five CHECK-name mismatches in two tests, repaired in `a332a592`. Repeat those tests before B11-C closure. The integrated real-app test occurs before whole-B11 closure.
 
 ---
 

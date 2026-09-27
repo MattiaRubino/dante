@@ -6,7 +6,7 @@
 - **Completed functional frontier:** B10 ✅ CLOSED; B11-A ✅ CLOSED / PROVEN
 - **Current block:** B11-C Schedule-relative personal Reminder (B11-B catalog reconciliation open)
 - **Current persistence source frontier:** B11-C / Alembic `20260927_86` (candidate)
-- **Last measured whole-catalog topology:** B10-C / `20260925_79` / `167|5|123|93|329|279|446`
+- **Measured whole-catalog topology:** B11-C / `20260927_86` / `184|5|144|100|370|323|480|0|0|0`
 - **B10-D closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-d-closure-2026-09-26.md`
 - **B10-E closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-e-closure-2026-09-26.md`
 - **Deferred block:** B07 UI/UX Consolidation v1 — execute only after B14
@@ -93,8 +93,8 @@ B10 Actual / Outcome / Confirmation / Resolution ✅ CLOSED 2026-09-26
 
 B11 Advanced Recurrence / Conditional / Reminder 🟨 IN PROGRESS
   B11-A Advanced Recurrence                    ✅ CLOSED / PROVEN (user-run local gates)
-  B11-B Conditional Temporal Behavior         🟨 AUTOMATED GATE PROVEN / catalog reconciliation open
-  B11-C Schedule-relative personal Reminder   🟨 BACKEND/WEB CHECKPOINT / client + catalog + proof open
+  B11-B Conditional Temporal Behavior         🟨 AUTOMATED GATE PROVEN / exact catalog rerun open
+  B11-C Schedule-relative personal Reminder   🟨 FOCUSED GATE PROVEN / exact catalog rerun open
 B13 Work Structure / Decomposition / Dependencies⬜
 B12 Replanning / Conflict / Solver               ⬜
 B14 Temporal Create Completeness Gate             ⬜
@@ -308,9 +308,9 @@ or hidden until supported
 
 B11-A extends the B06 elapsed recurrence baseline with completion-relative and anchor-stream-relative provenance at `_81`. The user reported the focused PostgreSQL, OpenAPI, generated-client and web gates passing; generated client checkpoint `6d4c6188`. B11-B implements the bounded `actual_realization` condition at `_82`–`_85`. Its local automated gate passed (PostgreSQL 4, OpenAPI 6, web 3, generated check 361 files, both typechecks) and its generated client is at `e79f6870`; see `timeline-temporal-operational-b11-b-proof-2026-09-27.md`.
 
-The Dictionary and whole-catalog proof still declare `_79`, and the candidate DB overlay previously stopped at `_80`. Reconcile those against PostgreSQL before declaring B11-B vertically closed. Do not infer a topology tuple from migration arithmetic.
+The local PostgreSQL probe measured `_86` at `184|5|144|100|370|323|480|0|0|0`. Dictionary entries and catalog tests now target `_86`. The first exact gate passed 8 tests and failed 2 on CHECK names; the five mismatches have been repaired against published migrations. Rerun the exact gate before closing the vertical.
 
-B11-C is approved as a narrow self-personal Reminder configuration on an accepted Schedule with an exact start instant; see `timeline-temporal-operational-b11-c-scope-2026-09-27.md`. Candidate `_86` persistence/backend/API and focused tests are published at `9878b441`; existing-Schedule and Create web checkpoints are `9d806355` and `e9a0f760`. Local PostgreSQL/web proof, Dictionary/catalog reconciliation, generated client and integrated acceptance are still open. Delivery and generic automation remain excluded.
+B11-C is a narrow self-personal Reminder configuration on an accepted Schedule with an exact start instant; see `timeline-temporal-operational-b11-c-scope-2026-09-27.md`. `_86` persistence/backend/API was published at `9878b441`; existing-Schedule and Create web checkpoints at `9d806355` and `e9a0f760`; generated client at `d0378e17`. The focused local gate passed backend 5 and web 16 tests, generation and client/web typechecks. The `_86` probe passed; the exact catalog gate needs rerun after the CHECK-name repair. Integrated real-app acceptance remains the whole-B11 gate. Delivery and generic automation remain excluded.
 
 ---
 

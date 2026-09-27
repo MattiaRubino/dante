@@ -1,12 +1,12 @@
 # Timeline / Temporal-Operational — Candidate Database Overlay
 
-- **Status:** CURRENT CANDIDATE DATABASE OVERLAY — B11-C `_86` source head; catalog reconciliation open
+- **Status:** CURRENT CANDIDATE DATABASE OVERLAY — B11-C `_86`; exact catalog gate rerun open
 - **Reconciled:** 2026-09-27
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
 - **Candidate migration source head:** `20260927_86`
-- **Focused local proof frontier:** B11-B `_85` (not a whole-catalog count)
-- **Last explicitly recorded whole-topology count:** B10-C `_79` / `167|5|123|93|329|279|446`
+- **Focused local proof frontier:** B11-C `_86` (5 backend and 16 web focused tests passed)
+- **Measured whole-topology count:** `_86` / `184|5|144|100|370|323|480|0|0|0`
 - **Whole-DB SoR:** `README.md`
 - **Machine-readable authority:** `dictionary/`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
@@ -68,19 +68,19 @@ Published migrations are immutable. Any persistence correction is forward-only.
 
 ## 3. Proven frontier and topology discipline
 
-B11-B focused functional persistence frontier is:
+B11-C focused functional persistence frontier is:
 
 ```text
-Alembic 20260927_85
+Alembic 20260927_86
 ```
 
-Neither the B10-D nor B11-A/B closure proof recorded a newly measured whole-database topology tuple. Therefore this overlay does **not** invent one. The last explicitly recorded whole-topology tuple remains the B10-C `_79` value:
+The local PostgreSQL `_86` probe measured the whole-database topology directly:
 
 ```text
-167|5|123|93|329|279|446
+184|5|144|100|370|323|480|0|0|0
 ```
 
-The Dictionary and catalog-test revision still point at `_79`; reconcile all real objects and ACLs through `_86` before claiming whole-catalog agreement. Update this document from measured evidence rather than arithmetic inference.
+Dictionary entries and current-catalog tests now target `_86`. The first exact gate passed 8 tests and failed 2 on five CHECK names; a subsequent checkpoint aligned those names to the immutable migrations. Whole-catalog agreement awaits the rerun.
 
 ## 4. Permanent persistence boundaries
 
@@ -325,4 +325,4 @@ Revisions `_82`–`_85` add `conditional_temporal_intent`, `conditional_temporal
 
 ## 13. Current database cursor
 
-B11-C `_86` is a forward-only candidate after `_85`: stable `schedule_reminder` owner keyed by self Person and Schedule, append-only `schedule_reminder_configuration_state` with shared MaterialState address/current binding, `schedule_reminder_current_history`, and `schedule_reminder_operation` for CAS/idempotency. Guarded PostgreSQL functions resolve self ownership, the accepted exact-start interval (absolute or resolved named-zone), and the derived due/disposition. Runtime has execute grants on the bounded get/configure functions but no direct table DML. The migration and focused test are published; PostgreSQL proof is pending. This adds no delivery/notification job and no Actual mutation. Reconcile the Dictionary and current catalog with the actual B10-D/B11-A/B/C objects and their PostgreSQL ACLs. Do not promote the `_79` topology to a later revision without a direct catalog measurement.
+B11-C `_86` adds a stable `schedule_reminder` owner keyed by self Person and Schedule, append-only `schedule_reminder_configuration_state` with shared MaterialState address/current binding, `schedule_reminder_current_history`, and `schedule_reminder_operation` for CAS/idempotency. Guarded PostgreSQL functions resolve self ownership, the accepted exact-start interval (absolute or resolved named-zone), and derived due/disposition. Runtime has execute grants on bounded get/configure functions and no direct table DML. Focused backend (5) and web (16) tests, generation and both typechecks passed locally; the `_86` catalog probe passed with the measured tuple above. The exact Dictionary/catalog gate awaits rerun after CHECK-name repair. This slice creates no delivery job or Actual mutation.
