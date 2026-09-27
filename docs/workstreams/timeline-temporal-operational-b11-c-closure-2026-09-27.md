@@ -33,4 +33,10 @@ These results establish the `_86` catalog, Dictionary, SQLAlchemy registry and A
 
 ## Remaining B11 gate
 
-B11-A, B11-B and B11-C are technically closed. Before closing the parent B11 block, run the integrated real-app walkthrough locally: create an admissible Schedule with Reminder intent, inspect due state on the Timeline, revise or withdraw the Schedule, configure/disable from an existing Schedule, reload to verify canonical state, and exercise the Create partial-success retry without creating the subject twice. Record the observed behavior in the whole-B11 closure evidence. B13/B12/B14 and deferred B07 remain separate roadmap blocks.
+B11-A, B11-B and B11-C are technically closed. Before closing the parent B11 block, run the integrated real-app walkthrough locally across all three capabilities:
+
+1. Author completion-relative and anchor-stream-relative Routine/Event recurrence; confirm that a qualifying Actual/anchor produces the expected Occurrence, replay does not duplicate it, and a missing Actual does not fabricate a completion-relative Occurrence.
+2. Create an `actual_realization` Condition on a self-owned Activity/Event/Occurrence; confirm `indeterminate/withhold` before Actual, then evaluate again after recording/correcting Actual and inspect exact pinned evidence without an implicit Schedule or Actual mutation.
+3. Create an admissible Schedule with Reminder intent, inspect its derived due state on the Timeline, revise or withdraw the Schedule, configure/disable from an existing Schedule, reload to verify canonical state, and exercise the Create partial-success retry without creating the subject twice.
+
+Record the observed behavior in the whole-B11 closure evidence. B13/B12/B14 and deferred B07 remain separate roadmap blocks.

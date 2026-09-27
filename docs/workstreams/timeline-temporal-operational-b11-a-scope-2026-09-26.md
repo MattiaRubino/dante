@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — B11-A Advanced Recurrence Scope
 
-- **Status:** B11-A APPROVED / IN PROGRESS
+- **Status:** B11-A CLOSED / PROVEN by user-run focused local gates
 - **Date:** 2026-09-26
 - **Branch:** `feature/timeline-temporal-operational`
 - **Entering completed frontier:** B10 ✅ CLOSED / PROVEN
