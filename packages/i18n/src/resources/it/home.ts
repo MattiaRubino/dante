@@ -105,6 +105,9 @@ export const home = {
       creating: 'Aggiungo…',
       failure:
         'Non è stato possibile applicare la creazione. La bozza è ancora qui.',
+      reminderPartial:
+        'Activity e Schedule sono stati creati. Il promemoria non è configurato. Riprova solo il promemoria oppure chiudi e usa i dettagli dello Schedule più tardi.',
+      reminderRetry: 'Riprova promemoria',
       date: 'Data',
       start: 'Ora',
       duration: 'Durata prevista',
@@ -293,7 +296,7 @@ export const home = {
         atStart: 'All’inizio',
         before: '{{value}} prima',
         deliveryNote:
-          'La policy viene salvata nel draft locale. L’invio reale di notifiche arriverà con il relativo backend/provider; qui non viene simulato.',
+          'Per un’Activity con Schedule esatto, il promemoria viene configurato dopo la creazione dello Schedule. L’invio di notifiche non è incluso.',
       },
       eventDetails: {
         title: 'Dettagli evento',

@@ -113,6 +113,8 @@ export function TemporalCreateEntry({
   );
   const requestSeenRef = useRef<number | null>(null);
   const preparedRef = useRef<TemporalCreatePreparedOperation | null>(null);
+  const partialReminderRef = useRef<(() => Promise<void>) | null>(null);
+  const [reminderRetry, setReminderRetry] = useState(false);
   const commitInFlightRef = useRef(false);
   const [open, setOpen] = useState(false);
   const [session, setSession] = useState<TemporalCreateSession>(() =>
@@ -184,6 +186,8 @@ export function TemporalCreateEntry({
       composerDragRef.current = null;
       document.documentElement.removeAttribute('data-temporal-create-dragging');
       preparedRef.current = null;
+      partialReminderRef.current = null;
+      setReminderRetry(false);
       commitInFlightRef.current = false;
       onPreview(null);
       if (restoreFocus) {
@@ -209,6 +213,8 @@ export function TemporalCreateEntry({
       setFailureMessage('');
       setLifecycle('idle');
       preparedRef.current = null;
+      partialReminderRef.current = null;
+      setReminderRetry(false);
       focusReturnRef.current = focusReturnTarget ?? triggerRef.current;
       void externalAnchor;
       setPosition({
@@ -403,11 +409,20 @@ export function TemporalCreateEntry({
   };
 
   const patch = (next: Partial<TemporalCreateSession['draft']['current']>) => {
+    if (partialReminderRef.current !== null) return;
+    const merged = { ...session.draft.current, ...next };
+    const eligibleReminder = merged.kind === 'activity' &&
+      merged.timeSemantics === 'timed' && merged.timeMode === 'zoned' &&
+      merged.eventRecurrence.patternKind === 'none';
+    const boundedNext = eligibleReminder ? next : {
+      ...next,
+      confirmation: { ...merged.confirmation, reminderLeadMinutes: null },
+    };
     preparedRef.current = null;
     setIssues([]);
     setFailureMessage('');
     setLifecycle('idle');
-    setSession((current) => updateTemporalCreateFields(current, next));
+    setSession((current) => updateTemporalCreateFields(current, boundedNext));
   };
 
   const changeSurface = (surface: TemporalCreateSurface) => {
@@ -416,6 +431,21 @@ export function TemporalCreateEntry({
 
   const submit = async () => {
     if (commitInFlightRef.current) {
+      return;
+    }
+    if (partialReminderRef.current !== null) {
+      commitInFlightRef.current = true;
+      setLifecycle('pending');
+      try {
+        await partialReminderRef.current();
+        setSession(discardTemporalCreateSession(freshFields(defaultDate)));
+        closeComposer();
+      } catch {
+        setLifecycle('failed');
+        setFailureMessage(t(($) => $.common.home.timeline.create.reminderPartial));
+      } finally {
+        commitInFlightRef.current = false;
+      }
       return;
     }
     if (
@@ -471,6 +501,13 @@ export function TemporalCreateEntry({
         const focusHandled = execution.effect.undoAvailable
           ? onApplied(execution.effect)
           : false;
+        if (execution.reminderRetry) {
+          partialReminderRef.current = execution.reminderRetry;
+          setReminderRetry(true);
+          setLifecycle('failed');
+          setFailureMessage(t(($) => $.common.home.timeline.create.reminderPartial));
+          return;
+        }
         setSession(discardTemporalCreateSession(freshFields(defaultDate)));
         closeComposer(!focusHandled);
         return;
@@ -498,6 +535,7 @@ export function TemporalCreateEntry({
       issues={issues}
       lifecycle={lifecycle}
       failureMessage={failureMessage}
+      reminderRetry={reminderRetry}
       onPatch={patch}
       onSurfaceChange={changeSurface}
       onRequestClose={requestClose}

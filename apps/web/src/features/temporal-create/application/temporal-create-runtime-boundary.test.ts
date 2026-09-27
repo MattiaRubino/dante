@@ -11,6 +11,7 @@ import {
   type TemporalSchedulePlacementInput,
 } from '../../temporal';
 import { createTemporalCreateFields } from '../model/temporal-create-session';
+import type { ScheduleReminderView } from '../../temporal/remote-schedule-reminder-data-source';
 import { createLocalTemporalCreateRuntime } from './temporal-create-runtime';
 
 const CANONICAL_ACTIVITY_REF = '0199a8c0-5e71-7bc0-8ad0-a2f403f5617d';
@@ -166,6 +167,57 @@ function activitySource(
 }
 
 describe('Temporal Create normal-runtime boundary', () => {
+  it('keeps a committed exact Schedule when Reminder fails and retries only Reminder', async () => {
+    const activity = activitySource();
+    const reminder: ScheduleReminderView = {
+      reminderRef: '0199a8c0-5e74-7bc0-8ad0-a2f403f5617e',
+      scheduleRef: CANONICAL_SCHEDULE_REF,
+      materialStateRef: '0199a8c0-5e74-7bc0-8ad0-a2f403f5617f',
+      enabled: true,
+      leadMinutes: 15,
+      scheduleStartsAt: '2026-09-07T13:00:00Z',
+      dueAt: '2026-09-07T12:45:00Z',
+      disposition: 'pending',
+      replayed: true,
+    };
+    const configure = vi.fn<(scheduleRef: string, command: {
+      operationId: string;
+      expectedMaterialStateRef: string | null;
+      enabled: boolean;
+      leadMinutes: number;
+    }) => Promise<ScheduleReminderView>>()
+      .mockRejectedValueOnce(new Error('Transport interrupted after Schedule commit'))
+      .mockResolvedValueOnce(reminder);
+    const runtime = createLocalTemporalCreateRuntime({
+      ...runtimeOptions('runtime-boundary-b11c'),
+      mode: 'production', activityDataSource: activity.source,
+      reminderDataSource: { configure },
+    });
+    const baseline = createTemporalCreateFields({
+      title: 'Attività con promemoria', kind: 'activity',
+      date: '2026-09-07', timeSemantics: 'timed', startTime: '15:00',
+      durationMinutes: 30, timeMode: 'zoned', timeZoneId: 'Europe/Rome',
+      contextId: CANONICAL_LIFE_AREA_REF,
+    });
+    const preparation = runtime.prepare(createTemporalCreateFields({
+      ...baseline,
+      confirmation: { ...baseline.confirmation, reminderLeadMinutes: 15 },
+    }));
+    if (preparation.status !== 'ready') throw new Error('Expected valid Create intent');
+    const execution = await runtime.execute(preparation.prepared);
+    expect(execution.result.status).toBe('applied');
+    expect(execution.effect?.projection.placement?.kind).toBe('zoned');
+    expect(execution.reminderRetry).toBeDefined();
+    expect(configure).toHaveBeenCalledWith(CANONICAL_SCHEDULE_REF, {
+      operationId: preparation.prepared.operationId,
+      expectedMaterialStateRef: null,
+      enabled: true,
+      leadMinutes: 15,
+    });
+    await execution.reminderRetry?.();
+    expect(activity.createScheduledActivity).toHaveBeenCalledTimes(1);
+    expect(configure).toHaveBeenCalledTimes(2);
+  });
   it.each(['production', 'development'])(
     'creates the canonical B01 unplaced Activity through the remote source in %s',
     async (mode) => {

@@ -96,6 +96,8 @@ export function TemporalCreateConfirmationFields({
           </select>
         </label>
 
+        {fields.kind === 'activity' && fields.timeSemantics === 'timed' &&
+        fields.timeMode === 'zoned' && fields.eventRecurrence.patternKind === 'none' ? (
         <label className="temporal-create-control">
           <span>
             {t(($) => $.common.home.timeline.create.confirmation.reminder)}
@@ -146,6 +148,7 @@ export function TemporalCreateConfirmationFields({
           </select>
           {renderError('confirmation.reminderLeadMinutes')}
         </label>
+        ) : null}
       </div>
 
       {confirmation.outcomePolicy === 'infer-provisional' ? (

@@ -37,6 +37,7 @@ type TemporalCreateComposerProps = Readonly<{
   issues: readonly TemporalValidationIssue[];
   lifecycle: 'idle' | 'pending' | 'failed';
   failureMessage: string;
+  reminderRetry: boolean;
   onPatch: (patch: Partial<TemporalCreateSession['draft']['current']>) => void;
   onSurfaceChange: (surface: TemporalCreateSurface) => void;
   onRequestClose: () => void;
@@ -82,6 +83,7 @@ export function TemporalCreateComposer({
   issues,
   lifecycle,
   failureMessage,
+  reminderRetry,
   onPatch,
   onSurfaceChange,
   onRequestClose,
@@ -386,7 +388,19 @@ export function TemporalCreateComposer({
           </button>
         </div>
 
-        <form
+        {reminderRetry ? (
+          <div className="temporal-create-composer__body" role="status">
+            <p>{failureMessage}</p>
+            <div className="temporal-create-actions">
+              <button type="button" disabled={pending} onClick={requestCloseFromCurrentFocus}>
+                {t(($) => $.common.home.timeline.create.cancel)}
+              </button>
+              <button className="is-primary" type="button" disabled={pending} onClick={onSubmit}>
+                {t(($) => $.common.home.timeline.create.reminderRetry)}
+              </button>
+            </div>
+          </div>
+        ) : <form
           className="temporal-create-composer__body"
           inert={discardPending || undefined}
           onSubmit={submitForm}
@@ -481,7 +495,7 @@ export function TemporalCreateComposer({
                 : t(($) => $.common.home.timeline.create.submit)}
             </button>
           </div>
-        </form>
+        </form>}
 
         {discardPending ? (
           <div

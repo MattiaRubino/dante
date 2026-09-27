@@ -828,7 +828,9 @@ export function TemporalCreateRecurrenceFields({
             </select>
           </label>
 
-          {depth === 'full' ? (
+          {depth === 'full' && fields.kind === 'activity' &&
+          fields.eventRecurrence.patternKind === 'none' &&
+          fields.timeSemantics === 'timed' && fields.timeMode === 'zoned' ? (
             <label className="temporal-create-control">
               <span>
                 {t(($) => $.common.home.timeline.create.confirmation.reminder)}

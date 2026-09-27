@@ -38,6 +38,7 @@ import {
   type TemporalCreateKind,
   type TemporalCreateTimeSemantics,
 } from '../model/temporal-create-session';
+import { createRemoteScheduleReminderDataSource } from '../../temporal/remote-schedule-reminder-data-source';
 
 export type TemporalCreateRecurrenceOwner = 'event' | 'routine' | null;
 
@@ -130,6 +131,7 @@ export type TemporalCreateAppliedEffect = Readonly<{
 export type TemporalCreateExecution = Readonly<{
   result: TemporalOperationResult;
   effect: TemporalCreateAppliedEffect | null;
+  reminderRetry?: () => Promise<void>;
 }>;
 
 export interface TemporalCreateRuntime {
@@ -289,6 +291,11 @@ function b02eScheduledActivityIntentSupported(
     return false;
   }
 
+  const reminderLead = specification.confirmation.reminderLeadMinutes;
+  if (reminderLead !== null && placement.kind !== 'absolute' && placement.kind !== 'zoned') {
+    return false;
+  }
+
   const baseline = createTemporalCreateFields({
     title: specification.title,
     kind: 'activity',
@@ -310,7 +317,10 @@ function b02eScheduledActivityIntentSupported(
       specification.eventRecurrence,
       baseline.eventRecurrence,
     ) &&
-    sameStructuredIntent(specification.confirmation, baseline.confirmation) &&
+    sameStructuredIntent(
+      { ...specification.confirmation, reminderLeadMinutes: null },
+      baseline.confirmation,
+    ) &&
     sameStructuredIntent(specification.event, baseline.event)
   );
 }
@@ -494,7 +504,12 @@ function schedulePlacementInput(
 }
 
 class RemoteActivityTemporalWorkspace implements TemporalWorkspacePort {
+  private readonly scheduleRefs = new Map<TemporalOperationId, string>();
   public constructor(private readonly source: TemporalActivityDataSource) {}
+
+  public scheduleRefFor(operationId: TemporalOperationId): string | null {
+    return this.scheduleRefs.get(operationId) ?? null;
+  }
 
   public async execute(
     command: TemporalCommand,
@@ -623,6 +638,7 @@ class RemoteActivityTemporalWorkspace implements TemporalWorkspacePort {
         ...(lifeAreaRef === undefined ? {} : { lifeAreaRef }),
         placement: schedulePlacement as TemporalSchedulePlacementInput,
       });
+      this.scheduleRefs.set(command.operationId, result.schedule.scheduleRef);
       return Object.freeze({
         operationId: command.operationId,
         status: 'applied' as const,
@@ -740,6 +756,7 @@ class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
     private readonly ids: TemporalIdFactory,
     clock: TemporalClock,
     private readonly canonicalActivityOnly = false,
+    private readonly reminderSource?: Pick<ReturnType<typeof createRemoteScheduleReminderDataSource>, 'configure'>,
   ) {
     this.clock = clock;
   }
@@ -992,6 +1009,32 @@ class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
         this.replacePlacement(projection.id, prepared.metadata, placement),
       remove: () => this.removeProjection(projection.id, prepared.metadata),
     }) satisfies TemporalCreateAppliedEffect;
+    const reminderLead = prepared.metadata.specification.confirmation.reminderLeadMinutes;
+    if (reminderLead !== null && this.workspace instanceof RemoteActivityTemporalWorkspace) {
+      const scheduleRef = this.workspace.scheduleRefFor(prepared.operationId);
+      if (scheduleRef === null || this.reminderSource === undefined) {
+        return Object.freeze({
+          result, effect,
+          reminderRetry: async () => {
+            throw new Error('Committed Schedule Reminder reference unavailable.');
+          },
+        });
+      }
+      const reminderSource = this.reminderSource;
+      const configure = async () => {
+        await reminderSource.configure(scheduleRef, {
+          operationId: prepared.operationId,
+          expectedMaterialStateRef: null,
+          enabled: true,
+          leadMinutes: reminderLead,
+        });
+      };
+      try {
+        await configure();
+      } catch {
+        return Object.freeze({ result, effect, reminderRetry: configure });
+      }
+    }
 
     return Object.freeze({ result, effect });
   }
@@ -1036,6 +1079,7 @@ export type TemporalCreateRuntimeOptions = Readonly<{
   ids?: TemporalIdFactory;
   workspace?: TemporalWorkspacePort;
   activityDataSource?: TemporalActivityDataSource;
+  reminderDataSource?: Pick<ReturnType<typeof createRemoteScheduleReminderDataSource>, 'configure'>;
   mode?: string;
 }>;
 
@@ -1066,6 +1110,7 @@ export function createLocalTemporalCreateRuntime(
     ids,
     options.clock ?? systemTemporalClock,
     true,
+    options.reminderDataSource ?? createRemoteScheduleReminderDataSource(),
   );
 }
 

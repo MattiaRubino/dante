@@ -107,6 +107,8 @@ export const home = {
       submit: 'Add',
       creating: 'Adding…',
       failure: 'Create could not be applied. Your draft is still here.',
+      reminderPartial: 'Activity and Schedule were created. The Reminder was not configured. Retry only the Reminder or close and use the Schedule details later.',
+      reminderRetry: 'Retry Reminder',
       date: 'Date',
       start: 'Time',
       duration: 'Expected duration',
@@ -295,7 +297,7 @@ export const home = {
         atStart: 'At start',
         before: '{{value}} before',
         deliveryNote:
-          'The policy is stored in the local draft. Real notification delivery arrives with the owning backend/provider and is not simulated here.',
+          'For an exact scheduled Activity, Reminder configuration is stored after Schedule creation. Notification delivery is not included.',
       },
       eventDetails: {
         title: 'Event details',
