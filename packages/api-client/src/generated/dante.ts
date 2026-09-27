@@ -7,6 +7,8 @@
 import type {
   ActivityResponse,
   ActualRealizationCommand,
+  ActualRealizationConditionRequest,
+  ActualRealizationConditionResponse,
   ActualRealizationHistoryResponse,
   ActualRealizationResponse,
   AdvancedCheckpointRequest,
@@ -22,6 +24,8 @@ import type {
   AuthHandleAppleCallbackBody,
   AuthenticatedSessionResponse,
   AuthenticationMethodsResponse,
+  ConditionalEvaluationRequest,
+  ConditionalEvaluationResponse,
   ConfirmationCommand,
   ConfirmationHistoryResponse,
   ConfirmationResponse,
@@ -4752,6 +4756,303 @@ export const temporalRecordActualOutcome = async (
     status: res.status,
     headers: res.headers,
   } as temporalRecordActualOutcomeResponse;
+};
+
+export type temporalCreateActualRealizationConditionResponse200 = {
+  data: ActualRealizationConditionResponse;
+  status: 200;
+};
+
+export type temporalCreateActualRealizationConditionResponse201 = {
+  data: ActualRealizationConditionResponse;
+  status: 201;
+};
+
+export type temporalCreateActualRealizationConditionResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type temporalCreateActualRealizationConditionResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type temporalCreateActualRealizationConditionResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type temporalCreateActualRealizationConditionResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type temporalCreateActualRealizationConditionResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type temporalCreateActualRealizationConditionResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type temporalCreateActualRealizationConditionResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type temporalCreateActualRealizationConditionResponseSuccess = (
+  | temporalCreateActualRealizationConditionResponse200
+  | temporalCreateActualRealizationConditionResponse201
+) & {
+  headers: Headers;
+};
+export type temporalCreateActualRealizationConditionResponseError = (
+  | temporalCreateActualRealizationConditionResponse400
+  | temporalCreateActualRealizationConditionResponse401
+  | temporalCreateActualRealizationConditionResponse403
+  | temporalCreateActualRealizationConditionResponse404
+  | temporalCreateActualRealizationConditionResponse409
+  | temporalCreateActualRealizationConditionResponse422
+  | temporalCreateActualRealizationConditionResponse500
+) & {
+  headers: Headers;
+};
+
+export type temporalCreateActualRealizationConditionResponse =
+  | temporalCreateActualRealizationConditionResponseSuccess
+  | temporalCreateActualRealizationConditionResponseError;
+
+export const getTemporalCreateActualRealizationConditionUrl = () => {
+  return `/api/v1/temporal/conditions/actual-realization`;
+};
+
+/**
+ * @summary Create Actual Realization Condition
+ */
+export const temporalCreateActualRealizationCondition = async (
+  actualRealizationConditionRequest: ActualRealizationConditionRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalCreateActualRealizationConditionResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalCreateActualRealizationConditionUrl(),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(actualRealizationConditionRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalCreateActualRealizationConditionResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalCreateActualRealizationConditionResponse;
+};
+
+export type temporalGetActualRealizationConditionResponse200 = {
+  data: ActualRealizationConditionResponse;
+  status: 200;
+};
+
+export type temporalGetActualRealizationConditionResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type temporalGetActualRealizationConditionResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type temporalGetActualRealizationConditionResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetActualRealizationConditionResponseSuccess =
+  temporalGetActualRealizationConditionResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetActualRealizationConditionResponseError = (
+  | temporalGetActualRealizationConditionResponse401
+  | temporalGetActualRealizationConditionResponse404
+  | temporalGetActualRealizationConditionResponse422
+) & {
+  headers: Headers;
+};
+
+export type temporalGetActualRealizationConditionResponse =
+  | temporalGetActualRealizationConditionResponseSuccess
+  | temporalGetActualRealizationConditionResponseError;
+
+export const getTemporalGetActualRealizationConditionUrl = (
+  conditionRef: string,
+) => {
+  return `/api/v1/temporal/conditions/actual-realization/${conditionRef}`;
+};
+
+/**
+ * @summary Get Actual Realization Condition
+ */
+export const temporalGetActualRealizationCondition = async (
+  conditionRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetActualRealizationConditionResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetActualRealizationConditionUrl(conditionRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetActualRealizationConditionResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetActualRealizationConditionResponse;
+};
+
+export type temporalEvaluateActualRealizationConditionResponse200 = {
+  data: ConditionalEvaluationResponse;
+  status: 200;
+};
+
+export type temporalEvaluateActualRealizationConditionResponse201 = {
+  data: ConditionalEvaluationResponse;
+  status: 201;
+};
+
+export type temporalEvaluateActualRealizationConditionResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type temporalEvaluateActualRealizationConditionResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type temporalEvaluateActualRealizationConditionResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type temporalEvaluateActualRealizationConditionResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type temporalEvaluateActualRealizationConditionResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type temporalEvaluateActualRealizationConditionResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type temporalEvaluateActualRealizationConditionResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type temporalEvaluateActualRealizationConditionResponseSuccess = (
+  | temporalEvaluateActualRealizationConditionResponse200
+  | temporalEvaluateActualRealizationConditionResponse201
+) & {
+  headers: Headers;
+};
+export type temporalEvaluateActualRealizationConditionResponseError = (
+  | temporalEvaluateActualRealizationConditionResponse400
+  | temporalEvaluateActualRealizationConditionResponse401
+  | temporalEvaluateActualRealizationConditionResponse403
+  | temporalEvaluateActualRealizationConditionResponse404
+  | temporalEvaluateActualRealizationConditionResponse409
+  | temporalEvaluateActualRealizationConditionResponse422
+  | temporalEvaluateActualRealizationConditionResponse500
+) & {
+  headers: Headers;
+};
+
+export type temporalEvaluateActualRealizationConditionResponse =
+  | temporalEvaluateActualRealizationConditionResponseSuccess
+  | temporalEvaluateActualRealizationConditionResponseError;
+
+export const getTemporalEvaluateActualRealizationConditionUrl = (
+  conditionRef: string,
+) => {
+  return `/api/v1/temporal/conditions/actual-realization/${conditionRef}/evaluations`;
+};
+
+/**
+ * @summary Evaluate Actual Realization Condition
+ */
+export const temporalEvaluateActualRealizationCondition = async (
+  conditionRef: string,
+  conditionalEvaluationRequest: ConditionalEvaluationRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalEvaluateActualRealizationConditionResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalEvaluateActualRealizationConditionUrl(conditionRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(conditionalEvaluationRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalEvaluateActualRealizationConditionResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalEvaluateActualRealizationConditionResponse;
 };
 
 export type temporalListConfirmationHistoryResponse200 = {

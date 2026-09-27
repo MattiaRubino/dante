@@ -787,6 +787,75 @@
         "title": "ActualRealizationCommand",
         "type": "object"
       },
+      "ActualRealizationConditionRequest": {
+        "additionalProperties": false,
+        "description": "Create one bounded condition over canonical Actual realization truth.",
+        "properties": {
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "subject_kind": {
+            "enum": ["activity", "event", "occurrence"],
+            "title": "Subject Kind",
+            "type": "string"
+          },
+          "subject_native_ref": {
+            "format": "uuid",
+            "title": "Subject Native Ref",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "subject_kind", "subject_native_ref"],
+        "title": "ActualRealizationConditionRequest",
+        "type": "object"
+      },
+      "ActualRealizationConditionResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "condition_ref": {
+            "format": "uuid",
+            "title": "Condition Ref",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "family_code": {
+            "const": "actual_realization",
+            "title": "Family Code",
+            "type": "string"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "subject_kind": {
+            "enum": ["activity", "event", "occurrence"],
+            "title": "Subject Kind",
+            "type": "string"
+          },
+          "subject_native_ref": {
+            "format": "uuid",
+            "title": "Subject Native Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "condition_ref",
+          "subject_kind",
+          "subject_native_ref",
+          "family_code",
+          "created_at",
+          "replayed"
+        ],
+        "title": "ActualRealizationConditionResponse",
+        "type": "object"
+      },
       "ActualRealizationHistoryResponse": {
         "additionalProperties": false,
         "properties": {
@@ -2218,6 +2287,91 @@
         },
         "required": ["local_date", "period"],
         "title": "CoarseLocalPeriodPlacementRequest",
+        "type": "object"
+      },
+      "ConditionalEvaluationRequest": {
+        "additionalProperties": false,
+        "description": "Evaluate from PostgreSQL truth; callers never provide the result.",
+        "properties": {
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id"],
+        "title": "ConditionalEvaluationRequest",
+        "type": "object"
+      },
+      "ConditionalEvaluationResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "actual_realization_material_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Realization Material State Ref"
+          },
+          "actual_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Ref"
+          },
+          "condition_ref": {
+            "format": "uuid",
+            "title": "Condition Ref",
+            "type": "string"
+          },
+          "disposition_code": {
+            "enum": ["allow", "withhold"],
+            "title": "Disposition Code",
+            "type": "string"
+          },
+          "evaluated_at": {
+            "format": "date-time",
+            "title": "Evaluated At",
+            "type": "string"
+          },
+          "evaluation_ref": {
+            "format": "uuid",
+            "title": "Evaluation Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "result_code": {
+            "enum": ["satisfied", "not_satisfied", "indeterminate"],
+            "title": "Result Code",
+            "type": "string"
+          }
+        },
+        "required": [
+          "evaluation_ref",
+          "condition_ref",
+          "result_code",
+          "disposition_code",
+          "actual_ref",
+          "actual_realization_material_state_ref",
+          "evaluated_at",
+          "replayed"
+        ],
+        "title": "ConditionalEvaluationResponse",
         "type": "object"
       },
       "ConfirmationCommand": {
@@ -20939,6 +21093,297 @@
           }
         },
         "summary": "Record Actual Outcome",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/conditions/actual-realization": {
+      "post": {
+        "operationId": "temporal_create_actual_realization_condition",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActualRealizationConditionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActualRealizationConditionResponse"
+                }
+              }
+            },
+            "description": "Idempotent replay."
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActualRealizationConditionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request."
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Authentication required."
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Mutation rejected by security policy."
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Conditional subject unavailable."
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Operation id reuse conflict."
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Conditional payload rejected."
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unexpected server error."
+          }
+        },
+        "summary": "Create Actual Realization Condition",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/conditions/actual-realization/{condition_ref}": {
+      "get": {
+        "operationId": "temporal_get_actual_realization_condition",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "condition_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Condition Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActualRealizationConditionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Authentication required."
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Conditional intent unavailable."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Actual Realization Condition",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/conditions/actual-realization/{condition_ref}/evaluations": {
+      "post": {
+        "operationId": "temporal_evaluate_actual_realization_condition",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "condition_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Condition Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConditionalEvaluationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConditionalEvaluationResponse"
+                }
+              }
+            },
+            "description": "Idempotent replay."
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConditionalEvaluationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request."
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Authentication required."
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Mutation rejected by security policy."
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Conditional intent unavailable."
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Operation id reuse conflict."
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Conditional evaluation rejected."
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unexpected server error."
+          }
+        },
+        "summary": "Evaluate Actual Realization Condition",
         "tags": ["temporal"]
       }
     },
