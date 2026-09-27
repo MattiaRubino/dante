@@ -1014,6 +1014,345 @@
         "title": "ActualTimingResponse",
         "type": "object"
       },
+      "AdvancedCheckpointRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "end_at_exclusive": {
+            "format": "date-time",
+            "title": "End At Exclusive",
+            "type": "string"
+          },
+          "governing_recurrence_state_ref": {
+            "format": "uuid",
+            "title": "Governing Recurrence State Ref",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "start_at": {
+            "format": "date-time",
+            "title": "Start At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "governing_recurrence_state_ref",
+          "start_at",
+          "end_at_exclusive"
+        ],
+        "title": "AdvancedCheckpointRequest",
+        "type": "object"
+      },
+      "AdvancedCheckpointResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "accepted_at": {
+            "format": "date-time",
+            "title": "Accepted At",
+            "type": "string"
+          },
+          "governing_recurrence_state_ref": {
+            "format": "uuid",
+            "title": "Governing Recurrence State Ref",
+            "type": "string"
+          },
+          "occurrences": {
+            "items": {
+              "$ref": "#/components/schemas/AdvancedOccurrenceResponse"
+            },
+            "title": "Occurrences",
+            "type": "array"
+          },
+          "owner_kind": {
+            "enum": ["routine", "event"],
+            "title": "Owner Kind",
+            "type": "string"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "source_ref": {
+            "format": "uuid",
+            "title": "Source Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "owner_kind",
+          "source_ref",
+          "governing_recurrence_state_ref",
+          "accepted_at",
+          "occurrences",
+          "replayed"
+        ],
+        "title": "AdvancedCheckpointResponse",
+        "type": "object"
+      },
+      "AdvancedElapsedRecurrenceRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "anchor_mode_code": {
+            "enum": ["previous_completion", "anchor_stream"],
+            "title": "Anchor Mode Code",
+            "type": "string"
+          },
+          "anchor_source_family": {
+            "anyOf": [
+              {
+                "enum": ["routine", "event"],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Anchor Source Family"
+          },
+          "anchor_source_native_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Anchor Source Native Ref"
+          },
+          "effective_from": {
+            "format": "date-time",
+            "title": "Effective From",
+            "type": "string"
+          },
+          "effective_until": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Until"
+          },
+          "elapsed_seconds": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Elapsed Seconds"
+          },
+          "expected_material_state_ref": {
+            "format": "uuid",
+            "title": "Expected Material State Ref",
+            "type": "string"
+          },
+          "expected_occurrence_count": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Occurrence Count"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "range_kind": {
+            "default": "open",
+            "enum": ["open", "until_boundary", "expected_count"],
+            "title": "Range Kind",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "expected_material_state_ref",
+          "effective_from",
+          "elapsed_seconds",
+          "anchor_mode_code"
+        ],
+        "title": "AdvancedElapsedRecurrenceRequest",
+        "type": "object"
+      },
+      "AdvancedOccurrenceResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "anchor_actual_material_state_ref": {
+            "format": "uuid",
+            "title": "Anchor Actual Material State Ref",
+            "type": "string"
+          },
+          "anchor_actual_ref": {
+            "format": "uuid",
+            "title": "Anchor Actual Ref",
+            "type": "string"
+          },
+          "anchor_completed_at": {
+            "format": "date-time",
+            "title": "Anchor Completed At",
+            "type": "string"
+          },
+          "anchor_occurrence_ref": {
+            "format": "uuid",
+            "title": "Anchor Occurrence Ref",
+            "type": "string"
+          },
+          "created": {
+            "title": "Created",
+            "type": "boolean"
+          },
+          "expected_at": {
+            "format": "date-time",
+            "title": "Expected At",
+            "type": "string"
+          },
+          "occurrence_ref": {
+            "format": "uuid",
+            "title": "Occurrence Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "occurrence_ref",
+          "expected_at",
+          "anchor_occurrence_ref",
+          "anchor_actual_ref",
+          "anchor_actual_material_state_ref",
+          "anchor_completed_at",
+          "created"
+        ],
+        "title": "AdvancedOccurrenceResponse",
+        "type": "object"
+      },
+      "AdvancedRecurrenceResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "anchor_mode_code": {
+            "enum": ["previous_completion", "anchor_stream"],
+            "title": "Anchor Mode Code",
+            "type": "string"
+          },
+          "anchor_source_family": {
+            "anyOf": [
+              {
+                "enum": ["routine", "event"],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Anchor Source Family"
+          },
+          "anchor_source_native_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Anchor Source Native Ref"
+          },
+          "effective_from": {
+            "format": "date-time",
+            "title": "Effective From",
+            "type": "string"
+          },
+          "effective_until": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Until"
+          },
+          "elapsed_seconds": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Elapsed Seconds",
+            "type": "string"
+          },
+          "expected_occurrence_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Occurrence Count"
+          },
+          "material_state_ref": {
+            "format": "uuid",
+            "title": "Material State Ref",
+            "type": "string"
+          },
+          "owner_kind": {
+            "enum": ["routine", "event"],
+            "title": "Owner Kind",
+            "type": "string"
+          },
+          "range_kind": {
+            "enum": ["open", "until_boundary", "expected_count"],
+            "title": "Range Kind",
+            "type": "string"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "source_ref": {
+            "format": "uuid",
+            "title": "Source Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "owner_kind",
+          "source_ref",
+          "material_state_ref",
+          "range_kind",
+          "expected_occurrence_count",
+          "effective_from",
+          "effective_until",
+          "elapsed_seconds",
+          "anchor_mode_code",
+          "anchor_source_family",
+          "anchor_source_native_ref",
+          "replayed"
+        ],
+        "title": "AdvancedRecurrenceResponse",
+        "type": "object"
+      },
       "AppearanceLifeAreaRequest": {
         "additionalProperties": false,
         "properties": {
@@ -21863,6 +22202,297 @@
         "tags": ["temporal"]
       }
     },
+    "/api/v1/temporal/events/{source_ref}/advanced-recurrence": {
+      "get": {
+        "operationId": "temporal_get_event_advanced_recurrence",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "source_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Source Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdvancedRecurrenceResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Advanced Recurrence unavailable."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Event Advanced Recurrence",
+        "tags": ["temporal"]
+      },
+      "put": {
+        "operationId": "temporal_replace_event_advanced_recurrence",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "source_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Source Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdvancedElapsedRecurrenceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdvancedRecurrenceResponse"
+                }
+              }
+            },
+            "description": "Idempotent replay."
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdvancedRecurrenceResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request."
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Authentication required."
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Mutation rejected by security policy."
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Source or anchor stream unavailable."
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Operation reuse or stale current state."
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Advanced Recurrence payload rejected."
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unexpected server error."
+          }
+        },
+        "summary": "Replace Event Advanced Recurrence",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/events/{source_ref}/advanced-recurrence/checkpoint": {
+      "post": {
+        "operationId": "temporal_checkpoint_event_advanced_recurrence",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "source_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Source Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdvancedCheckpointRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdvancedCheckpointResponse"
+                }
+              }
+            },
+            "description": "Idempotent replay."
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdvancedCheckpointResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request."
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Authentication required."
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Mutation rejected by security policy."
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Source or anchor stream unavailable."
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Operation reuse or stale current state."
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Advanced Recurrence payload rejected."
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unexpected server error."
+          }
+        },
+        "summary": "Checkpoint Event Advanced Recurrence",
+        "tags": ["temporal"]
+      }
+    },
     "/api/v1/temporal/life-area-assignments": {
       "get": {
         "operationId": "temporal_list_life_area_assignments",
@@ -23986,6 +24616,297 @@
           }
         },
         "summary": "Detach Tag",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/routines/{source_ref}/advanced-recurrence": {
+      "get": {
+        "operationId": "temporal_get_routine_advanced_recurrence",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "source_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Source Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdvancedRecurrenceResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Advanced Recurrence unavailable."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Routine Advanced Recurrence",
+        "tags": ["temporal"]
+      },
+      "put": {
+        "operationId": "temporal_replace_routine_advanced_recurrence",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "source_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Source Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdvancedElapsedRecurrenceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdvancedRecurrenceResponse"
+                }
+              }
+            },
+            "description": "Idempotent replay."
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdvancedRecurrenceResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request."
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Authentication required."
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Mutation rejected by security policy."
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Source or anchor stream unavailable."
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Operation reuse or stale current state."
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Advanced Recurrence payload rejected."
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unexpected server error."
+          }
+        },
+        "summary": "Replace Routine Advanced Recurrence",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/routines/{source_ref}/advanced-recurrence/checkpoint": {
+      "post": {
+        "operationId": "temporal_checkpoint_routine_advanced_recurrence",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "source_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Source Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdvancedCheckpointRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdvancedCheckpointResponse"
+                }
+              }
+            },
+            "description": "Idempotent replay."
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdvancedCheckpointResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request."
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Authentication required."
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Mutation rejected by security policy."
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Source or anchor stream unavailable."
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Operation reuse or stale current state."
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Advanced Recurrence payload rejected."
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unexpected server error."
+          }
+        },
+        "summary": "Checkpoint Routine Advanced Recurrence",
         "tags": ["temporal"]
       }
     },

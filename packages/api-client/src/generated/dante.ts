@@ -9,6 +9,10 @@ import type {
   ActualRealizationCommand,
   ActualRealizationHistoryResponse,
   ActualRealizationResponse,
+  AdvancedCheckpointRequest,
+  AdvancedCheckpointResponse,
+  AdvancedElapsedRecurrenceRequest,
+  AdvancedRecurrenceResponse,
   AppearanceLifeAreaRequest,
   AppleAuthenticationBegunResponse,
   AppleNotificationRequest,
@@ -6435,6 +6439,298 @@ export const temporalDetachEventTag = async (
   } as temporalDetachEventTagResponse;
 };
 
+export type temporalGetEventAdvancedRecurrenceResponse200 = {
+  data: AdvancedRecurrenceResponse;
+  status: 200;
+};
+
+export type temporalGetEventAdvancedRecurrenceResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type temporalGetEventAdvancedRecurrenceResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetEventAdvancedRecurrenceResponseSuccess =
+  temporalGetEventAdvancedRecurrenceResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetEventAdvancedRecurrenceResponseError = (
+  | temporalGetEventAdvancedRecurrenceResponse404
+  | temporalGetEventAdvancedRecurrenceResponse422
+) & {
+  headers: Headers;
+};
+
+export type temporalGetEventAdvancedRecurrenceResponse =
+  | temporalGetEventAdvancedRecurrenceResponseSuccess
+  | temporalGetEventAdvancedRecurrenceResponseError;
+
+export const getTemporalGetEventAdvancedRecurrenceUrl = (sourceRef: string) => {
+  return `/api/v1/temporal/events/${sourceRef}/advanced-recurrence`;
+};
+
+/**
+ * @summary Get Event Advanced Recurrence
+ */
+export const temporalGetEventAdvancedRecurrence = async (
+  sourceRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetEventAdvancedRecurrenceResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetEventAdvancedRecurrenceUrl(sourceRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetEventAdvancedRecurrenceResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetEventAdvancedRecurrenceResponse;
+};
+
+export type temporalReplaceEventAdvancedRecurrenceResponse200 = {
+  data: AdvancedRecurrenceResponse;
+  status: 200;
+};
+
+export type temporalReplaceEventAdvancedRecurrenceResponse201 = {
+  data: AdvancedRecurrenceResponse;
+  status: 201;
+};
+
+export type temporalReplaceEventAdvancedRecurrenceResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type temporalReplaceEventAdvancedRecurrenceResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type temporalReplaceEventAdvancedRecurrenceResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type temporalReplaceEventAdvancedRecurrenceResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type temporalReplaceEventAdvancedRecurrenceResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type temporalReplaceEventAdvancedRecurrenceResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type temporalReplaceEventAdvancedRecurrenceResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type temporalReplaceEventAdvancedRecurrenceResponseSuccess = (
+  | temporalReplaceEventAdvancedRecurrenceResponse200
+  | temporalReplaceEventAdvancedRecurrenceResponse201
+) & {
+  headers: Headers;
+};
+export type temporalReplaceEventAdvancedRecurrenceResponseError = (
+  | temporalReplaceEventAdvancedRecurrenceResponse400
+  | temporalReplaceEventAdvancedRecurrenceResponse401
+  | temporalReplaceEventAdvancedRecurrenceResponse403
+  | temporalReplaceEventAdvancedRecurrenceResponse404
+  | temporalReplaceEventAdvancedRecurrenceResponse409
+  | temporalReplaceEventAdvancedRecurrenceResponse422
+  | temporalReplaceEventAdvancedRecurrenceResponse500
+) & {
+  headers: Headers;
+};
+
+export type temporalReplaceEventAdvancedRecurrenceResponse =
+  | temporalReplaceEventAdvancedRecurrenceResponseSuccess
+  | temporalReplaceEventAdvancedRecurrenceResponseError;
+
+export const getTemporalReplaceEventAdvancedRecurrenceUrl = (
+  sourceRef: string,
+) => {
+  return `/api/v1/temporal/events/${sourceRef}/advanced-recurrence`;
+};
+
+/**
+ * @summary Replace Event Advanced Recurrence
+ */
+export const temporalReplaceEventAdvancedRecurrence = async (
+  sourceRef: string,
+  advancedElapsedRecurrenceRequest: AdvancedElapsedRecurrenceRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalReplaceEventAdvancedRecurrenceResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalReplaceEventAdvancedRecurrenceUrl(sourceRef),
+    {
+      ...options,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(advancedElapsedRecurrenceRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalReplaceEventAdvancedRecurrenceResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalReplaceEventAdvancedRecurrenceResponse;
+};
+
+export type temporalCheckpointEventAdvancedRecurrenceResponse200 = {
+  data: AdvancedCheckpointResponse;
+  status: 200;
+};
+
+export type temporalCheckpointEventAdvancedRecurrenceResponse201 = {
+  data: AdvancedCheckpointResponse;
+  status: 201;
+};
+
+export type temporalCheckpointEventAdvancedRecurrenceResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type temporalCheckpointEventAdvancedRecurrenceResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type temporalCheckpointEventAdvancedRecurrenceResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type temporalCheckpointEventAdvancedRecurrenceResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type temporalCheckpointEventAdvancedRecurrenceResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type temporalCheckpointEventAdvancedRecurrenceResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type temporalCheckpointEventAdvancedRecurrenceResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type temporalCheckpointEventAdvancedRecurrenceResponseSuccess = (
+  | temporalCheckpointEventAdvancedRecurrenceResponse200
+  | temporalCheckpointEventAdvancedRecurrenceResponse201
+) & {
+  headers: Headers;
+};
+export type temporalCheckpointEventAdvancedRecurrenceResponseError = (
+  | temporalCheckpointEventAdvancedRecurrenceResponse400
+  | temporalCheckpointEventAdvancedRecurrenceResponse401
+  | temporalCheckpointEventAdvancedRecurrenceResponse403
+  | temporalCheckpointEventAdvancedRecurrenceResponse404
+  | temporalCheckpointEventAdvancedRecurrenceResponse409
+  | temporalCheckpointEventAdvancedRecurrenceResponse422
+  | temporalCheckpointEventAdvancedRecurrenceResponse500
+) & {
+  headers: Headers;
+};
+
+export type temporalCheckpointEventAdvancedRecurrenceResponse =
+  | temporalCheckpointEventAdvancedRecurrenceResponseSuccess
+  | temporalCheckpointEventAdvancedRecurrenceResponseError;
+
+export const getTemporalCheckpointEventAdvancedRecurrenceUrl = (
+  sourceRef: string,
+) => {
+  return `/api/v1/temporal/events/${sourceRef}/advanced-recurrence/checkpoint`;
+};
+
+/**
+ * @summary Checkpoint Event Advanced Recurrence
+ */
+export const temporalCheckpointEventAdvancedRecurrence = async (
+  sourceRef: string,
+  advancedCheckpointRequest: AdvancedCheckpointRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalCheckpointEventAdvancedRecurrenceResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalCheckpointEventAdvancedRecurrenceUrl(sourceRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(advancedCheckpointRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalCheckpointEventAdvancedRecurrenceResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalCheckpointEventAdvancedRecurrenceResponse;
+};
+
 export type temporalListLifeAreaAssignmentsResponse200 = {
   data: LifeAreaAssignmentResponse[];
   status: 200;
@@ -9299,6 +9595,300 @@ export const temporalDetachRoutineTag = async (
     status: res.status,
     headers: res.headers,
   } as temporalDetachRoutineTagResponse;
+};
+
+export type temporalGetRoutineAdvancedRecurrenceResponse200 = {
+  data: AdvancedRecurrenceResponse;
+  status: 200;
+};
+
+export type temporalGetRoutineAdvancedRecurrenceResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type temporalGetRoutineAdvancedRecurrenceResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetRoutineAdvancedRecurrenceResponseSuccess =
+  temporalGetRoutineAdvancedRecurrenceResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetRoutineAdvancedRecurrenceResponseError = (
+  | temporalGetRoutineAdvancedRecurrenceResponse404
+  | temporalGetRoutineAdvancedRecurrenceResponse422
+) & {
+  headers: Headers;
+};
+
+export type temporalGetRoutineAdvancedRecurrenceResponse =
+  | temporalGetRoutineAdvancedRecurrenceResponseSuccess
+  | temporalGetRoutineAdvancedRecurrenceResponseError;
+
+export const getTemporalGetRoutineAdvancedRecurrenceUrl = (
+  sourceRef: string,
+) => {
+  return `/api/v1/temporal/routines/${sourceRef}/advanced-recurrence`;
+};
+
+/**
+ * @summary Get Routine Advanced Recurrence
+ */
+export const temporalGetRoutineAdvancedRecurrence = async (
+  sourceRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetRoutineAdvancedRecurrenceResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetRoutineAdvancedRecurrenceUrl(sourceRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetRoutineAdvancedRecurrenceResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetRoutineAdvancedRecurrenceResponse;
+};
+
+export type temporalReplaceRoutineAdvancedRecurrenceResponse200 = {
+  data: AdvancedRecurrenceResponse;
+  status: 200;
+};
+
+export type temporalReplaceRoutineAdvancedRecurrenceResponse201 = {
+  data: AdvancedRecurrenceResponse;
+  status: 201;
+};
+
+export type temporalReplaceRoutineAdvancedRecurrenceResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type temporalReplaceRoutineAdvancedRecurrenceResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type temporalReplaceRoutineAdvancedRecurrenceResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type temporalReplaceRoutineAdvancedRecurrenceResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type temporalReplaceRoutineAdvancedRecurrenceResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type temporalReplaceRoutineAdvancedRecurrenceResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type temporalReplaceRoutineAdvancedRecurrenceResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type temporalReplaceRoutineAdvancedRecurrenceResponseSuccess = (
+  | temporalReplaceRoutineAdvancedRecurrenceResponse200
+  | temporalReplaceRoutineAdvancedRecurrenceResponse201
+) & {
+  headers: Headers;
+};
+export type temporalReplaceRoutineAdvancedRecurrenceResponseError = (
+  | temporalReplaceRoutineAdvancedRecurrenceResponse400
+  | temporalReplaceRoutineAdvancedRecurrenceResponse401
+  | temporalReplaceRoutineAdvancedRecurrenceResponse403
+  | temporalReplaceRoutineAdvancedRecurrenceResponse404
+  | temporalReplaceRoutineAdvancedRecurrenceResponse409
+  | temporalReplaceRoutineAdvancedRecurrenceResponse422
+  | temporalReplaceRoutineAdvancedRecurrenceResponse500
+) & {
+  headers: Headers;
+};
+
+export type temporalReplaceRoutineAdvancedRecurrenceResponse =
+  | temporalReplaceRoutineAdvancedRecurrenceResponseSuccess
+  | temporalReplaceRoutineAdvancedRecurrenceResponseError;
+
+export const getTemporalReplaceRoutineAdvancedRecurrenceUrl = (
+  sourceRef: string,
+) => {
+  return `/api/v1/temporal/routines/${sourceRef}/advanced-recurrence`;
+};
+
+/**
+ * @summary Replace Routine Advanced Recurrence
+ */
+export const temporalReplaceRoutineAdvancedRecurrence = async (
+  sourceRef: string,
+  advancedElapsedRecurrenceRequest: AdvancedElapsedRecurrenceRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalReplaceRoutineAdvancedRecurrenceResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalReplaceRoutineAdvancedRecurrenceUrl(sourceRef),
+    {
+      ...options,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(advancedElapsedRecurrenceRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalReplaceRoutineAdvancedRecurrenceResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalReplaceRoutineAdvancedRecurrenceResponse;
+};
+
+export type temporalCheckpointRoutineAdvancedRecurrenceResponse200 = {
+  data: AdvancedCheckpointResponse;
+  status: 200;
+};
+
+export type temporalCheckpointRoutineAdvancedRecurrenceResponse201 = {
+  data: AdvancedCheckpointResponse;
+  status: 201;
+};
+
+export type temporalCheckpointRoutineAdvancedRecurrenceResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type temporalCheckpointRoutineAdvancedRecurrenceResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type temporalCheckpointRoutineAdvancedRecurrenceResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type temporalCheckpointRoutineAdvancedRecurrenceResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type temporalCheckpointRoutineAdvancedRecurrenceResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type temporalCheckpointRoutineAdvancedRecurrenceResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type temporalCheckpointRoutineAdvancedRecurrenceResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type temporalCheckpointRoutineAdvancedRecurrenceResponseSuccess = (
+  | temporalCheckpointRoutineAdvancedRecurrenceResponse200
+  | temporalCheckpointRoutineAdvancedRecurrenceResponse201
+) & {
+  headers: Headers;
+};
+export type temporalCheckpointRoutineAdvancedRecurrenceResponseError = (
+  | temporalCheckpointRoutineAdvancedRecurrenceResponse400
+  | temporalCheckpointRoutineAdvancedRecurrenceResponse401
+  | temporalCheckpointRoutineAdvancedRecurrenceResponse403
+  | temporalCheckpointRoutineAdvancedRecurrenceResponse404
+  | temporalCheckpointRoutineAdvancedRecurrenceResponse409
+  | temporalCheckpointRoutineAdvancedRecurrenceResponse422
+  | temporalCheckpointRoutineAdvancedRecurrenceResponse500
+) & {
+  headers: Headers;
+};
+
+export type temporalCheckpointRoutineAdvancedRecurrenceResponse =
+  | temporalCheckpointRoutineAdvancedRecurrenceResponseSuccess
+  | temporalCheckpointRoutineAdvancedRecurrenceResponseError;
+
+export const getTemporalCheckpointRoutineAdvancedRecurrenceUrl = (
+  sourceRef: string,
+) => {
+  return `/api/v1/temporal/routines/${sourceRef}/advanced-recurrence/checkpoint`;
+};
+
+/**
+ * @summary Checkpoint Routine Advanced Recurrence
+ */
+export const temporalCheckpointRoutineAdvancedRecurrence = async (
+  sourceRef: string,
+  advancedCheckpointRequest: AdvancedCheckpointRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalCheckpointRoutineAdvancedRecurrenceResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalCheckpointRoutineAdvancedRecurrenceUrl(sourceRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(advancedCheckpointRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalCheckpointRoutineAdvancedRecurrenceResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalCheckpointRoutineAdvancedRecurrenceResponse;
 };
 
 export type reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchResponse200 =
