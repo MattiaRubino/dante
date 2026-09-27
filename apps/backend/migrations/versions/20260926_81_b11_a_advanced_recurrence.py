@@ -584,20 +584,20 @@ def upgrade() -> None:
     for prefix in ("routine", "event"):
         table = f"{prefix}_recurrence_elapsed_state"
         op.drop_constraint(
-            f"ck_{table}_anchor_mode", table, schema=_SCHEMA, type_="check"
+            op.f(f"ck_{table}_anchor_mode"), table, schema=_SCHEMA, type_="check"
         )
         op.drop_constraint(
-            f"ck_{table}_anchor_at", table, schema=_SCHEMA, type_="check"
+            op.f(f"ck_{table}_anchor_at"), table, schema=_SCHEMA, type_="check"
         )
         op.alter_column(table, "anchor_at", schema=_SCHEMA, nullable=True)
         op.create_check_constraint(
-            f"ck_{table}_anchor_mode",
+            op.f(f"ck_{table}_anchor_mode"),
             table,
             "anchor_mode_code IN ('fixed_anchor','previous_expected','previous_completion','anchor_stream')",
             schema=_SCHEMA,
         )
         op.create_check_constraint(
-            f"ck_{table}_anchor_at",
+            op.f(f"ck_{table}_anchor_at"),
             table,
             "((anchor_mode_code IN ('fixed_anchor','previous_expected') AND anchor_at IS NOT NULL AND isfinite(anchor_at)) OR "
             "(anchor_mode_code IN ('previous_completion','anchor_stream') AND anchor_at IS NULL))",
