@@ -9,8 +9,8 @@
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
 - **Current persistence source frontier:** `20260927_86` (B11-C candidate)
 - **Measured whole-catalog topology:** B11-C `_86` / `184|5|144|100|370|323|480|0|0|0`
-- **Completed functional frontier:** B10 ✅ CLOSED; B11-A/B/C ✅ CLOSED / PROVEN
-- **Current implementation cursor:** B11-D whole-block integration gate; real-app after D
+- **Completed functional frontier:** B10 ✅ CLOSED; B11-A/B/C/D ✅ CLOSED / PROVEN
+- **Current implementation cursor:** B11 whole-block real-app acceptance after D
 - **CI:** not authorized; local tests are run by the user
 
 ---
@@ -90,7 +90,7 @@ B11 Advanced Recurrence / Conditional / Reminder 🟨 IN PROGRESS
   B11-A advanced elapsed Recurrence               ✅ CLOSED / PROVEN (user-run local gates)
   B11-B actual_realization Condition              ✅ CLOSED / PROVEN
   B11-C Schedule-relative personal Reminder       ✅ CLOSED / PROVEN
-  B11-D whole-block integration gate              🟨 IN PROGRESS
+  B11-D whole-block integration gate              ✅ CLOSED / PROVEN
 B13 Work Structure / Decomposition / Dependencies⬜
 B12 Replanning / Conflict / Solver               ⬜
 B14 Temporal Create Completeness Gate             ⬜
@@ -271,11 +271,11 @@ The editable Create reminder intent must leave B11 either canonically supported,
 
 B11-C has the approved narrow Schedule-relative self Reminder scope at `timeline-temporal-operational-b11-c-scope-2026-09-27.md`. Commit `9878b441` publishes forward-only `_86`, guarded self functions, mapping, API, OpenAPI inventory and focused tests. Commits `9d806355` and `e9a0f760` add existing-Schedule controls and the Create two-command partial retry path. Generated client `d0378e17` and focused local backend 5/web 16 gate passed; the `_86` topology probe passed. The exact catalog tests passed after CHECK-name repair `a332a592` and registration of the five existing Outcome Reconciliation mappings `3fe447af`. B11-C is closed; see `timeline-temporal-operational-b11-c-closure-2026-09-27.md`. The integrated real-app test occurs before whole-B11 closure.
 
-B11-D now verifies A/B/C together through `timeline-temporal-operational-b11-d-scope-2026-09-27.md`. Its local automated gate precedes the integrated real-app test. The latter remains the final whole-B11 acceptance gate.
+B11-D verifies A/B/C together through `timeline-temporal-operational-b11-d-scope-2026-09-27.md`; closure evidence is `timeline-temporal-operational-b11-d-closure-2026-09-27.md`. Its local automated gate precedes the integrated real-app test. The latter remains the final whole-B11 acceptance gate.
 
 The isolated integrated PostgreSQL test passed locally at `82f763af` (`1 passed in 7.20s`). B11-D also wires typed Routine Recurrence through Timeline Occurrences and keeps Occurrence Actual/Condition separate; Reminder uncertain-write retry has dedicated web coverage. The complete local commands and reported results are in `timeline-temporal-operational-b11-d-gate-2026-09-27.md`.
 
-The full local gate then reported OpenAPI 7, PostgreSQL 14, generated check 364, client/web typechecks, and web 24 passed. Ruff's only failure was the B11-D test import order, fixed at `c685d519`; repeat that one lint command before D closure. Whole-B11 real-app acceptance still follows D.
+The full local gate then reported OpenAPI 7, PostgreSQL 14, generated check 364, client/web typechecks, and web 24 passed. Ruff's only initial failure was the B11-D test import order, fixed at `c685d519`; the user pulled `37ce469a` and reported Ruff passing. B11-D is CLOSED / PROVEN. Whole-B11 real-app acceptance is the current cursor.
 
 ---
 

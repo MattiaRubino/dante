@@ -2,9 +2,10 @@
 
 - **Date:** 2026-09-27
 - **Branch:** `feature/timeline-temporal-operational`
-- **Status:** IN PROGRESS
+- **Status:** CLOSED / PROVEN — user-run local automated gate
 - **Entering frontier:** B11-A/B/C CLOSED / PROVEN; Alembic `20260927_86`
 - **Real-app acceptance:** reserved for final B11 closure after B11-D
+- **Closure evidence:** `timeline-temporal-operational-b11-d-closure-2026-09-27.md`
 
 ## Purpose
 

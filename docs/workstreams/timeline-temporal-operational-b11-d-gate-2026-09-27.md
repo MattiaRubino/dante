@@ -2,7 +2,7 @@
 
 - **Date:** 2026-09-27
 - **Branch:** `feature/timeline-temporal-operational`
-- **Status:** FUNCTIONAL GATE PASSED LOCALLY; Ruff import-order rerun pending
+- **Status:** PASSED LOCALLY — B11-D CLOSED / PROVEN
 - **Scope:** `timeline-temporal-operational-b11-d-scope-2026-09-27.md`
 - **Real-app walkthrough:** after this gate, before whole-B11 closure
 
@@ -48,7 +48,7 @@ pnpm --filter @dante/web exec vitest run \
   src/features/temporal-create/application/temporal-create-runtime-boundary.test.ts
 ```
 
-Record the actual local results before marking B11-D closed. Only then run the final integrated real-app walkthrough and decide whole-B11 closure.
+The reported local results below close B11-D. Run the final integrated real-app walkthrough before deciding whole-B11 closure.
 
 ## Reported local results
 
@@ -61,7 +61,7 @@ Generated sources                            PASS; 364 files deterministic/curre
 API client typecheck                          PASS
 Web typecheck                                 PASS
 Web focused gate                             6 files, 24 passed
-Ruff B11-D test                               FAIL I001 (import order only)
+Ruff B11-D test                               PASS after I001 import-order repair
 ```
 
-The sole Ruff finding moved the `tests.integration..._seed_self` import into the third-party group; that exact fix was published at `c685d519`. Repeat only Ruff against that commit. The preceding PostgreSQL/OpenAPI/web/client results do not need to be rerun for an import-order-only edit. The `react-i18next` warning was non-failing.
+The sole initial Ruff finding was I001 import order in the B11-D test. Its repair was published at `c685d519`; the user pulled branch head `37ce469a` and reported `All checks passed!` for the exact Ruff command on 2026-09-27. The preceding PostgreSQL/OpenAPI/web/client results were not rerun for that import-order-only edit. The `react-i18next` warning was non-failing. Closure evidence: `timeline-temporal-operational-b11-d-closure-2026-09-27.md`.
