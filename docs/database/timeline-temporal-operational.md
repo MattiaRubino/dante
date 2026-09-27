@@ -1,10 +1,11 @@
 # Timeline / Temporal-Operational — Candidate Database Overlay
 
-- **Status:** CURRENT CANDIDATE DATABASE AUTHORITY — B10-D `_80` locally proven
-- **Reconciled:** 2026-09-26
+- **Status:** CURRENT CANDIDATE DATABASE OVERLAY — B11-B `_85` source head; catalog reconciliation open
+- **Reconciled:** 2026-09-27
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
-- **Candidate source head / proven persistence frontier:** `20260926_80`
+- **Candidate migration source head:** `20260927_85`
+- **Focused local proof frontier:** B11-B `_85` (not a whole-catalog count)
 - **Last explicitly recorded whole-topology count:** B10-C `_79` / `167|5|123|93|329|279|446`
 - **Whole-DB SoR:** `README.md`
 - **Machine-readable authority:** `dictionary/`
@@ -57,23 +58,27 @@ Published migrations are immutable. Any persistence correction is forward-only.
 20260925_79 B10-C Confirmation
     ↓
 20260926_80 B10-D Reconciliation
+    ↓
+20260926_81 B11-A advanced elapsed Recurrence
+    ↓
+20260927_82 → 20260927_85 B11-B conditional temporal intent/evaluation and forward-only read/qualification repairs
 ```
 
 ## 3. Proven frontier and topology discipline
 
-B10-D functional persistence frontier is:
+B11-B focused functional persistence frontier is:
 
 ```text
-Alembic 20260926_80
+Alembic 20260927_85
 ```
 
-The B10-D closure proof did not include a newly recorded whole-database topology tuple. Therefore this overlay does **not** invent one. The last explicitly recorded whole-topology tuple remains the B10-C `_79` value:
+Neither the B10-D nor B11-A/B closure proof recorded a newly measured whole-database topology tuple. Therefore this overlay does **not** invent one. The last explicitly recorded whole-topology tuple remains the B10-C `_79` value:
 
 ```text
 167|5|123|93|329|279|446
 ```
 
-When a later catalog/topology gate records the `_80` tuple, update this document from evidence rather than arithmetic inference.
+The Dictionary and catalog-test revision still point at `_79`; reconcile all real objects and ACLs through `_85` (and the following B11-C migration) before claiming whole-catalog agreement. Update this document from measured evidence rather than arithmetic inference.
 
 ## 4. Permanent persistence boundaries
 
@@ -308,10 +313,14 @@ backend B10-D/B10-C/OpenAPI inventory 6/6 PASS in 3.07s
 
 Closure evidence: `../workstreams/timeline-temporal-operational-b10-d-closure-2026-09-26.md`.
 
-## 11. Current database cursor
+## 11. B11-A Advanced Recurrence — focused local proof
 
-B10-D `_80` is locally proven and closed. **B10-E is integration/acceptance**, not a planned new persistence family.
+Revision `_81` extends existing Routine/Event elapsed Recurrence with completion-relative Actual anchors and anchor-stream-relative provenance. It adds typed anchor state/operation relations and guarded generation functions; it does not create a second Recurrence owner, a fake Activity, or an implicit Schedule/Actual. The user reported the focused PostgreSQL/OpenAPI/web/generated-client gates passing. The whole-catalog Dictionary proof was not recorded at `_81`.
 
-Do not add a generic Resolution, Decision, Verification or Provenance database owner merely to complete B10-E.
+## 12. B11-B Conditional Temporal Behavior — focused local proof
 
-If the integrated B10-E proof exposes a real persistence defect, repair it with a new forward-only migration and re-run the affected database/catalog gates.
+Revisions `_82`–`_85` add `conditional_temporal_intent`, `conditional_temporal_evaluation`, `conditional_temporal_operation`, and guarded create/get/find/evaluate functions. `_83`–`_85` are forward-only corrections to published routines, not new Condition identities. Evaluation reads accepted-current Actual and pins the exact Actual MaterialState when known; `allow` never executes an effect. The user-run focused PostgreSQL (4), OpenAPI (6), web (3), generated check (361 files) and client/web typechecks passed; see `../workstreams/timeline-temporal-operational-b11-b-proof-2026-09-27.md`.
+
+## 13. Current database cursor
+
+B11-C is the approved next forward-only persistence step after `_85`. Reconcile the Dictionary and current catalog with the actual B10-D/B11-A/B/C objects and their PostgreSQL ACLs. Do not promote the `_79` topology to a later revision without a direct catalog measurement.

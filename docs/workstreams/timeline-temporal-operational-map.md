@@ -1,15 +1,16 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
-- **Status:** CURRENT LIVE STATE — reconciled 2026-09-26
+- **Status:** CURRENT LIVE STATE — reconciled 2026-09-27
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Continuation handoff:** `docs/workstreams/timeline-temporal-operational-handoff.md`
 - **B10-D closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-d-closure-2026-09-26.md`
 - **B10-E closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-e-closure-2026-09-26.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Last proven persistence frontier:** `20260926_80`
-- **Completed functional frontier:** B10 ✅ CLOSED 2026-09-26
-- **Current implementation cursor:** B11 Advanced Recurrence / Conditional / Reminder
+- **Current persistence source frontier:** `20260927_85` (B11-B)
+- **Last measured whole-catalog topology:** B10-C `_79` / `167|5|123|93|329|279|446`
+- **Completed functional frontier:** B10 ✅ CLOSED; B11-A ✅ CLOSED / PROVEN
+- **Current implementation cursor:** B11-C Reminder; B11-B catalog/documentation reconciliation open
 - **CI:** not authorized; local tests are run by the user
 
 ---
@@ -85,7 +86,10 @@ B10-E timeline-temporal-operational-b10-e-closure-2026-09-26.md
 # 3. Active execution order
 
 ```text
-B11 Advanced Recurrence / Conditional / Reminder 🟨 NEXT
+B11 Advanced Recurrence / Conditional / Reminder 🟨 IN PROGRESS
+  B11-A advanced elapsed Recurrence               ✅ CLOSED / PROVEN (user-run local gates)
+  B11-B actual_realization Condition              🟨 LOCAL AUTOMATED GATE PROVEN / catalog open
+  B11-C Schedule-relative personal Reminder       🟨 SCOPE APPROVED / implementation open
 B13 Work Structure / Decomposition / Dependencies⬜
 B12 Replanning / Conflict / Solver               ⬜
 B14 Temporal Create Completeness Gate             ⬜
@@ -244,7 +248,7 @@ B10   CLOSED
 
 # 5. Current gate — B11
 
-B11 is now active.
+B11 is active. B11-A completion-relative and anchor-stream-relative recurrence uses `_81` and is locally proven. B11-B bounded `actual_realization` Condition uses `_82`–`_85`; its focused local gate passed at generated client `e79f6870` (PostgreSQL 4, OpenAPI 6, web 3, deterministic generation 361 files, client/web typechecks). The evidence is in `timeline-temporal-operational-b11-b-proof-2026-09-27.md`. Its Dictionary and whole-catalog gate are still open, so do not call the full B11-B vertical closed yet.
 
 Scope theme:
 
@@ -264,7 +268,7 @@ reminder intent != silently ignored editable Create field
 
 The editable Create reminder intent must leave B11 either canonically supported, truthfully handed off, or hidden until supported.
 
-Before implementation, re-read the relevant Domain / Logical / Physical / Database authority and inspect the current reminder/conditional Create surface.
+B11-C has the approved narrow Schedule-relative self Reminder scope at `timeline-temporal-operational-b11-c-scope-2026-09-27.md`. The next code step is forward-only `_86` persistence and guarded self capabilities, followed by API/generated client/web and the Dictionary/catalog reconciliation. The integrated real-app test occurs before whole-B11 closure.
 
 ---
 

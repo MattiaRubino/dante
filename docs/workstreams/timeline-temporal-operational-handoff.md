@@ -1,7 +1,7 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B10 CLOSED — B11 NEXT
-- **Reconciled:** 2026-09-26
+- **Status:** B11 IN PROGRESS — B11-C SCOPE APPROVED; B11-B CATALOG RECONCILIATION OPEN
+- **Reconciled:** 2026-09-27
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Live execution ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
@@ -10,7 +10,8 @@
 - **B10-D closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-d-closure-2026-09-26.md`
 - **B10-E closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-e-closure-2026-09-26.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Last proven persistence frontier:** B10-D / Alembic `20260926_80`
+- **Current migration source head:** B11-B / Alembic `20260927_85`
+- **Last measured whole-catalog topology:** B10-C `_79` / `167|5|123|93|329|279|446`
 - **B10-D generated client:** `cebfb557196d3fc0f412262a1d12feae9291b875`
 - **B10 real-app acceptance:** USER-REPORTED PASS 2026-09-26
 - **CI:** no CI/GitHub Actions unless explicitly authorized; user runs local tests
@@ -31,7 +32,10 @@ B10     ✅ CLOSED 2026-09-26
   B10-C ✅ CLOSED / PROVEN 2026-09-26
   B10-D ✅ CLOSED / PROVEN 2026-09-26
   B10-E ✅ CLOSED / USER-REPORTED ACCEPTANCE 2026-09-26
-B11     🟨 NEXT — Advanced Recurrence / Conditional / Reminder
+B11     🟨 IN PROGRESS — Advanced Recurrence / Conditional / Reminder
+  B11-A ✅ CLOSED / PROVEN — `_81`, local gates reported passed
+  B11-B 🟨 FOCUSED AUTOMATED GATE PROVEN — `_82`–`_85`; Dictionary/catalog still open
+  B11-C 🟨 SCOPE APPROVED — personal Schedule-relative Reminder
 B13     ⬜ NOT STARTED
 B12     ⬜ NOT STARTED
 B14     ⬜ NOT STARTED
@@ -222,9 +226,11 @@ The B10-E-specific automated tests were added to the repository but were not sep
 
 ---
 
-# 4. Exact next step — B11
+# 4. Exact next step — B11-C and B11-B catalog reconciliation
 
-B11 is now the only active implementation cursor.
+B11-A and the B11-B technical gate have been implemented. B11-B's generated client at `e79f6870` is locally verified (361 deterministic generated files; client/web typecheck; web 3, OpenAPI 6, PostgreSQL 4 passed). The scope and evidence are `timeline-temporal-operational-b11-b-scope-2026-09-27.md` and `timeline-temporal-operational-b11-b-proof-2026-09-27.md`.
+
+The Dictionary scope and `test_current_catalog.py` still claim B10-C `_79` although the migration source head is `_85`. Do not label B11-B fully closed or invent the whole-topology count. Reconcile Dictionary/DB reference from the live catalog and perform the local catalog gate. The candidate overlay must describe the `_81`–`_85` evolution truthfully.
 
 Theme:
 
@@ -242,7 +248,7 @@ reminder intent != hidden ignored Create field
 conditional behavior != implicit mutation
 ```
 
-Before implementation, re-read the B11-relevant Domain / Logical / Physical / Database authority and inspect the current reminder/conditional Create surface. The editable reminder intent must leave B11 either canonically supported, truthfully handed off, or hidden until supported.
+B11-C scope is `timeline-temporal-operational-b11-c-scope-2026-09-27.md`: one personal Reminder per self Person/Schedule, append-only configuration state, exact-start admissibility, pending/due projection, no delivery claim. Continue with forward-only `_86`, SQLAlchemy, guarded PostgreSQL capabilities, API/OpenAPI, generated client, Create/Timeline integration, Dictionary and local gates. The whole-B11 real-app walkthrough occurs before B11 closure.
 
 Do not reopen B10 semantics unless B11 uncovers concrete contradictory evidence.
 

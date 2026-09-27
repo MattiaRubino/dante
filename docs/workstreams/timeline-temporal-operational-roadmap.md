@@ -1,11 +1,12 @@
 # Timeline / Temporal-Operational Vertical — Implementation Roadmap
 
-- **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-26
+- **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-27
 - **Branch/workstream:** `feature/timeline-temporal-operational`
 - **Vertical boundary:** Home `+` creation/configuration → canonical temporal truth → Timeline projection/actions → bounded lifecycle completion
-- **Completed functional frontier:** B10 ✅ CLOSED 2026-09-26
-- **Current block:** B11 Advanced Recurrence / Conditional / Reminder
-- **Last proven persistence frontier:** B10-D / Alembic `20260926_80`
+- **Completed functional frontier:** B10 ✅ CLOSED; B11-A ✅ CLOSED / PROVEN
+- **Current block:** B11-C Schedule-relative personal Reminder (B11-B catalog reconciliation open)
+- **Current persistence source frontier:** B11-B / Alembic `20260927_85`
+- **Last measured whole-catalog topology:** B10-C / `20260925_79` / `167|5|123|93|329|279|446`
 - **B10-D closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-d-closure-2026-09-26.md`
 - **B10-E closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-e-closure-2026-09-26.md`
 - **Deferred block:** B07 UI/UX Consolidation v1 — execute only after B14
@@ -90,7 +91,10 @@ B10 Actual / Outcome / Confirmation / Resolution ✅ CLOSED 2026-09-26
   B10-D Reconciliation / resolution workflow      ✅ CLOSED / PROVEN 2026-09-26
   B10-E Final integration + acceptance            ✅ CLOSED / USER-REPORTED ACCEPTANCE 2026-09-26
 
-B11 Advanced Recurrence / Conditional / Reminder 🟨 NEXT
+B11 Advanced Recurrence / Conditional / Reminder 🟨 IN PROGRESS
+  B11-A Advanced Recurrence                    ✅ CLOSED / PROVEN (user-run local gates)
+  B11-B Conditional Temporal Behavior         🟨 AUTOMATED GATE PROVEN / catalog reconciliation open
+  B11-C Schedule-relative personal Reminder   🟨 SCOPE APPROVED / implementation open
 B13 Work Structure / Decomposition / Dependencies⬜
 B12 Replanning / Conflict / Solver               ⬜
 B14 Temporal Create Completeness Gate             ⬜
@@ -290,7 +294,7 @@ Whole B10 is now CLOSED. Advance directly to B11.
 
 ---
 
-# 4. B11 — Advanced Recurrence / Conditional / Reminder — NEXT
+# 4. B11 — Advanced Recurrence / Conditional / Reminder — IN PROGRESS
 
 B11 extends recurrence and conditional/reminder behavior without RRULE-as-ontology, fake Activity materialization or an unjustified universal Reminder owner.
 
@@ -302,7 +306,11 @@ truthfully handed off
 or hidden until supported
 ```
 
-Before implementation, reconcile the current B06 recurrence baseline with the relevant Domain / Logical / Physical / Database authority and inspect existing reminder/conditional UI/API intent.
+B11-A extends the B06 elapsed recurrence baseline with completion-relative and anchor-stream-relative provenance at `_81`. The user reported the focused PostgreSQL, OpenAPI, generated-client and web gates passing; generated client checkpoint `6d4c6188`. B11-B implements the bounded `actual_realization` condition at `_82`–`_85`. Its local automated gate passed (PostgreSQL 4, OpenAPI 6, web 3, generated check 361 files, both typechecks) and its generated client is at `e79f6870`; see `timeline-temporal-operational-b11-b-proof-2026-09-27.md`.
+
+The Dictionary and whole-catalog proof still declare `_79`, and the candidate DB overlay previously stopped at `_80`. Reconcile those against PostgreSQL before declaring B11-B vertically closed. Do not infer a topology tuple from migration arithmetic.
+
+B11-C is approved as a narrow self-personal Reminder configuration on an accepted Schedule with an exact start instant; see `timeline-temporal-operational-b11-c-scope-2026-09-27.md`. Delivery and generic automation remain excluded.
 
 ---
 
