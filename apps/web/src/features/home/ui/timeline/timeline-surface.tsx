@@ -1397,6 +1397,13 @@ export function TimelineSurface({
           }
           return null;
         })()}
+        reminderScheduleRef={(() => {
+          const basis = detailState?.event.canonicalBasis;
+          if (basis?.placement.kind === 'absolute' || basis?.placement.kind === 'named-zone-local') {
+            return basis.scheduleRef;
+          }
+          return null;
+        })()}
         onUnschedule={() => {
           const basis = detailState?.event.canonicalBasis;
           if (basis !== undefined) {

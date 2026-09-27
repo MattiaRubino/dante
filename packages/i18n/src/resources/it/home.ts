@@ -486,6 +486,18 @@ export const home = {
       save: 'Conferma',
     },
     detail: {
+      reminder: {
+        title: 'Promemoria personale',
+        loading: 'Caricamento promemoria…',
+        retryRead: 'Riprova caricamento',
+        enabled: 'Attivo',
+        lead: 'Minuti prima dell’inizio',
+        save: 'Salva promemoria',
+        pending: 'In attesa',
+        due: 'Da ricordare',
+        unavailable: 'Non disponibile',
+        error: 'Promemoria non disponibile. Riprova il comando.',
+      },
       subitems: '{{count}} sotto-attività collegate',
       aiNote:
         'DANTE può usare questo contesto per proporre modifiche, mentre le modifiche operative restano confermabili.',

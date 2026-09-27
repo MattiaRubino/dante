@@ -477,6 +477,18 @@ export const home = {
       save: 'Confirm',
     },
     detail: {
+      reminder: {
+        title: 'Personal reminder',
+        loading: 'Loading reminder…',
+        retryRead: 'Retry loading',
+        enabled: 'Enabled',
+        lead: 'Minutes before start',
+        save: 'Save reminder',
+        pending: 'Pending',
+        due: 'Due',
+        unavailable: 'Unavailable',
+        error: 'Reminder unavailable. Retry this command.',
+      },
       subitems: '{{count}} linked subitems',
       aiNote:
         'DANTE can use this context to propose changes, while operational changes remain confirmable.',

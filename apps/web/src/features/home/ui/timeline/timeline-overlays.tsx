@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 
 import { ResponsibilityControls } from '../../../temporal/responsibility-controls';
 import { SessionSubjectControls } from '../../../temporal/session-subject-controls';
+import { ScheduleReminderControls } from '../../../temporal/schedule-reminder-controls';
 
 import {
   buildCalendarMonthGrid,
@@ -814,6 +815,7 @@ type EventDetailDialogProps = Readonly<{
   responsibilitySubject?:
     | Readonly<{ kind: 'activity' | 'event'; ref: string }>
     | null;
+  reminderScheduleRef?: string | null;
   onUnschedule: () => void;
   onClose: () => void;
 }>;
@@ -825,6 +827,7 @@ export function EventDetailDialog({
   pending,
   sessionSubject = null,
   responsibilitySubject = null,
+  reminderScheduleRef = null,
   onUnschedule,
   onClose,
 }: EventDetailDialogProps) {
@@ -908,6 +911,9 @@ export function EventDetailDialog({
         <div className="timeline-event-ai-note">
           {t(($) => $.common.home.timeline.detail.aiNote)}
         </div>
+        {reminderScheduleRef === null ? null : (
+          <ScheduleReminderControls key={reminderScheduleRef} scheduleRef={reminderScheduleRef} />
+        )}
         <div className="timeline-event-modal__actions">
           {responsibilitySubject === null ? null : (
             <ResponsibilityControls
