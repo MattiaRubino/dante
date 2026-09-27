@@ -16,6 +16,10 @@ The local automated gate exercises one self-owned Routine and its seed Occurrenc
 
 The gate also runs the B11-A anchor-stream and B11-B/C focused regressions, exact `_86` catalog tests, relevant API/OpenAPI and web tests, deterministic generated-client check, and typechecks. The user executes local tests on `~/projects/dante`; no GitHub Actions or CI are used.
 
+The product integration must route a selected Occurrence's Actual/Condition controls to the Occurrence while routing Advanced Recurrence controls to its typed Routine/Event source. Switching subjects must not retain a prior subject's control state. An existing exact Schedule's Reminder control must retry an uncertain configuration with the same operation id and expected MaterialState; a different intent uses a new operation.
+
+The complete executable gate is recorded in `timeline-temporal-operational-b11-d-gate-2026-09-27.md`.
+
 ## Closure boundary
 
 B11-D is closed only after its integrated tests and the focused regressions pass locally and the results are recorded in roadmap/map/handoff. The final real-app walkthrough across A/B/C occurs **after** B11-D and immediately before closing the parent B11 block. No published Alembic revision or generated client is edited manually.

@@ -253,6 +253,8 @@ B11-C scope is `timeline-temporal-operational-b11-c-scope-2026-09-27.md`: one pe
 
 The active cursor is B11-D, scoped in `timeline-temporal-operational-b11-d-scope-2026-09-27.md`: integrated A/B/C automated proof on one canonical chain plus focused regressions. Run this local gate before asking for the final real-app walkthrough. Only that walkthrough can close the parent B11 block.
 
+The user reported the isolated `test_b11_d_whole_block.py` passing (`1 passed in 7.20s`) after `82f763af`. Web integration then connected typed Routine/Event Recurrence to its selected Occurrence source while leaving Actual/Condition on the Occurrence, plus keyed remount on subject change (`a89d13e6`). Reminder control retry coverage is in the complete B11-D gate. Run the full command set in `timeline-temporal-operational-b11-d-gate-2026-09-27.md` before closing B11-D. The real-app walkthrough is explicitly after D.
+
 Do not reopen B10 semantics unless B11 uncovers concrete contradictory evidence.
 
 ---
