@@ -3,8 +3,8 @@
 - **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-27
 - **Branch/workstream:** `feature/timeline-temporal-operational`
 - **Vertical boundary:** Home `+` creation/configuration → canonical temporal truth → Timeline projection/actions → bounded lifecycle completion
-- **Completed functional frontier:** B10 ✅ CLOSED; B11-A ✅ CLOSED / PROVEN
-- **Current block:** B11 integrated real-app acceptance (B11-A/B/C technically closed)
+- **Completed functional frontier:** B10 ✅ CLOSED; B11-A/B/C ✅ CLOSED / PROVEN
+- **Current block:** B11-D whole-block integration gate; real-app acceptance follows D
 - **Current persistence source frontier:** B11-C / Alembic `20260927_86` (candidate)
 - **Measured whole-catalog topology:** B11-C / `20260927_86` / `184|5|144|100|370|323|480|0|0|0`
 - **B10-D closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-d-closure-2026-09-26.md`
@@ -95,6 +95,7 @@ B11 Advanced Recurrence / Conditional / Reminder 🟨 IN PROGRESS
   B11-A Advanced Recurrence                    ✅ CLOSED / PROVEN (user-run local gates)
   B11-B Conditional Temporal Behavior         ✅ CLOSED / PROVEN (focused and `_86` catalog gates)
   B11-C Schedule-relative personal Reminder   ✅ CLOSED / PROVEN (focused and `_86` catalog gates)
+  B11-D Whole-block integration gate          🟨 IN PROGRESS (automated; real-app after D)
 B13 Work Structure / Decomposition / Dependencies⬜
 B12 Replanning / Conflict / Solver               ⬜
 B14 Temporal Create Completeness Gate             ⬜
@@ -311,6 +312,8 @@ B11-A extends the B06 elapsed recurrence baseline with completion-relative and a
 The local PostgreSQL probe measured `_86` at `184|5|144|100|370|323|480|0|0|0`. Dictionary entries and catalog tests target `_86`. The first exact gate passed 8 tests and failed 2 on CHECK names; after their repair, both tests exposed five unregistered B10-D mappings. Commit `3fe447af` registered them, and the user-run rerun passed both exact tests. B11-B is `CLOSED / PROVEN`; see its proof checkpoint and the B11-C closure record.
 
 B11-C is a narrow self-personal Reminder configuration on an accepted Schedule with an exact start instant; see `timeline-temporal-operational-b11-c-scope-2026-09-27.md`. `_86` persistence/backend/API was published at `9878b441`; existing-Schedule and Create web checkpoints at `9d806355` and `e9a0f760`; generated client at `d0378e17`. The focused local gate passed backend 5 and web 16 tests, generation and client/web typechecks. The `_86` probe and both exact catalog tests passed; B11-C is `CLOSED / PROVEN` with evidence in `timeline-temporal-operational-b11-c-closure-2026-09-27.md`. Integrated real-app acceptance remains the whole-B11 gate. Delivery and generic automation remain excluded.
+
+B11-D is the next whole-block automated integration gate; scope is `timeline-temporal-operational-b11-d-scope-2026-09-27.md`. It verifies A/B/C together on one canonical chain and then runs focused regressions. The integrated real-app walkthrough is performed after D, immediately before whole-B11 closure.
 
 ---
 

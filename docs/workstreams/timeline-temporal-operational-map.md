@@ -10,7 +10,7 @@
 - **Current persistence source frontier:** `20260927_86` (B11-C candidate)
 - **Measured whole-catalog topology:** B11-C `_86` / `184|5|144|100|370|323|480|0|0|0`
 - **Completed functional frontier:** B10 ✅ CLOSED; B11-A/B/C ✅ CLOSED / PROVEN
-- **Current implementation cursor:** B11 integrated real-app acceptance
+- **Current implementation cursor:** B11-D whole-block integration gate; real-app after D
 - **CI:** not authorized; local tests are run by the user
 
 ---
@@ -90,6 +90,7 @@ B11 Advanced Recurrence / Conditional / Reminder 🟨 IN PROGRESS
   B11-A advanced elapsed Recurrence               ✅ CLOSED / PROVEN (user-run local gates)
   B11-B actual_realization Condition              ✅ CLOSED / PROVEN
   B11-C Schedule-relative personal Reminder       ✅ CLOSED / PROVEN
+  B11-D whole-block integration gate              🟨 IN PROGRESS
 B13 Work Structure / Decomposition / Dependencies⬜
 B12 Replanning / Conflict / Solver               ⬜
 B14 Temporal Create Completeness Gate             ⬜
@@ -269,6 +270,8 @@ reminder intent != silently ignored editable Create field
 The editable Create reminder intent must leave B11 either canonically supported, truthfully handed off, or hidden until supported.
 
 B11-C has the approved narrow Schedule-relative self Reminder scope at `timeline-temporal-operational-b11-c-scope-2026-09-27.md`. Commit `9878b441` publishes forward-only `_86`, guarded self functions, mapping, API, OpenAPI inventory and focused tests. Commits `9d806355` and `e9a0f760` add existing-Schedule controls and the Create two-command partial retry path. Generated client `d0378e17` and focused local backend 5/web 16 gate passed; the `_86` topology probe passed. The exact catalog tests passed after CHECK-name repair `a332a592` and registration of the five existing Outcome Reconciliation mappings `3fe447af`. B11-C is closed; see `timeline-temporal-operational-b11-c-closure-2026-09-27.md`. The integrated real-app test occurs before whole-B11 closure.
+
+B11-D now verifies A/B/C together through `timeline-temporal-operational-b11-d-scope-2026-09-27.md`. Its local automated gate precedes the integrated real-app test. The latter remains the final whole-B11 acceptance gate.
 
 ---
 
