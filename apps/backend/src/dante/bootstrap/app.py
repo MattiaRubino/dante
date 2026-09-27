@@ -40,6 +40,7 @@ from dante.modules.temporal.responsibility_participation_api import (
     router as temporal_responsibility_router,
 )
 from dante.modules.temporal.routine_api import router as temporal_routine_router
+from dante.modules.temporal.schedule_reminder_api import router as temporal_schedule_reminder_router
 from dante.modules.temporal.session_api import router as temporal_session_router
 from dante.modules.temporal.temporal_constraint_api import (
     router as temporal_constraint_router,
@@ -109,6 +110,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(temporal_life_area_assignment_router)
     app.include_router(temporal_constraint_router)
     app.include_router(temporal_constrained_activity_router)
+    app.include_router(temporal_schedule_reminder_router)
 
     @app.get("/health/live", include_in_schema=False)
     def health_live() -> dict[str, str]:

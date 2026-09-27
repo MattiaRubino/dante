@@ -142,6 +142,18 @@ _EXPECTED_TEMPORAL_OPERATIONS = {
     ("/api/v1/temporal/outcomes/{outcome_ref}/reconciliations", "post"): "temporal_record_outcome_reconciliation",
     ("/api/v1/temporal/outcomes/{outcome_ref}/reconciliations", "get"): "temporal_list_outcome_reconciliations",
     ("/api/v1/temporal/reconciliations/{reconciliation_ref}/history", "get"): "temporal_list_outcome_reconciliation_history",
+    ("/api/v1/temporal/routines/{source_ref}/advanced-recurrence", "get"): "temporal_get_routine_advanced_recurrence",
+    ("/api/v1/temporal/routines/{source_ref}/advanced-recurrence", "put"): "temporal_replace_routine_advanced_recurrence",
+    ("/api/v1/temporal/routines/{source_ref}/advanced-recurrence/checkpoint", "post"): "temporal_checkpoint_routine_advanced_recurrence",
+    ("/api/v1/temporal/events/{source_ref}/advanced-recurrence", "get"): "temporal_get_event_advanced_recurrence",
+    ("/api/v1/temporal/events/{source_ref}/advanced-recurrence", "put"): "temporal_replace_event_advanced_recurrence",
+    ("/api/v1/temporal/events/{source_ref}/advanced-recurrence/checkpoint", "post"): "temporal_checkpoint_event_advanced_recurrence",
+    ("/api/v1/temporal/conditions/actual-realization", "post"): "temporal_create_actual_realization_condition",
+    ("/api/v1/temporal/conditions/actual-realization", "get"): "temporal_find_actual_realization_condition",
+    ("/api/v1/temporal/conditions/actual-realization/{condition_ref}", "get"): "temporal_get_actual_realization_condition",
+    ("/api/v1/temporal/conditions/actual-realization/{condition_ref}/evaluations", "post"): "temporal_evaluate_actual_realization_condition",
+    ("/api/v1/temporal/schedules/{schedule_ref}/reminder", "get"): "temporal_get_schedule_reminder",
+    ("/api/v1/temporal/schedules/{schedule_ref}/reminder", "put"): "temporal_configure_schedule_reminder",
 }
 
 
