@@ -16,6 +16,9 @@ from dante.modules.temporal.advanced_recurrence_api import (
     router as temporal_advanced_recurrence_router,
 )
 from dante.modules.temporal.api import router as temporal_router
+from dante.modules.temporal.conditional_temporal_api import (
+    router as temporal_conditional_router,
+)
 from dante.modules.temporal.confirmation_api import router as temporal_confirmation_router
 from dante.modules.temporal.constrained_activity_api import (
     router as temporal_constrained_activity_router,
@@ -100,6 +103,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(temporal_reconciliation_router)
     app.include_router(temporal_recurrence_router)
     app.include_router(temporal_advanced_recurrence_router)
+    app.include_router(temporal_conditional_router)
     app.include_router(temporal_recurring_authoring_router)
     app.include_router(temporal_occurrence_router)
     app.include_router(temporal_life_area_assignment_router)
