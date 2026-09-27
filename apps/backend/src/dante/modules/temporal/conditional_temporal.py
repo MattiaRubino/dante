@@ -194,7 +194,7 @@ class ConditionalTemporalApplication:
         except DBAPIError as exc:
             raise _db_error(exc) from exc
         except SQLAlchemyError as exc:
-            raise ConditionalTemporalPersistenceError() from exc
+            raise ConditionalTemporalPersistenceError(str(exc)) from exc
         if row is None:
             raise ConditionalTemporalNotFoundError("Conditional subject unavailable.")
         return _condition(row, replayed=bool(row["replayed"]))
@@ -206,7 +206,7 @@ class ConditionalTemporalApplication:
         condition_ref: ScopedRecordRef,
     ) -> ActualRealizationConditionView | None:
         try:
-            async with self._session_factory() as session:
+            async with self._session_factory() as session, session.begin():
                 row = (
                     await session.execute(
                         text(
@@ -223,7 +223,7 @@ class ConditionalTemporalApplication:
         except DBAPIError as exc:
             raise _db_error(exc) from exc
         except SQLAlchemyError as exc:
-            raise ConditionalTemporalPersistenceError() from exc
+            raise ConditionalTemporalPersistenceError(str(exc)) from exc
         return _condition(row) if row is not None else None
 
     async def evaluate_actual_realization_condition(
@@ -266,7 +266,7 @@ class ConditionalTemporalApplication:
         except DBAPIError as exc:
             raise _db_error(exc) from exc
         except SQLAlchemyError as exc:
-            raise ConditionalTemporalPersistenceError() from exc
+            raise ConditionalTemporalPersistenceError(str(exc)) from exc
         if row is None:
             raise ConditionalTemporalNotFoundError("Conditional temporal intent unavailable.")
         return _evaluation(row, replayed=bool(row["replayed"]))
