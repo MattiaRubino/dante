@@ -163,6 +163,7 @@ import type {
   TemporalConstraintEvaluationResponse,
   TemporalConstraintListResponse,
   TemporalConstraintResponse,
+  TemporalFindActualRealizationConditionParams,
   TemporalListConstraintsBySubjectParams,
   TimelineWindowEmptyResponse,
   TimelineWindowItemsResponse,
@@ -4756,6 +4757,88 @@ export const temporalRecordActualOutcome = async (
     status: res.status,
     headers: res.headers,
   } as temporalRecordActualOutcomeResponse;
+};
+
+export type temporalFindActualRealizationConditionResponse200 = {
+  data: ActualRealizationConditionResponse;
+  status: 200;
+};
+
+export type temporalFindActualRealizationConditionResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type temporalFindActualRealizationConditionResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type temporalFindActualRealizationConditionResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalFindActualRealizationConditionResponseSuccess =
+  temporalFindActualRealizationConditionResponse200 & {
+    headers: Headers;
+  };
+export type temporalFindActualRealizationConditionResponseError = (
+  | temporalFindActualRealizationConditionResponse401
+  | temporalFindActualRealizationConditionResponse404
+  | temporalFindActualRealizationConditionResponse422
+) & {
+  headers: Headers;
+};
+
+export type temporalFindActualRealizationConditionResponse =
+  | temporalFindActualRealizationConditionResponseSuccess
+  | temporalFindActualRealizationConditionResponseError;
+
+export const getTemporalFindActualRealizationConditionUrl = (
+  params: TemporalFindActualRealizationConditionParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value));
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/v1/temporal/conditions/actual-realization?${stringifiedParams}`
+    : `/api/v1/temporal/conditions/actual-realization`;
+};
+
+/**
+ * @summary Find Actual Realization Condition
+ */
+export const temporalFindActualRealizationCondition = async (
+  params: TemporalFindActualRealizationConditionParams,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalFindActualRealizationConditionResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalFindActualRealizationConditionUrl(params),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalFindActualRealizationConditionResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalFindActualRealizationConditionResponse;
 };
 
 export type temporalCreateActualRealizationConditionResponse200 = {
