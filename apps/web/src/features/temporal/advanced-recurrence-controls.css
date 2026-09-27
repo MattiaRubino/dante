@@ -1,0 +1,33 @@
+.timeline-advanced-recurrence {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+}
+
+.timeline-advanced-recurrence label,
+.timeline-advanced-recurrence__anchor {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.timeline-advanced-recurrence__anchor {
+  grid-template-columns: minmax(8rem, 0.45fr) minmax(12rem, 1fr);
+}
+
+.timeline-advanced-recurrence input,
+.timeline-advanced-recurrence select,
+.timeline-advanced-recurrence button {
+  font: inherit;
+}
+
+.timeline-advanced-recurrence small {
+  opacity: 0.72;
+}
+
+@media (max-width: 640px) {
+  .timeline-advanced-recurrence__anchor {
+    grid-template-columns: 1fr;
+  }
+}
