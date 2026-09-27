@@ -46,6 +46,16 @@ export {
   createRemoteTemporalActivityDataSource,
   type TemporalActivityRemoteFailureKind,
 } from './remote-activity-data-source';
+export {
+  TemporalAdvancedRecurrenceRemoteError,
+  createRemoteTemporalAdvancedRecurrenceDataSource,
+  type AdvancedRecurrenceAnchorMode,
+  type AdvancedRecurrenceAnchorSourceKind,
+  type AdvancedRecurrenceLoadResult,
+  type AdvancedRecurrenceOwnerKind,
+  type AdvancedRecurrenceView,
+  type ReplaceAdvancedRecurrenceCommand,
+} from './remote-advanced-recurrence-data-source';
 export { createRemoteTemporalConstrainedActivityDataSource } from './remote-constrained-activity-data-source';
 export {
   TemporalEventAgendaRemoteError,
