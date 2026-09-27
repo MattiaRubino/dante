@@ -226,6 +226,42 @@ class ConditionalTemporalApplication:
             raise ConditionalTemporalPersistenceError(str(exc)) from exc
         return _condition(row) if row is not None else None
 
+    async def find_actual_realization_condition(
+        self,
+        *,
+        self_person_ref: NativeRef,
+        subject_kind: ConditionalSubjectKind,
+        subject_native_ref: NativeRef,
+    ) -> ActualRealizationConditionView | None:
+        if subject_kind not in {"activity", "event", "occurrence"}:
+            raise ConditionalTemporalInputError(
+                "Conditional subjects are Activity, Event and Occurrence only."
+            )
+        try:
+            async with self._session_factory() as session, session.begin():
+                row = (
+                    await session.execute(
+                        text(
+                            """
+                            SELECT *
+                              FROM dante.find_self_actual_realization_condition(
+                                :actor,:subject_kind,:subject_ref
+                              )
+                            """
+                        ),
+                        {
+                            "actor": self_person_ref,
+                            "subject_kind": subject_kind,
+                            "subject_ref": subject_native_ref,
+                        },
+                    )
+                ).mappings().one_or_none()
+        except DBAPIError as exc:
+            raise _db_error(exc) from exc
+        except SQLAlchemyError as exc:
+            raise ConditionalTemporalPersistenceError(str(exc)) from exc
+        return _condition(row) if row is not None else None
+
     async def evaluate_actual_realization_condition(
         self,
         *,

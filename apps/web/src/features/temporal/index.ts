@@ -56,6 +56,15 @@ export {
   type AdvancedRecurrenceView,
   type ReplaceAdvancedRecurrenceCommand,
 } from './remote-advanced-recurrence-data-source';
+export {
+  ConditionalTemporalRemoteError,
+  createRemoteConditionalTemporalDataSource,
+  type ActualRealizationConditionView,
+  type ConditionalEvaluationView,
+  type ConditionalTemporalDisposition,
+  type ConditionalTemporalResult,
+  type ConditionalTemporalSubjectKind,
+} from './remote-conditional-temporal-data-source';
 export { createRemoteTemporalConstrainedActivityDataSource } from './remote-constrained-activity-data-source';
 export {
   TemporalEventAgendaRemoteError,

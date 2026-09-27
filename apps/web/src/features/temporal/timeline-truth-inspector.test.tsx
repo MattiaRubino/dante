@@ -110,5 +110,6 @@ describe('Timeline truth inspector', () => {
     expect(screen.getByText('Outcome', { selector: 'strong' })).toBeTruthy();
     expect(screen.getByText('Confirmation', { selector: 'strong' })).toBeTruthy();
     expect(screen.getByText('Reconciliation', { selector: 'strong' })).toBeTruthy();
+    expect(screen.getByText('Condizione Actual', { selector: 'strong' })).toBeTruthy();
   });
 });

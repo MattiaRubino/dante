@@ -198,6 +198,40 @@ async def create_actual_realization_condition(
 
 
 @router.get(
+    "/conditions/actual-realization",
+    response_model=ActualRealizationConditionResponse,
+    responses={
+        401: {"model": ProblemDetails, "description": "Authentication required."},
+        404: {"model": ProblemDetails, "description": "Conditional intent unavailable."},
+    },
+    operation_id="temporal_find_actual_realization_condition",
+)
+async def find_actual_realization_condition(
+    subject_kind: Literal["activity", "event", "occurrence"],
+    subject_native_ref: UUID,
+    context: Context,
+    application: Application,
+) -> ActualRealizationConditionResponse:
+    try:
+        view = await application.find_actual_realization_condition(
+            self_person_ref=context.self_person_ref,
+            subject_kind=subject_kind,
+            subject_native_ref=NativeRef(subject_native_ref),
+        )
+    except (
+        ConditionalTemporalInputError,
+        ConditionalTemporalNotFoundError,
+        ConditionalTemporalPersistenceError,
+    ) as exc:
+        raise _problem(exc) from exc
+    if view is None:
+        raise _problem(
+            ConditionalTemporalNotFoundError("Conditional temporal intent unavailable.")
+        )
+    return _condition_response(view)
+
+
+@router.get(
     "/conditions/actual-realization/{condition_ref}",
     response_model=ActualRealizationConditionResponse,
     responses={

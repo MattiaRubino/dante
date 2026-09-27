@@ -18,6 +18,8 @@ def test_b11_b_conditional_operations_are_public_and_bounded() -> None:
     expected = {
         ("/api/v1/temporal/conditions/actual-realization", "post"):
             "temporal_create_actual_realization_condition",
+        ("/api/v1/temporal/conditions/actual-realization", "get"):
+            "temporal_find_actual_realization_condition",
         ("/api/v1/temporal/conditions/actual-realization/{condition_ref}", "get"):
             "temporal_get_actual_realization_condition",
         ("/api/v1/temporal/conditions/actual-realization/{condition_ref}/evaluations", "post"):

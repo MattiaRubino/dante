@@ -4,6 +4,7 @@ import './timeline-truth-inspector.css';
 
 import { ActualRealizationControls } from './actual-realization-controls';
 import { AdvancedRecurrenceControls } from './advanced-recurrence-controls';
+import { ConditionalTemporalControls } from './conditional-temporal-controls';
 import { useTemporalTimelineRuntime } from './timeline-runtime-boundary';
 import type { TemporalTimelineWindow } from './timeline-read';
 
@@ -89,6 +90,7 @@ export function TimelineTruthInspector() {
           </select>
         </label>
         <ActualRealizationControls kind={selected.kind} subjectRef={selected.ref} />
+        <ConditionalTemporalControls kind={selected.kind} subjectRef={selected.ref} />
         {selected.kind === 'event' ? (
           <AdvancedRecurrenceControls sourceRef={selected.ref} />
         ) : null}

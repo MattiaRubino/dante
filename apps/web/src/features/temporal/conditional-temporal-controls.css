@@ -1,0 +1,23 @@
+.timeline-conditional-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.timeline-conditional-controls > strong,
+.timeline-conditional-controls > small,
+.timeline-conditional-controls > [role='status'],
+.timeline-conditional-controls > [role='alert'] {
+  flex-basis: 100%;
+}
+
+.timeline-conditional-controls > p {
+  margin: 0;
+}
+
+.timeline-conditional-controls > small {
+  color: #8fa0b5;
+  line-height: 1.35;
+}

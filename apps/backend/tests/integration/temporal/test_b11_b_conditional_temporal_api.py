@@ -89,6 +89,14 @@ def test_b11_b_conditional_api_derives_truth_and_pins_actual_state(
         assert "result_code" not in first_condition
         assert "disposition_code" not in first_condition
 
+        found = client.get(
+            condition_path,
+            params={"subject_kind": "event", "subject_native_ref": event_ref},
+            headers=_base_headers(),
+        )
+        assert found.status_code == 200
+        assert found.json()["condition_ref"] == condition_ref
+
         replay = client.post(condition_path, json=condition_payload, headers=headers)
         assert replay.status_code == 200
         assert replay.json()["condition_ref"] == condition_ref
