@@ -8,6 +8,7 @@ from typing import Any
 
 import psycopg
 import pytest
+from tests.integration.temporal.test_b05_primary_life_area_assignment import _seed_self
 
 from dante.modules.temporal.actual_runtime import ActualApplication
 from dante.modules.temporal.advanced_recurrence import (
@@ -26,7 +27,6 @@ from dante.modules.temporal.schedule import (
 from dante.modules.temporal.schedule_reminder import ScheduleReminderApplication
 from dante.platform.database.references import NativeRef
 from dante.platform.database.runtime import create_database_runtime
-from tests.integration.temporal.test_b05_primary_life_area_assignment import _seed_self
 
 pytestmark = pytest.mark.postgres
 
