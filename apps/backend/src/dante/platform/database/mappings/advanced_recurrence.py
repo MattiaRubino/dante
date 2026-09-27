@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKeyConstraint, Index, Text
+from sqlalchemy import CheckConstraint, DateTime, ForeignKeyConstraint, Index, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from dante.platform.database.metadata import Base
@@ -111,6 +111,11 @@ class OccurrenceGenerationActualAnchorRow(Base):
             name="fk_occurrence_generation_actual_anchor_actual_state",
             onupdate="NO ACTION",
             ondelete="NO ACTION",
+        ),
+        UniqueConstraint(
+            "governing_recurrence_state_ref",
+            "anchor_occurrence_ref",
+            name="uq_occurrence_generation_actual_anchor_state_anchor",
         ),
         Index(
             "ix_occurrence_generation_actual_anchor_state_expected",

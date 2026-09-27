@@ -19,8 +19,8 @@ from dante.platform.database.metadata import Base
 
 pytestmark = pytest.mark.postgres
 
-_CURRENT_REVISION = "20260925_79"
-_CURRENT_TOPOLOGY = (167, 5, 123, 93, 329, 279, 446, 0, 0, 0)
+_CURRENT_REVISION = "20260927_86"
+_CURRENT_TOPOLOGY = (184, 5, 144, 100, 370, 323, 480, 0, 0, 0)
 _REPO_ROOT = Path(__file__).resolve().parents[5]
 _DICTIONARY_ROOT = _REPO_ROOT / "docs" / "database" / "dictionary"
 
@@ -159,7 +159,7 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
     assert environment == ("180006", "UTF8", "63")
     assert topology == _CURRENT_TOPOLOGY
     assert current_revision == (_CURRENT_REVISION,)
-    assert (len(tables), len(views), len(routines)) == (167, 5, 123)
+    assert (len(tables), len(views), len(routines)) == (184, 5, 144)
     assert live_tables == set(tables)
     assert live_views == set(views)
     assert live_routines == set(routines)
@@ -183,22 +183,26 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
         "B10-A",
         "B10-B",
         "B10-C",
+        "B10-D",
+        "B11-A",
+        "B11-B",
+        "B11-C",
     ]
     assert current["standalone_entries"] == {
-        "tables": 167,
+        "tables": 184,
         "views": 5,
-        "routines": 123,
-        "total": 295,
+        "routines": 144,
+        "total": 333,
     }
     assert current["embedded_objects"] == {
-        "triggers": 93,
-        "physical_indexes": 329,
+        "triggers": 100,
+        "physical_indexes": 370,
     }
     assert current["constraints"] == {
-        "foreign_keys": 279,
-        "check_constraints": 446,
+        "foreign_keys": 323,
+        "check_constraints": 480,
     }
-    assert len(MAPPED_TABLES) == len(Base.registry.mappers) == len(Base.metadata.tables) == 167
+    assert len(MAPPED_TABLES) == len(Base.registry.mappers) == len(Base.metadata.tables) == 184
     assert all(len(mapper.relationships) == 0 for mapper in Base.registry.mappers)
     assert set(VIEW_METADATA.tables) == {f"dante.{name}" for name in views}
     assert {table.name for table in MAPPED_TABLES} == set(tables)

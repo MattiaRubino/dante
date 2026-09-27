@@ -33,21 +33,25 @@
       "CP6-M07",
       "B10-A",
       "B10-B",
-      "B10-C"
+      "B10-C",
+      "B10-D",
+      "B11-A",
+      "B11-B",
+      "B11-C"
     ],
     "standalone_entries": {
-      "tables": 167,
+      "tables": 184,
       "views": 5,
-      "routines": 123,
-      "total": 295
+      "routines": 144,
+      "total": 333
     },
     "embedded_objects": {
-      "triggers": 93,
-      "physical_indexes": 329
+      "triggers": 100,
+      "physical_indexes": 370
     },
     "constraints": {
-      "foreign_keys": 279,
-      "check_constraints": 446
+      "foreign_keys": 323,
+      "check_constraints": 480
     }
   },
   "technical_foundation": {

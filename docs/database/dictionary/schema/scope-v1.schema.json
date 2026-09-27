@@ -68,7 +68,7 @@
       "properties": {
         "completed_stages": {
           "type": "array",
-          "maxItems": 10,
+          "maxItems": 14,
           "uniqueItems": true,
           "items": {
             "enum": [
@@ -81,7 +81,11 @@
               "CP6-M07",
               "B10-A",
               "B10-B",
-              "B10-C"
+              "B10-C",
+              "B10-D",
+              "B11-A",
+              "B11-B",
+              "B11-C"
             ]
           }
         },
@@ -223,7 +227,11 @@
                   "CP6-M07",
                   "B10-A",
                   "B10-B",
-                  "B10-C"
+                  "B10-C",
+                  "B10-D",
+                  "B11-A",
+                  "B11-B",
+                  "B11-C"
                 ]
               }
             }
