@@ -6,7 +6,7 @@
 - **Persistence head:** `20260927_85` (forward-only after `_82`–`_84`)
 - **Implementation checkpoint:** `1f0af49c6c218e9c67a51b1ffae0c4a9bdf81af8`
 - **Generated client checkpoint:** `e79f68702c7a6ad6d1a41b4fc92b4a6cdf646a11`
-- **Classification:** LOCAL AUTOMATED GATE PROVEN; documentation/catalog reconciliation still open
+- **Classification:** CLOSED / PROVEN after `_86` catalog reconciliation (2026-09-27)
 
 ## User-run local proof
 
@@ -28,6 +28,6 @@ The generated OpenAPI/client diff (four files) was committed and pushed by the u
 
 The `actual_realization` Condition is self-scoped for Activity/Event/Occurrence; Routine is not a direct Actual subject. The absence of accepted Actual yields `indeterminate/withhold`, not false reality. Evaluation pins accepted Actual plus exact MaterialState when present, does not mutate other canonical owners, and remains historical after later correction. The added read-by-typed-subject API prevents reload from treating an existing Condition as a new intent. Creation/evaluation operation ids are not Condition/Evaluation identities.
 
-## Reconciliation outstanding before formal vertical closure
+## Catalog reconciliation and vertical closure
 
-The live roadmap/map/handoff still declare B11 as next and the candidate DB overlay ends at `_80`; Dictionary `scope.json` still reports B10-C `_79`. These declarations are stale relative to the published `_81`–`_85` migrations. A focused test pass is not a whole-catalog tuple. Reconcile the current DB reference and Dictionary against the actual Alembic/SQLAlchemy/PostgreSQL catalog, record the measured topology rather than an inferred count, and update the workstream ledger before marking B11-B `CLOSED / PROVEN`.
+At this checkpoint, roadmap/map/handoff and Dictionary still reported the older `_79` frontier. The later local PostgreSQL `_86` probe measured `184|5|144|100|370|323|480|0|0|0`; Dictionary and catalog tests were reconciled to that measurement. After CHECK-name repair (`a332a592`) and registration of five existing Outcome Reconciliation mappings (`3fe447af`), the user reran both exact catalog tests: **2 passed in 8.90s**. B11-B is `CLOSED / PROVEN` through the shared `_86` catalog gate. The integrated real-app walkthrough is reserved for whole-B11 closure.

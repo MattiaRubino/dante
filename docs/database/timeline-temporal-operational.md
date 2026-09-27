@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Candidate Database Overlay
 
-- **Status:** CURRENT CANDIDATE DATABASE OVERLAY — B11-C `_86`; exact catalog gate rerun open
+- **Status:** CURRENT CANDIDATE DATABASE OVERLAY — B11-C `_86` catalog locally proven
 - **Reconciled:** 2026-09-27
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
@@ -80,7 +80,7 @@ The local PostgreSQL `_86` probe measured the whole-database topology directly:
 184|5|144|100|370|323|480|0|0|0
 ```
 
-Dictionary entries and current-catalog tests now target `_86`. The first exact gate passed 8 tests and failed 2 on five CHECK names; a subsequent checkpoint aligned those names to the immutable migrations. Whole-catalog agreement awaits the rerun.
+Dictionary entries and current-catalog tests target `_86`. The first exact gate passed 8 tests and failed 2 on five CHECK names. After those names were aligned to the immutable migrations, both tests advanced to a missing registration of the five existing Outcome Reconciliation SQLAlchemy mappings. Registration at `3fe447af` completed 184 unique mappings; the user-run rerun of both exact catalog tests passed on 2026-09-27.
 
 ## 4. Permanent persistence boundaries
 
@@ -325,4 +325,4 @@ Revisions `_82`–`_85` add `conditional_temporal_intent`, `conditional_temporal
 
 ## 13. Current database cursor
 
-B11-C `_86` adds a stable `schedule_reminder` owner keyed by self Person and Schedule, append-only `schedule_reminder_configuration_state` with shared MaterialState address/current binding, `schedule_reminder_current_history`, and `schedule_reminder_operation` for CAS/idempotency. Guarded PostgreSQL functions resolve self ownership, the accepted exact-start interval (absolute or resolved named-zone), and derived due/disposition. Runtime has execute grants on bounded get/configure functions and no direct table DML. Focused backend (5) and web (16) tests, generation and both typechecks passed locally; the `_86` catalog probe passed with the measured tuple above. The exact Dictionary/catalog gate awaits rerun after CHECK-name repair. This slice creates no delivery job or Actual mutation.
+B11-C `_86` adds a stable `schedule_reminder` owner keyed by self Person and Schedule, append-only `schedule_reminder_configuration_state` with shared MaterialState address/current binding, `schedule_reminder_current_history`, and `schedule_reminder_operation` for CAS/idempotency. Guarded PostgreSQL functions resolve self ownership, the accepted exact-start interval (absolute or resolved named-zone), and derived due/disposition. Runtime has execute grants on bounded get/configure functions and no direct table DML. Focused backend (5) and web (16) tests, generation and both typechecks passed locally; the `_86` catalog probe and both exact Dictionary/catalog tests passed with the measured tuple above. This slice creates no delivery job or Actual mutation. The whole-B11 real-app walkthrough remains open.

@@ -1,6 +1,6 @@
 # DANTE Database Dictionary
 
-- **Status:** `_86` entries materialized; exact PostgreSQL catalog gate awaiting rerun after CHECK-name repair
+- **Status:** `_86` Dictionary/PostgreSQL/SQLAlchemy catalog gate proven locally
 - **Schema version:** 1
 - **Serialization:** JSON
 - **PostgreSQL:** 18.6
@@ -10,7 +10,7 @@
 - **Current candidate Alembic source head:** `20260927_86` (B11-C)
 - **Measured whole-catalog topology:** `20260927_86` / `184|5|144|100|370|323|480|0|0|0`
 - **Frozen CP6 head:** `20260826_08`
-- **Last exact Dictionary/catalog gate:** B10-C `_79`; `_86` rerun pending
+- **Last exact Dictionary/catalog gate:** B11-C `_86` / 2026-09-27
 
 ## 1. Purpose
 
@@ -101,9 +101,9 @@ B09-C / 20260925_69
   owner-local Person referent catalog and create/rename receipts, three bounded capabilities and widened guarded Person admissibility; user-run PostgreSQL/catalog proof passed 2026-09-25
 ```
 
-B06-E whole-block closure required no new migration. The local `_86` probe measured B10-D Reconciliation `_80`, B11-A advanced Recurrence `_81`, B11-B conditional temporal `_82`–`_85`, and B11-C personal Schedule Reminder `_86`. Their 17 additional table and 21 routine entries are materialized; the first exact catalog gate found five CHECK-name mismatches, repaired after the 8-pass/2-fail run. Repeat that gate before declaring cross-representation proof; see `../timeline-temporal-operational.md` and `../../workstreams/timeline-temporal-operational-handoff.md`.
+B06-E whole-block closure required no new migration. The local `_86` probe measured B10-D Reconciliation `_80`, B11-A advanced Recurrence `_81`, B11-B conditional temporal `_82`–`_85`, and B11-C personal Schedule Reminder `_86`. Their 17 additional table and 21 routine entries are materialized. The first exact catalog gate exposed five CHECK-name mismatches (repaired at `a332a592`); its rerun then exposed five unregistered B10-D SQLAlchemy mappings (registered at `3fe447af`). The user-run rerun of both exact catalog tests passed on 2026-09-27; see `../timeline-temporal-operational.md` and `../../workstreams/timeline-temporal-operational-handoff.md`.
 
-The object tree and `scope.json` now describe the directly measured `_86` topology. Exact name, ACL and mapping parity still require the rerun.
+The object tree and `scope.json` describe the directly measured `_86` topology. Exact names, ACLs and mapping membership passed the local catalog gate.
 
 ## 4. Persistence classification
 

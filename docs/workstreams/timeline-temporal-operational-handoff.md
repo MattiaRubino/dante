@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B11 IN PROGRESS — B11-C FOCUSED GATE PROVEN; exact catalog rerun open
+- **Status:** B11 IN PROGRESS — B11-A/B/C CLOSED; integrated real-app acceptance open
 - **Reconciled:** 2026-09-27
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -34,8 +34,8 @@ B10     ✅ CLOSED 2026-09-26
   B10-E ✅ CLOSED / USER-REPORTED ACCEPTANCE 2026-09-26
 B11     🟨 IN PROGRESS — Advanced Recurrence / Conditional / Reminder
   B11-A ✅ CLOSED / PROVEN — `_81`, local gates reported passed
-  B11-B 🟨 FOCUSED AUTOMATED GATE PROVEN — `_82`–`_85`; exact catalog rerun open
-  B11-C 🟨 FOCUSED GATE PROVEN — `_86` / API / Create / Timeline; exact catalog rerun open
+  B11-B ✅ CLOSED / PROVEN — `_82`–`_85`; focused and `_86` catalog gates passed
+  B11-C ✅ CLOSED / PROVEN — `_86` / API / Create / Timeline; focused and catalog gates passed
 B13     ⬜ NOT STARTED
 B12     ⬜ NOT STARTED
 B14     ⬜ NOT STARTED
@@ -230,7 +230,7 @@ The B10-E-specific automated tests were added to the repository but were not sep
 
 B11-A and the B11-B technical gate have been implemented. B11-B's generated client at `e79f6870` is locally verified (361 deterministic generated files; client/web typecheck; web 3, OpenAPI 6, PostgreSQL 4 passed). The scope and evidence are `timeline-temporal-operational-b11-b-scope-2026-09-27.md` and `timeline-temporal-operational-b11-b-proof-2026-09-27.md`.
 
-The `_86` PostgreSQL probe measured `184|5|144|100|370|323|480|0|0|0`. Dictionary scope and both current-catalog tests now target `_86`. The first exact gate passed 8 tests and failed 2 on five mismatched CHECK names. Those names were repaired in `a332a592` to match the published migrations, and the 21 new routine signatures were reconciled to their SQL definitions. Rerun the exact local catalog gate before marking B11-B/C vertically closed.
+The `_86` PostgreSQL probe measured `184|5|144|100|370|323|480|0|0|0`. Dictionary scope and both current-catalog tests target `_86`. The first exact gate passed 8 tests and failed 2 on five mismatched CHECK names. Those names were repaired in `a332a592` to match the published migrations, and the 21 new routine signatures were reconciled to their SQL definitions at `6610982f`. The next run reached five existing B10-D SQLAlchemy mappings missing from `MAPPED_TABLES`; `3fe447af` registered them. The user's final local rerun passed both exact tests in 8.90s. B11-B and B11-C are technically closed; the B11 product walkthrough remains.
 
 Theme:
 
@@ -248,7 +248,7 @@ reminder intent != hidden ignored Create field
 conditional behavior != implicit mutation
 ```
 
-B11-C scope is `timeline-temporal-operational-b11-c-scope-2026-09-27.md`: one personal Reminder per self Person/Schedule, append-only configuration state, exact-start admissibility, pending/due/unavailable read, no delivery claim. `_86`/SQLAlchemy/guarded functions/API/OpenAPI were published at `9878b441`; existing-Schedule controls at `9d806355`; Create two-command partial retry at `e9a0f760`; generated client at `d0378e17`. Focused local backend (5), web (16), generation and typechecks passed. The `_86` catalog probe passed; exact catalog rerun is the remaining B11-C gate. The whole-B11 real-app walkthrough occurs before B11 closure.
+B11-C scope is `timeline-temporal-operational-b11-c-scope-2026-09-27.md`: one personal Reminder per self Person/Schedule, append-only configuration state, exact-start admissibility, pending/due/unavailable read, no delivery claim. `_86`/SQLAlchemy/guarded functions/API/OpenAPI were published at `9878b441`; existing-Schedule controls at `9d806355`; Create two-command partial retry at `e9a0f760`; generated client at `d0378e17`. Focused local backend (5), web (16), generation and typechecks passed. The `_86` catalog probe and exact catalog rerun passed. Closure evidence is `timeline-temporal-operational-b11-c-closure-2026-09-27.md`. The whole-B11 real-app walkthrough occurs before B11 closure.
 
 Do not reopen B10 semantics unless B11 uncovers concrete contradictory evidence.
 

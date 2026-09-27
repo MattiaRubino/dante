@@ -3,8 +3,9 @@
 - **Date:** 2026-09-27
 - **Branch:** `feature/timeline-temporal-operational`
 - **Parent:** B11 Advanced Recurrence / Conditional / Reminder
-- **Status:** APPROVED SEMANTIC SCOPE; implementation and local proof pending
+- **Status:** APPROVED SEMANTIC SCOPE; implementation and local gates closed 2026-09-27
 - **Persistence predecessor:** `20260927_85`
+- **Closure evidence:** `timeline-temporal-operational-b11-c-closure-2026-09-27.md`
 
 ## Purpose and owner
 
