@@ -135,6 +135,8 @@ import type {
   RoutineResponse,
   RoutineTagEffectResponse,
   RoutineTagOperationRequest,
+  ScheduleReminderRequest,
+  ScheduleReminderResponse,
   ScheduledActivityAbsoluteResponse,
   ScheduledActivityCoarseResponse,
   ScheduledActivityDateSpanResponse,
@@ -10353,6 +10355,201 @@ export const reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPa
       headers: res.headers,
     } as reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchResponse;
   };
+
+export type temporalGetScheduleReminderResponse200 = {
+  data: ScheduleReminderResponse;
+  status: 200;
+};
+
+export type temporalGetScheduleReminderResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type temporalGetScheduleReminderResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type temporalGetScheduleReminderResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type temporalGetScheduleReminderResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetScheduleReminderResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type temporalGetScheduleReminderResponseSuccess =
+  temporalGetScheduleReminderResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetScheduleReminderResponseError = (
+  | temporalGetScheduleReminderResponse400
+  | temporalGetScheduleReminderResponse401
+  | temporalGetScheduleReminderResponse404
+  | temporalGetScheduleReminderResponse422
+  | temporalGetScheduleReminderResponse500
+) & {
+  headers: Headers;
+};
+
+export type temporalGetScheduleReminderResponse =
+  | temporalGetScheduleReminderResponseSuccess
+  | temporalGetScheduleReminderResponseError;
+
+export const getTemporalGetScheduleReminderUrl = (scheduleRef: string) => {
+  return `/api/v1/temporal/schedules/${scheduleRef}/reminder`;
+};
+
+/**
+ * @summary Get Schedule Reminder
+ */
+export const temporalGetScheduleReminder = async (
+  scheduleRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetScheduleReminderResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetScheduleReminderUrl(scheduleRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetScheduleReminderResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetScheduleReminderResponse;
+};
+
+export type temporalConfigureScheduleReminderResponse200 = {
+  data: ScheduleReminderResponse;
+  status: 200;
+};
+
+export type temporalConfigureScheduleReminderResponse201 = {
+  data: ScheduleReminderResponse;
+  status: 201;
+};
+
+export type temporalConfigureScheduleReminderResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type temporalConfigureScheduleReminderResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type temporalConfigureScheduleReminderResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type temporalConfigureScheduleReminderResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type temporalConfigureScheduleReminderResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type temporalConfigureScheduleReminderResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type temporalConfigureScheduleReminderResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type temporalConfigureScheduleReminderResponseSuccess = (
+  | temporalConfigureScheduleReminderResponse200
+  | temporalConfigureScheduleReminderResponse201
+) & {
+  headers: Headers;
+};
+export type temporalConfigureScheduleReminderResponseError = (
+  | temporalConfigureScheduleReminderResponse400
+  | temporalConfigureScheduleReminderResponse401
+  | temporalConfigureScheduleReminderResponse403
+  | temporalConfigureScheduleReminderResponse404
+  | temporalConfigureScheduleReminderResponse409
+  | temporalConfigureScheduleReminderResponse422
+  | temporalConfigureScheduleReminderResponse500
+) & {
+  headers: Headers;
+};
+
+export type temporalConfigureScheduleReminderResponse =
+  | temporalConfigureScheduleReminderResponseSuccess
+  | temporalConfigureScheduleReminderResponseError;
+
+export const getTemporalConfigureScheduleReminderUrl = (
+  scheduleRef: string,
+) => {
+  return `/api/v1/temporal/schedules/${scheduleRef}/reminder`;
+};
+
+/**
+ * @summary Configure Schedule Reminder
+ */
+export const temporalConfigureScheduleReminder = async (
+  scheduleRef: string,
+  scheduleReminderRequest: ScheduleReminderRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalConfigureScheduleReminderResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalConfigureScheduleReminderUrl(scheduleRef),
+    {
+      ...options,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(scheduleReminderRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalConfigureScheduleReminderResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalConfigureScheduleReminderResponse;
+};
 
 export type unscheduleScheduleApiV1TemporalSchedulesScheduleRefUnschedulePostResponse200 =
   {

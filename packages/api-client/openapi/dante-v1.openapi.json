@@ -7787,6 +7787,116 @@
         "title": "RoutineTagOperationRequest",
         "type": "object"
       },
+      "ScheduleReminderRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "expected_material_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Material State Ref"
+          },
+          "lead_minutes": {
+            "maximum": 10080.0,
+            "minimum": 0.0,
+            "title": "Lead Minutes",
+            "type": "integer"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "enabled", "lead_minutes"],
+        "title": "ScheduleReminderRequest",
+        "type": "object"
+      },
+      "ScheduleReminderResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "disposition_code": {
+            "enum": ["pending", "due", "unavailable"],
+            "title": "Disposition Code",
+            "type": "string"
+          },
+          "due_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due At"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "lead_minutes": {
+            "title": "Lead Minutes",
+            "type": "integer"
+          },
+          "material_state_ref": {
+            "format": "uuid",
+            "title": "Material State Ref",
+            "type": "string"
+          },
+          "reminder_ref": {
+            "format": "uuid",
+            "title": "Reminder Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "schedule_starts_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Schedule Starts At"
+          }
+        },
+        "required": [
+          "reminder_ref",
+          "schedule_ref",
+          "material_state_ref",
+          "enabled",
+          "lead_minutes",
+          "schedule_starts_at",
+          "due_at",
+          "disposition_code",
+          "replayed"
+        ],
+        "title": "ScheduleReminderResponse",
+        "type": "object"
+      },
       "ScheduledActivityAbsoluteResponse": {
         "additionalProperties": false,
         "properties": {
@@ -25499,6 +25609,206 @@
           }
         },
         "summary": "Revise Schedule Placement",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/schedules/{schedule_ref}/reminder": {
+      "get": {
+        "operationId": "temporal_get_schedule_reminder",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "schedule_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Schedule Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleReminderResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request."
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Authentication required."
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Reminder unavailable."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unexpected server error."
+          }
+        },
+        "summary": "Get Schedule Reminder",
+        "tags": ["temporal"]
+      },
+      "put": {
+        "operationId": "temporal_configure_schedule_reminder",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "schedule_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Schedule Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleReminderRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleReminderResponse"
+                }
+              }
+            },
+            "description": "Revision or idempotent replay."
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleReminderResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request."
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Authentication required."
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Mutation rejected by security policy."
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Exact-start self Schedule unavailable."
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Current-state or operation conflict."
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Reminder input rejected."
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unexpected server error."
+          }
+        },
+        "summary": "Configure Schedule Reminder",
         "tags": ["temporal"]
       }
     },
