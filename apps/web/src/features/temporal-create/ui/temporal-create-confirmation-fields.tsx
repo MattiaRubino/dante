@@ -50,7 +50,9 @@ export function TemporalCreateConfirmationFields({
             {t(($) => $.common.home.timeline.create.confirmation.outcome)}
           </span>
           <select
+            data-create-path="confirmation.outcomePolicy"
             value={confirmation.outcomePolicy}
+            disabled={confirmation.outcomePolicy === 'inherit'}
             onChange={(event) =>
               patchConfirmation({
                 outcomePolicy: event.currentTarget
@@ -61,45 +63,49 @@ export function TemporalCreateConfirmationFields({
             <option value="inherit">
               {t(($) => $.common.home.timeline.create.confirmation.inherit)}
             </option>
-            <option value="ask-immediately">
+            <option value="ask-immediately" disabled>
               {t(
                 ($) =>
                   $.common.home.timeline.create.confirmation.askImmediately,
               )}
             </option>
-            <option value="ask-later">
+            <option value="ask-later" disabled>
               {t(($) => $.common.home.timeline.create.confirmation.askLater)}
             </option>
-            <option value="daily-review">
+            <option value="daily-review" disabled>
               {t(($) => $.common.home.timeline.create.confirmation.dailyReview)}
             </option>
-            <option value="weekly-review">
+            <option value="weekly-review" disabled>
               {t(
                 ($) => $.common.home.timeline.create.confirmation.weeklyReview,
               )}
             </option>
-            <option value="silent">
+            <option value="silent" disabled>
               {t(($) => $.common.home.timeline.create.confirmation.silent)}
             </option>
-            <option value="auto-complete">
+            <option value="auto-complete" disabled>
               {t(
                 ($) => $.common.home.timeline.create.confirmation.autoComplete,
               )}
             </option>
-            <option value="auto-not-completed">
+            <option value="auto-not-completed" disabled>
               {t(
                 ($) =>
                   $.common.home.timeline.create.confirmation.autoNotCompleted,
               )}
             </option>
-            <option value="infer-provisional">
+            <option value="infer-provisional" disabled>
               {t(
                 ($) =>
                   $.common.home.timeline.create.confirmation.inferProvisional,
               )}
             </option>
           </select>
+          {renderError('confirmation.outcomePolicy')}
         </label>
+        <p className="temporal-create-truth-note">
+          Le altre regole per l’esito non sono ancora disponibili in Crea.
+        </p>
 
         {reminderEligible ? (
         <label className="temporal-create-control">
