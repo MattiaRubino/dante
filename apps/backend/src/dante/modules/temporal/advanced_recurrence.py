@@ -258,7 +258,7 @@ class AdvancedRecurrenceApplication:
         source_ref: UUID,
     ) -> AdvancedRecurrenceView | None:
         try:
-            async with self._session_factory() as session:
+            async with self._session_factory() as session, session.begin():
                 return await self._read_in_session(
                     session,
                     owner=owner,
