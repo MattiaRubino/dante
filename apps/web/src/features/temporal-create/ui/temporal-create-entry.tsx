@@ -517,7 +517,10 @@ export function TemporalCreateEntry({
         setLifecycle('idle');
       } else {
         setLifecycle('failed');
-        setFailureMessage(t(($) => $.common.home.timeline.create.failure));
+        setFailureMessage(
+          execution.result.failure.message ??
+            t(($) => $.common.home.timeline.create.failure),
+        );
       }
     } catch {
       setLifecycle('failed');
