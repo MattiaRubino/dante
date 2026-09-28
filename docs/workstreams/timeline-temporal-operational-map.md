@@ -10,7 +10,7 @@
 - **B13-A gate authority:** `docs/workstreams/timeline-temporal-operational-b13-a-scope-2026-09-28.md`
 - **B13-A candidate checkpoint:** `docs/workstreams/timeline-temporal-operational-b13-a-implementation-2026-09-28.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Current persistence source frontier:** `20260928_87` (B13-A candidate; unproven)
+- **Current persistence source frontier:** `20260928_88` (B13-A repair candidate; PostgreSQL retest pending)
 - **Measured whole-catalog topology:** B11-C `_86` / `184|5|144|100|370|323|480|0|0|0`
 - **Completed functional frontier:** B11 ✅ CLOSED / USER-REPORTED ACCEPTANCE 2026-09-28
 - **Current implementation cursor:** B13-A Work Structure Core — local PostgreSQL/API/web/catalog gate pending
@@ -295,7 +295,7 @@ canonical Plan
 → bounded author/read proof
 ```
 
-The discovery checkpoint chose flat `Plan -> Step`, existing Plan NativeRef, Plan-owned internal Step references, normalized immutable structure revisions, explicit presentation position and same-self Activity references. The `_87` candidate, guarded API and Home author/read controls are implemented. Local PostgreSQL, exact catalog, OpenAPI, generated client and web gates remain before B13-A closure; see `timeline-temporal-operational-b13-a-implementation-2026-09-28.md`.
+The discovery checkpoint chose flat `Plan -> Step`, existing Plan NativeRef, Plan-owned internal Step references, normalized immutable structure revisions, explicit presentation position and same-self Activity references. The `_87` candidate exposed a replay projection error and check-constraint naming mismatch in the first local gate; `_88` repairs them. OpenAPI, web/API typechecks and generated-client checks passed. Focused PostgreSQL/catalog and repaired web test still need local proof; see `timeline-temporal-operational-b13-a-implementation-2026-09-28.md`.
 
 Forbidden in B13-A:
 

@@ -2,7 +2,7 @@
 
 - **Branch:** `feature/timeline-temporal-operational`
 - **Status:** CANDIDATE — local PostgreSQL, API, web, generated-client and catalog gates pending
-- **Migration source head:** `20260928_87`
+- **Migration source head:** `20260928_88`
 - **Prior proven persistence frontier:** B11-C / `20260927_86`
 
 ## Discovery decisions
@@ -17,6 +17,7 @@ The API replaces a complete bounded snapshot with expected-current CAS and a rep
 
 ```text
 _87 forward-only migration
+_88 forward-only replay and catalog-identifier repair
 seven typed Plan work tables + four guarded self-scoped functions
 SQLAlchemy mapping inventory + Dictionary entries
 Plan application / HTTP OpenAPI routes
@@ -24,8 +25,8 @@ Home Plan/Step panel + governed web data source
 focused PostgreSQL, OpenAPI and web tests
 ```
 
-The expected `_87` topology derived from the migration delta is `191|5|148|100|386|334|488|0|0|0`. This is **not yet a measured PostgreSQL result**. The user-run catalog gate must verify it before B13-A can be marked PROVEN.
+The expected topology is `191|5|148|100|386|334|488|0|0|0`. The first user-run PostgreSQL gate reached `_87` and matched the topology, but exposed a replay SQL column error and eight check-constraint names that differed from the Dictionary. The follow-up `_88` corrects both without changing data or topology. OpenAPI tests, web/API typechecks and deterministic client generation passed; the focused PostgreSQL test, exact catalog and one UI test must be rerun after this repair.
 
 ## Exit gate
 
-Run the B13-A PostgreSQL test, the exact current catalog tests, the OpenAPI contract and inventory, web tests and typechecks, then deterministic API client generation/check. Record actual outputs; repair any discrepancy with a new forward migration if `_87` has been applied/published. Only after all applicable gates pass should the roadmap, map and handoff advance to B13-B.
+Run the B13-A PostgreSQL test, exact current catalog tests and repaired UI test at `_88`; record actual outputs. The generated API client remains on the user's local worktree and must be committed from the deterministic generator. Only after all applicable gates pass should the roadmap, map and handoff advance to B13-B.

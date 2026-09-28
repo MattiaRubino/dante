@@ -82,15 +82,20 @@ class PlanStepInStateRow(Base):
             name="fk_plan_step_in_state_work",
         ),
         ForeignKeyConstraint(
-            ["plan_ref", "step_ref"], ["dante.plan_step.plan_ref", "dante.plan_step.step_ref"],
+            ["plan_ref", "step_ref"],
+            ["dante.plan_step.plan_ref", "dante.plan_step.step_ref"],
             name="fk_plan_step_in_state_step",
         ),
         ForeignKeyConstraint(
-            ["activity_ref"], ["dante.activity.activity_ref"],
+            ["activity_ref"],
+            ["dante.activity.activity_ref"],
             name="fk_plan_step_in_state_activity",
         ),
         Index(
-            "ux_plan_step_in_state_activity", "state_ref", "activity_ref", unique=True,
+            "ux_plan_step_in_state_activity",
+            "state_ref",
+            "activity_ref",
+            unique=True,
             postgresql_where=text("activity_ref IS NOT NULL"),
         ),
     )
@@ -131,7 +136,9 @@ class PlanWorkCurrentHistoryRow(Base):
             name="fk_plan_work_current_history_state",
         ),
         Index(
-            "ux_plan_work_current_history_open", "plan_ref", unique=True,
+            "ux_plan_work_current_history_open",
+            "plan_ref",
+            unique=True,
             postgresql_where=text("current_until_at IS NULL"),
         ),
     )
@@ -153,7 +160,8 @@ class PlanWorkOperationRow(Base):
         CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name="fingerprint"),
         UniqueConstraint("state_ref", name="uq_plan_work_operation_state"),
         ForeignKeyConstraint(
-            ["self_person_ref"], ["dante.person.person_ref"],
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
             name="fk_plan_work_operation_person",
         ),
         ForeignKeyConstraint(

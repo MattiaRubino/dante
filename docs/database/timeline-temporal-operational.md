@@ -1,10 +1,10 @@
 # Timeline / Temporal-Operational — Candidate Database Overlay
 
-- **Status:** CURRENT CANDIDATE DATABASE OVERLAY — B13-A `_87` source; PostgreSQL gate pending
+- **Status:** CURRENT CANDIDATE DATABASE OVERLAY — B13-A `_88` repair; PostgreSQL retest pending
 - **Reconciled:** 2026-09-27
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
-- **Candidate migration source head:** `20260928_87` (B13-A; PostgreSQL proof pending)
+- **Candidate migration source head:** `20260928_88` (B13-A repair; PostgreSQL retest pending)
 - **Focused local proof frontier:** B11-C `_86` (5 backend and 16 web focused tests passed)
 - **Measured whole-topology count:** `_86` / `184|5|144|100|370|323|480|0|0|0`
 - **Whole-DB SoR:** `README.md`
@@ -66,6 +66,7 @@ Published migrations are immutable. Any persistence correction is forward-only.
 20260927_86 B11-C personal Schedule Reminder candidate
     ↓
 20260928_87 B13-A Plan work structure candidate
+20260928_88 B13-A replay projection and catalog check-name repair
 ```
 
 ## 3. Proven frontier and topology discipline
@@ -333,4 +334,4 @@ B11-C `_86` adds a stable `schedule_reminder` owner keyed by self Person and Sch
 
 Forward-only `_87` reuses the Plan NativeRef identity shell and introduces self ownership, internal Plan-owned Steps, immutable normalized structure revisions, explicit accepted-current binding/history and replay-safe operations. Step order is a presentation sequence, not Dependency. An optional link to an existing self-owned Activity preserves the Activity's separate identity and lifecycle. The runtime has execute grants on four guarded read/write functions and no direct DML grants on the seven new tables.
 
-The Dictionary and catalog expectations target `_87`; `191|5|148|100|386|334|488|0|0|0` is a migration-derived **candidate expectation**, not measured proof. The user-run PostgreSQL and exact catalog gates must establish the live topology before this slice closes. See `../workstreams/timeline-temporal-operational-b13-a-implementation-2026-09-28.md`.
+The `_87` local test reached the expected topology `191|5|148|100|386|334|488|0|0|0` but exposed one replay projection error and eight check identifiers that did not match the Dictionary. Forward-only `_88` repairs those names and the function, with no topology delta. Focused PostgreSQL and exact catalog retests are required before closure. See `../workstreams/timeline-temporal-operational-b13-a-implementation-2026-09-28.md`.

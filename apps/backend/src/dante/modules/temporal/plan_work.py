@@ -74,8 +74,7 @@ def _view(row: RowMapping) -> PlanWorkView:
                 position=int(item["position"]),
                 title=str(item["title"]),
                 activity_ref=(
-                    UUID(str(item["activity_ref"]))
-                    if item["activity_ref"] is not None else None
+                    UUID(str(item["activity_ref"])) if item["activity_ref"] is not None else None
                 ),
             )
             for item in steps
@@ -131,26 +130,32 @@ class PlanWorkApplication:
         try:
             async with self._session_factory() as session, session.begin():
                 rows = (
-                    await session.execute(
-                        text("SELECT * FROM dante.list_self_plan_work(:self_ref)"),
-                        {"self_ref": self_person_ref},
+                    (
+                        await session.execute(
+                            text("SELECT * FROM dante.list_self_plan_work(:self_ref)"),
+                            {"self_ref": self_person_ref},
+                        )
                     )
-                ).mappings().all()
+                    .mappings()
+                    .all()
+                )
         except SQLAlchemyError as exc:
             raise PlanWorkPersistenceError(str(exc)) from exc
         return tuple(_view(row) for row in rows)
 
-    async def get(
-        self, *, self_person_ref: NativeRef, plan_ref: UUID
-    ) -> PlanWorkView | None:
+    async def get(self, *, self_person_ref: NativeRef, plan_ref: UUID) -> PlanWorkView | None:
         try:
             async with self._session_factory() as session, session.begin():
                 row = (
-                    await session.execute(
-                        text("SELECT * FROM dante.get_self_plan_work(:self_ref,:plan_ref)"),
-                        {"self_ref": self_person_ref, "plan_ref": plan_ref},
+                    (
+                        await session.execute(
+                            text("SELECT * FROM dante.get_self_plan_work(:self_ref,:plan_ref)"),
+                            {"self_ref": self_person_ref, "plan_ref": plan_ref},
+                        )
                     )
-                ).mappings().one_or_none()
+                    .mappings()
+                    .one_or_none()
+                )
         except SQLAlchemyError as exc:
             raise PlanWorkPersistenceError(str(exc)) from exc
         return _view(row) if row is not None else None
@@ -171,14 +176,18 @@ class PlanWorkApplication:
         try:
             async with self._session_factory() as session, session.begin():
                 row = (
-                    await session.execute(
-                        text(
-                            "SELECT * FROM dante.create_self_plan_work("
-                            ":self_ref,:operation_id,:fingerprint,:plan_ref,:state_ref,:title)"
-                        ),
-                        params,
+                    (
+                        await session.execute(
+                            text(
+                                "SELECT * FROM dante.create_self_plan_work("
+                                ":self_ref,:operation_id,:fingerprint,:plan_ref,:state_ref,:title)"
+                            ),
+                            params,
+                        )
                     )
-                ).mappings().one()
+                    .mappings()
+                    .one()
+                )
         except DBAPIError as exc:
             raise _error(exc) from exc
         except SQLAlchemyError as exc:
@@ -210,13 +219,15 @@ class PlanWorkApplication:
         params = {
             "self_ref": self_person_ref,
             "operation_id": key,
-            "fingerprint": _fingerprint({
-                "kind": "replace",
-                "plan_ref": str(plan_ref),
-                "expected_state_ref": str(expected_state_ref),
-                "title": clean_title,
-                "steps": payload,
-            }),
+            "fingerprint": _fingerprint(
+                {
+                    "kind": "replace",
+                    "plan_ref": str(plan_ref),
+                    "expected_state_ref": str(expected_state_ref),
+                    "title": clean_title,
+                    "steps": payload,
+                }
+            ),
             "plan_ref": plan_ref,
             "expected_state_ref": expected_state_ref,
             "state_ref": new_native_ref(),
@@ -226,15 +237,19 @@ class PlanWorkApplication:
         try:
             async with self._session_factory() as session, session.begin():
                 row = (
-                    await session.execute(
-                        text(
-                            "SELECT * FROM dante.replace_self_plan_work("
-                            ":self_ref,:operation_id,:fingerprint,:plan_ref,"
-                            ":expected_state_ref,:state_ref,:title,CAST(:steps AS jsonb))"
-                        ),
-                        params,
+                    (
+                        await session.execute(
+                            text(
+                                "SELECT * FROM dante.replace_self_plan_work("
+                                ":self_ref,:operation_id,:fingerprint,:plan_ref,"
+                                ":expected_state_ref,:state_ref,:title,CAST(:steps AS jsonb))"
+                            ),
+                            params,
+                        )
                     )
-                ).mappings().one()
+                    .mappings()
+                    .one()
+                )
         except DBAPIError as exc:
             raise _error(exc) from exc
         except SQLAlchemyError as exc:

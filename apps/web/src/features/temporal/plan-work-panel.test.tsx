@@ -45,8 +45,7 @@ describe('Plan work panel', () => {
   it('keeps Step order as an explicit Plan revision', async () => {
     render(<PlanWorkPanel />);
     fireEvent.click(screen.getByText('Plan e Step'));
-    await screen.findByText('Record');
-    fireEvent.click(screen.getByRole('button', { name: 'Sposta giù Record' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Sposta giù Record' }));
     await waitFor(() => expect(replace).toHaveBeenCalledOnce());
     expect(replace.mock.calls[0]?.[0]).toMatchObject({ planRef: PLAN, stateRef: STATE });
     expect(replace.mock.calls[0]?.[2].map((step: { stepRef: string }) => step.stepRef))

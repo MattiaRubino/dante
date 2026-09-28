@@ -8,7 +8,7 @@
 - **Current gate:** B13-A Work Structure Core ▶ OPEN
 - **Current gate authority:** `docs/workstreams/timeline-temporal-operational-b13-a-scope-2026-09-28.md`
 - **B13-A implementation checkpoint:** `docs/workstreams/timeline-temporal-operational-b13-a-implementation-2026-09-28.md`
-- **Current persistence source frontier:** B13-A / Alembic `20260928_87` (candidate; local PostgreSQL gate pending)
+- **Current persistence source frontier:** B13-A / Alembic `20260928_88` (repair candidate; local PostgreSQL retest pending)
 - **Measured whole-catalog topology:** B11-C / `20260927_86` / `184|5|144|100|370|323|480|0|0|0`
 - **B10-D closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-d-closure-2026-09-26.md`
 - **B10-E closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-e-closure-2026-09-26.md`
@@ -370,7 +370,7 @@ maximum Session / merge / spacing / preparation / recovery constraints
 promotion of Step to universal root identity without model authority
 ```
 
-The discovery checkpoint selected flat `Plan -> Step`, normalized immutable structure revisions and explicit position. Existing Plan identity is reused; optional Activity references are same-self validated without identity collapse. The `_87` candidate and minimum author/read UI exist, but the PostgreSQL, catalog, public-contract, generated-client and web gates must pass locally before closure. See `timeline-temporal-operational-b13-a-implementation-2026-09-28.md`.
+The discovery checkpoint selected flat `Plan -> Step`, normalized immutable structure revisions and explicit position. Existing Plan identity is reused; optional Activity references are same-self validated without identity collapse. The first `_87` local gate passed OpenAPI, web/API typechecks and deterministic client generation, while PostgreSQL exposed a replay projection error and catalog check names and the web test exposed an ambiguous selector. The `_88` forward repair and test correction require focused local retest before closure. See `timeline-temporal-operational-b13-a-implementation-2026-09-28.md`.
 
 ## B13-B — Qualified Dependencies
 

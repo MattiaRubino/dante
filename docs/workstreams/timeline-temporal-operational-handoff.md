@@ -9,7 +9,7 @@
 - **B13-A candidate checkpoint:** `docs/workstreams/timeline-temporal-operational-b13-a-implementation-2026-09-28.md`
 - **B11 closure evidence:** `docs/workstreams/timeline-temporal-operational-b11-closure-2026-09-28.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Current migration source head:** B13-A / Alembic `20260928_87` (candidate; unproven)
+- **Current migration source head:** B13-A / Alembic `20260928_88` (repair candidate; retest pending)
 - **Measured whole-catalog topology:** B11-C `_86` / `184|5|144|100|370|323|480|0|0|0`
 - **B11 real-app acceptance:** USER-REPORTED PASS 2026-09-28
 - **CI:** no CI/GitHub Actions unless explicitly authorized; user runs local tests
@@ -247,7 +247,7 @@ The B13-A discovery checkpoint resolved the implementation choices before `_87` 
 7. database versus guarded-operation boundaries for cross-Plan, duplicate-link and cycle invariants;
 8. the minimum public API/client/UI slice required for author/read proof.
 
-The decision is flat `Plan -> Step`, reusing Plan NativeRef and giving Step an internal Plan-owned reference. Normalized revision snapshots hold membership, title, presentation order and optional same-self Activity link. Guarded functions enforce ownership, duplicate links and expected-current revision; current/history bindings remain explicit. The candidate is implemented in `timeline-temporal-operational-b13-a-implementation-2026-09-28.md`. Its PostgreSQL/catalog/API/web/generated-client gates are still pending, so B13-A is **not closed**.
+The decision is flat `Plan -> Step`, reusing Plan NativeRef and giving Step an internal Plan-owned reference. Normalized revision snapshots hold membership, title, presentation order and optional same-self Activity link. Guarded functions enforce ownership, duplicate links and expected-current revision; current/history bindings remain explicit. The first local gate exposed a replay SQL column error and catalog check names, repaired by `_88`; the UI test selector and Python quality issues were also corrected. OpenAPI, web/API typechecks and deterministic client generation passed. PostgreSQL/catalog and repaired web test remain pending, so B13-A is **not closed**.
 
 B13-A non-goals:
 

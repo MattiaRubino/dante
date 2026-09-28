@@ -6,6 +6,8 @@ from typing import Any
 
 import psycopg
 import pytest
+from tests.integration.temporal.b05_legacy_test_support import ensure_test_life_area
+from tests.integration.temporal.test_b02_schedule_create import _seed_self_person
 
 from dante.modules.temporal.activity import TemporalActivityApplication
 from dante.modules.temporal.plan_work import (
@@ -17,8 +19,6 @@ from dante.modules.temporal.plan_work import (
 )
 from dante.platform.database.references import new_native_ref
 from dante.platform.database.runtime import create_database_runtime
-from tests.integration.temporal.b05_legacy_test_support import ensure_test_life_area
-from tests.integration.temporal.test_b02_schedule_create import _seed_self_person
 
 pytestmark = pytest.mark.postgres
 
@@ -39,14 +39,10 @@ async def test_b13_a_plan_structure_is_self_owned_ordered_and_historical(
         assert created.plan_ref.version == created.state_ref.version == 7
         assert created.steps == ()
         assert (
-            await plans.create(
-                self_person_ref=alice, operation_id="b13a:create", title="Album"
-            )
+            await plans.create(self_person_ref=alice, operation_id="b13a:create", title="Album")
         ).replayed
         with pytest.raises(PlanWorkConflictError):
-            await plans.create(
-                self_person_ref=alice, operation_id="b13a:create", title="Different"
-            )
+            await plans.create(self_person_ref=alice, operation_id="b13a:create", title="Different")
         assert await plans.get(self_person_ref=bob, plan_ref=created.plan_ref) is None
         assert [item.plan_ref for item in await plans.list(self_person_ref=alice)] == [
             created.plan_ref
@@ -67,78 +63,105 @@ async def test_b13_a_plan_structure_is_self_owned_ordered_and_historical(
             PlanStepInput(step_ref=mix, title="Mix"),
         )
         first = await plans.replace(
-            self_person_ref=alice, plan_ref=created.plan_ref,
+            self_person_ref=alice,
+            plan_ref=created.plan_ref,
             expected_state_ref=created.state_ref,
-            operation_id="b13a:steps", title="Album", steps=steps,
+            operation_id="b13a:steps",
+            title="Album",
+            steps=steps,
         )
-        assert [(item.title, item.position) for item in first.steps] == [
-            ("Record", 0), ("Mix", 1)
-        ]
+        assert [(item.title, item.position) for item in first.steps] == [("Record", 0), ("Mix", 1)]
         assert first.steps[0].activity_ref == activity.activity.activity_ref
         assert first.steps[0].step_ref != first.steps[0].activity_ref
         reordered = await plans.replace(
-            self_person_ref=alice, plan_ref=created.plan_ref,
+            self_person_ref=alice,
+            plan_ref=created.plan_ref,
             expected_state_ref=first.state_ref,
-            operation_id="b13a:reorder", title="Album", steps=(steps[1], steps[0]),
+            operation_id="b13a:reorder",
+            title="Album",
+            steps=(steps[1], steps[0]),
         )
         assert [item.step_ref for item in reordered.steps] == [mix, voice]
         assert reordered.state_ref != first.state_ref
-        assert (await plans.get(
-            self_person_ref=alice, plan_ref=created.plan_ref
-        )).state_ref == reordered.state_ref
+        assert (
+            await plans.get(self_person_ref=alice, plan_ref=created.plan_ref)
+        ).state_ref == reordered.state_ref
         replay = await plans.replace(
-            self_person_ref=alice, plan_ref=created.plan_ref,
+            self_person_ref=alice,
+            plan_ref=created.plan_ref,
             expected_state_ref=first.state_ref,
-            operation_id="b13a:reorder", title="Album", steps=(steps[1], steps[0]),
+            operation_id="b13a:reorder",
+            title="Album",
+            steps=(steps[1], steps[0]),
         )
-        assert replay.replayed and replay.state_ref == reordered.state_ref
+        assert replay.replayed
+        assert replay.state_ref == reordered.state_ref
         with pytest.raises(PlanWorkConflictError):
             await plans.replace(
-                self_person_ref=alice, plan_ref=created.plan_ref,
+                self_person_ref=alice,
+                plan_ref=created.plan_ref,
                 expected_state_ref=first.state_ref,
-                operation_id="b13a:stale", title="Album", steps=steps,
+                operation_id="b13a:stale",
+                title="Album",
+                steps=steps,
             )
         with pytest.raises(PlanWorkConflictError):
             await plans.replace(
-                self_person_ref=alice, plan_ref=created.plan_ref,
+                self_person_ref=alice,
+                plan_ref=created.plan_ref,
                 expected_state_ref=reordered.state_ref,
-                operation_id="b13a:duplicate-step", title="Album",
+                operation_id="b13a:duplicate-step",
+                title="Album",
                 steps=(steps[0], steps[0]),
             )
         with pytest.raises(PlanWorkConflictError):
             await plans.replace(
-                self_person_ref=alice, plan_ref=created.plan_ref,
+                self_person_ref=alice,
+                plan_ref=created.plan_ref,
                 expected_state_ref=reordered.state_ref,
-                operation_id="b13a:duplicate-link", title="Album",
+                operation_id="b13a:duplicate-link",
+                title="Album",
                 steps=(
                     steps[0],
                     PlanStepInput(
-                        step_ref=mix, title="Mix",
+                        step_ref=mix,
+                        title="Mix",
                         activity_ref=activity.activity.activity_ref,
                     ),
                 ),
             )
         with pytest.raises(PlanWorkNotFoundError):
             await plans.replace(
-                self_person_ref=alice, plan_ref=created.plan_ref,
+                self_person_ref=alice,
+                plan_ref=created.plan_ref,
                 expected_state_ref=reordered.state_ref,
-                operation_id="b13a:foreign-activity", title="Album",
-                steps=(PlanStepInput(
-                    step_ref=mix, title="Foreign Activity",
-                    activity_ref=new_native_ref(),
-                ),),
+                operation_id="b13a:foreign-activity",
+                title="Album",
+                steps=(
+                    PlanStepInput(
+                        step_ref=mix,
+                        title="Foreign Activity",
+                        activity_ref=new_native_ref(),
+                    ),
+                ),
             )
         with pytest.raises(PlanWorkInputError):
             await plans.replace(
-                self_person_ref=alice, plan_ref=created.plan_ref,
+                self_person_ref=alice,
+                plan_ref=created.plan_ref,
                 expected_state_ref=reordered.state_ref,
-                operation_id="b13a:bad-title", title=" ", steps=steps,
+                operation_id="b13a:bad-title",
+                title=" ",
+                steps=steps,
             )
         with pytest.raises(PlanWorkNotFoundError):
             await plans.replace(
-                self_person_ref=bob, plan_ref=created.plan_ref,
+                self_person_ref=bob,
+                plan_ref=created.plan_ref,
                 expected_state_ref=reordered.state_ref,
-                operation_id="b13a:foreign-owner", title="Album", steps=steps,
+                operation_id="b13a:foreign-owner",
+                title="Album",
+                steps=steps,
             )
 
         another = await plans.create(
@@ -146,9 +169,11 @@ async def test_b13_a_plan_structure_is_self_owned_ordered_and_historical(
         )
         with pytest.raises(PlanWorkNotFoundError):
             await plans.replace(
-                self_person_ref=alice, plan_ref=another.plan_ref,
+                self_person_ref=alice,
+                plan_ref=another.plan_ref,
                 expected_state_ref=another.state_ref,
-                operation_id="b13a:cross-plan", title="Other",
+                operation_id="b13a:cross-plan",
+                title="Other",
                 steps=(PlanStepInput(step_ref=voice, title="Foreign Step"),),
             )
         with psycopg.connect(
