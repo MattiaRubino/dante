@@ -290,6 +290,10 @@ export function TemporalCreateComposer({
           : 'Per creare una ricorrenza, seleziona una Life Area.';
       case 'temporal.create.reminder.invalid':
         return t(($) => $.common.home.timeline.create.validation.reminder);
+      case 'temporal.create.confirmation.outcome_policy_unavailable':
+        return i18n.language.toLowerCase().startsWith('en')
+          ? 'This outcome policy is not available in Create. Select “Use inherited rule”.'
+          : 'Questa regola per l’esito non è disponibile in Crea. Seleziona “Usa la regola ereditata”.';
       default:
         return t(($) => $.common.home.timeline.create.validation.generic);
     }
