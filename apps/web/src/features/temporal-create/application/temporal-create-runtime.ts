@@ -770,6 +770,18 @@ class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
   ): TemporalCreatePreparation {
     const specification = createTemporalCreateFields(fields);
     const issues = validateTemporalCreateFields(specification);
+    if (specification.confirmation.outcomePolicy !== 'inherit') {
+      return Object.freeze({
+        status: 'invalid',
+        issues: Object.freeze([
+          ...issues,
+          temporalValidationIssue(
+            'temporal.create.confirmation.outcome_policy_unavailable',
+            ['confirmation.outcomePolicy'],
+          ),
+        ]),
+      });
+    }
     if (issues.length > 0) {
       return Object.freeze({ status: 'invalid', issues });
     }
