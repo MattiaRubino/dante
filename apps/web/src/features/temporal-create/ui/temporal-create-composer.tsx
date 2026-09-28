@@ -284,6 +284,10 @@ export function TemporalCreateComposer({
         return t(
           ($) => $.common.home.timeline.create.validation.recurrenceCount,
         );
+      case 'temporal.create.recurrence.life_area_required':
+        return i18n.language.toLowerCase().startsWith('en')
+          ? 'Select a Life Area before creating a recurrence.'
+          : 'Per creare una ricorrenza, seleziona una Life Area.';
       case 'temporal.create.reminder.invalid':
         return t(($) => $.common.home.timeline.create.validation.reminder);
       default:

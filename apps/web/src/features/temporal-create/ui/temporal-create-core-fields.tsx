@@ -562,6 +562,7 @@ export function TemporalCreateCoreFields({
           onChange={(contextId) => onPatch({ contextId })}
           onCreateContext={onCreateContext}
         />
+        {renderError('contextId')}
       </div>
 
       {fields.kind === 'event' ? (

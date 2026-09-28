@@ -226,6 +226,44 @@ describe('B06 Temporal Create runtime', () => {
     });
   });
 
+  it('requires a canonical Life Area before submitting recurring authoring', () => {
+    const sources = runtimeWithAuthoring();
+    const baseline = createTemporalCreateFields({
+      title: 'Evento senza area',
+      kind: 'event',
+      date: '2026-10-01',
+      timeSemantics: 'timed',
+      startTime: '09:30',
+      timeMode: 'floating',
+      timeZoneId: 'Europe/Rome',
+      contextId: 'personale',
+    });
+    const preparation = sources.runtime.prepare(
+      createTemporalCreateFields({
+        ...baseline,
+        eventRecurrence: Object.freeze({
+          ...baseline.eventRecurrence,
+          patternKind: 'calendar-wall-clock',
+          calendarFrequency: 'weekly',
+          weekdays: Object.freeze(['MO']),
+        }),
+      }),
+    );
+
+    expect(preparation).toEqual({
+      status: 'invalid',
+      issues: [
+        {
+          code: 'temporal.create.recurrence.life_area_required',
+          path: ['contextId'],
+          severity: 'error',
+        },
+      ],
+    });
+    expect(sources.createEvent).not.toHaveBeenCalled();
+    expect(sources.createRoutine).not.toHaveBeenCalled();
+  });
+
   it('rejects quota expected-count because canonical quota has no expected-count range', async () => {
     const { execution, createEvent } = await executeEvent({
       patternKind: 'quota-per-period',

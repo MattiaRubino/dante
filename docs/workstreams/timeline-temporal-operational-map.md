@@ -275,7 +275,7 @@ B11-D verifies A/B/C together through `timeline-temporal-operational-b11-d-scope
 
 The isolated integrated PostgreSQL test passed locally at `82f763af` (`1 passed in 7.20s`). B11-D also wires typed Routine Recurrence through Timeline Occurrences and keeps Occurrence Actual/Condition separate; Reminder uncertain-write retry has dedicated web coverage. The complete local commands and reported results are in `timeline-temporal-operational-b11-d-gate-2026-09-27.md`.
 
-The full local gate then reported OpenAPI 7, PostgreSQL 14, generated check 364, client/web typechecks, and web 24 passed. Ruff's only initial failure was the B11-D test import order, fixed at `c685d519`; the user pulled `37ce469a` and reported Ruff passing. B11-D is CLOSED / PROVEN. Whole-B11 real-app acceptance is the current cursor.
+The full local gate then reported OpenAPI 7, PostgreSQL 14, generated check 364, client/web typechecks, and web 24 passed. Ruff's only initial failure was the B11-D test import order, fixed at `c685d519`; the user pulled `37ce469a` and reported Ruff passing. B11-D is CLOSED / PROVEN. The first whole-B11 real-app attempt exposed a Create defect: a recurring Event with `Senza Life Area` reached a generic failure. The repair validates this at `Life Area` before submission; rerun whole-B11 real-app acceptance from the published branch.
 
 ---
 

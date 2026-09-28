@@ -2,11 +2,15 @@
 
 - **Date:** 2026-09-27
 - **Branch:** `feature/timeline-temporal-operational`
-- **Status:** PENDING USER-RUN REAL-APP WALKTHROUGH
+- **Status:** REMEDIATION PUBLISHED; user-run real-app walkthrough must restart
 - **Entering frontier:** B11-A/B/C/D CLOSED / PROVEN; `_86` exact catalog and automated integration gate passed locally
 - **Exit:** close parent B11 only after observed acceptance is recorded
 
 This is the single product walkthrough for B11, after B11-D. Use the local disposable harness and a real authenticated Home/Timeline/Create surface. PostgreSQL remains the canonical authority; check persisted behavior after reload. No GitHub Actions/CI.
+
+## 2026-09-28 observed Create boundary
+
+The first real-app attempt exposed a Create defect: a recurring Event with `Senza Life Area` was allowed to reach `Aggiungi`, then failed only with the generic message `Non è stato possibile applicare la creazione. La bozza è ancora qui.` Recurring Event/Routine authoring requires a canonical Life Area. The app now blocks submission before any backend call, focuses `Life Area` and displays: `Per creare una ricorrenza, seleziona una Life Area.` The first walkthrough attempt is therefore not an acceptance result; use a real Life Area for each recurring Event/Routine in the rerun.
 
 ## Start the isolated app
 

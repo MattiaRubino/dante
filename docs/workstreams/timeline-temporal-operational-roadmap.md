@@ -317,7 +317,7 @@ B11-D is the closed whole-block automated integration gate; scope is `timeline-t
 
 The B11-D backend integration test passed its first isolated local run (`1 passed in 7.20s`); the complete gate is recorded in `timeline-temporal-operational-b11-d-gate-2026-09-27.md`. The Timeline inspector routes Routine/Event Recurrence through the selected Occurrence's source while Actual/Condition remain on the Occurrence, and Reminder retry uses its existing canonical operation contract.
 
-The user-run full gate passed OpenAPI 7, PostgreSQL 14, deterministic generation 364, both typechecks and web 24. Ruff found one import-order error in the new B11-D test, corrected at `c685d519`; the user pulled `37ce469a` and reported the Ruff rerun passing. B11-D is CLOSED / PROVEN. No real-app walkthrough has been run for B11; the parent B11 remains IN PROGRESS pending that final acceptance.
+The user-run full gate passed OpenAPI 7, PostgreSQL 14, deterministic generation 364, both typechecks and web 24. Ruff found one import-order error in the new B11-D test, corrected at `c685d519`; the user pulled `37ce469a` and reported the Ruff rerun passing. B11-D is CLOSED / PROVEN. The first B11 real-app attempt on 2026-09-28 exposed a Create validation defect: recurring authoring allowed `Senza Life Area` through to a generic failure. The published repair blocks before submission and directs the user to `Life Area`; rerun the whole-B11 real-app acceptance. The parent B11 remains IN PROGRESS.
 
 ---
 

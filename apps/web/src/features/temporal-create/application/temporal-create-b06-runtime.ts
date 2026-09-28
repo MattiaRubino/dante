@@ -588,7 +588,25 @@ class B06TemporalCreateRuntime implements TemporalCreateRuntime {
     fields: TemporalCreateFields,
     operationId?: TemporalOperationId,
   ): TemporalCreatePreparation {
-    return this.base.prepare(fields, operationId);
+    const preparation = this.base.prepare(fields, operationId);
+    if (preparation.status !== 'ready') {
+      return preparation;
+    }
+    if (
+      preparation.prepared.metadata.recurrenceOwner !== null &&
+      !isCanonicalLifeAreaRef(preparation.prepared.metadata.contextId)
+    ) {
+      return Object.freeze({
+        status: 'invalid' as const,
+        issues: Object.freeze([
+          temporalValidationIssue(
+            'temporal.create.recurrence.life_area_required',
+            ['contextId'],
+          ),
+        ]),
+      });
+    }
+    return preparation;
   }
 
   public async execute(
