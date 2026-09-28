@@ -518,7 +518,9 @@ export function TemporalCreateEntry({
       } else {
         setLifecycle('failed');
         setFailureMessage(
-          execution.result.failure.message ??
+          (execution.result.status === 'failed'
+            ? execution.result.failure.message
+            : null) ??
             t(($) => $.common.home.timeline.create.failure),
         );
       }
