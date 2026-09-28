@@ -5,6 +5,7 @@ import {
   createDeterministicTemporalIdFactory,
   createFixedTemporalClock,
   type TemporalActivityDataSource,
+  type TemporalAcceptedSchedulePlacement,
   type TemporalConstrainedActivityDataSource,
   type TemporalScheduleDataSource,
 } from '../../temporal';
@@ -53,13 +54,30 @@ function runtimeWithSources() {
     ) {
       throw new Error('Expected a supported B04 placement.');
     }
+    const acceptedPlacement: TemporalAcceptedSchedulePlacement =
+      placement.kind === 'named-zone-local-interval'
+        ? Object.freeze({
+            kind: 'named-zone-local-interval' as const,
+            startsLocalAt: placement.startsLocalAt,
+            endsLocalAt: placement.endsLocalAt,
+            zoneId: placement.zoneId,
+            resolvedStartAt: placement.startsLocalAt.toZonedDateTime(
+              placement.zoneId,
+              { disambiguation: placement.disambiguation },
+            ).toInstant(),
+            resolvedEndAt: placement.endsLocalAt.toZonedDateTime(
+              placement.zoneId,
+              { disambiguation: placement.disambiguation },
+            ).toInstant(),
+          })
+        : placement;
     return Promise.resolve(
       Object.freeze({
         activity: activityRecord('B04 Activity'),
         schedule: Object.freeze({
           scheduleRef: SCHEDULE_REF,
           placementMaterialStateRef: STATE_REF,
-          placement,
+          placement: acceptedPlacement,
         }),
         replayed: false,
       }),
