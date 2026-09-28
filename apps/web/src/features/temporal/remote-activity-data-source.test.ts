@@ -44,6 +44,41 @@ const SCHEDULED_ACTIVITY = Object.freeze({
 });
 
 describe('remote temporal Activity data source', () => {
+  it('preserves the server problem detail for a rejected Schedule create', async () => {
+    const fetchFn = vi.fn<typeof globalThis.fetch>((input) => {
+      if (input === '/api/v1/auth/session') {
+        return Promise.resolve(jsonResponse({ authenticated: true, csrf_token: 'csrf-b02' }));
+      }
+      return Promise.resolve(
+        jsonResponse(
+          {
+            code: 'temporal.schedule.persistence_unavailable',
+            detail: 'Schedule persistence is temporarily unavailable.',
+          },
+          503,
+        ),
+      );
+    });
+    const source = createRemoteTemporalActivityDataSource(fetchFn, () => 'Europe/Rome');
+
+    await expect(
+      source.createScheduledActivity({
+        operationId: 'operation:b02-web-problem-detail',
+        title: 'Prima Activity',
+        placement: {
+          kind: 'floating-local-interval',
+          startsLocalAt: Temporal.PlainDateTime.from('2026-09-09T14:15:00'),
+          endsLocalAt: Temporal.PlainDateTime.from('2026-09-09T15:00:00'),
+        },
+      }),
+    ).rejects.toMatchObject({
+      name: TemporalActivityRemoteError.name,
+      message: 'Schedule persistence is temporarily unavailable.',
+      status: 503,
+      code: 'temporal.schedule.persistence_unavailable',
+    });
+  });
+
   it('creates through authenticated governed fetch with CSRF and canonical B01 payload', async () => {
     const fetchFn = vi.fn<typeof globalThis.fetch>((input, init) => {
       const headers = new Headers(init?.headers);
