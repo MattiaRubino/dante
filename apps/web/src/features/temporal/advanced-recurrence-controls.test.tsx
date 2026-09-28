@@ -209,6 +209,8 @@ describe('Advanced Recurrence controls', () => {
     await screen.findByRole('alert');
     expect(screen.getByText('Recurrence avanzata: lettura non disponibile')).toBeTruthy();
     expect(screen.queryByText('Recurrence avanzata: sorgente non ricorrente')).toBeNull();
-    expect(screen.getByLabelText('Regola Recurrence avanzata')).toBeDisabled();
+    expect(
+      (screen.getByLabelText('Regola Recurrence avanzata') as HTMLSelectElement).disabled,
+    ).toBe(true);
   });
 });
