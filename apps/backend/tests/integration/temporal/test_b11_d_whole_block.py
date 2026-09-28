@@ -78,6 +78,9 @@ async def test_b11_d_canonical_chain_preserves_independent_history(
             owner="routine", self_person_ref=alice, owner_ref=routine.routine_ref
         )
         assert current_rule is not None
+        assert await advanced.get(
+            owner="routine", self_person_ref=alice, source_ref=routine.routine_ref
+        ) is None
         rule = await advanced.replace(
             owner="routine",
             self_person_ref=alice,
