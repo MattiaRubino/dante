@@ -2,7 +2,7 @@
 
 - **Branch:** `feature/timeline-temporal-operational`
 - **Status:** CANDIDATE — local PostgreSQL, API, web, generated-client and catalog gates pending
-- **Migration source head:** `20260928_88`
+- **Migration source head:** `20260928_89`
 - **Prior proven persistence frontier:** B11-C / `20260927_86`
 
 ## Discovery decisions
@@ -18,6 +18,7 @@ The API replaces a complete bounded snapshot with expected-current CAS and a rep
 ```text
 _87 forward-only migration
 _88 forward-only replay and catalog-identifier repair
+_89 forward-only replace-current binding qualification
 seven typed Plan work tables + four guarded self-scoped functions
 SQLAlchemy mapping inventory + Dictionary entries
 Plan application / HTTP OpenAPI routes
@@ -25,8 +26,8 @@ Home Plan/Step panel + governed web data source
 focused PostgreSQL, OpenAPI and web tests
 ```
 
-The expected topology is `191|5|148|100|386|334|488|0|0|0`. The first user-run PostgreSQL gate reached `_87` and matched the topology, but exposed a replay SQL column error and eight check-constraint names that differed from the Dictionary. The follow-up `_88` corrects both without changing data or topology. Its first published source used the reserved SQL alias `constraint` and failed transactionally during fixture migration setup; no `_88` application was observed. The alias was corrected in the same unapplied revision so the migration chain can run. OpenAPI tests, web/API typechecks, the UI test and deterministic client generation passed; the generated client was committed as `96f2f7b9`. The focused PostgreSQL test and exact catalog still need a local rerun.
+The expected topology is `191|5|148|100|386|334|488|0|0|0`. The first user-run PostgreSQL gate reached `_87` and matched the topology, but exposed a replay SQL column error and eight check-constraint names that differed from the Dictionary. The follow-up `_88` corrected both without changing data or topology. Its first published source used the reserved SQL alias `constraint` and failed transactionally during fixture migration setup; no `_88` application was observed. The alias was corrected in the same unapplied revision so the migration chain could run. The next local run reached Plan replacement and exposed an ambiguous unqualified `plan_ref`; `_89` qualifies the accepted-current binding with a table alias. OpenAPI tests, web/API typechecks, the UI test and deterministic client generation passed; the generated client was committed as `96f2f7b9`. The focused PostgreSQL test and exact catalog still need a local rerun.
 
 ## Exit gate
 
-Run the B13-A PostgreSQL test and exact current catalog tests at `_88`; record actual outputs. Only after all applicable gates pass should the roadmap, map and handoff advance to B13-B.
+Run the B13-A PostgreSQL test and exact current catalog tests at `_89`; record actual outputs. Only after all applicable gates pass should the roadmap, map and handoff advance to B13-B.

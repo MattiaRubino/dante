@@ -8,7 +8,7 @@
 - **Current gate:** B13-A Work Structure Core ▶ OPEN
 - **Current gate authority:** `docs/workstreams/timeline-temporal-operational-b13-a-scope-2026-09-28.md`
 - **B13-A implementation checkpoint:** `docs/workstreams/timeline-temporal-operational-b13-a-implementation-2026-09-28.md`
-- **Current persistence source frontier:** B13-A / Alembic `20260928_88` (repair candidate; local PostgreSQL retest pending)
+- **Current persistence source frontier:** B13-A / Alembic `20260928_89` (replace repair candidate; local PostgreSQL retest pending)
 - **Measured whole-catalog topology:** B11-C / `20260927_86` / `184|5|144|100|370|323|480|0|0|0`
 - **B10-D closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-d-closure-2026-09-26.md`
 - **B10-E closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-e-closure-2026-09-26.md`
@@ -370,7 +370,7 @@ maximum Session / merge / spacing / preparation / recovery constraints
 promotion of Step to universal root identity without model authority
 ```
 
-The discovery checkpoint selected flat `Plan -> Step`, normalized immutable structure revisions and explicit position. Existing Plan identity is reused; optional Activity references are same-self validated without identity collapse. The first `_87` local gate passed OpenAPI, web/API typechecks and deterministic client generation, while PostgreSQL exposed a replay projection error and catalog check names and the web test exposed an ambiguous selector. The `_88` forward repair and test correction require focused local retest before closure. See `timeline-temporal-operational-b13-a-implementation-2026-09-28.md`.
+The discovery checkpoint selected flat `Plan -> Step`, normalized immutable structure revisions and explicit position. Existing Plan identity is reused; optional Activity references are same-self validated without identity collapse. OpenAPI, web/API typechecks, generated client and UI test passed locally. `_88` repaired replay and catalog naming; the next local run exposed an ambiguous accepted-current update, repaired in forward `_89`. Focused PostgreSQL and catalog retest remain before closure. See `timeline-temporal-operational-b13-a-implementation-2026-09-28.md`.
 
 ## B13-B — Qualified Dependencies
 
