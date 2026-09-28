@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — B13-B Qualified Dependencies gate
 
-- **Status:** PROPOSED — awaiting explicit scope approval
+- **Status:** APPROVED — semantic scope frozen; implementation pending
 - **Date:** 2026-09-28
 - **Branch:** `feature/timeline-temporal-operational`
 - **Pre-scope HEAD:** `4a0a95c94a746173af6d965dfc791339111560c0`
