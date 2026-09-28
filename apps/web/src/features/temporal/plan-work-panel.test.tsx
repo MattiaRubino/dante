@@ -1,0 +1,55 @@
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import type { PlanWork } from './remote-plan-work-data-source';
+
+const PLAN = '0199a8c0-5e74-7bc0-8ad0-a2f403f5617d';
+const STATE = '0199a8c0-5e74-7bc0-8ad0-a2f403f5617e';
+const first = '0199a8c0-5e74-7bc0-8ad0-a2f403f5617f';
+const second = '0199a8c0-5e74-7bc0-8ad0-a2f403f56180';
+const current: PlanWork = {
+  planRef: PLAN, stateRef: STATE, title: 'Album',
+  createdAt: '2026-09-28T12:00:00Z', replayed: false,
+  steps: [
+    { stepRef: first, position: 0, title: 'Record', activityRef: null },
+    { stepRef: second, position: 1, title: 'Mix', activityRef: null },
+  ],
+};
+
+const { list, replace } = vi.hoisted(() => ({
+  list: vi.fn<() => Promise<readonly PlanWork[]>>(),
+  replace: vi.fn(),
+}));
+vi.mock('./remote-plan-work-data-source', async (importOriginal) => {
+  const original = await importOriginal<typeof import('./remote-plan-work-data-source')>();
+  return {
+    ...original,
+    createRemotePlanWorkDataSource: () => ({
+      list, replace, create: vi.fn(),
+    }),
+  };
+});
+
+import { PlanWorkPanel } from './plan-work-panel';
+
+describe('Plan work panel', () => {
+  beforeEach(() => {
+    list.mockReset().mockResolvedValue([current]);
+    replace.mockReset().mockResolvedValue({
+      ...current,
+      stateRef: '0199a8c0-5e74-7bc0-8ad0-a2f403f56181',
+      steps: [current.steps[1], current.steps[0]],
+    });
+  });
+
+  it('keeps Step order as an explicit Plan revision', async () => {
+    render(<PlanWorkPanel />);
+    fireEvent.click(screen.getByText('Plan e Step'));
+    await screen.findByText('Record');
+    fireEvent.click(screen.getByRole('button', { name: 'Sposta giù Record' }));
+    await waitFor(() => expect(replace).toHaveBeenCalledOnce());
+    expect(replace.mock.calls[0]?.[0]).toMatchObject({ planRef: PLAN, stateRef: STATE });
+    expect(replace.mock.calls[0]?.[2].map((step: { stepRef: string }) => step.stepRef))
+      .toEqual([second, first]);
+  });
+});

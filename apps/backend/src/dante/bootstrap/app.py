@@ -30,6 +30,7 @@ from dante.modules.temporal.life_area_assignment_api import (
 )
 from dante.modules.temporal.occurrence_api import router as temporal_occurrence_router
 from dante.modules.temporal.outcome_api import router as temporal_outcome_router
+from dante.modules.temporal.plan_work_api import router as temporal_plan_work_router
 from dante.modules.temporal.product_tag_api import router as temporal_product_tag_router
 from dante.modules.temporal.reconciliation_api import router as temporal_reconciliation_router
 from dante.modules.temporal.recurrence_api import router as temporal_recurrence_router
@@ -111,6 +112,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(temporal_constraint_router)
     app.include_router(temporal_constrained_activity_router)
     app.include_router(temporal_schedule_reminder_router)
+    app.include_router(temporal_plan_work_router)
 
     @app.get("/health/live", include_in_schema=False)
     def health_live() -> dict[str, str]:

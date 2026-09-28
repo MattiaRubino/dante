@@ -1,0 +1,52 @@
+.plan-work-panel {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 69;
+  width: min(360px, calc(100vw - 32px));
+  max-height: min(70vh, 680px);
+  overflow: auto;
+  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface, #111827) 94%, transparent);
+  box-shadow: 0 18px 48px rgb(0 0 0 / 28%);
+  backdrop-filter: blur(16px);
+}
+
+.plan-work-panel > summary {
+  cursor: pointer;
+  padding: 10px 14px;
+  font-weight: 700;
+}
+
+.plan-work-panel__body {
+  display: grid;
+  gap: 10px;
+  padding: 0 14px 14px;
+}
+
+.plan-work-panel__body label {
+  display: grid;
+  gap: 5px;
+}
+
+.plan-work-panel__body input,
+.plan-work-panel__body select {
+  min-width: 0;
+  width: 100%;
+}
+
+.plan-work-panel__body li {
+  margin-block: 8px;
+}
+
+.plan-work-panel__body li button {
+  margin-inline-start: 8px;
+}
+
+@media (max-width: 760px) {
+  .plan-work-panel {
+    bottom: 72px;
+    max-height: min(40vh, 380px);
+  }
+}

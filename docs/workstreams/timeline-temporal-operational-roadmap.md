@@ -7,7 +7,8 @@
 - **Current block:** B13 Work Structure / Decomposition / Dependencies
 - **Current gate:** B13-A Work Structure Core ▶ OPEN
 - **Current gate authority:** `docs/workstreams/timeline-temporal-operational-b13-a-scope-2026-09-28.md`
-- **Current persistence source frontier:** B11-C / Alembic `20260927_86`
+- **B13-A implementation checkpoint:** `docs/workstreams/timeline-temporal-operational-b13-a-implementation-2026-09-28.md`
+- **Current persistence source frontier:** B13-A / Alembic `20260928_87` (candidate; local PostgreSQL gate pending)
 - **Measured whole-catalog topology:** B11-C / `20260927_86` / `184|5|144|100|370|323|480|0|0|0`
 - **B10-D closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-d-closure-2026-09-26.md`
 - **B10-E closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-e-closure-2026-09-26.md`
@@ -102,7 +103,7 @@ B11 Advanced Recurrence / Conditional / Reminder ✅ CLOSED / USER-REPORTED ACCE
   B11-D Whole-block integration gate              ✅ CLOSED / PROVEN; real-app acceptance ✅
 
 B13 Work Structure / Decomposition / Dependencies ◐ IN PROGRESS
-  B13-A Work Structure Core                       ▶ OPEN / CURRENT GATE
+  B13-A Work Structure Core                       ◐ IMPLEMENTED CANDIDATE / LOCAL GATE PENDING
   B13-B Qualified Dependencies                    ⬜
   B13-C Execution Structure Constraints           ⬜
   B13-D Whole-block Integration / Proof / Acceptance ⬜
@@ -354,7 +355,7 @@ B13 permanently distinguishes:
 
 B13 is intentionally split into four coherent gates:
 
-## B13-A — Work Structure Core — OPEN / CURRENT GATE
+## B13-A — Work Structure Core — CANDIDATE / LOCAL GATE PENDING
 
 Introduce the minimum canonical Plan-owned decomposition foundation: internal structural Step semantics, optional references to real Activities, explicit ordering distinct from decomposition, accepted/current-state plus history behavior, and only the API/UI needed to prove the canonical path.
 
@@ -369,7 +370,7 @@ maximum Session / merge / spacing / preparation / recovery constraints
 promotion of Step to universal root identity without model authority
 ```
 
-DDL must not begin until the current repository evidence resolves whether B13-A is `Plan -> Step` only or recursive structure, the exact ordering representation, Activity-link semantics and reusable identity/current-history primitives.
+The discovery checkpoint selected flat `Plan -> Step`, normalized immutable structure revisions and explicit position. Existing Plan identity is reused; optional Activity references are same-self validated without identity collapse. The `_87` candidate and minimum author/read UI exist, but the PostgreSQL, catalog, public-contract, generated-client and web gates must pass locally before closure. See `timeline-temporal-operational-b13-a-implementation-2026-09-28.md`.
 
 ## B13-B — Qualified Dependencies
 

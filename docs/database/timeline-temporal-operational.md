@@ -1,10 +1,10 @@
 # Timeline / Temporal-Operational — Candidate Database Overlay
 
-- **Status:** CURRENT CANDIDATE DATABASE OVERLAY — B11-C `_86` catalog locally proven
+- **Status:** CURRENT CANDIDATE DATABASE OVERLAY — B13-A `_87` source; PostgreSQL gate pending
 - **Reconciled:** 2026-09-27
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
-- **Candidate migration source head:** `20260927_86`
+- **Candidate migration source head:** `20260928_87` (B13-A; PostgreSQL proof pending)
 - **Focused local proof frontier:** B11-C `_86` (5 backend and 16 web focused tests passed)
 - **Measured whole-topology count:** `_86` / `184|5|144|100|370|323|480|0|0|0`
 - **Whole-DB SoR:** `README.md`
@@ -64,6 +64,8 @@ Published migrations are immutable. Any persistence correction is forward-only.
 20260927_82 → 20260927_85 B11-B conditional temporal intent/evaluation and forward-only read/qualification repairs
     ↓
 20260927_86 B11-C personal Schedule Reminder candidate
+    ↓
+20260928_87 B13-A Plan work structure candidate
 ```
 
 ## 3. Proven frontier and topology discipline
@@ -323,6 +325,12 @@ Revision `_81` extends existing Routine/Event elapsed Recurrence with completion
 
 Revisions `_82`–`_85` add `conditional_temporal_intent`, `conditional_temporal_evaluation`, `conditional_temporal_operation`, and guarded create/get/find/evaluate functions. `_83`–`_85` are forward-only corrections to published routines, not new Condition identities. Evaluation reads accepted-current Actual and pins the exact Actual MaterialState when known; `allow` never executes an effect. The user-run focused PostgreSQL (4), OpenAPI (6), web (3), generated check (361 files) and client/web typechecks passed; see `../workstreams/timeline-temporal-operational-b11-b-proof-2026-09-27.md`.
 
-## 13. Current database cursor
+## 13. B11-C Reminder — proven frontier
 
-B11-C `_86` adds a stable `schedule_reminder` owner keyed by self Person and Schedule, append-only `schedule_reminder_configuration_state` with shared MaterialState address/current binding, `schedule_reminder_current_history`, and `schedule_reminder_operation` for CAS/idempotency. Guarded PostgreSQL functions resolve self ownership, the accepted exact-start interval (absolute or resolved named-zone), and derived due/disposition. Runtime has execute grants on bounded get/configure functions and no direct table DML. Focused backend (5) and web (16) tests, generation and both typechecks passed locally; the `_86` catalog probe and both exact Dictionary/catalog tests passed with the measured tuple above. This slice creates no delivery job or Actual mutation. The whole-B11 real-app walkthrough remains open.
+B11-C `_86` adds a stable `schedule_reminder` owner keyed by self Person and Schedule, append-only `schedule_reminder_configuration_state` with shared MaterialState address/current binding, `schedule_reminder_current_history`, and `schedule_reminder_operation` for CAS/idempotency. Guarded PostgreSQL functions resolve self ownership, the accepted exact-start interval (absolute or resolved named-zone), and derived due/disposition. Runtime has execute grants on bounded get/configure functions and no direct table DML. Focused backend (5) and web (16) tests, generation and both typechecks passed locally; the `_86` catalog probe and both exact Dictionary/catalog tests passed with the measured tuple above. This slice creates no delivery job or Actual mutation. Whole B11 is closed with user-reported real-app acceptance.
+
+## 14. B13-A Plan work structure — candidate
+
+Forward-only `_87` reuses the Plan NativeRef identity shell and introduces self ownership, internal Plan-owned Steps, immutable normalized structure revisions, explicit accepted-current binding/history and replay-safe operations. Step order is a presentation sequence, not Dependency. An optional link to an existing self-owned Activity preserves the Activity's separate identity and lifecycle. The runtime has execute grants on four guarded read/write functions and no direct DML grants on the seven new tables.
+
+The Dictionary and catalog expectations target `_87`; `191|5|148|100|386|334|488|0|0|0` is a migration-derived **candidate expectation**, not measured proof. The user-run PostgreSQL and exact catalog gates must establish the live topology before this slice closes. See `../workstreams/timeline-temporal-operational-b13-a-implementation-2026-09-28.md`.

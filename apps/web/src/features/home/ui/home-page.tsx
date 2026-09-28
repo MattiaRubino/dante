@@ -4,6 +4,7 @@ import './home-skin.css';
 import './central-stage/central-stage-m1-geometry.css';
 
 import { TimelineTruthInspector } from '../../temporal/timeline-truth-inspector';
+import { PlanWorkPanel } from '../../temporal/plan-work-panel';
 import { TemporalTimelineRuntimeBoundary } from '../../temporal/timeline-runtime-boundary';
 import type { HomeWorldOpenIntent } from '../model/home-world-focus';
 import { HomeShell } from './home-shell';
@@ -20,6 +21,7 @@ export function HomePage(props: HomePageProps) {
     <TemporalTimelineRuntimeBoundary viewedDateIso={props.viewedDateIso}>
       <HomeShell {...props} />
       <TimelineTruthInspector />
+      <PlanWorkPanel />
     </TemporalTimelineRuntimeBoundary>
   );
 }

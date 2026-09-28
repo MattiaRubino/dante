@@ -1,9 +1,4 @@
-"""Measure the live `_86` catalog delta before materializing the B11 Dictionary.
-
-This is deliberately a probe, not a guessed whole-catalog assertion.  The
-Dictionary is still materialized at B10-C `_79`; its next revision must be
-derived from an upgraded PostgreSQL catalog, not from migration arithmetic.
-"""
+"""Keep the B11-C catalog objects visible at the current candidate head."""
 
 from __future__ import annotations
 
@@ -18,7 +13,7 @@ from dante.platform.database.mappings import MAPPED_TABLES
 
 pytestmark = pytest.mark.postgres
 
-_CURRENT_REVISION = "20260927_86"
+_CURRENT_REVISION = "20260928_87"
 _REPO_ROOT = Path(__file__).resolve().parents[5]
 _DICTIONARY_ROOT = _REPO_ROOT / "docs" / "database" / "dictionary"
 _B11_C_TABLES = {
@@ -55,7 +50,7 @@ def _print_delta(label: str, values: set[str]) -> None:
 
 
 def test_b11_catalog_reconciliation_probe(migrated_database: Any) -> None:
-    """Emit exact live-vs-Dictionary deltas for the one `_86` reconciliation."""
+    """Emit live-vs-Dictionary deltas while retaining B11-C object assertions."""
     dictionary = {
         kind: _dictionary_names(kind)
         for kind in ("tables", "views", "routines")

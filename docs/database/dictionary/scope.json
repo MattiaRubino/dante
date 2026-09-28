@@ -37,21 +37,22 @@
       "B10-D",
       "B11-A",
       "B11-B",
-      "B11-C"
+      "B11-C",
+      "B13-A"
     ],
     "standalone_entries": {
-      "tables": 184,
+      "tables": 191,
       "views": 5,
-      "routines": 144,
-      "total": 333
+      "routines": 148,
+      "total": 344
     },
     "embedded_objects": {
       "triggers": 100,
-      "physical_indexes": 370
+      "physical_indexes": 386
     },
     "constraints": {
-      "foreign_keys": 323,
-      "check_constraints": 480
+      "foreign_keys": 334,
+      "check_constraints": 488
     }
   },
   "technical_foundation": {

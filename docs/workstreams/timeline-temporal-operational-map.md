@@ -8,11 +8,12 @@
 - **B10-E closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-e-closure-2026-09-26.md`
 - **B11 closure evidence:** `docs/workstreams/timeline-temporal-operational-b11-closure-2026-09-28.md`
 - **B13-A gate authority:** `docs/workstreams/timeline-temporal-operational-b13-a-scope-2026-09-28.md`
+- **B13-A candidate checkpoint:** `docs/workstreams/timeline-temporal-operational-b13-a-implementation-2026-09-28.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Current persistence source frontier:** `20260927_86` (B11-C)
+- **Current persistence source frontier:** `20260928_87` (B13-A candidate; unproven)
 - **Measured whole-catalog topology:** B11-C `_86` / `184|5|144|100|370|323|480|0|0|0`
 - **Completed functional frontier:** B11 ✅ CLOSED / USER-REPORTED ACCEPTANCE 2026-09-28
-- **Current implementation cursor:** B13-A Work Structure Core ▶ OPEN
+- **Current implementation cursor:** B13-A Work Structure Core — local PostgreSQL/API/web/catalog gate pending
 - **CI:** not authorized; local tests are run by the user
 
 ---
@@ -101,7 +102,7 @@ timeline-temporal-operational-b11-closure-2026-09-28.md
 
 ```text
 B13 Work Structure / Decomposition / Dependencies ◐ IN PROGRESS
-  B13-A Work Structure Core                       ▶ OPEN / CURRENT GATE
+  B13-A Work Structure Core                       ◐ CANDIDATE / LOCAL GATE PENDING
   B13-B Qualified Dependencies                    ⬜
   B13-C Execution Structure Constraints           ⬜
   B13-D Whole-block Integration / Proof / Acceptance ⬜
@@ -294,7 +295,7 @@ canonical Plan
 → bounded author/read proof
 ```
 
-Implementation discovery must precede DDL. In particular, resolve from current repository evidence whether B13-A needs only `Plan -> Step` or recursive nesting, the ordering representation, Activity-link representation, reuse of existing identity/material/current-history primitives and the correct database/guard boundaries.
+The discovery checkpoint chose flat `Plan -> Step`, existing Plan NativeRef, Plan-owned internal Step references, normalized immutable structure revisions, explicit presentation position and same-self Activity references. The `_87` candidate, guarded API and Home author/read controls are implemented. Local PostgreSQL, exact catalog, OpenAPI, generated client and web gates remain before B13-A closure; see `timeline-temporal-operational-b13-a-implementation-2026-09-28.md`.
 
 Forbidden in B13-A:
 

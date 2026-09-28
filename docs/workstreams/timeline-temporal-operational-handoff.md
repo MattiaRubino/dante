@@ -6,9 +6,10 @@
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Live execution ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **B13-A gate authority:** `docs/workstreams/timeline-temporal-operational-b13-a-scope-2026-09-28.md`
+- **B13-A candidate checkpoint:** `docs/workstreams/timeline-temporal-operational-b13-a-implementation-2026-09-28.md`
 - **B11 closure evidence:** `docs/workstreams/timeline-temporal-operational-b11-closure-2026-09-28.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Current migration source head:** B11-C / Alembic `20260927_86`
+- **Current migration source head:** B13-A / Alembic `20260928_87` (candidate; unproven)
 - **Measured whole-catalog topology:** B11-C `_86` / `184|5|144|100|370|323|480|0|0|0`
 - **B11 real-app acceptance:** USER-REPORTED PASS 2026-09-28
 - **CI:** no CI/GitHub Actions unless explicitly authorized; user runs local tests
@@ -35,7 +36,7 @@ B11     ✅ CLOSED / USER-REPORTED ACCEPTANCE 2026-09-28
   B11-C ✅ CLOSED / PROVEN
   B11-D ✅ CLOSED / PROVEN
 B13     ◐ IN PROGRESS
-  B13-A ▶ OPEN / CURRENT GATE
+  B13-A ◐ CANDIDATE / LOCAL GATE PENDING
   B13-B ⬜ NOT STARTED
   B13-C ⬜ NOT STARTED
   B13-D ⬜ NOT STARTED
@@ -235,7 +236,7 @@ decomposition != execution precedence
 
 Treat Step as internal work-structure semantics unless stronger current repository authority requires promotion to a universal root semantic identity. Do not create generic `work_item`, `node` or `edge` abstractions merely to defer the decision.
 
-Before B13-A DDL, inventory current repository evidence and decide:
+The B13-A discovery checkpoint resolved the implementation choices before `_87` DDL:
 
 1. whether existing Plan identity/address primitives are sufficient or a dedicated Plan state family is required;
 2. whether this gate is `Plan -> Step` only or needs recursive structural nesting;
@@ -245,6 +246,8 @@ Before B13-A DDL, inventory current repository evidence and decide:
 6. which existing identity/material/current-history primitives can be reused correctly;
 7. database versus guarded-operation boundaries for cross-Plan, duplicate-link and cycle invariants;
 8. the minimum public API/client/UI slice required for author/read proof.
+
+The decision is flat `Plan -> Step`, reusing Plan NativeRef and giving Step an internal Plan-owned reference. Normalized revision snapshots hold membership, title, presentation order and optional same-self Activity link. Guarded functions enforce ownership, duplicate links and expected-current revision; current/history bindings remain explicit. The candidate is implemented in `timeline-temporal-operational-b13-a-implementation-2026-09-28.md`. Its PostgreSQL/catalog/API/web/generated-client gates are still pending, so B13-A is **not closed**.
 
 B13-A non-goals:
 

@@ -154,6 +154,10 @@ _EXPECTED_TEMPORAL_OPERATIONS = {
     ("/api/v1/temporal/conditions/actual-realization/{condition_ref}/evaluations", "post"): "temporal_evaluate_actual_realization_condition",
     ("/api/v1/temporal/schedules/{schedule_ref}/reminder", "get"): "temporal_get_schedule_reminder",
     ("/api/v1/temporal/schedules/{schedule_ref}/reminder", "put"): "temporal_configure_schedule_reminder",
+    ("/api/v1/temporal/plans", "get"): "temporal_list_self_plans",
+    ("/api/v1/temporal/plans", "post"): "temporal_create_self_plan",
+    ("/api/v1/temporal/plans/{plan_ref}", "get"): "temporal_get_self_plan",
+    ("/api/v1/temporal/plans/{plan_ref}", "put"): "temporal_replace_self_plan_work",
 }
 
 
