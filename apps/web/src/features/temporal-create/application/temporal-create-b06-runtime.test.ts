@@ -245,7 +245,7 @@ describe('B06 Temporal Create runtime', () => {
           ...baseline.eventRecurrence,
           patternKind: 'calendar-wall-clock',
           calendarFrequency: 'weekly',
-          weekdays: Object.freeze(['MO']),
+          weekdays: Object.freeze(['MO'] as const),
         }),
       }),
     );
