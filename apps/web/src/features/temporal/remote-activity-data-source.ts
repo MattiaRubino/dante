@@ -503,12 +503,18 @@ function problemCode(payload: unknown): string | null {
     : null;
 }
 
+function problemDetail(payload: unknown, fallback: string): string {
+  return isRecord(payload) && typeof payload.detail === 'string' && payload.detail.trim()
+    ? payload.detail
+    : fallback;
+}
+
 async function requireOk(response: Response, label: string): Promise<unknown> {
   const payload = await readJson(response, label);
   if (!response.ok) {
     throw new TemporalActivityRemoteError(
       'http',
-      `${label} failed with HTTP ${response.status}.`,
+      problemDetail(payload, `${label} failed with HTTP ${response.status}.`),
       response.status,
       problemCode(payload),
     );
