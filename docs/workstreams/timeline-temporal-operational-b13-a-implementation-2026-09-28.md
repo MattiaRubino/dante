@@ -25,8 +25,8 @@ Home Plan/Step panel + governed web data source
 focused PostgreSQL, OpenAPI and web tests
 ```
 
-The expected topology is `191|5|148|100|386|334|488|0|0|0`. The first user-run PostgreSQL gate reached `_87` and matched the topology, but exposed a replay SQL column error and eight check-constraint names that differed from the Dictionary. The follow-up `_88` corrects both without changing data or topology. OpenAPI tests, web/API typechecks and deterministic client generation passed; the focused PostgreSQL test, exact catalog and one UI test must be rerun after this repair.
+The expected topology is `191|5|148|100|386|334|488|0|0|0`. The first user-run PostgreSQL gate reached `_87` and matched the topology, but exposed a replay SQL column error and eight check-constraint names that differed from the Dictionary. The follow-up `_88` corrects both without changing data or topology. Its first published source used the reserved SQL alias `constraint` and failed transactionally during fixture migration setup; no `_88` application was observed. The alias was corrected in the same unapplied revision so the migration chain can run. OpenAPI tests, web/API typechecks, the UI test and deterministic client generation passed; the generated client was committed as `96f2f7b9`. The focused PostgreSQL test and exact catalog still need a local rerun.
 
 ## Exit gate
 
-Run the B13-A PostgreSQL test, exact current catalog tests and repaired UI test at `_88`; record actual outputs. The generated API client remains on the user's local worktree and must be committed from the deterministic generator. Only after all applicable gates pass should the roadmap, map and handoff advance to B13-B.
+Run the B13-A PostgreSQL test and exact current catalog tests at `_88`; record actual outputs. Only after all applicable gates pass should the roadmap, map and handoff advance to B13-B.

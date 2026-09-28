@@ -30,11 +30,11 @@ def upgrade() -> None:
         matches = (
             connection.execute(
                 sa.text(
-                    "SELECT constraint.conname FROM pg_constraint AS constraint "
-                    "JOIN pg_class AS relation ON relation.oid=constraint.conrelid "
-                    "JOIN pg_namespace AS namespace ON namespace.oid=relation.relnamespace "
-                    "WHERE namespace.nspname='dante' AND relation.relname=:table "
-                    "AND constraint.contype='c' AND constraint.conname LIKE :old_name"
+                    "SELECT c.conname FROM pg_constraint AS c "
+                    "JOIN pg_class AS rel ON rel.oid=c.conrelid "
+                    "JOIN pg_namespace AS ns ON ns.oid=rel.relnamespace "
+                    "WHERE ns.nspname='dante' AND rel.relname=:table "
+                    "AND c.contype='c' AND c.conname LIKE :old_name"
                 ),
                 {"table": table, "old_name": f"{old_prefix}%"},
             )
