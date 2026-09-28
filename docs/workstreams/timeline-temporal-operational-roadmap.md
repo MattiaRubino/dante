@@ -5,6 +5,8 @@
 - **Vertical boundary:** Home `+` creation/configuration → canonical temporal truth → Timeline projection/actions → bounded lifecycle completion
 - **Completed functional frontier:** B11 ✅ CLOSED / USER-REPORTED ACCEPTANCE 2026-09-28
 - **Current block:** B13 Work Structure / Decomposition / Dependencies
+- **Current gate:** B13-A Work Structure Core ▶ OPEN
+- **Current gate authority:** `docs/workstreams/timeline-temporal-operational-b13-a-scope-2026-09-28.md`
 - **Current persistence source frontier:** B11-C / Alembic `20260927_86`
 - **Measured whole-catalog topology:** B11-C / `20260927_86` / `184|5|144|100|370|323|480|0|0|0`
 - **B10-D closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-d-closure-2026-09-26.md`
@@ -59,6 +61,7 @@ Step != Activity
 Plan != Activity
 Dependency != hierarchy
 ordering != dependency
+decomposition != execution precedence
 proposal != accepted effect
 current accepted state != latest row
 MaterialState payload != mutable runtime record
@@ -93,24 +96,29 @@ B10 Actual / Outcome / Confirmation / Resolution ✅ CLOSED 2026-09-26
   B10-E Final integration + acceptance            ✅ CLOSED / USER-REPORTED ACCEPTANCE 2026-09-26
 
 B11 Advanced Recurrence / Conditional / Reminder ✅ CLOSED / USER-REPORTED ACCEPTANCE 2026-09-28
-  B11-A Advanced Recurrence                    ✅ CLOSED / PROVEN (user-run local gates)
-  B11-B Conditional Temporal Behavior         ✅ CLOSED / PROVEN (focused and `_86` catalog gates)
-  B11-C Schedule-relative personal Reminder   ✅ CLOSED / PROVEN (focused and `_86` catalog gates)
-  B11-D Whole-block integration gate          ✅ CLOSED / PROVEN; real-app acceptance ✅
-B13 Work Structure / Decomposition / Dependencies⬜
-B12 Replanning / Conflict / Solver               ⬜
+  B11-A Advanced Recurrence                       ✅ CLOSED / PROVEN (user-run local gates)
+  B11-B Conditional Temporal Behavior             ✅ CLOSED / PROVEN (focused and `_86` catalog gates)
+  B11-C Schedule-relative personal Reminder       ✅ CLOSED / PROVEN (focused and `_86` catalog gates)
+  B11-D Whole-block integration gate              ✅ CLOSED / PROVEN; real-app acceptance ✅
+
+B13 Work Structure / Decomposition / Dependencies ◐ IN PROGRESS
+  B13-A Work Structure Core                       ▶ OPEN / CURRENT GATE
+  B13-B Qualified Dependencies                    ⬜
+  B13-C Execution Structure Constraints           ⬜
+  B13-D Whole-block Integration / Proof / Acceptance ⬜
+B12 Replanning / Conflict / Solver                ⏸ HELD UNTIL B13 CLOSES
 B14 Temporal Create Completeness Gate             ⬜
-B07 UI/UX Consolidation v1                       ⏸ DEFERRED UNTIL B14
-B15 Whole Vertical Closure                       ⬜
+B07 UI/UX Consolidation v1                        ⏸ DEFERRED UNTIL B14
+B15 Whole Vertical Closure                        ⬜
 ```
 
 Execution sequence:
 
 ```text
-B09 → B10 → B11 → B13 → B12 → B14 → B07 → B15
+B09 → B10 → B11 → B13-A → B13-B → B13-C → B13-D → B12 → B14 → B07 → B15
 ```
 
-B13 precedes B12 so replanning/solver logic already understands work structure and dependencies. B14 precedes B07 so final UI consolidation does not polish unsupported editable intent.
+B13 precedes B12 so replanning/solver logic already understands canonical work structure, dependencies and execution-structure constraints. B14 precedes B07 so final UI consolidation does not polish unsupported editable intent.
 
 ---
 
@@ -292,7 +300,7 @@ The B10 truth inspector is mounted from the canonical Home timeline runtime. The
 
 The B10-E-specific automated tests were added but were not separately reported as user-run at closure time; closure therefore records B10-E precisely as `USER-REPORTED ACCEPTANCE`, while B10-A through B10-D retain their `PROVEN` classifications.
 
-Whole B10 is now CLOSED. Advance directly to B11.
+Whole B10 is now CLOSED.
 
 ---
 
@@ -318,31 +326,66 @@ B11-D is the closed whole-block automated integration gate; scope is `timeline-t
 
 The B11-D backend integration test passed its first isolated local run (`1 passed in 7.20s`); the complete gate is recorded in `timeline-temporal-operational-b11-d-gate-2026-09-27.md`. The Timeline inspector routes Routine/Event Recurrence through the selected Occurrence's source while Actual/Condition remain on the Occurrence, and Reminder retry uses its existing canonical operation contract.
 
-The user-run full gate passed OpenAPI 7, PostgreSQL 14, deterministic generation 364, both typechecks and web 24. Ruff found one import-order error in the new B11-D test, corrected at `c685d519`; the user pulled `37ce469a` and reported the Ruff rerun passing. The first B11 real-app attempt on 2026-09-28 exposed two product defects: recurring Create allowed `Senza Life Area` through to a generic failure, and Advanced Recurrence read failed with `autobegin=False`. Both repairs were published; the final isolated B11-D PostgreSQL rerun passed (`1 passed in 6.81s`) and the user reported the restarted integrated real-app walkthrough working. B11 is CLOSED / USER-REPORTED ACCEPTANCE; see `timeline-temporal-operational-b11-closure-2026-09-28.md`. Advance to B13.
+The user-run full gate passed OpenAPI 7, PostgreSQL 14, deterministic generation 364, both typechecks and web 24. Ruff found one import-order error in the new B11-D test, corrected at `c685d519`; the user pulled `37ce469a` and reported the Ruff rerun passing. The first B11 real-app attempt on 2026-09-28 exposed two product defects: recurring Create allowed `Senza Life Area` through to a generic failure, and Advanced Recurrence read failed with `autobegin=False`. Both repairs were published; the final isolated B11-D PostgreSQL rerun passed (`1 passed in 6.81s`) and the user reported the restarted integrated real-app walkthrough working. B11 is CLOSED / USER-REPORTED ACCEPTANCE; see `timeline-temporal-operational-b11-closure-2026-09-28.md`.
 
 ---
 
-# 5. B13 — Work Structure / Decomposition / Dependencies
+# 5. B13 — Work Structure / Decomposition / Dependencies — IN PROGRESS
 
-B13 distinguishes:
+B13 is now the functional frontier. Gate authority for the current slice is `docs/workstreams/timeline-temporal-operational-b13-a-scope-2026-09-28.md`.
+
+B13 permanently distinguishes:
 
 ```text
-1. INTERNAL STEP
+1. INTERNAL STRUCTURE
    Step != Activity
+   Plan != Activity
 
 2. COMPOSITE WORK
    real Activities retain independent identity/lifecycle/Schedule/Session
 
-3. DEPENDENCY
-   Dependency != hierarchy
+3. DECOMPOSITION / ORDERING
+   decomposition != execution precedence
    ordering != dependency
+
+4. DEPENDENCY
+   Dependency != hierarchy
 ```
 
-It also closes temporal execution-structure foundations where semantically appropriate: maximum Session count, merge compatibility, spacing, preparation/recovery and related structure rules.
+B13 is intentionally split into four coherent gates:
+
+## B13-A — Work Structure Core — OPEN / CURRENT GATE
+
+Introduce the minimum canonical Plan-owned decomposition foundation: internal structural Step semantics, optional references to real Activities, explicit ordering distinct from decomposition, accepted/current-state plus history behavior, and only the API/UI needed to prove the canonical path.
+
+Forbidden in B13-A:
+
+```text
+generic work_item/node/edge ontology
+hidden dependency semantics
+auto-Schedule
+solver/proposal behavior
+maximum Session / merge / spacing / preparation / recovery constraints
+promotion of Step to universal root identity without model authority
+```
+
+DDL must not begin until the current repository evidence resolves whether B13-A is `Plan -> Step` only or recursive structure, the exact ordering representation, Activity-link semantics and reusable identity/current-history primitives.
+
+## B13-B — Qualified Dependencies
+
+Own real dependency semantics after B13-A structure exists. Dependency must remain separate from containment and ordering.
+
+## B13-C — Execution Structure Constraints
+
+Own execution-structure foundations where supported by current Domain/Logical authority, including maximum Session count, merge compatibility, spacing and preparation/recovery behavior. These constraints must not be smuggled into B13-A hierarchy.
+
+## B13-D — Whole-block Integration / Proof / Acceptance
+
+Prove A/B/C together across canonical persistence, backend/API/client as applicable, product behavior, negative invariants, local automated gates and real-app acceptance before B13 closes.
 
 ---
 
-# 6. B12 — Replanning / Conflict / Solver
+# 6. B12 — Replanning / Conflict / Solver — HELD UNTIL B13 CLOSES
 
 Deterministic-first replanning/conflict/solver:
 
@@ -362,6 +405,8 @@ fallback policy != hidden mutation
 solver UNKNOWN != INFEASIBLE
 AI != scheduling authority
 ```
+
+B12 may not invent work structure, dependency truth or B13 execution constraints. It resumes only after B13-D closes.
 
 ---
 
