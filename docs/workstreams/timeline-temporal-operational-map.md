@@ -7,11 +7,12 @@
 - **B10-D closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-d-closure-2026-09-26.md`
 - **B10-E closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-e-closure-2026-09-26.md`
 - **B11 closure evidence:** `docs/workstreams/timeline-temporal-operational-b11-closure-2026-09-28.md`
+- **B13-A gate authority:** `docs/workstreams/timeline-temporal-operational-b13-a-scope-2026-09-28.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
 - **Current persistence source frontier:** `20260927_86` (B11-C)
 - **Measured whole-catalog topology:** B11-C `_86` / `184|5|144|100|370|323|480|0|0|0`
 - **Completed functional frontier:** B11 ✅ CLOSED / USER-REPORTED ACCEPTANCE 2026-09-28
-- **Current implementation cursor:** B13 Work Structure / Decomposition / Dependencies
+- **Current implementation cursor:** B13-A Work Structure Core ▶ OPEN
 - **CI:** not authorized; local tests are run by the user
 
 ---
@@ -41,6 +42,7 @@ Step != Activity
 Plan != Activity
 Dependency != hierarchy
 ordering != dependency
+decomposition != execution precedence
 proposal != accepted effect
 projection != canonical truth
 current accepted state != latest row
@@ -70,6 +72,11 @@ B10 Actual / Outcome / Confirmation / Reconciliation ✅ CLOSED 2026-09-26
   B10-C Confirmation                             ✅ CLOSED / PROVEN 2026-09-26
   B10-D Reconciliation / resolution workflow     ✅ CLOSED / PROVEN 2026-09-26
   B10-E Final integration + acceptance           ✅ CLOSED / USER-REPORTED ACCEPTANCE 2026-09-26
+B11 Advanced Recurrence / Conditional / Reminder ✅ CLOSED / USER-REPORTED ACCEPTANCE 2026-09-28
+  B11-A Advanced Recurrence                      ✅ CLOSED / PROVEN
+  B11-B Conditional Temporal Behavior            ✅ CLOSED / PROVEN
+  B11-C Schedule-relative personal Reminder      ✅ CLOSED / PROVEN
+  B11-D Whole-block integration gate             ✅ CLOSED / PROVEN
 ```
 
 B10 closure evidence:
@@ -82,40 +89,35 @@ B10-D timeline-temporal-operational-b10-d-closure-2026-09-26.md
 B10-E timeline-temporal-operational-b10-e-closure-2026-09-26.md
 ```
 
+B11 closure evidence:
+
+```text
+timeline-temporal-operational-b11-closure-2026-09-28.md
+```
+
 ---
 
 # 3. Active execution order
 
 ```text
-B11 Advanced Recurrence / Conditional / Reminder ✅ CLOSED / USER-REPORTED ACCEPTANCE 2026-09-28
-  B11-A advanced elapsed Recurrence               ✅ CLOSED / PROVEN (user-run local gates)
-  B11-B actual_realization Condition              ✅ CLOSED / PROVEN
-  B11-C Schedule-relative personal Reminder       ✅ CLOSED / PROVEN
-  B11-D whole-block integration gate              ✅ CLOSED / PROVEN
-B13 Work Structure / Decomposition / Dependencies⬜
-B12 Replanning / Conflict / Solver               ⬜
+B13 Work Structure / Decomposition / Dependencies ◐ IN PROGRESS
+  B13-A Work Structure Core                       ▶ OPEN / CURRENT GATE
+  B13-B Qualified Dependencies                    ⬜
+  B13-C Execution Structure Constraints           ⬜
+  B13-D Whole-block Integration / Proof / Acceptance ⬜
+B12 Replanning / Conflict / Solver                ⏸ HELD UNTIL B13 CLOSES
 B14 Temporal Create Completeness Gate             ⬜
-B07 UI/UX Consolidation v1                       ⏸ DEFERRED UNTIL B14
-B15 Whole Vertical Closure                       ⬜
+B07 UI/UX Consolidation v1                        ⏸ DEFERRED UNTIL B14
+B15 Whole Vertical Closure                        ⬜
 ```
 
 Sequence authority:
 
 ```text
-B09 → B10 → B11 → B13 → B12 → B14 → B07 → B15
+B09 → B10 → B11 → B13-A → B13-B → B13-C → B13-D → B12 → B14 → B07 → B15
 ```
 
-Within B10:
-
-```text
-B10-A Actual          ✅
-→ B10-B Outcome       ✅
-→ B10-C Confirmation  ✅
-→ B10-D Reconciliation✅
-→ B10-E integration + user real-app proof ✅
-```
-
-No CI/GitHub Actions. The user runs local automated gates. B10-E acceptance was user-reported from the integrated real-app walkthrough; the newly added B10-E-specific automated tests were not separately reported as user-run at closure time.
+No CI/GitHub Actions. The user runs local automated gates.
 
 ---
 
@@ -250,50 +252,80 @@ B10   CLOSED
 
 # 5. B11 closure record
 
-B11 is active. B11-A completion-relative and anchor-stream-relative recurrence uses `_81` and is locally proven. B11-B bounded `actual_realization` Condition uses `_82`–`_85`; its focused local gate passed at generated client `e79f6870` (PostgreSQL 4, OpenAPI 6, web 3, deterministic generation 361 files, client/web typechecks). The evidence is in `timeline-temporal-operational-b11-b-proof-2026-09-27.md`. The shared `_86` catalog probe measured `184|5|144|100|370|323|480|0|0|0`; both exact cross-representation tests passed after the CHECK-name and mapping registration repairs. B11-B is closed.
+B11 is CLOSED / USER-REPORTED ACCEPTANCE 2026-09-28.
 
-Scope theme:
+B11-A completion-relative and anchor-stream-relative recurrence uses `_81` and is locally proven. B11-B bounded `actual_realization` Condition uses `_82`–`_85`; its focused local gate passed at generated client `e79f6870` (PostgreSQL 4, OpenAPI 6, web 3, deterministic generation 361 files, client/web typechecks). The shared `_86` catalog probe measured `184|5|144|100|370|323|480|0|0|0`; both exact cross-representation tests passed after the CHECK-name and mapping-registration repairs.
 
-```text
-Advanced Recurrence / Conditional / Reminder
-```
+B11-C has the approved narrow Schedule-relative self Reminder scope at `timeline-temporal-operational-b11-c-scope-2026-09-27.md`. Commit `9878b441` publishes forward-only `_86`, guarded self functions, mapping, API, OpenAPI inventory and focused tests. Commits `9d806355` and `e9a0f760` add existing-Schedule controls and the Create two-command partial retry path. Generated client `d0378e17` and focused local backend 5/web 16 gate passed; the `_86` topology probe and exact catalog tests passed.
 
-B11 must extend the existing B06 Routine / Recurrence / Occurrence baseline without collapsing:
+B11-D verifies A/B/C together through `timeline-temporal-operational-b11-d-scope-2026-09-27.md`. The full local gate reported OpenAPI 7, PostgreSQL 14, generated check 364, both typechecks, web 24 and final Ruff pass after import-order repair. The first real-app attempt exposed recurring Create `Senza Life Area` validation and Advanced Recurrence `autobegin=False` read defects; both were repaired. The final isolated B11-D PostgreSQL rerun passed (`1 passed in 6.81s`) and the user reported the restarted integrated walkthrough working.
 
-```text
-Routine != Recurrence != Occurrence
-Occurrence != Schedule
-RRULE-like representation != ontology
-conditional behavior != hidden mutation
-reminder intent != silently ignored editable Create field
-```
-
-The editable Create reminder intent must leave B11 either canonically supported, truthfully handed off, or hidden until supported.
-
-B11-C has the approved narrow Schedule-relative self Reminder scope at `timeline-temporal-operational-b11-c-scope-2026-09-27.md`. Commit `9878b441` publishes forward-only `_86`, guarded self functions, mapping, API, OpenAPI inventory and focused tests. Commits `9d806355` and `e9a0f760` add existing-Schedule controls and the Create two-command partial retry path. Generated client `d0378e17` and focused local backend 5/web 16 gate passed; the `_86` topology probe passed. The exact catalog tests passed after CHECK-name repair `a332a592` and registration of the five existing Outcome Reconciliation mappings `3fe447af`. B11-C is closed; see `timeline-temporal-operational-b11-c-closure-2026-09-27.md`. The integrated real-app test occurs before whole-B11 closure.
-
-B11-D verifies A/B/C together through `timeline-temporal-operational-b11-d-scope-2026-09-27.md`; closure evidence is `timeline-temporal-operational-b11-d-closure-2026-09-27.md`. Its local automated gate precedes the integrated real-app test. The latter remains the final whole-B11 acceptance gate.
-
-The isolated integrated PostgreSQL test passed locally at `82f763af` (`1 passed in 7.20s`). B11-D also wires typed Routine Recurrence through Timeline Occurrences and keeps Occurrence Actual/Condition separate; Reminder uncertain-write retry has dedicated web coverage. The complete local commands and reported results are in `timeline-temporal-operational-b11-d-gate-2026-09-27.md`.
-
-The full local gate then reported OpenAPI 7, PostgreSQL 14, generated check 364, client/web typechecks, and web 24 passed. Ruff's only initial failure was the B11-D test import order, fixed at `c685d519`; the user pulled `37ce469a` and reported Ruff passing. The first real-app attempt exposed the recurring Create `Senza Life Area` validation defect and an Advanced Recurrence read transaction defect. Both repairs were published. The final B11-D PostgreSQL rerun passed (`1 passed in 6.81s`) and the user reported the restarted integrated real-app walkthrough working. B11 is CLOSED / USER-REPORTED ACCEPTANCE. Closure evidence: `timeline-temporal-operational-b11-closure-2026-09-28.md`; the next block is B13.
+Closure authority is `timeline-temporal-operational-b11-closure-2026-09-28.md`. B11 is historical closed scope; do not describe its walkthrough as pending.
 
 ---
 
-# 6. Later blocks
+# 6. Current frontier — B13-A Work Structure Core
 
-## B13 — Work Structure / Decomposition / Dependencies
+Gate authority:
 
 ```text
-Step != Activity
+docs/workstreams/timeline-temporal-operational-b13-a-scope-2026-09-28.md
+```
+
+Frozen distinctions:
+
+```text
 Plan != Activity
+Step != Activity
 Dependency != hierarchy
 ordering != dependency
+decomposition != execution precedence
 ```
+
+Current goal:
+
+```text
+canonical Plan
+→ Plan-owned internal work structure
+→ structural Step semantics
+→ optional reference to a real Activity without identity collapse
+→ explicit ordering separate from decomposition
+→ deterministic accepted/current-state + history behavior
+→ bounded author/read proof
+```
+
+Implementation discovery must precede DDL. In particular, resolve from current repository evidence whether B13-A needs only `Plan -> Step` or recursive nesting, the ordering representation, Activity-link representation, reuse of existing identity/material/current-history primitives and the correct database/guard boundaries.
+
+Forbidden in B13-A:
+
+```text
+generic work_item/node/edge ontology
+Dependency semantics
+B13-C execution constraints
+B12 solver/replanning
+automatic Schedule mutation
+proposal acceptance semantics
+```
+
+---
+
+# 7. Later gates
+
+## B13-B — Qualified Dependencies
+
+Own real Dependency semantics only after B13-A work structure exists. Dependency remains distinct from hierarchy and ordering.
+
+## B13-C — Execution Structure Constraints
+
+Own maximum Session count, merge compatibility, spacing, preparation/recovery and related execution-structure rules where current Domain/Logical authority supports them.
+
+## B13-D — Whole-block Integration / Proof / Acceptance
+
+Prove B13-A/B/C together across persistence, application/API/client as applicable, product behavior, negative invariants and user-run local gates before parent B13 closes.
 
 ## B12 — Replanning / Conflict / Solver
 
-Deterministic-first replanning over canonical truth/constraints/dependencies. Proposal != accepted Schedule; solver UNKNOWN != INFEASIBLE; AI != scheduling authority.
+HELD until B13-D closes. Deterministic-first replanning over canonical truth/constraints/dependencies. Proposal != accepted Schedule; solver UNKNOWN != INFEASIBLE; AI != scheduling authority.
 
 ## B14 — Temporal Create Completeness Gate
 
