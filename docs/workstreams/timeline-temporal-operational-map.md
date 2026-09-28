@@ -7,10 +7,10 @@
 - **B10-D closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-d-closure-2026-09-26.md`
 - **B10-E closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-e-closure-2026-09-26.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Current persistence source frontier:** `20260927_86` (B11-C candidate)
+- **Current persistence source frontier:** `20260927_86` (B11-C)
 - **Measured whole-catalog topology:** B11-C `_86` / `184|5|144|100|370|323|480|0|0|0`
-- **Completed functional frontier:** B10 ✅ CLOSED; B11-A/B/C/D ✅ CLOSED / PROVEN
-- **Current implementation cursor:** B11 whole-block real-app acceptance after D
+- **Completed functional frontier:** B11 ✅ CLOSED / USER-REPORTED ACCEPTANCE 2026-09-28
+- **Current implementation cursor:** B13 Work Structure / Decomposition / Dependencies
 - **CI:** not authorized; local tests are run by the user
 
 ---
@@ -86,7 +86,7 @@ B10-E timeline-temporal-operational-b10-e-closure-2026-09-26.md
 # 3. Active execution order
 
 ```text
-B11 Advanced Recurrence / Conditional / Reminder 🟨 IN PROGRESS
+B11 Advanced Recurrence / Conditional / Reminder ✅ CLOSED / USER-REPORTED ACCEPTANCE 2026-09-28
   B11-A advanced elapsed Recurrence               ✅ CLOSED / PROVEN (user-run local gates)
   B11-B actual_realization Condition              ✅ CLOSED / PROVEN
   B11-C Schedule-relative personal Reminder       ✅ CLOSED / PROVEN
@@ -247,7 +247,7 @@ B10   CLOSED
 
 ---
 
-# 5. Current gate — B11
+# 5. B11 closure record
 
 B11 is active. B11-A completion-relative and anchor-stream-relative recurrence uses `_81` and is locally proven. B11-B bounded `actual_realization` Condition uses `_82`–`_85`; its focused local gate passed at generated client `e79f6870` (PostgreSQL 4, OpenAPI 6, web 3, deterministic generation 361 files, client/web typechecks). The evidence is in `timeline-temporal-operational-b11-b-proof-2026-09-27.md`. The shared `_86` catalog probe measured `184|5|144|100|370|323|480|0|0|0`; both exact cross-representation tests passed after the CHECK-name and mapping registration repairs. B11-B is closed.
 
@@ -275,7 +275,7 @@ B11-D verifies A/B/C together through `timeline-temporal-operational-b11-d-scope
 
 The isolated integrated PostgreSQL test passed locally at `82f763af` (`1 passed in 7.20s`). B11-D also wires typed Routine Recurrence through Timeline Occurrences and keeps Occurrence Actual/Condition separate; Reminder uncertain-write retry has dedicated web coverage. The complete local commands and reported results are in `timeline-temporal-operational-b11-d-gate-2026-09-27.md`.
 
-The full local gate then reported OpenAPI 7, PostgreSQL 14, generated check 364, client/web typechecks, and web 24 passed. Ruff's only initial failure was the B11-D test import order, fixed at `c685d519`; the user pulled `37ce469a` and reported Ruff passing. B11-D is CLOSED / PROVEN. The first whole-B11 real-app attempt exposed a Create defect: a recurring Event with `Senza Life Area` reached a generic failure. The repair validates this at `Life Area` before submission; rerun whole-B11 real-app acceptance from the published branch.
+The full local gate then reported OpenAPI 7, PostgreSQL 14, generated check 364, client/web typechecks, and web 24 passed. Ruff's only initial failure was the B11-D test import order, fixed at `c685d519`; the user pulled `37ce469a` and reported Ruff passing. The first real-app attempt exposed the recurring Create `Senza Life Area` validation defect and an Advanced Recurrence read transaction defect. Both repairs were published. The final B11-D PostgreSQL rerun passed (`1 passed in 6.81s`) and the user reported the restarted integrated real-app walkthrough working. B11 is CLOSED / USER-REPORTED ACCEPTANCE. Closure evidence: `timeline-temporal-operational-b11-closure-2026-09-28.md`; the next block is B13.
 
 ---
 
