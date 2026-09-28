@@ -6,15 +6,51 @@ import { ActualRealizationControls } from './actual-realization-controls';
 import { AdvancedRecurrenceControls } from './advanced-recurrence-controls';
 import { ConditionalTemporalControls } from './conditional-temporal-controls';
 import { useTemporalTimelineRuntime } from './timeline-runtime-boundary';
-import type { TemporalTimelineWindow } from './timeline-read';
+import type {
+  TemporalTimelineItem,
+  TemporalTimelineWindow,
+} from './timeline-read';
 
 export type TimelineTruthSubject = Readonly<{
   key: string;
   kind: 'activity' | 'event' | 'occurrence';
   ref: string;
   title: string;
-  recurrenceOwner: Readonly<{ kind: 'routine' | 'event'; ref: string }> | null;
+  timelineLabel: string;
+  recurrenceOwner: Readonly<{
+    kind: 'routine' | 'event';
+    ref: string;
+  }> | null;
 }>;
+
+function timelineItemLabel(item: TemporalTimelineItem): string {
+  if (item.kind === 'expected_occurrence') {
+    switch (item.coordinate.familyCode) {
+      case 'calendar-wall-clock':
+        return item.coordinate.generatedWallTime === null
+          ? item.coordinate.generatedDate.toString()
+          : `${item.coordinate.generatedDate} ${item.coordinate.generatedWallTime}`;
+      case 'elapsed-interval':
+        return item.coordinate.expectedAt.toString();
+      case 'quota-per-period':
+        return `${item.coordinate.periodStartDate}–${item.coordinate.periodEndDateExclusive}`;
+      case 'cyclic-positional':
+        return `${item.coordinate.generatedDate} · ciclo ${item.coordinate.positionIndex}`;
+    }
+  }
+
+  switch (item.temporalForm) {
+    case 'date-span':
+      return item.startDate.toString();
+    case 'floating-local':
+    case 'named-zone-local':
+      return item.startsLocalAt.toString();
+    case 'absolute':
+      return item.displayStartsLocalAt.toString();
+    case 'coarse-local-period':
+      return `${item.localDate} · ${item.period}`;
+  }
+}
 
 export function timelineTruthSubjects(
   window: TemporalTimelineWindow | null,
@@ -30,6 +66,7 @@ export function timelineTruthSubjects(
             kind: 'activity' as const,
             ref: item.activityRef,
             title: item.title,
+            timelineLabel: timelineItemLabel(item),
             recurrenceOwner: null,
           } satisfies TimelineTruthSubject)
         : item.kind === 'scheduled_event'
@@ -38,6 +75,7 @@ export function timelineTruthSubjects(
               kind: 'event' as const,
               ref: item.eventRef,
               title: item.title,
+              timelineLabel: timelineItemLabel(item),
               recurrenceOwner: { kind: 'event' as const, ref: item.eventRef },
             } satisfies TimelineTruthSubject)
           : ({
@@ -45,6 +83,7 @@ export function timelineTruthSubjects(
               kind: 'occurrence' as const,
               ref: item.occurrenceRef,
               title: item.title,
+              timelineLabel: timelineItemLabel(item),
               recurrenceOwner: {
                 kind: item.sourceKind,
                 ref: item.sourceNativeRef,
@@ -91,7 +130,7 @@ export function TimelineTruthInspector() {
           >
             {subjects.map((subject) => (
               <option key={subject.key} value={subject.key}>
-                {`${subject.kind} · ${subject.title}`}
+                {`${subject.kind} · ${subject.title} · ${subject.timelineLabel}`}
               </option>
             ))}
           </select>

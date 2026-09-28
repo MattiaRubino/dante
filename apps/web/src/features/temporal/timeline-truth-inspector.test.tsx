@@ -76,6 +76,7 @@ describe('Timeline truth inspector', () => {
         kind: 'activity',
         ref: ACTIVITY,
         title: 'Allenamento',
+        timelineLabel: '2026-09-26',
         recurrenceOwner: null,
       },
       {
@@ -83,6 +84,7 @@ describe('Timeline truth inspector', () => {
         kind: 'event',
         ref: EVENT,
         title: 'Cena',
+        timelineLabel: '2026-09-26',
         recurrenceOwner: { kind: 'event', ref: EVENT },
       },
       {
@@ -90,9 +92,27 @@ describe('Timeline truth inspector', () => {
         kind: 'occurrence',
         ref: OCCURRENCE,
         title: 'Routine completata',
+        timelineLabel: '2026-09-26T11:00:00Z',
         recurrenceOwner: { kind: 'routine', ref: ROUTINE },
       },
     ]);
+  });
+
+  it('shows the occurrence timing in the selector, not only its repeated title', async () => {
+    render(
+      <TemporalTimelineRuntimeBoundary
+        viewedDateIso="2026-09-26"
+        dataSource={{ loadWindow: async () => windowFixture() }}
+        mode="development"
+      >
+        <TimelineTruthInspector />
+      </TemporalTimelineRuntimeBoundary>,
+    );
+
+    const picker = await screen.findByLabelText('Elemento per stato reale');
+    expect(picker.textContent).toContain(
+      'occurrence · Routine completata · 2026-09-26T11:00:00Z',
+    );
   });
 
   it('mounts the full Actual-to-Reconciliation controls from the real timeline runtime', async () => {

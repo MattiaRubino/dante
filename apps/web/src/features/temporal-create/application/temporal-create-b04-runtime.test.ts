@@ -48,7 +48,8 @@ function runtimeWithSources() {
     const placement = request.placement;
     if (
       placement.kind !== 'absolute-interval' &&
-      placement.kind !== 'floating-local-interval'
+      placement.kind !== 'floating-local-interval' &&
+      placement.kind !== 'named-zone-local-interval'
     ) {
       throw new Error('Expected a supported B04 placement.');
     }
@@ -282,6 +283,49 @@ describe('B04 Temporal Create runtime', () => {
       ]);
     },
   );
+
+  it('confirms the separate B04 Schedule with the authored named-zone wall clock', async () => {
+    const sources = runtimeWithSources();
+    const initial = createTemporalCreateFields({
+      title: 'Named-zone session',
+      date: '2026-10-20',
+      startTime: '21:00',
+      durationMinutes: 30,
+      timeSemantics: 'timed',
+      timeMode: 'zoned',
+      timeZoneId: 'Europe/Rome',
+      contextId: 'personale',
+    });
+    const fields = createTemporalCreateFields({
+      ...initial,
+      execution: {
+        ...initial.execution,
+        sessionMode: 'splittable',
+        minSessionMinutes: 1,
+      },
+    });
+    const prepared = sources.runtime.prepare(fields);
+    if (prepared.status !== 'ready') {
+      throw new Error('Expected named-zone Session Activity preparation.');
+    }
+
+    const execution = await sources.runtime.execute(prepared.prepared);
+
+    expect(execution.result.status).toBe('applied');
+    const request = sources.establishActivitySchedule.mock.calls[0]?.[0];
+    expect(request?.placement.kind).toBe('named-zone-local-interval');
+    if (request?.placement.kind !== 'named-zone-local-interval') {
+      throw new Error('Expected named-zone Schedule request.');
+    }
+    expect(request.placement.startsLocalAt.toString()).toBe(
+      '2026-10-20T21:00:00',
+    );
+    expect(request.placement.endsLocalAt.toString()).toBe(
+      '2026-10-20T21:30:00',
+    );
+    expect(request.placement.zoneId).toBe('Europe/Rome');
+    expect(execution.effect?.projection.placement?.kind).toBe('zoned');
+  });
 
   it('keeps a committed Activity unplaced when its separate Schedule command fails', async () => {
     const sources = runtimeWithSources();
