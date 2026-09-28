@@ -42,6 +42,7 @@ export function AdvancedRecurrenceControls({
   const [advanced, setAdvanced] = useState<AdvancedRecurrenceView | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [pending, setPending] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [mode, setMode] = useState<AdvancedRecurrenceAnchorMode>('previous_completion');
   const [delay, setDelay] = useState('3600');
@@ -53,6 +54,7 @@ export function AdvancedRecurrenceControls({
   const applyLoaded = useCallback((value: AdvancedRecurrenceView | null, stateRef: string | null) => {
     setCurrentStateRef(stateRef);
     setAdvanced(value);
+    setLoadError(null);
     if (value !== null) {
       setMode(value.anchorModeCode);
       setDelay(value.elapsedSeconds);
@@ -71,6 +73,9 @@ export function AdvancedRecurrenceControls({
 
   useEffect(() => {
     let cancelled = false;
+    setLoaded(false);
+    setLoadError(null);
+    setMessage(null);
     void source
       .load(ownerKind, sourceRef)
       .then((result) => {
@@ -79,7 +84,7 @@ export function AdvancedRecurrenceControls({
       .catch((error: unknown) => {
         if (!cancelled) {
           setLoaded(true);
-          setMessage(rejection('Recurrence avanzata non disponibile.', error));
+          setLoadError(rejection('Recurrence avanzata non disponibile.', error));
         }
       });
     return () => {
@@ -132,6 +137,8 @@ export function AdvancedRecurrenceControls({
 
   const state = !loaded
     ? 'Recurrence avanzata: caricamento…'
+    : loadError !== null
+      ? 'Recurrence avanzata: lettura non disponibile'
     : currentStateRef === null
       ? 'Recurrence avanzata: sorgente non ricorrente'
       : advanced === null
@@ -217,6 +224,7 @@ export function AdvancedRecurrenceControls({
         La regola usa solo completamenti Actual. Le Occurrence già materializzate mantengono
         l'Actual MaterialState che le ha generate anche dopo una correzione successiva.
       </small>
+      {loadError === null ? null : <span role="alert">{loadError}</span>}
       {message === null ? null : message === 'Recurrence avanzata salvata.' ? (
         <span role="status">{message}</span>
       ) : (
