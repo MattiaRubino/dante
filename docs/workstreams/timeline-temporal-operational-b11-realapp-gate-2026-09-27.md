@@ -1,14 +1,14 @@
 # B11 — Final real-app acceptance gate
 
-- **Date:** 2026-09-27
+- **Date:** 2026-09-28
 - **Branch:** `feature/timeline-temporal-operational`
-- **Status:** REMEDIATION PUBLISHED; user-run real-app walkthrough must restart
+- **Status:** CLOSED — USER-REPORTED PASS
 - **Entering frontier:** B11-A/B/C/D CLOSED / PROVEN; `_86` exact catalog and automated integration gate passed locally
-- **Exit:** close parent B11 only after observed acceptance is recorded
+- **Exit:** parent B11 closed; next block B13
 
 This is the single product walkthrough for B11, after B11-D. Use the local disposable harness and a real authenticated Home/Timeline/Create surface. PostgreSQL remains the canonical authority; check persisted behavior after reload. No GitHub Actions/CI.
 
-## 2026-09-28 observed Create boundary
+## 2026-09-28 remediation and accepted rerun
 
 The first real-app attempt exposed a Create defect: a recurring Event with `Senza Life Area` was allowed to reach `Aggiungi`, then failed only with the generic message `Non è stato possibile applicare la creazione. La bozza è ancora qui.` Recurring Event/Routine authoring requires a canonical Life Area. The app now blocks submission before any backend call, focuses `Life Area` and displays: `Per creare una ricorrenza, seleziona una Life Area.` The first walkthrough attempt is therefore not an acceptance result; use a real Life Area for each recurring Event/Routine in the rerun.
 
@@ -33,3 +33,8 @@ Wait for the harness to report ready, then open `https://127.0.0.1:4173` and sig
 4. **Cross-capability chain (B11-D).** On the same Routine/Event → Occurrence path, observe the Condition, accepted Schedule and Reminder, then record Actual and reevaluate. Reload and switch between subjects. Verify the selected Occurrence's Actual/Condition and the source Routine/Event's Recurrence stay distinct; Reminder and Condition do not silently mutate one another or replace canonical PostgreSQL state.
 
 Report each numbered observation as pass/fail/not exercised and include the first visible error or unexpected behavior. In particular, state whether Create partial-success retry and anchor-stream recurrence were exercised. A capability that the current UI cannot reach is an open acceptance finding, not an assumed pass. Close B11 only after reviewing those observations and recording the final result in roadmap, map, handoff and B11 closure evidence.
+
+
+## Final result
+
+The recurring Create Life Area validation and the Advanced Recurrence read-transaction defect were repaired and published. The user restarted the disposable authenticated stack and reported the integrated B11 walkthrough working. This gate is therefore **CLOSED / USER-REPORTED PASS**. The automated B11-D PostgreSQL rerun also passed: `1 passed in 6.81s`.
