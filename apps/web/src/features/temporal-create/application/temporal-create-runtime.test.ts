@@ -26,6 +26,37 @@ function runtime() {
 }
 
 describe('Temporal Create rich application runtime', () => {
+  it('points to the unsupported outcome policy before submitting an Activity', () => {
+    const createRuntime = runtime();
+    const baseline = createTemporalCreateFields({
+      title: 'Promemoria B11',
+      kind: 'activity',
+      date: '2026-09-28',
+      timeSemantics: 'timed',
+      startTime: '12:00',
+      timeMode: 'zoned',
+      timeZoneId: 'Europe/Rome',
+    });
+    const fields = createTemporalCreateFields({
+      ...baseline,
+      confirmation: {
+        ...baseline.confirmation,
+        outcomePolicy: 'ask-immediately',
+      },
+    });
+
+    const preparation = createRuntime.prepare(fields);
+    expect(preparation.status).toBe('invalid');
+    if (preparation.status === 'invalid') {
+      expect(preparation.issues).toContainEqual(
+        expect.objectContaining({
+          code: 'temporal.create.confirmation.outcome_policy_unavailable',
+          path: ['confirmation.outcomePolicy'],
+        }),
+      );
+    }
+  });
+
   it('retains rich Activity scheduling/execution intent without fake recurrence or placement', async () => {
     const createRuntime = runtime();
     const baseline = createTemporalCreateFields({
