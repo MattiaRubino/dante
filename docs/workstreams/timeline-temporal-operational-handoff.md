@@ -1,16 +1,17 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B13-A WORK STRUCTURE CORE ▶ OPEN / CURRENT GATE
+- **Status:** B13-A CLOSED / B13-B QUALIFIED DEPENDENCIES ▶ NEXT GATE
 - **Reconciled:** 2026-09-28
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Live execution ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **B13-A gate authority:** `docs/workstreams/timeline-temporal-operational-b13-a-scope-2026-09-28.md`
-- **B13-A candidate checkpoint:** `docs/workstreams/timeline-temporal-operational-b13-a-implementation-2026-09-28.md`
+- **B13-A implementation checkpoint:** `docs/workstreams/timeline-temporal-operational-b13-a-implementation-2026-09-28.md`
+- **B13-A closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-a-closure-2026-09-28.md`
 - **B11 closure evidence:** `docs/workstreams/timeline-temporal-operational-b11-closure-2026-09-28.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Current migration source head:** B13-A / Alembic `20260928_89` (replace repair candidate; retest pending)
-- **Measured whole-catalog topology:** B11-C `_86` / `184|5|144|100|370|323|480|0|0|0`
+- **Current migration source head:** B13-A / Alembic `20260928_89` (focused PostgreSQL/catalog proven)
+- **Catalog-verified whole topology:** `_89` / `191|5|148|100|386|334|488|0|0|0`
 - **B11 real-app acceptance:** USER-REPORTED PASS 2026-09-28
 - **CI:** no CI/GitHub Actions unless explicitly authorized; user runs local tests
 
@@ -36,8 +37,8 @@ B11     ✅ CLOSED / USER-REPORTED ACCEPTANCE 2026-09-28
   B11-C ✅ CLOSED / PROVEN
   B11-D ✅ CLOSED / PROVEN
 B13     ◐ IN PROGRESS
-  B13-A ◐ CANDIDATE / LOCAL GATE PENDING
-  B13-B ⬜ NOT STARTED
+  B13-A ✅ CLOSED / PROVEN 2026-09-28
+  B13-B ▶ NEXT / SCOPE DISCOVERY
   B13-C ⬜ NOT STARTED
   B13-D ⬜ NOT STARTED
 B12     ⏸ HELD UNTIL B13 CLOSES
@@ -204,7 +205,7 @@ B11 is `CLOSED / USER-REPORTED ACCEPTANCE`.
 
 ---
 
-# 5. Current gate — B13-A Work Structure Core
+# 5. Closed gate — B13-A Work Structure Core
 
 Scope authority:
 
@@ -247,7 +248,7 @@ The B13-A discovery checkpoint resolved the implementation choices before `_87` 
 7. database versus guarded-operation boundaries for cross-Plan, duplicate-link and cycle invariants;
 8. the minimum public API/client/UI slice required for author/read proof.
 
-The decision is flat `Plan -> Step`, reusing Plan NativeRef and giving Step an internal Plan-owned reference. Normalized revision snapshots hold membership, title, presentation order and optional same-self Activity link. Guarded functions enforce ownership, duplicate links and expected-current revision; current/history bindings remain explicit. `_88` repaired replay and catalog names; `_89` qualifies an ambiguous accepted-current update exposed by the next local test. OpenAPI, web/API typechecks, deterministic client generation and the UI test passed. PostgreSQL/catalog retest remains pending, so B13-A is **not closed**.
+The decision is flat `Plan -> Step`, reusing Plan NativeRef and giving Step an internal Plan-owned reference. Normalized revision snapshots hold membership, title, presentation order and optional same-self Activity link. Guarded functions enforce ownership, duplicate links and expected-current revision; current/history bindings remain explicit. `_88` repaired replay and catalog names; `_89` qualified the accepted-current update. OpenAPI, web/API typechecks, deterministic client generation and the UI test passed. The final user-run PostgreSQL/catalog suite passed **9 tests in 24.09s** at `_89`; B13-A is **closed**. Evidence: `timeline-temporal-operational-b13-a-closure-2026-09-28.md`.
 
 B13-A non-goals:
 
@@ -262,11 +263,13 @@ generic graph ontology
 B07 UI consolidation
 ```
 
-B13-A closes only after applicable persistence/backend/API/client/product surfaces are proven with user-run local gates and the workstream docs are reconciled.
+B13-A focused automated closure does not claim whole B13 real-app acceptance; that remains B13-D.
 
 ---
 
 # 6. B13 continuation
+
+The current gate is B13-B scope discovery. Read the current Dependency Domain concept and Logical/Physical authority; freeze qualified dependency semantics before persistence or API implementation. Preserve the distinction from Plan containment and Step presentation order.
 
 ```text
 B13-B — Qualified Dependencies

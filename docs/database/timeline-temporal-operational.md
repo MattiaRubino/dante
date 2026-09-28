@@ -1,12 +1,12 @@
 # Timeline / Temporal-Operational — Candidate Database Overlay
 
-- **Status:** CURRENT CANDIDATE DATABASE OVERLAY — B13-A `_89` repair; PostgreSQL retest pending
-- **Reconciled:** 2026-09-27
+- **Status:** CURRENT CANDIDATE DATABASE OVERLAY — B13-A `_89` focused PostgreSQL/catalog proven
+- **Reconciled:** 2026-09-28
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
-- **Candidate migration source head:** `20260928_89` (B13-A repair; PostgreSQL retest pending)
-- **Focused local proof frontier:** B11-C `_86` (5 backend and 16 web focused tests passed)
-- **Measured whole-topology count:** `_86` / `184|5|144|100|370|323|480|0|0|0`
+- **Candidate migration source head:** `20260928_89` (B13-A focused PostgreSQL/catalog proven)
+- **Focused local proof frontier:** B13-A `_89` (9 PostgreSQL/catalog tests passed)
+- **Catalog-verified whole-topology count:** `_89` / `191|5|148|100|386|334|488|0|0|0`
 - **Whole-DB SoR:** `README.md`
 - **Machine-readable authority:** `dictionary/`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
@@ -66,7 +66,9 @@ Published migrations are immutable. Any persistence correction is forward-only.
 20260927_86 B11-C personal Schedule Reminder candidate
     ↓
 20260928_87 B13-A Plan work structure candidate
+    ↓
 20260928_88 B13-A replay projection and catalog check-name repair
+    ↓
 20260928_89 B13-A replace-current binding qualification
 ```
 
@@ -84,7 +86,7 @@ The local PostgreSQL `_86` probe measured the whole-database topology directly:
 184|5|144|100|370|323|480|0|0|0
 ```
 
-Dictionary entries and current-catalog tests target `_86`. The first exact gate passed 8 tests and failed 2 on five CHECK names. After those names were aligned to the immutable migrations, both tests advanced to a missing registration of the five existing Outcome Reconciliation SQLAlchemy mappings. Registration at `3fe447af` completed 184 unique mappings; the user-run rerun of both exact catalog tests passed on 2026-09-27.
+At B11-C, Dictionary entries and current-catalog tests targeted `_86`. The first exact gate passed 8 tests and failed 2 on five CHECK names. After those names were aligned to the immutable migrations, both tests advanced to a missing registration of the five existing Outcome Reconciliation SQLAlchemy mappings. Registration at `3fe447af` completed 184 unique mappings; the user-run rerun of both exact catalog tests passed on 2026-09-27. B13-A subsequently advanced the current Dictionary/catalog target to `_89`, verified by its final local suite.
 
 ## 4. Permanent persistence boundaries
 
@@ -331,8 +333,8 @@ Revisions `_82`–`_85` add `conditional_temporal_intent`, `conditional_temporal
 
 B11-C `_86` adds a stable `schedule_reminder` owner keyed by self Person and Schedule, append-only `schedule_reminder_configuration_state` with shared MaterialState address/current binding, `schedule_reminder_current_history`, and `schedule_reminder_operation` for CAS/idempotency. Guarded PostgreSQL functions resolve self ownership, the accepted exact-start interval (absolute or resolved named-zone), and derived due/disposition. Runtime has execute grants on bounded get/configure functions and no direct table DML. Focused backend (5) and web (16) tests, generation and both typechecks passed locally; the `_86` catalog probe and both exact Dictionary/catalog tests passed with the measured tuple above. This slice creates no delivery job or Actual mutation. Whole B11 is closed with user-reported real-app acceptance.
 
-## 14. B13-A Plan work structure — candidate
+## 14. B13-A Plan work structure — focused proof closed
 
 Forward-only `_87` reuses the Plan NativeRef identity shell and introduces self ownership, internal Plan-owned Steps, immutable normalized structure revisions, explicit accepted-current binding/history and replay-safe operations. Step order is a presentation sequence, not Dependency. An optional link to an existing self-owned Activity preserves the Activity's separate identity and lifecycle. The runtime has execute grants on four guarded read/write functions and no direct DML grants on the seven new tables.
 
-The `_87` local test reached the expected topology `191|5|148|100|386|334|488|0|0|0` but exposed one replay projection error and eight check identifiers that did not match the Dictionary. Forward-only `_88` repaired those names and the function; `_89` qualifies an ambiguous `plan_ref` in the replace-current update. Neither changes topology. Focused PostgreSQL and exact catalog retests are required before closure. See `../workstreams/timeline-temporal-operational-b13-a-implementation-2026-09-28.md`.
+The `_87` local test reached the expected topology `191|5|148|100|386|334|488|0|0|0` but exposed one replay projection error and eight check identifiers that did not match the Dictionary. `_88` repaired those names and the function; forward-only `_89` qualified an ambiguous `plan_ref` in the replace-current update. Neither changes topology. The final user-run focused PostgreSQL and exact Dictionary/catalog suite passed **9 tests in 24.09s** at `_89`. See `../workstreams/timeline-temporal-operational-b13-a-closure-2026-09-28.md`.

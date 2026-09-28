@@ -8,12 +8,13 @@
 - **B10-E closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-e-closure-2026-09-26.md`
 - **B11 closure evidence:** `docs/workstreams/timeline-temporal-operational-b11-closure-2026-09-28.md`
 - **B13-A gate authority:** `docs/workstreams/timeline-temporal-operational-b13-a-scope-2026-09-28.md`
-- **B13-A candidate checkpoint:** `docs/workstreams/timeline-temporal-operational-b13-a-implementation-2026-09-28.md`
+- **B13-A implementation checkpoint:** `docs/workstreams/timeline-temporal-operational-b13-a-implementation-2026-09-28.md`
+- **B13-A closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-a-closure-2026-09-28.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Current persistence source frontier:** `20260928_89` (B13-A replace repair candidate; PostgreSQL retest pending)
-- **Measured whole-catalog topology:** B11-C `_86` / `184|5|144|100|370|323|480|0|0|0`
-- **Completed functional frontier:** B11 ✅ CLOSED / USER-REPORTED ACCEPTANCE 2026-09-28
-- **Current implementation cursor:** B13-A Work Structure Core — local PostgreSQL/API/web/catalog gate pending
+- **Current persistence source frontier:** `20260928_89` (B13-A focused PostgreSQL/catalog proven)
+- **Catalog-verified whole topology:** `_89` / `191|5|148|100|386|334|488|0|0|0`
+- **Completed functional frontier:** B13-A ✅ CLOSED / focused local proof 2026-09-28
+- **Current implementation cursor:** B13-B Qualified Dependencies — scope discovery
 - **CI:** not authorized; local tests are run by the user
 
 ---
@@ -102,8 +103,8 @@ timeline-temporal-operational-b11-closure-2026-09-28.md
 
 ```text
 B13 Work Structure / Decomposition / Dependencies ◐ IN PROGRESS
-  B13-A Work Structure Core                       ◐ CANDIDATE / LOCAL GATE PENDING
-  B13-B Qualified Dependencies                    ⬜
+  B13-A Work Structure Core                       ✅ CLOSED / PROVEN 2026-09-28
+  B13-B Qualified Dependencies                    ▶ NEXT / SCOPE DISCOVERY
   B13-C Execution Structure Constraints           ⬜
   B13-D Whole-block Integration / Proof / Acceptance ⬜
 B12 Replanning / Conflict / Solver                ⏸ HELD UNTIL B13 CLOSES
@@ -265,7 +266,7 @@ Closure authority is `timeline-temporal-operational-b11-closure-2026-09-28.md`. 
 
 ---
 
-# 6. Current frontier — B13-A Work Structure Core
+# 6. Closed frontier — B13-A Work Structure Core
 
 Gate authority:
 
@@ -295,7 +296,7 @@ canonical Plan
 → bounded author/read proof
 ```
 
-The discovery checkpoint chose flat `Plan -> Step`, existing Plan NativeRef, Plan-owned internal Step references, normalized immutable structure revisions, explicit presentation position and same-self Activity references. `_88` repaired replay and catalog names; the next local test reached replacement and found an ambiguous binding column, qualified in `_89`. OpenAPI, web/API typechecks, generated client and the UI test passed. Focused PostgreSQL/catalog proof remains; see `timeline-temporal-operational-b13-a-implementation-2026-09-28.md`.
+The discovery checkpoint chose flat `Plan -> Step`, existing Plan NativeRef, Plan-owned internal Step references, normalized immutable structure revisions, explicit presentation position and same-self Activity references. `_88` repaired replay and catalog names; `_89` qualified the accepted-current binding. OpenAPI, web/API typechecks, generated client and the UI test passed. The final focused PostgreSQL/catalog suite passed **9 tests in 24.09s** at `_89`; see `timeline-temporal-operational-b13-a-closure-2026-09-28.md`.
 
 Forbidden in B13-A:
 
@@ -314,7 +315,7 @@ proposal acceptance semantics
 
 ## B13-B — Qualified Dependencies
 
-Own real Dependency semantics only after B13-A work structure exists. Dependency remains distinct from hierarchy and ordering.
+Current next gate: freeze real qualified Dependency semantics against Domain/Logical/Physical authority before implementation. Dependency remains distinct from hierarchy and ordering.
 
 ## B13-C — Execution Structure Constraints
 

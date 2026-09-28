@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — B13-A Work Structure Core Scope Freeze
 
-- **Status:** OPEN — CURRENT IMPLEMENTATION GATE
+- **Status:** CLOSED — scope fulfilled by focused automated gate 2026-09-28
 - **Date:** 2026-09-28
 - **Branch:** `feature/timeline-temporal-operational`
 - **Parent block:** B13 Work Structure / Decomposition / Dependencies
@@ -9,6 +9,7 @@
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Live ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **Continuation handoff:** `docs/workstreams/timeline-temporal-operational-handoff.md`
+- **Closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-a-closure-2026-09-28.md`
 - **CI:** not authorized; user runs local tests
 
 This document freezes the semantic and delivery boundary for B13-A before persistence or application implementation begins.

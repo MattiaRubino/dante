@@ -3,13 +3,13 @@
 - **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-28
 - **Branch/workstream:** `feature/timeline-temporal-operational`
 - **Vertical boundary:** Home `+` creation/configuration → canonical temporal truth → Timeline projection/actions → bounded lifecycle completion
-- **Completed functional frontier:** B11 ✅ CLOSED / USER-REPORTED ACCEPTANCE 2026-09-28
+- **Completed functional frontier:** B13-A ✅ CLOSED / focused local automated proof 2026-09-28
 - **Current block:** B13 Work Structure / Decomposition / Dependencies
-- **Current gate:** B13-A Work Structure Core ▶ OPEN
-- **Current gate authority:** `docs/workstreams/timeline-temporal-operational-b13-a-scope-2026-09-28.md`
-- **B13-A implementation checkpoint:** `docs/workstreams/timeline-temporal-operational-b13-a-implementation-2026-09-28.md`
-- **Current persistence source frontier:** B13-A / Alembic `20260928_89` (replace repair candidate; local PostgreSQL retest pending)
-- **Measured whole-catalog topology:** B11-C / `20260927_86` / `184|5|144|100|370|323|480|0|0|0`
+- **Current gate:** B13-B Qualified Dependencies ▶ scope discovery
+- **B13-A scope authority:** `docs/workstreams/timeline-temporal-operational-b13-a-scope-2026-09-28.md`
+- **B13-A closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-a-closure-2026-09-28.md`
+- **Current persistence source frontier:** B13-A / Alembic `20260928_89` (focused PostgreSQL and catalog proven)
+- **Catalog-verified whole topology:** `_89` / `191|5|148|100|386|334|488|0|0|0`
 - **B10-D closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-d-closure-2026-09-26.md`
 - **B10-E closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-e-closure-2026-09-26.md`
 - **B11 closure evidence:** `docs/workstreams/timeline-temporal-operational-b11-closure-2026-09-28.md`
@@ -103,8 +103,8 @@ B11 Advanced Recurrence / Conditional / Reminder ✅ CLOSED / USER-REPORTED ACCE
   B11-D Whole-block integration gate              ✅ CLOSED / PROVEN; real-app acceptance ✅
 
 B13 Work Structure / Decomposition / Dependencies ◐ IN PROGRESS
-  B13-A Work Structure Core                       ◐ IMPLEMENTED CANDIDATE / LOCAL GATE PENDING
-  B13-B Qualified Dependencies                    ⬜
+  B13-A Work Structure Core                       ✅ CLOSED / PROVEN 2026-09-28
+  B13-B Qualified Dependencies                    ▶ NEXT / SCOPE DISCOVERY
   B13-C Execution Structure Constraints           ⬜
   B13-D Whole-block Integration / Proof / Acceptance ⬜
 B12 Replanning / Conflict / Solver                ⏸ HELD UNTIL B13 CLOSES
@@ -355,7 +355,7 @@ B13 permanently distinguishes:
 
 B13 is intentionally split into four coherent gates:
 
-## B13-A — Work Structure Core — CANDIDATE / LOCAL GATE PENDING
+## B13-A — Work Structure Core — CLOSED / PROVEN 2026-09-28
 
 Introduce the minimum canonical Plan-owned decomposition foundation: internal structural Step semantics, optional references to real Activities, explicit ordering distinct from decomposition, accepted/current-state plus history behavior, and only the API/UI needed to prove the canonical path.
 
@@ -370,11 +370,11 @@ maximum Session / merge / spacing / preparation / recovery constraints
 promotion of Step to universal root identity without model authority
 ```
 
-The discovery checkpoint selected flat `Plan -> Step`, normalized immutable structure revisions and explicit position. Existing Plan identity is reused; optional Activity references are same-self validated without identity collapse. OpenAPI, web/API typechecks, generated client and UI test passed locally. `_88` repaired replay and catalog naming; the next local run exposed an ambiguous accepted-current update, repaired in forward `_89`. Focused PostgreSQL and catalog retest remain before closure. See `timeline-temporal-operational-b13-a-implementation-2026-09-28.md`.
+The discovery checkpoint selected flat `Plan -> Step`, normalized immutable structure revisions and explicit position. Existing Plan identity is reused; optional Activity references are same-self validated without identity collapse. OpenAPI, web/API typechecks, generated client and UI test passed locally. `_88` repaired replay and catalog naming; forward `_89` qualified the accepted-current update. The final user-run focused PostgreSQL/catalog suite passed **9 tests in 24.09s** at `_89`. See `timeline-temporal-operational-b13-a-closure-2026-09-28.md`.
 
 ## B13-B — Qualified Dependencies
 
-Own real dependency semantics after B13-A structure exists. Dependency must remain separate from containment and ordering.
+Next gate: freeze real qualified Dependency semantics against current Domain/Logical/Physical authority before implementation. Dependency must remain separate from containment and ordering.
 
 ## B13-C — Execution Structure Constraints
 
