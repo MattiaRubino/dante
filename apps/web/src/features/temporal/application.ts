@@ -111,6 +111,7 @@ export type TemporalOperationResult =
         kind: 'transport' | 'unavailable' | 'unknown';
         code: string;
         retryable: boolean;
+        message?: string;
       }>;
     }>;
 
