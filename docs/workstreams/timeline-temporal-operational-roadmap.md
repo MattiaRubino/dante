@@ -1,14 +1,15 @@
 # Timeline / Temporal-Operational Vertical — Implementation Roadmap
 
-- **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-27
+- **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-28
 - **Branch/workstream:** `feature/timeline-temporal-operational`
 - **Vertical boundary:** Home `+` creation/configuration → canonical temporal truth → Timeline projection/actions → bounded lifecycle completion
-- **Completed functional frontier:** B10 ✅ CLOSED; B11-A/B/C/D ✅ CLOSED / PROVEN
-- **Current block:** B11 whole-block real-app acceptance after B11-D
-- **Current persistence source frontier:** B11-C / Alembic `20260927_86` (candidate)
+- **Completed functional frontier:** B11 ✅ CLOSED / USER-REPORTED ACCEPTANCE 2026-09-28
+- **Current block:** B13 Work Structure / Decomposition / Dependencies
+- **Current persistence source frontier:** B11-C / Alembic `20260927_86`
 - **Measured whole-catalog topology:** B11-C / `20260927_86` / `184|5|144|100|370|323|480|0|0|0`
 - **B10-D closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-d-closure-2026-09-26.md`
 - **B10-E closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-e-closure-2026-09-26.md`
+- **B11 closure evidence:** `docs/workstreams/timeline-temporal-operational-b11-closure-2026-09-28.md`
 - **Deferred block:** B07 UI/UX Consolidation v1 — execute only after B14
 - **Live execution ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **Continuation handoff:** `docs/workstreams/timeline-temporal-operational-handoff.md`
@@ -91,11 +92,11 @@ B10 Actual / Outcome / Confirmation / Resolution ✅ CLOSED 2026-09-26
   B10-D Reconciliation / resolution workflow      ✅ CLOSED / PROVEN 2026-09-26
   B10-E Final integration + acceptance            ✅ CLOSED / USER-REPORTED ACCEPTANCE 2026-09-26
 
-B11 Advanced Recurrence / Conditional / Reminder 🟨 IN PROGRESS
+B11 Advanced Recurrence / Conditional / Reminder ✅ CLOSED / USER-REPORTED ACCEPTANCE 2026-09-28
   B11-A Advanced Recurrence                    ✅ CLOSED / PROVEN (user-run local gates)
   B11-B Conditional Temporal Behavior         ✅ CLOSED / PROVEN (focused and `_86` catalog gates)
   B11-C Schedule-relative personal Reminder   ✅ CLOSED / PROVEN (focused and `_86` catalog gates)
-  B11-D Whole-block integration gate          ✅ CLOSED / PROVEN (automated; real-app after D)
+  B11-D Whole-block integration gate          ✅ CLOSED / PROVEN; real-app acceptance ✅
 B13 Work Structure / Decomposition / Dependencies⬜
 B12 Replanning / Conflict / Solver               ⬜
 B14 Temporal Create Completeness Gate             ⬜
@@ -295,7 +296,7 @@ Whole B10 is now CLOSED. Advance directly to B11.
 
 ---
 
-# 4. B11 — Advanced Recurrence / Conditional / Reminder — IN PROGRESS
+# 4. B11 — Advanced Recurrence / Conditional / Reminder — CLOSED
 
 B11 extends recurrence and conditional/reminder behavior without RRULE-as-ontology, fake Activity materialization or an unjustified universal Reminder owner.
 
@@ -317,7 +318,7 @@ B11-D is the closed whole-block automated integration gate; scope is `timeline-t
 
 The B11-D backend integration test passed its first isolated local run (`1 passed in 7.20s`); the complete gate is recorded in `timeline-temporal-operational-b11-d-gate-2026-09-27.md`. The Timeline inspector routes Routine/Event Recurrence through the selected Occurrence's source while Actual/Condition remain on the Occurrence, and Reminder retry uses its existing canonical operation contract.
 
-The user-run full gate passed OpenAPI 7, PostgreSQL 14, deterministic generation 364, both typechecks and web 24. Ruff found one import-order error in the new B11-D test, corrected at `c685d519`; the user pulled `37ce469a` and reported the Ruff rerun passing. B11-D is CLOSED / PROVEN. The first B11 real-app attempt on 2026-09-28 exposed a Create validation defect: recurring authoring allowed `Senza Life Area` through to a generic failure. The published repair blocks before submission and directs the user to `Life Area`; rerun the whole-B11 real-app acceptance. The parent B11 remains IN PROGRESS.
+The user-run full gate passed OpenAPI 7, PostgreSQL 14, deterministic generation 364, both typechecks and web 24. Ruff found one import-order error in the new B11-D test, corrected at `c685d519`; the user pulled `37ce469a` and reported the Ruff rerun passing. The first B11 real-app attempt on 2026-09-28 exposed two product defects: recurring Create allowed `Senza Life Area` through to a generic failure, and Advanced Recurrence read failed with `autobegin=False`. Both repairs were published; the final isolated B11-D PostgreSQL rerun passed (`1 passed in 6.81s`) and the user reported the restarted integrated real-app walkthrough working. B11 is CLOSED / USER-REPORTED ACCEPTANCE; see `timeline-temporal-operational-b11-closure-2026-09-28.md`. Advance to B13.
 
 ---
 
