@@ -694,6 +694,9 @@ class RemoteActivityTemporalWorkspace implements TemporalWorkspacePort {
             error instanceof TemporalActivityRemoteError
               ? error.kind === 'transport' || (error.status ?? 0) >= 500
               : false,
+          ...(error instanceof TemporalActivityRemoteError
+            ? { message: error.message }
+            : {}),
         }),
       });
     }
