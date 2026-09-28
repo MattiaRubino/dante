@@ -1,7 +1,7 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B11-D CLOSED / PROVEN — B11 whole-block real-app acceptance pending
-- **Reconciled:** 2026-09-27
+- **Status:** B11 CLOSED / USER-REPORTED ACCEPTANCE 2026-09-28 — next B13
+- **Reconciled:** 2026-09-28
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Live execution ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
@@ -14,6 +14,8 @@
 - **Measured whole-catalog topology:** B11-C `_86` / `184|5|144|100|370|323|480|0|0|0`
 - **B10-D generated client:** `cebfb557196d3fc0f412262a1d12feae9291b875`
 - **B10 real-app acceptance:** USER-REPORTED PASS 2026-09-26
+- **B11 closure evidence:** `docs/workstreams/timeline-temporal-operational-b11-closure-2026-09-28.md`
+- **B11 real-app acceptance:** USER-REPORTED PASS 2026-09-28
 - **CI:** no CI/GitHub Actions unless explicitly authorized; user runs local tests
 
 Read this first after a context reset. Repository HEAD remains the source of truth; re-fetch it before any write.
@@ -32,11 +34,11 @@ B10     ✅ CLOSED 2026-09-26
   B10-C ✅ CLOSED / PROVEN 2026-09-26
   B10-D ✅ CLOSED / PROVEN 2026-09-26
   B10-E ✅ CLOSED / USER-REPORTED ACCEPTANCE 2026-09-26
-B11     🟨 IN PROGRESS — Advanced Recurrence / Conditional / Reminder
+B11     ✅ CLOSED / USER-REPORTED ACCEPTANCE 2026-09-28
   B11-A ✅ CLOSED / PROVEN — `_81`, local gates reported passed
   B11-B ✅ CLOSED / PROVEN — `_82`–`_85`; focused and `_86` catalog gates passed
   B11-C ✅ CLOSED / PROVEN — `_86` / API / Create / Timeline; focused and catalog gates passed
-  B11-D ✅ CLOSED / PROVEN — integrated automated gate; whole-B11 real-app acceptance pending
+  B11-D ✅ CLOSED / PROVEN — integrated automated gate; final real-app acceptance passed
 B13     ⬜ NOT STARTED
 B12     ⬜ NOT STARTED
 B14     ⬜ NOT STARTED
@@ -227,7 +229,7 @@ The B10-E-specific automated tests were added to the repository but were not sep
 
 ---
 
-# 4. Exact next step — B11 whole-block real-app acceptance
+# 4. B11 closure and exact next step
 
 B11-A and the B11-B technical gate have been implemented. B11-B's generated client at `e79f6870` is locally verified (361 deterministic generated files; client/web typecheck; web 3, OpenAPI 6, PostgreSQL 4 passed). The scope and evidence are `timeline-temporal-operational-b11-b-scope-2026-09-27.md` and `timeline-temporal-operational-b11-b-proof-2026-09-27.md`.
 
@@ -255,7 +257,7 @@ B11-D is CLOSED / PROVEN, scoped in `timeline-temporal-operational-b11-d-scope-2
 
 The user reported the isolated `test_b11_d_whole_block.py` passing (`1 passed in 7.20s`) after `82f763af`. Web integration then connected typed Routine/Event Recurrence to its selected Occurrence source while leaving Actual/Condition on the Occurrence, plus keyed remount on subject change (`a89d13e6`). Reminder control retry coverage and the complete B11-D gate are in `timeline-temporal-operational-b11-d-gate-2026-09-27.md`. The real-app walkthrough is explicitly after D.
 
-The full user-run gate passed OpenAPI 7, PostgreSQL 14, generated check 364, both typechecks and 24 web tests. Ruff reported only I001 in the new test; its import-order repair is at `c685d519`. The user pulled `37ce469a` and reported the Ruff rerun passing. B11-D is closed; whole-B11 real-app acceptance remains separate and is now the next gate. Its first 2026-09-28 attempt exposed that recurring Create accepted `Senza Life Area` until a generic failure. The published repair turns this into an explicit Italian `Life Area` validation before any backend call. Use `timeline-temporal-operational-b11-realapp-gate-2026-09-27.md`, select a real Life Area for recurring authoring, and record actual observations before closing B11.
+The full user-run gate passed OpenAPI 7, PostgreSQL 14, generated check 364, both typechecks and 24 web tests. Ruff reported only I001 in the new test; its import-order repair is at `c685d519`. The published final repair also fixes the Advanced Recurrence read transaction. The final B11-D PostgreSQL rerun passed (`1 passed in 6.81s`), and the user reported the restarted real-app walkthrough working. B11 is CLOSED / USER-REPORTED ACCEPTANCE; see `timeline-temporal-operational-b11-closure-2026-09-28.md`. The exact next block is B13 Work Structure / Decomposition / Dependencies.
 
 Do not reopen B10 semantics unless B11 uncovers concrete contradictory evidence.
 
