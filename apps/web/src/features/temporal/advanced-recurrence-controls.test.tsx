@@ -187,4 +187,28 @@ describe('Advanced Recurrence controls', () => {
     });
     expect(writes[0]?.url).toContain(`/routines/${ROUTINE}/advanced-recurrence`);
   });
+
+  it('does not report a source as non-recurring when reading its Recurrence failed', async () => {
+    const fetchFn = vi.fn<Fetch>(async (input) => {
+      const url = String(input);
+      if (url.endsWith(`/routines/${ROUTINE}/recurrence`)) {
+        return Response.json(
+          {
+            code: 'temporal.recurrence.persistence_unavailable',
+            detail: 'Canonical Recurrence state could not be read.',
+          },
+          { status: 503 },
+        );
+      }
+      return unavailable();
+    });
+    vi.stubGlobal('fetch', fetchFn);
+
+    render(<AdvancedRecurrenceControls ownerKind="routine" sourceRef={ROUTINE} />);
+
+    await screen.findByRole('alert');
+    expect(screen.getByText('Recurrence avanzata: lettura non disponibile')).toBeTruthy();
+    expect(screen.queryByText('Recurrence avanzata: sorgente non ricorrente')).toBeNull();
+    expect(screen.getByLabelText('Regola Recurrence avanzata')).toBeDisabled();
+  });
 });
