@@ -19,6 +19,11 @@ export function TemporalCreateConfirmationFields({
 }: TemporalCreateConfirmationFieldsProps) {
   const { t } = useTranslation('common');
   const confirmation = fields.confirmation;
+  const reminderEligible =
+    fields.kind === 'activity' &&
+    fields.timeSemantics === 'timed' &&
+    fields.timeMode === 'zoned' &&
+    fields.eventRecurrence.patternKind === 'none';
   const patchConfirmation = (
     patch: Partial<TemporalCreateFields['confirmation']>,
   ) => onPatch({ confirmation: { ...confirmation, ...patch } });
@@ -96,8 +101,7 @@ export function TemporalCreateConfirmationFields({
           </select>
         </label>
 
-        {fields.kind === 'activity' && fields.timeSemantics === 'timed' &&
-        fields.timeMode === 'zoned' && fields.eventRecurrence.patternKind === 'none' ? (
+        {reminderEligible ? (
         <label className="temporal-create-control">
           <span>
             {t(($) => $.common.home.timeline.create.confirmation.reminder)}
@@ -148,6 +152,11 @@ export function TemporalCreateConfirmationFields({
           </select>
           {renderError('confirmation.reminderLeadMinutes')}
         </label>
+        ) : fields.kind === 'activity' ? (
+          <p className="temporal-create-truth-note">
+            Il Promemoria personale richiede un’Attività con Orario, Riferimento orario
+            “Fuso specifico” e Ripeti “Mai”.
+          </p>
         ) : null}
       </div>
 
