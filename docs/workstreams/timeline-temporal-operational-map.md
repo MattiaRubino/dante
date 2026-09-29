@@ -14,11 +14,13 @@
 - **B13-B closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-b-closure-2026-09-29.md`
 - **B13-C scope:** `docs/workstreams/timeline-temporal-operational-b13-c-scope-2026-09-29.md`
 - **B13-C closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-c-closure-2026-09-29.md`
+- **B13-D scope:** `docs/workstreams/timeline-temporal-operational-b13-d-scope-2026-09-29.md`
+- **B13-D candidate gate:** `docs/workstreams/timeline-temporal-operational-b13-d-gate-2026-09-29.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
 - **Current persistence source frontier:** `20260929_92` (B13-C focused PostgreSQL/catalog proof)
 - **Catalog-verified whole topology:** `_92` / `196|5|152|100|397|344|497|0|0|0`
 - **Completed functional frontier:** B13-C ✅ CLOSED / focused local proof 2026-09-29
-- **Current implementation cursor:** B13-D whole-block integration / proof / acceptance — scope and user-run gate next
+- **Current implementation cursor:** B13-D whole-block integration candidate — user-run local and real-app gates pending
 - **CI:** not authorized; local tests are run by the user
 
 ---
@@ -110,7 +112,7 @@ B13 Work Structure / Decomposition / Dependencies ◐ IN PROGRESS
   B13-A Work Structure Core                       ✅ CLOSED / PROVEN 2026-09-28
   B13-B Qualified Dependencies                    ✅ CLOSED / PROVEN 2026-09-29
   B13-C Execution Structure Constraints           ✅ CLOSED / PROVEN 2026-09-29
-  B13-D Whole-block Integration / Proof / Acceptance ⬜
+  B13-D Whole-block Integration / Proof / Acceptance ◐ CANDIDATE / LOCAL GATE PENDING
 B12 Replanning / Conflict / Solver                ⏸ HELD UNTIL B13 CLOSES
 B14 Temporal Create Completeness Gate             ⬜
 B07 UI/UX Consolidation v1                        ⏸ DEFERRED UNTIL B14
@@ -327,7 +329,7 @@ Closed / focused proof at forward-only `_92`. Immutable Plan Step revisions carr
 
 ## B13-D — Whole-block Integration / Proof / Acceptance
 
-Prove B13-A/B/C together across persistence, application/API/client as applicable, product behavior, negative invariants and user-run local gates before parent B13 closes.
+The candidate integrates B13-A/B/C on one Plan in a PostgreSQL test and one Home panel test. Its scope and executable local gate are `timeline-temporal-operational-b13-d-scope-2026-09-29.md` and `timeline-temporal-operational-b13-d-gate-2026-09-29.md`. User-run PostgreSQL, web/client checks and real-app acceptance remain pending; parent B13 is open.
 
 ## B12 — Replanning / Conflict / Solver
 

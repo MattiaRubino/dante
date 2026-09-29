@@ -31,5 +31,22 @@ def test_b13_a_plan_structure_contract_is_bounded() -> None:
     replace = cast(dict[str, Any], schemas["ReplacePlanBody"])
     assert set(replace["properties"]) == {"operation_id", "title", "expected_state_ref", "steps"}
     step = cast(dict[str, Any], schemas["PlanStepBody"])
-    assert set(step["properties"]) == {"step_ref", "title", "activity_ref"}
+    assert set(step["properties"]) == {
+        "step_ref",
+        "title",
+        "activity_ref",
+        "divisible",
+        "max_planned_slices",
+        "merge_compatible",
+        "execution_strength_code",
+    }
     assert "dependency" not in str(step).lower()
+    assessment = cast(
+        dict[str, Any],
+        paths["/api/v1/temporal/plans/{plan_ref}/steps/{step_ref}/execution/assess"],
+    )
+    assert assessment["post"]["operationId"] == "temporal_assess_plan_step_execution"
+    request = cast(dict[str, Any], schemas["AssessExecutionBody"])
+    assert set(request["properties"]) == {"expected_state_ref", "slices", "merge_pair"}
+    result = cast(dict[str, Any], schemas["ExecutionAssessmentResponse"])
+    assert {"basis", "proposed_count", "count_status", "merge_status"} <= set(result["properties"])

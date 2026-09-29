@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B13-C CLOSED / B13-D SCOPE NEXT
+- **Status:** B13-C CLOSED / B13-D INTEGRATION CANDIDATE — USER-RUN GATE PENDING
 - **Reconciled:** 2026-09-29
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -15,6 +15,8 @@
 - **B13-C scope:** `docs/workstreams/timeline-temporal-operational-b13-c-scope-2026-09-29.md`
 - **B13-C implementation checkpoint:** `docs/workstreams/timeline-temporal-operational-b13-c-implementation-2026-09-29.md`
 - **B13-C closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-c-closure-2026-09-29.md`
+- **B13-D scope:** `docs/workstreams/timeline-temporal-operational-b13-d-scope-2026-09-29.md`
+- **B13-D candidate gate:** `docs/workstreams/timeline-temporal-operational-b13-d-gate-2026-09-29.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
 - **Current migration source head:** B13-C / Alembic `20260929_92` (focused PostgreSQL/catalog proof)
 - **Catalog-verified whole topology:** `_92` / `196|5|152|100|397|344|497|0|0|0`
@@ -46,7 +48,7 @@ B13     ◐ IN PROGRESS
   B13-A ✅ CLOSED / PROVEN 2026-09-28
   B13-B ✅ CLOSED / PROVEN 2026-09-29
   B13-C ✅ CLOSED / PROVEN 2026-09-29
-  B13-D ⬜ NOT STARTED
+  B13-D ◐ CANDIDATE / USER-RUN GATE PENDING
 B12     ⏸ HELD UNTIL B13 CLOSES
 B14     ⬜ NOT STARTED
 B07     ⏸ DEFERRED UNTIL B14
@@ -275,7 +277,7 @@ B13-A focused automated closure does not claim whole B13 real-app acceptance; th
 
 # 6. B13 continuation
 
-B13-B is closed / proven at `_90`; its closure evidence is `timeline-temporal-operational-b13-b-closure-2026-09-29.md`. B13-C is closed / focused proof at `_92`: the user-run B13-A/B/C and exact Dictionary/catalog suite passed **13 tests in 29.16s** after the forward CHECK-name repair. The earlier web suite passed **11 tests**, deterministic client generation and both typechecks passed. See `timeline-temporal-operational-b13-c-closure-2026-09-29.md`. B13-D is next for whole-block integration and real-app acceptance. Do not merge Dependency truth into execution-structure constraints.
+B13-B is closed / proven at `_90`; its closure evidence is `timeline-temporal-operational-b13-b-closure-2026-09-29.md`. B13-C is closed / focused proof at `_92`: the user-run B13-A/B/C and exact Dictionary/catalog suite passed **13 tests in 29.16s** after the forward CHECK-name repair. The earlier web suite passed **11 tests**, deterministic client generation and both typechecks passed. See `timeline-temporal-operational-b13-c-closure-2026-09-29.md`. B13-D now has a whole-block integration candidate and an executable user-run gate; see its scope, implementation checkpoint and gate documents. Automated local PostgreSQL and real-app acceptance are pending. Do not merge Dependency truth into execution-structure constraints.
 
 ```text
 B13-B — Qualified Dependencies

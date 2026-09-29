@@ -5,7 +5,9 @@
 - **Vertical boundary:** Home `+` creation/configuration → canonical temporal truth → Timeline projection/actions → bounded lifecycle completion
 - **Completed functional frontier:** B13-C ✅ CLOSED / focused local automated proof 2026-09-29
 - **Current block:** B13 Work Structure / Decomposition / Dependencies
-- **Current gate:** B13-D Whole-block Integration / Proof / Acceptance — scope next
+- **Current gate:** B13-D Whole-block Integration / Proof / Acceptance — candidate, local gate pending
+- **B13-D scope authority:** `docs/workstreams/timeline-temporal-operational-b13-d-scope-2026-09-29.md`
+- **B13-D candidate gate:** `docs/workstreams/timeline-temporal-operational-b13-d-gate-2026-09-29.md`
 - **B13-C scope authority:** `docs/workstreams/timeline-temporal-operational-b13-c-scope-2026-09-29.md`
 - **B13-C closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-c-closure-2026-09-29.md`
 - **B13-B scope authority:** `docs/workstreams/timeline-temporal-operational-b13-b-scope-2026-09-28.md`
@@ -110,7 +112,7 @@ B13 Work Structure / Decomposition / Dependencies ◐ IN PROGRESS
   B13-A Work Structure Core                       ✅ CLOSED / PROVEN 2026-09-28
   B13-B Qualified Dependencies                    ✅ CLOSED / PROVEN 2026-09-29
   B13-C Execution Structure Constraints           ✅ CLOSED / PROVEN 2026-09-29
-  B13-D Whole-block Integration / Proof / Acceptance ⬜
+  B13-D Whole-block Integration / Proof / Acceptance ◐ CANDIDATE / LOCAL GATE PENDING
 B12 Replanning / Conflict / Solver                ⏸ HELD UNTIL B13 CLOSES
 B14 Temporal Create Completeness Gate             ⬜
 B07 UI/UX Consolidation v1                        ⏸ DEFERRED UNTIL B14
@@ -386,7 +388,7 @@ Closed / focused proof at `_92`. The supported Plan-contextual Step policy gover
 
 ## B13-D — Whole-block Integration / Proof / Acceptance
 
-Prove A/B/C together across canonical persistence, backend/API/client as applicable, product behavior, negative invariants, local automated gates and real-app acceptance before B13 closes.
+Scope and candidate gate: `timeline-temporal-operational-b13-d-scope-2026-09-29.md` and `timeline-temporal-operational-b13-d-gate-2026-09-29.md`. The new whole-block PostgreSQL test and Home panel integration test bring A/B/C into one Plan chain. User-run local automated proof and real-app walkthrough are pending. B13 and B12 do not advance until those results are recorded.
 
 ---
 
