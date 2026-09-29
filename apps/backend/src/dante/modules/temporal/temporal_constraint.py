@@ -1368,28 +1368,42 @@ class TemporalConstraintApplication:
             self_person_ref=self_person_ref,
             subject_native_ref=subject_native_ref,
         )
-        active = [value for value in constraints if value.current_rule is not None]
-        items = tuple(
-            _evaluate_current_rule(value, placement)
-            for value in active
-            if not (
-                isinstance(value.current_rule, TemporalConstraintCurrentDurationRuleView)
-                and value.current_rule.constrained_facet == "session.active_duration"
-            )
-        )
-        hard_set_status = _hard_set_status(active)
-        if any(item.strength == "hard" and item.evaluation == "not_evaluable" for item in items):
-            status: ConstraintSetEvaluationStatus = "not_evaluable"
-        elif any(item.strength == "hard" and item.evaluation == "violated" for item in items):
-            status = "inadmissible"
-        elif any(item.strength == "soft" and item.evaluation == "violated" for item in items):
-            status = "admissible_with_soft_violations"
-        else:
-            status = "admissible"
-        return TemporalConstraintEvaluationView(
+        return evaluate_current_constraint_snapshot(
             subject_native_ref=subject_native_ref,
             placement=placement,
-            status=status,
-            hard_set_status=hard_set_status,
-            items=items,
+            constraints=constraints,
         )
+
+
+def evaluate_current_constraint_snapshot(
+    *,
+    subject_native_ref: NativeRef,
+    placement: AbsoluteIntervalPlacement,
+    constraints: list[TemporalConstraintView],
+) -> TemporalConstraintEvaluationView:
+    """Evaluate an already self-scoped current snapshot without additional database reads."""
+    active = [value for value in constraints if value.current_rule is not None]
+    items = tuple(
+        _evaluate_current_rule(value, placement)
+        for value in active
+        if not (
+            isinstance(value.current_rule, TemporalConstraintCurrentDurationRuleView)
+            and value.current_rule.constrained_facet == "session.active_duration"
+        )
+    )
+    hard_set_status = _hard_set_status(active)
+    if any(item.strength == "hard" and item.evaluation == "not_evaluable" for item in items):
+        status: ConstraintSetEvaluationStatus = "not_evaluable"
+    elif any(item.strength == "hard" and item.evaluation == "violated" for item in items):
+        status = "inadmissible"
+    elif any(item.strength == "soft" and item.evaluation == "violated" for item in items):
+        status = "admissible_with_soft_violations"
+    else:
+        status = "admissible"
+    return TemporalConstraintEvaluationView(
+        subject_native_ref=subject_native_ref,
+        placement=placement,
+        status=status,
+        hard_set_status=hard_set_status,
+        items=items,
+    )

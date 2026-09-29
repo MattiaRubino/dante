@@ -342,7 +342,7 @@ The candidate integrates B13-A/B/C on one Plan in a PostgreSQL test and one Home
 
 ## B12 — Replanning / Conflict / Solver
 
-Block and B12-A scopes are in `timeline-temporal-operational-b12-scope-2026-09-29.md` and `timeline-temporal-operational-b12-a-scope-2026-09-29.md`. B12-A is closed / proven: generated 389, both typechecks, web 4, API contract 1, Ruff, PostgreSQL/catalog 11 passed in 26.14s in the user's worktree; see `timeline-temporal-operational-b12-a-closure-2026-09-29.md`. B12-B candidate scope is prepared in `timeline-temporal-operational-b12-b-scope-2026-09-29.md`; approval is pending. Real-app proof runs once in B12-D before parent B12 closure. Proposal != accepted Schedule; solver UNKNOWN != INFEASIBLE; AI != scheduling authority.
+Block and B12-A scopes are in `timeline-temporal-operational-b12-scope-2026-09-29.md` and `timeline-temporal-operational-b12-a-scope-2026-09-29.md`. B12-A is closed / proven: generated 389, both typechecks, web 4, API contract 1, Ruff, PostgreSQL/catalog 11 passed in 26.14s in the user's worktree; see `timeline-temporal-operational-b12-a-closure-2026-09-29.md`. B12-B is approved and its implementation candidate awaits focused user-run PostgreSQL proof; see `timeline-temporal-operational-b12-b-implementation-2026-09-29.md`. Real-app proof runs once in B12-D before parent B12 closure. Proposal != accepted Schedule; solver UNKNOWN != INFEASIBLE; AI != scheduling authority.
 
 ## B14 — Temporal Create Completeness Gate
 

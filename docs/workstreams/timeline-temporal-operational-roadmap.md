@@ -422,7 +422,7 @@ solver UNKNOWN != INFEASIBLE
 AI != scheduling authority
 ```
 
-B12 may not invent work structure, dependency truth or B13 execution constraints. The block scope is `timeline-temporal-operational-b12-scope-2026-09-29.md`: B12-A current-truth diagnosis → B12-B bounded solver candidates → B12-C governed admission → B12-D whole-block acceptance. B12-A is closed / proven on the user's focused automated gate: generated 389, both typechecks, web 4, contract 1, Ruff and PostgreSQL/catalog 11 passed. See `timeline-temporal-operational-b12-a-closure-2026-09-29.md`. The whole-chain real-app walkthrough is B12-D, before closing B12. B12-B's one-Activity fixed-duration scope is prepared in `timeline-temporal-operational-b12-b-scope-2026-09-29.md`; separate approval is pending.
+B12 may not invent work structure, dependency truth or B13 execution constraints. The block scope is `timeline-temporal-operational-b12-scope-2026-09-29.md`: B12-A current-truth diagnosis → B12-B bounded solver candidates → B12-C governed admission → B12-D whole-block acceptance. B12-A is closed / proven on the user's focused automated gate: generated 389, both typechecks, web 4, contract 1, Ruff and PostgreSQL/catalog 11 passed. See `timeline-temporal-operational-b12-a-closure-2026-09-29.md`. The whole-chain real-app walkthrough is B12-D, before closing B12. B12-B is approved and its implementation candidate awaits focused user-run PostgreSQL proof; see `timeline-temporal-operational-b12-b-implementation-2026-09-29.md`.
 
 ---
 

@@ -85,6 +85,7 @@ import type {
   PasswordRecoveryValidationRequest,
   PasswordResetRequest,
   PersonReferentResponse,
+  PlanCandidateResponse,
   PlanDependencyHistoryResponse,
   PlanDependencyResponse,
   PlanDiagnosisResponse,
@@ -178,6 +179,7 @@ import type {
   TemporalDiagnoseSelfPlanConflictsParams,
   TemporalFindActualRealizationConditionParams,
   TemporalListConstraintsBySubjectParams,
+  TemporalSearchSelfPlanStepCandidatesParams,
   TimelineWindowEmptyResponse,
   TimelineWindowItemsResponse,
   UnassignedLifeAreaItemResponse,
@@ -9763,6 +9765,110 @@ export const temporalListSelfPlanDependencyHistory = async (
     status: res.status,
     headers: res.headers,
   } as temporalListSelfPlanDependencyHistoryResponse;
+};
+
+export type temporalSearchSelfPlanStepCandidatesResponse200 = {
+  data: PlanCandidateResponse;
+  status: 200;
+};
+
+export type temporalSearchSelfPlanStepCandidatesResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type temporalSearchSelfPlanStepCandidatesResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type temporalSearchSelfPlanStepCandidatesResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type temporalSearchSelfPlanStepCandidatesResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type temporalSearchSelfPlanStepCandidatesResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type temporalSearchSelfPlanStepCandidatesResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type temporalSearchSelfPlanStepCandidatesResponseSuccess =
+  temporalSearchSelfPlanStepCandidatesResponse200 & {
+    headers: Headers;
+  };
+export type temporalSearchSelfPlanStepCandidatesResponseError = (
+  | temporalSearchSelfPlanStepCandidatesResponse401
+  | temporalSearchSelfPlanStepCandidatesResponse403
+  | temporalSearchSelfPlanStepCandidatesResponse404
+  | temporalSearchSelfPlanStepCandidatesResponse409
+  | temporalSearchSelfPlanStepCandidatesResponse422
+  | temporalSearchSelfPlanStepCandidatesResponse500
+) & {
+  headers: Headers;
+};
+
+export type temporalSearchSelfPlanStepCandidatesResponse =
+  | temporalSearchSelfPlanStepCandidatesResponseSuccess
+  | temporalSearchSelfPlanStepCandidatesResponseError;
+
+export const getTemporalSearchSelfPlanStepCandidatesUrl = (
+  planRef: string,
+  stepRef: string,
+  params: TemporalSearchSelfPlanStepCandidatesParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value));
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/v1/temporal/plans/${planRef}/steps/${stepRef}/candidates?${stringifiedParams}`
+    : `/api/v1/temporal/plans/${planRef}/steps/${stepRef}/candidates`;
+};
+
+/**
+ * @summary Search Self Plan Step Candidates
+ */
+export const temporalSearchSelfPlanStepCandidates = async (
+  planRef: string,
+  stepRef: string,
+  params: TemporalSearchSelfPlanStepCandidatesParams,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalSearchSelfPlanStepCandidatesResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalSearchSelfPlanStepCandidatesUrl(planRef, stepRef, params),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalSearchSelfPlanStepCandidatesResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalSearchSelfPlanStepCandidatesResponse;
 };
 
 export type temporalAssessPlanStepExecutionResponse200 = {

@@ -1,6 +1,6 @@
 # B12 — Replanning / Conflict / Solver — prepared block scope
 
-- **Status:** B12-A closed / proven; B12-B scope prepared for separate approval
+- **Status:** B12-A closed / proven; B12-B approved and implementation candidate awaiting local proof
 - **Date:** 2026-09-29
 - **Branch:** `feature/timeline-temporal-operational`
 - **Preparation basis:** `c46ba83ddd05c6f07e81a12ce3424a22bd68cc4b`

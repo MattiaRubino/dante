@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 
 import type { PlanWork } from './remote-plan-work-data-source';
+import { PlanCandidatePanel } from './plan-candidate-panel';
 import {
   createRemotePlanConflictDataSource,
   type DiagnosticCode,
@@ -95,6 +96,10 @@ export function PlanConflictPanel({ plan }: { plan: PlanWork }) {
                       .
                     </p>
                   ))}
+                  {step.activityRef !== null && step.placements?.length === 1 &&
+                  step.placements[0]?.temporalFormCode === 'absolute' ? (
+                    <PlanCandidatePanel plan={plan} stepRef={step.stepRef} title={step.title} />
+                  ) : null}
                 </li>
               ))}
             </ol>

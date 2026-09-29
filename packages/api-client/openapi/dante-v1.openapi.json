@@ -2309,6 +2309,35 @@
         "title": "CalendarYearMonthDay",
         "type": "object"
       },
+      "CandidateIntervalResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "ends_at": {
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "grid_index": {
+            "title": "Grid Index",
+            "type": "integer"
+          },
+          "soft_findings": {
+            "items": {
+              "$ref": "#/components/schemas/ConstraintFindingResponse"
+            },
+            "title": "Soft Findings",
+            "type": "array"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          }
+        },
+        "required": ["starts_at", "ends_at", "grid_index", "soft_findings"],
+        "title": "CandidateIntervalResponse",
+        "type": "object"
+      },
       "CoarseLocalPeriodPlacementRequest": {
         "additionalProperties": false,
         "properties": {
@@ -2624,6 +2653,31 @@
         },
         "required": ["activity", "constraints"],
         "title": "ConstrainedActivityResponse",
+        "type": "object"
+      },
+      "ConstraintBasisResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "constraint_ref": {
+            "format": "uuid",
+            "title": "Constraint Ref",
+            "type": "string"
+          },
+          "material_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Material State Ref"
+          }
+        },
+        "required": ["constraint_ref", "material_state_ref"],
+        "title": "ConstraintBasisResponse",
         "type": "object"
       },
       "ConstraintFindingResponse": {
@@ -5569,6 +5623,203 @@
           "ends_at"
         ],
         "title": "PlacementBasisResponse",
+        "type": "object"
+      },
+      "PlanCandidateResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "activity_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Activity Ref"
+          },
+          "basis_status": {
+            "enum": ["supported", "unknown", "blocked", "unsupported"],
+            "title": "Basis Status",
+            "type": "string"
+          },
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/CandidateIntervalResponse"
+            },
+            "title": "Candidates",
+            "type": "array"
+          },
+          "capacity_evaluated": {
+            "title": "Capacity Evaluated",
+            "type": "boolean"
+          },
+          "constraint_states": {
+            "items": {
+              "$ref": "#/components/schemas/ConstraintBasisResponse"
+            },
+            "title": "Constraint States",
+            "type": "array"
+          },
+          "dependencies": {
+            "items": {
+              "$ref": "#/components/schemas/DependencyFindingResponse"
+            },
+            "title": "Dependencies",
+            "type": "array"
+          },
+          "duration_microseconds": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Microseconds"
+          },
+          "grid_minutes": {
+            "title": "Grid Minutes",
+            "type": "integer"
+          },
+          "grid_size": {
+            "title": "Grid Size",
+            "type": "integer"
+          },
+          "horizon_ends_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Horizon Ends At"
+          },
+          "horizon_starts_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Horizon Starts At"
+          },
+          "max_seconds_per_solve": {
+            "title": "Max Seconds Per Solve",
+            "type": "number"
+          },
+          "model_version": {
+            "title": "Model Version",
+            "type": "string"
+          },
+          "movement_policy_material_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Movement Policy Material State Ref"
+          },
+          "movement_policy_status": {
+            "enum": ["automatic", "blocked", "missing"],
+            "title": "Movement Policy Status",
+            "type": "string"
+          },
+          "placement": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PlacementBasisResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "plan_ref": {
+            "format": "uuid",
+            "title": "Plan Ref",
+            "type": "string"
+          },
+          "plan_state_ref": {
+            "format": "uuid",
+            "title": "Plan State Ref",
+            "type": "string"
+          },
+          "reason_code": {
+            "title": "Reason Code",
+            "type": "string"
+          },
+          "solver_status": {
+            "anyOf": [
+              {
+                "enum": [
+                  "OPTIMAL",
+                  "FEASIBLE",
+                  "INFEASIBLE",
+                  "MODEL_INVALID",
+                  "UNKNOWN"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Solver Status"
+          },
+          "solver_version": {
+            "title": "Solver Version",
+            "type": "string"
+          },
+          "step_ref": {
+            "format": "uuid",
+            "title": "Step Ref",
+            "type": "string"
+          },
+          "step_title": {
+            "title": "Step Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "plan_ref",
+          "plan_state_ref",
+          "step_ref",
+          "step_title",
+          "activity_ref",
+          "placement",
+          "dependencies",
+          "constraint_states",
+          "movement_policy_material_state_ref",
+          "movement_policy_status",
+          "basis_status",
+          "reason_code",
+          "solver_status",
+          "candidates",
+          "horizon_starts_at",
+          "horizon_ends_at",
+          "duration_microseconds",
+          "grid_minutes",
+          "grid_size",
+          "max_seconds_per_solve",
+          "model_version",
+          "solver_version",
+          "capacity_evaluated"
+        ],
+        "title": "PlanCandidateResponse",
         "type": "object"
       },
       "PlanDependencyHistoryResponse": {
@@ -26403,6 +26654,117 @@
           }
         },
         "summary": "List Self Plan Dependency History",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/plans/{plan_ref}/steps/{step_ref}/candidates": {
+      "get": {
+        "operationId": "temporal_search_self_plan_step_candidates",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Plan Ref",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "step_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Step Ref",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "expected_state_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Expected State Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanCandidateResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Search Self Plan Step Candidates",
         "tags": ["temporal"]
       }
     },

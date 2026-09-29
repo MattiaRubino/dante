@@ -1,6 +1,6 @@
 # B12-B — Bounded absolute-time candidate generation — scope proposal
 
-- **Status:** PREPARED FOR EXPLICIT B12-B APPROVAL; implementation not started
+- **Status:** APPROVED; implementation candidate awaiting focused user-run PostgreSQL gate
 - **Date:** 2026-09-29
 - **Branch:** `feature/timeline-temporal-operational`
 - **Entry:** B12-A closed / proven; `20260929_92` remains DB source head
@@ -44,4 +44,4 @@ No new canonical candidate/solver table or migration is planned. No Schedule, Pl
 
 B12-B closes on focused automated proof. B12-C will review/submit effects with fresh policy/state checks. B12-D will run the integrated end-to-end real-app walkthrough once, immediately before parent B12 closure.
 
-**Approval requested next:** B12-B within this exact one-Activity, fixed-duration, 24-hour candidate scope. Approval does not authorize B12-C admission or whole-Plan automation.
+**Approval:** The user approved B12-B within this one-Activity, fixed-duration, 24-hour candidate scope. B12-C admission and whole-Plan automation remain separate gates.

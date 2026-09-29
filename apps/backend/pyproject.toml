@@ -27,6 +27,7 @@ dependencies = [
     "cryptography==50.0.1",
     "boto3>=1.40,<2",
     "botocore>=1.40,<2",
+    "ortools>=9.15,<9.16",
 ]
 
 [build-system]
