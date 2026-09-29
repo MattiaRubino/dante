@@ -5,7 +5,7 @@
 - **Vertical boundary:** Home `+` creation/configuration → canonical temporal truth → Timeline projection/actions → bounded lifecycle completion
 - **Completed functional frontier:** B13-C ✅ CLOSED / focused local automated proof 2026-09-29
 - **Current block:** B13 Work Structure / Decomposition / Dependencies
-- **Current gate:** B13-D Whole-block Integration / Proof / Acceptance — candidate, local gate pending
+- **Current gate:** B13-D Whole-block Integration / Proof / Acceptance — automated local gate passed, real-app walkthrough pending
 - **B13-D scope authority:** `docs/workstreams/timeline-temporal-operational-b13-d-scope-2026-09-29.md`
 - **B13-D candidate gate:** `docs/workstreams/timeline-temporal-operational-b13-d-gate-2026-09-29.md`
 - **B13-C scope authority:** `docs/workstreams/timeline-temporal-operational-b13-c-scope-2026-09-29.md`
@@ -112,7 +112,7 @@ B13 Work Structure / Decomposition / Dependencies ◐ IN PROGRESS
   B13-A Work Structure Core                       ✅ CLOSED / PROVEN 2026-09-28
   B13-B Qualified Dependencies                    ✅ CLOSED / PROVEN 2026-09-29
   B13-C Execution Structure Constraints           ✅ CLOSED / PROVEN 2026-09-29
-  B13-D Whole-block Integration / Proof / Acceptance ◐ CANDIDATE / LOCAL GATE PENDING
+  B13-D Whole-block Integration / Proof / Acceptance ◐ AUTOMATED PASS / REAL-APP PENDING
 B12 Replanning / Conflict / Solver                ⏸ HELD UNTIL B13 CLOSES
 B14 Temporal Create Completeness Gate             ⬜
 B07 UI/UX Consolidation v1                        ⏸ DEFERRED UNTIL B14
@@ -388,7 +388,7 @@ Closed / focused proof at `_92`. The supported Plan-contextual Step policy gover
 
 ## B13-D — Whole-block Integration / Proof / Acceptance
 
-Scope and candidate gate: `timeline-temporal-operational-b13-d-scope-2026-09-29.md` and `timeline-temporal-operational-b13-d-gate-2026-09-29.md`. The new whole-block PostgreSQL test and Home panel integration test bring A/B/C into one Plan chain. User-run local automated proof and real-app walkthrough are pending. B13 and B12 do not advance until those results are recorded.
+Scope and gate: `timeline-temporal-operational-b13-d-scope-2026-09-29.md` and `timeline-temporal-operational-b13-d-gate-2026-09-29.md`. The new whole-block PostgreSQL test and Home panel integration test bring A/B/C into one Plan chain. The user-run local gate passed: generated check (383 files), both typechecks, web **12**, backend contract/unit **3**, PostgreSQL **14**, and Ruff. The real-app walkthrough remains pending. B13 and B12 do not advance until that result is recorded.
 
 ---
 

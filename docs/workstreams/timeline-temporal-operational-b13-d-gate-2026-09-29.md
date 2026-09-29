@@ -1,6 +1,6 @@
 # B13-D — local acceptance gate
 
-- **Status:** CANDIDATE / user-run PostgreSQL and real-app results pending
+- **Status:** AUTOMATED LOCAL GATE PASS / real-app walkthrough pending
 - **Branch:** `feature/timeline-temporal-operational`
 - **Alembic head:** `20260929_92`; no new persistence revision in this candidate
 - **Runner:** user worktree `~/projects/dante`; no CI/GitHub Actions
@@ -43,7 +43,9 @@ uv run --locked ruff format --check \
   tests/integration/temporal/test_b13_d_whole_block.py
 ```
 
-The new integration test is one additional PostgreSQL test on top of the 13-test B13-C gate; the expected count is **14** if discovery does not add or deselect tests. Report the actual output, not just the expected count. If any step fails, stop the real-app acceptance claim and repair the cause forward.
+## User-run automated evidence — 2026-09-29
+
+The user pulled `c7e298384a2dacc8e7a8dc64405e20a1951f0879` and supplied the local command output. `pnpm generated:check` passed (383 deterministic generated files); API-client and web typechecks passed; the six-file web suite passed **12 tests**; backend OpenAPI/unit selection passed **3 tests in 2.02s**; the seven-file PostgreSQL selection passed **14 tests in 44.24s**; Ruff check passed and both Python files were already formatted. The Vite build emitted an advisory chunk-size warning, with successful exit. This proves the automated candidate gate only; no real-app result has been reported yet.
 
 ## Real-app walkthrough after automated PASS
 

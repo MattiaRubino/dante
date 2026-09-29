@@ -1,6 +1,6 @@
 # B13-D — integration candidate checkpoint
 
-- **Status:** LOCAL CANDIDATE / user-run PostgreSQL and real-app gates pending
+- **Status:** AUTOMATED LOCAL GATE PASS / real-app walkthrough pending
 - **Date:** 2026-09-29
 - **Branch:** `feature/timeline-temporal-operational`
 - **Base:** `4eac3e971d50cb3c0f04d2699e35275a2dacbe9b`
@@ -17,4 +17,4 @@ The Home `PlanWorkPanel` integration test drives both nested controls from one a
 
 In this coding workspace, the focused web suite passed **12 tests across 6 files**, including the new whole-panel integration; web typecheck passed. Ruff check and format checks passed for the two changed Python tests, and the new integration test compiled. The generated OpenAPI artifact contains the expected Plan Step and assessment fields, but the Python contract test has not run here. The local `uv` is `0.12.18` while this repository pins `==0.12.5`, so the local Python test command exits before pytest starts. There is no local PostgreSQL proof for the new integrated test. These are candidate checks, not B13-D acceptance.
 
-The exact user-run commands and real-app walkthrough are in `timeline-temporal-operational-b13-d-gate-2026-09-29.md`. Record actual outputs and any product defects there or in a forward repair checkpoint. Do not mark B13-D or parent B13 closed until the whole-block automated gate and user-reported real-app walkthrough pass. B12 remains held.
+The user subsequently ran the published `c7e29838` gate locally: deterministic generation (383 files), API-client and web typechecks, six web files (**12 tests**), backend contract/unit (**3 tests**), seven PostgreSQL files (**14 tests in 44.24s**), Ruff check and format all passed. The earlier workspace limitation remains a record of where these checks were run, not a pending gate. The exact commands and remaining real-app walkthrough are in `timeline-temporal-operational-b13-d-gate-2026-09-29.md`. Do not mark B13-D or parent B13 closed until the user reports the real-app walkthrough; B12 remains held.
