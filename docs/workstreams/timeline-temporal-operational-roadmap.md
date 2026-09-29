@@ -3,11 +3,12 @@
 - **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-29
 - **Branch/workstream:** `feature/timeline-temporal-operational`
 - **Vertical boundary:** Home `+` creation/configuration → canonical temporal truth → Timeline projection/actions → bounded lifecycle completion
-- **Completed functional frontier:** B13-C ✅ CLOSED / focused local automated proof 2026-09-29
-- **Current block:** B13 Work Structure / Decomposition / Dependencies
-- **Current gate:** B13-D Whole-block Integration / Proof / Acceptance — direct Activity-to-Step UX repair, local rerun and real-app walkthrough pending
+- **Completed functional frontier:** B13 ✅ CLOSED / user-reported B13-D real-app acceptance 2026-09-29
+- **Current block:** B12 Replanning / Conflict / Solver — scope gate next
+- **Current gate:** B13-D CLOSED / user-reported real-app acceptance; post-repair web rerun unreported
 - **B13-D scope authority:** `docs/workstreams/timeline-temporal-operational-b13-d-scope-2026-09-29.md`
 - **B13-D candidate gate:** `docs/workstreams/timeline-temporal-operational-b13-d-gate-2026-09-29.md`
+- **B13-D closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-d-closure-2026-09-29.md`
 - **B13-C scope authority:** `docs/workstreams/timeline-temporal-operational-b13-c-scope-2026-09-29.md`
 - **B13-C closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-c-closure-2026-09-29.md`
 - **B13-B scope authority:** `docs/workstreams/timeline-temporal-operational-b13-b-scope-2026-09-28.md`
@@ -108,12 +109,12 @@ B11 Advanced Recurrence / Conditional / Reminder ✅ CLOSED / USER-REPORTED ACCE
   B11-C Schedule-relative personal Reminder       ✅ CLOSED / PROVEN (focused and `_86` catalog gates)
   B11-D Whole-block integration gate              ✅ CLOSED / PROVEN; real-app acceptance ✅
 
-B13 Work Structure / Decomposition / Dependencies ◐ IN PROGRESS
+B13 Work Structure / Decomposition / Dependencies ✅ CLOSED / USER-REPORTED ACCEPTANCE
   B13-A Work Structure Core                       ✅ CLOSED / PROVEN 2026-09-28
   B13-B Qualified Dependencies                    ✅ CLOSED / PROVEN 2026-09-29
   B13-C Execution Structure Constraints           ✅ CLOSED / PROVEN 2026-09-29
-  B13-D Whole-block Integration / Proof / Acceptance ◐ UX REPAIR / LOCAL RERUN + REAL-APP PENDING
-B12 Replanning / Conflict / Solver                ⏸ HELD UNTIL B13 CLOSES
+  B13-D Whole-block Integration / Proof / Acceptance ✅ CLOSED / USER-REPORTED 2026-09-29
+B12 Replanning / Conflict / Solver                ⬜ NEXT / SCOPE GATE
 B14 Temporal Create Completeness Gate             ⬜
 B07 UI/UX Consolidation v1                        ⏸ DEFERRED UNTIL B14
 B15 Whole Vertical Closure                        ⬜
@@ -388,11 +389,11 @@ Closed / focused proof at `_92`. The supported Plan-contextual Step policy gover
 
 ## B13-D — Whole-block Integration / Proof / Acceptance
 
-Scope and gate: `timeline-temporal-operational-b13-d-scope-2026-09-29.md` and `timeline-temporal-operational-b13-d-gate-2026-09-29.md`. The new whole-block PostgreSQL test and Home panel integration test bring A/B/C into one Plan chain. The initial user-run local gate passed: generated check (383 files), both typechecks, web **12**, backend contract/unit **3**, PostgreSQL **14**, and Ruff. Acceptance preparation then exposed the UUID copy/paste Activity-link flow. The direct Activity-to-linked-Step repair requires the gate rerun and the real-app walkthrough. B13 and B12 do not advance until those results are recorded.
+Scope and gate: `timeline-temporal-operational-b13-d-scope-2026-09-29.md` and `timeline-temporal-operational-b13-d-gate-2026-09-29.md`. The new whole-block PostgreSQL test and Home panel integration test bring A/B/C into one Plan chain. The initial user-run local gate passed: generated check (383 files), both typechecks, web **12**, backend contract/unit **3**, PostgreSQL **14**, and Ruff. Acceptance preparation then exposed the UUID copy/paste Activity-link flow. The direct Activity-to-linked-Step repair was used in the real app. Screenshots confirmed linked Record/Mix Steps and an `Actual avvenuto` Record → Mix Dependency evaluated as `sconosciuta`; the user then reported “ok va chiudiamo” after receiving the full walkthrough. This is user-reported acceptance, not itemized proof of every remaining manual check. The post-repair seven-file web rerun (expected 16 tests) has not been reported; do not claim it passed. See `docs/workstreams/timeline-temporal-operational-b13-d-closure-2026-09-29.md`. B13 is closed on that qualified evidence, and B12 is next for a separately approved scope gate.
 
 ---
 
-# 6. B12 — Replanning / Conflict / Solver — HELD UNTIL B13 CLOSES
+# 6. B12 — Replanning / Conflict / Solver — NEXT SCOPE GATE
 
 Deterministic-first replanning/conflict/solver:
 
@@ -413,7 +414,7 @@ solver UNKNOWN != INFEASIBLE
 AI != scheduling authority
 ```
 
-B12 may not invent work structure, dependency truth or B13 execution constraints. It resumes only after B13-D closes.
+B12 may not invent work structure, dependency truth or B13 execution constraints. B13-D is closed with user-reported acceptance; B12 implementation requires its own explicit scope gate.
 
 ---
 

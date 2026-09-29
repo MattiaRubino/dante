@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B13-C CLOSED / B13-D UX REPAIR — LOCAL RERUN + REAL-APP PENDING
+- **Status:** B13 CLOSED / B13-D USER-REPORTED ACCEPTANCE; B12 SCOPE GATE NEXT
 - **Reconciled:** 2026-09-29
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -17,6 +17,7 @@
 - **B13-C closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-c-closure-2026-09-29.md`
 - **B13-D scope:** `docs/workstreams/timeline-temporal-operational-b13-d-scope-2026-09-29.md`
 - **B13-D candidate gate:** `docs/workstreams/timeline-temporal-operational-b13-d-gate-2026-09-29.md`
+- **B13-D closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-d-closure-2026-09-29.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
 - **Current migration source head:** B13-C / Alembic `20260929_92` (focused PostgreSQL/catalog proof)
 - **Catalog-verified whole topology:** `_92` / `196|5|152|100|397|344|497|0|0|0`
@@ -48,8 +49,8 @@ B13     ◐ IN PROGRESS
   B13-A ✅ CLOSED / PROVEN 2026-09-28
   B13-B ✅ CLOSED / PROVEN 2026-09-29
   B13-C ✅ CLOSED / PROVEN 2026-09-29
-  B13-D ◐ UX REPAIR / LOCAL RERUN + REAL-APP PENDING
-B12     ⏸ HELD UNTIL B13 CLOSES
+  B13-D ✅ CLOSED / USER-REPORTED ACCEPTANCE 2026-09-29
+B12     ⬜ NEXT / SCOPE GATE
 B14     ⬜ NOT STARTED
 B07     ⏸ DEFERRED UNTIL B14
 B15     ⬜ NOT STARTED
@@ -277,7 +278,7 @@ B13-A focused automated closure does not claim whole B13 real-app acceptance; th
 
 # 6. B13 continuation
 
-B13-B is closed / proven at `_90`; its closure evidence is `timeline-temporal-operational-b13-b-closure-2026-09-29.md`. B13-C is closed / focused proof at `_92`: the user-run B13-A/B/C and exact Dictionary/catalog suite passed **13 tests in 29.16s** after the forward CHECK-name repair. The earlier web suite passed **11 tests**, deterministic client generation and both typechecks passed. See `timeline-temporal-operational-b13-c-closure-2026-09-29.md`. B13-D whole-block automated gate initially passed on the user's local worktree: generated check (383 files), both typechecks, web **12**, backend contract/unit **3**, PostgreSQL **14 in 44.24s**, and Ruff. Acceptance preparation exposed the UUID copy/paste Activity-link path; the direct card-to-linked-Step repair is published next and needs its short local rerun plus real-app acceptance. See its scope, implementation checkpoint and gate documents. Do not merge Dependency truth into execution-structure constraints.
+B13-B is closed / proven at `_90`; its closure evidence is `timeline-temporal-operational-b13-b-closure-2026-09-29.md`. B13-C is closed / focused proof at `_92`: the user-run B13-A/B/C and exact Dictionary/catalog suite passed **13 tests in 29.16s** after the forward CHECK-name repair. The earlier web suite passed **11 tests**, deterministic client generation and both typechecks passed. See `timeline-temporal-operational-b13-c-closure-2026-09-29.md`. B13-D whole-block automated gate initially passed on the user's local worktree: generated check (383 files), both typechecks, web **12**, backend contract/unit **3**, PostgreSQL **14 in 44.24s**, and Ruff. Acceptance preparation exposed the UUID copy/paste Activity-link path; the direct card-to-linked-Step repair was published and used in the real app. Screenshots confirmed linked Record/Mix Steps and the `Actual avvenuto` Record → Mix Dependency in `sconosciuta`; after receiving the complete walkthrough the user reported “ok va chiudiamo”. B13-D/B13 are closed on user-reported acceptance, while the final seven-file web rerun and itemized remaining manual observations are not recorded. See `docs/workstreams/timeline-temporal-operational-b13-d-closure-2026-09-29.md`. See its scope, implementation checkpoint and gate documents. Do not merge Dependency truth into execution-structure constraints.
 
 ```text
 B13-B — Qualified Dependencies
@@ -287,7 +288,7 @@ B13-D — Whole-block Integration / Proof / Acceptance
 
 B13-B owns real dependency semantics. B13-C owns execution-structure constraints only where current Domain/Logical authority supports them. B13-D proves the complete B13 chain and real product behavior.
 
-B12 remains held until B13-D closes so replanning/solver behavior consumes canonical structure/dependency truth instead of inventing it.
+B12 is next for a separately approved scope gate. Replanning/solver behavior must consume canonical structure/dependency truth instead of inventing it.
 
 ---
 

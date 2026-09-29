@@ -1,6 +1,6 @@
 # B13-D — local acceptance gate
 
-- **Status:** UX REPAIR CANDIDATE / local rerun and real-app walkthrough pending
+- **Status:** B13-D CLOSED / user-reported real-app acceptance; post-repair web rerun unreported
 - **Branch:** `feature/timeline-temporal-operational`
 - **Alembic head:** `20260929_92`; no new persistence revision in this candidate
 - **Runner:** user worktree `~/projects/dante`; no CI/GitHub Actions
@@ -46,7 +46,7 @@ uv run --locked ruff format --check \
 
 ## Automated evidence before UX repair — 2026-09-29
 
-The user pulled `c7e298384a2dacc8e7a8dc64405e20a1951f0879` and supplied the local command output. `pnpm generated:check` passed (383 deterministic generated files); API-client and web typechecks passed; the six-file web suite passed **12 tests**; backend OpenAPI/unit selection passed **3 tests in 2.02s**; the seven-file PostgreSQL selection passed **14 tests in 44.24s**; Ruff check passed and both Python files were already formatted. The Vite build emitted an advisory chunk-size warning, with successful exit. This proves the automated candidate gate only; no real-app result has been reported yet.
+The user pulled `c7e298384a2dacc8e7a8dc64405e20a1951f0879` and supplied the local command output. `pnpm generated:check` passed (383 deterministic generated files); API-client and web typechecks passed; the six-file web suite passed **12 tests**; backend OpenAPI/unit selection passed **3 tests in 2.02s**; the seven-file PostgreSQL selection passed **14 tests in 44.24s**; Ruff check passed and both Python files were already formatted. The Vite build emitted an advisory chunk-size warning, with successful exit. This proves the automated candidate gate before the UX repair. Later real-app screenshots and the user's overall acceptance are recorded below.
 
 ## UX repair — direct Activity to Plan flow
 
@@ -64,4 +64,6 @@ In the running local Home app, use a fresh test Plan and two distinct unplaced A
 4. Record an Actual for the Record Activity using its existing product control. Reload the Dependency: its current evaluation should follow the accepted Actual. Correct the Actual where the product supports that path; evaluation should update without changing Mix policy or the proposed planning basis.
 5. Retire the Mix policy and Dependency, refresh and confirm the active controls no longer claim those rules. Record any missing path, error, stale view or unexpected mutation precisely.
 
-Do not mark B13-D or parent B13 accepted until the user reports this walkthrough and its observed results. The automated gate only proves the focused repository paths.
+## Acceptance report — 2026-09-29
+
+Screenshots from the user's local app showed the Album Plan with Record and Mix Steps linked to distinct Activities, then the Record → Mix `Actual avvenuto` Dependency evaluated as `sconosciuta`. After receiving the complete remaining walkthrough, the user reported “ok va chiudiamo”. This is overall user-reported acceptance; the remaining checks were not reported one by one. The post-repair seven-file web rerun (expected 16 tests) has no reported PASS; the earlier 14-pass/1-fail run preceded two fixes. Do not relabel that run as passed. B13-D and parent B13 close on qualified user-reported acceptance; see `docs/workstreams/timeline-temporal-operational-b13-d-closure-2026-09-29.md`.

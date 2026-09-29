@@ -16,11 +16,12 @@
 - **B13-C closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-c-closure-2026-09-29.md`
 - **B13-D scope:** `docs/workstreams/timeline-temporal-operational-b13-d-scope-2026-09-29.md`
 - **B13-D candidate gate:** `docs/workstreams/timeline-temporal-operational-b13-d-gate-2026-09-29.md`
+- **B13-D closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-d-closure-2026-09-29.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
 - **Current persistence source frontier:** `20260929_92` (B13-C focused PostgreSQL/catalog proof)
 - **Catalog-verified whole topology:** `_92` / `196|5|152|100|397|344|497|0|0|0`
-- **Completed functional frontier:** B13-C ✅ CLOSED / focused local proof 2026-09-29
-- **Current implementation cursor:** B13-D direct Activity-to-Step UX repair — local rerun and real-app walkthrough pending
+- **Completed functional frontier:** B13 ✅ CLOSED / user-reported acceptance 2026-09-29
+- **Current implementation cursor:** B12 scope gate next; B13-D post-repair web rerun remains unreported
 - **CI:** not authorized; local tests are run by the user
 
 ---
@@ -108,12 +109,12 @@ timeline-temporal-operational-b11-closure-2026-09-28.md
 # 3. Active execution order
 
 ```text
-B13 Work Structure / Decomposition / Dependencies ◐ IN PROGRESS
+B13 Work Structure / Decomposition / Dependencies ✅ CLOSED / USER-REPORTED ACCEPTANCE
   B13-A Work Structure Core                       ✅ CLOSED / PROVEN 2026-09-28
   B13-B Qualified Dependencies                    ✅ CLOSED / PROVEN 2026-09-29
   B13-C Execution Structure Constraints           ✅ CLOSED / PROVEN 2026-09-29
-  B13-D Whole-block Integration / Proof / Acceptance ◐ UX REPAIR / LOCAL RERUN + REAL-APP PENDING
-B12 Replanning / Conflict / Solver                ⏸ HELD UNTIL B13 CLOSES
+  B13-D Whole-block Integration / Proof / Acceptance ✅ CLOSED / USER-REPORTED 2026-09-29
+B12 Replanning / Conflict / Solver                ⬜ NEXT / SCOPE GATE
 B14 Temporal Create Completeness Gate             ⬜
 B07 UI/UX Consolidation v1                        ⏸ DEFERRED UNTIL B14
 B15 Whole Vertical Closure                        ⬜
@@ -329,11 +330,11 @@ Closed / focused proof at forward-only `_92`. Immutable Plan Step revisions carr
 
 ## B13-D — Whole-block Integration / Proof / Acceptance
 
-The candidate integrates B13-A/B/C on one Plan in a PostgreSQL test and one Home panel test. Its scope and executable local gate are `timeline-temporal-operational-b13-d-scope-2026-09-29.md` and `timeline-temporal-operational-b13-d-gate-2026-09-29.md`. The initial user-run gate passed: generated check (383 files), both typechecks, web **12**, backend contract/unit **3**, PostgreSQL **14**, and Ruff. A direct Activity-to-Step repair removes manual UUID linking and adds a short web rerun. Real-app acceptance remains pending; parent B13 is open.
+The candidate integrates B13-A/B/C on one Plan in a PostgreSQL test and one Home panel test. Its scope and executable local gate are `timeline-temporal-operational-b13-d-scope-2026-09-29.md` and `timeline-temporal-operational-b13-d-gate-2026-09-29.md`. The initial user-run gate passed: generated check (383 files), both typechecks, web **12**, backend contract/unit **3**, PostgreSQL **14**, and Ruff. The direct Activity-to-Step repair removed manual UUID linking. Screenshots confirmed both linked Steps and the Record → Mix `Actual avvenuto` Dependency in `sconosciuta`; the user then reported overall acceptance with “ok va chiudiamo” after the full walkthrough. The final seven-file web rerun was not reported, so its expected 16 tests are unverified. B13-D and B13 are closed on user-reported real-app acceptance with this explicit verification gap; see `docs/workstreams/timeline-temporal-operational-b13-d-closure-2026-09-29.md`.
 
 ## B12 — Replanning / Conflict / Solver
 
-HELD until B13-D closes. Deterministic-first replanning over canonical truth/constraints/dependencies. Proposal != accepted Schedule; solver UNKNOWN != INFEASIBLE; AI != scheduling authority.
+NEXT: scope gate before implementation. Deterministic-first replanning over canonical truth/constraints/dependencies. Proposal != accepted Schedule; solver UNKNOWN != INFEASIBLE; AI != scheduling authority.
 
 ## B14 — Temporal Create Completeness Gate
 
