@@ -14,14 +14,16 @@
 - **B13-B closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-b-closure-2026-09-29.md`
 - **B13-C scope:** `docs/workstreams/timeline-temporal-operational-b13-c-scope-2026-09-29.md`
 - **B13-C closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-c-closure-2026-09-29.md`
-- **B13-D scope:** `docs/workstreams/timeline-temporal-operational-b13-d-scope-2026-09-29.md`
+- **B12 block scope:** `docs/workstreams/timeline-temporal-operational-b12-scope-2026-09-29.md`
+- **B12-A scope proposal:** `docs/workstreams/timeline-temporal-operational-b12-a-scope-2026-09-29.md`
+- **B13-D scope: `docs/workstreams/timeline-temporal-operational-b13-d-scope-2026-09-29.md`
 - **B13-D candidate gate:** `docs/workstreams/timeline-temporal-operational-b13-d-gate-2026-09-29.md`
 - **B13-D closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-d-closure-2026-09-29.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
 - **Current persistence source frontier:** `20260929_92` (B13-C focused PostgreSQL/catalog proof)
 - **Catalog-verified whole topology:** `_92` / `196|5|152|100|397|344|497|0|0|0`
 - **Completed functional frontier:** B13 ✅ CLOSED / user-reported acceptance 2026-09-29
-- **Current implementation cursor:** B12 scope gate next; B13-D post-repair web rerun remains unreported
+- **Current implementation cursor:** B12-A scope prepared; awaiting explicit approval; B13-D post-repair web rerun unreported
 - **CI:** not authorized; local tests are run by the user
 
 ---
@@ -114,7 +116,11 @@ B13 Work Structure / Decomposition / Dependencies ✅ CLOSED / USER-REPORTED ACC
   B13-B Qualified Dependencies                    ✅ CLOSED / PROVEN 2026-09-29
   B13-C Execution Structure Constraints           ✅ CLOSED / PROVEN 2026-09-29
   B13-D Whole-block Integration / Proof / Acceptance ✅ CLOSED / USER-REPORTED 2026-09-29
-B12 Replanning / Conflict / Solver                ⬜ NEXT / SCOPE GATE
+B12 Replanning / Conflict / Solver                ◐ PREPARED / B12-A APPROVAL PENDING
+  B12-A Current-truth conflict diagnosis           ⬜ SCOPE PREPARED
+  B12-B Bounded candidate generation / solver      ⬜ LATER GATE
+  B12-C Review / governed admission                ⬜ LATER GATE
+  B12-D Integration / product acceptance           ⬜ LATER GATE
 B14 Temporal Create Completeness Gate             ⬜
 B07 UI/UX Consolidation v1                        ⏸ DEFERRED UNTIL B14
 B15 Whole Vertical Closure                        ⬜
@@ -334,7 +340,7 @@ The candidate integrates B13-A/B/C on one Plan in a PostgreSQL test and one Home
 
 ## B12 — Replanning / Conflict / Solver
 
-NEXT: scope gate before implementation. Deterministic-first replanning over canonical truth/constraints/dependencies. Proposal != accepted Schedule; solver UNKNOWN != INFEASIBLE; AI != scheduling authority.
+Block and B12-A scopes are prepared in `timeline-temporal-operational-b12-scope-2026-09-29.md` and `timeline-temporal-operational-b12-a-scope-2026-09-29.md`. Await explicit B12-A approval before implementation. Sequence: read-only current-truth diagnosis, bounded deterministic candidates, governed admission, integrated real-app acceptance. Proposal != accepted Schedule; solver UNKNOWN != INFEASIBLE; AI != scheduling authority.
 
 ## B14 — Temporal Create Completeness Gate
 
