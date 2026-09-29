@@ -1,6 +1,7 @@
 # B12-B — bounded candidate search — implementation checkpoint
 
-- **Status:** implementation candidate; focused user-run PostgreSQL gate pending
+- **Status:** implementation checkpoint superseded by the proven B12-B closure
+- **Closure evidence:** `timeline-temporal-operational-b12-b-closure-2026-09-29.md`
 - **Scope:** `timeline-temporal-operational-b12-b-scope-2026-09-29.md`
 - **DB head:** `20260929_92`; no migration
 - **Acceptance cadence:** automated B12-B proof here; integrated real-app walkthrough in B12-D
@@ -19,9 +20,9 @@ The response carries the exact Plan and Schedule MaterialState basis, active qua
 | Ruff changed B12-B backend files | PASS |
 | Focused mypy on three new backend modules | PASS |
 
-The full backend mypy tree currently reports pre-existing errors in other temporal modules and one existing Constraint typing path; this checkpoint does not claim a whole-tree mypy pass. PostgreSQL and current catalog tests require the user's local database runtime and must be run from the pulled branch before B12-B closure. No CI or GitHub Actions evidence is claimed.
+The full backend mypy tree reported pre-existing errors in other temporal modules and one existing Constraint typing path; this checkpoint does not claim a whole-tree mypy pass. The user subsequently passed the focused PostgreSQL/catalog gate; see the closure evidence. No CI or GitHub Actions evidence is claimed.
 
-## Focused user-run gate
+## Focused user-run gate (completed)
 
 From the repository root, pull `feature/timeline-temporal-operational`, then run:
 
@@ -35,4 +36,4 @@ uv run --locked pytest -q --no-cov --tb=short -m postgres \
   tests/integration/database/test_b11_catalog_reconciliation_probe.py
 ```
 
-Also run the generated-source check, two typechecks, focused web tests, API contract/unit tests and Ruff from the same checkout. Record actual outputs before changing the status to CLOSED / PROVEN. Only after that gate, prepare B12-C scope for separate approval. The real-app proof remains at B12-D immediately before parent B12 closure.
+The user ran the generated-source check, two typechecks, focused web tests, API contract/unit tests, Ruff and this PostgreSQL/catalog gate from the same checkout. Exact results are in the B12-B closure. The real-app proof remains at B12-D immediately before parent B12 closure.

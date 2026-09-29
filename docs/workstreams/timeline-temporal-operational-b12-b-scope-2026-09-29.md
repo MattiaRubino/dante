@@ -1,6 +1,6 @@
 # B12-B — Bounded absolute-time candidate generation — scope proposal
 
-- **Status:** APPROVED; implementation candidate awaiting focused user-run PostgreSQL gate
+- **Status:** CLOSED / PROVEN on focused user-run gate; see `timeline-temporal-operational-b12-b-closure-2026-09-29.md`
 - **Date:** 2026-09-29
 - **Branch:** `feature/timeline-temporal-operational`
 - **Entry:** B12-A closed / proven; `20260929_92` remains DB source head
