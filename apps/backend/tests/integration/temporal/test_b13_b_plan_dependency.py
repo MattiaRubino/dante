@@ -58,6 +58,14 @@ async def test_b13_b_dependency_reacts_to_current_actual_and_outcome(
                 title="Mix",
             )
         ).activity.activity_ref
+        third_activity = (
+            await activities.create_activity(
+                self_person_ref=alice,
+                life_area_ref=area,
+                operation_id="b13b:third-activity",
+                title="Master",
+            )
+        ).activity.activity_ref
         first_step, second_step = new_native_ref(), new_native_ref()
         steps = (
             PlanStepInput(step_ref=first_step, title="Record", activity_ref=first_activity),
@@ -127,7 +135,7 @@ async def test_b13_b_dependency_reacts_to_current_actual_and_outcome(
                 qualifier_code="outcome_code",
                 disposition_code="work.completed",
             )
-        with pytest.raises(PlanWorkInputError):
+        with pytest.raises(PlanWorkInputError, match="Active Plan Dependency endpoint"):
             await plans.replace(
                 self_person_ref=alice,
                 plan_ref=plan.plan_ref,
@@ -136,7 +144,7 @@ async def test_b13_b_dependency_reacts_to_current_actual_and_outcome(
                 title="Album",
                 steps=steps[1:],
             )
-        with pytest.raises(PlanWorkInputError):
+        with pytest.raises(PlanWorkInputError, match="Active Plan Dependency endpoint"):
             await plans.replace(
                 self_person_ref=alice,
                 plan_ref=plan.plan_ref,
@@ -144,9 +152,7 @@ async def test_b13_b_dependency_reacts_to_current_actual_and_outcome(
                 operation_id="b13b:relink-active",
                 title="Album",
                 steps=(
-                    PlanStepInput(
-                        step_ref=first_step, title="Record", activity_ref=second_activity
-                    ),
+                    PlanStepInput(step_ref=first_step, title="Record", activity_ref=third_activity),
                     steps[1],
                 ),
             )
