@@ -56,6 +56,7 @@ class PlanCandidateResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     plan_ref: UUID
+    basis_fingerprint: str
     plan_state_ref: UUID
     step_ref: UUID
     step_title: str
@@ -136,7 +137,8 @@ async def search_self_plan_step_candidates(
 def _response(view: PlanCandidateView) -> PlanCandidateResponse:
     placement = view.placement
     return PlanCandidateResponse(
-        plan_ref=view.plan_ref, plan_state_ref=view.plan_state_ref,
+        plan_ref=view.plan_ref, basis_fingerprint=view.basis_fingerprint,
+        plan_state_ref=view.plan_state_ref,
         step_ref=view.step_ref, step_title=view.step_title,
         activity_ref=view.activity_ref,
         placement=PlacementBasisResponse(

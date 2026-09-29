@@ -5625,6 +5625,58 @@
         "title": "PlacementBasisResponse",
         "type": "object"
       },
+      "PlanAdmissionResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "enum": ["committed", "pending_confirmation"],
+            "title": "Kind",
+            "type": "string"
+          },
+          "placement_material_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Placement Material State Ref"
+          },
+          "proposal_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proposal Ref"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "schedule_ref",
+          "proposal_ref",
+          "placement_material_state_ref",
+          "replayed"
+        ],
+        "title": "PlanAdmissionResponse",
+        "type": "object"
+      },
       "PlanCandidateResponse": {
         "additionalProperties": false,
         "properties": {
@@ -5639,6 +5691,10 @@
               }
             ],
             "title": "Activity Ref"
+          },
+          "basis_fingerprint": {
+            "title": "Basis Fingerprint",
+            "type": "string"
           },
           "basis_status": {
             "enum": ["supported", "unknown", "blocked", "unsupported"],
@@ -5796,6 +5852,7 @@
         },
         "required": [
           "plan_ref",
+          "basis_fingerprint",
           "plan_state_ref",
           "step_ref",
           "step_title",
@@ -8245,6 +8302,63 @@
           "recorded_at"
         ],
         "title": "RetiredTemporalConstraintResponse",
+        "type": "object"
+      },
+      "ReviewedMoveBody": {
+        "additionalProperties": false,
+        "properties": {
+          "basis_fingerprint": {
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Basis Fingerprint",
+            "type": "string"
+          },
+          "ends_at": {
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "expected_plan_state_ref": {
+            "format": "uuid",
+            "title": "Expected Plan State Ref",
+            "type": "string"
+          },
+          "expected_policy_state_ref": {
+            "format": "uuid",
+            "title": "Expected Policy State Ref",
+            "type": "string"
+          },
+          "expected_schedule_ref": {
+            "format": "uuid",
+            "title": "Expected Schedule Ref",
+            "type": "string"
+          },
+          "expected_schedule_state_ref": {
+            "format": "uuid",
+            "title": "Expected Schedule State Ref",
+            "type": "string"
+          },
+          "operation_id": {
+            "format": "uuid",
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "expected_plan_state_ref",
+          "expected_schedule_ref",
+          "expected_schedule_state_ref",
+          "expected_policy_state_ref",
+          "basis_fingerprint",
+          "starts_at",
+          "ends_at"
+        ],
+        "title": "ReviewedMoveBody",
         "type": "object"
       },
       "RevisePlanDependencyBody": {
@@ -26654,6 +26768,238 @@
           }
         },
         "summary": "List Self Plan Dependency History",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/plans/{plan_ref}/steps/{step_ref}/candidate-moves": {
+      "post": {
+        "operationId": "temporal_request_reviewed_plan_candidate_move",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Plan Ref",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "step_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Step Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewedMoveBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanAdmissionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Request Reviewed Plan Candidate Move",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/plans/{plan_ref}/steps/{step_ref}/candidate-moves/{proposal_ref}/confirm": {
+      "post": {
+        "operationId": "temporal_confirm_reviewed_plan_candidate_move",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Plan Ref",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "step_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Step Ref",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "proposal_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Proposal Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewedMoveBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanAdmissionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Confirm Reviewed Plan Candidate Move",
         "tags": ["temporal"]
       }
     },

@@ -40,13 +40,14 @@
       "B11-C",
       "B13-A",
       "B13-B",
-      "B13-C"
+      "B13-C",
+      "B12-C"
     ],
     "standalone_entries": {
       "tables": 196,
       "views": 5,
-      "routines": 152,
-      "total": 353
+      "routines": 155,
+      "total": 356
     },
     "embedded_objects": {
       "triggers": 100,

@@ -1,6 +1,6 @@
 # B12-C — review and governed admission — scope proposal
 
-- **Status:** PREPARED FOR EXPLICIT B12-C APPROVAL; implementation not started
+- **Status:** APPROVED 2026-09-29; implementation checkpoint pending focused local proof
 - **Date:** 2026-09-29
 - **Entry:** B12-A and B12-B closed / proven on focused user-run gates; DB head `20260929_92`
 - **Parent:** `timeline-temporal-operational-b12-scope-2026-09-29.md`
@@ -26,4 +26,4 @@ Add typed authenticated submit and confirmation contracts plus a Home review flo
 
 Focused local tests must cover direct commit; pending proposal then confirmation; no Schedule effect before confirmation; changed Plan, Dependency, Actual/Outcome, Schedule, hard/soft Constraint and Movement Policy between search, review, submit and acceptance; another self Person; retries and operation-id collisions; concurrent correction against admission; no capacity claim; generated client, web component, typechecks, Ruff and current PostgreSQL catalog. Preserve `20260929_92` if no migration is needed, otherwise migrate forward and reconcile catalog. No CI/GitHub Actions.
 
-**Approval requested next:** B12-C for this single reviewed Schedule move and guarded B04-D admission path. It does not authorize multi-item batch effects, automatic broad replanning or parent B12 closure.
+**Approved boundary:** single reviewed Schedule move and guarded B04-D admission. Multi-item batch effects, automatic broad replanning and parent B12 closure remain outside this gate.

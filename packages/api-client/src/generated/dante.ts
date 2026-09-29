@@ -85,6 +85,7 @@ import type {
   PasswordRecoveryValidationRequest,
   PasswordResetRequest,
   PersonReferentResponse,
+  PlanAdmissionResponse,
   PlanCandidateResponse,
   PlanDependencyHistoryResponse,
   PlanDependencyResponse,
@@ -131,6 +132,7 @@ import type {
   RestoredScheduleResponse,
   RetireTemporalConstraintRequest,
   RetiredTemporalConstraintResponse,
+  ReviewedMoveBody,
   RevisePlanDependencyBody,
   ReviseScheduleRequest,
   ReviseTemporalConstraintRequest,
@@ -9765,6 +9767,220 @@ export const temporalListSelfPlanDependencyHistory = async (
     status: res.status,
     headers: res.headers,
   } as temporalListSelfPlanDependencyHistoryResponse;
+};
+
+export type temporalRequestReviewedPlanCandidateMoveResponse200 = {
+  data: PlanAdmissionResponse;
+  status: 200;
+};
+
+export type temporalRequestReviewedPlanCandidateMoveResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type temporalRequestReviewedPlanCandidateMoveResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type temporalRequestReviewedPlanCandidateMoveResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type temporalRequestReviewedPlanCandidateMoveResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type temporalRequestReviewedPlanCandidateMoveResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type temporalRequestReviewedPlanCandidateMoveResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type temporalRequestReviewedPlanCandidateMoveResponseSuccess =
+  temporalRequestReviewedPlanCandidateMoveResponse200 & {
+    headers: Headers;
+  };
+export type temporalRequestReviewedPlanCandidateMoveResponseError = (
+  | temporalRequestReviewedPlanCandidateMoveResponse401
+  | temporalRequestReviewedPlanCandidateMoveResponse403
+  | temporalRequestReviewedPlanCandidateMoveResponse404
+  | temporalRequestReviewedPlanCandidateMoveResponse409
+  | temporalRequestReviewedPlanCandidateMoveResponse422
+  | temporalRequestReviewedPlanCandidateMoveResponse500
+) & {
+  headers: Headers;
+};
+
+export type temporalRequestReviewedPlanCandidateMoveResponse =
+  | temporalRequestReviewedPlanCandidateMoveResponseSuccess
+  | temporalRequestReviewedPlanCandidateMoveResponseError;
+
+export const getTemporalRequestReviewedPlanCandidateMoveUrl = (
+  planRef: string,
+  stepRef: string,
+) => {
+  return `/api/v1/temporal/plans/${planRef}/steps/${stepRef}/candidate-moves`;
+};
+
+/**
+ * @summary Request Reviewed Plan Candidate Move
+ */
+export const temporalRequestReviewedPlanCandidateMove = async (
+  planRef: string,
+  stepRef: string,
+  reviewedMoveBody: ReviewedMoveBody,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalRequestReviewedPlanCandidateMoveResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalRequestReviewedPlanCandidateMoveUrl(planRef, stepRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(reviewedMoveBody),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalRequestReviewedPlanCandidateMoveResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalRequestReviewedPlanCandidateMoveResponse;
+};
+
+export type temporalConfirmReviewedPlanCandidateMoveResponse200 = {
+  data: PlanAdmissionResponse;
+  status: 200;
+};
+
+export type temporalConfirmReviewedPlanCandidateMoveResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type temporalConfirmReviewedPlanCandidateMoveResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type temporalConfirmReviewedPlanCandidateMoveResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type temporalConfirmReviewedPlanCandidateMoveResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type temporalConfirmReviewedPlanCandidateMoveResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type temporalConfirmReviewedPlanCandidateMoveResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type temporalConfirmReviewedPlanCandidateMoveResponseSuccess =
+  temporalConfirmReviewedPlanCandidateMoveResponse200 & {
+    headers: Headers;
+  };
+export type temporalConfirmReviewedPlanCandidateMoveResponseError = (
+  | temporalConfirmReviewedPlanCandidateMoveResponse401
+  | temporalConfirmReviewedPlanCandidateMoveResponse403
+  | temporalConfirmReviewedPlanCandidateMoveResponse404
+  | temporalConfirmReviewedPlanCandidateMoveResponse409
+  | temporalConfirmReviewedPlanCandidateMoveResponse422
+  | temporalConfirmReviewedPlanCandidateMoveResponse500
+) & {
+  headers: Headers;
+};
+
+export type temporalConfirmReviewedPlanCandidateMoveResponse =
+  | temporalConfirmReviewedPlanCandidateMoveResponseSuccess
+  | temporalConfirmReviewedPlanCandidateMoveResponseError;
+
+export const getTemporalConfirmReviewedPlanCandidateMoveUrl = (
+  planRef: string,
+  stepRef: string,
+  proposalRef: string,
+) => {
+  return `/api/v1/temporal/plans/${planRef}/steps/${stepRef}/candidate-moves/${proposalRef}/confirm`;
+};
+
+/**
+ * @summary Confirm Reviewed Plan Candidate Move
+ */
+export const temporalConfirmReviewedPlanCandidateMove = async (
+  planRef: string,
+  stepRef: string,
+  proposalRef: string,
+  reviewedMoveBody: ReviewedMoveBody,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalConfirmReviewedPlanCandidateMoveResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalConfirmReviewedPlanCandidateMoveUrl(
+      planRef,
+      stepRef,
+      proposalRef,
+    ),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(reviewedMoveBody),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalConfirmReviewedPlanCandidateMoveResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalConfirmReviewedPlanCandidateMoveResponse;
 };
 
 export type temporalSearchSelfPlanStepCandidatesResponse200 = {

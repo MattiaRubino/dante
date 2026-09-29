@@ -3,6 +3,12 @@ import { createWebFetch } from '../../platform/api/web-fetch';
 import type { PlanWork } from './remote-plan-work-data-source';
 
 export type PlanCandidates = Readonly<{
+  basisFingerprint: string;
+  scheduleRef: string | null;
+  scheduleStateRef: string | null;
+  policyStateRef: string | null;
+  currentStartsAt: string | null;
+  currentEndsAt: string | null;
   basisStatus: 'supported' | 'unknown' | 'blocked' | 'unsupported';
   reasonCode: string;
   solverStatus: 'OPTIMAL' | 'FEASIBLE' | 'INFEASIBLE' | 'MODEL_INVALID' | 'UNKNOWN' | null;
@@ -35,6 +41,8 @@ function parse(value: unknown, plan: PlanWork, stepRef: string): PlanCandidates 
   if (
     row.plan_ref !== plan.planRef || row.plan_state_ref !== plan.stateRef ||
     row.step_ref !== stepRef || row.capacity_evaluated !== false ||
+    typeof row.basis_fingerprint !== 'string' ||
+    !/^[0-9a-f]{64}$/.test(row.basis_fingerprint) ||
     !['supported', 'unknown', 'blocked', 'unsupported'].includes(String(row.basis_status)) ||
     !['automatic', 'blocked', 'missing'].includes(String(row.movement_policy_status)) ||
     (row.solver_status !== null && !statuses.includes(String(row.solver_status))) ||
@@ -60,7 +68,21 @@ function parse(value: unknown, plan: PlanWork, stepRef: string): PlanCandidates 
       ).length,
     });
   });
+  const placement = row.placement === null ? null : record(row.placement);
+  if (placement !== null && (
+    typeof placement.schedule_ref !== 'string' ||
+    typeof placement.material_state_ref !== 'string'
+  )) throw new Error('Base Schedule non valida.');
   return Object.freeze({
+    basisFingerprint: row.basis_fingerprint,
+    scheduleRef: placement === null ? null : placement.schedule_ref as string,
+    scheduleStateRef: placement === null ? null : placement.material_state_ref as string,
+    currentStartsAt: placement === null || placement.starts_at === null
+      ? null : date(placement.starts_at),
+    currentEndsAt: placement === null || placement.ends_at === null
+      ? null : date(placement.ends_at),
+    policyStateRef: row.movement_policy_material_state_ref === null
+      ? null : String(row.movement_policy_material_state_ref),
     basisStatus: row.basis_status as PlanCandidates['basisStatus'],
     reasonCode: row.reason_code,
     solverStatus: row.solver_status as PlanCandidates['solverStatus'],

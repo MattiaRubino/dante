@@ -82,6 +82,7 @@ class DependencyFinding:
     dependency_ref: UUID
     state_ref: UUID
     prerequisite_step_ref: UUID
+    dependent_step_ref: UUID
     qualifier_code: str
     evaluation_code: str | None
     actual_material_state_ref: UUID | None
@@ -175,6 +176,7 @@ class PlanConflictApplication:
                 dependency_ref=item.dependency_ref,
                 state_ref=item.state_ref,
                 prerequisite_step_ref=item.prerequisite_step_ref,
+                dependent_step_ref=item.dependent_step_ref,
                 qualifier_code=item.qualifier_code,
                 evaluation_code=item.evaluation_code,
                 actual_material_state_ref=item.actual_material_state_ref,

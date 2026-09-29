@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
+import json
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Literal
@@ -64,6 +66,7 @@ class PlanCandidateView:
     activity_ref: UUID | None
     placement: PlacementBasis | None
     dependencies: tuple[DependencyFinding, ...]
+    all_dependencies: tuple[DependencyFinding, ...]
     constraint_states: tuple[tuple[UUID, UUID | None], ...]
     movement_policy_material_state_ref: UUID | None
     movement_policy_status: Literal["automatic", "blocked", "missing"]
@@ -80,6 +83,37 @@ class PlanCandidateView:
     model_version: str = MODEL_VERSION
     solver_version: str = SOLVER_VERSION
     capacity_evaluated: bool = False
+
+    @property
+    def basis_fingerprint(self) -> str:
+        """Stable review token for the exact current evidence and finite model result."""
+        placement = self.placement
+        payload = {
+            "plan": str(self.plan_ref), "state": str(self.plan_state_ref),
+            "step": str(self.step_ref), "activity": str(self.activity_ref),
+            "schedule": None if placement is None else [
+                str(placement.schedule_ref), str(placement.material_state_ref),
+                placement.temporal_form_code,
+                placement.starts_at.isoformat() if placement.starts_at else None,
+                placement.ends_at.isoformat() if placement.ends_at else None,
+            ],
+            "dependencies": [[
+                str(item.dependency_ref), str(item.state_ref),
+                str(item.prerequisite_step_ref), str(item.dependent_step_ref),
+                item.qualifier_code,
+                item.evaluation_code, str(item.actual_material_state_ref),
+                str(item.outcome_material_state_ref), item.cycle,
+            ] for item in self.all_dependencies],
+            "constraints": [[str(ref), str(state)] for ref, state in self.constraint_states],
+            "policy": [str(self.movement_policy_material_state_ref), self.movement_policy_status],
+            "status": [self.basis_status, self.solver_status],
+            "model": [self.model_version, self.solver_version, self.grid_minutes, self.grid_size],
+            "horizon": [str(self.horizon_starts_at), str(self.horizon_ends_at),
+                        self.duration_microseconds],
+            "candidates": [[item.starts_at.isoformat(), item.ends_at.isoformat()]
+                           for item in self.candidates],
+        }
+        return hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
 
 def _constraint_basis(
@@ -220,6 +254,8 @@ class PlanCandidateApplication:
             plan_ref=plan_ref, plan_state_ref=expected_state_ref,
             step_ref=step_ref, step_title=step.title, activity_ref=step.activity_ref,
             placement=placement, dependencies=step.dependencies,
+            all_dependencies=tuple(item for current in diagnosis.steps
+                                   for item in current.dependencies),
             constraint_states=_constraint_basis(constraints),
             movement_policy_material_state_ref=policy.material_state_ref if policy else None,
             movement_policy_status=policy_status,

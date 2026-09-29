@@ -11,6 +11,7 @@ export const PlanCandidateResponse = /*#__PURE__*/ zod.object({
     /*#__PURE__*/ zod.uuid(),
     /*#__PURE__*/ zod.null(),
   ]),
+  basis_fingerprint: /*#__PURE__*/ zod.string(),
   basis_status: /*#__PURE__*/ zod.enum([
     'supported',
     'unknown',
