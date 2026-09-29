@@ -1,5 +1,5 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { PlanWork } from './remote-plan-work-data-source';
 
@@ -42,6 +42,7 @@ vi.mock('./remote-plan-dependency-data-source', () => ({
 import { PlanWorkPanel } from './plan-work-panel';
 
 describe('Plan work panel', () => {
+  afterEach(cleanup);
   beforeEach(() => {
     list.mockReset().mockResolvedValue([current]);
     replace.mockReset().mockResolvedValue({
@@ -69,8 +70,11 @@ describe('Plan work panel', () => {
         title: 'Mix dalla Home',
       },
     }));
-    expect(await screen.findByText(/Attività selezionata: Mix dalla Home/)).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: '+ Aggiungi “Mix dalla Home” al Plan' }));
+    const add = await screen.findByRole('button', {
+      name: '+ Aggiungi “Mix dalla Home” al Plan',
+    });
+    expect(screen.getByText('Mix dalla Home', { selector: 'strong' })).toBeTruthy();
+    fireEvent.click(add);
     await waitFor(() => expect(replace).toHaveBeenCalledOnce());
     expect(replace.mock.calls[0]?.[2].at(-1)).toMatchObject({
       title: 'Mix dalla Home',

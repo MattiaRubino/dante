@@ -63,7 +63,7 @@ export function PlanWorkPanel() {
     setActivityIntent(intent);
     setPlanTitle((previous) => previous.trim() || `Plan ${intent.title}`);
     if (panelRef.current !== null) panelRef.current.open = true;
-    requestAnimationFrame(() => panelRef.current?.scrollIntoView({
+    requestAnimationFrame(() => panelRef.current?.scrollIntoView?.({
       behavior: 'smooth', block: 'start',
     }));
   }), []);
