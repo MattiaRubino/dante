@@ -12,11 +12,13 @@
 - **B13-A closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-a-closure-2026-09-28.md`
 - **B13-B scope authority:** `docs/workstreams/timeline-temporal-operational-b13-b-scope-2026-09-28.md`
 - **B13-B closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-b-closure-2026-09-29.md`
+- **B13-C scope:** `docs/workstreams/timeline-temporal-operational-b13-c-scope-2026-09-29.md`
+- **B13-C candidate checkpoint:** `docs/workstreams/timeline-temporal-operational-b13-c-implementation-2026-09-29.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Current persistence source frontier:** `20260928_90` (B13-B focused PostgreSQL/catalog proven)
+- **Current persistence source frontier:** `20260929_91` (B13-C candidate; PostgreSQL/catalog unverified)
 - **Catalog-verified whole topology:** `_90` / `196|5|152|100|397|344|496|0|0|0`
 - **Completed functional frontier:** B13-B ✅ CLOSED / focused local proof 2026-09-29
-- **Current implementation cursor:** B13-C Execution Structure Constraints — semantic pre-scope pending
+- **Current implementation cursor:** B13-C Execution Structure Constraints — local implementation candidate, PostgreSQL proof pending
 - **CI:** not authorized; local tests are run by the user
 
 ---
@@ -107,7 +109,7 @@ timeline-temporal-operational-b11-closure-2026-09-28.md
 B13 Work Structure / Decomposition / Dependencies ◐ IN PROGRESS
   B13-A Work Structure Core                       ✅ CLOSED / PROVEN 2026-09-28
   B13-B Qualified Dependencies                    ✅ CLOSED / PROVEN 2026-09-29
-  B13-C Execution Structure Constraints           ⬜
+  B13-C Execution Structure Constraints           ◐ LOCAL CANDIDATE / POSTGRESQL PROOF PENDING
   B13-D Whole-block Integration / Proof / Acceptance ⬜
 B12 Replanning / Conflict / Solver                ⏸ HELD UNTIL B13 CLOSES
 B14 Temporal Create Completeness Gate             ⬜
@@ -321,7 +323,7 @@ Closed / proven at forward-only `_90`. The user-run PostgreSQL/catalog gate pass
 
 ## B13-C — Execution Structure Constraints
 
-Own maximum Session count, merge compatibility, spacing, preparation/recovery and related execution-structure rules where current Domain/Logical authority supports them.
+Scope frozen. The `_91` candidate extends immutable Plan Step revisions with Plan-contextual divisibility, optional maximum proposed-slice count and bounded proposed-slice merge permission. Read-only assessment counts explicit proposed slices and reuses the Activity Temporal Constraint evaluator. Spacing, preparation and recovery remain unsupported and not editable. See the B13-C implementation checkpoint; PostgreSQL/catalog and user-run gates are pending. B13-C is not closed.
 
 ## B13-D — Whole-block Integration / Proof / Acceptance
 

@@ -1611,6 +1611,50 @@
         "title": "AssertionCredential",
         "type": "object"
       },
+      "AssessExecutionBody": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_state_ref": {
+            "format": "uuid",
+            "title": "Expected State Ref",
+            "type": "string"
+          },
+          "merge_pair": {
+            "anyOf": [
+              {
+                "maxItems": 2,
+                "minItems": 2,
+                "prefixItems": [
+                  {
+                    "format": "uuid",
+                    "type": "string"
+                  },
+                  {
+                    "format": "uuid",
+                    "type": "string"
+                  }
+                ],
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Merge Pair"
+          },
+          "slices": {
+            "items": {
+              "$ref": "#/components/schemas/ProposedSlice"
+            },
+            "maxItems": 100,
+            "title": "Slices",
+            "type": "array"
+          }
+        },
+        "required": ["expected_state_ref", "slices"],
+        "title": "AssessExecutionBody",
+        "type": "object"
+      },
       "AssignLifeAreaRequest": {
         "additionalProperties": false,
         "properties": {
@@ -3954,6 +3998,96 @@
         "title": "EventResponse",
         "type": "object"
       },
+      "ExecutionAssessmentResponse": {
+        "properties": {
+          "activity_ref": {
+            "format": "uuid",
+            "title": "Activity Ref",
+            "type": "string"
+          },
+          "basis": {
+            "title": "Basis",
+            "type": "string"
+          },
+          "count_reason": {
+            "title": "Count Reason",
+            "type": "string"
+          },
+          "count_status": {
+            "title": "Count Status",
+            "type": "string"
+          },
+          "merge_reason": {
+            "title": "Merge Reason",
+            "type": "string"
+          },
+          "merge_status": {
+            "title": "Merge Status",
+            "type": "string"
+          },
+          "merged_temporal_rules": {
+            "items": {
+              "$ref": "#/components/schemas/TemporalRuleAssessment"
+            },
+            "title": "Merged Temporal Rules",
+            "type": "array"
+          },
+          "merged_temporal_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Merged Temporal Status"
+          },
+          "plan_ref": {
+            "format": "uuid",
+            "title": "Plan Ref",
+            "type": "string"
+          },
+          "proposed_count": {
+            "title": "Proposed Count",
+            "type": "integer"
+          },
+          "slice_assessments": {
+            "items": {
+              "$ref": "#/components/schemas/SliceAssessment"
+            },
+            "title": "Slice Assessments",
+            "type": "array"
+          },
+          "state_ref": {
+            "format": "uuid",
+            "title": "State Ref",
+            "type": "string"
+          },
+          "step_ref": {
+            "format": "uuid",
+            "title": "Step Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "plan_ref",
+          "state_ref",
+          "step_ref",
+          "activity_ref",
+          "basis",
+          "proposed_count",
+          "count_status",
+          "count_reason",
+          "slice_assessments",
+          "merge_status",
+          "merge_reason",
+          "merged_temporal_status",
+          "merged_temporal_rules"
+        ],
+        "title": "ExecutionAssessmentResponse",
+        "type": "object"
+      },
       "ExistingAccountSignupResponse": {
         "additionalProperties": false,
         "description": "Mailbox proof succeeded but that canonical email already belongs to an Account.",
@@ -5479,6 +5613,53 @@
             ],
             "title": "Activity Ref"
           },
+          "divisible": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Divisible"
+          },
+          "execution_strength_code": {
+            "anyOf": [
+              {
+                "enum": ["hard", "soft"],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Execution Strength Code"
+          },
+          "max_planned_slices": {
+            "anyOf": [
+              {
+                "maximum": 100.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Planned Slices"
+          },
+          "merge_compatible": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Merge Compatible"
+          },
           "step_ref": {
             "format": "uuid",
             "title": "Step Ref",
@@ -5510,6 +5691,51 @@
             ],
             "title": "Activity Ref"
           },
+          "divisible": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Divisible"
+          },
+          "execution_strength_code": {
+            "anyOf": [
+              {
+                "enum": ["hard", "soft"],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Execution Strength Code"
+          },
+          "max_planned_slices": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Planned Slices"
+          },
+          "merge_compatible": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Merge Compatible"
+          },
           "position": {
             "title": "Position",
             "type": "integer"
@@ -5524,7 +5750,16 @@
             "type": "string"
           }
         },
-        "required": ["step_ref", "position", "title", "activity_ref"],
+        "required": [
+          "step_ref",
+          "position",
+          "title",
+          "activity_ref",
+          "divisible",
+          "max_planned_slices",
+          "merge_compatible",
+          "execution_strength_code"
+        ],
         "title": "PlanStepResponse",
         "type": "object"
       },
@@ -5850,6 +6085,29 @@
           "updated_at"
         ],
         "title": "ProductTagResponse",
+        "type": "object"
+      },
+      "ProposedSlice": {
+        "additionalProperties": false,
+        "properties": {
+          "ends_at": {
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "slice_ref": {
+            "format": "uuid",
+            "title": "Slice Ref",
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          }
+        },
+        "required": ["slice_ref", "starts_at", "ends_at"],
+        "title": "ProposedSlice",
         "type": "object"
       },
       "ProviderAuthenticatedResponse": {
@@ -9778,6 +10036,38 @@
         "title": "SkipOccurrenceRequest",
         "type": "object"
       },
+      "SliceAssessment": {
+        "properties": {
+          "hard_set_status": {
+            "title": "Hard Set Status",
+            "type": "string"
+          },
+          "slice_ref": {
+            "format": "uuid",
+            "title": "Slice Ref",
+            "type": "string"
+          },
+          "temporal_rules": {
+            "items": {
+              "$ref": "#/components/schemas/TemporalRuleAssessment"
+            },
+            "title": "Temporal Rules",
+            "type": "array"
+          },
+          "temporal_status": {
+            "title": "Temporal Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "slice_ref",
+          "temporal_status",
+          "hard_set_status",
+          "temporal_rules"
+        ],
+        "title": "SliceAssessment",
+        "type": "object"
+      },
       "StructuralExclusionRequest": {
         "additionalProperties": false,
         "properties": {
@@ -10117,6 +10407,42 @@
           "current_rule"
         ],
         "title": "TemporalConstraintResponse",
+        "type": "object"
+      },
+      "TemporalRuleAssessment": {
+        "properties": {
+          "constrained_facet": {
+            "title": "Constrained Facet",
+            "type": "string"
+          },
+          "constraint_ref": {
+            "format": "uuid",
+            "title": "Constraint Ref",
+            "type": "string"
+          },
+          "evaluation": {
+            "enum": ["satisfied", "violated", "not_evaluable"],
+            "title": "Evaluation",
+            "type": "string"
+          },
+          "reason_code": {
+            "title": "Reason Code",
+            "type": "string"
+          },
+          "strength": {
+            "enum": ["hard", "soft"],
+            "title": "Strength",
+            "type": "string"
+          }
+        },
+        "required": [
+          "constraint_ref",
+          "strength",
+          "evaluation",
+          "reason_code",
+          "constrained_facet"
+        ],
+        "title": "TemporalRuleAssessment",
         "type": "object"
       },
       "TimelineAbsoluteActivityResponse": {
@@ -25671,6 +25997,87 @@
           }
         },
         "summary": "List Self Plan Dependency History",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/plans/{plan_ref}/steps/{step_ref}/execution/assess": {
+      "post": {
+        "operationId": "temporal_assess_plan_step_execution",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Plan Ref",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "step_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Step Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssessExecutionBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExecutionAssessmentResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Assess Plan Step Execution",
         "tags": ["temporal"]
       }
     },

@@ -11,7 +11,9 @@ const item = {
   state_ref: STATE,
   title: 'Album',
   created_at: '2026-09-28T12:00:00Z',
-  steps: [{ step_ref: STEP, position: 0, title: 'Record', activity_ref: null }],
+  steps: [{ step_ref: STEP, position: 0, title: 'Record', activity_ref: null,
+    divisible: null, max_planned_slices: null, merge_compatible: null,
+    execution_strength_code: null }],
   replayed: false,
 };
 

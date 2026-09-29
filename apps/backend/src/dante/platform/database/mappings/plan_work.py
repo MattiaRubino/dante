@@ -3,6 +3,7 @@
 from datetime import datetime
 
 from sqlalchemy import (
+    Boolean,
     CheckConstraint,
     DateTime,
     ForeignKeyConstraint,
@@ -76,6 +77,16 @@ class PlanStepInStateRow(Base):
         CheckConstraint(
             "title=btrim(title) AND title<>'' AND char_length(title)<=300", name="title"
         ),
+        CheckConstraint(
+            "COALESCE(((divisible IS NULL AND max_planned_slices IS NULL AND "
+            "merge_compatible IS NULL AND execution_strength_code IS NULL) OR "
+            "(activity_ref IS NOT NULL AND divisible IS NOT NULL AND "
+            "merge_compatible IS NOT NULL AND execution_strength_code IN ('hard','soft') "
+            "AND (max_planned_slices IS NULL OR max_planned_slices BETWEEN 1 AND 100) "
+            "AND ((divisible AND (max_planned_slices IS NULL OR max_planned_slices>=2)) "
+            "OR (NOT divisible AND max_planned_slices=1 AND NOT merge_compatible)))),false)",
+            name="execution_policy",
+        ),
         ForeignKeyConstraint(
             ["plan_ref", "state_ref"],
             ["dante.plan_work_state.plan_ref", "dante.plan_work_state.state_ref"],
@@ -106,6 +117,10 @@ class PlanStepInStateRow(Base):
     position: Mapped[int] = mapped_column(Integer, nullable=False)
     title: Mapped[str] = mapped_column(Text, nullable=False)
     activity_ref: Mapped[NativeRef | None] = mapped_column(nullable=True)
+    divisible: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    max_planned_slices: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    merge_compatible: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    execution_strength_code: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
 class PlanCurrentWorkStateRow(Base):

@@ -11,6 +11,22 @@ export const PlanStepResponse = /*#__PURE__*/ zod.object({
     /*#__PURE__*/ zod.uuid(),
     /*#__PURE__*/ zod.null(),
   ]),
+  divisible: /*#__PURE__*/ zod.union([
+    /*#__PURE__*/ zod.boolean(),
+    /*#__PURE__*/ zod.null(),
+  ]),
+  execution_strength_code: /*#__PURE__*/ zod.union([
+    /*#__PURE__*/ zod.enum(['hard', 'soft']),
+    /*#__PURE__*/ zod.null(),
+  ]),
+  max_planned_slices: /*#__PURE__*/ zod.union([
+    /*#__PURE__*/ zod.int(),
+    /*#__PURE__*/ zod.null(),
+  ]),
+  merge_compatible: /*#__PURE__*/ zod.union([
+    /*#__PURE__*/ zod.boolean(),
+    /*#__PURE__*/ zod.null(),
+  ]),
   position: /*#__PURE__*/ zod.int(),
   step_ref: /*#__PURE__*/ zod.uuid(),
   title: /*#__PURE__*/ zod.string(),

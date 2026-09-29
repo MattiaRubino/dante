@@ -5,12 +5,14 @@
 - **Vertical boundary:** Home `+` creation/configuration → canonical temporal truth → Timeline projection/actions → bounded lifecycle completion
 - **Completed functional frontier:** B13-B ✅ CLOSED / focused local automated proof 2026-09-29
 - **Current block:** B13 Work Structure / Decomposition / Dependencies
-- **Current gate:** B13-C Execution Structure Constraints ▶ semantic pre-scope pending
+- **Current gate:** B13-C Execution Structure Constraints ◐ local candidate / PostgreSQL proof pending
+- **B13-C scope authority:** `docs/workstreams/timeline-temporal-operational-b13-c-scope-2026-09-29.md`
+- **B13-C candidate checkpoint:** `docs/workstreams/timeline-temporal-operational-b13-c-implementation-2026-09-29.md`
 - **B13-B scope authority:** `docs/workstreams/timeline-temporal-operational-b13-b-scope-2026-09-28.md`
 - **B13-B closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-b-closure-2026-09-29.md`
 - **B13-A scope authority:** `docs/workstreams/timeline-temporal-operational-b13-a-scope-2026-09-28.md`
 - **B13-A closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-a-closure-2026-09-28.md`
-- **Current persistence source frontier:** B13-B / Alembic `20260928_90` (focused PostgreSQL and catalog proven)
+- **Current persistence source frontier:** B13-C / Alembic `20260929_91` (candidate, unverified); last proven `_90`
 - **Catalog-verified whole topology:** `_90` / `196|5|152|100|397|344|496|0|0|0`
 - **B10-D closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-d-closure-2026-09-26.md`
 - **B10-E closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-e-closure-2026-09-26.md`
@@ -107,7 +109,7 @@ B11 Advanced Recurrence / Conditional / Reminder ✅ CLOSED / USER-REPORTED ACCE
 B13 Work Structure / Decomposition / Dependencies ◐ IN PROGRESS
   B13-A Work Structure Core                       ✅ CLOSED / PROVEN 2026-09-28
   B13-B Qualified Dependencies                    ✅ CLOSED / PROVEN 2026-09-29
-  B13-C Execution Structure Constraints           ⬜
+  B13-C Execution Structure Constraints           ◐ LOCAL CANDIDATE / POSTGRESQL PROOF PENDING
   B13-D Whole-block Integration / Proof / Acceptance ⬜
 B12 Replanning / Conflict / Solver                ⏸ HELD UNTIL B13 CLOSES
 B14 Temporal Create Completeness Gate             ⬜

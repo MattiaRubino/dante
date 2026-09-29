@@ -39,7 +39,8 @@
       "B11-B",
       "B11-C",
       "B13-A",
-      "B13-B"
+      "B13-B",
+      "B13-C"
     ],
     "standalone_entries": {
       "tables": 196,
@@ -53,7 +54,7 @@
     },
     "constraints": {
       "foreign_keys": 344,
-      "check_constraints": 496
+      "check_constraints": 497
     }
   },
   "technical_foundation": {

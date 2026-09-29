@@ -11,8 +11,10 @@ const current: PlanWork = {
   planRef: PLAN, stateRef: STATE, title: 'Album',
   createdAt: '2026-09-28T12:00:00Z', replayed: false,
   steps: [
-    { stepRef: first, position: 0, title: 'Record', activityRef: null },
-    { stepRef: second, position: 1, title: 'Mix', activityRef: null },
+    { stepRef: first, position: 0, title: 'Record', activityRef: null,
+      divisible: null, maxPlannedSlices: null, mergeCompatible: null, executionStrengthCode: null },
+    { stepRef: second, position: 1, title: 'Mix', activityRef: null,
+      divisible: null, maxPlannedSlices: null, mergeCompatible: null, executionStrengthCode: null },
   ],
 };
 

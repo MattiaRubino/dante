@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B13-B CLOSED / B13-C SEMANTIC PRE-SCOPE PENDING
+- **Status:** B13-B CLOSED / B13-C LOCAL IMPLEMENTATION CANDIDATE — POSTGRESQL PROOF PENDING
 - **Reconciled:** 2026-09-29
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -12,8 +12,10 @@
 - **B13-B approved scope:** `docs/workstreams/timeline-temporal-operational-b13-b-scope-2026-09-28.md`
 - **B13-B candidate checkpoint:** `docs/workstreams/timeline-temporal-operational-b13-b-implementation-2026-09-28.md`
 - **B13-B closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-b-closure-2026-09-29.md`
+- **B13-C scope:** `docs/workstreams/timeline-temporal-operational-b13-c-scope-2026-09-29.md`
+- **B13-C implementation checkpoint:** `docs/workstreams/timeline-temporal-operational-b13-c-implementation-2026-09-29.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Current migration source head:** B13-B / Alembic `20260928_90` (focused PostgreSQL/catalog proven)
+- **Current migration source head:** B13-C / Alembic `20260929_91` (candidate, unverified); last proven `_90`
 - **Catalog-verified whole topology:** `_90` / `196|5|152|100|397|344|496|0|0|0`
 - **B11 real-app acceptance:** USER-REPORTED PASS 2026-09-28
 - **CI:** no CI/GitHub Actions unless explicitly authorized; user runs local tests
@@ -272,7 +274,7 @@ B13-A focused automated closure does not claim whole B13 real-app acceptance; th
 
 # 6. B13 continuation
 
-B13-B is closed / proven at `_90`; its closure evidence is `timeline-temporal-operational-b13-b-closure-2026-09-29.md`. Start B13-C by freezing only the execution-structure semantics that current Domain/Logical authority actually supports. Do not reopen B13-B or merge its Dependency truth into B13-C.
+B13-B is closed / proven at `_90`; its closure evidence is `timeline-temporal-operational-b13-b-closure-2026-09-29.md`. B13-C scope is frozen and the `_91` implementation is a local candidate. Run the focused PostgreSQL/Dictionary/catalog gate in the implementation checkpoint after publication, then record measured results before closure. Do not reopen B13-B or merge its Dependency truth into B13-C.
 
 ```text
 B13-B — Qualified Dependencies

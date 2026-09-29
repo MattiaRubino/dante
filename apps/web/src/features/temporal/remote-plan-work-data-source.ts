@@ -8,6 +8,10 @@ export type PlanStep = Readonly<{
   title: string;
   position: number;
   activityRef: string | null;
+  divisible: boolean | null;
+  maxPlannedSlices: number | null;
+  mergeCompatible: boolean | null;
+  executionStrengthCode: 'hard' | 'soft' | null;
 }>;
 
 export type PlanWork = Readonly<{
@@ -37,7 +41,15 @@ function step(value: unknown): PlanStep {
   const row = record(value);
   if (typeof row.title !== 'string' || !row.title.trim() ||
       typeof row.position !== 'number' || !Number.isInteger(row.position) ||
-      row.position < 0 || row.position >= 1000) {
+      row.position < 0 || row.position >= 1000 ||
+      (row.divisible !== null && typeof row.divisible !== 'boolean') ||
+      (row.merge_compatible !== null && typeof row.merge_compatible !== 'boolean') ||
+      (row.max_planned_slices !== null &&
+        (typeof row.max_planned_slices !== 'number' ||
+          !Number.isInteger(row.max_planned_slices) || row.max_planned_slices < 1 ||
+          row.max_planned_slices > 100)) ||
+      (row.execution_strength_code !== null && row.execution_strength_code !== 'hard' &&
+        row.execution_strength_code !== 'soft')) {
     throw new Error('Step del Plan non valido.');
   }
   return Object.freeze({
@@ -45,6 +57,10 @@ function step(value: unknown): PlanStep {
     title: row.title,
     position: row.position,
     activityRef: row.activity_ref === null ? null : uuid(row.activity_ref),
+    divisible: row.divisible as boolean | null,
+    maxPlannedSlices: row.max_planned_slices as number | null,
+    mergeCompatible: row.merge_compatible as boolean | null,
+    executionStrengthCode: row.execution_strength_code as 'hard' | 'soft' | null,
   });
 }
 
@@ -134,7 +150,7 @@ export function createRemotePlanWorkDataSource(
       return mutation(ENDPOINT, 'POST', { title: title.trim(), operation_id: operationId });
     },
     async replace(
-      current: PlanWork, title: string, steps: readonly Pick<PlanStep, 'stepRef' | 'title' | 'activityRef'>[],
+      current: PlanWork, title: string, steps: readonly Omit<PlanStep, 'position'>[],
       operationId: string,
     ): Promise<PlanWork> {
       return mutation(`${ENDPOINT}/${encodeURIComponent(current.planRef)}`, 'PUT', {
@@ -145,6 +161,10 @@ export function createRemotePlanWorkDataSource(
           step_ref: uuid(item.stepRef),
           title: item.title.trim(),
           activity_ref: item.activityRef === null ? null : uuid(item.activityRef),
+          divisible: item.divisible,
+          max_planned_slices: item.maxPlannedSlices,
+          merge_compatible: item.mergeCompatible,
+          execution_strength_code: item.executionStrengthCode,
         })),
       });
     },

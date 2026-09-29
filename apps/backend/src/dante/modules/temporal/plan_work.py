@@ -38,6 +38,10 @@ class PlanStepView:
     position: int
     title: str
     activity_ref: UUID | None
+    divisible: bool | None
+    max_planned_slices: int | None
+    merge_compatible: bool | None
+    execution_strength_code: str | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -55,6 +59,10 @@ class PlanStepInput:
     step_ref: UUID
     title: str
     activity_ref: UUID | None = None
+    divisible: bool | None = None
+    max_planned_slices: int | None = None
+    merge_compatible: bool | None = None
+    execution_strength_code: str | None = None
 
 
 def _view(row: RowMapping) -> PlanWorkView:
@@ -76,6 +84,10 @@ def _view(row: RowMapping) -> PlanWorkView:
                 activity_ref=(
                     UUID(str(item["activity_ref"])) if item["activity_ref"] is not None else None
                 ),
+                divisible=item["divisible"],
+                max_planned_slices=item["max_planned_slices"],
+                merge_compatible=item["merge_compatible"],
+                execution_strength_code=item["execution_strength_code"],
             )
             for item in steps
         ),
@@ -213,6 +225,10 @@ class PlanWorkApplication:
                 "step_ref": str(step.step_ref),
                 "title": _title(step.title),
                 "activity_ref": str(step.activity_ref) if step.activity_ref else None,
+                "divisible": step.divisible,
+                "max_planned_slices": step.max_planned_slices,
+                "merge_compatible": step.merge_compatible,
+                "execution_strength_code": step.execution_strength_code,
             }
             for step in steps
         ]

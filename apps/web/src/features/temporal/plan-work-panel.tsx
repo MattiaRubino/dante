@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { PlanDependencyPanel } from './plan-dependency-panel';
+import { PlanExecutionPanel } from './plan-execution-panel';
 
 import {
   createRemotePlanWorkDataSource,
@@ -90,7 +91,7 @@ export function PlanWorkPanel() {
   };
 
   const replace = (
-    steps: readonly Pick<PlanStep, 'stepRef' | 'title' | 'activityRef'>[],
+    steps: readonly Omit<PlanStep, 'position'>[],
     success: string,
     onSuccess?: () => void,
   ) => {
@@ -112,6 +113,8 @@ export function PlanWorkPanel() {
     pendingStep.current = { fingerprint, ref };
     replace([...current.steps, {
       stepRef: ref, title: stepTitle.trim(), activityRef: null,
+      divisible: null, maxPlannedSlices: null, mergeCompatible: null,
+      executionStrengthCode: null,
     }], 'Step aggiunto.', () => setStepTitle(''));
   };
 
@@ -129,7 +132,12 @@ export function PlanWorkPanel() {
     const reference = linkActivityRef.trim() || null;
     replace(
       current.steps.map((item) => item.stepRef === linkStepRef
-        ? { ...item, activityRef: reference } : item),
+        ? { ...item, activityRef: reference,
+            ...(item.activityRef !== reference ? {
+              divisible: null, maxPlannedSlices: null, mergeCompatible: null,
+              executionStrengthCode: null,
+            } : {}),
+          } : item),
       reference === null ? 'Attività scollegata.' : 'Attività collegata.',
       () => setLinkActivityRef(''),
     );
@@ -217,6 +225,11 @@ export function PlanWorkPanel() {
                   </>
                 ) : null}
                 <PlanDependencyPanel key={`${current.planRef}:${current.stateRef}`} plan={current} />
+                <PlanExecutionPanel key={`execution:${current.planRef}:${current.stateRef}`}
+                  plan={current} pending={pending}
+                  update={(stepRef, policy) => replace(current.steps.map((item) =>
+                    item.stepRef === stepRef ? { ...item, ...policy } : item),
+                  policy.divisible === null ? 'Policy ritirata.' : 'Policy aggiornata.')} />
               </section>
             ) : null}
           </>

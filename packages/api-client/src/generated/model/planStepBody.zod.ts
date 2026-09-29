@@ -6,12 +6,41 @@
  */
 import * as zod from 'zod/mini';
 
+export const planStepBodyMaxPlannedSlicesOneMax = 100;
+
 export const planStepBodyTitleMax = 300;
 
 export const PlanStepBody = /*#__PURE__*/ zod.object({
   activity_ref: /*#__PURE__*/ zod.optional(
     /*#__PURE__*/ zod.union([
       /*#__PURE__*/ zod.uuid(),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
+  divisible: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.boolean(),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
+  execution_strength_code: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.enum(['hard', 'soft']),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
+  max_planned_slices: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod
+        .int()
+        .check(/*#__PURE__*/ zod.gte(1))
+        .check(/*#__PURE__*/ zod.lte(planStepBodyMaxPlannedSlicesOneMax)),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
+  merge_compatible: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.boolean(),
       /*#__PURE__*/ zod.null(),
     ]),
   ),

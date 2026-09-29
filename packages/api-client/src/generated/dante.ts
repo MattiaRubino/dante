@@ -19,6 +19,7 @@ import type {
   AppleAuthenticationBegunResponse,
   AppleNotificationRequest,
   ArchiveProductTagRequest,
+  AssessExecutionBody,
   AssignLifeAreaRequest,
   AssignRoutineLifeAreaRequest,
   AuthHandleAppleCallbackBody,
@@ -50,6 +51,7 @@ import type {
   EvaluateTemporalConstraintsRequest,
   EventAgendaMutationResponse,
   EventResponse,
+  ExecutionAssessmentResponse,
   ExistingAccountSignupResponse,
   ExpectedParticipationResponse,
   ExplicitExtraOccurrenceRequest,
@@ -9657,6 +9659,92 @@ export const temporalListSelfPlanDependencyHistory = async (
     status: res.status,
     headers: res.headers,
   } as temporalListSelfPlanDependencyHistoryResponse;
+};
+
+export type temporalAssessPlanStepExecutionResponse200 = {
+  data: ExecutionAssessmentResponse;
+  status: 200;
+};
+
+export type temporalAssessPlanStepExecutionResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type temporalAssessPlanStepExecutionResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type temporalAssessPlanStepExecutionResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type temporalAssessPlanStepExecutionResponseSuccess =
+  temporalAssessPlanStepExecutionResponse200 & {
+    headers: Headers;
+  };
+export type temporalAssessPlanStepExecutionResponseError = (
+  | temporalAssessPlanStepExecutionResponse404
+  | temporalAssessPlanStepExecutionResponse409
+  | temporalAssessPlanStepExecutionResponse422
+) & {
+  headers: Headers;
+};
+
+export type temporalAssessPlanStepExecutionResponse =
+  | temporalAssessPlanStepExecutionResponseSuccess
+  | temporalAssessPlanStepExecutionResponseError;
+
+export const getTemporalAssessPlanStepExecutionUrl = (
+  planRef: string,
+  stepRef: string,
+) => {
+  return `/api/v1/temporal/plans/${planRef}/steps/${stepRef}/execution/assess`;
+};
+
+/**
+ * @summary Assess Plan Step Execution
+ */
+export const temporalAssessPlanStepExecution = async (
+  planRef: string,
+  stepRef: string,
+  assessExecutionBody: AssessExecutionBody,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalAssessPlanStepExecutionResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalAssessPlanStepExecutionUrl(planRef, stepRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(assessExecutionBody),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalAssessPlanStepExecutionResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalAssessPlanStepExecutionResponse;
 };
 
 export type temporalListOutcomeReconciliationHistoryResponse200 = {

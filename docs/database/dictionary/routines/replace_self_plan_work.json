@@ -8,7 +8,7 @@
     "name": "replace_self_plan_work",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Guarded append-only Plan structure revision; active Dependency endpoint bindings cannot be removed or relinked.",
+  "purpose": "Guarded append-only Plan structure revision; active Dependency endpoint bindings cannot be removed or relinked. B13-C accepts coherent Plan-contextual execution policy values in immutable Step snapshots.",
   "classification": {
     "persistence_role": "plan_work_capability",
     "canonicality": "capability_surface",
@@ -18,7 +18,8 @@
     "authority_sources": [
       "docs/workstreams/timeline-temporal-operational-b13-a-scope-2026-09-28.md",
       "docs/database/timeline-temporal-operational.md",
-      "docs/workstreams/timeline-temporal-operational-b13-b-scope-2026-09-28.md"
+      "docs/workstreams/timeline-temporal-operational-b13-b-scope-2026-09-28.md",
+      "docs/workstreams/timeline-temporal-operational-b13-c-scope-2026-09-29.md"
     ],
     "domain_concepts": [
       "Plan",
@@ -107,7 +108,8 @@
     "obligations": [
       "Self ownership and current-state qualification.",
       "Idempotency receipt is not Plan identity.",
-      "B13-B Plan Dependency ownership and endpoint guard"
+      "B13-B Plan Dependency ownership and endpoint guard",
+      "B13-C policy is scoped to the exact linked Step revision, not inferred from Activity Sessions or Schedule."
     ],
     "test_refs": [
       "apps/backend/tests/integration/temporal/test_b13_a_plan_work.py",

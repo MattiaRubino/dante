@@ -13,8 +13,10 @@ const plan: PlanWork = {
   planRef: PLAN, stateRef: STATE, title: 'Album',
   createdAt: '2026-09-28T17:00:00Z', replayed: false,
   steps: [
-    { stepRef: FIRST, title: 'Record', activityRef: DEPENDENCY, position: 0 },
-    { stepRef: SECOND, title: 'Mix', activityRef: STATE, position: 1 },
+    { stepRef: FIRST, title: 'Record', activityRef: DEPENDENCY, position: 0,
+      divisible: null, maxPlannedSlices: null, mergeCompatible: null, executionStrengthCode: null },
+    { stepRef: SECOND, title: 'Mix', activityRef: STATE, position: 1,
+      divisible: null, maxPlannedSlices: null, mergeCompatible: null, executionStrengthCode: null },
   ],
 };
 const relation: PlanDependency = {

@@ -1,10 +1,10 @@
 # Timeline / Temporal-Operational — Candidate Database Overlay
 
-- **Status:** CURRENT CANDIDATE DATABASE OVERLAY — B13-B `_90` proven
+- **Status:** CURRENT CANDIDATE DATABASE OVERLAY — B13-C `_91` unverified; B13-B `_90` proven
 - **Reconciled:** 2026-09-29
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
-- **Current migration source head:** `20260928_90` (B13-B focused PostgreSQL/catalog proven)
+- **Current migration source head:** `20260929_91` (B13-C candidate, unverified)
 - **Focused local proof frontier:** B13-B `_90` (11 PostgreSQL/catalog tests passed in 41.75s)
 - **Catalog-verified whole-topology count:** `_90` / `196|5|152|100|397|344|496|0|0|0`
 - **Whole-DB SoR:** `README.md`
@@ -72,6 +72,8 @@ Published migrations are immutable. Any persistence correction is forward-only.
 20260928_89 B13-A replace-current binding qualification
     ↓
 20260928_90 B13-B Plan-qualified Dependency (focused PostgreSQL/catalog proven)
+    ↓
+20260929_91 B13-C Plan Step execution intent (candidate, unverified)
 ```
 
 ## 3. Proven frontier and topology discipline
@@ -346,3 +348,7 @@ The `_87` local test reached the expected topology `191|5|148|100|386|334|488|0|
 Forward-only `_90` introduces five Plan-scoped relation/current/history/operation tables and four guarded capabilities. The relation preserves direction, immutable Step-to-Activity endpoint bindings, explicit dependent admissibility purpose and typed Actual/Outcome qualifier. Current evaluation is derived from accepted Actual/Outcome truth; stale Outcome basis is unknown. An active endpoint guard is added to the existing Plan replacement function; the scoped owner dispatcher is extended to the bounded `plan_dependency` family.
 
 The Dictionary/catalog topology is verified at `_90`: `196|5|152|100|397|344|496|0|0|0`. The user-run focused PostgreSQL capability and exact catalog suite passed **11 tests in 41.75s** on 2026-09-29. `_90` is the current persistence frontier; B13-D remains the whole-B13 integration/acceptance gate.
+
+## 16. B13-C Plan Step execution intent — candidate, PostgreSQL proof pending
+
+Forward-only `_91` adds four nullable execution-policy columns and one coherent-tuple CHECK to the existing immutable `plan_step_in_state`. It patches guarded `get_self_plan_work` and `replace_self_plan_work` with exact anchors, retaining B13-A ownership/current-history/replay and B13-B active Dependency endpoint protection. No table, routine, view, trigger, index or FK is added. The Dictionary predicts `196|5|152|100|397|344|497|0|0|0`; this is not a measured catalog tuple. The last verified PostgreSQL frontier remains `_90`. See `../workstreams/timeline-temporal-operational-b13-c-implementation-2026-09-29.md` for the explicit proposed-slice basis and capability ledger.
