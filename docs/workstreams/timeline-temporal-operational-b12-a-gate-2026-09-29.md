@@ -30,3 +30,17 @@ uv run --locked pytest -q --no-cov --tb=short -m postgres \
 ```
 
 Then perform the five-step walkthrough in the implementation checkpoint and report command output plus what the Home panel displayed. The stage remains open until both are complete.
+
+For the existing local app, restart the backend after pulling in one terminal (using your existing `apps/backend/.env.local`), and start the web in another:
+
+```bash
+cd ~/projects/dante/apps/backend
+uv run --locked --env-file .env.local uvicorn dante.bootstrap.app:create_app --factory --reload
+```
+
+```bash
+cd ~/projects/dante
+pnpm --filter @dante/web dev
+```
+
+Open `http://localhost:5173/` and use Home → Plan e Step. The existing PostgreSQL service and user account are prerequisites, as in the B13 walkthrough.

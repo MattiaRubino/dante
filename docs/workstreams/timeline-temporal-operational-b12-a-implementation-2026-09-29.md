@@ -28,7 +28,7 @@ Limits: at most 20 Steps, 40 active Dependencies and 40 current Schedules; only 
 
 1. Open Home → Plan e Step and select a self-owned Plan with linked Record and Mix Activities; ensure Mix has one accepted absolute Schedule interval.
 2. Click **Analizza conflitti**. Check that Record/Mix are named and that an absent Actual on the Record → Mix Dependency says `sconosciuta`.
-3. With a hard duration rule that Mix's current interval violates, click again and confirm a hard violation; the Schedule should stay in place.
+3. If Mix already has a hard Temporal Constraint that its current absolute interval violates, click again and confirm a hard violation; the Schedule should stay in place. The PostgreSQL integration test proves this case without requiring a new manual rule authoring path.
 4. Record `non avvenuto` for Record, click again and confirm `non soddisfatta` plus blocked prerequisite. Correct to `avvenuto`, click again and confirm `soddisfatta` while the hard violation remains.
 5. For a linked Activity without accepted Schedule, confirm the result stays unknown. No availability/free-slot claim or automatic move appears.
 
