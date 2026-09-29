@@ -1,17 +1,17 @@
 # Timeline / Temporal-Operational Vertical — Implementation Roadmap
 
-- **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-28
+- **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-29
 - **Branch/workstream:** `feature/timeline-temporal-operational`
 - **Vertical boundary:** Home `+` creation/configuration → canonical temporal truth → Timeline projection/actions → bounded lifecycle completion
-- **Completed functional frontier:** B13-A ✅ CLOSED / focused local automated proof 2026-09-28
+- **Completed functional frontier:** B13-B ✅ CLOSED / focused local automated proof 2026-09-29
 - **Current block:** B13 Work Structure / Decomposition / Dependencies
-- **Current gate:** B13-B Qualified Dependencies ▶ implementation candidate / local PostgreSQL gate pending
+- **Current gate:** B13-C Execution Structure Constraints ▶ semantic pre-scope pending
 - **B13-B scope authority:** `docs/workstreams/timeline-temporal-operational-b13-b-scope-2026-09-28.md`
-- **B13-B candidate source head:** Alembic `20260928_90` — PostgreSQL proof pending
+- **B13-B closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-b-closure-2026-09-29.md`
 - **B13-A scope authority:** `docs/workstreams/timeline-temporal-operational-b13-a-scope-2026-09-28.md`
 - **B13-A closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-a-closure-2026-09-28.md`
-- **Current persistence source frontier:** B13-A / Alembic `20260928_89` (focused PostgreSQL and catalog proven)
-- **Catalog-verified whole topology:** `_89` / `191|5|148|100|386|334|488|0|0|0`
+- **Current persistence source frontier:** B13-B / Alembic `20260928_90` (focused PostgreSQL and catalog proven)
+- **Catalog-verified whole topology:** `_90` / `196|5|152|100|397|344|496|0|0|0`
 - **B10-D closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-d-closure-2026-09-26.md`
 - **B10-E closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-e-closure-2026-09-26.md`
 - **B11 closure evidence:** `docs/workstreams/timeline-temporal-operational-b11-closure-2026-09-28.md`
@@ -106,7 +106,7 @@ B11 Advanced Recurrence / Conditional / Reminder ✅ CLOSED / USER-REPORTED ACCE
 
 B13 Work Structure / Decomposition / Dependencies ◐ IN PROGRESS
   B13-A Work Structure Core                       ✅ CLOSED / PROVEN 2026-09-28
-  B13-B Qualified Dependencies                    ◐ IMPLEMENTED CANDIDATE / POSTGRESQL PROOF PENDING
+  B13-B Qualified Dependencies                    ✅ CLOSED / PROVEN 2026-09-29
   B13-C Execution Structure Constraints           ⬜
   B13-D Whole-block Integration / Proof / Acceptance ⬜
 B12 Replanning / Conflict / Solver                ⏸ HELD UNTIL B13 CLOSES
@@ -374,9 +374,9 @@ promotion of Step to universal root identity without model authority
 
 The discovery checkpoint selected flat `Plan -> Step`, normalized immutable structure revisions and explicit position. Existing Plan identity is reused; optional Activity references are same-self validated without identity collapse. OpenAPI, web/API typechecks, generated client and UI test passed locally. `_88` repaired replay and catalog naming; forward `_89` qualified the accepted-current update. The final user-run focused PostgreSQL/catalog suite passed **9 tests in 24.09s** at `_89`. See `timeline-temporal-operational-b13-a-closure-2026-09-28.md`.
 
-## B13-B — Qualified Dependencies
+## B13-B — Qualified Dependencies — CLOSED / PROVEN 2026-09-29
 
-Approved scope: `timeline-temporal-operational-b13-b-scope-2026-09-28.md`. Candidate migration `_90` implements Plan-scoped typed Actual/Outcome prerequisites; focused PostgreSQL/catalog user-run gate is pending. Dependency remains separate from containment and ordering.
+Scope authority: `timeline-temporal-operational-b13-b-scope-2026-09-28.md`. Forward-only `_90` implements Plan-scoped typed Actual/Outcome prerequisites, immutable qualifier history, current binding, replay/CAS receipts and bounded cycle diagnostics. The user-run focused PostgreSQL/catalog suite passed **11 tests in 41.75s**. The earlier focused web gate passed **6 tests** and both web/API-client typechecks. Dependency remains separate from containment and Step ordering; B13-D retains the whole-block real-app acceptance. See `timeline-temporal-operational-b13-b-closure-2026-09-29.md`.
 
 ## B13-C — Execution Structure Constraints
 

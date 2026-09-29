@@ -1,10 +1,10 @@
-# B13-B implementation candidate — focused local proof pending
+# B13-B implementation checkpoint — focused local proof obtained
 
-- **Status:** LOCAL IMPLEMENTATION CANDIDATE; PostgreSQL proof and implementation Git write gate pending
+- **Status:** IMPLEMENTED / FOCUSED LOCAL AUTOMATED PROOF OBTAINED; closed 2026-09-29
 - **Base:** `1f7ecca73ca2816d8aa0da838734ad67daf9fba5`
 - **Semantic authority:** `timeline-temporal-operational-b13-b-scope-2026-09-28.md`
 - **Candidate Alembic head:** `20260928_90` (forward only)
-- **Last verified live head:** B13-A `20260928_89`
+- **Verified live head:** B13-B `20260928_90`
 
 ## Source inventory and physical decisions
 
@@ -26,7 +26,7 @@
 
 - `_90` adds five tables, four guarded functions, a bounded `plan_dependency` scoped address, and a forward patch to the active Plan replacement function. A Plan row lock serializes relation writes with structure replacement. Active relation endpoints cannot disappear or relink; historical assertions and operation receipts remain intact.
 - Self-scoped HTTP routes provide create, list, read, revise, retire and history. The generated client and Home Plan panel expose typed Actual/Outcome conditions, derived evaluation, and cycle diagnostics. The relation records purpose, direction and both Activity bindings.
-- The Dictionary and ORM inventory describe 196 tables, five views, 152 routines, 100 triggers, 397 physical indexes, 344 foreign keys and 496 checks. These are **predicted candidate counts**, not a measured live PostgreSQL topology. The five new tables contribute 11 indexes (five primary keys, three unique constraints and three explicit indexes).
+- The Dictionary and ORM inventory describe 196 tables, five views, 152 routines, 100 triggers, 397 physical indexes, 344 foreign keys and 496 checks. These counts were subsequently reconciled by the exact live PostgreSQL/catalog gate. The five new tables contribute 11 indexes (five primary keys, three unique constraints and three explicit indexes).
 - In this worktree, 9 OpenAPI tests and 4 static inventory tests passed; 6 focused web tests passed. Ruff lint/format, backend mypy for the new source files, web/API-client TypeScript checks and byte-identical client regeneration after Orval plus Prettier passed. The PostgreSQL suite cannot run in this workspace because no local PostgreSQL cluster/container is available. No CI/Actions ran.
 
 After the exact implementation Git gate is approved and the candidate is published, run from a clean pull on the branch:
@@ -49,7 +49,15 @@ pnpm --filter @dante/web typecheck
 pnpm --filter @dante/api-client typecheck
 ```
 
-Record the complete results and the live topology before marking B13-B closed and starting B13-C.
+## Closure evidence
+
+The user pulled the final test-only correction `e19d3b0` and ran the focused PostgreSQL/catalog gate on 2026-09-29:
+
+```text
+PostgreSQL B13-B + exact catalog reconciliation    11 passed in 41.75s
+```
+
+The candidate's earlier static/backend OpenAPI checks, Ruff/mypy, deterministic generated-client check, focused web tests (6) and web/API-client typechecks had already passed. The final correction changes only the B13-B integration test so it tests the active-Dependency relink guard without violating the independent one-Activity-per-Step invariant. No CI/Actions ran. B13-B is closed; B13-D retains whole-B13 product acceptance.
 
 ## Publication boundary
 

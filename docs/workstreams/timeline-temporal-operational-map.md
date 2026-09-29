@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
-- **Status:** CURRENT LIVE STATE — reconciled 2026-09-28
+- **Status:** CURRENT LIVE STATE — reconciled 2026-09-29
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Continuation handoff:** `docs/workstreams/timeline-temporal-operational-handoff.md`
@@ -11,12 +11,12 @@
 - **B13-A implementation checkpoint:** `docs/workstreams/timeline-temporal-operational-b13-a-implementation-2026-09-28.md`
 - **B13-A closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-a-closure-2026-09-28.md`
 - **B13-B scope authority:** `docs/workstreams/timeline-temporal-operational-b13-b-scope-2026-09-28.md`
-- **B13-B candidate source head:** Alembic `20260928_90` — PostgreSQL proof pending
+- **B13-B closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-b-closure-2026-09-29.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Current persistence source frontier:** `20260928_89` (B13-A focused PostgreSQL/catalog proven)
-- **Catalog-verified whole topology:** `_89` / `191|5|148|100|386|334|488|0|0|0`
-- **Completed functional frontier:** B13-A ✅ CLOSED / focused local proof 2026-09-28
-- **Current implementation cursor:** B13-B Qualified Dependencies — implementation candidate / PostgreSQL proof pending
+- **Current persistence source frontier:** `20260928_90` (B13-B focused PostgreSQL/catalog proven)
+- **Catalog-verified whole topology:** `_90` / `196|5|152|100|397|344|496|0|0|0`
+- **Completed functional frontier:** B13-B ✅ CLOSED / focused local proof 2026-09-29
+- **Current implementation cursor:** B13-C Execution Structure Constraints — semantic pre-scope pending
 - **CI:** not authorized; local tests are run by the user
 
 ---
@@ -106,7 +106,7 @@ timeline-temporal-operational-b11-closure-2026-09-28.md
 ```text
 B13 Work Structure / Decomposition / Dependencies ◐ IN PROGRESS
   B13-A Work Structure Core                       ✅ CLOSED / PROVEN 2026-09-28
-  B13-B Qualified Dependencies                    ◐ IMPLEMENTED CANDIDATE / POSTGRESQL PROOF PENDING
+  B13-B Qualified Dependencies                    ✅ CLOSED / PROVEN 2026-09-29
   B13-C Execution Structure Constraints           ⬜
   B13-D Whole-block Integration / Proof / Acceptance ⬜
 B12 Replanning / Conflict / Solver                ⏸ HELD UNTIL B13 CLOSES
@@ -317,7 +317,7 @@ proposal acceptance semantics
 
 ## B13-B — Qualified Dependencies
 
-Approved semantic gate and candidate `_90` implementation; local PostgreSQL/catalog and web acceptance remains pending. See `timeline-temporal-operational-b13-b-implementation-2026-09-28.md`.
+Closed / proven at forward-only `_90`. The user-run PostgreSQL/catalog gate passed **11 tests in 41.75s**; the focused web gate previously passed **6 tests** and both typechecks. See `timeline-temporal-operational-b13-b-closure-2026-09-29.md`. Whole-B13 acceptance remains B13-D.
 
 ## B13-C — Execution Structure Constraints
 
