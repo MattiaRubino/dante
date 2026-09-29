@@ -3,17 +3,17 @@
 - **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-29
 - **Branch/workstream:** `feature/timeline-temporal-operational`
 - **Vertical boundary:** Home `+` creation/configuration → canonical temporal truth → Timeline projection/actions → bounded lifecycle completion
-- **Completed functional frontier:** B13-B ✅ CLOSED / focused local automated proof 2026-09-29
+- **Completed functional frontier:** B13-C ✅ CLOSED / focused local automated proof 2026-09-29
 - **Current block:** B13 Work Structure / Decomposition / Dependencies
-- **Current gate:** B13-C Execution Structure Constraints ◐ local candidate / PostgreSQL proof pending
+- **Current gate:** B13-D Whole-block Integration / Proof / Acceptance — scope next
 - **B13-C scope authority:** `docs/workstreams/timeline-temporal-operational-b13-c-scope-2026-09-29.md`
-- **B13-C candidate checkpoint:** `docs/workstreams/timeline-temporal-operational-b13-c-implementation-2026-09-29.md`
+- **B13-C closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-c-closure-2026-09-29.md`
 - **B13-B scope authority:** `docs/workstreams/timeline-temporal-operational-b13-b-scope-2026-09-28.md`
 - **B13-B closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-b-closure-2026-09-29.md`
 - **B13-A scope authority:** `docs/workstreams/timeline-temporal-operational-b13-a-scope-2026-09-28.md`
 - **B13-A closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-a-closure-2026-09-28.md`
-- **Current persistence source frontier:** B13-C / Alembic `20260929_92` (repair candidate, retest pending); last fully proven `_90`
-- **Catalog-verified whole topology:** `_90` / `196|5|152|100|397|344|496|0|0|0`
+- **Current persistence source frontier:** B13-C / Alembic `20260929_92` (focused PostgreSQL/catalog proof)
+- **Catalog-verified whole topology:** `_92` / `196|5|152|100|397|344|497|0|0|0`
 - **B10-D closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-d-closure-2026-09-26.md`
 - **B10-E closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-e-closure-2026-09-26.md`
 - **B11 closure evidence:** `docs/workstreams/timeline-temporal-operational-b11-closure-2026-09-28.md`
@@ -109,7 +109,7 @@ B11 Advanced Recurrence / Conditional / Reminder ✅ CLOSED / USER-REPORTED ACCE
 B13 Work Structure / Decomposition / Dependencies ◐ IN PROGRESS
   B13-A Work Structure Core                       ✅ CLOSED / PROVEN 2026-09-28
   B13-B Qualified Dependencies                    ✅ CLOSED / PROVEN 2026-09-29
-  B13-C Execution Structure Constraints           ◐ LOCAL CANDIDATE / POSTGRESQL PROOF PENDING
+  B13-C Execution Structure Constraints           ✅ CLOSED / PROVEN 2026-09-29
   B13-D Whole-block Integration / Proof / Acceptance ⬜
 B12 Replanning / Conflict / Solver                ⏸ HELD UNTIL B13 CLOSES
 B14 Temporal Create Completeness Gate             ⬜
@@ -382,7 +382,7 @@ Scope authority: `timeline-temporal-operational-b13-b-scope-2026-09-28.md`. Forw
 
 ## B13-C — Execution Structure Constraints
 
-Own execution-structure foundations where supported by current Domain/Logical authority, including maximum Session count, merge compatibility, spacing and preparation/recovery behavior. These constraints must not be smuggled into B13-A hierarchy.
+Closed / focused proof at `_92`. The supported Plan-contextual Step policy governs proposed planning-slice count and compatible union assessment, using the existing Activity Temporal Constraint evaluator. Spacing, preparation and recovery remain unsupported and not editable. The user-run B13-A/B/C and exact catalog suite passed **13 tests in 29.16s**; focused web, generated-client and typecheck gates passed on the published implementation. See `timeline-temporal-operational-b13-c-closure-2026-09-29.md`. Whole-B13 real-app acceptance remains B13-D.
 
 ## B13-D — Whole-block Integration / Proof / Acceptance
 

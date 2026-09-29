@@ -13,12 +13,12 @@
 - **B13-B scope authority:** `docs/workstreams/timeline-temporal-operational-b13-b-scope-2026-09-28.md`
 - **B13-B closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-b-closure-2026-09-29.md`
 - **B13-C scope:** `docs/workstreams/timeline-temporal-operational-b13-c-scope-2026-09-29.md`
-- **B13-C candidate checkpoint:** `docs/workstreams/timeline-temporal-operational-b13-c-implementation-2026-09-29.md`
+- **B13-C closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-c-closure-2026-09-29.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Current persistence source frontier:** `20260929_92` (B13-C repair candidate; PostgreSQL/catalog retest pending)
-- **Catalog-verified whole topology:** `_90` / `196|5|152|100|397|344|496|0|0|0`
-- **Completed functional frontier:** B13-B ✅ CLOSED / focused local proof 2026-09-29
-- **Current implementation cursor:** B13-C Execution Structure Constraints — local implementation candidate, PostgreSQL proof pending
+- **Current persistence source frontier:** `20260929_92` (B13-C focused PostgreSQL/catalog proof)
+- **Catalog-verified whole topology:** `_92` / `196|5|152|100|397|344|497|0|0|0`
+- **Completed functional frontier:** B13-C ✅ CLOSED / focused local proof 2026-09-29
+- **Current implementation cursor:** B13-D whole-block integration / proof / acceptance — scope and user-run gate next
 - **CI:** not authorized; local tests are run by the user
 
 ---
@@ -109,7 +109,7 @@ timeline-temporal-operational-b11-closure-2026-09-28.md
 B13 Work Structure / Decomposition / Dependencies ◐ IN PROGRESS
   B13-A Work Structure Core                       ✅ CLOSED / PROVEN 2026-09-28
   B13-B Qualified Dependencies                    ✅ CLOSED / PROVEN 2026-09-29
-  B13-C Execution Structure Constraints           ◐ LOCAL CANDIDATE / POSTGRESQL PROOF PENDING
+  B13-C Execution Structure Constraints           ✅ CLOSED / PROVEN 2026-09-29
   B13-D Whole-block Integration / Proof / Acceptance ⬜
 B12 Replanning / Conflict / Solver                ⏸ HELD UNTIL B13 CLOSES
 B14 Temporal Create Completeness Gate             ⬜
@@ -323,7 +323,7 @@ Closed / proven at forward-only `_90`. The user-run PostgreSQL/catalog gate pass
 
 ## B13-C — Execution Structure Constraints
 
-Scope frozen. The `_91` candidate extends immutable Plan Step revisions with Plan-contextual divisibility, optional maximum proposed-slice count and bounded proposed-slice merge permission. Read-only assessment counts explicit proposed slices and reuses the Activity Temporal Constraint evaluator. Spacing, preparation and recovery remain unsupported and not editable. The user-run `_91` PostgreSQL gate passed 10/13; `_92` repairs the CHECK name and the probe revision assertion before a full retest. See the B13-C implementation checkpoint. B13-C is not closed.
+Closed / focused proof at forward-only `_92`. Immutable Plan Step revisions carry Plan-contextual divisibility, optional maximum proposed-slice count and bounded proposed-slice merge permission. Read-only assessment counts explicit proposed slices and reuses the Activity Temporal Constraint evaluator. Spacing, preparation and recovery remain unsupported and not editable. The user-run B13-A/B/C plus exact catalog suite passed **13 tests in 29.16s**; the earlier web suite passed **11 tests**, with generated-client determinism and both typechecks. See `timeline-temporal-operational-b13-c-closure-2026-09-29.md`. Whole-B13 real-app acceptance remains B13-D.
 
 ## B13-D — Whole-block Integration / Proof / Acceptance
 
