@@ -84,10 +84,13 @@ _READ_QUERY = """
 
 def upgrade() -> None:
     op.drop_constraint(
-        "ck_scoped_address_scoped_family", "scoped_address", schema=_SCHEMA, type_="check"
+        op.f("ck_scoped_address_scoped_family"),
+        "scoped_address",
+        schema=_SCHEMA,
+        type_="check",
     )
     op.create_check_constraint(
-        "ck_scoped_address_scoped_family",
+        op.f("ck_scoped_address_scoped_family"),
         "scoped_address",
         "scoped_family IN ("
         "'schedule','actual','temporal_constraint','outcome','confirmation',"
@@ -107,16 +110,16 @@ def upgrade() -> None:
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
         sa.CheckConstraint(
             "uuid_extract_version(dependency_ref) IS NOT DISTINCT FROM 7",
-            name="ck_plan_dependency_uuidv7",
+            name=op.f("ck_plan_dependency_uuidv7"),
         ),
         sa.CheckConstraint(
             "prerequisite_step_ref<>dependent_step_ref AND "
             "prerequisite_activity_ref<>dependent_activity_ref",
-            name="ck_plan_dependency_distinct_endpoints",
+            name=op.f("ck_plan_dependency_distinct_endpoints"),
         ),
         sa.CheckConstraint(
             "purpose_code='dependent_activity_admissibility'",
-            name="ck_plan_dependency_purpose",
+            name=op.f("ck_plan_dependency_purpose"),
         ),
         sa.UniqueConstraint("plan_ref", "dependency_ref", name="uq_plan_dependency_plan"),
         sa.ForeignKeyConstraint(
@@ -157,7 +160,7 @@ def upgrade() -> None:
         sa.Column("recorded_at", sa.DateTime(timezone=True), nullable=False),
         sa.CheckConstraint(
             "uuid_extract_version(state_ref) IS NOT DISTINCT FROM 7",
-            name="ck_plan_dependency_state_uuidv7",
+            name=op.f("ck_plan_dependency_state_uuidv7"),
         ),
         sa.CheckConstraint(
             "(qualifier_code='actual_occurred' AND disposition_code IS NULL) OR "
@@ -165,7 +168,7 @@ def upgrade() -> None:
             "disposition_code=btrim(disposition_code) AND "
             "char_length(disposition_code) BETWEEN 1 AND 120 AND "
             "disposition_code ~ '^[a-z0-9][a-z0-9._:-]*$')",
-            name="ck_plan_dependency_state_qualifier",
+            name=op.f("ck_plan_dependency_state_qualifier"),
         ),
         sa.UniqueConstraint("dependency_ref", "state_ref", name="uq_plan_dependency_state_owner"),
         sa.ForeignKeyConstraint(
@@ -206,7 +209,7 @@ def upgrade() -> None:
         sa.CheckConstraint(
             "isfinite(current_from_at) AND (current_until_at IS NULL OR "
             "(isfinite(current_until_at) AND current_until_at>current_from_at))",
-            name="ck_plan_dependency_current_history_interval",
+            name=op.f("ck_plan_dependency_current_history_interval"),
         ),
         sa.ForeignKeyConstraint(
             ["dependency_ref", "state_ref"],
@@ -238,11 +241,11 @@ def upgrade() -> None:
         sa.CheckConstraint(
             "operation_id=btrim(operation_id) AND operation_id<>'' "
             "AND char_length(operation_id)<=200",
-            name="ck_plan_dependency_operation_id",
+            name=op.f("ck_plan_dependency_operation_id"),
         ),
         sa.CheckConstraint(
             "intent_fingerprint ~ '^[0-9a-f]{64}$'",
-            name="ck_plan_dependency_operation_fingerprint",
+            name=op.f("ck_plan_dependency_operation_fingerprint"),
         ),
         sa.ForeignKeyConstraint(
             ["self_person_ref"],
