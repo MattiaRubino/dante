@@ -1,6 +1,6 @@
 # B12-D — whole-block integration and real-app acceptance — scope proposal
 
-- **Status:** PREPARED FOR EXPLICIT B12-D APPROVAL; implementation not started
+- **Status:** APPROVED 2026-09-29; integrated implementation candidate awaiting local proof
 - **Date:** 2026-09-29
 - **Entry:** B12-A/B/C closed on focused proof; database head `20260929_93`
 - **Parent:** `timeline-temporal-operational-b12-scope-2026-09-29.md`
@@ -22,4 +22,4 @@ The user runs one complete local gate: generated-client determinism; API-client 
 
 After automated proof, give the user one complete, click-only sequence with no UUID copying or DevTools: create/link two Activities and a Plan; define and observe the Dependency; complete the prerequisite evidence; select the dependent Step and inspect diagnosis/candidates; review an interval; submit and, if pending, confirm; reload and check Home and Timeline. Include one practical negative case such as blocked policy or stale review, and record what the user actually observed. Repair any defect in the owning layer, republish and rerun affected gates. Only after the real-app report may B12-D and parent B12 close.
 
-**Approval requested next:** B12-D integration/proof and the final real-app acceptance sequence above. The current request does not close parent B12 or authorize automatic broad replanning.
+**Approved boundary:** B12-D integrated proof and final real-app acceptance. Parent B12 closure still depends on the local gate and user observation; automatic broad replanning remains outside scope.
