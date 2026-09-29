@@ -26,6 +26,7 @@ export function PlanWorkPanel() {
   const [planTitle, setPlanTitle] = useState('');
   const [stepTitle, setStepTitle] = useState('');
   const [activityIntent, setActivityIntent] = useState<PlanActivityIntent | null>(null);
+  const [targetStepRef, setTargetStepRef] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -34,6 +35,12 @@ export function PlanWorkPanel() {
   const pendingStep = useRef<{ fingerprint: string; ref: string } | null>(null);
   const panelRef = useRef<HTMLDetailsElement | null>(null);
   const current = plans.find((item) => item.planRef === selectedRef) ?? null;
+  const unlinkedSteps = current?.steps.filter((item) => item.activityRef === null) ?? [];
+  const alreadyLinked = current?.steps.find((item) =>
+    item.activityRef === activityIntent?.activityRef);
+  const matchingStep = unlinkedSteps.find((item) =>
+    item.title.trim().toLocaleLowerCase() === activityIntent?.title.trim().toLocaleLowerCase());
+  const selectedTarget = targetStepRef || matchingStep?.stepRef || 'new';
 
   const reload = async () => {
     const items = await source.list();
@@ -61,6 +68,7 @@ export function PlanWorkPanel() {
 
   useEffect(() => subscribePlanActivityIntent((intent) => {
     setActivityIntent(intent);
+    setTargetStepRef('');
     setPlanTitle((previous) => previous.trim() || `Plan ${intent.title}`);
     if (panelRef.current !== null) panelRef.current.open = true;
     requestAnimationFrame(() => panelRef.current?.scrollIntoView?.({
@@ -132,8 +140,16 @@ export function PlanWorkPanel() {
   };
 
   const addSelectedActivity = () => {
-    if (current === null || activityIntent === null) return;
+    if (current === null || activityIntent === null || alreadyLinked !== undefined) return;
     const intent = activityIntent;
+    const target = unlinkedSteps.find((item) => item.stepRef === selectedTarget);
+    if (target !== undefined) {
+      replace(current.steps.map((item) => item.stepRef === target.stepRef
+        ? { ...item, activityRef: intent.activityRef } : item),
+      `Attività “${intent.title}” collegata allo Step “${target.title}”.`,
+      () => { setActivityIntent(null); setTargetStepRef(''); });
+      return;
+    }
     const fingerprint = JSON.stringify([
       current.planRef, current.stateRef, intent.activityRef,
     ]);
@@ -144,7 +160,10 @@ export function PlanWorkPanel() {
       stepRef: ref, title: intent.title, activityRef: intent.activityRef,
       divisible: null, maxPlannedSlices: null, mergeCompatible: null,
       executionStrengthCode: null,
-    }], `Step “${intent.title}” aggiunto e collegato.`, () => setActivityIntent(null));
+    }], `Step “${intent.title}” aggiunto e collegato.`, () => {
+      setActivityIntent(null);
+      setTargetStepRef('');
+    });
   };
 
   const moveStep = (index: number, direction: -1 | 1) => {
@@ -192,7 +211,11 @@ export function PlanWorkPanel() {
                 Attività selezionata: <strong>{activityIntent.title}</strong>.
                 {current === null
                   ? ' Crea o seleziona un Plan, poi aggiungila con +.'
-                  : ' Premi + per aggiungerla come Step collegato.'}
+                  : alreadyLinked !== undefined
+                    ? ` Già collegata allo Step “${alreadyLinked.title}”.`
+                    : matchingStep !== undefined
+                      ? ` Collega lo Step esistente “${matchingStep.title}”.`
+                      : ' Scegli uno Step esistente oppure aggiungine uno nuovo.'}
                 <button type="button" disabled={pending} onClick={() => setActivityIntent(null)}>
                   Annulla selezione
                 </button>
@@ -202,7 +225,10 @@ export function PlanWorkPanel() {
               <label>
                 Plan corrente
                 <select value={selectedRef ?? ''} disabled={pending}
-                  onChange={(event) => setSelectedRef(event.currentTarget.value)}>
+                  onChange={(event) => {
+                    setSelectedRef(event.currentTarget.value);
+                    setTargetStepRef('');
+                  }}>
                   {plans.map((item) => (
                     <option key={item.planRef} value={item.planRef}>{item.title}</option>
                   ))}
@@ -216,7 +242,8 @@ export function PlanWorkPanel() {
                   {current.steps.map((item, index) => (
                     <li key={item.stepRef}>
                       <span>{item.title}</span>
-                      {item.activityRef !== null ? <small> · Attività collegata</small> : null}
+                      <small>{item.activityRef !== null
+                        ? ' · Attività collegata' : ' · nessuna Attività collegata'}</small>
                       {item.activityRef !== null ? (
                         <button type="button" aria-label={`Scollega attività da ${item.title}`}
                           disabled={pending} onClick={() => unlinkActivity(item.stepRef)}>
@@ -246,10 +273,30 @@ export function PlanWorkPanel() {
                 <button type="button" disabled={pending || !stepTitle.trim() ||
                   current.steps.length >= 1000} onClick={addStep}>Aggiungi Step</button>
                 {activityIntent !== null ? (
-                  <button type="button" disabled={pending || current.steps.length >= 1000}
-                    onClick={addSelectedActivity}>
-                    + Aggiungi “{activityIntent.title}” al Plan
-                  </button>
+                  alreadyLinked === undefined ? (
+                    <>
+                      {unlinkedSteps.length > 0 ? (
+                        <label>Destinazione dell’Attività
+                          <select value={selectedTarget} disabled={pending}
+                            onChange={(event) => setTargetStepRef(event.currentTarget.value)}>
+                            <option value="new">Nuovo Step “{activityIntent.title}”</option>
+                            {unlinkedSteps.map((item) => (
+                              <option key={item.stepRef} value={item.stepRef}>
+                                Step esistente “{item.title}”
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      ) : null}
+                      <button type="button"
+                        disabled={pending || (selectedTarget === 'new' && current.steps.length >= 1000)}
+                        onClick={addSelectedActivity}>
+                        {selectedTarget === 'new'
+                          ? `+ Aggiungi “${activityIntent.title}” al Plan`
+                          : `Collega “${activityIntent.title}” allo Step esistente`}
+                      </button>
+                    </>
+                  ) : null
                 ) : (
                   <p>Apri un’Activity nel Planning Tray e premi il suo titolo per aggiungerla qui.</p>
                 )}

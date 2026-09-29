@@ -82,4 +82,22 @@ describe('Plan work panel', () => {
     });
     expect(screen.queryByText(/UUID dell’Attività/)).toBeNull();
   });
+
+  it('links a matching existing Step instead of creating a duplicate', async () => {
+    const activityRef = '0199a8c0-5e74-7bc0-8ad0-a2f403f5618b';
+    render(<PlanWorkPanel />);
+    window.dispatchEvent(new CustomEvent('dante:open-plan-for-activity', {
+      detail: { activityRef, title: 'Record' },
+    }));
+    const link = await screen.findByRole('button', {
+      name: 'Collega “Record” allo Step esistente',
+    });
+    expect(screen.getByLabelText('Destinazione dell’Attività')).toHaveProperty('value', first);
+    fireEvent.click(link);
+    await waitFor(() => expect(replace).toHaveBeenCalledOnce());
+    const steps = replace.mock.calls[0]?.[2] as PlanWork['steps'];
+    expect(steps).toHaveLength(2);
+    expect(steps[0]).toMatchObject({ stepRef: first, activityRef });
+    expect(steps[1]).toMatchObject({ stepRef: second, activityRef: null });
+  });
 });
