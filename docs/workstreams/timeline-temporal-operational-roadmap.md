@@ -4,14 +4,14 @@
 - **Branch/workstream:** `feature/timeline-temporal-operational`
 - **Vertical boundary:** Home `+` creation/configuration → canonical temporal truth → Timeline projection/actions → bounded lifecycle completion
 - **Completed functional frontier:** B13 ✅ CLOSED / user-reported B13-D real-app acceptance 2026-09-29
-- **Current block:** B12 Replanning / Conflict / Solver — B12-C implementation candidate
-- **Current gate:** B12-A closed / proven on user-run focused gate; B12-B closed / proven; B12-C implemented candidate / focused local gate pending; whole-B12 real-app acceptance at B12-D
+- **Current block:** B12 Replanning / Conflict / Solver — B12-D scope prepared
+- **Current gate:** B12-A closed / proven on user-run focused gate; B12-B closed / proven; B12-C closed / focused proof; B12-D scope prepared / approval pending; whole-B12 real-app acceptance at B12-D
 - **B12 block scope:** `docs/workstreams/timeline-temporal-operational-b12-scope-2026-09-29.md`
 - **B12-A scope proposal:** `docs/workstreams/timeline-temporal-operational-b12-a-scope-2026-09-29.md`
 - **B12-A closure:** `docs/workstreams/timeline-temporal-operational-b12-a-closure-2026-09-29.md`
 - **B12-B scope proposal:** `docs/workstreams/timeline-temporal-operational-b12-b-scope-2026-09-29.md`
 - **B12-B closure:** `docs/workstreams/timeline-temporal-operational-b12-b-closure-2026-09-29.md`
-- **B12-C scope proposal:** `docs/workstreams/timeline-temporal-operational-b12-c-scope-2026-09-29.md`
+- **B12-C approved scope:** `docs/workstreams/timeline-temporal-operational-b12-c-scope-2026-09-29.md`
 - **B13-D scope authority: `docs/workstreams/timeline-temporal-operational-b13-d-scope-2026-09-29.md`
 - **B13-D candidate gate:** `docs/workstreams/timeline-temporal-operational-b13-d-gate-2026-09-29.md`
 - **B13-D closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-d-closure-2026-09-29.md`
@@ -21,8 +21,8 @@
 - **B13-B closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-b-closure-2026-09-29.md`
 - **B13-A scope authority:** `docs/workstreams/timeline-temporal-operational-b13-a-scope-2026-09-28.md`
 - **B13-A closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-a-closure-2026-09-28.md`
-- **Current persistence source frontier:** B12-C / Alembic `20260929_93` (local gate pending; `_92` proven)
-- **Catalog-verified whole topology:** `_92` / `196|5|152|100|397|344|497|0|0|0`
+- **Current persistence source frontier:** B12-C / Alembic `20260929_93` (focused local proof)
+- **Reported current catalog topology:** `_93` / `196|5|155|100|397|344|497|0|0|0` (focused local gate)
 - **B10-D closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-d-closure-2026-09-26.md`
 - **B10-E closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-e-closure-2026-09-26.md`
 - **B11 closure evidence:** `docs/workstreams/timeline-temporal-operational-b11-closure-2026-09-28.md`
@@ -120,11 +120,11 @@ B13 Work Structure / Decomposition / Dependencies ✅ CLOSED / USER-REPORTED ACC
   B13-B Qualified Dependencies                    ✅ CLOSED / PROVEN 2026-09-29
   B13-C Execution Structure Constraints           ✅ CLOSED / PROVEN 2026-09-29
   B13-D Whole-block Integration / Proof / Acceptance ✅ CLOSED / USER-REPORTED 2026-09-29
-B12 Replanning / Conflict / Solver                ◐ B12-C LOCAL GATE PENDING
+B12 Replanning / Conflict / Solver                ◐ B12-D APPROVAL PENDING
   B12-A Current-truth conflict diagnosis           ✅ CLOSED / PROVEN 2026-09-29
   B12-B Bounded candidate generation / solver      ✅ CLOSED / PROVEN 2026-09-29
-  B12-C Review / governed admission                ◐ IMPLEMENTED CANDIDATE / LOCAL GATE PENDING
-  B12-D Integration / product acceptance           ⬜ LATER GATE
+  B12-C Review / governed admission                ✅ CLOSED / PROVEN 2026-09-29
+  B12-D Integration / product acceptance           ⬜ SCOPE PREPARED / APPROVAL PENDING
 B14 Temporal Create Completeness Gate             ⬜
 B07 UI/UX Consolidation v1                        ⏸ DEFERRED UNTIL B14
 B15 Whole Vertical Closure                        ⬜
@@ -403,7 +403,7 @@ Scope and gate: `timeline-temporal-operational-b13-d-scope-2026-09-29.md` and `t
 
 ---
 
-# 6. B12 — Replanning / Conflict / Solver — B12-C IMPLEMENTED CANDIDATE
+# 6. B12 — Replanning / Conflict / Solver — B12-D SCOPE PREPARED
 
 Deterministic-first replanning/conflict/solver:
 
@@ -424,7 +424,7 @@ solver UNKNOWN != INFEASIBLE
 AI != scheduling authority
 ```
 
-B12 may not invent work structure, dependency truth or B13 execution constraints. The block scope is `timeline-temporal-operational-b12-scope-2026-09-29.md`: B12-A current-truth diagnosis → B12-B bounded solver candidates → B12-C governed admission → B12-D whole-block acceptance. B12-A is closed / proven on the user's focused automated gate: generated 389, both typechecks, web 4, contract 1, Ruff and PostgreSQL/catalog 11 passed. See `timeline-temporal-operational-b12-a-closure-2026-09-29.md`. The whole-chain real-app walkthrough is B12-D, before closing B12. B12-B is closed / proven on the user-run focused local gate: generated 393, both typechecks, web 3, backend 8, Ruff and PostgreSQL/catalog 11 passed in 24.63s; see `timeline-temporal-operational-b12-b-closure-2026-09-29.md`. B12-C scope was approved; the `_93` reviewed admission implementation awaits the focused user-run PostgreSQL/catalog gate. See `timeline-temporal-operational-b12-c-implementation-2026-09-29.md`.
+B12 may not invent work structure, dependency truth or B13 execution constraints. The block scope is `timeline-temporal-operational-b12-scope-2026-09-29.md`: B12-A current-truth diagnosis → B12-B bounded solver candidates → B12-C governed admission → B12-D whole-block acceptance. B12-A is closed / proven on the user's focused automated gate: generated 389, both typechecks, web 4, contract 1, Ruff and PostgreSQL/catalog 11 passed. See `timeline-temporal-operational-b12-a-closure-2026-09-29.md`. The whole-chain real-app walkthrough is B12-D, before closing B12. B12-B is closed / proven on the user-run focused local gate: generated 393, both typechecks, web 3, backend 8, Ruff and PostgreSQL/catalog 11 passed in 24.63s; see `timeline-temporal-operational-b12-b-closure-2026-09-29.md`. B12-C is closed on the reported focused local gate: generated 397, both typechecks, web 4, Ruff, backend 9 and PostgreSQL 19 passed. See `timeline-temporal-operational-b12-c-closure-2026-09-29.md`. B12-D scope is prepared in `timeline-temporal-operational-b12-d-scope-2026-09-29.md` for separate approval.
 
 ---
 

@@ -1,12 +1,12 @@
 # Timeline / Temporal-Operational — Candidate Database Overlay
 
-- **Status:** CURRENT CANDIDATE DATABASE OVERLAY — B12-C `_93` candidate; `_92` focused PostgreSQL/catalog proof
+- **Status:** CURRENT CANDIDATE DATABASE OVERLAY — B12-C `_93` focused local proof
 - **Reconciled:** 2026-09-29
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
-- **Current migration source head:** `20260929_93` (B12-C focused PostgreSQL/catalog gate pending; `_92` proven)
-- **Focused local proof frontier:** B13-C `_92` (13 PostgreSQL/catalog tests passed in 29.16s)
-- **Catalog-verified whole-topology count:** `_92` / `196|5|152|100|397|344|497|0|0|0`
+- **Current migration source head:** `20260929_93` (B12-C focused local proof)
+- **Focused local proof frontier:** B12-C `_93` (19 PostgreSQL tests reported passed in 39.83s)
+- **Reported current catalog topology:** `_93` / `196|5|155|100|397|344|497|0|0|0`
 - **Whole-DB SoR:** `README.md`
 - **Machine-readable authority:** `dictionary/`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
@@ -77,7 +77,7 @@ Published migrations are immutable. Any persistence correction is forward-only.
     ↓
 20260929_92 B13-C execution-policy CHECK-name repair (focused PostgreSQL/catalog proven)
     ↓
-20260929_93 B12-C guarded reviewed candidate admission (local PostgreSQL/catalog gate pending)
+20260929_93 B12-C guarded reviewed candidate admission (focused local proof reported)
 ```
 
 ## 3. Proven frontier and topology discipline
@@ -359,4 +359,4 @@ Forward-only `_91` adds four nullable execution-policy columns and one coherent-
 
 ## B12-C reviewed candidate admission checkpoint
 
-Forward-only `_93` adds three owner-controlled, security-definer functions: an internal current-evidence guard, a self-scoped B04-D request delegate, and a self-scoped B04-D confirmation delegate. The guard serializes Plan/Dependency changes on the Plan row, locks current Policy and relevant Actual/Outcome/Constraint evidence, and checks exact Schedule, Plan Step and evidence state before calling B04-D in the same transaction. No new table, view, index, trigger or constraint is introduced; Dictionary/catalog target is `196|5|155|100|397|344|497|0|0|0`. This is a source candidate until the focused local PostgreSQL/catalog proof is reported. See `../workstreams/timeline-temporal-operational-b12-c-implementation-2026-09-29.md`.
+Forward-only `_93` adds three owner-controlled, security-definer functions: an internal current-evidence guard, a self-scoped B04-D request delegate, and a self-scoped B04-D confirmation delegate. The guard serializes Plan/Dependency changes on the Plan row, locks current Policy and relevant Actual/Outcome/Constraint evidence, and checks exact Schedule, Plan Step and evidence state before calling B04-D in the same transaction. No new table, view, index, trigger or constraint is introduced; Dictionary/catalog target is `196|5|155|100|397|344|497|0|0|0`. The user reported a passing focused local PostgreSQL gate (19 tests in 39.83s); the pasted transcript does not echo the exact final file selection. See the qualified closure evidence in `../workstreams/timeline-temporal-operational-b12-c-closure-2026-09-29.md`. See `../workstreams/timeline-temporal-operational-b12-c-implementation-2026-09-29.md`.
