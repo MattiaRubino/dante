@@ -2,46 +2,50 @@
   "$schema": "../schema/object-v1.schema.json",
   "dictionary_version": 1,
   "object": {
-    "key": "routine:dante.replace_self_plan_work",
+    "key": "routine:dante.write_self_plan_dependency",
     "type": "routine",
     "schema": "dante",
-    "name": "replace_self_plan_work",
+    "name": "write_self_plan_dependency",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Guarded append-only Plan structure revision; active Dependency endpoint bindings cannot be removed or relinked.",
+  "purpose": "Guarded self-owned create, revise and retire operation with replay and expected-current checks.",
   "classification": {
-    "persistence_role": "plan_work_capability",
+    "persistence_role": "plan_dependency_capability",
     "canonicality": "capability_surface",
-    "family": "PlanWorkStructure"
+    "family": "PlanDependency"
   },
   "semantic_traceability": {
     "authority_sources": [
-      "docs/workstreams/timeline-temporal-operational-b13-a-scope-2026-09-28.md",
-      "docs/database/timeline-temporal-operational.md",
-      "docs/workstreams/timeline-temporal-operational-b13-b-scope-2026-09-28.md"
+      "docs/workstreams/timeline-temporal-operational-b13-b-scope-2026-09-28.md",
+      "docs/database/timeline-temporal-operational.md"
     ],
     "domain_concepts": [
       "Plan",
+      "Step",
       "Activity",
       "Dependency"
     ],
     "logical_families": [
-      "Plan work structure"
+      "LR-03 typed association/relation"
     ],
     "reference_families": [
-      "NativeRef"
+      "NativeRef",
+      "ScopedRecordRef"
     ],
-    "material_facets": []
+    "material_facets": [
+      "actual.realization",
+      "outcome.disposition"
+    ]
   },
   "implementation": {
-    "introducing_stage": "B13-A",
-    "alembic_revision": "20260928_87",
+    "introducing_stage": "B13-B",
+    "alembic_revision": "20260928_90",
     "sqlalchemy": {
       "mode": "none",
       "module": null,
       "symbol": null
     },
-    "runtime_acl_stage": "B13-A"
+    "runtime_acl_stage": "B13-B"
   },
   "structure": {
     "columns": [],
@@ -63,10 +67,14 @@
         "uuid",
         "uuid",
         "uuid",
+        "uuid",
+        "uuid",
+        "uuid",
         "text",
-        "jsonb"
+        "text",
+        "boolean"
       ],
-      "return_type": "TABLE(plan_ref uuid, state_ref uuid, title text, created_at timestamp with time zone, steps jsonb, replayed boolean)",
+      "return_type": "TABLE(dependency_ref uuid, state_ref uuid, replayed boolean)",
       "security": "DEFINER",
       "volatility": "VOLATILE",
       "parallel_safety": "UNSAFE",
@@ -81,9 +89,9 @@
   },
   "state_history": {
     "material_state_behavior": null,
-    "current_binding": "Uses explicit Plan accepted-current binding.",
-    "chronology": "Historical revisions remain immutable.",
-    "immutability_policy": "Guarded writes only; no runtime table DML."
+    "current_binding": "Uses explicit accepted-current relation state.",
+    "chronology": "Historical assertions and intervals remain queryable.",
+    "immutability_policy": "Guarded self-scoped relation capability."
   },
   "lifecycle": {
     "retention": null,
@@ -105,12 +113,12 @@
   },
   "proof": {
     "obligations": [
-      "Self ownership and current-state qualification.",
-      "Idempotency receipt is not Plan identity.",
-      "B13-B Plan Dependency ownership and endpoint guard"
+      "Self ownership",
+      "Typed directional prerequisite",
+      "No inferred ordering"
     ],
     "test_refs": [
-      "apps/backend/tests/integration/temporal/test_b13_a_plan_work.py",
+      "apps/backend/tests/integration/temporal/test_b13_b_plan_dependency.py",
       "apps/backend/tests/integration/database/test_database_current_catalog.py"
     ],
     "staged_evidence": []

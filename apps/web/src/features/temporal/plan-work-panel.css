@@ -44,6 +44,19 @@
   margin-inline-start: 8px;
 }
 
+.plan-dependency-panel {
+  display: grid;
+  gap: 8px;
+  border-top: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  margin-block-start: 16px;
+  padding-block-start: 12px;
+}
+
+.plan-dependency-panel label {
+  display: grid;
+  gap: 5px;
+}
+
 @media (max-width: 760px) {
   .plan-work-panel {
     bottom: 72px;

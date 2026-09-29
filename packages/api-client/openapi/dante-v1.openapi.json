@@ -2763,6 +2763,50 @@
         "title": "CreatePlanBody",
         "type": "object"
       },
+      "CreatePlanDependencyBody": {
+        "additionalProperties": false,
+        "properties": {
+          "dependent_step_ref": {
+            "format": "uuid",
+            "title": "Dependent Step Ref",
+            "type": "string"
+          },
+          "disposition_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Disposition Code"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "prerequisite_step_ref": {
+            "format": "uuid",
+            "title": "Prerequisite Step Ref",
+            "type": "string"
+          },
+          "qualifier_code": {
+            "title": "Qualifier Code",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "prerequisite_step_ref",
+          "dependent_step_ref",
+          "qualifier_code"
+        ],
+        "title": "CreatePlanDependencyBody",
+        "type": "object"
+      },
       "CreateProductTagRequest": {
         "additionalProperties": false,
         "properties": {
@@ -5226,6 +5270,200 @@
         "title": "PersonReferentResponse",
         "type": "object"
       },
+      "PlanDependencyHistoryResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "active": {
+            "title": "Active",
+            "type": "boolean"
+          },
+          "current_from_at": {
+            "format": "date-time",
+            "title": "Current From At",
+            "type": "string"
+          },
+          "current_until_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Until At"
+          },
+          "disposition_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Disposition Code"
+          },
+          "qualifier_code": {
+            "title": "Qualifier Code",
+            "type": "string"
+          },
+          "recorded_at": {
+            "format": "date-time",
+            "title": "Recorded At",
+            "type": "string"
+          },
+          "state_ref": {
+            "format": "uuid",
+            "title": "State Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "state_ref",
+          "qualifier_code",
+          "disposition_code",
+          "active",
+          "recorded_at",
+          "current_from_at",
+          "current_until_at"
+        ],
+        "title": "PlanDependencyHistoryResponse",
+        "type": "object"
+      },
+      "PlanDependencyResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "active": {
+            "title": "Active",
+            "type": "boolean"
+          },
+          "actual_material_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Material State Ref"
+          },
+          "cycle": {
+            "title": "Cycle",
+            "type": "boolean"
+          },
+          "dependency_ref": {
+            "format": "uuid",
+            "title": "Dependency Ref",
+            "type": "string"
+          },
+          "dependent_activity_ref": {
+            "format": "uuid",
+            "title": "Dependent Activity Ref",
+            "type": "string"
+          },
+          "dependent_step_ref": {
+            "format": "uuid",
+            "title": "Dependent Step Ref",
+            "type": "string"
+          },
+          "disposition_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Disposition Code"
+          },
+          "evaluation_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evaluation Code"
+          },
+          "outcome_material_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outcome Material State Ref"
+          },
+          "plan_ref": {
+            "format": "uuid",
+            "title": "Plan Ref",
+            "type": "string"
+          },
+          "prerequisite_activity_ref": {
+            "format": "uuid",
+            "title": "Prerequisite Activity Ref",
+            "type": "string"
+          },
+          "prerequisite_step_ref": {
+            "format": "uuid",
+            "title": "Prerequisite Step Ref",
+            "type": "string"
+          },
+          "purpose_code": {
+            "title": "Purpose Code",
+            "type": "string"
+          },
+          "qualifier_code": {
+            "title": "Qualifier Code",
+            "type": "string"
+          },
+          "recorded_at": {
+            "format": "date-time",
+            "title": "Recorded At",
+            "type": "string"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "state_ref": {
+            "format": "uuid",
+            "title": "State Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dependency_ref",
+          "plan_ref",
+          "prerequisite_step_ref",
+          "prerequisite_activity_ref",
+          "dependent_step_ref",
+          "dependent_activity_ref",
+          "state_ref",
+          "purpose_code",
+          "qualifier_code",
+          "disposition_code",
+          "active",
+          "recorded_at",
+          "evaluation_code",
+          "actual_material_state_ref",
+          "outcome_material_state_ref",
+          "cycle",
+          "replayed"
+        ],
+        "title": "PlanDependencyResponse",
+        "type": "object"
+      },
       "PlanStepBody": {
         "additionalProperties": false,
         "properties": {
@@ -7292,6 +7530,61 @@
           "recorded_at"
         ],
         "title": "RetiredTemporalConstraintResponse",
+        "type": "object"
+      },
+      "RevisePlanDependencyBody": {
+        "additionalProperties": false,
+        "properties": {
+          "active": {
+            "default": true,
+            "title": "Active",
+            "type": "boolean"
+          },
+          "dependent_step_ref": {
+            "format": "uuid",
+            "title": "Dependent Step Ref",
+            "type": "string"
+          },
+          "disposition_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Disposition Code"
+          },
+          "expected_state_ref": {
+            "format": "uuid",
+            "title": "Expected State Ref",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "prerequisite_step_ref": {
+            "format": "uuid",
+            "title": "Prerequisite Step Ref",
+            "type": "string"
+          },
+          "qualifier_code": {
+            "title": "Qualifier Code",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "prerequisite_step_ref",
+          "dependent_step_ref",
+          "qualifier_code",
+          "expected_state_ref"
+        ],
+        "title": "RevisePlanDependencyBody",
         "type": "object"
       },
       "ReviseScheduleRequest": {
@@ -24929,6 +25222,455 @@
           }
         },
         "summary": "Replace Self Plan Work",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/plans/{plan_ref}/dependencies": {
+      "get": {
+        "operationId": "temporal_list_self_plan_dependencies",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Plan Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PlanDependencyResponse"
+                  },
+                  "title": "Response Temporal List Self Plan Dependencies",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Self Plan Dependencies",
+        "tags": ["temporal"]
+      },
+      "post": {
+        "operationId": "temporal_create_self_plan_dependency",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Plan Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePlanDependencyBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanDependencyResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanDependencyResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Create Self Plan Dependency",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/plans/{plan_ref}/dependencies/{dependency_ref}": {
+      "get": {
+        "operationId": "temporal_get_self_plan_dependency",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Plan Ref",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "dependency_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Dependency Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanDependencyResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Self Plan Dependency",
+        "tags": ["temporal"]
+      },
+      "put": {
+        "operationId": "temporal_revise_self_plan_dependency",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Plan Ref",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "dependency_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Dependency Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RevisePlanDependencyBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanDependencyResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Revise Self Plan Dependency",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/plans/{plan_ref}/dependencies/{dependency_ref}/history": {
+      "get": {
+        "operationId": "temporal_list_self_plan_dependency_history",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Plan Ref",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "dependency_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Dependency Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PlanDependencyHistoryResponse"
+                  },
+                  "title": "Response Temporal List Self Plan Dependency History",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Self Plan Dependency History",
         "tags": ["temporal"]
       }
     },

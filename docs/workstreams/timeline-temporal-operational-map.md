@@ -10,11 +10,13 @@
 - **B13-A gate authority:** `docs/workstreams/timeline-temporal-operational-b13-a-scope-2026-09-28.md`
 - **B13-A implementation checkpoint:** `docs/workstreams/timeline-temporal-operational-b13-a-implementation-2026-09-28.md`
 - **B13-A closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-a-closure-2026-09-28.md`
+- **B13-B scope authority:** `docs/workstreams/timeline-temporal-operational-b13-b-scope-2026-09-28.md`
+- **B13-B candidate source head:** Alembic `20260928_90` — PostgreSQL proof pending
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
 - **Current persistence source frontier:** `20260928_89` (B13-A focused PostgreSQL/catalog proven)
 - **Catalog-verified whole topology:** `_89` / `191|5|148|100|386|334|488|0|0|0`
 - **Completed functional frontier:** B13-A ✅ CLOSED / focused local proof 2026-09-28
-- **Current implementation cursor:** B13-B Qualified Dependencies — scope discovery
+- **Current implementation cursor:** B13-B Qualified Dependencies — implementation candidate / PostgreSQL proof pending
 - **CI:** not authorized; local tests are run by the user
 
 ---
@@ -104,7 +106,7 @@ timeline-temporal-operational-b11-closure-2026-09-28.md
 ```text
 B13 Work Structure / Decomposition / Dependencies ◐ IN PROGRESS
   B13-A Work Structure Core                       ✅ CLOSED / PROVEN 2026-09-28
-  B13-B Qualified Dependencies                    ▶ NEXT / SCOPE DISCOVERY
+  B13-B Qualified Dependencies                    ◐ IMPLEMENTED CANDIDATE / POSTGRESQL PROOF PENDING
   B13-C Execution Structure Constraints           ⬜
   B13-D Whole-block Integration / Proof / Acceptance ⬜
 B12 Replanning / Conflict / Solver                ⏸ HELD UNTIL B13 CLOSES
@@ -315,7 +317,7 @@ proposal acceptance semantics
 
 ## B13-B — Qualified Dependencies
 
-Current next gate: freeze real qualified Dependency semantics against Domain/Logical/Physical authority before implementation. Dependency remains distinct from hierarchy and ordering.
+Approved semantic gate and candidate `_90` implementation; local PostgreSQL/catalog and web acceptance remains pending. See `timeline-temporal-operational-b13-b-implementation-2026-09-28.md`.
 
 ## B13-C — Execution Structure Constraints
 

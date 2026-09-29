@@ -68,7 +68,7 @@
       "properties": {
         "completed_stages": {
           "type": "array",
-          "maxItems": 14,
+          "maxItems": 16,
           "uniqueItems": true,
           "items": {
             "enum": [
@@ -85,7 +85,9 @@
               "B10-D",
               "B11-A",
               "B11-B",
-              "B11-C"
+              "B11-C",
+              "B13-A",
+              "B13-B"
             ]
           }
         },
@@ -231,7 +233,9 @@
                   "B10-D",
                   "B11-A",
                   "B11-B",
-                  "B11-C"
+                  "B11-C",
+                  "B13-A",
+                  "B13-B"
                 ]
               }
             }

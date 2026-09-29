@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B13-A CLOSED / B13-B QUALIFIED DEPENDENCIES ▶ NEXT GATE
+- **Status:** B13-A CLOSED / B13-B IMPLEMENTATION CANDIDATE — LOCAL GATE PENDING
 - **Reconciled:** 2026-09-28
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -9,6 +9,9 @@
 - **B13-A implementation checkpoint:** `docs/workstreams/timeline-temporal-operational-b13-a-implementation-2026-09-28.md`
 - **B13-A closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-a-closure-2026-09-28.md`
 - **B11 closure evidence:** `docs/workstreams/timeline-temporal-operational-b11-closure-2026-09-28.md`
+- **B13-B approved scope:** `docs/workstreams/timeline-temporal-operational-b13-b-scope-2026-09-28.md`
+- **B13-B candidate checkpoint:** `docs/workstreams/timeline-temporal-operational-b13-b-implementation-2026-09-28.md`
+- **B13-B candidate source head:** Alembic `20260928_90` — PostgreSQL proof pending
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
 - **Current migration source head:** B13-A / Alembic `20260928_89` (focused PostgreSQL/catalog proven)
 - **Catalog-verified whole topology:** `_89` / `191|5|148|100|386|334|488|0|0|0`
@@ -38,7 +41,7 @@ B11     ✅ CLOSED / USER-REPORTED ACCEPTANCE 2026-09-28
   B11-D ✅ CLOSED / PROVEN
 B13     ◐ IN PROGRESS
   B13-A ✅ CLOSED / PROVEN 2026-09-28
-  B13-B ▶ NEXT / SCOPE DISCOVERY
+  B13-B ◐ IMPLEMENTED CANDIDATE / POSTGRESQL PROOF PENDING
   B13-C ⬜ NOT STARTED
   B13-D ⬜ NOT STARTED
 B12     ⏸ HELD UNTIL B13 CLOSES
@@ -269,7 +272,7 @@ B13-A focused automated closure does not claim whole B13 real-app acceptance; th
 
 # 6. B13 continuation
 
-The current gate is B13-B scope discovery. Read the current Dependency Domain concept and Logical/Physical authority; freeze qualified dependency semantics before persistence or API implementation. Preserve the distinction from Plan containment and Step presentation order.
+B13-B semantics are frozen in `timeline-temporal-operational-b13-b-scope-2026-09-28.md`. The `_90` implementation is a candidate. Keep B13-C closed until focused PostgreSQL/catalog and web gates pass and B13-B is explicitly closed.
 
 ```text
 B13-B — Qualified Dependencies

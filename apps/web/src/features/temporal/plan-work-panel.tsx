@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { PlanDependencyPanel } from './plan-dependency-panel';
 
 import {
   createRemotePlanWorkDataSource,
@@ -215,6 +216,7 @@ export function PlanWorkPanel() {
                       onClick={linkActivity}>Aggiorna collegamento</button>
                   </>
                 ) : null}
+                <PlanDependencyPanel key={`${current.planRef}:${current.stateRef}`} plan={current} />
               </section>
             ) : null}
           </>

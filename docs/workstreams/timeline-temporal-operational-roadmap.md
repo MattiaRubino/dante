@@ -5,7 +5,9 @@
 - **Vertical boundary:** Home `+` creation/configuration → canonical temporal truth → Timeline projection/actions → bounded lifecycle completion
 - **Completed functional frontier:** B13-A ✅ CLOSED / focused local automated proof 2026-09-28
 - **Current block:** B13 Work Structure / Decomposition / Dependencies
-- **Current gate:** B13-B Qualified Dependencies ▶ scope discovery
+- **Current gate:** B13-B Qualified Dependencies ▶ implementation candidate / local PostgreSQL gate pending
+- **B13-B scope authority:** `docs/workstreams/timeline-temporal-operational-b13-b-scope-2026-09-28.md`
+- **B13-B candidate source head:** Alembic `20260928_90` — PostgreSQL proof pending
 - **B13-A scope authority:** `docs/workstreams/timeline-temporal-operational-b13-a-scope-2026-09-28.md`
 - **B13-A closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-a-closure-2026-09-28.md`
 - **Current persistence source frontier:** B13-A / Alembic `20260928_89` (focused PostgreSQL and catalog proven)
@@ -104,7 +106,7 @@ B11 Advanced Recurrence / Conditional / Reminder ✅ CLOSED / USER-REPORTED ACCE
 
 B13 Work Structure / Decomposition / Dependencies ◐ IN PROGRESS
   B13-A Work Structure Core                       ✅ CLOSED / PROVEN 2026-09-28
-  B13-B Qualified Dependencies                    ▶ NEXT / SCOPE DISCOVERY
+  B13-B Qualified Dependencies                    ◐ IMPLEMENTED CANDIDATE / POSTGRESQL PROOF PENDING
   B13-C Execution Structure Constraints           ⬜
   B13-D Whole-block Integration / Proof / Acceptance ⬜
 B12 Replanning / Conflict / Solver                ⏸ HELD UNTIL B13 CLOSES
@@ -374,7 +376,7 @@ The discovery checkpoint selected flat `Plan -> Step`, normalized immutable stru
 
 ## B13-B — Qualified Dependencies
 
-Next gate: freeze real qualified Dependency semantics against current Domain/Logical/Physical authority before implementation. Dependency must remain separate from containment and ordering.
+Approved scope: `timeline-temporal-operational-b13-b-scope-2026-09-28.md`. Candidate migration `_90` implements Plan-scoped typed Actual/Outcome prerequisites; focused PostgreSQL/catalog user-run gate is pending. Dependency remains separate from containment and ordering.
 
 ## B13-C — Execution Structure Constraints
 

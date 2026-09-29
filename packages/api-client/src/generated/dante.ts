@@ -36,6 +36,7 @@ import type {
   CreateLifeAreaRequest,
   CreatePersonReferentRequest,
   CreatePlanBody,
+  CreatePlanDependencyBody,
   CreateProductTagRequest,
   CreateRecurringEventRequest,
   CreateRecurringRoutineRequest,
@@ -82,6 +83,8 @@ import type {
   PasswordRecoveryValidationRequest,
   PasswordResetRequest,
   PersonReferentResponse,
+  PlanDependencyHistoryResponse,
+  PlanDependencyResponse,
   PlanWorkResponse,
   PostponedEventResponse,
   ProblemDetails,
@@ -124,6 +127,7 @@ import type {
   RestoredScheduleResponse,
   RetireTemporalConstraintRequest,
   RetiredTemporalConstraintResponse,
+  RevisePlanDependencyBody,
   ReviseScheduleRequest,
   ReviseTemporalConstraintRequest,
   RevisedScheduleAbsoluteResponse,
@@ -9218,6 +9222,441 @@ export const temporalReplaceSelfPlanWork = async (
     status: res.status,
     headers: res.headers,
   } as temporalReplaceSelfPlanWorkResponse;
+};
+
+export type temporalListSelfPlanDependenciesResponse200 = {
+  data: PlanDependencyResponse[];
+  status: 200;
+};
+
+export type temporalListSelfPlanDependenciesResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type temporalListSelfPlanDependenciesResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type temporalListSelfPlanDependenciesResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalListSelfPlanDependenciesResponseSuccess =
+  temporalListSelfPlanDependenciesResponse200 & {
+    headers: Headers;
+  };
+export type temporalListSelfPlanDependenciesResponseError = (
+  | temporalListSelfPlanDependenciesResponse400
+  | temporalListSelfPlanDependenciesResponse401
+  | temporalListSelfPlanDependenciesResponse422
+) & {
+  headers: Headers;
+};
+
+export type temporalListSelfPlanDependenciesResponse =
+  | temporalListSelfPlanDependenciesResponseSuccess
+  | temporalListSelfPlanDependenciesResponseError;
+
+export const getTemporalListSelfPlanDependenciesUrl = (planRef: string) => {
+  return `/api/v1/temporal/plans/${planRef}/dependencies`;
+};
+
+/**
+ * @summary List Self Plan Dependencies
+ */
+export const temporalListSelfPlanDependencies = async (
+  planRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListSelfPlanDependenciesResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalListSelfPlanDependenciesUrl(planRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListSelfPlanDependenciesResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListSelfPlanDependenciesResponse;
+};
+
+export type temporalCreateSelfPlanDependencyResponse200 = {
+  data: PlanDependencyResponse;
+  status: 200;
+};
+
+export type temporalCreateSelfPlanDependencyResponse201 = {
+  data: PlanDependencyResponse;
+  status: 201;
+};
+
+export type temporalCreateSelfPlanDependencyResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type temporalCreateSelfPlanDependencyResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type temporalCreateSelfPlanDependencyResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type temporalCreateSelfPlanDependencyResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type temporalCreateSelfPlanDependencyResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type temporalCreateSelfPlanDependencyResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type temporalCreateSelfPlanDependencyResponseSuccess = (
+  | temporalCreateSelfPlanDependencyResponse200
+  | temporalCreateSelfPlanDependencyResponse201
+) & {
+  headers: Headers;
+};
+export type temporalCreateSelfPlanDependencyResponseError = (
+  | temporalCreateSelfPlanDependencyResponse400
+  | temporalCreateSelfPlanDependencyResponse401
+  | temporalCreateSelfPlanDependencyResponse403
+  | temporalCreateSelfPlanDependencyResponse404
+  | temporalCreateSelfPlanDependencyResponse409
+  | temporalCreateSelfPlanDependencyResponse422
+) & {
+  headers: Headers;
+};
+
+export type temporalCreateSelfPlanDependencyResponse =
+  | temporalCreateSelfPlanDependencyResponseSuccess
+  | temporalCreateSelfPlanDependencyResponseError;
+
+export const getTemporalCreateSelfPlanDependencyUrl = (planRef: string) => {
+  return `/api/v1/temporal/plans/${planRef}/dependencies`;
+};
+
+/**
+ * @summary Create Self Plan Dependency
+ */
+export const temporalCreateSelfPlanDependency = async (
+  planRef: string,
+  createPlanDependencyBody: CreatePlanDependencyBody,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalCreateSelfPlanDependencyResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalCreateSelfPlanDependencyUrl(planRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(createPlanDependencyBody),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalCreateSelfPlanDependencyResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalCreateSelfPlanDependencyResponse;
+};
+
+export type temporalGetSelfPlanDependencyResponse200 = {
+  data: PlanDependencyResponse;
+  status: 200;
+};
+
+export type temporalGetSelfPlanDependencyResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type temporalGetSelfPlanDependencyResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type temporalGetSelfPlanDependencyResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type temporalGetSelfPlanDependencyResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetSelfPlanDependencyResponseSuccess =
+  temporalGetSelfPlanDependencyResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetSelfPlanDependencyResponseError = (
+  | temporalGetSelfPlanDependencyResponse400
+  | temporalGetSelfPlanDependencyResponse401
+  | temporalGetSelfPlanDependencyResponse404
+  | temporalGetSelfPlanDependencyResponse422
+) & {
+  headers: Headers;
+};
+
+export type temporalGetSelfPlanDependencyResponse =
+  | temporalGetSelfPlanDependencyResponseSuccess
+  | temporalGetSelfPlanDependencyResponseError;
+
+export const getTemporalGetSelfPlanDependencyUrl = (
+  planRef: string,
+  dependencyRef: string,
+) => {
+  return `/api/v1/temporal/plans/${planRef}/dependencies/${dependencyRef}`;
+};
+
+/**
+ * @summary Get Self Plan Dependency
+ */
+export const temporalGetSelfPlanDependency = async (
+  planRef: string,
+  dependencyRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetSelfPlanDependencyResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetSelfPlanDependencyUrl(planRef, dependencyRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetSelfPlanDependencyResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetSelfPlanDependencyResponse;
+};
+
+export type temporalReviseSelfPlanDependencyResponse200 = {
+  data: PlanDependencyResponse;
+  status: 200;
+};
+
+export type temporalReviseSelfPlanDependencyResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type temporalReviseSelfPlanDependencyResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type temporalReviseSelfPlanDependencyResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type temporalReviseSelfPlanDependencyResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type temporalReviseSelfPlanDependencyResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type temporalReviseSelfPlanDependencyResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type temporalReviseSelfPlanDependencyResponseSuccess =
+  temporalReviseSelfPlanDependencyResponse200 & {
+    headers: Headers;
+  };
+export type temporalReviseSelfPlanDependencyResponseError = (
+  | temporalReviseSelfPlanDependencyResponse400
+  | temporalReviseSelfPlanDependencyResponse401
+  | temporalReviseSelfPlanDependencyResponse403
+  | temporalReviseSelfPlanDependencyResponse404
+  | temporalReviseSelfPlanDependencyResponse409
+  | temporalReviseSelfPlanDependencyResponse422
+) & {
+  headers: Headers;
+};
+
+export type temporalReviseSelfPlanDependencyResponse =
+  | temporalReviseSelfPlanDependencyResponseSuccess
+  | temporalReviseSelfPlanDependencyResponseError;
+
+export const getTemporalReviseSelfPlanDependencyUrl = (
+  planRef: string,
+  dependencyRef: string,
+) => {
+  return `/api/v1/temporal/plans/${planRef}/dependencies/${dependencyRef}`;
+};
+
+/**
+ * @summary Revise Self Plan Dependency
+ */
+export const temporalReviseSelfPlanDependency = async (
+  planRef: string,
+  dependencyRef: string,
+  revisePlanDependencyBody: RevisePlanDependencyBody,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalReviseSelfPlanDependencyResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalReviseSelfPlanDependencyUrl(planRef, dependencyRef),
+    {
+      ...options,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(revisePlanDependencyBody),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalReviseSelfPlanDependencyResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalReviseSelfPlanDependencyResponse;
+};
+
+export type temporalListSelfPlanDependencyHistoryResponse200 = {
+  data: PlanDependencyHistoryResponse[];
+  status: 200;
+};
+
+export type temporalListSelfPlanDependencyHistoryResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type temporalListSelfPlanDependencyHistoryResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type temporalListSelfPlanDependencyHistoryResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type temporalListSelfPlanDependencyHistoryResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalListSelfPlanDependencyHistoryResponseSuccess =
+  temporalListSelfPlanDependencyHistoryResponse200 & {
+    headers: Headers;
+  };
+export type temporalListSelfPlanDependencyHistoryResponseError = (
+  | temporalListSelfPlanDependencyHistoryResponse400
+  | temporalListSelfPlanDependencyHistoryResponse401
+  | temporalListSelfPlanDependencyHistoryResponse404
+  | temporalListSelfPlanDependencyHistoryResponse422
+) & {
+  headers: Headers;
+};
+
+export type temporalListSelfPlanDependencyHistoryResponse =
+  | temporalListSelfPlanDependencyHistoryResponseSuccess
+  | temporalListSelfPlanDependencyHistoryResponseError;
+
+export const getTemporalListSelfPlanDependencyHistoryUrl = (
+  planRef: string,
+  dependencyRef: string,
+) => {
+  return `/api/v1/temporal/plans/${planRef}/dependencies/${dependencyRef}/history`;
+};
+
+/**
+ * @summary List Self Plan Dependency History
+ */
+export const temporalListSelfPlanDependencyHistory = async (
+  planRef: string,
+  dependencyRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListSelfPlanDependencyHistoryResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalListSelfPlanDependencyHistoryUrl(planRef, dependencyRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListSelfPlanDependencyHistoryResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListSelfPlanDependencyHistoryResponse;
 };
 
 export type temporalListOutcomeReconciliationHistoryResponse200 = {

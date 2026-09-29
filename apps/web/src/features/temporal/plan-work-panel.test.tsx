@@ -29,6 +29,13 @@ vi.mock('./remote-plan-work-data-source', async (importOriginal) => {
     }),
   };
 });
+vi.mock('./remote-plan-dependency-data-source', () => ({
+  createRemotePlanDependencyDataSource: () => ({
+    list: vi.fn().mockResolvedValue([]),
+    create: vi.fn(),
+    revise: vi.fn(),
+  }),
+}));
 
 import { PlanWorkPanel } from './plan-work-panel';
 

@@ -158,6 +158,11 @@ _EXPECTED_TEMPORAL_OPERATIONS = {
     ("/api/v1/temporal/plans", "post"): "temporal_create_self_plan",
     ("/api/v1/temporal/plans/{plan_ref}", "get"): "temporal_get_self_plan",
     ("/api/v1/temporal/plans/{plan_ref}", "put"): "temporal_replace_self_plan_work",
+    ("/api/v1/temporal/plans/{plan_ref}/dependencies", "get"): "temporal_list_self_plan_dependencies",
+    ("/api/v1/temporal/plans/{plan_ref}/dependencies", "post"): "temporal_create_self_plan_dependency",
+    ("/api/v1/temporal/plans/{plan_ref}/dependencies/{dependency_ref}", "get"): "temporal_get_self_plan_dependency",
+    ("/api/v1/temporal/plans/{plan_ref}/dependencies/{dependency_ref}", "put"): "temporal_revise_self_plan_dependency",
+    ("/api/v1/temporal/plans/{plan_ref}/dependencies/{dependency_ref}/history", "get"): "temporal_list_self_plan_dependency_history",
 }
 
 

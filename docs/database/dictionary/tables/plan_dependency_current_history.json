@@ -1,0 +1,224 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "table:dante.plan_dependency_current_history",
+    "type": "table",
+    "schema": "dante",
+    "name": "plan_dependency_current_history",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Accepted-current intervals for every relation assertion.",
+  "classification": {
+    "persistence_role": "plan_dependency",
+    "canonicality": "canonical",
+    "family": "PlanDependency"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/workstreams/timeline-temporal-operational-b13-b-scope-2026-09-28.md",
+      "docs/database/timeline-temporal-operational.md"
+    ],
+    "domain_concepts": [
+      "Plan",
+      "Step",
+      "Activity",
+      "Dependency"
+    ],
+    "logical_families": [
+      "LR-03 typed association/relation"
+    ],
+    "reference_families": [
+      "NativeRef",
+      "ScopedRecordRef"
+    ],
+    "material_facets": [
+      "actual.realization",
+      "outcome.disposition"
+    ]
+  },
+  "implementation": {
+    "introducing_stage": "B13-B",
+    "alembic_revision": "20260928_90",
+    "sqlalchemy": {
+      "mode": "orm_row",
+      "module": "dante.platform.database.mappings.plan_dependency",
+      "symbol": "PlanDependencyCurrentHistoryRow"
+    },
+    "runtime_acl_stage": "B13-B"
+  },
+  "structure": {
+    "columns": [
+      {
+        "name": "dependency_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Stable Plan-scoped qualified Dependency reference.",
+        "semantic_type": "ScopedRecordRef",
+        "value_contract": null
+      },
+      {
+        "name": "state_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Accepted typed assertion revision reference.",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "current_from_at",
+        "postgres_type": "timestamp with time zone",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Inclusive accepted-current interval start.",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "current_until_at",
+        "postgres_type": "timestamp with time zone",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Exclusive accepted-current interval end.",
+        "semantic_type": null,
+        "value_contract": null
+      }
+    ],
+    "primary_key": {
+      "name": "pk_plan_dependency_current_history",
+      "columns": [
+        "dependency_ref",
+        "current_from_at"
+      ],
+      "reason": "Canonical relation family row identity.",
+      "deferrable": false,
+      "initially": "NOT DEFERRABLE",
+      "enforced": true
+    },
+    "foreign_keys": [
+      {
+        "name": "fk_plan_dependency_current_history_state",
+        "columns": [
+          "dependency_ref",
+          "state_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "plan_dependency_state",
+          "columns": [
+            "dependency_ref",
+            "state_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "plan_dependency_state",
+        "cardinality": "many-to-one",
+        "semantic_reason": "Preserve the exact bounded owner or endpoint identity."
+      }
+    ],
+    "unique_constraints": [],
+    "check_constraints": [
+      {
+        "name": "ck_plan_dependency_current_history_interval",
+        "expression_contract": "isfinite(current_from_at) AND (current_until_at IS NULL OR (isfinite(current_until_at) AND current_until_at>current_from_at))",
+        "reason": "Keep the LR-03 relation, qualifier and history shape bounded.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "pk_plan_dependency_current_history",
+        "method": "btree",
+        "unique": true,
+        "keys": [
+          "dependency_ref",
+          "current_from_at"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "primary_key",
+        "reason": "Exact bounded relation lookup or enforcement.",
+        "valid": true,
+        "ready": true,
+        "live": true
+      },
+      {
+        "name": "ux_plan_dependency_current_history_open",
+        "method": "btree",
+        "unique": true,
+        "keys": [
+          "dependency_ref"
+        ],
+        "predicate": "current_until_at IS NULL",
+        "include": [],
+        "source": "explicit_index",
+        "reason": "Exact bounded relation lookup or enforcement.",
+        "valid": true,
+        "ready": true,
+        "live": true
+      }
+    ],
+    "triggers": [],
+    "table": {
+      "persistence": "permanent",
+      "access_method": "heap",
+      "partitioned": false,
+      "row_security": false,
+      "force_row_security": false,
+      "replica_identity": "default",
+      "reloptions": []
+    },
+    "view": null,
+    "routine": null
+  },
+  "state_history": {
+    "material_state_behavior": null,
+    "current_binding": "Explicit Plan-scoped accepted-current relation revision.",
+    "chronology": "Immutable assertion revisions and closed/open accepted-current intervals.",
+    "immutability_policy": "No runtime table DML; guarded self operation is the only author."
+  },
+  "lifecycle": {
+    "retention": null,
+    "redaction": null,
+    "retirement_tombstone": "Retired current assertion remains queryable in history.",
+    "delete_behavior": "No direct runtime deletion."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": []
+  },
+  "proof": {
+    "obligations": [
+      "Self-owned Plan endpoints and immutable history",
+      "Current Actual/Outcome only"
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b13_b_plan_dependency.py",
+      "apps/backend/tests/integration/database/test_database_current_catalog.py"
+    ],
+    "staged_evidence": []
+  }
+}

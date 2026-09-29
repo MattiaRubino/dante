@@ -1,10 +1,10 @@
 # Timeline / Temporal-Operational — Candidate Database Overlay
 
-- **Status:** CURRENT CANDIDATE DATABASE OVERLAY — B13-A `_89` focused PostgreSQL/catalog proven
+- **Status:** CURRENT CANDIDATE DATABASE OVERLAY — B13-B `_90` unverified; B13-A `_89` proven
 - **Reconciled:** 2026-09-28
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
-- **Candidate migration source head:** `20260928_89` (B13-A focused PostgreSQL/catalog proven)
+- **Candidate migration source head:** `20260928_90` (B13-B implementation; PostgreSQL/catalog proof pending)
 - **Focused local proof frontier:** B13-A `_89` (9 PostgreSQL/catalog tests passed)
 - **Catalog-verified whole-topology count:** `_89` / `191|5|148|100|386|334|488|0|0|0`
 - **Whole-DB SoR:** `README.md`
@@ -70,6 +70,8 @@ Published migrations are immutable. Any persistence correction is forward-only.
 20260928_88 B13-A replay projection and catalog check-name repair
     ↓
 20260928_89 B13-A replace-current binding qualification
+    ↓
+20260928_90 B13-B Plan-qualified Dependency candidate (unverified)
 ```
 
 ## 3. Proven frontier and topology discipline
@@ -338,3 +340,9 @@ B11-C `_86` adds a stable `schedule_reminder` owner keyed by self Person and Sch
 Forward-only `_87` reuses the Plan NativeRef identity shell and introduces self ownership, internal Plan-owned Steps, immutable normalized structure revisions, explicit accepted-current binding/history and replay-safe operations. Step order is a presentation sequence, not Dependency. An optional link to an existing self-owned Activity preserves the Activity's separate identity and lifecycle. The runtime has execute grants on four guarded read/write functions and no direct DML grants on the seven new tables.
 
 The `_87` local test reached the expected topology `191|5|148|100|386|334|488|0|0|0` but exposed one replay projection error and eight check identifiers that did not match the Dictionary. `_88` repaired those names and the function; forward-only `_89` qualified an ambiguous `plan_ref` in the replace-current update. Neither changes topology. The final user-run focused PostgreSQL and exact Dictionary/catalog suite passed **9 tests in 24.09s** at `_89`. See `../workstreams/timeline-temporal-operational-b13-a-closure-2026-09-28.md`.
+
+## 15. B13-B Plan-qualified Dependency — candidate, PostgreSQL proof pending
+
+Forward-only `_90` introduces five Plan-scoped relation/current/history/operation tables and four guarded capabilities. The relation preserves direction, immutable Step-to-Activity endpoint bindings, explicit dependent admissibility purpose and typed Actual/Outcome qualifier. Current evaluation is derived from accepted Actual/Outcome truth; stale Outcome basis is unknown. An active endpoint guard is added to the existing Plan replacement function; the scoped owner dispatcher is extended to the bounded `plan_dependency` family.
+
+The candidate Dictionary predicts `196|5|152|100|397|344|496|0|0|0`. This is **not** a live catalog result. The last verified live topology remains B13-A `_89` / `191|5|148|100|386|334|488|0|0|0`. Local PostgreSQL migration, capability and exact catalog tests must prove `_90` before B13-B closes.
