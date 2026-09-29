@@ -1,10 +1,10 @@
 # Timeline / Temporal-Operational — Candidate Database Overlay
 
-- **Status:** CURRENT CANDIDATE DATABASE OVERLAY — B13-C `_91` unverified; B13-B `_90` proven
+- **Status:** CURRENT CANDIDATE DATABASE OVERLAY — B13-C `_92` repair pending PostgreSQL retest; B13-B `_90` proven
 - **Reconciled:** 2026-09-29
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
-- **Current migration source head:** `20260929_91` (B13-C candidate, unverified)
+- **Current migration source head:** `20260929_92` (B13-C repair candidate, unverified)
 - **Focused local proof frontier:** B13-B `_90` (11 PostgreSQL/catalog tests passed in 41.75s)
 - **Catalog-verified whole-topology count:** `_90` / `196|5|152|100|397|344|496|0|0|0`
 - **Whole-DB SoR:** `README.md`
@@ -74,6 +74,8 @@ Published migrations are immutable. Any persistence correction is forward-only.
 20260928_90 B13-B Plan-qualified Dependency (focused PostgreSQL/catalog proven)
     ↓
 20260929_91 B13-C Plan Step execution intent (candidate, unverified)
+    ↓
+20260929_92 B13-C execution-policy CHECK-name repair (candidate, unverified)
 ```
 
 ## 3. Proven frontier and topology discipline
@@ -351,4 +353,4 @@ The Dictionary/catalog topology is verified at `_90`: `196|5|152|100|397|344|496
 
 ## 16. B13-C Plan Step execution intent — candidate, PostgreSQL proof pending
 
-Forward-only `_91` adds four nullable execution-policy columns and one coherent-tuple CHECK to the existing immutable `plan_step_in_state`. It patches guarded `get_self_plan_work` and `replace_self_plan_work` with exact anchors, retaining B13-A ownership/current-history/replay and B13-B active Dependency endpoint protection. No table, routine, view, trigger, index or FK is added. The Dictionary predicts `196|5|152|100|397|344|497|0|0|0`; this is not a measured catalog tuple. The last verified PostgreSQL frontier remains `_90`. See `../workstreams/timeline-temporal-operational-b13-c-implementation-2026-09-29.md` for the explicit proposed-slice basis and capability ledger.
+Forward-only `_91` adds four nullable execution-policy columns and one coherent-tuple CHECK to the existing immutable `plan_step_in_state`. It patches guarded `get_self_plan_work` and `replace_self_plan_work` with exact anchors, retaining B13-A ownership/current-history/replay and B13-B active Dependency endpoint protection. The user-run gate at `_91` passed 10 of 13 PostgreSQL tests, including B13-C behavior, but exposed a duplicate naming-convention prefix on the CHECK and a stale catalog-probe revision assertion. Forward-only `_92` renames the physical CHECK to the Dictionary/ORM identifier; the probe now expects `_92`. No table, routine, view, trigger, index or FK is added by the repair. The Dictionary predicts `196|5|152|100|397|344|497|0|0|0`; this is not a measured catalog tuple. Exact catalog proof and closure remain pending the `_92` retest. The last fully verified PostgreSQL frontier remains `_90`. See `../workstreams/timeline-temporal-operational-b13-c-implementation-2026-09-29.md` for the proposed-slice basis, capability ledger and measured gate.

@@ -12,7 +12,7 @@
 - **B13-B closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-b-closure-2026-09-29.md`
 - **B13-A scope authority:** `docs/workstreams/timeline-temporal-operational-b13-a-scope-2026-09-28.md`
 - **B13-A closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-a-closure-2026-09-28.md`
-- **Current persistence source frontier:** B13-C / Alembic `20260929_91` (candidate, unverified); last proven `_90`
+- **Current persistence source frontier:** B13-C / Alembic `20260929_92` (repair candidate, retest pending); last fully proven `_90`
 - **Catalog-verified whole topology:** `_90` / `196|5|152|100|397|344|496|0|0|0`
 - **B10-D closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-d-closure-2026-09-26.md`
 - **B10-E closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-e-closure-2026-09-26.md`

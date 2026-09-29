@@ -15,7 +15,7 @@
 - **B13-C scope:** `docs/workstreams/timeline-temporal-operational-b13-c-scope-2026-09-29.md`
 - **B13-C implementation checkpoint:** `docs/workstreams/timeline-temporal-operational-b13-c-implementation-2026-09-29.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Current migration source head:** B13-C / Alembic `20260929_91` (candidate, unverified); last proven `_90`
+- **Current migration source head:** B13-C / Alembic `20260929_92` (repair candidate, retest pending); last fully proven `_90`
 - **Catalog-verified whole topology:** `_90` / `196|5|152|100|397|344|496|0|0|0`
 - **B11 real-app acceptance:** USER-REPORTED PASS 2026-09-28
 - **CI:** no CI/GitHub Actions unless explicitly authorized; user runs local tests
@@ -274,7 +274,7 @@ B13-A focused automated closure does not claim whole B13 real-app acceptance; th
 
 # 6. B13 continuation
 
-B13-B is closed / proven at `_90`; its closure evidence is `timeline-temporal-operational-b13-b-closure-2026-09-29.md`. B13-C scope is frozen and the `_91` implementation is a local candidate. Run the focused PostgreSQL/Dictionary/catalog gate in the implementation checkpoint after publication, then record measured results before closure. Do not reopen B13-B or merge its Dependency truth into B13-C.
+B13-B is closed / proven at `_90`; its closure evidence is `timeline-temporal-operational-b13-b-closure-2026-09-29.md`. B13-C scope is frozen. The published `_91` implementation passed 10/13 PostgreSQL tests but failed exact catalog comparison on its CHECK name and a stale probe revision; forward-only `_92` is the repair candidate. Run the full focused PostgreSQL/Dictionary/catalog gate after publication, then record measured results before closure. Do not reopen B13-B or merge its Dependency truth into B13-C.
 
 ```text
 B13-B — Qualified Dependencies

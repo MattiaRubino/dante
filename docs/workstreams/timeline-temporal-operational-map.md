@@ -15,7 +15,7 @@
 - **B13-C scope:** `docs/workstreams/timeline-temporal-operational-b13-c-scope-2026-09-29.md`
 - **B13-C candidate checkpoint:** `docs/workstreams/timeline-temporal-operational-b13-c-implementation-2026-09-29.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Current persistence source frontier:** `20260929_91` (B13-C candidate; PostgreSQL/catalog unverified)
+- **Current persistence source frontier:** `20260929_92` (B13-C repair candidate; PostgreSQL/catalog retest pending)
 - **Catalog-verified whole topology:** `_90` / `196|5|152|100|397|344|496|0|0|0`
 - **Completed functional frontier:** B13-B ✅ CLOSED / focused local proof 2026-09-29
 - **Current implementation cursor:** B13-C Execution Structure Constraints — local implementation candidate, PostgreSQL proof pending
@@ -323,7 +323,7 @@ Closed / proven at forward-only `_90`. The user-run PostgreSQL/catalog gate pass
 
 ## B13-C — Execution Structure Constraints
 
-Scope frozen. The `_91` candidate extends immutable Plan Step revisions with Plan-contextual divisibility, optional maximum proposed-slice count and bounded proposed-slice merge permission. Read-only assessment counts explicit proposed slices and reuses the Activity Temporal Constraint evaluator. Spacing, preparation and recovery remain unsupported and not editable. See the B13-C implementation checkpoint; PostgreSQL/catalog and user-run gates are pending. B13-C is not closed.
+Scope frozen. The `_91` candidate extends immutable Plan Step revisions with Plan-contextual divisibility, optional maximum proposed-slice count and bounded proposed-slice merge permission. Read-only assessment counts explicit proposed slices and reuses the Activity Temporal Constraint evaluator. Spacing, preparation and recovery remain unsupported and not editable. The user-run `_91` PostgreSQL gate passed 10/13; `_92` repairs the CHECK name and the probe revision assertion before a full retest. See the B13-C implementation checkpoint. B13-C is not closed.
 
 ## B13-D — Whole-block Integration / Proof / Acceptance
 
