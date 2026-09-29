@@ -5,7 +5,7 @@
 - **Vertical boundary:** Home `+` creation/configuration → canonical temporal truth → Timeline projection/actions → bounded lifecycle completion
 - **Completed functional frontier:** B13 ✅ CLOSED / user-reported B13-D real-app acceptance 2026-09-29
 - **Current block:** B12 Replanning / Conflict / Solver — preparation complete
-- **Current gate:** B12-A scope prepared / explicit approval pending; B13-D post-repair web rerun unreported
+- **Current gate:** B12-A candidate / local PostgreSQL and real-app proof pending; B13-D post-repair web rerun unreported
 - **B12 block scope:** `docs/workstreams/timeline-temporal-operational-b12-scope-2026-09-29.md`
 - **B12-A scope proposal:** `docs/workstreams/timeline-temporal-operational-b12-a-scope-2026-09-29.md`
 - **B13-D scope authority: `docs/workstreams/timeline-temporal-operational-b13-d-scope-2026-09-29.md`
@@ -116,8 +116,8 @@ B13 Work Structure / Decomposition / Dependencies ✅ CLOSED / USER-REPORTED ACC
   B13-B Qualified Dependencies                    ✅ CLOSED / PROVEN 2026-09-29
   B13-C Execution Structure Constraints           ✅ CLOSED / PROVEN 2026-09-29
   B13-D Whole-block Integration / Proof / Acceptance ✅ CLOSED / USER-REPORTED 2026-09-29
-B12 Replanning / Conflict / Solver                ◐ PREPARED / B12-A APPROVAL PENDING
-  B12-A Current-truth conflict diagnosis           ⬜ SCOPE PREPARED
+B12 Replanning / Conflict / Solver                ◐ B12-A CANDIDATE / PROOF PENDING
+  B12-A Current-truth conflict diagnosis           ◐ CANDIDATE / PROOF PENDING
   B12-B Bounded candidate generation / solver      ⬜ LATER GATE
   B12-C Review / governed admission                ⬜ LATER GATE
   B12-D Integration / product acceptance           ⬜ LATER GATE
@@ -399,7 +399,7 @@ Scope and gate: `timeline-temporal-operational-b13-d-scope-2026-09-29.md` and `t
 
 ---
 
-# 6. B12 — Replanning / Conflict / Solver — SCOPE PREPARED
+# 6. B12 — Replanning / Conflict / Solver — B12-A CANDIDATE
 
 Deterministic-first replanning/conflict/solver:
 
@@ -420,7 +420,7 @@ solver UNKNOWN != INFEASIBLE
 AI != scheduling authority
 ```
 
-B12 may not invent work structure, dependency truth or B13 execution constraints. The prepared block scope is `timeline-temporal-operational-b12-scope-2026-09-29.md`: B12-A current-truth diagnosis → B12-B bounded solver candidates → B12-C governed admission → B12-D whole-block acceptance. B12-A is specified in `timeline-temporal-operational-b12-a-scope-2026-09-29.md` and awaits explicit gate approval. No B12 implementation or proof exists yet.
+B12 may not invent work structure, dependency truth or B13 execution constraints. The prepared block scope is `timeline-temporal-operational-b12-scope-2026-09-29.md`: B12-A current-truth diagnosis → B12-B bounded solver candidates → B12-C governed admission → B12-D whole-block acceptance. B12-A was approved and the read-only Home diagnosis candidate is documented in `timeline-temporal-operational-b12-a-implementation-2026-09-29.md`. Its local PostgreSQL and real-app acceptance remain pending; see `timeline-temporal-operational-b12-a-gate-2026-09-29.md`. B12-B is not authorized yet.
 
 ---
 

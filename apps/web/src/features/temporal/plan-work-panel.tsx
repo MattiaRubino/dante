@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { PlanDependencyPanel } from './plan-dependency-panel';
+import { PlanConflictPanel } from './plan-conflict-panel';
 import { PlanExecutionPanel } from './plan-execution-panel';
 
 import {
@@ -301,6 +302,8 @@ export function PlanWorkPanel() {
                   <p>Apri un’Activity nel Planning Tray e premi il suo titolo per aggiungerla qui.</p>
                 )}
                 <PlanDependencyPanel key={`${current.planRef}:${current.stateRef}`} plan={current} />
+                <PlanConflictPanel key={`conflicts:${current.planRef}:${current.stateRef}`}
+                  plan={current} />
                 <PlanExecutionPanel key={`execution:${current.planRef}:${current.stateRef}`}
                   plan={current} pending={pending}
                   update={(stepRef, policy) => replace(current.steps.map((item) =>

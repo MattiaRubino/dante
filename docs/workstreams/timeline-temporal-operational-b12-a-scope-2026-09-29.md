@@ -1,6 +1,6 @@
 # B12-A — Current-truth conflict diagnosis and replan basis — scope proposal
 
-- **Status:** PREPARED FOR EXPLICIT B12-A APPROVAL; no implementation authorized by this document
+- **Status:** APPROVED 2026-09-29; implementation candidate published, local proof and real-app acceptance pending
 - **Date:** 2026-09-29
 - **Branch:** `feature/timeline-temporal-operational`
 - **Preparation basis:** `c46ba83ddd05c6f07e81a12ce3424a22bd68cc4b`
@@ -59,4 +59,4 @@ The exact test filenames and any required read function are selected only after 
 
 No candidate search, OR-Tools invocation, optimization, objective weights, Proposal acceptance, direct or automatic Schedule movement, broad day/week replanning, new capacity claims, generic overlap-conflict inference, provider/calendar orchestration, AI scheduling authority or multi-actor governance. B12-B owns bounded candidates; B12-C owns review/governed effect; B12-D owns whole-block integration.
 
-**Approval requested next:** B12-A as described here. That approval permits implementation within this bounded scope, followed by user-run local tests. An unexpected need for a new semantic owner, unsupported data authority or multi-item effect requires a revised gate, not an implicit scope expansion.
+**Approval received:** B12-A on 2026-09-29. Implementation and user-run local tests follow this bounded scope. An unexpected need for a new semantic owner, unsupported data authority or multi-item effect requires a revised gate, not an implicit scope expansion.

@@ -2626,6 +2626,44 @@
         "title": "ConstrainedActivityResponse",
         "type": "object"
       },
+      "ConstraintFindingResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "constraint_ref": {
+            "format": "uuid",
+            "title": "Constraint Ref",
+            "type": "string"
+          },
+          "evaluation": {
+            "enum": ["satisfied", "violated", "not_evaluable"],
+            "title": "Evaluation",
+            "type": "string"
+          },
+          "material_state_ref": {
+            "format": "uuid",
+            "title": "Material State Ref",
+            "type": "string"
+          },
+          "reason_code": {
+            "title": "Reason Code",
+            "type": "string"
+          },
+          "strength": {
+            "enum": ["hard", "soft"],
+            "title": "Strength",
+            "type": "string"
+          }
+        },
+        "required": [
+          "constraint_ref",
+          "material_state_ref",
+          "strength",
+          "evaluation",
+          "reason_code"
+        ],
+        "title": "ConstraintFindingResponse",
+        "type": "object"
+      },
       "CreateActivityRequest": {
         "additionalProperties": false,
         "description": "Minimum B01 CreateActivity command; placement is not an Activity field.",
@@ -3495,6 +3533,83 @@
         },
         "required": ["start_date", "end_date_exclusive"],
         "title": "DateSpanPlacementRequest",
+        "type": "object"
+      },
+      "DependencyFindingResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "actual_material_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Material State Ref"
+          },
+          "cycle": {
+            "title": "Cycle",
+            "type": "boolean"
+          },
+          "dependency_ref": {
+            "format": "uuid",
+            "title": "Dependency Ref",
+            "type": "string"
+          },
+          "evaluation_code": {
+            "anyOf": [
+              {
+                "enum": ["satisfied", "unsatisfied", "unknown"],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evaluation Code"
+          },
+          "outcome_material_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outcome Material State Ref"
+          },
+          "prerequisite_step_ref": {
+            "format": "uuid",
+            "title": "Prerequisite Step Ref",
+            "type": "string"
+          },
+          "qualifier_code": {
+            "enum": ["actual_occurred", "outcome_code"],
+            "title": "Qualifier Code",
+            "type": "string"
+          },
+          "state_ref": {
+            "format": "uuid",
+            "title": "State Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dependency_ref",
+          "state_ref",
+          "prerequisite_step_ref",
+          "qualifier_code",
+          "evaluation_code",
+          "actual_material_state_ref",
+          "outcome_material_state_ref",
+          "cycle"
+        ],
+        "title": "DependencyFindingResponse",
         "type": "object"
       },
       "ElapsedOccurrenceCoordinate": {
@@ -5404,6 +5519,58 @@
         "title": "PersonReferentResponse",
         "type": "object"
       },
+      "PlacementBasisResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "ends_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ends At"
+          },
+          "material_state_ref": {
+            "format": "uuid",
+            "title": "Material State Ref",
+            "type": "string"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "starts_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Starts At"
+          },
+          "temporal_form_code": {
+            "title": "Temporal Form Code",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schedule_ref",
+          "material_state_ref",
+          "temporal_form_code",
+          "starts_at",
+          "ends_at"
+        ],
+        "title": "PlacementBasisResponse",
+        "type": "object"
+      },
       "PlanDependencyHistoryResponse": {
         "additionalProperties": false,
         "properties": {
@@ -5596,6 +5763,45 @@
           "replayed"
         ],
         "title": "PlanDependencyResponse",
+        "type": "object"
+      },
+      "PlanDiagnosisResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "capacity_evaluated": {
+            "title": "Capacity Evaluated",
+            "type": "boolean"
+          },
+          "plan_ref": {
+            "format": "uuid",
+            "title": "Plan Ref",
+            "type": "string"
+          },
+          "plan_state_ref": {
+            "format": "uuid",
+            "title": "Plan State Ref",
+            "type": "string"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/StepDiagnosisResponse"
+            },
+            "title": "Steps",
+            "type": "array"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "plan_ref",
+          "plan_state_ref",
+          "title",
+          "capacity_evaluated",
+          "steps"
+        ],
+        "title": "PlanDiagnosisResponse",
         "type": "object"
       },
       "PlanStepBody": {
@@ -10066,6 +10272,105 @@
           "temporal_rules"
         ],
         "title": "SliceAssessment",
+        "type": "object"
+      },
+      "StepDiagnosisResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "activity_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Activity Ref"
+          },
+          "constraint_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Constraint Status"
+          },
+          "constraints": {
+            "items": {
+              "$ref": "#/components/schemas/ConstraintFindingResponse"
+            },
+            "title": "Constraints",
+            "type": "array"
+          },
+          "dependencies": {
+            "items": {
+              "$ref": "#/components/schemas/DependencyFindingResponse"
+            },
+            "title": "Dependencies",
+            "type": "array"
+          },
+          "diagnostics": {
+            "items": {
+              "enum": [
+                "unlinked_step",
+                "unknown_basis",
+                "multiple_current_placements",
+                "unsupported_placement",
+                "known_hard_violation",
+                "dependency_cycle",
+                "blocked_prerequisite",
+                "no_known_conflict_in_supported_rules"
+              ],
+              "type": "string"
+            },
+            "title": "Diagnostics",
+            "type": "array"
+          },
+          "hard_set_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hard Set Status"
+          },
+          "placements": {
+            "items": {
+              "$ref": "#/components/schemas/PlacementBasisResponse"
+            },
+            "title": "Placements",
+            "type": "array"
+          },
+          "step_ref": {
+            "format": "uuid",
+            "title": "Step Ref",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "step_ref",
+          "title",
+          "activity_ref",
+          "placements",
+          "constraints",
+          "constraint_status",
+          "hard_set_status",
+          "dependencies",
+          "diagnostics"
+        ],
+        "title": "StepDiagnosisResponse",
         "type": "object"
       },
       "StructuralExclusionRequest": {
@@ -25548,6 +25853,107 @@
           }
         },
         "summary": "Replace Self Plan Work",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/plans/{plan_ref}/conflicts": {
+      "get": {
+        "operationId": "temporal_diagnose_self_plan_conflicts",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Plan Ref",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "expected_state_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Expected State Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanDiagnosisResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Diagnose Self Plan Conflicts",
         "tags": ["temporal"]
       }
     },

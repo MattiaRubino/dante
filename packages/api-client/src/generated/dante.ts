@@ -87,6 +87,7 @@ import type {
   PersonReferentResponse,
   PlanDependencyHistoryResponse,
   PlanDependencyResponse,
+  PlanDiagnosisResponse,
   PlanWorkResponse,
   PostponedEventResponse,
   ProblemDetails,
@@ -174,6 +175,7 @@ import type {
   TemporalConstraintEvaluationResponse,
   TemporalConstraintListResponse,
   TemporalConstraintResponse,
+  TemporalDiagnoseSelfPlanConflictsParams,
   TemporalFindActualRealizationConditionParams,
   TemporalListConstraintsBySubjectParams,
   TimelineWindowEmptyResponse,
@@ -9224,6 +9226,108 @@ export const temporalReplaceSelfPlanWork = async (
     status: res.status,
     headers: res.headers,
   } as temporalReplaceSelfPlanWorkResponse;
+};
+
+export type temporalDiagnoseSelfPlanConflictsResponse200 = {
+  data: PlanDiagnosisResponse;
+  status: 200;
+};
+
+export type temporalDiagnoseSelfPlanConflictsResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type temporalDiagnoseSelfPlanConflictsResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type temporalDiagnoseSelfPlanConflictsResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type temporalDiagnoseSelfPlanConflictsResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type temporalDiagnoseSelfPlanConflictsResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type temporalDiagnoseSelfPlanConflictsResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type temporalDiagnoseSelfPlanConflictsResponseSuccess =
+  temporalDiagnoseSelfPlanConflictsResponse200 & {
+    headers: Headers;
+  };
+export type temporalDiagnoseSelfPlanConflictsResponseError = (
+  | temporalDiagnoseSelfPlanConflictsResponse401
+  | temporalDiagnoseSelfPlanConflictsResponse403
+  | temporalDiagnoseSelfPlanConflictsResponse404
+  | temporalDiagnoseSelfPlanConflictsResponse409
+  | temporalDiagnoseSelfPlanConflictsResponse422
+  | temporalDiagnoseSelfPlanConflictsResponse500
+) & {
+  headers: Headers;
+};
+
+export type temporalDiagnoseSelfPlanConflictsResponse =
+  | temporalDiagnoseSelfPlanConflictsResponseSuccess
+  | temporalDiagnoseSelfPlanConflictsResponseError;
+
+export const getTemporalDiagnoseSelfPlanConflictsUrl = (
+  planRef: string,
+  params: TemporalDiagnoseSelfPlanConflictsParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value));
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/v1/temporal/plans/${planRef}/conflicts?${stringifiedParams}`
+    : `/api/v1/temporal/plans/${planRef}/conflicts`;
+};
+
+/**
+ * @summary Diagnose Self Plan Conflicts
+ */
+export const temporalDiagnoseSelfPlanConflicts = async (
+  planRef: string,
+  params: TemporalDiagnoseSelfPlanConflictsParams,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalDiagnoseSelfPlanConflictsResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalDiagnoseSelfPlanConflictsUrl(planRef, params),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalDiagnoseSelfPlanConflictsResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalDiagnoseSelfPlanConflictsResponse;
 };
 
 export type temporalListSelfPlanDependenciesResponse200 = {
