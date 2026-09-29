@@ -1,6 +1,6 @@
 # B12 — Replanning / Conflict / Solver — prepared block scope
 
-- **Status:** B12-A closed / proven; B12-B scope preparation
+- **Status:** B12-A closed / proven; B12-B scope prepared for separate approval
 - **Date:** 2026-09-29
 - **Branch:** `feature/timeline-temporal-operational`
 - **Preparation basis:** `c46ba83ddd05c6f07e81a12ce3424a22bd68cc4b`
@@ -61,4 +61,4 @@ B12-A does not claim to solve all capacity, preference, resource, recurrence, mu
 
 The user runs PostgreSQL/backend/web/typecheck/generated-client checks locally; no GitHub Actions or CI. Changed migrations, if any, are forward-only and must reconcile the Dictionary, ORM and live catalog. Each gate records exact observed results and distinguishes focused proof from user-reported product acceptance.
 
-**Next:** prepare and approve the separate B12-B scope. B12-A focused local proof passed on 2026-09-29; see `timeline-temporal-operational-b12-a-closure-2026-09-29.md`. The integrated real-app walkthrough belongs to B12-D.
+**Next:** review and approve the separate `timeline-temporal-operational-b12-b-scope-2026-09-29.md`. B12-A focused local proof passed on 2026-09-29; see `timeline-temporal-operational-b12-a-closure-2026-09-29.md`. The integrated real-app walkthrough belongs to B12-D.
