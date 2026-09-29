@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B13 CLOSED / B12-A CANDIDATE — PROOF PENDING
+- **Status:** B13 CLOSED / B12-A CLOSED-PROVEN / B12-B SCOPE PREPARATION
 - **Reconciled:** 2026-09-29
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -52,7 +52,8 @@ B13     ✅ CLOSED / USER-REPORTED ACCEPTANCE 2026-09-29
   B13-B ✅ CLOSED / PROVEN 2026-09-29
   B13-C ✅ CLOSED / PROVEN 2026-09-29
   B13-D ✅ CLOSED / USER-REPORTED ACCEPTANCE 2026-09-29
-B12     ◐ B12-A CANDIDATE / PROOF PENDING
+B12     ◐ B12-B SCOPE PREPARATION
+  B12-A ✅ CLOSED / PROVEN 2026-09-29
 B14     ⬜ NOT STARTED
 B07     ⏸ DEFERRED UNTIL B14
 B15     ⬜ NOT STARTED
@@ -290,7 +291,7 @@ B13-D — Whole-block Integration / Proof / Acceptance
 
 B13-B owns real dependency semantics. B13-C owns execution-structure constraints only where current Domain/Logical authority supports them. B13-D proves the complete B13 chain and real product behavior.
 
-B12 block scope and the complete proposed B12-A diagnosis slice are published in `timeline-temporal-operational-b12-scope-2026-09-29.md` and `timeline-temporal-operational-b12-a-scope-2026-09-29.md`. B12-A was approved and its read-only Home diagnosis candidate is published; see `timeline-temporal-operational-b12-a-implementation-2026-09-29.md` and `timeline-temporal-operational-b12-a-gate-2026-09-29.md`. Local PostgreSQL proof and real-app acceptance remain pending. Its read-only Home diagnosis must distinguish known hard violations, blocked prerequisites and unknown/unsupported bases without generating placements. B12-B candidates, B12-C governed admission and B12-D integration follow only after the preceding gate's focused local proof and product result. Replanning/solver behavior must consume canonical structure/dependency truth instead of inventing it.
+B12 block scope and B12-A diagnosis scope are published in `timeline-temporal-operational-b12-scope-2026-09-29.md` and `timeline-temporal-operational-b12-a-scope-2026-09-29.md`. B12-A is closed / proven on the user-run focused local gate at `db6a568`: generated 389, both typechecks, web 4, API contract 1, Ruff and PostgreSQL/catalog 11 passed in 26.14s. See `timeline-temporal-operational-b12-a-closure-2026-09-29.md`. Its read-only Home diagnosis distinguishes known hard violations, blocked prerequisites and unknown/unsupported bases without generating placements. B12-B candidates and B12-C governed admission each require a separate approved scope and focused local proof. B12-D integrates the chain and owns the one real-app walkthrough before parent B12 closure. Replanning/solver behavior must consume canonical structure/dependency truth instead of inventing it.
 
 ---
 

@@ -23,7 +23,7 @@
 - **Current persistence source frontier:** `20260929_92` (B13-C focused PostgreSQL/catalog proof)
 - **Catalog-verified whole topology:** `_92` / `196|5|152|100|397|344|497|0|0|0`
 - **Completed functional frontier:** B13 ✅ CLOSED / user-reported acceptance 2026-09-29
-- **Current implementation cursor:** B12-A candidate; local PostgreSQL and real-app proof pending; B13-D post-repair web rerun unreported
+- **Current implementation cursor:** B12-A closed / proven; B12-B scope preparation; whole-B12 real-app acceptance reserved for B12-D; B13-D post-repair web rerun unreported
 - **CI:** not authorized; local tests are run by the user
 
 ---
@@ -116,8 +116,8 @@ B13 Work Structure / Decomposition / Dependencies ✅ CLOSED / USER-REPORTED ACC
   B13-B Qualified Dependencies                    ✅ CLOSED / PROVEN 2026-09-29
   B13-C Execution Structure Constraints           ✅ CLOSED / PROVEN 2026-09-29
   B13-D Whole-block Integration / Proof / Acceptance ✅ CLOSED / USER-REPORTED 2026-09-29
-B12 Replanning / Conflict / Solver                ◐ B12-A CANDIDATE / PROOF PENDING
-  B12-A Current-truth conflict diagnosis           ◐ CANDIDATE / PROOF PENDING
+B12 Replanning / Conflict / Solver                ◐ B12-B SCOPE PREPARATION
+  B12-A Current-truth conflict diagnosis           ✅ CLOSED / PROVEN 2026-09-29
   B12-B Bounded candidate generation / solver      ⬜ LATER GATE
   B12-C Review / governed admission                ⬜ LATER GATE
   B12-D Integration / product acceptance           ⬜ LATER GATE
@@ -340,7 +340,7 @@ The candidate integrates B13-A/B/C on one Plan in a PostgreSQL test and one Home
 
 ## B12 — Replanning / Conflict / Solver
 
-Block and B12-A scopes are prepared in `timeline-temporal-operational-b12-scope-2026-09-29.md` and `timeline-temporal-operational-b12-a-scope-2026-09-29.md`. B12-A approved; read-only diagnosis candidate published. Local PostgreSQL and real-app proof remain pending. Sequence: read-only current-truth diagnosis, bounded deterministic candidates, governed admission, integrated real-app acceptance. Proposal != accepted Schedule; solver UNKNOWN != INFEASIBLE; AI != scheduling authority.
+Block and B12-A scopes are in `timeline-temporal-operational-b12-scope-2026-09-29.md` and `timeline-temporal-operational-b12-a-scope-2026-09-29.md`. B12-A is closed / proven: generated 389, both typechecks, web 4, API contract 1, Ruff, PostgreSQL/catalog 11 passed in 26.14s in the user's worktree; see `timeline-temporal-operational-b12-a-closure-2026-09-29.md`. Next is B12-B scope. Real-app proof runs once in B12-D before parent B12 closure. Proposal != accepted Schedule; solver UNKNOWN != INFEASIBLE; AI != scheduling authority.
 
 ## B14 — Temporal Create Completeness Gate
 

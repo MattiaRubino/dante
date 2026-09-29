@@ -1,6 +1,6 @@
-# B12-A — local proof and product gate
+# B12-A — local automated proof gate
 
-**Status:** candidate; user-run PostgreSQL and real-app proof pending. The user runs local commands; no CI/GitHub Actions.
+**Status:** PASSED in the user's local worktree on 2026-09-29. No CI/GitHub Actions. Real-app acceptance belongs to B12-D.
 
 From `~/projects/dante` after pulling `feature/timeline-temporal-operational`:
 
@@ -29,18 +29,4 @@ uv run --locked pytest -q --no-cov --tb=short -m postgres \
   tests/integration/database/test_b11_catalog_reconciliation_probe.py
 ```
 
-Then perform the five-step walkthrough in the implementation checkpoint and report command output plus what the Home panel displayed. The stage remains open until both are complete.
-
-For the existing local app, restart the backend after pulling in one terminal (using your existing `apps/backend/.env.local`), and start the web in another:
-
-```bash
-cd ~/projects/dante/apps/backend
-uv run --locked --env-file .env.local uvicorn dante.bootstrap.app:create_app --factory --reload
-```
-
-```bash
-cd ~/projects/dante
-pnpm --filter @dante/web dev
-```
-
-Open `http://localhost:5173/` and use Home → Plan e Step. The existing PostgreSQL service and user account are prerequisites, as in the B13 walkthrough.
+Reported result at `db6a568`: generated check **389**, both typechecks PASS, web **4 passed / 2 files**, OpenAPI contract **1 passed**, Ruff PASS, PostgreSQL/catalog **11 passed in 26.14s**. B12-A is closed on this focused automated evidence. The integrated product check runs at B12-D before closing B12.

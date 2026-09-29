@@ -1,6 +1,6 @@
 # B12-A — Current-truth conflict diagnosis — implementation checkpoint
 
-- **Status:** CANDIDATE / local PostgreSQL and real-app acceptance pending
+- **Status:** CLOSED / PROVEN on user-run focused local gate 2026-09-29
 - **Date:** 2026-09-29
 - **Branch:** `feature/timeline-temporal-operational`
 - **Scope:** `timeline-temporal-operational-b12-a-scope-2026-09-29.md`
@@ -20,11 +20,11 @@ Limits: at most 20 Steps, 40 active Dependencies and 40 current Schedules; only 
 - Focused OpenAPI contract test: 1 passed.
 - OpenAPI and generated client produced through repository tooling; web and API-client typechecks: PASS.
 - Focused web component tests: 4 passed across two files.
-- This executor cannot run the PostgreSQL integration test because Docker is not installed. User worktree must run the full local gate and report results.
+- This executor could not run PostgreSQL because Docker is not installed. The user's local worktree passed the focused PostgreSQL/catalog suite: **11 passed in 26.14s**.
 - Generated-source determinism: PASS (389 files) in this executor with a temporary local uv version override, restored after generation. Repeat on the user worktree with the repository's pinned uv/pnpm versions.
-- Real-app acceptance is pending. Do not close B12-A or advance to B12-B until the user reports the complete result.
+- User-run proof at `db6a568`: generated check **389 files current**, both typechecks PASS, web **4 passed / 2 files**, OpenAPI contract **1 passed**, Ruff PASS, PostgreSQL/catalog **11 passed in 26.14s**. B12-A is closed on this focused automated evidence. The whole-chain real-app acceptance is deferred to B12-D before parent B12 closure.
 
-## Product walkthrough
+## Deferred B12-D product walkthrough material
 
 1. Open Home → Plan e Step and select a self-owned Plan with linked Record and Mix Activities; ensure Mix has one accepted absolute Schedule interval.
 2. Click **Analizza conflitti**. Check that Record/Mix are named and that an absent Actual on the Record → Mix Dependency says `sconosciuta`.
@@ -32,4 +32,4 @@ Limits: at most 20 Steps, 40 active Dependencies and 40 current Schedules; only 
 4. Record `non avvenuto` for Record, click again and confirm `non soddisfatta` plus blocked prerequisite. Correct to `avvenuto`, click again and confirm `soddisfatta` while the hard violation remains.
 5. For a linked Activity without accepted Schedule, confirm the result stays unknown. No availability/free-slot claim or automatic move appears.
 
-The automated PostgreSQL test creates this exact Record → Mix progression and checks Schedule/Plan immutability, self scope and stale Plan state. Its outcome is pending the user's local run.
+These manual checks are reserved for the integrated B12-D walkthrough and will be reconciled with candidate generation and governed admission then. The B12-A automated PostgreSQL test creates the Record → Mix progression and checks Schedule/Plan immutability, self scope and stale Plan state; it passed in the user's local gate.

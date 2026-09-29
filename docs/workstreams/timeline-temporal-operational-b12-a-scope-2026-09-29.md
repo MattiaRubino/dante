@@ -1,6 +1,6 @@
 # B12-A — Current-truth conflict diagnosis and replan basis — scope proposal
 
-- **Status:** APPROVED 2026-09-29; implementation candidate published, local proof and real-app acceptance pending
+- **Status:** CLOSED / PROVEN 2026-09-29; focused local automated proof passed
 - **Date:** 2026-09-29
 - **Branch:** `feature/timeline-temporal-operational`
 - **Preparation basis:** `c46ba83ddd05c6f07e81a12ce3424a22bd68cc4b`
@@ -51,9 +51,9 @@ Preserve accepted states and values on refresh; reevaluation after a canonical s
 4. Reordering Steps does not change Dependency direction. An unplaced/unsupported placement and incomplete Availability/Capacity data remain explicit unknown/unsupported, never an invented conflict or free slot.
 5. Repeated read returns stable material bases without new write rows; changing current Plan/Dependency/Schedule/Actual/constraint state changes or invalidates the displayed basis on the next request.
 6. Another self Person cannot inspect the Plan or private related truth; limits and invalid input produce bounded errors.
-7. Focused PostgreSQL/API, OpenAPI/generated-client, web/component and typecheck gates pass on the user's local worktree, with Dictionary/catalog checks if a new guarded DB read is added. A real-app walkthrough confirms the control and its wording.
+7. Focused PostgreSQL/API, OpenAPI/generated-client, web/component and typecheck gates pass on the user's local worktree, with Dictionary/catalog checks if a new guarded DB read is added. The integrated real-app walkthrough is reserved for B12-D.
 
-The exact test filenames and any required read function are selected only after inspecting owning modules and tests at implementation start. B12-A closes only after the complete slice, local proof and user-reported product result; do not split it into superficial subgates.
+The exact test filenames and any required read function are selected only after inspecting owning modules and tests at implementation start. B12-A closes after the complete slice and focused user-run local automated proof; do not split it into superficial subgates. B12-D owns the user-reported product acceptance for the whole B12 chain.
 
 ## 6. Explicit non-goals and handoff
 

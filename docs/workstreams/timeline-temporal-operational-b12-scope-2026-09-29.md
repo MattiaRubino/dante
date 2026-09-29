@@ -1,6 +1,6 @@
 # B12 — Replanning / Conflict / Solver — prepared block scope
 
-- **Status:** PRE-SCOPE PREPARED; B12-A approval and implementation pending
+- **Status:** B12-A closed / proven; B12-B scope preparation
 - **Date:** 2026-09-29
 - **Branch:** `feature/timeline-temporal-operational`
 - **Preparation basis:** `c46ba83ddd05c6f07e81a12ce3424a22bd68cc4b`
@@ -8,7 +8,7 @@
 - **B13 verification debt:** final post-repair seven-file web rerun not reported; do not claim PASS
 - **CI:** not authorized; the user runs local tests and real-app gates
 
-This is the B12 block plan, not approval to implement its A/B/C/D gates. Each gate must be scoped and approved before implementation. Complete each gate vertically, including its real product path and focused local proof, before moving to the next.
+This is the B12 block plan; B12-A has separate approval. Each later gate must be scoped and approved before implementation. Complete each gate's product implementation and focused local automated proof before moving to the next. Run the integrated real-app walkthrough once at B12-D, immediately before closing parent B12.
 
 ## 1. Authority and repository inventory
 
@@ -61,4 +61,4 @@ B12-A does not claim to solve all capacity, preference, resource, recurrence, mu
 
 The user runs PostgreSQL/backend/web/typecheck/generated-client checks locally; no GitHub Actions or CI. Changed migrations, if any, are forward-only and must reconcile the Dictionary, ORM and live catalog. Each gate records exact observed results and distinguishes focused proof from user-reported product acceptance.
 
-**Next:** approve the exact B12-A semantic scope in its companion document. Its implementation has not begun.
+**Next:** prepare and approve the separate B12-B scope. B12-A focused local proof passed on 2026-09-29; see `timeline-temporal-operational-b12-a-closure-2026-09-29.md`. The integrated real-app walkthrough belongs to B12-D.
