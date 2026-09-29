@@ -20,7 +20,7 @@
 - **Current persistence source frontier:** `20260929_92` (B13-C focused PostgreSQL/catalog proof)
 - **Catalog-verified whole topology:** `_92` / `196|5|152|100|397|344|497|0|0|0`
 - **Completed functional frontier:** B13-C ✅ CLOSED / focused local proof 2026-09-29
-- **Current implementation cursor:** B13-D automated local gate passed — real-app walkthrough pending
+- **Current implementation cursor:** B13-D direct Activity-to-Step UX repair — local rerun and real-app walkthrough pending
 - **CI:** not authorized; local tests are run by the user
 
 ---
@@ -112,7 +112,7 @@ B13 Work Structure / Decomposition / Dependencies ◐ IN PROGRESS
   B13-A Work Structure Core                       ✅ CLOSED / PROVEN 2026-09-28
   B13-B Qualified Dependencies                    ✅ CLOSED / PROVEN 2026-09-29
   B13-C Execution Structure Constraints           ✅ CLOSED / PROVEN 2026-09-29
-  B13-D Whole-block Integration / Proof / Acceptance ◐ AUTOMATED PASS / REAL-APP PENDING
+  B13-D Whole-block Integration / Proof / Acceptance ◐ UX REPAIR / LOCAL RERUN + REAL-APP PENDING
 B12 Replanning / Conflict / Solver                ⏸ HELD UNTIL B13 CLOSES
 B14 Temporal Create Completeness Gate             ⬜
 B07 UI/UX Consolidation v1                        ⏸ DEFERRED UNTIL B14
@@ -329,7 +329,7 @@ Closed / focused proof at forward-only `_92`. Immutable Plan Step revisions carr
 
 ## B13-D — Whole-block Integration / Proof / Acceptance
 
-The candidate integrates B13-A/B/C on one Plan in a PostgreSQL test and one Home panel test. Its scope and executable local gate are `timeline-temporal-operational-b13-d-scope-2026-09-29.md` and `timeline-temporal-operational-b13-d-gate-2026-09-29.md`. The user-run gate passed: generated check (383 files), both typechecks, web **12**, backend contract/unit **3**, PostgreSQL **14**, and Ruff. Real-app acceptance remains pending; parent B13 is open.
+The candidate integrates B13-A/B/C on one Plan in a PostgreSQL test and one Home panel test. Its scope and executable local gate are `timeline-temporal-operational-b13-d-scope-2026-09-29.md` and `timeline-temporal-operational-b13-d-gate-2026-09-29.md`. The initial user-run gate passed: generated check (383 files), both typechecks, web **12**, backend contract/unit **3**, PostgreSQL **14**, and Ruff. A direct Activity-to-Step repair removes manual UUID linking and adds a short web rerun. Real-app acceptance remains pending; parent B13 is open.
 
 ## B12 — Replanning / Conflict / Solver
 

@@ -270,6 +270,24 @@
   display: grid;
   min-width: 0;
   gap: 4px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.timeline-planning-card__copy:hover > strong,
+.timeline-planning-card__copy:focus-visible > strong {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.timeline-planning-card__copy:focus-visible {
+  outline: 2px solid #93c5fd;
+  outline-offset: 4px;
 }
 
 .timeline-planning-card__copy > strong {

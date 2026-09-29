@@ -60,4 +60,22 @@ describe('Plan work panel', () => {
     expect(replace.mock.calls[0]?.[2].map((step: { stepRef: string }) => step.stepRef))
       .toEqual([second, first]);
   });
+
+  it('adds the Activity selected from Home as a linked Step without a UUID field', async () => {
+    render(<PlanWorkPanel />);
+    window.dispatchEvent(new CustomEvent('dante:open-plan-for-activity', {
+      detail: {
+        activityRef: '0199a8c0-5e74-7bc0-8ad0-a2f403f5618a',
+        title: 'Mix dalla Home',
+      },
+    }));
+    expect(await screen.findByText(/Attività selezionata: Mix dalla Home/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: '+ Aggiungi “Mix dalla Home” al Plan' }));
+    await waitFor(() => expect(replace).toHaveBeenCalledOnce());
+    expect(replace.mock.calls[0]?.[2].at(-1)).toMatchObject({
+      title: 'Mix dalla Home',
+      activityRef: '0199a8c0-5e74-7bc0-8ad0-a2f403f5618a',
+    });
+    expect(screen.queryByText(/UUID dell’Attività/)).toBeNull();
+  });
 });

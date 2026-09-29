@@ -11,6 +11,7 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
 import { SessionSubjectControls } from '../../../temporal/session-subject-controls';
+import { openPlanForActivity } from '../../../temporal/plan-work-intent';
 import {
   subscribeTemporalPlanningInvalidation,
   subscribeTemporalTimelineInvalidation,
@@ -471,12 +472,21 @@ export function TimelinePlanningTrayB01({
                 data-timeline-tone="personal"
               >
                 <div className="timeline-planning-card__main">
-                  <span className="timeline-planning-card__copy">
+                  <button
+                    className="timeline-planning-card__copy"
+                    type="button"
+                    aria-label={`Apri Plan per ${item.title}`}
+                    onClick={() => {
+                      setOpen(false);
+                      setQuery('');
+                      openPlanForActivity(item);
+                    }}
+                  >
                     <strong>{item.title}</strong>
                     <span className="timeline-planning-card__policy">
                       {b01Copy.activity}
                     </span>
-                  </span>
+                  </button>
                   <span className="timeline-planning-card__actions">
                     <button
                       type="button"

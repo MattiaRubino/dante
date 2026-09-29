@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B13-C CLOSED / B13-D AUTOMATED LOCAL GATE PASS — REAL-APP PENDING
+- **Status:** B13-C CLOSED / B13-D UX REPAIR — LOCAL RERUN + REAL-APP PENDING
 - **Reconciled:** 2026-09-29
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -48,7 +48,7 @@ B13     ◐ IN PROGRESS
   B13-A ✅ CLOSED / PROVEN 2026-09-28
   B13-B ✅ CLOSED / PROVEN 2026-09-29
   B13-C ✅ CLOSED / PROVEN 2026-09-29
-  B13-D ◐ AUTOMATED PASS / REAL-APP PENDING
+  B13-D ◐ UX REPAIR / LOCAL RERUN + REAL-APP PENDING
 B12     ⏸ HELD UNTIL B13 CLOSES
 B14     ⬜ NOT STARTED
 B07     ⏸ DEFERRED UNTIL B14
@@ -277,7 +277,7 @@ B13-A focused automated closure does not claim whole B13 real-app acceptance; th
 
 # 6. B13 continuation
 
-B13-B is closed / proven at `_90`; its closure evidence is `timeline-temporal-operational-b13-b-closure-2026-09-29.md`. B13-C is closed / focused proof at `_92`: the user-run B13-A/B/C and exact Dictionary/catalog suite passed **13 tests in 29.16s** after the forward CHECK-name repair. The earlier web suite passed **11 tests**, deterministic client generation and both typechecks passed. See `timeline-temporal-operational-b13-c-closure-2026-09-29.md`. B13-D whole-block automated gate passed on the user's local worktree: generated check (383 files), both typechecks, web **12**, backend contract/unit **3**, PostgreSQL **14 in 44.24s**, and Ruff. See its scope, implementation checkpoint and gate documents. Real-app acceptance is pending. Do not merge Dependency truth into execution-structure constraints.
+B13-B is closed / proven at `_90`; its closure evidence is `timeline-temporal-operational-b13-b-closure-2026-09-29.md`. B13-C is closed / focused proof at `_92`: the user-run B13-A/B/C and exact Dictionary/catalog suite passed **13 tests in 29.16s** after the forward CHECK-name repair. The earlier web suite passed **11 tests**, deterministic client generation and both typechecks passed. See `timeline-temporal-operational-b13-c-closure-2026-09-29.md`. B13-D whole-block automated gate initially passed on the user's local worktree: generated check (383 files), both typechecks, web **12**, backend contract/unit **3**, PostgreSQL **14 in 44.24s**, and Ruff. Acceptance preparation exposed the UUID copy/paste Activity-link path; the direct card-to-linked-Step repair is published next and needs its short local rerun plus real-app acceptance. See its scope, implementation checkpoint and gate documents. Do not merge Dependency truth into execution-structure constraints.
 
 ```text
 B13-B — Qualified Dependencies

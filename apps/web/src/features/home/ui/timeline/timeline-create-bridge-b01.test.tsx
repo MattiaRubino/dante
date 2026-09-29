@@ -114,6 +114,16 @@ describe('Timeline B01 canonical Planning Tray bridge', () => {
         name: 'Colloca: Activity persistita nel Planning Tray',
       }),
     ).toBeTruthy();
+    const planIntent = vi.fn();
+    window.addEventListener('dante:open-plan-for-activity', planIntent);
+    fireEvent.click(screen.getByRole('button', {
+      name: 'Apri Plan per Activity persistita nel Planning Tray',
+    }));
+    expect(planIntent).toHaveBeenCalledOnce();
+    expect(planIntent.mock.calls[0]?.[0]).toMatchObject({
+      detail: { activityRef: ACTIVITY_REF, title: 'Activity persistita nel Planning Tray' },
+    });
+    window.removeEventListener('dante:open-plan-for-activity', planIntent);
 
     first.unmount();
     const second = renderPlanningTray(source.runtime);
