@@ -119,6 +119,10 @@ export function ContextRail() {
           </article>
         </div>
       </section>
+      <div
+        className="home-create-panel-host"
+        data-home-context-create-host
+      />
     </aside>
   );
 }
