@@ -3,7 +3,7 @@
 - **Stato:** ATTIVO — direzione e priorità fornite dall'utente durante l'uso dell'app
 - **Avvio:** 2026-09-30
 - **Branch:** `feature/timeline-temporal-operational`
-- **Base:** B00–B13 e B12 chiusi; frontiera di persistenza `20260929_93`
+- **Base:** B00–B13 e B12 chiusi; frontiera di persistenza prima di U2 `20260929_93`
 - **Fonte della lista viva:** questo documento, Roadmap, Map e Handoff
 - **CI:** non usata; i test locali sono eseguiti dall'utente
 
@@ -43,7 +43,42 @@ Le voci possono essere lavorate singolarmente oppure in un gruppo quando condivi
 |---|---|---|---|
 | U0 | Inventario delle capacità create e gestibili preparato; l'utente definisce ora flussi e collocazione della UI. | pronto | inventario discusso il 2026-09-30 |
 | U1 | Rivedere l'ingresso `+`: chiusura senza bozza, posizione e forma del pannello di Create, rapporto con il calendario e necessità di un comando Crea separato. | candidato pronto — prova visiva utente | decisione 2026-09-30: resta il solo `+` a sinistra; nessun comando Crea in alto. Il Create base è un pannello fisso non trascinabile che sostituisce visivamente la colonna Cattura/Da risolvere. Geometria desktop corrente: rail destra **475 px**, sottratta alla Timeline come sibling H0 senza introdurre una terza colonna; policy Timeline, fallback Home e test di layout sono allineati. Default Activity oraria. Doppio clic sulla Timeline semina data/ora. Click esterno con bozza pulita chiude; bozza modificata offre Annulla, Scarta o Sposta in Da collocare (solo Activity: crea senza Schedule). Gli Event restano collocati. Base desktop, foglio avanzato e mobile hanno larghezza/altezza/overflow responsivi. Checkpoint geometria: `1002a807`, `f4e27639`, `774d4ee5`, `98126f57`. |
-| U2 | Consolidare il Quick Create come superficie canonica di authoring, mantenendo la logica del vertical e correggendo i contratti che oggi impongono vincoli di prodotto non più desiderati. | **CONTRATTO BLOCCATO — implementazione in corso** | decisioni 2026-09-30 descritte sotto; richiede persistenza/API/client/UI/test/docs, con migrazioni solo forward-only dalla frontiera `_93`. |
+| U2 | Consolidare il Quick Create come superficie canonica di authoring, mantenendo la logica del vertical e correggendo i contratti che oggi impongono vincoli di prodotto non più desiderati. | **IMPLEMENTAZIONE IN CORSO — backend/API salvati, client/UI/docs finali mancanti** | contratto fissato; migrazione `_94`, mapping, application layer, API U2 e test backend/API sono già pubblicati sul branch. |
+
+## U2 — checkpoint implementazione salvati
+
+Questa sezione è il punto di ripartenza operativo e viene aggiornata durante il lavoro.
+
+### Fatto e pubblicato
+
+- `865f458e` — contratto B14/U2 documentato: Life Area opzionale, due date esplicite, location Activity/Event, descrizione canonica, colore e Advanced condiviso.
+- `48bb8d1e` — migrazione forward-only `20260930_94_b14_u2_optional_authoring_metadata.py`: metadata canonici e wrapper authoring bounded.
+- `73861f19` — mapping SQLAlchemy Activity aggiornato.
+- `4dee862b` — mapping SQLAlchemy Event aggiornato.
+- `61c4d5c5` — `TemporalAuthoringApplication`: authoring transazionale, Life Area opzionale/creabile, colore e Schedule nello stesso confine transazionale.
+- `32f01251` — test PostgreSQL U2 per unassigned, metadata, multi-day, Life Area creata/aggiornata e ACL bounded.
+- `bf80ea30` — API pubblica U2 `/api/v1/temporal/authoring/activities|events` con contratto unico Quick Create.
+- `680b267b` — router U2 registrato nell'app FastAPI.
+- `a20731a9` — test unit/contract dell'API U2: operation id stabili, unassigned reale, location/description condivise e confini multi-day espliciti.
+
+### Da fare prima di dichiarare U2 chiuso
+
+1. **OpenAPI + generated client**: rigenerare dal backend U2, senza edit manuale del generated; aggiungere/aggiornare test contract client.
+2. **Runtime Create web**: spostare Activity/Event Quick Create sul nuovo endpoint U2, preservando i flussi storici compatibili finché la migrazione UI non è completa.
+3. **UI Quick Create**:
+   - due date sempre visibili ai lati degli orari;
+   - date come display cliccabili con calendario controllato DANTE, niente picker nativo/Cancella;
+   - Life Area opzionale, selezione o nuova area creata solo al submit;
+   - colore associato alla Life Area oppure override item se unassigned;
+   - location anche Activity;
+   - descrizione;
+   - Tag fuori dal Quick Create;
+   - rimozione del vecchio controllo esterno Life Area/Tag solo dopo equivalenza funzionale.
+4. **Advanced**: superficie centrale ampia, stesso draft del rail, senza duplicare stato o persistenza.
+5. **Proiezioni/Timeline**: mostrare correttamente unassigned, colore accettato e metadata utili senza creare fonti locali parallele.
+6. **Catalog/Dictionary/scope/DB docs**: riconciliare `_94`, nuove colonne/funzioni e la supersessione deliberata dell'obbligo B05.
+7. **Roadmap / Map / Handoff**: aggiornare al checkpoint U2 reale dopo i gate.
+8. **Gate locale utente**: Alembic/PostgreSQL + test backend U2/regressioni B05/B03/B02 + API/OpenAPI/client + web typecheck/vitest + prova visiva/E2E. Nessuna CI.
 
 ## U2 — contratto Quick Create e authoring canonico
 
