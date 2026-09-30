@@ -42,6 +42,7 @@ export function PlanCandidatePanel({ plan, stepRef, activityRef, title }: {
   const [earliest, setEarliest] = useState('');
   const [constraintSaved, setConstraintSaved] = useState(false);
   const [policySaved, setPolicySaved] = useState(false);
+  const [scheduleFixed, setScheduleFixed] = useState(false);
   const configure = (kind: 'constraint' | 'policy') => {
     if (pending || result?.scheduleRef === null || result === null) return;
     if (kind === 'constraint' && (
@@ -65,6 +66,22 @@ export function PlanCandidatePanel({ plan, stepRef, activityRef, title }: {
       setResult(await source.search(plan, stepRef));
     }).catch((cause: unknown) => setError(
       cause instanceof Error ? cause.message : 'Configurazione non disponibile.',
+    )).finally(() => setPending(false));
+  };
+  const fixSchedule = () => {
+    if (pending || result === null || result.scheduleRef === null ||
+      result.scheduleStateRef === null || result.currentStartsAt === null ||
+      result.currentEndsAt === null) return;
+    setPending(true);
+    setError(null);
+    void setupSource.makeScheduleAbsolute(
+      result.scheduleRef, result.scheduleStateRef,
+      result.currentStartsAt, result.currentEndsAt,
+    ).then(async () => {
+      setScheduleFixed(true);
+      setResult(await source.search(plan, stepRef));
+    }).catch((cause: unknown) => setError(
+      cause instanceof Error ? cause.message : 'Schedule non disponibile.',
     )).finally(() => setPending(false));
   };
   const search = () => {
@@ -114,6 +131,17 @@ export function PlanCandidatePanel({ plan, stepRef, activityRef, title }: {
       {result !== null ? (
         <div role="status">
           <p>Disponibilità e capacità non valutate. La ricerca mostra alternative senza modificare la Schedule.</p>
+          {result.basisStatus === 'unsupported' &&
+          result.placementForm !== 'absolute' &&
+          result.currentStartsAt !== null && result.currentEndsAt !== null ? (
+            <section aria-label={`Orario fisso per ${title}`}>
+              <p>Questa Schedule usa un orario locale. Per cercare alternative serve un intervallo fisso.</p>
+              <button type="button" disabled={pending || scheduleFixed} onClick={fixSchedule}>
+                Rendi fisso questo orario
+              </button>
+              {scheduleFixed ? <p>Orario fisso registrato. Riesegui Analizza conflitti.</p> : null}
+            </section>
+          ) : null}
           {typeof result.currentStartsAt === 'string' &&
           typeof result.scheduleRef === 'string' ? (
             <section aria-label={`Regole di spostamento per ${title}`}>
