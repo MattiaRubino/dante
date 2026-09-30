@@ -371,9 +371,16 @@ export function TemporalCreateEntry({
     }
   };
 
+  const discardPending = open && session.closeDecision === 'confirm-discard';
+  // The discard confirmation has a single owner: the viewport portal below.
+  // Keep the rail composer mounted for context, but present it without its legacy
+  // inline confirmation so we never expose two alertdialogs for the same decision.
+  const composerSession = discardPending
+    ? continueTemporalCreateEditing(session)
+    : session;
   const composer = open ? (
     <TemporalCreateComposer
-      session={session}
+      session={composerSession}
       contexts={contexts}
       issues={issues}
       lifecycle={lifecycle}
@@ -394,7 +401,6 @@ export function TemporalCreateEntry({
     typeof document === 'undefined'
       ? null
       : document.querySelector<HTMLElement>('[data-home-context-create-host]');
-  const discardPending = open && session.closeDecision === 'confirm-discard';
   const discardModal =
     discardPending && typeof document !== 'undefined'
       ? createPortal(
