@@ -8,6 +8,7 @@ import { TimelineTruthInspector } from '../../temporal/timeline-truth-inspector'
 import { PlanWorkPanel } from '../../temporal/plan-work-panel';
 import { TemporalTimelineRuntimeBoundary } from '../../temporal/timeline-runtime-boundary';
 import type { HomeWorldOpenIntent } from '../model/home-world-focus';
+import { HomeCreateInteractionBridge } from './home-create-interaction-bridge';
 import { HomeShell } from './home-shell';
 
 type HomePageProps = Readonly<{
@@ -20,6 +21,7 @@ type HomePageProps = Readonly<{
 export function HomePage(props: HomePageProps) {
   return (
     <TemporalTimelineRuntimeBoundary viewedDateIso={props.viewedDateIso}>
+      <HomeCreateInteractionBridge />
       <HomeShell {...props} />
       <TimelineTruthInspector />
       <PlanWorkPanel />
