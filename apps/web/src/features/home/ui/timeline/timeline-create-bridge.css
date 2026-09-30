@@ -75,13 +75,12 @@
   outline-offset: 2px;
 }
 
+/* U1: drafting does not materialize a visual Timeline ghost. The preview
+ * projection may remain an internal Create concern for future UX, but it is
+ * deliberately absent from the rendered product surface for now. */
 .temporal-create-projection-card.is-preview,
 .temporal-create-all-day.is-preview {
-  border-style: dashed;
-  opacity: 0.62;
-  pointer-events: none;
-  box-shadow: inset 3px 0 0
-    color-mix(in srgb, var(--timeline-group-color) 60%, transparent);
+  display: none;
 }
 
 .temporal-create-all-day {
