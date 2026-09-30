@@ -70,10 +70,11 @@
   pointer-events: none;
 }
 
-.home-context-rail:has(.temporal-create-discard),
-.home-create-panel-host:has(.temporal-create-discard),
-.home-create-panel-host:has(.temporal-create-discard) .temporal-create-composer {
-  overflow: visible;
+/* The legacy inline discard remains inside the composer for component-level
+ * compatibility, but U1 owns the product modal as a body portal. Keeping the
+ * inline copy hidden prevents rail clipping/duplicate focus targets. */
+.home-create-panel-host .temporal-create-composer > .temporal-create-discard {
+  display: none;
 }
 
 .temporal-create-backdrop.is-modal .temporal-create-composer__header,
@@ -81,20 +82,30 @@
   visibility: hidden;
 }
 
-.temporal-create-discard {
+.temporal-create-discard-viewport {
   position: fixed;
-  z-index: 2100;
-  top: 50%;
-  left: 50%;
-  width: min(520px, calc(100vw - 32px));
-  max-width: calc(100vw - 32px);
+  z-index: 3200;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  padding: 24px;
+  background: rgba(2, 6, 12, 0.66);
+  backdrop-filter: blur(4px);
+}
+
+.temporal-create-discard-viewport .temporal-create-discard {
+  position: relative;
+  z-index: 1;
+  top: auto;
+  left: auto;
+  width: min(520px, calc(100vw - 48px));
+  max-width: 100%;
   margin: 0;
-  transform: translate(-50%, -50%);
+  transform: none;
   padding: 20px;
   border-radius: 16px;
-  box-shadow:
-    0 0 0 100vmax rgba(2, 6, 12, 0.66),
-    0 28px 90px rgba(0, 0, 0, 0.56);
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.56);
   background: color-mix(
     in srgb,
     var(--dante-semantic-color-home-surface-primary, #0d1522) 97%,
@@ -105,5 +116,13 @@
 @media (max-width: 1120px) {
   .home-create-panel-host .temporal-create-composer {
     width: calc(100vw - 24px);
+  }
+
+  .temporal-create-discard-viewport {
+    padding: 16px;
+  }
+
+  .temporal-create-discard-viewport .temporal-create-discard {
+    width: min(520px, calc(100vw - 32px));
   }
 }
