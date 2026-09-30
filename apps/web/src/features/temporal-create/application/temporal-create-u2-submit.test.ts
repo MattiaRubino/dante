@@ -161,7 +161,7 @@ describe('U2 Quick Create submit mapping', () => {
         patternKind: 'calendar-wall-clock',
         calendarFrequency: 'weekly',
         calendarInterval: 1,
-        weekdays: Object.freeze(['WE']),
+        weekdays: Object.freeze(['WE' as const]),
       },
     });
 
