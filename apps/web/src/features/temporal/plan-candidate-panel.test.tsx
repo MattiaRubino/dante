@@ -33,7 +33,7 @@ it('shows bounded previews without an apply action or a claim of availability', 
       softViolations: 1,
     }],
   });
-  render(<PlanCandidatePanel plan={plan} stepRef={stepRef} title="Mix" />);
+  render(<PlanCandidatePanel plan={plan} stepRef={stepRef} activityRef="activity" title="Mix" />);
   expect(search).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole('button', { name: 'Cerca alternative vicine per Mix' }));
   await waitFor(() => expect(search).toHaveBeenCalledWith(plan, stepRef));
@@ -49,7 +49,7 @@ it('keeps an unsatisfied prerequisite distinct from infeasibility', async () => 
     solverStatus: null, movementPolicyStatus: 'missing',
     capacityEvaluated: false, candidates: [],
   });
-  render(<PlanCandidatePanel plan={plan} stepRef={stepRef} title="Mix" />);
+  render(<PlanCandidatePanel plan={plan} stepRef={stepRef} activityRef="activity" title="Mix" />);
   fireEvent.click(screen.getByRole('button', { name: 'Cerca alternative vicine per Mix' }));
   expect(await screen.findByText('Un prerequisito non è soddisfatto.')).toBeTruthy();
 });
@@ -68,7 +68,7 @@ it('requires an explicit review and handles pending confirmation before a commit
   });
   request.mockResolvedValue({ kind: 'pending_confirmation', proposalRef: 'proposal', replayed: false });
   confirm.mockResolvedValue({ kind: 'committed', proposalRef: 'proposal', replayed: false });
-  render(<PlanCandidatePanel plan={plan} stepRef={stepRef} title="Mix" />);
+  render(<PlanCandidatePanel plan={plan} stepRef={stepRef} activityRef="activity" title="Mix" />);
   fireEvent.click(screen.getByRole('button', { name: 'Cerca alternative vicine per Mix' }));
   expect(await screen.findByRole('button', { name: 'Rivedi questa alternativa' })).toBeTruthy();
   expect(request).not.toHaveBeenCalled();

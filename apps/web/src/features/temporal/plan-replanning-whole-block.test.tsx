@@ -9,11 +9,13 @@ import { afterEach, expect, it, vi } from 'vitest';
 
 import type { PlanWork } from './remote-plan-work-data-source';
 
-const { diagnose, search, request, confirm } = vi.hoisted(() => ({
+const { diagnose, search, request, confirm, requireConfirmation, setEarliestStart } = vi.hoisted(() => ({
   diagnose: vi.fn(),
   search: vi.fn(),
   request: vi.fn(),
   confirm: vi.fn(),
+  requireConfirmation: vi.fn(),
+  setEarliestStart: vi.fn(),
 }));
 vi.mock('./remote-plan-conflict-data-source', () => ({
   createRemotePlanConflictDataSource: () => ({ diagnose }),
@@ -23,6 +25,9 @@ vi.mock('./remote-plan-candidate-data-source', () => ({
 }));
 vi.mock('./remote-plan-admission-data-source', () => ({
   createRemotePlanAdmissionDataSource: () => ({ request, confirm }),
+}));
+vi.mock('./remote-plan-replanning-setup-data-source', () => ({
+  createRemotePlanReplanningSetupDataSource: () => ({ requireConfirmation, setEarliestStart }),
 }));
 
 import { PlanConflictPanel } from './plan-conflict-panel';
@@ -117,6 +122,8 @@ afterEach(() => {
   search.mockReset();
   request.mockReset();
   confirm.mockReset();
+  requireConfirmation.mockReset();
+  setEarliestStart.mockReset();
 });
 
 it('traces unknown prerequisite, reviewed proposal, confirmation and refreshed Schedule', async () => {
@@ -252,5 +259,43 @@ it('shows unsupported placement and blocked Policy without offering review', asy
   expect(
     screen.queryByRole('button', { name: 'Rivedi questa alternativa' }),
   ).toBeNull();
+  expect(request).not.toHaveBeenCalled();
+});
+
+it('configures a hard conflict and confirmation Policy by clicks before reviewed admission', async () => {
+  diagnose.mockResolvedValue(diagnosis('satisfied'));
+  const candidate = {
+    ...base, basisStatus: 'supported', reasonCode: 'supported_rules_only',
+    solverStatus: 'OPTIMAL', candidates: [{
+      startsAt: '2026-10-02T11:00:00Z', endsAt: '2026-10-02T12:00:00Z',
+      softViolations: 0,
+    }],
+  };
+  search
+    .mockResolvedValueOnce({ ...candidate, movementPolicyStatus: 'missing', policyStateRef: null })
+    .mockResolvedValueOnce({ ...candidate, movementPolicyStatus: 'missing', policyStateRef: null })
+    .mockResolvedValueOnce(candidate);
+  setEarliestStart.mockResolvedValue(undefined);
+  requireConfirmation.mockResolvedValue(undefined);
+  render(<PlanConflictPanel plan={plan} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Analizza conflitti' }));
+  fireEvent.click(await screen.findByRole('button', { name: 'Cerca alternative vicine per Mix' }));
+  expect(await screen.findByRole('button', { name: 'Consenti spostamento con conferma' })).toBeTruthy();
+  expect(screen.queryByRole('button', { name: 'Rivedi questa alternativa' })).toBeNull();
+  const boundary = new Date(Date.parse(placement.startsAt) + 60 * 60 * 1000);
+  const localBoundary = new Date(boundary.getTime() - boundary.getTimezoneOffset() * 60_000)
+    .toISOString().slice(0, 16);
+  fireEvent.change(screen.getByLabelText('Inizio non prima di'), {
+    target: { value: localBoundary },
+  });
+  fireEvent.click(screen.getByRole('button', { name: 'Imposta vincolo hard' }));
+  await waitFor(() => expect(setEarliestStart).toHaveBeenCalledWith(
+    mixActivity, boundary.toISOString(),
+  ));
+  fireEvent.click(await screen.findByRole('button', {
+    name: 'Consenti spostamento con conferma',
+  }));
+  await waitFor(() => expect(requireConfirmation).toHaveBeenCalledWith(placement.scheduleRef, null));
+  expect(await screen.findByRole('button', { name: 'Rivedi questa alternativa' })).toBeTruthy();
   expect(request).not.toHaveBeenCalled();
 });

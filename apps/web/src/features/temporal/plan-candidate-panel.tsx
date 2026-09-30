@@ -10,6 +10,7 @@ import {
   type Admission,
   type ReviewedAlternative,
 } from './remote-plan-admission-data-source';
+import { createRemotePlanReplanningSetupDataSource } from './remote-plan-replanning-setup-data-source';
 
 const REASONS: Record<string, string> = {
   linked_absolute_schedule_required: 'Serve uno Step collegato a una sola Schedule corrente.',
@@ -27,16 +28,45 @@ function format(iso: string): string {
   }).format(new Date(iso));
 }
 
-export function PlanCandidatePanel({ plan, stepRef, title }: {
-  plan: PlanWork; stepRef: string; title: string;
+export function PlanCandidatePanel({ plan, stepRef, activityRef, title }: {
+  plan: PlanWork; stepRef: string; activityRef: string; title: string;
 }) {
   const source = useMemo(() => createRemotePlanCandidateDataSource(), []);
   const admissionSource = useMemo(() => createRemotePlanAdmissionDataSource(), []);
+  const setupSource = useMemo(() => createRemotePlanReplanningSetupDataSource(), []);
   const [result, setResult] = useState<PlanCandidates | null>(null);
   const [selected, setSelected] = useState<ReviewedAlternative | null>(null);
   const [admission, setAdmission] = useState<Admission | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [earliest, setEarliest] = useState('');
+  const [constraintSaved, setConstraintSaved] = useState(false);
+  const [policySaved, setPolicySaved] = useState(false);
+  const configure = (kind: 'constraint' | 'policy') => {
+    if (pending || result?.scheduleRef === null || result === null) return;
+    if (kind === 'constraint' && (
+      !Number.isFinite(Date.parse(earliest)) ||
+      result.currentStartsAt === null ||
+      Date.parse(earliest) <= Date.parse(result.currentStartsAt)
+    )) {
+      setError('Scegli una data e ora dopo l’inizio attuale di questa Attività.');
+      return;
+    }
+    setPending(true);
+    setError(null);
+    const action = kind === 'policy'
+      ? setupSource.requireConfirmation(result.scheduleRef, result.policyStateRef)
+      : setupSource.setEarliestStart(activityRef, new Date(earliest).toISOString());
+    void action.then(async () => {
+      if (kind === 'constraint') setConstraintSaved(true);
+      else setPolicySaved(true);
+      setSelected(null);
+      setAdmission(null);
+      setResult(await source.search(plan, stepRef));
+    }).catch((cause: unknown) => setError(
+      cause instanceof Error ? cause.message : 'Configurazione non disponibile.',
+    )).finally(() => setPending(false));
+  };
   const search = () => {
     if (pending) return;
     setPending(true);
@@ -84,8 +114,28 @@ export function PlanCandidatePanel({ plan, stepRef, title }: {
       {result !== null ? (
         <div role="status">
           <p>Disponibilità e capacità non valutate. La ricerca mostra alternative senza modificare la Schedule.</p>
+          {typeof result.currentStartsAt === 'string' &&
+          typeof result.scheduleRef === 'string' ? (
+            <section aria-label={`Regole di spostamento per ${title}`}>
+              <h4>Regole per {title}</h4>
+              <p>Inizio attuale: {format(result.currentStartsAt)}.</p>
+              <label>Inizio non prima di{' '}
+                <input type="datetime-local" value={earliest}
+                  onChange={(event) => setEarliest(event.currentTarget.value)} />
+              </label>{' '}
+              <button type="button" disabled={pending || constraintSaved}
+                onClick={() => configure('constraint')}>Imposta vincolo hard</button>
+              {constraintSaved ? <p>Vincolo registrato. Riesegui Analizza conflitti per leggere la situazione corrente.</p> : null}
+              {result.movementPolicyStatus !== 'automatic' ? (
+                <button type="button" disabled={pending} onClick={() => configure('policy')}>
+                  Consenti spostamento con conferma
+                </button>
+              ) : null}
+              {policySaved ? <p>Movement Policy registrata con conferma esplicita.</p> : null}
+            </section>
+          ) : null}
           {result.movementPolicyStatus !== 'automatic' ? (
-            <p>Movement Policy: {result.movementPolicyStatus === 'blocked' ? 'movimento automatico bloccato' : 'non presente'}. Ogni eventuale modifica richiede una verifica separata.</p>
+            <p>Movement Policy: {result.movementPolicyStatus === 'blocked' ? 'movimento automatico bloccato' : 'non presente'}.</p>
           ) : null}
           {result.basisStatus !== 'supported' || result.solverStatus !== 'OPTIMAL' ? (
             <p>{REASONS[result.reasonCode] ?? 'Il risultato non è conclusivo per le regole supportate.'}</p>

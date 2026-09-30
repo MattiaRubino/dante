@@ -78,6 +78,7 @@ _EXPECTED_TEMPORAL_OPERATIONS = {
     ("/api/v1/temporal/life-area-assignments/activities/{activity_ref}", "put"): "temporal_assign_activity_life_area",
     ("/api/v1/temporal/life-area-assignments/events/{event_ref}", "put"): "temporal_assign_event_life_area",
     ("/api/v1/temporal/constraints", "post"): "temporal_create_constraint",
+    ("/api/v1/temporal/schedules/{schedule_ref}/movement-policy", "put"): "temporal_set_self_schedule_movement_policy",
     ("/api/v1/temporal/constraints", "get"): "temporal_list_constraints_by_subject",
     ("/api/v1/temporal/constraints/evaluate", "post"): "temporal_evaluate_constraints",
     ("/api/v1/temporal/constraints/{constraint_ref}", "get"): "temporal_get_constraint",

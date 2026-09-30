@@ -63,6 +63,7 @@ import type {
   LifeAreaMutationResponse,
   LifeAreaReorderResponse,
   LifeAreaResponse,
+  MovementPolicyMutationResponse,
   MutationRequest,
   OccurrenceCheckpointRequest,
   OccurrenceCheckpointResponse,
@@ -164,6 +165,7 @@ import type {
   SessionEndCommand,
   SessionResponse,
   SetExpectedParticipationRequest,
+  SetMovementPolicyBody,
   SetResponsibilityRequest,
   SignInRequest,
   SignupAuthenticatedResponse,
@@ -11577,6 +11579,108 @@ export const temporalCheckpointRoutineAdvancedRecurrence = async (
     status: res.status,
     headers: res.headers,
   } as temporalCheckpointRoutineAdvancedRecurrenceResponse;
+};
+
+export type temporalSetSelfScheduleMovementPolicyResponse200 = {
+  data: MovementPolicyMutationResponse;
+  status: 200;
+};
+
+export type temporalSetSelfScheduleMovementPolicyResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type temporalSetSelfScheduleMovementPolicyResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type temporalSetSelfScheduleMovementPolicyResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type temporalSetSelfScheduleMovementPolicyResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type temporalSetSelfScheduleMovementPolicyResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type temporalSetSelfScheduleMovementPolicyResponse503 = {
+  data: ProblemDetails;
+  status: 503;
+};
+
+export type temporalSetSelfScheduleMovementPolicyResponseSuccess =
+  temporalSetSelfScheduleMovementPolicyResponse200 & {
+    headers: Headers;
+  };
+export type temporalSetSelfScheduleMovementPolicyResponseError = (
+  | temporalSetSelfScheduleMovementPolicyResponse401
+  | temporalSetSelfScheduleMovementPolicyResponse403
+  | temporalSetSelfScheduleMovementPolicyResponse404
+  | temporalSetSelfScheduleMovementPolicyResponse409
+  | temporalSetSelfScheduleMovementPolicyResponse422
+  | temporalSetSelfScheduleMovementPolicyResponse503
+) & {
+  headers: Headers;
+};
+
+export type temporalSetSelfScheduleMovementPolicyResponse =
+  | temporalSetSelfScheduleMovementPolicyResponseSuccess
+  | temporalSetSelfScheduleMovementPolicyResponseError;
+
+export const getTemporalSetSelfScheduleMovementPolicyUrl = (
+  scheduleRef: string,
+) => {
+  return `/api/v1/temporal/schedules/${scheduleRef}/movement-policy`;
+};
+
+/**
+ * @summary Set Self Schedule Movement Policy
+ */
+export const temporalSetSelfScheduleMovementPolicy = async (
+  scheduleRef: string,
+  setMovementPolicyBody: SetMovementPolicyBody,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalSetSelfScheduleMovementPolicyResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalSetSelfScheduleMovementPolicyUrl(scheduleRef),
+    {
+      ...options,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(setMovementPolicyBody),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalSetSelfScheduleMovementPolicyResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalSetSelfScheduleMovementPolicyResponse;
 };
 
 export type reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchResponse200 =
