@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B12 CLOSED / QUALIFIED USER ACCEPTANCE — B14 UI correctness next; affected B12-D rerun unreported
+- **Status:** B12 CLOSED / QUALIFIED USER ACCEPTANCE — B14+B07 active as one user-guided product/UI cycle; affected B12-D rerun unreported
 - **Reconciled:** 2026-09-30
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -26,6 +26,7 @@
 - **B12-D implementation checkpoint:** `docs/workstreams/timeline-temporal-operational-b12-d-implementation-2026-09-29.md`
 - **B12-D local gate:** `docs/workstreams/timeline-temporal-operational-b12-d-gate-2026-09-29.md`
 - **B12 closure:** `docs/workstreams/timeline-temporal-operational-b12-closure-2026-09-30.md`
+- **B14/B07 working ledger:** `docs/workstreams/timeline-temporal-operational-b14-ui-consolidation-2026-09-30.md`
 - **B13-D scope:** `docs/workstreams/timeline-temporal-operational-b13-d-scope-2026-09-29.md`
 - **B13-D candidate gate:** `docs/workstreams/timeline-temporal-operational-b13-d-gate-2026-09-29.md`
 - **B13-D closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-d-closure-2026-09-29.md`
@@ -66,15 +67,14 @@ B12     ✅ CLOSED / QUALIFIED USER ACCEPTANCE 2026-09-30
   B12-B ✅ CLOSED / PROVEN 2026-09-29
   B12-C ✅ CLOSED / PROVEN 2026-09-29
   B12-D ✅ CLOSED / QUALIFIED USER ACCEPTANCE 2026-09-30
-B14     ◐ NEXT — UI CORRECTNESS
-B07     ⏸ DEFERRED UNTIL B14
+B14+B07 ◐ ACTIVE — USER-GUIDED PRODUCT / UI CONSOLIDATION
 B15     ⬜ NOT STARTED
 ```
 
 Execution order:
 
 ```text
-B09 → B10 → B11 → B13-A → B13-B → B13-C → B13-D → B12 → B14 → B07 → B15
+B09 → B10 → B11 → B13-A → B13-B → B13-C → B13-D → B12 → B14+B07 → B15
 ```
 
 ---

@@ -4,8 +4,9 @@
 - **Branch/workstream:** `feature/timeline-temporal-operational`
 - **Vertical boundary:** Home `+` creation/configuration → canonical temporal truth → Timeline projection/actions → bounded lifecycle completion
 - **Completed functional frontier:** B12 ✅ CLOSED / qualified user-reported B12-D acceptance 2026-09-30
-- **Current block:** B14 Temporal Create Completeness Gate — UI correctness next
-- **Current gate:** B12-D and B12 closed on qualified user-reported acceptance; final click-path automated rerun and itemized real-app observations unreported; B14 next
+- **Current block:** B14 + B07 user-guided product/UI consolidation
+- **Current gate:** B12-D and B12 closed on qualified user-reported acceptance; B14/B07 is a live user-directed implementation cycle
+- **B14/B07 working ledger:** `docs/workstreams/timeline-temporal-operational-b14-ui-consolidation-2026-09-30.md`
 - **B12 block scope:** `docs/workstreams/timeline-temporal-operational-b12-scope-2026-09-29.md`
 - **B12-A scope proposal:** `docs/workstreams/timeline-temporal-operational-b12-a-scope-2026-09-29.md`
 - **B12-A closure:** `docs/workstreams/timeline-temporal-operational-b12-a-closure-2026-09-29.md`
@@ -31,7 +32,7 @@
 - **B10-D closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-d-closure-2026-09-26.md`
 - **B10-E closure evidence:** `docs/workstreams/timeline-temporal-operational-b10-e-closure-2026-09-26.md`
 - **B11 closure evidence:** `docs/workstreams/timeline-temporal-operational-b11-closure-2026-09-28.md`
-- **Deferred block:** B07 UI/UX Consolidation v1 — execute only after B14
+- **UI consolidation:** B07 runs within the active B14 user-guided cycle
 - **Live execution ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **Continuation handoff:** `docs/workstreams/timeline-temporal-operational-handoff.md`
 
@@ -130,18 +131,17 @@ B12 Replanning / Conflict / Solver                ✅ CLOSED / QUALIFIED USER AC
   B12-B Bounded candidate generation / solver      ✅ CLOSED / PROVEN 2026-09-29
   B12-C Review / governed admission                ✅ CLOSED / PROVEN 2026-09-29
   B12-D Integration / product acceptance           ✅ CLOSED / QUALIFIED USER ACCEPTANCE 2026-09-30
-B14 Temporal Create Completeness Gate             ◐ NEXT — UI CORRECTNESS
-B07 UI/UX Consolidation v1                        ⏸ DEFERRED UNTIL B14
+B14 + B07 Product / UI Consolidation              ◐ ACTIVE — USER-GUIDED
 B15 Whole Vertical Closure                        ⬜
 ```
 
 Execution sequence:
 
 ```text
-B09 → B10 → B11 → B13-A → B13-B → B13-C → B13-D → B12 → B14 → B07 → B15
+B09 → B10 → B11 → B13-A → B13-B → B13-C → B13-D → B12 → B14+B07 → B15
 ```
 
-B13 precedes B12 so replanning/solver logic already understands canonical work structure, dependencies and execution-structure constraints. B14 precedes B07 so final UI consolidation does not polish unsupported editable intent.
+B13 precedes B12 so replanning/solver logic already understands canonical work structure, dependencies and execution-structure constraints. B14 and B07 now run together so field truth, product rules and UI placement are corrected in the same user-directed delivery cycle.
 
 ---
 
@@ -433,7 +433,9 @@ B12 may not invent work structure, dependency truth or B13 execution constraints
 
 ---
 
-# 7. B14 — Temporal Create Completeness Gate
+# 7. B14 + B07 — user-guided product and UI consolidation
+
+The user directs the backlog while using the application. The active ledger is `timeline-temporal-operational-b14-ui-consolidation-2026-09-30.md`. Every change can include UI placement, interaction rules and the owning application/persistence work required to make it real.
 
 For every editable field visible in Create, exactly one must be true:
 
@@ -454,13 +456,7 @@ editable UI value
 
 ---
 
-# 8. B07 — UI/UX Consolidation v1
-
-Execute after B14 so final Home/Timeline/`+`/editors/actions/navigation are designed once against truthful functional vocabulary. B07 does not create missing semantics.
-
----
-
-# 9. B15 — Whole Vertical Closure
+# 8. B15 — Whole Vertical Closure
 
 Final whole-vertical reconciliation across migrations/catalog/Dictionary, backend/API/client, frontend, negative invariants, local automated proof and dogfood.
 

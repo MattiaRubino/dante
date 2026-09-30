@@ -25,6 +25,7 @@
 - **B12-D implementation checkpoint:** `docs/workstreams/timeline-temporal-operational-b12-d-implementation-2026-09-29.md`
 - **B12-D local gate:** `docs/workstreams/timeline-temporal-operational-b12-d-gate-2026-09-29.md`
 - **B12 closure:** `docs/workstreams/timeline-temporal-operational-b12-closure-2026-09-30.md`
+- **B14/B07 working ledger:** `docs/workstreams/timeline-temporal-operational-b14-ui-consolidation-2026-09-30.md`
 - **B13-D scope:** `docs/workstreams/timeline-temporal-operational-b13-d-scope-2026-09-29.md`
 - **B13-D candidate gate:** `docs/workstreams/timeline-temporal-operational-b13-d-gate-2026-09-29.md`
 - **B13-D closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-d-closure-2026-09-29.md`
@@ -32,7 +33,7 @@
 - **Current persistence source frontier:** `20260929_93` (B12-C focused local proof)
 - **Reported current catalog topology:** `_93` / `196|5|155|100|397|344|497|0|0|0` (focused local gate)
 - **Completed functional frontier:** B12 ✅ CLOSED / qualified user-reported acceptance 2026-09-30
-- **Current implementation cursor:** B12-D and B12 closed on qualified user-reported acceptance; final click-path automated rerun and itemized real-app observations unreported; B14 UI correctness next; B13-D post-repair web rerun unreported
+- **Current implementation cursor:** B12-D and B12 closed on qualified user-reported acceptance; B14/B07 active as one user-guided product/UI cycle; B13-D post-repair web rerun unreported
 - **CI:** not authorized; local tests are run by the user
 
 ---
@@ -130,15 +131,14 @@ B12 Replanning / Conflict / Solver                ✅ CLOSED / QUALIFIED USER AC
   B12-B Bounded candidate generation / solver      ✅ CLOSED / PROVEN 2026-09-29
   B12-C Review / governed admission                ✅ CLOSED / PROVEN 2026-09-29
   B12-D Integration / product acceptance           ✅ CLOSED / QUALIFIED USER ACCEPTANCE 2026-09-30
-B14 Temporal Create Completeness Gate             ◐ NEXT — UI CORRECTNESS
-B07 UI/UX Consolidation v1                        ⏸ DEFERRED UNTIL B14
+B14 + B07 Product / UI Consolidation              ◐ ACTIVE — USER-GUIDED
 B15 Whole Vertical Closure                        ⬜
 ```
 
 Sequence authority:
 
 ```text
-B09 → B10 → B11 → B13-A → B13-B → B13-C → B13-D → B12 → B14 → B07 → B15
+B09 → B10 → B11 → B13-A → B13-B → B13-C → B13-D → B12 → B14+B07 → B15
 ```
 
 No CI/GitHub Actions. The user runs local automated gates.
@@ -351,13 +351,9 @@ The candidate integrates B13-A/B/C on one Plan in a PostgreSQL test and one Home
 
 Block and B12-A scopes are in `timeline-temporal-operational-b12-scope-2026-09-29.md` and `timeline-temporal-operational-b12-a-scope-2026-09-29.md`. B12-A is closed / proven: generated 389, both typechecks, web 4, API contract 1, Ruff, PostgreSQL/catalog 11 passed in 26.14s in the user's worktree; see `timeline-temporal-operational-b12-a-closure-2026-09-29.md`. B12-B is closed / proven on the user-run focused local gate: generated 393, both typechecks, web 3, backend 8, Ruff and PostgreSQL/catalog 11 passed in 24.63s; see `timeline-temporal-operational-b12-b-closure-2026-09-29.md`. B12-C is closed on the reported focused local gate: generated 397, both typechecks, web 4, Ruff, backend 9 and PostgreSQL 19 passed. See `timeline-temporal-operational-b12-c-closure-2026-09-29.md`. B12-D scope was approved; the original user-run gate passed on `75891447` (web 11, backend 9, PostgreSQL/catalog 20, generated 397, both typechecks and Ruff). The affected automated rerun and itemized real-app observations are unreported; the user accepted qualified closure. See `timeline-temporal-operational-b12-closure-2026-09-30.md`; proof and commands are in `timeline-temporal-operational-b12-d-implementation-2026-09-29.md` and `timeline-temporal-operational-b12-d-gate-2026-09-29.md`. The user accepted B12 closure without itemized final real-app proof; the gap is recorded in the closure. Proposal != accepted Schedule; solver UNKNOWN != INFEASIBLE; AI != scheduling authority.
 
-## B14 — Temporal Create Completeness Gate
+## B14 + B07 — user-guided product and UI consolidation
 
-Every editable Create field must be canonically supported/proven, truthfully handed off, presentation-only, or hidden.
-
-## B07 — UI/UX Consolidation v1
-
-Deferred until B14 so final UI consolidation operates over truthful functional vocabulary.
+The user directs a live list of changes while using the product. Each item can modify UI placement, interaction behavior and the owning rule or persistence layer. The Create completeness rule remains active: every editable field must be canonically supported/proven, truthfully handed off, presentation-only, or hidden. The active ledger is `timeline-temporal-operational-b14-ui-consolidation-2026-09-30.md`.
 
 ## B15 — Whole Vertical Closure
 
