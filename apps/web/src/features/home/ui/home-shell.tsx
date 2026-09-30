@@ -41,7 +41,7 @@ type WorldFocusPointerPress = {
 };
 
 const WORLD_FOCUS_CLICK_TRAVEL_THRESHOLD = 7;
-const HOME_CONTEXT_RAIL_FALLBACK_WIDTH_PX = 437;
+const HOME_CONTEXT_RAIL_FALLBACK_WIDTH_PX = 475;
 
 function getWorldButton(target: EventTarget | null) {
   if (!(target instanceof Element)) {
