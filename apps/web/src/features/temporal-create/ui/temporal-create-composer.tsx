@@ -3,7 +3,6 @@ import {
   useId,
   useLayoutEffect,
   useRef,
-  type CSSProperties,
   type FormEvent,
   type KeyboardEvent,
   type ReactNode,
@@ -21,17 +20,14 @@ import {
 } from './temporal-create-fields';
 import { temporalCreateProductCopy } from './temporal-create-product-copy';
 import type {
-  TemporalCreateComposerPosition,
   TemporalCreateContextOption,
 } from './temporal-create-ui-types';
 
 export type {
-  TemporalCreateComposerPosition,
   TemporalCreateContextOption,
 } from './temporal-create-ui-types';
 
 type TemporalCreateComposerProps = Readonly<{
-  position: TemporalCreateComposerPosition;
   session: TemporalCreateSession;
   contexts: readonly TemporalCreateContextOption[];
   issues: readonly TemporalValidationIssue[];
@@ -43,6 +39,7 @@ type TemporalCreateComposerProps = Readonly<{
   onRequestClose: () => void;
   onContinueEditing: () => void;
   onDiscard: () => void;
+  onMoveToUnplaced: () => void;
   onSubmit: () => void;
 }>;
 
@@ -77,7 +74,6 @@ function issueFor(
 }
 
 export function TemporalCreateComposer({
-  position,
   session,
   contexts,
   issues,
@@ -89,6 +85,7 @@ export function TemporalCreateComposer({
   onRequestClose,
   onContinueEditing,
   onDiscard,
+  onMoveToUnplaced,
   onSubmit,
 }: TemporalCreateComposerProps) {
   const { t, i18n } = useTranslation('common');
@@ -162,6 +159,12 @@ export function TemporalCreateComposer({
   const requestCloseFromCurrentFocus = () => {
     rememberCloseAttemptFocus();
     onRequestClose();
+  };
+
+  const requestCloseFromBackdrop = () => {
+    if (!pending && !discardPending) {
+      requestCloseFromCurrentFocus();
+    }
   };
 
   const continueEditing = () => {
@@ -308,11 +311,6 @@ export function TemporalCreateComposer({
     ) : null;
   };
 
-  const style = {
-    top: `${position.top}px`,
-    left: `${position.left}px`,
-  } satisfies CSSProperties;
-
   const constraintLabel =
     fields.scheduling.constraintKind === 'open'
       ? t(($) => $.common.home.timeline.create.planning.constraintOpen)
@@ -343,6 +341,11 @@ export function TemporalCreateComposer({
     <div
       className={`temporal-create-backdrop${discardPending ? ' is-modal' : ''}`}
       data-temporal-create="backdrop"
+      onPointerDown={(event) => {
+        if (event.target === event.currentTarget) {
+          requestCloseFromBackdrop();
+        }
+      }}
     >
       <div
         ref={dialogRef}
@@ -356,7 +359,6 @@ export function TemporalCreateComposer({
         aria-labelledby={dialogTitleId}
         aria-busy={pending || undefined}
         onKeyDown={handleKeyDown}
-        style={style}
       >
         <div
           className="temporal-create-composer__header"
@@ -524,8 +526,22 @@ export function TemporalCreateComposer({
             </div>
             <div className="temporal-create-discard__actions">
               <button ref={continueRef} type="button" onClick={continueEditing}>
-                {t(($) => $.common.home.timeline.create.continueEditing)}
+                Annulla
               </button>
+              {fields.kind === 'activity' ? (
+                <button
+                  type="button"
+                  disabled={pending || fields.title.trim().length === 0}
+                  onClick={onMoveToUnplaced}
+                  title={
+                    fields.title.trim().length === 0
+                      ? 'Inserisci prima un titolo.'
+                      : undefined
+                  }
+                >
+                  Sposta in Da collocare
+                </button>
+              ) : null}
               <button
                 className="temporal-create-discard__destructive"
                 type="button"

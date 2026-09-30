@@ -7,7 +7,7 @@
   --home-orientation-height: 190px;
   --home-hero-height: 650px;
   --home-hero-bottom: 18px;
-  --home-today-rail-width: 306px;
+  --home-today-rail-width: 380px;
   --home-today-gap: 16px;
 
   min-height: 100dvh;
@@ -1134,7 +1134,7 @@
   grid-template-rows: minmax(0, 0.94fr) minmax(0, 1.06fr);
   gap: 14px;
   align-self: stretch;
-  min-width: 306px;
+  min-width: 380px;
   min-height: 0;
   margin-bottom: 10px;
   overflow: hidden;
@@ -1153,7 +1153,7 @@
 }
 
 .home-context-rail > section {
-  min-width: 306px;
+  min-width: 380px;
   min-height: 0;
   height: 100%;
   padding: 16px;

@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B12 CLOSED / QUALIFIED USER ACCEPTANCE — B14+B07 active as one user-guided product/UI cycle; affected B12-D rerun unreported
+- **Status:** B12 CLOSED / QUALIFIED USER ACCEPTANCE — B14+B07 active as one user-guided product/UI cycle; U1 Create-entry candidate awaits user visual proof; affected B12-D rerun unreported
 - **Reconciled:** 2026-09-30
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`

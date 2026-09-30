@@ -33,15 +33,19 @@
   position: fixed;
   z-index: 1600;
   inset: 0;
-  background: rgba(2, 6, 12, 0.42);
+  background: transparent;
   overscroll-behavior: contain;
 }
 
 .temporal-create-composer {
-  position: absolute;
+  position: fixed;
+  top: 104px !important;
+  right: 18px;
+  bottom: 10px;
+  left: auto !important;
   box-sizing: border-box;
-  width: min(560px, calc(100vw - 32px));
-  max-height: calc(100dvh - 32px);
+  width: min(380px, calc(100vw - 36px));
+  max-height: none;
   overflow: auto;
   padding: 18px;
   border: 1px solid
@@ -65,6 +69,15 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.045);
   isolation: isolate;
   animation: temporal-create-enter 150ms cubic-bezier(0.2, 0.75, 0.25, 1);
+}
+
+@media (max-width: 1120px) {
+  .temporal-create-composer {
+    top: 78px !important;
+    right: 12px;
+    bottom: 12px;
+    width: calc(100vw - 24px);
+  }
 }
 
 .temporal-create-composer__header {
@@ -447,10 +460,12 @@
   }
 
   .temporal-create-composer {
-    position: relative;
-    top: auto !important;
+    position: fixed;
+    top: 78px !important;
+    right: 12px;
+    bottom: 12px;
     left: auto !important;
-    width: min(100%, 620px);
+    width: calc(100vw - 24px);
     max-height: min(84dvh, 720px);
     border-radius: 22px;
     animation-name: temporal-create-sheet-enter;

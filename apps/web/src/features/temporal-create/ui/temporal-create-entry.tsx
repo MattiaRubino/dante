@@ -2,7 +2,6 @@ import type { PlainDate } from '@dante/time';
 import {
   useCallback,
   useEffect,
-  useLayoutEffect,
   useRef,
   useState,
 } from 'react';
@@ -37,30 +36,15 @@ import {
 } from '../model/temporal-create-session';
 import {
   TemporalCreateComposer,
-  type TemporalCreateComposerPosition,
   type TemporalCreateContextOption,
 } from './temporal-create-composer';
 
 import './temporal-create.css';
 
-const VIEWPORT_PADDING_PX = 16;
-const DEFAULT_COMPOSER_TOP_PX = 64;
-const FLOATING_COMPOSER_BREAKPOINT_PX = 900;
-
 type InvocationAnchor = Readonly<{
   left: number;
   top: number;
   bottom: number;
-}>;
-
-type ComposerDrag = Readonly<{
-  pointerId: number;
-  startX: number;
-  startY: number;
-  startLeft: number;
-  startTop: number;
-  width: number;
-  height: number;
 }>;
 
 export type TemporalCreateInvocation = Readonly<{
@@ -83,10 +67,6 @@ export type TemporalCreateEntryProps = Readonly<{
   creationEnabled?: boolean | undefined;
 }>;
 
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(Math.max(value, min), Math.max(min, max));
-}
-
 function minuteToInput(minute: number): string {
   const safe = Math.max(0, Math.min(1435, Math.round(minute / 5) * 5));
   return `${String(Math.floor(safe / 60)).padStart(2, '0')}:${String(
@@ -107,7 +87,6 @@ export function TemporalCreateEntry({
   const { t, i18n } = useTranslation('common');
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const focusReturnRef = useRef<HTMLElement | null>(null);
-  const composerDragRef = useRef<ComposerDrag | null>(null);
   const [runtime] = useState(
     () => runtimeOverride ?? createLocalTemporalCreateRuntime(),
   );
@@ -125,10 +104,6 @@ export function TemporalCreateEntry({
     'idle',
   );
   const [failureMessage, setFailureMessage] = useState('');
-  const [position, setPosition] = useState<TemporalCreateComposerPosition>({
-    top: DEFAULT_COMPOSER_TOP_PX,
-    left: VIEWPORT_PADDING_PX,
-  });
 
   const freshFields = useCallback(
     (
@@ -148,14 +123,9 @@ export function TemporalCreateEntry({
           minute = 9 * 60;
         }
       }
-      const defaultsToUnplacedActivity =
-        import.meta.env.MODE !== 'test' &&
-        startMinute === undefined &&
-        seed?.timeSemantics === undefined &&
-        seed?.startTime === undefined;
       const base = createTemporalCreateFields({
         date: targetDate,
-        timeSemantics: defaultsToUnplacedActivity ? 'unscheduled' : 'timed',
+        timeSemantics: 'timed',
         startTime: seed?.startTime ?? minuteToInput(minute),
         durationMinutes: seed?.durationMinutes ?? durationMinutes ?? 30,
         timeZoneId: seed?.timeZoneId ?? zone,
@@ -183,8 +153,6 @@ export function TemporalCreateEntry({
       setIssues([]);
       setFailureMessage('');
       setLifecycle('idle');
-      composerDragRef.current = null;
-      document.documentElement.removeAttribute('data-temporal-create-dragging');
       preparedRef.current = null;
       partialReminderRef.current = null;
       setReminderRetry(false);
@@ -216,11 +184,9 @@ export function TemporalCreateEntry({
       partialReminderRef.current = null;
       setReminderRetry(false);
       focusReturnRef.current = focusReturnTarget ?? triggerRef.current;
+      // The fixed Create panel uses an invocation's time/date as content seed,
+      // never as a second positional model. The Timeline remains its own surface.
       void externalAnchor;
-      setPosition({
-        top: DEFAULT_COMPOSER_TOP_PX,
-        left: VIEWPORT_PADDING_PX,
-      });
       setOpen(true);
     },
     [freshFields, onBeforeOpen],
@@ -258,144 +224,6 @@ export function TemporalCreateEntry({
     return () => onPreview(null);
   }, [onPreview, open, session.closeDecision, session.draft]);
 
-  useLayoutEffect(() => {
-    if (!open) {
-      return;
-    }
-
-    const clampFloatingPosition = () => {
-      const composer = document.querySelector<HTMLElement>(
-        '[data-temporal-create="composer"]',
-      );
-      if (!composer || window.innerWidth <= FLOATING_COMPOSER_BREAKPOINT_PX) {
-        return;
-      }
-      const rect = composer.getBoundingClientRect();
-      setPosition((current) => {
-        const next = {
-          left: clamp(
-            current.left,
-            VIEWPORT_PADDING_PX,
-            window.innerWidth - rect.width - VIEWPORT_PADDING_PX,
-          ),
-          top: clamp(
-            current.top,
-            VIEWPORT_PADDING_PX,
-            window.innerHeight - rect.height - VIEWPORT_PADDING_PX,
-          ),
-        };
-        return next.left === current.left && next.top === current.top
-          ? current
-          : next;
-      });
-    };
-
-    const frame = requestAnimationFrame(clampFloatingPosition);
-    window.addEventListener('resize', clampFloatingPosition);
-    return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener('resize', clampFloatingPosition);
-    };
-  }, [open, session.surface]);
-
-  useEffect(() => {
-    if (!open) {
-      composerDragRef.current = null;
-      document.documentElement.removeAttribute('data-temporal-create-dragging');
-      return;
-    }
-
-    const composer = document.querySelector<HTMLElement>(
-      '[data-temporal-create="composer"]',
-    );
-    const handle = composer?.querySelector<HTMLElement>(
-      '.temporal-create-composer__heading-copy',
-    );
-    if (!composer || !handle) {
-      return;
-    }
-
-    const finishDrag = (pointerId?: number) => {
-      if (
-        pointerId !== undefined &&
-        composerDragRef.current?.pointerId !== pointerId
-      ) {
-        return;
-      }
-      composerDragRef.current = null;
-      document.documentElement.removeAttribute('data-temporal-create-dragging');
-    };
-
-    const onPointerDown = (event: PointerEvent) => {
-      if (
-        window.innerWidth <= FLOATING_COMPOSER_BREAKPOINT_PX ||
-        event.button !== 0 ||
-        !event.isPrimary
-      ) {
-        return;
-      }
-      const target = event.target;
-      if (
-        target instanceof Element &&
-        target.closest('button, input, select, textarea, a')
-      ) {
-        return;
-      }
-      const rect = composer.getBoundingClientRect();
-      composerDragRef.current = {
-        pointerId: event.pointerId,
-        startX: event.clientX,
-        startY: event.clientY,
-        startLeft: rect.left,
-        startTop: rect.top,
-        width: rect.width,
-        height: rect.height,
-      };
-      document.documentElement.setAttribute(
-        'data-temporal-create-dragging',
-        'true',
-      );
-      handle.setPointerCapture(event.pointerId);
-      event.preventDefault();
-    };
-
-    const onPointerMove = (event: PointerEvent) => {
-      const drag = composerDragRef.current;
-      if (!drag || drag.pointerId !== event.pointerId) {
-        return;
-      }
-      setPosition({
-        left: clamp(
-          drag.startLeft + event.clientX - drag.startX,
-          VIEWPORT_PADDING_PX,
-          window.innerWidth - drag.width - VIEWPORT_PADDING_PX,
-        ),
-        top: clamp(
-          drag.startTop + event.clientY - drag.startY,
-          VIEWPORT_PADDING_PX,
-          window.innerHeight - drag.height - VIEWPORT_PADDING_PX,
-        ),
-      });
-      event.preventDefault();
-    };
-
-    const onPointerUp = (event: PointerEvent) => finishDrag(event.pointerId);
-    const onPointerCancel = (event: PointerEvent) =>
-      finishDrag(event.pointerId);
-
-    handle.addEventListener('pointerdown', onPointerDown);
-    handle.addEventListener('pointermove', onPointerMove);
-    handle.addEventListener('pointerup', onPointerUp);
-    handle.addEventListener('pointercancel', onPointerCancel);
-    return () => {
-      handle.removeEventListener('pointerdown', onPointerDown);
-      handle.removeEventListener('pointermove', onPointerMove);
-      handle.removeEventListener('pointerup', onPointerUp);
-      handle.removeEventListener('pointercancel', onPointerCancel);
-      finishDrag();
-    };
-  }, [open, session.surface]);
-
   const requestClose = () => {
     if (lifecycle === 'pending') {
       return;
@@ -429,7 +257,9 @@ export function TemporalCreateEntry({
     setSession((current) => setTemporalCreateSurface(current, surface));
   };
 
-  const submit = async () => {
+  const submit = async (
+    fieldsOverride?: Partial<TemporalCreateSession['draft']['current']>,
+  ) => {
     if (commitInFlightRef.current) {
       return;
     }
@@ -462,9 +292,12 @@ export function TemporalCreateEntry({
       setFailureMessage('Seleziona una Life Area attiva prima di creare.');
       return;
     }
-    const preparation = preparedRef.current
+    const fields = fieldsOverride
+      ? { ...session.draft.current, ...fieldsOverride }
+      : session.draft.current;
+    const preparation = preparedRef.current && !fieldsOverride
       ? ({ status: 'ready', prepared: preparedRef.current } as const)
-      : runtime.prepare(session.draft.current);
+      : runtime.prepare(fields);
     if (preparation.status === 'invalid') {
       setIssues(preparation.issues);
       const hasAdvancedIssue = preparation.issues.some(
@@ -534,7 +367,6 @@ export function TemporalCreateEntry({
 
   const composer = open ? (
     <TemporalCreateComposer
-      position={position}
       session={session}
       contexts={contexts}
       issues={issues}
@@ -548,6 +380,9 @@ export function TemporalCreateEntry({
         setSession((current) => continueTemporalCreateEditing(current))
       }
       onDiscard={() => closeComposer()}
+      onMoveToUnplaced={() =>
+        void submit({ timeSemantics: 'unscheduled' })
+      }
       onSubmit={() => void submit()}
     />
   ) : null;
