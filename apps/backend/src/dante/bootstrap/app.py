@@ -16,6 +16,7 @@ from dante.modules.temporal.advanced_recurrence_api import (
     router as temporal_advanced_recurrence_router,
 )
 from dante.modules.temporal.api import router as temporal_router
+from dante.modules.temporal.authoring_api import router as temporal_authoring_router
 from dante.modules.temporal.conditional_temporal_api import (
     router as temporal_conditional_router,
 )
@@ -98,6 +99,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(auth_m5_provider_router)
     app.include_router(auth_m5_passkey_router)
     app.include_router(temporal_router)
+    app.include_router(temporal_authoring_router)
     app.include_router(temporal_event_router)
     app.include_router(temporal_life_area_router)
     app.include_router(temporal_product_tag_router)
