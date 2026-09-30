@@ -41,6 +41,7 @@ type WorldFocusPointerPress = {
 };
 
 const WORLD_FOCUS_CLICK_TRAVEL_THRESHOLD = 7;
+const HOME_CONTEXT_RAIL_FALLBACK_WIDTH_PX = 437;
 
 function getWorldButton(target: EventTarget | null) {
   if (!(target instanceof Element)) {
@@ -249,7 +250,9 @@ export function HomeShell({
         computed.getPropertyValue('--home-today-gap'),
       );
       timelineExpansionMetricsRef.current = {
-        railWidth: Number.isFinite(railWidth) ? railWidth : 306,
+        railWidth: Number.isFinite(railWidth)
+          ? railWidth
+          : HOME_CONTEXT_RAIL_FALLBACK_WIDTH_PX,
         gap: Number.isFinite(gap) ? gap : 16,
       };
     }
