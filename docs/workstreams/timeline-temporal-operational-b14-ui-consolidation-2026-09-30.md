@@ -40,9 +40,11 @@ Le voci possono essere lavorate singolarmente oppure in un gruppo quando condivi
 | Voce | Decisione dell'utente | Stato | Evidenza / note |
 |---|---|---|---|
 | U0 | Inventario delle capacità create e gestibili preparato; l'utente definisce ora flussi e collocazione della UI. | pronto | inventario discusso il 2026-09-30 |
+| U1 | Rivedere l'ingresso `+`: chiusura senza bozza, posizione e forma del pannello di Create, rapporto con il calendario e necessità di un comando Crea separato. | in discussione | stato attuale: pannello fisso in alto a sinistra, click esterno non gestito, ancoraggio del punto d'ingresso non usato |
 
 La prima decisione dell'utente apre la voce `U1`. Le righe successive descrivono la scelta concreta, i file o confini coinvolti e il test locale richiesto prima di dichiararla conclusa.
 
 ## Chiusura
 
 B14/B07 chiude quando l'utente considera coerenti i flussi principali e l'inventario non contiene più comandi inutili, nascosti dietro passaggi tecnici o privi di comportamento reale. B15 conserva il controllo verticale finale su persistenza, catalogo, API, client, frontend e regressioni.
+
