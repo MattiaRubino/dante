@@ -1,0 +1,56 @@
+/* U1 — Home Create rail geometry and replacement contract.
+ *
+ * The Home H0 ownership tree remains:
+ * Timeline and Context Rail are siblings. Create is a temporary surface owned by
+ * the Context Rail; it must not become a third Today column or resize the shell
+ * independently from the rail.
+ */
+
+@media (min-width: 1121px) {
+  .home-shell {
+    --home-today-rail-width: 437px;
+  }
+
+  .home-context-rail,
+  .home-context-rail > section {
+    min-width: 437px;
+  }
+
+  .home-create-panel-host .temporal-create-composer {
+    width: min(437px, calc(100vw - 36px));
+  }
+}
+
+.home-context-rail {
+  position: relative;
+}
+
+.home-create-panel-host {
+  position: absolute;
+  inset: 0;
+  min-width: 0;
+  min-height: 0;
+  pointer-events: none;
+}
+
+.home-create-panel-host:has(.temporal-create-backdrop) {
+  pointer-events: auto;
+}
+
+.home-context-rail > section {
+  transition:
+    opacity 120ms ease,
+    visibility 120ms ease;
+}
+
+.home-context-rail:has(.temporal-create-backdrop) > section {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (max-width: 1120px) {
+  .home-create-panel-host .temporal-create-composer {
+    width: calc(100vw - 24px);
+  }
+}
