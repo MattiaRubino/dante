@@ -70,6 +70,17 @@
   pointer-events: none;
 }
 
+.home-context-rail:has(.temporal-create-discard),
+.home-create-panel-host:has(.temporal-create-discard),
+.home-create-panel-host:has(.temporal-create-discard) .temporal-create-composer {
+  overflow: visible;
+}
+
+.temporal-create-backdrop.is-modal .temporal-create-composer__header,
+.temporal-create-backdrop.is-modal .temporal-create-composer__body {
+  visibility: hidden;
+}
+
 .temporal-create-discard {
   position: fixed;
   z-index: 2100;
