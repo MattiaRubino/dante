@@ -1,0 +1,100 @@
+.temporal-create-u2-when {
+  display: grid;
+  grid-template-columns:
+    28px minmax(72px, 0.9fr) minmax(82px, 1fr) 28px minmax(82px, 1fr)
+    minmax(72px, 0.9fr);
+  align-items: start;
+  gap: 5px;
+  width: 100%;
+  min-width: 0;
+}
+
+.temporal-create-u2-when > * {
+  min-width: 0;
+}
+
+.temporal-create-u2-date-bridge {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.temporal-create-u2-when .temporal-create-timezone-control {
+  align-self: center;
+}
+
+.temporal-create-u2-when .temporal-create-timezone-trigger,
+.temporal-create-u2-when .temporal-create-time-band-trigger {
+  width: 28px;
+  height: 44px;
+}
+
+.temporal-create-u2-when .temporal-create-time-control__field {
+  min-width: 0;
+}
+
+.temporal-create-u2-when .temporal-create-inline-time-editor {
+  min-width: 0;
+}
+
+.temporal-create-u2-when .temporal-create-time-control > small {
+  display: block;
+  min-height: 14px;
+  margin-top: 2px;
+  font-size: 0.66rem;
+  text-align: center;
+  opacity: 0.58;
+}
+
+.temporal-create-u2-all-day {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.temporal-create-u2-repeat select,
+.temporal-create-u2-location,
+.temporal-create-u2-description {
+  width: 100%;
+  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  border-radius: 11px;
+  color: inherit;
+  background: color-mix(in srgb, currentColor 4%, transparent);
+  font: inherit;
+}
+
+.temporal-create-u2-repeat select,
+.temporal-create-u2-location {
+  height: 42px;
+  padding: 0 11px;
+}
+
+.temporal-create-u2-description {
+  min-height: 74px;
+  padding: 10px 11px;
+  resize: vertical;
+}
+
+.temporal-create-u2-repeat select:focus,
+.temporal-create-u2-location:focus,
+.temporal-create-u2-description:focus {
+  border-color: color-mix(in srgb, #ff8a3d 62%, transparent);
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, #ff8a3d 12%, transparent);
+}
+
+@media (max-width: 720px) {
+  .temporal-create-u2-when {
+    grid-template-columns: 28px minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .temporal-create-u2-when .temporal-create-time-band-control {
+    grid-column: 1;
+  }
+
+  .temporal-create-u2-when > .temporal-create-date-picker:last-child {
+    grid-column: 3;
+  }
+}
