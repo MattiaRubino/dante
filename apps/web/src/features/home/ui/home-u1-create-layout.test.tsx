@@ -3,6 +3,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest
 
 import { i18n } from '../../../bootstrap/i18n';
 import { HomePage } from './home-page';
+import { TIMELINE_POLICY } from './timeline/model/timeline-policy';
 
 beforeAll(async () => {
   vi.stubGlobal(
@@ -46,6 +47,7 @@ describe('Home U1 Create rail contract', () => {
     const rail = container.querySelector('[data-home-region="context-rail"]');
     const createHost = container.querySelector('[data-home-context-create-host]');
 
+    expect(TIMELINE_POLICY.expansion.defaultContextRailWidthPx).toBe(475);
     expect(today).not.toBeNull();
     expect(timeline).not.toBeNull();
     expect(rail).not.toBeNull();
