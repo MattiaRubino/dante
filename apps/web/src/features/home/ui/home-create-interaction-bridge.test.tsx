@@ -77,8 +77,12 @@ describe('Home U1 Create interaction bridge', () => {
 
     fireEvent.pointerDown(day, { clientY: 615 });
 
-    expect(screen.getByLabelText('Data')).toHaveValue('2026-10-02');
-    expect(screen.getByLabelText('Ora')).toHaveValue('10:15');
+    expect((screen.getByLabelText('Data') as HTMLInputElement).value).toBe(
+      '2026-10-02',
+    );
+    expect((screen.getByLabelText('Ora') as HTMLInputElement).value).toBe(
+      '10:15',
+    );
     expect(onEscape).not.toHaveBeenCalled();
   });
 });
