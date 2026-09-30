@@ -30,6 +30,17 @@ export type {
   TemporalScheduledActivityCreateResult,
 } from './activity-data-source';
 export type {
+  TemporalAuthorActivityRequest,
+  TemporalAuthorEventRequest,
+  TemporalAuthoringBaseRequest,
+  TemporalAuthoringDataSource,
+  TemporalAuthoringItem,
+  TemporalAuthoringLifeAreaInput,
+  TemporalAuthoringSchedule,
+  TemporalAuthoredActivityResult,
+  TemporalAuthoredEventResult,
+} from './authoring-data-source';
+export type {
   TemporalEventAgendaDataSource,
   TemporalEventAgendaReplaceRequest,
   TemporalEventAgendaReplaceResult,
@@ -56,6 +67,11 @@ export {
   type AdvancedRecurrenceView,
   type ReplaceAdvancedRecurrenceCommand,
 } from './remote-advanced-recurrence-data-source';
+export {
+  TemporalAuthoringRemoteError,
+  createRemoteTemporalAuthoringDataSource,
+  type TemporalAuthoringRemoteFailureKind,
+} from './remote-authoring-data-source';
 export {
   ConditionalTemporalRemoteError,
   createRemoteConditionalTemporalDataSource,
