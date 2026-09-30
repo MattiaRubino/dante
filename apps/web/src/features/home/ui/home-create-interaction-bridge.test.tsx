@@ -34,6 +34,9 @@ function Harness({ onEscape }: { onEscape: () => void }) {
           value={time}
           onChange={(event) => setTime(event.currentTarget.value)}
         />
+        <div className="temporal-create-time-segment">
+          <input aria-label="Ore visibili" defaultValue="17" />
+        </div>
       </div>
       <section
         className="timeline-day-section"
@@ -116,5 +119,22 @@ describe('Home U1 Create interaction bridge', () => {
     expect(onEscape).not.toHaveBeenCalled();
 
     document.removeEventListener('dblclick', leakedDoubleClick, true);
+  });
+
+  it('selects the whole visible hour segment when it is focused or clicked', async () => {
+    const onEscape = vi.fn();
+    render(<Harness onEscape={onEscape} />);
+    const hour = screen.getByLabelText('Ore visibili') as HTMLInputElement;
+
+    fireEvent.focus(hour);
+    await Promise.resolve();
+    expect(hour.selectionStart).toBe(0);
+    expect(hour.selectionEnd).toBe(2);
+
+    hour.setSelectionRange(1, 1);
+    fireEvent.click(hour);
+    await Promise.resolve();
+    expect(hour.selectionStart).toBe(0);
+    expect(hour.selectionEnd).toBe(2);
   });
 });
