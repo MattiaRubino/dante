@@ -85,4 +85,36 @@ describe('Home U1 Create interaction bridge', () => {
     );
     expect(onEscape).not.toHaveBeenCalled();
   });
+
+  it('consumes Timeline double-click while Create is open so no second invocation leaks through', () => {
+    const onEscape = vi.fn();
+    render(<Harness onEscape={onEscape} />);
+    const day = screen.getByTestId('timeline-day');
+    vi.spyOn(day, 'getBoundingClientRect').mockReturnValue({
+      x: 0,
+      y: 0,
+      width: 400,
+      height: 1440,
+      top: 0,
+      right: 400,
+      bottom: 1440,
+      left: 0,
+      toJSON: () => ({}),
+    });
+    const leakedDoubleClick = vi.fn();
+    document.addEventListener('dblclick', leakedDoubleClick, true);
+
+    fireEvent.doubleClick(day, { clientY: 720 });
+
+    expect((screen.getByLabelText('Data') as HTMLInputElement).value).toBe(
+      '2026-10-02',
+    );
+    expect((screen.getByLabelText('Ora') as HTMLInputElement).value).toBe(
+      '12:00',
+    );
+    expect(leakedDoubleClick).not.toHaveBeenCalled();
+    expect(onEscape).not.toHaveBeenCalled();
+
+    document.removeEventListener('dblclick', leakedDoubleClick, true);
+  });
 });
