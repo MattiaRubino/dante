@@ -1,14 +1,14 @@
 import type { PlainDate } from '@dante/time';
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
-import type { TemporalValidationIssue } from '../../temporal';
+import {
+  createRemoteTemporalAuthoringDataSource,
+  systemTemporalIdFactory,
+  type TemporalAuthoringDataSource,
+  type TemporalValidationIssue,
+} from '../../temporal';
 import {
   createLocalTemporalCreateRuntime,
   type TemporalCreateAppliedEffect,
@@ -24,6 +24,11 @@ import {
   type TemporalCreateTimelineProjection,
 } from '../application/temporal-create-projection';
 import {
+  buildTemporalCreateU2Request,
+  temporalCreateU2QuickIntentSupported,
+  validateTemporalCreateU2QuickFields,
+} from '../application/temporal-create-u2-submit';
+import {
   continueTemporalCreateEditing,
   createTemporalCreateFields,
   createTemporalCreateSession,
@@ -34,6 +39,10 @@ import {
   type TemporalCreateSession,
   type TemporalCreateSurface,
 } from '../model/temporal-create-session';
+import {
+  createTemporalCreateU2AuthoringDraft,
+  type TemporalCreateU2AuthoringDraft,
+} from '../model/temporal-create-u2-authoring';
 import {
   TemporalCreateComposer,
   type TemporalCreateContextOption,
@@ -63,6 +72,7 @@ export type TemporalCreateEntryProps = Readonly<{
   contexts: readonly TemporalCreateContextOption[];
   request?: TemporalCreateInvocation | null;
   runtime?: TemporalCreateRuntime;
+  authoringDataSource?: TemporalAuthoringDataSource;
   onPreview: (projection: TemporalCreateTimelineProjection | null) => void;
   onApplied: (effect: TemporalCreateAppliedEffect) => boolean;
   onBeforeOpen?: (() => void) | undefined;
@@ -81,6 +91,7 @@ export function TemporalCreateEntry({
   contexts,
   request,
   runtime: runtimeOverride,
+  authoringDataSource: authoringDataSourceOverride,
   onPreview,
   onApplied,
   onBeforeOpen,
@@ -92,9 +103,16 @@ export function TemporalCreateEntry({
   const [runtime] = useState(
     () => runtimeOverride ?? createLocalTemporalCreateRuntime(),
   );
+  const [authoringDataSource] = useState(
+    () =>
+      authoringDataSourceOverride ?? createRemoteTemporalAuthoringDataSource(),
+  );
   const requestSeenRef = useRef<number | null>(null);
   const preparedRef = useRef<TemporalCreatePreparedOperation | null>(null);
   const partialReminderRef = useRef<(() => Promise<void>) | null>(null);
+  const u2DraftRef = useRef<TemporalCreateU2AuthoringDraft>(
+    createTemporalCreateU2AuthoringDraft(createTemporalCreateFields()),
+  );
   const [reminderRetry, setReminderRetry] = useState(false);
   const commitInFlightRef = useRef(false);
   const [open, setOpen] = useState(false);
@@ -160,9 +178,7 @@ export function TemporalCreateEntry({
       setReminderRetry(false);
       commitInFlightRef.current = false;
       onPreview(null);
-      if (restoreFocus) {
-        restoreComposerFocus();
-      }
+      if (restoreFocus) restoreComposerFocus();
     },
     [onPreview, restoreComposerFocus],
   );
@@ -178,6 +194,7 @@ export function TemporalCreateEntry({
     ) => {
       onBeforeOpen?.();
       const fields = freshFields(date, startMinute, durationMinutes, seed);
+      u2DraftRef.current = createTemporalCreateU2AuthoringDraft(fields);
       setSession(createTemporalCreateSession(fields));
       setIssues([]);
       setFailureMessage('');
@@ -193,9 +210,7 @@ export function TemporalCreateEntry({
   );
 
   useEffect(() => {
-    if (!request || requestSeenRef.current === request.id || open) {
-      return;
-    }
+    if (!request || requestSeenRef.current === request.id || open) return;
     requestSeenRef.current = request.id;
     const frame = requestAnimationFrame(() => {
       openComposer(
@@ -220,9 +235,7 @@ export function TemporalCreateEntry({
   }, [onPreview, open, session.closeDecision, session.draft]);
 
   const requestClose = () => {
-    if (lifecycle === 'pending') {
-      return;
-    }
+    if (lifecycle === 'pending') return;
     if (session.draft.current.title.trim().length === 0) {
       closeComposer();
       return;
@@ -264,12 +277,50 @@ export function TemporalCreateEntry({
     setSession((current) => continueTemporalCreateEditing(current));
   };
 
+  const executeU2Quick = async (
+    fields: TemporalCreateSession['draft']['current'],
+  ): Promise<boolean> => {
+    const validation = validateTemporalCreateU2QuickFields(fields);
+    if (validation.length > 0) {
+      setIssues(validation);
+      return false;
+    }
+
+    const mapped = buildTemporalCreateU2Request(
+      fields,
+      u2DraftRef.current,
+      systemTemporalIdFactory.operationId(),
+    );
+    commitInFlightRef.current = true;
+    setLifecycle('pending');
+    setIssues([]);
+    setFailureMessage('');
+    try {
+      if (mapped.kind === 'activity') {
+        await authoringDataSource.authorActivity(mapped.request);
+      } else {
+        await authoringDataSource.authorEvent(mapped.request);
+      }
+      setSession(discardTemporalCreateSession(freshFields(defaultDate)));
+      closeComposer();
+      return true;
+    } catch (reason) {
+      setLifecycle('failed');
+      setFailureMessage(
+        reason instanceof Error
+          ? reason.message
+          : t(($) => $.common.home.timeline.create.failure),
+      );
+      return false;
+    } finally {
+      commitInFlightRef.current = false;
+    }
+  };
+
   const submit = async (
     fieldsOverride?: Partial<TemporalCreateSession['draft']['current']>,
   ) => {
-    if (commitInFlightRef.current) {
-      return;
-    }
+    if (commitInFlightRef.current) return;
     if (partialReminderRef.current !== null) {
       commitInFlightRef.current = true;
       setLifecycle('pending');
@@ -287,23 +338,18 @@ export function TemporalCreateEntry({
       }
       return;
     }
-    if (
-      import.meta.env.MODE !== 'test' &&
-      !contexts.some(
-        (context) =>
-          context.id === session.draft.current.contextId &&
-          /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-            context.id,
-          ),
-      )
-    ) {
-      setLifecycle('failed');
-      setFailureMessage('Seleziona una Life Area attiva prima di creare.');
-      return;
-    }
+
     const fields = fieldsOverride
       ? { ...session.draft.current, ...fieldsOverride }
       : session.draft.current;
+    const useU2Quick =
+      (authoringDataSourceOverride !== undefined || import.meta.env.MODE !== 'test') &&
+      temporalCreateU2QuickIntentSupported(fields);
+    if (useU2Quick) {
+      await executeU2Quick(fields);
+      return;
+    }
+
     const preparation =
       preparedRef.current && !fieldsOverride
         ? ({ status: 'ready', prepared: preparedRef.current } as const)
@@ -395,6 +441,9 @@ export function TemporalCreateEntry({
       onDiscard={() => closeComposer()}
       onMoveToUnplaced={() => void submit({ timeSemantics: 'unscheduled' })}
       onSubmit={() => void submit()}
+      onU2DraftChange={(draft) => {
+        u2DraftRef.current = draft;
+      }}
     />
   ) : null;
   const createHost =
@@ -472,11 +521,7 @@ export function TemporalCreateEntry({
         aria-haspopup="dialog"
         aria-expanded={open}
         data-create-ready={creationEnabled ? 'true' : 'false'}
-        title={
-          creationEnabled
-            ? t(($) => $.common.home.timeline.quickAdd)
-            : `${t(($) => $.common.home.timeline.quickAdd)} · seleziona una Life Area attiva per salvare`
-        }
+        title={t(($) => $.common.home.timeline.quickAdd)}
       >
         +
       </button>
