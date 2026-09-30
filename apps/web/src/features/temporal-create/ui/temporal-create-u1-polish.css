@@ -139,6 +139,61 @@
   text-align: center;
 }
 
+/* The final-time picker must open inward, never widening the rail or causing horizontal drift. */
+.temporal-create-composer .temporal-create-date-time-row > .temporal-create-time-control:last-child .temporal-create-time-picker {
+  right: 0;
+  left: auto;
+  transform: none;
+}
+
+.temporal-create-composer .temporal-create-time-picker {
+  max-width: min(148px, calc(100vw - 32px));
+}
+
+/* Empty title is an intentional required-state hint. Submit without it becomes a hard error. */
+.temporal-create-composer .temporal-create-title-input:placeholder-shown {
+  border-color: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-chrome-active, #ea5c12) 72%,
+    transparent
+  ) !important;
+  box-shadow: 0 0 0 1px
+    color-mix(
+      in srgb,
+      var(--dante-semantic-color-home-chrome-active, #ea5c12) 12%,
+      transparent
+    );
+}
+
+.temporal-create-composer .temporal-create-composer__body:has(
+    > .temporal-create-title-input + .temporal-create-field-error
+  ) > .temporal-create-title-input {
+  border-color: var(--dante-timeline-tone-urgent, #ff5b64) !important;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--dante-timeline-tone-urgent, #ff5b64) 26%, transparent),
+    0 0 18px color-mix(in srgb, var(--dante-timeline-tone-urgent, #ff5b64) 10%, transparent);
+  animation: temporal-create-title-required-shake 260ms ease-in-out;
+}
+
+@keyframes temporal-create-title-required-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-5px);
+  }
+  40% {
+    transform: translateX(4px);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+}
+
 /* One fixed footer card for Advanced / Cancel / Add. */
 .temporal-create-composer .temporal-create-actions.temporal-create-actions {
   position: absolute;
