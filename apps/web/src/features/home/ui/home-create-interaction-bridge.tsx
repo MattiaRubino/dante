@@ -148,8 +148,32 @@ export function HomeCreateInteractionBridge() {
       );
     };
 
+    // When Create is already open, Timeline clicks are only a temporal reseed.
+    // Consume the resulting dblclick before TimelineCreateBridge can enqueue a
+    // second invocation which would otherwise reopen Create after dismissal.
+    const onDoubleClick = (event: MouseEvent) => {
+      const composer = document.querySelector<HTMLElement>(
+        '[data-temporal-create="composer"]',
+      );
+      if (!composer || document.querySelector('.temporal-create-discard')) {
+        return;
+      }
+      const timelineSection = emptyTimelineSection(event.target);
+      if (!timelineSection) {
+        return;
+      }
+      reseedOpenCreate(timelineSection, event.clientY);
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+    };
+
     document.addEventListener('pointerdown', onPointerDown, true);
-    return () => document.removeEventListener('pointerdown', onPointerDown, true);
+    window.addEventListener('dblclick', onDoubleClick, true);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown, true);
+      window.removeEventListener('dblclick', onDoubleClick, true);
+    };
   }, []);
 
   return null;
