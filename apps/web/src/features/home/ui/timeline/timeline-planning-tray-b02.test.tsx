@@ -45,7 +45,8 @@ function installTimelineHosts(): void {
   document.body.innerHTML = '<div class="dante-timeline-actions"></div>';
 }
 
-function createHarness(rejectPlacement = false, initiallyUnplaced = true) {
+function createHarness(rejectPlacement = false, initiallyUnplaced = true,
+  expectedPlacement: 'floating-local-interval' | 'named-zone-local-interval' = 'floating-local-interval') {
   let unplaced: readonly TemporalActivityRecord[] = Object.freeze(
     initiallyUnplaced ? [ACTIVITY] : [],
   );
@@ -61,9 +62,9 @@ function createHarness(rejectPlacement = false, initiallyUnplaced = true) {
     if (rejectPlacement) {
       return Promise.reject(new Error('schedule unavailable'));
     }
-    if (request.placement.kind !== 'floating-local-interval') {
+    if (request.placement.kind !== expectedPlacement) {
       return Promise.reject(
-        new Error('Planning Tray expected floating-local placement'),
+        new Error(`Planning Tray expected ${expectedPlacement} placement`),
       );
     }
     unplaced = Object.freeze([]);
@@ -129,6 +130,25 @@ async function openTray(
 }
 
 describe('Timeline B02 canonical Planning Tray placement and invalidation', () => {
+  it('chooses duration and time zone when placing, without requiring either at creation', async () => {
+    const harness = createHarness(false, true, 'named-zone-local-interval');
+    await openTray(harness.runtime);
+    fireEvent.click(screen.getByRole('button', { name: `Colloca: ${ACTIVITY.title}` }));
+    fireEvent.change(screen.getByLabelText('Data'), { target: { value: '2026-10-02' } });
+    fireEvent.change(screen.getByLabelText('Inizio'), { target: { value: '10:00' } });
+    fireEvent.change(screen.getByLabelText('Durata (minuti)'), { target: { value: '60' } });
+    fireEvent.change(screen.getByLabelText('Riferimento orario'), { target: { value: 'zoned' } });
+    fireEvent.change(screen.getByLabelText('Fuso orario'), { target: { value: 'Europe/Rome' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Colloca in Timeline' }));
+    await waitFor(() => expect(harness.establishActivitySchedule).toHaveBeenCalledTimes(1));
+    const placement = harness.establishActivitySchedule.mock.calls[0]?.[0].placement;
+    expect(placement?.kind).toBe('named-zone-local-interval');
+    if (placement?.kind !== 'named-zone-local-interval') throw new Error('Expected named zone');
+    expect(placement.zoneId).toBe('Europe/Rome');
+    expect(placement.startsLocalAt.toString()).toBe('2026-10-02T10:00:00');
+    expect(placement.endsLocalAt.toString()).toBe('2026-10-02T11:00:00');
+  });
+
   it('places the same Activity, then removes it only after canonical refetch', async () => {
     const harness = createHarness();
     await openTray(harness.runtime);

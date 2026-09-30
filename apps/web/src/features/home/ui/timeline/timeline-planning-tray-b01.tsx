@@ -62,6 +62,10 @@ function readCopy(language: string) {
         date: 'Date',
         time: 'Start',
         duration: 'Duration (minutes)',
+        timeReference: 'Time reference',
+        localTime: 'Local time',
+        namedZoneTime: 'Specific time zone',
+        timeZone: 'Time zone',
         cancel: 'Cancel',
         confirm: 'Place in Timeline',
         placing: 'Placing…',
@@ -80,6 +84,10 @@ function readCopy(language: string) {
         date: 'Data',
         time: 'Inizio',
         duration: 'Durata (minuti)',
+        timeReference: 'Riferimento orario',
+        localTime: 'Ora locale',
+        namedZoneTime: 'Fuso specifico',
+        timeZone: 'Fuso orario',
         cancel: 'Annulla',
         confirm: 'Colloca in Timeline',
         placing: 'Collocazione…',
@@ -137,6 +145,10 @@ export function TimelinePlanningTrayB01({
   const [placementDate, setPlacementDate] = useState(defaultDate.toString());
   const [placementTime, setPlacementTime] = useState('09:00');
   const [durationMinutes, setDurationMinutes] = useState(30);
+  const [placementTimeMode, setPlacementTimeMode] = useState<'floating' | 'zoned'>('floating');
+  const [placementTimeZone, setPlacementTimeZone] = useState(
+    () => Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Rome',
+  );
   const [placementPending, setPlacementPending] = useState(false);
   const [placementError, setPlacementError] = useState<string | null>(null);
   const [remoteItems, setRemoteItems] = useState<
@@ -306,16 +318,30 @@ export function TimelinePlanningTrayB01({
       setPlacementError(null);
       let start: PlainDateTime;
       let end: PlainDateTime;
+      let placement: Parameters<TemporalCreateRuntime['placeExistingActivity']>[1];
       try {
         start = Temporal.PlainDateTime.from(
           `${placementDate}T${placementTime}`,
         );
         end = start.add({ minutes: durationMinutes });
         if (
-          durationMinutes <= 0 ||
+          !Number.isInteger(durationMinutes) || durationMinutes <= 0 ||
           !start.toPlainDate().equals(end.toPlainDate())
         ) {
           throw new RangeError('cross-day-or-empty');
+        }
+        if (placementTimeMode === 'zoned') {
+          const zone = placementTimeZone.trim();
+          const zonedStart = start.toZonedDateTime(zone, { disambiguation: 'reject' });
+          const zonedEnd = end.toZonedDateTime(zone, { disambiguation: 'reject' });
+          placement = Object.freeze({
+            kind: 'zoned' as const,
+            start: zonedStart,
+            end: zonedEnd,
+            disambiguation: 'reject' as const,
+          });
+        } else {
+          placement = Object.freeze({ kind: 'floating-local' as const, start, end });
         }
       } catch {
         setPlacementError(b01Copy.invalidPlacement);
@@ -326,11 +352,7 @@ export function TimelinePlanningTrayB01({
       try {
         const result = await runtime.placeExistingActivity(
           activityRef,
-          Object.freeze({
-            kind: 'floating-local' as const,
-            start,
-            end,
-          }),
+          placement,
         );
         if (result.status !== 'applied') {
           setPlacementError(b01Copy.placementFailed);
@@ -350,6 +372,8 @@ export function TimelinePlanningTrayB01({
       durationMinutes,
       placementDate,
       placementTime,
+      placementTimeMode,
+      placementTimeZone,
       refresh,
       runtime,
     ],
@@ -558,6 +582,23 @@ export function TimelinePlanningTrayB01({
                         }
                       />
                     </label>
+                    <label>
+                      <span>{b01Copy.timeReference}</span>
+                      <select value={placementTimeMode} disabled={placementPending}
+                        onChange={(event) => setPlacementTimeMode(event.target.value as 'floating' | 'zoned')}>
+                        <option value="floating">{b01Copy.localTime}</option>
+                        <option value="zoned">{b01Copy.namedZoneTime}</option>
+                      </select>
+                    </label>
+                    {placementTimeMode === 'zoned' ? (
+                      <label>
+                        <span>{b01Copy.timeZone}</span>
+                        <input type="text" value={placementTimeZone}
+                          disabled={placementPending}
+                          onChange={(event) => setPlacementTimeZone(event.target.value)}
+                          placeholder="Europe/Rome" />
+                      </label>
+                    ) : null}
                     {placementError ? (
                       <p role="alert">{placementError}</p>
                     ) : null}
