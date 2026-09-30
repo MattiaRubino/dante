@@ -1,6 +1,6 @@
 # B12-D — local automated and real-app gate
 
-- **Status:** ORIGINAL AUTOMATED GATE PASSED; CLICK-PATH REPAIR RECHECK AND REAL-APP PROOF PENDING
+- **Status:** ORIGINAL AUTOMATED GATE PASSED; B12 CLOSED ON QUALIFIED USER ACCEPTANCE; POST-REPAIR RERUN AND ITEMIZED OBSERVATIONS UNREPORTED
 - **Branch:** `feature/timeline-temporal-operational`
 - **Database head:** `20260929_93`; current exact Dictionary/catalog topology `196|5|155|100|397|344|497|0|0|0`
 - **CI:** none; user runs in `~/projects/dante`
@@ -52,7 +52,7 @@ uv run --locked pytest -q --no-cov --tb=short -m postgres \
   tests/integration/database/test_b11_catalog_reconciliation_probe.py
 ```
 
-Return the entire command output. A pending proposal is not accepted Schedule; the real-app walkthrough and reported result are required before closing B12-D and parent B12.
+This command remains the affected regression gate. Its final-candidate output has not been supplied. A pending proposal is not accepted Schedule; B12 closed on qualified user acceptance with this verification gap recorded in the closure.
 
 ## Automated evidence on the original candidate — user worktree, 2026-09-30
 

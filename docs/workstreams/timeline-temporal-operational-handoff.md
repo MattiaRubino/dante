@@ -1,7 +1,7 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B13 CLOSED / B12-A/B CLOSED-PROVEN / B12-C CLOSED / PROVEN — B12-D original gate passed; click-path recheck and real-app proof pending
-- **Reconciled:** 2026-09-29
+- **Status:** B12 CLOSED / QUALIFIED USER ACCEPTANCE — B14 UI correctness next; affected B12-D rerun unreported
+- **Reconciled:** 2026-09-30
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Live execution ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
@@ -25,6 +25,7 @@
 - **B12-D approved scope:** `docs/workstreams/timeline-temporal-operational-b12-d-scope-2026-09-29.md`
 - **B12-D implementation checkpoint:** `docs/workstreams/timeline-temporal-operational-b12-d-implementation-2026-09-29.md`
 - **B12-D local gate:** `docs/workstreams/timeline-temporal-operational-b12-d-gate-2026-09-29.md`
+- **B12 closure:** `docs/workstreams/timeline-temporal-operational-b12-closure-2026-09-30.md`
 - **B13-D scope:** `docs/workstreams/timeline-temporal-operational-b13-d-scope-2026-09-29.md`
 - **B13-D candidate gate:** `docs/workstreams/timeline-temporal-operational-b13-d-gate-2026-09-29.md`
 - **B13-D closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-d-closure-2026-09-29.md`
@@ -60,12 +61,12 @@ B13     ✅ CLOSED / USER-REPORTED ACCEPTANCE 2026-09-29
   B13-B ✅ CLOSED / PROVEN 2026-09-29
   B13-C ✅ CLOSED / PROVEN 2026-09-29
   B13-D ✅ CLOSED / USER-REPORTED ACCEPTANCE 2026-09-29
-B12     ◐ B12-D CLICK-PATH RECHECK / REAL-APP PENDING
+B12     ✅ CLOSED / QUALIFIED USER ACCEPTANCE 2026-09-30
   B12-A ✅ CLOSED / PROVEN 2026-09-29
   B12-B ✅ CLOSED / PROVEN 2026-09-29
   B12-C ✅ CLOSED / PROVEN 2026-09-29
-  B12-D ◐ ORIGINAL GATE PASSED / CLICK-PATH RECHECK PENDING
-B14     ⬜ NOT STARTED
+  B12-D ✅ CLOSED / QUALIFIED USER ACCEPTANCE 2026-09-30
+B14     ◐ NEXT — UI CORRECTNESS
 B07     ⏸ DEFERRED UNTIL B14
 B15     ⬜ NOT STARTED
 ```
@@ -302,7 +303,7 @@ B13-D — Whole-block Integration / Proof / Acceptance
 
 B13-B owns real dependency semantics. B13-C owns execution-structure constraints only where current Domain/Logical authority supports them. B13-D proves the complete B13 chain and real product behavior.
 
-B12 block scope and B12-A diagnosis scope are published in `timeline-temporal-operational-b12-scope-2026-09-29.md` and `timeline-temporal-operational-b12-a-scope-2026-09-29.md`. B12-A is closed / proven on the user-run focused local gate at `db6a568`: generated 389, both typechecks, web 4, API contract 1, Ruff and PostgreSQL/catalog 11 passed in 26.14s. See `timeline-temporal-operational-b12-a-closure-2026-09-29.md`. Its read-only Home diagnosis distinguishes known hard violations, blocked prerequisites and unknown/unsupported bases without generating placements. B12-B is closed / proven on the user-run focused local gate: generated 393, both typechecks, web 3, backend 8, Ruff and PostgreSQL/catalog 11 passed in 24.63s; see `timeline-temporal-operational-b12-b-closure-2026-09-29.md`. B12-C is closed on the reported focused local gate: generated 397, both typechecks, web 4, Ruff, backend 9 and PostgreSQL 19 passed. See `timeline-temporal-operational-b12-c-closure-2026-09-29.md`. The original B12-D candidate passed the user-run gate on `75891447` (generated 397, web 11, backend 9, PostgreSQL/catalog 20, both typechecks and Ruff). A missing click path for hard constraints and Movement Policy is repaired in the follow-up candidate; its affected gate and real-app observation remain. See `timeline-temporal-operational-b12-d-implementation-2026-09-29.md` and `timeline-temporal-operational-b12-d-gate-2026-09-29.md`. B12-D owns the one real-app walkthrough before parent B12 closure. Replanning/solver behavior consumes canonical structure/dependency truth.
+B12 block scope and B12-A diagnosis scope are published in `timeline-temporal-operational-b12-scope-2026-09-29.md` and `timeline-temporal-operational-b12-a-scope-2026-09-29.md`. B12-A is closed / proven on the user-run focused local gate at `db6a568`: generated 389, both typechecks, web 4, API contract 1, Ruff and PostgreSQL/catalog 11 passed in 26.14s. See `timeline-temporal-operational-b12-a-closure-2026-09-29.md`. Its read-only Home diagnosis distinguishes known hard violations, blocked prerequisites and unknown/unsupported bases without generating placements. B12-B is closed / proven on the user-run focused local gate: generated 393, both typechecks, web 3, backend 8, Ruff and PostgreSQL/catalog 11 passed in 24.63s; see `timeline-temporal-operational-b12-b-closure-2026-09-29.md`. B12-C is closed on the reported focused local gate: generated 397, both typechecks, web 4, Ruff, backend 9 and PostgreSQL 19 passed. See `timeline-temporal-operational-b12-c-closure-2026-09-29.md`. The original B12-D candidate passed the user-run gate on `75891447` (generated 397, web 11, backend 9, PostgreSQL/catalog 20, both typechecks and Ruff). The hard-rule and Movement Policy click path was repaired, and placement-zone authoring was moved to Colloca. The user accepted qualified B12 closure; the affected automated rerun and itemized real-app observations are unreported. See `timeline-temporal-operational-b12-closure-2026-09-30.md` and `timeline-temporal-operational-b12-d-gate-2026-09-29.md`. Replanning/solver behavior consumes canonical structure/dependency truth.
 
 ---
 
