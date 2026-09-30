@@ -81,12 +81,13 @@ function reseedOpenCreate(section: HTMLElement, clientY: number): void {
   }
 
   const minute = snapMinute(minuteAtClientY(section, clientY));
+  const composerSelector = '[data-temporal-create="composer"]';
   const apply = () => {
     const dateInput = document.querySelector<HTMLInputElement>(
-      '.temporal-create-composer [data-create-path="date"]',
+      `${composerSelector} [data-create-path="date"]`,
     );
     const timeInput = document.querySelector<HTMLInputElement>(
-      '.temporal-create-composer [data-create-path="startTime"]',
+      `${composerSelector} [data-create-path="startTime"]`,
     );
     if (!dateInput || !timeInput) {
       return;
@@ -96,7 +97,7 @@ function reseedOpenCreate(section: HTMLElement, clientY: number): void {
   };
 
   const timedButton = document.querySelector<HTMLButtonElement>(
-    '.temporal-create-composer [data-create-path="timeSemantics"] button[role="radio"]',
+    `${composerSelector} [data-create-path="timeSemantics"] button[role="radio"]`,
   );
   if (timedButton?.getAttribute('aria-checked') !== 'true') {
     timedButton?.click();
