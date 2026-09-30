@@ -1,0 +1,119 @@
+.temporal-create-life-area-field {
+  position: relative;
+  min-width: 0;
+}
+
+.temporal-create-life-area-field__input-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 38px auto;
+  align-items: center;
+  gap: 7px;
+}
+
+.temporal-create-life-area-field__input-row > input[type='text'] {
+  min-width: 0;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  border-radius: 11px;
+  color: inherit;
+  background: color-mix(in srgb, currentColor 4%, transparent);
+  font: inherit;
+}
+
+.temporal-create-life-area-field__input-row > input[type='text']:focus {
+  border-color: color-mix(in srgb, #ff8a3d 65%, transparent);
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, #ff8a3d 13%, transparent);
+}
+
+.temporal-create-life-area-field__color {
+  position: relative;
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  cursor: pointer;
+}
+
+.temporal-create-life-area-field__color > span {
+  width: 22px;
+  height: 22px;
+  border: 2px solid rgb(255 255 255 / 30%);
+  border-radius: 50%;
+  box-shadow: 0 2px 9px rgb(0 0 0 / 25%);
+}
+
+.temporal-create-life-area-field__color > input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.temporal-create-life-area-field__input-row > button {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 8px;
+  color: inherit;
+  background: transparent;
+  opacity: 0.55;
+  cursor: pointer;
+}
+
+.temporal-create-life-area-field__options {
+  position: absolute;
+  z-index: 72;
+  top: calc(100% + 7px);
+  right: 0;
+  left: 0;
+  display: grid;
+  max-height: 238px;
+  overflow: auto;
+  padding: 7px;
+  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  border-radius: 13px;
+  background: var(--dante-surface, #171923);
+  box-shadow: 0 16px 42px rgb(0 0 0 / 30%);
+}
+
+.temporal-create-life-area-field__options > button {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  min-height: 36px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 8px;
+  color: inherit;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.temporal-create-life-area-field__options > button:hover,
+.temporal-create-life-area-field__options > button[aria-selected='true'] {
+  background: color-mix(in srgb, currentColor 8%, transparent);
+}
+
+.temporal-create-life-area-field__swatch,
+.temporal-create-life-area-field__options .is-empty {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: color-mix(in srgb, currentColor 18%, transparent);
+}
+
+.temporal-create-life-area-field__new {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 5px;
+  padding: 8px;
+  border-top: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+  font-size: 0.76rem;
+  opacity: 0.72;
+}
