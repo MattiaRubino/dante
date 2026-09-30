@@ -147,8 +147,8 @@ describe('Timeline truth inspector', () => {
     await screen.findByText('Realtà / Outcome');
     await waitFor(() => {
       expect(screen.getByLabelText('Elemento per stato reale')).toBeTruthy();
+      expect(screen.getByText('Stato reale: sconosciuto')).toBeTruthy();
     });
-    expect(screen.getByText('Stato reale: sconosciuto')).toBeTruthy();
     expect(screen.getByText('Outcome', { selector: 'strong' })).toBeTruthy();
     expect(screen.getByText('Confirmation', { selector: 'strong' })).toBeTruthy();
     expect(screen.getByText('Reconciliation', { selector: 'strong' })).toBeTruthy();
