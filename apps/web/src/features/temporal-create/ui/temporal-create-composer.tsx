@@ -306,22 +306,6 @@ export function TemporalCreateComposer({
     ) : null;
   };
 
-  const constraintLabel =
-    fields.scheduling.constraintKind === 'open'
-      ? t(($) => $.common.home.timeline.create.planning.constraintOpen)
-      : fields.scheduling.constraintKind === 'bounded-window'
-        ? t(($) => $.common.home.timeline.create.planning.constraintWindow)
-        : fields.scheduling.constraintKind === 'deadline'
-          ? t(($) => $.common.home.timeline.create.planning.constraintDeadline)
-          : fields.scheduling.constraintKind === 'preferred-window'
-            ? t(
-                ($) =>
-                  $.common.home.timeline.create.planning.constraintPreferred,
-              )
-            : fields.timeSemantics === 'unscheduled'
-              ? copy.activity.toPlace
-              : null;
-
   const submitForm = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     onSubmit();
@@ -330,6 +314,11 @@ export function TemporalCreateComposer({
   const showAdvanced = (target?: 'recurrence') => {
     advancedTargetRef.current = target ?? null;
     onSurfaceChange('full');
+  };
+
+  const toggleAdvanced = () => {
+    advancedTargetRef.current = null;
+    onSurfaceChange(advanced ? 'quick' : 'full');
   };
 
   return (
@@ -356,24 +345,10 @@ export function TemporalCreateComposer({
         onKeyDown={handleKeyDown}
       >
         <div
-          className={`temporal-create-composer__header${advanced ? '' : ' is-minimal'}`}
+          className="temporal-create-composer__header is-minimal"
           inert={discardPending || undefined}
         >
-          {advanced ? (
-            <button
-              className="temporal-create-composer__back"
-              type="button"
-              aria-label={copy.hideAdvanced}
-              aria-expanded="true"
-              disabled={pending}
-              onClick={() => onSurfaceChange('quick')}
-            >
-              <span aria-hidden="true">←</span>
-              <span>{copy.backToQuick}</span>
-            </button>
-          ) : (
-            <span aria-hidden="true" />
-          )}
+          <span aria-hidden="true" />
           <button
             className="temporal-create-composer__close"
             type="button"
@@ -441,18 +416,6 @@ export function TemporalCreateComposer({
               renderError={renderError}
             />
 
-            {!advanced ? (
-              <button
-                type="button"
-                className="temporal-create-advanced-toggle"
-                aria-expanded="false"
-                onClick={() => showAdvanced()}
-              >
-                <span>{copy.advanced}</span>
-                <span aria-hidden="true">⌄</span>
-              </button>
-            ) : null}
-
             <TemporalCreateAdvancedFields
               fields={fields}
               contexts={contexts}
@@ -461,28 +424,6 @@ export function TemporalCreateComposer({
               renderError={renderError}
             />
 
-            <div className="temporal-create-intent-summary" aria-live="polite">
-              <span className="is-kind">
-                {fields.kind === 'activity'
-                  ? t(($) => $.common.home.timeline.create.kind.activity)
-                  : t(($) => $.common.home.timeline.create.kind.event)}
-              </span>
-              {constraintLabel ? <span>{constraintLabel}</span> : null}
-              {fields.eventRecurrence.patternKind !== 'none' ? (
-                <span>
-                  {t(
-                    ($) =>
-                      $.common.home.timeline.create.recurrence.recurringBadge,
-                  )}
-                </span>
-              ) : null}
-              {fields.timeSemantics === 'timed' && !constraintLabel ? (
-                <span>{`${fields.date} · ${fields.startTime} · ${fields.durationMinutes} min`}</span>
-              ) : fields.timeSemantics === 'all-day' ? (
-                <span>{`${fields.date} · ${t(($) => $.common.home.timeline.create.timeSemantics.allDay)}`}</span>
-              ) : null}
-            </div>
-
             {failureMessage ? (
               <div className="temporal-create-operation-error" role="alert">
                 {failureMessage}
@@ -490,6 +431,15 @@ export function TemporalCreateComposer({
             ) : null}
 
             <div className="temporal-create-actions">
+              <button
+                type="button"
+                className="temporal-create-advanced-toggle"
+                aria-expanded={advanced}
+                onClick={toggleAdvanced}
+              >
+                <span>{advanced ? copy.hideAdvanced : copy.advanced}</span>
+                <span aria-hidden="true">{advanced ? '⌃' : '⌄'}</span>
+              </button>
               <button
                 type="button"
                 disabled={pending}
