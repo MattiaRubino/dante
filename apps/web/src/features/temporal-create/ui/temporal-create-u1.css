@@ -73,25 +73,43 @@
 
 .temporal-create-when-block {
   display: grid;
-  gap: 10px;
+  gap: 7px;
   min-width: 0;
 }
 
-.temporal-create-date-timezone-row {
+.temporal-create-date-time-row {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 42px;
-  align-items: end;
-  gap: 8px;
+  grid-template-columns:
+    34px
+    minmax(108px, 1.25fr)
+    minmax(72px, 0.78fr)
+    12px
+    minmax(72px, 0.78fr);
+  align-items: start;
+  gap: 5px;
+  min-width: 0;
 }
 
-.temporal-create-date-control {
+.temporal-create-date-control,
+.temporal-create-time-control,
+.temporal-create-timezone-control {
   min-width: 0;
+}
+
+.temporal-create-date-control,
+.temporal-create-timezone-control {
+  align-self: start;
+}
+
+.temporal-create-date-control > .temporal-create-field-error {
+  position: absolute;
+  top: calc(100% + 3px);
+  left: 39px;
 }
 
 .temporal-create-timezone-control {
   position: relative;
-  align-self: end;
 }
 
 .temporal-create-timezone-trigger,
@@ -101,7 +119,6 @@
   padding: 0;
   border: 1px solid
     var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
-  border-radius: 11px;
   color: var(--dante-semantic-color-home-text-muted, #8f9bad);
   background: color-mix(
     in srgb,
@@ -112,8 +129,9 @@
 }
 
 .temporal-create-timezone-trigger {
-  width: 42px;
+  width: 34px;
   height: 42px;
+  border-radius: 10px;
 }
 
 .temporal-create-timezone-trigger:hover,
@@ -134,8 +152,8 @@
 .temporal-create-timezone-trigger svg,
 .temporal-create-clock-trigger svg,
 .temporal-create-timezone-current svg {
-  width: 17px;
-  height: 17px;
+  width: 16px;
+  height: 16px;
   fill: none;
   stroke: currentColor;
   stroke-width: 1.6;
@@ -145,9 +163,9 @@
 
 .temporal-create-timezone-panel {
   position: absolute;
-  z-index: 70;
-  top: calc(100% + 8px);
-  right: 0;
+  z-index: 90;
+  top: calc(100% + 7px);
+  left: 0;
   display: grid;
   width: min(330px, calc(100vw - 40px));
   gap: 8px;
@@ -207,42 +225,30 @@
   );
 }
 
-.temporal-create-time-range {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 18px minmax(0, 1fr);
-  align-items: start;
-  gap: 7px;
-}
-
 .temporal-create-time-range__arrow {
-  align-self: center;
-  margin-top: 23px;
+  align-self: start;
+  margin-top: 13px;
   color: var(--dante-semantic-color-home-text-muted, #7f8b9d);
-  font-size: 14px;
+  font-size: 13px;
+  line-height: 16px;
   text-align: center;
 }
 
 .temporal-create-time-control {
   position: relative;
   display: grid;
-  min-width: 0;
-  gap: 6px;
-}
-
-.temporal-create-time-control__label {
-  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
-  font-size: 10px;
-  font-weight: 650;
+  gap: 3px;
 }
 
 .temporal-create-time-control__field {
   display: grid;
   min-width: 0;
-  grid-template-columns: minmax(0, 1fr) auto 38px;
+  grid-template-columns: minmax(0, 1fr) 30px;
   align-items: stretch;
+  min-height: 42px;
   border: 1px solid
     var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
-  border-radius: 11px;
+  border-radius: 10px;
   background: color-mix(
     in srgb,
     var(--dante-semantic-color-home-surface-control, #151f2e) 76%,
@@ -268,86 +274,39 @@
 
 .temporal-create-composer .temporal-create-time-control__field > input {
   min-width: 0;
-  min-height: 44px;
-  padding: 0 9px;
+  min-height: 40px;
+  padding: 0 6px;
   border: 0;
-  border-radius: 10px 0 0 10px;
+  border-radius: 9px 0 0 9px;
   background: transparent;
   box-shadow: none;
+  font-size: 11px;
   font-variant-numeric: tabular-nums;
-}
-
-.temporal-create-time-stepper {
-  display: grid;
-  width: 40px;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1px;
-  padding: 4px 2px;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 100ms ease;
-}
-
-.temporal-create-time-control__field:focus-within .temporal-create-time-stepper {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.temporal-create-time-stepper > div {
-  display: grid;
-  grid-template-rows: 1fr 1fr;
-  gap: 1px;
-}
-
-.temporal-create-time-stepper button {
-  display: grid;
-  width: 17px;
-  min-width: 17px;
-  height: 17px;
-  place-items: center;
-  padding: 0;
-  border: 0;
-  border-radius: 4px;
-  color: var(--dante-semantic-color-home-text-muted, #7f8b9d);
-  background: rgba(255, 255, 255, 0.028);
-  font-size: 6px;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.temporal-create-time-stepper button:hover {
-  color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
-  background: var(
-    --dante-semantic-color-home-chrome-active-soft,
-    rgba(234, 92, 18, 0.095)
-  );
+  letter-spacing: 0;
 }
 
 .temporal-create-clock-trigger {
-  width: 38px;
-  min-width: 38px;
-  height: 100%;
+  width: 30px;
+  min-width: 30px;
+  height: 40px;
   border-width: 0 0 0 1px;
-  border-radius: 0 10px 10px 0;
+  border-radius: 0 9px 9px 0;
 }
 
 .temporal-create-time-control > small {
-  min-height: 12px;
+  min-height: 10px;
   color: var(--dante-semantic-color-home-text-muted, #7f8b9d);
-  font-size: 8.5px;
-  line-height: 1.3;
+  font-size: 7.5px;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
+.temporal-create-time-wheel,
 .temporal-create-time-picker {
   position: absolute;
-  z-index: 80;
+  z-index: 95;
   top: calc(100% + 6px);
   left: 50%;
-  display: grid;
-  width: min(286px, calc(100vw - 40px));
-  gap: 8px;
-  padding: 9px;
-  transform: translateX(-50%);
   border: 1px solid
     var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
   border-radius: 13px;
@@ -357,6 +316,69 @@
     black
   );
   box-shadow: 0 22px 60px rgba(0, 0, 0, 0.42);
+  transform: translateX(-50%);
+}
+
+.temporal-create-time-wheel {
+  display: grid;
+  width: 154px;
+  grid-template-columns: 1fr 12px 1fr;
+  align-items: center;
+  gap: 3px;
+  padding: 8px;
+}
+
+.temporal-create-time-wheel__column {
+  display: grid;
+  grid-template-rows: 24px 30px 24px;
+  place-items: center;
+  gap: 2px;
+}
+
+.temporal-create-time-wheel__column button {
+  display: grid;
+  width: 34px;
+  min-width: 34px;
+  height: 24px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  color: var(--dante-semantic-color-home-text-muted, #7f8b9d);
+  background: rgba(255, 255, 255, 0.025);
+  font-size: 7px;
+  cursor: pointer;
+}
+
+.temporal-create-time-wheel__column button:hover {
+  color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
+  background: var(
+    --dante-semantic-color-home-chrome-active-soft,
+    rgba(234, 92, 18, 0.095)
+  );
+}
+
+.temporal-create-time-wheel__column strong {
+  min-width: 38px;
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  font-size: 18px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.temporal-create-time-wheel__separator {
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  font-size: 17px;
+  font-weight: 650;
+  text-align: center;
+}
+
+.temporal-create-time-picker {
+  display: grid;
+  width: min(286px, calc(100vw - 40px));
+  gap: 8px;
+  padding: 9px;
 }
 
 .temporal-create-time-presets {
@@ -428,6 +450,54 @@
   );
 }
 
+.temporal-create-context-picker__label {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.temporal-create-intent-summary {
+  display: none !important;
+}
+
+.temporal-create-actions {
+  position: sticky;
+  z-index: 40;
+  bottom: -18px;
+  align-items: center;
+  margin: 2px -18px -18px;
+  padding: 10px 18px 18px;
+  border-top: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.065));
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-surface-primary, #0d1522) 97%,
+    black
+  );
+}
+
+.temporal-create-actions .temporal-create-advanced-toggle {
+  margin-right: auto;
+  padding: 0;
+  border: 0;
+  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
+  background: transparent;
+  box-shadow: none;
+  font-size: 9px;
+  font-weight: 620;
+}
+
+.temporal-create-actions .temporal-create-advanced-toggle:hover {
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  background: transparent;
+}
+
 @media (max-width: 560px) {
   .temporal-create-type-grid.is-four {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -438,17 +508,30 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .temporal-create-time-range {
-    grid-template-columns: 1fr;
+  .temporal-create-date-time-row {
+    grid-template-columns: 34px minmax(0, 1fr) minmax(72px, 0.72fr);
   }
 
-  .temporal-create-time-range__arrow {
+  .temporal-create-date-time-row > .temporal-create-time-range__arrow {
     display: none;
   }
 
-  .temporal-create-time-picker {
+  .temporal-create-date-time-row > .temporal-create-time-control:last-child {
+    grid-column: 3;
+  }
+
+  .temporal-create-time-picker,
+  .temporal-create-time-wheel {
     left: 0;
-    width: min(320px, calc(100vw - 36px));
     transform: none;
+  }
+
+  .temporal-create-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .temporal-create-actions .temporal-create-advanced-toggle {
+    grid-column: 1 / -1;
+    justify-self: start;
   }
 }
