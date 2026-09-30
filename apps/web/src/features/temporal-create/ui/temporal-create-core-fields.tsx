@@ -534,6 +534,8 @@ export function TemporalCreateCoreFields({
         : 'Local time'
       : fields.timeZoneId;
 
+  const startLabel = italian ? 'Inizio' : 'Start';
+
   return (
     <>
       <fieldset className="temporal-create-type-fieldset">
@@ -680,7 +682,7 @@ export function TemporalCreateCoreFields({
 
           <div className="temporal-create-time-range">
             <TemporalCreateTimeControl
-              label={t(($) => $.common.home.timeline.create.start)}
+              label={startLabel}
               value={fields.startTime}
               dataPath="startTime"
               onChange={(startTime) => onPatch({ startTime })}
