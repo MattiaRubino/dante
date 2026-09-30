@@ -82,17 +82,32 @@ describe('Temporal Create U1 top controls', () => {
     expect(
       document.querySelector('.temporal-create-composer__heading-copy'),
     ).toBeNull();
+    expect(document.querySelector('.temporal-create-intent-summary')).toBeNull();
   });
 
-  it('supports manual time, 15-minute stepping, picker presets and timezone selection', () => {
+  it('supports protected manual time, split stepping, picker presets and timezone selection', () => {
     renderEntry();
 
     const start = screen.getByLabelText('Inizio') as HTMLInputElement;
     const before = start.value;
+
+    fireEvent.focus(start);
+    expect(
+      screen.getByRole('group', { name: 'Inizio: modifica ore e minuti' }),
+    ).toBeTruthy();
     fireEvent.click(
       screen.getByRole('button', { name: 'Inizio: aumenta 15 minuti' }),
     );
     expect(start.value).toBe(addMinutes(before, 15));
+
+    const lastValid = start.value;
+    fireEvent.change(start, { target: { value: '15:asdo' } });
+    expect(start.value).toBe(lastValid);
+
+    fireEvent.change(start, { target: { value: '29:99' } });
+    expect(start.value).toBe('29:99');
+    fireEvent.blur(start);
+    expect(start.value).toBe(lastValid);
 
     fireEvent.click(
       screen.getByRole('button', { name: 'Inizio: scegli orario' }),
@@ -110,5 +125,23 @@ describe('Temporal Create U1 top controls', () => {
     expect(
       screen.getByRole('button', { name: /Fuso orario: Europe\/Rome/ }),
     ).toBeTruthy();
+  });
+
+  it('toggles advanced options from the footer action row', () => {
+    renderEntry();
+
+    const advanced = screen.getByRole('button', { name: /Opzioni avanzate/ });
+    expect(advanced.getAttribute('aria-expanded')).toBe('false');
+    fireEvent.click(advanced);
+
+    const hide = screen.getByRole('button', { name: /Nascondi opzioni avanzate/ });
+    expect(hide.getAttribute('aria-expanded')).toBe('true');
+    fireEvent.click(hide);
+
+    expect(
+      screen.getByRole('button', { name: /Opzioni avanzate/ }).getAttribute(
+        'aria-expanded',
+      ),
+    ).toBe('false');
   });
 });
