@@ -14,11 +14,13 @@ import type {
   TemporalCreateSession,
   TemporalCreateSurface,
 } from '../model/temporal-create-session';
+import type { TemporalCreateU2AuthoringDraft } from '../model/temporal-create-u2-authoring';
 import {
   TemporalCreateAdvancedFields,
   TemporalCreateCoreFields,
 } from './temporal-create-fields';
 import { temporalCreateProductCopy } from './temporal-create-product-copy';
+import { TemporalCreateU2DraftProvider } from './temporal-create-u2-draft-context';
 import type { TemporalCreateContextOption } from './temporal-create-ui-types';
 
 export type { TemporalCreateContextOption } from './temporal-create-ui-types';
@@ -37,10 +39,12 @@ type TemporalCreateComposerProps = Readonly<{
   onDiscard: () => void;
   onMoveToUnplaced: () => void;
   onSubmit: () => void;
+  onU2DraftChange?: (draft: TemporalCreateU2AuthoringDraft) => void;
 }>;
 
 const FOCUSABLE_SELECTOR =
   'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+const NOOP_U2_DRAFT = () => undefined;
 
 function focusableElements(root: HTMLElement): HTMLElement[] {
   return Array.from(
@@ -52,9 +56,7 @@ function focusValidationPath(root: HTMLElement, path: string): void {
   const region = root.querySelector<HTMLElement>(
     `[data-create-path="${path}"]`,
   );
-  if (!region) {
-    return;
-  }
+  if (!region) return;
   if (region.matches(FOCUSABLE_SELECTOR)) {
     region.focus();
     return;
@@ -83,6 +85,7 @@ export function TemporalCreateComposer({
   onDiscard,
   onMoveToUnplaced,
   onSubmit,
+  onU2DraftChange = NOOP_U2_DRAFT,
 }: TemporalCreateComposerProps) {
   const { t, i18n } = useTranslation('common');
   const copy = temporalCreateProductCopy(
@@ -107,38 +110,26 @@ export function TemporalCreateComposer({
   }, []);
 
   useLayoutEffect(() => {
-    if (discardPending) {
-      continueRef.current?.focus();
-    }
+    if (discardPending) continueRef.current?.focus();
   }, [discardPending]);
 
   useEffect(() => {
-    if (!advanced || advancedTargetRef.current !== 'recurrence') {
-      return;
-    }
+    if (!advanced || advancedTargetRef.current !== 'recurrence') return;
     const frame = requestAnimationFrame(() => {
-      const target = dialogRef.current?.querySelector<HTMLElement>(
-        '[data-create-recurrence-owner]',
-      );
-      target?.scrollIntoView({ block: 'start' });
+      dialogRef.current
+        ?.querySelector<HTMLElement>('[data-create-recurrence-owner]')
+        ?.scrollIntoView({ block: 'start' });
       advancedTargetRef.current = null;
     });
     return () => cancelAnimationFrame(frame);
   }, [advanced]);
 
   useEffect(() => {
-    if (issues.length === 0 || discardPending) {
-      return;
-    }
+    if (issues.length === 0 || discardPending) return;
     const firstPath = issues[0]?.path[0];
-    if (!firstPath) {
-      return;
-    }
+    if (!firstPath) return;
     const frame = requestAnimationFrame(() => {
-      const root = dialogRef.current;
-      if (root) {
-        focusValidationPath(root, firstPath);
-      }
+      if (dialogRef.current) focusValidationPath(dialogRef.current, firstPath);
     });
     return () => cancelAnimationFrame(frame);
   }, [discardPending, issues, session.surface]);
@@ -157,9 +148,7 @@ export function TemporalCreateComposer({
   };
 
   const requestCloseFromBackdrop = () => {
-    if (!pending && !discardPending) {
-      requestCloseFromCurrentFocus();
-    }
+    if (!pending && !discardPending) requestCloseFromCurrentFocus();
   };
 
   const continueEditing = () => {
@@ -178,21 +167,13 @@ export function TemporalCreateComposer({
     if (event.key === 'Escape') {
       event.preventDefault();
       event.stopPropagation();
-      if (discardPending) {
-        continueEditing();
-      } else if (!pending) {
-        requestCloseFromCurrentFocus();
-      }
+      if (discardPending) continueEditing();
+      else if (!pending) requestCloseFromCurrentFocus();
       return;
     }
-
-    if (event.key !== 'Tab' || !discardPending) {
-      return;
-    }
+    if (event.key !== 'Tab' || !discardPending) return;
     const root = discardRef.current;
-    if (!root) {
-      return;
-    }
+    if (!root) return;
     const focusables = focusableElements(root);
     if (focusables.length === 0) {
       event.preventDefault();
@@ -222,9 +203,7 @@ export function TemporalCreateComposer({
       case 'temporal.create.timezone.invalid':
         return t(($) => $.common.home.timeline.create.validation.timeZone);
       case 'temporal.create.event.requires_placement':
-        return t(
-          ($) => $.common.home.timeline.create.validation.eventPlacement,
-        );
+        return t(($) => $.common.home.timeline.create.validation.eventPlacement);
       case 'temporal.create.all_day_range.invalid':
         return t(($) => $.common.home.timeline.create.validation.allDayRange);
       case 'temporal.create.window.invalid':
@@ -232,13 +211,9 @@ export function TemporalCreateComposer({
       case 'temporal.create.deadline.invalid':
         return t(($) => $.common.home.timeline.create.validation.deadline);
       case 'temporal.create.preferred_window.invalid':
-        return t(
-          ($) => $.common.home.timeline.create.validation.preferredWindow,
-        );
+        return t(($) => $.common.home.timeline.create.validation.preferredWindow);
       case 'temporal.create.minimum_session.invalid':
-        return t(
-          ($) => $.common.home.timeline.create.validation.minimumSession,
-        );
+        return t(($) => $.common.home.timeline.create.validation.minimumSession);
       case 'temporal.create.session_count.invalid':
         return t(($) => $.common.home.timeline.create.validation.sessionCount);
       case 'temporal.create.buffer.invalid':
@@ -246,42 +221,23 @@ export function TemporalCreateComposer({
       case 'temporal.create.event_buffer.invalid':
         return t(($) => $.common.home.timeline.create.validation.eventBuffer);
       case 'temporal.create.recurrence.interval_invalid':
-        return t(
-          ($) => $.common.home.timeline.create.validation.recurrenceInterval,
-        );
+        return t(($) => $.common.home.timeline.create.validation.recurrenceInterval);
       case 'temporal.create.recurrence.weekdays_required':
-        return t(
-          ($) => $.common.home.timeline.create.validation.recurrenceWeekdays,
-        );
+        return t(($) => $.common.home.timeline.create.validation.recurrenceWeekdays);
       case 'temporal.create.recurrence.ordinal_invalid':
-        return t(
-          ($) => $.common.home.timeline.create.validation.recurrenceOrdinal,
-        );
+        return t(($) => $.common.home.timeline.create.validation.recurrenceOrdinal);
       case 'temporal.create.recurrence.elapsed_invalid':
-        return t(
-          ($) => $.common.home.timeline.create.validation.recurrenceElapsed,
-        );
+        return t(($) => $.common.home.timeline.create.validation.recurrenceElapsed);
       case 'temporal.create.recurrence.quota_invalid':
-        return t(
-          ($) => $.common.home.timeline.create.validation.recurrenceQuota,
-        );
+        return t(($) => $.common.home.timeline.create.validation.recurrenceQuota);
       case 'temporal.create.recurrence.quota_timezone_invalid':
-        return t(
-          ($) =>
-            $.common.home.timeline.create.validation.recurrenceQuotaTimeZone,
-        );
+        return t(($) => $.common.home.timeline.create.validation.recurrenceQuotaTimeZone);
       case 'temporal.create.recurrence.cycle_invalid':
-        return t(
-          ($) => $.common.home.timeline.create.validation.recurrenceCycle,
-        );
+        return t(($) => $.common.home.timeline.create.validation.recurrenceCycle);
       case 'temporal.create.recurrence.until_invalid':
-        return t(
-          ($) => $.common.home.timeline.create.validation.recurrenceUntil,
-        );
+        return t(($) => $.common.home.timeline.create.validation.recurrenceUntil);
       case 'temporal.create.recurrence.count_invalid':
-        return t(
-          ($) => $.common.home.timeline.create.validation.recurrenceCount,
-        );
+        return t(($) => $.common.home.timeline.create.validation.recurrenceCount);
       case 'temporal.create.recurrence.life_area_required':
         return i18n.language.toLowerCase().startsWith('en')
           ? 'Select a Life Area before creating a recurrence.'
@@ -321,21 +277,19 @@ export function TemporalCreateComposer({
     onSurfaceChange(advanced ? 'quick' : 'full');
   };
 
+  const resetKey = `${session.draft.baseline.date}|${session.draft.baseline.startTime}|${session.draft.baseline.title}`;
+
   return (
     <div
       className={`temporal-create-backdrop${discardPending ? ' is-modal' : ''}`}
       data-temporal-create="backdrop"
       onPointerDown={(event) => {
-        if (event.target === event.currentTarget) {
-          requestCloseFromBackdrop();
-        }
+        if (event.target === event.currentTarget) requestCloseFromBackdrop();
       }}
     >
       <div
         ref={dialogRef}
-        className={`temporal-create-composer${
-          advanced ? ' is-advanced is-full' : ''
-        }`}
+        className={`temporal-create-composer${advanced ? ' is-advanced is-full' : ''}`}
         data-temporal-create="composer"
         data-temporal-create-surface={advanced ? 'advanced' : 'base'}
         role="dialog"
@@ -364,19 +318,10 @@ export function TemporalCreateComposer({
           <div className="temporal-create-composer__body" role="status">
             <p>{failureMessage}</p>
             <div className="temporal-create-actions">
-              <button
-                type="button"
-                disabled={pending}
-                onClick={requestCloseFromCurrentFocus}
-              >
+              <button type="button" disabled={pending} onClick={requestCloseFromCurrentFocus}>
                 {t(($) => $.common.home.timeline.create.cancel)}
               </button>
-              <button
-                className="is-primary"
-                type="button"
-                disabled={pending}
-                onClick={onSubmit}
-              >
+              <button className="is-primary" type="button" disabled={pending} onClick={onSubmit}>
                 {t(($) => $.common.home.timeline.create.reminderRetry)}
               </button>
             </div>
@@ -387,10 +332,7 @@ export function TemporalCreateComposer({
             inert={discardPending || undefined}
             onSubmit={submitForm}
           >
-            <label
-              className="temporal-create-visually-hidden"
-              htmlFor={titleId}
-            >
+            <label className="temporal-create-visually-hidden" htmlFor={titleId}>
               {t(($) => $.common.home.timeline.create.titleLabel)}
             </label>
             <input
@@ -408,21 +350,27 @@ export function TemporalCreateComposer({
             />
             {renderError('title')}
 
-            <TemporalCreateCoreFields
+            <TemporalCreateU2DraftProvider
               fields={fields}
-              contexts={contexts}
-              onPatch={onPatch}
-              onRequestAdvanced={showAdvanced}
-              renderError={renderError}
-            />
+              resetKey={resetKey}
+              onDraftChange={onU2DraftChange}
+            >
+              <TemporalCreateCoreFields
+                fields={fields}
+                contexts={contexts}
+                onPatch={onPatch}
+                onRequestAdvanced={showAdvanced}
+                renderError={renderError}
+              />
 
-            <TemporalCreateAdvancedFields
-              fields={fields}
-              contexts={contexts}
-              depth={advanced ? 'full' : 'quick'}
-              onPatch={onPatch}
-              renderError={renderError}
-            />
+              <TemporalCreateAdvancedFields
+                fields={fields}
+                contexts={contexts}
+                depth={advanced ? 'full' : 'quick'}
+                onPatch={onPatch}
+                renderError={renderError}
+              />
+            </TemporalCreateU2DraftProvider>
 
             {failureMessage ? (
               <div className="temporal-create-operation-error" role="alert">
@@ -440,11 +388,7 @@ export function TemporalCreateComposer({
                 <span>{advanced ? copy.hideAdvanced : copy.advanced}</span>
                 <span aria-hidden="true">{advanced ? '⌃' : '⌄'}</span>
               </button>
-              <button
-                type="button"
-                disabled={pending}
-                onClick={requestCloseFromCurrentFocus}
-              >
+              <button type="button" disabled={pending} onClick={requestCloseFromCurrentFocus}>
                 {t(($) => $.common.home.timeline.create.cancel)}
               </button>
               <button className="is-primary" type="submit" disabled={pending}>
@@ -466,36 +410,22 @@ export function TemporalCreateComposer({
             aria-describedby={discardDescriptionId}
           >
             <div>
-              <strong id={discardTitleId}>
-                {t(($) => $.common.home.timeline.create.discardTitle)}
-              </strong>
-              <p id={discardDescriptionId}>
-                {t(($) => $.common.home.timeline.create.discardBody)}
-              </p>
+              <strong id={discardTitleId}>{t(($) => $.common.home.timeline.create.discardTitle)}</strong>
+              <p id={discardDescriptionId}>{t(($) => $.common.home.timeline.create.discardBody)}</p>
             </div>
             <div className="temporal-create-discard__actions">
-              <button ref={continueRef} type="button" onClick={continueEditing}>
-                Annulla
-              </button>
+              <button ref={continueRef} type="button" onClick={continueEditing}>Annulla</button>
               {fields.kind === 'activity' ? (
                 <button
                   type="button"
                   disabled={pending || fields.title.trim().length === 0}
                   onClick={onMoveToUnplaced}
-                  title={
-                    fields.title.trim().length === 0
-                      ? 'Inserisci prima un titolo.'
-                      : undefined
-                  }
+                  title={fields.title.trim().length === 0 ? 'Inserisci prima un titolo.' : undefined}
                 >
                   Sposta in Da collocare
                 </button>
               ) : null}
-              <button
-                className="temporal-create-discard__destructive"
-                type="button"
-                onClick={onDiscard}
-              >
+              <button className="temporal-create-discard__destructive" type="button" onClick={onDiscard}>
                 {t(($) => $.common.home.timeline.create.discard)}
               </button>
             </div>
