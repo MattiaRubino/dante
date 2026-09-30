@@ -223,6 +223,13 @@ export function TemporalCreateEntry({
     if (lifecycle === 'pending') {
       return;
     }
+    // U1 product contract: time/date/type edits are provisional positioning only.
+    // Until the user gives the draft a title, outside/Escape/close dismisses it
+    // immediately instead of asking to preserve or discard an unnamed draft.
+    if (session.draft.current.title.trim().length === 0) {
+      closeComposer();
+      return;
+    }
     const requestResult = requestTemporalCreateClose(session);
     if (requestResult.shouldClose) {
       closeComposer();
@@ -250,6 +257,10 @@ export function TemporalCreateEntry({
 
   const changeSurface = (surface: TemporalCreateSurface) => {
     setSession((current) => setTemporalCreateSurface(current, surface));
+  };
+
+  const continueEditing = () => {
+    setSession((current) => continueTemporalCreateEditing(current));
   };
 
   const submit = async (
@@ -371,9 +382,7 @@ export function TemporalCreateEntry({
       onPatch={patch}
       onSurfaceChange={changeSurface}
       onRequestClose={requestClose}
-      onContinueEditing={() =>
-        setSession((current) => continueTemporalCreateEditing(current))
-      }
+      onContinueEditing={continueEditing}
       onDiscard={() => closeComposer()}
       onMoveToUnplaced={() =>
         void submit({ timeSemantics: 'unscheduled' })
@@ -385,6 +394,57 @@ export function TemporalCreateEntry({
     typeof document === 'undefined'
       ? null
       : document.querySelector<HTMLElement>('[data-home-context-create-host]');
+  const discardPending = open && session.closeDecision === 'confirm-discard';
+  const discardModal =
+    discardPending && typeof document !== 'undefined'
+      ? createPortal(
+          <div
+            className="temporal-create-discard-viewport"
+            data-temporal-create="discard-modal"
+          >
+            <div
+              className="temporal-create-discard"
+              role="alertdialog"
+              aria-modal="true"
+              aria-label={t(($) => $.common.home.timeline.create.discardTitle)}
+            >
+              <div>
+                <strong>
+                  {t(($) => $.common.home.timeline.create.discardTitle)}
+                </strong>
+                <p>{t(($) => $.common.home.timeline.create.discardBody)}</p>
+              </div>
+              <div className="temporal-create-discard__actions">
+                <button type="button" autoFocus onClick={continueEditing}>
+                  Annulla
+                </button>
+                {session.draft.current.kind === 'activity' ? (
+                  <button
+                    type="button"
+                    disabled={
+                      lifecycle === 'pending' ||
+                      session.draft.current.title.trim().length === 0
+                    }
+                    onClick={() =>
+                      void submit({ timeSemantics: 'unscheduled' })
+                    }
+                  >
+                    Sposta in Da collocare
+                  </button>
+                ) : null}
+                <button
+                  className="temporal-create-discard__destructive"
+                  type="button"
+                  onClick={() => closeComposer()}
+                >
+                  {t(($) => $.common.home.timeline.create.discard)}
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )
+      : null;
 
   return (
     <>
@@ -417,6 +477,7 @@ export function TemporalCreateEntry({
       {composer && typeof document !== 'undefined'
         ? createPortal(composer, createHost ?? document.body)
         : null}
+      {discardModal}
     </>
   );
 }
