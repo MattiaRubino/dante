@@ -107,21 +107,65 @@ function reseedOpenCreate(section: HTMLElement, clientY: number): void {
   apply();
 }
 
-function selectTimeSegment(target: EventTarget | null): void {
+function timeSegmentInput(target: EventTarget | null): HTMLInputElement | null {
   if (!(target instanceof HTMLInputElement)) {
-    return;
+    return null;
   }
   if (!target.closest('[data-temporal-create="composer"]')) {
-    return;
+    return null;
   }
   if (!target.closest('.temporal-create-time-segment')) {
+    return null;
+  }
+  return target;
+}
+
+function closeOpenTimePicker(input: HTMLInputElement): void {
+  const control = input.closest('.temporal-create-time-control');
+  const trigger = control?.querySelector<HTMLButtonElement>(
+    '.temporal-create-clock-trigger[aria-expanded="true"]',
+  );
+  trigger?.click();
+}
+
+function selectTimeSegment(target: EventTarget | null): void {
+  const input = timeSegmentInput(target);
+  if (!input) {
+    return;
+  }
+
+  closeOpenTimePicker(input);
+  queueMicrotask(() => {
+    if (input.isConnected) {
+      input.select();
+    }
+  });
+}
+
+function advanceHourToMinutes(target: EventTarget | null): void {
+  const input = timeSegmentInput(target);
+  if (!input || !input.getAttribute('aria-label')?.endsWith(': ore')) {
+    return;
+  }
+  if (!/^\d{2}$/.test(input.value) || Number(input.value) > 23) {
+    return;
+  }
+
+  const editor = input.closest('.temporal-create-inline-time-editor');
+  const segments = editor?.querySelectorAll<HTMLInputElement>(
+    '.temporal-create-time-segment input',
+  );
+  const minuteInput = segments?.[1];
+  if (!minuteInput) {
     return;
   }
 
   queueMicrotask(() => {
-    if (target.isConnected) {
-      target.select();
+    if (!minuteInput.isConnected) {
+      return;
     }
+    minuteInput.focus({ preventScroll: true });
+    minuteInput.select();
   });
 }
 
@@ -194,14 +238,20 @@ export function HomeCreateInteractionBridge() {
       selectTimeSegment(event.target);
     };
 
+    const onTimeSegmentInput = (event: Event) => {
+      advanceHourToMinutes(event.target);
+    };
+
     document.addEventListener('pointerdown', onPointerDown, true);
     document.addEventListener('focusin', onTimeSegmentFocus, true);
     document.addEventListener('click', onTimeSegmentClick, true);
+    document.addEventListener('input', onTimeSegmentInput);
     window.addEventListener('dblclick', onDoubleClick, true);
     return () => {
       document.removeEventListener('pointerdown', onPointerDown, true);
       document.removeEventListener('focusin', onTimeSegmentFocus, true);
       document.removeEventListener('click', onTimeSegmentClick, true);
+      document.removeEventListener('input', onTimeSegmentInput);
       window.removeEventListener('dblclick', onDoubleClick, true);
     };
   }, []);
