@@ -107,6 +107,24 @@ function reseedOpenCreate(section: HTMLElement, clientY: number): void {
   apply();
 }
 
+function selectTimeSegment(target: EventTarget | null): void {
+  if (!(target instanceof HTMLInputElement)) {
+    return;
+  }
+  if (!target.closest('[data-temporal-create="composer"]')) {
+    return;
+  }
+  if (!target.closest('.temporal-create-time-segment')) {
+    return;
+  }
+
+  queueMicrotask(() => {
+    if (target.isConnected) {
+      target.select();
+    }
+  });
+}
+
 export function HomeCreateInteractionBridge() {
   useEffect(() => {
     const onPointerDown = (event: PointerEvent) => {
@@ -168,10 +186,22 @@ export function HomeCreateInteractionBridge() {
       event.stopImmediatePropagation();
     };
 
+    const onTimeSegmentFocus = (event: FocusEvent) => {
+      selectTimeSegment(event.target);
+    };
+
+    const onTimeSegmentClick = (event: MouseEvent) => {
+      selectTimeSegment(event.target);
+    };
+
     document.addEventListener('pointerdown', onPointerDown, true);
+    document.addEventListener('focusin', onTimeSegmentFocus, true);
+    document.addEventListener('click', onTimeSegmentClick, true);
     window.addEventListener('dblclick', onDoubleClick, true);
     return () => {
       document.removeEventListener('pointerdown', onPointerDown, true);
+      document.removeEventListener('focusin', onTimeSegmentFocus, true);
+      document.removeEventListener('click', onTimeSegmentClick, true);
       window.removeEventListener('dblclick', onDoubleClick, true);
     };
   }, []);
