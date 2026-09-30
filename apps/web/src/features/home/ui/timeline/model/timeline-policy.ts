@@ -109,7 +109,7 @@ export const TIMELINE_POLICY = {
     settledProgress: 0.98,
     dragActivationDistancePx: 4,
     settleThreshold: 0.5,
-    defaultContextRailWidthPx: 437,
+    defaultContextRailWidthPx: 475,
     minDragDistancePx: 110,
   },
   grid: {
