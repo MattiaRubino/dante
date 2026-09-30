@@ -8,12 +8,12 @@
 
 @media (min-width: 1121px) {
   .home-shell {
-    --home-today-rail-width: 437px;
+    --home-today-rail-width: 475px;
   }
 
   .home-context-rail,
   .home-context-rail > section {
-    min-width: 437px;
+    min-width: 475px;
   }
 
   .home-create-panel-host {
