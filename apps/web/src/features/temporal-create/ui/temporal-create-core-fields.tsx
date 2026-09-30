@@ -207,9 +207,13 @@ function TemporalCreateTimeControl({
   helper,
 }: TimeControlProps) {
   const { i18n } = useTranslation('common');
+  const normalizedValue = timeToMinute(value) === null ? '00:00' : minuteToTime(timeToMinute(value) ?? 0);
+  const [draft, setDraft] = useState(normalizedValue);
+  const [wheelOpen, setWheelOpen] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
+  const lastValidRef = useRef(normalizedValue);
   const italian = i18n.language.toLowerCase().startsWith('it');
   const presetLabels: Readonly<Record<string, string>> = italian
     ? {
@@ -226,7 +230,17 @@ function TemporalCreateTimeControl({
       };
 
   useEffect(() => {
-    if (!pickerOpen) {
+    const parsed = timeToMinute(value);
+    if (parsed === null) {
+      return;
+    }
+    const next = minuteToTime(parsed);
+    lastValidRef.current = next;
+    setDraft(next);
+  }, [value]);
+
+  useEffect(() => {
+    if (!pickerOpen && !wheelOpen) {
       return;
     }
     const dismiss = (event: PointerEvent) => {
@@ -235,93 +249,164 @@ function TemporalCreateTimeControl({
         !rootRef.current?.contains(event.target)
       ) {
         setPickerOpen(false);
+        setWheelOpen(false);
       }
     };
     document.addEventListener('pointerdown', dismiss, true);
     return () => document.removeEventListener('pointerdown', dismiss, true);
-  }, [pickerOpen]);
+  }, [pickerOpen, wheelOpen]);
 
   useEffect(() => {
     if (!pickerOpen) {
       return;
     }
     const frame = requestAnimationFrame(() => {
-      const selected = nearestQuarter(value);
+      const selected = nearestQuarter(lastValidRef.current);
       const option = Array.from(
         listRef.current?.querySelectorAll<HTMLElement>('[data-time-value]') ?? [],
       ).find((candidate) => candidate.dataset.timeValue === selected);
       option?.scrollIntoView({ block: 'center' });
     });
     return () => cancelAnimationFrame(frame);
-  }, [pickerOpen, value]);
+  }, [pickerOpen]);
 
-  const adjust = (delta: number) => onChange(shiftTime(value, delta));
+  const commit = (next: string) => {
+    const parsed = timeToMinute(next);
+    if (parsed === null) {
+      setDraft(lastValidRef.current);
+      return;
+    }
+    const normalized = minuteToTime(parsed);
+    lastValidRef.current = normalized;
+    setDraft(normalized);
+    onChange(normalized);
+  };
+
+  const adjust = (delta: number) => {
+    const next = shiftTime(lastValidRef.current, delta);
+    commit(next);
+  };
+
+  const parts = lastValidRef.current.split(':');
+  const hour = parts[0] ?? '00';
+  const minute = parts[1] ?? '00';
 
   return (
     <div ref={rootRef} className="temporal-create-time-control">
-      <span className="temporal-create-time-control__label">{label}</span>
       <div className="temporal-create-time-control__field">
         <input
           data-create-path={dataPath}
           type="text"
           inputMode="numeric"
-          value={value}
-          onChange={(event) => onChange(event.currentTarget.value)}
+          value={draft}
+          onFocus={() => {
+            setWheelOpen(true);
+            setPickerOpen(false);
+          }}
+          onChange={(event) => {
+            const next = event.currentTarget.value;
+            if (/^\d{0,2}:?\d{0,2}$/.test(next)) {
+              setDraft(next);
+              const parsed = timeToMinute(next);
+              if (parsed !== null) {
+                const normalized = minuteToTime(parsed);
+                lastValidRef.current = normalized;
+                onChange(normalized);
+              }
+            }
+          }}
           onBlur={(event) => {
-            const parsed = timeToMinute(event.currentTarget.value);
-            if (parsed !== null) {
-              onChange(minuteToTime(parsed));
+            const nextFocus = event.relatedTarget;
+            if (nextFocus instanceof Node && rootRef.current?.contains(nextFocus)) {
+              return;
+            }
+            commit(event.currentTarget.value);
+            setWheelOpen(false);
+          }}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              event.preventDefault();
+              commit(event.currentTarget.value);
+              setWheelOpen(false);
+              event.currentTarget.blur();
+            } else if (event.key === 'Escape') {
+              event.preventDefault();
+              setDraft(lastValidRef.current);
+              setWheelOpen(false);
+              event.currentTarget.blur();
             }
           }}
           aria-label={label}
           autoComplete="off"
           spellCheck="false"
         />
-        <div className="temporal-create-time-stepper" aria-label={`${label} stepper`}>
-          <div>
+        <button
+          className="temporal-create-clock-trigger"
+          type="button"
+          aria-label={`${label}: scegli orario`}
+          aria-expanded={pickerOpen}
+          onPointerDown={(event) => event.preventDefault()}
+          onClick={() => {
+            setWheelOpen(false);
+            setPickerOpen((current) => !current);
+          }}
+        >
+          <ClockIcon />
+        </button>
+      </div>
+
+      {helper ? <small>{helper}</small> : null}
+
+      {wheelOpen ? (
+        <div
+          className="temporal-create-time-wheel"
+          role="group"
+          aria-label={`${label}: modifica ore e minuti`}
+        >
+          <div className="temporal-create-time-wheel__column">
             <button
               type="button"
               aria-label={`${label}: aumenta ora`}
+              onPointerDown={(event) => event.preventDefault()}
               onClick={() => adjust(60)}
             >
               ▲
             </button>
+            <strong aria-label={`${label}: ore ${hour}`}>{hour}</strong>
             <button
               type="button"
               aria-label={`${label}: diminuisci ora`}
+              onPointerDown={(event) => event.preventDefault()}
               onClick={() => adjust(-60)}
             >
               ▼
             </button>
           </div>
-          <div>
+          <span className="temporal-create-time-wheel__separator" aria-hidden="true">
+            :
+          </span>
+          <div className="temporal-create-time-wheel__column">
             <button
               type="button"
               aria-label={`${label}: aumenta 15 minuti`}
+              onPointerDown={(event) => event.preventDefault()}
               onClick={() => adjust(15)}
             >
               ▲
             </button>
+            <strong aria-label={`${label}: minuti ${minute}`}>{minute}</strong>
             <button
               type="button"
               aria-label={`${label}: diminuisci 15 minuti`}
+              onPointerDown={(event) => event.preventDefault()}
               onClick={() => adjust(-15)}
             >
               ▼
             </button>
           </div>
         </div>
-        <button
-          className="temporal-create-clock-trigger"
-          type="button"
-          aria-label={`${label}: scegli orario`}
-          aria-expanded={pickerOpen}
-          onClick={() => setPickerOpen((current) => !current)}
-        >
-          <ClockIcon />
-        </button>
-      </div>
-      {helper ? <small>{helper}</small> : null}
+      ) : null}
+
       {pickerOpen ? (
         <div className="temporal-create-time-picker" role="dialog" aria-label={label}>
           <div className="temporal-create-time-presets">
@@ -330,7 +415,7 @@ function TemporalCreateTimeControl({
                 key={preset.key}
                 type="button"
                 onClick={() => {
-                  onChange(preset.value);
+                  commit(preset.value);
                   setPickerOpen(false);
                 }}
               >
@@ -345,9 +430,9 @@ function TemporalCreateTimeControl({
                 key={option}
                 type="button"
                 data-time-value={option}
-                className={nearestQuarter(value) === option ? 'is-selected' : ''}
+                className={nearestQuarter(lastValidRef.current) === option ? 'is-selected' : ''}
                 onClick={() => {
-                  onChange(option);
+                  commit(option);
                   setPickerOpen(false);
                 }}
               >
@@ -619,19 +704,7 @@ export function TemporalCreateCoreFields({
 
       {fields.timeSemantics === 'timed' ? (
         <div className="temporal-create-when-block">
-          <div className="temporal-create-date-timezone-row">
-            <label className="temporal-create-control temporal-create-date-control">
-              <span>{t(($) => $.common.home.timeline.create.date)}</span>
-              <input
-                data-create-path="date"
-                type="date"
-                value={fields.date}
-                onChange={(event) =>
-                  onPatch({ date: event.currentTarget.value })
-                }
-              />
-              {renderError('date')}
-            </label>
+          <div className="temporal-create-date-time-row">
             <div ref={timeZoneRootRef} className="temporal-create-timezone-control">
               <button
                 className={`temporal-create-timezone-trigger${timeZoneOpen ? ' is-open' : ''}`}
@@ -678,9 +751,23 @@ export function TemporalCreateCoreFields({
                 </div>
               ) : null}
             </div>
-          </div>
 
-          <div className="temporal-create-time-range">
+            <label className="temporal-create-control temporal-create-date-control">
+              <span className="temporal-create-visually-hidden">
+                {t(($) => $.common.home.timeline.create.date)}
+              </span>
+              <input
+                data-create-path="date"
+                type="date"
+                value={fields.date}
+                onChange={(event) =>
+                  onPatch({ date: event.currentTarget.value })
+                }
+                aria-label={t(($) => $.common.home.timeline.create.date)}
+              />
+              {renderError('date')}
+            </label>
+
             <TemporalCreateTimeControl
               label={startLabel}
               value={fields.startTime}
@@ -711,12 +798,15 @@ export function TemporalCreateCoreFields({
       {fields.kind === 'activity' && fields.timeSemantics === 'all-day' ? (
         <div className="temporal-create-grid one">
           <label className="temporal-create-control">
-            <span>{t(($) => $.common.home.timeline.create.date)}</span>
+            <span className="temporal-create-visually-hidden">
+              {t(($) => $.common.home.timeline.create.date)}
+            </span>
             <input
               data-create-path="date"
               type="date"
               value={fields.date}
               onChange={(event) => onPatch({ date: event.currentTarget.value })}
+              aria-label={t(($) => $.common.home.timeline.create.date)}
             />
             {renderError('date')}
           </label>
@@ -726,13 +816,14 @@ export function TemporalCreateCoreFields({
       {fields.kind === 'event' && fields.timeSemantics === 'all-day' ? (
         <div className="temporal-create-grid two">
           <label className="temporal-create-control">
-            <span>
+            <span className="temporal-create-visually-hidden">
               {t(($) => $.common.home.timeline.create.eventDetails.startDate)}
             </span>
             <input
               data-create-path="date"
               type="date"
               value={fields.date}
+              aria-label={t(($) => $.common.home.timeline.create.eventDetails.startDate)}
               onChange={(event) => {
                 const date = event.currentTarget.value;
                 onPatch({
@@ -750,13 +841,14 @@ export function TemporalCreateCoreFields({
             {renderError('date')}
           </label>
           <label className="temporal-create-control">
-            <span>
+            <span className="temporal-create-visually-hidden">
               {t(($) => $.common.home.timeline.create.eventDetails.endDate)}
             </span>
             <input
               data-create-path="event.allDayEndDate"
               type="date"
               value={fields.event.allDayEndDate}
+              aria-label={t(($) => $.common.home.timeline.create.eventDetails.endDate)}
               onChange={(event) =>
                 patchEvent({ allDayEndDate: event.currentTarget.value })
               }
@@ -768,8 +860,9 @@ export function TemporalCreateCoreFields({
 
       <div className="temporal-create-event-quick-row">
         <label className="temporal-create-control">
-          <span>{copy.event.repeat}</span>
+          <span className="temporal-create-visually-hidden">{copy.event.repeat}</span>
           <select
+            aria-label={copy.event.repeat}
             value={quickRecurrence(fields)}
             onChange={(event) =>
               changeQuickRecurrence(
