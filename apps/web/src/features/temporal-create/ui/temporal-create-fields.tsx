@@ -8,7 +8,7 @@ import type {
 import { TemporalCreateActivityFields } from './temporal-create-activity-fields';
 import { TemporalCreateAppearanceFields } from './temporal-create-appearance-fields';
 import { TemporalCreateConfirmationFields } from './temporal-create-confirmation-fields';
-import { TemporalCreateCoreFields } from './temporal-create-core-fields';
+import { TemporalCreateCoreFieldsU2 } from './temporal-create-core-u2';
 import { TemporalCreateEventFields } from './temporal-create-event-fields';
 import { TemporalCreateOrganizationFields } from './temporal-create-organization-fields';
 import { TemporalCreateRecurrenceFields } from './temporal-create-recurrence-fields';
@@ -22,7 +22,7 @@ type TemporalCreateAdvancedFieldsProps = Readonly<{
   renderError: (path: string) => ReactNode;
 }>;
 
-export { TemporalCreateCoreFields };
+export { TemporalCreateCoreFieldsU2 as TemporalCreateCoreFields };
 
 export function TemporalCreateAdvancedFields({
   fields,
