@@ -1,10 +1,11 @@
 .timeline-truth-inspector {
   position: fixed;
-  right: 16px;
-  bottom: 16px;
+  left: 16px;
+  right: auto;
+  bottom: 66px;
   z-index: 70;
-  width: min(420px, calc(100vw - 32px));
-  max-height: min(78vh, 760px);
+  width: min(360px, calc(100vw - 32px));
+  max-height: min(62vh, 620px);
   overflow: auto;
   border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
   border-radius: 14px;
@@ -35,4 +36,11 @@
 .timeline-truth-inspector__body select {
   min-width: 0;
   width: 100%;
+}
+
+@media (max-width: 760px) {
+  .timeline-truth-inspector {
+    bottom: 122px;
+    max-height: min(35vh, 320px);
+  }
 }
