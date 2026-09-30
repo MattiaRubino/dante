@@ -1,0 +1,225 @@
+/* U1 polish — inline time readability, icon-only temporal controls and a fixed Create footer. */
+
+.temporal-create-composer.temporal-create-composer {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.temporal-create-composer .temporal-create-composer__header.is-minimal {
+  flex: 0 0 auto;
+}
+
+.temporal-create-composer .temporal-create-composer__body.temporal-create-composer__body {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding-right: 4px;
+  padding-bottom: 86px;
+  scrollbar-gutter: stable;
+}
+
+/* The hour/minute arrows are real controls: compact, but visibly clickable. */
+.temporal-create-composer .temporal-create-time-segment.temporal-create-time-segment {
+  grid-template-rows: 10px 20px 10px;
+}
+
+.temporal-create-composer .temporal-create-time-segment.temporal-create-time-segment > button {
+  justify-self: center;
+  width: 22px;
+  min-width: 22px;
+  height: 10px;
+  border: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
+  border-radius: 4px;
+  color: var(--dante-semantic-color-home-text-muted, #7f8b9d);
+  background: rgba(255, 255, 255, 0.035);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  font-size: 6px;
+}
+
+.temporal-create-composer .temporal-create-time-segment.temporal-create-time-segment > button:hover {
+  border-color: var(
+    --dante-semantic-color-home-chrome-active-border,
+    rgba(234, 92, 18, 0.255)
+  );
+  color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
+  background: var(
+    --dante-semantic-color-home-chrome-active-soft,
+    rgba(234, 92, 18, 0.095)
+  );
+}
+
+.temporal-create-composer .temporal-create-time-segment.temporal-create-time-segment > input:focus {
+  color: #fff;
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-chrome-active, #ea5c12) 8%,
+    rgba(255, 255, 255, 0.035)
+  );
+  box-shadow: inset 0 0 0 1px
+    color-mix(
+      in srgb,
+      var(--dante-semantic-color-home-chrome-active, #ea5c12) 24%,
+      transparent
+    );
+}
+
+/* World and band arrow are icon buttons, not cards. */
+.temporal-create-composer .temporal-create-timezone-trigger.temporal-create-timezone-trigger,
+.temporal-create-composer .temporal-create-time-band-trigger.temporal-create-time-band-trigger {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.temporal-create-composer .temporal-create-timezone-trigger.temporal-create-timezone-trigger {
+  width: 30px;
+  height: 42px;
+  border-radius: 50%;
+  color: #36d9ff;
+  filter: drop-shadow(0 0 5px rgba(54, 217, 255, 0.22));
+}
+
+.temporal-create-composer .temporal-create-timezone-trigger.temporal-create-timezone-trigger:hover,
+.temporal-create-composer .temporal-create-timezone-trigger.temporal-create-timezone-trigger.is-open {
+  border: 0;
+  color: #67e8f9;
+  background: transparent;
+  filter:
+    drop-shadow(0 0 5px rgba(54, 217, 255, 0.32))
+    drop-shadow(0 0 8px rgba(167, 139, 250, 0.2));
+  transform: scale(1.06);
+}
+
+.temporal-create-composer .temporal-create-timezone-trigger svg circle,
+.temporal-create-composer .temporal-create-timezone-current svg circle {
+  stroke: #35d5ff;
+}
+
+.temporal-create-composer .temporal-create-timezone-trigger svg path,
+.temporal-create-composer .temporal-create-timezone-current svg path {
+  stroke: #a78bfa;
+}
+
+.temporal-create-composer .temporal-create-time-band-trigger.temporal-create-time-band-trigger {
+  width: 28px;
+  height: 42px;
+  border-radius: 0;
+  color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
+}
+
+.temporal-create-composer .temporal-create-time-band-trigger.temporal-create-time-band-trigger:hover,
+.temporal-create-composer .temporal-create-time-band-trigger.temporal-create-time-band-trigger[aria-expanded='true'] {
+  border: 0;
+  color: #ffb27e;
+  background: transparent;
+  transform: translateX(1px);
+}
+
+.temporal-create-composer .temporal-create-time-band-trigger.temporal-create-time-band-trigger > span {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.temporal-create-composer .temporal-create-time-band-trigger.temporal-create-time-band-trigger > small {
+  display: none;
+}
+
+/* Keep the tiny duration under the END control, never under the band arrow. */
+.temporal-create-composer .temporal-create-date-time-row > .temporal-create-time-control:last-child > small {
+  position: absolute;
+  top: 44px;
+  right: 0;
+  left: 0;
+  text-align: center;
+}
+
+/* One fixed footer card for Advanced / Cancel / Add. */
+.temporal-create-composer .temporal-create-actions.temporal-create-actions {
+  position: absolute;
+  z-index: 120;
+  right: 18px;
+  bottom: 18px;
+  left: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 8px;
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09)) 88%,
+      var(--dante-semantic-color-home-chrome-active, #ea5c12)
+    );
+  border-radius: 14px;
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-surface-primary, #0d1522) 94%,
+    black
+  );
+  box-shadow:
+    0 14px 36px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.035);
+  backdrop-filter: blur(16px);
+}
+
+.temporal-create-composer .temporal-create-actions .temporal-create-advanced-toggle {
+  min-height: 36px;
+  margin-right: auto;
+  padding: 0 10px;
+  border: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
+  border-radius: 10px;
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  background: var(--dante-semantic-color-home-surface-control, #151f2e);
+  box-shadow: none;
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.temporal-create-composer .temporal-create-actions .temporal-create-advanced-toggle:hover {
+  border-color: var(
+    --dante-semantic-color-home-chrome-active-border,
+    rgba(234, 92, 18, 0.255)
+  );
+  color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
+  background: var(
+    --dante-semantic-color-home-chrome-active-soft,
+    rgba(234, 92, 18, 0.095)
+  );
+}
+
+/* Advanced content stays inside the rail and scrolls behind the fixed footer. */
+.temporal-create-composer .temporal-create-advanced {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.temporal-create-composer .temporal-create-advanced > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (max-width: 560px) {
+  .temporal-create-composer .temporal-create-composer__body.temporal-create-composer__body {
+    padding-bottom: 132px;
+  }
+
+  .temporal-create-composer .temporal-create-actions.temporal-create-actions {
+    right: 12px;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    left: 12px;
+    flex-wrap: wrap;
+  }
+
+  .temporal-create-composer .temporal-create-actions .temporal-create-advanced-toggle {
+    flex: 1 0 100%;
+    margin-right: 0;
+  }
+}
