@@ -85,36 +85,69 @@ describe('Temporal Create U1 top controls', () => {
     expect(document.querySelector('.temporal-create-intent-summary')).toBeNull();
   });
 
-  it('supports protected manual time, split stepping, picker presets and timezone selection', () => {
+  it('keeps hour/minute stepping inline and rejects invalid manual time', () => {
     renderEntry();
 
-    const start = screen.getByLabelText('Inizio') as HTMLInputElement;
-    const before = start.value;
+    const startRaw = document.querySelector<HTMLInputElement>(
+      '[data-create-path="startTime"]',
+    );
+    if (!startRaw) {
+      throw new Error('Expected canonical start-time input.');
+    }
+    const before = startRaw.value;
 
-    fireEvent.focus(start);
-    expect(
-      screen.getByRole('group', { name: 'Inizio: modifica ore e minuti' }),
-    ).toBeTruthy();
+    const hour = screen.getByLabelText('Inizio: ore') as HTMLInputElement;
+    const minute = screen.getByLabelText('Inizio: minuti') as HTMLInputElement;
+
     fireEvent.click(
       screen.getByRole('button', { name: 'Inizio: aumenta 15 minuti' }),
     );
-    expect(start.value).toBe(addMinutes(before, 15));
+    expect(startRaw.value).toBe(addMinutes(before, 15));
 
-    const lastValid = start.value;
-    fireEvent.change(start, { target: { value: '15:asdo' } });
-    expect(start.value).toBe(lastValid);
+    const validHour = hour.value;
+    fireEvent.change(hour, { target: { value: 'ab' } });
+    expect(hour.value).toBe(validHour);
 
-    fireEvent.change(start, { target: { value: '29:99' } });
-    expect(start.value).toBe('29:99');
-    fireEvent.blur(start);
-    expect(start.value).toBe(lastValid);
+    fireEvent.change(hour, { target: { value: '99' } });
+    expect(hour.value).toBe('99');
+    fireEvent.blur(hour);
+    expect(hour.value).toBe(validHour);
+
+    const validMinute = minute.value;
+    fireEvent.change(minute, { target: { value: '99' } });
+    expect(minute.value).toBe('99');
+    fireEvent.blur(minute);
+    expect(minute.value).toBe(validMinute);
+  });
+
+  it('uses the clock only for quarter-hour choices and the arrow for day bands', () => {
+    renderEntry();
+
+    const startRaw = document.querySelector<HTMLInputElement>(
+      '[data-create-path="startTime"]',
+    );
+    const endRaw = document.querySelector<HTMLInputElement>(
+      '[data-create-path="endTime"]',
+    );
+    if (!startRaw || !endRaw) {
+      throw new Error('Expected canonical time inputs.');
+    }
 
     fireEvent.click(
       screen.getByRole('button', { name: 'Inizio: scegli orario' }),
     );
     const picker = screen.getByRole('dialog', { name: 'Inizio' });
-    fireEvent.click(within(picker).getByRole('button', { name: /Mattina/ }));
-    expect(start.value).toBe('08:00');
+    expect(within(picker).queryByText('Mattina')).toBeNull();
+    fireEvent.click(within(picker).getByRole('button', { name: '17:15' }));
+    expect(startRaw.value).toBe('17:15');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Fasce orarie' }));
+    const bands = screen.getByRole('dialog', { name: 'Fasce orarie' });
+    fireEvent.click(
+      within(bands).getByRole('button', { name: /Mattina.*06:00.*12:00/ }),
+    );
+    expect(startRaw.value).toBe('06:00');
+    expect(endRaw.value).toBe('12:00');
 
     const zoneTrigger = screen.getByRole('button', {
       name: /Fuso orario: Ora locale/,
