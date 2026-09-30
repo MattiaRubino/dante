@@ -120,6 +120,14 @@ function timeSegmentInput(target: EventTarget | null): HTMLInputElement | null {
   return target;
 }
 
+function ensureCreateDatesRequired(composer: HTMLElement): void {
+  for (const input of composer.querySelectorAll<HTMLInputElement>(
+    'input[type="date"]',
+  )) {
+    input.required = true;
+  }
+}
+
 function closeOpenTimePicker(input: HTMLInputElement): void {
   const control = input.closest('.temporal-create-time-control');
   const trigger = control?.querySelector<HTMLButtonElement>(
@@ -179,6 +187,11 @@ export function HomeCreateInteractionBridge() {
         return;
       }
 
+      // Date is mandatory for every scheduled/all-day Create path. Mark the
+      // native control required before Chromium opens its picker so it does not
+      // offer a misleading Clear/Cancella action.
+      ensureCreateDatesRequired(composer);
+
       if (document.querySelector('.temporal-create-discard')) {
         return;
       }
@@ -231,6 +244,12 @@ export function HomeCreateInteractionBridge() {
     };
 
     const onTimeSegmentFocus = (event: FocusEvent) => {
+      const composer = document.querySelector<HTMLElement>(
+        '[data-temporal-create="composer"]',
+      );
+      if (composer) {
+        ensureCreateDatesRequired(composer);
+      }
       selectTimeSegment(event.target);
     };
 
