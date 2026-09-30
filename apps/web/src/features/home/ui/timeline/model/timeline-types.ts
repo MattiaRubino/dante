@@ -10,6 +10,10 @@ export type TimelineGroup = Readonly<{
   id: TimelineGroupId;
   label: string;
   tone: TimelineSemanticTone;
+  /** Accepted actor-local Life Area revision, when this group projects one. */
+  organizationRevision?: number;
+  /** Accepted Life Area appearance. Presentation metadata, never Schedule truth. */
+  colorCode?: string | null;
   /** Actor-local organization preference; not a Schedule or conflict filter. */
   hidden?: boolean;
   archived?: boolean;
