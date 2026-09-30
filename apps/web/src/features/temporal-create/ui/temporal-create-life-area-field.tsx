@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import { createRemoteTemporalOrganizationDataSource } from '../../temporal/remote-organization';
 import type {
   TemporalCreateU2AuthoringDraft,
   TemporalCreateU2LifeAreaDraft,
@@ -41,6 +42,28 @@ function selectedColor(draft: TemporalCreateU2AuthoringDraft): string {
   }
 }
 
+function canonicalOptions(
+  contexts: readonly TemporalCreateContextOption[],
+  areas: Awaited<ReturnType<ReturnType<typeof createRemoteTemporalOrganizationDataSource>['load']>>['areas'],
+): readonly TemporalCreateContextOption[] {
+  const byRef = new Map(contexts.map((context) => [context.id, context]));
+  return Object.freeze(
+    areas
+      .filter((area) => !area.archived)
+      .map((area) => {
+        const current = byRef.get(area.ref);
+        return Object.freeze({
+          id: area.ref,
+          label: area.name,
+          tone: current?.tone ?? ('personal' as const),
+          revision: area.revision,
+          colorCode: area.colorCode,
+          local: false,
+        });
+      }),
+  );
+}
+
 export function TemporalCreateLifeAreaField({
   contexts,
   draft,
@@ -50,11 +73,34 @@ export function TemporalCreateLifeAreaField({
 }: TemporalCreateLifeAreaFieldProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState(() => selectedLabel(draft));
+  const [availableContexts, setAvailableContexts] = useState(contexts);
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const sourceRef = useRef<ReturnType<typeof createRemoteTemporalOrganizationDataSource> | null>(null);
 
   useEffect(() => {
     setQuery(selectedLabel(draft));
   }, [draft.lifeArea]);
+
+  useEffect(() => {
+    setAvailableContexts(contexts);
+  }, [contexts]);
+
+  useEffect(() => {
+    if (!open || import.meta.env.MODE === 'test') return;
+    sourceRef.current ??= createRemoteTemporalOrganizationDataSource();
+    let cancelled = false;
+    void sourceRef.current.load().then(
+      (snapshot) => {
+        if (!cancelled) {
+          setAvailableContexts(canonicalOptions(contexts, snapshot.areas));
+        }
+      },
+      () => undefined,
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [contexts, open]);
 
   useEffect(() => {
     if (!open) return;
@@ -73,11 +119,11 @@ export function TemporalCreateLifeAreaField({
   const filtered = useMemo(() => {
     const needle = normalized(query).toLocaleLowerCase();
     return needle
-      ? contexts.filter((context) =>
+      ? availableContexts.filter((context) =>
           context.label.toLocaleLowerCase().includes(needle),
         )
-      : contexts;
-  }, [contexts, query]);
+      : availableContexts;
+  }, [availableContexts, query]);
 
   const choose = (context: TemporalCreateContextOption) => {
     onLifeAreaChange(
@@ -109,7 +155,7 @@ export function TemporalCreateLifeAreaField({
       clear();
       return;
     }
-    const exact = contexts.find(
+    const exact = availableContexts.find(
       (context) => context.label.toLocaleLowerCase() === name.toLocaleLowerCase(),
     );
     if (exact) {
