@@ -112,47 +112,51 @@ export function TimelineTruthInspector() {
     }
   }, [selectedKey, subjects]);
 
-  if (subjects.length === 0) return null;
-
-  const selected = subjects.find((item) => item.key === selectedKey) ?? subjects[0];
-  if (selected === undefined) return null;
+  const selected =
+    subjects.find((item) => item.key === selectedKey) ?? subjects[0] ?? null;
 
   return (
     <details className="timeline-truth-inspector" data-timeline-truth-inspector>
       <summary>Realtà / Outcome</summary>
-      <div className="timeline-truth-inspector__body">
-        <label>
-          Elemento timeline
-          <select
-            aria-label="Elemento per stato reale"
-            value={selected.key}
-            onChange={(event) => setSelectedKey(event.currentTarget.value)}
-          >
-            {subjects.map((subject) => (
-              <option key={subject.key} value={subject.key}>
-                {`${subject.kind} · ${subject.title} · ${subject.timelineLabel}`}
-              </option>
-            ))}
-          </select>
-        </label>
-        <ActualRealizationControls
-          key={`actual:${selected.key}`}
-          kind={selected.kind}
-          subjectRef={selected.ref}
-        />
-        <ConditionalTemporalControls
-          key={`condition:${selected.key}`}
-          kind={selected.kind}
-          subjectRef={selected.ref}
-        />
-        {selected.recurrenceOwner === null ? null : (
-          <AdvancedRecurrenceControls
-            key={`${selected.recurrenceOwner.kind}:${selected.recurrenceOwner.ref}`}
-            ownerKind={selected.recurrenceOwner.kind}
-            sourceRef={selected.recurrenceOwner.ref}
+      {selected === null ? (
+        <div className="timeline-truth-inspector__body is-empty">
+          <p>Nessun elemento della Timeline disponibile per lo stato reale.</p>
+        </div>
+      ) : (
+        <div className="timeline-truth-inspector__body">
+          <label>
+            Elemento timeline
+            <select
+              aria-label="Elemento per stato reale"
+              value={selected.key}
+              onChange={(event) => setSelectedKey(event.currentTarget.value)}
+            >
+              {subjects.map((subject) => (
+                <option key={subject.key} value={subject.key}>
+                  {`${subject.kind} · ${subject.title} · ${subject.timelineLabel}`}
+                </option>
+              ))}
+            </select>
+          </label>
+          <ActualRealizationControls
+            key={`actual:${selected.key}`}
+            kind={selected.kind}
+            subjectRef={selected.ref}
           />
-        )}
-      </div>
+          <ConditionalTemporalControls
+            key={`condition:${selected.key}`}
+            kind={selected.kind}
+            subjectRef={selected.ref}
+          />
+          {selected.recurrenceOwner === null ? null : (
+            <AdvancedRecurrenceControls
+              key={`${selected.recurrenceOwner.kind}:${selected.recurrenceOwner.ref}`}
+              ownerKind={selected.recurrenceOwner.kind}
+              sourceRef={selected.recurrenceOwner.ref}
+            />
+          )}
+        </div>
+      )}
     </details>
   );
 }
