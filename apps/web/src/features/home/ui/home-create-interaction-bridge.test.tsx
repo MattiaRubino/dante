@@ -7,6 +7,7 @@ import { HomeCreateInteractionBridge } from './home-create-interaction-bridge';
 function Harness({ onEscape }: { onEscape: () => void }) {
   const [date, setDate] = useState('2026-10-01');
   const [time, setTime] = useState('09:00');
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   return (
     <>
@@ -34,8 +35,25 @@ function Harness({ onEscape }: { onEscape: () => void }) {
           value={time}
           onChange={(event) => setTime(event.currentTarget.value)}
         />
-        <div className="temporal-create-time-segment">
-          <input aria-label="Ore visibili" defaultValue="17" />
+        <div className="temporal-create-time-control">
+          <div className="temporal-create-inline-time-editor">
+            <div className="temporal-create-time-segment">
+              <input aria-label="Inizio: ore" defaultValue="17" />
+            </div>
+            <div className="temporal-create-time-segment">
+              <input aria-label="Inizio: minuti" defaultValue="30" />
+            </div>
+          </div>
+          <button
+            type="button"
+            className="temporal-create-clock-trigger"
+            aria-label="Inizio: scegli orario"
+            aria-expanded={pickerOpen}
+            onClick={() => setPickerOpen((current) => !current)}
+          >
+            clock
+          </button>
+          {pickerOpen ? <div role="dialog" aria-label="Inizio" /> : null}
         </div>
       </div>
       <section
@@ -121,20 +139,26 @@ describe('Home U1 Create interaction bridge', () => {
     document.removeEventListener('dblclick', leakedDoubleClick, true);
   });
 
-  it('selects the whole visible hour segment when it is focused or clicked', async () => {
+  it('selects a time segment, closes its clock picker and advances hours to minutes', async () => {
     const onEscape = vi.fn();
     render(<Harness onEscape={onEscape} />);
-    const hour = screen.getByLabelText('Ore visibili') as HTMLInputElement;
+    const hour = screen.getByLabelText('Inizio: ore') as HTMLInputElement;
+    const minute = screen.getByLabelText('Inizio: minuti') as HTMLInputElement;
+    const clock = screen.getByRole('button', { name: 'Inizio: scegli orario' });
+
+    fireEvent.click(clock);
+    expect(screen.getByRole('dialog', { name: 'Inizio' })).toBeTruthy();
 
     fireEvent.focus(hour);
     await Promise.resolve();
+    expect(screen.queryByRole('dialog', { name: 'Inizio' })).toBeNull();
     expect(hour.selectionStart).toBe(0);
     expect(hour.selectionEnd).toBe(2);
 
-    hour.setSelectionRange(1, 1);
-    fireEvent.click(hour);
+    fireEvent.input(hour, { target: { value: '18' } });
     await Promise.resolve();
-    expect(hour.selectionStart).toBe(0);
-    expect(hour.selectionEnd).toBe(2);
+    expect(document.activeElement).toBe(minute);
+    expect(minute.selectionStart).toBe(0);
+    expect(minute.selectionEnd).toBe(2);
   });
 });
