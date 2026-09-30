@@ -19,13 +19,9 @@ import {
   TemporalCreateCoreFields,
 } from './temporal-create-fields';
 import { temporalCreateProductCopy } from './temporal-create-product-copy';
-import type {
-  TemporalCreateContextOption,
-} from './temporal-create-ui-types';
+import type { TemporalCreateContextOption } from './temporal-create-ui-types';
 
-export type {
-  TemporalCreateContextOption,
-} from './temporal-create-ui-types';
+export type { TemporalCreateContextOption } from './temporal-create-ui-types';
 
 type TemporalCreateComposerProps = Readonly<{
   session: TemporalCreateSession;
@@ -93,7 +89,6 @@ export function TemporalCreateComposer({
     i18n.resolvedLanguage ?? i18n.language,
   );
   const titleId = useId();
-  const dialogTitleId = useId();
   const discardTitleId = useId();
   const discardDescriptionId = useId();
   const dialogRef = useRef<HTMLDivElement | null>(null);
@@ -356,37 +351,29 @@ export function TemporalCreateComposer({
         data-temporal-create-surface={advanced ? 'advanced' : 'base'}
         role="dialog"
         aria-modal={discardPending || undefined}
-        aria-labelledby={dialogTitleId}
+        aria-label={t(($) => $.common.home.timeline.create.title)}
         aria-busy={pending || undefined}
         onKeyDown={handleKeyDown}
       >
         <div
-          className="temporal-create-composer__header"
+          className={`temporal-create-composer__header${advanced ? '' : ' is-minimal'}`}
           inert={discardPending || undefined}
         >
-          <div className="temporal-create-composer__heading-stack">
-            {advanced ? (
-              <button
-                className="temporal-create-composer__back"
-                type="button"
-                aria-label={copy.hideAdvanced}
-                aria-expanded="true"
-                disabled={pending}
-                onClick={() => onSurfaceChange('quick')}
-              >
-                <span aria-hidden="true">←</span>
-                <span>{copy.backToQuick}</span>
-              </button>
-            ) : null}
-            <div className="temporal-create-composer__heading-copy">
-              <span className="temporal-create-composer__eyebrow">
-                {t(($) => $.common.home.timeline.create.draft)}
-              </span>
-              <h2 id={dialogTitleId}>
-                {t(($) => $.common.home.timeline.create.title)}
-              </h2>
-            </div>
-          </div>
+          {advanced ? (
+            <button
+              className="temporal-create-composer__back"
+              type="button"
+              aria-label={copy.hideAdvanced}
+              aria-expanded="true"
+              disabled={pending}
+              onClick={() => onSurfaceChange('quick')}
+            >
+              <span aria-hidden="true">←</span>
+              <span>{copy.backToQuick}</span>
+            </button>
+          ) : (
+            <span aria-hidden="true" />
+          )}
           <button
             className="temporal-create-composer__close"
             type="button"
@@ -402,110 +389,122 @@ export function TemporalCreateComposer({
           <div className="temporal-create-composer__body" role="status">
             <p>{failureMessage}</p>
             <div className="temporal-create-actions">
-              <button type="button" disabled={pending} onClick={requestCloseFromCurrentFocus}>
+              <button
+                type="button"
+                disabled={pending}
+                onClick={requestCloseFromCurrentFocus}
+              >
                 {t(($) => $.common.home.timeline.create.cancel)}
               </button>
-              <button className="is-primary" type="button" disabled={pending} onClick={onSubmit}>
+              <button
+                className="is-primary"
+                type="button"
+                disabled={pending}
+                onClick={onSubmit}
+              >
                 {t(($) => $.common.home.timeline.create.reminderRetry)}
               </button>
             </div>
           </div>
-        ) : <form
-          className="temporal-create-composer__body"
-          inert={discardPending || undefined}
-          onSubmit={submitForm}
-        >
-          <label className="temporal-create-title-label" htmlFor={titleId}>
-            {t(($) => $.common.home.timeline.create.titleLabel)}
-          </label>
-          <input
-            ref={titleRef}
-            id={titleId}
-            className="temporal-create-title-input"
-            data-create-path="title"
-            name="temporal-create-title"
-            type="text"
-            value={fields.title}
-            onChange={(event) => onPatch({ title: event.currentTarget.value })}
-            placeholder={t(
-              ($) => $.common.home.timeline.create.titlePlaceholder,
-            )}
-            autoComplete="off"
-            spellCheck="true"
-          />
-          {renderError('title')}
-
-          <TemporalCreateCoreFields
-            fields={fields}
-            contexts={contexts}
-            onPatch={onPatch}
-            onRequestAdvanced={showAdvanced}
-            renderError={renderError}
-          />
-
-          {!advanced ? (
-            <button
-              type="button"
-              className="temporal-create-advanced-toggle"
-              aria-expanded="false"
-              onClick={() => showAdvanced()}
+        ) : (
+          <form
+            className="temporal-create-composer__body"
+            inert={discardPending || undefined}
+            onSubmit={submitForm}
+          >
+            <label
+              className="temporal-create-visually-hidden"
+              htmlFor={titleId}
             >
-              <span>{copy.advanced}</span>
-              <span aria-hidden="true">⌄</span>
-            </button>
-          ) : null}
+              {t(($) => $.common.home.timeline.create.titleLabel)}
+            </label>
+            <input
+              ref={titleRef}
+              id={titleId}
+              className="temporal-create-title-input"
+              data-create-path="title"
+              name="temporal-create-title"
+              type="text"
+              value={fields.title}
+              onChange={(event) => onPatch({ title: event.currentTarget.value })}
+              placeholder={t(($) => $.common.home.timeline.create.titleLabel)}
+              autoComplete="off"
+              spellCheck="true"
+            />
+            {renderError('title')}
 
-          <TemporalCreateAdvancedFields
-            fields={fields}
-            contexts={contexts}
-            depth={advanced ? 'full' : 'quick'}
-            onPatch={onPatch}
-            renderError={renderError}
-          />
+            <TemporalCreateCoreFields
+              fields={fields}
+              contexts={contexts}
+              onPatch={onPatch}
+              onRequestAdvanced={showAdvanced}
+              renderError={renderError}
+            />
 
-          <div className="temporal-create-intent-summary" aria-live="polite">
-            <span className="is-kind">
-              {fields.kind === 'activity'
-                ? t(($) => $.common.home.timeline.create.kind.activity)
-                : t(($) => $.common.home.timeline.create.kind.event)}
-            </span>
-            {constraintLabel ? <span>{constraintLabel}</span> : null}
-            {fields.eventRecurrence.patternKind !== 'none' ? (
-              <span>
-                {t(
-                  ($) =>
-                    $.common.home.timeline.create.recurrence.recurringBadge,
-                )}
+            {!advanced ? (
+              <button
+                type="button"
+                className="temporal-create-advanced-toggle"
+                aria-expanded="false"
+                onClick={() => showAdvanced()}
+              >
+                <span>{copy.advanced}</span>
+                <span aria-hidden="true">⌄</span>
+              </button>
+            ) : null}
+
+            <TemporalCreateAdvancedFields
+              fields={fields}
+              contexts={contexts}
+              depth={advanced ? 'full' : 'quick'}
+              onPatch={onPatch}
+              renderError={renderError}
+            />
+
+            <div className="temporal-create-intent-summary" aria-live="polite">
+              <span className="is-kind">
+                {fields.kind === 'activity'
+                  ? t(($) => $.common.home.timeline.create.kind.activity)
+                  : t(($) => $.common.home.timeline.create.kind.event)}
               </span>
-            ) : null}
-            {fields.timeSemantics === 'timed' && !constraintLabel ? (
-              <span>{`${fields.date} · ${fields.startTime} · ${fields.durationMinutes} min`}</span>
-            ) : fields.timeSemantics === 'all-day' ? (
-              <span>{`${fields.date} · ${t(($) => $.common.home.timeline.create.timeSemantics.allDay)}`}</span>
-            ) : null}
-          </div>
-
-          {failureMessage ? (
-            <div className="temporal-create-operation-error" role="alert">
-              {failureMessage}
+              {constraintLabel ? <span>{constraintLabel}</span> : null}
+              {fields.eventRecurrence.patternKind !== 'none' ? (
+                <span>
+                  {t(
+                    ($) =>
+                      $.common.home.timeline.create.recurrence.recurringBadge,
+                  )}
+                </span>
+              ) : null}
+              {fields.timeSemantics === 'timed' && !constraintLabel ? (
+                <span>{`${fields.date} · ${fields.startTime} · ${fields.durationMinutes} min`}</span>
+              ) : fields.timeSemantics === 'all-day' ? (
+                <span>{`${fields.date} · ${t(($) => $.common.home.timeline.create.timeSemantics.allDay)}`}</span>
+              ) : null}
             </div>
-          ) : null}
 
-          <div className="temporal-create-actions">
-            <button
-              type="button"
-              disabled={pending}
-              onClick={requestCloseFromCurrentFocus}
-            >
-              {t(($) => $.common.home.timeline.create.cancel)}
-            </button>
-            <button className="is-primary" type="submit" disabled={pending}>
-              {pending
-                ? t(($) => $.common.home.timeline.create.creating)
-                : t(($) => $.common.home.timeline.create.submit)}
-            </button>
-          </div>
-        </form>}
+            {failureMessage ? (
+              <div className="temporal-create-operation-error" role="alert">
+                {failureMessage}
+              </div>
+            ) : null}
+
+            <div className="temporal-create-actions">
+              <button
+                type="button"
+                disabled={pending}
+                onClick={requestCloseFromCurrentFocus}
+              >
+                {t(($) => $.common.home.timeline.create.cancel)}
+              </button>
+              <button className="is-primary" type="submit" disabled={pending}>
+                {pending
+                  ? t(($) => $.common.home.timeline.create.creating)
+                  : t(($) => $.common.home.timeline.create.submit)}
+              </button>
+            </div>
+          </form>
+        )}
 
         {discardPending ? (
           <div
