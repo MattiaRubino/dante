@@ -1,0 +1,115 @@
+.temporal-create-date-picker {
+  position: relative;
+  min-width: 0;
+}
+
+.temporal-create-date-picker__trigger {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 650;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.temporal-create-date-picker__trigger:hover,
+.temporal-create-date-picker__trigger:focus-visible {
+  background: color-mix(in srgb, currentColor 7%, transparent);
+  outline: none;
+}
+
+.temporal-create-date-picker__popover {
+  position: absolute;
+  z-index: 80;
+  top: calc(100% + 8px);
+  left: 0;
+  width: min(292px, calc(100vw - 36px));
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+  border-radius: 16px;
+  background: var(--dante-surface, #171923);
+  box-shadow: 0 18px 48px rgb(0 0 0 / 32%);
+}
+
+.temporal-create-date-picker:last-child .temporal-create-date-picker__popover {
+  right: 0;
+  left: auto;
+}
+
+.temporal-create-date-picker__popover header {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 34px;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.temporal-create-date-picker__popover header strong {
+  overflow: hidden;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-transform: capitalize;
+}
+
+.temporal-create-date-picker__popover header button,
+.temporal-create-date-picker__grid button {
+  border: 0;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.temporal-create-date-picker__popover header button {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  font-size: 1.25rem;
+}
+
+.temporal-create-date-picker__popover header button:hover,
+.temporal-create-date-picker__grid button:hover:not(:disabled) {
+  background: color-mix(in srgb, currentColor 9%, transparent);
+}
+
+.temporal-create-date-picker__weekdays,
+.temporal-create-date-picker__grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.temporal-create-date-picker__weekdays {
+  margin-bottom: 5px;
+  opacity: 0.55;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.temporal-create-date-picker__grid button {
+  aspect-ratio: 1;
+  border-radius: 9px;
+  font-size: 0.76rem;
+}
+
+.temporal-create-date-picker__grid button.is-outside {
+  opacity: 0.32;
+}
+
+.temporal-create-date-picker__grid button.is-selected {
+  background: color-mix(in srgb, #ff8a3d 28%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #ff8a3d 78%, transparent);
+  opacity: 1;
+}
+
+.temporal-create-date-picker__grid button:disabled {
+  opacity: 0.14;
+  cursor: not-allowed;
+}
