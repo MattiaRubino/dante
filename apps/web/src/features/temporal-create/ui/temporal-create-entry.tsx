@@ -193,12 +193,7 @@ export function TemporalCreateEntry({
   );
 
   useEffect(() => {
-    if (
-      !creationEnabled ||
-      !request ||
-      requestSeenRef.current === request.id ||
-      open
-    ) {
+    if (!request || requestSeenRef.current === request.id || open) {
       return;
     }
     requestSeenRef.current = request.id;
@@ -213,7 +208,7 @@ export function TemporalCreateEntry({
       );
     });
     return () => cancelAnimationFrame(frame);
-  }, [creationEnabled, open, openComposer, request]);
+  }, [open, openComposer, request]);
 
   useEffect(() => {
     if (!open || session.closeDecision === 'confirm-discard') {
@@ -386,6 +381,10 @@ export function TemporalCreateEntry({
       onSubmit={() => void submit()}
     />
   ) : null;
+  const createHost =
+    typeof document === 'undefined'
+      ? null
+      : document.querySelector<HTMLElement>('[data-home-context-create-host]');
 
   return (
     <>
@@ -403,20 +402,20 @@ export function TemporalCreateEntry({
             triggerRef.current,
           )
         }
-        disabled={!creationEnabled}
         aria-label={t(($) => $.common.home.timeline.quickAdd)}
         aria-haspopup="dialog"
         aria-expanded={open}
+        data-create-ready={creationEnabled ? 'true' : 'false'}
         title={
           creationEnabled
             ? t(($) => $.common.home.timeline.quickAdd)
-            : 'Crea prima una Life Area attiva'
+            : `${t(($) => $.common.home.timeline.quickAdd)} · seleziona una Life Area attiva per salvare`
         }
       >
         +
       </button>
       {composer && typeof document !== 'undefined'
-        ? createPortal(composer, document.body)
+        ? createPortal(composer, createHost ?? document.body)
         : null}
     </>
   );
