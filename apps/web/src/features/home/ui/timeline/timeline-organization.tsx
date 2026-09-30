@@ -24,10 +24,12 @@ export function canonicalOrganizationGroups(snapshot: OrganizationSnapshot): rea
     id: item.ref,
     label: item.name,
     tone: 'personal',
+    organizationRevision: item.revision,
+    colorCode: item.colorCode,
     hidden: item.hidden,
     archived: item.archived,
   }));
-  // Legacy rows are explicit and always discoverable: never infer "Personal".
+  // U2 makes unassigned a legitimate actor-local organization state.
   if (snapshot.unassigned.length || snapshot.assignments.length === 0) {
     groups.push({ id: LEGACY_UNASSIGNED_GROUP, label: 'Senza Life Area', tone: 'personal' });
   }
@@ -201,15 +203,15 @@ export function TimelineOrganizationPanel({
             <h3>Life Area dell’elemento</h3>
             <label>Assegna a
               <select value={selectedAssignment?.areaRef ?? ''} disabled={pending} onChange={(event) => void apply(() => source.assignItem(selectedItem, event.target.value, selectedAssignment?.revision ?? 0))}>
-                <option value="" disabled>Senza Life Area (legacy)</option>
+                <option value="" disabled>Senza Life Area</option>
                 {areas.filter((area) => !area.archived || area.ref === selectedAssignment?.areaRef).map((area) => (
                   <option key={area.ref} value={area.ref} disabled={area.archived}>{area.name}{area.archived ? ' (archiviata)' : ''}</option>
                 ))}
               </select>
             </label>
           </section>}
-          {snapshot?.unassigned.length ? <section aria-label="Elementi legacy senza Life Area">
-            <h3>Da organizzare ({snapshot.unassigned.length})</h3>
+          {snapshot?.unassigned.length ? <section aria-label="Elementi senza Life Area">
+            <h3>Senza Life Area ({snapshot.unassigned.length})</h3>
             <ul>{snapshot.unassigned.map((item) => (
               <li key={`${item.kind}:${item.itemRef}`}>
                 <span>{item.kind === 'event' ? 'Evento' : 'Attività'} · {item.title}</span>
