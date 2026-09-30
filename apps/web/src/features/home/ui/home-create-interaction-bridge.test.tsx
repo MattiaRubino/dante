@@ -24,6 +24,7 @@ function Harness({ onEscape }: { onEscape: () => void }) {
           </button>
         </fieldset>
         <input
+          type="date"
           aria-label="Data"
           data-create-path="date"
           value={date}
@@ -78,6 +79,17 @@ describe('Home U1 Create interaction bridge', () => {
     fireEvent.pointerDown(screen.getByRole('button', { name: 'Fuori' }));
 
     expect(onEscape).toHaveBeenCalledOnce();
+  });
+
+  it('marks Create date as required before the native picker interaction', () => {
+    const onEscape = vi.fn();
+    render(<Harness onEscape={onEscape} />);
+    const date = screen.getByLabelText('Data') as HTMLInputElement;
+
+    expect(date.required).toBe(false);
+    fireEvent.pointerDown(date);
+    expect(date.required).toBe(true);
+    expect(onEscape).not.toHaveBeenCalled();
   });
 
   it('re-seeds an open Create draft from an empty Timeline point instead of closing it', () => {
