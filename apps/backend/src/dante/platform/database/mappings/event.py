@@ -1,4 +1,4 @@
-"""SQLAlchemy rows for canonical B03 Event persistence."""
+"""SQLAlchemy rows for canonical B03/B14 Event persistence."""
 
 from datetime import datetime
 
@@ -11,13 +11,25 @@ from dante.platform.database.references import NativeRef
 
 
 class EventExpectationRow(Base):
-    """Initial durable expectation descriptor for one personal Event."""
+    """Durable expectation descriptor for one personal Event."""
 
     __tablename__ = "event_expectation"
     __table_args__ = (
         CheckConstraint(
             "title=btrim(title) AND title<>'' AND char_length(title)<=300",
             name="title",
+        ),
+        CheckConstraint(
+            "description IS NULL OR (description=btrim(description) AND description<>'')",
+            name="description",
+        ),
+        CheckConstraint(
+            "location IS NULL OR (location=btrim(location) AND location<>'')",
+            name="location",
+        ),
+        CheckConstraint(
+            "color_code IS NULL OR color_code ~ '^#[0-9A-F]{6}$'",
+            name="color_code",
         ),
         ForeignKeyConstraint(
             ["event_ref"],
@@ -48,6 +60,9 @@ class EventExpectationRow(Base):
     event_ref: Mapped[NativeRef] = mapped_column(primary_key=True)
     self_person_ref: Mapped[NativeRef] = mapped_column(nullable=False)
     title: Mapped[str] = mapped_column(Text, nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    location: Mapped[str | None] = mapped_column(Text, nullable=True)
+    color_code: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
 
