@@ -40,6 +40,7 @@ import {
 } from './temporal-create-composer';
 
 import './temporal-create.css';
+import './temporal-create-u1.css';
 
 type InvocationAnchor = Readonly<{
   left: number;
@@ -241,13 +242,17 @@ export function TemporalCreateEntry({
   const patch = (next: Partial<TemporalCreateSession['draft']['current']>) => {
     if (partialReminderRef.current !== null) return;
     const merged = { ...session.draft.current, ...next };
-    const eligibleReminder = merged.kind === 'activity' &&
-      merged.timeSemantics === 'timed' && merged.timeMode === 'zoned' &&
+    const eligibleReminder =
+      merged.kind === 'activity' &&
+      merged.timeSemantics === 'timed' &&
+      merged.timeMode === 'zoned' &&
       merged.eventRecurrence.patternKind === 'none';
-    const boundedNext = eligibleReminder ? next : {
-      ...next,
-      confirmation: { ...merged.confirmation, reminderLeadMinutes: null },
-    };
+    const boundedNext = eligibleReminder
+      ? next
+      : {
+          ...next,
+          confirmation: { ...merged.confirmation, reminderLeadMinutes: null },
+        };
     preparedRef.current = null;
     setIssues([]);
     setFailureMessage('');
@@ -278,7 +283,9 @@ export function TemporalCreateEntry({
         closeComposer();
       } catch {
         setLifecycle('failed');
-        setFailureMessage(t(($) => $.common.home.timeline.create.reminderPartial));
+        setFailureMessage(
+          t(($) => $.common.home.timeline.create.reminderPartial),
+        );
       } finally {
         commitInFlightRef.current = false;
       }
@@ -301,9 +308,10 @@ export function TemporalCreateEntry({
     const fields = fieldsOverride
       ? { ...session.draft.current, ...fieldsOverride }
       : session.draft.current;
-    const preparation = preparedRef.current && !fieldsOverride
-      ? ({ status: 'ready', prepared: preparedRef.current } as const)
-      : runtime.prepare(fields);
+    const preparation =
+      preparedRef.current && !fieldsOverride
+        ? ({ status: 'ready', prepared: preparedRef.current } as const)
+        : runtime.prepare(fields);
     if (preparation.status === 'invalid') {
       setIssues(preparation.issues);
       const hasAdvancedIssue = preparation.issues.some(
@@ -344,7 +352,9 @@ export function TemporalCreateEntry({
           partialReminderRef.current = execution.reminderRetry;
           setReminderRetry(true);
           setLifecycle('failed');
-          setFailureMessage(t(($) => $.common.home.timeline.create.reminderPartial));
+          setFailureMessage(
+            t(($) => $.common.home.timeline.create.reminderPartial),
+          );
           return;
         }
         setSession(discardTemporalCreateSession(freshFields(defaultDate)));
@@ -359,8 +369,7 @@ export function TemporalCreateEntry({
         setFailureMessage(
           (execution.result.status === 'failed'
             ? execution.result.failure.message
-            : null) ??
-            t(($) => $.common.home.timeline.create.failure),
+            : null) ?? t(($) => $.common.home.timeline.create.failure),
         );
       }
     } catch {
@@ -391,9 +400,7 @@ export function TemporalCreateEntry({
       onRequestClose={requestClose}
       onContinueEditing={continueEditing}
       onDiscard={() => closeComposer()}
-      onMoveToUnplaced={() =>
-        void submit({ timeSemantics: 'unscheduled' })
-      }
+      onMoveToUnplaced={() => void submit({ timeSemantics: 'unscheduled' })}
       onSubmit={() => void submit()}
     />
   ) : null;
