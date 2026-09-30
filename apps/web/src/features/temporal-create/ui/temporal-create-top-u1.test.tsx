@@ -20,9 +20,7 @@ afterEach(() => {
 });
 
 afterAll(() => {
-  delete (HTMLElement.prototype as HTMLElement & {
-    scrollIntoView?: unknown;
-  }).scrollIntoView;
+  Reflect.deleteProperty(HTMLElement.prototype, 'scrollIntoView');
 });
 
 function renderEntry() {
