@@ -34,15 +34,78 @@ Le voci possono essere lavorate singolarmente oppure in un gruppo quando condivi
 - Uno spostamento di Schedule, una proposta e un fatto avvenuto restano azioni diverse anche quando sono presentate nello stesso spazio dell'interfaccia.
 - Quando una scelta richiede una nuova regola o persistenza, la si implementa nel livello proprietario e si aggiorna API, client e test se esposti pubblicamente.
 - Le migrazioni pubblicate restano immutabili; una correzione dati è sempre forward-only.
+- Il Quick Create non può fingere capacità: ogni dato mostrato come editabile deve arrivare al contratto canonico che lo possiede.
+- Le modifiche di B14 vengono pubblicate in checkpoint frequenti e coerenti sul branch; i gate di test restano locali lato utente.
 
 ## Lista viva
 
 | Voce | Decisione dell'utente | Stato | Evidenza / note |
 |---|---|---|---|
 | U0 | Inventario delle capacità create e gestibili preparato; l'utente definisce ora flussi e collocazione della UI. | pronto | inventario discusso il 2026-09-30 |
-| U1 | Rivedere l'ingresso `+`: chiusura senza bozza, posizione e forma del pannello di Create, rapporto con il calendario e necessità di un comando Crea separato. | candidato pronto — prova visiva utente | decisione 2026-09-30: resta il solo `+` a sinistra; nessun comando Crea in alto. Il Create base è un pannello fisso non trascinabile che sostituisce visivamente la colonna Cattura/Da risolvere. Geometria desktop corrente: rail destra **475 px**, sottratta alla Timeline come sibling H0 senza introdurre una terza colonna; policy Timeline, fallback Home e test di layout sono allineati. Default Activity oraria. Doppio clic sulla Timeline semina data/ora. Click esterno con bozza pulita chiude; bozza modificata offre Annulla, Scarta o Sposta in Da collocare (solo Activity: crea senza Schedule). Gli Event restano collocati. Base desktop, foglio avanzato e mobile hanno larghezza/altezza/overflow responsivi. Checkpoint geometria: `1002a807`, `f4e27639`, `774d4ee5`, `98126f57`. Resta la verifica visiva utente e il rerun locale dei test mirati sulla HEAD corrente. |
+| U1 | Rivedere l'ingresso `+`: chiusura senza bozza, posizione e forma del pannello di Create, rapporto con il calendario e necessità di un comando Crea separato. | candidato pronto — prova visiva utente | decisione 2026-09-30: resta il solo `+` a sinistra; nessun comando Crea in alto. Il Create base è un pannello fisso non trascinabile che sostituisce visivamente la colonna Cattura/Da risolvere. Geometria desktop corrente: rail destra **475 px**, sottratta alla Timeline come sibling H0 senza introdurre una terza colonna; policy Timeline, fallback Home e test di layout sono allineati. Default Activity oraria. Doppio clic sulla Timeline semina data/ora. Click esterno con bozza pulita chiude; bozza modificata offre Annulla, Scarta o Sposta in Da collocare (solo Activity: crea senza Schedule). Gli Event restano collocati. Base desktop, foglio avanzato e mobile hanno larghezza/altezza/overflow responsivi. Checkpoint geometria: `1002a807`, `f4e27639`, `774d4ee5`, `98126f57`. |
+| U2 | Consolidare il Quick Create come superficie canonica di authoring, mantenendo la logica del vertical e correggendo i contratti che oggi impongono vincoli di prodotto non più desiderati. | **CONTRATTO BLOCCATO — implementazione in corso** | decisioni 2026-09-30 descritte sotto; richiede persistenza/API/client/UI/test/docs, con migrazioni solo forward-only dalla frontiera `_93`. |
 
-La prima decisione dell'utente apre la voce `U1`. Le righe successive descrivono la scelta concreta, i file o confini coinvolti e il test locale richiesto prima di dichiararla conclusa.
+## U2 — contratto Quick Create e authoring canonico
+
+### Oggetto e collocazione
+
+- Il Quick Create espone **Activity** ed **Event** come capacità operative attuali. `Timer` e `Sveglia` possono restare visibili come future entry disabilitate finché non esiste il relativo vertical.
+- Collocazione rapida: `Orario`, `Tutto il giorno`, `Da collocare`; la vecchia `Fascia` non resta nel Quick Create.
+- La UI non altera le distinzioni `Activity != Event`, `Schedule != Session != Actual` e `planned/intended != happened`.
+
+### Intervallo temporale
+
+- Per la modalità `Orario` sono visibili **sempre due date**, una di inizio e una di fine, con i due orari al centro: `data inizio | ora inizio → ora fine | data fine`.
+- Le date sono display cliccabili leggibili (es. `mar 30 set`), non campi numerici `gg/mm/aaaa`; il calendario è un popover controllato da DANTE, non il picker nativo del browser.
+- Il popover calendario si chiude dopo la selezione o al click esterno; nessuna azione browser `Cancella` deve essere esposta.
+- Gli orari restano editabili da tastiera e con controllo ore/minuti; l'orologio apre la lista a passi di 15 minuti. Le fasce (`Mattina`, `Pomeriggio`, `Sera`, `Notte`) appartengono al comando tra inizio e fine e impostano entrambi gli estremi.
+- Un intervallo che attraversa mezzanotte o più giorni deve essere **esplicito nelle due date**; non sono ammessi rollover nascosti della sola ora finale.
+- La rappresentazione UI deve continuare a produrre una Schedule canonica; se il contratto pubblico oggi esprime `date + start + duration`, la seconda data viene trasformata in un intervallo/durata senza creare una seconda fonte di verità.
+
+### Life Area, colore e Tag
+
+- La **Life Area non è obbligatoria** per creare una nuova Activity o Event. L'assenza è stato canonico `null/unassigned`, non una Life Area sintetica chiamata `-`, `Personal` o equivalente.
+- Il Quick Create contiene un campo `Life Area (opzionale)` scrivibile/selezionabile. Focus/click mostra le Life Area esistenti; testo nuovo prepara una nuova Life Area nel draft.
+- Una Life Area digitata durante il draft viene creata **solo quando `Aggiungi` viene accettato**. La creazione dell'item non deve lasciare Life Area orfane se il comando complessivo fallisce.
+- Se viene selezionata una Life Area esistente, il suo colore è il colore predefinito dell'elemento.
+- Se si modifica il colore con una Life Area selezionata e si conferma, viene aggiornata l'apparenza della Life Area attraverso il suo contratto canonico/revisionato; le successive selezioni ereditano il nuovo colore.
+- Se non è selezionata alcuna Life Area, un colore scelto è un override dell'elemento, non la creazione di una Life Area fittizia.
+- I **Tag** B05 restano una capacità canonica secondaria molti-a-molti ma non fanno parte del Quick Create in questa fase; non vengono eliminati dalla piattaforma.
+- Il vecchio controllo esterno `Life Area e Tag` viene rimosso/spostato solo quando le capacità ancora necessarie sono raggiungibili dalla nuova superficie.
+
+### Location e descrizione
+
+- **Location è opzionale sia per Activity sia per Event.** Non è più una capability solo Event.
+- `Descrizione` è un campo opzionale del Quick Create. Deve essere persistita tramite un contratto canonico esplicito; un valore solo nel metadata frontend non è sufficiente.
+- Location e descrizione non cambiano la semantica di Schedule e non vengono usate come scorciatoie per Context, Life Area o Tag.
+
+### Colore dell'elemento
+
+- Il colore visuale può derivare dalla Life Area oppure essere sovrascritto a livello dell'elemento.
+- L'override dell'elemento deve essere persistito nel proprietario corretto e non nel solo stato React.
+- La Timeline usa lo stesso stato accettato per renderizzare la card; nessun secondo catalogo colori locale.
+
+### Opzioni avanzate
+
+- Il footer del rail mantiene `Opzioni avanzate`, `Annulla`, `Aggiungi` fissi.
+- `Opzioni avanzate` non espande indefinitamente i 475 px del rail: apre una **superficie centrale ampia** sopra la Home.
+- Quick Create e Advanced condividono **lo stesso draft**, non due form o due fonti di verità; chiudendo Advanced si torna al rail conservando le modifiche.
+- La superficie avanzata organizza le capacità già implementate (timezone/temporal policy, recurrence, constraints, execution structure, reminder/confirmation/outcome, partecipanti e proprietà Event, ecc.) senza esporre controlli che non persistono realmente.
+
+### Confini di implementazione U2
+
+La consegna U2 è considerata completa solo quando sono coerenti:
+
+1. persistenza PostgreSQL e migrazioni forward-only;
+2. mapping SQLAlchemy e application layer;
+3. API/OpenAPI;
+4. generated client rigenerato, mai editato a mano;
+5. runtime Create e UI;
+6. test PostgreSQL/backend, contract/client e web mirati;
+7. Dictionary/scope e documenti Database/Workstream coinvolti;
+8. Roadmap, Map e Handoff.
+
+La precedente regola B05 secondo cui ogni nuovo planning item deve ricevere una Life Area primaria viene quindi **deliberatamente superseded da U2**: una Life Area resta una classificazione actor-local utile, ma non è prerequisito ontologico per l'esistenza di Activity/Event.
 
 ## Chiusura
 
