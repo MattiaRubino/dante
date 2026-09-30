@@ -87,6 +87,7 @@ export function TemporalCreateLifeAreaField({
         label: context.label,
         expectedRevision: context.revision ?? 1,
         colorCode: context.colorCode ?? null,
+        colorChanged: false,
       }),
     );
     onItemColorChange(null);
@@ -130,7 +131,11 @@ export function TemporalCreateLifeAreaField({
     const canonical = colorCode.toUpperCase();
     if (draft.lifeArea.kind === 'existing') {
       onLifeAreaChange(
-        Object.freeze({ ...draft.lifeArea, colorCode: canonical }),
+        Object.freeze({
+          ...draft.lifeArea,
+          colorCode: canonical,
+          colorChanged: true,
+        }),
       );
       return;
     }
