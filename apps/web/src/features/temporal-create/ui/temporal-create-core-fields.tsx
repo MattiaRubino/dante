@@ -3,6 +3,7 @@ import {
   useEffect,
   useRef,
   useState,
+  type KeyboardEvent,
   type ReactNode,
 } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -50,6 +51,12 @@ type TimeControlProps = Readonly<{
   helper?: ReactNode;
 }>;
 
+type TimeBand = Readonly<{
+  key: 'morning' | 'afternoon' | 'evening' | 'night';
+  start: string;
+  end: string;
+}>;
+
 const WEEKDAYS: readonly TemporalCreateWeekday[] = Object.freeze([
   'MO',
   'TU',
@@ -69,11 +76,11 @@ const TIME_OPTIONS = Object.freeze(
   }),
 );
 
-const TIME_PRESETS = Object.freeze([
-  Object.freeze({ key: 'morning', value: '08:00' }),
-  Object.freeze({ key: 'afternoon', value: '14:00' }),
-  Object.freeze({ key: 'evening', value: '19:00' }),
-  Object.freeze({ key: 'night', value: '23:00' }),
+const TIME_BANDS: readonly TimeBand[] = Object.freeze([
+  Object.freeze({ key: 'morning', start: '06:00', end: '12:00' }),
+  Object.freeze({ key: 'afternoon', start: '12:00', end: '18:00' }),
+  Object.freeze({ key: 'evening', start: '18:00', end: '23:00' }),
+  Object.freeze({ key: 'night', start: '23:00', end: '06:00' }),
 ]);
 
 const FALLBACK_TIME_ZONES = Object.freeze([
@@ -206,28 +213,15 @@ function TemporalCreateTimeControl({
   onChange,
   helper,
 }: TimeControlProps) {
-  const { i18n } = useTranslation('common');
-  const normalizedValue = timeToMinute(value) === null ? '00:00' : minuteToTime(timeToMinute(value) ?? 0);
-  const [draft, setDraft] = useState(normalizedValue);
-  const [wheelOpen, setWheelOpen] = useState(false);
+  const parsedValue = timeToMinute(value);
+  const normalizedValue =
+    parsedValue === null ? '00:00' : minuteToTime(parsedValue);
+  const [hourDraft, setHourDraft] = useState(normalizedValue.slice(0, 2));
+  const [minuteDraft, setMinuteDraft] = useState(normalizedValue.slice(3, 5));
   const [pickerOpen, setPickerOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
   const lastValidRef = useRef(normalizedValue);
-  const italian = i18n.language.toLowerCase().startsWith('it');
-  const presetLabels: Readonly<Record<string, string>> = italian
-    ? {
-        morning: 'Mattina',
-        afternoon: 'Pomeriggio',
-        evening: 'Sera',
-        night: 'Notte',
-      }
-    : {
-        morning: 'Morning',
-        afternoon: 'Afternoon',
-        evening: 'Evening',
-        night: 'Night',
-      };
 
   useEffect(() => {
     const parsed = timeToMinute(value);
@@ -236,11 +230,12 @@ function TemporalCreateTimeControl({
     }
     const next = minuteToTime(parsed);
     lastValidRef.current = next;
-    setDraft(next);
+    setHourDraft(next.slice(0, 2));
+    setMinuteDraft(next.slice(3, 5));
   }, [value]);
 
   useEffect(() => {
-    if (!pickerOpen && !wheelOpen) {
+    if (!pickerOpen) {
       return;
     }
     const dismiss = (event: PointerEvent) => {
@@ -249,12 +244,11 @@ function TemporalCreateTimeControl({
         !rootRef.current?.contains(event.target)
       ) {
         setPickerOpen(false);
-        setWheelOpen(false);
       }
     };
     document.addEventListener('pointerdown', dismiss, true);
     return () => document.removeEventListener('pointerdown', dismiss, true);
-  }, [pickerOpen, wheelOpen]);
+  }, [pickerOpen]);
 
   useEffect(() => {
     if (!pickerOpen) {
@@ -270,86 +264,155 @@ function TemporalCreateTimeControl({
     return () => cancelAnimationFrame(frame);
   }, [pickerOpen]);
 
-  const commit = (next: string) => {
-    const parsed = timeToMinute(next);
-    if (parsed === null) {
-      setDraft(lastValidRef.current);
+  const syncDraft = (next: string) => {
+    lastValidRef.current = next;
+    setHourDraft(next.slice(0, 2));
+    setMinuteDraft(next.slice(3, 5));
+    onChange(next);
+  };
+
+  const restore = () => {
+    setHourDraft(lastValidRef.current.slice(0, 2));
+    setMinuteDraft(lastValidRef.current.slice(3, 5));
+  };
+
+  const commitParts = (hourValue: string, minuteValue: string) => {
+    if (!/^\d{1,2}$/.test(hourValue) || !/^\d{1,2}$/.test(minuteValue)) {
+      restore();
       return;
     }
-    const normalized = minuteToTime(parsed);
-    lastValidRef.current = normalized;
-    setDraft(normalized);
-    onChange(normalized);
+    const hour = Number(hourValue);
+    const minute = Number(minuteValue);
+    if (hour > 23 || minute > 59) {
+      restore();
+      return;
+    }
+    syncDraft(`${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`);
   };
 
   const adjust = (delta: number) => {
-    const next = shiftTime(lastValidRef.current, delta);
-    commit(next);
+    syncDraft(shiftTime(lastValidRef.current, delta));
   };
 
-  const parts = lastValidRef.current.split(':');
-  const hour = parts[0] ?? '00';
-  const minute = parts[1] ?? '00';
+  const handleSegmentKeyDown = (
+    event: KeyboardEvent<HTMLInputElement>,
+  ) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      commitParts(hourDraft, minuteDraft);
+      event.currentTarget.blur();
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      restore();
+      event.currentTarget.blur();
+    }
+  };
 
   return (
-    <div ref={rootRef} className="temporal-create-time-control">
+    <div ref={rootRef} className="temporal-create-time-control" role="group" aria-label={label}>
+      <input
+        className="temporal-create-time-raw-input"
+        data-create-path={dataPath}
+        type="text"
+        tabIndex={-1}
+        aria-hidden="true"
+        value={lastValidRef.current}
+        onChange={(event) => {
+          const next = event.currentTarget.value;
+          const parsed = timeToMinute(next);
+          if (parsed !== null) {
+            syncDraft(minuteToTime(parsed));
+          }
+        }}
+      />
+
       <div className="temporal-create-time-control__field">
-        <input
-          data-create-path={dataPath}
-          type="text"
-          inputMode="numeric"
-          value={draft}
-          onFocus={() => {
-            setWheelOpen(true);
-            setPickerOpen(false);
-          }}
-          onChange={(event) => {
-            const next = event.currentTarget.value;
-            if (/^\d{0,2}:?\d{0,2}$/.test(next)) {
-              setDraft(next);
-              const parsed = timeToMinute(next);
-              if (parsed !== null) {
-                const normalized = minuteToTime(parsed);
-                lastValidRef.current = normalized;
-                onChange(normalized);
-              }
-            }
-          }}
-          onBlur={(event) => {
-            const nextFocus = event.relatedTarget;
-            if (nextFocus instanceof Node && rootRef.current?.contains(nextFocus)) {
-              return;
-            }
-            commit(event.currentTarget.value);
-            setWheelOpen(false);
-          }}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') {
-              event.preventDefault();
-              commit(event.currentTarget.value);
-              setWheelOpen(false);
-              event.currentTarget.blur();
-            } else if (event.key === 'Escape') {
-              event.preventDefault();
-              setDraft(lastValidRef.current);
-              setWheelOpen(false);
-              event.currentTarget.blur();
-            }
-          }}
-          aria-label={label}
-          autoComplete="off"
-          spellCheck="false"
-        />
+        <div className="temporal-create-inline-time-editor">
+          <div className="temporal-create-time-segment">
+            <button
+              type="button"
+              aria-label={`${label}: aumenta ora`}
+              onClick={() => adjust(60)}
+            >
+              ▲
+            </button>
+            <input
+              type="text"
+              inputMode="numeric"
+              maxLength={2}
+              aria-label={`${label}: ore`}
+              value={hourDraft}
+              onChange={(event) => {
+                const next = event.currentTarget.value;
+                if (/^\d{0,2}$/.test(next)) {
+                  setHourDraft(next);
+                  if (next.length === 2 && Number(next) <= 23) {
+                    commitParts(next, minuteDraft);
+                  }
+                }
+              }}
+              onBlur={() => commitParts(hourDraft, minuteDraft)}
+              onKeyDown={handleSegmentKeyDown}
+              autoComplete="off"
+              spellCheck="false"
+            />
+            <button
+              type="button"
+              aria-label={`${label}: diminuisci ora`}
+              onClick={() => adjust(-60)}
+            >
+              ▼
+            </button>
+          </div>
+
+          <span className="temporal-create-inline-time-editor__separator" aria-hidden="true">
+            :
+          </span>
+
+          <div className="temporal-create-time-segment">
+            <button
+              type="button"
+              aria-label={`${label}: aumenta 15 minuti`}
+              onClick={() => adjust(15)}
+            >
+              ▲
+            </button>
+            <input
+              type="text"
+              inputMode="numeric"
+              maxLength={2}
+              aria-label={`${label}: minuti`}
+              value={minuteDraft}
+              onChange={(event) => {
+                const next = event.currentTarget.value;
+                if (/^\d{0,2}$/.test(next)) {
+                  setMinuteDraft(next);
+                  if (next.length === 2 && Number(next) <= 59) {
+                    commitParts(hourDraft, next);
+                  }
+                }
+              }}
+              onBlur={() => commitParts(hourDraft, minuteDraft)}
+              onKeyDown={handleSegmentKeyDown}
+              autoComplete="off"
+              spellCheck="false"
+            />
+            <button
+              type="button"
+              aria-label={`${label}: diminuisci 15 minuti`}
+              onClick={() => adjust(-15)}
+            >
+              ▼
+            </button>
+          </div>
+        </div>
+
         <button
           className="temporal-create-clock-trigger"
           type="button"
           aria-label={`${label}: scegli orario`}
           aria-expanded={pickerOpen}
-          onPointerDown={(event) => event.preventDefault()}
-          onClick={() => {
-            setWheelOpen(false);
-            setPickerOpen((current) => !current);
-          }}
+          onClick={() => setPickerOpen((current) => !current)}
         >
           <ClockIcon />
         </button>
@@ -357,82 +420,21 @@ function TemporalCreateTimeControl({
 
       {helper ? <small>{helper}</small> : null}
 
-      {wheelOpen ? (
-        <div
-          className="temporal-create-time-wheel"
-          role="group"
-          aria-label={`${label}: modifica ore e minuti`}
-        >
-          <div className="temporal-create-time-wheel__column">
-            <button
-              type="button"
-              aria-label={`${label}: aumenta ora`}
-              onPointerDown={(event) => event.preventDefault()}
-              onClick={() => adjust(60)}
-            >
-              ▲
-            </button>
-            <strong aria-label={`${label}: ore ${hour}`}>{hour}</strong>
-            <button
-              type="button"
-              aria-label={`${label}: diminuisci ora`}
-              onPointerDown={(event) => event.preventDefault()}
-              onClick={() => adjust(-60)}
-            >
-              ▼
-            </button>
-          </div>
-          <span className="temporal-create-time-wheel__separator" aria-hidden="true">
-            :
-          </span>
-          <div className="temporal-create-time-wheel__column">
-            <button
-              type="button"
-              aria-label={`${label}: aumenta 15 minuti`}
-              onPointerDown={(event) => event.preventDefault()}
-              onClick={() => adjust(15)}
-            >
-              ▲
-            </button>
-            <strong aria-label={`${label}: minuti ${minute}`}>{minute}</strong>
-            <button
-              type="button"
-              aria-label={`${label}: diminuisci 15 minuti`}
-              onPointerDown={(event) => event.preventDefault()}
-              onClick={() => adjust(-15)}
-            >
-              ▼
-            </button>
-          </div>
-        </div>
-      ) : null}
-
       {pickerOpen ? (
         <div className="temporal-create-time-picker" role="dialog" aria-label={label}>
-          <div className="temporal-create-time-presets">
-            {TIME_PRESETS.map((preset) => (
-              <button
-                key={preset.key}
-                type="button"
-                onClick={() => {
-                  commit(preset.value);
-                  setPickerOpen(false);
-                }}
-              >
-                <span>{presetLabels[preset.key]}</span>
-                <small>{preset.value}</small>
-              </button>
-            ))}
-          </div>
           <div ref={listRef} className="temporal-create-time-list">
             {TIME_OPTIONS.map((option) => (
               <button
                 key={option}
                 type="button"
                 data-time-value={option}
-                className={nearestQuarter(lastValidRef.current) === option ? 'is-selected' : ''}
+                className={
+                  nearestQuarter(lastValidRef.current) === option
+                    ? 'is-selected'
+                    : ''
+                }
                 onClick={() => {
-                  commit(option);
+                  syncDraft(option);
                   setPickerOpen(false);
                 }}
               >
@@ -460,12 +462,28 @@ export function TemporalCreateCoreFields({
   const onCreateContext = useTemporalCreateContextCreator();
   const typeRegistry = temporalCreateTypeRegistry();
   const [timeZoneOpen, setTimeZoneOpen] = useState(false);
+  const [timeBandOpen, setTimeBandOpen] = useState(false);
   const timeZoneRootRef = useRef<HTMLDivElement | null>(null);
+  const timeBandRootRef = useRef<HTMLDivElement | null>(null);
   const italian = i18n.language.toLowerCase().startsWith('it');
   const recurrenceOwner: Exclude<TemporalCreateRecurrenceOwner, null> =
     fields.kind === 'event' ? 'event' : 'routine';
   const patchEvent = (patch: Partial<TemporalCreateFields['event']>) =>
     onPatch({ event: { ...fields.event, ...patch } });
+
+  const bandLabels: Readonly<Record<TimeBand['key'], string>> = italian
+    ? {
+        morning: 'Mattina',
+        afternoon: 'Pomeriggio',
+        evening: 'Sera',
+        night: 'Notte',
+      }
+    : {
+        morning: 'Morning',
+        afternoon: 'Afternoon',
+        evening: 'Evening',
+        night: 'Night',
+      };
 
   useEffect(() => {
     if (!timeZoneOpen) {
@@ -482,6 +500,22 @@ export function TemporalCreateCoreFields({
     document.addEventListener('pointerdown', dismiss, true);
     return () => document.removeEventListener('pointerdown', dismiss, true);
   }, [timeZoneOpen]);
+
+  useEffect(() => {
+    if (!timeBandOpen) {
+      return;
+    }
+    const dismiss = (event: PointerEvent) => {
+      if (
+        event.target instanceof Node &&
+        !timeBandRootRef.current?.contains(event.target)
+      ) {
+        setTimeBandOpen(false);
+      }
+    };
+    document.addEventListener('pointerdown', dismiss, true);
+    return () => document.removeEventListener('pointerdown', dismiss, true);
+  }, [timeBandOpen]);
 
   const changeKind = (kind: TemporalCreateKind) => {
     if (kind === fields.kind) {
@@ -563,6 +597,39 @@ export function TemporalCreateCoreFields({
     if (duration !== null) {
       onPatch({ durationMinutes: duration });
     }
+  };
+
+  const applyTimeBand = (band: TimeBand) => {
+    let endDate = fields.date;
+    const startMinute = timeToMinute(band.start);
+    const endMinute = timeToMinute(band.end);
+    if (
+      startMinute !== null &&
+      endMinute !== null &&
+      endMinute <= startMinute
+    ) {
+      try {
+        endDate = Temporal.PlainDate.from(fields.date)
+          .add({ days: 1 })
+          .toString();
+      } catch {
+        endDate = fields.date;
+      }
+    }
+
+    const duration = temporalCreateDurationFromEndDateTime(
+      fields.date,
+      band.start,
+      endDate,
+      band.end,
+      fields.timeMode,
+      fields.timeZoneId,
+    );
+
+    if (duration !== null) {
+      onPatch({ startTime: band.start, durationMinutes: duration });
+    }
+    setTimeBandOpen(false);
   };
 
   const changeQuickRecurrence = (value: QuickRecurrence) => {
@@ -775,9 +842,41 @@ export function TemporalCreateCoreFields({
               onChange={(startTime) => onPatch({ startTime })}
               helper={renderError('startTime')}
             />
-            <span className="temporal-create-time-range__arrow" aria-hidden="true">
-              →
-            </span>
+
+            <div
+              ref={timeBandRootRef}
+              className="temporal-create-time-band-control"
+            >
+              <button
+                type="button"
+                className="temporal-create-time-band-trigger"
+                aria-label={italian ? 'Fasce orarie' : 'Time bands'}
+                aria-expanded={timeBandOpen}
+                onClick={() => setTimeBandOpen((current) => !current)}
+              >
+                <span aria-hidden="true">→</span>
+                <small aria-hidden="true">⌄</small>
+              </button>
+              {timeBandOpen ? (
+                <div
+                  className="temporal-create-time-band-panel"
+                  role="dialog"
+                  aria-label={italian ? 'Fasce orarie' : 'Time bands'}
+                >
+                  {TIME_BANDS.map((band) => (
+                    <button
+                      key={band.key}
+                      type="button"
+                      onClick={() => applyTimeBand(band)}
+                    >
+                      <strong>{bandLabels[band.key]}</strong>
+                      <small>{`${band.start}–${band.end}`}</small>
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+
             <TemporalCreateTimeControl
               label={copy.event.end}
               value={end.time}
