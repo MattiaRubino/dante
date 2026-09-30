@@ -21,7 +21,7 @@ export function createRemotePlanReplanningSetupDataSource(
     }
     return row.csrf_token;
   }
-  async function write(endpoint: string, method: 'PUT' | 'POST', body: object) {
+  async function write(endpoint: string, method: 'PUT' | 'POST' | 'PATCH', body: object) {
     const response = await webFetch(endpoint, {
       method, cache: 'no-store',
       headers: { 'Content-Type': 'application/json', 'X-Dante-CSRF': await csrf() },
@@ -63,6 +63,24 @@ export function createRemotePlanReplanningSetupDataSource(
       });
       if (row.subject_ref !== activityRef || typeof row.constraint_ref !== 'string') {
         throw new Error('Vincolo salvato con un’Attività inattesa.');
+      }
+    },
+    async makeScheduleAbsolute(
+      scheduleRef: string, expectedPlacementStateRef: string,
+      startsAt: string, endsAt: string,
+    ) {
+      const row = await write(
+        `/api/v1/temporal/schedules/${encodeURIComponent(scheduleRef)}/placement`,
+        'PATCH', {
+          operation_id: crypto.randomUUID(),
+          expected_placement_material_state_ref: expectedPlacementStateRef,
+          placement: {
+            kind: 'absolute_interval', starts_at: startsAt, ends_at: endsAt,
+          },
+        },
+      );
+      if (row.schedule_ref !== scheduleRef || row.temporal_form !== 'absolute') {
+        throw new Error('Schedule fissata con una base inattesa.');
       }
     },
   });

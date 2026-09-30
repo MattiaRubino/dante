@@ -17,6 +17,11 @@ it('sends self-scoped Policy CAS and an Activity hard boundary through CSRF writ
         schedule_ref: scheduleRef, material_state_ref: policyStateRef,
       }));
     }
+    if (url.endsWith(`/schedules/${scheduleRef}/placement`)) {
+      return new Response(JSON.stringify({
+        schedule_ref: scheduleRef, temporal_form: 'absolute',
+      }));
+    }
     return new Response(JSON.stringify({
       subject_ref: activityRef, constraint_ref: 'constraint',
     }));
@@ -24,6 +29,10 @@ it('sends self-scoped Policy CAS and an Activity hard boundary through CSRF writ
   const source = createRemotePlanReplanningSetupDataSource(fetchFn as typeof fetch);
   await source.requireConfirmation(scheduleRef, null);
   await source.setEarliestStart(activityRef, '2026-10-02T11:00:00.000Z');
+  await source.makeScheduleAbsolute(
+    scheduleRef, policyStateRef,
+    '2026-10-02T10:00:00.000Z', '2026-10-02T11:00:00.000Z',
+  );
 
   const policy = fetchFn.mock.calls[1]!;
   expect(policy[1]?.method).toBe('PUT');
@@ -38,5 +47,11 @@ it('sends self-scoped Policy CAS and an Activity hard boundary through CSRF writ
     subject_ref: activityRef,
     rule: { boundary_kind: 'earliest_start', strength: 'hard',
       boundary_at: '2026-10-02T11:00:00.000Z' },
+  });
+  const fixed = fetchFn.mock.calls[5]!;
+  expect(fixed[1]?.method).toBe('PATCH');
+  expect(JSON.parse(String(fixed[1]?.body))).toMatchObject({
+    expected_placement_material_state_ref: policyStateRef,
+    placement: { kind: 'absolute_interval', starts_at: '2026-10-02T10:00:00.000Z' },
   });
 });

@@ -27,8 +27,8 @@ _PLACEMENTS = text(
            schedule.schedule_ref,
            current.material_state_ref,
            placement.temporal_form_code,
-           absolute.starts_at,
-           absolute.ends_at
+           COALESCE(absolute.starts_at, named.resolved_start_at),
+           COALESCE(absolute.ends_at, named.resolved_end_at)
       FROM dante.schedule AS schedule
       JOIN dante.activity_intention AS activity
         ON activity.activity_ref = schedule.subject_native_ref
@@ -40,6 +40,8 @@ _PLACEMENTS = text(
        AND placement.material_state_ref = current.material_state_ref
       LEFT JOIN dante.schedule_placement_absolute_state AS absolute
         ON absolute.material_state_ref = placement.material_state_ref
+      LEFT JOIN dante.schedule_placement_named_zone_state AS named
+        ON named.material_state_ref = placement.material_state_ref
      WHERE schedule.subject_native_ref IN :activity_refs
      ORDER BY schedule.subject_native_ref, schedule.schedule_ref
      LIMIT 41

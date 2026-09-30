@@ -96,8 +96,7 @@ export function PlanConflictPanel({ plan }: { plan: PlanWork }) {
                       .
                     </p>
                   ))}
-                  {step.activityRef !== null && step.placements?.length === 1 &&
-                  step.placements[0]?.temporalFormCode === 'absolute' ? (
+                  {step.activityRef !== null && step.placements?.length === 1 ? (
                     <PlanCandidatePanel plan={plan} stepRef={step.stepRef}
                       activityRef={step.activityRef} title={step.title} />
                   ) : null}

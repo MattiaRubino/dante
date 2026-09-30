@@ -9,13 +9,14 @@ import { afterEach, expect, it, vi } from 'vitest';
 
 import type { PlanWork } from './remote-plan-work-data-source';
 
-const { diagnose, search, request, confirm, requireConfirmation, setEarliestStart } = vi.hoisted(() => ({
+const { diagnose, search, request, confirm, requireConfirmation, setEarliestStart, makeScheduleAbsolute } = vi.hoisted(() => ({
   diagnose: vi.fn(),
   search: vi.fn(),
   request: vi.fn(),
   confirm: vi.fn(),
   requireConfirmation: vi.fn(),
   setEarliestStart: vi.fn(),
+  makeScheduleAbsolute: vi.fn(),
 }));
 vi.mock('./remote-plan-conflict-data-source', () => ({
   createRemotePlanConflictDataSource: () => ({ diagnose }),
@@ -27,7 +28,7 @@ vi.mock('./remote-plan-admission-data-source', () => ({
   createRemotePlanAdmissionDataSource: () => ({ request, confirm }),
 }));
 vi.mock('./remote-plan-replanning-setup-data-source', () => ({
-  createRemotePlanReplanningSetupDataSource: () => ({ requireConfirmation, setEarliestStart }),
+  createRemotePlanReplanningSetupDataSource: () => ({ requireConfirmation, setEarliestStart, makeScheduleAbsolute }),
 }));
 
 import { PlanConflictPanel } from './plan-conflict-panel';
@@ -124,6 +125,7 @@ afterEach(() => {
   confirm.mockReset();
   requireConfirmation.mockReset();
   setEarliestStart.mockReset();
+  makeScheduleAbsolute.mockReset();
 });
 
 it('traces unknown prerequisite, reviewed proposal, confirmation and refreshed Schedule', async () => {
@@ -245,9 +247,9 @@ it('shows unsupported placement and blocked Policy without offering review', asy
   expect(
     await screen.findByText(/Forma della collocazione non ancora supportata/),
   ).toBeTruthy();
-  expect(
-    screen.queryByRole('button', { name: /Cerca alternative vicine per Mix/ }),
-  ).toBeNull();
+  expect(await screen.findByRole('button', {
+    name: /Cerca alternative vicine per Mix/,
+  })).toBeTruthy();
 
   fireEvent.click(screen.getByRole('button', { name: 'Analizza conflitti' }));
   fireEvent.click(

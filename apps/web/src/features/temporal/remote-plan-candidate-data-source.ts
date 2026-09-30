@@ -6,6 +6,7 @@ export type PlanCandidates = Readonly<{
   basisFingerprint: string;
   scheduleRef: string | null;
   scheduleStateRef: string | null;
+  placementForm: string | null;
   policyStateRef: string | null;
   currentStartsAt: string | null;
   currentEndsAt: string | null;
@@ -71,12 +72,14 @@ function parse(value: unknown, plan: PlanWork, stepRef: string): PlanCandidates 
   const placement = row.placement === null ? null : record(row.placement);
   if (placement !== null && (
     typeof placement.schedule_ref !== 'string' ||
-    typeof placement.material_state_ref !== 'string'
+    typeof placement.material_state_ref !== 'string' ||
+    typeof placement.temporal_form_code !== 'string'
   )) throw new Error('Base Schedule non valida.');
   return Object.freeze({
     basisFingerprint: row.basis_fingerprint,
     scheduleRef: placement === null ? null : placement.schedule_ref as string,
     scheduleStateRef: placement === null ? null : placement.material_state_ref as string,
+    placementForm: placement === null ? null : placement.temporal_form_code as string,
     currentStartsAt: placement === null || placement.starts_at === null
       ? null : date(placement.starts_at),
     currentEndsAt: placement === null || placement.ends_at === null
