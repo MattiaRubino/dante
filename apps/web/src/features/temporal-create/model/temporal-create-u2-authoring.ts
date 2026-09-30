@@ -10,6 +10,7 @@ export type TemporalCreateU2LifeAreaDraft =
       label: string;
       expectedRevision: number;
       colorCode: string | null;
+      colorChanged: boolean;
     }>
   | Readonly<{
       kind: 'new';
