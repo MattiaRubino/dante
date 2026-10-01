@@ -11,9 +11,8 @@
 - **Chiusura U2:** `docs/workstreams/timeline-temporal-operational-b14-u2-closure-2026-10-01.md`
 - **Generated U2:** `dd94c6ee876bf5e671a516898b064c37e2d90741`
 - **U3 handoff corrente:** `docs/workstreams/timeline-temporal-operational-b14-u3-handoff-2026-10-01.md`
-- **Ultimo gate web locale completamente verde:** `899f9260` — typecheck + 16/16 focused PASS
-- **Ultimo rerun U3:** `5c3634d4` — typecheck PASS, 16 focused PASS / 1 FAIL; failure circoscritto al globo Quick ancora montato in Advanced
-- **Fix candidate successivo:** `1e0ef2f9` + `08478d93`; richiede nuovo gate locale
+- **Ultimo gate web locale completamente verde:** `779fa723` — typecheck PASS + 17/17 focused PASS
+- **U3 Create/Advanced provato fino a:** Quick/Advanced timezone split, Reminder unico, Verifica esito separata, all-day esplicito, Aspetto rimosso
 - **CI:** non usata; i test locali sono eseguiti dall'utente
 
 ## Obiettivo
@@ -41,7 +40,7 @@ B14 e B07 vengono lavorati nello stesso ciclo: ogni decisione dell'utente viene 
 | U0 | Inventario capacità e superfici | pronto | base per il consolidamento user-guided |
 | U1 | `+` nel rail destro, chiusura draft, doppio click Timeline, geometria Home | candidato/provato progressivamente | rail desktop 475 px; Create sostituisce Cattura/Da risolvere; niente terza colonna |
 | U2 | Quick Create canonico: date, Life Area opzionale, colore, location, descrizione, authoring Activity/Event | **CLOSED / PROVEN 2026-10-01** | `_95`; catalogo e generated riconciliati; gate locale verde |
-| U3+ | polish e organizzazione UI | **ATTIVO** | planning tray unificato, Advanced centrale, Reminder/verification separation, all-day esplicito; candidate corrente da provare |
+| U3+ | polish e organizzazione UI | **ATTIVO / CURRENT CREATE SLICE PROVEN** | planning tray unificato, Advanced centrale, Reminder/verification separation, all-day esplicito; prossimo checkpoint = verifica UI reale + IA Advanced |
 
 ## U2 — decisioni canoniche chiuse
 
@@ -187,7 +186,7 @@ Handoff dettagliato e gate corrente:
 
 `docs/workstreams/timeline-temporal-operational-b14-u3-handoff-2026-10-01.md`
 
-Decisioni già consolidate nel candidate:
+Decisioni già consolidate nel candidate e ora coperte dal gate focused verde a `779fa723`:
 
 1. planning tray `Da collocare` unico per Activity non collocata, Event mai collocato ed Event posticipato, senza collassarne identità/storia;
 2. Event può essere creato direttamente `Da collocare`;
@@ -203,20 +202,20 @@ Decisioni già consolidate nel candidate:
 
 ## Cursor U3+
 
-L'ultimo rerun utente sul candidate `5c3634d4` ha dato `web typecheck PASS`, `composer 2/2 PASS`, `entry U2 9/9 PASS`, `top/U1 5/6 PASS`. L'unico failure era coerente con una vera incoerenza UI: il Core montava ancora il globo Quick mentre Advanced mostrava già i controlli espliciti del fuso.
-
-Il candidate corrente aggiunge:
+Il rerun utente sul branch a `779fa723` ha chiuso il precedente mismatch del globo Advanced:
 
 ```text
-1e0ef2f9  Core timezone affordance renderizzata solo quando richiesta
-08478d93  Composer passa showCompactTimezone=false in Advanced
+web typecheck                 PASS
+composer                      2/2 PASS
+entry U2                      9/9 PASS
+top/U1                        6/6 PASS
+focused total                 17/17 PASS
 ```
 
-Il prossimo passo è:
+Il current Create slice U3 è quindi provato lato automated focused gate. Il prossimo passo è:
 
-1. rieseguire il gate web indicato nell'U3 handoff;
-2. se verde, fare la verifica reale dei punti colore / all-day / Reminder / Advanced;
-3. continuare l'information architecture Advanced Activity vs Event;
-4. integrare B04 vincoli temporali + movement policy nella superficie Advanced;
-5. progettare e spostare Session / Actual / Outcome / Confirmation / Reconciliation prima di ripulire definitivamente il planning tray;
-6. definire il sistema di delivery delle notifiche Reminder solo verso la fine del ciclo.
+1. fare la verifica UI reale dei punti colore / all-day / Reminder / Advanced;
+2. continuare l'information architecture Advanced Activity vs Event sulla base di ciò che emerge visivamente;
+3. integrare B04 vincoli temporali + movement policy nella superficie Advanced;
+4. progettare e spostare Session / Actual / Outcome / Confirmation / Reconciliation prima di ripulire definitivamente il planning tray;
+5. definire il sistema di delivery delle notifiche Reminder solo verso la fine del ciclo.
