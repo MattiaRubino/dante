@@ -27,7 +27,6 @@ export { TemporalCreateCoreFieldsU2 as TemporalCreateCoreFields };
 
 export function TemporalCreateAdvancedFields({
   fields,
-  contexts,
   depth,
   onPatch,
   renderError,
@@ -69,6 +68,7 @@ export function TemporalCreateAdvancedFields({
                 {t(($) => $.common.home.timeline.create.timeMode.label)}
               </span>
               <select
+                data-create-path="timeMode"
                 value={fields.timeMode}
                 onChange={(event) =>
                   onPatch({
