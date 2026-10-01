@@ -98,8 +98,10 @@ export type TimelineEvent = Readonly<{
   endMinute: number;
   title: string;
   groupId: TimelineGroupId;
-  /** Presentation-only override; grouping and filters continue to use groupId. */
+  /** Presentation-only semantic override; grouping and filters continue to use groupId. */
   appearanceTone?: TimelineSemanticTone;
+  /** Canonical item color projected only for presentation; never Schedule truth. */
+  appearanceColorCode?: string;
   /**
    * Exact canonical basis retained by a real Timeline projection. It is not a
    * second owner and does not turn this ViewModel into canonical truth.
@@ -120,8 +122,10 @@ export type TimelineAllDayItem = Readonly<{
   endDateExclusiveKey: string;
   title: string;
   groupId: TimelineGroupId;
-  /** Presentation-only override; grouping and filters continue to use groupId. */
+  /** Presentation-only semantic override; grouping and filters continue to use groupId. */
   appearanceTone?: TimelineSemanticTone;
+  /** Canonical item color projected only for presentation; never Schedule truth. */
+  appearanceColorCode?: string;
   /** Canonical Schedule identity retained without inventing a clock interval. */
   canonicalBasis?: TimelineCanonicalScheduleBasis;
   /** Materialized expected Occurrence that may explicitly enter shared Schedule. */
