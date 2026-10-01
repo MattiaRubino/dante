@@ -13237,6 +13237,17 @@
       "UnassignedLifeAreaItemResponse": {
         "additionalProperties": false,
         "properties": {
+          "color_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color Code"
+          },
           "created_at": {
             "format": "date-time",
             "title": "Created At",
@@ -13261,7 +13272,8 @@
           "subject_kind",
           "subject_native_ref",
           "title",
-          "created_at"
+          "created_at",
+          "color_code"
         ],
         "title": "UnassignedLifeAreaItemResponse",
         "type": "object"

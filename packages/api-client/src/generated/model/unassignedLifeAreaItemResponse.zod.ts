@@ -7,6 +7,10 @@
 import * as zod from 'zod/mini';
 
 export const UnassignedLifeAreaItemResponse = /*#__PURE__*/ zod.object({
+  color_code: /*#__PURE__*/ zod.union([
+    /*#__PURE__*/ zod.string(),
+    /*#__PURE__*/ zod.null(),
+  ]),
   created_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
   subject_kind: /*#__PURE__*/ zod.enum(['activity', 'event']),
   subject_native_ref: /*#__PURE__*/ zod.uuid(),
