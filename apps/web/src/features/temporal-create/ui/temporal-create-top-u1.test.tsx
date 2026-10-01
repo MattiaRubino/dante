@@ -242,8 +242,12 @@ describe('Temporal Create U1 top controls', () => {
     const advancedComposer = document.querySelector<HTMLElement>(
       '[data-temporal-create="composer"]',
     );
+    const advancedBackdrop = advancedComposer?.closest<HTMLElement>(
+      '[data-temporal-create="backdrop"]',
+    );
     expect(advancedComposer?.dataset.temporalCreateSurface).toBe('advanced');
-    expect(advancedComposer?.parentElement).toBe(document.body);
+    expect(advancedComposer?.parentElement).toBe(advancedBackdrop);
+    expect(advancedBackdrop?.parentElement).toBe(document.body);
     expect((screen.getByPlaceholderText('Titolo') as HTMLInputElement).value).toBe(
       'Bozza preservata',
     );
