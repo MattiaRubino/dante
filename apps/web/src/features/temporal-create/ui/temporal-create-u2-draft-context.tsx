@@ -25,20 +25,22 @@ const U2DraftContext = createContext<U2DraftContextValue | null>(null);
 export function TemporalCreateU2DraftProvider({
   fields,
   resetKey,
+  initialDraft,
   onDraftChange,
   children,
 }: Readonly<{
   fields: TemporalCreateFields;
   resetKey: string | number;
+  initialDraft?: TemporalCreateU2AuthoringDraft;
   onDraftChange: (draft: TemporalCreateU2AuthoringDraft) => void;
   children: ReactNode;
 }>) {
   const [state, setState] = useState(() =>
-    createTemporalCreateU2AuthoringDraft(fields),
+    initialDraft ?? createTemporalCreateU2AuthoringDraft(fields),
   );
 
   useEffect(() => {
-    const next = createTemporalCreateU2AuthoringDraft(fields);
+    const next = initialDraft ?? createTemporalCreateU2AuthoringDraft(fields);
     setState(next);
     onDraftChange(next);
     // resetKey intentionally owns lifecycle boundaries; ordinary field edits
