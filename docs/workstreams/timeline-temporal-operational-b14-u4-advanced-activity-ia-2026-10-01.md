@@ -1,8 +1,8 @@
 # B14 + B07 — U4 Advanced Activity information architecture — 2026-10-01
 
 - **Branch:** `feature/timeline-temporal-operational`
-- **Status:** CANDIDATE — Create/runtime boundary is PROVEN; B08/B10 post-create split now awaits local gate
-- **Latest proven gate:** `fd92c246` — web typecheck PASS + 17/17 focused tests PASS on 2026-10-01
+- **Status:** CANDIDATE — Create/runtime boundary and B08/B10 split are PROVEN; inline Session-enabled Timeline card runtime awaits local gate
+- **Latest proven gate:** `038d86d5` — web typecheck PASS + 8/8 focused tests PASS on 2026-10-01
 - **Accepted direction:** Activity structure is attached directly to the title row, not rendered as a detached panel
 - **CI:** not authorized; user runs local tests in `~/projects/dante`
 
@@ -10,7 +10,7 @@
 
 Turn Advanced Create for Activity into a product information architecture instead of a historical collection of controls, while reusing proven vertical capabilities instead of fabricating parallel UI state.
 
-The permanent semantic boundaries remain:
+Permanent semantic boundaries:
 
 ```text
 Step != Activity
@@ -20,7 +20,7 @@ Actual != Outcome != Confirmation != Reconciliation
 Create configuration != post-create runtime action
 ```
 
-The last boundary is explicit product policy: Create/Advanced configures which capabilities and policies an item will have; actions against real state belong to the created Activity/Event surface.
+Create/Advanced configures which capabilities and policies an item will have. Commands against real state belong to the created Activity/Event surface.
 
 ## 2. Current Advanced Activity order
 
@@ -40,7 +40,7 @@ The old detached `Struttura`, `Esecuzione`, `Organizzazione` and duplicate Appea
 
 ## 3. Title-attached Activity tree
 
-The accepted geometry is:
+Accepted geometry:
 
 ```text
 Activity title                         [Activity settings]
@@ -50,36 +50,32 @@ Activity title                         [Activity settings]
     └── Sessione                      [Session settings]
 ```
 
-The right side of the title and every future child row is reserved for configuration/settings belonging to that node. It is not a runtime command rail.
+The right side of the root and every future child row is a settings rail, not a runtime command rail. Valid Create-time controls include enablement, mode and duration/time rules. Start/Pause/Resume/End Session, record Actual, save Outcome and register Confirmation require an existing canonical subject and do not belong in Create.
 
-Examples of valid Create-time controls in that rail are enablement, mode, duration/time rules and other properties that must exist on the item after creation.
+### Session intent is real Create state
 
-Examples that do **not** belong there are Start/Pause/Resume/End Session, record Actual, save Outcome or register Confirmation. Those require an existing canonical subject and belong on the post-create card/details surface.
-
-### Session intent is real Create draft state
-
-Selecting `Sessione` updates the existing supported Create execution intent:
+Selecting `Sessione` updates the supported Create execution intent:
 
 ```text
 execution.sessionMode = splittable
 execution.minSessionMinutes = N
 ```
 
-The previous detached `Esecuzione` panel that edited the same state remains removed, so there is one authoring surface rather than two competing controls.
+The detached `Esecuzione` panel remains removed. The Session child row contains only Create-time configuration and may be removed again before submit.
 
-The Session child row contains only Create-time configuration. The current supported setting is minimum active Session duration; it is displayed in the row settings rail. The row may be disabled/removed again before creation.
-
-The temporary disabled runtime icons previously shown in Create were removed after user review. Their semantics were wrong even while disabled because Create is not a place from which an Activity can later be resumed.
-
-### Runtime Session controls belong to the created item
-
-The canonical B08 runtime remains separate and real:
+B04 persists the currently supported Session capability as the active soft Temporal Constraint:
 
 ```text
-Start → Pause → Resume → End
+family = duration
+constrained_facet = session.active_duration
+duration_kind = minimum
 ```
 
-`SessionSubjectControls` and `remote-session-data-source` remain the post-create runtime path for an existing Activity/Occurrence subject. Their commands require a real `activityRef` / `occurrenceRef` and must be mounted from the final Activity card/details destination rather than represented in Advanced Create.
+That persisted rule, rather than a new duplicate boolean, is the current source of truth for whether the created Activity should expose B08 runtime on its Timeline card.
+
+### Sub-Activity remains blocked, not faked
+
+`Sotto-attività` remains disabled because the repository still has no canonical Activity → child Activity authoring contract. B13 Plan/Step is not reused as a substitute because `Step != Activity` is permanent.
 
 ## 4. Reference time
 
@@ -87,29 +83,54 @@ Advanced uses explicit `Riferimento orario` controls over the same `timeMode/tim
 
 ## 5. Planning
 
-Placed Activity currently exposes `Unica | Suddivisa`; only `Unica` is active. `Suddivisa` stays disabled until canonical multi-placement authoring exists.
+Placed Activity exposes `Unica | Suddivisa`; only `Unica` is active. `Suddivisa` remains disabled until canonical multi-placement authoring exists.
 
-Unplaced Activity keeps the existing supported Temporal Constraint authoring for open/window/deadline/preferred-window intent.
+Unplaced Activity keeps the supported Temporal Constraint authoring for open/window/deadline/preferred-window intent.
 
-The legacy editable `locked | window | confirm | free` movement selector is not reintroduced. `Proteggi collocazione` remains a disabled destination until it can truthfully govern both accidental manual movement and Dante automation, with post-create unlock/edit semantics explicitly defined.
+The legacy editable `locked | window | confirm | free` selector is not reintroduced. `Proteggi collocazione` remains a destination until it can truthfully govern accidental manual movement and Dante automation, including a post-create unlock/edit path.
 
-## 6. Reality and outcome
+## 6. Post-create Session runtime
 
-`Realtà ed esito` is a Create-time **policy/configuration** destination, not a place where realized truth is recorded.
+Canonical B08 remains:
 
-The conceptual runtime chain remains:
+```text
+Start → Pause → Resume → End
+```
+
+`SessionSubjectControls` and `remote-session-data-source` remain the single runtime implementation. U4 now adds a compact `card` presentation of the same component rather than duplicating Session lifecycle logic.
+
+A scheduled Activity card first reads the already-existing canonical constraints endpoint for its `activityRef`. Compact runtime is mounted only when an active current rule has:
+
+```text
+family = duration
+constrained_facet = session.active_duration
+```
+
+Therefore:
+
+```text
+Activity with Session configured    → compact B08 controls on Timeline card
+Activity without Session configured → no Session controls
+Event                               → no B08 Session controls
+```
+
+Capability discovery fails closed: an unavailable or malformed read never exposes a Start command. Duplicate reads for the same Activity are deduplicated in the current web surface. No DB column, new boolean or parallel Session truth was introduced.
+
+The card presentation hides detail-only duration/policy prose while preserving accessible runtime feedback. When another card is the active focus target, these runtime buttons are removed from tab order and disabled consistently with the Timeline's existing inline-action behavior.
+
+A future performance consolidation may fold this capability directly into the authoritative Timeline read projection; the current candidate deliberately reuses the existing canonical constraint read instead of changing DB truth merely for presentation.
+
+## 7. Reality and outcome
+
+`Realtà ed esito` in Create is a policy/configuration destination, not a place where realized truth is recorded.
+
+Runtime chain:
 
 ```text
 Actual → Outcome → Confirmation → Reconciliation
 ```
 
-Create may configure supported behavior/policies for that future chain. The actual operations happen only after the Activity/Event exists, on its post-create card/details surface.
-
-The current Create runtime only truthfully supports the inherited outcome-verification policy. Other model enum values must not be made selectable merely because the TypeScript type contains them; they require a canonical persistence/authoring path first.
-
-### B08/B10 runtime split candidate
-
-After the proven Create gate, the post-create runtime was corrected so B10 is no longer owned by B08:
+The B08/B10 split is now PROVEN locally:
 
 ```text
 Activity / Occurrence detail
@@ -120,49 +141,62 @@ Event detail
 └── Reality / Outcome / Confirmation / Reconciliation (B10)
 ```
 
-`SessionSubjectControls` now owns only Session runtime and duration evaluation. `ActualRealizationControls` is mounted independently by Timeline subject detail from the canonical Activity/Event/Occurrence basis.
+`SessionSubjectControls` owns only B08. B10 controls mount independently from canonical Activity/Event/Occurrence subject identity, so Event reality semantics never depend on Session UI.
 
-This matters because Event has B10 reality semantics even though current Session runtime supports Activity/Occurrence only. B10 must therefore never depend on the presence of a Session UI.
+Do not remove legacy B10 exposure from `Da collocare` until the final post-create destinations and cleanup are proven together.
 
-The new focused test `timeline-runtime-detail-controls.test.tsx` covers canonical Activity/Event/Occurrence B10 subject derivation and verifies that Reality controls mount without Session controls.
+## 8. Proven gates
 
-## 7. Description
-
-Description remains the final Advanced section. Life Area stays in the primary Create controls. The historical duplicate `Organizzazione` notes panel remains removed.
-
-## 8. Proven gates and candidate history
-
-### Proven Create/runtime-boundary gate
+### Create/runtime boundary
 
 User-local result on `fd92c246` lineage:
 
 ```text
 web typecheck: PASS
-focused test files: 3 passed
+focused files: 3 passed
 focused tests: 17 passed
+```
+
+### Independent B08/B10 destinations
+
+User-local result on `038d86d5` lineage:
+
+```text
+web typecheck: PASS
+focused files: 4 passed
+focused tests: 8 passed
 ```
 
 Covered:
 
 ```text
-temporal-create-advanced-activity-ia.test.tsx
 session-subject-controls.test.tsx
-temporal-create-b04-runtime.test.ts
+timeline-runtime-detail-controls.test.tsx
+timeline-event-lifecycle-b03.test.tsx
+temporal-create-advanced-activity-ia.test.tsx
 ```
 
-This proves the correction that Advanced Create exposes Session settings but no Start/Pause/Resume/End controls.
+The `react-i18next` NO_I18NEXT_INSTANCE line emitted by the focused runtime-detail test was non-blocking; the test file still passed.
 
-### Current B08/B10 split candidate
+## 9. Current inline-card candidate history
+
+After the `038d86d5` proven checkpoint:
 
 ```text
-f61fcbb0  decouple B10 reality controls from Session runtime
-61e50968  mount B10 reality controls directly on canonical subject detail
-89f271d5  add focused Activity/Event/Occurrence runtime-destination tests
+be03dbbf  read canonical Session capability from Temporal Constraints
+eeb71fb2  add compact Timeline-card Session styling
+b4984a5e  gate card runtime by canonical capability
+ed5bd855  add compact/inert presentation to the existing B08 controls
+b06ed0a9  preserve card feedback accessibly without detail prose
+a3db99ad  mount B08 controls on scheduled Activity cards only
+9a809cd7  test canonical Session capability detection
+6a2c3b18  test capability-gated card mounting
+980dfbb0  test compact and inert B08 card presentation
 ```
 
-## 9. Explicitly not claimed yet
+## 10. Explicitly not claimed yet
 
-Do not describe these as implemented/proven capability yet:
+Do not describe these as implemented/proven yet:
 
 ```text
 canonical Activity → sub-Activity authoring
@@ -170,14 +204,12 @@ future Session records created before execution
 multi-placement `Suddivisa` authoring
 placement protection / lock persistence
 manual-vs-automation unlock semantics
-inline B08 runtime buttons directly on every Timeline card
+inline B08 Timeline-card runtime candidate until local gate passes
 Create-time persistence for non-inherited outcome verification policies
 Reminder notification delivery
 ```
 
-The current B08 runtime remains available in the created item detail; direct compact Timeline-card buttons are still a separate UI move and must not be confused with Create-time configuration.
-
-## 10. Required local gate for B08/B10 split
+## 11. Required local gate for inline Session cards
 
 User runs locally; no CI/GitHub Actions:
 
@@ -189,6 +221,9 @@ git pull --ff-only origin feature/timeline-temporal-operational
 pnpm --filter @dante/web typecheck
 
 pnpm --filter @dante/web exec vitest run \
+  src/features/temporal/remote-session-capability-data-source.test.ts \
+  src/features/temporal/activity-session-card-controls.test.tsx \
+  src/features/temporal/session-subject-controls-card.test.tsx \
   src/features/temporal/session-subject-controls.test.tsx \
   src/features/home/ui/timeline/timeline-runtime-detail-controls.test.tsx \
   src/features/home/ui/timeline/timeline-event-lifecycle-b03.test.tsx \
@@ -197,12 +232,13 @@ pnpm --filter @dante/web exec vitest run \
 git status --short
 ```
 
-## 11. Next checkpoint after green gate
+## 12. Next checkpoint after green gate
 
-1. mount compact B08 Start/Pause/Resume/End directly on eligible created Timeline Activity/Occurrence cards, while keeping Create free of runtime commands;
-2. only show those card controls when canonical persisted capability/policy says Session tracking is enabled — do not show Session runtime on every Activity merely because the endpoint exists;
-3. remove legacy B10 exposure from `Da collocare` only after the final card/details destination is proven;
-4. decide whether canonical Activity decomposition needs a new relation or an already-approved dormant contract exists elsewhere in the model;
-5. design canonical `Suddivisa` multi-placement creation and duration derivation;
-6. implement placement protection for manual + Dante movement and the post-create unlock path;
-7. continue with Event Advanced separately.
+1. inspect a real Session-enabled Activity card and verify the compact controls fit short/normal Timeline cards cleanly;
+2. verify an Activity created without `Sessione` exposes no runtime controls and Event exposes none;
+3. decide whether capability discovery should be folded into the authoritative Timeline projection before broad-scale density work;
+4. remove legacy B10 exposure from `Da collocare` only after the final card/details destination is proven;
+5. design the canonical Activity → sub-Activity relationship rather than substituting B13 Step;
+6. design canonical `Suddivisa` multi-placement creation and duration derivation;
+7. implement placement protection for manual + Dante movement and post-create unlock;
+8. continue Event Advanced separately.
