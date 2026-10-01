@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react';
 
 import './session-subject-controls.css';
 
-import { ActualRealizationControls } from './actual-realization-controls';
 import {
   createRemoteTemporalSessionDataSource,
   type SessionSubjectKind,
@@ -189,7 +188,6 @@ export function SessionSubjectControls({
               : 'non raggiunto'}
         </span>
       ))}
-      <ActualRealizationControls kind={kind} subjectRef={subjectRef} />
     </div>
   );
 }
