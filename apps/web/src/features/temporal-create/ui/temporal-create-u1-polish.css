@@ -10,6 +10,55 @@
   flex: 0 0 auto;
 }
 
+.temporal-create-composer__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.temporal-create-composer__pin {
+  display: grid;
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08));
+  border-radius: 9px;
+  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-surface-control, #151f2e) 58%,
+    transparent
+  );
+  cursor: pointer;
+}
+
+.temporal-create-composer__pin svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.temporal-create-composer__pin:hover,
+.temporal-create-composer__pin[aria-pressed='true'] {
+  border-color: color-mix(in srgb, #ff8a3d 42%, transparent);
+  color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
+  background: var(
+    --dante-semantic-color-home-chrome-active-soft,
+    rgba(234, 92, 18, 0.095)
+  );
+}
+
+.temporal-create-composer__pin[aria-pressed='true'] svg {
+  transform: rotate(-18deg);
+}
+
 .temporal-create-composer .temporal-create-composer__body.temporal-create-composer__body {
   display: flex;
   flex: 1 1 auto;
