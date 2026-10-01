@@ -6,7 +6,6 @@ import type {
   TemporalCreateSurface,
 } from '../model/temporal-create-session';
 import { TemporalCreateActivityFields } from './temporal-create-activity-fields';
-import { TemporalCreateAppearanceFields } from './temporal-create-appearance-fields';
 import { TemporalCreateConfirmationFields } from './temporal-create-confirmation-fields';
 import { TemporalCreateCoreFieldsU2 } from './temporal-create-core-u2';
 import { TemporalCreateEventFields } from './temporal-create-event-fields';
@@ -28,7 +27,6 @@ export { TemporalCreateCoreFieldsU2 as TemporalCreateCoreFields };
 
 export function TemporalCreateAdvancedFields({
   fields,
-  contexts,
   depth,
   onPatch,
   renderError,
@@ -139,12 +137,6 @@ export function TemporalCreateAdvancedFields({
       <TemporalCreateOrganizationFields
         fields={fields}
         depth="full"
-        onPatch={onPatch}
-      />
-
-      <TemporalCreateAppearanceFields
-        fields={fields}
-        contexts={contexts}
         onPatch={onPatch}
       />
     </div>
