@@ -129,11 +129,10 @@ function placementInput(
 
   if (fields.timeSemantics === 'all-day') {
     const startDate = Temporal.PlainDate.from(fields.date);
-    // Quick Activity currently exposes one all-day date, therefore its
-    // canonical placement must be exactly that day. Event exposes an explicit
-    // end date and may intentionally span multiple days.
+    // Quick exposes the same explicit inclusive start/end date range for both
+    // Activity and Event. The canonical Schedule stores an exclusive end.
     const inclusiveEnd = Temporal.PlainDate.from(
-      fields.kind === 'event' ? fields.event.allDayEndDate : fields.date,
+      fields.kind === 'event' ? fields.event.allDayEndDate : draft.endDate,
     );
     return Object.freeze({
       kind: 'date-span' as const,
