@@ -1,19 +1,22 @@
 .temporal-create-life-area-field {
   position: relative;
-  min-width: 0;
-}
-
-.temporal-create-life-area-field__input-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 38px auto;
-  align-items: center;
-  gap: 7px;
+  grid-template-columns: 54px minmax(0, 1fr);
+  align-items: start;
+  gap: 8px;
+  min-width: 0;
 }
 
-.temporal-create-life-area-field__input-row > input[type='text'] {
+.temporal-create-life-area-field__color-cell,
+.temporal-create-life-area-field__area-cell {
+  position: relative;
   min-width: 0;
+}
+
+.temporal-create-life-area-field__color-trigger,
+.temporal-create-life-area-field__area-cell > input[type='text'] {
+  box-sizing: border-box;
   height: 42px;
-  padding: 0 12px;
   border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
   border-radius: 11px;
   color: inherit;
@@ -21,40 +24,47 @@
   font: inherit;
 }
 
-.temporal-create-life-area-field__input-row > input[type='text']:focus {
-  border-color: color-mix(in srgb, #ff8a3d 65%, transparent);
-  outline: none;
-  box-shadow: 0 0 0 2px color-mix(in srgb, #ff8a3d 13%, transparent);
-}
-
-.temporal-create-life-area-field__color {
-  position: relative;
+.temporal-create-life-area-field__color-trigger {
   display: grid;
-  width: 38px;
-  height: 38px;
+  width: 54px;
   place-items: center;
+  padding: 0;
   cursor: pointer;
 }
 
-.temporal-create-life-area-field__color > span {
+.temporal-create-life-area-field__color-trigger > span {
   width: 22px;
   height: 22px;
-  border: 2px solid rgb(255 255 255 / 30%);
+  border: 2px solid rgb(255 255 255 / 28%);
   border-radius: 50%;
-  box-shadow: 0 2px 9px rgb(0 0 0 / 25%);
+  box-shadow: 0 2px 9px rgb(0 0 0 / 24%);
 }
 
-.temporal-create-life-area-field__color > input {
+.temporal-create-life-area-field__color-trigger:hover,
+.temporal-create-life-area-field__color-trigger[aria-expanded='true'],
+.temporal-create-life-area-field__color-trigger:focus-visible,
+.temporal-create-life-area-field__area-cell > input[type='text']:focus {
+  border-color: color-mix(in srgb, #ff8a3d 62%, transparent);
+  outline: none;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #ff8a3d 18%, transparent);
+}
+
+.temporal-create-life-area-field__area-cell > input[type='text'] {
+  width: 100%;
+  min-width: 0;
+  padding: 0 38px 0 12px;
+}
+
+.temporal-create-life-area-field__area-cell > button {
   position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.temporal-create-life-area-field__input-row > button {
+  z-index: 2;
+  top: 7px;
+  right: 7px;
+  display: grid;
   width: 28px;
   height: 28px;
+  place-items: center;
+  padding: 0;
   border: 0;
   border-radius: 8px;
   color: inherit;
@@ -63,27 +73,103 @@
   cursor: pointer;
 }
 
+.temporal-create-life-area-field__area-cell > button:hover {
+  background: color-mix(in srgb, currentColor 8%, transparent);
+  opacity: 0.9;
+}
+
+.temporal-create-life-area-field__color-popover,
 .temporal-create-life-area-field__options {
   position: absolute;
-  z-index: 72;
+  z-index: 82;
   top: calc(100% + 7px);
-  right: 0;
-  left: 0;
-  display: grid;
-  max-height: 238px;
-  overflow: auto;
-  padding: 7px;
   border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
   border-radius: 13px;
   background: var(--dante-surface, #171923);
   box-shadow: 0 16px 42px rgb(0 0 0 / 30%);
 }
 
+.temporal-create-life-area-field__color-popover {
+  left: 0;
+  display: grid;
+  grid-template-columns: repeat(5, 30px);
+  gap: 7px;
+  width: max-content;
+  padding: 9px;
+}
+
+.temporal-create-life-area-field__color-swatch {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.temporal-create-life-area-field__color-swatch > span {
+  width: 20px;
+  height: 20px;
+  border: 1px solid rgb(255 255 255 / 24%);
+  border-radius: 50%;
+  box-shadow: 0 2px 7px rgb(0 0 0 / 22%);
+}
+
+.temporal-create-life-area-field__color-swatch.is-custom > span {
+  border-color: rgb(255 255 255 / 36%);
+  background: conic-gradient(
+    #ff5d73,
+    #f4c95d,
+    #62d394,
+    #45c4d9,
+    #5d8cff,
+    #8b73ff,
+    #c875e6,
+    #ff5d73
+  );
+}
+
+.temporal-create-life-area-field__color-swatch:hover,
+.temporal-create-life-area-field__color-swatch:focus-visible,
+.temporal-create-life-area-field__color-swatch[aria-pressed='true'] {
+  border-color: color-mix(in srgb, #ff8a3d 52%, transparent);
+  outline: none;
+  background: color-mix(in srgb, currentColor 7%, transparent);
+}
+
+.temporal-create-life-area-field__color-swatch[aria-pressed='true'] > span {
+  box-shadow:
+    0 2px 7px rgb(0 0 0 / 22%),
+    0 0 0 2px color-mix(in srgb, #ff8a3d 42%, transparent);
+}
+
+.temporal-create-life-area-field__native-color {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.temporal-create-life-area-field__options {
+  right: 0;
+  left: 0;
+  display: grid;
+  max-height: 238px;
+  overflow: auto;
+  padding: 7px;
+}
+
 .temporal-create-life-area-field__options > button {
   display: grid;
+  position: static;
   grid-template-columns: 16px minmax(0, 1fr);
   align-items: center;
   gap: 9px;
+  width: 100%;
   min-height: 36px;
   padding: 6px 8px;
   border: 0;
@@ -91,6 +177,7 @@
   color: inherit;
   background: transparent;
   text-align: left;
+  opacity: 1;
   cursor: pointer;
 }
 
