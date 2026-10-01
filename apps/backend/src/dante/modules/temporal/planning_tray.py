@@ -161,27 +161,26 @@ class TemporalPlanningTrayApplication:
         postponed = {
             UUID(str(row["event_ref"])): row for row in postponed_rows
         }
-        items: list[PlanningTrayItemView] = []
-        for row in activities:
-            items.append(
-                PlanningTrayItemView(
-                    kind="activity",
-                    state="unplaced",
-                    subject_ref=NativeRef(UUID(str(row["subject_ref"]))),
-                    title=str(row["title"]),
-                    created_at=row["created_at"],
-                    life_area_ref=(
-                        None
-                        if row["life_area_ref"] is None
-                        else UUID(str(row["life_area_ref"]))
-                    ),
-                    life_area_assignment_revision=(
-                        None
-                        if row["life_area_assignment_revision"] is None
-                        else int(row["life_area_assignment_revision"])
-                    ),
-                )
+        items: list[PlanningTrayItemView] = [
+            PlanningTrayItemView(
+                kind="activity",
+                state="unplaced",
+                subject_ref=NativeRef(UUID(str(row["subject_ref"]))),
+                title=str(row["title"]),
+                created_at=row["created_at"],
+                life_area_ref=(
+                    None
+                    if row["life_area_ref"] is None
+                    else UUID(str(row["life_area_ref"]))
+                ),
+                life_area_assignment_revision=(
+                    None
+                    if row["life_area_assignment_revision"] is None
+                    else int(row["life_area_assignment_revision"])
+                ),
             )
+            for row in activities
+        ]
 
         for row in events:
             event_ref = UUID(str(row["subject_ref"]))
