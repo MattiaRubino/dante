@@ -634,14 +634,17 @@ export function createRemoteTemporalAuthoringDataSource(
   };
 
   return Object.freeze({
-    async authorActivity(request, signal) {
+    async authorActivity(
+      request: TemporalAuthorActivityRequest,
+      signal?: AbortSignal,
+    ) {
       const result = activityResult(
         await mutate(ACTIVITY_ENDPOINT, request, signal),
       );
       invalidateTemporalTimelineRead();
       return result;
     },
-    async authorEvent(request, signal) {
+    async authorEvent(request: TemporalAuthorEventRequest, signal?: AbortSignal) {
       const result = eventResult(await mutate(EVENT_ENDPOINT, request, signal));
       invalidateTemporalTimelineRead();
       return result;
