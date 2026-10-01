@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type {
@@ -23,7 +23,6 @@ export function TemporalCreateActivityFields({
   const scheduling = fields.scheduling;
   const execution = fields.execution;
   const unplaced = fields.timeSemantics === 'unscheduled';
-  const [structureMenuOpen, setStructureMenuOpen] = useState(false);
 
   const patchScheduling = (
     patch: Partial<TemporalCreateFields['scheduling']>,
@@ -33,53 +32,6 @@ export function TemporalCreateActivityFields({
 
   return (
     <>
-      <section
-        className="temporal-create-section is-wide temporal-create-structure-section"
-        aria-labelledby="temporal-create-activity-structure-heading"
-      >
-        <div className="temporal-create-section__heading">
-          <h3 id="temporal-create-activity-structure-heading">
-            {italian ? 'Struttura' : 'Structure'}
-          </h3>
-        </div>
-
-        <div className="temporal-create-structure-tree">
-          <div className="temporal-create-structure-tree__root">
-            <span className="temporal-create-structure-tree__marker" aria-hidden="true" />
-            <strong>
-              {fields.title.trim() || (italian ? 'Attività senza titolo' : 'Untitled activity')}
-            </strong>
-          </div>
-          <div className="temporal-create-structure-add">
-            <button
-              type="button"
-              aria-label={italian ? 'Aggiungi alla struttura' : 'Add to structure'}
-              aria-expanded={structureMenuOpen}
-              onClick={() => setStructureMenuOpen((current) => !current)}
-            >
-              <span aria-hidden="true">+</span>
-              {italian ? 'Aggiungi' : 'Add'}
-            </button>
-            {structureMenuOpen ? (
-              <div
-                className="temporal-create-structure-menu"
-                role="menu"
-                aria-label={italian ? 'Aggiungi alla struttura' : 'Add to structure'}
-              >
-                <button type="button" role="menuitem" disabled>
-                  <strong>{italian ? 'Sotto-attività' : 'Sub-activity'}</strong>
-                  <small>{italian ? 'prossimo slice' : 'next slice'}</small>
-                </button>
-                <button type="button" role="menuitem" disabled>
-                  <strong>{italian ? 'Sessione' : 'Session'}</strong>
-                  <small>{italian ? 'prossimo slice' : 'next slice'}</small>
-                </button>
-              </div>
-            ) : null}
-          </div>
-        </div>
-      </section>
-
       <section
         className="temporal-create-section is-wide"
         aria-labelledby="temporal-create-activity-planning-heading"
@@ -91,7 +43,11 @@ export function TemporalCreateActivityFields({
         </div>
 
         {!unplaced ? (
-          <div className="temporal-create-planning-mode" role="group" aria-label={italian ? 'Modalità di pianificazione' : 'Planning mode'}>
+          <div
+            className="temporal-create-planning-mode"
+            role="group"
+            aria-label={italian ? 'Modalità di pianificazione' : 'Planning mode'}
+          >
             <button type="button" className="is-active" aria-pressed="true">
               {italian ? 'Unica' : 'Single'}
             </button>
@@ -99,7 +55,11 @@ export function TemporalCreateActivityFields({
               type="button"
               disabled
               aria-pressed="false"
-              title={italian ? 'La pianificazione suddivisa sarà collegata al percorso canonico multi-placement nel prossimo slice.' : 'Split planning will be connected to the canonical multi-placement path in the next slice.'}
+              title={
+                italian
+                  ? 'La pianificazione suddivisa sarà collegata al percorso canonico multi-placement nel prossimo slice.'
+                  : 'Split planning will be connected to the canonical multi-placement path in the next slice.'
+              }
             >
               {italian ? 'Suddivisa' : 'Split'}
             </button>
@@ -139,9 +99,21 @@ export function TemporalCreateActivityFields({
           <div className="temporal-create-candidate-control" aria-disabled="true">
             <div>
               <strong>{italian ? 'Proteggi collocazione' : 'Protect placement'}</strong>
-              <small>{italian ? 'utente + automazioni Dante' : 'user + Dante automations'}</small>
+              <small>
+                {italian
+                  ? 'utente + automazioni Dante'
+                  : 'user + Dante automations'}
+              </small>
             </div>
-            <button type="button" disabled aria-label={italian ? 'Proteggi collocazione, da collegare' : 'Protect placement, not wired yet'}>
+            <button
+              type="button"
+              disabled
+              aria-label={
+                italian
+                  ? 'Proteggi collocazione, da collegare'
+                  : 'Protect placement, not wired yet'
+              }
+            >
               {italian ? 'Da collegare' : 'Not wired'}
             </button>
           </div>
@@ -153,7 +125,9 @@ export function TemporalCreateActivityFields({
             data-create-path="scheduling.window"
           >
             <label className="temporal-create-control">
-              <span>{t(($) => $.common.home.timeline.create.planning.windowStartDate)}</span>
+              <span>
+                {t(($) => $.common.home.timeline.create.planning.windowStartDate)}
+              </span>
               <input
                 type="date"
                 value={scheduling.windowStartDate}
@@ -163,7 +137,9 @@ export function TemporalCreateActivityFields({
               />
             </label>
             <label className="temporal-create-control">
-              <span>{t(($) => $.common.home.timeline.create.planning.windowStartTime)}</span>
+              <span>
+                {t(($) => $.common.home.timeline.create.planning.windowStartTime)}
+              </span>
               <input
                 type="time"
                 value={scheduling.windowStartTime}
@@ -173,7 +149,9 @@ export function TemporalCreateActivityFields({
               />
             </label>
             <label className="temporal-create-control">
-              <span>{t(($) => $.common.home.timeline.create.planning.windowEndDate)}</span>
+              <span>
+                {t(($) => $.common.home.timeline.create.planning.windowEndDate)}
+              </span>
               <input
                 type="date"
                 value={scheduling.windowEndDate}
@@ -183,7 +161,9 @@ export function TemporalCreateActivityFields({
               />
             </label>
             <label className="temporal-create-control">
-              <span>{t(($) => $.common.home.timeline.create.planning.windowEndTime)}</span>
+              <span>
+                {t(($) => $.common.home.timeline.create.planning.windowEndTime)}
+              </span>
               <input
                 type="time"
                 value={scheduling.windowEndTime}
@@ -202,7 +182,9 @@ export function TemporalCreateActivityFields({
             data-create-path="scheduling.deadline"
           >
             <label className="temporal-create-control">
-              <span>{t(($) => $.common.home.timeline.create.planning.earliestDate)}</span>
+              <span>
+                {t(($) => $.common.home.timeline.create.planning.earliestDate)}
+              </span>
               <input
                 type="date"
                 value={scheduling.earliestStartDate}
@@ -212,7 +194,9 @@ export function TemporalCreateActivityFields({
               />
             </label>
             <label className="temporal-create-control">
-              <span>{t(($) => $.common.home.timeline.create.planning.earliestTime)}</span>
+              <span>
+                {t(($) => $.common.home.timeline.create.planning.earliestTime)}
+              </span>
               <input
                 type="time"
                 value={scheduling.earliestStartTime}
@@ -222,7 +206,9 @@ export function TemporalCreateActivityFields({
               />
             </label>
             <label className="temporal-create-control">
-              <span>{t(($) => $.common.home.timeline.create.planning.deadlineDate)}</span>
+              <span>
+                {t(($) => $.common.home.timeline.create.planning.deadlineDate)}
+              </span>
               <input
                 type="date"
                 value={scheduling.deadlineDate}
@@ -232,7 +218,9 @@ export function TemporalCreateActivityFields({
               />
             </label>
             <label className="temporal-create-control">
-              <span>{t(($) => $.common.home.timeline.create.planning.deadlineTime)}</span>
+              <span>
+                {t(($) => $.common.home.timeline.create.planning.deadlineTime)}
+              </span>
               <input
                 type="time"
                 value={scheduling.deadlineTime}
@@ -251,7 +239,9 @@ export function TemporalCreateActivityFields({
             data-create-path="scheduling.preferredWindow"
           >
             <label className="temporal-create-control">
-              <span>{t(($) => $.common.home.timeline.create.planning.preferredStart)}</span>
+              <span>
+                {t(($) => $.common.home.timeline.create.planning.preferredStart)}
+              </span>
               <input
                 type="time"
                 value={scheduling.preferredStartTime}
@@ -261,7 +251,9 @@ export function TemporalCreateActivityFields({
               />
             </label>
             <label className="temporal-create-control">
-              <span>{t(($) => $.common.home.timeline.create.planning.preferredEnd)}</span>
+              <span>
+                {t(($) => $.common.home.timeline.create.planning.preferredEnd)}
+              </span>
               <input
                 type="time"
                 value={scheduling.preferredEndTime}
@@ -297,7 +289,11 @@ export function TemporalCreateActivityFields({
               })
             }
           />
-          <span>{italian ? 'Durata minima per Sessione' : 'Minimum Session duration'}</span>
+          <span>
+            {italian
+              ? 'Durata minima per Sessione'
+              : 'Minimum Session duration'}
+          </span>
         </label>
 
         {execution.sessionMode === 'splittable' ? (
