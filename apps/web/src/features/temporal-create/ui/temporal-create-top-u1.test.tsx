@@ -170,11 +170,18 @@ describe('Temporal Create U1 top controls', () => {
     expect(endRaw.value).toBe('12:00');
 
     const zoneTrigger = screen.getByRole('button', {
-      name: /Fuso orario: Ora locale/,
+      name: /Fuso orario:/,
     });
     fireEvent.click(zoneTrigger);
-    fireEvent.click(screen.getByRole('button', { name: 'Europe/Rome' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Ora locale' }));
+    expect(
+      screen.getByRole('button', { name: /Fuso orario: Ora locale/ }),
+    ).toBeTruthy();
 
+    fireEvent.click(
+      screen.getByRole('button', { name: /Fuso orario: Ora locale/ }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Europe/Rome' }));
     expect(
       screen.getByRole('button', { name: /Fuso orario: Europe\/Rome/ }),
     ).toBeTruthy();
@@ -203,21 +210,50 @@ describe('Temporal Create U1 top controls', () => {
     expect(document.querySelector('[data-temporal-create="composer"]')).toBeNull();
   });
 
-  it('toggles advanced options from the footer action row', () => {
+  it('promotes Advanced to a central viewport surface without losing the Quick draft', () => {
     renderEntry();
+
+    const quickComposer = document.querySelector<HTMLElement>(
+      '[data-temporal-create="composer"]',
+    );
+    expect(quickComposer?.closest('[data-home-context-create-host]')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Annulla' })).toBeNull();
+
+    fireEvent.change(screen.getByPlaceholderText('Titolo'), {
+      target: { value: 'Bozza preservata' },
+    });
+    fireEvent.change(screen.getByLabelText('Life Area (opzionale)'), {
+      target: { value: 'Nuova area' },
+    });
 
     const advanced = screen.getByRole('button', { name: /Opzioni avanzate/ });
     expect(advanced.getAttribute('aria-expanded')).toBe('false');
     fireEvent.click(advanced);
 
+    const advancedComposer = document.querySelector<HTMLElement>(
+      '[data-temporal-create="composer"]',
+    );
+    expect(advancedComposer?.dataset.temporalCreateSurface).toBe('advanced');
+    expect(advancedComposer?.closest('[data-home-context-create-host]')).toBeNull();
+    expect(advancedComposer?.parentElement?.parentElement).toBe(document.body);
+    expect((screen.getByPlaceholderText('Titolo') as HTMLInputElement).value).toBe(
+      'Bozza preservata',
+    );
+    expect(
+      (screen.getByLabelText('Life Area (opzionale)') as HTMLInputElement).value,
+    ).toBe('Nuova area');
+
     const hide = screen.getByRole('button', { name: /Nascondi opzioni avanzate/ });
     expect(hide.getAttribute('aria-expanded')).toBe('true');
     fireEvent.click(hide);
 
-    expect(
-      screen.getByRole('button', { name: /Opzioni avanzate/ }).getAttribute(
-        'aria-expanded',
-      ),
-    ).toBe('false');
+    const restoredQuick = document.querySelector<HTMLElement>(
+      '[data-temporal-create="composer"]',
+    );
+    expect(restoredQuick?.dataset.temporalCreateSurface).toBe('base');
+    expect(restoredQuick?.closest('[data-home-context-create-host]')).toBeTruthy();
+    expect((screen.getByPlaceholderText('Titolo') as HTMLInputElement).value).toBe(
+      'Bozza preservata',
+    );
   });
 });
