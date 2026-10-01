@@ -11,8 +11,9 @@
 - **Chiusura U2:** `docs/workstreams/timeline-temporal-operational-b14-u2-closure-2026-10-01.md`
 - **Generated U2:** `dd94c6ee876bf5e671a516898b064c37e2d90741`
 - **U3 handoff corrente:** `docs/workstreams/timeline-temporal-operational-b14-u3-handoff-2026-10-01.md`
-- **Ultimo gate web locale provato:** `899f9260` — typecheck + 16/16 focused PASS
-- **Candidate U3 successivo al gate:** vedere handoff U3; richiede nuovo gate locale
+- **Ultimo gate web locale completamente verde:** `899f9260` — typecheck + 16/16 focused PASS
+- **Ultimo rerun U3:** `5c3634d4` — typecheck PASS, 16 focused PASS / 1 FAIL; failure circoscritto al globo Quick ancora montato in Advanced
+- **Fix candidate successivo:** `1e0ef2f9` + `08478d93`; richiede nuovo gate locale
 - **CI:** non usata; i test locali sono eseguiti dall'utente
 
 ## Obiettivo
@@ -193,7 +194,7 @@ Decisioni già consolidate nel candidate:
 3. Advanced è una superficie centrale viewport e conserva lo stesso draft del Quick;
 4. `Ricorda` è un solo controllo principale: si configura prima del submit; la scrittura B11-C avviene dopo l'authoring solo perché necessita del `schedule_ref` accettato;
 5. `Reminder configuration != notification delivery`: il delivery viene affrontato alla fine del consolidamento;
-6. Quick `Orario` mantiene il globo compatto; Advanced espone esplicitamente `timeMode` + `timeZoneId` e nasconde il globo;
+6. Quick `Orario` mantiene il globo compatto; Advanced espone esplicitamente `timeMode` + `timeZoneId` e non monta il globo Quick;
 7. `Verifica esito` è distinta dal Reminder e dalla B10 `Confirmation`; per ora espone solo la policy realmente supportata;
 8. `Tutto il giorno` usa due date esplicite sia per Activity sia per Event e non inventa fuso/orario su un date-span;
 9. `Da collocare` non mostra `Ripeti` né `Ricorda`;
@@ -202,10 +203,19 @@ Decisioni già consolidate nel candidate:
 
 ## Cursor U3+
 
-Candidate successivo al gate locale `899f9260` è **non ancora provato**. Il prossimo passo è:
+L'ultimo rerun utente sul candidate `5c3634d4` ha dato `web typecheck PASS`, `composer 2/2 PASS`, `entry U2 9/9 PASS`, `top/U1 5/6 PASS`. L'unico failure era coerente con una vera incoerenza UI: il Core montava ancora il globo Quick mentre Advanced mostrava già i controlli espliciti del fuso.
 
-1. eseguire il gate web indicato nell'U3 handoff;
-2. fare la verifica reale dei punti colore / all-day / Reminder / Advanced;
+Il candidate corrente aggiunge:
+
+```text
+1e0ef2f9  Core timezone affordance renderizzata solo quando richiesta
+08478d93  Composer passa showCompactTimezone=false in Advanced
+```
+
+Il prossimo passo è:
+
+1. rieseguire il gate web indicato nell'U3 handoff;
+2. se verde, fare la verifica reale dei punti colore / all-day / Reminder / Advanced;
 3. continuare l'information architecture Advanced Activity vs Event;
 4. integrare B04 vincoli temporali + movement policy nella superficie Advanced;
 5. progettare e spostare Session / Actual / Outcome / Confirmation / Reconciliation prima di ripulire definitivamente il planning tray;
