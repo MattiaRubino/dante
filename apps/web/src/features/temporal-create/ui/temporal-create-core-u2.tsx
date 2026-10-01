@@ -25,6 +25,7 @@ import {
 import { TemporalCreateDatePicker } from './temporal-create-date-picker';
 import { TemporalCreateLifeAreaField } from './temporal-create-life-area-field';
 import { temporalCreateProductCopy } from './temporal-create-product-copy';
+import { TemporalCreateQuickReminder } from './temporal-create-quick-reminder';
 import { temporalCreateTypeRegistry } from './temporal-create-type-registry';
 import { useTemporalCreateU2Draft } from './temporal-create-u2-draft-context';
 import type { TemporalCreateContextOption } from './temporal-create-ui-types';
@@ -769,16 +770,18 @@ export function TemporalCreateCoreFieldsU2({
         </div>
       ) : null}
 
-      <div className="temporal-create-u2-repeat">
-        <select aria-label={copy.event.repeat} value={quickRecurrence(fields)} onChange={(event) => changeQuickRecurrence(event.currentTarget.value as QuickRecurrence)}>
-          <option value="none">{copy.event.repeatNever}</option>
-          <option value="daily">{copy.event.repeatDaily}</option>
-          <option value="weekly">{copy.event.repeatWeekly}</option>
-          <option value="monthly">{copy.event.repeatMonthly}</option>
-          <option value="yearly">{copy.event.repeatYearly}</option>
-          <option value="custom">{copy.event.repeatCustom}</option>
-        </select>
-      </div>
+      {fields.timeSemantics !== 'unscheduled' ? (
+        <div className="temporal-create-u2-repeat">
+          <select aria-label={copy.event.repeat} value={quickRecurrence(fields)} onChange={(event) => changeQuickRecurrence(event.currentTarget.value as QuickRecurrence)}>
+            <option value="none">{copy.event.repeatNever}</option>
+            <option value="daily">{copy.event.repeatDaily}</option>
+            <option value="weekly">{copy.event.repeatWeekly}</option>
+            <option value="monthly">{copy.event.repeatMonthly}</option>
+            <option value="yearly">{copy.event.repeatYearly}</option>
+            <option value="custom">{copy.event.repeatCustom}</option>
+          </select>
+        </div>
+      ) : null}
 
       <TemporalCreateLifeAreaField
         contexts={contexts}
@@ -797,6 +800,8 @@ export function TemporalCreateCoreFieldsU2({
         autoComplete="off"
         onChange={(event) => patchEvent({ location: event.currentTarget.value })}
       />
+
+      <TemporalCreateQuickReminder fields={fields} onPatch={onPatch} />
 
       <textarea
         className="temporal-create-u2-description"
