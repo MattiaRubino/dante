@@ -14,6 +14,8 @@ export type TimelineGroup = Readonly<{
   organizationRevision?: number;
   /** Accepted Life Area appearance. Presentation metadata, never Schedule truth. */
   colorCode?: string | null;
+  /** Per-item presentation colors for a neutral grouping state such as no Life Area. */
+  itemColorCodes?: Readonly<Record<string, string>>;
   /** Actor-local organization preference; not a Schedule or conflict filter. */
   hidden?: boolean;
   archived?: boolean;
