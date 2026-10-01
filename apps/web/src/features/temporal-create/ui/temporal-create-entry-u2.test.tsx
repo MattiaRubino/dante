@@ -12,6 +12,7 @@ import {
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { i18n } from '../../../bootstrap/i18n';
+import { HomeCreateInteractionBridge } from '../../home/ui/home-create-interaction-bridge';
 import type {
   TemporalAuthorActivityRequest,
   TemporalAuthorEventRequest,
@@ -83,6 +84,7 @@ function renderEntry(
   };
   const rendered = render(
     <>
+      <HomeCreateInteractionBridge />
       <div data-home-context-create-host />
       <TemporalCreateEntry
         defaultDate={Temporal.PlainDate.from('2026-09-30')}
@@ -109,6 +111,9 @@ describe('Temporal Create U2 entry', () => {
     expect(
       screen.getByRole('option', { name: 'Ripeti · Mai' }),
     ).toBeTruthy();
+    expect((screen.getByLabelText('Ricorda') as HTMLSelectElement).disabled).toBe(
+      false,
+    );
     fireEvent.change(screen.getByPlaceholderText('Titolo'), {
       target: { value: 'Passeggiata' },
     });
@@ -147,7 +152,7 @@ describe('Temporal Create U2 entry', () => {
     });
   });
 
-  it('keeps curated colors and the professional custom picker inside one floating color popup', () => {
+  it('keeps curated colors and the custom picker inside one floating popup without dismissing Create', () => {
     renderEntry();
 
     fireEvent.click(
@@ -162,6 +167,10 @@ describe('Temporal Create U2 entry', () => {
     expect(within(palette).getByRole('button', { name: 'Blu' })).toBeTruthy();
     expect(within(palette).getByTitle('Arancione DANTE')).toBeTruthy();
 
+    fireEvent.pointerDown(within(palette).getByRole('button', { name: 'Blu' }));
+    fireEvent.click(within(palette).getByRole('button', { name: 'Blu' }));
+    expect(document.querySelector('[data-temporal-create="composer"]')).toBeTruthy();
+
     fireEvent.click(
       within(palette).getByRole('button', { name: 'Colore personalizzato' }),
     );
@@ -171,6 +180,7 @@ describe('Temporal Create U2 entry', () => {
     expect(
       screen.queryByRole('dialog', { name: 'Colore personalizzato' }),
     ).toBeNull();
+    expect(document.querySelector('[data-temporal-create="composer"]')).toBeTruthy();
   });
 
   it('remembers only colors actually used when Add is submitted, not colors merely inspected', async () => {
@@ -214,11 +224,31 @@ describe('Temporal Create U2 entry', () => {
     expect(eventRequests[0]?.placement).toBeDefined();
   });
 
-  it('creates an Event in Da collocare without inventing a Schedule placement', async () => {
+  it('creates all-day Activity through U2 with a canonical date-span placement', async () => {
+    const { activityRequests } = renderEntry();
+
+    fireEvent.click(screen.getByRole('radio', { name: 'Tutto il giorno' }));
+    fireEvent.change(screen.getByPlaceholderText('Titolo'), {
+      target: { value: 'Giornata fotografica' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi' }));
+
+    await waitFor(() => expect(activityRequests).toHaveLength(1));
+    expect(activityRequests[0]?.placement?.kind).toBe('date-span');
+    expect(
+      screen.queryByText(/Schedule non è confermato/i),
+    ).toBeNull();
+  });
+
+  it('creates an Event in Da collocare without recurrence or an invented Schedule placement', async () => {
     const { eventRequests } = renderEntry();
 
     fireEvent.click(screen.getByRole('radio', { name: 'Evento' }));
     fireEvent.click(screen.getByRole('radio', { name: 'Da collocare' }));
+    expect(screen.queryByRole('option', { name: 'Ripeti · Mai' })).toBeNull();
+    expect((screen.getByLabelText('Ricorda') as HTMLSelectElement).disabled).toBe(
+      true,
+    );
     fireEvent.change(screen.getByPlaceholderText('Titolo'), {
       target: { value: 'Cena da organizzare' },
     });
