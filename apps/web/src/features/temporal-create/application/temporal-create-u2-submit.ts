@@ -52,7 +52,15 @@ export function temporalCreateU2QuickIntentSupported(
   const defaults = defaultFieldsFor(fields);
   if (!sameJson(fields.scheduling, defaults.scheduling)) return false;
   if (!sameJson(fields.execution, defaults.execution)) return false;
-  if (!sameJson(fields.confirmation, defaults.confirmation)) return false;
+
+  // Reminder is a Schedule capability applied immediately after U2 authoring;
+  // every other Confirmation field still belongs to the historical Advanced
+  // runtime and therefore must stay at its default here.
+  const confirmationWithoutReminder = {
+    ...fields.confirmation,
+    reminderLeadMinutes: defaults.confirmation.reminderLeadMinutes,
+  };
+  if (!sameJson(confirmationWithoutReminder, defaults.confirmation)) return false;
 
   if (fields.kind === 'event') {
     const event = fields.event;
