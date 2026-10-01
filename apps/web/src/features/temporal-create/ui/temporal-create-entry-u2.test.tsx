@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { Temporal } from '@dante/time';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { i18n } from '../../../bootstrap/i18n';
@@ -13,6 +13,8 @@ import type {
   TemporalAuthoredEventResult,
 } from '../../temporal';
 import { TemporalCreateEntry } from './temporal-create-entry';
+
+const DEFAULT_COLOR = '#EA5C12';
 
 beforeAll(async () => {
   await i18n.changeLanguage('it');
@@ -88,7 +90,7 @@ function renderEntry(contexts: readonly {
 }
 
 describe('Temporal Create U2 entry', () => {
-  it('creates an Activity without requiring any Life Area', async () => {
+  it('creates an Activity without requiring any Life Area and persists the DANTE default color', async () => {
     const { activityRequests } = renderEntry();
 
     fireEvent.change(screen.getByPlaceholderText('Titolo'), {
@@ -104,11 +106,12 @@ describe('Temporal Create U2 entry', () => {
 
     await waitFor(() => expect(activityRequests).toHaveLength(1));
     expect(activityRequests[0]?.lifeArea).toBeUndefined();
+    expect(activityRequests[0]?.itemColorCode).toBe(DEFAULT_COLOR);
     expect(activityRequests[0]?.location).toBe('Lungofiume');
     expect(activityRequests[0]?.description).toBe('Lungo il fiume');
   });
 
-  it('stages a new Life Area locally and sends it only with the accepted Add', async () => {
+  it('stages a new Life Area locally and sends the real default orange only with accepted Add', async () => {
     const { activityRequests } = renderEntry();
 
     fireEvent.change(screen.getByPlaceholderText('Titolo'), {
@@ -122,7 +125,36 @@ describe('Temporal Create U2 entry', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Aggiungi' }));
 
     await waitFor(() => expect(activityRequests).toHaveLength(1));
-    expect(activityRequests[0]?.lifeArea).toEqual({ newName: 'Formazione' });
+    expect(activityRequests[0]?.lifeArea).toEqual({
+      newName: 'Formazione',
+      colorCode: DEFAULT_COLOR,
+    });
+  });
+
+  it('uses DANTE color controls instead of the operating-system picker and exposes primary colors', () => {
+    renderEntry();
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Colore attività o evento' }),
+    );
+    const palette = screen.getByRole('dialog', { name: 'Scegli colore' });
+
+    expect(document.querySelector('input[type="color"]')).toBeNull();
+    expect(within(palette).getByRole('button', { name: 'Colore #FF3B30' })).toBeTruthy();
+    expect(within(palette).getByRole('button', { name: 'Colore #FFD60A' })).toBeTruthy();
+    expect(within(palette).getByRole('button', { name: 'Colore #0A84FF' })).toBeTruthy();
+
+    fireEvent.click(
+      within(palette).getByRole('button', { name: 'Colore personalizzato' }),
+    );
+    expect(
+      within(palette).getByRole('dialog', { name: 'Colore personalizzato' }),
+    ).toBeTruthy();
+    expect(
+      within(palette).getByRole('button', {
+        name: 'Scegli un colore dal cerchio',
+      }),
+    ).toBeTruthy();
   });
 
   it('routes Event through the U2 Event endpoint', async () => {
@@ -139,6 +171,7 @@ describe('Temporal Create U2 entry', () => {
 
     await waitFor(() => expect(eventRequests).toHaveLength(1));
     expect(eventRequests[0]?.title).toBe('Workshop');
+    expect(eventRequests[0]?.itemColorCode).toBe(DEFAULT_COLOR);
     expect(eventRequests[0]?.location).toBe('Sala A');
   });
 });
