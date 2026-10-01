@@ -455,7 +455,6 @@ export function TimelinePlanningTrayB01({
                         setOpen(false);
                         setQuery('');
                         openPlanForActivity({
-                          projectionId: key,
                           activityRef: item.subjectRef,
                           title: item.title,
                         });
