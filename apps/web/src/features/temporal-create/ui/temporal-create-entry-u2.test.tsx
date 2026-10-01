@@ -24,6 +24,7 @@ import { TEMPORAL_CREATE_RECENT_COLORS_KEY } from './temporal-create-recent-colo
 import { TemporalCreateEntry } from './temporal-create-entry';
 
 const DEFAULT_COLOR = '#EA5C12';
+const SCHEDULE_REF = '0199a111-1111-7111-8111-111111111120';
 
 beforeAll(async () => {
   await i18n.changeLanguage('it');
@@ -32,9 +33,13 @@ beforeAll(async () => {
 afterEach(() => {
   cleanup();
   window.localStorage.clear();
+  vi.unstubAllGlobals();
 });
 
-function activityResult(title: string): TemporalAuthoredActivityResult {
+function activityResult(
+  title: string,
+  scheduled = false,
+): TemporalAuthoredActivityResult {
   return Object.freeze({
     item: Object.freeze({
       subjectRef: '0199a111-1111-7111-8111-111111111111',
@@ -48,14 +53,28 @@ function activityResult(title: string): TemporalAuthoredActivityResult {
       lifeAreaColorCode: null,
       lifeAreaRevision: null,
     }),
-    schedule: null,
+    schedule: scheduled
+      ? Object.freeze({
+          scheduleRef: SCHEDULE_REF,
+          placementMaterialStateRef:
+            '0199a111-1111-7111-8111-111111111121',
+          placement: Object.freeze({
+            kind: 'absolute-interval' as const,
+            startsAt: Temporal.Instant.from('2026-09-30T19:00:00Z'),
+            endsAt: Temporal.Instant.from('2026-09-30T19:30:00Z'),
+          }),
+        })
+      : null,
     replayed: false,
   });
 }
 
-function eventResult(title: string): TemporalAuthoredEventResult {
+function eventResult(
+  title: string,
+  scheduled = false,
+): TemporalAuthoredEventResult {
   return Object.freeze({
-    ...activityResult(title),
+    ...activityResult(title, scheduled),
     agendaRevision: 0,
     agendaParts: Object.freeze([]),
   });
@@ -69,17 +88,18 @@ function renderEntry(
     revision?: number;
     colorCode?: string | null;
   }[] = [],
+  scheduledResult = false,
 ) {
   const activityRequests: TemporalAuthorActivityRequest[] = [];
   const eventRequests: TemporalAuthorEventRequest[] = [];
   const source: TemporalAuthoringDataSource = {
     authorActivity: vi.fn(async (request) => {
       activityRequests.push(request);
-      return activityResult(request.title);
+      return activityResult(request.title, scheduledResult);
     }),
     authorEvent: vi.fn(async (request) => {
       eventRequests.push(request);
-      return eventResult(request.title);
+      return eventResult(request.title, scheduledResult);
     }),
   };
   const rendered = render(
@@ -205,6 +225,53 @@ describe('Temporal Create U2 entry', () => {
     ).toEqual(['#4285F4']);
   });
 
+  it('configures B11 reminder only after accepted scheduled U2 authoring', async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.endsWith('/api/v1/auth/session')) {
+        return new Response(
+          JSON.stringify({ authenticated: true, csrf_token: 'csrf-test' }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+      if (url.includes(`/api/v1/temporal/schedules/${SCHEDULE_REF}/reminder`)) {
+        expect(init?.method).toBe('PUT');
+        const body = JSON.parse(String(init?.body ?? '{}')) as Record<string, unknown>;
+        expect(body.enabled).toBe(true);
+        expect(body.lead_minutes).toBe(15);
+        return new Response(
+          JSON.stringify({
+            reminder_ref: '0199a111-1111-7111-8111-111111111122',
+            schedule_ref: SCHEDULE_REF,
+            material_state_ref: '0199a111-1111-7111-8111-111111111123',
+            enabled: true,
+            lead_minutes: 15,
+            schedule_starts_at: '2026-09-30T19:00:00Z',
+            due_at: '2026-09-30T18:45:00Z',
+            disposition_code: 'pending',
+            replayed: false,
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+      throw new Error(`Unexpected fetch ${url}`);
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const { activityRequests } = renderEntry([], true);
+    fireEvent.change(screen.getByPlaceholderText('Titolo'), {
+      target: { value: 'Dentista' },
+    });
+    fireEvent.change(screen.getByLabelText('Ricorda'), {
+      target: { value: '15' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi' }));
+
+    await waitFor(() => expect(activityRequests).toHaveLength(1));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    expect(document.querySelector('[data-temporal-create="composer"]')).toBeNull();
+  });
+
   it('routes a scheduled Event through the U2 Event endpoint', async () => {
     const { eventRequests } = renderEntry();
 
@@ -224,7 +291,7 @@ describe('Temporal Create U2 entry', () => {
     expect(eventRequests[0]?.placement).toBeDefined();
   });
 
-  it('creates all-day Activity through U2 with a canonical date-span placement', async () => {
+  it('creates all-day Activity through U2 with a canonical single-day date-span placement', async () => {
     const { activityRequests } = renderEntry();
 
     fireEvent.click(screen.getByRole('radio', { name: 'Tutto il giorno' }));
@@ -234,21 +301,33 @@ describe('Temporal Create U2 entry', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Aggiungi' }));
 
     await waitFor(() => expect(activityRequests).toHaveLength(1));
-    expect(activityRequests[0]?.placement?.kind).toBe('date-span');
-    expect(
-      screen.queryByText(/Schedule non è confermato/i),
-    ).toBeNull();
+    const placement = activityRequests[0]?.placement;
+    expect(placement?.kind).toBe('date-span');
+    if (placement?.kind !== 'date-span') {
+      throw new Error('Expected all-day date-span placement.');
+    }
+    expect(placement.startDate.toString()).toBe('2026-09-30');
+    expect(placement.endDateExclusive.toString()).toBe('2026-10-01');
+    expect(screen.queryByText(/Schedule non è confermato/i)).toBeNull();
   });
 
   it('creates an Event in Da collocare without recurrence or an invented Schedule placement', async () => {
     const { eventRequests } = renderEntry();
 
     fireEvent.click(screen.getByRole('radio', { name: 'Evento' }));
+    fireEvent.change(screen.getByLabelText('Ripeti'), {
+      target: { value: 'daily' },
+    });
     fireEvent.click(screen.getByRole('radio', { name: 'Da collocare' }));
     expect(screen.queryByRole('option', { name: 'Ripeti · Mai' })).toBeNull();
     expect((screen.getByLabelText('Ricorda') as HTMLSelectElement).disabled).toBe(
       true,
     );
+
+    fireEvent.click(screen.getByRole('radio', { name: 'Orario' }));
+    expect((screen.getByLabelText('Ripeti') as HTMLSelectElement).value).toBe('none');
+    fireEvent.click(screen.getByRole('radio', { name: 'Da collocare' }));
+
     fireEvent.change(screen.getByPlaceholderText('Titolo'), {
       target: { value: 'Cena da organizzare' },
     });
