@@ -100,16 +100,20 @@ describe('Temporal Create U1 top controls', () => {
     expect(within(calendar).queryByText('Cancella')).toBeNull();
   });
 
-  it('keeps hour/minute stepping inline and rejects invalid manual time', () => {
+  it('keeps start/end time controls independent and rejects invalid manual time', () => {
     renderEntry();
 
     const startRaw = document.querySelector<HTMLInputElement>(
       '[data-create-path="startTime"]',
     );
-    if (!startRaw) {
-      throw new Error('Expected canonical start-time input.');
+    const endRaw = document.querySelector<HTMLInputElement>(
+      '[data-create-path="endTime"]',
+    );
+    if (!startRaw || !endRaw) {
+      throw new Error('Expected canonical start/end time inputs.');
     }
     const before = startRaw.value;
+    const endBefore = endRaw.value;
 
     const hour = screen.getByLabelText('Inizio: ore') as HTMLInputElement;
     const minute = screen.getByLabelText('Inizio: minuti') as HTMLInputElement;
@@ -118,6 +122,7 @@ describe('Temporal Create U1 top controls', () => {
       screen.getByRole('button', { name: 'Inizio: aumenta 15 minuti' }),
     );
     expect(startRaw.value).toBe(addMinutes(before, 15));
+    expect(endRaw.value).toBe(endBefore);
 
     const validHour = hour.value;
     fireEvent.change(hour, { target: { value: 'ab' } });
