@@ -27,6 +27,8 @@ import type {
 } from './model/timeline-types';
 import { TimelineCreateBridge } from './timeline-create-bridge';
 
+const CANONICAL_UNCOLORED_GROUP = '#7F8B9D';
+
 function displayDate(date: PlainDate): Date {
   return new Date(Date.UTC(date.year, date.month - 1, date.day, 12));
 }
@@ -47,6 +49,26 @@ function weekdayLabel(date: PlainDate, locale: string): string {
     .replace('.', '')
     .slice(0, 2)
     .toLocaleUpperCase(locale);
+}
+
+function timelineGroupColor(group: TimelineGroup): string {
+  if (group.colorCode) return group.colorCode;
+  if (group.organizationRevision !== undefined || group.id === 'legacy-unassigned') {
+    return CANONICAL_UNCOLORED_GROUP;
+  }
+  return `var(--dante-timeline-tone-${group.tone})`;
+}
+
+function timelineGroupColorRules(groups: readonly TimelineGroup[]): string {
+  return groups
+    .map(
+      (group, index) =>
+        `.home-timeline--production [data-group-index="${index}"],\n` +
+        `.home-timeline--production .timeline-split-columns > span:nth-child(${index + 1}) {\n` +
+        `  --timeline-group-color: ${timelineGroupColor(group)};\n` +
+        `}`,
+    )
+    .join('\n');
 }
 
 function TimelineIcon({ type }: { type: 'view' | 'group' | 'reset' }) {
@@ -192,6 +214,9 @@ export function TimelineHeader({
 
   return (
     <header className="dante-timeline-header">
+      <style data-timeline-canonical-group-colors>
+        {timelineGroupColorRules(groups)}
+      </style>
       <div className="dante-timeline-header-row">
         <TimelineCreateBridge
           defaultDate={viewDate}
@@ -354,11 +379,15 @@ export function TimelineHeader({
             {groups.map((group, index) => {
               const active = filters.has(group.id);
               const dimmed = filters.size > 0 && !active;
+              const groupStyle = {
+                '--timeline-group-color': timelineGroupColor(group),
+              } as CSSProperties;
               return (
                 <button
                   className={`dante-timeline-group-chip${active ? ' is-active' : ''}${dimmed ? ' is-dimmed' : ''}${draggingGroupId === group.id ? ' is-reordering' : ''}${dropTargetId === group.id ? ' is-drop-target' : ''}`}
                   data-timeline-tone={group.tone}
                   data-group-id={group.id}
+                  style={groupStyle}
                   key={group.id}
                   type="button"
                   draggable
