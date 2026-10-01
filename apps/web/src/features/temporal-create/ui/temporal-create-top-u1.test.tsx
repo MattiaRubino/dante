@@ -255,6 +255,17 @@ describe('Temporal Create U1 top controls', () => {
       'Nuova Area',
     );
 
+    // Advanced owns the timezone explicitly. The compact Quick globe is hidden,
+    // while both surfaces still edit the same timeMode/timeZoneId fields.
+    expect(screen.queryByRole('button', { name: /Fuso orario:/ })).toBeNull();
+    expect(document.querySelector('[data-create-path="timeMode"]')).toBeTruthy();
+    expect(document.querySelector('[data-create-path="timeZoneId"]')).toBeTruthy();
+
+    // Reminder remains one primary Create control, not a second Advanced copy.
+    expect(screen.getAllByLabelText('Ricorda')).toHaveLength(1);
+    expect(screen.getByRole('heading', { name: 'Verifica esito' })).toBeTruthy();
+    expect(screen.queryByText('Aspetto')).toBeNull();
+
     const backToQuick = screen.getByRole('button', {
       name: /Nascondi opzioni avanzate/,
     });
