@@ -172,6 +172,30 @@ describe('Temporal Create U2 entry', () => {
     });
   });
 
+  it('preserves the selected item color when typing a new Life Area name', async () => {
+    const { activityRequests } = renderEntry();
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Colore attività o evento' }),
+    );
+    const palette = screen.getByRole('dialog', { name: 'Scegli colore' });
+    fireEvent.click(within(palette).getByRole('button', { name: 'Blu' }));
+
+    fireEvent.change(screen.getByPlaceholderText('Titolo'), {
+      target: { value: 'Studio blu' },
+    });
+    fireEvent.change(screen.getByLabelText('Life Area (opzionale)'), {
+      target: { value: 'Formazione blu' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi' }));
+
+    await waitFor(() => expect(activityRequests).toHaveLength(1));
+    expect(activityRequests[0]?.lifeArea).toEqual({
+      newName: 'Formazione blu',
+      colorCode: '#4285F4',
+    });
+  });
+
   it('keeps curated colors and the custom picker inside one floating popup without dismissing Create', () => {
     renderEntry();
 
@@ -291,10 +315,13 @@ describe('Temporal Create U2 entry', () => {
     expect(eventRequests[0]?.placement).toBeDefined();
   });
 
-  it('creates all-day Activity through U2 with a canonical single-day date-span placement', async () => {
+  it('shows the same explicit all-day start/end date controls for Activity and Event', async () => {
     const { activityRequests } = renderEntry();
 
     fireEvent.click(screen.getByRole('radio', { name: 'Tutto il giorno' }));
+    expect(screen.getByRole('button', { name: /Data inizio:/ })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /Data fine:/ })).toBeTruthy();
+
     fireEvent.change(screen.getByPlaceholderText('Titolo'), {
       target: { value: 'Giornata fotografica' },
     });
@@ -311,7 +338,7 @@ describe('Temporal Create U2 entry', () => {
     expect(screen.queryByText(/Schedule non è confermato/i)).toBeNull();
   });
 
-  it('creates an Event in Da collocare without recurrence or an invented Schedule placement', async () => {
+  it('creates an Event in Da collocare without recurrence, reminder or an invented Schedule placement', async () => {
     const { eventRequests } = renderEntry();
 
     fireEvent.click(screen.getByRole('radio', { name: 'Evento' }));
@@ -320,9 +347,7 @@ describe('Temporal Create U2 entry', () => {
     });
     fireEvent.click(screen.getByRole('radio', { name: 'Da collocare' }));
     expect(screen.queryByRole('option', { name: 'Ripeti · Mai' })).toBeNull();
-    expect((screen.getByLabelText('Ricorda') as HTMLSelectElement).disabled).toBe(
-      true,
-    );
+    expect(screen.queryByLabelText('Ricorda')).toBeNull();
 
     fireEvent.click(screen.getByRole('radio', { name: 'Orario' }));
     expect((screen.getByLabelText('Ripeti') as HTMLSelectElement).value).toBe('none');
