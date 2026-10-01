@@ -180,6 +180,29 @@ describe('Temporal Create U1 top controls', () => {
     ).toBeTruthy();
   });
 
+  it('keeps the rail open on backdrop clicks while pinned', () => {
+    renderEntry();
+
+    const backdrop = document.querySelector<HTMLElement>(
+      '[data-temporal-create="backdrop"]',
+    );
+    if (!backdrop) throw new Error('Expected Create backdrop.');
+
+    const pin = screen.getByRole('button', {
+      name: 'Mantieni aperto il pannello Crea',
+    });
+    fireEvent.click(pin);
+    expect(pin.getAttribute('aria-pressed')).toBe('true');
+
+    fireEvent.pointerDown(backdrop);
+    expect(document.querySelector('[data-temporal-create="composer"]')).toBeTruthy();
+
+    const unpin = screen.getByRole('button', { name: 'Sblocca pannello Crea' });
+    fireEvent.click(unpin);
+    fireEvent.pointerDown(backdrop);
+    expect(document.querySelector('[data-temporal-create="composer"]')).toBeNull();
+  });
+
   it('toggles advanced options from the footer action row', () => {
     renderEntry();
 
