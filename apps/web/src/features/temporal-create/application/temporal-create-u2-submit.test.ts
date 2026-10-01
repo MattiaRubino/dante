@@ -103,10 +103,12 @@ describe('U2 Quick Create submit mapping', () => {
       lifeAreaRef: '0199a111-1111-7111-8111-111111111111',
     });
 
+    if (selected.lifeArea.kind !== 'existing') {
+      throw new Error('Expected existing Life Area draft.');
+    }
     const edited = patchTemporalCreateU2AuthoringDraft(selected, {
       lifeArea: Object.freeze({
         ...selected.lifeArea,
-        kind: 'existing' as const,
         colorCode: '#FF8800',
         colorChanged: true,
       }),
