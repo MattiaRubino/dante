@@ -106,6 +106,9 @@ describe('Temporal Create U2 entry', () => {
   it('creates an Activity without requiring any Life Area and persists the DANTE default color', async () => {
     const { activityRequests } = renderEntry();
 
+    expect(
+      screen.getByRole('option', { name: 'Ripeti · Mai' }),
+    ).toBeTruthy();
     fireEvent.change(screen.getByPlaceholderText('Titolo'), {
       target: { value: 'Passeggiata' },
     });
@@ -144,8 +147,8 @@ describe('Temporal Create U2 entry', () => {
     });
   });
 
-  it('uses a curated Google-style palette plus the professional custom picker without native color input', () => {
-    const { container } = renderEntry();
+  it('uses named curated colors and opens the professional custom picker outside the create rail flow', () => {
+    renderEntry();
 
     fireEvent.click(
       screen.getByRole('button', { name: 'Colore attività o evento' }),
@@ -153,20 +156,19 @@ describe('Temporal Create U2 entry', () => {
     const palette = screen.getByRole('dialog', { name: 'Scegli colore' });
 
     expect(document.querySelector('input[type="color"]')).toBeNull();
-    expect(
-      within(palette).getByRole('button', { name: 'Colore #D50000' }),
-    ).toBeTruthy();
-    expect(
-      within(palette).getByRole('button', { name: 'Colore #FFD600' }),
-    ).toBeTruthy();
-    expect(
-      within(palette).getByRole('button', { name: 'Colore #4285F4' }),
-    ).toBeTruthy();
+    expect(within(palette).getByRole('button', { name: 'Rosso' })).toBeTruthy();
+    expect(within(palette).getByRole('button', { name: 'Giallo' })).toBeTruthy();
+    expect(within(palette).getByRole('button', { name: 'Blu' })).toBeTruthy();
+    expect(within(palette).getByTitle('Arancione DANTE')).toBeTruthy();
 
     fireEvent.click(
       within(palette).getByRole('button', { name: 'Colore personalizzato' }),
     );
-    expect(container.querySelector('.react-colorful')).toBeTruthy();
+    const customPicker = screen.getByRole('dialog', {
+      name: 'Colore personalizzato',
+    });
+    expect(customPicker.classList.contains('is-floating')).toBe(true);
+    expect(customPicker.querySelector('.react-colorful')).toBeTruthy();
     expect(screen.getByLabelText('Codice colore HEX')).toBeTruthy();
   });
 
@@ -176,7 +178,7 @@ describe('Temporal Create U2 entry', () => {
     fireEvent.click(
       screen.getByRole('button', { name: 'Colore attività o evento' }),
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Colore #4285F4' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Blu' }));
     expect(window.localStorage.getItem(TEMPORAL_CREATE_RECENT_COLORS_KEY)).toBeNull();
 
     fireEvent.change(screen.getByPlaceholderText('Titolo'), {
