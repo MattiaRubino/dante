@@ -211,55 +211,47 @@
   }
 }
 
-/* One fixed footer card for Advanced / Cancel / Add. */
+/* Fixed action rail: one separator, then the three actions. It must not read as
+   another input/card inside the Create form. */
 .temporal-create-composer .temporal-create-actions.temporal-create-actions {
   position: absolute;
   z-index: 120;
   right: 18px;
-  bottom: 18px;
+  bottom: 14px;
   left: 18px;
   display: flex;
   align-items: center;
   gap: 8px;
   margin: 0;
-  padding: 8px;
-  border: 1px solid
-    color-mix(
-      in srgb,
-      var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09)) 88%,
-      var(--dante-semantic-color-home-chrome-active, #ea5c12)
-    );
-  border-radius: 14px;
+  padding: 10px 0 0;
+  border: 0;
+  border-top: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
+  border-radius: 0;
   background: color-mix(
     in srgb,
-    var(--dante-semantic-color-home-surface-primary, #0d1522) 94%,
-    black
+    var(--dante-semantic-color-home-surface-primary, #0d1522) 96%,
+    transparent
   );
-  box-shadow:
-    0 14px 36px rgba(0, 0, 0, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.035);
-  backdrop-filter: blur(16px);
+  box-shadow: none;
+  backdrop-filter: blur(12px);
 }
 
 .temporal-create-composer .temporal-create-actions .temporal-create-advanced-toggle {
   min-height: 36px;
   margin-right: auto;
-  padding: 0 10px;
-  border: 1px solid
-    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
-  border-radius: 10px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 8px;
   color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
-  background: var(--dante-semantic-color-home-surface-control, #151f2e);
+  background: transparent;
   box-shadow: none;
   font-size: 9px;
   font-weight: 650;
 }
 
 .temporal-create-composer .temporal-create-actions .temporal-create-advanced-toggle:hover {
-  border-color: var(
-    --dante-semantic-color-home-chrome-active-border,
-    rgba(234, 92, 18, 0.255)
-  );
+  border-color: transparent;
   color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
   background: var(
     --dante-semantic-color-home-chrome-active-soft,
