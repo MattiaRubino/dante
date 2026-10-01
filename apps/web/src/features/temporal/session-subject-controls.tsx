@@ -36,11 +36,13 @@ function RuntimeButton({
   label,
   symbol,
   pending,
+  interactive,
   onClick,
 }: Readonly<{
   label: string;
   symbol: string;
   pending: boolean;
+  interactive: boolean;
   onClick: () => void;
 }>) {
   return (
@@ -49,7 +51,8 @@ function RuntimeButton({
       type="button"
       aria-label={label}
       title={label}
-      disabled={pending}
+      disabled={pending || !interactive}
+      tabIndex={interactive ? undefined : -1}
       onClick={onClick}
     >
       <span aria-hidden="true">{symbol}</span>
@@ -61,10 +64,14 @@ export function SessionSubjectControls({
   kind,
   subjectRef,
   label,
+  variant = 'detail',
+  interactive = true,
 }: Readonly<{
   kind: SessionSubjectKind;
   subjectRef: string;
   label: string;
+  variant?: 'detail' | 'card';
+  interactive?: boolean;
 }>) {
   const [sessions, setSessions] = useState<readonly TemporalSessionView[]>([]);
   const [pending, setPending] = useState(false);
@@ -103,6 +110,7 @@ export function SessionSubjectControls({
       .then(() => setMessage(rejectionMessage(fallback, error)));
 
   const start = () => {
+    if (!interactive) return;
     setPending(true);
     void source
       .start(kind, subjectRef, operationId())
@@ -113,7 +121,7 @@ export function SessionSubjectControls({
   };
 
   const end = () => {
-    if (openSession === null) return;
+    if (!interactive || openSession === null) return;
     setPending(true);
     void source
       .end(openSession.sessionRef, openSession.timingMaterialStateRef, operationId())
@@ -126,7 +134,7 @@ export function SessionSubjectControls({
   };
 
   const pause = () => {
-    if (openSession === null) return;
+    if (!interactive || openSession === null) return;
     setPending(true);
     void source
       .pause(openSession.sessionRef, openSession.timingMaterialStateRef, operationId())
@@ -139,7 +147,7 @@ export function SessionSubjectControls({
   };
 
   const resume = () => {
-    if (openSession === null) return;
+    if (!interactive || openSession === null) return;
     setPending(true);
     void source
       .resume(openSession.sessionRef, openSession.timingMaterialStateRef, operationId())
@@ -151,43 +159,79 @@ export function SessionSubjectControls({
       .finally(() => setPending(false));
   };
 
+  const card = variant === 'card';
+
   return (
-    <div className="timeline-session-controls" data-timeline-session-subject={subjectRef}>
+    <div
+      className={`timeline-session-controls${card ? ' is-card' : ''}`}
+      data-timeline-session-subject={subjectRef}
+    >
       <div className="timeline-session-controls__runtime-actions" aria-label={`Sessione · ${label}`}>
         {openSession === null ? (
-          <RuntimeButton label="Avvia" symbol="▶" pending={pending} onClick={start} />
+          <RuntimeButton
+            label="Avvia"
+            symbol="▶"
+            pending={pending}
+            interactive={interactive}
+            onClick={start}
+          />
         ) : openSession.paused ? (
-          <RuntimeButton label="Riprendi" symbol="▶" pending={pending} onClick={resume} />
+          <RuntimeButton
+            label="Riprendi"
+            symbol="▶"
+            pending={pending}
+            interactive={interactive}
+            onClick={resume}
+          />
         ) : (
           <>
-            <RuntimeButton label="Pausa" symbol="⏸" pending={pending} onClick={pause} />
-            <RuntimeButton label="Termina" symbol="■" pending={pending} onClick={end} />
+            <RuntimeButton
+              label="Pausa"
+              symbol="⏸"
+              pending={pending}
+              interactive={interactive}
+              onClick={pause}
+            />
+            <RuntimeButton
+              label="Termina"
+              symbol="■"
+              pending={pending}
+              interactive={interactive}
+              onClick={end}
+            />
           </>
         )}
       </div>
 
-      {openSession === null ? null : (
+      {card || openSession === null ? null : (
         <span className="timeline-session-duration" aria-label="Durata sessione">
           Attiva {formatDuration(openSession.activeSeconds)} · Pausa{' '}
           {formatDuration(openSession.pausedSeconds)} · Totale{' '}
           {formatDuration(openSession.elapsedSeconds)}
         </span>
       )}
-      {message === null ? null : <span role="status">{message}</span>}
-      {durationSession?.durationEvaluations.map((item) => (
-        <span
-          className="timeline-session-duration-policy"
-          data-session-duration-evaluation={item.evaluation}
-          key={item.constraintRef}
-        >
-          Minimo attivo {formatDuration(item.minimumDurationMicroseconds / 1_000_000)} ·{' '}
-          {item.evaluation === 'pending'
-            ? 'in corso'
-            : item.evaluation === 'satisfied'
-              ? 'raggiunto'
-              : 'non raggiunto'}
+      {message === null ? null : (
+        <span role="status" className={card ? 'timeline-session-controls__card-status' : undefined}>
+          {message}
         </span>
-      ))}
+      )}
+      {card
+        ? null
+        : durationSession?.durationEvaluations.map((item) => (
+            <span
+              className="timeline-session-duration-policy"
+              data-session-duration-evaluation={item.evaluation}
+              key={item.constraintRef}
+            >
+              Minimo attivo{' '}
+              {formatDuration(item.minimumDurationMicroseconds / 1_000_000)} ·{' '}
+              {item.evaluation === 'pending'
+                ? 'in corso'
+                : item.evaluation === 'satisfied'
+                  ? 'raggiunto'
+                  : 'non raggiunto'}
+            </span>
+          ))}
     </div>
   );
 }
