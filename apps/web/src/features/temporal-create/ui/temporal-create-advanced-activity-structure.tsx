@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import './temporal-create-advanced-activity-structure.css';
+
 export function TemporalCreateAdvancedActivityStructure() {
   const { i18n } = useTranslation('common');
   const italian = i18n.language.toLowerCase().startsWith('it');
