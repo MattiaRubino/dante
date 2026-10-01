@@ -7,6 +7,7 @@ import {
 } from './timeline-organization';
 
 const AREA_REF = '0199a8c0-6e71-7bc0-8ad0-a2f403f5617d';
+const UNASSIGNED_REF = '0199a8c0-6e73-7bc0-8ad0-a2f403f5617d';
 
 function snapshot(
   overrides: Partial<OrganizationSnapshot> = {},
@@ -54,15 +55,16 @@ describe('Timeline organization groups', () => {
     ]);
   });
 
-  it('makes legacy/unassigned state explicit rather than assigning an invented default area', () => {
+  it('keeps unassigned grouping neutral while retaining each item color', () => {
     const groups = canonicalOrganizationGroups(
       snapshot({
         assignments: [],
         unassigned: [
           {
             kind: 'event',
-            itemRef: '0199a8c0-6e73-7bc0-8ad0-a2f403f5617d',
+            itemRef: UNASSIGNED_REF,
             title: 'Storico',
+            colorCode: '#EA5C12',
           },
         ],
       }),
@@ -70,7 +72,11 @@ describe('Timeline organization groups', () => {
     expect(groups.at(-1)).toMatchObject({
       id: LEGACY_UNASSIGNED_GROUP,
       label: 'Senza Life Area',
+      itemColorCodes: {
+        [`event:${UNASSIGNED_REF}`]: '#EA5C12',
+      },
     });
+    expect(groups.at(-1)?.colorCode).toBeUndefined();
     expect(groups.some((group) => group.label === 'Personale')).toBe(false);
   });
 });
