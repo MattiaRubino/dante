@@ -11,6 +11,7 @@ import {
 } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { ActivitySessionCardControls } from '../../../temporal/activity-session-card-controls';
 import { computeTimelineGaps } from './model/timeline-layout';
 import {
   TIMELINE_MINUTES_PER_DAY,
@@ -186,6 +187,10 @@ function TimelineEventCard({
     focusedEvent.groupId === event.groupId;
   const isDim = focusedEvent !== null && !isFocused && !isGroupmate;
   const inlineActionsEnabled = focusedEvent === null || isFocused;
+  const sessionActivityRef =
+    event.canonicalBasis?.kind === 'scheduled-activity'
+      ? event.canonicalBasis.activityRef
+      : null;
 
   if (filtered) {
     return null;
@@ -292,6 +297,13 @@ function TimelineEventCard({
           {group?.label ?? event.groupId}
           {event.meta ? ` · ${event.meta}` : ''}
         </div>
+        {sessionActivityRef === null ? null : (
+          <ActivitySessionCardControls
+            activityRef={sessionActivityRef}
+            label={event.title}
+            interactive={inlineActionsEnabled}
+          />
+        )}
       </div>
 
       {event.subitems?.length && expandedSubitems ? (
