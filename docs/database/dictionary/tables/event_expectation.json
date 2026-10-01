@@ -8,7 +8,7 @@
     "name": "event_expectation",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Canonical B03-A expected-occurrence descriptor for one self-scoped Event; it extends the existing Event NativeRef with the minimum durable expectation state without duplicating Event identity or storing temporal placement in the Event descriptor.",
+  "purpose": "Canonical self-scoped Event expectation descriptor. B14-U2 extends the original B03 title/creation descriptor with optional description, location and per-item color override while preserving Event identity and keeping temporal placement in Schedule.",
   "classification": {
     "persistence_role": "event_expected_occurrence_profile",
     "canonicality": "canonical",
@@ -18,6 +18,7 @@
     "authority_sources": [
       "docs/domain/concepts/event.md",
       "docs/workstreams/timeline-temporal-operational-b03-execution-plan.md",
+      "docs/workstreams/timeline-temporal-operational-b14-ui-consolidation-2026-09-30.md",
       "docs/workstreams/timeline-temporal-operational-map.md"
     ],
     "domain_concepts": ["Event"],
@@ -33,7 +34,7 @@
       "module": "dante.platform.database.mappings.event",
       "symbol": "EventExpectationRow"
     },
-    "runtime_acl_stage": "B03-A-EVENT"
+    "runtime_acl_stage": "B14-U2"
   },
   "structure": {
     "columns": [
@@ -42,9 +43,9 @@
         "postgres_type": "uuid",
         "nullable": false,
         "default": {"kind": "none", "expression": null},
-        "meaning": "Stable Event NativeRef whose minimum expected-occurrence descriptor this row carries.",
+        "meaning": "Stable Event NativeRef whose expectation descriptor this row carries.",
         "semantic_type": "NativeRef",
-        "value_contract": "References one existing UUIDv7 Event identity; the descriptor does not mint, replace or become that identity."
+        "value_contract": "References one existing UUIDv7 Event identity; this row does not mint or replace that identity."
       },
       {
         "name": "self_person_ref",
@@ -60,9 +61,36 @@
         "postgres_type": "text",
         "nullable": false,
         "default": {"kind": "none", "expression": null},
-        "meaning": "Minimum user-authored expected-occurrence title for the Event.",
+        "meaning": "User-authored expected-occurrence title for the Event.",
         "semantic_type": null,
         "value_contract": "Trimmed, non-empty, at most 300 characters; Schedule placement, recurrence, participation and outcome do not belong in this column."
+      },
+      {
+        "name": "description",
+        "postgres_type": "text",
+        "nullable": true,
+        "default": {"kind": "none", "expression": null},
+        "meaning": "Optional canonical descriptive text captured with Event authoring.",
+        "semantic_type": null,
+        "value_contract": "NULL or trimmed non-empty text; description is not Schedule, Agenda, Participation or Outcome state."
+      },
+      {
+        "name": "location",
+        "postgres_type": "text",
+        "nullable": true,
+        "default": {"kind": "none", "expression": null},
+        "meaning": "Optional canonical Event location supplied by the author.",
+        "semantic_type": null,
+        "value_contract": "NULL or trimmed non-empty text; location is descriptive Event metadata and does not become temporal placement."
+      },
+      {
+        "name": "color_code",
+        "postgres_type": "text",
+        "nullable": true,
+        "default": {"kind": "none", "expression": null},
+        "meaning": "Optional per-Event presentation color override independent of Life Area color.",
+        "semantic_type": null,
+        "value_contract": "NULL or uppercase #RRGGBB. It does not create or imply a Life Area assignment."
       },
       {
         "name": "created_at",
@@ -77,7 +105,7 @@
     "primary_key": {
       "name": "pk_event_expectation",
       "columns": ["event_ref"],
-      "reason": "Exactly one minimum B03-A expectation descriptor is materialized per Event identity.",
+      "reason": "Exactly one current Event expectation descriptor is materialized per Event identity.",
       "deferrable": false,
       "initially": "NOT DEFERRABLE",
       "enforced": true
@@ -111,7 +139,7 @@
         "validated": true,
         "reference_family": "NativeRef",
         "cardinality": "many_to_one",
-        "semantic_reason": "B03-A is intentionally self-scoped while Event remains distinct from later Participation/Actor semantics."
+        "semantic_reason": "The Event descriptor is self-scoped while preserving Event as distinct from Participation/Actor semantics."
       }
     ],
     "unique_constraints": [],
@@ -119,7 +147,31 @@
       {
         "name": "ck_event_expectation_title",
         "expression_contract": "title=btrim(title) AND title<>'' AND char_length(title)<=300",
-        "reason": "Reject empty, padded or unbounded minimum Event titles at the database boundary.",
+        "reason": "Reject empty, padded or unbounded Event titles at the database boundary.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_event_expectation_description",
+        "expression_contract": "description IS NULL OR (description=btrim(description) AND description<>'')",
+        "reason": "Optional Event description must be canonical trimmed non-empty text when present.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_event_expectation_location",
+        "expression_contract": "location IS NULL OR (location=btrim(location) AND location<>'')",
+        "reason": "Optional Event location must be canonical trimmed non-empty text when present.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_event_expectation_color_code",
+        "expression_contract": "color_code IS NULL OR color_code ~ '^#[0-9A-F]{6}$'",
+        "reason": "Optional per-item color is stored only as canonical uppercase #RRGGBB.",
         "enforced": true,
         "validated": true,
         "no_inherit": false
@@ -147,7 +199,7 @@
         "predicate": null,
         "include": [],
         "source": "explicit_index",
-        "reason": "Deterministic self-scoped Event lookup/order without making presentation order canonical truth.",
+        "reason": "Deterministic self-scoped Event ordering without making presentation order canonical truth.",
         "valid": true,
         "ready": true,
         "live": true
@@ -168,15 +220,15 @@
   },
   "state_history": {
     "material_state_behavior": null,
-    "current_binding": "This minimum expectation descriptor is selected directly by Event NativeRef; Schedule current/history remains a separate shared capability.",
+    "current_binding": "The Event descriptor is selected directly by Event NativeRef; Schedule current/history remains a separate shared capability.",
     "chronology": "created_at records the authoritative Event creation instant; UUIDv7 ordering is never used as chronology.",
-    "immutability_policy": "B03-A exposes create/read only. Later Event expectation editing must be governed explicitly rather than introduced as generic runtime UPDATE."
+    "immutability_policy": "Runtime has no generic descriptor UPDATE authority. B14-U2 authoring may initialize description, location and color atomically during creation through a bounded SECURITY DEFINER capability; later editing requires its own governed mutation design."
   },
   "lifecycle": {
-    "retention": "Retained with the canonical Event even when the Event has no current Schedule, including postponed/TBD lifecycle states introduced later in B03.",
+    "retention": "Retained with the canonical Event even when the Event has no current Schedule, including postponed/TBD lifecycle states.",
     "redaction": null,
     "retirement_tombstone": null,
-    "delete_behavior": "No runtime DELETE in B03-A. The introducing migration refuses downgrade once canonical Event expectation rows exist."
+    "delete_behavior": "No runtime DELETE. Destructive evolution requires a separately reviewed forward migration."
   },
   "security": {
     "owner_role": "dante_owner",
@@ -189,11 +241,13 @@
     "obligations": [
       "Event identity remains the existing UUIDv7 NativeRef and is not duplicated by the descriptor",
       "runtime can read but cannot directly INSERT, UPDATE or DELETE the descriptor",
-      "title integrity and self-Person scope are enforced in real PostgreSQL",
+      "title, optional description/location and color integrity are enforced in PostgreSQL",
+      "Life Area assignment is optional and absence of an assignment row is valid",
       "Event descriptor contains no Schedule, Recurrence, Participation, Session, Actual or Outcome collapse"
     ],
     "test_refs": [
       "apps/backend/tests/integration/temporal/test_b03_event_core.py",
+      "apps/backend/tests/integration/temporal/test_b14_u2_authoring.py",
       "apps/backend/tests/integration/database/test_current_catalog.py",
       "apps/backend/tests/integration/database/test_database_current_catalog.py",
       "apps/backend/tests/integration/database/test_migrations.py"
