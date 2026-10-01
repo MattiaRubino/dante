@@ -205,16 +205,24 @@
   box-shadow: 0 1px 5px rgb(0 0 0 / 24%);
 }
 
-.temporal-create-life-area-field__custom-picker {
+.temporal-create-life-area-field__custom-picker.is-floating {
+  position: fixed;
+  z-index: 10020;
+  box-sizing: border-box;
   display: grid;
-  gap: 9px;
-  padding-top: 8px;
-  border-top: 1px solid color-mix(in srgb, currentColor 9%, transparent);
+  gap: 10px;
+  width: 238px;
+  padding: 12px;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 14px;
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  background: var(--dante-semantic-color-home-surface-panel, #171923);
+  box-shadow: 0 22px 54px rgb(0 0 0 / 42%);
 }
 
 .temporal-create-life-area-field__custom-picker .react-colorful {
   width: 100%;
-  height: 154px;
+  height: 176px;
 }
 
 .temporal-create-life-area-field__custom-picker .react-colorful__saturation {
@@ -224,7 +232,7 @@
 
 .temporal-create-life-area-field__custom-picker .react-colorful__hue {
   height: 16px;
-  margin-top: 7px;
+  margin-top: 8px;
   border-radius: 999px;
 }
 
@@ -254,10 +262,10 @@
   width: 100%;
   height: 34px;
   padding: 0 9px;
-  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  border: 1px solid rgb(255 255 255 / 14%);
   border-radius: 8px;
   color: inherit;
-  background: color-mix(in srgb, currentColor 4%, transparent);
+  background: rgb(255 255 255 / 4%);
   font: inherit;
   font-size: 0.76rem;
   text-transform: uppercase;
@@ -266,6 +274,7 @@
 .temporal-create-life-area-field__custom-picker input:focus {
   border-color: color-mix(in srgb, #ea5c12 55%, transparent);
   outline: none;
+  box-shadow: none;
 }
 
 .temporal-create-life-area-field__options {
