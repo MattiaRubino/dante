@@ -1,0 +1,61 @@
+.temporal-create-quick-reminder {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 22px 1px minmax(0, 1fr);
+  min-height: 42px;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 0 11px;
+  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  border-radius: 11px;
+  color: inherit;
+  background: color-mix(in srgb, currentColor 4%, transparent);
+}
+
+.temporal-create-quick-reminder:focus-within {
+  border-color: #ea5c12;
+}
+
+.temporal-create-quick-reminder.is-disabled {
+  opacity: 0.58;
+}
+
+.temporal-create-quick-reminder__icon {
+  display: grid;
+  place-items: center;
+  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
+}
+
+.temporal-create-quick-reminder__icon svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.temporal-create-quick-reminder__divider {
+  width: 1px;
+  height: 26px;
+  background: color-mix(in srgb, currentColor 18%, transparent);
+}
+
+.temporal-create-quick-reminder select {
+  width: 100%;
+  min-width: 0;
+  height: 40px;
+  padding: 0;
+  border: 0 !important;
+  outline: 0 !important;
+  color: inherit;
+  background: transparent !important;
+  box-shadow: none !important;
+  font: inherit;
+}
+
+.temporal-create-quick-reminder select:disabled {
+  cursor: not-allowed;
+}
