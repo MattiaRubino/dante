@@ -136,6 +136,8 @@
   color: inherit;
   background: color-mix(in srgb, currentColor 4%, transparent);
   font: inherit;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .temporal-create-u2-repeat select,
@@ -147,6 +149,7 @@
 .temporal-create-u2-location.temporal-create-u2-location {
   margin-top: 8px;
   padding: 0 11px 0 52px;
+  border-width: 1px !important;
   background-color: color-mix(in srgb, currentColor 4%, transparent) !important;
   background-image:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238F9BAD' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z'/%3E%3Ccircle cx='12' cy='10' r='2.5'/%3E%3C/svg%3E"),
@@ -160,9 +163,13 @@
   background-repeat: no-repeat !important;
   background-position: 13px center, 41px center !important;
   background-size: 18px 18px, 1px 42px !important;
+  background-clip: padding-box !important;
 }
 
 .temporal-create-u2-location.temporal-create-u2-location:focus {
+  border-color: #ea5c12 !important;
+  outline: none !important;
+  box-shadow: none !important;
   background-image:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23F0A06F' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z'/%3E%3Ccircle cx='12' cy='10' r='2.5'/%3E%3C/svg%3E"),
     linear-gradient(
@@ -174,19 +181,25 @@
     ) !important;
 }
 
-.temporal-create-u2-description {
+.temporal-create-u2-description.temporal-create-u2-description {
   min-height: 76px;
   margin-top: 8px;
   padding: 10px 11px;
+  border-width: 1px !important;
   resize: vertical;
+  background-clip: padding-box !important;
 }
 
-.temporal-create-u2-repeat select:focus,
-.temporal-create-u2-location:focus,
-.temporal-create-u2-description:focus {
+.temporal-create-u2-repeat select:focus {
   border-color: color-mix(in srgb, #ff8a3d 62%, transparent);
   outline: none;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, #ff8a3d 18%, transparent);
+  box-shadow: none;
+}
+
+.temporal-create-u2-description.temporal-create-u2-description:focus {
+  border-color: #ea5c12 !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .temporal-create-u2-location::placeholder,
