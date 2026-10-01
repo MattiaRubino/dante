@@ -14,13 +14,17 @@
   grid-template-columns:
     minmax(0, 1fr) var(--temporal-create-structure-actions-width);
   gap: 12px;
-  min-height: 38px;
   margin-top: -6px;
+}
+
+.temporal-create-advanced-structure-inline__tree {
+  min-width: 0;
 }
 
 .temporal-create-advanced-structure-inline__branch {
   position: relative;
   min-width: 0;
+  min-height: 38px;
   padding-left: 18px;
 }
 
@@ -78,6 +82,91 @@
 .temporal-create-advanced-structure-inline .temporal-create-structure-menu {
   top: 38px;
   left: 0;
+}
+
+.temporal-create-structure-node {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--temporal-create-structure-actions-width);
+  gap: 12px;
+  width: calc(100% + var(--temporal-create-structure-actions-width) + 12px);
+  margin-top: 4px;
+}
+
+.temporal-create-structure-node__identity {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 46px;
+  align-items: center;
+  padding: 8px 10px 8px 30px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.temporal-create-structure-node__elbow {
+  position: absolute;
+  top: -18px;
+  left: 12px;
+  width: 12px;
+  height: 39px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.11);
+  border-left: 1px solid rgba(255, 255, 255, 0.11);
+  border-bottom-left-radius: 8px;
+}
+
+.temporal-create-structure-node__minimum {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 14px;
+  color: rgba(255, 255, 255, 0.64);
+  font-size: 12px;
+}
+
+.temporal-create-structure-node__minimum input {
+  width: 58px;
+  min-height: 28px;
+  padding: 3px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 7px;
+  color: inherit;
+  background: rgba(0, 0, 0, 0.16);
+}
+
+.temporal-create-structure-node__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 0;
+}
+
+.temporal-create-structure-node__actions button {
+  display: inline-grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 8px;
+  color: inherit;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.temporal-create-structure-node__actions button:not(:disabled) {
+  cursor: pointer;
+}
+
+.temporal-create-structure-node__actions button:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.temporal-create-structure-node__actions button.is-remove {
+  margin-left: 4px;
+  color: rgba(255, 174, 150, 0.9);
 }
 
 @media (max-width: 900px) {

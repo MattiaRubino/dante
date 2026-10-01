@@ -388,7 +388,11 @@ export function TemporalCreateComposer({
             {renderError('title')}
 
             {advanced && fields.kind === 'activity' ? (
-              <TemporalCreateAdvancedActivityStructure />
+              <TemporalCreateAdvancedActivityStructure
+                fields={fields}
+                onPatch={onPatch}
+                renderError={renderError}
+              />
             ) : null}
 
             <TemporalCreateU2DraftProvider

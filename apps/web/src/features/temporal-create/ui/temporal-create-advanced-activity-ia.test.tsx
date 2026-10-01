@@ -47,12 +47,11 @@ function openAdvanced() {
 }
 
 describe('Temporal Create Advanced Activity IA', () => {
-  it('keeps Activity structure attached to the title and leaves unsupported authoring read-only', () => {
+  it('keeps the Activity tree under the title and writes Session execution intent', () => {
     openAdvanced();
 
     expect(screen.getByRole('heading', { name: 'Riferimento orario' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Pianificazione' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Esecuzione' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Realtà ed esito' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Verifica esito' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Descrizione' })).toBeTruthy();
@@ -76,11 +75,41 @@ describe('Temporal Create Advanced Activity IA', () => {
         name: 'Sotto-attività',
       }) as HTMLButtonElement).disabled,
     ).toBe(true);
+
+    const addSession = within(structureMenu).getByRole('menuitem', {
+      name: 'Sessione',
+    }) as HTMLButtonElement;
+    expect(addSession.disabled).toBe(false);
+    fireEvent.click(addSession);
+
+    expect(document.querySelector('[data-create-structure-session]')).toBeTruthy();
+    const minimum = document.querySelector<HTMLInputElement>(
+      '[data-create-path="execution.minSessionMinutes"]',
+    );
+    expect(minimum?.value).toBe('30');
+    if (!minimum) throw new Error('Expected Session minimum input.');
+    fireEvent.change(minimum, { target: { value: '45' } });
+    expect(minimum.value).toBe('45');
+
     expect(
-      (within(structureMenu).getByRole('menuitem', {
-        name: 'Sessione',
-      }) as HTMLButtonElement).disabled,
+      (screen.getByRole('button', { name: 'Avvia Sessione dopo la creazione' }) as HTMLButtonElement)
+        .disabled,
     ).toBe(true);
+    expect(
+      (screen.getByRole('button', { name: 'Pausa Sessione dopo la creazione' }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true);
+    expect(
+      (screen.getByRole('button', { name: 'Riprendi Sessione dopo la creazione' }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true);
+    expect(
+      (screen.getByRole('button', { name: 'Termina Sessione dopo la creazione' }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Rimuovi configurazione Sessione' }));
+    expect(document.querySelector('[data-create-structure-session]')).toBeNull();
 
     const split = screen.getByRole('button', { name: 'Suddivisa' });
     expect((split as HTMLButtonElement).disabled).toBe(true);

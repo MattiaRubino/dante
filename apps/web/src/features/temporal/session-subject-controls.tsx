@@ -33,6 +33,31 @@ function rejectionMessage(fallback: string, error: unknown): string {
   return fallback;
 }
 
+function RuntimeButton({
+  label,
+  symbol,
+  pending,
+  onClick,
+}: Readonly<{
+  label: string;
+  symbol: string;
+  pending: boolean;
+  onClick: () => void;
+}>) {
+  return (
+    <button
+      className="timeline-session-controls__runtime-button"
+      type="button"
+      aria-label={label}
+      title={label}
+      disabled={pending}
+      onClick={onClick}
+    >
+      <span aria-hidden="true">{symbol}</span>
+    </button>
+  );
+}
+
 export function SessionSubjectControls({
   kind,
   subjectRef,
@@ -71,7 +96,6 @@ export function SessionSubjectControls({
   }, [kind, subjectRef]);
 
   const openSession = sessions.find((session) => session.open) ?? null;
-  // Canonical Session listing is oldest-first; show the newest ended policy result.
   const durationSession = openSession ?? sessions[sessions.length - 1] ?? null;
 
   const recoverAfterRejection = (fallback: string, error: unknown) =>
@@ -90,9 +114,7 @@ export function SessionSubjectControls({
   };
 
   const end = () => {
-    if (openSession === null) {
-      return;
-    }
+    if (openSession === null) return;
     setPending(true);
     void source
       .end(openSession.sessionRef, openSession.timingMaterialStateRef, operationId())
@@ -105,9 +127,7 @@ export function SessionSubjectControls({
   };
 
   const pause = () => {
-    if (openSession === null) {
-      return;
-    }
+    if (openSession === null) return;
     setPending(true);
     void source
       .pause(openSession.sessionRef, openSession.timingMaterialStateRef, operationId())
@@ -120,9 +140,7 @@ export function SessionSubjectControls({
   };
 
   const resume = () => {
-    if (openSession === null) {
-      return;
-    }
+    if (openSession === null) return;
     setPending(true);
     void source
       .resume(openSession.sessionRef, openSession.timingMaterialStateRef, operationId())
@@ -136,32 +154,25 @@ export function SessionSubjectControls({
 
   return (
     <div className="timeline-session-controls" data-timeline-session-subject={subjectRef}>
-      {openSession === null ? (
-        <button type="button" disabled={pending} onClick={start}>
-          Avvia
-        </button>
-      ) : (
-        <>
-          {openSession.paused ? (
-            <button type="button" disabled={pending} onClick={resume}>
-              Riprendi
-            </button>
-          ) : (
-            <>
-              <button type="button" disabled={pending} onClick={pause}>
-                Pausa
-              </button>
-              <button type="button" disabled={pending} onClick={end}>
-                Termina
-              </button>
-            </>
-          )}
-          <span className="timeline-session-duration" aria-label="Durata sessione">
-            Attiva {formatDuration(openSession.activeSeconds)} · Pausa{' '}
-            {formatDuration(openSession.pausedSeconds)} · Totale{' '}
-            {formatDuration(openSession.elapsedSeconds)}
-          </span>
-        </>
+      <div className="timeline-session-controls__runtime-actions" aria-label={`Sessione · ${label}`}>
+        {openSession === null ? (
+          <RuntimeButton label="Avvia" symbol="▶" pending={pending} onClick={start} />
+        ) : openSession.paused ? (
+          <RuntimeButton label="Riprendi" symbol="▶" pending={pending} onClick={resume} />
+        ) : (
+          <>
+            <RuntimeButton label="Pausa" symbol="⏸" pending={pending} onClick={pause} />
+            <RuntimeButton label="Termina" symbol="■" pending={pending} onClick={end} />
+          </>
+        )}
+      </div>
+
+      {openSession === null ? null : (
+        <span className="timeline-session-duration" aria-label="Durata sessione">
+          Attiva {formatDuration(openSession.activeSeconds)} · Pausa{' '}
+          {formatDuration(openSession.pausedSeconds)} · Totale{' '}
+          {formatDuration(openSession.elapsedSeconds)}
+        </span>
       )}
       {message === null ? null : <span role="status">{message}</span>}
       {durationSession?.durationEvaluations.map((item) => (
