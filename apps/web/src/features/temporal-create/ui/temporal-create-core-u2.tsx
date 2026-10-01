@@ -466,9 +466,7 @@ export function TemporalCreateCoreFieldsU2({
       onPatch({
         kind,
         timeSemantics:
-          fields.timeSemantics === 'unscheduled' || fields.timeSemantics === 'coarse'
-            ? 'timed'
-            : fields.timeSemantics,
+          fields.timeSemantics === 'coarse' ? 'timed' : fields.timeSemantics,
         scheduling: {
           ...fields.scheduling,
           constraintKind: 'none',
@@ -657,9 +655,7 @@ export function TemporalCreateCoreFieldsU2({
         <div className="temporal-create-choice-row">
           <button type="button" role="radio" aria-checked={fields.timeSemantics === 'timed'} className={fields.timeSemantics === 'timed' ? 'is-active' : ''} onClick={() => changeTimeSemantics('timed')}>Orario</button>
           <button type="button" role="radio" aria-checked={fields.timeSemantics === 'all-day'} className={fields.timeSemantics === 'all-day' ? 'is-active' : ''} onClick={() => changeTimeSemantics('all-day')}>Tutto il giorno</button>
-          {fields.kind === 'activity' ? (
-            <button type="button" role="radio" aria-checked={fields.timeSemantics === 'unscheduled'} className={fields.timeSemantics === 'unscheduled' ? 'is-active' : ''} onClick={() => changeTimeSemantics('unscheduled')}>Da collocare</button>
-          ) : null}
+          <button type="button" role="radio" aria-checked={fields.timeSemantics === 'unscheduled'} className={fields.timeSemantics === 'unscheduled' ? 'is-active' : ''} onClick={() => changeTimeSemantics('unscheduled')}>Da collocare</button>
         </div>
       </fieldset>
       {renderError('timeSemantics')}
