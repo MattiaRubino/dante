@@ -1,0 +1,85 @@
+.temporal-create-composer.is-full {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: min(1040px, calc(100vw - 64px)) !important;
+  max-height: calc(100dvh - 48px) !important;
+  padding: 0 24px 24px !important;
+  transform: translate(-50%, -50%);
+  border: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.1)) !important;
+  border-radius: 18px !important;
+  box-shadow:
+    0 28px 90px rgba(0, 0, 0, 0.46),
+    0 0 0 1px rgba(255, 255, 255, 0.025);
+  overflow: auto;
+}
+
+.temporal-create-composer.is-full .temporal-create-composer__header {
+  margin: 0 -24px;
+  padding: 16px 24px 12px;
+  border-radius: 18px 18px 0 0;
+}
+
+.temporal-create-composer.is-full .temporal-create-composer__body {
+  display: grid;
+  gap: 12px;
+  max-width: none;
+  padding-top: 18px;
+}
+
+.temporal-create-composer.is-full .temporal-create-title-input {
+  min-height: 58px;
+  font-size: 19px;
+}
+
+.temporal-create-composer.is-full .temporal-create-advanced {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 12px;
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08));
+}
+
+.temporal-create-composer.is-full .temporal-create-advanced > .temporal-create-section:first-child,
+.temporal-create-composer.is-full .temporal-create-advanced > .temporal-create-section:only-child {
+  grid-column: 1 / -1;
+}
+
+.temporal-create-composer.is-full .temporal-create-actions {
+  position: sticky;
+  z-index: 5;
+  bottom: -24px;
+  margin: 8px -24px -24px;
+  padding: 12px 24px 16px;
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-surface-primary, #0d1522) 97%,
+    black
+  );
+  border-top: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08));
+}
+
+@media (max-width: 900px) {
+  .temporal-create-composer.is-full {
+    top: 12px !important;
+    left: 12px !important;
+    width: calc(100vw - 24px) !important;
+    max-height: calc(100dvh - 24px) !important;
+    transform: none;
+  }
+
+  .temporal-create-composer.is-full .temporal-create-advanced {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .temporal-create-composer.is-full .temporal-create-advanced > .temporal-create-section:first-child {
+    grid-column: auto;
+  }
+}
