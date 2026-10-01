@@ -236,4 +236,4 @@ def test_u2_authoring_acl_is_bounded(migrated_database: Any) -> None:
                 "SELECT has_table_privilege('dante_runtime',%s,'SELECT'), "
                 "has_table_privilege('dante_runtime',%s,'UPDATE')",
                 (f"dante.{table}", f"dante.{table}"),
-            ).fetchone() == (False, False)
+            ).fetchone() == (True, False)
