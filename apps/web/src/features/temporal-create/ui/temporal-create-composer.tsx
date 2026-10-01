@@ -16,6 +16,7 @@ import type {
   TemporalCreateSurface,
 } from '../model/temporal-create-session';
 import type { TemporalCreateU2AuthoringDraft } from '../model/temporal-create-u2-authoring';
+import { TemporalCreateAdvancedActivityStructure } from './temporal-create-advanced-activity-structure';
 import {
   TemporalCreateAdvancedFields,
   TemporalCreateCoreFields,
@@ -374,7 +375,7 @@ export function TemporalCreateComposer({
             <input
               ref={titleRef}
               id={titleId}
-              className="temporal-create-title-input"
+              className={`temporal-create-title-input${advanced && fields.kind === 'activity' ? ' has-structure-actions' : ''}`}
               data-create-path="title"
               name="temporal-create-title"
               type="text"
@@ -385,6 +386,10 @@ export function TemporalCreateComposer({
               spellCheck="true"
             />
             {renderError('title')}
+
+            {advanced && fields.kind === 'activity' ? (
+              <TemporalCreateAdvancedActivityStructure />
+            ) : null}
 
             <TemporalCreateU2DraftProvider
               fields={fields}
