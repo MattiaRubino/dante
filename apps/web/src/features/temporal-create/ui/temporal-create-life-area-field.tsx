@@ -127,7 +127,7 @@ function floatingColorPanelPosition(trigger: HTMLButtonElement): FloatingPanelPo
     left: Math.max(viewportPadding, left),
     top: Math.max(
       viewportPadding,
-      Math.min(rect.top - 8, window.innerHeight - 420),
+      Math.min(rect.top - 118, window.innerHeight - 430),
     ),
   });
 }
@@ -266,10 +266,7 @@ export function TemporalCreateLifeAreaField({
       setAreaOpen(true);
       return;
     }
-    const previousColor =
-      draft.lifeArea.kind === 'new'
-        ? draft.lifeArea.colorCode ?? DEFAULT_COLOR
-        : DEFAULT_COLOR;
+    const previousColor = selectedColor(draft);
     onLifeAreaChange(
       Object.freeze({ kind: 'new' as const, name, colorCode: previousColor }),
     );
