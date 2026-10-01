@@ -5,6 +5,7 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { i18n } from '../../../bootstrap/i18n';
+import { HomeCreateInteractionBridge } from '../../home/ui/home-create-interaction-bridge';
 import { TemporalCreateEntry } from './temporal-create-entry';
 
 beforeAll(async () => {
@@ -26,6 +27,7 @@ afterAll(() => {
 function renderEntry() {
   const rendered = render(
     <>
+      <HomeCreateInteractionBridge />
       <div data-home-context-create-host />
       <TemporalCreateEntry
         defaultDate={Temporal.PlainDate.from('2026-09-30')}
@@ -187,7 +189,7 @@ describe('Temporal Create U1 top controls', () => {
     ).toBeTruthy();
   });
 
-  it('keeps the rail open on backdrop clicks while pinned', () => {
+  it('keeps the rail open on outside clicks while pinned, including the global Home bridge', () => {
     renderEntry();
 
     const backdrop = document.querySelector<HTMLElement>(
@@ -203,6 +205,12 @@ describe('Temporal Create U1 top controls', () => {
 
     fireEvent.pointerDown(backdrop);
     expect(document.querySelector('[data-temporal-create="composer"]')).toBeTruthy();
+
+    const outside = document.createElement('div');
+    document.body.append(outside);
+    fireEvent.pointerDown(outside);
+    expect(document.querySelector('[data-temporal-create="composer"]')).toBeTruthy();
+    outside.remove();
 
     const unpin = screen.getByRole('button', { name: 'Sblocca pannello Crea' });
     fireEvent.click(unpin);
