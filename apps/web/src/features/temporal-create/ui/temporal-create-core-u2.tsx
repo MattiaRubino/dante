@@ -510,6 +510,10 @@ export function TemporalCreateCoreFieldsU2({
     fields.date,
     authoringDraft.endDate,
   );
+  const visibleAllDayEndDate =
+    fields.kind === 'event'
+      ? safeAllDayEndDate(fields.date, fields.event.allDayEndDate)
+      : safeAllDayEndDate(fields.date, authoringDraft.endDate);
 
   const patchEnd = (endDate: string, endTime: string) => {
     const normalizedEndDate = normalizeTemporalCreateU2EndDate(fields.date, endDate);
@@ -540,6 +544,28 @@ export function TemporalCreateCoreFieldsU2({
       date,
       ...(duration === null ? {} : { durationMinutes: duration }),
     });
+  };
+
+  const patchAllDayStartDate = (date: string) => {
+    const endDate = safeAllDayEndDate(date, visibleAllDayEndDate);
+    if (fields.kind === 'event') {
+      onPatch({
+        date,
+        event: { ...fields.event, allDayEndDate: endDate },
+      });
+      return;
+    }
+    patchAuthoring({ endDate });
+    onPatch({ date });
+  };
+
+  const patchAllDayEndDate = (date: string) => {
+    const endDate = safeAllDayEndDate(fields.date, date);
+    if (fields.kind === 'event') {
+      patchEvent({ allDayEndDate: endDate });
+      return;
+    }
+    patchAuthoring({ endDate });
   };
 
   const patchStartTime = (startTime: string) => {
@@ -757,25 +783,15 @@ export function TemporalCreateCoreFieldsU2({
             label="Data inizio"
             value={fields.date}
             locale={locale}
-            onChange={(date) => {
-              onPatch({
-                date,
-                event: {
-                  ...fields.event,
-                  allDayEndDate: safeAllDayEndDate(date, fields.event.allDayEndDate),
-                },
-              });
-            }}
+            onChange={patchAllDayStartDate}
           />
-          {fields.kind === 'event' ? (
-            <TemporalCreateDatePicker
-              label="Data fine"
-              value={safeAllDayEndDate(fields.date, fields.event.allDayEndDate)}
-              min={fields.date}
-              locale={locale}
-              onChange={(allDayEndDate) => patchEvent({ allDayEndDate })}
-            />
-          ) : null}
+          <TemporalCreateDatePicker
+            label="Data fine"
+            value={visibleAllDayEndDate}
+            min={fields.date}
+            locale={locale}
+            onChange={patchAllDayEndDate}
+          />
         </div>
       ) : null}
 
@@ -810,7 +826,9 @@ export function TemporalCreateCoreFieldsU2({
         onChange={(event) => patchEvent({ location: event.currentTarget.value })}
       />
 
-      <TemporalCreateQuickReminder fields={fields} onPatch={onPatch} />
+      {fields.timeSemantics !== 'unscheduled' ? (
+        <TemporalCreateQuickReminder fields={fields} onPatch={onPatch} />
+      ) : null}
 
       <textarea
         className="temporal-create-u2-description"
