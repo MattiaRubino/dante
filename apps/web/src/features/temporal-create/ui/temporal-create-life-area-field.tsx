@@ -17,23 +17,22 @@ type TemporalCreateLifeAreaFieldProps = Readonly<{
   onLegacyContextChange: (contextId: string) => void;
 }>;
 
+const DEFAULT_COLOR = '#EA5C12';
 const COLOR_PRESETS = Object.freeze([
-  '#FF8A3D',
-  '#FF5D73',
-  '#F4C95D',
-  '#FFE66D',
-  '#62D394',
-  '#2A9D8F',
-  '#45C4D9',
-  '#5D8CFF',
-  '#6574CD',
-  '#8B73FF',
-  '#C875E6',
-  '#8D99AE',
+  DEFAULT_COLOR,
+  '#FF3B30',
+  '#FFD60A',
+  '#0A84FF',
+  '#30D158',
+  '#64D2FF',
+  '#5E5CE6',
+  '#BF5AF2',
+  '#FF375F',
+  '#AC8E68',
+  '#8E8E93',
+  '#F2F2F7',
 ]);
-const RECENT_COLORS_KEY = 'dante.temporal-create.recent-colors.v1';
-const MAX_RECENT_COLORS = 3;
-const COLOR_CODE = /^#[0-9A-F]{6}$/;
+const RECENT_COLORS_KEY = 'dante.temporal-create.recent-colors';
 
 function normalized(value: string): string {
   return value.trim().replace(/\s+/g, ' ');
@@ -54,37 +53,9 @@ function selectedColor(draft: TemporalCreateU2AuthoringDraft): string {
   switch (draft.lifeArea.kind) {
     case 'existing':
     case 'new':
-      return draft.lifeArea.colorCode ?? '#FF8A3D';
+      return draft.lifeArea.colorCode ?? DEFAULT_COLOR;
     case 'none':
-      return draft.itemColorCode ?? '#FF8A3D';
-  }
-}
-
-function readRecentColors(): readonly string[] {
-  if (typeof window === 'undefined') return Object.freeze([]);
-  try {
-    const parsed: unknown = JSON.parse(window.localStorage.getItem(RECENT_COLORS_KEY) ?? '[]');
-    if (!Array.isArray(parsed)) return Object.freeze([]);
-    return Object.freeze(
-      parsed
-        .filter((value): value is string =>
-          typeof value === 'string' && COLOR_CODE.test(value.toUpperCase()),
-        )
-        .map((value) => value.toUpperCase())
-        .filter((value, index, all) => all.indexOf(value) === index)
-        .slice(0, MAX_RECENT_COLORS),
-    );
-  } catch {
-    return Object.freeze([]);
-  }
-}
-
-function writeRecentColors(colors: readonly string[]): void {
-  if (typeof window === 'undefined') return;
-  try {
-    window.localStorage.setItem(RECENT_COLORS_KEY, JSON.stringify(colors));
-  } catch {
-    // Recent swatches are presentation convenience only.
+      return draft.itemColorCode ?? DEFAULT_COLOR;
   }
 }
 
@@ -110,6 +81,66 @@ function canonicalOptions(
   );
 }
 
+function colorFromPointer(
+  element: HTMLElement,
+  clientX: number,
+  clientY: number,
+): string {
+  const rect = element.getBoundingClientRect();
+  const x = clientX - rect.left - rect.width / 2;
+  const y = clientY - rect.top - rect.height / 2;
+  const radius = Math.min(rect.width, rect.height) / 2;
+  const saturation = Math.max(0, Math.min(1, Math.hypot(x, y) / radius));
+  const hue = (Math.atan2(y, x) * 180) / Math.PI + 90;
+  const normalizedHue = (hue + 360) % 360;
+  return hslToHex(normalizedHue, saturation * 100, 52);
+}
+
+function hslToHex(h: number, s: number, l: number): string {
+  const saturation = s / 100;
+  const lightness = l / 100;
+  const chroma = (1 - Math.abs(2 * lightness - 1)) * saturation;
+  const x = chroma * (1 - Math.abs(((h / 60) % 2) - 1));
+  const m = lightness - chroma / 2;
+  const [r1, g1, b1] =
+    h < 60
+      ? [chroma, x, 0]
+      : h < 120
+        ? [x, chroma, 0]
+        : h < 180
+          ? [0, chroma, x]
+          : h < 240
+            ? [0, x, chroma]
+            : h < 300
+              ? [x, 0, chroma]
+              : [chroma, 0, x];
+  const toHex = (channel: number) =>
+    Math.round((channel + m) * 255)
+      .toString(16)
+      .padStart(2, '0')
+      .toUpperCase();
+  return `#${toHex(r1)}${toHex(g1)}${toHex(b1)}`;
+}
+
+function readRecentColors(): readonly string[] {
+  try {
+    const raw = window.localStorage.getItem(RECENT_COLORS_KEY);
+    if (!raw) return Object.freeze([]);
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return Object.freeze([]);
+    return Object.freeze(
+      parsed
+        .filter((value): value is string =>
+          typeof value === 'string' && /^#[0-9A-F]{6}$/i.test(value),
+        )
+        .slice(0, 3)
+        .map((value) => value.toUpperCase()),
+    );
+  } catch {
+    return Object.freeze([]);
+  }
+}
+
 export function TemporalCreateLifeAreaField({
   contexts,
   draft,
@@ -119,14 +150,14 @@ export function TemporalCreateLifeAreaField({
 }: TemporalCreateLifeAreaFieldProps) {
   const [areaOpen, setAreaOpen] = useState(false);
   const [colorOpen, setColorOpen] = useState(false);
+  const [customOpen, setCustomOpen] = useState(false);
   const [query, setQuery] = useState(() => selectedLabel(draft));
   const [availableContexts, setAvailableContexts] = useState(contexts);
-  const [catalogLoading, setCatalogLoading] = useState(
-    () => import.meta.env.MODE !== 'test',
+  const [recentColors, setRecentColors] = useState<readonly string[]>(() =>
+    typeof window === 'undefined' ? Object.freeze([]) : readRecentColors(),
   );
-  const [recentColors, setRecentColors] = useState<readonly string[]>(readRecentColors);
   const rootRef = useRef<HTMLDivElement | null>(null);
-  const customColorRef = useRef<HTMLInputElement | null>(null);
+  const wheelRef = useRef<HTMLButtonElement | null>(null);
   const sourceRef = useRef<ReturnType<typeof createRemoteTemporalOrganizationDataSource> | null>(null);
   const currentColor = selectedColor(draft);
 
@@ -139,23 +170,16 @@ export function TemporalCreateLifeAreaField({
   }, [contexts]);
 
   useEffect(() => {
-    if (import.meta.env.MODE === 'test') {
-      setCatalogLoading(false);
-      return;
-    }
+    if (import.meta.env.MODE === 'test') return;
     sourceRef.current ??= createRemoteTemporalOrganizationDataSource();
     let cancelled = false;
-    setCatalogLoading(true);
     void sourceRef.current.load().then(
       (snapshot) => {
         if (!cancelled) {
           setAvailableContexts(canonicalOptions(contexts, snapshot.areas));
-          setCatalogLoading(false);
         }
       },
-      () => {
-        if (!cancelled) setCatalogLoading(false);
-      },
+      () => undefined,
     );
     return () => {
       cancelled = true;
@@ -163,7 +187,7 @@ export function TemporalCreateLifeAreaField({
   }, [contexts]);
 
   useEffect(() => {
-    if (!areaOpen && !colorOpen) return;
+    if (!areaOpen && !colorOpen && !customOpen) return;
     const dismiss = (event: PointerEvent) => {
       if (
         event.target instanceof Node &&
@@ -171,11 +195,12 @@ export function TemporalCreateLifeAreaField({
       ) {
         setAreaOpen(false);
         setColorOpen(false);
+        setCustomOpen(false);
       }
     };
     document.addEventListener('pointerdown', dismiss, true);
     return () => document.removeEventListener('pointerdown', dismiss, true);
-  }, [areaOpen, colorOpen]);
+  }, [areaOpen, colorOpen, customOpen]);
 
   const filtered = useMemo(() => {
     const needle = normalized(query).toLocaleLowerCase();
@@ -186,6 +211,20 @@ export function TemporalCreateLifeAreaField({
       : availableContexts;
   }, [availableContexts, query]);
 
+  const rememberColor = (colorCode: string) => {
+    const canonical = colorCode.toUpperCase();
+    const next = Object.freeze([
+      canonical,
+      ...recentColors.filter((color) => color !== canonical),
+    ].slice(0, 3));
+    setRecentColors(next);
+    try {
+      window.localStorage.setItem(RECENT_COLORS_KEY, JSON.stringify(next));
+    } catch {
+      // Recent colors are a local UI convenience only.
+    }
+  };
+
   const choose = (context: TemporalCreateContextOption) => {
     onLifeAreaChange(
       Object.freeze({
@@ -193,8 +232,8 @@ export function TemporalCreateLifeAreaField({
         lifeAreaRef: context.id,
         label: context.label,
         expectedRevision: context.revision ?? 1,
-        colorCode: context.colorCode ?? null,
-        colorChanged: false,
+        colorCode: context.colorCode ?? DEFAULT_COLOR,
+        colorChanged: context.colorCode === null,
       }),
     );
     onItemColorChange(null);
@@ -206,6 +245,7 @@ export function TemporalCreateLifeAreaField({
   const clear = () => {
     setQuery('');
     onLifeAreaChange(Object.freeze({ kind: 'none' as const }));
+    onItemColorChange(DEFAULT_COLOR);
     onLegacyContextChange('');
   };
 
@@ -225,25 +265,15 @@ export function TemporalCreateLifeAreaField({
       return;
     }
     const previousColor =
-      draft.lifeArea.kind === 'new' ? draft.lifeArea.colorCode : null;
+      draft.lifeArea.kind === 'new'
+        ? draft.lifeArea.colorCode ?? DEFAULT_COLOR
+        : DEFAULT_COLOR;
     onLifeAreaChange(
       Object.freeze({ kind: 'new' as const, name, colorCode: previousColor }),
     );
     onItemColorChange(null);
     onLegacyContextChange('');
     setAreaOpen(true);
-  };
-
-  const rememberColor = (colorCode: string) => {
-    const canonical = colorCode.toUpperCase();
-    const next = Object.freeze(
-      [canonical, ...recentColors.filter((value) => value !== canonical)].slice(
-        0,
-        MAX_RECENT_COLORS,
-      ),
-    );
-    setRecentColors(next);
-    writeRecentColors(next);
   };
 
   const changeColor = (colorCode: string) => {
@@ -268,6 +298,12 @@ export function TemporalCreateLifeAreaField({
     onItemColorChange(canonical);
   };
 
+  const chooseCustomAt = (clientX: number, clientY: number) => {
+    const wheel = wheelRef.current;
+    if (!wheel) return;
+    changeColor(colorFromPointer(wheel, clientX, clientY));
+  };
+
   const colorLabel =
     draft.lifeArea.kind === 'none'
       ? 'Colore attività o evento'
@@ -284,6 +320,7 @@ export function TemporalCreateLifeAreaField({
           title={colorLabel}
           onClick={() => {
             setColorOpen((current) => !current);
+            setCustomOpen(false);
             setAreaOpen(false);
           }}
         >
@@ -300,27 +337,12 @@ export function TemporalCreateLifeAreaField({
               className="temporal-create-life-area-field__color-swatch is-custom"
               type="button"
               aria-label="Colore personalizzato"
+              aria-expanded={customOpen}
               title="Colore personalizzato"
-              onClick={() => customColorRef.current?.click()}
+              onClick={() => setCustomOpen((current) => !current)}
             >
               <span aria-hidden="true" />
             </button>
-            {recentColors.map((color, index) => (
-              <button
-                key={`recent-${color}`}
-                className="temporal-create-life-area-field__color-swatch is-recent"
-                type="button"
-                aria-label={`Colore recente ${index + 1}: ${color}`}
-                aria-pressed={currentColor === color}
-                title="Colore recente"
-                onClick={() => {
-                  changeColor(color);
-                  setColorOpen(false);
-                }}
-              >
-                <span aria-hidden="true" style={{ background: color }} />
-              </button>
-            ))}
             {COLOR_PRESETS.map((color) => (
               <button
                 key={color}
@@ -330,23 +352,60 @@ export function TemporalCreateLifeAreaField({
                 aria-pressed={currentColor === color}
                 onClick={() => {
                   changeColor(color);
-                  setColorOpen(false);
+                  setCustomOpen(false);
                 }}
               >
                 <span aria-hidden="true" style={{ background: color }} />
               </button>
             ))}
-            <input
-              ref={customColorRef}
-              className="temporal-create-life-area-field__native-color"
-              type="color"
-              value={currentColor}
-              aria-label="Scegli colore personalizzato"
-              onChange={(event) => {
-                changeColor(event.currentTarget.value);
-                setColorOpen(false);
-              }}
-            />
+            {recentColors.length > 0 ? (
+              <div className="temporal-create-life-area-field__recent" aria-label="Colori recenti">
+                {recentColors.map((color) => (
+                  <button
+                    key={color}
+                    type="button"
+                    aria-label={`Colore recente ${color}`}
+                    onClick={() => changeColor(color)}
+                  >
+                    <span aria-hidden="true" style={{ background: color }} />
+                  </button>
+                ))}
+              </div>
+            ) : null}
+            {customOpen ? (
+              <div
+                className="temporal-create-life-area-field__custom-popover"
+                role="dialog"
+                aria-label="Colore personalizzato"
+              >
+                <button
+                  ref={wheelRef}
+                  className="temporal-create-life-area-field__color-wheel"
+                  type="button"
+                  aria-label="Scegli un colore dal cerchio"
+                  onPointerDown={(event) => {
+                    event.currentTarget.setPointerCapture(event.pointerId);
+                    chooseCustomAt(event.clientX, event.clientY);
+                  }}
+                  onPointerMove={(event) => {
+                    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                      chooseCustomAt(event.clientX, event.clientY);
+                    }
+                  }}
+                  onPointerUp={(event) => {
+                    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                      event.currentTarget.releasePointerCapture(event.pointerId);
+                    }
+                  }}
+                >
+                  <span
+                    className="temporal-create-life-area-field__color-wheel-marker"
+                    aria-hidden="true"
+                    style={{ background: currentColor }}
+                  />
+                </button>
+              </div>
+            ) : null}
           </div>
         ) : null}
       </div>
@@ -361,6 +420,7 @@ export function TemporalCreateLifeAreaField({
           onFocus={() => {
             setAreaOpen(true);
             setColorOpen(false);
+            setCustomOpen(false);
           }}
           onChange={(event) => stageTypedName(event.currentTarget.value)}
         />
@@ -384,36 +444,30 @@ export function TemporalCreateLifeAreaField({
               <span className="is-empty" aria-hidden="true" />
               <span>Nessuna Life Area</span>
             </button>
-            {catalogLoading ? (
-              <div className="temporal-create-life-area-field__loading" role="status">
-                Aggiornamento Life Area…
-              </div>
-            ) : (
-              filtered.map((context) => (
-                <button
-                  key={context.id}
-                  type="button"
-                  role="option"
-                  aria-selected={
-                    draft.lifeArea.kind === 'existing' &&
-                    draft.lifeArea.lifeAreaRef === context.id
+            {filtered.map((context) => (
+              <button
+                key={context.id}
+                type="button"
+                role="option"
+                aria-selected={
+                  draft.lifeArea.kind === 'existing' &&
+                  draft.lifeArea.lifeAreaRef === context.id
+                }
+                onClick={() => choose(context)}
+              >
+                <span
+                  className="temporal-create-life-area-field__swatch"
+                  style={
+                    context.colorCode
+                      ? { background: context.colorCode }
+                      : undefined
                   }
-                  onClick={() => choose(context)}
-                >
-                  <span
-                    className="temporal-create-life-area-field__swatch"
-                    style={
-                      context.colorCode
-                        ? { background: context.colorCode }
-                        : undefined
-                    }
-                    data-context-tone={context.tone}
-                    aria-hidden="true"
-                  />
-                  <span>{context.label}</span>
-                </button>
-              ))
-            )}
+                  data-context-tone={context.tone}
+                  aria-hidden="true"
+                />
+                <span>{context.label}</span>
+              </button>
+            ))}
             {draft.lifeArea.kind === 'new' ? (
               <div className="temporal-create-life-area-field__new">
                 <span aria-hidden="true">＋</span>
