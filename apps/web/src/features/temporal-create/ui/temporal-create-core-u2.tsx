@@ -487,6 +487,15 @@ export function TemporalCreateCoreFieldsU2({
         semantics === 'unscheduled'
           ? { ...fields.scheduling, constraintKind: 'none' }
           : { ...fields.scheduling, constraintKind: 'none', fallbackPolicy: 'inherit' },
+      ...(semantics === 'unscheduled'
+        ? {
+            eventRecurrence: {
+              ...fields.eventRecurrence,
+              owner: null,
+              patternKind: 'none' as const,
+            },
+          }
+        : {}),
     });
   };
 
