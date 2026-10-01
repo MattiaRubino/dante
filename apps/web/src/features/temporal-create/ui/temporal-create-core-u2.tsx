@@ -35,6 +35,7 @@ import './temporal-create-core-u2.css';
 type Props = Readonly<{
   fields: TemporalCreateFields;
   contexts: readonly TemporalCreateContextOption[];
+  showCompactTimezone?: boolean;
   onPatch: (patch: Partial<TemporalCreateFields>) => void;
   onRequestAdvanced: (target?: 'recurrence') => void;
   renderError: (path: string) => ReactNode;
@@ -414,6 +415,7 @@ function TimeControl({
 export function TemporalCreateCoreFieldsU2({
   fields,
   contexts,
+  showCompactTimezone = true,
   onPatch,
   onRequestAdvanced,
   renderError,
@@ -433,6 +435,10 @@ export function TemporalCreateCoreFieldsU2({
 
   const patchEvent = (patch: Partial<TemporalCreateFields['event']>) =>
     onPatch({ event: { ...fields.event, ...patch } });
+
+  useEffect(() => {
+    if (!showCompactTimezone && timeZoneOpen) setTimeZoneOpen(false);
+  }, [showCompactTimezone, timeZoneOpen]);
 
   useEffect(() => {
     if (!timeZoneOpen) return;
@@ -698,29 +704,31 @@ export function TemporalCreateCoreFieldsU2({
 
       {fields.timeSemantics === 'timed' ? (
         <div className="temporal-create-u2-when">
-          <div ref={timeZoneRootRef} className="temporal-create-timezone-control">
-            <button
-              className={`temporal-create-timezone-trigger${timeZoneOpen ? ' is-open' : ''}`}
-              type="button"
-              aria-label={`Fuso orario: ${timeZoneLabel}`}
-              aria-expanded={timeZoneOpen}
-              title={timeZoneLabel}
-              onClick={() => setTimeZoneOpen((current) => !current)}
-            >
-              <GlobeIcon />
-            </button>
-            {timeZoneOpen ? (
-              <div className="temporal-create-timezone-panel">
-                <div className="temporal-create-timezone-current"><GlobeIcon /><span>{timeZoneLabel}</span></div>
-                <div className="temporal-create-timezone-list">
-                  <button type="button" className={fields.timeMode === 'floating' ? 'is-selected' : ''} onClick={() => onPatch({ timeMode: 'floating' })}>Ora locale</button>
-                  {TIME_ZONES.map((zoneId) => (
-                    <button key={zoneId} type="button" className={fields.timeMode === 'zoned' && fields.timeZoneId === zoneId ? 'is-selected' : ''} onClick={() => onPatch({ timeMode: 'zoned', timeZoneId: zoneId })}>{zoneId.replaceAll('_', ' ')}</button>
-                  ))}
+          {showCompactTimezone ? (
+            <div ref={timeZoneRootRef} className="temporal-create-timezone-control">
+              <button
+                className={`temporal-create-timezone-trigger${timeZoneOpen ? ' is-open' : ''}`}
+                type="button"
+                aria-label={`Fuso orario: ${timeZoneLabel}`}
+                aria-expanded={timeZoneOpen}
+                title={timeZoneLabel}
+                onClick={() => setTimeZoneOpen((current) => !current)}
+              >
+                <GlobeIcon />
+              </button>
+              {timeZoneOpen ? (
+                <div className="temporal-create-timezone-panel">
+                  <div className="temporal-create-timezone-current"><GlobeIcon /><span>{timeZoneLabel}</span></div>
+                  <div className="temporal-create-timezone-list">
+                    <button type="button" className={fields.timeMode === 'floating' ? 'is-selected' : ''} onClick={() => onPatch({ timeMode: 'floating' })}>Ora locale</button>
+                    {TIME_ZONES.map((zoneId) => (
+                      <button key={zoneId} type="button" className={fields.timeMode === 'zoned' && fields.timeZoneId === zoneId ? 'is-selected' : ''} onClick={() => onPatch({ timeMode: 'zoned', timeZoneId: zoneId })}>{zoneId.replaceAll('_', ' ')}</button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ) : null}
-          </div>
+              ) : null}
+            </div>
+          ) : null}
 
           <input
             className="temporal-create-u2-date-bridge"
