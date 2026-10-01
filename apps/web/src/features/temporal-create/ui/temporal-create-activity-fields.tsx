@@ -53,6 +53,7 @@ export function TemporalCreateActivityFields({
           <div className="temporal-create-structure-add">
             <button
               type="button"
+              aria-label={italian ? 'Aggiungi alla struttura' : 'Add to structure'}
               aria-expanded={structureMenuOpen}
               onClick={() => setStructureMenuOpen((current) => !current)}
             >
