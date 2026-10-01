@@ -324,6 +324,7 @@ export function TemporalCreateLifeAreaField({
           <div
             ref={colorPanelRef}
             className="temporal-create-life-area-field__color-popover is-floating"
+            data-temporal-create-portal="color"
             role="dialog"
             aria-label="Scegli colore"
             style={{
