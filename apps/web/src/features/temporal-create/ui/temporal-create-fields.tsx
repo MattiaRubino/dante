@@ -37,8 +37,9 @@ export function TemporalCreateAdvancedFields({
     return null;
   }
 
-  const activityHasRepeat =
-    fields.kind === 'activity' && fields.eventRecurrence.patternKind !== 'none';
+  const recurrenceAdvanced =
+    fields.kind === 'event' ||
+    (fields.kind === 'activity' && fields.eventRecurrence.patternKind !== 'none');
 
   return (
     <div
@@ -120,20 +121,20 @@ export function TemporalCreateAdvancedFields({
         />
       )}
 
-      {fields.kind === 'event' || activityHasRepeat ? (
+      {recurrenceAdvanced ? (
         <TemporalCreateRecurrenceFields
           fields={fields}
           depth="full"
           onPatch={onPatch}
           renderError={renderError}
         />
-      ) : (
-        <TemporalCreateConfirmationFields
-          fields={fields}
-          onPatch={onPatch}
-          renderError={renderError}
-        />
-      )}
+      ) : null}
+
+      <TemporalCreateConfirmationFields
+        fields={fields}
+        onPatch={onPatch}
+        renderError={renderError}
+      />
 
       <TemporalCreateOrganizationFields
         fields={fields}
