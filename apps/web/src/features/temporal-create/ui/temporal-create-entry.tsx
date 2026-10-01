@@ -9,6 +9,7 @@ import {
   type TemporalAuthoringDataSource,
   type TemporalValidationIssue,
 } from '../../temporal';
+import { createRemoteScheduleReminderDataSource } from '../../temporal/remote-schedule-reminder-data-source';
 import {
   createLocalTemporalCreateRuntime,
   type TemporalCreateAppliedEffect,
@@ -107,6 +108,9 @@ export function TemporalCreateEntry({
     () =>
       authoringDataSourceOverride ?? createRemoteTemporalAuthoringDataSource(),
   );
+  const [reminderDataSource] = useState(() =>
+    createRemoteScheduleReminderDataSource(),
+  );
   const requestSeenRef = useRef<number | null>(null);
   const preparedRef = useRef<TemporalCreatePreparedOperation | null>(null);
   const partialReminderRef = useRef<(() => Promise<void>) | null>(null);
@@ -148,6 +152,7 @@ export function TemporalCreateEntry({
         timeSemantics: 'timed',
         startTime: seed?.startTime ?? minuteToInput(minute),
         durationMinutes: seed?.durationMinutes ?? durationMinutes ?? 30,
+        timeMode: 'zoned',
         timeZoneId: seed?.timeZoneId ?? zone,
         contextId: seed?.contextId ?? contexts[0]?.id ?? '',
       });
@@ -252,7 +257,6 @@ export function TemporalCreateEntry({
     if (partialReminderRef.current !== null) return;
     const merged = { ...session.draft.current, ...next };
     const eligibleReminder =
-      merged.kind === 'activity' &&
       merged.timeSemantics === 'timed' &&
       merged.timeMode === 'zoned' &&
       merged.eventRecurrence.patternKind === 'none';
@@ -296,11 +300,43 @@ export function TemporalCreateEntry({
     setIssues([]);
     setFailureMessage('');
     try {
-      if (mapped.kind === 'activity') {
-        await authoringDataSource.authorActivity(mapped.request);
-      } else {
-        await authoringDataSource.authorEvent(mapped.request);
+      const authored =
+        mapped.kind === 'activity'
+          ? await authoringDataSource.authorActivity(mapped.request)
+          : await authoringDataSource.authorEvent(mapped.request);
+
+      const reminderLeadMinutes = fields.confirmation.reminderLeadMinutes;
+      if (reminderLeadMinutes !== null) {
+        const scheduleRef = authored.schedule?.scheduleRef;
+        if (!scheduleRef) {
+          throw new Error(
+            i18n.language.toLowerCase().startsWith('en')
+              ? 'The item was created, but no Schedule is available for its reminder.'
+              : 'La creazione è riuscita, ma non esiste uno Schedule a cui collegare il promemoria.',
+          );
+        }
+        const reminderOperationId = systemTemporalIdFactory.operationId();
+        const retryReminder = async () => {
+          await reminderDataSource.configure(scheduleRef, {
+            operationId: reminderOperationId,
+            expectedMaterialStateRef: null,
+            enabled: true,
+            leadMinutes: reminderLeadMinutes,
+          });
+        };
+        try {
+          await retryReminder();
+        } catch {
+          partialReminderRef.current = retryReminder;
+          setReminderRetry(true);
+          setLifecycle('failed');
+          setFailureMessage(
+            t(($) => $.common.home.timeline.create.reminderPartial),
+          );
+          return false;
+        }
       }
+
       setSession(discardTemporalCreateSession(freshFields(defaultDate)));
       closeComposer();
       return true;
@@ -426,6 +462,7 @@ export function TemporalCreateEntry({
   const composerSession = discardPending
     ? continueTemporalCreateEditing(session)
     : session;
+  const advancedComposer = composerSession.surface !== 'quick';
   const composer = open ? (
     <TemporalCreateComposer
       session={composerSession}
@@ -434,6 +471,7 @@ export function TemporalCreateEntry({
       lifecycle={lifecycle}
       failureMessage={failureMessage}
       reminderRetry={reminderRetry}
+      u2Draft={u2DraftRef.current}
       onPatch={patch}
       onSurfaceChange={changeSurface}
       onRequestClose={requestClose}
@@ -522,7 +560,10 @@ export function TemporalCreateEntry({
         +
       </button>
       {composer && typeof document !== 'undefined'
-        ? createPortal(composer, createHost ?? document.body)
+        ? createPortal(
+            composer,
+            advancedComposer ? document.body : createHost ?? document.body,
+          )
         : null}
       {discardModal}
     </>
