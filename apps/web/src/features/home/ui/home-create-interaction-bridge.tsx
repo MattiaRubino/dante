@@ -221,6 +221,13 @@ export function HomeCreateInteractionBridge() {
         return;
       }
 
+      // Pinned Create is intentionally allowed to coexist with interactions in
+      // the rest of Home. The global bridge must not defeat the component's
+      // own pinned contract by synthesizing Escape behind its back.
+      if (composer.dataset.pinned === 'true') {
+        return;
+      }
+
       composer.dispatchEvent(
         new KeyboardEvent('keydown', {
           key: 'Escape',
