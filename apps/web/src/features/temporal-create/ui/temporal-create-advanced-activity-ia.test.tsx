@@ -68,7 +68,9 @@ describe('Temporal Create Advanced Activity IA', () => {
     });
     expect((protect as HTMLButtonElement).disabled).toBe(true);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Aggiungi alla struttura' }),
+    );
     const structureMenu = screen.getByRole('menu', {
       name: 'Aggiungi alla struttura',
     });
