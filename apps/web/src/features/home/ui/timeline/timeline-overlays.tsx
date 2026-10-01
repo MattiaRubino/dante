@@ -12,6 +12,7 @@ import {
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
+import { ActualRealizationControls } from '../../../temporal/actual-realization-controls';
 import { ResponsibilityControls } from '../../../temporal/responsibility-controls';
 import { SessionSubjectControls } from '../../../temporal/session-subject-controls';
 import { ScheduleReminderControls } from '../../../temporal/schedule-reminder-controls';
@@ -801,6 +802,10 @@ export type TimelineDetail = Readonly<{
   meta: string;
   ownerKind?: 'activity' | 'event';
   eventRef?: string;
+  realitySubject?: Readonly<{
+    kind: 'activity' | 'event' | 'occurrence';
+    ref: string;
+  }>;
   subitemsCount?: number;
 }>;
 
@@ -914,6 +919,14 @@ export function EventDetailDialog({
         {reminderScheduleRef === null ? null : (
           <ScheduleReminderControls key={reminderScheduleRef} scheduleRef={reminderScheduleRef} />
         )}
+        {detail.realitySubject === undefined ? null : (
+          <div className="timeline-event-modal__reality" data-timeline-runtime-reality>
+            <ActualRealizationControls
+              kind={detail.realitySubject.kind}
+              subjectRef={detail.realitySubject.ref}
+            />
+          </div>
+        )}
         <div className="timeline-event-modal__actions">
           {responsibilitySubject === null ? null : (
             <ResponsibilityControls
@@ -997,6 +1010,23 @@ export function detailFromEvent(
     event.canonicalBasis?.kind === 'scheduled-event'
       ? event.canonicalBasis.eventRef
       : undefined;
+  const realitySubject =
+    event.canonicalBasis?.kind === 'scheduled-activity'
+      ? Object.freeze({
+          kind: 'activity' as const,
+          ref: event.canonicalBasis.activityRef,
+        })
+      : event.canonicalBasis?.kind === 'scheduled-event'
+        ? Object.freeze({
+            kind: 'event' as const,
+            ref: event.canonicalBasis.eventRef,
+          })
+        : event.canonicalBasis?.kind === 'scheduled-occurrence'
+          ? Object.freeze({
+              kind: 'occurrence' as const,
+              ref: event.canonicalBasis.occurrenceRef,
+            })
+          : undefined;
   const base: TimelineDetail = {
     title: event.title,
     startMinute: event.startMinute,
@@ -1005,6 +1035,7 @@ export function detailFromEvent(
     meta: event.meta ?? '',
     ...(ownerKind === undefined ? {} : { ownerKind }),
     ...(eventRef === undefined ? {} : { eventRef }),
+    ...(realitySubject === undefined ? {} : { realitySubject }),
   };
   return event.subitems?.length
     ? { ...base, subitemsCount: event.subitems.length }
