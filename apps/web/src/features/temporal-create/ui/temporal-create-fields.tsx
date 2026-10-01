@@ -9,7 +9,6 @@ import { TemporalCreateActivityFields } from './temporal-create-activity-fields'
 import { TemporalCreateConfirmationFields } from './temporal-create-confirmation-fields';
 import { TemporalCreateCoreFieldsU2 } from './temporal-create-core-u2';
 import { TemporalCreateEventFields } from './temporal-create-event-fields';
-import { TemporalCreateOrganizationFields } from './temporal-create-organization-fields';
 import { TemporalCreateRecurrenceFields } from './temporal-create-recurrence-fields';
 import type { TemporalCreateContextOption } from './temporal-create-ui-types';
 
@@ -31,7 +30,8 @@ export function TemporalCreateAdvancedFields({
   onPatch,
   renderError,
 }: TemporalCreateAdvancedFieldsProps) {
-  const { t } = useTranslation('common');
+  const { i18n } = useTranslation('common');
+  const italian = i18n.language.toLowerCase().startsWith('it');
 
   if (depth === 'quick') {
     return null;
@@ -48,26 +48,17 @@ export function TemporalCreateAdvancedFields({
     >
       {fields.timeSemantics === 'timed' ? (
         <section
-          className="temporal-create-section is-compact"
+          className="temporal-create-section is-compact is-wide"
           aria-labelledby="temporal-create-time-heading"
         >
           <div className="temporal-create-section__heading">
-            <div>
-              <h3 id="temporal-create-time-heading">
-                {t(($) => $.common.home.timeline.create.timeDetails.title)}
-              </h3>
-              <p>
-                {t(
-                  ($) => $.common.home.timeline.create.timeDetails.description,
-                )}
-              </p>
-            </div>
+            <h3 id="temporal-create-time-heading">
+              {italian ? 'Riferimento orario' : 'Time reference'}
+            </h3>
           </div>
           <div className="temporal-create-grid two">
             <label className="temporal-create-control">
-              <span>
-                {t(($) => $.common.home.timeline.create.timeMode.label)}
-              </span>
+              <span>{italian ? 'Modalità' : 'Mode'}</span>
               <select
                 data-create-path="timeMode"
                 value={fields.timeMode}
@@ -79,16 +70,16 @@ export function TemporalCreateAdvancedFields({
                 }
               >
                 <option value="floating">
-                  {t(($) => $.common.home.timeline.create.timeMode.floating)}
+                  {italian ? 'Ora locale' : 'Local time'}
                 </option>
                 <option value="zoned">
-                  {t(($) => $.common.home.timeline.create.timeMode.zoned)}
+                  {italian ? 'Fuso specifico' : 'Named time zone'}
                 </option>
               </select>
             </label>
             {fields.timeMode === 'zoned' ? (
               <label className="temporal-create-control">
-                <span>{t(($) => $.common.home.timeline.create.timeZone)}</span>
+                <span>{italian ? 'Fuso orario' : 'Time zone'}</span>
                 <input
                   data-create-path="timeZoneId"
                   type="text"
@@ -136,11 +127,24 @@ export function TemporalCreateAdvancedFields({
         renderError={renderError}
       />
 
-      <TemporalCreateOrganizationFields
-        fields={fields}
-        depth="full"
-        onPatch={onPatch}
-      />
+      <section
+        className="temporal-create-section is-wide temporal-create-description-section"
+        aria-labelledby="temporal-create-description-heading"
+      >
+        <div className="temporal-create-section__heading">
+          <h3 id="temporal-create-description-heading">
+            {italian ? 'Descrizione' : 'Description'}
+          </h3>
+        </div>
+        <textarea
+          className="temporal-create-u2-description temporal-create-advanced-description"
+          value={fields.notes}
+          aria-label={italian ? 'Descrizione avanzata' : 'Advanced description'}
+          placeholder={italian ? 'Descrizione' : 'Description'}
+          rows={5}
+          onChange={(event) => onPatch({ notes: event.currentTarget.value })}
+        />
+      </section>
     </div>
   );
 }
