@@ -14,6 +14,8 @@ import { TemporalCreateOrganizationFields } from './temporal-create-organization
 import { TemporalCreateRecurrenceFields } from './temporal-create-recurrence-fields';
 import type { TemporalCreateContextOption } from './temporal-create-ui-types';
 
+import './temporal-create-advanced-shell.css';
+
 type TemporalCreateAdvancedFieldsProps = Readonly<{
   fields: TemporalCreateFields;
   contexts: readonly TemporalCreateContextOption[];
