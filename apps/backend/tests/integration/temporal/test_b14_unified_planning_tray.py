@@ -49,8 +49,9 @@ def _seed_self(database: Any) -> NativeRef:
 
 def _placement(hour: int) -> FloatingLocalIntervalPlacement:
     return FloatingLocalIntervalPlacement(
-        starts_local_at=datetime(2026, 10, 2, hour, 0),
-        ends_local_at=datetime(2026, 10, 2, hour + 1, 0),
+        # Floating-local placements are intentionally timezone-naive canonical values.
+        starts_local_at=datetime(2026, 10, 2, hour, 0),  # noqa: DTZ001
+        ends_local_at=datetime(2026, 10, 2, hour + 1, 0),  # noqa: DTZ001
     )
 
 
