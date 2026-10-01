@@ -1,35 +1,28 @@
 # B14 + B07 — U3 Create / Planning handoff — 2026-10-01
 
 - **Branch:** `feature/timeline-temporal-operational`
-- **Status:** ACTIVE — implementation candidate; latest fully green user-local proof is `899f9260`; user-local gate at `5c3634d4` was partially green with one scoped Advanced-timezone failure; later fixes require a rerun
-- **Current candidate HEAD before this document update:** `08478d939b30a48ce6ec2e49efa6bd3a37d32069`
+- **Status:** ACTIVE — latest user-local focused gate is fully green at `779fa723`; U3 Create/Planning candidate through the Quick-vs-Advanced timezone split is proven
+- **Current proven HEAD before this document update:** `779fa72348c3f9353c38d00d7dc6cfc19338deec`
 - **U2 canonical closure:** `docs/workstreams/timeline-temporal-operational-b14-u2-closure-2026-10-01.md`
 - **UI ledger:** `docs/workstreams/timeline-temporal-operational-b14-ui-consolidation-2026-09-30.md`
 - **CI:** not authorized; user runs tests locally in `~/projects/dante`
 
 ## 1. Proven checkpoint carried forward
 
-User-local gate at `899f9260`:
-
-```text
-web typecheck                                  PASS
-Temporal Create composer tests                 PASS
-Temporal Create U2 entry tests                 PASS
-Temporal Create top/U1 tests                   PASS
-focused total                                  16/16 PASS
-```
-
-Latest user-local rerun at `5c3634d4` after the later U3 candidate:
+Latest user-local gate at `779fa723`:
 
 ```text
 web typecheck                                  PASS
 Temporal Create composer tests                 2/2 PASS
 Temporal Create U2 entry tests                 9/9 PASS
-Temporal Create top/U1 tests                   5/6 PASS
-focused total                                  16 PASS / 1 FAIL
+Temporal Create top/U1 tests                   6/6 PASS
+focused total                                  17/17 PASS
+worktree after gate                            clean
 ```
 
-The single failure was not a backend/API or draft-loss failure. Advanced still mounted the compact Quick timezone globe while also rendering the explicit Advanced `timeMode` / `timeZoneId` controls. That contradicts the accepted U3 product rule. Commits `1e0ef2f9` + `08478d93` make the Quick timezone affordance surface-aware and stop mounting it in Advanced. Those fixes are candidate-only until the next user-local rerun.
+This rerun proves the scoped U3 fix that separates the timezone affordance by surface: Quick keeps the compact globe, while Advanced no longer mounts that control and uses the explicit `timeMode` / `timeZoneId` controls instead.
+
+Previous rerun at `5c3634d4` had exposed exactly one failure (`16 PASS / 1 FAIL`) because Advanced still mounted the compact Quick timezone globe. Commits `1e0ef2f9` + `08478d93` corrected that mismatch; the `779fa723` gate now proves the fix.
 
 Earlier in the same cycle the unified planning-tray vertical was also proven locally:
 
@@ -41,7 +34,7 @@ larger backend focused gate                    10/10 PASS
 OpenAPI/generated planning-tray client         generated and committed at a9dbdbe2
 ```
 
-Do not describe commits after the latest complete green gate as proven until the user reruns the local gate.
+Do not describe later commits as proven until the user reruns the appropriate local gate.
 
 ## 2. Product decisions frozen in U3 so far
 
@@ -103,7 +96,7 @@ Event agenda/decomposition != Actual/Outcome/Confirmation/Reconciliation
 
 `Verifica esito` in Create means policy for how Dante should later ask/infer/review realization/outcome. Canonical B10 `Confirmation` means contextual attestation of one exact Outcome version. Do not merge these names or models.
 
-## 4. Candidate commits after the last proven gate
+## 4. Commits covered by the latest proven focused gate
 
 ```text
 480162a0  preserve selected color while staging new Life Area + lift color popup
@@ -124,27 +117,13 @@ b06b5542  lock Advanced timezone / verification separation in tests
 08478d93  drive Quick timezone affordance from Composer surface
 ```
 
-The user-local gate at `5c3634d4` proved typecheck and 16 focused tests but exposed the one Advanced globe mismatch described above. `1e0ef2f9` and `08478d93` are implementation candidate only until the user reruns the focused gate.
+The user-local gate at `779fa723` gives the current focused proof for these Create/Advanced changes: typecheck PASS and `17/17` focused tests PASS.
 
-## 5. Immediate next local gate
+## 5. Current gate status
 
-Run locally only:
+No additional automated rerun is required before visual inspection of this exact candidate. There were no backend/API/DB changes in the timezone fix and no OpenAPI regeneration is required.
 
-```bash
-cd ~/projects/dante
-git pull --ff-only origin feature/timeline-temporal-operational
-
-pnpm --filter @dante/web typecheck
-
-pnpm --filter @dante/web exec vitest run \
-  src/features/temporal-create/ui/temporal-create-entry-u2.test.tsx \
-  src/features/temporal-create/ui/temporal-create-top-u1.test.tsx \
-  src/features/temporal-create/ui/temporal-create-composer.test.tsx
-
-git status --short
-```
-
-No OpenAPI regeneration is expected for this candidate because it changes only web/product organization.
+The next checkpoint is the real-app product check below. Any code changes made after this document update become candidate-only until the user runs the next appropriate local gate.
 
 ## 6. Real-app checks after automated green
 
