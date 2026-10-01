@@ -26,6 +26,12 @@ function monthGridStart(month: Temporal.PlainDate): Temporal.PlainDate {
   return month.subtract({ days: month.dayOfWeek - 1 });
 }
 
+function capitalizeToken(value: string, locale: string): string {
+  const clean = value.replace('.', '').trim();
+  if (!clean) return '';
+  return `${clean.slice(0, 1).toLocaleUpperCase(locale)}${clean.slice(1)}`;
+}
+
 function compactLabel(value: Temporal.PlainDate, locale: string): string {
   const date = new Date(Date.UTC(value.year, value.month - 1, value.day));
   const parts = new Intl.DateTimeFormat(locale, {
@@ -35,23 +41,27 @@ function compactLabel(value: Temporal.PlainDate, locale: string): string {
     ...(value.year === new Date().getUTCFullYear() ? {} : { year: 'numeric' }),
     timeZone: 'UTC',
   }).formatToParts(date);
-  const weekday = parts.find((part) => part.type === 'weekday')?.value ?? '';
+  const weekday = capitalizeToken(
+    parts.find((part) => part.type === 'weekday')?.value ?? '',
+    locale,
+  );
   const day = parts.find((part) => part.type === 'day')?.value ?? String(value.day);
-  const month = parts.find((part) => part.type === 'month')?.value ?? '';
+  const month = capitalizeToken(
+    parts.find((part) => part.type === 'month')?.value ?? '',
+    locale,
+  );
   const year = parts.find((part) => part.type === 'year')?.value;
-  return [weekday.replace('.', ''), day, month.replace('.', ''), year]
-    .filter(Boolean)
-    .join(' ')
-    .toLowerCase();
+  return `${weekday}, ${day} ${month}${year ? ` ${year}` : ''}`;
 }
 
 function monthLabel(value: Temporal.PlainDate, locale: string): string {
   const date = new Date(Date.UTC(value.year, value.month - 1, 1));
-  return new Intl.DateTimeFormat(locale, {
+  const label = new Intl.DateTimeFormat(locale, {
     month: 'long',
     year: 'numeric',
     timeZone: 'UTC',
   }).format(date);
+  return capitalizeToken(label, locale);
 }
 
 export function TemporalCreateDatePicker({
