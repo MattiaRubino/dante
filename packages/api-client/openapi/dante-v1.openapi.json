@@ -688,6 +688,204 @@
         "title": "AbsoluteStartWithinWindowRuleRequest",
         "type": "object"
       },
+      "AcceptedAbsolutePlacementResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "ends_at": {
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "kind": {
+            "const": "absolute_interval",
+            "default": "absolute_interval",
+            "title": "Kind",
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          }
+        },
+        "required": ["starts_at", "ends_at"],
+        "title": "AcceptedAbsolutePlacementResponse",
+        "type": "object"
+      },
+      "AcceptedAuthoringScheduleResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "placement": {
+            "discriminator": {
+              "mapping": {
+                "absolute_interval": "#/components/schemas/AcceptedAbsolutePlacementResponse",
+                "coarse_local_period": "#/components/schemas/AcceptedCoarseLocalPlacementResponse",
+                "date_span": "#/components/schemas/AcceptedDateSpanPlacementResponse",
+                "floating_local_interval": "#/components/schemas/AcceptedFloatingLocalPlacementResponse",
+                "named_zone_local_interval": "#/components/schemas/AcceptedNamedZonePlacementResponse"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AcceptedDateSpanPlacementResponse"
+              },
+              {
+                "$ref": "#/components/schemas/AcceptedFloatingLocalPlacementResponse"
+              },
+              {
+                "$ref": "#/components/schemas/AcceptedNamedZonePlacementResponse"
+              },
+              {
+                "$ref": "#/components/schemas/AcceptedAbsolutePlacementResponse"
+              },
+              {
+                "$ref": "#/components/schemas/AcceptedCoarseLocalPlacementResponse"
+              }
+            ],
+            "title": "Placement"
+          },
+          "placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Placement Material State Ref",
+            "type": "string"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schedule_ref",
+          "placement_material_state_ref",
+          "placement"
+        ],
+        "title": "AcceptedAuthoringScheduleResponse",
+        "type": "object"
+      },
+      "AcceptedCoarseLocalPlacementResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "coarse_local_period",
+            "default": "coarse_local_period",
+            "title": "Kind",
+            "type": "string"
+          },
+          "local_date": {
+            "format": "date",
+            "title": "Local Date",
+            "type": "string"
+          },
+          "period": {
+            "enum": ["morning", "afternoon", "evening"],
+            "title": "Period",
+            "type": "string"
+          }
+        },
+        "required": ["local_date", "period"],
+        "title": "AcceptedCoarseLocalPlacementResponse",
+        "type": "object"
+      },
+      "AcceptedDateSpanPlacementResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "end_date_exclusive": {
+            "format": "date",
+            "title": "End Date Exclusive",
+            "type": "string"
+          },
+          "kind": {
+            "const": "date_span",
+            "default": "date_span",
+            "title": "Kind",
+            "type": "string"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          }
+        },
+        "required": ["start_date", "end_date_exclusive"],
+        "title": "AcceptedDateSpanPlacementResponse",
+        "type": "object"
+      },
+      "AcceptedFloatingLocalPlacementResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "ends_local_at": {
+            "format": "date-time",
+            "title": "Ends Local At",
+            "type": "string"
+          },
+          "kind": {
+            "const": "floating_local_interval",
+            "default": "floating_local_interval",
+            "title": "Kind",
+            "type": "string"
+          },
+          "starts_local_at": {
+            "format": "date-time",
+            "title": "Starts Local At",
+            "type": "string"
+          }
+        },
+        "required": ["starts_local_at", "ends_local_at"],
+        "title": "AcceptedFloatingLocalPlacementResponse",
+        "type": "object"
+      },
+      "AcceptedNamedZonePlacementResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "disambiguation": {
+            "enum": ["reject", "earlier", "later"],
+            "title": "Disambiguation",
+            "type": "string"
+          },
+          "ends_local_at": {
+            "format": "date-time",
+            "title": "Ends Local At",
+            "type": "string"
+          },
+          "kind": {
+            "const": "named_zone_local_interval",
+            "default": "named_zone_local_interval",
+            "title": "Kind",
+            "type": "string"
+          },
+          "resolved_end_at": {
+            "format": "date-time",
+            "title": "Resolved End At",
+            "type": "string"
+          },
+          "resolved_start_at": {
+            "format": "date-time",
+            "title": "Resolved Start At",
+            "type": "string"
+          },
+          "starts_local_at": {
+            "format": "date-time",
+            "title": "Starts Local At",
+            "type": "string"
+          },
+          "zone_id": {
+            "title": "Zone Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "starts_local_at",
+          "ends_local_at",
+          "zone_id",
+          "disambiguation",
+          "resolved_start_at",
+          "resolved_end_at"
+        ],
+        "title": "AcceptedNamedZonePlacementResponse",
+        "type": "object"
+      },
       "ActivityResponse": {
         "additionalProperties": false,
         "description": "Minimum canonical Activity representation exposed by B01.",
@@ -1842,6 +2040,543 @@
           "provider_email_private"
         ],
         "title": "AuthenticationProviderMethodResponse",
+        "type": "object"
+      },
+      "AuthorActivityRequest": {
+        "additionalProperties": false,
+        "description": "One transactional Activity Quick Create command.",
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "item_color_code": {
+            "anyOf": [
+              {
+                "pattern": "^#[0-9A-Fa-f]{6}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Item Color Code"
+          },
+          "life_area": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AuthoringLifeAreaRequest"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "placement": {
+            "anyOf": [
+              {
+                "discriminator": {
+                  "mapping": {
+                    "absolute_interval": "#/components/schemas/dante__modules__temporal__api__AbsoluteIntervalPlacementRequest",
+                    "coarse_local_period": "#/components/schemas/CoarseLocalPeriodPlacementRequest",
+                    "date_span": "#/components/schemas/DateSpanPlacementRequest",
+                    "floating_local_interval": "#/components/schemas/FloatingLocalIntervalPlacementRequest",
+                    "named_zone_local_interval": "#/components/schemas/NamedZoneLocalIntervalPlacementRequest"
+                  },
+                  "propertyName": "kind"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/DateSpanPlacementRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FloatingLocalIntervalPlacementRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/NamedZoneLocalIntervalPlacementRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/dante__modules__temporal__api__AbsoluteIntervalPlacementRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CoarseLocalPeriodPlacementRequest"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Placement"
+          },
+          "title": {
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "title"],
+        "title": "AuthorActivityRequest",
+        "type": "object"
+      },
+      "AuthorEventRequest": {
+        "additionalProperties": false,
+        "description": "One transactional Event Quick Create command.",
+        "properties": {
+          "agenda_parts": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 100,
+            "title": "Agenda Parts",
+            "type": "array"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "item_color_code": {
+            "anyOf": [
+              {
+                "pattern": "^#[0-9A-Fa-f]{6}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Item Color Code"
+          },
+          "life_area": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AuthoringLifeAreaRequest"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "placement": {
+            "anyOf": [
+              {
+                "discriminator": {
+                  "mapping": {
+                    "absolute_interval": "#/components/schemas/dante__modules__temporal__api__AbsoluteIntervalPlacementRequest",
+                    "coarse_local_period": "#/components/schemas/CoarseLocalPeriodPlacementRequest",
+                    "date_span": "#/components/schemas/DateSpanPlacementRequest",
+                    "floating_local_interval": "#/components/schemas/FloatingLocalIntervalPlacementRequest",
+                    "named_zone_local_interval": "#/components/schemas/NamedZoneLocalIntervalPlacementRequest"
+                  },
+                  "propertyName": "kind"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/DateSpanPlacementRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FloatingLocalIntervalPlacementRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/NamedZoneLocalIntervalPlacementRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/dante__modules__temporal__api__AbsoluteIntervalPlacementRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CoarseLocalPeriodPlacementRequest"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Placement"
+          },
+          "title": {
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "title"],
+        "title": "AuthorEventRequest",
+        "type": "object"
+      },
+      "AuthoredActivityResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "activity_ref": {
+            "format": "uuid",
+            "title": "Activity Ref",
+            "type": "string"
+          },
+          "color_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color Code"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "life_area_assignment_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Assignment Revision"
+          },
+          "life_area_color_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Color Code"
+          },
+          "life_area_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Ref"
+          },
+          "life_area_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Revision"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "schedule": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AcceptedAuthoringScheduleResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "activity_ref",
+          "title",
+          "created_at",
+          "description",
+          "location",
+          "color_code",
+          "life_area_ref",
+          "life_area_color_code",
+          "schedule",
+          "replayed"
+        ],
+        "title": "AuthoredActivityResponse",
+        "type": "object"
+      },
+      "AuthoredEventResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "agenda_parts": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Agenda Parts",
+            "type": "array"
+          },
+          "agenda_revision": {
+            "minimum": 0.0,
+            "title": "Agenda Revision",
+            "type": "integer"
+          },
+          "color_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color Code"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "event_ref": {
+            "format": "uuid",
+            "title": "Event Ref",
+            "type": "string"
+          },
+          "life_area_assignment_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Assignment Revision"
+          },
+          "life_area_color_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Color Code"
+          },
+          "life_area_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Ref"
+          },
+          "life_area_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Revision"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "schedule": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AcceptedAuthoringScheduleResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "event_ref",
+          "title",
+          "created_at",
+          "description",
+          "location",
+          "color_code",
+          "life_area_ref",
+          "life_area_color_code",
+          "agenda_revision",
+          "agenda_parts",
+          "schedule",
+          "replayed"
+        ],
+        "title": "AuthoredEventResponse",
+        "type": "object"
+      },
+      "AuthoringLifeAreaRequest": {
+        "additionalProperties": false,
+        "description": "Select one existing Life Area or request creation of one new area.",
+        "properties": {
+          "color_code": {
+            "anyOf": [
+              {
+                "pattern": "^#[0-9A-Fa-f]{6}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color Code"
+          },
+          "expected_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Revision"
+          },
+          "life_area_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Ref"
+          },
+          "new_name": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "New Name"
+          }
+        },
+        "title": "AuthoringLifeAreaRequest",
         "type": "object"
       },
       "CalendarOccurrenceCoordinate": {
@@ -22727,6 +23462,84 @@
           }
         },
         "summary": "Record Actual Outcome",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/authoring/activities": {
+      "post": {
+        "operationId": "temporal_author_activity",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthorActivityRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthoredActivityResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Author Activity",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/authoring/events": {
+      "post": {
+        "operationId": "temporal_author_event",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthorEventRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthoredEventResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Author Event",
         "tags": ["temporal"]
       }
     },

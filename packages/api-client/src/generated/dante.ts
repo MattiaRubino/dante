@@ -25,6 +25,10 @@ import type {
   AuthHandleAppleCallbackBody,
   AuthenticatedSessionResponse,
   AuthenticationMethodsResponse,
+  AuthorActivityRequest,
+  AuthorEventRequest,
+  AuthoredActivityResponse,
+  AuthoredEventResponse,
   ConditionalEvaluationRequest,
   ConditionalEvaluationResponse,
   ConfirmationCommand,
@@ -4776,6 +4780,134 @@ export const temporalRecordActualOutcome = async (
     status: res.status,
     headers: res.headers,
   } as temporalRecordActualOutcomeResponse;
+};
+
+export type temporalAuthorActivityResponse201 = {
+  data: AuthoredActivityResponse;
+  status: 201;
+};
+
+export type temporalAuthorActivityResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalAuthorActivityResponseSuccess =
+  temporalAuthorActivityResponse201 & {
+    headers: Headers;
+  };
+export type temporalAuthorActivityResponseError =
+  temporalAuthorActivityResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalAuthorActivityResponse =
+  temporalAuthorActivityResponseSuccess | temporalAuthorActivityResponseError;
+
+export const getTemporalAuthorActivityUrl = () => {
+  return `/api/v1/temporal/authoring/activities`;
+};
+
+/**
+ * @summary Author Activity
+ */
+export const temporalAuthorActivity = async (
+  authorActivityRequest: AuthorActivityRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalAuthorActivityResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(getTemporalAuthorActivityUrl(), {
+    ...options,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(authorActivityRequest),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalAuthorActivityResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalAuthorActivityResponse;
+};
+
+export type temporalAuthorEventResponse201 = {
+  data: AuthoredEventResponse;
+  status: 201;
+};
+
+export type temporalAuthorEventResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalAuthorEventResponseSuccess =
+  temporalAuthorEventResponse201 & {
+    headers: Headers;
+  };
+export type temporalAuthorEventResponseError =
+  temporalAuthorEventResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalAuthorEventResponse =
+  temporalAuthorEventResponseSuccess | temporalAuthorEventResponseError;
+
+export const getTemporalAuthorEventUrl = () => {
+  return `/api/v1/temporal/authoring/events`;
+};
+
+/**
+ * @summary Author Event
+ */
+export const temporalAuthorEvent = async (
+  authorEventRequest: AuthorEventRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalAuthorEventResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(getTemporalAuthorEventUrl(), {
+    ...options,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(authorEventRequest),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalAuthorEventResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalAuthorEventResponse;
 };
 
 export type temporalFindActualRealizationConditionResponse200 = {
