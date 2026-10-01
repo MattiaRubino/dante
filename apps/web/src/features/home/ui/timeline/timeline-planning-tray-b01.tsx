@@ -10,30 +10,28 @@ import {
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
-import { SessionSubjectControls } from '../../../temporal/session-subject-controls';
 import { openPlanForActivity } from '../../../temporal/plan-work-intent';
+import type {
+  TemporalPlanningTrayDataSource,
+  TemporalPlanningTrayItem,
+} from '../../../temporal/planning-tray-data-source';
+import { createRemoteTemporalPlanningTrayDataSource } from '../../../temporal/remote-planning-tray-data-source';
+import { SessionSubjectControls } from '../../../temporal/session-subject-controls';
 import {
   subscribeTemporalPlanningInvalidation,
   subscribeTemporalTimelineInvalidation,
 } from '../../../temporal/timeline-invalidation';
 import type { TemporalCreateRuntime } from '../../../temporal-create';
-import { timelinePlanningCopy } from './timeline-planning-copy';
 import type { TimelinePlanningTrayItem } from './timeline-planning-tray';
 
 import './timeline-planning-tray.css';
 
 type TimelineB01PlanningTrayProps = Readonly<{
-  /** Compatibility prop; canonical items come from the runtime. */
   items?: readonly TimelinePlanningTrayItem[];
   runtime: TemporalCreateRuntime;
   defaultDate: PlainDate;
   onBeforeOpen?: (() => void) | undefined;
-}>;
-
-type CanonicalPlanningActivity = Readonly<{
-  projectionId: string;
-  activityRef: string;
-  title: string;
+  source?: TemporalPlanningTrayDataSource | undefined;
 }>;
 
 type ReadState = 'loading' | 'ready' | 'error';
@@ -41,22 +39,30 @@ type ReadState = 'loading' | 'ready' | 'error';
 const PANEL_ID = 'timeline-planning-tray-b01';
 const PANEL_GAP_PX = 8;
 const PANEL_VIEWPORT_PADDING_PX = 12;
-const PANEL_DESKTOP_WIDTH_PX = 370;
+const PANEL_DESKTOP_WIDTH_PX = 390;
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
-function readCopy(language: string) {
+function copyFor(language: string) {
   const english = language.toLowerCase().startsWith('en');
   return english
     ? Object.freeze({
-        description:
-          'Activities that exist but do not have an accepted Schedule.',
-        loading: 'Loading activities…',
-        failed: 'Activities to place are unavailable.',
+        title: 'To place',
+        trigger: 'Open items to place',
+        close: 'Close items to place',
+        description: 'Activities and events that currently have no accepted Timeline placement.',
+        loading: 'Loading items…',
+        failed: 'Items to place are unavailable.',
         retry: 'Retry',
+        search: 'Search items to place',
+        searchPlaceholder: 'Search…',
+        emptyTitle: 'Nothing to place',
+        emptyBody: 'Activities and events without a placement will appear here.',
         activity: 'Activity',
+        event: 'Event',
+        postponed: 'Postponed',
         place: 'Place',
         placementTitle: 'Accepted Schedule',
         date: 'Date',
@@ -67,18 +73,26 @@ function readCopy(language: string) {
         namedZoneTime: 'Specific time zone',
         timeZone: 'Time zone',
         cancel: 'Cancel',
-        confirm: 'Place in Timeline',
+        confirm: 'Place on Timeline',
         placing: 'Placing…',
         invalidPlacement: 'Choose a valid same-day interval.',
-        placementFailed:
-          'The Schedule was not accepted. The Activity is still here.',
+        placementFailed: 'The Schedule was not accepted. The item is still here.',
       })
     : Object.freeze({
-        description: 'Attività già esistenti, ma senza uno Schedule accettato.',
-        loading: 'Caricamento attività…',
-        failed: 'Le attività da collocare non sono disponibili.',
+        title: 'Da collocare',
+        trigger: 'Apri Da collocare',
+        close: 'Chiudi Da collocare',
+        description: 'Attività ed eventi che al momento non hanno una collocazione accettata in Timeline.',
+        loading: 'Caricamento elementi…',
+        failed: 'Da collocare non è disponibile.',
         retry: 'Riprova',
-        activity: 'Activity',
+        search: 'Cerca in Da collocare',
+        searchPlaceholder: 'Cerca…',
+        emptyTitle: 'Niente da collocare',
+        emptyBody: 'Attività ed eventi senza collocazione compariranno qui.',
+        activity: 'Attività',
+        event: 'Evento',
+        postponed: 'Posticipato',
         place: 'Colloca',
         placementTitle: 'Schedule accettato',
         date: 'Data',
@@ -92,45 +106,33 @@ function readCopy(language: string) {
         confirm: 'Colloca in Timeline',
         placing: 'Collocazione…',
         invalidPlacement: 'Scegli un intervallo valido nella stessa giornata.',
-        placementFailed:
-          'Lo Schedule non è stato accettato. L’Activity resta qui.',
+        placementFailed: 'Lo Schedule non è stato accettato. L’elemento resta qui.',
       });
 }
 
-function canonicalActivities(
-  projections: Awaited<ReturnType<TemporalCreateRuntime['list']>>,
-): readonly CanonicalPlanningActivity[] {
-  const byProjectionId = new Map<string, CanonicalPlanningActivity>();
-  for (const projection of projections) {
-    if (
-      projection.subject.source !== 'native' ||
-      projection.subject.kind !== 'activity' ||
-      projection.placement !== null
-    ) {
-      continue;
-    }
-    byProjectionId.set(
-      projection.id,
-      Object.freeze({
-        projectionId: projection.id,
-        activityRef: projection.subject.id,
-        title: projection.title,
-      }),
-    );
-  }
-  return Object.freeze([...byProjectionId.values()]);
+function itemKey(item: TemporalPlanningTrayItem): string {
+  return `${item.kind}:${item.subjectRef}`;
+}
+
+function operationId(item: TemporalPlanningTrayItem): string {
+  const random = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
+  return `planning-tray:${item.kind}:${item.subjectRef}:${random}`;
 }
 
 export function TimelinePlanningTrayB01({
   items: _items,
-  runtime,
+  runtime: _runtime,
   defaultDate,
   onBeforeOpen,
+  source: injectedSource,
 }: TimelineB01PlanningTrayProps) {
   const { i18n } = useTranslation('common');
   const language = i18n.resolvedLanguage ?? i18n.language;
-  const copy = timelinePlanningCopy(language);
-  const b01Copy = readCopy(language);
+  const copy = copyFor(language);
+  const source = useMemo(
+    () => injectedSource ?? createRemoteTemporalPlanningTrayDataSource(),
+    [injectedSource],
+  );
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const panelRef = useRef<HTMLElement | null>(null);
   const searchRef = useRef<HTMLInputElement | null>(null);
@@ -139,9 +141,8 @@ export function TimelinePlanningTrayB01({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [readState, setReadState] = useState<ReadState>('loading');
-  const [placingActivityRef, setPlacingActivityRef] = useState<string | null>(
-    null,
-  );
+  const [remoteItems, setRemoteItems] = useState<readonly TemporalPlanningTrayItem[]>([]);
+  const [placingKey, setPlacingKey] = useState<string | null>(null);
   const [placementDate, setPlacementDate] = useState(defaultDate.toString());
   const [placementTime, setPlacementTime] = useState('09:00');
   const [durationMinutes, setDurationMinutes] = useState(30);
@@ -151,74 +152,39 @@ export function TimelinePlanningTrayB01({
   );
   const [placementPending, setPlacementPending] = useState(false);
   const [placementError, setPlacementError] = useState<string | null>(null);
-  const [remoteItems, setRemoteItems] = useState<
-    readonly CanonicalPlanningActivity[]
-  >([]);
   const [panelStyle, setPanelStyle] = useState<CSSProperties | undefined>();
-
-  const mergedItems = remoteItems;
 
   const filteredItems = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase();
-    if (!normalized) {
-      return mergedItems;
-    }
-    return mergedItems.filter((item) =>
+    if (!normalized) return remoteItems;
+    return remoteItems.filter((item) =>
       item.title.toLocaleLowerCase().includes(normalized),
     );
-  }, [mergedItems, query]);
-
-  const commitRead = useCallback(
-    (
-      generation: number,
-      projections: Awaited<ReturnType<TemporalCreateRuntime['list']>>,
-    ) => {
-      if (readGenerationRef.current !== generation) {
-        return;
-      }
-      setRemoteItems(canonicalActivities(projections));
-      setReadState('ready');
-    },
-    [],
-  );
-
-  const failRead = useCallback((generation: number) => {
-    if (readGenerationRef.current === generation) {
-      setReadState('error');
-    }
-  }, []);
+  }, [query, remoteItems]);
 
   const refresh = useCallback(async () => {
     const generation = ++readGenerationRef.current;
     setReadState('loading');
     try {
-      commitRead(generation, await runtime.list());
+      const items = await source.listItems();
+      if (readGenerationRef.current !== generation) return;
+      setRemoteItems(items);
+      setReadState('ready');
     } catch {
-      failRead(generation);
+      if (readGenerationRef.current === generation) setReadState('error');
     }
-  }, [commitRead, failRead, runtime]);
+  }, [source]);
 
   useEffect(() => {
-    const generation = ++readGenerationRef.current;
-    void runtime
-      .list()
-      .then((projections) => commitRead(generation, projections))
-      .catch(() => failRead(generation));
+    void refresh();
     return () => {
-      if (readGenerationRef.current === generation) {
-        readGenerationRef.current += 1;
-      }
+      readGenerationRef.current += 1;
     };
-  }, [commitRead, failRead, runtime]);
+  }, [refresh]);
 
   useEffect(() => {
-    const reload = () => {
-      void refresh();
-    };
+    const reload = () => void refresh();
     const unsubscribePlanning = subscribeTemporalPlanningInvalidation(reload);
-    // A Schedule withdrawal changes both Timeline and the derived Activity tray.
-    // Listen to the canonical Timeline read invalidation as well, so every governed
-    // unschedule path refreshes the same remote Activity projection immediately.
     const unsubscribeTimeline = subscribeTemporalTimelineInvalidation(reload);
     return () => {
       unsubscribePlanning();
@@ -228,9 +194,7 @@ export function TimelinePlanningTrayB01({
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
-      setActionsHost(
-        document.querySelector<HTMLElement>('.dante-timeline-actions'),
-      );
+      setActionsHost(document.querySelector<HTMLElement>('.dante-timeline-actions'));
     });
     return () => cancelAnimationFrame(frame);
   }, []);
@@ -262,9 +226,7 @@ export function TimelinePlanningTrayB01({
   }, []);
 
   useEffect(() => {
-    if (!open) {
-      return;
-    }
+    if (!open) return;
     const frame = requestAnimationFrame(() => {
       positionPanel();
       searchRef.current?.focus();
@@ -280,26 +242,17 @@ export function TimelinePlanningTrayB01({
   }, [open, positionPanel]);
 
   useEffect(() => {
-    if (!open) {
-      return;
-    }
+    if (!open) return;
     const closeOutside = (event: globalThis.PointerEvent) => {
-      if (!(event.target instanceof Node)) {
-        return;
-      }
-      if (
-        panelRef.current?.contains(event.target) ||
-        triggerRef.current?.contains(event.target)
-      ) {
+      if (!(event.target instanceof Node)) return;
+      if (panelRef.current?.contains(event.target) || triggerRef.current?.contains(event.target)) {
         return;
       }
       setOpen(false);
       setQuery('');
     };
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape') {
-        return;
-      }
+      if (event.key !== 'Escape') return;
       setOpen(false);
       setQuery('');
       requestAnimationFrame(() => triggerRef.current?.focus());
@@ -314,68 +267,70 @@ export function TimelinePlanningTrayB01({
   }, [open]);
 
   const submitPlacement = useCallback(
-    async (activityRef: string) => {
+    async (item: TemporalPlanningTrayItem) => {
       setPlacementError(null);
       let start: PlainDateTime;
       let end: PlainDateTime;
-      let placement: Parameters<TemporalCreateRuntime['placeExistingActivity']>[1];
       try {
-        start = Temporal.PlainDateTime.from(
-          `${placementDate}T${placementTime}`,
-        );
+        start = Temporal.PlainDateTime.from(`${placementDate}T${placementTime}`);
         end = start.add({ minutes: durationMinutes });
         if (
-          !Number.isInteger(durationMinutes) || durationMinutes <= 0 ||
+          !Number.isInteger(durationMinutes) ||
+          durationMinutes <= 0 ||
           !start.toPlainDate().equals(end.toPlainDate())
         ) {
           throw new RangeError('cross-day-or-empty');
         }
         if (placementTimeMode === 'zoned') {
-          const zone = placementTimeZone.trim();
-          const zonedStart = start.toZonedDateTime(zone, { disambiguation: 'reject' });
-          const zonedEnd = end.toZonedDateTime(zone, { disambiguation: 'reject' });
-          placement = Object.freeze({
-            kind: 'zoned' as const,
-            start: zonedStart,
-            end: zonedEnd,
-            disambiguation: 'reject' as const,
-          });
-        } else {
-          placement = Object.freeze({ kind: 'floating-local' as const, start, end });
+          start.toZonedDateTime(placementTimeZone.trim(), { disambiguation: 'reject' });
+          end.toZonedDateTime(placementTimeZone.trim(), { disambiguation: 'reject' });
         }
       } catch {
-        setPlacementError(b01Copy.invalidPlacement);
+        setPlacementError(copy.invalidPlacement);
         return;
       }
 
+      const placement =
+        placementTimeMode === 'zoned'
+          ? Object.freeze({
+              kind: 'named-zone-local-interval' as const,
+              startsLocalAt: start,
+              endsLocalAt: end,
+              zoneId: placementTimeZone.trim(),
+              disambiguation: 'reject' as const,
+            })
+          : Object.freeze({
+              kind: 'floating-local-interval' as const,
+              startsLocalAt: start,
+              endsLocalAt: end,
+            });
+
       setPlacementPending(true);
       try {
-        const result = await runtime.placeExistingActivity(
-          activityRef,
+        await source.placeItem({
+          kind: item.kind,
+          subjectRef: item.subjectRef,
+          operationId: operationId(item),
           placement,
-        );
-        if (result.status !== 'applied') {
-          setPlacementError(b01Copy.placementFailed);
-          return;
-        }
+        });
         await refresh();
-        setPlacingActivityRef(null);
+        setPlacingKey(null);
       } catch {
-        setPlacementError(b01Copy.placementFailed);
+        setPlacementError(copy.placementFailed);
       } finally {
         setPlacementPending(false);
       }
     },
     [
-      b01Copy.invalidPlacement,
-      b01Copy.placementFailed,
+      copy.invalidPlacement,
+      copy.placementFailed,
       durationMinutes,
       placementDate,
       placementTime,
       placementTimeMode,
       placementTimeZone,
       refresh,
-      runtime,
+      source,
     ],
   );
 
@@ -394,9 +349,7 @@ export function TimelinePlanningTrayB01({
           void refresh();
         }
         setOpen(next);
-        if (!next) {
-          setQuery('');
-        }
+        if (!next) setQuery('');
       }}
     >
       <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -404,9 +357,9 @@ export function TimelinePlanningTrayB01({
         <path d="M8 10h8M8 14h5" />
         <path d="M16.5 3.5v5M14 6h5" />
       </svg>
-      {mergedItems.length > 0 ? (
+      {remoteItems.length > 0 ? (
         <span className="timeline-planning-trigger__badge" aria-hidden="true">
-          {mergedItems.length > 99 ? '99+' : mergedItems.length}
+          {remoteItems.length > 99 ? '99+' : remoteItems.length}
         </span>
       ) : null}
     </button>
@@ -424,11 +377,9 @@ export function TimelinePlanningTrayB01({
     >
       <header className="timeline-planning-tray__header">
         <div>
-          <span className="timeline-planning-tray__kicker">
-            DANTE · Timeline
-          </span>
+          <span className="timeline-planning-tray__kicker">DANTE · Timeline</span>
           <h2>{copy.title}</h2>
-          <p>{b01Copy.description}</p>
+          <p>{copy.description}</p>
         </div>
         <button
           className="timeline-planning-tray__close"
@@ -444,7 +395,7 @@ export function TimelinePlanningTrayB01({
         </button>
       </header>
 
-      {mergedItems.length > 0 ? (
+      {remoteItems.length > 0 ? (
         <label className="timeline-planning-tray__search">
           <span className="home-visually-hidden">{copy.search}</span>
           <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -465,111 +416,115 @@ export function TimelinePlanningTrayB01({
       <div className="timeline-planning-tray__body">
         {readState === 'error' ? (
           <div className="timeline-planning-empty is-search" role="alert">
-            <strong>{b01Copy.failed}</strong>
-            <button type="button" onClick={() => void refresh()}>
-              {b01Copy.retry}
-            </button>
+            <strong>{copy.failed}</strong>
+            <button type="button" onClick={() => void refresh()}>{copy.retry}</button>
           </div>
-        ) : readState === 'loading' && mergedItems.length === 0 ? (
-          <div className="timeline-planning-empty">
-            <strong>{b01Copy.loading}</strong>
-          </div>
-        ) : mergedItems.length === 0 ? (
+        ) : readState === 'loading' && remoteItems.length === 0 ? (
+          <div className="timeline-planning-empty"><strong>{copy.loading}</strong></div>
+        ) : remoteItems.length === 0 ? (
           <div className="timeline-planning-empty">
             <span aria-hidden="true">✓</span>
             <strong>{copy.emptyTitle}</strong>
             <p>{copy.emptyBody}</p>
           </div>
         ) : filteredItems.length === 0 ? (
-          <div className="timeline-planning-empty is-search">
-            <strong>{copy.emptyTitle}</strong>
-          </div>
+          <div className="timeline-planning-empty is-search"><strong>{copy.emptyTitle}</strong></div>
         ) : (
           filteredItems.map((item) => {
-            const placing = placingActivityRef === item.activityRef;
+            const key = itemKey(item);
+            const placing = placingKey === key;
+            const typeLabel = item.kind === 'activity' ? copy.activity : copy.event;
+            const stateLabel = item.state === 'postponed' ? copy.postponed : typeLabel;
             return (
               <article
-                key={item.projectionId}
+                key={key}
                 className="timeline-planning-card timeline-planning-card--session"
-                data-timeline-planning-item={item.projectionId}
-                data-temporal-activity-ref={item.activityRef}
+                data-timeline-planning-item={key}
+                data-temporal-subject-kind={item.kind}
+                data-temporal-subject-ref={item.subjectRef}
+                data-temporal-planning-state={item.state}
                 data-timeline-tone="personal"
               >
                 <div className="timeline-planning-card__main">
-                  <button
-                    className="timeline-planning-card__copy"
-                    type="button"
-                    aria-label={`Apri Plan per ${item.title}`}
-                    onClick={() => {
-                      setOpen(false);
-                      setQuery('');
-                      openPlanForActivity(item);
-                    }}
-                  >
-                    <strong>{item.title}</strong>
-                    <span className="timeline-planning-card__policy">
-                      {b01Copy.activity}
-                    </span>
-                  </button>
+                  {item.kind === 'activity' ? (
+                    <button
+                      className="timeline-planning-card__copy"
+                      type="button"
+                      aria-label={`Apri Plan per ${item.title}`}
+                      onClick={() => {
+                        setOpen(false);
+                        setQuery('');
+                        openPlanForActivity({
+                          projectionId: key,
+                          activityRef: item.subjectRef,
+                          title: item.title,
+                        });
+                      }}
+                    >
+                      <strong>{item.title}</strong>
+                      <span className="timeline-planning-card__policy">{stateLabel}</span>
+                    </button>
+                  ) : (
+                    <div className="timeline-planning-card__copy">
+                      <strong>{item.title}</strong>
+                      <span className="timeline-planning-card__policy">{stateLabel}</span>
+                    </div>
+                  )}
                   <span className="timeline-planning-card__actions">
                     <button
                       type="button"
-                      aria-label={`${b01Copy.place}: ${item.title}`}
+                      aria-label={`${copy.place}: ${item.title}`}
                       aria-expanded={placing}
                       onClick={() => {
-                        setPlacingActivityRef(
-                          placing ? null : item.activityRef,
-                        );
+                        setPlacingKey(placing ? null : key);
                         setPlacementError(null);
                       }}
                     >
-                      {b01Copy.place}
+                      {copy.place}
                     </button>
                   </span>
                 </div>
 
-                <SessionSubjectControls
-                  kind="activity"
-                  subjectRef={item.activityRef}
-                  label={item.title}
-                />
+                {item.kind === 'activity' ? (
+                  <SessionSubjectControls
+                    kind="activity"
+                    subjectRef={item.subjectRef}
+                    label={item.title}
+                  />
+                ) : null}
 
                 {placing ? (
                   <form
                     className="timeline-planning-quick-place"
                     onSubmit={(event) => {
                       event.preventDefault();
-                      void submitPlacement(item.activityRef);
+                      void submitPlacement(item);
                     }}
                   >
                     <div className="timeline-planning-quick-place__heading">
-                      <strong>{b01Copy.placementTitle}</strong>
-                      <span>{b01Copy.activity}</span>
+                      <strong>{copy.placementTitle}</strong>
+                      <span>{stateLabel}</span>
                     </div>
                     <label>
-                      <span>{b01Copy.date}</span>
+                      <span>{copy.date}</span>
                       <input
                         type="date"
                         value={placementDate}
                         disabled={placementPending}
-                        onChange={(event) =>
-                          setPlacementDate(event.target.value)
-                        }
+                        onChange={(event) => setPlacementDate(event.target.value)}
                       />
                     </label>
                     <label>
-                      <span>{b01Copy.time}</span>
+                      <span>{copy.time}</span>
                       <input
                         type="time"
                         value={placementTime}
                         disabled={placementPending}
-                        onChange={(event) =>
-                          setPlacementTime(event.target.value)
-                        }
+                        onChange={(event) => setPlacementTime(event.target.value)}
                       />
                     </label>
                     <label>
-                      <span>{b01Copy.duration}</span>
+                      <span>{copy.duration}</span>
                       <input
                         type="number"
                         min={1}
@@ -577,44 +532,48 @@ export function TimelinePlanningTrayB01({
                         step={1}
                         value={durationMinutes}
                         disabled={placementPending}
-                        onChange={(event) =>
-                          setDurationMinutes(Number(event.target.value))
-                        }
+                        onChange={(event) => setDurationMinutes(Number(event.target.value))}
                       />
                     </label>
                     <label>
-                      <span>{b01Copy.timeReference}</span>
-                      <select value={placementTimeMode} disabled={placementPending}
-                        onChange={(event) => setPlacementTimeMode(event.target.value as 'floating' | 'zoned')}>
-                        <option value="floating">{b01Copy.localTime}</option>
-                        <option value="zoned">{b01Copy.namedZoneTime}</option>
+                      <span>{copy.timeReference}</span>
+                      <select
+                        value={placementTimeMode}
+                        disabled={placementPending}
+                        onChange={(event) =>
+                          setPlacementTimeMode(event.target.value as 'floating' | 'zoned')
+                        }
+                      >
+                        <option value="floating">{copy.localTime}</option>
+                        <option value="zoned">{copy.namedZoneTime}</option>
                       </select>
                     </label>
                     {placementTimeMode === 'zoned' ? (
                       <label>
-                        <span>{b01Copy.timeZone}</span>
-                        <input type="text" value={placementTimeZone}
+                        <span>{copy.timeZone}</span>
+                        <input
+                          type="text"
+                          value={placementTimeZone}
                           disabled={placementPending}
                           onChange={(event) => setPlacementTimeZone(event.target.value)}
-                          placeholder="Europe/Rome" />
+                          placeholder="Europe/Rome"
+                        />
                       </label>
                     ) : null}
-                    {placementError ? (
-                      <p role="alert">{placementError}</p>
-                    ) : null}
+                    {placementError ? <p role="alert">{placementError}</p> : null}
                     <div className="timeline-planning-quick-place__actions">
                       <button
                         type="button"
                         disabled={placementPending}
                         onClick={() => {
-                          setPlacingActivityRef(null);
+                          setPlacingKey(null);
                           setPlacementError(null);
                         }}
                       >
-                        {b01Copy.cancel}
+                        {copy.cancel}
                       </button>
                       <button type="submit" disabled={placementPending}>
-                        {placementPending ? b01Copy.placing : b01Copy.confirm}
+                        {placementPending ? copy.placing : copy.confirm}
                       </button>
                     </div>
                   </form>
