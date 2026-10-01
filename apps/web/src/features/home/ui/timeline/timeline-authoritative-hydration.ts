@@ -129,6 +129,12 @@ function canonicalBasis(
   });
 }
 
+function appearanceColor(
+  colorCode: string | null | undefined,
+): Readonly<{ appearanceColorCode?: string }> {
+  return colorCode ? Object.freeze({ appearanceColorCode: colorCode }) : Object.freeze({});
+}
+
 function expectedCalendarProjection(
   item: TemporalTimelineExpectedOccurrenceItem,
   effectiveZoneId: string,
@@ -262,7 +268,9 @@ function isScheduledItem(
 export function canonicalScheduledDateLaneItem(
   item: TemporalTimelineScheduledItem,
   groupId = 'personale',
+  appearanceColorCode?: string | null,
 ): TimelineAllDayItem | null {
+  const itemAppearance = appearanceColor(appearanceColorCode);
   if (item.temporalForm === 'date-span') {
     return Object.freeze({
       id: item.scheduleRef,
@@ -273,6 +281,7 @@ export function canonicalScheduledDateLaneItem(
       ...(groupId === 'personale'
         ? { appearanceTone: 'personal' as const }
         : {}),
+      ...itemAppearance,
       canonicalBasis: canonicalBasis(item),
       laneKind: 'all-day' as const,
     });
@@ -287,6 +296,7 @@ export function canonicalScheduledDateLaneItem(
       ...(groupId === 'personale'
         ? { appearanceTone: 'personal' as const }
         : {}),
+      ...itemAppearance,
       canonicalBasis: canonicalBasis(item),
       laneKind: 'coarse' as const,
       coarsePeriod: item.period,
@@ -298,6 +308,7 @@ export function canonicalScheduledDateLaneItem(
 export function canonicalScheduledTimelineEvents(
   item: TemporalTimelineScheduledItem,
   groupId = 'personale',
+  appearanceColorCode?: string | null,
 ): readonly Readonly<{ dateKey: string; event: TimelineEvent }>[] {
   const interval = displayedInterval(item);
   if (interval === null) {
@@ -309,6 +320,7 @@ export function canonicalScheduledTimelineEvents(
   const multiDay = !startDate.equals(endDate);
   const projections: Readonly<{ dateKey: string; event: TimelineEvent }>[] = [];
   const meta = eventMeta(item);
+  const itemAppearance = appearanceColor(appearanceColorCode);
 
   for (
     let date = startDate;
@@ -338,6 +350,7 @@ export function canonicalScheduledTimelineEvents(
           ...(groupId === 'personale'
             ? { appearanceTone: 'personal' as const }
             : {}),
+          ...itemAppearance,
           canonicalBasis: canonicalBasis(item),
           ...(meta === undefined ? {} : { meta }),
         }),
@@ -393,6 +406,9 @@ export function useAuthoritativeTimelineHydration(
   ) => void,
   onReconcileDateLane: (items: readonly TimelineAllDayItem[]) => void,
   resolveGroupId?: ((item: TemporalTimelineItem) => string) | null,
+  resolveAppearanceColorCode?:
+    | ((item: TemporalTimelineItem) => string | null)
+    | null,
 ): void {
   const { state } = useTemporalTimelineRuntime();
   const reconcileEventsRef = useRef(onReconcileEvents);
@@ -419,7 +435,11 @@ export function useAuthoritativeTimelineHydration(
     reconcileEventsRef.current(
       Object.freeze(
         scheduledItems.flatMap((item) =>
-          canonicalScheduledTimelineEvents(item, resolveGroupId?.(item)),
+          canonicalScheduledTimelineEvents(
+            item,
+            resolveGroupId?.(item),
+            resolveAppearanceColorCode?.(item) ?? null,
+          ),
         ),
       ),
     );
@@ -438,10 +458,11 @@ export function useAuthoritativeTimelineHydration(
           const projected = canonicalScheduledDateLaneItem(
             item,
             resolveGroupId?.(item),
+            resolveAppearanceColorCode?.(item) ?? null,
           );
           return projected === null ? [] : [projected];
         }),
       ),
     );
-  }, [state, resolveGroupId]);
+  }, [state, resolveGroupId, resolveAppearanceColorCode]);
 }
