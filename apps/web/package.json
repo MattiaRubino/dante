@@ -24,6 +24,7 @@
     "@tanstack/react-router": "1.170.31",
     "i18next": "26.3.6",
     "react": "19.2.8",
+    "react-colorful": "5.8.1",
     "react-dom": "19.2.8",
     "react-i18next": "17.0.11"
   },
