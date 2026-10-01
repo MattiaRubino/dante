@@ -28,21 +28,23 @@ function reminderLabel(value: number | null): string {
 }
 
 export function TemporalCreateQuickReminder({ fields, onPatch }: Props) {
-  if (fields.timeSemantics !== 'timed') return null;
-
   const eligible =
+    fields.timeSemantics === 'timed' &&
     fields.timeMode === 'zoned' &&
     fields.eventRecurrence.patternKind === 'none';
-  const value = fields.confirmation.reminderLeadMinutes;
+  const value = eligible ? fields.confirmation.reminderLeadMinutes : null;
+
+  const unavailableReason =
+    fields.timeSemantics !== 'timed'
+      ? 'Il promemoria richiede un orario preciso.'
+      : fields.timeMode !== 'zoned'
+        ? 'Il promemoria richiede un fuso orario specifico.'
+        : 'Il promemoria Quick non è disponibile sulle ricorrenze.';
 
   return (
     <label
       className={`temporal-create-quick-reminder${eligible ? '' : ' is-disabled'}`}
-      title={
-        eligible
-          ? 'Promemoria relativo all’inizio dello Schedule.'
-          : 'Il promemoria richiede un orario con fuso specifico e senza ricorrenza.'
-      }
+      title={eligible ? 'Promemoria relativo all’inizio dello Schedule.' : unavailableReason}
     >
       <span className="temporal-create-quick-reminder__icon" aria-hidden="true">
         <BellIcon />
@@ -62,11 +64,14 @@ export function TemporalCreateQuickReminder({ fields, onPatch }: Props) {
           });
         }}
       >
-        {TEMPORAL_CREATE_REMINDER_OPTIONS.map((option) => (
-          <option key={option ?? 'none'} value={option ?? ''}>
-            {reminderLabel(option)}
-          </option>
-        ))}
+        {!eligible ? <option value="">Ricorda · Non disponibile</option> : null}
+        {eligible
+          ? TEMPORAL_CREATE_REMINDER_OPTIONS.map((option) => (
+              <option key={option ?? 'none'} value={option ?? ''}>
+                {reminderLabel(option)}
+              </option>
+            ))
+          : null}
       </select>
     </label>
   );
