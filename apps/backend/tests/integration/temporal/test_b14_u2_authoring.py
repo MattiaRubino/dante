@@ -15,6 +15,7 @@ from dante.modules.temporal.authoring import (
     TemporalAuthoringOperationIdReuseError,
 )
 from dante.modules.temporal.life_area import LifeAreaApplication
+from dante.modules.temporal.life_area_assignment import LifeAreaAssignmentApplication
 from dante.modules.temporal.schedule import FloatingLocalIntervalPlacement
 from dante.platform.database.references import NativeRef
 from dante.platform.database.runtime import create_database_runtime
@@ -77,6 +78,26 @@ async def test_u2_unassigned_activity_metadata_multiday_schedule_and_replay(
         assert created.schedule is not None
         assert created.schedule.placement == placement
         assert not created.replayed
+
+        unassigned = await LifeAreaAssignmentApplication(
+            runtime.session_factory
+        ).list_unassigned(self_person_ref=actor)
+        assert [
+            (
+                item.subject_kind,
+                item.subject_native_ref,
+                item.title,
+                item.color_code,
+            )
+            for item in unassigned
+        ] == [
+            (
+                "activity",
+                created.item.subject_native_ref,
+                "Camminata notturna",
+                "#12ABEF",
+            )
+        ]
 
         replay = await authoring.create_activity(
             self_person_ref=actor,
