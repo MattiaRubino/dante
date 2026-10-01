@@ -64,6 +64,7 @@ class UnassignedLifeAreaItemResponse(BaseModel):
     subject_native_ref: UUID
     title: str
     created_at: datetime
+    color_code: str | None
 
 
 def _response(value: LifeAreaAssignmentView) -> LifeAreaAssignmentResponse:
@@ -83,6 +84,7 @@ def _unassigned_response(value: UnassignedLifeAreaItemView) -> UnassignedLifeAre
         subject_native_ref=value.subject_native_ref,
         title=value.title,
         created_at=value.created_at,
+        color_code=value.color_code,
     )
 
 
