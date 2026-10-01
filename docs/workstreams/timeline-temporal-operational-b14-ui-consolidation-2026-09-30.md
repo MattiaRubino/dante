@@ -1,12 +1,15 @@
 # B14 + B07 — consolidamento prodotto e UI guidato dall'uso
 
-- **Stato:** ATTIVO — U2 source candidate pubblicata; gate locale/generated pendenti
+- **Stato:** ATTIVO — U2 CLOSED / PROVEN; U3+ UI consolidation corrente
 - **Avvio:** 2026-09-30
+- **Riconciliato:** 2026-10-01
 - **Branch:** `feature/timeline-temporal-operational`
 - **Base chiusa:** B00–B13 e B12
-- **Frontiera persistence source corrente:** `20260930_94`
-- **Ultima frontiera catalogo provata prima di U2:** `_93` / `196|5|155|100|397|344|497|0|0|0`
+- **Frontiera persistence corrente:** `20261001_95`
+- **Frontiera catalogo provata:** `_95` / `196|5|157|100|397|344|503|0|0|0`
 - **Gate U2:** `docs/workstreams/timeline-temporal-operational-b14-u2-gate-2026-09-30.md`
+- **Chiusura U2:** `docs/workstreams/timeline-temporal-operational-b14-u2-closure-2026-10-01.md`
+- **Generated U2:** `dd94c6ee876bf5e671a516898b064c37e2d90741`
 - **CI:** non usata; i test locali sono eseguiti dall'utente
 
 ## Obiettivo
@@ -33,10 +36,10 @@ B14 e B07 vengono lavorati nello stesso ciclo: ogni decisione dell'utente viene 
 |---|---|---|---|
 | U0 | Inventario capacità e superfici | pronto | base per il consolidamento user-guided |
 | U1 | `+` nel rail destro, chiusura draft, doppio click Timeline, geometria Home | candidato/provato progressivamente | rail desktop 475 px; Create sostituisce Cattura/Da risolvere; niente terza colonna |
-| U2 | Quick Create canonico: date, Life Area opzionale, colore, location, descrizione, authoring Activity/Event | **SOURCE CANDIDATE PUBBLICATA — gate locale richiesto** | `_94` + backend/API + runtime web + UI U2 + test source presenti; generated/client e prova locale ancora da eseguire |
-| U3+ | successivo polish e organizzazione UI | da continuare dopo gate U2 | include Advanced centrale e successive decisioni utente |
+| U2 | Quick Create canonico: date, Life Area opzionale, colore, location, descrizione, authoring Activity/Event | **CLOSED / PROVEN 2026-10-01** | `_95`; catalogo e generated riconciliati; gate locale verde |
+| U3+ | polish e organizzazione UI | **ATTIVO** | due date/orari, organizzazione Life Area/colore/location/descrizione, Advanced centrale, successive decisioni utente |
 
-## U2 — decisioni canoniche
+## U2 — decisioni canoniche chiuse
 
 ### Oggetto e collocazione
 
@@ -48,7 +51,7 @@ B14 e B07 vengono lavorati nello stesso ciclo: ogni decisione dell'utente viene 
 ### Intervallo temporale
 
 - Modalità `Orario`: due date esplicite e sempre visibili attorno ai due orari: `data inizio | ora inizio → ora fine | data fine`.
-- Le date usano un picker DANTE controllato, non l'input data nativo del browser; quindi nessun comando browser `Cancella` fa parte del prodotto.
+- Le date usano un picker DANTE controllato, non l'input data nativo del browser; nessun comando browser `Cancella` fa parte del prodotto.
 - Ora e minuti restano editabili da tastiera e tramite stepper; l'orologio apre gli orari a passi di 15 minuti.
 - Le fasce `Mattina/Pomeriggio/Sera/Notte` appartengono al comando tra inizio e fine e impostano entrambi gli estremi.
 - Multi-day esplicito: nessun rollover nascosto della sola ora finale.
@@ -60,17 +63,17 @@ B14 e B07 vengono lavorati nello stesso ciclo: ogni decisione dell'utente viene 
 - Assenza = vero stato canonico `null/unassigned`; nessuna Life Area fittizia `-`, `Personal` o equivalente.
 - Campo Quick `Life Area (opzionale)` scrivibile/selezionabile.
 - Un nome nuovo resta solo nel draft e viene creato atomicamente soltanto quando `Aggiungi` viene accettato.
-- Se il comando complessivo fallisce, non deve restare una Life Area orfana.
+- Se il comando complessivo fallisce, non resta una Life Area orfana.
 - Selezionare una Life Area esistente usa colore/revisione canonici senza creare una nuova revisione.
 - Cambiare esplicitamente il colore di una Life Area selezionata produce un update revision-guarded.
 - Senza Life Area, un colore scelto è override dell'item.
 - I Tag B05 restano capability canonica secondaria molti-a-molti ma sono fuori dal Quick Create.
-- Il pannello storico `Life Area e Tag` non viene rimosso finché le capability di gestione Tag/area ancora necessarie non hanno una destinazione equivalente.
+- Il pannello storico `Life Area e Tag` non viene rimosso finché le capability di gestione ancora necessarie non hanno una destinazione equivalente.
 
 ### Location e descrizione
 
 - `location` è opzionale sia per Activity sia per Event.
-- `description` è opzionale e persistita canonicamente, non solo nel metadata React/frontend.
+- `description` è opzionale e persistita canonicamente.
 - Location/description non sono Schedule, Context, Life Area o Tag.
 
 ### Colore
@@ -79,7 +82,7 @@ B14 e B07 vengono lavorati nello stesso ciclo: ogni decisione dell'utente viene 
 - Il colore della Life Area resta actor-local organization state.
 - La Timeline può proiettare l'apparenza accettata ma non diventa proprietaria di quella verità.
 
-## U2 — implementazione pubblicata
+## U2 — implementazione chiusa
 
 ### Persistence / backend / API
 
@@ -87,6 +90,7 @@ B14 e B07 vengono lavorati nello stesso ciclo: ogni decisione dell'utente viene 
 - `48bb8d1e` — migration forward-only `20260930_94_b14_u2_optional_authoring_metadata.py`.
 - `_94` aggiunge `description`, `location`, `color_code` a `dante.activity_intention` e `dante.event_expectation` con vincoli DB.
 - `_94` aggiunge wrapper bounded `create_self_activity_authoring(...)` e `create_self_event_authoring(...)`; runtime non riceve direct-write sui descriptor.
+- `20261001_95` ripristina forward-only il read ACL storico sui descriptor dopo il revoke troppo ampio di `_94`; direct write resta negato.
 - `73861f19` — mapping Activity.
 - `4dee862b` — mapping Event.
 - `61c4d5c5` — `TemporalAuthoringApplication`: Activity/Event + Life Area opzionale/nuova/revisionata + eventuale Schedule nello stesso boundary applicativo.
@@ -115,57 +119,52 @@ B14 e B07 vengono lavorati nello stesso ciclo: ogni decisione dell'utente viene 
 - `d059bc9f` — `Senza Life Area` trattato come stato organizzativo legittimo, non legacy.
 - `cc0204e6` — entry tests Activity/Event U2.
 - `792a82a2` — typing test fallback recurrence consolidato.
+- `dd94c6ee` — OpenAPI + generated TypeScript/Zod client U2 rigenerati e pubblicati.
+
+## Frontiera DB / Dictionary provata
+
+```text
+Alembic head         20261001_95
+tables               196
+views                   5
+routines               157
+triggers               100
+physical indexes       397
+foreign keys           344
+check constraints      503
+domain/enum              0
+sequence/matview         0
+policies                 0
+```
+
+Dictionary e test di catalogo descrivono la stessa topologia. Le due nuove routine U2 e i sei CHECK metadata sono registrati; le vecchie descrizioni B05 che implicavano Life Area obbligatoria sono state superseded.
+
+## Gate U2 — PROVEN
+
+Chiusura dettagliata:
+
+`docs/workstreams/timeline-temporal-operational-b14-u2-closure-2026-10-01.md`
+
+Evidenza locale riportata:
+
+```text
+Alembic current                         20261001_95 (head)
+focused U2/B05/B03/backend regressions  PASS
+U2 API unit contract                    PASS
+web typecheck                           PASS
+web focused suite                       8 files / 26 tests PASS
+api-client typecheck                    PASS
+generated:check                         PASS / deterministic
+final current catalog pair              8 passed in 30.04s
+```
+
+Nessuna CI/GitHub Action è stata usata.
 
 ## Confine temporaneo con Advanced
 
-U2 chiude il **Quick authoring compatibile**. Le capability avanzate storiche che non sono ancora rappresentate dal nuovo DTO U2 non vengono semplificate o perse: il runtime rileva l'intento e resta sul percorso storico.
+U2 chiude il **Quick authoring compatibile**. Le capability avanzate storiche che non sono ancora rappresentate dal DTO U2 non vengono semplificate o perse: il runtime rileva l'intento e resta sul percorso storico.
 
-Questo è deliberato e temporaneo. La prossima fase UI deve migrare/organizzare le capability Advanced nella superficie centrale mantenendo lo stesso draft e poi potrà ridurre il fallback storico. Finché quel passaggio non è completo non è corretto affermare che ogni possibile configurazione Advanced utilizzi già il DTO U2.
-
-## Generated API client
-
-Il public contract backend è cambiato, quindi prima del gate devono essere rigenerati:
-
-```text
-packages/api-client/openapi/dante-v1.openapi.json
-packages/api-client/src/generated/
-```
-
-Solo tramite:
-
-```bash
-pnpm api:generate
-pnpm generated:check
-```
-
-Nessun edit manuale è ammesso.
-
-## Gate U2
-
-Il comando autorevole è registrato in:
-
-`docs/workstreams/timeline-temporal-operational-b14-u2-gate-2026-09-30.md`
-
-Il gate comprende:
-
-```text
-Alembic upgrade _94
-PostgreSQL U2 + regressioni B05/B03/database catalog
-API U2 unit contract
-OpenAPI export + generated client
-web typecheck
-U2 adapter/mapper/entry + U1 regressions
-api-client typecheck
-manual real-app proof
-```
-
-## Cosa NON è ancora chiuso
-
-- Il source tree U2 è candidate, non `PROVEN`, finché l'utente non esegue il gate locale.
-- OpenAPI/generated devono essere rigenerati localmente dal backend corrente e l'eventuale diff deve essere committato.
-- Dictionary/catalog e Roadmap/Map/Handoff devono essere promossi alla frontiera `_94` **dopo** il gate, usando la topologia realmente osservata e non inventata.
-- La superficie Advanced centrale grande è la prossima decisione/UI work: il draft condiviso è già predisposto, la forma visuale finale non è ancora congelata.
-- Ulteriore polish Home/Timeline continua dopo il gate U2.
+Questo è deliberato e temporaneo. U3+ deve migrare/organizzare le capability Advanced nella superficie centrale mantenendo lo stesso draft e poi ridurre progressivamente il fallback storico. Finché quel passaggio non è completo non è corretto affermare che ogni configurazione Advanced utilizzi già il DTO U2.
 
 ## Supersessione B05 deliberata
 
@@ -178,6 +177,12 @@ Life Area remains organization, not Domain ownership
 Tag remains secondary many-to-many organization
 ```
 
-## Chiusura
+## Cursor U3+
 
-U2 sarà marcato `CLOSED / PROVEN` solo dopo esito positivo del gate locale e riconciliazione generated/catalog/docs. B14+B07 resta attivo anche dopo U2 per continuare il consolidamento visuale e delle superfici secondo l'uso reale dell'app.
+U2 è `CLOSED / PROVEN`. B14+B07 resta attivo e riparte ora dal consolidamento visuale già deciso con l'utente:
+
+1. riga Quick `data inizio | ora inizio → ora fine | data fine`, con entrambe le date sempre presenti e picker DANTE;
+2. composizione `Life Area + colore`, poi `Località`, poi `Descrizione`;
+3. Tag fuori dal Quick Create;
+4. superficie Advanced centrale grande sullo stesso draft, senza eliminare capability;
+5. ulteriore polish Home/Timeline dopo l'assestamento del Create.
