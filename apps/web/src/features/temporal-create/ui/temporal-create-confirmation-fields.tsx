@@ -25,7 +25,7 @@ export function TemporalCreateConfirmationFields({
       className="temporal-create-section temporal-create-reality-section"
       aria-labelledby="temporal-create-reality-heading"
     >
-      <details>
+      <details open>
         <summary>
           <h3 id="temporal-create-reality-heading">
             {italian ? 'Realtà ed esito' : 'Reality and outcome'}
