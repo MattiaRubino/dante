@@ -2,6 +2,8 @@ import { Temporal } from '@dante/time';
 
 import type { TemporalCreateFields } from './temporal-create-session';
 
+export const TEMPORAL_CREATE_U2_DEFAULT_COLOR = '#EA5C12';
+
 export type TemporalCreateU2LifeAreaDraft =
   | Readonly<{ kind: 'none' }>
   | Readonly<{
@@ -41,7 +43,7 @@ export function createTemporalCreateU2AuthoringDraft(
   return Object.freeze({
     endDate: inferredEndDate(fields),
     lifeArea: Object.freeze({ kind: 'none' as const }),
-    itemColorCode: null,
+    itemColorCode: TEMPORAL_CREATE_U2_DEFAULT_COLOR,
   });
 }
 
