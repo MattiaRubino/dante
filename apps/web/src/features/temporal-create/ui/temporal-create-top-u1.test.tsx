@@ -179,14 +179,15 @@ describe('Temporal Create U1 top controls', () => {
     expect(
       screen.getByRole('button', { name: /Fuso orario: Ora locale/ }),
     ).toBeTruthy();
+    expect((screen.getByLabelText('Ricorda') as HTMLSelectElement).disabled).toBe(true);
 
-    fireEvent.click(
-      screen.getByRole('button', { name: /Fuso orario: Ora locale/ }),
-    );
+    // The timezone panel deliberately remains open while choosing between
+    // floating-local and a named zone, so select the named zone directly.
     fireEvent.click(screen.getByRole('button', { name: 'Europe/Rome' }));
     expect(
       screen.getByRole('button', { name: /Fuso orario: Europe\/Rome/ }),
     ).toBeTruthy();
+    expect((screen.getByLabelText('Ricorda') as HTMLSelectElement).disabled).toBe(false);
   });
 
   it('keeps the rail open on outside clicks while pinned, including the global Home bridge', () => {
@@ -231,7 +232,7 @@ describe('Temporal Create U1 top controls', () => {
       target: { value: 'Bozza preservata' },
     });
     fireEvent.change(screen.getByLabelText('Life Area (opzionale)'), {
-      target: { value: 'Nuova area' },
+      target: { value: 'Nuova Area' },
     });
 
     const advanced = screen.getByRole('button', { name: /Opzioni avanzate/ });
@@ -242,26 +243,30 @@ describe('Temporal Create U1 top controls', () => {
       '[data-temporal-create="composer"]',
     );
     expect(advancedComposer?.dataset.temporalCreateSurface).toBe('advanced');
-    expect(advancedComposer?.closest('[data-home-context-create-host]')).toBeNull();
-    expect(advancedComposer?.parentElement?.parentElement).toBe(document.body);
+    expect(advancedComposer?.parentElement).toBe(document.body);
     expect((screen.getByPlaceholderText('Titolo') as HTMLInputElement).value).toBe(
       'Bozza preservata',
     );
-    expect(
-      (screen.getByLabelText('Life Area (opzionale)') as HTMLInputElement).value,
-    ).toBe('Nuova area');
+    expect((screen.getByLabelText('Life Area (opzionale)') as HTMLInputElement).value).toBe(
+      'Nuova Area',
+    );
 
-    const hide = screen.getByRole('button', { name: /Nascondi opzioni avanzate/ });
-    expect(hide.getAttribute('aria-expanded')).toBe('true');
-    fireEvent.click(hide);
+    const backToQuick = screen.getByRole('button', {
+      name: /Nascondi opzioni avanzate/,
+    });
+    expect(backToQuick.getAttribute('aria-expanded')).toBe('true');
+    fireEvent.click(backToQuick);
 
-    const restoredQuick = document.querySelector<HTMLElement>(
+    const returnedComposer = document.querySelector<HTMLElement>(
       '[data-temporal-create="composer"]',
     );
-    expect(restoredQuick?.dataset.temporalCreateSurface).toBe('base');
-    expect(restoredQuick?.closest('[data-home-context-create-host]')).toBeTruthy();
+    expect(returnedComposer?.dataset.temporalCreateSurface).toBe('base');
+    expect(returnedComposer?.closest('[data-home-context-create-host]')).toBeTruthy();
     expect((screen.getByPlaceholderText('Titolo') as HTMLInputElement).value).toBe(
       'Bozza preservata',
+    );
+    expect((screen.getByLabelText('Life Area (opzionale)') as HTMLInputElement).value).toBe(
+      'Nuova Area',
     );
   });
 });
