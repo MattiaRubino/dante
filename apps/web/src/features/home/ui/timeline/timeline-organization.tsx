@@ -23,12 +23,23 @@ export function canonicalOrganizationGroups(
     hidden: item.hidden,
     archived: item.archived,
   }));
-  // U2 makes unassigned a legitimate actor-local organization state.
+  // U2 makes unassigned a legitimate actor-local organization state. The
+  // group itself remains neutral; accepted item colors stay presentation-only.
   if (snapshot.unassigned.length || snapshot.assignments.length === 0) {
+    const itemColorCodes = Object.freeze(
+      Object.fromEntries(
+        snapshot.unassigned.flatMap((item) =>
+          item.colorCode === null
+            ? []
+            : [[`${item.kind}:${item.itemRef}`, item.colorCode]],
+        ),
+      ),
+    );
     groups.push({
       id: LEGACY_UNASSIGNED_GROUP,
       label: 'Senza Life Area',
       tone: 'personal',
+      itemColorCodes,
     });
   }
   return Object.freeze(groups);
