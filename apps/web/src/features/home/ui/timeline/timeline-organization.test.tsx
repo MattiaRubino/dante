@@ -21,7 +21,7 @@ function snapshot(
         archived: false,
         hidden: true,
         iconCode: null,
-        colorCode: null,
+        colorCode: '#F4C95D',
       },
     ],
     assignments: [
@@ -40,12 +40,14 @@ function snapshot(
 }
 
 describe('Timeline organization groups', () => {
-  it('retains the real hidden Life Area as canonical group instead of manufacturing Personal', () => {
+  it('retains canonical Life Area revision/color metadata without manufacturing Personal', () => {
     expect(canonicalOrganizationGroups(snapshot())).toEqual([
       {
         id: AREA_REF,
         label: 'Lavoro',
         tone: 'personal',
+        organizationRevision: 1,
+        colorCode: '#F4C95D',
         hidden: true,
         archived: false,
       },
