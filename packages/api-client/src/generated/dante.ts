@@ -90,12 +90,15 @@ import type {
   PasswordRecoveryValidationRequest,
   PasswordResetRequest,
   PersonReferentResponse,
+  PlacePlanningTrayItemRequest,
+  PlacePlanningTrayItemResponse,
   PlanAdmissionResponse,
   PlanCandidateResponse,
   PlanDependencyHistoryResponse,
   PlanDependencyResponse,
   PlanDiagnosisResponse,
   PlanWorkResponse,
+  PlanningTrayItemResponse,
   PostponedEventResponse,
   ProblemDetails,
   ProductTagEdgeResponse,
@@ -9018,6 +9021,119 @@ export const temporalRenamePersonReferent = async (
     status: res.status,
     headers: res.headers,
   } as temporalRenamePersonReferentResponse;
+};
+
+export type temporalListPlanningTrayResponse200 = {
+  data: PlanningTrayItemResponse[];
+  status: 200;
+};
+
+export type temporalListPlanningTrayResponseSuccess =
+  temporalListPlanningTrayResponse200 & {
+    headers: Headers;
+  };
+export type temporalListPlanningTrayResponse =
+  temporalListPlanningTrayResponseSuccess;
+
+export const getTemporalListPlanningTrayUrl = () => {
+  return `/api/v1/temporal/planning-tray`;
+};
+
+/**
+ * @summary List Planning Tray
+ */
+export const temporalListPlanningTray = async (
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListPlanningTrayResponse> => {
+  const res = await (fetchFn ?? fetch)(getTemporalListPlanningTrayUrl(), {
+    ...options,
+    method: 'GET',
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListPlanningTrayResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListPlanningTrayResponse;
+};
+
+export type temporalPlacePlanningTrayItemResponse200 = {
+  data: PlacePlanningTrayItemResponse;
+  status: 200;
+};
+
+export type temporalPlacePlanningTrayItemResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalPlacePlanningTrayItemResponseSuccess =
+  temporalPlacePlanningTrayItemResponse200 & {
+    headers: Headers;
+  };
+export type temporalPlacePlanningTrayItemResponseError =
+  temporalPlacePlanningTrayItemResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalPlacePlanningTrayItemResponse =
+  | temporalPlacePlanningTrayItemResponseSuccess
+  | temporalPlacePlanningTrayItemResponseError;
+
+export const getTemporalPlacePlanningTrayItemUrl = (
+  kind: 'activity' | 'event',
+  subjectRef: string,
+) => {
+  return `/api/v1/temporal/planning-tray/${kind}/${subjectRef}/place`;
+};
+
+/**
+ * @summary Place Planning Tray Item
+ */
+export const temporalPlacePlanningTrayItem = async (
+  kind: 'activity' | 'event',
+  subjectRef: string,
+  placePlanningTrayItemRequest: PlacePlanningTrayItemRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalPlacePlanningTrayItemResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalPlacePlanningTrayItemUrl(kind, subjectRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(placePlanningTrayItemRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalPlacePlanningTrayItemResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalPlacePlanningTrayItemResponse;
 };
 
 export type temporalListSelfPlansResponse200 = {

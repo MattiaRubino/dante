@@ -6340,6 +6340,88 @@
         "title": "PersonReferentResponse",
         "type": "object"
       },
+      "PlacePlanningTrayItemRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "placement": {
+            "discriminator": {
+              "mapping": {
+                "absolute_interval": "#/components/schemas/PlanningTrayAbsolutePlacementRequest",
+                "coarse_local_period": "#/components/schemas/PlanningTrayCoarsePlacementRequest",
+                "date_span": "#/components/schemas/PlanningTrayDateSpanPlacementRequest",
+                "floating_local_interval": "#/components/schemas/PlanningTrayFloatingPlacementRequest",
+                "named_zone_local_interval": "#/components/schemas/PlanningTrayNamedZonePlacementRequest"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/PlanningTrayDateSpanPlacementRequest"
+              },
+              {
+                "$ref": "#/components/schemas/PlanningTrayFloatingPlacementRequest"
+              },
+              {
+                "$ref": "#/components/schemas/PlanningTrayNamedZonePlacementRequest"
+              },
+              {
+                "$ref": "#/components/schemas/PlanningTrayAbsolutePlacementRequest"
+              },
+              {
+                "$ref": "#/components/schemas/PlanningTrayCoarsePlacementRequest"
+              }
+            ],
+            "title": "Placement"
+          }
+        },
+        "required": ["operation_id", "placement"],
+        "title": "PlacePlanningTrayItemRequest",
+        "type": "object"
+      },
+      "PlacePlanningTrayItemResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "enum": ["activity", "event"],
+            "title": "Kind",
+            "type": "string"
+          },
+          "placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Placement Material State Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "subject_ref": {
+            "format": "uuid",
+            "title": "Subject Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "subject_ref",
+          "schedule_ref",
+          "placement_material_state_ref"
+        ],
+        "title": "PlacePlanningTrayItemResponse",
+        "type": "object"
+      },
       "PlacementBasisResponse": {
         "additionalProperties": false,
         "properties": {
@@ -7087,6 +7169,206 @@
           "replayed"
         ],
         "title": "PlanWorkResponse",
+        "type": "object"
+      },
+      "PlanningTrayAbsolutePlacementRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "ends_at": {
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "kind": {
+            "const": "absolute_interval",
+            "default": "absolute_interval",
+            "title": "Kind",
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          }
+        },
+        "required": ["starts_at", "ends_at"],
+        "title": "PlanningTrayAbsolutePlacementRequest",
+        "type": "object"
+      },
+      "PlanningTrayCoarsePlacementRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "coarse_local_period",
+            "default": "coarse_local_period",
+            "title": "Kind",
+            "type": "string"
+          },
+          "local_date": {
+            "format": "date",
+            "title": "Local Date",
+            "type": "string"
+          },
+          "period": {
+            "enum": ["morning", "afternoon", "evening"],
+            "title": "Period",
+            "type": "string"
+          }
+        },
+        "required": ["local_date", "period"],
+        "title": "PlanningTrayCoarsePlacementRequest",
+        "type": "object"
+      },
+      "PlanningTrayDateSpanPlacementRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "end_date_exclusive": {
+            "format": "date",
+            "title": "End Date Exclusive",
+            "type": "string"
+          },
+          "kind": {
+            "const": "date_span",
+            "default": "date_span",
+            "title": "Kind",
+            "type": "string"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          }
+        },
+        "required": ["start_date", "end_date_exclusive"],
+        "title": "PlanningTrayDateSpanPlacementRequest",
+        "type": "object"
+      },
+      "PlanningTrayFloatingPlacementRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "ends_local_at": {
+            "format": "date-time",
+            "title": "Ends Local At",
+            "type": "string"
+          },
+          "kind": {
+            "const": "floating_local_interval",
+            "default": "floating_local_interval",
+            "title": "Kind",
+            "type": "string"
+          },
+          "starts_local_at": {
+            "format": "date-time",
+            "title": "Starts Local At",
+            "type": "string"
+          }
+        },
+        "required": ["starts_local_at", "ends_local_at"],
+        "title": "PlanningTrayFloatingPlacementRequest",
+        "type": "object"
+      },
+      "PlanningTrayItemResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "kind": {
+            "enum": ["activity", "event"],
+            "title": "Kind",
+            "type": "string"
+          },
+          "life_area_assignment_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Assignment Revision"
+          },
+          "life_area_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Ref"
+          },
+          "schedule_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Schedule Ref"
+          },
+          "state": {
+            "enum": ["unplaced", "postponed"],
+            "title": "State",
+            "type": "string"
+          },
+          "subject_ref": {
+            "format": "uuid",
+            "title": "Subject Ref",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": ["kind", "state", "subject_ref", "title", "created_at"],
+        "title": "PlanningTrayItemResponse",
+        "type": "object"
+      },
+      "PlanningTrayNamedZonePlacementRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "disambiguation": {
+            "default": "reject",
+            "enum": ["reject", "earlier", "later"],
+            "title": "Disambiguation",
+            "type": "string"
+          },
+          "ends_local_at": {
+            "format": "date-time",
+            "title": "Ends Local At",
+            "type": "string"
+          },
+          "kind": {
+            "const": "named_zone_local_interval",
+            "default": "named_zone_local_interval",
+            "title": "Kind",
+            "type": "string"
+          },
+          "starts_local_at": {
+            "format": "date-time",
+            "title": "Starts Local At",
+            "type": "string"
+          },
+          "zone_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Zone Id",
+            "type": "string"
+          }
+        },
+        "required": ["starts_local_at", "ends_local_at", "zone_id"],
+        "title": "PlanningTrayNamedZonePlacementRequest",
         "type": "object"
       },
       "PostponedEventResponse": {
@@ -26776,6 +27058,90 @@
           }
         },
         "summary": "Rename Person Referent",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/planning-tray": {
+      "get": {
+        "operationId": "temporal_list_planning_tray",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PlanningTrayItemResponse"
+                  },
+                  "title": "Response Temporal List Planning Tray",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Planning Tray",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/planning-tray/{kind}/{subject_ref}/place": {
+      "post": {
+        "operationId": "temporal_place_planning_tray_item",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "kind",
+            "required": true,
+            "schema": {
+              "enum": ["activity", "event"],
+              "title": "Kind",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "subject_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Subject Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlacePlanningTrayItemRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlacePlanningTrayItemResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Place Planning Tray Item",
         "tags": ["temporal"]
       }
     },
