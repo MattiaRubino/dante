@@ -535,15 +535,35 @@ export function TemporalCreateCoreFieldsU2({
   };
 
   const patchStartTime = (startTime: string) => {
-    const nextEnd = temporalCreateEndDateTime(
+    let endDate = visibleEndDate;
+    let duration = temporalCreateDurationFromEndDateTime(
       fields.date,
       startTime,
-      fields.durationMinutes,
+      endDate,
+      calculatedEnd.time,
       fields.timeMode,
       fields.timeZoneId,
     );
-    patchAuthoring({ endDate: nextEnd.date });
-    onPatch({ startTime });
+    if (duration === null) {
+      try {
+        endDate = Temporal.PlainDate.from(endDate).add({ days: 1 }).toString();
+        duration = temporalCreateDurationFromEndDateTime(
+          fields.date,
+          startTime,
+          endDate,
+          calculatedEnd.time,
+          fields.timeMode,
+          fields.timeZoneId,
+        );
+      } catch {
+        duration = null;
+      }
+    }
+    patchAuthoring({ endDate });
+    onPatch({
+      startTime,
+      ...(duration === null ? {} : { durationMinutes: duration }),
+    });
   };
 
   const bandLabels: Readonly<Record<TimeBand['key'], string>> = italian
