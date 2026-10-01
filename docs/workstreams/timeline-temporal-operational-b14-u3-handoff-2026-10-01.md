@@ -2,7 +2,7 @@
 
 - **Branch:** `feature/timeline-temporal-operational`
 - **Status:** ACTIVE — implementation candidate; latest user-local proof is `899f9260`, later changes require a new local gate
-- **Current candidate HEAD before this document:** `b06b5542b718adf83bf2258edc1e39d8d9478dca`
+- **Current candidate HEAD before this document update:** `856d59f28894dd5aadd72cee1c1a059a639412af`
 - **U2 canonical closure:** `docs/workstreams/timeline-temporal-operational-b14-u2-closure-2026-10-01.md`
 - **UI ledger:** `docs/workstreams/timeline-temporal-operational-b14-ui-consolidation-2026-09-30.md`
 - **CI:** not authorized; user runs tests locally in `~/projects/dante`
@@ -58,6 +58,7 @@ Do not describe later commits as proven until the user reruns the local gate.
 - Quick timezone = compact globe; Advanced timezone = explicit `timeMode` + `timeZoneId` controls over the same state. The Quick globe is hidden while Advanced is active.
 - Reminder has one product control (`Ricorda`) in the shared/main Create fields. Advanced must not expose a second Reminder/Promemoria copy.
 - `Verifica esito` is separate from Reminder. It owns `confirmation.outcomePolicy`; for now only the actually supported inherited rule is exposed. Unsupported future policies are not shown as disabled fake choices.
+- Advanced recurrence and `Verifica esito` are independent sections: Event recurrence or an Activity recurrence does not suppress outcome-verification policy.
 - `Verifica esito` is not canonical B10 `Confirmation`; B10 Confirmation remains an attestation on an exact Outcome MaterialState.
 
 ### Planning tray / `Da collocare`
@@ -94,17 +95,18 @@ Event agenda/decomposition != Actual/Outcome/Confirmation/Reconciliation
 
 ```text
 480162a0  preserve selected color while staging new Life Area + lift color popup
- da4d703d  Quick all-day/Reminder visibility consolidation
- d4d48733  Activity all-day request uses explicit end date too
- a7839d51  remove Advanced Aspetto rendering
- 1a6cbab8  regressions: color preservation, all-day pair, no Reminder in unplaced
- 9876d146  Advanced hides compact globe and uses explicit timezone section
- c62d6c2c  separate Verifica esito from Reminder
- a7e1888e  remove Advanced appearance dependency
- edcc3b34  delete superseded appearance component
- c830a9f1  delete superseded appearance styles
- 12f85f6a  mark explicit Advanced timeMode field
- b06b5542  lock Advanced timezone / verification separation in tests
+da4d703d  Quick all-day/Reminder visibility consolidation
+d4d48733  Activity all-day request uses explicit end date too
+a7839d51  remove Advanced Aspetto rendering
+1a6cbab8  regressions: color preservation, all-day pair, no Reminder in unplaced
+9876d146  Advanced hides compact globe and uses explicit timezone section
+c62d6c2c  separate Verifica esito from Reminder
+a7e1888e  remove Advanced appearance dependency
+edcc3b34  delete superseded appearance component
+c830a9f1  delete superseded appearance styles
+12f85f6a  mark explicit Advanced timeMode field
+b06b5542  lock Advanced timezone / verification separation in tests
+856d59f2  make recurrence and outcome verification independent sections
 ```
 
 These commits are implementation candidate only until the user runs the next local gate.
@@ -140,7 +142,8 @@ Verify in this order:
 5. Reminder is selectable before submit for a normal named-zone timed Activity/Event;
 6. Advanced opens centrally, preserves draft, hides the compact globe, and exposes explicit time reference/timezone;
 7. Advanced has one `Ricorda` control only and a separate `Verifica esito` section;
-8. `Aspetto` is absent.
+8. Event/recurring Activity can show recurrence and `Verifica esito` independently;
+9. `Aspetto` is absent.
 
 ## 7. Next product work after this checkpoint
 
