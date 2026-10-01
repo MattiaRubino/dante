@@ -144,22 +144,34 @@
   padding: 0 11px;
 }
 
-.temporal-create-u2-location {
+.temporal-create-u2-location.temporal-create-u2-location {
   margin-top: 8px;
-  padding-left: 48px;
-  background-color: color-mix(in srgb, currentColor 4%, transparent);
+  padding: 0 11px 0 52px;
+  background-color: color-mix(in srgb, currentColor 4%, transparent) !important;
   background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238F9BAD' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z'/%3E%3Ccircle cx='12' cy='10' r='2.4'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238F9BAD' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z'/%3E%3Ccircle cx='12' cy='10' r='2.5'/%3E%3C/svg%3E"),
     linear-gradient(
       to bottom,
-      transparent 9px,
-      color-mix(in srgb, currentColor 14%, transparent) 9px,
-      color-mix(in srgb, currentColor 14%, transparent) 33px,
-      transparent 33px
-    );
-  background-repeat: no-repeat;
-  background-position: 12px center, 39px center;
-  background-size: 17px 17px, 1px 42px;
+      transparent 8px,
+      rgba(143, 155, 173, 0.28) 8px,
+      rgba(143, 155, 173, 0.28) 34px,
+      transparent 34px
+    ) !important;
+  background-repeat: no-repeat !important;
+  background-position: 13px center, 41px center !important;
+  background-size: 18px 18px, 1px 42px !important;
+}
+
+.temporal-create-u2-location.temporal-create-u2-location:focus {
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23F0A06F' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z'/%3E%3Ccircle cx='12' cy='10' r='2.5'/%3E%3C/svg%3E"),
+    linear-gradient(
+      to bottom,
+      transparent 8px,
+      rgba(240, 160, 111, 0.42) 8px,
+      rgba(240, 160, 111, 0.42) 34px,
+      transparent 34px
+    ) !important;
 }
 
 .temporal-create-u2-description {
