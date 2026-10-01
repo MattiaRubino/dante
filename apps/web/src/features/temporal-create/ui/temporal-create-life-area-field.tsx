@@ -29,7 +29,7 @@ type ColorPreset = Readonly<{
   label: string;
 }>;
 
-type FloatingPickerPosition = Readonly<{
+type FloatingPanelPosition = Readonly<{
   left: number;
   top: number;
 }>;
@@ -111,6 +111,27 @@ function canonicalOptions(
   );
 }
 
+function floatingColorPanelPosition(trigger: HTMLButtonElement): FloatingPanelPosition {
+  const rect = trigger.getBoundingClientRect();
+  const panelWidth = 270;
+  const gap = 12;
+  const viewportPadding = 12;
+  let left = rect.left - panelWidth - gap;
+  if (left < viewportPadding) {
+    left = Math.min(
+      window.innerWidth - panelWidth - viewportPadding,
+      rect.right + gap,
+    );
+  }
+  return Object.freeze({
+    left: Math.max(viewportPadding, left),
+    top: Math.max(
+      viewportPadding,
+      Math.min(rect.top - 8, window.innerHeight - 420),
+    ),
+  });
+}
+
 export function TemporalCreateLifeAreaField({
   contexts,
   draft,
@@ -121,8 +142,8 @@ export function TemporalCreateLifeAreaField({
   const [areaOpen, setAreaOpen] = useState(false);
   const [colorOpen, setColorOpen] = useState(false);
   const [customColorOpen, setCustomColorOpen] = useState(false);
-  const [customPickerPosition, setCustomPickerPosition] =
-    useState<FloatingPickerPosition | null>(null);
+  const [colorPanelPosition, setColorPanelPosition] =
+    useState<FloatingPanelPosition | null>(null);
   const [query, setQuery] = useState(() => selectedLabel(draft));
   const [availableContexts, setAvailableContexts] = useState(contexts);
   const [recentColors] = useState<readonly string[]>(() =>
@@ -131,7 +152,7 @@ export function TemporalCreateLifeAreaField({
       : readTemporalCreateRecentUsedColors(),
   );
   const rootRef = useRef<HTMLDivElement | null>(null);
-  const customPickerRef = useRef<HTMLDivElement | null>(null);
+  const colorPanelRef = useRef<HTMLDivElement | null>(null);
   const sourceRef = useRef<
     ReturnType<typeof createRemoteTemporalOrganizationDataSource> | null
   >(null);
@@ -163,29 +184,30 @@ export function TemporalCreateLifeAreaField({
   }, [contexts]);
 
   useEffect(() => {
-    if (!areaOpen && !colorOpen && !customColorOpen) return;
+    if (!areaOpen && !colorOpen) return;
     const dismiss = (event: PointerEvent) => {
       if (!(event.target instanceof Node)) return;
       if (rootRef.current?.contains(event.target)) return;
-      if (customPickerRef.current?.contains(event.target)) return;
+      if (colorPanelRef.current?.contains(event.target)) return;
       setAreaOpen(false);
       setColorOpen(false);
       setCustomColorOpen(false);
-      setCustomPickerPosition(null);
+      setColorPanelPosition(null);
     };
     document.addEventListener('pointerdown', dismiss, true);
     return () => document.removeEventListener('pointerdown', dismiss, true);
-  }, [areaOpen, colorOpen, customColorOpen]);
+  }, [areaOpen, colorOpen]);
 
   useEffect(() => {
-    if (!customColorOpen) return;
-    const closeFloatingPicker = () => {
+    if (!colorOpen) return;
+    const close = () => {
+      setColorOpen(false);
       setCustomColorOpen(false);
-      setCustomPickerPosition(null);
+      setColorPanelPosition(null);
     };
-    window.addEventListener('resize', closeFloatingPicker);
-    return () => window.removeEventListener('resize', closeFloatingPicker);
-  }, [customColorOpen]);
+    window.addEventListener('resize', close);
+    return () => window.removeEventListener('resize', close);
+  }, [colorOpen]);
 
   useEffect(() => {
     const form = rootRef.current?.closest('form');
@@ -283,57 +305,98 @@ export function TemporalCreateLifeAreaField({
       ? 'Colore attività o evento'
       : 'Colore Life Area';
 
-  const openCustomPicker = (trigger: HTMLButtonElement) => {
-    if (customColorOpen) {
+  const toggleColorPanel = (trigger: HTMLButtonElement) => {
+    if (colorOpen) {
+      setColorOpen(false);
       setCustomColorOpen(false);
-      setCustomPickerPosition(null);
+      setColorPanelPosition(null);
       return;
     }
-    const rect = trigger.getBoundingClientRect();
-    const panelWidth = 238;
-    const panelHeight = 258;
-    const gap = 12;
-    let left = rect.left - panelWidth - gap;
-    if (left < 12) {
-      left = Math.min(window.innerWidth - panelWidth - 12, rect.right + gap);
-    }
-    const top = Math.max(
-      12,
-      Math.min(rect.top - 6, window.innerHeight - panelHeight - 12),
-    );
-    setCustomPickerPosition(Object.freeze({ left, top }));
-    setCustomColorOpen(true);
+    setAreaOpen(false);
+    setCustomColorOpen(false);
+    setColorPanelPosition(floatingColorPanelPosition(trigger));
+    setColorOpen(true);
   };
 
-  const floatingPicker =
-    customColorOpen &&
-    customPickerPosition &&
-    typeof document !== 'undefined'
+  const floatingColorPanel =
+    colorOpen && colorPanelPosition && typeof document !== 'undefined'
       ? createPortal(
           <div
-            ref={customPickerRef}
-            className="temporal-create-life-area-field__custom-picker is-floating"
+            ref={colorPanelRef}
+            className="temporal-create-life-area-field__color-popover is-floating"
             role="dialog"
-            aria-label="Colore personalizzato"
+            aria-label="Scegli colore"
             style={{
-              left: customPickerPosition.left,
-              top: customPickerPosition.top,
+              left: colorPanelPosition.left,
+              top: colorPanelPosition.top,
             }}
           >
-            <HexColorPicker
-              color={currentColor}
-              onChange={changeColor}
-              aria-label="Selettore colore personalizzato"
-            />
-            <label>
-              <span>HEX</span>
-              <HexColorInput
-                color={currentColor}
-                onChange={changeColor}
-                prefixed
-                aria-label="Codice colore HEX"
-              />
-            </label>
+            <div className="temporal-create-life-area-field__palette">
+              <button
+                className="temporal-create-life-area-field__custom-trigger"
+                type="button"
+                aria-label="Colore personalizzato"
+                aria-expanded={customColorOpen}
+                title="Colore personalizzato"
+                onClick={() => setCustomColorOpen((current) => !current)}
+              >
+                <span aria-hidden="true" />
+              </button>
+              {COLOR_PRESETS.map((preset) => (
+                <button
+                  key={preset.value}
+                  className="temporal-create-life-area-field__color-swatch"
+                  type="button"
+                  aria-label={preset.label}
+                  aria-pressed={currentColor === preset.value}
+                  title={preset.label}
+                  onClick={() => changeColor(preset.value)}
+                >
+                  <span aria-hidden="true" style={{ background: preset.value }} />
+                </button>
+              ))}
+            </div>
+
+            {recentColors.length > 0 ? (
+              <div
+                className="temporal-create-life-area-field__recent"
+                aria-label="Ultimi colori usati"
+              >
+                <small>Usati di recente</small>
+                <div>
+                  {recentColors.map((color) => (
+                    <button
+                      key={color}
+                      type="button"
+                      aria-label={`Colore usato ${color}`}
+                      title={`Usato di recente · ${color}`}
+                      onClick={() => changeColor(color)}
+                    >
+                      <span aria-hidden="true" style={{ background: color }} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {customColorOpen ? (
+              <div className="temporal-create-life-area-field__custom-picker is-embedded">
+                <HexColorPicker
+                  color={currentColor}
+                  onChange={changeColor}
+                  aria-label="Selettore colore personalizzato"
+                />
+                <label>
+                  <span>HEX</span>
+                  <HexColorInput
+                    color={currentColor}
+                    onChange={changeColor}
+                    prefixed
+                    aria-label="Codice colore HEX"
+                  />
+                </label>
+              </div>
+            ) : null}
           </div>,
           document.body,
         )
@@ -349,77 +412,10 @@ export function TemporalCreateLifeAreaField({
             aria-label={colorLabel}
             aria-expanded={colorOpen}
             title={colorLabel}
-            onClick={() => {
-              setColorOpen((current) => !current);
-              setCustomColorOpen(false);
-              setCustomPickerPosition(null);
-              setAreaOpen(false);
-            }}
+            onClick={(event) => toggleColorPanel(event.currentTarget)}
           >
             <span aria-hidden="true" style={{ background: currentColor }} />
           </button>
-
-          {colorOpen ? (
-            <div
-              className="temporal-create-life-area-field__color-popover"
-              role="dialog"
-              aria-label="Scegli colore"
-            >
-              <div className="temporal-create-life-area-field__palette">
-                <button
-                  className="temporal-create-life-area-field__custom-trigger"
-                  type="button"
-                  aria-label="Colore personalizzato"
-                  aria-expanded={customColorOpen}
-                  title="Colore personalizzato"
-                  onClick={(event) => openCustomPicker(event.currentTarget)}
-                >
-                  <span aria-hidden="true" />
-                </button>
-                {COLOR_PRESETS.map((preset) => (
-                  <button
-                    key={preset.value}
-                    className="temporal-create-life-area-field__color-swatch"
-                    type="button"
-                    aria-label={preset.label}
-                    aria-pressed={currentColor === preset.value}
-                    title={preset.label}
-                    onClick={() => changeColor(preset.value)}
-                  >
-                    <span
-                      aria-hidden="true"
-                      style={{ background: preset.value }}
-                    />
-                  </button>
-                ))}
-              </div>
-
-              {recentColors.length > 0 ? (
-                <div
-                  className="temporal-create-life-area-field__recent"
-                  aria-label="Ultimi colori usati"
-                >
-                  <small>Usati di recente</small>
-                  <div>
-                    {recentColors.map((color) => (
-                      <button
-                        key={color}
-                        type="button"
-                        aria-label={`Colore usato ${color}`}
-                        title={`Usato di recente · ${color}`}
-                        onClick={() => changeColor(color)}
-                      >
-                        <span
-                          aria-hidden="true"
-                          style={{ background: color }}
-                        />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-            </div>
-          ) : null}
         </div>
 
         <div className="temporal-create-life-area-field__area-cell">
@@ -433,7 +429,7 @@ export function TemporalCreateLifeAreaField({
               setAreaOpen(true);
               setColorOpen(false);
               setCustomColorOpen(false);
-              setCustomPickerPosition(null);
+              setColorPanelPosition(null);
             }}
             onChange={(event) => stageTypedName(event.currentTarget.value)}
           />
@@ -496,7 +492,7 @@ export function TemporalCreateLifeAreaField({
           ) : null}
         </div>
       </div>
-      {floatingPicker}
+      {floatingColorPanel}
     </>
   );
 }
