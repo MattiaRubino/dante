@@ -208,6 +208,19 @@
   color: color-mix(in srgb, currentColor 58%, transparent);
 }
 
+/* Quick footer intentionally has only the two actions that still carry unique
+   meaning: open Advanced and accept Add. Closing lives in the header X. */
+.temporal-create-composer:not(.is-full)
+  .temporal-create-actions.temporal-create-actions {
+  justify-content: flex-end;
+}
+
+.temporal-create-composer:not(.is-full)
+  .temporal-create-actions
+  .temporal-create-advanced-toggle {
+  margin-right: 0;
+}
+
 @media (max-width: 720px) {
   .temporal-create-u2-when {
     grid-template-columns: 20px minmax(68px, 0.8fr) minmax(92px, 1fr) 18px minmax(92px, 1fr) minmax(68px, 0.8fr);
