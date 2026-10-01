@@ -1,0 +1,87 @@
+.temporal-create-backdrop.is-advanced {
+  --temporal-create-structure-actions-width: clamp(220px, 30%, 320px);
+}
+
+.temporal-create-backdrop.is-advanced
+  .temporal-create-title-input.has-structure-actions {
+  width: calc(100% - var(--temporal-create-structure-actions-width) - 12px);
+  align-self: flex-start;
+}
+
+.temporal-create-advanced-structure-inline {
+  order: -28;
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr) var(--temporal-create-structure-actions-width);
+  gap: 12px;
+  min-height: 38px;
+  margin-top: -6px;
+}
+
+.temporal-create-advanced-structure-inline__branch {
+  position: relative;
+  min-width: 0;
+  padding-left: 18px;
+}
+
+.temporal-create-advanced-structure-inline__connector {
+  position: absolute;
+  top: -8px;
+  bottom: 18px;
+  left: 6px;
+  width: 1px;
+  background: var(
+    --dante-semantic-color-home-border-subtle,
+    rgba(255, 255, 255, 0.09)
+  );
+}
+
+.temporal-create-advanced-structure-inline__connector::after {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 10px;
+  height: 1px;
+  background: inherit;
+  content: '';
+}
+
+.temporal-create-advanced-structure-inline__add {
+  position: relative;
+  display: inline-block;
+}
+
+.temporal-create-advanced-structure-inline__add > button {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: 1px dashed color-mix(in srgb, currentColor 22%, transparent);
+  border-radius: 9px;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.temporal-create-advanced-structure-inline__add > button:hover,
+.temporal-create-advanced-structure-inline__add > button:focus-visible {
+  border-color: color-mix(in srgb, #ea5c12 58%, transparent);
+  outline: none;
+}
+
+.temporal-create-advanced-structure-inline__actions {
+  min-width: 0;
+  min-height: 32px;
+}
+
+.temporal-create-advanced-structure-inline .temporal-create-structure-menu {
+  top: 38px;
+  left: 0;
+}
+
+@media (max-width: 900px) {
+  .temporal-create-backdrop.is-advanced {
+    --temporal-create-structure-actions-width: clamp(160px, 27%, 220px);
+  }
+}
