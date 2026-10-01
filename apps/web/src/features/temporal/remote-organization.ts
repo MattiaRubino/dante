@@ -21,6 +21,7 @@ export type UnassignedItem = Readonly<{
   kind: OrganizationKind;
   itemRef: string;
   title: string;
+  colorCode: string | null;
 }>;
 export type ProductTag = Readonly<{
   ref: string;
@@ -49,7 +50,11 @@ type RoutineOrganization = Readonly<{
 const UUID_V7 = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export class TemporalOrganizationError extends Error {
-  constructor(message: string, readonly status: number | null = null, readonly code: string | null = null) {
+  constructor(
+    message: string,
+    readonly status: number | null = null,
+    readonly code: string | null = null,
+  ) {
     super(message);
     this.name = 'TemporalOrganizationError';
   }
@@ -141,6 +146,7 @@ function unassigned(value: unknown): UnassignedItem {
     kind: kind(row.subject_kind),
     itemRef: uuid(row.subject_native_ref),
     title: label(row.title),
+    colorCode: nullable(row.color_code),
   });
 }
 
@@ -201,12 +207,17 @@ export function createRemoteTemporalOrganizationDataSource(
     try {
       value = await response.json();
     } catch {
-      throw new TemporalOrganizationError('Invalid organization JSON.', response.status);
+      throw new TemporalOrganizationError(
+        'Invalid organization JSON.',
+        response.status,
+      );
     }
     if (!response.ok) {
       const problem = record(value);
       throw new TemporalOrganizationError(
-        typeof problem.detail === 'string' ? problem.detail : 'Organization unavailable.',
+        typeof problem.detail === 'string'
+          ? problem.detail
+          : 'Organization unavailable.',
         response.status,
         typeof problem.code === 'string' ? problem.code : null,
       );
@@ -214,10 +225,21 @@ export function createRemoteTemporalOrganizationDataSource(
     return value;
   }
 
-  async function mutate(path: string, method: string, payload: unknown): Promise<unknown> {
+  async function mutate(
+    path: string,
+    method: string,
+    payload: unknown,
+  ): Promise<unknown> {
     const session = record(await request('/api/v1/auth/session'));
-    if (session.authenticated !== true || typeof session.csrf_token !== 'string' || !session.csrf_token) {
-      throw new TemporalOrganizationError('Organization requires an authenticated session.', 401);
+    if (
+      session.authenticated !== true ||
+      typeof session.csrf_token !== 'string' ||
+      !session.csrf_token
+    ) {
+      throw new TemporalOrganizationError(
+        'Organization requires an authenticated session.',
+        401,
+      );
     }
     return request(path, {
       method,
@@ -231,14 +253,15 @@ export function createRemoteTemporalOrganizationDataSource(
 
   return Object.freeze({
     async load(): Promise<OrganizationSnapshot> {
-      const [areas, assignments, unassignedItems, tags, edges, routines] = await Promise.all([
-        request('/api/v1/temporal/life-areas'),
-        request('/api/v1/temporal/life-area-assignments'),
-        request('/api/v1/temporal/life-area-assignments/unassigned'),
-        request('/api/v1/temporal/tags'),
-        request('/api/v1/temporal/tags/assignments'),
-        request('/api/v1/temporal/routines'),
-      ]);
+      const [areas, assignments, unassignedItems, tags, edges, routines] =
+        await Promise.all([
+          request('/api/v1/temporal/life-areas'),
+          request('/api/v1/temporal/life-area-assignments'),
+          request('/api/v1/temporal/life-area-assignments/unassigned'),
+          request('/api/v1/temporal/tags'),
+          request('/api/v1/temporal/tags/assignments'),
+          request('/api/v1/temporal/routines'),
+        ]);
       const routineRows = list(routines, routineOrganization);
       return Object.freeze({
         areas: list(areas, area),
@@ -255,38 +278,71 @@ export function createRemoteTemporalOrganizationDataSource(
       });
     },
     async createArea(name: string): Promise<LifeArea> {
-      return area(await mutate('/api/v1/temporal/life-areas', 'POST', {
-        operation_id: crypto.randomUUID(), name,
-      }));
+      return area(
+        await mutate('/api/v1/temporal/life-areas', 'POST', {
+          operation_id: crypto.randomUUID(),
+          name,
+        }),
+      );
     },
     async renameArea(current: LifeArea, name: string): Promise<void> {
       await mutate(`/api/v1/temporal/life-areas/${current.ref}/name`, 'PATCH', {
-        operation_id: crypto.randomUUID(), expected_revision: current.revision, name,
+        operation_id: crypto.randomUUID(),
+        expected_revision: current.revision,
+        name,
       });
     },
     async setAreaHidden(current: LifeArea, hidden: boolean): Promise<void> {
-      await mutate(`/api/v1/temporal/life-areas/${current.ref}/visibility`, 'PUT', {
-        operation_id: crypto.randomUUID(), expected_revision: current.revision, hidden,
-      });
+      await mutate(
+        `/api/v1/temporal/life-areas/${current.ref}/visibility`,
+        'PUT',
+        {
+          operation_id: crypto.randomUUID(),
+          expected_revision: current.revision,
+          hidden,
+        },
+      );
     },
-    async setAreaAppearance(current: LifeArea, iconCode: string | null, colorCode: string | null): Promise<void> {
-      await mutate(`/api/v1/temporal/life-areas/${current.ref}/appearance`, 'PUT', {
-        operation_id: crypto.randomUUID(), expected_revision: current.revision,
-        icon_code: iconCode, color_code: colorCode,
-      });
+    async setAreaAppearance(
+      current: LifeArea,
+      iconCode: string | null,
+      colorCode: string | null,
+    ): Promise<void> {
+      await mutate(
+        `/api/v1/temporal/life-areas/${current.ref}/appearance`,
+        'PUT',
+        {
+          operation_id: crypto.randomUUID(),
+          expected_revision: current.revision,
+          icon_code: iconCode,
+          color_code: colorCode,
+        },
+      );
     },
     async archiveArea(current: LifeArea): Promise<void> {
-      await mutate(`/api/v1/temporal/life-areas/${current.ref}/archive`, 'POST', {
-        operation_id: crypto.randomUUID(), expected_revision: current.revision,
-      });
+      await mutate(
+        `/api/v1/temporal/life-areas/${current.ref}/archive`,
+        'POST',
+        {
+          operation_id: crypto.randomUUID(),
+          expected_revision: current.revision,
+        },
+      );
     },
     async reorderAreas(areas: readonly LifeArea[]): Promise<void> {
       await mutate('/api/v1/temporal/life-areas/order', 'PUT', {
         operation_id: crypto.randomUUID(),
-        entries: areas.map((item) => ({ life_area_ref: item.ref, expected_revision: item.revision })),
+        entries: areas.map((item) => ({
+          life_area_ref: item.ref,
+          expected_revision: item.revision,
+        })),
       });
     },
-    async assignItem(item: Pick<UnassignedItem, 'kind' | 'itemRef'>, areaRef: string, expectedRevision: number): Promise<void> {
+    async assignItem(
+      item: Pick<UnassignedItem, 'kind' | 'itemRef'>,
+      areaRef: string,
+      expectedRevision: number,
+    ): Promise<void> {
       if (item.kind === 'routine') {
         await mutate(`/api/v1/temporal/routines/${item.itemRef}/life-area`, 'PUT', {
           operation_id: crypto.randomUUID(),
@@ -295,36 +351,61 @@ export function createRemoteTemporalOrganizationDataSource(
         });
         return;
       }
-      await mutate(`/api/v1/temporal/life-area-assignments/${item.kind === 'activity' ? 'activities' : 'events'}/${item.itemRef}`, 'PUT', {
-        operation_id: crypto.randomUUID(), life_area_ref: uuid(areaRef),
-        expected_assignment_revision: expectedRevision,
-      });
+      await mutate(
+        `/api/v1/temporal/life-area-assignments/${
+          item.kind === 'activity' ? 'activities' : 'events'
+        }/${item.itemRef}`,
+        'PUT',
+        {
+          operation_id: crypto.randomUUID(),
+          life_area_ref: uuid(areaRef),
+          expected_assignment_revision: expectedRevision,
+        },
+      );
     },
     async createTag(name: string): Promise<ProductTag> {
-      return tag(await mutate('/api/v1/temporal/tags', 'POST', {
-        operation_id: crypto.randomUUID(), name,
-      }));
+      return tag(
+        await mutate('/api/v1/temporal/tags', 'POST', {
+          operation_id: crypto.randomUUID(),
+          name,
+        }),
+      );
     },
     async renameTag(current: ProductTag, name: string): Promise<void> {
       await mutate(`/api/v1/temporal/tags/${current.ref}/name`, 'PUT', {
-        operation_id: crypto.randomUUID(), expected_revision: current.revision, name,
+        operation_id: crypto.randomUUID(),
+        expected_revision: current.revision,
+        name,
       });
     },
     async archiveTag(current: ProductTag): Promise<void> {
       await mutate(`/api/v1/temporal/tags/${current.ref}/archive`, 'POST', {
-        operation_id: crypto.randomUUID(), expected_revision: current.revision,
+        operation_id: crypto.randomUUID(),
+        expected_revision: current.revision,
       });
     },
-    async setItemTag(item: Pick<UnassignedItem, 'kind' | 'itemRef'>, tagRef: string, attached: boolean): Promise<void> {
+    async setItemTag(
+      item: Pick<UnassignedItem, 'kind' | 'itemRef'>,
+      tagRef: string,
+      attached: boolean,
+    ): Promise<void> {
       if (item.kind === 'routine') {
-        await mutate(`/api/v1/temporal/routines/${item.itemRef}/tags/${uuid(tagRef)}/${attached ? 'attach' : 'detach'}`, 'POST', {
-          operation_id: crypto.randomUUID(),
-        });
+        await mutate(
+          `/api/v1/temporal/routines/${item.itemRef}/tags/${uuid(tagRef)}/${
+            attached ? 'attach' : 'detach'
+          }`,
+          'POST',
+          { operation_id: crypto.randomUUID() },
+        );
         return;
       }
-      await mutate(`/api/v1/temporal/${item.kind === 'activity' ? 'activities' : 'events'}/${item.itemRef}/tags/${uuid(tagRef)}/${attached ? 'attach' : 'detach'}`, 'POST', {
-        operation_id: crypto.randomUUID(),
-      });
+      await mutate(
+        `/api/v1/temporal/${
+          item.kind === 'activity' ? 'activities' : 'events'
+        }/${item.itemRef}/tags/${uuid(tagRef)}/${attached ? 'attach' : 'detach'}`,
+        'POST',
+        { operation_id: crypto.randomUUID() },
+      );
     },
   });
 }
