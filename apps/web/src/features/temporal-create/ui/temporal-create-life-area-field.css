@@ -190,8 +190,8 @@
 .temporal-create-life-area-field__custom-popover {
   position: absolute;
   z-index: 84;
-  top: 0;
-  left: calc(100% + 8px);
+  top: calc(100% + 8px);
+  left: 0;
   display: grid;
   place-items: center;
   padding: 10px;
@@ -307,11 +307,4 @@
   border-top: 1px solid color-mix(in srgb, currentColor 10%, transparent);
   font-size: 0.76rem;
   opacity: 0.72;
-}
-
-@media (max-width: 760px) {
-  .temporal-create-life-area-field__custom-popover {
-    top: calc(100% + 8px);
-    left: 0;
-  }
 }
