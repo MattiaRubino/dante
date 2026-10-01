@@ -8,6 +8,7 @@ import type {
 } from '../model/temporal-create-u2-authoring';
 import {
   readTemporalCreateRecentUsedColors,
+  rememberTemporalCreateUsedColor,
   TEMPORAL_CREATE_DEFAULT_COLOR,
 } from './temporal-create-recent-colors';
 import type { TemporalCreateContextOption } from './temporal-create-ui-types';
@@ -162,6 +163,14 @@ export function TemporalCreateLifeAreaField({
     document.addEventListener('pointerdown', dismiss, true);
     return () => document.removeEventListener('pointerdown', dismiss, true);
   }, [areaOpen, colorOpen]);
+
+  useEffect(() => {
+    const form = rootRef.current?.closest('form');
+    if (!form) return;
+    const rememberUsedColor = () => rememberTemporalCreateUsedColor(currentColor);
+    form.addEventListener('submit', rememberUsedColor);
+    return () => form.removeEventListener('submit', rememberUsedColor);
+  }, [currentColor]);
 
   const filtered = useMemo(() => {
     const needle = normalized(query).toLocaleLowerCase();
