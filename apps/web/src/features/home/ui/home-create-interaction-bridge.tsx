@@ -203,6 +203,13 @@ export function HomeCreateInteractionBridge() {
 
       if (
         target instanceof Element &&
+        target.closest('[data-temporal-create-portal]')
+      ) {
+        return;
+      }
+
+      if (
+        target instanceof Element &&
         target.closest('.dante-timeline-quick-add')
       ) {
         return;
