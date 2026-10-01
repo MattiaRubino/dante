@@ -41,13 +41,14 @@
       "B13-A",
       "B13-B",
       "B13-C",
-      "B12-C"
+      "B12-C",
+      "B14-U2"
     ],
     "standalone_entries": {
       "tables": 196,
       "views": 5,
-      "routines": 155,
-      "total": 356
+      "routines": 157,
+      "total": 358
     },
     "embedded_objects": {
       "triggers": 100,
@@ -55,7 +56,7 @@
     },
     "constraints": {
       "foreign_keys": 344,
-      "check_constraints": 497
+      "check_constraints": 503
     }
   },
   "technical_foundation": {
