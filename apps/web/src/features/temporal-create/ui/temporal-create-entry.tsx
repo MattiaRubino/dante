@@ -473,20 +473,16 @@ export function TemporalCreateEntry({
                 <button type="button" autoFocus onClick={continueEditing}>
                   Annulla
                 </button>
-                {session.draft.current.kind === 'activity' ? (
-                  <button
-                    type="button"
-                    disabled={
-                      lifecycle === 'pending' ||
-                      session.draft.current.title.trim().length === 0
-                    }
-                    onClick={() =>
-                      void submit({ timeSemantics: 'unscheduled' })
-                    }
-                  >
-                    Sposta in Da collocare
-                  </button>
-                ) : null}
+                <button
+                  type="button"
+                  disabled={
+                    lifecycle === 'pending' ||
+                    session.draft.current.title.trim().length === 0
+                  }
+                  onClick={() => void submit({ timeSemantics: 'unscheduled' })}
+                >
+                  Sposta in Da collocare
+                </button>
                 <button
                   className="temporal-create-discard__destructive"
                   type="button"
