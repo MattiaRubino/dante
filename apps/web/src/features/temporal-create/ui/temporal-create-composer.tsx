@@ -449,16 +449,14 @@ export function TemporalCreateComposer({
             </div>
             <div className="temporal-create-discard__actions">
               <button ref={continueRef} type="button" onClick={continueEditing}>Annulla</button>
-              {fields.kind === 'activity' ? (
-                <button
-                  type="button"
-                  disabled={pending || fields.title.trim().length === 0}
-                  onClick={onMoveToUnplaced}
-                  title={fields.title.trim().length === 0 ? 'Inserisci prima un titolo.' : undefined}
-                >
-                  Sposta in Da collocare
-                </button>
-              ) : null}
+              <button
+                type="button"
+                disabled={pending || fields.title.trim().length === 0}
+                onClick={onMoveToUnplaced}
+                title={fields.title.trim().length === 0 ? 'Inserisci prima un titolo.' : undefined}
+              >
+                Sposta in Da collocare
+              </button>
               <button className="temporal-create-discard__destructive" type="button" onClick={onDiscard}>
                 {t(($) => $.common.home.timeline.create.discard)}
               </button>
