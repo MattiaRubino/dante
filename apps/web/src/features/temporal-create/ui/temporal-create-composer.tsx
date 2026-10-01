@@ -395,6 +395,7 @@ export function TemporalCreateComposer({
               <TemporalCreateCoreFields
                 fields={fields}
                 contexts={contexts}
+                showCompactTimezone={!advanced}
                 onPatch={onPatch}
                 onRequestAdvanced={showAdvanced}
                 renderError={renderError}
