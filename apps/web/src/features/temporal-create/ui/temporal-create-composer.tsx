@@ -3,6 +3,7 @@ import {
   useId,
   useLayoutEffect,
   useRef,
+  useState,
   type FormEvent,
   type KeyboardEvent,
   type ReactNode,
@@ -71,6 +72,15 @@ function issueFor(
   return issues.find((issue) => issue.path[0] === path);
 }
 
+function PinIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M9 4h6l-1 5 3 3v2H7v-2l3-3-1-5Z" />
+      <path d="M12 14v6" />
+    </svg>
+  );
+}
+
 export function TemporalCreateComposer({
   session,
   contexts,
@@ -100,10 +110,12 @@ export function TemporalCreateComposer({
   const continueRef = useRef<HTMLButtonElement | null>(null);
   const closeAttemptFocusRef = useRef<HTMLElement | null>(null);
   const advancedTargetRef = useRef<'recurrence' | null>(null);
+  const [pinned, setPinned] = useState(false);
   const fields = session.draft.current;
   const pending = lifecycle === 'pending';
   const discardPending = session.closeDecision === 'confirm-discard';
   const advanced = session.surface !== 'quick';
+  const italian = i18n.language.toLowerCase().startsWith('it');
 
   useLayoutEffect(() => {
     titleRef.current?.focus();
@@ -148,6 +160,7 @@ export function TemporalCreateComposer({
   };
 
   const requestCloseFromBackdrop = () => {
+    if (pinned) return;
     if (!pending && !discardPending) requestCloseFromCurrentFocus();
   };
 
@@ -292,6 +305,7 @@ export function TemporalCreateComposer({
         className={`temporal-create-composer${advanced ? ' is-advanced is-full' : ''}`}
         data-temporal-create="composer"
         data-temporal-create-surface={advanced ? 'advanced' : 'base'}
+        data-pinned={pinned || undefined}
         role="dialog"
         aria-modal={discardPending || undefined}
         aria-label={t(($) => $.common.home.timeline.create.title)}
@@ -303,15 +317,35 @@ export function TemporalCreateComposer({
           inert={discardPending || undefined}
         >
           <span aria-hidden="true" />
-          <button
-            className="temporal-create-composer__close"
-            type="button"
-            disabled={pending}
-            onClick={requestCloseFromCurrentFocus}
-            aria-label={t(($) => $.common.home.timeline.create.close)}
-          >
-            ×
-          </button>
+          <div className="temporal-create-composer__header-actions">
+            <button
+              className="temporal-create-composer__pin"
+              type="button"
+              aria-pressed={pinned}
+              aria-label={
+                pinned
+                  ? italian
+                    ? 'Sblocca pannello Crea'
+                    : 'Unpin Create panel'
+                  : italian
+                    ? 'Mantieni aperto il pannello Crea'
+                    : 'Pin Create panel open'
+              }
+              title={pinned ? 'Pannello fissato' : 'Mantieni aperto'}
+              onClick={() => setPinned((current) => !current)}
+            >
+              <PinIcon />
+            </button>
+            <button
+              className="temporal-create-composer__close"
+              type="button"
+              disabled={pending}
+              onClick={requestCloseFromCurrentFocus}
+              aria-label={t(($) => $.common.home.timeline.create.close)}
+            >
+              ×
+            </button>
+          </div>
         </div>
 
         {reminderRetry ? (
