@@ -1,8 +1,8 @@
 .temporal-create-u2-when {
   display: grid;
   grid-template-columns:
-    28px minmax(82px, 0.95fr) minmax(82px, 0.9fr) 26px minmax(82px, 0.9fr)
-    minmax(82px, 0.95fr);
+    20px minmax(64px, 0.72fr) minmax(100px, 1.12fr) 18px
+    minmax(100px, 1.12fr) minmax(64px, 0.72fr);
   align-items: start;
   gap: 4px;
   width: 100%;
@@ -22,45 +22,101 @@
 }
 
 .temporal-create-u2-when .temporal-create-timezone-control {
-  align-self: center;
+  align-self: start;
+  margin-top: 0;
 }
 
-.temporal-create-u2-when .temporal-create-timezone-trigger,
+.temporal-create-u2-when .temporal-create-timezone-trigger {
+  width: 20px !important;
+  height: 42px !important;
+}
+
+.temporal-create-u2-when .temporal-create-timezone-trigger svg {
+  width: 14px;
+  height: 14px;
+}
+
 .temporal-create-u2-when .temporal-create-time-band-trigger {
-  width: 28px;
-  height: 44px;
+  width: 18px !important;
+  height: 42px !important;
 }
 
 .temporal-create-u2-when .temporal-create-date-picker__trigger {
-  min-height: 44px;
-  padding-inline: 6px;
-  border: 1px solid transparent;
+  box-sizing: border-box;
+  display: flex;
+  width: 100%;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
   border-radius: 10px;
-  font-size: 0.76rem;
-  letter-spacing: -0.01em;
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-surface-control, #151f2e) 76%,
+    black
+  );
+  font-size: 0.7rem;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+  text-align: center;
 }
 
 .temporal-create-u2-when .temporal-create-date-picker__trigger:hover,
 .temporal-create-u2-when .temporal-create-date-picker__trigger:focus-visible,
 .temporal-create-u2-when .temporal-create-date-picker__trigger[aria-expanded='true'] {
-  border-color: color-mix(in srgb, currentColor 10%, transparent);
-  background: color-mix(in srgb, currentColor 5%, transparent);
+  border-color: color-mix(in srgb, #ff8a3d 44%, transparent);
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-surface-control, #151f2e) 86%,
+    #ff8a3d 4%
+  );
+  outline: none;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #ff8a3d 10%, transparent);
 }
 
 .temporal-create-u2-when .temporal-create-time-control__field {
+  grid-template-columns: minmax(0, 1fr) 22px;
   min-width: 0;
+  min-height: 42px;
 }
 
 .temporal-create-u2-when .temporal-create-inline-time-editor {
   min-width: 0;
+  grid-template-columns: minmax(31px, 1fr) 6px minmax(31px, 1fr);
+  padding-inline: 2px;
+}
+
+.temporal-create-u2-when .temporal-create-time-segment.temporal-create-time-segment > button {
+  width: 24px;
+  min-width: 24px;
+}
+
+.temporal-create-u2-when .temporal-create-time-segment input {
+  font-size: 13px;
+}
+
+.temporal-create-u2-when .temporal-create-clock-trigger {
+  width: 22px;
+  min-width: 22px;
+}
+
+.temporal-create-u2-when .temporal-create-clock-trigger svg {
+  width: 13px;
+  height: 13px;
 }
 
 .temporal-create-u2-when .temporal-create-time-control > small {
   display: block;
   min-height: 14px;
   margin-top: 2px;
-  font-size: 0.66rem;
+  overflow: hidden;
+  font-size: 0.64rem;
   text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   opacity: 0.58;
 }
 
@@ -70,10 +126,11 @@
   gap: 8px;
 }
 
-.temporal-create-u2-repeat select {
+.temporal-create-u2-repeat select,
+.temporal-create-u2-location,
+.temporal-create-u2-description {
+  box-sizing: border-box;
   width: 100%;
-  height: 42px;
-  padding: 0 11px;
   border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
   border-radius: 11px;
   color: inherit;
@@ -81,57 +138,20 @@
   font: inherit;
 }
 
-/* U3 quick-authoring organization card. The three controls remain independent
-   semantic fields; this is only their compact product composition. */
-.temporal-create-life-area-field {
-  margin-top: 1px;
-  padding: 3px 9px 2px;
-  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
-  border-bottom: 0;
-  border-radius: 14px 14px 0 0;
-  background: color-mix(in srgb, currentColor 3.5%, transparent);
-}
-
-.temporal-create-life-area-field .temporal-create-life-area-field__input-row > input[type='text'] {
-  height: 40px;
-  padding-inline: 2px 8px;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
-.temporal-create-life-area-field .temporal-create-life-area-field__input-row > input[type='text']:focus {
-  border: 0;
-  outline: none;
-  box-shadow: none;
-}
-
-.temporal-create-life-area-field:focus-within {
-  border-color: color-mix(in srgb, #ff8a3d 42%, transparent);
-}
-
-.temporal-create-life-area-field + .temporal-create-u2-location,
-.temporal-create-u2-location + .temporal-create-u2-description {
-  width: 100%;
-  margin: 0;
-  border-color: color-mix(in srgb, currentColor 14%, transparent);
-  color: inherit;
-  background: color-mix(in srgb, currentColor 3.5%, transparent);
-  font: inherit;
-}
-
-.temporal-create-life-area-field + .temporal-create-u2-location {
+.temporal-create-u2-repeat select,
+.temporal-create-u2-location {
   height: 42px;
   padding: 0 11px;
-  border-radius: 0;
-  border-bottom-width: 0;
 }
 
-.temporal-create-u2-location + .temporal-create-u2-description {
+.temporal-create-u2-location {
+  margin-top: 8px;
+}
+
+.temporal-create-u2-description {
   min-height: 76px;
+  margin-top: 8px;
   padding: 10px 11px;
-  border-radius: 0 0 14px 14px;
   resize: vertical;
 }
 
@@ -140,7 +160,7 @@
 .temporal-create-u2-description:focus {
   border-color: color-mix(in srgb, #ff8a3d 62%, transparent);
   outline: none;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, #ff8a3d 22%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #ff8a3d 18%, transparent);
 }
 
 .temporal-create-u2-location::placeholder,
@@ -151,15 +171,7 @@
 
 @media (max-width: 720px) {
   .temporal-create-u2-when {
-    grid-template-columns: 28px minmax(0, 1fr) minmax(0, 1fr);
-    row-gap: 5px;
-  }
-
-  .temporal-create-u2-when .temporal-create-time-band-control {
-    grid-column: 1;
-  }
-
-  .temporal-create-u2-when > .temporal-create-date-picker:last-child {
-    grid-column: 3;
+    grid-template-columns: 20px minmax(68px, 0.8fr) minmax(92px, 1fr) 18px minmax(92px, 1fr) minmax(68px, 0.8fr);
+    gap: 3px;
   }
 }
