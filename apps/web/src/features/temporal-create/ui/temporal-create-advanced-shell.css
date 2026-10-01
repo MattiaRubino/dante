@@ -1,85 +1,136 @@
-.temporal-create-composer.is-full {
-  position: fixed !important;
-  top: 50% !important;
-  left: 50% !important;
-  right: auto !important;
-  bottom: auto !important;
-  width: min(1040px, calc(100vw - 64px)) !important;
-  max-height: calc(100dvh - 48px) !important;
-  padding: 0 24px 24px !important;
-  transform: translate(-50%, -50%);
-  border: 1px solid
-    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.1)) !important;
-  border-radius: 18px !important;
-  box-shadow:
-    0 28px 90px rgba(0, 0, 0, 0.46),
-    0 0 0 1px rgba(255, 255, 255, 0.025);
-  overflow: auto;
+.temporal-create-backdrop.is-advanced {
+  position: fixed;
+  z-index: 1900;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  background: rgba(3, 7, 13, 0.62);
+  backdrop-filter: blur(3px);
 }
 
-.temporal-create-composer.is-full .temporal-create-composer__header {
+.temporal-create-backdrop.is-advanced .temporal-create-composer.is-full {
+  position: relative !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  width: min(1040px, calc(100vw - 56px)) !important;
+  height: auto;
+  max-height: calc(100dvh - 56px) !important;
+  padding: 0 24px 24px !important;
+  transform: none !important;
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.1)) 78%,
+      var(--dante-semantic-color-home-chrome-active, #ea5c12)
+    ) !important;
+  border-radius: 18px !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent 22%),
+    color-mix(
+      in srgb,
+      var(--dante-semantic-color-home-surface-primary, #0d1522) 98%,
+      black
+    );
+  box-shadow:
+    0 34px 110px rgba(0, 0, 0, 0.58),
+    0 0 0 1px rgba(255, 255, 255, 0.025);
+  overflow: hidden;
+}
+
+.temporal-create-backdrop.is-advanced .temporal-create-composer__header {
+  flex: 0 0 auto;
   margin: 0 -24px;
   padding: 16px 24px 12px;
   border-radius: 18px 18px 0 0;
 }
 
-.temporal-create-composer.is-full .temporal-create-composer__body {
-  display: grid;
-  gap: 12px;
+.temporal-create-backdrop.is-advanced .temporal-create-composer__body {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
   max-width: none;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 0;
   padding-top: 18px;
+  padding-right: 4px;
+  padding-bottom: 82px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 
-.temporal-create-composer.is-full .temporal-create-title-input {
+.temporal-create-backdrop.is-advanced .temporal-create-title-input {
   min-height: 58px;
   font-size: 19px;
 }
 
-.temporal-create-composer.is-full .temporal-create-advanced {
+.temporal-create-backdrop.is-advanced .temporal-create-advanced {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: start;
   gap: 12px;
-  margin-top: 8px;
-  padding-top: 16px;
+  margin-top: 12px;
+  padding-top: 18px;
   border-top: 1px solid
     var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08));
 }
 
-.temporal-create-composer.is-full .temporal-create-advanced > .temporal-create-section:first-child,
-.temporal-create-composer.is-full .temporal-create-advanced > .temporal-create-section:only-child {
+.temporal-create-backdrop.is-advanced
+  .temporal-create-advanced
+  > .temporal-create-section:first-child,
+.temporal-create-backdrop.is-advanced
+  .temporal-create-advanced
+  > .temporal-create-section:only-child {
   grid-column: 1 / -1;
 }
 
-.temporal-create-composer.is-full .temporal-create-actions {
-  position: sticky;
-  z-index: 5;
-  bottom: -24px;
-  margin: 8px -24px -24px;
-  padding: 12px 24px 16px;
-  background: color-mix(
-    in srgb,
-    var(--dante-semantic-color-home-surface-primary, #0d1522) 97%,
-    black
-  );
+.temporal-create-backdrop.is-advanced
+  .temporal-create-actions.temporal-create-actions {
+  position: sticky !important;
+  z-index: 20;
+  right: auto;
+  bottom: -82px;
+  left: auto;
+  justify-content: flex-end;
+  margin: 8px -4px -82px;
+  padding: 12px 4px 16px;
   border-top: 1px solid
     var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08));
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-surface-primary, #0d1522) 98%,
+    black
+  );
+  backdrop-filter: blur(14px);
+}
+
+.temporal-create-backdrop.is-advanced
+  .temporal-create-actions
+  .temporal-create-advanced-toggle {
+  margin-right: 0;
 }
 
 @media (max-width: 900px) {
-  .temporal-create-composer.is-full {
-    top: 12px !important;
-    left: 12px !important;
-    width: calc(100vw - 24px) !important;
-    max-height: calc(100dvh - 24px) !important;
-    transform: none;
+  .temporal-create-backdrop.is-advanced {
+    padding: 12px;
   }
 
-  .temporal-create-composer.is-full .temporal-create-advanced {
+  .temporal-create-backdrop.is-advanced .temporal-create-composer.is-full {
+    width: calc(100vw - 24px) !important;
+    max-height: calc(100dvh - 24px) !important;
+  }
+
+  .temporal-create-backdrop.is-advanced .temporal-create-advanced {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .temporal-create-composer.is-full .temporal-create-advanced > .temporal-create-section:first-child {
+  .temporal-create-backdrop.is-advanced
+    .temporal-create-advanced
+    > .temporal-create-section:first-child {
     grid-column: auto;
   }
 }
