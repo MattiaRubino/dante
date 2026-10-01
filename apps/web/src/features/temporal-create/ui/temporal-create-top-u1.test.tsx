@@ -85,6 +85,21 @@ describe('Temporal Create U1 top controls', () => {
     expect(document.querySelector('.temporal-create-intent-summary')).toBeNull();
   });
 
+  it('keeps explicit start/end dates on the timed row and uses only the DANTE calendar', () => {
+    renderEntry();
+
+    const startDate = screen.getByRole('button', { name: /Data inizio:/ });
+    const endDate = screen.getByRole('button', { name: /Data fine:/ });
+    expect(startDate).toBeTruthy();
+    expect(endDate).toBeTruthy();
+    expect(document.querySelector('input[type="date"]')).toBeNull();
+
+    fireEvent.click(startDate);
+    const calendar = screen.getByRole('dialog', { name: 'Data inizio' });
+    expect(calendar).toBeTruthy();
+    expect(within(calendar).queryByText('Cancella')).toBeNull();
+  });
+
   it('keeps hour/minute stepping inline and rejects invalid manual time', () => {
     renderEntry();
 
