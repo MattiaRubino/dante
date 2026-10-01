@@ -147,7 +147,7 @@ describe('Temporal Create U2 entry', () => {
     });
   });
 
-  it('uses named curated colors and opens the professional custom picker outside the create rail flow', () => {
+  it('keeps curated colors and the professional custom picker inside one floating color popup', () => {
     renderEntry();
 
     fireEvent.click(
@@ -155,6 +155,7 @@ describe('Temporal Create U2 entry', () => {
     );
     const palette = screen.getByRole('dialog', { name: 'Scegli colore' });
 
+    expect(palette.classList.contains('is-floating')).toBe(true);
     expect(document.querySelector('input[type="color"]')).toBeNull();
     expect(within(palette).getByRole('button', { name: 'Rosso' })).toBeTruthy();
     expect(within(palette).getByRole('button', { name: 'Giallo' })).toBeTruthy();
@@ -164,12 +165,12 @@ describe('Temporal Create U2 entry', () => {
     fireEvent.click(
       within(palette).getByRole('button', { name: 'Colore personalizzato' }),
     );
-    const customPicker = screen.getByRole('dialog', {
-      name: 'Colore personalizzato',
-    });
-    expect(customPicker.classList.contains('is-floating')).toBe(true);
-    expect(customPicker.querySelector('.react-colorful')).toBeTruthy();
-    expect(screen.getByLabelText('Codice colore HEX')).toBeTruthy();
+    expect(within(palette).getByLabelText('Selettore colore personalizzato')).toBeTruthy();
+    expect(within(palette).getByLabelText('Codice colore HEX')).toBeTruthy();
+    expect(palette.querySelector('.react-colorful')).toBeTruthy();
+    expect(
+      screen.queryByRole('dialog', { name: 'Colore personalizzato' }),
+    ).toBeNull();
   });
 
   it('remembers only colors actually used when Add is submitted, not colors merely inspected', async () => {
@@ -194,7 +195,7 @@ describe('Temporal Create U2 entry', () => {
     ).toEqual(['#4285F4']);
   });
 
-  it('routes Event through the U2 Event endpoint', async () => {
+  it('routes a scheduled Event through the U2 Event endpoint', async () => {
     const { eventRequests } = renderEntry();
 
     fireEvent.click(screen.getByRole('radio', { name: 'Evento' }));
@@ -210,5 +211,21 @@ describe('Temporal Create U2 entry', () => {
     expect(eventRequests[0]?.title).toBe('Workshop');
     expect(eventRequests[0]?.itemColorCode).toBe(DEFAULT_COLOR);
     expect(eventRequests[0]?.location).toBe('Sala A');
+    expect(eventRequests[0]?.placement).toBeDefined();
+  });
+
+  it('creates an Event in Da collocare without inventing a Schedule placement', async () => {
+    const { eventRequests } = renderEntry();
+
+    fireEvent.click(screen.getByRole('radio', { name: 'Evento' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Da collocare' }));
+    fireEvent.change(screen.getByPlaceholderText('Titolo'), {
+      target: { value: 'Cena da organizzare' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi' }));
+
+    await waitFor(() => expect(eventRequests).toHaveLength(1));
+    expect(eventRequests[0]?.title).toBe('Cena da organizzare');
+    expect(eventRequests[0]?.placement).toBeUndefined();
   });
 });
