@@ -1,0 +1,93 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "routine:dante.create_self_activity_authoring",
+    "type": "routine",
+    "schema": "dante",
+    "name": "create_self_activity_authoring",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "B14-U2 bounded SECURITY DEFINER authoring capability that creates one self-scoped Activity with optional Life Area assignment and canonical description, location and per-item color metadata in the same transaction.",
+  "classification": {
+    "persistence_role": "activity_authoring_capability",
+    "canonicality": "capability_surface",
+    "family": "temporal_activity"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/workstreams/timeline-temporal-operational-b14-ui-consolidation-2026-09-30.md",
+      "docs/workstreams/timeline-temporal-operational-map.md",
+      "docs/development/backend-cp6-02-postgresql-persistence-constitution.md"
+    ],
+    "domain_concepts": ["Activity", "Person"],
+    "logical_families": ["bounded application operation capability"],
+    "reference_families": ["NativeRef"],
+    "material_facets": []
+  },
+  "implementation": {
+    "introducing_stage": "B14-U2",
+    "alembic_revision": "20260930_94",
+    "sqlalchemy": {"mode": "none", "module": null, "symbol": null},
+    "runtime_acl_stage": "B14-U2"
+  },
+  "structure": {
+    "columns": [],
+    "primary_key": null,
+    "foreign_keys": [],
+    "unique_constraints": [],
+    "check_constraints": [],
+    "indexes": [],
+    "triggers": [],
+    "table": null,
+    "view": null,
+    "routine": {
+      "routine_kind": "function",
+      "language": "plpgsql",
+      "argument_types": ["uuid", "text", "text", "uuid", "text", "uuid", "text", "text", "text"],
+      "return_type": "TABLE(activity_ref uuid, title text, created_at timestamp with time zone, life_area_ref uuid, assignment_revision bigint, description text, location text, color_code text, replayed boolean)",
+      "security": "DEFINER",
+      "volatility": "VOLATILE",
+      "parallel_safety": "UNSAFE",
+      "leakproof": false,
+      "function_search_path": ["pg_catalog", "dante", "pg_temp"],
+      "direct_runtime_execute": true
+    }
+  },
+  "state_history": {
+    "material_state_behavior": null,
+    "current_binding": "The capability returns the canonical Activity descriptor plus optional accepted Life Area assignment. Schedule remains a separate capability and identity family.",
+    "chronology": "Activity creation and optional organization/descriptor metadata are accepted in one authoritative PostgreSQL transaction.",
+    "immutability_policy": "Same operation id and intent replays the accepted result; changed intent for the same operation id is rejected. Generic runtime descriptor UPDATE remains denied."
+  },
+  "lifecycle": {
+    "retention": null,
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "The accepted B14-U2 authoring contract is evolved only through reviewed forward migrations."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": [
+      {"grantee": "dante_runtime", "privilege": "EXECUTE", "columns": [], "grant_option": false}
+    ]
+  },
+  "proof": {
+    "obligations": [
+      "function owner is dante_owner and SECURITY DEFINER is enabled",
+      "trusted search_path is exactly pg_catalog,dante,pg_temp",
+      "runtime receives bounded EXECUTE but no generic descriptor write authority",
+      "Life Area assignment is optional and no synthetic default area is created",
+      "description, location and item color are canonicalized inside the authoritative create transaction",
+      "same operation/same intent replays while conflicting reuse is rejected"
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b14_u2_authoring.py",
+      "apps/backend/tests/unit/temporal/test_b14_u2_authoring_api.py",
+      "apps/backend/tests/integration/database/test_current_catalog.py",
+      "apps/backend/tests/integration/database/test_database_current_catalog.py"
+    ],
+    "staged_evidence": []
+  }
+}
