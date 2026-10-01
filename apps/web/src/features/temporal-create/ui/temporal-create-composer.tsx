@@ -33,6 +33,7 @@ type TemporalCreateComposerProps = Readonly<{
   lifecycle: 'idle' | 'pending' | 'failed';
   failureMessage: string;
   reminderRetry: boolean;
+  u2Draft: TemporalCreateU2AuthoringDraft;
   onPatch: (patch: Partial<TemporalCreateSession['draft']['current']>) => void;
   onSurfaceChange: (surface: TemporalCreateSurface) => void;
   onRequestClose: () => void;
@@ -88,6 +89,7 @@ export function TemporalCreateComposer({
   lifecycle,
   failureMessage,
   reminderRetry,
+  u2Draft,
   onPatch,
   onSurfaceChange,
   onRequestClose,
@@ -294,7 +296,7 @@ export function TemporalCreateComposer({
 
   return (
     <div
-      className={`temporal-create-backdrop${discardPending ? ' is-modal' : ''}`}
+      className={`temporal-create-backdrop${advanced ? ' is-advanced' : ''}${discardPending ? ' is-modal' : ''}`}
       data-temporal-create="backdrop"
       onPointerDown={(event) => {
         if (event.target === event.currentTarget) requestCloseFromBackdrop();
@@ -387,6 +389,7 @@ export function TemporalCreateComposer({
             <TemporalCreateU2DraftProvider
               fields={fields}
               resetKey={resetKey}
+              initialDraft={u2Draft}
               onDraftChange={onU2DraftChange}
             >
               <TemporalCreateCoreFields
@@ -421,9 +424,6 @@ export function TemporalCreateComposer({
               >
                 <span>{advanced ? copy.hideAdvanced : copy.advanced}</span>
                 <span aria-hidden="true">{advanced ? '⌃' : '⌄'}</span>
-              </button>
-              <button type="button" disabled={pending} onClick={requestCloseFromCurrentFocus}>
-                {t(($) => $.common.home.timeline.create.cancel)}
               </button>
               <button className="is-primary" type="submit" disabled={pending}>
                 {pending
