@@ -10,6 +10,7 @@ import {
   requestTemporalCreateClose,
   updateTemporalCreateFields,
 } from '../model/temporal-create-session';
+import { createTemporalCreateU2AuthoringDraft } from '../model/temporal-create-u2-authoring';
 import { TemporalCreateComposer } from './temporal-create-composer';
 
 beforeAll(async () => {
@@ -50,6 +51,7 @@ function renderComposer(options?: { dirty?: boolean }) {
       lifecycle="idle"
       failureMessage=""
       reminderRetry={false}
+      u2Draft={createTemporalCreateU2AuthoringDraft(session.draft.current)}
       onPatch={vi.fn()}
       onSurfaceChange={vi.fn()}
       onRequestClose={onRequestClose}
