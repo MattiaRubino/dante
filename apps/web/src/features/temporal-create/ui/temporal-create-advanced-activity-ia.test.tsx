@@ -82,8 +82,17 @@ describe('Temporal Create Advanced Activity IA', () => {
     expect(addSession.disabled).toBe(false);
     fireEvent.click(addSession);
 
-    expect(document.querySelector('[data-create-structure-session]')).toBeTruthy();
-    const minimum = document.querySelector<HTMLInputElement>(
+    const sessionRow = document.querySelector<HTMLElement>(
+      '[data-create-structure-session]',
+    );
+    if (!sessionRow) throw new Error('Expected Session configuration row.');
+
+    const sessionOptions = sessionRow.querySelector<HTMLElement>(
+      '[data-create-structure-session-options]',
+    );
+    if (!sessionOptions) throw new Error('Expected Session settings rail.');
+
+    const minimum = sessionOptions.querySelector<HTMLInputElement>(
       '[data-create-path="execution.minSessionMinutes"]',
     );
     expect(minimum?.value).toBe('30');
@@ -91,24 +100,14 @@ describe('Temporal Create Advanced Activity IA', () => {
     fireEvent.change(minimum, { target: { value: '45' } });
     expect(minimum.value).toBe('45');
 
-    expect(
-      (screen.getByRole('button', { name: 'Avvia Sessione dopo la creazione' }) as HTMLButtonElement)
-        .disabled,
-    ).toBe(true);
-    expect(
-      (screen.getByRole('button', { name: 'Pausa Sessione dopo la creazione' }) as HTMLButtonElement)
-        .disabled,
-    ).toBe(true);
-    expect(
-      (screen.getByRole('button', { name: 'Riprendi Sessione dopo la creazione' }) as HTMLButtonElement)
-        .disabled,
-    ).toBe(true);
-    expect(
-      (screen.getByRole('button', { name: 'Termina Sessione dopo la creazione' }) as HTMLButtonElement)
-        .disabled,
-    ).toBe(true);
+    expect(screen.queryByRole('button', { name: 'Avvia' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Pausa' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Riprendi' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Termina' })).toBeNull();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Rimuovi configurazione Sessione' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Disabilita configurazione Sessione' }),
+    );
     expect(document.querySelector('[data-create-structure-session]')).toBeNull();
 
     const split = screen.getByRole('button', { name: 'Suddivisa' });
