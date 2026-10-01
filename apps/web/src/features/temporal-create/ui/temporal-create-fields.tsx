@@ -27,6 +27,7 @@ export { TemporalCreateCoreFieldsU2 as TemporalCreateCoreFields };
 
 export function TemporalCreateAdvancedFields({
   fields,
+  contexts,
   depth,
   onPatch,
   renderError,
