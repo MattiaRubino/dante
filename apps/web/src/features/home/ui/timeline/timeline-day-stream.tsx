@@ -110,6 +110,18 @@ function groupForEvent(
   return groups.find((group) => group.id === event.groupId);
 }
 
+function eventOrganizationKey(event: TimelineEvent): string | null {
+  const basis = event.canonicalBasis;
+  if (!basis) return null;
+  if (basis.kind === 'scheduled-activity') {
+    return `activity:${basis.activityRef}`;
+  }
+  if (basis.kind === 'scheduled-event') {
+    return `event:${basis.eventRef}`;
+  }
+  return `${basis.sourceKind}:${basis.sourceNativeRef}`;
+}
+
 function TimelineEventCard({
   dateKey,
   layout,
@@ -161,6 +173,12 @@ function TimelineEventCard({
   const event = layout.event;
   const group = groupForEvent(event, groups);
   const tone = event.appearanceTone ?? group?.tone ?? 'personal';
+  const organizationKey = eventOrganizationKey(event);
+  const itemColorCode =
+    event.appearanceColorCode ??
+    (organizationKey === null
+      ? undefined
+      : group?.itemColorCodes?.[organizationKey]);
   const isFocused = focusedEvent?.id === event.id;
   const isGroupmate =
     focusedEvent !== null &&
@@ -173,12 +191,13 @@ function TimelineEventCard({
     return null;
   }
 
-  const style = {
+  const style: CSSProperties & { '--timeline-group-color'?: string } = {
     top: layout.top,
     height: layout.height,
     left: `${layout.compactLeftPercent}%`,
     width: `${layout.compactWidthPercent}%`,
-  } satisfies CSSProperties;
+    ...(itemColorCode ? { '--timeline-group-color': itemColorCode } : {}),
+  };
 
   const keyboardMove = (keyboardEvent: KeyboardEvent<HTMLElement>) => {
     if (!keyboardEvent.altKey) {
@@ -1244,7 +1263,11 @@ export function TimelineDayStream({
             return;
           }
 
-          if (!focusedEvent || targetCard !== null || pointerIsInsideFocusedCard(target)) {
+          if (
+            !focusedEvent ||
+            targetCard !== null ||
+            pointerIsInsideFocusedCard(target)
+          ) {
             return;
           }
           clickEvent.stopPropagation();
