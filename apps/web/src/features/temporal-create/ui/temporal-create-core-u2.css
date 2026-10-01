@@ -1,10 +1,10 @@
 .temporal-create-u2-when {
   display: grid;
   grid-template-columns:
-    28px minmax(72px, 0.9fr) minmax(82px, 1fr) 28px minmax(82px, 1fr)
-    minmax(72px, 0.9fr);
+    28px minmax(82px, 0.95fr) minmax(82px, 0.9fr) 26px minmax(82px, 0.9fr)
+    minmax(82px, 0.95fr);
   align-items: start;
-  gap: 5px;
+  gap: 4px;
   width: 100%;
   min-width: 0;
 }
@@ -31,6 +31,22 @@
   height: 44px;
 }
 
+.temporal-create-u2-when .temporal-create-date-picker__trigger {
+  min-height: 44px;
+  padding-inline: 6px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-size: 0.76rem;
+  letter-spacing: -0.01em;
+}
+
+.temporal-create-u2-when .temporal-create-date-picker__trigger:hover,
+.temporal-create-u2-when .temporal-create-date-picker__trigger:focus-visible,
+.temporal-create-u2-when .temporal-create-date-picker__trigger[aria-expanded='true'] {
+  border-color: color-mix(in srgb, currentColor 10%, transparent);
+  background: color-mix(in srgb, currentColor 5%, transparent);
+}
+
 .temporal-create-u2-when .temporal-create-time-control__field {
   min-width: 0;
 }
@@ -54,10 +70,10 @@
   gap: 8px;
 }
 
-.temporal-create-u2-repeat select,
-.temporal-create-u2-location,
-.temporal-create-u2-description {
+.temporal-create-u2-repeat select {
   width: 100%;
+  height: 42px;
+  padding: 0 11px;
   border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
   border-radius: 11px;
   color: inherit;
@@ -65,15 +81,57 @@
   font: inherit;
 }
 
-.temporal-create-u2-repeat select,
-.temporal-create-u2-location {
-  height: 42px;
-  padding: 0 11px;
+/* U3 quick-authoring organization card. The three controls remain independent
+   semantic fields; this is only their compact product composition. */
+.temporal-create-life-area-field {
+  margin-top: 1px;
+  padding: 3px 9px 2px;
+  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  border-bottom: 0;
+  border-radius: 14px 14px 0 0;
+  background: color-mix(in srgb, currentColor 3.5%, transparent);
 }
 
-.temporal-create-u2-description {
-  min-height: 74px;
+.temporal-create-life-area-field .temporal-create-life-area-field__input-row > input[type='text'] {
+  height: 40px;
+  padding-inline: 2px 8px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.temporal-create-life-area-field .temporal-create-life-area-field__input-row > input[type='text']:focus {
+  border: 0;
+  outline: none;
+  box-shadow: none;
+}
+
+.temporal-create-life-area-field:focus-within {
+  border-color: color-mix(in srgb, #ff8a3d 42%, transparent);
+}
+
+.temporal-create-life-area-field + .temporal-create-u2-location,
+.temporal-create-u2-location + .temporal-create-u2-description {
+  width: 100%;
+  margin: 0;
+  border-color: color-mix(in srgb, currentColor 14%, transparent);
+  color: inherit;
+  background: color-mix(in srgb, currentColor 3.5%, transparent);
+  font: inherit;
+}
+
+.temporal-create-life-area-field + .temporal-create-u2-location {
+  height: 42px;
+  padding: 0 11px;
+  border-radius: 0;
+  border-bottom-width: 0;
+}
+
+.temporal-create-u2-location + .temporal-create-u2-description {
+  min-height: 76px;
   padding: 10px 11px;
+  border-radius: 0 0 14px 14px;
   resize: vertical;
 }
 
@@ -82,12 +140,19 @@
 .temporal-create-u2-description:focus {
   border-color: color-mix(in srgb, #ff8a3d 62%, transparent);
   outline: none;
-  box-shadow: 0 0 0 2px color-mix(in srgb, #ff8a3d 12%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #ff8a3d 22%, transparent);
+}
+
+.temporal-create-u2-location::placeholder,
+.temporal-create-u2-description::placeholder,
+.temporal-create-life-area-field input::placeholder {
+  color: color-mix(in srgb, currentColor 58%, transparent);
 }
 
 @media (max-width: 720px) {
   .temporal-create-u2-when {
     grid-template-columns: 28px minmax(0, 1fr) minmax(0, 1fr);
+    row-gap: 5px;
   }
 
   .temporal-create-u2-when .temporal-create-time-band-control {
