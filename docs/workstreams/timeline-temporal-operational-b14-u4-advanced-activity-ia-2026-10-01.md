@@ -1,149 +1,138 @@
 # B14 + B07 — U4 Advanced Activity information architecture — 2026-10-01
 
 - **Branch:** `feature/timeline-temporal-operational`
-- **Status:** CANDIDATE — visual/product checkpoint; user-local gate still required
+- **Status:** CANDIDATE — Session intent moved into the title-attached tree; user-local gate still required
 - **Previous proven gate:** `779fa723` — web typecheck PASS + 17/17 focused tests PASS
-- **Candidate direction:** Activity structure is attached directly to the title row, not rendered as a detached panel
+- **Accepted direction:** Activity structure is attached directly to the title row, not rendered as a detached panel
 - **CI:** not authorized; user runs local tests in `~/projects/dante`
 
 ## 1. Goal
 
-Turn Advanced Create for Activity into a product information architecture instead of a historical collection of controls. The candidate is intentionally conservative about persistence: controls that are not yet connected to a canonical authoring path are shown only as disabled visual destinations and do not collect silently ignored data.
+Turn Advanced Create for Activity into a product information architecture instead of a historical collection of controls, while reusing proven vertical capabilities instead of fabricating parallel UI state.
 
-## 2. Product decisions represented in the candidate
+The permanent semantic boundaries remain:
 
-Advanced Activity now follows this visible order:
+```text
+Step != Activity
+Schedule != Session
+Session END != Activity completion
+Actual != Outcome != Confirmation != Reconciliation
+```
+
+## 2. Current Advanced Activity order
 
 ```text
 kind
-→ title + inline structure branch / future action rail
+→ title + inline Activity tree / action rail
 → placement/date/time main controls
 → Life Area / location / Reminder main controls
 → Reference time
 → Planning
-→ Execution
 → Recurrence when applicable
 → Reality and outcome
 → Description
 ```
 
-Quick remains compact and keeps its prior ordering.
+The old detached `Struttura`, `Esecuzione`, `Organizzazione` and duplicate Appearance treatments are not retained as parallel panels.
 
-### Title-attached work structure
+## 3. Title-attached Activity tree
 
-The first visual pass used a standalone `Struttura` panel below the main controls. User review rejected that shape. The accepted direction is that decomposition belongs visually to the Activity name itself.
-
-Current candidate therefore uses:
+The accepted geometry is:
 
 ```text
-Activity title                         [reserved actions]
+Activity title                         [root actions]
 │
 └── + Aggiungi
     ├── Sotto-attività
-    └── Sessione
+    └── Sessione                      [row actions]
 ```
 
-There is no separate `Struttura` heading/panel anymore. The title intentionally leaves a right-side action rail. Future child rows must reuse the same two-column geometry so each Activity / sub-Activity / Session-like row can host its own controls on the right without redesigning the tree.
+The right side of the title and every future child row is reserved for row-specific actions. This geometry is now implemented in the Advanced Activity tree rather than as a separate `Struttura` panel.
 
-Examples of future row actions may include execution controls, verification/confirmation policy and child-specific temporal controls, but this checkpoint does not fabricate those capabilities.
+### Session intent is now real draft state
 
-Both `Sotto-attività` and `Sessione` remain deliberately disabled in this checkpoint. They are visual IA only until a reviewed atomic Create path exists. B13 Plan/Step must not be silently reused as `sub-Activity`; `Step != Activity` remains permanent. A future Session row created before execution must also not fabricate a canonical performed Session; `planned/intended != happened` and `Schedule != Session` remain authoritative.
-
-### Reference time
-
-The former verbose `Tempo e fuso` treatment is reduced to one compact `Riferimento orario` section with only:
+`Sessione` is no longer a disabled visual destination. Selecting it updates the existing canonical Create execution intent:
 
 ```text
-Modalità = Ora locale | Fuso specifico
-Fuso orario = explicit zone when zoned
+execution.sessionMode = splittable
+execution.minSessionMinutes = N
 ```
 
-No duplicate Quick globe is mounted in Advanced.
+The previous detached `Esecuzione` panel that edited the same state has been removed, so there is one authoring surface rather than two competing controls.
 
-### Planning
+The Session row exposes the already-supported minimum active Session duration and reserves compact runtime actions on the right:
 
-Placed Activity shows `Unica | Suddivisa`; only `Unica` is currently active. `Suddivisa` is disabled until Create has a canonical atomic multi-placement authoring path. This avoids allowing a user to enter a parent duration that contradicts hidden child placements.
+```text
+▶ start
+⏸ pause
+▶ resume
+■ end
+```
+
+Those four buttons are intentionally disabled before the Activity exists: a canonical B08 Session cannot be started against a subject that has no `activityRef` yet. This is not a fake limitation; `planned/intended != happened` remains authoritative.
+
+The real B08 runtime remains end-to-end and is reused for existing Activity subjects through `SessionSubjectControls` and `remote-session-data-source`. Its real card controls were compacted to icon buttons while keeping their accessible names and the proven Start/Pause/Resume/End commands.
+
+### Sub-Activity remains blocked, not faked
+
+`Sotto-attività` stays disabled because the current repository does not expose a canonical Activity → child Activity authoring contract. B13 Plan/Step is not silently reused as a substitute because `Step != Activity` is permanent.
+
+A future slice may add a reviewed Activity decomposition relationship, but U4 does not invent one merely to make the button appear functional.
+
+## 4. Reference time
+
+Advanced uses explicit `Riferimento orario` controls over the same `timeMode/timeZoneId` state used by Quick. The compact globe is Quick-only.
+
+## 5. Planning
+
+Placed Activity currently exposes `Unica | Suddivisa`; only `Unica` is active. `Suddivisa` stays disabled until canonical multi-placement authoring exists.
 
 Unplaced Activity keeps the existing supported Temporal Constraint authoring for open/window/deadline/preferred-window intent.
 
-The legacy editable `locked | window | confirm | free` movement select has been removed from this Advanced Activity candidate. B04 already superseded that prototype vocabulary by separating Temporal Constraint from Movement Policy.
+The legacy editable `locked | window | confirm | free` movement selector is not reintroduced. `Proteggi collocazione` remains a disabled destination until it can truthfully govern both accidental manual movement and Dante automation, with post-create unlock/edit semantics explicitly defined.
 
-A visual `Proteggi collocazione` destination is shown for placed Activity and is disabled. The accepted product direction is one user-facing protection concept that must eventually govern both accidental manual movement and Dante automation while preserving separate internal authority/effect paths. Post-create unlock/edit UX is explicitly still TODO.
+## 6. Reality and outcome
 
-### Execution / Session
-
-The previous Advanced panel exposed maximum Session count, spacing, preparation/recovery, partial completion, early finish and merge compatibility even though the current Create path does not persist all of them truthfully.
-
-U4 removes those editable controls from Activity Create. The candidate keeps only the existing Session minimum-duration authoring seam:
-
-```text
-Durata minima per Sessione
-→ minimum active Session duration
-```
-
-This preserves `Session != Activity`, `Session != Schedule`, and `Session END != completion`.
-
-### Reality and outcome
-
-The former standalone `Verifica esito` panel becomes a collapsible `Realtà ed esito` destination. The currently supported authoring remains the inherited outcome-verification policy. The visual flow is:
+`Realtà ed esito` remains the Create policy destination:
 
 ```text
 Actual → Outcome → Confirmation → Reconciliation
 ```
 
-This is product organization only; Create does not fabricate future Actual/Outcome/Confirmation records. Policy may be configured before execution; realized records arise only from reality.
+Create does not fabricate future Actual/Outcome/Confirmation/Reconciliation records. The existing B10 runtime continues to own realized truth after the subject exists.
 
-Unresolved work from this family is intended to feed the derived `Da risolvere` / Resolution Queue, without collapsing every unresolved case into canonical Reconciliation.
+Unresolved work from this family is intended to feed the derived `Da risolvere` queue without collapsing every unresolved state into canonical Reconciliation.
 
-### Description / Organization
+## 7. Description
 
-The historical Advanced `Organizzazione` panel contained only a duplicate Notes textarea and is removed, including the obsolete component file. Description now has one explicit Advanced section at the end while Quick keeps its compact description field. Life Area remains in the primary Create controls.
+Description remains the final Advanced section. Life Area stays in the primary Create controls. The historical duplicate `Organizzazione` notes panel remains removed.
 
-## 3. Candidate commit chain
+## 8. U4 commit history
 
-Initial U4 pass:
-
-```text
-5e4249ce  shape Advanced Create information architecture
-6067dba0  simplify Activity Advanced planning and execution
-a84bbb38  place outcome verification under reality section
-630cc035  compose Advanced Activity workspace styling
-6f914e37  remove superseded Advanced organization panel
-1dea8272  keep reality section visible in initial Advanced pass
-681f8899  add focused Advanced Activity IA regression
-```
-
-User-review correction after visual inspection:
+Initial visual/IA pass and title-inline correction remain part of the history. The current operational Session slice adds:
 
 ```text
-34ea7e06  add title-attached Activity structure component
-54221550  remove detached Activity structure panel
-d47a5e54  anchor structure directly after Advanced title and reserve root action space
-3517458c  add shared title/child action-rail geometry
-ea237de1  load inline structure styles
-fa9c2680  remove obsolete detached structure CSS
-dee352d3  update focused IA regression for inline structure
+07478e49  make Advanced Activity Session structure operational
+944cfdbc  wire Advanced Activity Session intent into draft
+0016c83c  move Session execution intent into Activity tree
+907cbf2f  reuse compact B08 Session controls in Activity cards
 ```
 
-## 4. Explicitly not claimed yet
+## 9. Explicitly not claimed yet
 
 Do not describe these as implemented capability yet:
 
 ```text
-atomic sub-Activity authoring from Create
-future/planned Session persistence
+canonical Activity → sub-Activity authoring
+future Session records created before execution
 multi-placement `Suddivisa` authoring
 placement protection / lock persistence
 manual-vs-automation unlock semantics
 Session linkage across multiple Activities
-row-specific action controls
-post-create unlock UX
 Reminder notification delivery
 ```
 
-The candidate only gives those capabilities a truthful visual destination where useful.
-
-## 5. Required local gate
+## 10. Required local gate
 
 User runs locally; no CI/GitHub Actions:
 
@@ -158,18 +147,17 @@ pnpm --filter @dante/web exec vitest run \
   src/features/temporal-create/ui/temporal-create-entry-u2.test.tsx \
   src/features/temporal-create/ui/temporal-create-top-u1.test.tsx \
   src/features/temporal-create/ui/temporal-create-composer.test.tsx \
-  src/features/temporal-create/ui/temporal-create-advanced-activity-ia.test.tsx
+  src/features/temporal-create/ui/temporal-create-advanced-activity-ia.test.tsx \
+  src/features/temporal/session-subject-controls.test.tsx
 
 git status --short
 ```
 
-## 6. Next checkpoint after green gate
+## 11. Next checkpoint after green gate
 
-Open Advanced Activity in the real app and inspect the title-attached tree. Then:
-
-1. settle exact action controls on the Activity root row and on each future child row;
-2. wire `Sotto-attività` only after selecting the canonical identity/relationship path rather than reusing Plan Step by accident;
-3. wire Session intent/tracking without creating a performed Session before reality;
+1. inspect the real Advanced Activity tree and compact Session row;
+2. decide whether canonical Activity decomposition needs a new relation or an already-approved dormant contract exists elsewhere in the model;
+3. move B10 runtime controls out of `Da collocare` only after their final post-create Activity destination is mounted;
 4. design canonical `Suddivisa` multi-placement creation and duration derivation;
-5. implement placement protection against both manual accidental moves and Dante automation, then define post-create unlock/edit UX;
-6. continue with Event Advanced separately so Activity-specific execution semantics do not leak into Event.
+5. implement placement protection for manual + Dante movement and the post-create unlock path;
+6. continue with Event Advanced separately.
