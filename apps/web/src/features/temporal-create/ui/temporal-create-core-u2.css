@@ -36,6 +36,22 @@
   height: 14px;
 }
 
+/* Quick keeps the compact globe. Advanced owns the same timeMode/timeZoneId
+   explicitly in its Time/Timezone section, so the icon is intentionally absent
+   there rather than duplicating the same control twice. */
+.temporal-create-composer.is-advanced .temporal-create-u2-when {
+  grid-template-columns:
+    minmax(92px, 0.8fr) minmax(132px, 1.2fr) 22px
+    minmax(132px, 1.2fr) minmax(92px, 0.8fr);
+  gap: 8px;
+}
+
+.temporal-create-composer.is-advanced
+  .temporal-create-u2-when
+  .temporal-create-timezone-control {
+  display: none;
+}
+
 .temporal-create-u2-when .temporal-create-time-band-trigger {
   width: 18px !important;
   height: 42px !important;
@@ -225,5 +241,12 @@
   .temporal-create-u2-when {
     grid-template-columns: 20px minmax(68px, 0.8fr) minmax(92px, 1fr) 18px minmax(92px, 1fr) minmax(68px, 0.8fr);
     gap: 3px;
+  }
+
+  .temporal-create-composer.is-advanced .temporal-create-u2-when {
+    grid-template-columns:
+      minmax(74px, 0.8fr) minmax(104px, 1fr) 18px
+      minmax(104px, 1fr) minmax(74px, 0.8fr);
+    gap: 4px;
   }
 }
