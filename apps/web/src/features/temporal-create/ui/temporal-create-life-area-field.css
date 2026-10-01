@@ -92,30 +92,38 @@
 .temporal-create-life-area-field__color-popover {
   left: 0;
   display: grid;
-  grid-template-columns: repeat(5, 30px);
-  gap: 7px;
+  grid-template-columns: repeat(6, 28px);
+  gap: 5px;
   width: max-content;
-  padding: 9px;
+  max-width: min(216px, calc(100vw - 32px));
+  padding: 8px;
 }
 
 .temporal-create-life-area-field__color-swatch {
   display: grid;
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   place-items: center;
   padding: 0;
   border: 1px solid transparent;
-  border-radius: 9px;
+  border-radius: 8px;
   background: transparent;
   cursor: pointer;
 }
 
 .temporal-create-life-area-field__color-swatch > span {
-  width: 20px;
-  height: 20px;
+  width: 19px;
+  height: 19px;
   border: 1px solid rgb(255 255 255 / 24%);
   border-radius: 50%;
   box-shadow: 0 2px 7px rgb(0 0 0 / 22%);
+}
+
+.temporal-create-life-area-field__color-swatch.is-recent > span {
+  width: 15px;
+  height: 15px;
+  border-width: 1px;
+  box-shadow: 0 1px 5px rgb(0 0 0 / 24%);
 }
 
 .temporal-create-life-area-field__color-swatch.is-custom > span {
@@ -192,6 +200,13 @@
   height: 12px;
   border-radius: 50%;
   background: color-mix(in srgb, currentColor 18%, transparent);
+}
+
+.temporal-create-life-area-field__loading {
+  min-height: 34px;
+  padding: 9px 8px;
+  color: color-mix(in srgb, currentColor 58%, transparent);
+  font-size: 0.74rem;
 }
 
 .temporal-create-life-area-field__new {
