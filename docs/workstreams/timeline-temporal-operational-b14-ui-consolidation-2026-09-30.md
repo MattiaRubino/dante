@@ -10,6 +10,9 @@
 - **Gate U2:** `docs/workstreams/timeline-temporal-operational-b14-u2-gate-2026-09-30.md`
 - **Chiusura U2:** `docs/workstreams/timeline-temporal-operational-b14-u2-closure-2026-10-01.md`
 - **Generated U2:** `dd94c6ee876bf5e671a516898b064c37e2d90741`
+- **U3 handoff corrente:** `docs/workstreams/timeline-temporal-operational-b14-u3-handoff-2026-10-01.md`
+- **Ultimo gate web locale provato:** `899f9260` — typecheck + 16/16 focused PASS
+- **Candidate U3 successivo al gate:** vedere handoff U3; richiede nuovo gate locale
 - **CI:** non usata; i test locali sono eseguiti dall'utente
 
 ## Obiettivo
@@ -37,7 +40,7 @@ B14 e B07 vengono lavorati nello stesso ciclo: ogni decisione dell'utente viene 
 | U0 | Inventario capacità e superfici | pronto | base per il consolidamento user-guided |
 | U1 | `+` nel rail destro, chiusura draft, doppio click Timeline, geometria Home | candidato/provato progressivamente | rail desktop 475 px; Create sostituisce Cattura/Da risolvere; niente terza colonna |
 | U2 | Quick Create canonico: date, Life Area opzionale, colore, location, descrizione, authoring Activity/Event | **CLOSED / PROVEN 2026-10-01** | `_95`; catalogo e generated riconciliati; gate locale verde |
-| U3+ | polish e organizzazione UI | **ATTIVO** | due date/orari, organizzazione Life Area/colore/location/descrizione, Advanced centrale, successive decisioni utente |
+| U3+ | polish e organizzazione UI | **ATTIVO** | planning tray unificato, Advanced centrale, Reminder/verification separation, all-day esplicito; candidate corrente da provare |
 
 ## U2 — decisioni canoniche chiuse
 
@@ -45,7 +48,7 @@ B14 e B07 vengono lavorati nello stesso ciclo: ogni decisione dell'utente viene 
 
 - Quick Create espone **Activity** ed **Event** come capability correnti.
 - `Timer` e `Sveglia` restano entry future disabilitate finché non esiste il relativo vertical.
-- Collocazione rapida: `Orario`, `Tutto il giorno`, `Da collocare` per Activity; Event resta collocato.
+- Collocazione rapida: `Orario`, `Tutto il giorno`, `Da collocare` per Activity ed Event nel ciclo U3; l'assenza di placement resta distinta dalla semantica di Event posticipato.
 - La vecchia `Fascia` non è una quarta semantica di collocazione Quick: le fasce orarie sono shortcut del controllo inizio/fine.
 
 ### Intervallo temporale
@@ -177,12 +180,33 @@ Life Area remains organization, not Domain ownership
 Tag remains secondary many-to-many organization
 ```
 
+## U3+ — decisioni correnti
+
+Handoff dettagliato e gate corrente:
+
+`docs/workstreams/timeline-temporal-operational-b14-u3-handoff-2026-10-01.md`
+
+Decisioni già consolidate nel candidate:
+
+1. planning tray `Da collocare` unico per Activity non collocata, Event mai collocato ed Event posticipato, senza collassarne identità/storia;
+2. Event può essere creato direttamente `Da collocare`;
+3. Advanced è una superficie centrale viewport e conserva lo stesso draft del Quick;
+4. `Ricorda` è un solo controllo principale: si configura prima del submit; la scrittura B11-C avviene dopo l'authoring solo perché necessita del `schedule_ref` accettato;
+5. `Reminder configuration != notification delivery`: il delivery viene affrontato alla fine del consolidamento;
+6. Quick `Orario` mantiene il globo compatto; Advanced espone esplicitamente `timeMode` + `timeZoneId` e nasconde il globo;
+7. `Verifica esito` è distinta dal Reminder e dalla B10 `Confirmation`; per ora espone solo la policy realmente supportata;
+8. `Tutto il giorno` usa due date esplicite sia per Activity sia per Event e non inventa fuso/orario su un date-span;
+9. `Da collocare` non mostra `Ripeti` né `Ricorda`;
+10. `Aspetto` Advanced è superseded dal controllo canonico Life Area + colore del Create ed è stato rimosso insieme a componente/stili non più referenziati;
+11. Session / Actual / Outcome / Confirmation / Reconciliation restano temporaneamente visibili nel planning tray finché non viene costruita la destinazione sostitutiva; solo allora verranno rimossi da `Da collocare`.
+
 ## Cursor U3+
 
-U2 è `CLOSED / PROVEN`. B14+B07 resta attivo e riparte ora dal consolidamento visuale già deciso con l'utente:
+Candidate successivo al gate locale `899f9260` è **non ancora provato**. Il prossimo passo è:
 
-1. riga Quick `data inizio | ora inizio → ora fine | data fine`, con entrambe le date sempre presenti e picker DANTE;
-2. composizione `Life Area + colore`, poi `Località`, poi `Descrizione`;
-3. Tag fuori dal Quick Create;
-4. superficie Advanced centrale grande sullo stesso draft, senza eliminare capability;
-5. ulteriore polish Home/Timeline dopo l'assestamento del Create.
+1. eseguire il gate web indicato nell'U3 handoff;
+2. fare la verifica reale dei punti colore / all-day / Reminder / Advanced;
+3. continuare l'information architecture Advanced Activity vs Event;
+4. integrare B04 vincoli temporali + movement policy nella superficie Advanced;
+5. progettare e spostare Session / Actual / Outcome / Confirmation / Reconciliation prima di ripulire definitivamente il planning tray;
+6. definire il sistema di delivery delle notifiche Reminder solo verso la fine del ciclo.
