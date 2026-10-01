@@ -93,66 +93,51 @@ export function TemporalCreateAdvancedActivityStructure({
               <span className="temporal-create-structure-node__elbow" aria-hidden="true" />
               <div>
                 <strong>{italian ? 'Sessione' : 'Session'}</strong>
-                <label className="temporal-create-structure-node__minimum">
-                  <span>{italian ? 'Minimo' : 'Minimum'}</span>
-                  <input
-                    data-create-path="execution.minSessionMinutes"
-                    type="number"
-                    min="1"
-                    step="1"
-                    value={execution.minSessionMinutes}
-                    onChange={(event) =>
-                      patchExecution({
-                        minSessionMinutes: Number(event.currentTarget.value),
-                      })
-                    }
-                  />
-                  <span>min</span>
-                </label>
-                {renderError('execution.minSessionMinutes')}
+                <small>
+                  {italian
+                    ? 'Configura come potrà essere eseguita l’Activity.'
+                    : 'Configure how the Activity may be executed.'}
+                </small>
               </div>
             </div>
 
             <div
               className="temporal-create-structure-node__actions"
-              aria-label={italian ? 'Controlli Sessione' : 'Session controls'}
+              data-create-structure-session-options
+              aria-label={
+                italian ? 'Impostazioni Sessione' : 'Session settings'
+              }
             >
-              <button
-                type="button"
-                disabled
-                aria-label={italian ? 'Avvia Sessione dopo la creazione' : 'Start Session after creation'}
-                title={italian ? 'Disponibile quando l’Activity esiste.' : 'Available once the Activity exists.'}
-              >
-                ▶
-              </button>
-              <button
-                type="button"
-                disabled
-                aria-label={italian ? 'Pausa Sessione dopo la creazione' : 'Pause Session after creation'}
-                title={italian ? 'Disponibile quando una Sessione è attiva.' : 'Available while a Session is active.'}
-              >
-                ⏸
-              </button>
-              <button
-                type="button"
-                disabled
-                aria-label={italian ? 'Riprendi Sessione dopo la creazione' : 'Resume Session after creation'}
-                title={italian ? 'Disponibile quando una Sessione è in pausa.' : 'Available while a Session is paused.'}
-              >
-                ▶
-              </button>
-              <button
-                type="button"
-                disabled
-                aria-label={italian ? 'Termina Sessione dopo la creazione' : 'End Session after creation'}
-                title={italian ? 'Disponibile quando una Sessione è attiva.' : 'Available while a Session is active.'}
-              >
-                ■
-              </button>
+              <label className="temporal-create-structure-node__minimum">
+                <span>{italian ? 'Minimo' : 'Minimum'}</span>
+                <input
+                  data-create-path="execution.minSessionMinutes"
+                  type="number"
+                  min="1"
+                  step="1"
+                  value={execution.minSessionMinutes}
+                  onChange={(event) =>
+                    patchExecution({
+                      minSessionMinutes: Number(event.currentTarget.value),
+                    })
+                  }
+                />
+                <span>min</span>
+              </label>
+              {renderError('execution.minSessionMinutes')}
               <button
                 className="is-remove"
                 type="button"
-                aria-label={italian ? 'Rimuovi configurazione Sessione' : 'Remove Session configuration'}
+                aria-label={
+                  italian
+                    ? 'Disabilita configurazione Sessione'
+                    : 'Disable Session configuration'
+                }
+                title={
+                  italian
+                    ? 'Rimuovi la configurazione Sessione da questa Activity.'
+                    : 'Remove Session configuration from this Activity.'
+                }
                 onClick={removeSessionConfiguration}
               >
                 ×
@@ -165,7 +150,7 @@ export function TemporalCreateAdvancedActivityStructure({
       <div
         className="temporal-create-advanced-structure-inline__actions"
         data-create-structure-actions
-        aria-label={italian ? 'Azioni attività' : 'Activity actions'}
+        aria-label={italian ? 'Impostazioni attività' : 'Activity settings'}
       />
     </div>
   );
