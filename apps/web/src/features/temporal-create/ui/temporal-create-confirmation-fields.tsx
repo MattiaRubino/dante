@@ -1,10 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
 import type { TemporalCreateFields } from '../model/temporal-create-session';
-import {
-  TEMPORAL_CREATE_REMINDER_OPTIONS,
-  temporalCreateDurationLabel,
-} from './temporal-create-field-shared';
 
 type TemporalCreateConfirmationFieldsProps = Readonly<{
   fields: TemporalCreateFields;
@@ -17,13 +13,9 @@ export function TemporalCreateConfirmationFields({
   onPatch,
   renderError,
 }: TemporalCreateConfirmationFieldsProps) {
-  const { t } = useTranslation('common');
+  const { i18n } = useTranslation('common');
+  const italian = i18n.language.toLowerCase().startsWith('it');
   const confirmation = fields.confirmation;
-  const reminderEligible =
-    fields.kind === 'activity' &&
-    fields.timeSemantics === 'timed' &&
-    fields.timeMode === 'zoned' &&
-    fields.eventRecurrence.patternKind === 'none';
   const patchConfirmation = (
     patch: Partial<TemporalCreateFields['confirmation']>,
   ) => onPatch({ confirmation: { ...confirmation, ...patch } });
@@ -31,28 +23,27 @@ export function TemporalCreateConfirmationFields({
   return (
     <section
       className="temporal-create-section"
-      aria-labelledby="temporal-create-confirmation-only-heading"
+      aria-labelledby="temporal-create-outcome-verification-heading"
     >
       <div className="temporal-create-section__heading">
         <div>
-          <h3 id="temporal-create-confirmation-only-heading">
-            {t(($) => $.common.home.timeline.create.confirmation.title)}
+          <h3 id="temporal-create-outcome-verification-heading">
+            {italian ? 'Verifica esito' : 'Outcome verification'}
           </h3>
           <p>
-            {t(($) => $.common.home.timeline.create.confirmation.description)}
+            {italian
+              ? 'Definisce come Dante dovrà gestire la verifica dopo che l’attività dovrebbe essere avvenuta. Non è un promemoria.'
+              : 'Defines how Dante should handle verification after the activity was expected to happen. This is not a reminder.'}
           </p>
         </div>
       </div>
 
       <div className="temporal-create-grid two">
         <label className="temporal-create-control">
-          <span>
-            {t(($) => $.common.home.timeline.create.confirmation.outcome)}
-          </span>
+          <span>{italian ? 'Regola di verifica' : 'Verification rule'}</span>
           <select
             data-create-path="confirmation.outcomePolicy"
             value={confirmation.outcomePolicy}
-            disabled={confirmation.outcomePolicy === 'inherit'}
             onChange={(event) =>
               patchConfirmation({
                 outcomePolicy: event.currentTarget
@@ -61,119 +52,18 @@ export function TemporalCreateConfirmationFields({
             }
           >
             <option value="inherit">
-              {t(($) => $.common.home.timeline.create.confirmation.inherit)}
-            </option>
-            <option value="ask-immediately" disabled>
-              {t(
-                ($) =>
-                  $.common.home.timeline.create.confirmation.askImmediately,
-              )}
-            </option>
-            <option value="ask-later" disabled>
-              {t(($) => $.common.home.timeline.create.confirmation.askLater)}
-            </option>
-            <option value="daily-review" disabled>
-              {t(($) => $.common.home.timeline.create.confirmation.dailyReview)}
-            </option>
-            <option value="weekly-review" disabled>
-              {t(
-                ($) => $.common.home.timeline.create.confirmation.weeklyReview,
-              )}
-            </option>
-            <option value="silent" disabled>
-              {t(($) => $.common.home.timeline.create.confirmation.silent)}
-            </option>
-            <option value="auto-complete" disabled>
-              {t(
-                ($) => $.common.home.timeline.create.confirmation.autoComplete,
-              )}
-            </option>
-            <option value="auto-not-completed" disabled>
-              {t(
-                ($) =>
-                  $.common.home.timeline.create.confirmation.autoNotCompleted,
-              )}
-            </option>
-            <option value="infer-provisional" disabled>
-              {t(
-                ($) =>
-                  $.common.home.timeline.create.confirmation.inferProvisional,
-              )}
+              {italian ? 'Eredita impostazione' : 'Use inherited setting'}
             </option>
           </select>
           {renderError('confirmation.outcomePolicy')}
         </label>
-        <p className="temporal-create-truth-note">
-          Le altre regole per l’esito non sono ancora disponibili in Crea.
-        </p>
 
-        {reminderEligible ? (
-        <label className="temporal-create-control">
-          <span>
-            {t(($) => $.common.home.timeline.create.confirmation.reminder)}
-          </span>
-          <select
-            aria-label={t(
-              ($) => $.common.home.timeline.create.confirmation.reminder,
-            )}
-            data-create-path="confirmation.reminderLeadMinutes"
-            value={
-              confirmation.reminderLeadMinutes === null
-                ? 'none'
-                : String(confirmation.reminderLeadMinutes)
-            }
-            onChange={(event) =>
-              patchConfirmation({
-                reminderLeadMinutes:
-                  event.currentTarget.value === 'none'
-                    ? null
-                    : Number(event.currentTarget.value),
-              })
-            }
-          >
-            {TEMPORAL_CREATE_REMINDER_OPTIONS.map((minutes) => (
-              <option
-                key={minutes === null ? 'none' : minutes}
-                value={minutes === null ? 'none' : minutes}
-              >
-                {minutes === null
-                  ? t(
-                      ($) =>
-                        $.common.home.timeline.create.confirmation.noReminder,
-                    )
-                  : minutes === 0
-                    ? t(
-                        ($) =>
-                          $.common.home.timeline.create.confirmation.atStart,
-                      )
-                    : t(
-                        ($) =>
-                          $.common.home.timeline.create.confirmation.before,
-                        {
-                          value: temporalCreateDurationLabel(minutes),
-                        },
-                      )}
-              </option>
-            ))}
-          </select>
-          {renderError('confirmation.reminderLeadMinutes')}
-        </label>
-        ) : fields.kind === 'activity' ? (
-          <p className="temporal-create-truth-note">
-            Il Promemoria personale richiede un’Attività con Orario, Riferimento orario
-            “Fuso specifico” e Ripeti “Mai”.
-          </p>
-        ) : null}
+        <p className="temporal-create-truth-note">
+          {italian
+            ? 'Le strategie automatiche di verifica verranno esposte qui solo quando il relativo vertical sarà realmente disponibile. Ricorda resta configurabile nella parte principale di Crea.'
+            : 'Automatic verification strategies will appear here only when the corresponding vertical is truly available. Reminder stays configurable in the main Create surface.'}
+        </p>
       </div>
-
-      {confirmation.outcomePolicy === 'infer-provisional' ? (
-        <p className="temporal-create-truth-note">
-          {t(($) => $.common.home.timeline.create.confirmation.inferNote)}
-        </p>
-      ) : null}
-      <p className="temporal-create-truth-note">
-        {t(($) => $.common.home.timeline.create.confirmation.deliveryNote)}
-      </p>
     </section>
   );
 }
