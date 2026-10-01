@@ -37,6 +37,7 @@ from dante.modules.temporal.plan_candidate_api import router as temporal_plan_ca
 from dante.modules.temporal.plan_conflict_api import router as temporal_plan_conflict_router
 from dante.modules.temporal.plan_dependency_api import router as temporal_plan_dependency_router
 from dante.modules.temporal.plan_work_api import router as temporal_plan_work_router
+from dante.modules.temporal.planning_tray_api import router as temporal_planning_tray_router
 from dante.modules.temporal.product_tag_api import router as temporal_product_tag_router
 from dante.modules.temporal.reconciliation_api import router as temporal_reconciliation_router
 from dante.modules.temporal.recurrence_api import router as temporal_recurrence_router
@@ -60,7 +61,7 @@ from dante.platform.observability.runtime import create_observability_runtime
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
-    """Create a fully validated DANTE FastAPI application instance."""
+    """Create a fully validated DANTE backend application instance."""
     effective_settings = settings if settings is not None else Settings()
     expose_openapi = effective_settings.env is not Environment.PROD
     observability_runtime = create_observability_runtime(
@@ -82,9 +83,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.settings = effective_settings
     app.state.observability_runtime = observability_runtime
 
-    # Starlette executes the last registered middleware first. Keep request context
-    # outermost, reject invalid first-party browser mutations before reading bodies,
-    # then bound accepted Auth payloads before framework parsing/application allocation.
     app.add_middleware(AuthRequestBodyLimitMiddleware)
     app.add_middleware(
         BrowserAuthSecurityMiddleware,
@@ -120,6 +118,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(temporal_constrained_activity_router)
     app.include_router(temporal_schedule_reminder_router)
     app.include_router(temporal_movement_policy_router)
+    app.include_router(temporal_planning_tray_router)
     app.include_router(temporal_plan_work_router)
     app.include_router(temporal_plan_dependency_router)
     app.include_router(temporal_plan_candidate_router)
@@ -128,12 +127,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.get("/health/live", include_in_schema=False)
     def health_live() -> dict[str, str]:
-        """Report process liveness without depending on external services."""
         return {"status": "ok"}
 
     @app.get("/health/ready", include_in_schema=False, response_model=None)
     async def health_ready(request: Request) -> dict[str, str] | JSONResponse:
-        """Report readiness only when the runtime PostgreSQL boundary is reachable."""
         database_runtime = cast(DatabaseRuntime, request.app.state.database_runtime)
         if await database_runtime.is_ready():
             return {"status": "ready"}
