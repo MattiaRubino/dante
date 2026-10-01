@@ -19,6 +19,7 @@ import type {
   TemporalAuthoredActivityResult,
   TemporalAuthoredEventResult,
 } from '../../temporal';
+import { TEMPORAL_CREATE_RECENT_COLORS_KEY } from './temporal-create-recent-colors';
 import { TemporalCreateEntry } from './temporal-create-entry';
 
 const DEFAULT_COLOR = '#EA5C12';
@@ -27,7 +28,10 @@ beforeAll(async () => {
   await i18n.changeLanguage('it');
 });
 
-afterEach(() => cleanup());
+afterEach(() => {
+  cleanup();
+  window.localStorage.clear();
+});
 
 function activityResult(title: string): TemporalAuthoredActivityResult {
   return Object.freeze({
@@ -140,8 +144,8 @@ describe('Temporal Create U2 entry', () => {
     });
   });
 
-  it('uses a curated DANTE palette without native or custom free-form pickers', () => {
-    renderEntry();
+  it('uses a curated Google-style palette plus the professional custom picker without native color input', () => {
+    const { container } = renderEntry();
 
     fireEvent.click(
       screen.getByRole('button', { name: 'Colore attività o evento' }),
@@ -158,14 +162,34 @@ describe('Temporal Create U2 entry', () => {
     expect(
       within(palette).getByRole('button', { name: 'Colore #4285F4' }),
     ).toBeTruthy();
+
+    fireEvent.click(
+      within(palette).getByRole('button', { name: 'Colore personalizzato' }),
+    );
+    expect(container.querySelector('.react-colorful')).toBeTruthy();
+    expect(screen.getByLabelText('Codice colore HEX')).toBeTruthy();
+  });
+
+  it('remembers only colors actually used when Add is submitted, not colors merely inspected', async () => {
+    const { activityRequests } = renderEntry();
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Colore attività o evento' }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Colore #4285F4' }));
+    expect(window.localStorage.getItem(TEMPORAL_CREATE_RECENT_COLORS_KEY)).toBeNull();
+
+    fireEvent.change(screen.getByPlaceholderText('Titolo'), {
+      target: { value: 'Blu usato' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi' }));
+
+    await waitFor(() => expect(activityRequests).toHaveLength(1));
     expect(
-      within(palette).queryByRole('button', { name: 'Colore personalizzato' }),
-    ).toBeNull();
-    expect(
-      within(palette).queryByRole('button', {
-        name: 'Scegli un colore dal cerchio',
-      }),
-    ).toBeNull();
+      JSON.parse(
+        window.localStorage.getItem(TEMPORAL_CREATE_RECENT_COLORS_KEY) ?? '[]',
+      ),
+    ).toEqual(['#4285F4']);
   });
 
   it('routes Event through the U2 Event endpoint', async () => {
