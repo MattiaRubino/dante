@@ -55,6 +55,7 @@ class UnassignedLifeAreaItemView:
     subject_native_ref: NativeRef
     title: str
     created_at: datetime
+    color_code: str | None
 
 
 def _operation(value: str) -> str:
@@ -216,8 +217,30 @@ class LifeAreaAssignmentApplication:
                     (
                         await session.execute(
                             text("""
-                            SELECT subject_kind,subject_native_ref,title,created_at
-                              FROM dante.list_self_unassigned_life_area_items(:self_person_ref)
+                            WITH unassigned AS (
+                                SELECT subject_kind,subject_native_ref,title,created_at
+                                  FROM dante.list_self_unassigned_life_area_items(
+                                    :self_person_ref
+                                  )
+                            )
+                            SELECT unassigned.subject_kind,
+                                   unassigned.subject_native_ref,
+                                   unassigned.title,
+                                   unassigned.created_at,
+                                   CASE
+                                     WHEN unassigned.subject_kind='activity'
+                                       THEN activity.color_code
+                                     WHEN unassigned.subject_kind='event'
+                                       THEN event.color_code
+                                     ELSE NULL
+                                   END AS color_code
+                              FROM unassigned
+                              LEFT JOIN dante.activity_intention AS activity
+                                ON unassigned.subject_kind='activity'
+                               AND activity.activity_ref=unassigned.subject_native_ref
+                              LEFT JOIN dante.event_expectation AS event
+                                ON unassigned.subject_kind='event'
+                               AND event.event_ref=unassigned.subject_native_ref
                         """),
                             {"self_person_ref": self_person_ref},
                         )
@@ -231,6 +254,11 @@ class LifeAreaAssignmentApplication:
                         subject_native_ref=NativeRef(UUID(str(row["subject_native_ref"]))),
                         title=str(row["title"]),
                         created_at=row["created_at"],
+                        color_code=(
+                            None
+                            if row["color_code"] is None
+                            else str(row["color_code"])
+                        ),
                     )
                     for row in rows
                 )
