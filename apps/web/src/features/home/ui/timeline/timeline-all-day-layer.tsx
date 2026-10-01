@@ -1,5 +1,5 @@
 import { Temporal } from '@dante/time';
-import { useMemo, useState } from 'react';
+import { type CSSProperties, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { createRemoteTemporalOccurrenceScheduleDataSource } from '../../../temporal/remote-occurrence-schedule-data-source';
@@ -46,6 +46,18 @@ function coarsePeriodLabel(
   }[period];
 }
 
+function itemOrganizationKey(item: TimelineAllDayItem): string | null {
+  const basis = item.canonicalBasis;
+  if (!basis) return null;
+  if (basis.kind === 'scheduled-activity') {
+    return `activity:${basis.activityRef}`;
+  }
+  if (basis.kind === 'scheduled-event') {
+    return `event:${basis.eventRef}`;
+  }
+  return `${basis.sourceKind}:${basis.sourceNativeRef}`;
+}
+
 function requestedOccurrencePlacement(
   dateKey: string,
   suggestedStartTime: string | undefined,
@@ -61,7 +73,11 @@ function requestedOccurrencePlacement(
   try {
     startTime = Temporal.PlainTime.from(startValue.trim());
   } catch {
-    window.alert(english ? 'Enter a valid time (HH:MM).' : 'Inserisci un orario valido (HH:MM).');
+    window.alert(
+      english
+        ? 'Enter a valid time (HH:MM).'
+        : 'Inserisci un orario valido (HH:MM).',
+    );
     return null;
   }
 
@@ -186,6 +202,17 @@ export function TimelineAllDayLane({
         {visibleItems.map((item) => {
           const group = groupMap.get(item.groupId);
           const tone = item.appearanceTone ?? group?.tone ?? 'personal';
+          const organizationKey = itemOrganizationKey(item);
+          const itemColorCode =
+            item.appearanceColorCode ??
+            (organizationKey === null
+              ? undefined
+              : group?.itemColorCodes?.[organizationKey]);
+          const itemStyle: CSSProperties & {
+            '--timeline-group-color'?: string;
+          } = itemColorCode
+            ? { '--timeline-group-color': itemColorCode }
+            : {};
           const position = timelineAllDayRangePosition(item, dateKey);
           const startsHere = position === 'single' || position === 'start';
           const endsHere = position === 'single' || position === 'end';
@@ -241,6 +268,7 @@ export function TimelineAllDayLane({
                 data-range-position={position}
                 data-range-start={startsHere || undefined}
                 data-range-end={endsHere || undefined}
+                style={itemStyle}
                 aria-label={`${item.title} · ${precisionLabel} · ${group?.label ?? item.groupId}`}
                 onClick={(event) => event.currentTarget.focus()}
               >
