@@ -1,8 +1,8 @@
 # B14 + B07 — U3 Create / Planning handoff — 2026-10-01
 
 - **Branch:** `feature/timeline-temporal-operational`
-- **Status:** ACTIVE — implementation candidate; latest user-local proof is `899f9260`, later changes require a new local gate
-- **Current candidate HEAD before this document update:** `856d59f28894dd5aadd72cee1c1a059a639412af`
+- **Status:** ACTIVE — implementation candidate; latest fully green user-local proof is `899f9260`; user-local gate at `5c3634d4` was partially green with one scoped Advanced-timezone failure; later fixes require a rerun
+- **Current candidate HEAD before this document update:** `08478d939b30a48ce6ec2e49efa6bd3a37d32069`
 - **U2 canonical closure:** `docs/workstreams/timeline-temporal-operational-b14-u2-closure-2026-10-01.md`
 - **UI ledger:** `docs/workstreams/timeline-temporal-operational-b14-ui-consolidation-2026-09-30.md`
 - **CI:** not authorized; user runs tests locally in `~/projects/dante`
@@ -19,6 +19,18 @@ Temporal Create top/U1 tests                   PASS
 focused total                                  16/16 PASS
 ```
 
+Latest user-local rerun at `5c3634d4` after the later U3 candidate:
+
+```text
+web typecheck                                  PASS
+Temporal Create composer tests                 2/2 PASS
+Temporal Create U2 entry tests                 9/9 PASS
+Temporal Create top/U1 tests                   5/6 PASS
+focused total                                  16 PASS / 1 FAIL
+```
+
+The single failure was not a backend/API or draft-loss failure. Advanced still mounted the compact Quick timezone globe while also rendering the explicit Advanced `timeMode` / `timeZoneId` controls. That contradicts the accepted U3 product rule. Commits `1e0ef2f9` + `08478d93` make the Quick timezone affordance surface-aware and stop mounting it in Advanced. Those fixes are candidate-only until the next user-local rerun.
+
 Earlier in the same cycle the unified planning-tray vertical was also proven locally:
 
 ```text
@@ -29,7 +41,7 @@ larger backend focused gate                    10/10 PASS
 OpenAPI/generated planning-tray client         generated and committed at a9dbdbe2
 ```
 
-Do not describe later commits as proven until the user reruns the local gate.
+Do not describe commits after the latest complete green gate as proven until the user reruns the local gate.
 
 ## 2. Product decisions frozen in U3 so far
 
@@ -55,7 +67,7 @@ Do not describe later commits as proven until the user reruns the local gate.
 
 - Advanced is a central viewport surface, not an expansion of the right rail.
 - Quick and Advanced share the same draft; switching surfaces must not lose entered data.
-- Quick timezone = compact globe; Advanced timezone = explicit `timeMode` + `timeZoneId` controls over the same state. The Quick globe is hidden while Advanced is active.
+- Quick timezone = compact globe; Advanced timezone = explicit `timeMode` + `timeZoneId` controls over the same state. The Quick globe is not mounted while Advanced is active.
 - Reminder has one product control (`Ricorda`) in the shared/main Create fields. Advanced must not expose a second Reminder/Promemoria copy.
 - `Verifica esito` is separate from Reminder. It owns `confirmation.outcomePolicy`; for now only the actually supported inherited rule is exposed. Unsupported future policies are not shown as disabled fake choices.
 - Advanced recurrence and `Verifica esito` are independent sections: Event recurrence or an Activity recurrence does not suppress outcome-verification policy.
@@ -107,9 +119,12 @@ c830a9f1  delete superseded appearance styles
 12f85f6a  mark explicit Advanced timeMode field
 b06b5542  lock Advanced timezone / verification separation in tests
 856d59f2  make recurrence and outcome verification independent sections
+5c3634d4  reconcile U3 handoff after verification split
+1e0ef2f9  make Core timezone affordance explicitly Quick-only
+08478d93  drive Quick timezone affordance from Composer surface
 ```
 
-These commits are implementation candidate only until the user runs the next local gate.
+The user-local gate at `5c3634d4` proved typecheck and 16 focused tests but exposed the one Advanced globe mismatch described above. `1e0ef2f9` and `08478d93` are implementation candidate only until the user reruns the focused gate.
 
 ## 5. Immediate next local gate
 
@@ -140,7 +155,7 @@ Verify in this order:
 3. `Da collocare` for Activity and Event has neither `Ripeti` nor `Ricorda`;
 4. `Tutto il giorno` for Activity and Event shows exactly two DANTE date pickers and no hour controls;
 5. Reminder is selectable before submit for a normal named-zone timed Activity/Event;
-6. Advanced opens centrally, preserves draft, hides the compact globe, and exposes explicit time reference/timezone;
+6. Advanced opens centrally, preserves draft, does not mount the compact globe, and exposes explicit time reference/timezone;
 7. Advanced has one `Ricorda` control only and a separate `Verifica esito` section;
 8. Event/recurring Activity can show recurrence and `Verifica esito` independently;
 9. `Aspetto` is absent.
