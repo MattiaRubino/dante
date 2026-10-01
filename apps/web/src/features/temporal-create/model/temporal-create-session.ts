@@ -267,7 +267,9 @@ function normalizeFields(fields: TemporalCreateFields): TemporalCreateFields {
   let eventRecurrence = fields.eventRecurrence;
 
   if (fields.kind === 'event') {
-    if (timeSemantics === 'unscheduled' || timeSemantics === 'coarse') {
+    // Events may intentionally exist without a current Schedule placement.
+    // Only the legacy coarse shortcut remains unavailable in Event Quick Create.
+    if (timeSemantics === 'coarse') {
       timeSemantics = 'timed';
     }
     if (
@@ -859,11 +861,7 @@ export function validateTemporalCreateFields(
       temporalValidationIssue('temporal.create.date.invalid', ['date']),
     );
   }
-  if (
-    fields.kind === 'event' &&
-    (fields.timeSemantics === 'unscheduled' ||
-      fields.timeSemantics === 'coarse')
-  ) {
+  if (fields.kind === 'event' && fields.timeSemantics === 'coarse') {
     issues.push(
       temporalValidationIssue('temporal.create.event.requires_placement', [
         'timeSemantics',
