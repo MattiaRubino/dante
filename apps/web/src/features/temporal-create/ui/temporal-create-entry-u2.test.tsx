@@ -1,7 +1,14 @@
 // @vitest-environment jsdom
 
 import { Temporal } from '@dante/time';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { i18n } from '../../../bootstrap/i18n';
@@ -49,13 +56,15 @@ function eventResult(title: string): TemporalAuthoredEventResult {
   });
 }
 
-function renderEntry(contexts: readonly {
-  id: string;
-  label: string;
-  tone: 'personal';
-  revision?: number;
-  colorCode?: string | null;
-}[] = []) {
+function renderEntry(
+  contexts: readonly {
+    id: string;
+    label: string;
+    tone: 'personal';
+    revision?: number;
+    colorCode?: string | null;
+  }[] = [],
+) {
   const activityRequests: TemporalAuthorActivityRequest[] = [];
   const eventRequests: TemporalAuthorEventRequest[] = [];
   const source: TemporalAuthoringDataSource = {
@@ -131,7 +140,7 @@ describe('Temporal Create U2 entry', () => {
     });
   });
 
-  it('uses DANTE color controls instead of the operating-system picker and exposes primary colors', () => {
+  it('uses a curated DANTE palette without native or custom free-form pickers', () => {
     renderEntry();
 
     fireEvent.click(
@@ -140,21 +149,23 @@ describe('Temporal Create U2 entry', () => {
     const palette = screen.getByRole('dialog', { name: 'Scegli colore' });
 
     expect(document.querySelector('input[type="color"]')).toBeNull();
-    expect(within(palette).getByRole('button', { name: 'Colore #FF3B30' })).toBeTruthy();
-    expect(within(palette).getByRole('button', { name: 'Colore #FFD60A' })).toBeTruthy();
-    expect(within(palette).getByRole('button', { name: 'Colore #0A84FF' })).toBeTruthy();
-
-    fireEvent.click(
-      within(palette).getByRole('button', { name: 'Colore personalizzato' }),
-    );
     expect(
-      within(palette).getByRole('dialog', { name: 'Colore personalizzato' }),
+      within(palette).getByRole('button', { name: 'Colore #D50000' }),
     ).toBeTruthy();
     expect(
-      within(palette).getByRole('button', {
+      within(palette).getByRole('button', { name: 'Colore #FFD600' }),
+    ).toBeTruthy();
+    expect(
+      within(palette).getByRole('button', { name: 'Colore #4285F4' }),
+    ).toBeTruthy();
+    expect(
+      within(palette).queryByRole('button', { name: 'Colore personalizzato' }),
+    ).toBeNull();
+    expect(
+      within(palette).queryByRole('button', {
         name: 'Scegli un colore dal cerchio',
       }),
-    ).toBeTruthy();
+    ).toBeNull();
   });
 
   it('routes Event through the U2 Event endpoint', async () => {
