@@ -206,7 +206,7 @@ CREATE FUNCTION dante.set_self_activity_execution_policy(
 LANGUAGE plpgsql SECURITY DEFINER VOLATILE PARALLEL UNSAFE
 SET search_path=pg_catalog,dante,pg_temp AS $function$
 DECLARE
-    prior dante.activity_execution_policy_operation%ROWTYPE;
+    prior record;
     current_state uuid;
     previous_from timestamptz;
     accepted_at timestamptz;
