@@ -18,6 +18,8 @@ from dante.modules.temporal.actual_runtime import (
     ActualInputError,
     ActualNotFoundError,
     ActualOperationReuseError,
+    ActualParentAcknowledgementRequiredError,
+    ActualParentBlockedError,
     ActualParentGuardError,
     ActualPersistenceError,
     ActualRealizationView,
@@ -188,10 +190,16 @@ def _problem(exc: Exception) -> ProblemError:
             title="Actual realization changed",
             detail=str(exc),
         )
-    if isinstance(exc, ActualParentGuardError):
+    if isinstance(exc, ActualParentAcknowledgementRequiredError):
+        return ProblemError(
+            status=409, code="temporal.actual.parent_ack_required",
+            category="conflict", title="Parent acknowledgement required",
+            detail=str(exc),
+        )
+    if isinstance(exc, ActualParentBlockedError):
         return ProblemError(
             status=409,
-            code="temporal.actual.parent_child_guard",
+            code="temporal.actual.parent_blocked",
             category="conflict",
             title="Parent Activity requires child review",
             detail=str(exc),

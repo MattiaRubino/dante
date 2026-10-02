@@ -1,7 +1,13 @@
 // @vitest-environment jsdom
 
 import { Temporal } from '@dante/time';
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import { i18n } from '../../../bootstrap/i18n';
@@ -50,19 +56,33 @@ describe('Temporal Create Advanced Activity IA', () => {
   it('keeps the Activity tree under the title and writes Session execution intent', () => {
     openAdvanced();
 
-    expect(screen.getByRole('heading', { name: 'Riferimento orario' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Pianificazione' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Realtà ed esito' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Verifica esito' })).toBeTruthy();
+    expect(
+      screen.getByRole('heading', { name: 'Riferimento orario' }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('heading', { name: 'Pianificazione' }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('heading', { name: 'Realtà ed esito' }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('heading', { name: 'Verifica esito' }),
+    ).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Descrizione' })).toBeTruthy();
 
     expect(screen.queryByRole('heading', { name: 'Struttura' })).toBeNull();
-    expect(screen.queryByRole('heading', { name: 'Organizzazione' })).toBeNull();
+    expect(
+      screen.queryByRole('heading', { name: 'Organizzazione' }),
+    ).toBeNull();
 
     const title = screen.getByPlaceholderText('Titolo');
     expect(title.classList.contains('has-structure-actions')).toBe(true);
-    expect(document.querySelector('[data-create-activity-structure]')).toBeTruthy();
-    expect(document.querySelector('[data-create-structure-actions]')).toBeTruthy();
+    expect(
+      document.querySelector('[data-create-activity-structure]'),
+    ).toBeTruthy();
+    expect(
+      document.querySelector('[data-create-structure-actions]'),
+    ).toBeTruthy();
 
     fireEvent.click(
       screen.getByRole('button', { name: 'Aggiungi alla struttura' }),
@@ -70,13 +90,22 @@ describe('Temporal Create Advanced Activity IA', () => {
     const structureMenu = screen.getByRole('menu', {
       name: 'Aggiungi alla struttura',
     });
-    expect(
-      (within(structureMenu).getByRole('menuitem', {
-        name: 'Sotto-attività',
-      }) as HTMLButtonElement).disabled,
-    ).toBe(true);
+    const addChild = within(structureMenu).getByRole('menuitem', {
+      name: 'Sotto-attività',
+    }) as HTMLButtonElement;
+    expect(addChild.disabled).toBe(false);
+    fireEvent.click(addChild);
+    expect(document.querySelector('[data-create-subactivity]')).toBeTruthy();
+    fireEvent.change(screen.getByLabelText('Titolo sotto-attività'), {
+      target: { value: 'Prima fase' },
+    });
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Aggiungi alla struttura' }),
+    );
 
-    const addSession = within(structureMenu).getByRole('menuitem', {
+    const addSession = within(
+      screen.getByRole('menu', { name: 'Aggiungi alla struttura' }),
+    ).getByRole('menuitem', {
       name: 'Sessione',
     }) as HTMLButtonElement;
     expect(addSession.disabled).toBe(false);
@@ -106,9 +135,13 @@ describe('Temporal Create Advanced Activity IA', () => {
     expect(screen.queryByRole('button', { name: 'Termina' })).toBeNull();
 
     fireEvent.click(
-      screen.getByRole('button', { name: 'Disabilita configurazione Sessione' }),
+      screen.getByRole('button', {
+        name: 'Disabilita configurazione Sessione',
+      }),
     );
-    expect(document.querySelector('[data-create-structure-session]')).toBeNull();
+    expect(
+      document.querySelector('[data-create-structure-session]'),
+    ).toBeNull();
 
     const split = screen.getByRole('button', { name: 'Suddivisa' });
     expect((split as HTMLButtonElement).disabled).toBe(true);

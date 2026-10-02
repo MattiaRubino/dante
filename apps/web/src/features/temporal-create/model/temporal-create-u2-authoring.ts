@@ -1,6 +1,7 @@
 import { Temporal } from '@dante/time';
 
 import type { TemporalCreateFields } from './temporal-create-session';
+import type { TemporalSessionCaptureMode } from '../../temporal/authoring-data-source';
 
 export const TEMPORAL_CREATE_U2_DEFAULT_COLOR = '#EA5C12';
 
@@ -24,6 +25,29 @@ export type TemporalCreateU2AuthoringDraft = Readonly<{
   endDate: string;
   lifeArea: TemporalCreateU2LifeAreaDraft;
   itemColorCode: string | null;
+  activityStructure: TemporalCreateActivityStructureDraft;
+}>;
+
+export type TemporalCreatePlannedSliceDraft = Readonly<{
+  id: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+}>;
+
+export type TemporalCreateActivityChildDraft = Readonly<{
+  id: string;
+  title: string;
+  requirementCode: 'required' | 'optional';
+  captureMode: TemporalSessionCaptureMode;
+  plannedSlices: readonly TemporalCreatePlannedSliceDraft[];
+}>;
+
+export type TemporalCreateActivityStructureDraft = Readonly<{
+  captureMode: TemporalSessionCaptureMode;
+  childGuardMode: 'none' | 'confirm' | 'block';
+  children: readonly TemporalCreateActivityChildDraft[];
+  plannedSlices: readonly TemporalCreatePlannedSliceDraft[];
 }>;
 
 function inferredEndDate(fields: TemporalCreateFields): string {
@@ -31,7 +55,10 @@ function inferredEndDate(fields: TemporalCreateFields): string {
     const start = Temporal.PlainDateTime.from(
       `${fields.date}T${fields.startTime}`,
     );
-    return start.add({ minutes: fields.durationMinutes }).toPlainDate().toString();
+    return start
+      .add({ minutes: fields.durationMinutes })
+      .toPlainDate()
+      .toString();
   } catch {
     return fields.date;
   }
@@ -44,6 +71,12 @@ export function createTemporalCreateU2AuthoringDraft(
     endDate: inferredEndDate(fields),
     lifeArea: Object.freeze({ kind: 'none' as const }),
     itemColorCode: TEMPORAL_CREATE_U2_DEFAULT_COLOR,
+    activityStructure: Object.freeze({
+      captureMode: 'disabled' as const,
+      childGuardMode: 'none' as const,
+      children: Object.freeze([]),
+      plannedSlices: Object.freeze([]),
+    }),
   });
 }
 

@@ -31,6 +31,7 @@ export type RecordActualCommand = Readonly<{
   operationId: string;
   expectedMaterialStateRef: string | null;
   realizationOccurred: boolean;
+  acknowledgeUnresolvedChildren?: boolean;
 }>;
 
 export class TemporalActualRemoteError extends Error {
@@ -54,7 +55,10 @@ function record(value: unknown): Record<string, unknown> {
 
 function uuid(value: unknown, field: string): string {
   if (typeof value !== 'string' || !UUID_V7.test(value)) {
-    throw new TemporalActualRemoteError('protocol', `${field} must be a UUIDv7.`);
+    throw new TemporalActualRemoteError(
+      'protocol',
+      `${field} must be a UUIDv7.`,
+    );
   }
   return value.toLowerCase();
 }
@@ -68,13 +72,22 @@ function timing(value: unknown): TemporalActualTiming | null {
     extent !== 'start_only' &&
     extent !== 'interval'
   ) {
-    throw new TemporalActualRemoteError('protocol', 'Invalid Actual timing extent.');
+    throw new TemporalActualRemoteError(
+      'protocol',
+      'Invalid Actual timing extent.',
+    );
   }
   if (typeof payload.started_at !== 'string') {
-    throw new TemporalActualRemoteError('protocol', 'Invalid Actual timing start.');
+    throw new TemporalActualRemoteError(
+      'protocol',
+      'Invalid Actual timing start.',
+    );
   }
   if (payload.ended_at !== null && typeof payload.ended_at !== 'string') {
-    throw new TemporalActualRemoteError('protocol', 'Invalid Actual timing end.');
+    throw new TemporalActualRemoteError(
+      'protocol',
+      'Invalid Actual timing end.',
+    );
   }
   return Object.freeze({
     extentCode: extent,
@@ -85,7 +98,10 @@ function timing(value: unknown): TemporalActualTiming | null {
 
 function sessionBases(value: unknown): readonly TemporalActualSessionBasis[] {
   if (!Array.isArray(value)) {
-    throw new TemporalActualRemoteError('protocol', 'Invalid Actual Session bases.');
+    throw new TemporalActualRemoteError(
+      'protocol',
+      'Invalid Actual Session bases.',
+    );
   }
   return Object.freeze(
     value.map((item) => {
@@ -107,7 +123,10 @@ function view(value: unknown): TemporalActualView {
     typeof payload.realization_occurred !== 'boolean' ||
     typeof payload.replayed !== 'boolean'
   ) {
-    throw new TemporalActualRemoteError('protocol', 'Invalid Actual realization state.');
+    throw new TemporalActualRemoteError(
+      'protocol',
+      'Invalid Actual realization state.',
+    );
   }
   return Object.freeze({
     actualRef: uuid(payload.actual_ref, 'actual_ref'),
@@ -122,7 +141,8 @@ function view(value: unknown): TemporalActualView {
 
 function subjectPath(kind: ActualSubjectKind, subjectRef: string): string {
   const encoded = encodeURIComponent(subjectRef);
-  if (kind === 'activity') return `/api/v1/temporal/activities/${encoded}/actual`;
+  if (kind === 'activity')
+    return `/api/v1/temporal/activities/${encoded}/actual`;
   if (kind === 'event') return `/api/v1/temporal/events/${encoded}/actual`;
   return `/api/v1/temporal/occurrences/${encoded}/actual`;
 }
@@ -150,7 +170,9 @@ export function createRemoteTemporalActualDataSource(
     return payload.csrf_token;
   }
 
-  async function problem(response: Response): Promise<TemporalActualRemoteError> {
+  async function problem(
+    response: Response,
+  ): Promise<TemporalActualRemoteError> {
     let payload: Record<string, unknown> = {};
     try {
       payload = record(await response.json());
@@ -163,7 +185,9 @@ export function createRemoteTemporalActualDataSource(
     }
     return new TemporalActualRemoteError(
       'http',
-      typeof payload.detail === 'string' ? payload.detail : 'Actual command rejected.',
+      typeof payload.detail === 'string'
+        ? payload.detail
+        : 'Actual command rejected.',
       response.status,
       typeof payload.code === 'string' ? payload.code : null,
     );
@@ -177,7 +201,10 @@ export function createRemoteTemporalActualDataSource(
       const response = await webFetch(subjectPath(kind, subjectRef));
       if (!response.ok) {
         const error = await problem(response);
-        if (response.status === 404 && error.code === 'temporal.actual.not_found') {
+        if (
+          response.status === 404 &&
+          error.code === 'temporal.actual.not_found'
+        ) {
           return null;
         }
         throw error;
@@ -201,6 +228,9 @@ export function createRemoteTemporalActualDataSource(
           operation_id: command.operationId,
           expected_material_state_ref: command.expectedMaterialStateRef,
           realization_occurred: command.realizationOccurred,
+          ...(command.acknowledgeUnresolvedChildren
+            ? { acknowledge_unresolved_children: true }
+            : {}),
           timing: null,
           session_bases: [],
         }),

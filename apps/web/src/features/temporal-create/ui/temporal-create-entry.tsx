@@ -26,8 +26,10 @@ import {
 } from '../application/temporal-create-projection';
 import {
   buildTemporalCreateU2Request,
+  temporalCreateHasU6Structure,
   temporalCreateU2QuickIntentSupported,
   validateTemporalCreateU2QuickFields,
+  validateTemporalCreateU6Structure,
 } from '../application/temporal-create-u2-submit';
 import {
   continueTemporalCreateEditing,
@@ -284,6 +286,15 @@ export function TemporalCreateEntry({
   const executeU2Quick = async (
     fields: TemporalCreateSession['draft']['current'],
   ): Promise<boolean> => {
+    const structureIssue = validateTemporalCreateU6Structure(
+      fields,
+      u2DraftRef.current,
+    );
+    if (structureIssue !== null) {
+      setFailureMessage(structureIssue);
+      setLifecycle('failed');
+      return false;
+    }
     const validation = validateTemporalCreateU2QuickFields(fields);
     if (validation.length > 0) {
       setIssues(validation);
@@ -379,8 +390,18 @@ export function TemporalCreateEntry({
       ? { ...session.draft.current, ...fieldsOverride }
       : session.draft.current;
     const useU2Quick =
-      (authoringDataSourceOverride !== undefined || import.meta.env.MODE !== 'test') &&
+      (authoringDataSourceOverride !== undefined ||
+        import.meta.env.MODE !== 'test') &&
       temporalCreateU2QuickIntentSupported(fields);
+    if (!useU2Quick && temporalCreateHasU6Structure(u2DraftRef.current)) {
+      setLifecycle('failed');
+      setFailureMessage(
+        i18n.language.toLowerCase().startsWith('en')
+          ? 'This Activity configuration cannot yet be combined with Sub-Activities or planned Sessions.'
+          : 'Questa configurazione non può ancora essere combinata con sotto-attività o Sessioni pianificate.',
+      );
+      return;
+    }
     if (useU2Quick) {
       await executeU2Quick(fields);
       return;
@@ -562,7 +583,7 @@ export function TemporalCreateEntry({
       {composer && typeof document !== 'undefined'
         ? createPortal(
             composer,
-            advancedComposer ? document.body : createHost ?? document.body,
+            advancedComposer ? document.body : (createHost ?? document.body),
           )
         : null}
       {discardModal}

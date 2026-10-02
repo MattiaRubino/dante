@@ -44,3 +44,21 @@
     max-height: min(35vh, 320px);
   }
 }
+.timeline-activity-structure {
+  min-width: 0;
+  width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.timeline-activity-structure ul {
+  margin: 4px 0 8px;
+  padding-left: 20px;
+}
+
+.timeline-activity-structure details {
+  margin: 5px 0;
+}
+
+.timeline-activity-structure summary {
+  cursor: pointer;
+}

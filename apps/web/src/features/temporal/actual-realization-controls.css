@@ -21,6 +21,13 @@
   gap: 6px;
 }
 
+.timeline-actual-controls__acknowledgement {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex-basis: 100%;
+}
+
 .timeline-actual-controls > small {
   flex-basis: 100%;
   color: #8fa0b5;

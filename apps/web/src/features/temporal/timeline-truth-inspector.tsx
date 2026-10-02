@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import './timeline-truth-inspector.css';
 
 import { ActualRealizationControls } from './actual-realization-controls';
+import { ActivityStructureReadback } from './activity-structure-readback';
 import { AdvancedRecurrenceControls } from './advanced-recurrence-controls';
 import { ConditionalTemporalControls } from './conditional-temporal-controls';
 import { useTemporalTimelineRuntime } from './timeline-runtime-boundary';
@@ -107,7 +108,10 @@ export function TimelineTruthInspector() {
       setSelectedKey(null);
       return;
     }
-    if (selectedKey === null || !subjects.some((item) => item.key === selectedKey)) {
+    if (
+      selectedKey === null ||
+      !subjects.some((item) => item.key === selectedKey)
+    ) {
       setSelectedKey(subjects[0]?.key ?? null);
     }
   }, [selectedKey, subjects]);
@@ -143,6 +147,12 @@ export function TimelineTruthInspector() {
             kind={selected.kind}
             subjectRef={selected.ref}
           />
+          {selected.kind === 'activity' ? (
+            <ActivityStructureReadback
+              key={`structure:${selected.ref}`}
+              activityRef={selected.ref}
+            />
+          ) : null}
           <ConditionalTemporalControls
             key={`condition:${selected.key}`}
             kind={selected.kind}

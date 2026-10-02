@@ -65,6 +65,7 @@ function activityResult(
         })
       : null,
     sessionCaptureMode: 'record',
+    childGuardMode: 'none',
     plannedSlices: Object.freeze([]),
     children: Object.freeze([]),
     replayed: false,
@@ -127,6 +128,68 @@ function renderEntry(
 }
 
 describe('Temporal Create U2 entry', () => {
+  it('submits Advanced Activity children, guard and planned Schedule in one authoring command', async () => {
+    const { activityRequests } = renderEntry();
+    fireEvent.change(screen.getByPlaceholderText('Titolo'), {
+      target: { value: 'Progetto' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Opzioni avanzate/ }));
+    const settings = document.querySelector('[data-create-structure-actions]');
+    if (!settings) throw new Error('Expected Activity settings.');
+    fireEvent.change(
+      within(settings as HTMLElement).getByLabelText('Sessioni'),
+      {
+        target: { value: 'live' },
+      },
+    );
+    fireEvent.change(
+      within(settings as HTMLElement).getByLabelText('Figli richiesti'),
+      {
+        target: { value: 'block' },
+      },
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Aggiungi alla struttura' }),
+    );
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Sotto-attività' }));
+    fireEvent.change(screen.getByLabelText('Titolo sotto-attività'), {
+      target: { value: 'Prima fase' },
+    });
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Aggiungi alla struttura' }),
+    );
+    fireEvent.click(
+      screen.getByRole('menuitem', { name: 'Sessione pianificata' }),
+    );
+    const planned = document.querySelector('[data-create-planned-session]');
+    if (!planned) throw new Error('Expected planned Session.');
+    fireEvent.change(within(planned as HTMLElement).getByLabelText('Inizio'), {
+      target: { value: '09:15' },
+    });
+    fireEvent.change(within(planned as HTMLElement).getByLabelText('Fine'), {
+      target: { value: '09:30' },
+    });
+    fireEvent.click(
+      screen.getByRole('button', { name: /Nascondi opzioni avanzate/ }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: /Opzioni avanzate/ }));
+    expect(
+      (screen.getByLabelText('Titolo sotto-attività') as HTMLInputElement)
+        .value,
+    ).toBe('Prima fase');
+    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi' }));
+
+    await waitFor(() => expect(activityRequests).toHaveLength(1));
+    expect(activityRequests[0]?.sessionCaptureMode).toBe('live');
+    expect(activityRequests[0]?.childGuardMode).toBe('block');
+    expect(activityRequests[0]?.children?.[0]).toMatchObject({
+      title: 'Prima fase',
+      requirementCode: 'required',
+      presentationOrder: 1,
+    });
+    expect(activityRequests[0]?.plannedSlices).toHaveLength(1);
+  });
+
   it('creates an Activity without requiring any Life Area and persists the DANTE default color', async () => {
     const { activityRequests } = renderEntry();
 

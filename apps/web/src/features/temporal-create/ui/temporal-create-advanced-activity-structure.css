@@ -11,8 +11,9 @@
 .temporal-create-advanced-structure-inline {
   order: -28;
   display: grid;
-  grid-template-columns:
-    minmax(0, 1fr) var(--temporal-create-structure-actions-width);
+  grid-template-columns: minmax(0, 1fr) var(
+      --temporal-create-structure-actions-width
+    );
   gap: 12px;
   margin-top: -6px;
 }
@@ -77,6 +78,63 @@
 .temporal-create-advanced-structure-inline__actions {
   min-width: 0;
   min-height: 32px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.temporal-create-advanced-structure-inline__actions label,
+.temporal-create-structure-node__actions label {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  font-size: 11px;
+}
+
+.temporal-create-advanced-structure-inline select,
+.temporal-create-advanced-structure-inline input {
+  min-width: 0;
+  max-width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 7px;
+  color: inherit;
+  background: rgba(0, 0, 0, 0.16);
+}
+
+.temporal-create-advanced-structure-inline select option {
+  color: #171717;
+}
+
+.temporal-create-structure-node.is-child
+  .temporal-create-structure-node__identity
+  input {
+  width: 100%;
+  padding: 6px 8px;
+}
+
+.temporal-create-structure-node__actions.is-planned-controls {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.temporal-create-structure-node__actions.is-planned-controls
+  input[type='date'] {
+  width: 130px;
+}
+
+.temporal-create-structure-node__actions.is-planned-controls
+  input[type='time'] {
+  width: 92px;
+}
+
+.temporal-create-structure-add-slice {
+  margin: 6px 0 4px 32px;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
 }
 
 .temporal-create-advanced-structure-inline .temporal-create-structure-menu {
@@ -87,7 +145,9 @@
 .temporal-create-structure-node {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) var(--temporal-create-structure-actions-width);
+  grid-template-columns: minmax(0, 1fr) var(
+      --temporal-create-structure-actions-width
+    );
   gap: 12px;
   width: calc(100% + var(--temporal-create-structure-actions-width) + 12px);
   margin-top: 4px;
@@ -155,6 +215,27 @@
   min-width: 0;
   min-height: 46px;
   padding: 6px 0;
+}
+
+.temporal-create-structure-node.is-child
+  .temporal-create-structure-node__actions {
+  flex-wrap: wrap;
+}
+
+@media (max-width: 700px) {
+  .temporal-create-advanced-structure-inline,
+  .temporal-create-structure-node {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .temporal-create-structure-node {
+    width: 100%;
+  }
+
+  .temporal-create-advanced-structure-inline__actions,
+  .temporal-create-structure-node__actions {
+    justify-content: flex-start;
+  }
 }
 
 .temporal-create-structure-node__actions .temporal-create-field-error {

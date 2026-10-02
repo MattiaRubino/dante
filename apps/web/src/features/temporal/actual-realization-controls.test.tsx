@@ -1,4 +1,12 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+// @vitest-environment jsdom
+
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ActualRealizationControls } from './actual-realization-controls';
@@ -107,6 +115,46 @@ describe('Actual realization controls', () => {
     });
   });
 
+  it('asks for explicit acknowledgement only when the parent guard requires it', async () => {
+    const bodies: Array<Record<string, unknown>> = [];
+    const fetchFn = vi.fn<Fetch>(async (input, init) => {
+      if (String(input).endsWith('/api/v1/auth/session')) {
+        return Response.json({ authenticated: true, csrf_token: 'csrf' });
+      }
+      if (init?.method === 'POST') {
+        const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+        bodies.push(body);
+        if (!body.acknowledge_unresolved_children) {
+          return Response.json(
+            {
+              code: 'temporal.actual.parent_ack_required',
+              detail: 'Required children need acknowledgement.',
+            },
+            { status: 409 },
+          );
+        }
+        return Response.json(actual(STATE_1, true), { status: 201 });
+      }
+      return notFound();
+    });
+    vi.stubGlobal('fetch', fetchFn);
+
+    render(<ActualRealizationControls kind="activity" subjectRef={SUBJECT} />);
+    await screen.findByText('Stato reale: sconosciuto');
+    fireEvent.click(screen.getByText('Segna avvenuto'));
+    await screen.findByRole('button', { name: 'Conferma comunque' });
+    expect(bodies).toHaveLength(1);
+    fireEvent.click(screen.getByRole('button', { name: 'Conferma comunque' }));
+    await screen.findByText('Stato reale: avvenuto');
+    expect(bodies[1]).toMatchObject({
+      realization_occurred: true,
+      acknowledge_unresolved_children: true,
+    });
+    expect(
+      screen.queryByRole('button', { name: 'Conferma comunque' }),
+    ).toBeNull();
+  });
+
   it('reloads authoritative state after a stale-current rejection', async () => {
     let reads = 0;
     const fetchFn = vi.fn<Fetch>(async (input, init) => {
@@ -124,11 +172,15 @@ describe('Actual realization controls', () => {
         );
       }
       reads += 1;
-      return Response.json(actual(reads === 1 ? STATE_1 : STATE_2, reads === 1));
+      return Response.json(
+        actual(reads === 1 ? STATE_1 : STATE_2, reads === 1),
+      );
     });
     vi.stubGlobal('fetch', fetchFn);
 
-    render(<ActualRealizationControls kind="occurrence" subjectRef={SUBJECT} />);
+    render(
+      <ActualRealizationControls kind="occurrence" subjectRef={SUBJECT} />,
+    );
     await screen.findByText('Stato reale: avvenuto');
 
     fireEvent.click(screen.getByText('Segna non avvenuto'));

@@ -7,6 +7,7 @@ import { OutcomeControls } from './outcome-controls';
 import { ReconciliationControls } from './reconciliation-controls';
 import {
   createRemoteTemporalActualDataSource,
+  TemporalActualRemoteError,
   type ActualSubjectKind,
   type TemporalActualView,
 } from './remote-actual-data-source';
@@ -29,11 +30,16 @@ export function ActualRealizationControls({
   kind: ActualSubjectKind;
   subjectRef: string;
 }>) {
-  const source = useMemo(() => createRemoteTemporalActualDataSource(globalThis.fetch), []);
+  const source = useMemo(
+    () => createRemoteTemporalActualDataSource(globalThis.fetch),
+    [],
+  );
   const [actual, setActual] = useState<TemporalActualView | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [needsParentAcknowledgement, setNeedsParentAcknowledgement] =
+    useState(false);
 
   const reload = useCallback(async () => {
     const current = await source.get(kind, subjectRef);
@@ -63,14 +69,19 @@ export function ActualRealizationControls({
     };
   }, [kind, source, subjectRef]);
 
-  const setRealization = (realizationOccurred: boolean) => {
+  const setRealization = (
+    realizationOccurred: boolean,
+    acknowledge = false,
+  ) => {
     setPending(true);
     setMessage(null);
+    setNeedsParentAcknowledgement(false);
     void source
       .record(kind, subjectRef, {
         operationId: operationId(),
         expectedMaterialStateRef: actual?.materialStateRef ?? null,
         realizationOccurred,
+        ...(acknowledge ? { acknowledgeUnresolvedChildren: true } : {}),
       })
       .then((saved) => {
         setActual(saved);
@@ -81,11 +92,25 @@ export function ActualRealizationControls({
             : 'Stato reale registrato: non avvenuto.',
         );
       })
-      .catch((error: unknown) =>
-        reload()
+      .catch((error: unknown) => {
+        if (
+          error instanceof TemporalActualRemoteError &&
+          error.code === 'temporal.actual.parent_ack_required'
+        ) {
+          setNeedsParentAcknowledgement(true);
+          setMessage(
+            'Una sotto-attività richiesta non risulta ancora avvenuta. Conferma esplicitamente per registrare comunque la realtà del padre.',
+          );
+          return;
+        }
+        return reload()
           .catch(() => undefined)
-          .then(() => setMessage(rejection('Aggiornamento stato reale rifiutato.', error))),
-      )
+          .then(() =>
+            setMessage(
+              rejection('Aggiornamento stato reale rifiutato.', error),
+            ),
+          );
+      })
       .finally(() => setPending(false));
   };
 
@@ -131,9 +156,34 @@ export function ActualRealizationControls({
           Segna non avvenuto
         </button>
       </div>
+      {needsParentAcknowledgement && kind === 'activity' ? (
+        <div
+          className="timeline-actual-controls__acknowledgement"
+          role="group"
+          aria-label="Conferma realtà del padre"
+        >
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => setRealization(true, true)}
+          >
+            Conferma comunque
+          </button>
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => {
+              setNeedsParentAcknowledgement(false);
+              setMessage(null);
+            }}
+          >
+            Annulla
+          </button>
+        </div>
+      ) : null}
       <small>
-        “Sconosciuto” significa che non è ancora stato registrato un Actual; non equivale a
-        “non avvenuto”.
+        “Sconosciuto” significa che non è ancora stato registrato un Actual; non
+        equivale a “non avvenuto”.
       </small>
       {messageNode}
       <OutcomeControls kind={kind} subjectRef={subjectRef} />

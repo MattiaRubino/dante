@@ -46,6 +46,14 @@ class ActualParentGuardError(RuntimeError):
     """Required child reality prevents the proposed parent realization."""
 
 
+class ActualParentAcknowledgementRequiredError(ActualParentGuardError):
+    """The parent action needs an explicit acknowledgement."""
+
+
+class ActualParentBlockedError(ActualParentGuardError):
+    """The parent action is blocked until required children are resolved."""
+
+
 class ActualAmbiguousSubjectError(RuntimeError):
     """The bounded B10-A subject maps to multiple pre-existing Actual owners."""
 
@@ -372,9 +380,13 @@ class ActualApplication:
             raise ActualOperationReuseError("Actual operation id was reused.") from exc
         if name == "actual_current_conflict" or "expected current state" in message:
             raise ActualCurrentConflictError("Actual current realization is stale.") from exc
-        if name in {"activity_parent_actual_blocked", "activity_parent_actual_ack_required"}:
-            raise ActualParentGuardError(
-                "Required child realization is unresolved; parent action is blocked or needs acknowledgement."
+        if name == "activity_parent_actual_blocked":
+            raise ActualParentBlockedError(
+                "Resolve required child Activities before recording the parent as occurred."
+            ) from exc
+        if name == "activity_parent_actual_ack_required":
+            raise ActualParentAcknowledgementRequiredError(
+                "Required child Activities are unresolved. Acknowledge this before recording the parent."
             ) from exc
         if name == "actual_subject_ambiguous" or "more than one realization owner" in message:
             raise ActualAmbiguousSubjectError("Actual subject is ambiguous.") from exc
