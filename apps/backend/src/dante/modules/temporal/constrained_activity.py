@@ -22,8 +22,8 @@ from dante.modules.temporal.activity import (
 from dante.modules.temporal.temporal_constraint import (
     AbsoluteBoundaryRule,
     AbsoluteWindowRule,
-    SessionMinimumDurationRule,
     CreatedTemporalConstraintView,
+    SessionMinimumDurationRule,
     TemporalConstraintInputError,
     TemporalConstraintOperationIdReuseError,
     TemporalConstraintPersistenceError,
@@ -82,10 +82,18 @@ def _normalize_operation_id(value: str) -> str:
     return normalized
 
 
-def _activity_fingerprint(*, title: str, life_area_ref: UUID) -> str:
+def _activity_fingerprint(
+    *, title: str, life_area_ref: UUID, session_capture_mode: str | None = None,
+) -> str:
+    intent: dict[str, object] = {
+        "version": 2, "title": title, "life_area_ref": str(life_area_ref),
+    }
+    if session_capture_mode is not None:
+        intent["version"] = 4
+        intent["session_capture_mode"] = session_capture_mode
     return hashlib.sha256(
         json.dumps(
-            {"version": 2, "title": title, "life_area_ref": str(life_area_ref)},
+            intent,
             ensure_ascii=False,
             separators=(",", ":"),
             sort_keys=True,
@@ -126,13 +134,16 @@ def _rule_payload(rule: TemporalConstraintRule) -> dict[str, str]:
     )
 
 
-def _composite_fingerprint(*, title: str, rules: tuple[TemporalConstraintRule, ...]) -> str:
+def _composite_fingerprint(
+    *, title: str, rules: tuple[TemporalConstraintRule, ...],
+    session_capture_mode: str | None = None,
+) -> str:
+    intent: dict[str, object] = {"title": title, "rules": [_rule_payload(rule) for rule in rules]}
+    if session_capture_mode is not None:
+        intent["session_capture_mode"] = session_capture_mode
     return hashlib.sha256(
         json.dumps(
-            {
-                "title": title,
-                "rules": [_rule_payload(rule) for rule in rules],
-            },
+            intent,
             ensure_ascii=False,
             separators=(",", ":"),
             sort_keys=True,
@@ -179,6 +190,7 @@ async def _create_activity_in_session(
     title: str,
     life_area_ref: UUID,
     requested_activity_ref: NativeRef,
+    session_capture_mode: str | None = None,
 ) -> tuple[ActivityView, bool]:
     row = (
         (
@@ -188,7 +200,8 @@ async def _create_activity_in_session(
                     "self_person_ref": self_person_ref,
                     "operation_id": operation_id,
                     "intent_fingerprint": _activity_fingerprint(
-                        title=title, life_area_ref=life_area_ref
+                        title=title, life_area_ref=life_area_ref,
+                        session_capture_mode=session_capture_mode,
                     ),
                     "activity_ref": requested_activity_ref,
                     "title": title,
@@ -225,6 +238,7 @@ class ConstrainedActivityApplication:
         title: str,
         life_area_ref: UUID,
         rules: tuple[TemporalConstraintRule, ...],
+        session_capture_mode: str | None = None,
     ) -> CreateConstrainedActivityResult:
         normalized_title = _normalize_title(title)
         normalized_operation_id = _normalize_operation_id(operation_id)
@@ -232,6 +246,10 @@ class ConstrainedActivityApplication:
             raise ConstrainedActivityInputError(
                 "Atomic constrained Activity authoring requires 1 to 4 rules."
             )
+        if session_capture_mode is not None and session_capture_mode not in {
+            "disabled", "record", "live", "record_and_live",
+        }:
+            raise ConstrainedActivityInputError("Session capture mode is invalid.")
         # Force the bounded public rule union and its value-level validation before opening
         # the transaction.
         for rule in rules:
@@ -241,6 +259,7 @@ class ConstrainedActivityApplication:
         composite_fingerprint = _composite_fingerprint(
             title=normalized_title,
             rules=rules,
+            session_capture_mode=session_capture_mode,
         )
 
         try:
@@ -252,6 +271,7 @@ class ConstrainedActivityApplication:
                     title=normalized_title,
                     life_area_ref=life_area_ref,
                     requested_activity_ref=requested_activity_ref,
+                    session_capture_mode=session_capture_mode,
                 )
 
                 created: list[CreatedTemporalConstraintView] = []
@@ -292,6 +312,42 @@ class ConstrainedActivityApplication:
                             replayed=rule_replayed,
                         )
                     )
+
+                if session_capture_mode is not None:
+                    policy_operation = (
+                        "b14-u6-policy:"
+                        + hashlib.sha256(normalized_operation_id.encode()).hexdigest()
+                    )
+                    policy_intent = {
+                        "version": 1,
+                        "activity_ref": str(activity.activity_ref),
+                        "mode_code": session_capture_mode,
+                        "expected_state_ref": None,
+                    }
+                    policy_fingerprint = hashlib.sha256(
+                        json.dumps(policy_intent, sort_keys=True, separators=(",", ":")).encode()
+                    ).hexdigest()
+                    policy = (
+                        await database_session.execute(
+                            text("""
+                                SELECT * FROM dante.set_self_activity_execution_policy(
+                                    :actor,:operation,:fingerprint,:activity,:state,:mode,NULL
+                                )
+                            """),
+                            {
+                                "actor": self_person_ref,
+                                "operation": policy_operation,
+                                "fingerprint": policy_fingerprint,
+                                "activity": activity.activity_ref,
+                                "state": new_native_ref(),
+                                "mode": session_capture_mode,
+                            },
+                        )
+                    ).mappings().one()
+                    if bool(policy["replayed"]) is not activity_replayed:
+                        raise ConstrainedActivityOperationIdReuseError(
+                            "Composite execution policy replay state is inconsistent."
+                        )
 
                 return CreateConstrainedActivityResult(
                     activity=activity,

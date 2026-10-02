@@ -114,6 +114,12 @@ export const AuthoredActivityResponse = /*#__PURE__*/ zod.object({
     }),
     /*#__PURE__*/ zod.null(),
   ]),
+  session_capture_mode: /*#__PURE__*/ zod.enum([
+    'disabled',
+    'record',
+    'live',
+    'record_and_live',
+  ]),
   title: /*#__PURE__*/ zod.string(),
 });
 

@@ -30,6 +30,10 @@ class SessionInputError(ValueError):
     """The Session command is outside the B08 contract."""
 
 
+class SessionCaptureDisabledError(RuntimeError):
+    """The Activity has no accepted policy admitting a live Session Start."""
+
+
 class SessionNotFoundError(LookupError):
     """The Session subject is outside the authenticated self scope."""
 
@@ -438,6 +442,8 @@ class SessionApplication:
         message = str(getattr(exc, "orig", exc))
         if name == "session_operation_reused" or "reused" in message:
             raise SessionOperationReuseError("Session operation id was reused.") from exc
+        if name == "session_execution_policy_live_required":
+            raise SessionCaptureDisabledError("Live Session capture is disabled.") from exc
         if name == "session_end_conflict" or "conflicts with current timing" in message:
             raise SessionEndConflictError("Session end conflicts with current timing.") from exc
         if name == "session_pause_conflict":

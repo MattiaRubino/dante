@@ -56,6 +56,8 @@ import type {
   EventAgendaMutationResponse,
   EventResponse,
   ExecutionAssessmentResponse,
+  ExecutionPolicyCommand,
+  ExecutionPolicyResponse,
   ExistingAccountSignupResponse,
   ExpectedParticipationResponse,
   ExplicitExtraOccurrenceRequest,
@@ -4128,6 +4130,134 @@ export const temporalRecordActivityActual = async (
     status: res.status,
     headers: res.headers,
   } as temporalRecordActivityActualResponse;
+};
+
+export type temporalGetActivityExecutionPolicyResponse200 = {
+  data: ExecutionPolicyResponse;
+  status: 200;
+};
+
+export type temporalGetActivityExecutionPolicyResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetActivityExecutionPolicyResponseSuccess =
+  temporalGetActivityExecutionPolicyResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetActivityExecutionPolicyResponseError =
+  temporalGetActivityExecutionPolicyResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalGetActivityExecutionPolicyResponse =
+  | temporalGetActivityExecutionPolicyResponseSuccess
+  | temporalGetActivityExecutionPolicyResponseError;
+
+export const getTemporalGetActivityExecutionPolicyUrl = (
+  activityRef: string,
+) => {
+  return `/api/v1/temporal/activities/${activityRef}/execution-policy`;
+};
+
+/**
+ * @summary Get Execution Policy
+ */
+export const temporalGetActivityExecutionPolicy = async (
+  activityRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetActivityExecutionPolicyResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetActivityExecutionPolicyUrl(activityRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetActivityExecutionPolicyResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetActivityExecutionPolicyResponse;
+};
+
+export type temporalSetActivityExecutionPolicyResponse200 = {
+  data: ExecutionPolicyResponse;
+  status: 200;
+};
+
+export type temporalSetActivityExecutionPolicyResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalSetActivityExecutionPolicyResponseSuccess =
+  temporalSetActivityExecutionPolicyResponse200 & {
+    headers: Headers;
+  };
+export type temporalSetActivityExecutionPolicyResponseError =
+  temporalSetActivityExecutionPolicyResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalSetActivityExecutionPolicyResponse =
+  | temporalSetActivityExecutionPolicyResponseSuccess
+  | temporalSetActivityExecutionPolicyResponseError;
+
+export const getTemporalSetActivityExecutionPolicyUrl = (
+  activityRef: string,
+) => {
+  return `/api/v1/temporal/activities/${activityRef}/execution-policy`;
+};
+
+/**
+ * @summary Set Execution Policy
+ */
+export const temporalSetActivityExecutionPolicy = async (
+  activityRef: string,
+  executionPolicyCommand: ExecutionPolicyCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalSetActivityExecutionPolicyResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalSetActivityExecutionPolicyUrl(activityRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(executionPolicyCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalSetActivityExecutionPolicyResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalSetActivityExecutionPolicyResponse;
 };
 
 export type temporalGetActivityResponsibilityResponse200 = {

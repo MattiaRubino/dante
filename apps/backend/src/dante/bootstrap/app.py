@@ -25,6 +25,7 @@ from dante.modules.temporal.constrained_activity_api import (
     router as temporal_constrained_activity_router,
 )
 from dante.modules.temporal.event_api import router as temporal_event_router
+from dante.modules.temporal.execution_policy_api import router as temporal_execution_policy_router
 from dante.modules.temporal.life_area_api import router as temporal_life_area_router
 from dante.modules.temporal.life_area_assignment_api import (
     router as temporal_life_area_assignment_router,
@@ -40,11 +41,11 @@ from dante.modules.temporal.plan_work_api import router as temporal_plan_work_ro
 from dante.modules.temporal.planning_tray_api import router as temporal_planning_tray_router
 from dante.modules.temporal.product_tag_api import router as temporal_product_tag_router
 from dante.modules.temporal.reconciliation_api import router as temporal_reconciliation_router
-from dante.modules.temporal.resolution_queue_api import router as temporal_resolution_queue_router
 from dante.modules.temporal.recurrence_api import router as temporal_recurrence_router
 from dante.modules.temporal.recurring_authoring_api import (
     router as temporal_recurring_authoring_router,
 )
+from dante.modules.temporal.resolution_queue_api import router as temporal_resolution_queue_router
 from dante.modules.temporal.responsibility_participation_api import (
     router as temporal_responsibility_router,
 )
@@ -100,6 +101,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(temporal_router)
     app.include_router(temporal_authoring_router)
     app.include_router(temporal_event_router)
+    app.include_router(temporal_execution_policy_router)
     app.include_router(temporal_life_area_router)
     app.include_router(temporal_product_tag_router)
     app.include_router(temporal_routine_router)

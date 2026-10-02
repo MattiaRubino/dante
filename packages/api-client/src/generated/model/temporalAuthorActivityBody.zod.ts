@@ -177,6 +177,17 @@ export const TemporalAuthorActivityBody = /*#__PURE__*/ zod
         /*#__PURE__*/ zod.null(),
       ]),
     ),
+    session_capture_mode: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod.enum([
+          'disabled',
+          'record',
+          'live',
+          'record_and_live',
+        ]),
+        /*#__PURE__*/ zod.null(),
+      ]),
+    ),
     title: /*#__PURE__*/ zod
       .string()
       .check(/*#__PURE__*/ zod.minLength(1))
@@ -184,7 +195,7 @@ export const TemporalAuthorActivityBody = /*#__PURE__*/ zod
   })
   .check(
     /*#__PURE__*/ zod.describe(
-      'One transactional Activity Quick Create command.',
+      'Activity Create can declare an explicit Session capture policy.',
     ),
   );
 

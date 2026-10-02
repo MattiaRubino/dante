@@ -2044,7 +2044,7 @@
       },
       "AuthorActivityRequest": {
         "additionalProperties": false,
-        "description": "One transactional Activity Quick Create command.",
+        "description": "Activity Create can declare an explicit Session capture policy.",
         "properties": {
           "description": {
             "anyOf": [
@@ -2132,6 +2132,18 @@
               }
             ],
             "title": "Placement"
+          },
+          "session_capture_mode": {
+            "anyOf": [
+              {
+                "enum": ["disabled", "record", "live", "record_and_live"],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Capture Mode"
           },
           "title": {
             "maxLength": 300,
@@ -2361,6 +2373,11 @@
               }
             ]
           },
+          "session_capture_mode": {
+            "enum": ["disabled", "record", "live", "record_and_live"],
+            "title": "Session Capture Mode",
+            "type": "string"
+          },
           "title": {
             "title": "Title",
             "type": "string"
@@ -2376,6 +2393,7 @@
           "life_area_ref",
           "life_area_color_code",
           "schedule",
+          "session_capture_mode",
           "replayed"
         ],
         "title": "AuthoredActivityResponse",
@@ -3527,6 +3545,18 @@
             "minItems": 1,
             "title": "Rules",
             "type": "array"
+          },
+          "session_capture_mode": {
+            "anyOf": [
+              {
+                "enum": ["disabled", "record", "live", "record_and_live"],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Capture Mode"
           },
           "title": {
             "maxLength": 300,
@@ -4990,6 +5020,72 @@
           "merged_temporal_rules"
         ],
         "title": "ExecutionAssessmentResponse",
+        "type": "object"
+      },
+      "ExecutionPolicyCommand": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected State Ref"
+          },
+          "mode_code": {
+            "enum": ["disabled", "record", "live", "record_and_live"],
+            "title": "Mode Code",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "mode_code"],
+        "title": "ExecutionPolicyCommand",
+        "type": "object"
+      },
+      "ExecutionPolicyResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "activity_ref": {
+            "format": "uuid",
+            "title": "Activity Ref",
+            "type": "string"
+          },
+          "mode_code": {
+            "enum": ["disabled", "record", "live", "record_and_live"],
+            "title": "Mode Code",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "State Ref"
+          }
+        },
+        "required": ["activity_ref", "state_ref", "mode_code"],
+        "title": "ExecutionPolicyResponse",
         "type": "object"
       },
       "ExistingAccountSignupResponse": {
@@ -23305,6 +23401,96 @@
           }
         },
         "summary": "Record Activity Actual",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/activities/{activity_ref}/execution-policy": {
+      "get": {
+        "operationId": "temporal_get_activity_execution_policy",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExecutionPolicyResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Execution Policy",
+        "tags": ["temporal"]
+      },
+      "post": {
+        "operationId": "temporal_set_activity_execution_policy",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExecutionPolicyCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExecutionPolicyResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Execution Policy",
         "tags": ["temporal"]
       }
     },

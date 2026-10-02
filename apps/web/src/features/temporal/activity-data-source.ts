@@ -58,6 +58,7 @@ export type TemporalConstrainedActivityCreateRequest = Readonly<{
   title: string;
   lifeAreaRef?: string;
   rules: readonly TemporalActivityConstraintRuleInput[];
+  sessionCaptureMode?: 'disabled' | 'record' | 'live' | 'record_and_live';
 }>;
 
 export type TemporalCreatedActivityConstraint = Readonly<{

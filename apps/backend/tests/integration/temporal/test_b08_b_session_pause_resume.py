@@ -6,6 +6,8 @@ from typing import Any
 
 import psycopg
 import pytest
+from tests.integration.temporal._u6_policy import enable_live_capture
+from tests.integration.temporal.test_b05_primary_life_area_assignment import _seed_self
 
 from dante.modules.temporal.activity import TemporalActivityApplication
 from dante.modules.temporal.life_area import LifeAreaApplication
@@ -16,7 +18,6 @@ from dante.modules.temporal.session_runtime import (
     SessionResumeConflictError,
 )
 from dante.platform.database.runtime import create_database_runtime
-from tests.integration.temporal.test_b05_primary_life_area_assignment import _seed_self
 
 pytestmark = pytest.mark.postgres
 
@@ -69,6 +70,9 @@ async def test_b08_b_pause_resume_is_idempotent_and_preserves_timing_history(
                 life_area_ref=area.life_area_ref,
             )
         ).activity
+        await enable_live_capture(
+            runtime.session_factory, actor=alice, activity_ref=activity.activity_ref,
+        )
         started = await sessions.start(
             self_person_ref=alice,
             operation_id="b08-b:start",

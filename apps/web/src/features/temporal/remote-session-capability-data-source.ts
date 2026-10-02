@@ -21,24 +21,6 @@ function record(value: unknown): Record<string, unknown> | null {
     : null;
 }
 
-function exposesSessionRuntime(value: unknown): boolean {
-  const constraint = record(value);
-  if (
-    constraint === null ||
-    constraint.subject_kind !== 'activity' ||
-    constraint.status !== 'active'
-  ) {
-    return false;
-  }
-
-  const rule = record(constraint.current_rule);
-  return (
-    rule !== null &&
-    rule.family === 'duration' &&
-    rule.constrained_facet === 'session.active_duration'
-  );
-}
-
 export function createRemoteTemporalSessionCapabilityDataSource(
   fetchFn: typeof globalThis.fetch = globalThis.fetch,
 ): TemporalSessionCapabilityDataSource {
@@ -52,7 +34,7 @@ export function createRemoteTemporalSessionCapabilityDataSource(
       let response: Response;
       try {
         response = await webFetch(
-          `/api/v1/temporal/constraints?subject_ref=${encodeURIComponent(activityRef)}`,
+          `/api/v1/temporal/activities/${encodeURIComponent(activityRef)}/execution-policy`,
           signal === undefined ? undefined : { signal },
         );
       } catch (error) {
@@ -84,8 +66,13 @@ export function createRemoteTemporalSessionCapabilityDataSource(
         );
       }
 
-      const envelope = record(payload);
-      if (envelope === null || !Array.isArray(envelope.items)) {
+      const policy = record(payload);
+      if (
+        policy === null || policy.activity_ref !== activityRef ||
+        !['disabled', 'record', 'live', 'record_and_live'].includes(
+          String(policy.mode_code),
+        )
+      ) {
         throw new TemporalSessionCapabilityRemoteError(
           'protocol',
           'Session capability response has an unsupported representation.',
@@ -93,7 +80,7 @@ export function createRemoteTemporalSessionCapabilityDataSource(
         );
       }
 
-      return envelope.items.some(exposesSessionRuntime);
+      return policy.mode_code === 'live' || policy.mode_code === 'record_and_live';
     },
   });
 }

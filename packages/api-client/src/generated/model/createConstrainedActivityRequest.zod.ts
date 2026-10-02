@@ -299,6 +299,17 @@ export const CreateConstrainedActivityRequest = /*#__PURE__*/ zod
       .check(
         /*#__PURE__*/ zod.maxLength(createConstrainedActivityRequestRulesMax),
       ),
+    session_capture_mode: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod.enum([
+          'disabled',
+          'record',
+          'live',
+          'record_and_live',
+        ]),
+        /*#__PURE__*/ zod.null(),
+      ]),
+    ),
     title: /*#__PURE__*/ zod
       .string()
       .check(/*#__PURE__*/ zod.minLength(1))

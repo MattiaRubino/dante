@@ -232,6 +232,9 @@ export function createRemoteTemporalConstrainedActivityDataSource(
             title: request.title.trim(),
             ...(request.lifeAreaRef === undefined ? {} : { life_area_ref: request.lifeAreaRef }),
             rules: request.rules.map(serializeRule),
+            ...(request.sessionCaptureMode === undefined
+              ? {}
+              : { session_capture_mode: request.sessionCaptureMode }),
           }),
           ...(signal === undefined ? {} : { signal }),
         });

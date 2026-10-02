@@ -43,21 +43,22 @@
       "B13-C",
       "B12-C",
       "B14-U2",
-      "B14-U6-D"
+      "B14-U6-D",
+      "B14-U6-B"
     ],
     "standalone_entries": {
-      "tables": 196,
+      "tables": 200,
       "views": 5,
-      "routines": 158,
-      "total": 359
+      "routines": 160,
+      "total": 365
     },
     "embedded_objects": {
       "triggers": 100,
-      "physical_indexes": 397
+      "physical_indexes": 407
     },
     "constraints": {
-      "foreign_keys": 344,
-      "check_constraints": 503
+      "foreign_keys": 350,
+      "check_constraints": 509
     }
   },
   "technical_foundation": {

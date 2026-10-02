@@ -64,8 +64,8 @@ class AuthoringLifeAreaRequest(BaseModel):
         return self
 
 
-class AuthorActivityRequest(BaseModel):
-    """One transactional Activity Quick Create command."""
+class AuthorItemRequest(BaseModel):
+    """Shared transactional item fields."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -78,7 +78,13 @@ class AuthorActivityRequest(BaseModel):
     placement: SchedulePlacementRequest | None = None
 
 
-class AuthorEventRequest(AuthorActivityRequest):
+class AuthorActivityRequest(AuthorItemRequest):
+    """Activity Create can declare an explicit Session capture policy."""
+
+    session_capture_mode: Literal["disabled", "record", "live", "record_and_live"] | None = None
+
+
+class AuthorEventRequest(AuthorItemRequest):
     """One transactional Event Quick Create command."""
 
     agenda_parts: list[str] = Field(default_factory=list, max_length=100)
@@ -155,6 +161,7 @@ class AuthoredActivityResponse(BaseModel):
     life_area_color_code: str | None
     life_area_revision: int | None = Field(default=None, ge=1)
     schedule: AcceptedAuthoringScheduleResponse | None
+    session_capture_mode: Literal["disabled", "record", "live", "record_and_live"]
     replayed: bool
 
 
@@ -322,6 +329,7 @@ async def author_activity(
             location=payload.location,
             item_color_code=payload.item_color_code,
             placement=None if payload.placement is None else _placement_from_request(payload.placement),
+            session_capture_mode=payload.session_capture_mode,
         )
     except _Errors as exc:
         raise _problem(exc) from exc
@@ -340,6 +348,7 @@ async def author_activity(
         life_area_color_code=item.life_area_color_code,
         life_area_revision=item.life_area_revision,
         schedule=_schedule_response(result),
+        session_capture_mode=result.session_capture_mode,
         replayed=result.replayed,
     )
 

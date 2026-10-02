@@ -93,9 +93,20 @@ async def test_b04_f_atomic_constrained_activity_create_replay_and_changed_inten
             operation_id="operation:b04-f:constrained-deadline",
             title="Consegna relazione",
             rules=rules,
+            session_capture_mode="live",
         )
         assert created.replayed is False
         assert len(created.constraints) == 2
+        with psycopg.connect(
+            **migrated_database.connection_kwargs(
+                "dante_migrator", migrated_database.cluster.migrator_password
+            )
+        ) as connection:
+            connection.execute("SET ROLE dante_owner")
+            assert connection.execute(
+                "SELECT mode_code FROM dante.get_self_activity_execution_policy(%s,%s)",
+                (self_ref, created.activity.activity_ref),
+            ).fetchone() == ("live",)
         assert all(value.replayed is False for value in created.constraints)
         assert {value.constraint_ref for value in created.constraints} == {
             value.constraint_ref
@@ -111,6 +122,7 @@ async def test_b04_f_atomic_constrained_activity_create_replay_and_changed_inten
             operation_id="operation:b04-f:constrained-deadline",
             title="Consegna relazione",
             rules=rules,
+            session_capture_mode="live",
         )
         assert replay.replayed is True
         assert replay.activity.activity_ref == created.activity.activity_ref
@@ -125,6 +137,7 @@ async def test_b04_f_atomic_constrained_activity_create_replay_and_changed_inten
                 life_area_ref=ensure_test_life_area(migrated_database, self_ref),
                 operation_id="operation:b04-f:constrained-deadline",
                 title="Consegna relazione",
+                session_capture_mode="live",
                 rules=(
                     AbsoluteBoundaryRule(
                         boundary_kind="latest_completion",

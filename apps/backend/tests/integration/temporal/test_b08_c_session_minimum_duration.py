@@ -5,6 +5,8 @@ from __future__ import annotations
 from typing import Any
 
 import pytest
+from tests.integration.temporal._u6_policy import enable_live_capture
+from tests.integration.temporal.test_b05_primary_life_area_assignment import _seed_self
 
 from dante.modules.temporal.activity import TemporalActivityApplication
 from dante.modules.temporal.life_area import LifeAreaApplication
@@ -14,7 +16,6 @@ from dante.modules.temporal.temporal_constraint import (
     TemporalConstraintApplication,
 )
 from dante.platform.database.runtime import create_database_runtime
-from tests.integration.temporal.test_b05_primary_life_area_assignment import _seed_self
 
 pytestmark = pytest.mark.postgres
 
@@ -53,6 +54,10 @@ async def test_b08_c_minimum_uses_one_session_active_time_and_never_blocks_end(
             rule=rule,
         )
         assert created.rule == rule
+
+        await enable_live_capture(
+            runtime.session_factory, actor=actor, activity_ref=activity.activity_ref,
+        )
 
         started = await sessions.start(
             self_person_ref=actor,

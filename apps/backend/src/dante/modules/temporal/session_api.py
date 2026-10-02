@@ -13,6 +13,7 @@ from dante.context.contracts import DanteContext
 from dante.context.dependencies import require_dante_context, require_mutating_dante_context
 from dante.modules.temporal.session_runtime import (
     SessionApplication,
+    SessionCaptureDisabledError,
     SessionEndConflictError,
     SessionInputError,
     SessionNotFoundError,
@@ -108,6 +109,14 @@ def _response(view: SessionView) -> SessionResponse:
 
 
 def _problem(exc: Exception) -> ProblemError:
+    if isinstance(exc, SessionCaptureDisabledError):
+        return ProblemError(
+            status=409,
+            code="temporal.session.capture_disabled",
+            category="conflict",
+            title="Live Session capture disabled",
+            detail="Enable live capture on this Activity before starting a Session.",
+        )
     if isinstance(exc, SessionInputError):
         return ProblemError(
             status=422,
@@ -185,6 +194,7 @@ async def _start(
         SessionNotFoundError,
         SessionOperationReuseError,
         SessionPersistenceError,
+        SessionCaptureDisabledError,
     ) as exc:
         raise _problem(exc) from exc
     response.status_code = 200 if view.replayed else 201

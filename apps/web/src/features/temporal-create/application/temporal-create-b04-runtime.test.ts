@@ -233,7 +233,9 @@ describe('B04 Temporal Create runtime', () => {
       const execution = await sources.runtime.execute(prepared.prepared);
       expect(execution.result.status).toBe('applied');
       expect(sources.createActivity).not.toHaveBeenCalled();
-      const rules = sources.createConstrainedActivity.mock.calls[0]?.[0].rules;
+      const request = sources.createConstrainedActivity.mock.calls[0]?.[0];
+      expect(request?.sessionCaptureMode).toBe('live');
+      const rules = request?.rules;
       expect(rules).toEqual([
         {
           family: 'duration',

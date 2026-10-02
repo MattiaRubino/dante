@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Annotated, cast
+from typing import Annotated, Literal, cast
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request, Response
@@ -43,6 +43,7 @@ class CreateConstrainedActivityRequest(BaseModel):
     title: str = Field(min_length=1, max_length=300)
     life_area_ref: UUID
     rules: list[TemporalConstraintRuleRequest] = Field(min_length=1, max_length=4)
+    session_capture_mode: Literal["disabled", "record", "live", "record_and_live"] | None = None
 
 
 class ConstrainedActivityResponse(BaseModel):
@@ -86,6 +87,7 @@ async def temporal_create_constrained_activity(
             title=payload.title,
             life_area_ref=payload.life_area_ref,
             rules=tuple(_rule_from_request(rule) for rule in payload.rules),
+            session_capture_mode=payload.session_capture_mode,
         )
     except ConstrainedActivityInputError as exc:
         raise ProblemError(

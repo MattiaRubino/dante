@@ -731,6 +731,7 @@ class B04TemporalCreateRuntime implements TemporalCreateRuntime {
               title: prepared.command.payload.title,
               ...(isCanonicalLifeAreaRef(prepared.metadata.contextId) ? { lifeAreaRef: prepared.metadata.contextId } : {}),
               rules,
+              ...(hasSessionMinimum ? { sessionCaptureMode: 'live' as const } : {}),
             });
       const activity = created.activity;
       const projection = activityProjection(activity, prepared.operationId);

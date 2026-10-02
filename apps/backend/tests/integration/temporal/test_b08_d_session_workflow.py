@@ -7,6 +7,8 @@ from typing import Any
 
 import psycopg
 import pytest
+from tests.integration.temporal._u6_policy import enable_live_capture
+from tests.integration.temporal.test_b05_primary_life_area_assignment import _seed_self
 
 from dante.modules.temporal.activity import TemporalActivityApplication
 from dante.modules.temporal.life_area import LifeAreaApplication
@@ -22,7 +24,6 @@ from dante.modules.temporal.temporal_constraint import (
 )
 from dante.platform.database.references import NativeRef
 from dante.platform.database.runtime import create_database_runtime
-from tests.integration.temporal.test_b05_primary_life_area_assignment import _seed_self
 
 pytestmark = pytest.mark.postgres
 
@@ -67,6 +68,10 @@ async def test_unplaced_activity_session_pause_resume_and_tc009_remain_independe
             operation_id="b08-d:minimum",
             subject_native_ref=activity.activity_ref,
             rule=SessionMinimumDurationRule(duration_microseconds=86_400_000_000),
+        )
+
+        await enable_live_capture(
+            runtime.session_factory, actor=actor, activity_ref=activity.activity_ref,
         )
 
         started = await sessions.start(

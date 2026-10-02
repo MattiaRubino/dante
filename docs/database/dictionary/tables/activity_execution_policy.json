@@ -1,0 +1,216 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "table:dante.activity_execution_policy",
+    "type": "table",
+    "schema": "dante",
+    "name": "activity_execution_policy",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Explicit Activity Session capture policy and its guarded accepted-current chronology.",
+  "classification": {
+    "persistence_role": "activity_execution_policy",
+    "canonicality": "canonical",
+    "family": "ActivityExecutionPolicy"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/domain/decisions/activity-subactivity-session-bounded-v1.md",
+      "docs/database/activity-subactivity-session-contract.md"
+    ],
+    "domain_concepts": [
+      "Activity",
+      "Session"
+    ],
+    "logical_families": [
+      "Activity execution policy"
+    ],
+    "reference_families": [
+      "NativeRef"
+    ],
+    "material_facets": []
+  },
+  "implementation": {
+    "introducing_stage": "B14-U6",
+    "alembic_revision": "20261002_97",
+    "sqlalchemy": {
+      "mode": "orm_row",
+      "module": "dante.platform.database.mappings.activity_execution_policy",
+      "symbol": "ActivityExecutionPolicyRow"
+    },
+    "runtime_acl_stage": "B14-U6"
+  },
+  "structure": {
+    "columns": [
+      {
+        "name": "activity_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Activity identity whose Session capture policy is governed.",
+        "semantic_type": "NativeRef",
+        "value_contract": "References the existing Activity and its self owner."
+      },
+      {
+        "name": "self_person_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Authenticated self Person scope.",
+        "semantic_type": "NativeRef",
+        "value_contract": "References the existing Activity and its self owner."
+      },
+      {
+        "name": "created_at",
+        "postgres_type": "timestamp with time zone",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Policy owner creation instant.",
+        "semantic_type": null,
+        "value_contract": null
+      }
+    ],
+    "primary_key": {
+      "name": "pk_activity_execution_policy",
+      "columns": [
+        "activity_ref"
+      ],
+      "reason": "Stable policy family row identity.",
+      "deferrable": false,
+      "initially": "NOT DEFERRABLE",
+      "enforced": true
+    },
+    "foreign_keys": [
+      {
+        "name": "fk_activity_execution_policy_activity",
+        "columns": [
+          "activity_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "activity_intention",
+          "columns": [
+            "activity_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "NativeRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Preserve exact owner and accepted policy state integrity."
+      },
+      {
+        "name": "fk_activity_execution_policy_person",
+        "columns": [
+          "self_person_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "person",
+          "columns": [
+            "person_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "NativeRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Preserve exact owner and accepted policy state integrity."
+      }
+    ],
+    "unique_constraints": [],
+    "check_constraints": [],
+    "indexes": [
+      {
+        "name": "pk_activity_execution_policy",
+        "method": "btree",
+        "unique": true,
+        "keys": [
+          "activity_ref"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "primary_key",
+        "reason": "Current state and owner lookup for the guarded policy.",
+        "valid": true,
+        "ready": true,
+        "live": true
+      },
+      {
+        "name": "ix_activity_execution_policy_self",
+        "method": "btree",
+        "unique": false,
+        "keys": [
+          "self_person_ref"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "explicit_index",
+        "reason": "Current state and owner lookup for the guarded policy.",
+        "valid": true,
+        "ready": true,
+        "live": true
+      }
+    ],
+    "triggers": [],
+    "table": {
+      "persistence": "permanent",
+      "access_method": "heap",
+      "partitioned": false,
+      "row_security": false,
+      "force_row_security": false,
+      "replica_identity": "default",
+      "reloptions": []
+    },
+    "view": null,
+    "routine": null
+  },
+  "state_history": {
+    "material_state_behavior": "Policy state rows are immutable assertions.",
+    "current_binding": "One open history interval per Activity.",
+    "chronology": "Corrections close the previous interval and append a new one.",
+    "immutability_policy": "No direct runtime DML; guarded changes only."
+  },
+  "lifecycle": {
+    "retention": "Retain policy correction history.",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No runtime delete."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": []
+  },
+  "proof": {
+    "obligations": [
+      "Session capability is independent of the duration constraint.",
+      "Only authenticated self can read or revise its policy."
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b14_u6_execution_policy.py",
+      "apps/backend/tests/integration/database/test_current_catalog.py"
+    ],
+    "staged_evidence": []
+  }
+}

@@ -12,6 +12,7 @@ import hashlib
 import json
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Literal
 from uuid import UUID, uuid7
 
 from sqlalchemy import text
@@ -87,6 +88,7 @@ class AuthoringResult:
     item: AuthoredItemView
     replayed: bool
     schedule: EstablishedScheduleView | None = None
+    session_capture_mode: Literal["disabled", "record", "live", "record_and_live"] = "disabled"
 
 
 @dataclass(frozen=True, slots=True)
@@ -177,9 +179,11 @@ def _item_fingerprint(
     description: str | None,
     location: str | None,
     color_code: str | None,
+    session_capture_mode: str | None = None,
 ) -> str:
     """Preserve B05 v2 replay compatibility for the exact historical shape."""
-    if life_area_ref is not None and description is None and location is None and color_code is None:
+    if (life_area_ref is not None and description is None and location is None
+            and color_code is None and session_capture_mode is None):
         intent: dict[str, object] = {
             "version": 2,
             "title": title,
@@ -200,6 +204,9 @@ def _item_fingerprint(
     }
     if subject_kind == "event":
         intent["agenda_parts"] = list(agenda_parts)
+    if session_capture_mode is not None:
+        intent["version"] = 4
+        intent["session_capture_mode"] = session_capture_mode
     return _json_fingerprint(intent)
 
 
@@ -389,6 +396,7 @@ class TemporalAuthoringApplication:
         location: str | None,
         item_color_code: str | None,
         life_area: _ResolvedLifeArea | None,
+        session_capture_mode: str | None,
     ) -> tuple[AuthoredItemView, bool]:
         if life_area is not None and item_color_code is not None:
             raise TemporalAuthoringInputError(
@@ -402,6 +410,7 @@ class TemporalAuthoringApplication:
             description=description,
             location=location,
             color_code=item_color_code,
+            session_capture_mode=session_capture_mode,
         )
         row = (
             (
@@ -500,6 +509,7 @@ class TemporalAuthoringApplication:
         item_color_code: str | None,
         agenda_parts: tuple[str, ...],
         placement: SchedulePlacement | None,
+        session_capture_mode: str | None,
     ) -> AuthoringResult:
         normalized_operation = _operation(operation_id)
         normalized_title = _title(title)
@@ -508,6 +518,12 @@ class TemporalAuthoringApplication:
         normalized_item_color = _color(item_color_code)
         if subject_kind not in {"activity", "event"}:
             raise TemporalAuthoringInputError("Unsupported authoring subject kind.")
+        if session_capture_mode is not None and (
+            subject_kind != "activity" or session_capture_mode not in {
+                "disabled", "record", "live", "record_and_live"
+            }
+        ):
+            raise TemporalAuthoringInputError("Activity Session capture mode is invalid.")
 
         try:
             async with self._session_factory() as session, session.begin():
@@ -527,6 +543,7 @@ class TemporalAuthoringApplication:
                         location=normalized_location,
                         item_color_code=normalized_item_color,
                         life_area=life_area,
+                        session_capture_mode=session_capture_mode,
                     )
                 else:
                     item, replayed = await self._create_event(
@@ -554,7 +571,41 @@ class TemporalAuthoringApplication:
                         raise TemporalAuthoringOperationIdReuseError(
                             "Create and Schedule replay state diverged."
                         )
-                return AuthoringResult(item=item, replayed=replayed, schedule=schedule)
+                if session_capture_mode is not None:
+                    policy_operation = _derived_operation(
+                        "b14-u6-execution-policy", normalized_operation
+                    )
+                    policy_fingerprint = _json_fingerprint({
+                        "version": 1,
+                        "activity_ref": str(item.subject_native_ref),
+                        "mode_code": session_capture_mode,
+                        "expected_state_ref": None,
+                    })
+                    policy = (
+                        await session.execute(
+                            text("""
+                                SELECT * FROM dante.set_self_activity_execution_policy(
+                                    :actor,:operation,:fingerprint,:activity,:state,:mode,NULL
+                                )
+                            """),
+                            {
+                                "actor": self_person_ref,
+                                "operation": policy_operation,
+                                "fingerprint": policy_fingerprint,
+                                "activity": item.subject_native_ref,
+                                "state": uuid7(),
+                                "mode": session_capture_mode,
+                            },
+                        )
+                    ).mappings().one()
+                    if bool(policy["replayed"]) is not replayed:
+                        raise TemporalAuthoringOperationIdReuseError(
+                            "Create and execution policy replay state diverged."
+                        )
+                return AuthoringResult(
+                    item=item, replayed=replayed, schedule=schedule,
+                    session_capture_mode=session_capture_mode or "disabled",
+                )
         except (
             TemporalAuthoringInputError,
             TemporalAuthoringLifeAreaUnavailableError,
@@ -613,6 +664,7 @@ class TemporalAuthoringApplication:
         location: str | None = None,
         item_color_code: str | None = None,
         placement: SchedulePlacement | None = None,
+        session_capture_mode: str | None = None,
     ) -> AuthoringResult:
         return await self._execute(
             subject_kind="activity",
@@ -625,6 +677,7 @@ class TemporalAuthoringApplication:
             item_color_code=item_color_code,
             agenda_parts=(),
             placement=placement,
+            session_capture_mode=session_capture_mode,
         )
 
     async def create_event(
@@ -651,4 +704,5 @@ class TemporalAuthoringApplication:
             item_color_code=item_color_code,
             agenda_parts=_agenda(agenda_parts),
             placement=placement,
+            session_capture_mode=None,
         )
