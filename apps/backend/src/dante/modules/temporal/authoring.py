@@ -25,6 +25,7 @@ from dante.modules.temporal.schedule import (
     ScheduleInputError,
     ScheduleOperationIdReuseError,
     SchedulePlacement,
+    _placement_payload,
     establish_schedule_in_session,
 )
 from dante.platform.database.references import NativeRef, new_native_ref
@@ -48,6 +49,10 @@ class TemporalAuthoringLifeAreaConflictError(RuntimeError):
 
 class TemporalAuthoringPersistenceError(RuntimeError):
     """Canonical quick-authoring persistence could not complete safely."""
+
+
+class TemporalAuthoringStructureConflictError(RuntimeError):
+    """The requested child placement or relationship conflicts with current truth."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -89,6 +94,31 @@ class AuthoringResult:
     replayed: bool
     schedule: EstablishedScheduleView | None = None
     session_capture_mode: Literal["disabled", "record", "live", "record_and_live"] = "disabled"
+    planned_slices: tuple[EstablishedScheduleView, ...] = ()
+    children: tuple[AuthoredActivityChild, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class ActivityChildIntent:
+    title: str
+    requirement_code: Literal["required", "optional"] = "required"
+    presentation_order: int = 1
+    description: str | None = None
+    placement: SchedulePlacement | None = None
+    planned_slices: tuple[SchedulePlacement, ...] = ()
+    session_capture_mode: Literal["disabled", "record", "live", "record_and_live"] | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class AuthoredActivityChild:
+    item: AuthoredItemView
+    decomposition_ref: UUID
+    state_ref: UUID
+    requirement_code: Literal["required", "optional"]
+    presentation_order: int
+    schedule: EstablishedScheduleView | None
+    planned_slices: tuple[EstablishedScheduleView, ...]
+    session_capture_mode: Literal["disabled", "record", "live", "record_and_live"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -180,10 +210,17 @@ def _item_fingerprint(
     location: str | None,
     color_code: str | None,
     session_capture_mode: str | None = None,
+    structure_digest: str | None = None,
 ) -> str:
     """Preserve B05 v2 replay compatibility for the exact historical shape."""
-    if (life_area_ref is not None and description is None and location is None
-            and color_code is None and session_capture_mode is None):
+    if (
+        life_area_ref is not None
+        and description is None
+        and location is None
+        and color_code is None
+        and session_capture_mode is None
+        and structure_digest is None
+    ):
         intent: dict[str, object] = {
             "version": 2,
             "title": title,
@@ -207,6 +244,9 @@ def _item_fingerprint(
     if session_capture_mode is not None:
         intent["version"] = 4
         intent["session_capture_mode"] = session_capture_mode
+    if structure_digest is not None:
+        intent["version"] = 5
+        intent["structure_digest"] = structure_digest
     return _json_fingerprint(intent)
 
 
@@ -339,9 +379,7 @@ async def _resolve_life_area(
     )
 
 
-def _activity_from_row(
-    row: RowMapping, *, area: _ResolvedLifeArea | None
-) -> AuthoredItemView:
+def _activity_from_row(row: RowMapping, *, area: _ResolvedLifeArea | None) -> AuthoredItemView:
     return AuthoredItemView(
         subject_kind="activity",
         subject_native_ref=NativeRef(UUID(str(row["activity_ref"]))),
@@ -397,6 +435,7 @@ class TemporalAuthoringApplication:
         item_color_code: str | None,
         life_area: _ResolvedLifeArea | None,
         session_capture_mode: str | None,
+        structure_digest: str | None = None,
     ) -> tuple[AuthoredItemView, bool]:
         if life_area is not None and item_color_code is not None:
             raise TemporalAuthoringInputError(
@@ -411,6 +450,7 @@ class TemporalAuthoringApplication:
             location=location,
             color_code=item_color_code,
             session_capture_mode=session_capture_mode,
+            structure_digest=structure_digest,
         )
         row = (
             (
@@ -510,6 +550,8 @@ class TemporalAuthoringApplication:
         agenda_parts: tuple[str, ...],
         placement: SchedulePlacement | None,
         session_capture_mode: str | None,
+        planned_slices: tuple[SchedulePlacement, ...] = (),
+        children: tuple[ActivityChildIntent, ...] = (),
     ) -> AuthoringResult:
         normalized_operation = _operation(operation_id)
         normalized_title = _title(title)
@@ -519,11 +561,54 @@ class TemporalAuthoringApplication:
         if subject_kind not in {"activity", "event"}:
             raise TemporalAuthoringInputError("Unsupported authoring subject kind.")
         if session_capture_mode is not None and (
-            subject_kind != "activity" or session_capture_mode not in {
-                "disabled", "record", "live", "record_and_live"
-            }
+            subject_kind != "activity"
+            or session_capture_mode not in {"disabled", "record", "live", "record_and_live"}
         ):
             raise TemporalAuthoringInputError("Activity Session capture mode is invalid.")
+        if subject_kind != "activity" and (planned_slices or children):
+            raise TemporalAuthoringInputError("Only an Activity can own planned execution rows.")
+        if len(children) > 100 or len(planned_slices) > 100:
+            raise TemporalAuthoringInputError("Activity structure exceeds its bounded size.")
+        for child in children:
+            _title(child.title)
+            if (
+                child.requirement_code not in {"required", "optional"}
+                or child.presentation_order < 1
+            ):
+                raise TemporalAuthoringInputError("Child relationship configuration is invalid.")
+            if (
+                child.session_capture_mode
+                not in {None, "disabled", "record", "live", "record_and_live"}
+                or len(child.planned_slices) > 100
+            ):
+                raise TemporalAuthoringInputError("Child execution configuration is invalid.")
+        structure_digest = None
+        if children or planned_slices:
+            structure_digest = _json_fingerprint(
+                {
+                    "version": 1,
+                    "root_placement": None if placement is None else _placement_payload(placement),
+                    "planned_slices": [_placement_payload(value) for value in planned_slices],
+                    "children": [
+                        {
+                            "title": _title(child.title),
+                            "description": _optional_text(child.description),
+                            "requirement_code": child.requirement_code,
+                            "presentation_order": child.presentation_order,
+                            "session_capture_mode": child.session_capture_mode,
+                            "placement": (
+                                None
+                                if child.placement is None
+                                else _placement_payload(child.placement)
+                            ),
+                            "planned_slices": [
+                                _placement_payload(value) for value in child.planned_slices
+                            ],
+                        }
+                        for child in children
+                    ],
+                }
+            )
 
         try:
             async with self._session_factory() as session, session.begin():
@@ -544,6 +629,7 @@ class TemporalAuthoringApplication:
                         item_color_code=normalized_item_color,
                         life_area=life_area,
                         session_capture_mode=session_capture_mode,
+                        structure_digest=structure_digest,
                     )
                 else:
                     item, replayed = await self._create_event(
@@ -575,42 +661,210 @@ class TemporalAuthoringApplication:
                     policy_operation = _derived_operation(
                         "b14-u6-execution-policy", normalized_operation
                     )
-                    policy_fingerprint = _json_fingerprint({
-                        "version": 1,
-                        "activity_ref": str(item.subject_native_ref),
-                        "mode_code": session_capture_mode,
-                        "expected_state_ref": None,
-                    })
+                    policy_fingerprint = _json_fingerprint(
+                        {
+                            "version": 1,
+                            "activity_ref": str(item.subject_native_ref),
+                            "mode_code": session_capture_mode,
+                            "expected_state_ref": None,
+                        }
+                    )
                     policy = (
-                        await session.execute(
-                            text("""
+                        (
+                            await session.execute(
+                                text("""
                                 SELECT * FROM dante.set_self_activity_execution_policy(
                                     :actor,:operation,:fingerprint,:activity,:state,:mode,NULL
                                 )
                             """),
-                            {
-                                "actor": self_person_ref,
-                                "operation": policy_operation,
-                                "fingerprint": policy_fingerprint,
-                                "activity": item.subject_native_ref,
-                                "state": uuid7(),
-                                "mode": session_capture_mode,
-                            },
+                                {
+                                    "actor": self_person_ref,
+                                    "operation": policy_operation,
+                                    "fingerprint": policy_fingerprint,
+                                    "activity": item.subject_native_ref,
+                                    "state": uuid7(),
+                                    "mode": session_capture_mode,
+                                },
+                            )
                         )
-                    ).mappings().one()
+                        .mappings()
+                        .one()
+                    )
                     if bool(policy["replayed"]) is not replayed:
                         raise TemporalAuthoringOperationIdReuseError(
                             "Create and execution policy replay state diverged."
                         )
+                planned_results: list[EstablishedScheduleView] = []
+                for index, planned in enumerate(planned_slices):
+                    accepted = await establish_schedule_in_session(
+                        session,
+                        self_person_ref=self_person_ref,
+                        operation_id=_derived_operation(
+                            f"b14-u6-planned-{index}", normalized_operation
+                        ),
+                        subject_native_ref=item.subject_native_ref,
+                        placement=planned,
+                    )
+                    if accepted.replayed is not replayed:
+                        raise TemporalAuthoringOperationIdReuseError(
+                            "Create and planned Schedule replay state diverged."
+                        )
+                    planned_results.append(accepted)
+
+                child_results: list[AuthoredActivityChild] = []
+                for index, child in enumerate(children):
+                    child_operation = _derived_operation(
+                        f"b14-u6-child-{index}", normalized_operation
+                    )
+                    child_item, child_replayed = await self._create_activity(
+                        session,
+                        self_person_ref=self_person_ref,
+                        operation_id=child_operation,
+                        title=_title(child.title),
+                        description=_optional_text(child.description),
+                        location=None,
+                        item_color_code=None,
+                        life_area=life_area,
+                        session_capture_mode=child.session_capture_mode,
+                    )
+                    if child_replayed is not replayed:
+                        raise TemporalAuthoringOperationIdReuseError(
+                            "Root and child Create replay state diverged."
+                        )
+                    relation_fingerprint = _json_fingerprint(
+                        {
+                            "version": 1,
+                            "parent": str(item.subject_native_ref),
+                            "child": str(child_item.subject_native_ref),
+                            "requirement": child.requirement_code,
+                            "order": child.presentation_order,
+                        }
+                    )
+                    relation = (
+                        (
+                            await session.execute(
+                                text("""
+                                SELECT * FROM dante.set_self_activity_decomposition(
+                                    :actor,:operation,:fingerprint,:relation,:parent,:child,
+                                    :state,true,:requirement,:position,NULL
+                                )
+                            """),
+                                {
+                                    "actor": self_person_ref,
+                                    "operation": _derived_operation(
+                                        f"b14-u6-relation-{index}", normalized_operation
+                                    ),
+                                    "fingerprint": relation_fingerprint,
+                                    "relation": uuid7(),
+                                    "parent": item.subject_native_ref,
+                                    "child": child_item.subject_native_ref,
+                                    "state": uuid7(),
+                                    "requirement": child.requirement_code,
+                                    "position": child.presentation_order,
+                                },
+                            )
+                        )
+                        .mappings()
+                        .one()
+                    )
+                    if bool(relation["replayed"]) is not replayed:
+                        raise TemporalAuthoringOperationIdReuseError(
+                            "Create and child relation replay state diverged."
+                        )
+                    child_schedule = None
+                    if child.placement is not None:
+                        child_schedule = await establish_schedule_in_session(
+                            session,
+                            self_person_ref=self_person_ref,
+                            operation_id=_derived_operation(
+                                f"b14-u6-child-placement-{index}", normalized_operation
+                            ),
+                            subject_native_ref=child_item.subject_native_ref,
+                            placement=child.placement,
+                        )
+                        if child_schedule.replayed is not replayed:
+                            raise TemporalAuthoringOperationIdReuseError(
+                                "Create and child Schedule replay state diverged."
+                            )
+                    child_slices: list[EstablishedScheduleView] = []
+                    for slice_index, child_planned in enumerate(child.planned_slices):
+                        accepted = await establish_schedule_in_session(
+                            session,
+                            self_person_ref=self_person_ref,
+                            operation_id=_derived_operation(
+                                f"b14-u6-child-{index}-planned-{slice_index}",
+                                normalized_operation,
+                            ),
+                            subject_native_ref=child_item.subject_native_ref,
+                            placement=child_planned,
+                        )
+                        if accepted.replayed is not replayed:
+                            raise TemporalAuthoringOperationIdReuseError(
+                                "Create and child planned Schedule replay state diverged."
+                            )
+                        child_slices.append(accepted)
+                    if child.session_capture_mode is not None:
+                        policy_fingerprint = _json_fingerprint(
+                            {
+                                "version": 1,
+                                "activity_ref": str(child_item.subject_native_ref),
+                                "mode_code": child.session_capture_mode,
+                                "expected_state_ref": None,
+                            }
+                        )
+                        policy = (
+                            (
+                                await session.execute(
+                                    text("""
+                                    SELECT * FROM dante.set_self_activity_execution_policy(
+                                        :actor,:operation,:fingerprint,:activity,:state,:mode,NULL
+                                    )
+                                """),
+                                    {
+                                        "actor": self_person_ref,
+                                        "operation": _derived_operation(
+                                            f"b14-u6-child-policy-{index}", normalized_operation
+                                        ),
+                                        "fingerprint": policy_fingerprint,
+                                        "activity": child_item.subject_native_ref,
+                                        "state": uuid7(),
+                                        "mode": child.session_capture_mode,
+                                    },
+                                )
+                            )
+                            .mappings()
+                            .one()
+                        )
+                        if bool(policy["replayed"]) is not replayed:
+                            raise TemporalAuthoringOperationIdReuseError(
+                                "Create and child execution policy replay state diverged."
+                            )
+                    child_results.append(
+                        AuthoredActivityChild(
+                            item=child_item,
+                            decomposition_ref=relation["decomposition_ref"],
+                            state_ref=relation["state_ref"],
+                            requirement_code=child.requirement_code,
+                            presentation_order=child.presentation_order,
+                            schedule=child_schedule,
+                            planned_slices=tuple(child_slices),
+                            session_capture_mode=child.session_capture_mode or "disabled",
+                        )
+                    )
                 return AuthoringResult(
-                    item=item, replayed=replayed, schedule=schedule,
+                    item=item,
+                    replayed=replayed,
+                    schedule=schedule,
                     session_capture_mode=session_capture_mode or "disabled",
+                    planned_slices=tuple(planned_results),
+                    children=tuple(child_results),
                 )
         except (
             TemporalAuthoringInputError,
             TemporalAuthoringLifeAreaUnavailableError,
             TemporalAuthoringLifeAreaConflictError,
             TemporalAuthoringOperationIdReuseError,
+            TemporalAuthoringStructureConflictError,
         ):
             raise
         except ScheduleOperationIdReuseError as exc:
@@ -639,6 +893,11 @@ class TemporalAuthoringApplication:
                 "ck_event_expectation_color_code",
             }:
                 raise TemporalAuthoringInputError("Invalid item color.") from exc
+            if constraint in {
+                "activity_decomposition_temporal_containment",
+                "activity_decomposition_depth_or_parent",
+            }:
+                raise TemporalAuthoringStructureConflictError() from exc
             raise TemporalAuthoringPersistenceError() from exc
         except DBAPIError as exc:
             constraint = _constraint_name(exc)
@@ -649,6 +908,11 @@ class TemporalAuthoringApplication:
                 raise TemporalAuthoringLifeAreaUnavailableError() from exc
             if constraint in {"life_area_expected_revision", "life_area_no_change"}:
                 raise TemporalAuthoringLifeAreaConflictError() from exc
+            if constraint in {
+                "activity_decomposition_temporal_containment",
+                "activity_decomposition_depth_or_parent",
+            }:
+                raise TemporalAuthoringStructureConflictError() from exc
             raise TemporalAuthoringPersistenceError() from exc
         except SQLAlchemyError as exc:
             raise TemporalAuthoringPersistenceError() from exc
@@ -665,6 +929,8 @@ class TemporalAuthoringApplication:
         item_color_code: str | None = None,
         placement: SchedulePlacement | None = None,
         session_capture_mode: str | None = None,
+        planned_slices: tuple[SchedulePlacement, ...] = (),
+        children: tuple[ActivityChildIntent, ...] = (),
     ) -> AuthoringResult:
         return await self._execute(
             subject_kind="activity",
@@ -678,6 +944,8 @@ class TemporalAuthoringApplication:
             agenda_parts=(),
             placement=placement,
             session_capture_mode=session_capture_mode,
+            planned_slices=planned_slices,
+            children=children,
         )
 
     async def create_event(

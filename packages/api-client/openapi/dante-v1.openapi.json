@@ -886,6 +886,106 @@
         "title": "AcceptedNamedZonePlacementResponse",
         "type": "object"
       },
+      "ActivityChildResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "child_activity_ref": {
+            "format": "uuid",
+            "title": "Child Activity Ref",
+            "type": "string"
+          },
+          "child_title": {
+            "title": "Child Title",
+            "type": "string"
+          },
+          "decomposition_ref": {
+            "format": "uuid",
+            "title": "Decomposition Ref",
+            "type": "string"
+          },
+          "parent_activity_ref": {
+            "format": "uuid",
+            "title": "Parent Activity Ref",
+            "type": "string"
+          },
+          "presentation_order": {
+            "title": "Presentation Order",
+            "type": "integer"
+          },
+          "requirement_code": {
+            "enum": ["required", "optional"],
+            "title": "Requirement Code",
+            "type": "string"
+          },
+          "schedules": {
+            "items": {
+              "$ref": "#/components/schemas/ActivityScheduleResponse"
+            },
+            "title": "Schedules",
+            "type": "array"
+          },
+          "session_capture_mode": {
+            "enum": ["disabled", "record", "live", "record_and_live"],
+            "title": "Session Capture Mode",
+            "type": "string"
+          },
+          "state_ref": {
+            "format": "uuid",
+            "title": "State Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "decomposition_ref",
+          "parent_activity_ref",
+          "child_activity_ref",
+          "child_title",
+          "state_ref",
+          "requirement_code",
+          "presentation_order",
+          "session_capture_mode",
+          "schedules"
+        ],
+        "title": "ActivityChildResponse",
+        "type": "object"
+      },
+      "ActivityChildrenResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "children": {
+            "items": {
+              "$ref": "#/components/schemas/ActivityChildResponse"
+            },
+            "title": "Children",
+            "type": "array"
+          },
+          "parent_activity_ref": {
+            "format": "uuid",
+            "title": "Parent Activity Ref",
+            "type": "string"
+          },
+          "schedules": {
+            "items": {
+              "$ref": "#/components/schemas/ActivityScheduleResponse"
+            },
+            "title": "Schedules",
+            "type": "array"
+          },
+          "session_capture_mode": {
+            "enum": ["disabled", "record", "live", "record_and_live"],
+            "title": "Session Capture Mode",
+            "type": "string"
+          }
+        },
+        "required": [
+          "parent_activity_ref",
+          "session_capture_mode",
+          "schedules",
+          "children"
+        ],
+        "title": "ActivityChildrenResponse",
+        "type": "object"
+      },
       "ActivityResponse": {
         "additionalProperties": false,
         "description": "Minimum canonical Activity representation exposed by B01.",
@@ -936,6 +1036,181 @@
         },
         "required": ["activity_ref", "title", "created_at"],
         "title": "ActivityResponse",
+        "type": "object"
+      },
+      "ActivityScheduleResponse": {
+        "additionalProperties": false,
+        "description": "One current Schedule placement; it does not represent a future Session.",
+        "properties": {
+          "end_date_exclusive": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Date Exclusive"
+          },
+          "ends_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ends At"
+          },
+          "ends_local_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ends Local At"
+          },
+          "local_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Local Date"
+          },
+          "period_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period Code"
+          },
+          "placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Placement Material State Ref",
+            "type": "string"
+          },
+          "resolved_end_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved End At"
+          },
+          "resolved_start_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved Start At"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Date"
+          },
+          "starts_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Starts At"
+          },
+          "starts_local_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Starts Local At"
+          },
+          "temporal_form": {
+            "enum": [
+              "date_span",
+              "floating_local",
+              "named_zone_local",
+              "absolute",
+              "coarse_local_period"
+            ],
+            "title": "Temporal Form",
+            "type": "string"
+          },
+          "zone_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Zone Id"
+          }
+        },
+        "required": [
+          "schedule_ref",
+          "placement_material_state_ref",
+          "temporal_form",
+          "start_date",
+          "end_date_exclusive",
+          "starts_local_at",
+          "ends_local_at",
+          "zone_id",
+          "resolved_start_at",
+          "resolved_end_at",
+          "starts_at",
+          "ends_at",
+          "local_date",
+          "period_code"
+        ],
+        "title": "ActivityScheduleResponse",
         "type": "object"
       },
       "ActualRealizationCommand": {
@@ -2042,10 +2317,138 @@
         "title": "AuthenticationProviderMethodResponse",
         "type": "object"
       },
+      "AuthorActivityChildRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "placement": {
+            "anyOf": [
+              {
+                "discriminator": {
+                  "mapping": {
+                    "absolute_interval": "#/components/schemas/dante__modules__temporal__api__AbsoluteIntervalPlacementRequest",
+                    "coarse_local_period": "#/components/schemas/CoarseLocalPeriodPlacementRequest",
+                    "date_span": "#/components/schemas/DateSpanPlacementRequest",
+                    "floating_local_interval": "#/components/schemas/FloatingLocalIntervalPlacementRequest",
+                    "named_zone_local_interval": "#/components/schemas/NamedZoneLocalIntervalPlacementRequest"
+                  },
+                  "propertyName": "kind"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/DateSpanPlacementRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FloatingLocalIntervalPlacementRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/NamedZoneLocalIntervalPlacementRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/dante__modules__temporal__api__AbsoluteIntervalPlacementRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CoarseLocalPeriodPlacementRequest"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Placement"
+          },
+          "planned_slices": {
+            "items": {
+              "discriminator": {
+                "mapping": {
+                  "absolute_interval": "#/components/schemas/dante__modules__temporal__api__AbsoluteIntervalPlacementRequest",
+                  "coarse_local_period": "#/components/schemas/CoarseLocalPeriodPlacementRequest",
+                  "date_span": "#/components/schemas/DateSpanPlacementRequest",
+                  "floating_local_interval": "#/components/schemas/FloatingLocalIntervalPlacementRequest",
+                  "named_zone_local_interval": "#/components/schemas/NamedZoneLocalIntervalPlacementRequest"
+                },
+                "propertyName": "kind"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/DateSpanPlacementRequest"
+                },
+                {
+                  "$ref": "#/components/schemas/FloatingLocalIntervalPlacementRequest"
+                },
+                {
+                  "$ref": "#/components/schemas/NamedZoneLocalIntervalPlacementRequest"
+                },
+                {
+                  "$ref": "#/components/schemas/dante__modules__temporal__api__AbsoluteIntervalPlacementRequest"
+                },
+                {
+                  "$ref": "#/components/schemas/CoarseLocalPeriodPlacementRequest"
+                }
+              ]
+            },
+            "maxItems": 100,
+            "title": "Planned Slices",
+            "type": "array"
+          },
+          "presentation_order": {
+            "default": 1,
+            "minimum": 1.0,
+            "title": "Presentation Order",
+            "type": "integer"
+          },
+          "requirement_code": {
+            "default": "required",
+            "enum": ["required", "optional"],
+            "title": "Requirement Code",
+            "type": "string"
+          },
+          "session_capture_mode": {
+            "anyOf": [
+              {
+                "enum": ["disabled", "record", "live", "record_and_live"],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Capture Mode"
+          },
+          "title": {
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": ["title"],
+        "title": "AuthorActivityChildRequest",
+        "type": "object"
+      },
       "AuthorActivityRequest": {
         "additionalProperties": false,
-        "description": "Activity Create can declare an explicit Session capture policy.",
+        "description": "Atomic root, direct children and planned placements.",
         "properties": {
+          "children": {
+            "items": {
+              "$ref": "#/components/schemas/AuthorActivityChildRequest"
+            },
+            "maxItems": 100,
+            "title": "Children",
+            "type": "array"
+          },
           "description": {
             "anyOf": [
               {
@@ -2132,6 +2535,40 @@
               }
             ],
             "title": "Placement"
+          },
+          "planned_slices": {
+            "items": {
+              "discriminator": {
+                "mapping": {
+                  "absolute_interval": "#/components/schemas/dante__modules__temporal__api__AbsoluteIntervalPlacementRequest",
+                  "coarse_local_period": "#/components/schemas/CoarseLocalPeriodPlacementRequest",
+                  "date_span": "#/components/schemas/DateSpanPlacementRequest",
+                  "floating_local_interval": "#/components/schemas/FloatingLocalIntervalPlacementRequest",
+                  "named_zone_local_interval": "#/components/schemas/NamedZoneLocalIntervalPlacementRequest"
+                },
+                "propertyName": "kind"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/DateSpanPlacementRequest"
+                },
+                {
+                  "$ref": "#/components/schemas/FloatingLocalIntervalPlacementRequest"
+                },
+                {
+                  "$ref": "#/components/schemas/NamedZoneLocalIntervalPlacementRequest"
+                },
+                {
+                  "$ref": "#/components/schemas/dante__modules__temporal__api__AbsoluteIntervalPlacementRequest"
+                },
+                {
+                  "$ref": "#/components/schemas/CoarseLocalPeriodPlacementRequest"
+                }
+              ]
+            },
+            "maxItems": 100,
+            "title": "Planned Slices",
+            "type": "array"
           },
           "session_capture_mode": {
             "anyOf": [
@@ -2266,6 +2703,74 @@
         "title": "AuthorEventRequest",
         "type": "object"
       },
+      "AuthoredActivityChildResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "activity_ref": {
+            "format": "uuid",
+            "title": "Activity Ref",
+            "type": "string"
+          },
+          "decomposition_ref": {
+            "format": "uuid",
+            "title": "Decomposition Ref",
+            "type": "string"
+          },
+          "decomposition_state_ref": {
+            "format": "uuid",
+            "title": "Decomposition State Ref",
+            "type": "string"
+          },
+          "planned_slices": {
+            "items": {
+              "$ref": "#/components/schemas/AcceptedAuthoringScheduleResponse"
+            },
+            "title": "Planned Slices",
+            "type": "array"
+          },
+          "presentation_order": {
+            "title": "Presentation Order",
+            "type": "integer"
+          },
+          "requirement_code": {
+            "enum": ["required", "optional"],
+            "title": "Requirement Code",
+            "type": "string"
+          },
+          "schedule": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AcceptedAuthoringScheduleResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "session_capture_mode": {
+            "enum": ["disabled", "record", "live", "record_and_live"],
+            "title": "Session Capture Mode",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "activity_ref",
+          "title",
+          "decomposition_ref",
+          "decomposition_state_ref",
+          "requirement_code",
+          "presentation_order",
+          "schedule",
+          "planned_slices",
+          "session_capture_mode"
+        ],
+        "title": "AuthoredActivityChildResponse",
+        "type": "object"
+      },
       "AuthoredActivityResponse": {
         "additionalProperties": false,
         "properties": {
@@ -2273,6 +2778,13 @@
             "format": "uuid",
             "title": "Activity Ref",
             "type": "string"
+          },
+          "children": {
+            "items": {
+              "$ref": "#/components/schemas/AuthoredActivityChildResponse"
+            },
+            "title": "Children",
+            "type": "array"
           },
           "color_code": {
             "anyOf": [
@@ -2358,6 +2870,13 @@
               }
             ],
             "title": "Location"
+          },
+          "planned_slices": {
+            "items": {
+              "$ref": "#/components/schemas/AcceptedAuthoringScheduleResponse"
+            },
+            "title": "Planned Slices",
+            "type": "array"
           },
           "replayed": {
             "title": "Replayed",
@@ -4352,6 +4871,87 @@
         },
         "required": ["start_date", "end_date_exclusive"],
         "title": "DateSpanPlacementRequest",
+        "type": "object"
+      },
+      "DecompositionCommand": {
+        "additionalProperties": false,
+        "properties": {
+          "active": {
+            "default": true,
+            "title": "Active",
+            "type": "boolean"
+          },
+          "decomposition_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decomposition Ref"
+          },
+          "expected_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected State Ref"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "presentation_order": {
+            "default": 1,
+            "minimum": 1.0,
+            "title": "Presentation Order",
+            "type": "integer"
+          },
+          "requirement_code": {
+            "default": "required",
+            "enum": ["required", "optional"],
+            "title": "Requirement Code",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id"],
+        "title": "DecompositionCommand",
+        "type": "object"
+      },
+      "DecompositionResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "active": {
+            "title": "Active",
+            "type": "boolean"
+          },
+          "decomposition_ref": {
+            "format": "uuid",
+            "title": "Decomposition Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "state_ref": {
+            "format": "uuid",
+            "title": "State Ref",
+            "type": "string"
+          }
+        },
+        "required": ["decomposition_ref", "state_ref", "active", "replayed"],
+        "title": "DecompositionResponse",
         "type": "object"
       },
       "DependencyFindingResponse": {
@@ -23875,6 +24475,108 @@
           }
         },
         "summary": "Detach Activity Tag",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/activities/{parent_activity_ref}/children": {
+      "get": {
+        "operationId": "temporal_get_activity_children",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "parent_activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Parent Activity Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityChildrenResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Activity Children",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/activities/{parent_activity_ref}/children/{child_activity_ref}": {
+      "post": {
+        "operationId": "temporal_set_activity_child",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "parent_activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Parent Activity Ref",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "child_activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Child Activity Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecompositionCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecompositionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Activity Child",
         "tags": ["temporal"]
       }
     },

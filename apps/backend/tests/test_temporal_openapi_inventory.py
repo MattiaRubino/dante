@@ -164,6 +164,20 @@ _EXPECTED_TEMPORAL_OPERATIONS = {
     ("/api/v1/temporal/plans/{plan_ref}/dependencies/{dependency_ref}", "get"): "temporal_get_self_plan_dependency",
     ("/api/v1/temporal/plans/{plan_ref}/dependencies/{dependency_ref}", "put"): "temporal_revise_self_plan_dependency",
     ("/api/v1/temporal/plans/{plan_ref}/dependencies/{dependency_ref}/history", "get"): "temporal_list_self_plan_dependency_history",
+    ("/api/v1/temporal/plans/{plan_ref}/steps/{step_ref}/execution/assess", "post"): "temporal_assess_plan_step_execution",
+    ("/api/v1/temporal/plans/{plan_ref}/conflicts", "get"): "temporal_diagnose_self_plan_conflicts",
+    ("/api/v1/temporal/plans/{plan_ref}/steps/{step_ref}/candidates", "get"): "temporal_search_self_plan_step_candidates",
+    ("/api/v1/temporal/plans/{plan_ref}/steps/{step_ref}/candidate-moves", "post"): "temporal_request_reviewed_plan_candidate_move",
+    ("/api/v1/temporal/plans/{plan_ref}/steps/{step_ref}/candidate-moves/{proposal_ref}/confirm", "post"): "temporal_confirm_reviewed_plan_candidate_move",
+    ("/api/v1/temporal/planning-tray", "get"): "temporal_list_planning_tray",
+    ("/api/v1/temporal/planning-tray/{kind}/{subject_ref}/place", "post"): "temporal_place_planning_tray_item",
+    ("/api/v1/temporal/authoring/activities", "post"): "temporal_author_activity",
+    ("/api/v1/temporal/authoring/events", "post"): "temporal_author_event",
+    ("/api/v1/temporal/resolution-queue", "get"): "temporal_list_resolution_queue",
+    ("/api/v1/temporal/activities/{activity_ref}/execution-policy", "get"): "temporal_get_activity_execution_policy",
+    ("/api/v1/temporal/activities/{activity_ref}/execution-policy", "post"): "temporal_set_activity_execution_policy",
+    ("/api/v1/temporal/activities/{parent_activity_ref}/children", "get"): "temporal_get_activity_children",
+    ("/api/v1/temporal/activities/{parent_activity_ref}/children/{child_activity_ref}", "post"): "temporal_set_activity_child",
 }
 
 

@@ -19,6 +19,7 @@ from dante.context.contracts import DanteContext
 from dante.context.dependencies import require_mutating_dante_context
 from dante.modules.temporal.api import SchedulePlacementRequest, _placement_from_request
 from dante.modules.temporal.authoring import (
+    ActivityChildIntent,
     AuthoringLifeAreaIntent,
     AuthoringResult,
     TemporalAuthoringApplication,
@@ -27,11 +28,13 @@ from dante.modules.temporal.authoring import (
     TemporalAuthoringLifeAreaUnavailableError,
     TemporalAuthoringOperationIdReuseError,
     TemporalAuthoringPersistenceError,
+    TemporalAuthoringStructureConflictError,
 )
 from dante.modules.temporal.schedule import (
     AbsoluteIntervalPlacement,
     CoarseLocalPeriodPlacement,
     DateSpanPlacement,
+    EstablishedScheduleView,
     FloatingLocalIntervalPlacement,
     NamedZoneLocalIntervalPlacement,
     SchedulePlacement,
@@ -78,10 +81,24 @@ class AuthorItemRequest(BaseModel):
     placement: SchedulePlacementRequest | None = None
 
 
+class AuthorActivityChildRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    title: str = Field(min_length=1, max_length=300)
+    description: str | None = None
+    requirement_code: Literal["required", "optional"] = "required"
+    presentation_order: int = Field(default=1, ge=1)
+    placement: SchedulePlacementRequest | None = None
+    planned_slices: list[SchedulePlacementRequest] = Field(default_factory=list, max_length=100)
+    session_capture_mode: Literal["disabled", "record", "live", "record_and_live"] | None = None
+
+
 class AuthorActivityRequest(AuthorItemRequest):
-    """Activity Create can declare an explicit Session capture policy."""
+    """Atomic root, direct children and planned placements."""
 
     session_capture_mode: Literal["disabled", "record", "live", "record_and_live"] | None = None
+    planned_slices: list[SchedulePlacementRequest] = Field(default_factory=list, max_length=100)
+    children: list[AuthorActivityChildRequest] = Field(default_factory=list, max_length=100)
 
 
 class AuthorEventRequest(AuthorItemRequest):
@@ -147,6 +164,20 @@ class AcceptedAuthoringScheduleResponse(BaseModel):
     placement: AcceptedAuthoringPlacementResponse
 
 
+class AuthoredActivityChildResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    activity_ref: UUID
+    title: str
+    decomposition_ref: UUID
+    decomposition_state_ref: UUID
+    requirement_code: Literal["required", "optional"]
+    presentation_order: int
+    schedule: AcceptedAuthoringScheduleResponse | None
+    planned_slices: list[AcceptedAuthoringScheduleResponse]
+    session_capture_mode: Literal["disabled", "record", "live", "record_and_live"]
+
+
 class AuthoredActivityResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -162,6 +193,8 @@ class AuthoredActivityResponse(BaseModel):
     life_area_revision: int | None = Field(default=None, ge=1)
     schedule: AcceptedAuthoringScheduleResponse | None
     session_capture_mode: Literal["disabled", "record", "live", "record_and_live"]
+    planned_slices: list[AcceptedAuthoringScheduleResponse] = Field(default_factory=list)
+    children: list[AuthoredActivityChildResponse] = Field(default_factory=list)
     replayed: bool
 
 
@@ -240,17 +273,28 @@ def _accepted_placement(placement: SchedulePlacement) -> AcceptedAuthoringPlacem
     raise TemporalAuthoringPersistenceError("Accepted Schedule placement is unsupported.")
 
 
-def _schedule_response(result: AuthoringResult) -> AcceptedAuthoringScheduleResponse | None:
-    if result.schedule is None:
-        return None
+def _accepted_schedule(schedule: EstablishedScheduleView) -> AcceptedAuthoringScheduleResponse:
     return AcceptedAuthoringScheduleResponse(
-        schedule_ref=result.schedule.schedule_ref,
-        placement_material_state_ref=result.schedule.material_state_ref,
-        placement=_accepted_placement(result.schedule.placement),
+        schedule_ref=schedule.schedule_ref,
+        placement_material_state_ref=schedule.material_state_ref,
+        placement=_accepted_placement(schedule.placement),
     )
 
 
+def _schedule_response(result: AuthoringResult) -> AcceptedAuthoringScheduleResponse | None:
+    return None if result.schedule is None else _accepted_schedule(result.schedule)
+
+
 def _problem(exc: Exception) -> ProblemError:
+    if isinstance(exc, TemporalAuthoringStructureConflictError):
+        return ProblemError(
+            status=409,
+            code="temporal.authoring.structure_conflict",
+            category="conflict",
+            title="Activity structure conflict",
+            detail="A child placement does not fit the parent temporal envelope.",
+            retryable=False,
+        )
     if isinstance(exc, TemporalAuthoringInputError):
         return ProblemError(
             status=422,
@@ -303,6 +347,7 @@ _Errors = (
     TemporalAuthoringLifeAreaConflictError,
     TemporalAuthoringOperationIdReuseError,
     TemporalAuthoringPersistenceError,
+    TemporalAuthoringStructureConflictError,
 )
 
 
@@ -328,8 +373,31 @@ async def author_activity(
             description=payload.description,
             location=payload.location,
             item_color_code=payload.item_color_code,
-            placement=None if payload.placement is None else _placement_from_request(payload.placement),
+            placement=None
+            if payload.placement is None
+            else _placement_from_request(payload.placement),
             session_capture_mode=payload.session_capture_mode,
+            planned_slices=tuple(
+                _placement_from_request(value) for value in payload.planned_slices
+            ),
+            children=tuple(
+                ActivityChildIntent(
+                    title=child.title,
+                    description=child.description,
+                    requirement_code=child.requirement_code,
+                    presentation_order=child.presentation_order,
+                    placement=(
+                        None
+                        if child.placement is None
+                        else _placement_from_request(child.placement)
+                    ),
+                    planned_slices=tuple(
+                        _placement_from_request(value) for value in child.planned_slices
+                    ),
+                    session_capture_mode=child.session_capture_mode,
+                )
+                for child in payload.children
+            ),
         )
     except _Errors as exc:
         raise _problem(exc) from exc
@@ -349,6 +417,21 @@ async def author_activity(
         life_area_revision=item.life_area_revision,
         schedule=_schedule_response(result),
         session_capture_mode=result.session_capture_mode,
+        planned_slices=[_accepted_schedule(value) for value in result.planned_slices],
+        children=[
+            AuthoredActivityChildResponse(
+                activity_ref=child.item.subject_native_ref,
+                title=child.item.title,
+                decomposition_ref=child.decomposition_ref,
+                decomposition_state_ref=child.state_ref,
+                requirement_code=child.requirement_code,
+                presentation_order=child.presentation_order,
+                schedule=(None if child.schedule is None else _accepted_schedule(child.schedule)),
+                planned_slices=[_accepted_schedule(value) for value in child.planned_slices],
+                session_capture_mode=child.session_capture_mode,
+            )
+            for child in result.children
+        ],
         replayed=result.replayed,
     )
 
@@ -376,7 +459,9 @@ async def author_event(
             location=payload.location,
             item_color_code=payload.item_color_code,
             agenda_parts=payload.agenda_parts,
-            placement=None if payload.placement is None else _placement_from_request(payload.placement),
+            placement=None
+            if payload.placement is None
+            else _placement_from_request(payload.placement),
         )
     except _Errors as exc:
         raise _problem(exc) from exc

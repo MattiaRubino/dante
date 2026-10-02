@@ -5,6 +5,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type {
+  ActivityChildrenResponse,
   ActivityResponse,
   ActualRealizationCommand,
   ActualRealizationConditionRequest,
@@ -50,6 +51,8 @@ import type {
   CreateScheduledEventRequest,
   CreateTemporalConstraintRequest,
   CreatedTemporalConstraintResponse,
+  DecompositionCommand,
+  DecompositionResponse,
   EstablishActivityScheduleRequest,
   EstablishOccurrenceScheduleRequest,
   EvaluateTemporalConstraintsRequest,
@@ -4735,6 +4738,136 @@ export const temporalDetachActivityTag = async (
     status: res.status,
     headers: res.headers,
   } as temporalDetachActivityTagResponse;
+};
+
+export type temporalGetActivityChildrenResponse200 = {
+  data: ActivityChildrenResponse;
+  status: 200;
+};
+
+export type temporalGetActivityChildrenResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetActivityChildrenResponseSuccess =
+  temporalGetActivityChildrenResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetActivityChildrenResponseError =
+  temporalGetActivityChildrenResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalGetActivityChildrenResponse =
+  | temporalGetActivityChildrenResponseSuccess
+  | temporalGetActivityChildrenResponseError;
+
+export const getTemporalGetActivityChildrenUrl = (
+  parentActivityRef: string,
+) => {
+  return `/api/v1/temporal/activities/${parentActivityRef}/children`;
+};
+
+/**
+ * @summary Get Activity Children
+ */
+export const temporalGetActivityChildren = async (
+  parentActivityRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetActivityChildrenResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetActivityChildrenUrl(parentActivityRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetActivityChildrenResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetActivityChildrenResponse;
+};
+
+export type temporalSetActivityChildResponse200 = {
+  data: DecompositionResponse;
+  status: 200;
+};
+
+export type temporalSetActivityChildResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalSetActivityChildResponseSuccess =
+  temporalSetActivityChildResponse200 & {
+    headers: Headers;
+  };
+export type temporalSetActivityChildResponseError =
+  temporalSetActivityChildResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalSetActivityChildResponse =
+  | temporalSetActivityChildResponseSuccess
+  | temporalSetActivityChildResponseError;
+
+export const getTemporalSetActivityChildUrl = (
+  parentActivityRef: string,
+  childActivityRef: string,
+) => {
+  return `/api/v1/temporal/activities/${parentActivityRef}/children/${childActivityRef}`;
+};
+
+/**
+ * @summary Set Activity Child
+ */
+export const temporalSetActivityChild = async (
+  parentActivityRef: string,
+  childActivityRef: string,
+  decompositionCommand: DecompositionCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalSetActivityChildResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalSetActivityChildUrl(parentActivityRef, childActivityRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(decompositionCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalSetActivityChildResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalSetActivityChildResponse;
 };
 
 export type temporalListActualHistoryResponse200 = {
