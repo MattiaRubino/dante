@@ -132,6 +132,7 @@ import type {
   ReplacePlanBody,
   ReplaceRecurrenceRequest,
   ReplanPostponedEventRequest,
+  ResolutionQueueResponse,
   ResponsibilityResponse,
   RestoredScheduleAbsoluteResponse,
   RestoredScheduleCoarseResponse,
@@ -10615,6 +10616,51 @@ export const temporalCreateRecurringRoutine = async (
     status: res.status,
     headers: res.headers,
   } as temporalCreateRecurringRoutineResponse;
+};
+
+export type temporalListResolutionQueueResponse200 = {
+  data: ResolutionQueueResponse;
+  status: 200;
+};
+
+export type temporalListResolutionQueueResponseSuccess =
+  temporalListResolutionQueueResponse200 & {
+    headers: Headers;
+  };
+export type temporalListResolutionQueueResponse =
+  temporalListResolutionQueueResponseSuccess;
+
+export const getTemporalListResolutionQueueUrl = () => {
+  return `/api/v1/temporal/resolution-queue`;
+};
+
+/**
+ * Only current unresolved reconciliations on current self-owned truth.
+ *
+ * A missing Actual, Outcome, or Session is never interpreted as failure.
+ * Outdated reconciliation targets are excluded until the owning B10 vertical
+ * explicitly creates/updates a decision for the accepted Outcome state.
+ * @summary List Resolution Queue
+ */
+export const temporalListResolutionQueue = async (
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListResolutionQueueResponse> => {
+  const res = await (fetchFn ?? fetch)(getTemporalListResolutionQueueUrl(), {
+    ...options,
+    method: 'GET',
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListResolutionQueueResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListResolutionQueueResponse;
 };
 
 export type temporalListRoutinesResponse200 = {

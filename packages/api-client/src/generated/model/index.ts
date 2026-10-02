@@ -245,6 +245,8 @@ export * from './replaceEventAgendaRequest.zod';
 export * from './replacePlanBody.zod';
 export * from './replaceRecurrenceRequest.zod';
 export * from './replanPostponedEventRequest.zod';
+export * from './resolutionQueueItem.zod';
+export * from './resolutionQueueResponse.zod';
 export * from './responsibilityResponse.zod';
 export * from './restoredScheduleAbsoluteResponse.zod';
 export * from './restoredScheduleCoarseResponse.zod';

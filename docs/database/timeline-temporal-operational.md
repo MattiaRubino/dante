@@ -360,3 +360,11 @@ Forward-only `_91` adds four nullable execution-policy columns and one coherent-
 ## B12-C reviewed candidate admission checkpoint
 
 Forward-only `_93` adds three owner-controlled, security-definer functions: an internal current-evidence guard, a self-scoped B04-D request delegate, and a self-scoped B04-D confirmation delegate. The guard serializes Plan/Dependency changes on the Plan row, locks current Policy and relevant Actual/Outcome/Constraint evidence, and checks exact Schedule, Plan Step and evidence state before calling B04-D in the same transaction. No new table, view, index, trigger or constraint is introduced; Dictionary/catalog target is `196|5|155|100|397|344|497|0|0|0`. The user reported a passing focused local PostgreSQL gate (19 tests in 39.83s); the pasted transcript does not echo the exact final file selection. See the qualified closure evidence in `../workstreams/timeline-temporal-operational-b12-c-closure-2026-09-29.md`. See `../workstreams/timeline-temporal-operational-b12-c-implementation-2026-09-29.md`.
+# B14-U6 candidate read projection (2026-10-02)
+
+Forward revision `20261002_96` adds only `dante.list_self_resolution_queue(uuid)`.
+It exposes current unresolved B10 Reconciliations for self-owned Activity/Event
+through a bounded SECURITY DEFINER read. It creates no queue table and does not
+infer skipped or failed execution from elapsed Schedule time. This is a candidate
+until the user reports the local PostgreSQL gate. The rest of U6 persistence is
+not claimed by this revision.

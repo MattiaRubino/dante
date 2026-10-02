@@ -1289,8 +1289,12 @@
   display: grid;
   gap: 9px;
   margin-top: 13px;
+  min-width: 0;
+  max-height: min(46vh, 430px);
+  overflow-y: auto;
 }
 .home-resolution-list article {
+  min-width: 0;
   padding: 10px;
   border: 1px solid rgba(159, 177, 184, 0.09);
   border-radius: 11px;
@@ -1328,6 +1332,11 @@
   color: #839095;
   font-size: 8.5px;
   line-height: 1.4;
+}
+.home-resolution-list article > .timeline-reconciliation-controls {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 .home-resolution-actions {
   display: flex;

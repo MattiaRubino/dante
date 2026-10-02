@@ -1,6 +1,7 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
 - **Status:** B12 CLOSED / QUALIFIED USER ACCEPTANCE — B14+B07 active as one user-guided product/UI cycle; U1 Create-entry candidate awaits user visual proof; affected B12-D rerun unreported
+- **U6 continuation:** derived B10 Reconciliation queue candidate in `_96`; Sub-Activity, execution policy, planned slices and the remaining queue reasons are still open. Read `timeline-temporal-operational-b14-u6-candidate-2026-10-02.md` and the approved U6 gate before work.
 - **Reconciled:** 2026-09-30
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`

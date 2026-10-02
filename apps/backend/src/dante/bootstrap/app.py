@@ -40,6 +40,7 @@ from dante.modules.temporal.plan_work_api import router as temporal_plan_work_ro
 from dante.modules.temporal.planning_tray_api import router as temporal_planning_tray_router
 from dante.modules.temporal.product_tag_api import router as temporal_product_tag_router
 from dante.modules.temporal.reconciliation_api import router as temporal_reconciliation_router
+from dante.modules.temporal.resolution_queue_api import router as temporal_resolution_queue_router
 from dante.modules.temporal.recurrence_api import router as temporal_recurrence_router
 from dante.modules.temporal.recurring_authoring_api import (
     router as temporal_recurring_authoring_router,
@@ -108,6 +109,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(temporal_outcome_router)
     app.include_router(temporal_confirmation_router)
     app.include_router(temporal_reconciliation_router)
+    app.include_router(temporal_resolution_queue_router)
     app.include_router(temporal_recurrence_router)
     app.include_router(temporal_advanced_recurrence_router)
     app.include_router(temporal_conditional_router)

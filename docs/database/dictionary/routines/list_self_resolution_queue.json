@@ -1,0 +1,75 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "routine:dante.list_self_resolution_queue",
+    "type": "routine",
+    "schema": "dante",
+    "name": "list_self_resolution_queue",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Read current unresolved B10 Reconciliations for self-owned Activity and Event subjects as a derived product inbox.",
+  "classification": {
+    "persistence_role": "capability",
+    "canonicality": "capability_surface",
+    "family": "OutcomeReconciliation"
+  },
+  "semantic_traceability": {
+    "authority_sources": ["docs/workstreams/timeline-temporal-operational-b14-u6-end-to-end-gate-2026-10-02.md"],
+    "domain_concepts": ["Outcome", "Actual", "Activity", "Event"],
+    "logical_families": ["OutcomeReconciliation"],
+    "reference_families": ["NativeRef", "ScopedRecordRef", "MaterialStateRef"],
+    "material_facets": ["outcome.reconciliation"]
+  },
+  "implementation": {
+    "introducing_stage": "B14-U6-D",
+    "alembic_revision": "20261002_96",
+    "sqlalchemy": {"mode": "none", "module": null, "symbol": null},
+    "runtime_acl_stage": "B14-U6-D"
+  },
+  "structure": {
+    "columns": [],
+    "primary_key": null,
+    "foreign_keys": [],
+    "unique_constraints": [],
+    "check_constraints": [],
+    "indexes": [],
+    "triggers": [],
+    "table": null,
+    "view": null,
+    "routine": {
+      "routine_kind": "function",
+      "language": "sql",
+      "argument_types": ["uuid"],
+      "return_type": "TABLE(subject_kind text, subject_ref uuid, title text, reconciliation_ref uuid, outcome_ref uuid, purpose_code text)",
+      "security": "DEFINER",
+      "volatility": "STABLE",
+      "parallel_safety": "UNSAFE",
+      "leakproof": false,
+      "function_search_path": ["pg_catalog", "dante", "pg_temp"],
+      "direct_runtime_execute": true
+    }
+  },
+  "state_history": {
+    "material_state_behavior": null,
+    "current_binding": "Only accepted current Actual, Outcome and Reconciliation states are considered.",
+    "chronology": "Never infers unresolved truth from a missing record or elapsed Schedule.",
+    "immutability_policy": "Read-only derived projection; no queue writes."
+  },
+  "lifecycle": {
+    "retention": null,
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No direct runtime delete."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": [{"grantee": "dante_runtime", "privilege": "EXECUTE", "columns": [], "grant_option": false}]
+  },
+  "proof": {
+    "obligations": ["Only the authenticated self's current unresolved B10 reconciliations appear."],
+    "test_refs": ["apps/backend/tests/integration/temporal/test_b14_u6_resolution_queue.py"],
+    "staged_evidence": []
+  }
+}

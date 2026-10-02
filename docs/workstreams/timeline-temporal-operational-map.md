@@ -34,6 +34,7 @@
 - **Reported current catalog topology:** `_93` / `196|5|155|100|397|344|497|0|0|0` (focused local gate)
 - **Completed functional frontier:** B12 ✅ CLOSED / qualified user-reported acceptance 2026-09-30
 - **Current implementation cursor:** B12-D and B12 closed on qualified user-reported acceptance; B14/B07 active as one user-guided product/UI cycle; U1 Create-entry candidate is ready for user visual proof; B13-D post-repair web rerun unreported
+- **U6 cursor:** `Da risolvere` B10 Reconciliation read/action is a candidate at migration `_96`; other U6 paths in the approved gate are still open. Follow `timeline-temporal-operational-b14-u6-candidate-2026-10-02.md`.
 - **CI:** not authorized; local tests are run by the user
 
 ---

@@ -53,9 +53,13 @@ function evidenceFor(
 export function ReconciliationControls({
   kind,
   subjectRef,
+  initialPurposeCode,
+  onRecorded,
 }: Readonly<{
   kind: ActualSubjectKind;
   subjectRef: string;
+  initialPurposeCode?: string;
+  onRecorded?: () => void;
 }>) {
   const actualSource = useMemo(
     () => createRemoteTemporalActualDataSource(globalThis.fetch),
@@ -75,13 +79,18 @@ export function ReconciliationControls({
   );
 
   const [outcome, setOutcome] = useState<TemporalOutcomeView | null>(null);
-  const [confirmations, setConfirmations] = useState<readonly TemporalConfirmationView[]>([]);
-  const [reconciliations, setReconciliations] = useState<readonly TemporalReconciliationView[]>([]);
-  const [purposeCode, setPurposeCode] = useState('review.personal');
-  const [actionCode, setActionCode] = useState<TemporalReconciliationAction>('unresolved');
-  const [selectedConfirmationRefs, setSelectedConfirmationRefs] = useState<ReadonlySet<string>>(
-    () => new Set(),
-  );
+  const [confirmations, setConfirmations] = useState<
+    readonly TemporalConfirmationView[]
+  >([]);
+  const [reconciliations, setReconciliations] = useState<
+    readonly TemporalReconciliationView[]
+  >([]);
+  const [purposeCode, setPurposeCode] = useState(initialPurposeCode ?? 'review.personal');
+  const [actionCode, setActionCode] =
+    useState<TemporalReconciliationAction>('unresolved');
+  const [selectedConfirmationRefs, setSelectedConfirmationRefs] = useState<
+    ReadonlySet<string>
+  >(() => new Set());
   const [loaded, setLoaded] = useState(false);
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -113,9 +122,10 @@ export function ReconciliationControls({
     currentOutcome: TemporalOutcomeView,
     currentReconciliations: readonly TemporalReconciliationView[],
   ) => {
-    const existing = currentReconciliations.find(
+    const current = currentReconciliations.filter(
       (item) => item.outcomeDispositionMaterialStateRef === currentOutcome.materialStateRef,
     );
+    const existing = current.find((item) => item.purposeCode === initialPurposeCode) ?? current[0];
     if (existing === undefined) {
       setSelectedConfirmationRefs(new Set());
       return;
@@ -138,7 +148,11 @@ export function ReconciliationControls({
       setConfirmations([]);
       setReconciliations([]);
       setLoaded(true);
-      return { outcome: null, confirmations: [] as const, reconciliations: [] as const };
+      return {
+        outcome: null,
+        confirmations: [] as const,
+        reconciliations: [] as const,
+      };
     }
     const currentOutcome = await outcomeSource.get(currentActual.actualRef);
     setOutcome(currentOutcome);
@@ -146,12 +160,17 @@ export function ReconciliationControls({
       setConfirmations([]);
       setReconciliations([]);
       setLoaded(true);
-      return { outcome: null, confirmations: [] as const, reconciliations: [] as const };
+      return {
+        outcome: null,
+        confirmations: [] as const,
+        reconciliations: [] as const,
+      };
     }
-    const [currentConfirmationRows, currentReconciliationRows] = await Promise.all([
-      confirmationSource.list(currentOutcome.outcomeRef),
-      reconciliationSource.list(currentOutcome.outcomeRef),
-    ]);
+    const [currentConfirmationRows, currentReconciliationRows] =
+      await Promise.all([
+        confirmationSource.list(currentOutcome.outcomeRef),
+        reconciliationSource.list(currentOutcome.outcomeRef),
+      ]);
     setConfirmations(currentConfirmationRows);
     setReconciliations(currentReconciliationRows);
     applyCurrent(currentOutcome, currentReconciliationRows);
@@ -169,9 +188,13 @@ export function ReconciliationControls({
     void reload()
       .then(({ outcome: currentOutcome, reconciliations: currentRows }) => {
         if (currentOutcome === null) {
-          setMessage('Reconciliation non disponibile: registra prima un Outcome.');
+          setMessage(
+            'Reconciliation non disponibile: registra prima un Outcome.',
+          );
         } else if (currentRows.length === 0) {
-          setMessage('Nessuna Reconciliation registrata. Il conflitto può restare esplicitamente irrisolto.');
+          setMessage(
+            'Nessuna Reconciliation registrata. Il conflitto può restare esplicitamente irrisolto.',
+          );
         } else {
           setMessage('Reconciliation caricate.');
         }
@@ -194,7 +217,11 @@ export function ReconciliationControls({
 
   const changeAction = (nextAction: TemporalReconciliationAction) => {
     setActionCode(nextAction);
-    if (nextAction === 'unresolved' || nextAction === 'defer' || nextAction === 'escalate') {
+    if (
+      nextAction === 'unresolved' ||
+      nextAction === 'defer' ||
+      nextAction === 'escalate'
+    ) {
       setSelectedConfirmationRefs(new Set());
     }
   };
@@ -207,35 +234,52 @@ export function ReconciliationControls({
       .get(kind, subjectRef)
       .then(async (currentActual) => {
         if (currentActual === null) {
-          setMessage('Reconciliation non disponibile: registra prima un Outcome.');
+          setMessage(
+            'Reconciliation non disponibile: registra prima un Outcome.',
+          );
           return;
         }
         const currentOutcome = await outcomeSource.get(currentActual.actualRef);
         if (currentOutcome === null) {
-          setMessage('Reconciliation non disponibile: registra prima un Outcome.');
+          setMessage(
+            'Reconciliation non disponibile: registra prima un Outcome.',
+          );
           return;
         }
-        const [currentConfirmationRows, currentReconciliationRows] = await Promise.all([
-          confirmationSource.list(currentOutcome.outcomeRef),
-          reconciliationSource.list(currentOutcome.outcomeRef),
-        ]);
+        const [currentConfirmationRows, currentReconciliationRows] =
+          await Promise.all([
+            confirmationSource.list(currentOutcome.outcomeRef),
+            reconciliationSource.list(currentOutcome.outcomeRef),
+          ]);
         const targetConfirmations = currentConfirmationRows.filter(
-          (item) => item.outcomeDispositionMaterialStateRef === currentOutcome.materialStateRef,
+          (item) =>
+            item.outcomeDispositionMaterialStateRef ===
+            currentOutcome.materialStateRef,
         );
         const expected = currentReconciliationRows.find(
           (item) =>
-            item.outcomeDispositionMaterialStateRef === currentOutcome.materialStateRef &&
+            item.outcomeDispositionMaterialStateRef ===
+              currentOutcome.materialStateRef &&
             item.purposeCode === normalizedPurpose,
         );
-        const saved = await reconciliationSource.record(currentOutcome.outcomeRef, {
-          operationId: operationId(),
-          outcomeDispositionMaterialStateRef: currentOutcome.materialStateRef,
-          expectedMaterialStateRef: expected?.materialStateRef ?? null,
-          purposeCode: normalizedPurpose,
-          actionCode,
-          evidence: evidenceFor(actionCode, targetConfirmations, selectedConfirmationRefs),
-        });
-        const refreshed = await reconciliationSource.list(currentOutcome.outcomeRef);
+        const saved = await reconciliationSource.record(
+          currentOutcome.outcomeRef,
+          {
+            operationId: operationId(),
+            outcomeDispositionMaterialStateRef: currentOutcome.materialStateRef,
+            expectedMaterialStateRef: expected?.materialStateRef ?? null,
+            purposeCode: normalizedPurpose,
+            actionCode,
+            evidence: evidenceFor(
+              actionCode,
+              targetConfirmations,
+              selectedConfirmationRefs,
+            ),
+          },
+        );
+        const refreshed = await reconciliationSource.list(
+          currentOutcome.outcomeRef,
+        );
         setOutcome(currentOutcome);
         setConfirmations(currentConfirmationRows);
         setReconciliations(refreshed.length === 0 ? [saved] : refreshed);
@@ -250,26 +294,42 @@ export function ReconciliationControls({
           ),
         );
         setMessage('Reconciliation registrata.');
+        onRecorded?.();
       })
       .catch((error: unknown) =>
         reload()
           .catch(() => undefined)
-          .then(() => setMessage(rejection('Aggiornamento Reconciliation rifiutato.', error))),
+          .then(() =>
+            setMessage(
+              rejection('Aggiornamento Reconciliation rifiutato.', error),
+            ),
+          ),
       )
       .finally(() => setPending(false));
   };
 
   return (
-    <div className="timeline-reconciliation-controls" data-timeline-reconciliation-subject={subjectRef}>
+    <div
+      className="timeline-reconciliation-controls"
+      data-timeline-reconciliation-subject={subjectRef}
+    >
       <strong>Reconciliation</strong>
       <small>
-        Reconciliation risolve contestualmente evidenze di Confirmation su una versione esatta
-        dell’Outcome. Non riscrive Outcome o Confirmation e non stabilisce una verità universale.
+        Reconciliation risolve contestualmente evidenze di Confirmation su una
+        versione esatta dell’Outcome. Non riscrive Outcome o Confirmation e non
+        stabilisce una verità universale.
       </small>
       {outcome === null && loaded ? (
-        <p data-timeline-reconciliation-state>Reconciliation: non disponibile senza Outcome</p>
+        <p data-timeline-reconciliation-state>
+          Reconciliation: non disponibile senza Outcome
+        </p>
       ) : null}
-      <button type="button" disabled={pending} data-timeline-reconciliation-load onClick={load}>
+      <button
+        type="button"
+        disabled={pending}
+        data-timeline-reconciliation-load
+        onClick={load}
+      >
         Carica Reconciliation
       </button>
       {loaded && outcome !== null ? (
@@ -296,7 +356,11 @@ export function ReconciliationControls({
               aria-label="Azione Reconciliation"
               value={actionCode}
               disabled={pending}
-              onChange={(event) => changeAction(event.currentTarget.value as TemporalReconciliationAction)}
+              onChange={(event) =>
+                changeAction(
+                  event.currentTarget.value as TemporalReconciliationAction,
+                )
+              }
             >
               <option value="unresolved">unresolved</option>
               <option value="select">select</option>
@@ -306,16 +370,23 @@ export function ReconciliationControls({
             </select>
           </label>
           {currentConfirmations.length === 0 ? (
-            <small>Nessuna Confirmation sul MaterialState corrente dell’Outcome.</small>
+            <small>
+              Nessuna Confirmation sul MaterialState corrente dell’Outcome.
+            </small>
           ) : (
-            <ul className="timeline-reconciliation-evidence" aria-label="Evidenze Reconciliation">
+            <ul
+              className="timeline-reconciliation-evidence"
+              aria-label="Evidenze Reconciliation"
+            >
               {currentConfirmations.map((item) => (
                 <li key={item.confirmationRef}>
                   <label>
                     <input
                       type="checkbox"
                       aria-label={`Seleziona Confirmation ${item.confirmationRef}`}
-                      checked={selectedConfirmationRefs.has(item.confirmationRef)}
+                      checked={selectedConfirmationRefs.has(
+                        item.confirmationRef,
+                      )}
                       disabled={
                         pending ||
                         actionCode === 'unresolved' ||
@@ -350,7 +421,9 @@ export function ReconciliationControls({
         </>
       ) : null}
       {message === null ? null : (
-        <span role={message.startsWith('Aggiornamento') ? 'alert' : 'status'}>{message}</span>
+        <span role={message.startsWith('Aggiornamento') ? 'alert' : 'status'}>
+          {message}
+        </span>
       )}
     </div>
   );

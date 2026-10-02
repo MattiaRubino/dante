@@ -1,7 +1,44 @@
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+
+import { ReconciliationControls } from '../../../temporal/reconciliation-controls';
+import {
+  createResolutionQueueSource,
+  type ResolutionQueue,
+} from './resolution-queue-data-source';
 
 export function ContextRail() {
   const { t } = useTranslation('common');
+  const source = useMemo(() => createResolutionQueueSource(), []);
+  const [queue, setQueue] = useState<ResolutionQueue | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<string | null>(null);
+
+  const refresh = useCallback(
+    (signal?: AbortSignal) => {
+      void source
+        .list(signal)
+        .then((next) => {
+          setQueue(next);
+          setError(null);
+        })
+        .catch((reason: unknown) => {
+          if (signal?.aborted) return;
+          setError(
+            reason instanceof Error
+              ? reason.message
+              : 'Da risolvere non disponibile.',
+          );
+        });
+    },
+    [source],
+  );
+
+  useEffect(() => {
+    const controller = new AbortController();
+    refresh(controller.signal);
+    return () => controller.abort();
+  }, [refresh]);
   return (
     <aside
       className="home-context-rail"
@@ -70,59 +107,52 @@ export function ContextRail() {
             <span className="home-context-kicker">DA DANTE A TE</span>
             <h2>Da risolvere</h2>
           </div>
-          <span className="home-resolution-count">3</span>
+          <span
+            className="home-resolution-count"
+            aria-label={`${queue?.count ?? 0} elementi aperti`}
+          >
+            {queue?.count ?? '…'}
+          </span>
         </header>
         <div className="home-resolution-list">
-          <article>
-            <div className="home-resolution-row">
-              <span className="home-resolution-status is-partial">
-                Parziale
-              </span>
-              <time>13:42</time>
-            </div>
-            <strong>Revisione concept</strong>
-            <p>Una decisione resta ambigua prima di continuare.</p>
-            <div className="home-resolution-actions">
+          {error ? <p role="alert">{error}</p> : null}
+          {queue?.count === 0 ? <p>Non ci sono decisioni aperte.</p> : null}
+          {queue?.items.map((item) => (
+            <article key={item.reconciliationRef}>
+              <div className="home-resolution-row">
+                <span className="home-resolution-status is-partial">
+                  Reconciliation
+                </span>
+              </div>
+              <strong>{item.title}</strong>
+              <p>Decisione aperta · {item.purposeCode}</p>
               <button
-                className="home-resolution-confirm"
+                className="home-resolution-details"
                 type="button"
-                disabled
+                aria-expanded={expanded === item.reconciliationRef}
+                onClick={() =>
+                  setExpanded((current) =>
+                    current === item.reconciliationRef
+                      ? null
+                      : item.reconciliationRef,
+                  )
+                }
               >
-                Conferma
+                {expanded === item.reconciliationRef ? 'Chiudi' : 'Risolvi'}
               </button>
-              <button type="button" disabled>
-                Correggi
-              </button>
-            </div>
-          </article>
-          <article>
-            <div className="home-resolution-row">
-              <span className="home-resolution-status is-done">Fatto</span>
-              <time>12:18</time>
-            </div>
-            <strong>Studio inglese</strong>
-            <p>Sessione completata. Verifica il tempo registrato.</p>
-            <button className="home-resolution-details" type="button" disabled>
-              Dettagli
-            </button>
-          </article>
-          <article>
-            <div className="home-resolution-row">
-              <span className="home-resolution-status is-skipped">Saltato</span>
-              <time>10:05</time>
-            </div>
-            <strong>Promemoria chiamata</strong>
-            <p>Non eseguito: serve una nuova decisione.</p>
-            <button className="home-resolution-details" type="button" disabled>
-              Dettagli
-            </button>
-          </article>
+              {expanded === item.reconciliationRef ? (
+                <ReconciliationControls
+                  kind={item.subjectKind}
+                  subjectRef={item.subjectRef}
+                  initialPurposeCode={item.purposeCode}
+                  onRecorded={() => refresh()}
+                />
+              ) : null}
+            </article>
+          ))}
         </div>
       </section>
-      <div
-        className="home-create-panel-host"
-        data-home-context-create-host
-      />
+      <div className="home-create-panel-host" data-home-context-create-host />
     </aside>
   );
 }

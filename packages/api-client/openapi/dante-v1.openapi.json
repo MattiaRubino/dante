@@ -8966,6 +8966,74 @@
         "title": "ReplanPostponedEventRequest",
         "type": "object"
       },
+      "ResolutionQueueItem": {
+        "additionalProperties": false,
+        "properties": {
+          "outcome_ref": {
+            "format": "uuid",
+            "title": "Outcome Ref",
+            "type": "string"
+          },
+          "purpose_code": {
+            "title": "Purpose Code",
+            "type": "string"
+          },
+          "reason_code": {
+            "const": "reconciliation_open",
+            "default": "reconciliation_open",
+            "title": "Reason Code",
+            "type": "string"
+          },
+          "reconciliation_ref": {
+            "format": "uuid",
+            "title": "Reconciliation Ref",
+            "type": "string"
+          },
+          "subject_kind": {
+            "enum": ["activity", "event"],
+            "title": "Subject Kind",
+            "type": "string"
+          },
+          "subject_ref": {
+            "format": "uuid",
+            "title": "Subject Ref",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "subject_kind",
+          "subject_ref",
+          "title",
+          "reconciliation_ref",
+          "outcome_ref",
+          "purpose_code"
+        ],
+        "title": "ResolutionQueueItem",
+        "type": "object"
+      },
+      "ResolutionQueueResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ResolutionQueueItem"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": ["items", "count"],
+        "title": "ResolutionQueueResponse",
+        "type": "object"
+      },
       "ResponsibilityResponse": {
         "additionalProperties": false,
         "properties": {
@@ -28589,6 +28657,26 @@
           }
         },
         "summary": "Create Recurring Routine",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/resolution-queue": {
+      "get": {
+        "description": "Only current unresolved reconciliations on current self-owned truth.\n\nA missing Actual, Outcome, or Session is never interpreted as failure.\nOutdated reconciliation targets are excluded until the owning B10 vertical\nexplicitly creates/updates a decision for the accepted Outcome state.",
+        "operationId": "temporal_list_resolution_queue",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResolutionQueueResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Resolution Queue",
         "tags": ["temporal"]
       }
     },

@@ -42,13 +42,14 @@
       "B13-B",
       "B13-C",
       "B12-C",
-      "B14-U2"
+      "B14-U2",
+      "B14-U6-D"
     ],
     "standalone_entries": {
       "tables": 196,
       "views": 5,
-      "routines": 157,
-      "total": 358
+      "routines": 158,
+      "total": 359
     },
     "embedded_objects": {
       "triggers": 100,
