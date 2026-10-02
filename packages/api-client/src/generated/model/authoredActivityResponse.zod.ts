@@ -29,6 +29,7 @@ export const authoredActivityResponseScheduleOnePlacementFourKindDefault = `abso
 export const authoredActivityResponseScheduleOnePlacementFiveKindDefault = `coarse_local_period`;
 export const AuthoredActivityResponse = /*#__PURE__*/ zod.object({
   activity_ref: /*#__PURE__*/ zod.uuid(),
+  child_guard_mode: /*#__PURE__*/ zod.enum(['none', 'confirm', 'block']),
   children: /*#__PURE__*/ zod.optional(
     /*#__PURE__*/ zod.array(
       /*#__PURE__*/ zod.object({

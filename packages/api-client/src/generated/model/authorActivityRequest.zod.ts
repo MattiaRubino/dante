@@ -64,6 +64,12 @@ export const authorActivityRequestTitleMax = 300;
 
 export const AuthorActivityRequest = /*#__PURE__*/ zod
   .object({
+    child_guard_mode: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod.enum(['none', 'confirm', 'block']),
+        /*#__PURE__*/ zod.null(),
+      ]),
+    ),
     children: /*#__PURE__*/ zod.optional(
       /*#__PURE__*/ zod
         .array(

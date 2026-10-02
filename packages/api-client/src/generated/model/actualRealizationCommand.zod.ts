@@ -6,9 +6,14 @@
  */
 import * as zod from 'zod/mini';
 
+export const actualRealizationCommandAcknowledgeUnresolvedChildrenDefault = false;
 export const actualRealizationCommandOperationIdMax = 200;
 
 export const ActualRealizationCommand = /*#__PURE__*/ zod.object({
+  acknowledge_unresolved_children: /*#__PURE__*/ zod._default(
+    /*#__PURE__*/ zod.boolean(),
+    actualRealizationCommandAcknowledgeUnresolvedChildrenDefault,
+  ),
   expected_material_state_ref: /*#__PURE__*/ zod.optional(
     /*#__PURE__*/ zod.union([
       /*#__PURE__*/ zod.uuid(),

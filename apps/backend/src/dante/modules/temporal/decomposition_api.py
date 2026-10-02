@@ -92,6 +92,7 @@ class ActivityChildrenResponse(BaseModel):
 
     parent_activity_ref: UUID
     session_capture_mode: Literal["disabled", "record", "live", "record_and_live"]
+    child_guard_mode: Literal["none", "confirm", "block"]
     schedules: list[ActivityScheduleResponse]
     children: list[ActivityChildResponse]
 
@@ -192,6 +193,12 @@ async def get_activity_children(
             )
             if owner is None:
                 raise _not_found()
+            child_guard_mode = (
+                await session.execute(
+                    text("SELECT mode_code FROM dante.get_self_activity_decomposition_policy(:actor,:parent)"),
+                    {"actor": context.self_person_ref, "parent": parent_activity_ref},
+                )
+            ).scalar_one()
             rows = (
                 (
                     await session.execute(
@@ -265,6 +272,7 @@ async def get_activity_children(
     return ActivityChildrenResponse(
         parent_activity_ref=parent_activity_ref,
         session_capture_mode=owner["mode_code"],
+        child_guard_mode=child_guard_mode,
         schedules=_owner_schedules(schedule_rows, parent_activity_ref),
         children=[
             ActivityChildResponse(

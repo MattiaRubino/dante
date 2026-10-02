@@ -952,6 +952,11 @@
       "ActivityChildrenResponse": {
         "additionalProperties": false,
         "properties": {
+          "child_guard_mode": {
+            "enum": ["none", "confirm", "block"],
+            "title": "Child Guard Mode",
+            "type": "string"
+          },
           "children": {
             "items": {
               "$ref": "#/components/schemas/ActivityChildResponse"
@@ -980,6 +985,7 @@
         "required": [
           "parent_activity_ref",
           "session_capture_mode",
+          "child_guard_mode",
           "schedules",
           "children"
         ],
@@ -1216,6 +1222,11 @@
       "ActualRealizationCommand": {
         "additionalProperties": false,
         "properties": {
+          "acknowledge_unresolved_children": {
+            "default": false,
+            "title": "Acknowledge Unresolved Children",
+            "type": "boolean"
+          },
           "expected_material_state_ref": {
             "anyOf": [
               {
@@ -2441,6 +2452,18 @@
         "additionalProperties": false,
         "description": "Atomic root, direct children and planned placements.",
         "properties": {
+          "child_guard_mode": {
+            "anyOf": [
+              {
+                "enum": ["none", "confirm", "block"],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Child Guard Mode"
+          },
           "children": {
             "items": {
               "$ref": "#/components/schemas/AuthorActivityChildRequest"
@@ -2779,6 +2802,11 @@
             "title": "Activity Ref",
             "type": "string"
           },
+          "child_guard_mode": {
+            "enum": ["none", "confirm", "block"],
+            "title": "Child Guard Mode",
+            "type": "string"
+          },
           "children": {
             "items": {
               "$ref": "#/components/schemas/AuthoredActivityChildResponse"
@@ -2913,6 +2941,7 @@
           "life_area_color_code",
           "schedule",
           "session_capture_mode",
+          "child_guard_mode",
           "replayed"
         ],
         "title": "AuthoredActivityResponse",
@@ -4926,6 +4955,72 @@
         },
         "required": ["operation_id"],
         "title": "DecompositionCommand",
+        "type": "object"
+      },
+      "DecompositionPolicyCommand": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected State Ref"
+          },
+          "mode_code": {
+            "enum": ["none", "confirm", "block"],
+            "title": "Mode Code",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "mode_code"],
+        "title": "DecompositionPolicyCommand",
+        "type": "object"
+      },
+      "DecompositionPolicyResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "activity_ref": {
+            "format": "uuid",
+            "title": "Activity Ref",
+            "type": "string"
+          },
+          "mode_code": {
+            "enum": ["none", "confirm", "block"],
+            "title": "Mode Code",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "State Ref"
+          }
+        },
+        "required": ["activity_ref", "state_ref", "mode_code"],
+        "title": "DecompositionPolicyResponse",
         "type": "object"
       },
       "DecompositionResponse": {
@@ -24001,6 +24096,96 @@
           }
         },
         "summary": "Record Activity Actual",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/activities/{activity_ref}/child-guard-policy": {
+      "get": {
+        "operationId": "temporal_get_activity_decomposition_policy",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecompositionPolicyResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Decomposition Policy",
+        "tags": ["temporal"]
+      },
+      "post": {
+        "operationId": "temporal_set_activity_decomposition_policy",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecompositionPolicyCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecompositionPolicyResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Decomposition Policy",
         "tags": ["temporal"]
       }
     },

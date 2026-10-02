@@ -6,9 +6,14 @@
  */
 import * as zod from 'zod/mini';
 
+export const temporalRecordActivityActualBodyAcknowledgeUnresolvedChildrenDefault = false;
 export const temporalRecordActivityActualBodyOperationIdMax = 200;
 
 export const TemporalRecordActivityActualBody = /*#__PURE__*/ zod.object({
+  acknowledge_unresolved_children: /*#__PURE__*/ zod._default(
+    /*#__PURE__*/ zod.boolean(),
+    temporalRecordActivityActualBodyAcknowledgeUnresolvedChildrenDefault,
+  ),
   expected_material_state_ref: /*#__PURE__*/ zod.optional(
     /*#__PURE__*/ zod.union([
       /*#__PURE__*/ zod.uuid(),

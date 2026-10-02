@@ -176,6 +176,8 @@ _EXPECTED_TEMPORAL_OPERATIONS = {
     ("/api/v1/temporal/resolution-queue", "get"): "temporal_list_resolution_queue",
     ("/api/v1/temporal/activities/{activity_ref}/execution-policy", "get"): "temporal_get_activity_execution_policy",
     ("/api/v1/temporal/activities/{activity_ref}/execution-policy", "post"): "temporal_set_activity_execution_policy",
+    ("/api/v1/temporal/activities/{activity_ref}/child-guard-policy", "get"): "temporal_get_activity_decomposition_policy",
+    ("/api/v1/temporal/activities/{activity_ref}/child-guard-policy", "post"): "temporal_set_activity_decomposition_policy",
     ("/api/v1/temporal/activities/{parent_activity_ref}/children", "get"): "temporal_get_activity_children",
     ("/api/v1/temporal/activities/{parent_activity_ref}/children/{child_activity_ref}", "post"): "temporal_set_activity_child",
 }

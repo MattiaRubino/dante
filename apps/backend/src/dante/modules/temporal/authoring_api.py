@@ -97,6 +97,7 @@ class AuthorActivityRequest(AuthorItemRequest):
     """Atomic root, direct children and planned placements."""
 
     session_capture_mode: Literal["disabled", "record", "live", "record_and_live"] | None = None
+    child_guard_mode: Literal["none", "confirm", "block"] | None = None
     planned_slices: list[SchedulePlacementRequest] = Field(default_factory=list, max_length=100)
     children: list[AuthorActivityChildRequest] = Field(default_factory=list, max_length=100)
 
@@ -193,6 +194,7 @@ class AuthoredActivityResponse(BaseModel):
     life_area_revision: int | None = Field(default=None, ge=1)
     schedule: AcceptedAuthoringScheduleResponse | None
     session_capture_mode: Literal["disabled", "record", "live", "record_and_live"]
+    child_guard_mode: Literal["none", "confirm", "block"]
     planned_slices: list[AcceptedAuthoringScheduleResponse] = Field(default_factory=list)
     children: list[AuthoredActivityChildResponse] = Field(default_factory=list)
     replayed: bool
@@ -377,6 +379,7 @@ async def author_activity(
             if payload.placement is None
             else _placement_from_request(payload.placement),
             session_capture_mode=payload.session_capture_mode,
+            child_guard_mode=payload.child_guard_mode,
             planned_slices=tuple(
                 _placement_from_request(value) for value in payload.planned_slices
             ),
@@ -417,6 +420,7 @@ async def author_activity(
         life_area_revision=item.life_area_revision,
         schedule=_schedule_response(result),
         session_capture_mode=result.session_capture_mode,
+        child_guard_mode=result.child_guard_mode,
         planned_slices=[_accepted_schedule(value) for value in result.planned_slices],
         children=[
             AuthoredActivityChildResponse(

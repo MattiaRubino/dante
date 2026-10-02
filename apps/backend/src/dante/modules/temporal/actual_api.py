@@ -18,6 +18,7 @@ from dante.modules.temporal.actual_runtime import (
     ActualInputError,
     ActualNotFoundError,
     ActualOperationReuseError,
+    ActualParentGuardError,
     ActualPersistenceError,
     ActualRealizationView,
     ActualSessionBasis,
@@ -38,7 +39,7 @@ class ActualTimingInput(BaseModel):
     ended_at: datetime | None = None
 
     @model_validator(mode="after")
-    def validate_extent(self) -> "ActualTimingInput":
+    def validate_extent(self) -> ActualTimingInput:
         if self.extent_code in {"instant", "start_only"} and self.ended_at is not None:
             raise ValueError(f"{self.extent_code} timing cannot carry ended_at")
         if self.extent_code == "interval" and (
@@ -63,9 +64,10 @@ class ActualRealizationCommand(BaseModel):
     realization_occurred: bool
     timing: ActualTimingInput | None = None
     session_bases: list[ActualSessionBasisInput] = Field(default_factory=list)
+    acknowledge_unresolved_children: bool = False
 
     @model_validator(mode="after")
-    def validate_realization_payload(self) -> "ActualRealizationCommand":
+    def validate_realization_payload(self) -> ActualRealizationCommand:
         if not self.realization_occurred and (self.timing is not None or self.session_bases):
             raise ValueError("known non-realization cannot carry timing or Session bases")
         session_refs = [basis.session_ref for basis in self.session_bases]
@@ -186,6 +188,14 @@ def _problem(exc: Exception) -> ProblemError:
             title="Actual realization changed",
             detail=str(exc),
         )
+    if isinstance(exc, ActualParentGuardError):
+        return ProblemError(
+            status=409,
+            code="temporal.actual.parent_child_guard",
+            category="conflict",
+            title="Parent Activity requires child review",
+            detail=str(exc),
+        )
     if isinstance(exc, ActualAmbiguousSubjectError):
         return ProblemError(
             status=409,
@@ -236,12 +246,14 @@ async def _record(
                 )
                 for basis in payload.session_bases
             ),
+            acknowledge_unresolved_children=payload.acknowledge_unresolved_children,
         )
     except (
         ActualInputError,
         ActualNotFoundError,
         ActualOperationReuseError,
         ActualCurrentConflictError,
+        ActualParentGuardError,
         ActualAmbiguousSubjectError,
         ActualPersistenceError,
     ) as exc:

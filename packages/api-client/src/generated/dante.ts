@@ -52,6 +52,8 @@ import type {
   CreateTemporalConstraintRequest,
   CreatedTemporalConstraintResponse,
   DecompositionCommand,
+  DecompositionPolicyCommand,
+  DecompositionPolicyResponse,
   DecompositionResponse,
   EstablishActivityScheduleRequest,
   EstablishOccurrenceScheduleRequest,
@@ -4133,6 +4135,134 @@ export const temporalRecordActivityActual = async (
     status: res.status,
     headers: res.headers,
   } as temporalRecordActivityActualResponse;
+};
+
+export type temporalGetActivityDecompositionPolicyResponse200 = {
+  data: DecompositionPolicyResponse;
+  status: 200;
+};
+
+export type temporalGetActivityDecompositionPolicyResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetActivityDecompositionPolicyResponseSuccess =
+  temporalGetActivityDecompositionPolicyResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetActivityDecompositionPolicyResponseError =
+  temporalGetActivityDecompositionPolicyResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalGetActivityDecompositionPolicyResponse =
+  | temporalGetActivityDecompositionPolicyResponseSuccess
+  | temporalGetActivityDecompositionPolicyResponseError;
+
+export const getTemporalGetActivityDecompositionPolicyUrl = (
+  activityRef: string,
+) => {
+  return `/api/v1/temporal/activities/${activityRef}/child-guard-policy`;
+};
+
+/**
+ * @summary Get Decomposition Policy
+ */
+export const temporalGetActivityDecompositionPolicy = async (
+  activityRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetActivityDecompositionPolicyResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetActivityDecompositionPolicyUrl(activityRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetActivityDecompositionPolicyResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetActivityDecompositionPolicyResponse;
+};
+
+export type temporalSetActivityDecompositionPolicyResponse200 = {
+  data: DecompositionPolicyResponse;
+  status: 200;
+};
+
+export type temporalSetActivityDecompositionPolicyResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalSetActivityDecompositionPolicyResponseSuccess =
+  temporalSetActivityDecompositionPolicyResponse200 & {
+    headers: Headers;
+  };
+export type temporalSetActivityDecompositionPolicyResponseError =
+  temporalSetActivityDecompositionPolicyResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalSetActivityDecompositionPolicyResponse =
+  | temporalSetActivityDecompositionPolicyResponseSuccess
+  | temporalSetActivityDecompositionPolicyResponseError;
+
+export const getTemporalSetActivityDecompositionPolicyUrl = (
+  activityRef: string,
+) => {
+  return `/api/v1/temporal/activities/${activityRef}/child-guard-policy`;
+};
+
+/**
+ * @summary Set Decomposition Policy
+ */
+export const temporalSetActivityDecompositionPolicy = async (
+  activityRef: string,
+  decompositionPolicyCommand: DecompositionPolicyCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalSetActivityDecompositionPolicyResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalSetActivityDecompositionPolicyUrl(activityRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(decompositionPolicyCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalSetActivityDecompositionPolicyResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalSetActivityDecompositionPolicyResponse;
 };
 
 export type temporalGetActivityExecutionPolicyResponse200 = {

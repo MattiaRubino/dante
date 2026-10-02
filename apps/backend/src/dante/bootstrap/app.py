@@ -25,6 +25,7 @@ from dante.modules.temporal.constrained_activity_api import (
     router as temporal_constrained_activity_router,
 )
 from dante.modules.temporal.decomposition_api import router as temporal_decomposition_router
+from dante.modules.temporal.decomposition_policy_api import router as temporal_decomposition_policy_router
 from dante.modules.temporal.event_api import router as temporal_event_router
 from dante.modules.temporal.execution_policy_api import router as temporal_execution_policy_router
 from dante.modules.temporal.life_area_api import router as temporal_life_area_router
@@ -103,6 +104,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(temporal_authoring_router)
     app.include_router(temporal_event_router)
     app.include_router(temporal_execution_policy_router)
+    app.include_router(temporal_decomposition_policy_router)
     app.include_router(temporal_decomposition_router)
     app.include_router(temporal_life_area_router)
     app.include_router(temporal_product_tag_router)

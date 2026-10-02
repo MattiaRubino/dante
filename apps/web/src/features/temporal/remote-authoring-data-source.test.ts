@@ -46,6 +46,7 @@ describe('remote U2 authoring data source', () => {
               },
             },
             session_capture_mode: 'record',
+            child_guard_mode: 'none',
             planned_slices: [],
             children: [],
             replayed: false,
@@ -169,6 +170,7 @@ describe('remote U2 authoring data source', () => {
             schedule: null,
             planned_slices: [planned],
             session_capture_mode: 'disabled',
+            child_guard_mode: 'block',
             children: [
               {
                 activity_ref: SCHEDULE_REF,
@@ -193,6 +195,7 @@ describe('remote U2 authoring data source', () => {
       operationId: 'u6-atomic-1',
       title: 'Progetto',
       sessionCaptureMode: 'disabled',
+      childGuardMode: 'block',
       plannedSlices: [
         {
           kind: 'absolute-interval',
@@ -204,6 +207,7 @@ describe('remote U2 authoring data source', () => {
     });
 
     expect(result.sessionCaptureMode).toBe('disabled');
+    expect(result.childGuardMode).toBe('block');
     expect(result.plannedSlices).toHaveLength(1);
     expect(result.children[0]?.requirementCode).toBe('required');
     expect(result.children[0]?.sessionCaptureMode).toBe('live');

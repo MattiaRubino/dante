@@ -94,6 +94,7 @@ class AuthoringResult:
     replayed: bool
     schedule: EstablishedScheduleView | None = None
     session_capture_mode: Literal["disabled", "record", "live", "record_and_live"] = "disabled"
+    child_guard_mode: Literal["none", "confirm", "block"] = "none"
     planned_slices: tuple[EstablishedScheduleView, ...] = ()
     children: tuple[AuthoredActivityChild, ...] = ()
 
@@ -550,6 +551,7 @@ class TemporalAuthoringApplication:
         agenda_parts: tuple[str, ...],
         placement: SchedulePlacement | None,
         session_capture_mode: str | None,
+        child_guard_mode: str | None = None,
         planned_slices: tuple[SchedulePlacement, ...] = (),
         children: tuple[ActivityChildIntent, ...] = (),
     ) -> AuthoringResult:
@@ -567,6 +569,10 @@ class TemporalAuthoringApplication:
             raise TemporalAuthoringInputError("Activity Session capture mode is invalid.")
         if subject_kind != "activity" and (planned_slices or children):
             raise TemporalAuthoringInputError("Only an Activity can own planned execution rows.")
+        if child_guard_mode is not None and (
+            subject_kind != "activity" or child_guard_mode not in {"none", "confirm", "block"}
+        ):
+            raise TemporalAuthoringInputError("Activity parent child policy is invalid.")
         if len(children) > 100 or len(planned_slices) > 100:
             raise TemporalAuthoringInputError("Activity structure exceeds its bounded size.")
         for child in children:
@@ -583,10 +589,11 @@ class TemporalAuthoringApplication:
             ):
                 raise TemporalAuthoringInputError("Child execution configuration is invalid.")
         structure_digest = None
-        if children or planned_slices:
+        if children or planned_slices or child_guard_mode is not None:
             structure_digest = _json_fingerprint(
                 {
                     "version": 1,
+                    "child_guard_mode": child_guard_mode,
                     "root_placement": None if placement is None else _placement_payload(placement),
                     "planned_slices": [_placement_payload(value) for value in planned_slices],
                     "children": [
@@ -693,6 +700,37 @@ class TemporalAuthoringApplication:
                     if bool(policy["replayed"]) is not replayed:
                         raise TemporalAuthoringOperationIdReuseError(
                             "Create and execution policy replay state diverged."
+                        )
+                if child_guard_mode is not None:
+                    guard_operation = _derived_operation(
+                        "b14-u6-parent-guard", normalized_operation
+                    )
+                    guard_fingerprint = _json_fingerprint({
+                        "version": 1,
+                        "activity_ref": str(item.subject_native_ref),
+                        "mode_code": child_guard_mode,
+                        "expected_state_ref": None,
+                    })
+                    guard = (
+                        (await session.execute(
+                            text("""
+                                SELECT * FROM dante.set_self_activity_decomposition_policy(
+                                    :actor,:operation,:fingerprint,:activity,:state,:mode,NULL
+                                )
+                            """),
+                            {
+                                "actor": self_person_ref,
+                                "operation": guard_operation,
+                                "fingerprint": guard_fingerprint,
+                                "activity": item.subject_native_ref,
+                                "state": uuid7(),
+                                "mode": child_guard_mode,
+                            },
+                        )).mappings().one()
+                    )
+                    if bool(guard["replayed"]) is not replayed:
+                        raise TemporalAuthoringOperationIdReuseError(
+                            "Create and parent policy replay state diverged."
                         )
                 planned_results: list[EstablishedScheduleView] = []
                 for index, planned in enumerate(planned_slices):
@@ -856,6 +894,7 @@ class TemporalAuthoringApplication:
                     replayed=replayed,
                     schedule=schedule,
                     session_capture_mode=session_capture_mode or "disabled",
+                    child_guard_mode=child_guard_mode or "none",
                     planned_slices=tuple(planned_results),
                     children=tuple(child_results),
                 )
@@ -929,6 +968,7 @@ class TemporalAuthoringApplication:
         item_color_code: str | None = None,
         placement: SchedulePlacement | None = None,
         session_capture_mode: str | None = None,
+        child_guard_mode: str | None = None,
         planned_slices: tuple[SchedulePlacement, ...] = (),
         children: tuple[ActivityChildIntent, ...] = (),
     ) -> AuthoringResult:
@@ -944,6 +984,7 @@ class TemporalAuthoringApplication:
             agenda_parts=(),
             placement=placement,
             session_capture_mode=session_capture_mode,
+            child_guard_mode=child_guard_mode,
             planned_slices=planned_slices,
             children=children,
         )

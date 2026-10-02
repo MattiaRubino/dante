@@ -493,6 +493,7 @@ function activityResult(payload: unknown): TemporalAuthoredActivityResult {
     'activity_ref',
     ...COMMON_RESPONSE_KEYS,
     'session_capture_mode',
+    'child_guard_mode',
     'planned_slices',
     'children',
   ]);
@@ -506,6 +507,19 @@ function activityResult(payload: unknown): TemporalAuthoredActivityResult {
     item: item(payload, 'activity_ref'),
     schedule: schedule(payload.schedule),
     sessionCaptureMode: captureMode(payload.session_capture_mode),
+    childGuardMode: (() => {
+      if (
+        payload.child_guard_mode === 'none' ||
+        payload.child_guard_mode === 'confirm' ||
+        payload.child_guard_mode === 'block'
+      ) {
+        return payload.child_guard_mode;
+      }
+      throw new TemporalAuthoringRemoteError(
+        'protocol',
+        'Activity child_guard_mode is unsupported.',
+      );
+    })(),
     plannedSlices: schedules(payload.planned_slices, 'planned_slices'),
     children: (() => {
       if (!Array.isArray(payload.children)) {
@@ -639,6 +653,9 @@ function requestBody(
   else {
     if (request.sessionCaptureMode !== undefined) {
       result.session_capture_mode = request.sessionCaptureMode;
+    }
+    if (request.childGuardMode !== undefined) {
+      result.child_guard_mode = request.childGuardMode;
     }
     if (request.plannedSlices !== undefined) {
       result.planned_slices = request.plannedSlices.map(serializePlacement);

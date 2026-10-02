@@ -45,21 +45,22 @@
       "B14-U2",
       "B14-U6-D",
       "B14-U6-B",
-      "B14-U6-C"
+      "B14-U6-C",
+      "B14-U6-GUARD"
     ],
     "standalone_entries": {
-      "tables": 204,
+      "tables": 209,
       "views": 5,
-      "routines": 165,
-      "total": 374
+      "routines": 168,
+      "total": 382
     },
     "embedded_objects": {
       "triggers": 102,
-      "physical_indexes": 418
+      "physical_indexes": 430
     },
     "constraints": {
-      "foreign_keys": 357,
-      "check_constraints": 518
+      "foreign_keys": 365,
+      "check_constraints": 525
     }
   },
   "technical_foundation": {

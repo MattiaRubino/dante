@@ -7,6 +7,7 @@
 import * as zod from 'zod/mini';
 
 export const ActivityChildrenResponse = /*#__PURE__*/ zod.object({
+  child_guard_mode: /*#__PURE__*/ zod.enum(['none', 'confirm', 'block']),
   children: /*#__PURE__*/ zod.array(
     /*#__PURE__*/ zod.object({
       child_activity_ref: /*#__PURE__*/ zod.uuid(),

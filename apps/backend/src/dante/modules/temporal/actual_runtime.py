@@ -42,6 +42,10 @@ class ActualCurrentConflictError(RuntimeError):
     """The caller's expected current realization is stale."""
 
 
+class ActualParentGuardError(RuntimeError):
+    """Required child reality prevents the proposed parent realization."""
+
+
 class ActualAmbiguousSubjectError(RuntimeError):
     """The bounded B10-A subject maps to multiple pre-existing Actual owners."""
 
@@ -139,9 +143,12 @@ class ActualApplication:
         started_at: datetime | None = None,
         ended_at: datetime | None = None,
         session_bases: tuple[ActualSessionBasis, ...] = (),
+        acknowledge_unresolved_children: bool = False,
     ) -> ActualRealizationView:
         if subject_kind not in {"activity", "event", "occurrence"}:
             raise ActualInputError("Actual subjects are Activity, Event and Occurrence only.")
+        if acknowledge_unresolved_children and subject_kind != "activity":
+            raise ActualInputError("Only an Activity can acknowledge unresolved children.")
         normalized = _normalize_operation_id(operation_id)
         bases = tuple(
             sorted(
@@ -160,7 +167,7 @@ class ActualApplication:
         )
         fingerprint = _fingerprint(
             {
-                "version": "1",
+                "version": "2" if acknowledge_unresolved_children else "1",
                 "command": "record_actual_realization",
                 "subject_kind": subject_kind,
                 "subject_native_ref": str(subject_native_ref),
@@ -170,6 +177,8 @@ class ActualApplication:
                     else None
                 ),
                 "realization_occurred": realization_occurred,
+                **({"acknowledge_unresolved_children": True}
+                   if acknowledge_unresolved_children else {}),
                 "extent_code": extent_code,
                 "started_at": started_at.isoformat() if started_at is not None else None,
                 "ended_at": ended_at.isoformat() if ended_at is not None else None,
@@ -184,6 +193,7 @@ class ActualApplication:
                 ],
             }
         )
+        state_ref = new_material_state_ref()
         rows = await self._rows(
             """
             SELECT actual_ref, subject_native_ref, material_state_ref,
@@ -201,7 +211,7 @@ class ActualApplication:
                 "operation_id": normalized,
                 "fingerprint": fingerprint,
                 "actual_ref": new_scoped_record_ref(),
-                "state_ref": new_material_state_ref(),
+                "state_ref": state_ref,
                 "subject": subject_native_ref,
                 "expected_state": expected_material_state_ref,
                 "occurred": realization_occurred,
@@ -211,6 +221,11 @@ class ActualApplication:
                 "session_refs": [basis.session_ref for basis in bases],
                 "session_state_refs": [basis.session_timing_material_state_ref for basis in bases],
             },
+            acknowledge_parent=(
+                (self_person_ref, normalized, subject_native_ref, state_ref)
+                if subject_kind == "activity" and acknowledge_unresolved_children
+                else None
+            ),
         )
         if not rows:
             raise ActualNotFoundError("Actual subject unavailable.")
@@ -256,10 +271,7 @@ class ActualApplication:
         )
         if not rows:
             raise ActualNotFoundError("Actual is not in the authenticated self scope.")
-        result: list[ActualRealizationView] = []
-        for row in rows:
-            result.append(await self._with_bases(self_person_ref, _view(row)))
-        return tuple(result)
+        return tuple([await self._with_bases(self_person_ref, _view(row)) for row in rows])
 
     async def _with_bases(
         self, self_person_ref: NativeRef, view: ActualRealizationView
@@ -321,9 +333,27 @@ class ActualApplication:
             return
         raise ActualInputError("Unsupported Actual timing extent.")
 
-    async def _rows(self, statement: str, parameters: dict[str, object]) -> list[RowMapping]:
+    async def _rows(
+        self,
+        statement: str,
+        parameters: dict[str, object],
+        *,
+        acknowledge_parent: tuple[NativeRef, str, NativeRef, MaterialStateRef] | None = None,
+    ) -> list[RowMapping]:
         try:
             async with self._session_factory() as database_session, database_session.begin():
+                if acknowledge_parent is not None:
+                    actor, operation_id, activity, proposed_state = acknowledge_parent
+                    await database_session.execute(
+                        text("SELECT dante.acknowledge_self_parent_actual("
+                             ":actor,:operation_id,:activity,:state_ref)"),
+                        {
+                            "actor": actor,
+                            "operation_id": operation_id,
+                            "activity": activity,
+                            "state_ref": proposed_state,
+                        },
+                    )
                 result = await database_session.execute(text(statement), parameters)
                 return list(result.mappings().all())
         except IntegrityError as exc:
@@ -342,6 +372,10 @@ class ActualApplication:
             raise ActualOperationReuseError("Actual operation id was reused.") from exc
         if name == "actual_current_conflict" or "expected current state" in message:
             raise ActualCurrentConflictError("Actual current realization is stale.") from exc
+        if name in {"activity_parent_actual_blocked", "activity_parent_actual_ack_required"}:
+            raise ActualParentGuardError(
+                "Required child realization is unresolved; parent action is blocked or needs acknowledgement."
+            ) from exc
         if name == "actual_subject_ambiguous" or "more than one realization owner" in message:
             raise ActualAmbiguousSubjectError("Actual subject is ambiguous.") from exc
         if name in {"actual_subject_unavailable", "actual_subject_family_unavailable"} or (
