@@ -6,6 +6,7 @@ from sqlalchemy import Table
 
 from . import (
     activity,
+    activity_decomposition,
     activity_execution_policy,
     actual,
     addressing,
@@ -77,6 +78,10 @@ MAPPED_TABLES: tuple[Table, ...] = cast(
         addressing.ScopedCurrentMaterialStateRow.__table__,
         activity.ActivityIntentionRow.__table__,
         activity.ActivityCreateOperationRow.__table__,
+        activity_decomposition.ActivityDecompositionRow.__table__,
+        activity_decomposition.ActivityDecompositionStateRow.__table__,
+        activity_decomposition.ActivityDecompositionCurrentHistoryRow.__table__,
+        activity_decomposition.ActivityDecompositionOperationRow.__table__,
         activity_execution_policy.ActivityExecutionPolicyRow.__table__,
         activity_execution_policy.ActivityExecutionPolicyStateRow.__table__,
         activity_execution_policy.ActivityExecutionPolicyCurrentHistoryRow.__table__,

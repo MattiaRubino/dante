@@ -44,21 +44,22 @@
       "B12-C",
       "B14-U2",
       "B14-U6-D",
-      "B14-U6-B"
+      "B14-U6-B",
+      "B14-U6-C"
     ],
     "standalone_entries": {
-      "tables": 200,
+      "tables": 204,
       "views": 5,
-      "routines": 160,
-      "total": 365
+      "routines": 165,
+      "total": 374
     },
     "embedded_objects": {
-      "triggers": 100,
-      "physical_indexes": 407
+      "triggers": 102,
+      "physical_indexes": 418
     },
     "constraints": {
-      "foreign_keys": 350,
-      "check_constraints": 509
+      "foreign_keys": 357,
+      "check_constraints": 518
     }
   },
   "technical_foundation": {

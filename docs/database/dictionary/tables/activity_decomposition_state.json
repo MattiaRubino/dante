@@ -1,0 +1,289 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "table:dante.activity_decomposition_state",
+    "type": "table",
+    "schema": "dante",
+    "name": "activity_decomposition_state",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Bounded direct Activity relation, accepted current state and guarded history.",
+  "classification": {
+    "persistence_role": "activity_decomposition",
+    "canonicality": "canonical",
+    "family": "ActivityDecomposition"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/domain/decisions/activity-subactivity-session-bounded-v1.md",
+      "docs/database/activity-subactivity-session-contract.md"
+    ],
+    "domain_concepts": [
+      "Activity",
+      "Sub-Activity"
+    ],
+    "logical_families": [
+      "Activity decomposition"
+    ],
+    "reference_families": [
+      "NativeRef"
+    ],
+    "material_facets": []
+  },
+  "implementation": {
+    "introducing_stage": "B14-U6",
+    "alembic_revision": "20261002_98",
+    "sqlalchemy": {
+      "mode": "orm_row",
+      "module": "dante.platform.database.mappings.activity_decomposition",
+      "symbol": "ActivityDecompositionStateRow"
+    },
+    "runtime_acl_stage": "B14-U6"
+  },
+  "structure": {
+    "columns": [
+      {
+        "name": "state_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Bounded Activity relation and its accepted current state.",
+        "semantic_type": "NativeRef",
+        "value_contract": null
+      },
+      {
+        "name": "decomposition_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Bounded Activity relation and its accepted current state.",
+        "semantic_type": "NativeRef",
+        "value_contract": null
+      },
+      {
+        "name": "active",
+        "postgres_type": "boolean",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Bounded Activity relation and its accepted current state.",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "requirement_code",
+        "postgres_type": "text",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Bounded Activity relation and its accepted current state.",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "presentation_order",
+        "postgres_type": "integer",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Bounded Activity relation and its accepted current state.",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "recorded_at",
+        "postgres_type": "timestamp with time zone",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Bounded Activity relation and its accepted current state.",
+        "semantic_type": null,
+        "value_contract": null
+      }
+    ],
+    "primary_key": {
+      "name": "pk_activity_decomposition_state",
+      "columns": [
+        "state_ref"
+      ],
+      "reason": "Stable policy family row identity.",
+      "deferrable": false,
+      "initially": "NOT DEFERRABLE",
+      "enforced": true
+    },
+    "foreign_keys": [
+      {
+        "name": "fk_activity_decomposition_state_relation",
+        "columns": [
+          "decomposition_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "activity_decomposition",
+          "columns": [
+            "decomposition_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": null,
+        "cardinality": "many_to_one",
+        "semantic_reason": "Preserve scoped relation and immutable state ownership."
+      }
+    ],
+    "unique_constraints": [
+      {
+        "name": "uq_activity_decomposition_state_owner",
+        "columns": [
+          "decomposition_ref",
+          "state_ref"
+        ],
+        "reason": "Bind the accepted state or operation to its owner.",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true
+      }
+    ],
+    "check_constraints": [
+      {
+        "name": "ck_activity_decomposition_state_order",
+        "expression_contract": "presentation_order>0",
+        "reason": "Enforce typed, finite and replay-safe policy values.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_activity_decomposition_state_recorded_at",
+        "expression_contract": "isfinite(recorded_at)",
+        "reason": "Enforce typed, finite and replay-safe policy values.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_activity_decomposition_state_requirement",
+        "expression_contract": "requirement_code IN ('required','optional')",
+        "reason": "Enforce typed, finite and replay-safe policy values.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_activity_decomposition_state_uuidv7",
+        "expression_contract": "uuid_extract_version(state_ref) IS NOT DISTINCT FROM 7",
+        "reason": "Enforce typed, finite and replay-safe policy values.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "ix_activity_decomposition_state_relation",
+        "method": "btree",
+        "unique": false,
+        "keys": [
+          "decomposition_ref"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "explicit_index",
+        "reason": "Indexed bounded relation/current-state lookup.",
+        "valid": true,
+        "ready": true,
+        "live": true
+      },
+      {
+        "name": "pk_activity_decomposition_state",
+        "method": "btree",
+        "unique": true,
+        "keys": [
+          "state_ref"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "primary_key",
+        "reason": "Indexed bounded relation/current-state lookup.",
+        "valid": true,
+        "ready": true,
+        "live": true
+      },
+      {
+        "name": "uq_activity_decomposition_state_owner",
+        "method": "btree",
+        "unique": true,
+        "keys": [
+          "decomposition_ref",
+          "state_ref"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "unique_constraint",
+        "reason": "Indexed bounded relation/current-state lookup.",
+        "valid": true,
+        "ready": true,
+        "live": true
+      }
+    ],
+    "triggers": [],
+    "table": {
+      "persistence": "permanent",
+      "access_method": "heap",
+      "partitioned": false,
+      "row_security": false,
+      "force_row_security": false,
+      "replica_identity": "default",
+      "reloptions": []
+    },
+    "view": null,
+    "routine": null
+  },
+  "state_history": {
+    "material_state_behavior": "Immutable relation state revisions with an explicit current binding.",
+    "current_binding": "One open current-history row per relation.",
+    "chronology": "Detach preserves relation and Activity identities.",
+    "immutability_policy": "No direct runtime DML; guarded changes only."
+  },
+  "lifecycle": {
+    "retention": "Retain policy correction history.",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No runtime delete."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": []
+  },
+  "proof": {
+    "obligations": [
+      "Session capability is independent of the duration constraint.",
+      "Only authenticated self can read or revise its policy."
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b14_u6_activity_decomposition.py"
+    ],
+    "staged_evidence": []
+  }
+}
