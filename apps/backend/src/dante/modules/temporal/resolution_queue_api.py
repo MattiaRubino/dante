@@ -56,7 +56,10 @@ async def list_resolution_queue(
     explicitly creates/updates a decision for the accepted Outcome state.
     """
     try:
-        async with request.app.state.database_runtime.session_factory() as session:
+        async with (
+            request.app.state.database_runtime.session_factory() as session,
+            session.begin(),
+        ):
             rows = (
                 (
                     await session.execute(
