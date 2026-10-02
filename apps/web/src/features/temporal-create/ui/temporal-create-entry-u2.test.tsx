@@ -56,8 +56,7 @@ function activityResult(
     schedule: scheduled
       ? Object.freeze({
           scheduleRef: SCHEDULE_REF,
-          placementMaterialStateRef:
-            '0199a111-1111-7111-8111-111111111121',
+          placementMaterialStateRef: '0199a111-1111-7111-8111-111111111121',
           placement: Object.freeze({
             kind: 'absolute-interval' as const,
             startsAt: Temporal.Instant.from('2026-09-30T19:00:00Z'),
@@ -65,6 +64,9 @@ function activityResult(
           }),
         })
       : null,
+    sessionCaptureMode: 'record',
+    plannedSlices: Object.freeze([]),
+    children: Object.freeze([]),
     replayed: false,
   });
 }
@@ -128,12 +130,10 @@ describe('Temporal Create U2 entry', () => {
   it('creates an Activity without requiring any Life Area and persists the DANTE default color', async () => {
     const { activityRequests } = renderEntry();
 
+    expect(screen.getByRole('option', { name: 'Ripeti · Mai' })).toBeTruthy();
     expect(
-      screen.getByRole('option', { name: 'Ripeti · Mai' }),
-    ).toBeTruthy();
-    expect((screen.getByLabelText('Ricorda') as HTMLSelectElement).disabled).toBe(
-      false,
-    );
+      (screen.getByLabelText('Ricorda') as HTMLSelectElement).disabled,
+    ).toBe(false);
     fireEvent.change(screen.getByPlaceholderText('Titolo'), {
       target: { value: 'Passeggiata' },
     });
@@ -207,24 +207,32 @@ describe('Temporal Create U2 entry', () => {
     expect(palette.classList.contains('is-floating')).toBe(true);
     expect(document.querySelector('input[type="color"]')).toBeNull();
     expect(within(palette).getByRole('button', { name: 'Rosso' })).toBeTruthy();
-    expect(within(palette).getByRole('button', { name: 'Giallo' })).toBeTruthy();
+    expect(
+      within(palette).getByRole('button', { name: 'Giallo' }),
+    ).toBeTruthy();
     expect(within(palette).getByRole('button', { name: 'Blu' })).toBeTruthy();
     expect(within(palette).getByTitle('Arancione DANTE')).toBeTruthy();
 
     fireEvent.pointerDown(within(palette).getByRole('button', { name: 'Blu' }));
     fireEvent.click(within(palette).getByRole('button', { name: 'Blu' }));
-    expect(document.querySelector('[data-temporal-create="composer"]')).toBeTruthy();
+    expect(
+      document.querySelector('[data-temporal-create="composer"]'),
+    ).toBeTruthy();
 
     fireEvent.click(
       within(palette).getByRole('button', { name: 'Colore personalizzato' }),
     );
-    expect(within(palette).getByLabelText('Selettore colore personalizzato')).toBeTruthy();
+    expect(
+      within(palette).getByLabelText('Selettore colore personalizzato'),
+    ).toBeTruthy();
     expect(within(palette).getByLabelText('Codice colore HEX')).toBeTruthy();
     expect(palette.querySelector('.react-colorful')).toBeTruthy();
     expect(
       screen.queryByRole('dialog', { name: 'Colore personalizzato' }),
     ).toBeNull();
-    expect(document.querySelector('[data-temporal-create="composer"]')).toBeTruthy();
+    expect(
+      document.querySelector('[data-temporal-create="composer"]'),
+    ).toBeTruthy();
   });
 
   it('remembers only colors actually used when Add is submitted, not colors merely inspected', async () => {
@@ -234,7 +242,9 @@ describe('Temporal Create U2 entry', () => {
       screen.getByRole('button', { name: 'Colore attività o evento' }),
     );
     fireEvent.click(screen.getByRole('button', { name: 'Blu' }));
-    expect(window.localStorage.getItem(TEMPORAL_CREATE_RECENT_COLORS_KEY)).toBeNull();
+    expect(
+      window.localStorage.getItem(TEMPORAL_CREATE_RECENT_COLORS_KEY),
+    ).toBeNull();
 
     fireEvent.change(screen.getByPlaceholderText('Titolo'), {
       target: { value: 'Blu usato' },
@@ -250,36 +260,43 @@ describe('Temporal Create U2 entry', () => {
   });
 
   it('configures B11 reminder only after accepted scheduled U2 authoring', async () => {
-    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
-      const url = String(input);
-      if (url.endsWith('/api/v1/auth/session')) {
-        return new Response(
-          JSON.stringify({ authenticated: true, csrf_token: 'csrf-test' }),
-          { status: 200, headers: { 'Content-Type': 'application/json' } },
-        );
-      }
-      if (url.includes(`/api/v1/temporal/schedules/${SCHEDULE_REF}/reminder`)) {
-        expect(init?.method).toBe('PUT');
-        const body = JSON.parse(String(init?.body ?? '{}')) as Record<string, unknown>;
-        expect(body.enabled).toBe(true);
-        expect(body.lead_minutes).toBe(15);
-        return new Response(
-          JSON.stringify({
-            reminder_ref: '0199a111-1111-7111-8111-111111111122',
-            schedule_ref: SCHEDULE_REF,
-            material_state_ref: '0199a111-1111-7111-8111-111111111123',
-            enabled: true,
-            lead_minutes: 15,
-            schedule_starts_at: '2026-09-30T19:00:00Z',
-            due_at: '2026-09-30T18:45:00Z',
-            disposition_code: 'pending',
-            replayed: false,
-          }),
-          { status: 200, headers: { 'Content-Type': 'application/json' } },
-        );
-      }
-      throw new Error(`Unexpected fetch ${url}`);
-    });
+    const fetchMock = vi.fn(
+      async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+        if (url.endsWith('/api/v1/auth/session')) {
+          return new Response(
+            JSON.stringify({ authenticated: true, csrf_token: 'csrf-test' }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } },
+          );
+        }
+        if (
+          url.includes(`/api/v1/temporal/schedules/${SCHEDULE_REF}/reminder`)
+        ) {
+          expect(init?.method).toBe('PUT');
+          const body = JSON.parse(String(init?.body ?? '{}')) as Record<
+            string,
+            unknown
+          >;
+          expect(body.enabled).toBe(true);
+          expect(body.lead_minutes).toBe(15);
+          return new Response(
+            JSON.stringify({
+              reminder_ref: '0199a111-1111-7111-8111-111111111122',
+              schedule_ref: SCHEDULE_REF,
+              material_state_ref: '0199a111-1111-7111-8111-111111111123',
+              enabled: true,
+              lead_minutes: 15,
+              schedule_starts_at: '2026-09-30T19:00:00Z',
+              due_at: '2026-09-30T18:45:00Z',
+              disposition_code: 'pending',
+              replayed: false,
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } },
+          );
+        }
+        throw new Error(`Unexpected fetch ${url}`);
+      },
+    );
     vi.stubGlobal('fetch', fetchMock);
 
     const { activityRequests } = renderEntry([], true);
@@ -293,7 +310,9 @@ describe('Temporal Create U2 entry', () => {
 
     await waitFor(() => expect(activityRequests).toHaveLength(1));
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
-    expect(document.querySelector('[data-temporal-create="composer"]')).toBeNull();
+    expect(
+      document.querySelector('[data-temporal-create="composer"]'),
+    ).toBeNull();
   });
 
   it('routes a scheduled Event through the U2 Event endpoint', async () => {
@@ -350,7 +369,9 @@ describe('Temporal Create U2 entry', () => {
     expect(screen.queryByLabelText('Ricorda')).toBeNull();
 
     fireEvent.click(screen.getByRole('radio', { name: 'Orario' }));
-    expect((screen.getByLabelText('Ripeti') as HTMLSelectElement).value).toBe('none');
+    expect((screen.getByLabelText('Ripeti') as HTMLSelectElement).value).toBe(
+      'none',
+    );
     fireEvent.click(screen.getByRole('radio', { name: 'Da collocare' }));
 
     fireEvent.change(screen.getByPlaceholderText('Titolo'), {

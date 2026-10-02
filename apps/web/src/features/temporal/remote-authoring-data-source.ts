@@ -13,6 +13,7 @@ import type {
   TemporalAuthoringSchedule,
   TemporalAuthoredActivityResult,
   TemporalAuthoredEventResult,
+  TemporalSessionCaptureMode,
 } from './authoring-data-source';
 import type {
   TemporalAcceptedSchedulePlacement,
@@ -29,10 +30,7 @@ const UUID_V7 =
 const COLOR = /^#[0-9A-F]{6}$/;
 
 export type TemporalAuthoringRemoteFailureKind =
-  | 'transport'
-  | 'http'
-  | 'protocol'
-  | 'authentication';
+  'transport' | 'http' | 'protocol' | 'authentication';
 
 export class TemporalAuthoringRemoteError extends Error {
   public constructor(
@@ -181,7 +179,9 @@ function localDateTime(value: unknown, field: string) {
   }
 }
 
-function acceptedPlacement(payload: unknown): TemporalAcceptedSchedulePlacement {
+function acceptedPlacement(
+  payload: unknown,
+): TemporalAcceptedSchedulePlacement {
   if (!isRecord(payload) || typeof payload.kind !== 'string') {
     throw new TemporalAuthoringRemoteError(
       'protocol',
@@ -242,7 +242,10 @@ function acceptedPlacement(payload: unknown): TemporalAcceptedSchedulePlacement 
         'starts_local_at',
       );
       const endsLocalAt = localDateTime(payload.ends_local_at, 'ends_local_at');
-      const resolvedStartAt = instant(payload.resolved_start_at, 'resolved_start_at');
+      const resolvedStartAt = instant(
+        payload.resolved_start_at,
+        'resolved_start_at',
+      );
       const resolvedEndAt = instant(payload.resolved_end_at, 'resolved_end_at');
       if (
         Temporal.PlainDateTime.compare(startsLocalAt, endsLocalAt) >= 0 ||
@@ -345,6 +348,93 @@ function schedule(value: unknown): TemporalAuthoringSchedule | null {
   });
 }
 
+function schedules(
+  value: unknown,
+  field: string,
+): readonly TemporalAuthoringSchedule[] {
+  if (!Array.isArray(value)) {
+    throw new TemporalAuthoringRemoteError(
+      'protocol',
+      `${field} must be an array.`,
+    );
+  }
+  return Object.freeze(
+    value.map((entry) => {
+      const parsed = schedule(entry);
+      if (parsed === null) {
+        throw new TemporalAuthoringRemoteError(
+          'protocol',
+          `${field} must contain schedules.`,
+        );
+      }
+      return parsed;
+    }),
+  );
+}
+
+function captureMode(value: unknown): TemporalSessionCaptureMode {
+  if (
+    value === 'disabled' ||
+    value === 'record' ||
+    value === 'live' ||
+    value === 'record_and_live'
+  ) {
+    return value;
+  }
+  throw new TemporalAuthoringRemoteError(
+    'protocol',
+    'Activity session_capture_mode is unsupported.',
+  );
+}
+
+function authoredChild(value: unknown) {
+  if (!isRecord(value)) {
+    throw new TemporalAuthoringRemoteError(
+      'protocol',
+      'Activity child must be an object.',
+    );
+  }
+  exactKeys(value, [
+    'activity_ref',
+    'title',
+    'decomposition_ref',
+    'decomposition_state_ref',
+    'requirement_code',
+    'presentation_order',
+    'schedule',
+    'planned_slices',
+    'session_capture_mode',
+  ]);
+  if (
+    typeof value.title !== 'string' ||
+    !value.title.trim() ||
+    (value.requirement_code !== 'required' &&
+      value.requirement_code !== 'optional') ||
+    typeof value.presentation_order !== 'number' ||
+    !Number.isInteger(value.presentation_order) ||
+    value.presentation_order < 1
+  ) {
+    throw new TemporalAuthoringRemoteError(
+      'protocol',
+      'Activity child metadata is invalid.',
+    );
+  }
+  return Object.freeze({
+    activityRef: uuid(value.activity_ref, 'activity_ref'),
+    title: value.title,
+    decompositionRef: uuid(value.decomposition_ref, 'decomposition_ref'),
+    decompositionStateRef: uuid(
+      value.decomposition_state_ref,
+      'decomposition_state_ref',
+    ),
+    requirementCode: value.requirement_code,
+    presentationOrder: value.presentation_order,
+    schedule: schedule(value.schedule),
+    plannedSlices: schedules(value.planned_slices, 'planned_slices'),
+    sessionCaptureMode: captureMode(value.session_capture_mode),
+  });
+}
+
 const COMMON_RESPONSE_KEYS = [
   'title',
   'created_at',
@@ -385,7 +475,10 @@ function item(
       payload.life_area_color_code,
       'life_area_color_code',
     ),
-    lifeAreaRevision: positiveRevision(payload.life_area_revision, 'life_area_revision'),
+    lifeAreaRevision: positiveRevision(
+      payload.life_area_revision,
+      'life_area_revision',
+    ),
   });
 }
 
@@ -396,7 +489,13 @@ function activityResult(payload: unknown): TemporalAuthoredActivityResult {
       'Activity authoring response must be an object.',
     );
   }
-  exactKeys(payload, ['activity_ref', ...COMMON_RESPONSE_KEYS]);
+  exactKeys(payload, [
+    'activity_ref',
+    ...COMMON_RESPONSE_KEYS,
+    'session_capture_mode',
+    'planned_slices',
+    'children',
+  ]);
   if (typeof payload.replayed !== 'boolean') {
     throw new TemporalAuthoringRemoteError(
       'protocol',
@@ -406,6 +505,17 @@ function activityResult(payload: unknown): TemporalAuthoredActivityResult {
   return Object.freeze({
     item: item(payload, 'activity_ref'),
     schedule: schedule(payload.schedule),
+    sessionCaptureMode: captureMode(payload.session_capture_mode),
+    plannedSlices: schedules(payload.planned_slices, 'planned_slices'),
+    children: (() => {
+      if (!Array.isArray(payload.children)) {
+        throw new TemporalAuthoringRemoteError(
+          'protocol',
+          'Activity children must be an array.',
+        );
+      }
+      return Object.freeze(payload.children.map(authoredChild));
+    })(),
     replayed: payload.replayed,
   });
 }
@@ -521,9 +631,33 @@ function requestBody(
     item_color_code: request.itemColorCode?.toUpperCase() ?? null,
     life_area: lifeAreaPayload(request.lifeArea) ?? null,
     placement:
-      request.placement === undefined ? null : serializePlacement(request.placement),
+      request.placement === undefined
+        ? null
+        : serializePlacement(request.placement),
   };
   if ('agendaParts' in request) result.agenda_parts = [...request.agendaParts];
+  else {
+    if (request.sessionCaptureMode !== undefined) {
+      result.session_capture_mode = request.sessionCaptureMode;
+    }
+    if (request.plannedSlices !== undefined) {
+      result.planned_slices = request.plannedSlices.map(serializePlacement);
+    }
+    if (request.children !== undefined) {
+      result.children = request.children.map((child) => ({
+        title: child.title.trim(),
+        description: child.description?.trim() || null,
+        requirement_code: child.requirementCode ?? 'required',
+        presentation_order: child.presentationOrder ?? 1,
+        placement:
+          child.placement === undefined
+            ? null
+            : serializePlacement(child.placement),
+        planned_slices: child.plannedSlices?.map(serializePlacement) ?? [],
+        session_capture_mode: child.sessionCaptureMode ?? null,
+      }));
+    }
+  }
   return result;
 }
 
@@ -601,7 +735,9 @@ async function csrfToken(
 
 function validateCommon(request: TemporalAuthorActivityRequest): void {
   if (!request.operationId.trim() || request.operationId.trim().length > 200) {
-    throw new RangeError('Authoring operation id must contain 1 to 200 characters.');
+    throw new RangeError(
+      'Authoring operation id must contain 1 to 200 characters.',
+    );
   }
   if (!request.title.trim() || request.title.trim().length > 300) {
     throw new RangeError('Authoring title must contain 1 to 300 characters.');
@@ -644,7 +780,10 @@ export function createRemoteTemporalAuthoringDataSource(
       invalidateTemporalTimelineRead();
       return result;
     },
-    async authorEvent(request: TemporalAuthorEventRequest, signal?: AbortSignal) {
+    async authorEvent(
+      request: TemporalAuthorEventRequest,
+      signal?: AbortSignal,
+    ) {
       const result = eventResult(await mutate(EVENT_ENDPOINT, request, signal));
       invalidateTemporalTimelineRead();
       return result;

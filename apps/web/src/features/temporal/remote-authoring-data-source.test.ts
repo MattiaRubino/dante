@@ -45,6 +45,9 @@ describe('remote U2 authoring data source', () => {
                 ends_local_at: '2026-10-02T01:00:00',
               },
             },
+            session_capture_mode: 'record',
+            planned_slices: [],
+            children: [],
             replayed: false,
           },
           201,
@@ -70,6 +73,8 @@ describe('remote U2 authoring data source', () => {
     expect(result.item.location).toBe('Roma');
     expect(result.item.colorCode).toBe('#FF7A00');
     expect(result.schedule?.placement.kind).toBe('floating-local-interval');
+    expect(result.sessionCaptureMode).toBe('record');
+    expect(result.children).toEqual([]);
 
     const [, request] = fetchFn.mock.calls[1] ?? [];
     expect(request?.method).toBe('POST');
@@ -127,9 +132,99 @@ describe('remote U2 authoring data source', () => {
     expect(result.item.lifeAreaRef).toBe(SCHEDULE_REF);
     expect(result.item.lifeAreaColorCode).toBe('#8A4FFF');
     expect(result.agendaParts).toEqual(['Decisioni']);
-    expect(JSON.parse(String(fetchFn.mock.calls[1]?.[1]?.body)).life_area).toEqual({
+    expect(
+      JSON.parse(String(fetchFn.mock.calls[1]?.[1]?.body)).life_area,
+    ).toEqual({
       new_name: 'Lavoro',
       color_code: '#8A4FFF',
     });
+  });
+
+  it('round trips atomic Activity children, planned slices and capture modes', async () => {
+    const planned = {
+      schedule_ref: SCHEDULE_REF,
+      placement_material_state_ref: MATERIAL_REF,
+      placement: {
+        kind: 'absolute_interval',
+        starts_at: '2026-10-02T10:00:00Z',
+        ends_at: '2026-10-02T10:30:00Z',
+      },
+    };
+    const fetchFn = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(authenticatedSession())
+      .mockResolvedValueOnce(
+        jsonResponse(
+          {
+            activity_ref: ACTIVITY_REF,
+            title: 'Progetto',
+            created_at: '2026-10-02T08:00:00Z',
+            description: null,
+            location: null,
+            color_code: null,
+            life_area_ref: null,
+            life_area_assignment_revision: null,
+            life_area_color_code: null,
+            life_area_revision: null,
+            schedule: null,
+            planned_slices: [planned],
+            session_capture_mode: 'disabled',
+            children: [
+              {
+                activity_ref: SCHEDULE_REF,
+                title: 'Fase uno',
+                decomposition_ref: MATERIAL_REF,
+                decomposition_state_ref: ACTIVITY_REF,
+                requirement_code: 'required',
+                presentation_order: 1,
+                schedule: null,
+                planned_slices: [planned],
+                session_capture_mode: 'live',
+              },
+            ],
+            replayed: false,
+          },
+          201,
+        ),
+      );
+    const source = createRemoteTemporalAuthoringDataSource(fetchFn);
+
+    const result = await source.authorActivity({
+      operationId: 'u6-atomic-1',
+      title: 'Progetto',
+      sessionCaptureMode: 'disabled',
+      plannedSlices: [
+        {
+          kind: 'absolute-interval',
+          startsAt: Temporal.Instant.from('2026-10-02T10:00:00Z'),
+          endsAt: Temporal.Instant.from('2026-10-02T10:30:00Z'),
+        },
+      ],
+      children: [{ title: 'Fase uno', sessionCaptureMode: 'live' }],
+    });
+
+    expect(result.sessionCaptureMode).toBe('disabled');
+    expect(result.plannedSlices).toHaveLength(1);
+    expect(result.children[0]?.requirementCode).toBe('required');
+    expect(result.children[0]?.sessionCaptureMode).toBe('live');
+    const body = JSON.parse(String(fetchFn.mock.calls[1]?.[1]?.body));
+    expect(body.planned_slices).toEqual([
+      {
+        kind: 'absolute_interval',
+        starts_at: '2026-10-02T10:00:00Z',
+        ends_at: '2026-10-02T10:30:00Z',
+      },
+    ]);
+    expect(body.children).toEqual([
+      {
+        title: 'Fase uno',
+        description: null,
+        requirement_code: 'required',
+        presentation_order: 1,
+        placement: null,
+        planned_slices: [],
+        session_capture_mode: 'live',
+      },
+    ]);
   });
 });

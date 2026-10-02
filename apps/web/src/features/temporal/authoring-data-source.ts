@@ -22,7 +22,25 @@ export type TemporalAuthoringBaseRequest = Readonly<{
   placement?: TemporalSchedulePlacementInput;
 }>;
 
-export type TemporalAuthorActivityRequest = TemporalAuthoringBaseRequest;
+export type TemporalAuthorActivityChildRequest = Readonly<{
+  title: string;
+  description?: string;
+  requirementCode?: 'required' | 'optional';
+  presentationOrder?: number;
+  placement?: TemporalSchedulePlacementInput;
+  plannedSlices?: readonly TemporalSchedulePlacementInput[];
+  sessionCaptureMode?: TemporalSessionCaptureMode;
+}>;
+
+export type TemporalSessionCaptureMode =
+  'disabled' | 'record' | 'live' | 'record_and_live';
+
+export type TemporalAuthorActivityRequest = TemporalAuthoringBaseRequest &
+  Readonly<{
+    sessionCaptureMode?: TemporalSessionCaptureMode;
+    plannedSlices?: readonly TemporalSchedulePlacementInput[];
+    children?: readonly TemporalAuthorActivityChildRequest[];
+  }>;
 
 export type TemporalAuthorEventRequest = TemporalAuthoringBaseRequest &
   Readonly<{
@@ -48,13 +66,32 @@ export type TemporalAuthoringSchedule = Readonly<{
   placement: TemporalAcceptedSchedulePlacement;
 }>;
 
-export type TemporalAuthoredActivityResult = Readonly<{
+type TemporalAuthoredItemResult = Readonly<{
   item: TemporalAuthoringItem;
   schedule: TemporalAuthoringSchedule | null;
   replayed: boolean;
 }>;
 
-export type TemporalAuthoredEventResult = TemporalAuthoredActivityResult &
+export type TemporalAuthoredActivityChild = Readonly<{
+  activityRef: string;
+  title: string;
+  decompositionRef: string;
+  decompositionStateRef: string;
+  requirementCode: 'required' | 'optional';
+  presentationOrder: number;
+  schedule: TemporalAuthoringSchedule | null;
+  plannedSlices: readonly TemporalAuthoringSchedule[];
+  sessionCaptureMode: TemporalSessionCaptureMode;
+}>;
+
+export type TemporalAuthoredActivityResult = TemporalAuthoredItemResult &
+  Readonly<{
+    sessionCaptureMode: TemporalSessionCaptureMode;
+    plannedSlices: readonly TemporalAuthoringSchedule[];
+    children: readonly TemporalAuthoredActivityChild[];
+  }>;
+
+export type TemporalAuthoredEventResult = TemporalAuthoredItemResult &
   Readonly<{
     agendaRevision: number;
     agendaParts: readonly string[];
