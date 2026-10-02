@@ -332,3 +332,66 @@ Logical relationship contract
 ```
 
 No UI control may be presented as persisted until the corresponding canonical path exists.
+
+## 14. 2026-10-02 planning/UI clarification — future “Sessione” is not Session truth
+
+The product may use the natural label **Sessione** while the user is configuring future execution inside Create/Advanced. That label does not authorize a future B08 Session row.
+
+Canonical rule:
+
+```text
+future planned execution slice
+= Schedule placement / planning structure
+
+actual execution episode
+= Session
+```
+
+Therefore a Create tree may visually contain rows such as:
+
+```text
+Activity: Studio inglese
+├── Sessione pianificata A   18:00-18:30
+├── Sessione pianificata B   18:45-19:15
+└── Sessione pianificata C   19:30-20:00
+```
+
+while persistence still preserves:
+
+```text
+planned slice != Session record
+```
+
+A B08 Session identity is materialized only when execution truth exists through a supported capture path:
+
+```text
+live Start/Play
+manual retrospective recording
+external import
+approved inferred capture
+```
+
+`Play` is therefore required only for the **live** capture path, not for Session semantics in general.
+
+If the planned interval passes and no Session/Actual is recorded, the system must preserve the plan/history but must not infer any of the following automatically:
+
+```text
+not done
+skipped
+failed
+completed
+Actual(realization_occurred=false)
+Reconciliation
+```
+
+Absence of execution truth remains unknown unless a separate configured policy, explicit user action or accepted evidence establishes more.
+
+A product follow-up queue may surface the missing/ambiguous state for review, but that queue is a derived product projection and is not itself a Session, Actual, Outcome, Confirmation or Reconciliation.
+
+Event keeps its distinct default path:
+
+```text
+Event -> Schedule -> Actual event occurrence / attendance / outcome
+```
+
+No Event-owned B08 Session is created merely because the Event occupies time. A Session may only be related to an Event when a genuinely distinct executable episode exists; that relation is outside this bounded Activity implementation unless separately authorized.
