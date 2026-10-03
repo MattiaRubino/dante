@@ -216,6 +216,8 @@ export function SessionSubjectControls({
       .finally(() => setPending(false));
   };
 
+  if (!allowLive && !allowManual && openSession === null) return null;
+
   return (
     <div
       className={`timeline-session-controls${card ? ' is-card' : ''}`}
@@ -225,14 +227,16 @@ export function SessionSubjectControls({
         className="timeline-session-controls__runtime-actions"
         aria-label={`Sessione · ${label}`}
       >
-        {!allowLive ? null : openSession === null ? (
-          <RuntimeButton
-            label="Avvia"
-            symbol="▶"
-            pending={pending}
-            interactive={interactive}
-            onClick={start}
-          />
+        {openSession === null ? (
+          allowLive ? (
+            <RuntimeButton
+              label="Avvia"
+              symbol="▶"
+              pending={pending}
+              interactive={interactive}
+              onClick={start}
+            />
+          ) : null
         ) : openSession.paused ? (
           <RuntimeButton
             label="Riprendi"

@@ -138,7 +138,6 @@ function CaptureControls({
   title: string;
   mode: CaptureMode;
 }>) {
-  if (mode === 'disabled') return null;
   return (
     <SessionSubjectControls
       kind="activity"

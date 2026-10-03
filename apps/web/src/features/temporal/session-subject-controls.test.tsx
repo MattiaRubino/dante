@@ -66,6 +66,20 @@ afterEach(() => {
 });
 
 describe('SessionSubjectControls B08-D whole workflow', () => {
+  it('still closes a previously open live Session after switching to record mode', async () => {
+    source.list.mockResolvedValue([session()]);
+    render(
+      <SessionSubjectControls
+        kind="activity"
+        subjectRef={activityRef}
+        label="Focus"
+        allowLive={false}
+        allowManual
+      />,
+    );
+    expect(await screen.findByRole('button', { name: 'Termina' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Avvia' })).toBeNull();
+  });
   it('records a past Activity Session only with manual capture enabled', async () => {
     source.list.mockResolvedValue([]);
     source.recordManual.mockResolvedValue(
