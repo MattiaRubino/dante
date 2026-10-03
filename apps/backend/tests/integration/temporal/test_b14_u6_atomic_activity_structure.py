@@ -18,6 +18,7 @@ from dante.modules.temporal.authoring import (
 )
 from dante.modules.temporal.decomposition_api import get_activity_children
 from dante.modules.temporal.schedule import AbsoluteIntervalPlacement
+from dante.modules.temporal.temporal_constraint import TemporalConstraintApplication
 from dante.platform.database.runtime import create_database_runtime
 
 pytestmark = pytest.mark.postgres
@@ -65,6 +66,7 @@ async def test_root_children_and_planned_slices_are_atomic_and_replayable(
             planned_slices=(first_slice, second_slice),
             children=children,
             session_capture_mode="record_and_live",
+            minimum_session_duration_microseconds=25 * 60 * 1_000_000,
         )
         assert not created.replayed
         assert len(created.children) == 2
@@ -81,6 +83,7 @@ async def test_root_children_and_planned_slices_are_atomic_and_replayable(
             planned_slices=(first_slice, second_slice),
             children=children,
             session_capture_mode="record_and_live",
+            minimum_session_duration_microseconds=25 * 60 * 1_000_000,
         )
         assert replay.replayed
         assert replay.item.subject_native_ref == created.item.subject_native_ref
@@ -99,14 +102,39 @@ async def test_root_children_and_planned_slices_are_atomic_and_replayable(
             child.item.subject_native_ref for child in created.children
         ]
         assert len(current.schedules) == 3
-        assert [(schedule.role_code, schedule.presentation_order) for schedule in current.schedules] == [
-            ("envelope", 0), ("planned", 1), ("planned", 2),
+        assert [
+            (schedule.role_code, schedule.presentation_order) for schedule in current.schedules
+        ] == [
+            ("envelope", 0),
+            ("planned", 1),
+            ("planned", 2),
         ]
         assert len(current.children[0].schedules) == 1
         assert current.children[0].schedules[0].role_code == "envelope"
         assert current.children[0].session_capture_mode == "live"
         assert len(current.children[1].schedules) == 1
         assert current.children[1].schedules[0].role_code == "planned"
+        rules = await TemporalConstraintApplication(
+            runtime.session_factory
+        ).list_constraints_by_subject(
+            self_person_ref=actor,
+            subject_native_ref=created.item.subject_native_ref,
+        )
+        assert len(rules) == 1
+        assert rules[0].current_rule is not None
+        assert rules[0].current_rule.constrained_facet == "session.active_duration"
+        assert rules[0].current_rule.duration_microseconds == 25 * 60 * 1_000_000
+        with pytest.raises(TemporalAuthoringOperationIdReuseError):
+            await authoring.create_activity(
+                self_person_ref=actor,
+                operation_id="u6:atomic:tree",
+                title="Workshop",
+                placement=root_window,
+                planned_slices=(first_slice, second_slice),
+                children=children,
+                session_capture_mode="record_and_live",
+                minimum_session_duration_microseconds=30 * 60 * 1_000_000,
+            )
         with pytest.raises(TemporalAuthoringOperationIdReuseError):
             await authoring.create_activity(
                 self_person_ref=actor,

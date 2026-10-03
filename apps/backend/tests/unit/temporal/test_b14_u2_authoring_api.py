@@ -49,6 +49,25 @@ def test_activity_authoring_accepts_real_unassigned_state() -> None:
     assert payload.placement.ends_local_at == datetime(2026, 10, 2, 1, 0)
 
 
+def test_activity_authoring_accepts_only_positive_session_minimum() -> None:
+    payload = AuthorActivityRequest.model_validate(
+        {
+            "operation_id": "u6:session-minimum",
+            "title": "Workshop",
+            "minimum_session_duration_microseconds": 1_500_000_000,
+        }
+    )
+    assert payload.minimum_session_duration_microseconds == 1_500_000_000
+    with pytest.raises(ValidationError):
+        AuthorActivityRequest.model_validate(
+            {
+                "operation_id": "u6:session-minimum",
+                "title": "Workshop",
+                "minimum_session_duration_microseconds": 0,
+            }
+        )
+
+
 def test_event_authoring_exposes_same_location_description_and_organization_shape() -> None:
     payload = AuthorEventRequest.model_validate(
         {

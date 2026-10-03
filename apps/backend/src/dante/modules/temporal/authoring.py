@@ -28,7 +28,16 @@ from dante.modules.temporal.schedule import (
     _placement_payload,
     establish_schedule_in_session,
 )
-from dante.platform.database.references import NativeRef, new_native_ref
+from dante.modules.temporal.temporal_constraint import (
+    SessionMinimumDurationRule,
+    _mutate_in_session,
+)
+from dante.platform.database.references import (
+    NativeRef,
+    new_material_state_ref,
+    new_native_ref,
+    new_scoped_record_ref,
+)
 
 
 class TemporalAuthoringInputError(ValueError):
@@ -162,21 +171,25 @@ async def _schedule_role(
     presentation_order: int,
 ) -> None:
     accepted = (
-        await session.execute(
-            text("""
+        (
+            await session.execute(
+                text("""
                 SELECT * FROM dante.set_self_activity_schedule_role(
                     :actor,:activity,:schedule,:role,:position
                 )
             """),
-            {
-                "actor": self_person_ref,
-                "activity": activity_ref,
-                "schedule": schedule.schedule_ref,
-                "role": role_code,
-                "position": presentation_order,
-            },
+                {
+                    "actor": self_person_ref,
+                    "activity": activity_ref,
+                    "schedule": schedule.schedule_ref,
+                    "role": role_code,
+                    "position": presentation_order,
+                },
+            )
         )
-    ).mappings().one()
+        .mappings()
+        .one()
+    )
     # A command created before this role relation existed can replay once and
     # attach its previously implicit purpose in the same transaction.
     if bool(accepted["replayed"]) and not schedule.replayed:
@@ -584,6 +597,7 @@ class TemporalAuthoringApplication:
         agenda_parts: tuple[str, ...],
         placement: SchedulePlacement | None,
         session_capture_mode: str | None,
+        minimum_session_duration_microseconds: int | None = None,
         child_guard_mode: str | None = None,
         planned_slices: tuple[SchedulePlacement, ...] = (),
         children: tuple[ActivityChildIntent, ...] = (),
@@ -600,6 +614,14 @@ class TemporalAuthoringApplication:
             or session_capture_mode not in {"disabled", "record", "live", "record_and_live"}
         ):
             raise TemporalAuthoringInputError("Activity Session capture mode is invalid.")
+        if minimum_session_duration_microseconds is not None and (
+            subject_kind != "activity"
+            or isinstance(minimum_session_duration_microseconds, bool)
+            or not isinstance(minimum_session_duration_microseconds, int)
+            or minimum_session_duration_microseconds <= 0
+            or minimum_session_duration_microseconds > 9_223_372_036_854_775_807
+        ):
+            raise TemporalAuthoringInputError("Activity Session minimum duration is invalid.")
         if subject_kind != "activity" and (planned_slices or children):
             raise TemporalAuthoringInputError("Only an Activity can own planned execution rows.")
         if child_guard_mode is not None and (
@@ -622,11 +644,17 @@ class TemporalAuthoringApplication:
             ):
                 raise TemporalAuthoringInputError("Child execution configuration is invalid.")
         structure_digest = None
-        if children or planned_slices or child_guard_mode is not None:
+        if (
+            children
+            or planned_slices
+            or child_guard_mode is not None
+            or minimum_session_duration_microseconds is not None
+        ):
             structure_digest = _json_fingerprint(
                 {
                     "version": 1,
                     "child_guard_mode": child_guard_mode,
+                    "minimum_session_duration_microseconds": minimum_session_duration_microseconds,
                     "root_placement": None if placement is None else _placement_payload(placement),
                     "planned_slices": [_placement_payload(value) for value in planned_slices],
                     "children": [
@@ -699,9 +727,12 @@ class TemporalAuthoringApplication:
                         )
                     if subject_kind == "activity":
                         await _schedule_role(
-                            session, self_person_ref=self_person_ref,
-                            activity_ref=item.subject_native_ref, schedule=schedule,
-                            role_code="envelope", presentation_order=0,
+                            session,
+                            self_person_ref=self_person_ref,
+                            activity_ref=item.subject_native_ref,
+                            schedule=schedule,
+                            role_code="envelope",
+                            presentation_order=0,
                         )
                 if session_capture_mode is not None:
                     policy_operation = _derived_operation(
@@ -740,32 +771,70 @@ class TemporalAuthoringApplication:
                         raise TemporalAuthoringOperationIdReuseError(
                             "Create and execution policy replay state diverged."
                         )
+                if minimum_session_duration_microseconds is not None:
+                    minimum_rule = SessionMinimumDurationRule(
+                        duration_microseconds=minimum_session_duration_microseconds
+                    )
+                    minimum_row = await _mutate_in_session(
+                        session,
+                        family="duration",
+                        self_person_ref=self_person_ref,
+                        operation_id=_derived_operation(
+                            "b14-u6-session-minimum", normalized_operation
+                        ),
+                        fingerprint=_json_fingerprint(
+                            {
+                                "version": 1,
+                                "activity_ref": str(item.subject_native_ref),
+                                "duration_microseconds": minimum_session_duration_microseconds,
+                            }
+                        ),
+                        mutation_kind="create",
+                        subject_native_ref=item.subject_native_ref,
+                        constraint_ref=new_scoped_record_ref(),
+                        expected_material_state_ref=None,
+                        resulting_material_state_ref=new_material_state_ref(),
+                        rule=minimum_rule,
+                    )
+                    if (
+                        bool(minimum_row["replayed"]) is not replayed
+                        or minimum_row["active"] is not True
+                    ):
+                        raise TemporalAuthoringOperationIdReuseError(
+                            "Create and Session minimum replay state diverged."
+                        )
                 if child_guard_mode is not None:
                     guard_operation = _derived_operation(
                         "b14-u6-parent-guard", normalized_operation
                     )
-                    guard_fingerprint = _json_fingerprint({
-                        "version": 1,
-                        "activity_ref": str(item.subject_native_ref),
-                        "mode_code": child_guard_mode,
-                        "expected_state_ref": None,
-                    })
+                    guard_fingerprint = _json_fingerprint(
+                        {
+                            "version": 1,
+                            "activity_ref": str(item.subject_native_ref),
+                            "mode_code": child_guard_mode,
+                            "expected_state_ref": None,
+                        }
+                    )
                     guard = (
-                        (await session.execute(
-                            text("""
+                        (
+                            await session.execute(
+                                text("""
                                 SELECT * FROM dante.set_self_activity_decomposition_policy(
                                     :actor,:operation,:fingerprint,:activity,:state,:mode,NULL
                                 )
                             """),
-                            {
-                                "actor": self_person_ref,
-                                "operation": guard_operation,
-                                "fingerprint": guard_fingerprint,
-                                "activity": item.subject_native_ref,
-                                "state": uuid7(),
-                                "mode": child_guard_mode,
-                            },
-                        )).mappings().one()
+                                {
+                                    "actor": self_person_ref,
+                                    "operation": guard_operation,
+                                    "fingerprint": guard_fingerprint,
+                                    "activity": item.subject_native_ref,
+                                    "state": uuid7(),
+                                    "mode": child_guard_mode,
+                                },
+                            )
+                        )
+                        .mappings()
+                        .one()
                     )
                     if bool(guard["replayed"]) is not replayed:
                         raise TemporalAuthoringOperationIdReuseError(
@@ -787,9 +856,12 @@ class TemporalAuthoringApplication:
                             "Create and planned Schedule replay state diverged."
                         )
                     await _schedule_role(
-                        session, self_person_ref=self_person_ref,
-                        activity_ref=item.subject_native_ref, schedule=accepted,
-                        role_code="planned", presentation_order=index + 1,
+                        session,
+                        self_person_ref=self_person_ref,
+                        activity_ref=item.subject_native_ref,
+                        schedule=accepted,
+                        role_code="planned",
+                        presentation_order=index + 1,
                     )
                     planned_results.append(accepted)
 
@@ -869,9 +941,11 @@ class TemporalAuthoringApplication:
                                 "Create and child Schedule replay state diverged."
                             )
                         await _schedule_role(
-                            session, self_person_ref=self_person_ref,
+                            session,
+                            self_person_ref=self_person_ref,
                             activity_ref=child_item.subject_native_ref,
-                            schedule=child_schedule, role_code="envelope",
+                            schedule=child_schedule,
+                            role_code="envelope",
                             presentation_order=0,
                         )
                     child_slices: list[EstablishedScheduleView] = []
@@ -891,9 +965,11 @@ class TemporalAuthoringApplication:
                                 "Create and child planned Schedule replay state diverged."
                             )
                         await _schedule_role(
-                            session, self_person_ref=self_person_ref,
+                            session,
+                            self_person_ref=self_person_ref,
                             activity_ref=child_item.subject_native_ref,
-                            schedule=accepted, role_code="planned",
+                            schedule=accepted,
+                            role_code="planned",
                             presentation_order=slice_index + 1,
                         )
                         child_slices.append(accepted)
@@ -1028,6 +1104,7 @@ class TemporalAuthoringApplication:
         item_color_code: str | None = None,
         placement: SchedulePlacement | None = None,
         session_capture_mode: str | None = None,
+        minimum_session_duration_microseconds: int | None = None,
         child_guard_mode: str | None = None,
         planned_slices: tuple[SchedulePlacement, ...] = (),
         children: tuple[ActivityChildIntent, ...] = (),
@@ -1044,6 +1121,7 @@ class TemporalAuthoringApplication:
             agenda_parts=(),
             placement=placement,
             session_capture_mode=session_capture_mode,
+            minimum_session_duration_microseconds=minimum_session_duration_microseconds,
             child_guard_mode=child_guard_mode,
             planned_slices=planned_slices,
             children=children,

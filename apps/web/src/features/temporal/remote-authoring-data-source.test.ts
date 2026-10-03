@@ -195,6 +195,7 @@ describe('remote U2 authoring data source', () => {
       operationId: 'u6-atomic-1',
       title: 'Progetto',
       sessionCaptureMode: 'disabled',
+      minimumSessionDurationMicroseconds: 1_500_000_000,
       childGuardMode: 'block',
       plannedSlices: [
         {
@@ -212,6 +213,7 @@ describe('remote U2 authoring data source', () => {
     expect(result.children[0]?.requirementCode).toBe('required');
     expect(result.children[0]?.sessionCaptureMode).toBe('live');
     const body = JSON.parse(String(fetchFn.mock.calls[1]?.[1]?.body));
+    expect(body.minimum_session_duration_microseconds).toBe(1_500_000_000);
     expect(body.planned_slices).toEqual([
       {
         kind: 'absolute_interval',

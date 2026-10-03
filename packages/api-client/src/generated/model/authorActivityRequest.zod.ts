@@ -40,6 +40,8 @@ export const authorActivityRequestLifeAreaOneColorCodeOneRegExp = new RegExp(
 
 export const authorActivityRequestLifeAreaOneNewNameOneMax = 100;
 
+export const authorActivityRequestMinimumSessionDurationMicrosecondsOneMax = 9223372036854776000;
+
 export const authorActivityRequestOperationIdMax = 200;
 
 export const authorActivityRequestPlacementOneOneKindDefault = `date_span`;
@@ -353,6 +355,19 @@ export const AuthorActivityRequest = /*#__PURE__*/ zod
     location: /*#__PURE__*/ zod.optional(
       /*#__PURE__*/ zod.union([
         /*#__PURE__*/ zod.string(),
+        /*#__PURE__*/ zod.null(),
+      ]),
+    ),
+    minimum_session_duration_microseconds: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod
+          .int()
+          .check(/*#__PURE__*/ zod.gte(1))
+          .check(
+            /*#__PURE__*/ zod.lte(
+              authorActivityRequestMinimumSessionDurationMicrosecondsOneMax,
+            ),
+          ),
         /*#__PURE__*/ zod.null(),
       ]),
     ),

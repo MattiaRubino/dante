@@ -97,6 +97,9 @@ class AuthorActivityRequest(AuthorItemRequest):
     """Atomic root, direct children and planned placements."""
 
     session_capture_mode: Literal["disabled", "record", "live", "record_and_live"] | None = None
+    minimum_session_duration_microseconds: int | None = Field(
+        default=None, ge=1, le=9_223_372_036_854_775_807
+    )
     child_guard_mode: Literal["none", "confirm", "block"] | None = None
     planned_slices: list[SchedulePlacementRequest] = Field(default_factory=list, max_length=100)
     children: list[AuthorActivityChildRequest] = Field(default_factory=list, max_length=100)
@@ -379,6 +382,7 @@ async def author_activity(
             if payload.placement is None
             else _placement_from_request(payload.placement),
             session_capture_mode=payload.session_capture_mode,
+            minimum_session_duration_microseconds=payload.minimum_session_duration_microseconds,
             child_guard_mode=payload.child_guard_mode,
             planned_slices=tuple(
                 _placement_from_request(value) for value in payload.planned_slices

@@ -5,7 +5,7 @@
 - **Vertical boundary:** Home `+` creation/configuration → canonical temporal truth → Timeline projection/actions → bounded lifecycle completion
 - **Completed functional frontier:** B12 ✅ CLOSED / qualified user-reported B12-D acceptance 2026-09-30
 - **Current block:** B14 + B07 user-guided product/UI consolidation
-- **U6:** ACTIVE / CANDIDATE at `_102`. B10 `Da risolvere`, direct Activity structure, typed Schedule-based planned execution, Session capture policy, parent Actual guard, manual/live Session surfaces and canonical readback are implemented. The `_102` PostgreSQL/catalog gate and real-app acceptance are pending. See `timeline-temporal-operational-b14-u6-candidate-2026-10-02.md`.
+- **U6:** ACTIVE / CANDIDATE at `_102`. B10 `Da risolvere`, direct Activity structure, typed Schedule-based planned execution, Session capture policy, parent Actual guard, manual/live Session surfaces and canonical readback are implemented. The focused `_102` PostgreSQL/catalog gate passed 9 tests at `39c846d0`. A follow-up Advanced Create Session minimum combination still needs PostgreSQL proof; full real-app acceptance remains pending. See `timeline-temporal-operational-b14-u6-candidate-2026-10-02.md`.
 - **Current gate:** B12-D and B12 closed on qualified user-reported acceptance; B14/B07 is a live user-directed implementation cycle
 - **B14/B07 working ledger:** `docs/workstreams/timeline-temporal-operational-b14-ui-consolidation-2026-09-30.md`
 - **B12 block scope:** `docs/workstreams/timeline-temporal-operational-b12-scope-2026-09-29.md`

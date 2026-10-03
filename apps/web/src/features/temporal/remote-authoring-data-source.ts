@@ -654,6 +654,10 @@ function requestBody(
     if (request.sessionCaptureMode !== undefined) {
       result.session_capture_mode = request.sessionCaptureMode;
     }
+    if (request.minimumSessionDurationMicroseconds !== undefined) {
+      result.minimum_session_duration_microseconds =
+        request.minimumSessionDurationMicroseconds;
+    }
     if (request.childGuardMode !== undefined) {
       result.child_guard_mode = request.childGuardMode;
     }

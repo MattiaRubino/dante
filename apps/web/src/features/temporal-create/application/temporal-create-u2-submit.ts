@@ -52,7 +52,27 @@ export function temporalCreateU2QuickIntentSupported(
 
   const defaults = defaultFieldsFor(fields);
   if (!sameJson(fields.scheduling, defaults.scheduling)) return false;
-  if (!sameJson(fields.execution, defaults.execution)) return false;
+  if (
+    fields.execution.sessionMode === 'indivisible' &&
+    fields.execution.minSessionMinutes !== defaults.execution.minSessionMinutes
+  )
+    return false;
+  if (
+    !sameJson(
+      {
+        ...fields.execution,
+        sessionMode: defaults.execution.sessionMode,
+        minSessionMinutes: defaults.execution.minSessionMinutes,
+      },
+      defaults.execution,
+    )
+  )
+    return false;
+  if (
+    fields.execution.sessionMode === 'splittable' &&
+    fields.kind !== 'activity'
+  )
+    return false;
 
   // Reminder is a Schedule capability applied immediately after U2 authoring;
   // every other Confirmation field still belongs to the historical Advanced
@@ -303,6 +323,12 @@ export function buildTemporalCreateU2Request(
     kind: 'activity' as const,
     request: Object.freeze({
       ...base,
+      ...(fields.execution.sessionMode === 'splittable'
+        ? {
+            minimumSessionDurationMicroseconds:
+              fields.execution.minSessionMinutes * 60 * 1_000_000,
+          }
+        : {}),
       ...(temporalCreateHasU6Structure(draft)
         ? {
             sessionCaptureMode: draft.activityStructure.captureMode,

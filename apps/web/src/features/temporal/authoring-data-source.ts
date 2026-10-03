@@ -38,6 +38,7 @@ export type TemporalSessionCaptureMode =
 export type TemporalAuthorActivityRequest = TemporalAuthoringBaseRequest &
   Readonly<{
     sessionCaptureMode?: TemporalSessionCaptureMode;
+    minimumSessionDurationMicroseconds?: number;
     childGuardMode?: 'none' | 'confirm' | 'block';
     plannedSlices?: readonly TemporalSchedulePlacementInput[];
     children?: readonly TemporalAuthorActivityChildRequest[];
