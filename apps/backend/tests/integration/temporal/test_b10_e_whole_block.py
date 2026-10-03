@@ -276,7 +276,8 @@ async def test_b10_e_chain_is_explicit_layered_and_history_preserving(
             counts = connection.execute(
                 """
                 SELECT
-                  (SELECT count(*) FROM dante.session WHERE subject_native_ref=%s),
+                  (SELECT count(*) FROM dante.session_execution_subject
+                     WHERE subject_native_ref=%s),
                   (SELECT count(*) FROM dante.actual WHERE subject_native_ref=%s),
                   (SELECT count(*) FROM dante.outcome WHERE actual_ref=%s),
                   (SELECT count(*) FROM dante.confirmation WHERE outcome_ref=%s),
