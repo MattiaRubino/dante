@@ -317,3 +317,7 @@ B12 block scope and B12-A diagnosis scope are published in `timeline-temporal-op
 - PostgreSQL remains canonical truth
 - distinguish proven persistence/domain semantics from user-reported product acceptance
 - repository HEAD is source of truth before any write
+
+## B14-U6 continuation, 2026-10-03
+
+Branch `feature/timeline-temporal-operational` implementation checkpoint `64916cf2882323b7e4dd29ac5e9e42b551565273` follows the `_101` manual Session and execution-policy CHECK-name repair at `c7fa7209faa6e36b8b1a3c21ae52c68e73c6e7c6`. The user-run `_100` gate reported 12 passed and two exact-catalog failures caused by `_97` CHECK naming expansion. The `_101` forward rename is published but not yet PostgreSQL-proven. Follow the U6 candidate checkpoint for scope, verification and open acceptance.

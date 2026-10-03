@@ -37,3 +37,17 @@ containment on subsequent Schedule changes, B10 guard admission, Advanced
 Create, post-create runtime policy, further explicitly configured queue
 reasons, Event regression and complete local/real-app acceptance. Do not call
 U6 closed based on this queue checkpoint.
+
+## Continuation — 2026-10-03, candidate `_101`
+
+Published implementation checkpoint `64916cf2882323b7e4dd29ac5e9e42b551565273` includes:
+
+- direct Activity children with full Activity identity and required/optional ordering;
+- parent window containment, direct parent Actual `none/confirm/block` guard, and explicit `disabled/record/live/record_and_live` Activity capture policies;
+- atomic authoring of root, children and future Schedule-based planned execution slices, with canonical reload in Activity details;
+- post-create live Session lifecycle and retrospective manual Activity Session recording; manual rows are B08 Sessions with past start/end, never future planning or B10 Actual;
+- B10 Reconciliation `Da risolvere` source and guarded owning action, with no production fixture rows.
+
+The user-run `_100` subset passed 12 tests and failed two catalog assertions. Six `_97` execution-policy CHECK constraints retained expanded Alembic names; `_101` renames them forward without editing the applied revision. `_101` also adds the manual Session receipt/function, Dictionary, mapping, catalog expectations, OpenAPI and generated client. Its PostgreSQL/catalog gate has been requested from the user and is **pending**. Web-focused tests (including manual/root/child controls and policy transition) and both TypeScript typechecks passed in the agent clone. The agent's temporary Python 3.14 interpreter was removed by the scratch runtime overnight, so the final backend non-PostgreSQL rerun and deterministic full-repository generation check cannot be claimed here; OpenAPI export and Orval generation ran before that runtime reset.
+
+Time passing without execution creates no Session or Actual. No explicit planned-execution follow-up policy was added, so the queue does not emit `planned_execution_review`. Current structure readback enumerates accepted Schedules by Activity owner but the canonical Schedule record does not encode the authoring UI role of root envelope versus planned slice; the UI uses the truthful generic Schedule label. The existing B04 Advanced Session minimum-duration configuration cannot be combined with the U6 structure in one Create command and shows a blocking explanation. These are remaining product integration limits, along with complete user-run PostgreSQL and real-app acceptance. Keep U6 ACTIVE / CANDIDATE.
