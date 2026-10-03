@@ -14,6 +14,8 @@ export const authorActivityChildRequestPlacementOneThreeZoneIdMax = 200;
 
 export const authorActivityChildRequestPlacementOneFourKindDefault = `absolute_interval`;
 export const authorActivityChildRequestPlacementOneFiveKindDefault = `coarse_local_period`;
+export const authorActivityChildRequestPlannedSliceNamesMax = 100;
+
 export const authorActivityChildRequestPlannedSlicesItemOneKindDefault = `date_span`;
 export const authorActivityChildRequestPlannedSlicesItemTwoKindDefault = `floating_local_interval`;
 export const authorActivityChildRequestPlannedSlicesItemThreeDisambiguationDefault = `reject`;
@@ -104,6 +106,15 @@ export const AuthorActivityChildRequest = /*#__PURE__*/ zod.object({
       ]),
       /*#__PURE__*/ zod.null(),
     ]),
+  ),
+  planned_slice_names: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod
+      .array(/*#__PURE__*/ zod.string())
+      .check(
+        /*#__PURE__*/ zod.maxLength(
+          authorActivityChildRequestPlannedSliceNamesMax,
+        ),
+      ),
   ),
   planned_slices: /*#__PURE__*/ zod.optional(
     /*#__PURE__*/ zod

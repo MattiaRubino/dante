@@ -16,14 +16,17 @@
   bottom: auto !important;
   left: auto !important;
   width: min(1040px, calc(100vw - 56px)) !important;
-  height: auto;
+  display: flex;
+  height: calc(100dvh - 56px);
+  flex-direction: column;
   max-height: calc(100dvh - 56px) !important;
   padding: 0 24px 24px !important;
   transform: none !important;
   border: 1px solid
     color-mix(
       in srgb,
-      var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.1)) 78%,
+      var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.1))
+        78%,
       var(--dante-semantic-color-home-chrome-active, #ea5c12)
     ) !important;
   border-radius: 18px !important;
@@ -57,7 +60,7 @@
   margin-top: 0;
   padding-top: 18px;
   padding-right: 4px;
-  padding-bottom: 82px;
+  padding-bottom: 0;
   overflow-x: hidden;
   overflow-y: auto;
   scrollbar-gutter: stable;
@@ -73,15 +76,75 @@
 
 .temporal-create-backdrop.is-advanced
   .temporal-create-composer__body
-  > .temporal-create-title-input {
+  > .temporal-create-title-row {
   order: -30;
 }
 
 .temporal-create-backdrop.is-advanced
   .temporal-create-composer__body
-  > .temporal-create-title-input
+  > .temporal-create-title-row
   + .temporal-create-field-error {
   order: -29;
+}
+
+.temporal-create-title-row {
+  width: 100%;
+  min-width: 0;
+}
+
+.temporal-create-title-row__name {
+  min-width: 0;
+}
+
+.temporal-create-title-row .temporal-create-title-input {
+  width: 100%;
+}
+
+.temporal-create-backdrop.is-advanced .temporal-create-title-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  align-items: start;
+  gap: 12px;
+}
+
+.temporal-create-title-row__tools {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.temporal-create-title-row__tools .temporal-create-reality-section {
+  width: auto;
+  min-width: 120px;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9px;
+}
+
+.temporal-create-title-row__tools .temporal-create-reality-trigger {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 22px;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.temporal-create-title-row__tools
+  .temporal-create-reality-section:has(
+    .temporal-create-reality-trigger[aria-expanded='true']
+  ) {
+  flex-basis: 100%;
+  order: 2;
 }
 
 .temporal-create-backdrop.is-advanced
@@ -124,15 +187,15 @@
 }
 
 .temporal-create-backdrop.is-advanced .temporal-create-section__heading > h3,
-.temporal-create-backdrop.is-advanced .temporal-create-section__heading > div > h3 {
+.temporal-create-backdrop.is-advanced
+  .temporal-create-section__heading
+  > div
+  > h3 {
   margin: 0;
 }
 
 .temporal-create-structure-menu {
-  position: absolute;
-  z-index: 12;
-  top: 40px;
-  left: 18px;
+  position: static;
   display: grid;
   width: min(260px, calc(100vw - 96px));
   gap: 4px;
@@ -235,24 +298,6 @@
   gap: 9px;
 }
 
-.temporal-create-reality-section details {
-  width: 100%;
-}
-
-.temporal-create-reality-section summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  cursor: pointer;
-  list-style: none;
-}
-
-.temporal-create-reality-section summary::-webkit-details-marker {
-  display: none;
-}
-
-.temporal-create-reality-section summary h3,
 .temporal-create-reality-section__body h4 {
   margin: 0;
 }
@@ -292,11 +337,11 @@
   position: sticky !important;
   z-index: 20;
   right: auto;
-  bottom: -82px;
+  bottom: 0;
   left: auto;
   order: 40;
   justify-content: flex-end;
-  margin: 8px -4px -82px;
+  margin: 8px -4px 0;
   padding: 12px 4px 16px;
   border-top: 1px solid
     var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08));
@@ -332,5 +377,14 @@
     .temporal-create-advanced
     > .temporal-create-section.is-wide {
     grid-column: auto;
+  }
+}
+
+@media (max-width: 700px) {
+  .temporal-create-backdrop.is-advanced .temporal-create-title-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .temporal-create-title-row__tools {
+    justify-content: flex-start;
   }
 }

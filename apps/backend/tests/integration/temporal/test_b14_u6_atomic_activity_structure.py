@@ -55,6 +55,7 @@ async def test_root_children_and_planned_slices_are_atomic_and_replayable(
             requirement_code="optional",
             presentation_order=2,
             planned_slices=(second_slice,),
+            planned_slice_names=("Presentazione",),
         ),
     )
     try:
@@ -64,6 +65,7 @@ async def test_root_children_and_planned_slices_are_atomic_and_replayable(
             title="Workshop",
             placement=root_window,
             planned_slices=(first_slice, second_slice),
+            planned_slice_names=("Ricerca fonti", "Preparazione"),
             children=children,
             session_capture_mode="record_and_live",
             minimum_session_duration_microseconds=25 * 60 * 1_000_000,
@@ -81,6 +83,7 @@ async def test_root_children_and_planned_slices_are_atomic_and_replayable(
             title="Workshop",
             placement=root_window,
             planned_slices=(first_slice, second_slice),
+            planned_slice_names=("Ricerca fonti", "Preparazione"),
             children=children,
             session_capture_mode="record_and_live",
             minimum_session_duration_microseconds=25 * 60 * 1_000_000,
@@ -109,11 +112,29 @@ async def test_root_children_and_planned_slices_are_atomic_and_replayable(
             ("planned", 1),
             ("planned", 2),
         ]
+        assert [schedule.display_name for schedule in current.schedules] == [
+            None,
+            "Ricerca fonti",
+            "Preparazione",
+        ]
         assert len(current.children[0].schedules) == 1
         assert current.children[0].schedules[0].role_code == "envelope"
         assert current.children[0].session_capture_mode == "live"
         assert len(current.children[1].schedules) == 1
         assert current.children[1].schedules[0].role_code == "planned"
+        assert current.children[1].schedules[0].display_name == "Presentazione"
+        with pytest.raises(TemporalAuthoringOperationIdReuseError):
+            await authoring.create_activity(
+                self_person_ref=actor,
+                operation_id="u6:atomic:tree",
+                title="Workshop",
+                placement=root_window,
+                planned_slices=(first_slice, second_slice),
+                planned_slice_names=("Altro nome", "Preparazione"),
+                children=children,
+                session_capture_mode="record_and_live",
+                minimum_session_duration_microseconds=25 * 60 * 1_000_000,
+            )
         rules = await TemporalConstraintApplication(
             runtime.session_factory
         ).list_constraints_by_subject(

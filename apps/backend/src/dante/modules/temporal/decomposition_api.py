@@ -58,6 +58,7 @@ class ActivityScheduleResponse(BaseModel):
     schedule_ref: UUID
     role_code: Literal["envelope", "planned"] | None
     presentation_order: int | None
+    display_name: str | None
     placement_material_state_ref: UUID
     temporal_form: Literal[
         "date_span", "floating_local", "named_zone_local", "absolute", "coarse_local_period"
@@ -157,20 +158,26 @@ def _problem(exc: DBAPIError) -> ProblemError:
 
 
 def _owner_schedules(
-    rows: list, activity_ref: UUID,
-    roles: dict[UUID, tuple[Literal["envelope", "planned"], int]],
+    rows: list,
+    activity_ref: UUID,
+    roles: dict[UUID, tuple[Literal["envelope", "planned"], int, str | None]],
 ) -> list[ActivityScheduleResponse]:
     return [
         ActivityScheduleResponse(
             **{key: value for key, value in row.items() if key != "subject_native_ref"},
             role_code=roles[row["schedule_ref"]][0] if row["schedule_ref"] in roles else None,
-            presentation_order=roles[row["schedule_ref"]][1] if row["schedule_ref"] in roles else None,
+            presentation_order=roles[row["schedule_ref"]][1]
+            if row["schedule_ref"] in roles
+            else None,
+            display_name=roles[row["schedule_ref"]][2] if row["schedule_ref"] in roles else None,
         )
         for row in sorted(
             (row for row in rows if row["subject_native_ref"] == activity_ref),
             key=lambda row: (
-                0 if roles.get(row["schedule_ref"], (None, 0))[0] == "envelope"
-                else 1 if roles.get(row["schedule_ref"], (None, 0))[0] == "planned"
+                0
+                if roles.get(row["schedule_ref"], (None, 0))[0] == "envelope"
+                else 1
+                if roles.get(row["schedule_ref"], (None, 0))[0] == "planned"
                 else 2,
                 roles.get(row["schedule_ref"], (None, 0))[1],
                 str(row["schedule_ref"]),
@@ -210,7 +217,9 @@ async def get_activity_children(
                 raise _not_found()
             child_guard_mode = (
                 await session.execute(
-                    text("SELECT mode_code FROM dante.get_self_activity_decomposition_policy(:actor,:parent)"),
+                    text(
+                        "SELECT mode_code FROM dante.get_self_activity_decomposition_policy(:actor,:parent)"
+                    ),
                     {"actor": context.self_person_ref, "parent": parent_activity_ref},
                 )
             ).scalar_one()
@@ -271,23 +280,31 @@ async def get_activity_children(
                 .all()
             )
             role_rows = (
-                await session.execute(
-                    text("""
+                (
+                    await session.execute(
+                        text("""
                         SELECT * FROM dante.get_self_activity_schedule_roles(
                             :actor,CAST(:subjects AS uuid[])
                         )
                     """),
-                    {
-                        "actor": context.self_person_ref,
-                        "subjects": [
-                            parent_activity_ref,
-                            *(row["child_activity_ref"] for row in rows),
-                        ],
-                    },
+                        {
+                            "actor": context.self_person_ref,
+                            "subjects": [
+                                parent_activity_ref,
+                                *(row["child_activity_ref"] for row in rows),
+                            ],
+                        },
+                    )
                 )
-            ).mappings().all()
+                .mappings()
+                .all()
+            )
             roles = {
-                row["schedule_ref"]: (row["role_code"], row["presentation_order"])
+                row["schedule_ref"]: (
+                    row["role_code"],
+                    row["presentation_order"],
+                    row["display_name"],
+                )
                 for row in role_rows
             }
             modes = {}

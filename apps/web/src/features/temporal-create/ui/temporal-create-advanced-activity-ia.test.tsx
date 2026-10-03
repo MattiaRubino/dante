@@ -62,9 +62,9 @@ describe('Temporal Create Advanced Activity IA', () => {
     expect(
       screen.getByRole('heading', { name: 'Pianificazione' }),
     ).toBeTruthy();
-    expect(
-      screen.getByRole('heading', { name: 'Realtà ed esito' }),
-    ).toBeTruthy();
+    const reality = screen.getByRole('button', { name: 'Realtà' });
+    expect(reality.closest('.temporal-create-title-row')).toBeTruthy();
+    fireEvent.click(reality);
     expect(
       screen.getByRole('heading', { name: 'Verifica esito' }),
     ).toBeTruthy();
@@ -76,7 +76,7 @@ describe('Temporal Create Advanced Activity IA', () => {
     ).toBeNull();
 
     const title = screen.getByPlaceholderText('Titolo');
-    expect(title.classList.contains('has-structure-actions')).toBe(true);
+    expect(title.closest('.temporal-create-title-row')).toBeTruthy();
     expect(
       document.querySelector('[data-create-activity-structure]'),
     ).toBeTruthy();
@@ -111,37 +111,40 @@ describe('Temporal Create Advanced Activity IA', () => {
     expect(addSession.disabled).toBe(false);
     fireEvent.click(addSession);
 
-    const sessionRow = document.querySelector<HTMLElement>(
-      '[data-create-structure-session]',
+    const sessionToggle = document.querySelector(
+      '[data-create-structure-actions]',
     );
-    if (!sessionRow) throw new Error('Expected Session configuration row.');
-
-    const sessionOptions = sessionRow.querySelector<HTMLElement>(
-      '[data-create-structure-session-options]',
-    );
-    if (!sessionOptions) throw new Error('Expected Session settings rail.');
-
-    const minimum = sessionOptions.querySelector<HTMLInputElement>(
-      '[data-create-path="execution.minSessionMinutes"]',
-    );
-    expect(minimum?.value).toBe('30');
-    if (!minimum) throw new Error('Expected Session minimum input.');
-    fireEvent.change(minimum, { target: { value: '45' } });
-    expect(minimum.value).toBe('45');
+    if (!sessionToggle)
+      throw new Error('Expected Session control beside the title.');
+    expect(
+      (
+        within(sessionToggle as HTMLElement).getByRole(
+          'checkbox',
+        ) as HTMLInputElement
+      ).checked,
+    ).toBe(true);
+    expect(
+      document.querySelector('[data-create-structure-session]'),
+    ).toBeNull();
+    expect(
+      document.querySelector(
+        '[data-create-path="execution.minSessionMinutes"]',
+      ),
+    ).toBeNull();
 
     expect(screen.queryByRole('button', { name: 'Avvia' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Pausa' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Riprendi' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Termina' })).toBeNull();
 
-    fireEvent.click(
-      screen.getByRole('button', {
-        name: 'Disabilita configurazione Sessione',
-      }),
-    );
+    fireEvent.click(within(sessionToggle as HTMLElement).getByRole('checkbox'));
     expect(
-      document.querySelector('[data-create-structure-session]'),
-    ).toBeNull();
+      (
+        within(sessionToggle as HTMLElement).getByRole(
+          'checkbox',
+        ) as HTMLInputElement
+      ).checked,
+    ).toBe(false);
 
     const split = screen.getByRole('button', { name: 'Suddivisa' });
     expect((split as HTMLButtonElement).disabled).toBe(true);

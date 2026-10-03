@@ -1,21 +1,7 @@
-.temporal-create-backdrop.is-advanced {
-  --temporal-create-structure-actions-width: clamp(220px, 30%, 320px);
-}
-
-.temporal-create-backdrop.is-advanced
-  .temporal-create-title-input.has-structure-actions {
-  width: calc(100% - var(--temporal-create-structure-actions-width) - 12px);
-  align-self: flex-start;
-}
-
 .temporal-create-advanced-structure-inline {
   order: -28;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) var(
-      --temporal-create-structure-actions-width
-    );
-  gap: 12px;
-  margin-top: -6px;
+  display: block;
+  min-width: 0;
 }
 
 .temporal-create-advanced-structure-inline__tree {
@@ -23,7 +9,6 @@
 }
 
 .temporal-create-advanced-structure-inline__branch {
-  position: relative;
   min-width: 0;
   min-height: 38px;
   padding-left: 18px;
@@ -52,8 +37,9 @@
 }
 
 .temporal-create-advanced-structure-inline__add {
-  position: relative;
-  display: inline-block;
+  display: inline-grid;
+  justify-items: start;
+  gap: 6px;
 }
 
 .temporal-create-advanced-structure-inline__add > button {
@@ -138,18 +124,15 @@
 }
 
 .temporal-create-advanced-structure-inline .temporal-create-structure-menu {
-  top: 38px;
-  left: 0;
+  position: static;
 }
 
 .temporal-create-structure-node {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) var(
-      --temporal-create-structure-actions-width
-    );
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
   gap: 12px;
-  width: calc(100% + var(--temporal-create-structure-actions-width) + 12px);
+  width: 100%;
   margin-top: 4px;
 }
 
@@ -223,7 +206,6 @@
 }
 
 @media (max-width: 700px) {
-  .temporal-create-advanced-structure-inline,
   .temporal-create-structure-node {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -269,12 +251,21 @@
   color: rgba(255, 174, 150, 0.9);
 }
 
-@media (max-width: 900px) {
-  .temporal-create-backdrop.is-advanced {
-    --temporal-create-structure-actions-width: clamp(160px, 27%, 220px);
-  }
+.temporal-create-structure-session-toggle {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9px;
+  font-size: 12px !important;
+  cursor: pointer;
+}
 
-  .temporal-create-structure-node__minimum > span:first-child {
-    display: none;
-  }
+.temporal-create-structure-session-toggle input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: #ea5c12;
 }

@@ -90,6 +90,7 @@ class AuthorActivityChildRequest(BaseModel):
     presentation_order: int = Field(default=1, ge=1)
     placement: SchedulePlacementRequest | None = None
     planned_slices: list[SchedulePlacementRequest] = Field(default_factory=list, max_length=100)
+    planned_slice_names: list[str] = Field(default_factory=list, max_length=100)
     session_capture_mode: Literal["disabled", "record", "live", "record_and_live"] | None = None
 
 
@@ -102,6 +103,7 @@ class AuthorActivityRequest(AuthorItemRequest):
     )
     child_guard_mode: Literal["none", "confirm", "block"] | None = None
     planned_slices: list[SchedulePlacementRequest] = Field(default_factory=list, max_length=100)
+    planned_slice_names: list[str] = Field(default_factory=list, max_length=100)
     children: list[AuthorActivityChildRequest] = Field(default_factory=list, max_length=100)
 
 
@@ -387,6 +389,7 @@ async def author_activity(
             planned_slices=tuple(
                 _placement_from_request(value) for value in payload.planned_slices
             ),
+            planned_slice_names=tuple(payload.planned_slice_names),
             children=tuple(
                 ActivityChildIntent(
                     title=child.title,
@@ -401,6 +404,7 @@ async def author_activity(
                     planned_slices=tuple(
                         _placement_from_request(value) for value in child.planned_slices
                     ),
+                    planned_slice_names=tuple(child.planned_slice_names),
                     session_capture_mode=child.session_capture_mode,
                 )
                 for child in payload.children

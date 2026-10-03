@@ -93,6 +93,18 @@
         "meaning": "Zero for envelope, positive order for planned slices.",
         "semantic_type": null,
         "value_contract": null
+      },
+      {
+        "name": "display_name",
+        "postgres_type": "text",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Optional user name for a future planned execution row; no actual Session identity.",
+        "semantic_type": null,
+        "value_contract": "Trimmed nonempty at most 300 characters; only planned role."
       }
     ],
     "primary_key": {
@@ -180,6 +192,14 @@
         "name": "ck_activity_schedule_role_order",
         "expression_contract": "(role_code='envelope' AND presentation_order=0) OR (role_code='planned' AND presentation_order BETWEEN 1 AND 100)",
         "reason": "Bounded ordered planned slices and single envelope position.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_activity_schedule_role_name",
+        "expression_contract": "display_name IS NULL OR (role_code='planned' AND display_name=btrim(display_name) AND display_name<>'' AND char_length(display_name)<=300)",
+        "reason": "A named planned row remains planning truth.",
         "enforced": true,
         "validated": true,
         "no_inherit": false

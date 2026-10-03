@@ -62,4 +62,22 @@ The legacy Advanced Session configuration expresses a soft minimum over a real S
 
 ## Next acceptance gate
 
+### Follow-up candidate — Advanced Activity correction and named future rows `_103`
+
+The real-app screenshots exposed an Advanced Create mismatch. The candidate now places
+the Reality control and Session enablement beside the title, keeps `+ Aggiungi`
+in normal document flow under the title with only Sub-Activity and Session choices,
+and keeps the tree and its controls within the dialog width. Technical capture-mode
+selectors and the parent-child guard selector are no longer exposed in Create.
+The Session choice adds a named planned Schedule row when the Activity starts on
+a later date; otherwise it enables Session capture, and Play on the created card
+remains the only live start action. No future B08 Session is inserted at Create.
+
+Forward-only `_103` adds an optional name to the accepted planned Schedule role.
+The atomic authoring request and self-scoped readback carry that name; idempotent
+replay rejects a changed name. Existing unnamed rows remain valid. Focused web
+tests, web/API-client typechecks, backend non-PostgreSQL contract tests and Ruff
+passed in the agent clone. PostgreSQL migration/catalog proof and real-app visual
+acceptance belong to the user's local gate and are **not yet claimed**.
+
 The previous `_102` catalog pair and the new atomic minimum each passed in focused user-run gates. Run the full affected U6, Event authoring and catalog suite together on the user's PostgreSQL installation before the real-app walkthrough. The application walkthrough follows the approved U6 gate: create a root Activity with a direct child and future planned row plus minimum Session duration; reload and inspect each owner/role; use live capture only where enabled; verify Session End does not record Activity Actual; inspect and resolve a real B10 `Da risolvere` item; verify ordinary Event remains Session-free and the Home right rail has no overflow. Record each actual observation before marking U6 accepted. U6 remains ACTIVE / CANDIDATE.

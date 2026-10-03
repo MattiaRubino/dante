@@ -60,7 +60,8 @@
         "uuid",
         "uuid",
         "text",
-        "integer"
+        "integer",
+        "text"
       ],
       "return_type": "TABLE(schedule_ref uuid, role_code text, presentation_order integer, replayed boolean)",
       "security": "DEFINER",

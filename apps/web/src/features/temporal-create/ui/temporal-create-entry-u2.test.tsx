@@ -92,6 +92,7 @@ function renderEntry(
     colorCode?: string | null;
   }[] = [],
   scheduledResult = false,
+  defaultDate = '2026-09-30',
 ) {
   const activityRequests: TemporalAuthorActivityRequest[] = [];
   const eventRequests: TemporalAuthorEventRequest[] = [];
@@ -110,7 +111,7 @@ function renderEntry(
       <HomeCreateInteractionBridge />
       <div data-home-context-create-host />
       <TemporalCreateEntry
-        defaultDate={Temporal.PlainDate.from('2026-09-30')}
+        defaultDate={Temporal.PlainDate.from(defaultDate)}
         contexts={contexts}
         authoringDataSource={source}
         onPreview={() => undefined}
@@ -128,26 +129,15 @@ function renderEntry(
 }
 
 describe('Temporal Create U2 entry', () => {
-  it('submits Advanced Activity children, guard and planned Schedule in one authoring command', async () => {
-    const { activityRequests } = renderEntry();
+  it('submits named future Session planning and a child in one authoring command', async () => {
+    const { activityRequests } = renderEntry([], false, '2132-03-06');
     fireEvent.change(screen.getByPlaceholderText('Titolo'), {
       target: { value: 'Progetto' },
     });
     fireEvent.click(screen.getByRole('button', { name: /Opzioni avanzate/ }));
     const settings = document.querySelector('[data-create-structure-actions]');
     if (!settings) throw new Error('Expected Activity settings.');
-    fireEvent.change(
-      within(settings as HTMLElement).getByLabelText('Sessioni'),
-      {
-        target: { value: 'live' },
-      },
-    );
-    fireEvent.change(
-      within(settings as HTMLElement).getByLabelText('Figli richiesti'),
-      {
-        target: { value: 'block' },
-      },
-    );
+    fireEvent.click(within(settings as HTMLElement).getByLabelText('Sessione'));
     fireEvent.click(
       screen.getByRole('button', { name: 'Aggiungi alla struttura' }),
     );
@@ -158,11 +148,15 @@ describe('Temporal Create U2 entry', () => {
     fireEvent.click(
       screen.getByRole('button', { name: 'Aggiungi alla struttura' }),
     );
-    fireEvent.click(
-      screen.getByRole('menuitem', { name: 'Sessione pianificata' }),
-    );
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Sessione' }));
     const planned = document.querySelector('[data-create-planned-session]');
     if (!planned) throw new Error('Expected planned Session.');
+    fireEvent.change(
+      within(planned as HTMLElement).getByLabelText('Nome Sessione'),
+      {
+        target: { value: 'Ricerca fonti' },
+      },
+    );
     fireEvent.change(within(planned as HTMLElement).getByLabelText('Inizio'), {
       target: { value: '09:15' },
     });
@@ -180,8 +174,9 @@ describe('Temporal Create U2 entry', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Aggiungi' }));
 
     await waitFor(() => expect(activityRequests).toHaveLength(1));
-    expect(activityRequests[0]?.sessionCaptureMode).toBe('live');
-    expect(activityRequests[0]?.childGuardMode).toBe('block');
+    expect(activityRequests[0]?.sessionCaptureMode).toBe('record_and_live');
+    expect(activityRequests[0]?.childGuardMode).toBe('none');
+    expect(activityRequests[0]?.plannedSliceNames).toEqual(['Ricerca fonti']);
     expect(activityRequests[0]?.children?.[0]).toMatchObject({
       title: 'Prima fase',
       requirementCode: 'required',

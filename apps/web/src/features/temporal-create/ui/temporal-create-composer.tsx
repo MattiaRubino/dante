@@ -16,7 +16,11 @@ import type {
   TemporalCreateSurface,
 } from '../model/temporal-create-session';
 import type { TemporalCreateU2AuthoringDraft } from '../model/temporal-create-u2-authoring';
-import { TemporalCreateAdvancedActivityStructure } from './temporal-create-advanced-activity-structure';
+import {
+  TemporalCreateAdvancedActivityHeaderActions,
+  TemporalCreateAdvancedActivityStructure,
+} from './temporal-create-advanced-activity-structure';
+import { TemporalCreateConfirmationFields } from './temporal-create-confirmation-fields';
 import {
   TemporalCreateAdvancedFields,
   TemporalCreateCoreFields,
@@ -403,41 +407,60 @@ export function TemporalCreateComposer({
             inert={discardPending || undefined}
             onSubmit={submitForm}
           >
-            <label
-              className="temporal-create-visually-hidden"
-              htmlFor={titleId}
-            >
-              {t(($) => $.common.home.timeline.create.titleLabel)}
-            </label>
-            <input
-              ref={titleRef}
-              id={titleId}
-              className={`temporal-create-title-input${advanced && fields.kind === 'activity' ? ' has-structure-actions' : ''}`}
-              data-create-path="title"
-              name="temporal-create-title"
-              type="text"
-              value={fields.title}
-              onChange={(event) =>
-                onPatch({ title: event.currentTarget.value })
-              }
-              placeholder={t(($) => $.common.home.timeline.create.titleLabel)}
-              autoComplete="off"
-              spellCheck="true"
-            />
-            {renderError('title')}
-
             <TemporalCreateU2DraftProvider
               fields={fields}
               resetKey={resetKey}
               initialDraft={u2Draft}
               onDraftChange={onU2DraftChange}
             >
+              <div
+                className={
+                  advanced
+                    ? 'temporal-create-title-row'
+                    : 'temporal-create-title-row is-quick'
+                }
+              >
+                <div className="temporal-create-title-row__name">
+                  <label
+                    className="temporal-create-visually-hidden"
+                    htmlFor={titleId}
+                  >
+                    {t(($) => $.common.home.timeline.create.titleLabel)}
+                  </label>
+                  <input
+                    ref={titleRef}
+                    id={titleId}
+                    className="temporal-create-title-input"
+                    data-create-path="title"
+                    name="temporal-create-title"
+                    type="text"
+                    value={fields.title}
+                    onChange={(event) =>
+                      onPatch({ title: event.currentTarget.value })
+                    }
+                    placeholder={t(
+                      ($) => $.common.home.timeline.create.titleLabel,
+                    )}
+                    autoComplete="off"
+                    spellCheck="true"
+                  />
+                  {renderError('title')}
+                </div>
+                {advanced ? (
+                  <div className="temporal-create-title-row__tools">
+                    <TemporalCreateConfirmationFields
+                      fields={fields}
+                      onPatch={onPatch}
+                      renderError={renderError}
+                    />
+                    {fields.kind === 'activity' ? (
+                      <TemporalCreateAdvancedActivityHeaderActions />
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
               {advanced && fields.kind === 'activity' ? (
-                <TemporalCreateAdvancedActivityStructure
-                  fields={fields}
-                  onPatch={onPatch}
-                  renderError={renderError}
-                />
+                <TemporalCreateAdvancedActivityStructure fields={fields} />
               ) : null}
               <TemporalCreateCoreFields
                 fields={fields}

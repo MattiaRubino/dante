@@ -53,6 +53,7 @@ describe('Activity structure after reload', () => {
                 schedule_ref: CHILD,
                 role_code: 'planned',
                 presentation_order: 1,
+                display_name: 'Ricerca fonti',
                 temporal_form: 'absolute',
                 starts_at: '2026-10-02T09:00:00Z',
                 ends_at: '2026-10-02T09:30:00Z',
@@ -65,19 +66,17 @@ describe('Activity structure after reload', () => {
     vi.stubGlobal('fetch', fetchFn);
     render(<ActivityStructureReadback activityRef={PARENT} />);
 
-    await screen.findByText(/Fase uno · required/);
-    expect(
-      screen.getByText(/Sessioni: live · Figli richiesti: confirm/),
-    ).toBeTruthy();
+    await screen.findByText(/Fase uno/);
+    expect(screen.queryByText(/Figli richiesti/)).toBeNull();
     expect(screen.getByText(/2026-10-02T08:00:00Z/)).toBeTruthy();
     expect(screen.getByText(/Finestra Activity/)).toBeTruthy();
     expect(screen.getByTestId('session-capture').dataset.live).toBe('true');
-    const child = screen.getByText(/Fase uno · required/);
+    const child = screen.getByText(/Fase uno/);
     child.click();
     await waitFor(() =>
       expect(screen.getAllByTestId('session-capture')).toHaveLength(2),
     );
-    expect(screen.getByText(/Sessione pianificata 1/)).toBeTruthy();
+    expect(screen.getByText(/Ricerca fonti/)).toBeTruthy();
     expect(screen.getByText(/Pianificazione conclusa/)).toBeTruthy();
     const manual = screen.getAllByTestId('session-capture')[1];
     expect(manual?.dataset.subject).toBe(CHILD);

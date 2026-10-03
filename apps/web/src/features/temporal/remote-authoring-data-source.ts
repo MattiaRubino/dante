@@ -664,6 +664,9 @@ function requestBody(
     if (request.plannedSlices !== undefined) {
       result.planned_slices = request.plannedSlices.map(serializePlacement);
     }
+    if (request.plannedSliceNames !== undefined) {
+      result.planned_slice_names = [...request.plannedSliceNames];
+    }
     if (request.children !== undefined) {
       result.children = request.children.map((child) => ({
         title: child.title.trim(),
@@ -675,6 +678,9 @@ function requestBody(
             ? null
             : serializePlacement(child.placement),
         planned_slices: child.plannedSlices?.map(serializePlacement) ?? [],
+        ...(child.plannedSliceNames === undefined
+          ? {}
+          : { planned_slice_names: [...child.plannedSliceNames] }),
         session_capture_mode: child.sessionCaptureMode ?? null,
       }));
     }

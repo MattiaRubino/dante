@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { TemporalCreateFields } from '../model/temporal-create-session';
@@ -16,6 +17,7 @@ export function TemporalCreateConfirmationFields({
   const { i18n } = useTranslation('common');
   const italian = i18n.language.toLowerCase().startsWith('it');
   const confirmation = fields.confirmation;
+  const [open, setOpen] = useState(false);
   const patchConfirmation = (
     patch: Partial<TemporalCreateFields['confirmation']>,
   ) => onPatch({ confirmation: { ...confirmation, ...patch } });
@@ -25,15 +27,24 @@ export function TemporalCreateConfirmationFields({
       className="temporal-create-section temporal-create-reality-section"
       aria-labelledby="temporal-create-reality-heading"
     >
-      <details open>
-        <summary>
-          <h3 id="temporal-create-reality-heading">
-            {italian ? 'Realtà ed esito' : 'Reality and outcome'}
-          </h3>
-          <span aria-hidden="true">⌄</span>
-        </summary>
+      <button
+        type="button"
+        className="temporal-create-reality-trigger"
+        aria-expanded={open}
+        aria-controls="temporal-create-reality-options"
+        onClick={() => setOpen((current) => !current)}
+      >
+        <span id="temporal-create-reality-heading">
+          {italian ? 'Realtà' : 'Reality'}
+        </span>
+        <span aria-hidden="true">{open ? '⌃' : '⌄'}</span>
+      </button>
 
-        <div className="temporal-create-reality-section__body">
+      {open ? (
+        <div
+          className="temporal-create-reality-section__body"
+          id="temporal-create-reality-options"
+        >
           <h4>{italian ? 'Verifica esito' : 'Outcome verification'}</h4>
           <label className="temporal-create-control">
             <span>{italian ? 'Regola di verifica' : 'Verification rule'}</span>
@@ -54,7 +65,12 @@ export function TemporalCreateConfirmationFields({
             {renderError('confirmation.outcomePolicy')}
           </label>
 
-          <div className="temporal-create-reality-flow" aria-label={italian ? 'Flusso realtà ed esito' : 'Reality and outcome flow'}>
+          <div
+            className="temporal-create-reality-flow"
+            aria-label={
+              italian ? 'Flusso realtà ed esito' : 'Reality and outcome flow'
+            }
+          >
             <span>Actual</span>
             <span aria-hidden="true">→</span>
             <span>Outcome</span>
@@ -64,7 +80,7 @@ export function TemporalCreateConfirmationFields({
             <span>Reconciliation</span>
           </div>
         </div>
-      </details>
+      ) : null}
     </section>
   );
 }

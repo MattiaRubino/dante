@@ -116,6 +116,7 @@ class ActivityChildIntent:
     description: str | None = None
     placement: SchedulePlacement | None = None
     planned_slices: tuple[SchedulePlacement, ...] = ()
+    planned_slice_names: tuple[str, ...] = ()
     session_capture_mode: Literal["disabled", "record", "live", "record_and_live"] | None = None
 
 
@@ -169,13 +170,14 @@ async def _schedule_role(
     schedule: EstablishedScheduleView,
     role_code: Literal["envelope", "planned"],
     presentation_order: int,
+    display_name: str | None = None,
 ) -> None:
     accepted = (
         (
             await session.execute(
                 text("""
                 SELECT * FROM dante.set_self_activity_schedule_role(
-                    :actor,:activity,:schedule,:role,:position
+                    :actor,:activity,:schedule,:role,:position,:display_name
                 )
             """),
                 {
@@ -184,6 +186,7 @@ async def _schedule_role(
                     "schedule": schedule.schedule_ref,
                     "role": role_code,
                     "position": presentation_order,
+                    "display_name": display_name,
                 },
             )
         )
@@ -600,6 +603,7 @@ class TemporalAuthoringApplication:
         minimum_session_duration_microseconds: int | None = None,
         child_guard_mode: str | None = None,
         planned_slices: tuple[SchedulePlacement, ...] = (),
+        planned_slice_names: tuple[str, ...] = (),
         children: tuple[ActivityChildIntent, ...] = (),
     ) -> AuthoringResult:
         normalized_operation = _operation(operation_id)
@@ -630,6 +634,10 @@ class TemporalAuthoringApplication:
             raise TemporalAuthoringInputError("Activity parent child policy is invalid.")
         if len(children) > 100 or len(planned_slices) > 100:
             raise TemporalAuthoringInputError("Activity structure exceeds its bounded size.")
+        if planned_slice_names and len(planned_slice_names) != len(planned_slices):
+            raise TemporalAuthoringInputError("Planned Session names must match planned rows.")
+        if any(len(name.strip()) > 300 for name in planned_slice_names):
+            raise TemporalAuthoringInputError("Planned Session name is too long.")
         for child in children:
             _title(child.title)
             if (
@@ -643,6 +651,12 @@ class TemporalAuthoringApplication:
                 or len(child.planned_slices) > 100
             ):
                 raise TemporalAuthoringInputError("Child execution configuration is invalid.")
+            if child.planned_slice_names and len(child.planned_slice_names) != len(
+                child.planned_slices
+            ):
+                raise TemporalAuthoringInputError("Child Session names must match planned rows.")
+            if any(len(name.strip()) > 300 for name in child.planned_slice_names):
+                raise TemporalAuthoringInputError("Child Session name is too long.")
         structure_digest = None
         if (
             children
@@ -657,6 +671,11 @@ class TemporalAuthoringApplication:
                     "minimum_session_duration_microseconds": minimum_session_duration_microseconds,
                     "root_placement": None if placement is None else _placement_payload(placement),
                     "planned_slices": [_placement_payload(value) for value in planned_slices],
+                    **(
+                        {"planned_slice_names": [name.strip() for name in planned_slice_names]}
+                        if any(name.strip() for name in planned_slice_names)
+                        else {}
+                    ),
                     "children": [
                         {
                             "title": _title(child.title),
@@ -672,6 +691,15 @@ class TemporalAuthoringApplication:
                             "planned_slices": [
                                 _placement_payload(value) for value in child.planned_slices
                             ],
+                            **(
+                                {
+                                    "planned_slice_names": [
+                                        name.strip() for name in child.planned_slice_names
+                                    ]
+                                }
+                                if any(name.strip() for name in child.planned_slice_names)
+                                else {}
+                            ),
                         }
                         for child in children
                     ],
@@ -862,6 +890,9 @@ class TemporalAuthoringApplication:
                         schedule=accepted,
                         role_code="planned",
                         presentation_order=index + 1,
+                        display_name=planned_slice_names[index].strip() or None
+                        if planned_slice_names
+                        else None,
                     )
                     planned_results.append(accepted)
 
@@ -971,6 +1002,9 @@ class TemporalAuthoringApplication:
                             schedule=accepted,
                             role_code="planned",
                             presentation_order=slice_index + 1,
+                            display_name=child.planned_slice_names[slice_index].strip() or None
+                            if child.planned_slice_names
+                            else None,
                         )
                         child_slices.append(accepted)
                     if child.session_capture_mode is not None:
@@ -1107,6 +1141,7 @@ class TemporalAuthoringApplication:
         minimum_session_duration_microseconds: int | None = None,
         child_guard_mode: str | None = None,
         planned_slices: tuple[SchedulePlacement, ...] = (),
+        planned_slice_names: tuple[str, ...] = (),
         children: tuple[ActivityChildIntent, ...] = (),
     ) -> AuthoringResult:
         return await self._execute(
@@ -1124,6 +1159,7 @@ class TemporalAuthoringApplication:
             minimum_session_duration_microseconds=minimum_session_duration_microseconds,
             child_guard_mode=child_guard_mode,
             planned_slices=planned_slices,
+            planned_slice_names=planned_slice_names,
             children=children,
         )
 

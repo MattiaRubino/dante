@@ -8,6 +8,10 @@ import * as zod from 'zod/mini';
 
 export const ActivityScheduleResponse = /*#__PURE__*/ zod
   .object({
+    display_name: /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.string(),
+      /*#__PURE__*/ zod.null(),
+    ]),
     end_date_exclusive: /*#__PURE__*/ zod.union([
       /*#__PURE__*/ zod.iso.date(),
       /*#__PURE__*/ zod.null(),

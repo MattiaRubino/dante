@@ -10,6 +10,7 @@ type Schedule = Readonly<{
   scheduleRef: string;
   roleCode: 'envelope' | 'planned' | null;
   presentationOrder: number | null;
+  displayName: string | null;
   temporalForm: string;
   start: string | null;
   end: string | null;
@@ -51,7 +52,10 @@ function schedule(value: unknown): Schedule {
       row.presentation_order !== undefined &&
       (typeof row.presentation_order !== 'number' ||
         !Number.isInteger(row.presentation_order) ||
-        row.presentation_order < 0))
+        row.presentation_order < 0)) ||
+    (row.display_name !== null &&
+      row.display_name !== undefined &&
+      typeof row.display_name !== 'string')
   ) {
     throw new Error('Uno Schedule della struttura non è valido.');
   }
@@ -69,6 +73,7 @@ function schedule(value: unknown): Schedule {
     roleCode: row.role_code === undefined ? null : row.role_code,
     presentationOrder:
       row.presentation_order === undefined ? null : row.presentation_order,
+    displayName: typeof row.display_name === 'string' ? row.display_name : null,
     temporalForm: row.temporal_form,
     start: start ?? null,
     end: end ?? null,
@@ -136,7 +141,8 @@ function Schedules({ rows }: Readonly<{ rows: readonly Schedule[] }>) {
       {rows.map((row) => (
         <li key={row.scheduleRef}>
           {row.roleCode === 'planned'
-            ? `Sessione pianificata ${row.presentationOrder ?? ''}`
+            ? row.displayName ||
+              `Sessione pianificata ${row.presentationOrder ?? ''}`
             : row.roleCode === 'envelope'
               ? 'Finestra Activity'
               : 'Schedule'}{' '}
@@ -181,11 +187,10 @@ function ChildDetail({ child }: Readonly<{ child: Child }>) {
       onToggle={(event) => setOpen(event.currentTarget.open)}
     >
       <summary>
-        {child.order}. {child.title} · {child.requirement}
+        {child.order}. {child.title}
       </summary>
       {open ? (
         <>
-          <p>Sessioni: {child.captureMode}</p>
           <Schedules rows={child.schedules} />
           <CaptureControls
             activityRef={child.activityRef}
@@ -248,10 +253,6 @@ export function ActivityStructureReadback({
       ) : null}
       {structure !== null ? (
         <>
-          <p>
-            Sessioni: {structure.captureMode} · Figli richiesti:{' '}
-            {structure.childGuardMode}
-          </p>
           <Schedules rows={structure.schedules} />
           <CaptureControls
             activityRef={activityRef}

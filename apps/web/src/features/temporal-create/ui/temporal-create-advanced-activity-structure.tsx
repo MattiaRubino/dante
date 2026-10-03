@@ -1,5 +1,6 @@
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Temporal } from '@dante/time';
 
 import type { TemporalCreateFields } from '../model/temporal-create-session';
 import type {
@@ -12,47 +13,97 @@ import './temporal-create-advanced-activity-structure.css';
 
 type TemporalCreateAdvancedActivityStructureProps = Readonly<{
   fields: TemporalCreateFields;
-  onPatch: (patch: Partial<TemporalCreateFields>) => void;
-  renderError: (path: string) => ReactNode;
 }>;
 
 let nextStructureRowId = 0;
 const newRowId = () => `structure-${++nextStructureRowId}`;
+
+function beginsLater(fields: TemporalCreateFields): boolean {
+  try {
+    const now = Temporal.Now.zonedDateTimeISO(fields.timeZoneId);
+    if (fields.timeSemantics === 'timed') {
+      const start = Temporal.PlainDateTime.from(
+        `${fields.date}T${fields.startTime}`,
+      );
+      return Temporal.PlainDateTime.compare(start, now.toPlainDateTime()) > 0;
+    }
+    return (
+      Temporal.PlainDate.compare(
+        Temporal.PlainDate.from(fields.date),
+        now.toPlainDate(),
+      ) > 0
+    );
+  } catch {
+    return fields.date > Temporal.Now.plainDateISO().toString();
+  }
+}
 
 function plannedSlice(
   fields: TemporalCreateFields,
 ): TemporalCreatePlannedSliceDraft {
   return Object.freeze({
     id: newRowId(),
+    title: '',
     date: fields.date,
     startTime: fields.startTime,
     endTime: '',
   });
 }
 
+export function TemporalCreateAdvancedActivityHeaderActions() {
+  const { i18n } = useTranslation('common');
+  const italian = i18n.language.toLowerCase().startsWith('it');
+  const { draft, patch } = useTemporalCreateU2Draft();
+  const structure = draft.activityStructure;
+  const enabled = structure.captureMode !== 'disabled';
+
+  return (
+    <label
+      className="temporal-create-structure-session-toggle"
+      data-create-structure-actions
+    >
+      <input
+        type="checkbox"
+        checked={enabled}
+        onChange={(event) =>
+          patch({
+            activityStructure: Object.freeze({
+              ...structure,
+              captureMode: event.currentTarget.checked
+                ? 'record_and_live'
+                : 'disabled',
+            }),
+          })
+        }
+      />
+      {italian ? 'Sessione' : 'Session'}
+    </label>
+  );
+}
+
 export function TemporalCreateAdvancedActivityStructure({
   fields,
-  onPatch,
-  renderError,
 }: TemporalCreateAdvancedActivityStructureProps) {
   const { i18n } = useTranslation('common');
   const italian = i18n.language.toLowerCase().startsWith('it');
   const [open, setOpen] = useState(false);
   const { draft, patch } = useTemporalCreateU2Draft();
   const structure = draft.activityStructure;
-  const execution = fields.execution;
-  const sessionConfigured = execution.sessionMode === 'splittable';
-
-  const patchExecution = (patch: Partial<TemporalCreateFields['execution']>) =>
-    onPatch({ execution: { ...execution, ...patch } });
+  const startsLater = beginsLater(fields);
 
   const addSessionConfiguration = () => {
-    patchExecution({ sessionMode: 'splittable' });
+    if (startsLater) {
+      patchStructure({
+        captureMode:
+          structure.captureMode === 'disabled'
+            ? 'record_and_live'
+            : structure.captureMode,
+        plannedSlices: [...structure.plannedSlices, plannedSlice(fields)],
+      });
+    } else {
+      patchStructure({ captureMode: 'record_and_live' });
+    }
     setOpen(false);
-  };
-
-  const removeSessionConfiguration = () => {
-    patchExecution({ sessionMode: 'indivisible' });
   };
 
   const patchStructure = (changes: Partial<typeof structure>) =>
@@ -137,7 +188,16 @@ export function TemporalCreateAdvancedActivityStructure({
           className="temporal-create-structure-node__elbow"
           aria-hidden="true"
         />
-        <strong>{italian ? 'Sessione pianificata' : 'Planned session'}</strong>
+        <input
+          type="text"
+          value={slice.title}
+          maxLength={300}
+          placeholder={italian ? 'Nome Sessione' : 'Session name'}
+          aria-label={italian ? 'Nome Sessione' : 'Session name'}
+          onChange={(event) =>
+            updateSlice(owner, slice.id, { title: event.currentTarget.value })
+          }
+        />
       </div>
       <div className="temporal-create-structure-node__actions is-planned-controls">
         <label>
@@ -226,25 +286,9 @@ export function TemporalCreateAdvancedActivityStructure({
                 <button
                   type="button"
                   role="menuitem"
-                  disabled={sessionConfigured}
                   onClick={addSessionConfiguration}
                 >
                   {italian ? 'Sessione' : 'Session'}
-                </button>
-                <button
-                  type="button"
-                  role="menuitem"
-                  onClick={() => {
-                    patchStructure({
-                      plannedSlices: [
-                        ...structure.plannedSlices,
-                        plannedSlice(fields),
-                      ],
-                    });
-                    setOpen(false);
-                  }}
-                >
-                  {italian ? 'Sessione pianificata' : 'Planned session'}
                 </button>
               </div>
             ) : null}
@@ -295,28 +339,19 @@ export function TemporalCreateAdvancedActivityStructure({
                     </option>
                   </select>
                 </label>
-                <label>
-                  {italian ? 'Sessioni' : 'Sessions'}
-                  <select
-                    value={child.captureMode}
+                <label className="temporal-create-structure-session-toggle">
+                  <input
+                    type="checkbox"
+                    checked={child.captureMode !== 'disabled'}
                     onChange={(event) =>
                       updateChild(child.id, {
-                        captureMode: event.currentTarget
-                          .value as TemporalCreateActivityChildDraft['captureMode'],
+                        captureMode: event.currentTarget.checked
+                          ? 'record_and_live'
+                          : 'disabled',
                       })
                     }
-                  >
-                    <option value="disabled">
-                      {italian ? 'Disabilitate' : 'Disabled'}
-                    </option>
-                    <option value="record">
-                      {italian ? 'Registra' : 'Record'}
-                    </option>
-                    <option value="live">Live</option>
-                    <option value="record_and_live">
-                      {italian ? 'Registra e live' : 'Record and live'}
-                    </option>
-                  </select>
+                  />
+                  {italian ? 'Sessione' : 'Session'}
                 </label>
                 <button
                   type="button"
@@ -366,17 +401,26 @@ export function TemporalCreateAdvancedActivityStructure({
                 </button>
               </div>
             </div>
-            <button
-              className="temporal-create-structure-add-slice"
-              type="button"
-              onClick={() =>
-                updateChild(child.id, {
-                  plannedSlices: [...child.plannedSlices, plannedSlice(fields)],
-                })
-              }
-            >
-              + {italian ? 'Sessione pianificata' : 'Planned session'}
-            </button>
+            {startsLater ? (
+              <button
+                className="temporal-create-structure-add-slice"
+                type="button"
+                onClick={() =>
+                  updateChild(child.id, {
+                    captureMode:
+                      child.captureMode === 'disabled'
+                        ? 'record_and_live'
+                        : child.captureMode,
+                    plannedSlices: [
+                      ...child.plannedSlices,
+                      plannedSlice(fields),
+                    ],
+                  })
+                }
+              >
+                + {italian ? 'Sessione' : 'Session'}
+              </button>
+            ) : null}
             {child.plannedSlices.map((slice) =>
               renderPlannedSlice(slice, child.id),
             )}
@@ -386,117 +430,6 @@ export function TemporalCreateAdvancedActivityStructure({
         {structure.plannedSlices.map((slice) =>
           renderPlannedSlice(slice, null),
         )}
-
-        {sessionConfigured ? (
-          <div
-            className="temporal-create-structure-node is-session"
-            data-create-structure-session
-          >
-            <div className="temporal-create-structure-node__identity">
-              <span
-                className="temporal-create-structure-node__elbow"
-                aria-hidden="true"
-              />
-              <div>
-                <strong>{italian ? 'Sessione' : 'Session'}</strong>
-                <small>
-                  {italian
-                    ? 'Configura come potrà essere eseguita l’Activity.'
-                    : 'Configure how the Activity may be executed.'}
-                </small>
-              </div>
-            </div>
-
-            <div
-              className="temporal-create-structure-node__actions"
-              data-create-structure-session-options
-              aria-label={
-                italian ? 'Impostazioni Sessione' : 'Session settings'
-              }
-            >
-              <label className="temporal-create-structure-node__minimum">
-                <span>{italian ? 'Minimo' : 'Minimum'}</span>
-                <input
-                  data-create-path="execution.minSessionMinutes"
-                  type="number"
-                  min="1"
-                  step="1"
-                  value={execution.minSessionMinutes}
-                  onChange={(event) =>
-                    patchExecution({
-                      minSessionMinutes: Number(event.currentTarget.value),
-                    })
-                  }
-                />
-                <span>min</span>
-              </label>
-              {renderError('execution.minSessionMinutes')}
-              <button
-                className="is-remove"
-                type="button"
-                aria-label={
-                  italian
-                    ? 'Disabilita configurazione Sessione'
-                    : 'Disable Session configuration'
-                }
-                title={
-                  italian
-                    ? 'Rimuovi la configurazione Sessione da questa Activity.'
-                    : 'Remove Session configuration from this Activity.'
-                }
-                onClick={removeSessionConfiguration}
-              >
-                ×
-              </button>
-            </div>
-          </div>
-        ) : null}
-      </div>
-
-      <div
-        className="temporal-create-advanced-structure-inline__actions"
-        data-create-structure-actions
-        aria-label={italian ? 'Impostazioni attività' : 'Activity settings'}
-      >
-        <label>
-          {italian ? 'Sessioni' : 'Sessions'}
-          <select
-            value={structure.captureMode}
-            onChange={(event) =>
-              patchStructure({
-                captureMode: event.currentTarget
-                  .value as typeof structure.captureMode,
-              })
-            }
-          >
-            <option value="disabled">
-              {italian ? 'Disabilitate' : 'Disabled'}
-            </option>
-            <option value="record">{italian ? 'Registra' : 'Record'}</option>
-            <option value="live">Live</option>
-            <option value="record_and_live">
-              {italian ? 'Registra e live' : 'Record and live'}
-            </option>
-          </select>
-        </label>
-        <label>
-          {italian ? 'Figli richiesti' : 'Required children'}
-          <select
-            value={structure.childGuardMode}
-            onChange={(event) =>
-              patchStructure({
-                childGuardMode: event.currentTarget
-                  .value as typeof structure.childGuardMode,
-              })
-            }
-          >
-            <option value="none">
-              {italian ? 'Nessun vincolo' : 'No guard'}
-            </option>
-            <option value="confirm">{italian ? 'Conferma' : 'Confirm'}</option>
-            <option value="block">{italian ? 'Blocca' : 'Block'}</option>
-          </select>
-        </label>
       </div>
     </div>
   );

@@ -336,6 +336,9 @@ export function buildTemporalCreateU2Request(
             plannedSlices: draft.activityStructure.plannedSlices.map((slice) =>
               plannedSliceInput(fields, slice),
             ),
+            plannedSliceNames: draft.activityStructure.plannedSlices.map(
+              (slice) => slice.title.trim(),
+            ),
             children: draft.activityStructure.children.map((child, index) => ({
               title: child.title.trim(),
               requirementCode: child.requirementCode,
@@ -343,6 +346,9 @@ export function buildTemporalCreateU2Request(
               sessionCaptureMode: child.captureMode,
               plannedSlices: child.plannedSlices.map((slice) =>
                 plannedSliceInput(fields, slice),
+              ),
+              plannedSliceNames: child.plannedSlices.map((slice) =>
+                slice.title.trim(),
               ),
             })),
           }

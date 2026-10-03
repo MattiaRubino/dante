@@ -1048,6 +1048,17 @@
         "additionalProperties": false,
         "description": "One current Schedule placement; it does not represent a future Session.",
         "properties": {
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
           "end_date_exclusive": {
             "anyOf": [
               {
@@ -1227,6 +1238,7 @@
           "schedule_ref",
           "role_code",
           "presentation_order",
+          "display_name",
           "placement_material_state_ref",
           "temporal_form",
           "start_date",
@@ -2404,6 +2416,14 @@
             ],
             "title": "Placement"
           },
+          "planned_slice_names": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 100,
+            "title": "Planned Slice Names",
+            "type": "array"
+          },
           "planned_slices": {
             "items": {
               "discriminator": {
@@ -2596,6 +2616,14 @@
               }
             ],
             "title": "Placement"
+          },
+          "planned_slice_names": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 100,
+            "title": "Planned Slice Names",
+            "type": "array"
           },
           "planned_slices": {
             "items": {

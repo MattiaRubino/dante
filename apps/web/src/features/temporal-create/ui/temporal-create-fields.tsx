@@ -6,7 +6,6 @@ import type {
   TemporalCreateSurface,
 } from '../model/temporal-create-session';
 import { TemporalCreateActivityFields } from './temporal-create-activity-fields';
-import { TemporalCreateConfirmationFields } from './temporal-create-confirmation-fields';
 import { TemporalCreateCoreFieldsU2 } from './temporal-create-core-u2';
 import { TemporalCreateEventFields } from './temporal-create-event-fields';
 import { TemporalCreateRecurrenceFields } from './temporal-create-recurrence-fields';
@@ -39,7 +38,8 @@ export function TemporalCreateAdvancedFields({
 
   const recurrenceAdvanced =
     fields.kind === 'event' ||
-    (fields.kind === 'activity' && fields.eventRecurrence.patternKind !== 'none');
+    (fields.kind === 'activity' &&
+      fields.eventRecurrence.patternKind !== 'none');
 
   return (
     <div
@@ -120,12 +120,6 @@ export function TemporalCreateAdvancedFields({
           renderError={renderError}
         />
       ) : null}
-
-      <TemporalCreateConfirmationFields
-        fields={fields}
-        onPatch={onPatch}
-        renderError={renderError}
-      />
 
       <section
         className="temporal-create-section is-wide temporal-create-description-section"

@@ -59,7 +59,7 @@
         "uuid",
         "uuid[]"
       ],
-      "return_type": "TABLE(schedule_ref uuid, role_code text, presentation_order integer)",
+      "return_type": "TABLE(schedule_ref uuid, role_code text, presentation_order integer, display_name text)",
       "security": "DEFINER",
       "volatility": "STABLE",
       "parallel_safety": "RESTRICTED",

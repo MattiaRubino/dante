@@ -14,6 +14,8 @@ export const temporalAuthorActivityBodyChildrenItemPlacementOneThreeZoneIdMax = 
 
 export const temporalAuthorActivityBodyChildrenItemPlacementOneFourKindDefault = `absolute_interval`;
 export const temporalAuthorActivityBodyChildrenItemPlacementOneFiveKindDefault = `coarse_local_period`;
+export const temporalAuthorActivityBodyChildrenItemPlannedSliceNamesMax = 100;
+
 export const temporalAuthorActivityBodyChildrenItemPlannedSlicesItemOneKindDefault = `date_span`;
 export const temporalAuthorActivityBodyChildrenItemPlannedSlicesItemTwoKindDefault = `floating_local_interval`;
 export const temporalAuthorActivityBodyChildrenItemPlannedSlicesItemThreeDisambiguationDefault = `reject`;
@@ -51,6 +53,8 @@ export const temporalAuthorActivityBodyPlacementOneThreeZoneIdMax = 200;
 
 export const temporalAuthorActivityBodyPlacementOneFourKindDefault = `absolute_interval`;
 export const temporalAuthorActivityBodyPlacementOneFiveKindDefault = `coarse_local_period`;
+export const temporalAuthorActivityBodyPlannedSliceNamesMax = 100;
+
 export const temporalAuthorActivityBodyPlannedSlicesItemOneKindDefault = `date_span`;
 export const temporalAuthorActivityBodyPlannedSlicesItemTwoKindDefault = `floating_local_interval`;
 export const temporalAuthorActivityBodyPlannedSlicesItemThreeDisambiguationDefault = `reject`;
@@ -161,6 +165,15 @@ export const TemporalAuthorActivityBody = /*#__PURE__*/ zod
                 ]),
                 /*#__PURE__*/ zod.null(),
               ]),
+            ),
+            planned_slice_names: /*#__PURE__*/ zod.optional(
+              /*#__PURE__*/ zod
+                .array(/*#__PURE__*/ zod.string())
+                .check(
+                  /*#__PURE__*/ zod.maxLength(
+                    temporalAuthorActivityBodyChildrenItemPlannedSliceNamesMax,
+                  ),
+                ),
             ),
             planned_slices: /*#__PURE__*/ zod.optional(
               /*#__PURE__*/ zod
@@ -446,6 +459,15 @@ export const TemporalAuthorActivityBody = /*#__PURE__*/ zod
         ]),
         /*#__PURE__*/ zod.null(),
       ]),
+    ),
+    planned_slice_names: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod
+        .array(/*#__PURE__*/ zod.string())
+        .check(
+          /*#__PURE__*/ zod.maxLength(
+            temporalAuthorActivityBodyPlannedSliceNamesMax,
+          ),
+        ),
     ),
     planned_slices: /*#__PURE__*/ zod.optional(
       /*#__PURE__*/ zod

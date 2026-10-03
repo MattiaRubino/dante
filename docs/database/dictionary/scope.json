@@ -48,7 +48,8 @@
       "B14-U6-C",
       "B14-U6-GUARD",
       "B14-U6-MANUAL",
-      "B14-U6-ROLE"
+      "B14-U6-ROLE",
+      "B14-U6-NAME"
     ],
     "standalone_entries": {
       "tables": 211,
@@ -62,7 +63,7 @@
     },
     "constraints": {
       "foreign_keys": 369,
-      "check_constraints": 529
+      "check_constraints": 530
     }
   },
   "technical_foundation": {

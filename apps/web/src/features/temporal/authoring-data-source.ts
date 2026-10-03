@@ -29,6 +29,7 @@ export type TemporalAuthorActivityChildRequest = Readonly<{
   presentationOrder?: number;
   placement?: TemporalSchedulePlacementInput;
   plannedSlices?: readonly TemporalSchedulePlacementInput[];
+  plannedSliceNames?: readonly string[];
   sessionCaptureMode?: TemporalSessionCaptureMode;
 }>;
 
@@ -41,6 +42,7 @@ export type TemporalAuthorActivityRequest = TemporalAuthoringBaseRequest &
     minimumSessionDurationMicroseconds?: number;
     childGuardMode?: 'none' | 'confirm' | 'block';
     plannedSlices?: readonly TemporalSchedulePlacementInput[];
+    plannedSliceNames?: readonly string[];
     children?: readonly TemporalAuthorActivityChildRequest[];
   }>;
 

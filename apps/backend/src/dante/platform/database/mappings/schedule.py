@@ -63,6 +63,11 @@ class ActivityScheduleRoleRow(Base):
             "(role_code='planned' AND presentation_order BETWEEN 1 AND 100)",
             name="order",
         ),
+        CheckConstraint(
+            "display_name IS NULL OR (role_code='planned' AND display_name=btrim(display_name) "
+            "AND display_name<>'' AND char_length(display_name)<=300)",
+            name="name",
+        ),
         ForeignKeyConstraint(
             ["schedule_ref"], ["dante.schedule.schedule_ref"],
             name="fk_activity_schedule_role_schedule",
@@ -77,6 +82,7 @@ class ActivityScheduleRoleRow(Base):
     activity_ref: Mapped[NativeRef] = mapped_column(nullable=False)
     role_code: Mapped[str] = mapped_column(Text, nullable=False)
     presentation_order: Mapped[int] = mapped_column(nullable=False)
+    display_name: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
 class ScheduleEstablishOperationRow(Base):
