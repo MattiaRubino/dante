@@ -35,6 +35,9 @@ from dante.modules.temporal.life_area_assignment_api import (
 from dante.modules.temporal.movement_policy_api import router as temporal_movement_policy_router
 from dante.modules.temporal.occurrence_api import router as temporal_occurrence_router
 from dante.modules.temporal.outcome_api import router as temporal_outcome_router
+from dante.modules.temporal.outcome_review_policy_api import (
+    router as temporal_outcome_review_policy_router,
+)
 from dante.modules.temporal.plan_admission_api import router as temporal_plan_admission_router
 from dante.modules.temporal.plan_candidate_api import router as temporal_plan_candidate_router
 from dante.modules.temporal.plan_conflict_api import router as temporal_plan_conflict_router
@@ -104,6 +107,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(temporal_authoring_router)
     app.include_router(temporal_event_router)
     app.include_router(temporal_execution_policy_router)
+    app.include_router(temporal_outcome_review_policy_router)
     app.include_router(temporal_decomposition_policy_router)
     app.include_router(temporal_decomposition_router)
     app.include_router(temporal_life_area_router)
