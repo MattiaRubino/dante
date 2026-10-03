@@ -75,7 +75,7 @@ export function ActivitySessionCardControls({
     };
   }, [activityRef, source]);
 
-  if (mode === null || mode === 'disabled') {
+  if (mode !== 'live' && mode !== 'record_and_live') {
     return null;
   }
 
@@ -91,7 +91,6 @@ export function ActivitySessionCardControls({
         variant="card"
         interactive={interactive}
         allowLive={mode === 'live' || mode === 'record_and_live'}
-        allowManual={mode === 'record' || mode === 'record_and_live'}
       />
     </div>
   );

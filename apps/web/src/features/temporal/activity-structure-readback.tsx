@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 
 import { createWebFetch } from '../../platform/api/web-fetch';
 import { ActualRealizationControls } from './actual-realization-controls';
+import { SessionSubjectControls } from './session-subject-controls';
+
+type CaptureMode = 'disabled' | 'record' | 'live' | 'record_and_live';
 
 type Schedule = Readonly<{
   scheduleRef: string;
@@ -15,12 +18,12 @@ type Child = Readonly<{
   title: string;
   requirement: 'required' | 'optional';
   order: number;
-  captureMode: string;
+  captureMode: CaptureMode;
   schedules: readonly Schedule[];
 }>;
 
 type Structure = Readonly<{
-  captureMode: string;
+  captureMode: CaptureMode;
   childGuardMode: 'none' | 'confirm' | 'block';
   schedules: readonly Schedule[];
   children: readonly Child[];
@@ -58,13 +61,24 @@ function schedule(value: unknown): Schedule {
   });
 }
 
+function captureMode(value: unknown): CaptureMode {
+  if (
+    value !== 'disabled' &&
+    value !== 'record' &&
+    value !== 'live' &&
+    value !== 'record_and_live'
+  ) {
+    throw new Error('La policy Session corrente non è valida.');
+  }
+  return value;
+}
+
 function parseStructure(value: unknown, parentRef: string): Structure {
   const row = object(value);
   if (
     row.parent_activity_ref !== parentRef ||
     !Array.isArray(row.schedules) ||
     !Array.isArray(row.children) ||
-    typeof row.session_capture_mode !== 'string' ||
     (row.child_guard_mode !== 'none' &&
       row.child_guard_mode !== 'confirm' &&
       row.child_guard_mode !== 'block')
@@ -72,7 +86,7 @@ function parseStructure(value: unknown, parentRef: string): Structure {
     throw new Error('La struttura Activity corrente non è disponibile.');
   }
   return Object.freeze({
-    captureMode: row.session_capture_mode,
+    captureMode: captureMode(row.session_capture_mode),
     childGuardMode: row.child_guard_mode,
     schedules: Object.freeze(row.schedules.map(schedule)),
     children: Object.freeze(
@@ -84,7 +98,6 @@ function parseStructure(value: unknown, parentRef: string): Structure {
           (child.requirement_code !== 'required' &&
             child.requirement_code !== 'optional') ||
           typeof child.presentation_order !== 'number' ||
-          typeof child.session_capture_mode !== 'string' ||
           !Array.isArray(child.schedules)
         ) {
           throw new Error('Una sotto-attività corrente non è valida.');
@@ -94,7 +107,7 @@ function parseStructure(value: unknown, parentRef: string): Structure {
           title: child.child_title,
           requirement: child.requirement_code,
           order: child.presentation_order,
-          captureMode: child.session_capture_mode,
+          captureMode: captureMode(child.session_capture_mode),
           schedules: Object.freeze(child.schedules.map(schedule)),
         });
       }),
@@ -116,6 +129,27 @@ function Schedules({ rows }: Readonly<{ rows: readonly Schedule[] }>) {
   );
 }
 
+function CaptureControls({
+  activityRef,
+  title,
+  mode,
+}: Readonly<{
+  activityRef: string;
+  title: string;
+  mode: CaptureMode;
+}>) {
+  if (mode === 'disabled') return null;
+  return (
+    <SessionSubjectControls
+      kind="activity"
+      subjectRef={activityRef}
+      label={title}
+      allowLive={mode === 'live' || mode === 'record_and_live'}
+      allowManual={mode === 'record' || mode === 'record_and_live'}
+    />
+  );
+}
+
 function ChildDetail({ child }: Readonly<{ child: Child }>) {
   const [open, setOpen] = useState(false);
   return (
@@ -130,6 +164,11 @@ function ChildDetail({ child }: Readonly<{ child: Child }>) {
         <>
           <p>Sessioni: {child.captureMode}</p>
           <Schedules rows={child.schedules} />
+          <CaptureControls
+            activityRef={child.activityRef}
+            title={child.title}
+            mode={child.captureMode}
+          />
           <ActualRealizationControls
             kind="activity"
             subjectRef={child.activityRef}
@@ -191,6 +230,11 @@ export function ActivityStructureReadback({
             {structure.childGuardMode}
           </p>
           <Schedules rows={structure.schedules} />
+          <CaptureControls
+            activityRef={activityRef}
+            title="Activity"
+            mode={structure.captureMode}
+          />
           {structure.children.map((child) => (
             <ChildDetail key={child.activityRef} child={child} />
           ))}

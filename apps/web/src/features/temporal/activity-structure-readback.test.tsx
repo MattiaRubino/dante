@@ -5,6 +5,17 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ActivityStructureReadback } from './activity-structure-readback';
 
+vi.mock('./session-subject-controls', () => ({
+  SessionSubjectControls: (props: Record<string, unknown>) => (
+    <div
+      data-testid="session-capture"
+      data-subject={String(props.subjectRef)}
+      data-live={String(props.allowLive)}
+      data-manual={String(props.allowManual)}
+    />
+  ),
+}));
+
 const PARENT = '0199a8c0-6e72-7cd1-9be1-b3f51406728e';
 const CHILD = '0199a8c0-6e72-7cd1-9be1-b3f51406728f';
 
@@ -55,7 +66,16 @@ describe('Activity structure after reload', () => {
       screen.getByText(/Sessioni: live · Figli richiesti: confirm/),
     ).toBeTruthy();
     expect(screen.getByText(/2026-10-02T08:00:00Z/)).toBeTruthy();
-    await waitFor(() => expect(fetchFn).toHaveBeenCalledTimes(1));
+    expect(screen.getByTestId('session-capture').dataset.live).toBe('true');
+    const child = screen.getByText(/Fase uno · required/);
+    child.click();
+    await waitFor(() =>
+      expect(screen.getAllByTestId('session-capture')).toHaveLength(2),
+    );
+    const manual = screen.getAllByTestId('session-capture')[1];
+    expect(manual?.dataset.subject).toBe(CHILD);
+    expect(manual?.dataset.live).toBe('false');
+    expect(manual?.dataset.manual).toBe('true');
     expect(String(fetchFn.mock.calls[0]?.[0])).toContain(
       `/activities/${PARENT}/children`,
     );
