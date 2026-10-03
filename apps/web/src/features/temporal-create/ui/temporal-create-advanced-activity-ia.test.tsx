@@ -53,7 +53,7 @@ function openAdvanced() {
 }
 
 describe('Temporal Create Advanced Activity IA', () => {
-  it('renders a bounded Activity tree with root actions at the bottom', () => {
+  it('keeps planned Sessions independent from live Session capability', () => {
     openAdvanced();
 
     expect(
@@ -77,15 +77,31 @@ describe('Temporal Create Advanced Activity IA', () => {
       '.temporal-create-activity-tree__root-actions',
     );
     if (!rootActions) throw new Error('Expected root add actions.');
-    expect(within(rootActions).getByRole('button', { name: 'Sessione' })).toBeTruthy();
+    expect(
+      within(rootActions).getByRole('button', { name: 'Sessione' }),
+    ).toBeTruthy();
     expect(
       within(rootActions).getByRole('button', { name: 'Sotto-attività' }),
     ).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Aggiungi alla struttura' })).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: 'Aggiungi alla struttura' }),
+    ).toBeNull();
 
-    fireEvent.click(within(rootActions).getByRole('button', { name: 'Sessione' }));
+    const rootCapability = document.querySelector<HTMLElement>(
+      '[data-session-capability="activity"]',
+    );
+    if (!rootCapability) throw new Error('Expected root Session capability.');
+    const rootCapabilityCheckbox = within(rootCapability).getByRole(
+      'checkbox',
+    ) as HTMLInputElement;
+    expect(rootCapabilityCheckbox.checked).toBe(false);
+
+    fireEvent.click(
+      within(rootActions).getByRole('button', { name: 'Sessione' }),
+    );
     expect(screen.getByLabelText('Nome Sessione')).toBeTruthy();
     expect(document.querySelector('[data-create-planned-session]')).toBeTruthy();
+    expect(rootCapabilityCheckbox.checked).toBe(false);
 
     fireEvent.click(
       within(rootActions).getByRole('button', { name: 'Sotto-attività' }),
@@ -96,28 +112,31 @@ describe('Temporal Create Advanced Activity IA', () => {
       target: { value: 'Prima fase' },
     });
 
+    const childCapability = child.querySelector<HTMLElement>(
+      '[data-session-capability="sub-activity"]',
+    );
+    if (!childCapability)
+      throw new Error('Expected Sub-Activity Session capability.');
+    const childCapabilityCheckbox = within(childCapability).getByRole(
+      'checkbox',
+    ) as HTMLInputElement;
+    expect(childCapabilityCheckbox.checked).toBe(false);
+
     const childTime = within(child).getByRole('button', { name: 'Orario' });
     fireEvent.click(childTime);
-    expect(
-      child.querySelector('[data-create-subactivity-time]'),
-    ).toBeTruthy();
+    expect(child.querySelector('[data-create-subactivity-time]')).toBeTruthy();
 
     const childAddSession = within(child).getByRole('button', {
       name: 'Sessione',
     });
     fireEvent.click(childAddSession);
     expect(child.querySelector('[data-create-owner]')).toBeTruthy();
+    expect(childCapabilityCheckbox.checked).toBe(false);
 
-    const sessionToggle = document.querySelector(
-      '[data-create-structure-actions]',
-    );
-    if (!sessionToggle)
-      throw new Error('Expected Session control beside the title.');
-    expect(
-      (
-        within(sessionToggle as HTMLElement).getByRole('checkbox') as HTMLInputElement
-      ).checked,
-    ).toBe(true);
+    fireEvent.click(rootCapabilityCheckbox);
+    fireEvent.click(childCapabilityCheckbox);
+    expect(rootCapabilityCheckbox.checked).toBe(true);
+    expect(childCapabilityCheckbox.checked).toBe(true);
 
     expect(screen.queryByRole('button', { name: 'Avvia' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Pausa' })).toBeNull();
