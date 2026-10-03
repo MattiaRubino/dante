@@ -37,7 +37,7 @@
     "alembic_revision": "20261002_100",
     "sqlalchemy": {
       "mode": "orm_row",
-      "module": "dante.platform.database.mappings.activity_parent_actual_acknowledgement",
+      "module": "dante.platform.database.mappings.activity_decomposition_policy",
       "symbol": "ActivityParentActualAcknowledgementRow"
     },
     "runtime_acl_stage": "B14-U6"
