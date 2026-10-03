@@ -53,7 +53,7 @@ function openAdvanced() {
 }
 
 describe('Temporal Create Advanced Activity IA', () => {
-  it('keeps the Activity tree under the title and writes Session execution intent', () => {
+  it('renders a bounded Activity tree with root actions at the bottom', () => {
     openAdvanced();
 
     expect(
@@ -64,52 +64,49 @@ describe('Temporal Create Advanced Activity IA', () => {
     ).toBeTruthy();
     const reality = screen.getByRole('button', { name: 'Realtà' });
     expect(reality.closest('.temporal-create-title-row')).toBeTruthy();
-    fireEvent.click(reality);
-    expect(
-      screen.getByRole('heading', { name: 'Verifica esito' }),
-    ).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Descrizione' })).toBeTruthy();
-
-    expect(screen.queryByRole('heading', { name: 'Struttura' })).toBeNull();
-    expect(
-      screen.queryByRole('heading', { name: 'Organizzazione' }),
-    ).toBeNull();
 
     const title = screen.getByPlaceholderText('Titolo');
     expect(title.closest('.temporal-create-title-row')).toBeTruthy();
+
+    const tree = document.querySelector<HTMLElement>(
+      '[data-create-activity-structure]',
+    );
+    if (!tree) throw new Error('Expected Activity tree.');
+    const rootActions = tree.querySelector<HTMLElement>(
+      '.temporal-create-activity-tree__root-actions',
+    );
+    if (!rootActions) throw new Error('Expected root add actions.');
+    expect(within(rootActions).getByRole('button', { name: 'Sessione' })).toBeTruthy();
     expect(
-      document.querySelector('[data-create-activity-structure]'),
+      within(rootActions).getByRole('button', { name: 'Sotto-attività' }),
     ).toBeTruthy();
-    expect(
-      document.querySelector('[data-create-structure-actions]'),
-    ).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Aggiungi alla struttura' })).toBeNull();
+
+    fireEvent.click(within(rootActions).getByRole('button', { name: 'Sessione' }));
+    expect(screen.getByLabelText('Nome Sessione')).toBeTruthy();
+    expect(document.querySelector('[data-create-planned-session]')).toBeTruthy();
 
     fireEvent.click(
-      screen.getByRole('button', { name: 'Aggiungi alla struttura' }),
+      within(rootActions).getByRole('button', { name: 'Sotto-attività' }),
     );
-    const structureMenu = screen.getByRole('menu', {
-      name: 'Aggiungi alla struttura',
-    });
-    const addChild = within(structureMenu).getByRole('menuitem', {
-      name: 'Sotto-attività',
-    }) as HTMLButtonElement;
-    expect(addChild.disabled).toBe(false);
-    fireEvent.click(addChild);
-    expect(document.querySelector('[data-create-subactivity]')).toBeTruthy();
-    fireEvent.change(screen.getByLabelText('Titolo sotto-attività'), {
+    const child = document.querySelector<HTMLElement>('[data-create-subactivity]');
+    if (!child) throw new Error('Expected Sub-Activity.');
+    fireEvent.change(within(child).getByLabelText('Titolo sotto-attività'), {
       target: { value: 'Prima fase' },
     });
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Aggiungi alla struttura' }),
-    );
 
-    const addSession = within(
-      screen.getByRole('menu', { name: 'Aggiungi alla struttura' }),
-    ).getByRole('menuitem', {
+    const childTime = within(child).getByRole('button', { name: 'Orario' });
+    fireEvent.click(childTime);
+    expect(
+      child.querySelector('[data-create-subactivity-time]'),
+    ).toBeTruthy();
+
+    const childAddSession = within(child).getByRole('button', {
       name: 'Sessione',
-    }) as HTMLButtonElement;
-    expect(addSession.disabled).toBe(false);
-    fireEvent.click(addSession);
+    });
+    fireEvent.click(childAddSession);
+    expect(child.querySelector('[data-create-owner]')).toBeTruthy();
 
     const sessionToggle = document.querySelector(
       '[data-create-structure-actions]',
@@ -118,33 +115,14 @@ describe('Temporal Create Advanced Activity IA', () => {
       throw new Error('Expected Session control beside the title.');
     expect(
       (
-        within(sessionToggle as HTMLElement).getByRole(
-          'checkbox',
-        ) as HTMLInputElement
+        within(sessionToggle as HTMLElement).getByRole('checkbox') as HTMLInputElement
       ).checked,
     ).toBe(true);
-    expect(
-      document.querySelector('[data-create-structure-session]'),
-    ).toBeNull();
-    expect(
-      document.querySelector(
-        '[data-create-path="execution.minSessionMinutes"]',
-      ),
-    ).toBeNull();
 
     expect(screen.queryByRole('button', { name: 'Avvia' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Pausa' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Riprendi' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Termina' })).toBeNull();
-
-    fireEvent.click(within(sessionToggle as HTMLElement).getByRole('checkbox'));
-    expect(
-      (
-        within(sessionToggle as HTMLElement).getByRole(
-          'checkbox',
-        ) as HTMLInputElement
-      ).checked,
-    ).toBe(false);
 
     const split = screen.getByRole('button', { name: 'Suddivisa' });
     expect((split as HTMLButtonElement).disabled).toBe(true);

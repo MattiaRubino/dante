@@ -13,8 +13,11 @@ import {
   validateTemporalCreateFields,
   type TemporalCreateFields,
 } from '../model/temporal-create-session';
-import type { TemporalCreateU2AuthoringDraft } from '../model/temporal-create-u2-authoring';
-import type { TemporalCreatePlannedSliceDraft } from '../model/temporal-create-u2-authoring';
+import type {
+  TemporalCreateActivityChildDraft,
+  TemporalCreatePlannedSliceDraft,
+  TemporalCreateU2AuthoringDraft,
+} from '../model/temporal-create-u2-authoring';
 
 export type TemporalCreateU2Request =
   | Readonly<{ kind: 'activity'; request: TemporalAuthorActivityRequest }>
@@ -74,9 +77,6 @@ export function temporalCreateU2QuickIntentSupported(
   )
     return false;
 
-  // Reminder is a Schedule capability applied immediately after U2 authoring;
-  // every other Confirmation field still belongs to the historical Advanced
-  // runtime and therefore must stay at its default here.
   const confirmationWithoutReminder = {
     ...fields.confirmation,
     reminderLeadMinutes: defaults.confirmation.reminderLeadMinutes,
@@ -118,6 +118,76 @@ export function temporalCreateHasU6Structure(
   );
 }
 
+function activityLocalWindow(fields: TemporalCreateFields): Readonly<{
+  start: Temporal.PlainDateTime;
+  end: Temporal.PlainDateTime;
+}> | null {
+  if (fields.timeSemantics !== 'timed') return null;
+  try {
+    const start = Temporal.PlainDateTime.from(
+      `${fields.date}T${fields.startTime}`,
+    );
+    return Object.freeze({
+      start,
+      end: start.add({ minutes: fields.durationMinutes }),
+    });
+  } catch {
+    return null;
+  }
+}
+
+function childLocalWindow(
+  child: TemporalCreateActivityChildDraft,
+): Readonly<{
+  start: Temporal.PlainDateTime;
+  end: Temporal.PlainDateTime;
+}> | null {
+  if (!child.scheduleEnabled) return null;
+  try {
+    return Object.freeze({
+      start: Temporal.PlainDateTime.from(
+        `${child.startDate}T${child.startTime}`,
+      ),
+      end: Temporal.PlainDateTime.from(`${child.endDate}T${child.endTime}`),
+    });
+  } catch {
+    return null;
+  }
+}
+
+function sliceLocalWindow(
+  slice: TemporalCreatePlannedSliceDraft,
+): Readonly<{
+  start: Temporal.PlainDateTime;
+  end: Temporal.PlainDateTime;
+}> | null {
+  try {
+    return Object.freeze({
+      start: Temporal.PlainDateTime.from(`${slice.date}T${slice.startTime}`),
+      end: Temporal.PlainDateTime.from(`${slice.date}T${slice.endTime}`),
+    });
+  } catch {
+    return null;
+  }
+}
+
+function contained(
+  inner: Readonly<{
+    start: Temporal.PlainDateTime;
+    end: Temporal.PlainDateTime;
+  }>,
+  outer: Readonly<{
+    start: Temporal.PlainDateTime;
+    end: Temporal.PlainDateTime;
+  }>,
+): boolean {
+  return (
+    Temporal.PlainDateTime.compare(inner.start, inner.end) < 0 &&
+    Temporal.PlainDateTime.compare(inner.start, outer.start) >= 0 &&
+    Temporal.PlainDateTime.compare(inner.end, outer.end) <= 0
+  );
+}
+
 export function validateTemporalCreateU6Structure(
   fields: TemporalCreateFields,
   draft: TemporalCreateU2AuthoringDraft,
@@ -136,56 +206,97 @@ export function validateTemporalCreateU6Structure(
   ) {
     return 'Every Sub-Activity requires a title and at most 100 planned Sessions.';
   }
-  const allSlices = [
-    ...structure.plannedSlices,
-    ...structure.children.flatMap((child) => child.plannedSlices),
-  ];
-  try {
-    for (const slice of allSlices) {
-      const start = Temporal.PlainDateTime.from(
-        `${slice.date}T${slice.startTime}`,
-      );
-      const end = Temporal.PlainDateTime.from(`${slice.date}T${slice.endTime}`);
-      if (Temporal.PlainDateTime.compare(start, end) >= 0) {
-        return 'A planned Session must end after it starts on the selected date.';
+
+  const parent = activityLocalWindow(fields);
+  if (
+    (structure.plannedSlices.length > 0 ||
+      structure.children.some(
+        (child) => child.scheduleEnabled || child.plannedSlices.length > 0,
+      )) &&
+    parent === null
+  ) {
+    return 'Place the parent Activity before assigning times to Sub-Activities or Sessions.';
+  }
+
+  for (const slice of structure.plannedSlices) {
+    const window = sliceLocalWindow(slice);
+    if (window === null || parent === null) {
+      return 'Complete each Session date, start and end time.';
+    }
+    if (!contained(window, parent)) {
+      return 'Every Activity Session must stay inside the parent Activity time range.';
+    }
+  }
+
+  for (const child of structure.children) {
+    const childWindow = childLocalWindow(child);
+    if (child.scheduleEnabled) {
+      if (childWindow === null || parent === null) {
+        return 'Complete the Sub-Activity start and end time.';
+      }
+      if (!contained(childWindow, parent)) {
+        return 'Every Sub-Activity time range must stay inside the parent Activity.';
       }
     }
-  } catch {
-    return 'Complete each planned Session date, start and end time.';
+    for (const slice of child.plannedSlices) {
+      const window = sliceLocalWindow(slice);
+      if (window === null || parent === null) {
+        return 'Complete each Session date, start and end time.';
+      }
+      const ownerWindow = childWindow ?? parent;
+      if (!contained(window, ownerWindow)) {
+        return child.scheduleEnabled
+          ? 'Every Sub-Activity Session must stay inside its Sub-Activity time range.'
+          : 'Every Sub-Activity Session must stay inside the parent Activity time range.';
+      }
+    }
   }
-  if (
-    structure.children.some((child) => child.plannedSlices.length > 0) &&
-    (fields.timeSemantics !== 'timed' || fields.timeMode !== 'zoned')
-  ) {
-    return 'Place the parent Activity in a named time zone before planning a child Session.';
-  }
+
   return null;
 }
 
-function plannedSliceInput(
+function localIntervalPlacement(
   fields: TemporalCreateFields,
-  slice: TemporalCreatePlannedSliceDraft,
+  start: Temporal.PlainDateTime,
+  end: Temporal.PlainDateTime,
 ): TemporalSchedulePlacementInput {
-  const startsLocalAt = Temporal.PlainDateTime.from(
-    `${slice.date}T${slice.startTime}`,
-  );
-  const endsLocalAt = Temporal.PlainDateTime.from(
-    `${slice.date}T${slice.endTime}`,
-  );
   if (fields.timeMode === 'zoned') {
     return Object.freeze({
       kind: 'named-zone-local-interval' as const,
-      startsLocalAt,
-      endsLocalAt,
+      startsLocalAt: start,
+      endsLocalAt: end,
       zoneId: fields.timeZoneId,
       disambiguation: fields.timeDisambiguation,
     });
   }
   return Object.freeze({
     kind: 'floating-local-interval' as const,
-    startsLocalAt,
-    endsLocalAt,
+    startsLocalAt: start,
+    endsLocalAt: end,
   });
+}
+
+function plannedSliceInput(
+  fields: TemporalCreateFields,
+  slice: TemporalCreatePlannedSliceDraft,
+): TemporalSchedulePlacementInput {
+  return localIntervalPlacement(
+    fields,
+    Temporal.PlainDateTime.from(`${slice.date}T${slice.startTime}`),
+    Temporal.PlainDateTime.from(`${slice.date}T${slice.endTime}`),
+  );
+}
+
+function childPlacementInput(
+  fields: TemporalCreateFields,
+  child: TemporalCreateActivityChildDraft,
+): TemporalSchedulePlacementInput | undefined {
+  if (!child.scheduleEnabled) return undefined;
+  return localIntervalPlacement(
+    fields,
+    Temporal.PlainDateTime.from(`${child.startDate}T${child.startTime}`),
+    Temporal.PlainDateTime.from(`${child.endDate}T${child.endTime}`),
+  );
 }
 
 /** U2 deliberately supersedes the B05 requirement that contextId be non-empty. */
@@ -235,8 +346,6 @@ function placementInput(
 
   if (fields.timeSemantics === 'all-day') {
     const startDate = Temporal.PlainDate.from(fields.date);
-    // Quick exposes the same explicit inclusive start/end date range for both
-    // Activity and Event. The canonical Schedule stores an exclusive end.
     const inclusiveEnd = Temporal.PlainDate.from(
       fields.kind === 'event' ? fields.event.allDayEndDate : draft.endDate,
     );
@@ -344,6 +453,9 @@ export function buildTemporalCreateU2Request(
               requirementCode: child.requirementCode,
               presentationOrder: index + 1,
               sessionCaptureMode: child.captureMode,
+              ...(childPlacementInput(fields, child)
+                ? { placement: childPlacementInput(fields, child) }
+                : {}),
               plannedSlices: child.plannedSlices.map((slice) =>
                 plannedSliceInput(fields, slice),
               ),

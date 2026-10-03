@@ -41,6 +41,11 @@ export type TemporalCreateActivityChildDraft = Readonly<{
   title: string;
   requirementCode: 'required' | 'optional';
   captureMode: TemporalSessionCaptureMode;
+  scheduleEnabled: boolean;
+  startDate: string;
+  startTime: string;
+  endDate: string;
+  endTime: string;
   plannedSlices: readonly TemporalCreatePlannedSliceDraft[];
 }>;
 

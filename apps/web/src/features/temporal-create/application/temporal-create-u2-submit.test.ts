@@ -9,6 +9,7 @@ import {
   buildTemporalCreateU2Request,
   temporalCreateU2QuickIntentSupported,
   validateTemporalCreateU2QuickFields,
+  validateTemporalCreateU6Structure,
 } from './temporal-create-u2-submit';
 
 describe('U2 Quick Create submit mapping', () => {
@@ -172,10 +173,12 @@ describe('U2 Quick Create submit mapping', () => {
     expect(temporalCreateU2QuickIntentSupported(recurring)).toBe(false);
   });
 
-  it('authors a Session minimum with children in the same Activity command', () => {
+  it('authors a Session minimum and a bounded Sub-Activity in the same Activity command', () => {
     const baseline = createTemporalCreateFields({
       kind: 'activity',
       date: '2026-10-20',
+      startTime: '09:00',
+      durationMinutes: 240,
     });
     const fields = createTemporalCreateFields({
       ...baseline,
@@ -195,11 +198,17 @@ describe('U2 Quick Create submit mapping', () => {
             title: 'Prepare',
             requirementCode: 'required',
             captureMode: 'live',
+            scheduleEnabled: true,
+            startDate: '2026-10-20',
+            startTime: '10:00',
+            endDate: '2026-10-20',
+            endTime: '11:30',
             plannedSlices: [],
           },
         ],
       },
     });
+    expect(validateTemporalCreateU6Structure(fields, draft)).toBeNull();
     expect(temporalCreateU2QuickIntentSupported(fields)).toBe(true);
     const mapped = buildTemporalCreateU2Request(fields, draft, 'u6:minimum');
     if (mapped.kind !== 'activity')
@@ -208,10 +217,63 @@ describe('U2 Quick Create submit mapping', () => {
       1_500_000_000,
     );
     expect(mapped.request.children?.[0]?.title).toBe('Prepare');
+    expect(mapped.request.children?.[0]?.placement?.kind).toBe(
+      'floating-local-interval',
+    );
     const unsupported = createTemporalCreateFields({
       ...fields,
       execution: { ...fields.execution, maxSessions: 3 },
     });
     expect(temporalCreateU2QuickIntentSupported(unsupported)).toBe(false);
+  });
+
+  it('rejects child and Session time ranges outside the root Activity envelope', () => {
+    const fields = createTemporalCreateFields({
+      kind: 'activity',
+      date: '2026-10-20',
+      startTime: '09:00',
+      durationMinutes: 120,
+    });
+    const initial = createTemporalCreateU2AuthoringDraft(fields);
+    const outsideChild = patchTemporalCreateU2AuthoringDraft(initial, {
+      activityStructure: {
+        ...initial.activityStructure,
+        children: [
+          {
+            id: 'child',
+            title: 'Late child',
+            requirementCode: 'required',
+            captureMode: 'disabled',
+            scheduleEnabled: true,
+            startDate: '2026-10-20',
+            startTime: '10:30',
+            endDate: '2026-10-20',
+            endTime: '11:30',
+            plannedSlices: [],
+          },
+        ],
+      },
+    });
+    expect(validateTemporalCreateU6Structure(fields, outsideChild)).toBe(
+      'Every Sub-Activity time range must stay inside the parent Activity.',
+    );
+
+    const outsideSession = patchTemporalCreateU2AuthoringDraft(initial, {
+      activityStructure: {
+        ...initial.activityStructure,
+        plannedSlices: [
+          {
+            id: 'session',
+            title: 'Overflow',
+            date: '2026-10-20',
+            startTime: '10:30',
+            endTime: '11:30',
+          },
+        ],
+      },
+    });
+    expect(validateTemporalCreateU6Structure(fields, outsideSession)).toBe(
+      'Every Activity Session must stay inside the parent Activity time range.',
+    );
   });
 });
