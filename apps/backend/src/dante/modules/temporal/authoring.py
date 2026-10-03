@@ -152,6 +152,39 @@ def _derived_operation(prefix: str, operation_id: str) -> str:
     return f"{prefix}:{digest}"
 
 
+async def _schedule_role(
+    session: AsyncSession,
+    *,
+    self_person_ref: NativeRef,
+    activity_ref: NativeRef,
+    schedule: EstablishedScheduleView,
+    role_code: Literal["envelope", "planned"],
+    presentation_order: int,
+) -> None:
+    accepted = (
+        await session.execute(
+            text("""
+                SELECT * FROM dante.set_self_activity_schedule_role(
+                    :actor,:activity,:schedule,:role,:position
+                )
+            """),
+            {
+                "actor": self_person_ref,
+                "activity": activity_ref,
+                "schedule": schedule.schedule_ref,
+                "role": role_code,
+                "position": presentation_order,
+            },
+        )
+    ).mappings().one()
+    # A command created before this role relation existed can replay once and
+    # attach its previously implicit purpose in the same transaction.
+    if bool(accepted["replayed"]) and not schedule.replayed:
+        raise TemporalAuthoringOperationIdReuseError(
+            "Create and Schedule role replay state diverged."
+        )
+
+
 def _title(value: str) -> str:
     normalized = value.strip()
     if not normalized or len(normalized) > 300:
@@ -664,6 +697,12 @@ class TemporalAuthoringApplication:
                         raise TemporalAuthoringOperationIdReuseError(
                             "Create and Schedule replay state diverged."
                         )
+                    if subject_kind == "activity":
+                        await _schedule_role(
+                            session, self_person_ref=self_person_ref,
+                            activity_ref=item.subject_native_ref, schedule=schedule,
+                            role_code="envelope", presentation_order=0,
+                        )
                 if session_capture_mode is not None:
                     policy_operation = _derived_operation(
                         "b14-u6-execution-policy", normalized_operation
@@ -747,6 +786,11 @@ class TemporalAuthoringApplication:
                         raise TemporalAuthoringOperationIdReuseError(
                             "Create and planned Schedule replay state diverged."
                         )
+                    await _schedule_role(
+                        session, self_person_ref=self_person_ref,
+                        activity_ref=item.subject_native_ref, schedule=accepted,
+                        role_code="planned", presentation_order=index + 1,
+                    )
                     planned_results.append(accepted)
 
                 child_results: list[AuthoredActivityChild] = []
@@ -824,6 +868,12 @@ class TemporalAuthoringApplication:
                             raise TemporalAuthoringOperationIdReuseError(
                                 "Create and child Schedule replay state diverged."
                             )
+                        await _schedule_role(
+                            session, self_person_ref=self_person_ref,
+                            activity_ref=child_item.subject_native_ref,
+                            schedule=child_schedule, role_code="envelope",
+                            presentation_order=0,
+                        )
                     child_slices: list[EstablishedScheduleView] = []
                     for slice_index, child_planned in enumerate(child.planned_slices):
                         accepted = await establish_schedule_in_session(
@@ -840,6 +890,12 @@ class TemporalAuthoringApplication:
                             raise TemporalAuthoringOperationIdReuseError(
                                 "Create and child planned Schedule replay state diverged."
                             )
+                        await _schedule_role(
+                            session, self_person_ref=self_person_ref,
+                            activity_ref=child_item.subject_native_ref,
+                            schedule=accepted, role_code="planned",
+                            presentation_order=slice_index + 1,
+                        )
                         child_slices.append(accepted)
                     if child.session_capture_mode is not None:
                         policy_fingerprint = _json_fingerprint(
@@ -935,6 +991,8 @@ class TemporalAuthoringApplication:
             if constraint in {
                 "activity_decomposition_temporal_containment",
                 "activity_decomposition_depth_or_parent",
+                "activity_schedule_role_conflict",
+                "uq_activity_schedule_role_owner_role_order",
             }:
                 raise TemporalAuthoringStructureConflictError() from exc
             raise TemporalAuthoringPersistenceError() from exc
@@ -950,6 +1008,8 @@ class TemporalAuthoringApplication:
             if constraint in {
                 "activity_decomposition_temporal_containment",
                 "activity_decomposition_depth_or_parent",
+                "activity_schedule_role_conflict",
+                "activity_schedule_role_owner_unavailable",
             }:
                 raise TemporalAuthoringStructureConflictError() from exc
             raise TemporalAuthoringPersistenceError() from exc

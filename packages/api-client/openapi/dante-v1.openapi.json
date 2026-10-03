@@ -1112,6 +1112,17 @@
             "title": "Placement Material State Ref",
             "type": "string"
           },
+          "presentation_order": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Presentation Order"
+          },
           "resolved_end_at": {
             "anyOf": [
               {
@@ -1135,6 +1146,18 @@
               }
             ],
             "title": "Resolved Start At"
+          },
+          "role_code": {
+            "anyOf": [
+              {
+                "enum": ["envelope", "planned"],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role Code"
           },
           "schedule_ref": {
             "format": "uuid",
@@ -1202,6 +1225,8 @@
         },
         "required": [
           "schedule_ref",
+          "role_code",
+          "presentation_order",
           "placement_material_state_ref",
           "temporal_form",
           "start_date",
@@ -14859,7 +14884,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -15201,7 +15226,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -15474,7 +15499,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -15754,7 +15779,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -16078,7 +16103,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -16368,7 +16393,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -16648,7 +16673,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -16947,7 +16972,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -17240,7 +17265,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -17549,7 +17574,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -17852,7 +17877,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -18161,7 +18186,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -18472,7 +18497,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -18778,7 +18803,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -19078,7 +19103,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -19388,7 +19413,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -19681,7 +19706,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -19967,7 +19992,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -20271,7 +20296,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -20583,7 +20608,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -20871,7 +20896,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -21157,7 +21182,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -21469,7 +21494,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -21729,7 +21754,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -21983,7 +22008,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -22227,7 +22252,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -22470,7 +22495,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -22961,7 +22986,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -23205,7 +23230,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -23449,7 +23474,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -23707,7 +23732,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content",
+            "description": "Unprocessable Entity",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -28494,7 +28519,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           },
           "500": {
             "content": {
@@ -28684,7 +28709,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           },
           "500": {
             "content": {
@@ -28785,7 +28810,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           },
           "500": {
             "content": {
@@ -28969,7 +28994,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           }
         },
         "summary": "Create Self Plan Dependency",
@@ -29159,7 +29184,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           }
         },
         "summary": "Revise Self Plan Dependency",
@@ -29345,7 +29370,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           },
           "500": {
             "content": {
@@ -29466,7 +29491,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           },
           "500": {
             "content": {
@@ -29577,7 +29602,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           },
           "500": {
             "content": {
@@ -29668,7 +29693,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           }
         },
         "summary": "Assess Plan Step Execution",
@@ -30883,7 +30908,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           },
           "503": {
             "content": {

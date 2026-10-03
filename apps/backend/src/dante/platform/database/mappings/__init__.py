@@ -125,6 +125,7 @@ MAPPED_TABLES: tuple[Table, ...] = cast(
         event.EventAgendaMutationOperationRow.__table__,
         event.EventCreateOperationRow.__table__,
         schedule.ScheduleRow.__table__,
+        schedule.ActivityScheduleRoleRow.__table__,
         schedule_reminder.ScheduleReminderRow.__table__,
         schedule_reminder.ScheduleReminderConfigurationStateRow.__table__,
         schedule_reminder.ScheduleReminderCurrentHistoryRow.__table__,

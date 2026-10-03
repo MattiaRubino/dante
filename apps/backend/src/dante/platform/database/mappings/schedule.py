@@ -48,6 +48,37 @@ class ScheduleRow(Base):
     subject_native_ref: Mapped[NativeRef] = mapped_column(nullable=False)
 
 
+class ActivityScheduleRoleRow(Base):
+    """Accepted Activity Schedule purpose; never a Session execution fact."""
+
+    __tablename__ = "activity_schedule_role"
+    __table_args__ = (
+        UniqueConstraint(
+            "activity_ref", "role_code", "presentation_order",
+            name="uq_activity_schedule_role_owner_role_order",
+        ),
+        CheckConstraint("role_code IN ('envelope','planned')", name="role"),
+        CheckConstraint(
+            "(role_code='envelope' AND presentation_order=0) OR "
+            "(role_code='planned' AND presentation_order BETWEEN 1 AND 100)",
+            name="order",
+        ),
+        ForeignKeyConstraint(
+            ["schedule_ref"], ["dante.schedule.schedule_ref"],
+            name="fk_activity_schedule_role_schedule",
+        ),
+        ForeignKeyConstraint(
+            ["activity_ref"], ["dante.activity_intention.activity_ref"],
+            name="fk_activity_schedule_role_activity",
+        ),
+    )
+
+    schedule_ref: Mapped[ScopedRecordRef] = mapped_column(primary_key=True)
+    activity_ref: Mapped[NativeRef] = mapped_column(nullable=False)
+    role_code: Mapped[str] = mapped_column(Text, nullable=False)
+    presentation_order: Mapped[int] = mapped_column(nullable=False)
+
+
 class ScheduleEstablishOperationRow(Base):
     """Idempotency receipt for one self-scoped accepted Schedule establishment."""
 

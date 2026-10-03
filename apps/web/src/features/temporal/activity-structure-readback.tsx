@@ -8,6 +8,8 @@ type CaptureMode = 'disabled' | 'record' | 'live' | 'record_and_live';
 
 type Schedule = Readonly<{
   scheduleRef: string;
+  roleCode: 'envelope' | 'planned' | null;
+  presentationOrder: number | null;
   temporalForm: string;
   start: string | null;
   end: string | null;
@@ -40,7 +42,16 @@ function schedule(value: unknown): Schedule {
   const row = object(value);
   if (
     typeof row.schedule_ref !== 'string' ||
-    typeof row.temporal_form !== 'string'
+    typeof row.temporal_form !== 'string' ||
+    (row.role_code !== null &&
+      row.role_code !== undefined &&
+      row.role_code !== 'envelope' &&
+      row.role_code !== 'planned') ||
+    (row.presentation_order !== null &&
+      row.presentation_order !== undefined &&
+      (typeof row.presentation_order !== 'number' ||
+        !Number.isInteger(row.presentation_order) ||
+        row.presentation_order < 0))
   ) {
     throw new Error('Uno Schedule della struttura non è valido.');
   }
@@ -55,6 +66,9 @@ function schedule(value: unknown): Schedule {
   }
   return Object.freeze({
     scheduleRef: row.schedule_ref,
+    roleCode: row.role_code === undefined ? null : row.role_code,
+    presentationOrder:
+      row.presentation_order === undefined ? null : row.presentation_order,
     temporalForm: row.temporal_form,
     start: start ?? null,
     end: end ?? null,
@@ -121,8 +135,18 @@ function Schedules({ rows }: Readonly<{ rows: readonly Schedule[] }>) {
     <ul>
       {rows.map((row) => (
         <li key={row.scheduleRef}>
-          Schedule · {row.temporalForm} · {row.start ?? 'senza inizio'}
+          {row.roleCode === 'planned'
+            ? `Sessione pianificata ${row.presentationOrder ?? ''}`
+            : row.roleCode === 'envelope'
+              ? 'Finestra Activity'
+              : 'Schedule'}{' '}
+          · {row.temporalForm} · {row.start ?? 'senza inizio'}
           {row.end === null ? '' : ` → ${row.end}`}
+          {row.roleCode === 'planned' &&
+          row.end !== null &&
+          Date.parse(row.end) <= Date.now()
+            ? ' · Pianificazione conclusa; verifica separatamente Session/Actual'
+            : ''}
         </li>
       ))}
     </ul>

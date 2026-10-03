@@ -56,6 +56,8 @@ class ActivityScheduleResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     schedule_ref: UUID
+    role_code: Literal["envelope", "planned"] | None
+    presentation_order: int | None
     placement_material_state_ref: UUID
     temporal_form: Literal[
         "date_span", "floating_local", "named_zone_local", "absolute", "coarse_local_period"
@@ -154,13 +156,26 @@ def _problem(exc: DBAPIError) -> ProblemError:
     return _unavailable()
 
 
-def _owner_schedules(rows: list, activity_ref: UUID) -> list[ActivityScheduleResponse]:
+def _owner_schedules(
+    rows: list, activity_ref: UUID,
+    roles: dict[UUID, tuple[Literal["envelope", "planned"], int]],
+) -> list[ActivityScheduleResponse]:
     return [
         ActivityScheduleResponse(
-            **{key: value for key, value in row.items() if key != "subject_native_ref"}
+            **{key: value for key, value in row.items() if key != "subject_native_ref"},
+            role_code=roles[row["schedule_ref"]][0] if row["schedule_ref"] in roles else None,
+            presentation_order=roles[row["schedule_ref"]][1] if row["schedule_ref"] in roles else None,
         )
-        for row in rows
-        if row["subject_native_ref"] == activity_ref
+        for row in sorted(
+            (row for row in rows if row["subject_native_ref"] == activity_ref),
+            key=lambda row: (
+                0 if roles.get(row["schedule_ref"], (None, 0))[0] == "envelope"
+                else 1 if roles.get(row["schedule_ref"], (None, 0))[0] == "planned"
+                else 2,
+                roles.get(row["schedule_ref"], (None, 0))[1],
+                str(row["schedule_ref"]),
+            ),
+        )
     ]
 
 
@@ -255,6 +270,26 @@ async def get_activity_children(
                 .mappings()
                 .all()
             )
+            role_rows = (
+                await session.execute(
+                    text("""
+                        SELECT * FROM dante.get_self_activity_schedule_roles(
+                            :actor,CAST(:subjects AS uuid[])
+                        )
+                    """),
+                    {
+                        "actor": context.self_person_ref,
+                        "subjects": [
+                            parent_activity_ref,
+                            *(row["child_activity_ref"] for row in rows),
+                        ],
+                    },
+                )
+            ).mappings().all()
+            roles = {
+                row["schedule_ref"]: (row["role_code"], row["presentation_order"])
+                for row in role_rows
+            }
             modes = {}
             for child in rows:
                 modes[child["child_activity_ref"]] = (
@@ -273,12 +308,12 @@ async def get_activity_children(
         parent_activity_ref=parent_activity_ref,
         session_capture_mode=owner["mode_code"],
         child_guard_mode=child_guard_mode,
-        schedules=_owner_schedules(schedule_rows, parent_activity_ref),
+        schedules=_owner_schedules(schedule_rows, parent_activity_ref, roles),
         children=[
             ActivityChildResponse(
                 **{key: value for key, value in row.items() if key != "current_from_at"},
                 session_capture_mode=modes[row["child_activity_ref"]],
-                schedules=_owner_schedules(schedule_rows, row["child_activity_ref"]),
+                schedules=_owner_schedules(schedule_rows, row["child_activity_ref"], roles),
             )
             for row in rows
         ],

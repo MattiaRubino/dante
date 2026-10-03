@@ -40,12 +40,20 @@ export const ActivityChildrenResponse = /*#__PURE__*/ zod.object({
               /*#__PURE__*/ zod.null(),
             ]),
             placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
+            presentation_order: /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod.int(),
+              /*#__PURE__*/ zod.null(),
+            ]),
             resolved_end_at: /*#__PURE__*/ zod.union([
               /*#__PURE__*/ zod.iso.datetime({ offset: true }),
               /*#__PURE__*/ zod.null(),
             ]),
             resolved_start_at: /*#__PURE__*/ zod.union([
               /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+              /*#__PURE__*/ zod.null(),
+            ]),
+            role_code: /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod.enum(['envelope', 'planned']),
               /*#__PURE__*/ zod.null(),
             ]),
             schedule_ref: /*#__PURE__*/ zod.uuid(),
@@ -113,12 +121,20 @@ export const ActivityChildrenResponse = /*#__PURE__*/ zod.object({
           /*#__PURE__*/ zod.null(),
         ]),
         placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
+        presentation_order: /*#__PURE__*/ zod.union([
+          /*#__PURE__*/ zod.int(),
+          /*#__PURE__*/ zod.null(),
+        ]),
         resolved_end_at: /*#__PURE__*/ zod.union([
           /*#__PURE__*/ zod.iso.datetime({ offset: true }),
           /*#__PURE__*/ zod.null(),
         ]),
         resolved_start_at: /*#__PURE__*/ zod.union([
           /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+          /*#__PURE__*/ zod.null(),
+        ]),
+        role_code: /*#__PURE__*/ zod.union([
+          /*#__PURE__*/ zod.enum(['envelope', 'planned']),
           /*#__PURE__*/ zod.null(),
         ]),
         schedule_ref: /*#__PURE__*/ zod.uuid(),

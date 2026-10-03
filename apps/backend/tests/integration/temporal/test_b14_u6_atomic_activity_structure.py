@@ -99,9 +99,14 @@ async def test_root_children_and_planned_slices_are_atomic_and_replayable(
             child.item.subject_native_ref for child in created.children
         ]
         assert len(current.schedules) == 3
+        assert [(schedule.role_code, schedule.presentation_order) for schedule in current.schedules] == [
+            ("envelope", 0), ("planned", 1), ("planned", 2),
+        ]
         assert len(current.children[0].schedules) == 1
+        assert current.children[0].schedules[0].role_code == "envelope"
         assert current.children[0].session_capture_mode == "live"
         assert len(current.children[1].schedules) == 1
+        assert current.children[1].schedules[0].role_code == "planned"
         with pytest.raises(TemporalAuthoringOperationIdReuseError):
             await authoring.create_activity(
                 self_person_ref=actor,
