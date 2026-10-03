@@ -66,16 +66,23 @@ export function SessionSubjectControls({
   label,
   variant = 'detail',
   interactive = true,
+  allowLive = true,
+  allowManual = false,
 }: Readonly<{
   kind: SessionSubjectKind;
   subjectRef: string;
   label: string;
   variant?: 'detail' | 'card';
   interactive?: boolean;
+  allowLive?: boolean;
+  allowManual?: boolean;
 }>) {
   const [sessions, setSessions] = useState<readonly TemporalSessionView[]>([]);
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [manualOpen, setManualOpen] = useState(false);
+  const [manualStart, setManualStart] = useState('');
+  const [manualEnd, setManualEnd] = useState('');
 
   const reload = useCallback(async () => {
     const listed = await source.list(kind, subjectRef);
@@ -116,7 +123,9 @@ export function SessionSubjectControls({
       .start(kind, subjectRef, operationId())
       .then(() => reload())
       .then(() => setMessage(`Sessione avviata · ${label}`))
-      .catch((error: unknown) => recoverAfterRejection('Avvio sessione rifiutato.', error))
+      .catch((error: unknown) =>
+        recoverAfterRejection('Avvio sessione rifiutato.', error),
+      )
       .finally(() => setPending(false));
   };
 
@@ -124,7 +133,11 @@ export function SessionSubjectControls({
     if (!interactive || openSession === null) return;
     setPending(true);
     void source
-      .end(openSession.sessionRef, openSession.timingMaterialStateRef, operationId())
+      .end(
+        openSession.sessionRef,
+        openSession.timingMaterialStateRef,
+        operationId(),
+      )
       .then(() => reload())
       .then(() => setMessage(`Sessione chiusa · ${label}`))
       .catch((error: unknown) =>
@@ -137,7 +150,11 @@ export function SessionSubjectControls({
     if (!interactive || openSession === null) return;
     setPending(true);
     void source
-      .pause(openSession.sessionRef, openSession.timingMaterialStateRef, operationId())
+      .pause(
+        openSession.sessionRef,
+        openSession.timingMaterialStateRef,
+        operationId(),
+      )
       .then(() => reload())
       .then(() => setMessage('Sessione in pausa · ' + label))
       .catch((error: unknown) =>
@@ -150,7 +167,11 @@ export function SessionSubjectControls({
     if (!interactive || openSession === null) return;
     setPending(true);
     void source
-      .resume(openSession.sessionRef, openSession.timingMaterialStateRef, operationId())
+      .resume(
+        openSession.sessionRef,
+        openSession.timingMaterialStateRef,
+        operationId(),
+      )
       .then(() => reload())
       .then(() => setMessage('Sessione ripresa · ' + label))
       .catch((error: unknown) =>
@@ -161,13 +182,50 @@ export function SessionSubjectControls({
 
   const card = variant === 'card';
 
+  const recordManual = () => {
+    if (!interactive || kind !== 'activity') return;
+    const started = new Date(manualStart);
+    const ended = new Date(manualEnd);
+    if (
+      !Number.isFinite(started.getTime()) ||
+      !Number.isFinite(ended.getTime()) ||
+      started >= ended ||
+      ended > new Date()
+    ) {
+      setMessage('Inserisci un inizio e una fine già trascorsi, in ordine.');
+      return;
+    }
+    setPending(true);
+    void source
+      .recordManual(
+        subjectRef,
+        operationId(),
+        started.toISOString(),
+        ended.toISOString(),
+      )
+      .then(() => reload())
+      .then(() => {
+        setManualOpen(false);
+        setManualStart('');
+        setManualEnd('');
+        setMessage(`Sessione registrata · ${label}`);
+      })
+      .catch((error: unknown) =>
+        recoverAfterRejection('Registrazione rifiutata.', error),
+      )
+      .finally(() => setPending(false));
+  };
+
   return (
     <div
       className={`timeline-session-controls${card ? ' is-card' : ''}`}
       data-timeline-session-subject={subjectRef}
     >
-      <div className="timeline-session-controls__runtime-actions" aria-label={`Sessione · ${label}`}>
-        {openSession === null ? (
+      <div
+        className="timeline-session-controls__runtime-actions"
+        aria-label={`Sessione · ${label}`}
+      >
+        {!allowLive ? null : openSession === null ? (
           <RuntimeButton
             label="Avvia"
             symbol="▶"
@@ -201,17 +259,69 @@ export function SessionSubjectControls({
             />
           </>
         )}
+        {allowManual && kind === 'activity' ? (
+          <button
+            type="button"
+            disabled={pending || !interactive}
+            onClick={() => setManualOpen((value) => !value)}
+          >
+            Registra sessione
+          </button>
+        ) : null}
       </div>
 
+      {manualOpen && allowManual && kind === 'activity' ? (
+        <form
+          className="timeline-session-controls__manual"
+          aria-label={`Registra sessione · ${label}`}
+          onSubmit={(event) => {
+            event.preventDefault();
+            recordManual();
+          }}
+        >
+          <label>
+            Inizio{' '}
+            <input
+              type="datetime-local"
+              required
+              value={manualStart}
+              disabled={pending || !interactive}
+              onChange={(event) => setManualStart(event.target.value)}
+            />
+          </label>
+          <label>
+            Fine{' '}
+            <input
+              type="datetime-local"
+              required
+              value={manualEnd}
+              disabled={pending || !interactive}
+              onChange={(event) => setManualEnd(event.target.value)}
+            />
+          </label>
+          <button type="submit" disabled={pending || !interactive}>
+            Salva sessione
+          </button>
+        </form>
+      ) : null}
+
       {card || openSession === null ? null : (
-        <span className="timeline-session-duration" aria-label="Durata sessione">
+        <span
+          className="timeline-session-duration"
+          aria-label="Durata sessione"
+        >
           Attiva {formatDuration(openSession.activeSeconds)} · Pausa{' '}
           {formatDuration(openSession.pausedSeconds)} · Totale{' '}
           {formatDuration(openSession.elapsedSeconds)}
         </span>
       )}
       {message === null ? null : (
-        <span role="status" className={card ? 'timeline-session-controls__card-status' : undefined}>
+        <span
+          role="status"
+          className={
+            card ? 'timeline-session-controls__card-status' : undefined
+          }
+        >
           {message}
         </span>
       )}

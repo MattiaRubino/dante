@@ -124,7 +124,7 @@
       "properties": {
         "completed_stages": {
           "type": "array",
-          "maxItems": 23,
+          "maxItems": 24,
           "uniqueItems": true,
           "items": {
             "enum": [
@@ -150,7 +150,8 @@
               "B14-U6-D",
               "B14-U6-B",
               "B14-U6-C",
-              "B14-U6-GUARD"
+              "B14-U6-GUARD",
+              "B14-U6-MANUAL"
             ]
           }
         },
@@ -412,7 +413,8 @@
                   "B14-U6-D",
                   "B14-U6-B",
                   "B14-U6-C",
-                  "B14-U6-GUARD"
+                  "B14-U6-GUARD",
+                  "B14-U6-MANUAL"
                 ]
               }
             }

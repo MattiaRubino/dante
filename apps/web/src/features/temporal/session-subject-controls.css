@@ -12,6 +12,34 @@
   gap: 5px;
 }
 
+.timeline-session-controls__manual {
+  display: flex;
+  flex: 1 1 100%;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: #1b2632;
+}
+
+.timeline-session-controls__manual label {
+  display: grid;
+  gap: 4px;
+  color: #d5deea;
+  font-size: 12px;
+}
+
+.timeline-session-controls__manual input {
+  max-width: 100%;
+  color: #eaf0f8;
+  background: #293646;
+  border: 1px solid #526174;
+  border-radius: 6px;
+  padding: 5px;
+}
+
 .timeline-session-controls__runtime-button {
   display: inline-grid;
   width: 30px;

@@ -46,21 +46,22 @@
       "B14-U6-D",
       "B14-U6-B",
       "B14-U6-C",
-      "B14-U6-GUARD"
+      "B14-U6-GUARD",
+      "B14-U6-MANUAL"
     ],
     "standalone_entries": {
-      "tables": 209,
+      "tables": 210,
       "views": 5,
-      "routines": 168,
-      "total": 382
+      "routines": 169,
+      "total": 384
     },
     "embedded_objects": {
       "triggers": 102,
-      "physical_indexes": 430
+      "physical_indexes": 432
     },
     "constraints": {
-      "foreign_keys": 365,
-      "check_constraints": 525
+      "foreign_keys": 367,
+      "check_constraints": 527
     }
   },
   "technical_foundation": {

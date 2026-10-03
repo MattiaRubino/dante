@@ -39,6 +39,11 @@ class SessionEndCommand(SessionCommand):
     expected_material_state_ref: UUID = Field(strict=False)
 
 
+class SessionManualCommand(SessionCommand):
+    started_at: datetime
+    ended_at: datetime
+
+
 SessionTransitionCommand = SessionEndCommand
 
 
@@ -114,8 +119,8 @@ def _problem(exc: Exception) -> ProblemError:
             status=409,
             code="temporal.session.capture_disabled",
             category="conflict",
-            title="Live Session capture disabled",
-            detail="Enable live capture on this Activity before starting a Session.",
+            title="Session capture disabled",
+            detail="Enable the requested Session capture mode on this Activity.",
         )
     if isinstance(exc, SessionInputError):
         return ProblemError(
@@ -229,6 +234,38 @@ async def start_occurrence_session(
     response: Response,
 ) -> SessionResponse:
     return await _start("occurrence", occurrence_ref, payload, context, application, response)
+
+
+@router.post(
+    "/activities/{activity_ref}/sessions/manual",
+    response_model=SessionResponse,
+    operation_id="temporal_record_manual_activity_session",
+)
+async def record_manual_activity_session(
+    activity_ref: UUID,
+    payload: SessionManualCommand,
+    context: MutatingContext,
+    application: Application,
+    response: Response,
+) -> SessionResponse:
+    try:
+        view = await application.record_manual(
+            self_person_ref=context.self_person_ref,
+            operation_id=payload.operation_id,
+            activity_ref=NativeRef(activity_ref),
+            started_at=payload.started_at,
+            ended_at=payload.ended_at,
+        )
+    except (
+        SessionInputError,
+        SessionNotFoundError,
+        SessionOperationReuseError,
+        SessionPersistenceError,
+        SessionCaptureDisabledError,
+    ) as exc:
+        raise _problem(exc) from exc
+    response.status_code = 200 if view.replayed else 201
+    return _response(view)
 
 
 @router.get(

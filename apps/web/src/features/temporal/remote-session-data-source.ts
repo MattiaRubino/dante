@@ -43,49 +43,75 @@ export class TemporalSessionRemoteError extends Error {
 
 function record(value: unknown): Record<string, unknown> {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    throw new TemporalSessionRemoteError('protocol', 'Invalid Session response.');
+    throw new TemporalSessionRemoteError(
+      'protocol',
+      'Invalid Session response.',
+    );
   }
   return value as Record<string, unknown>;
 }
 
 function uuid(value: unknown, field: string): string {
   if (typeof value !== 'string' || !UUID_V7.test(value)) {
-    throw new TemporalSessionRemoteError('protocol', `${field} must be a UUIDv7.`);
+    throw new TemporalSessionRemoteError(
+      'protocol',
+      `${field} must be a UUIDv7.`,
+    );
   }
   return value.toLowerCase();
 }
 
 function nonNegativeNumber(value: unknown, field: string): number {
   if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) {
-    throw new TemporalSessionRemoteError('protocol', `${field} must be non-negative.`);
+    throw new TemporalSessionRemoteError(
+      'protocol',
+      `${field} must be non-negative.`,
+    );
   }
   return value;
 }
 
-function durationEvaluations(value: unknown): readonly TemporalSessionDurationEvaluation[] {
+function durationEvaluations(
+  value: unknown,
+): readonly TemporalSessionDurationEvaluation[] {
   if (!Array.isArray(value)) {
-    throw new TemporalSessionRemoteError('protocol', 'Invalid Session duration evaluations.');
+    throw new TemporalSessionRemoteError(
+      'protocol',
+      'Invalid Session duration evaluations.',
+    );
   }
-  return Object.freeze(value.map((item) => {
-    const payload = record(item);
-    const strength = payload.strength;
-    const evaluation = payload.evaluation;
-    const threshold = payload.minimum_duration_microseconds;
-    if (
-      strength !== 'soft' ||
-      (evaluation !== 'pending' && evaluation !== 'satisfied' && evaluation !== 'violated') ||
-      typeof threshold !== 'number' || !Number.isSafeInteger(threshold) || threshold <= 0
-    ) {
-      throw new TemporalSessionRemoteError('protocol', 'Invalid Session duration evaluation.');
-    }
-    return Object.freeze({
-      constraintRef: uuid(payload.constraint_ref, 'constraint_ref'),
-      materialStateRef: uuid(payload.material_state_ref, 'material_state_ref'),
-      minimumDurationMicroseconds: threshold,
-      strength,
-      evaluation,
-    });
-  }));
+  return Object.freeze(
+    value.map((item) => {
+      const payload = record(item);
+      const strength = payload.strength;
+      const evaluation = payload.evaluation;
+      const threshold = payload.minimum_duration_microseconds;
+      if (
+        strength !== 'soft' ||
+        (evaluation !== 'pending' &&
+          evaluation !== 'satisfied' &&
+          evaluation !== 'violated') ||
+        typeof threshold !== 'number' ||
+        !Number.isSafeInteger(threshold) ||
+        threshold <= 0
+      ) {
+        throw new TemporalSessionRemoteError(
+          'protocol',
+          'Invalid Session duration evaluation.',
+        );
+      }
+      return Object.freeze({
+        constraintRef: uuid(payload.constraint_ref, 'constraint_ref'),
+        materialStateRef: uuid(
+          payload.material_state_ref,
+          'material_state_ref',
+        ),
+        minimumDurationMicroseconds: threshold,
+        strength,
+        evaluation,
+      });
+    }),
+  );
 }
 
 function view(value: unknown): TemporalSessionView {
@@ -101,14 +127,32 @@ function view(value: unknown): TemporalSessionView {
   if (ended !== null && typeof ended !== 'string') {
     throw new TemporalSessionRemoteError('protocol', 'Invalid Session end.');
   }
-  if (typeof payload.started_at !== 'string' || typeof payload.evaluated_at !== 'string') {
+  if (
+    typeof payload.started_at !== 'string' ||
+    typeof payload.evaluated_at !== 'string'
+  ) {
     throw new TemporalSessionRemoteError('protocol', 'Invalid Session timing.');
   }
-  const elapsedSeconds = nonNegativeNumber(payload.elapsed_seconds, 'elapsed_seconds');
-  const pausedSeconds = nonNegativeNumber(payload.paused_seconds, 'paused_seconds');
-  const activeSeconds = nonNegativeNumber(payload.active_seconds, 'active_seconds');
-  if (pausedSeconds > elapsedSeconds + 0.001 || activeSeconds > elapsedSeconds + 0.001) {
-    throw new TemporalSessionRemoteError('protocol', 'Invalid Session duration totals.');
+  const elapsedSeconds = nonNegativeNumber(
+    payload.elapsed_seconds,
+    'elapsed_seconds',
+  );
+  const pausedSeconds = nonNegativeNumber(
+    payload.paused_seconds,
+    'paused_seconds',
+  );
+  const activeSeconds = nonNegativeNumber(
+    payload.active_seconds,
+    'active_seconds',
+  );
+  if (
+    pausedSeconds > elapsedSeconds + 0.001 ||
+    activeSeconds > elapsedSeconds + 0.001
+  ) {
+    throw new TemporalSessionRemoteError(
+      'protocol',
+      'Invalid Session duration totals.',
+    );
   }
   return Object.freeze({
     sessionRef: uuid(payload.session_ref, 'session_ref'),
@@ -173,7 +217,9 @@ export function createRemoteTemporalSessionDataSource(
       const problem = record(value);
       throw new TemporalSessionRemoteError(
         'http',
-        typeof problem.detail === 'string' ? problem.detail : 'Session command rejected.',
+        typeof problem.detail === 'string'
+          ? problem.detail
+          : 'Session command rejected.',
         response.status,
         typeof problem.code === 'string' ? problem.code : null,
       );
@@ -182,14 +228,20 @@ export function createRemoteTemporalSessionDataSource(
   }
 
   return Object.freeze({
-    async list(kind: SessionSubjectKind, subjectRef: string): Promise<TemporalSessionView[]> {
+    async list(
+      kind: SessionSubjectKind,
+      subjectRef: string,
+    ): Promise<TemporalSessionView[]> {
       const path =
         kind === 'activity'
           ? `/api/v1/temporal/activities/${encodeURIComponent(subjectRef)}/sessions`
           : `/api/v1/temporal/occurrences/${encodeURIComponent(subjectRef)}/sessions`;
       const value = await send(path, 'GET');
       if (!Array.isArray(value)) {
-        throw new TemporalSessionRemoteError('protocol', 'Session list must be an array.');
+        throw new TemporalSessionRemoteError(
+          'protocol',
+          'Session list must be an array.',
+        );
       }
       return value.map(view);
     },
@@ -204,16 +256,38 @@ export function createRemoteTemporalSessionDataSource(
           : `/api/v1/temporal/occurrences/${encodeURIComponent(subjectRef)}/sessions`;
       return view(await send(path, 'POST', { operation_id: operationId }));
     },
+    async recordManual(
+      activityRef: string,
+      operationId: string,
+      startedAt: string,
+      endedAt: string,
+    ): Promise<TemporalSessionView> {
+      return view(
+        await send(
+          `/api/v1/temporal/activities/${encodeURIComponent(activityRef)}/sessions/manual`,
+          'POST',
+          {
+            operation_id: operationId,
+            started_at: startedAt,
+            ended_at: endedAt,
+          },
+        ),
+      );
+    },
     async end(
       sessionRef: string,
       expectedMaterialStateRef: string,
       operationId: string,
     ): Promise<TemporalSessionView> {
       return view(
-        await send(`/api/v1/temporal/sessions/${encodeURIComponent(sessionRef)}/end`, 'POST', {
-          operation_id: operationId,
-          expected_material_state_ref: expectedMaterialStateRef,
-        }),
+        await send(
+          `/api/v1/temporal/sessions/${encodeURIComponent(sessionRef)}/end`,
+          'POST',
+          {
+            operation_id: operationId,
+            expected_material_state_ref: expectedMaterialStateRef,
+          },
+        ),
       );
     },
     async pause(
@@ -222,10 +296,16 @@ export function createRemoteTemporalSessionDataSource(
       operationId: string,
     ): Promise<TemporalSessionView> {
       return view(
-        await send('/api/v1/temporal/sessions/' + encodeURIComponent(sessionRef) + '/pause', 'POST', {
-          operation_id: operationId,
-          expected_material_state_ref: expectedMaterialStateRef,
-        }),
+        await send(
+          '/api/v1/temporal/sessions/' +
+            encodeURIComponent(sessionRef) +
+            '/pause',
+          'POST',
+          {
+            operation_id: operationId,
+            expected_material_state_ref: expectedMaterialStateRef,
+          },
+        ),
       );
     },
     async resume(
@@ -234,10 +314,16 @@ export function createRemoteTemporalSessionDataSource(
       operationId: string,
     ): Promise<TemporalSessionView> {
       return view(
-        await send('/api/v1/temporal/sessions/' + encodeURIComponent(sessionRef) + '/resume', 'POST', {
-          operation_id: operationId,
-          expected_material_state_ref: expectedMaterialStateRef,
-        }),
+        await send(
+          '/api/v1/temporal/sessions/' +
+            encodeURIComponent(sessionRef) +
+            '/resume',
+          'POST',
+          {
+            operation_id: operationId,
+            expected_material_state_ref: expectedMaterialStateRef,
+          },
+        ),
       );
     },
   });

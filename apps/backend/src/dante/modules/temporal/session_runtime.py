@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import dataclass, replace
-from datetime import datetime
+from datetime import UTC, datetime
 from decimal import Decimal
 from typing import Literal
 from uuid import UUID
@@ -163,6 +163,54 @@ class SessionApplication:
                 "state_ref": new_material_state_ref(),
                 "subject_kind": subject_kind,
                 "subject": subject_native_ref,
+            },
+        )
+        return await self._hydrate(self_person_ref, view)
+
+    async def record_manual(
+        self,
+        *,
+        self_person_ref: NativeRef,
+        operation_id: str,
+        activity_ref: NativeRef,
+        started_at: datetime,
+        ended_at: datetime,
+    ) -> SessionView:
+        normalized = _normalize_operation_id(operation_id)
+        if (
+            started_at.tzinfo is None
+            or ended_at.tzinfo is None
+            or started_at >= ended_at
+            or ended_at > datetime.now(UTC)
+        ):
+            raise SessionInputError("Manual Session requires a past, ordered absolute interval.")
+        fingerprint = _fingerprint(
+            {
+                "version": "1",
+                "command": "record_manual",
+                "activity_ref": str(activity_ref),
+                "started_at": started_at.astimezone(UTC).isoformat(),
+                "ended_at": ended_at.astimezone(UTC).isoformat(),
+            }
+        )
+        view = await self._call(
+            """
+            SELECT session_ref, subject_native_ref, timing_material_state_ref,
+                   started_at, ended_at, replayed
+              FROM dante.record_self_activity_session(
+                :actor, :operation_id, :fingerprint, :session_ref, :state_ref,
+                :activity_ref, :started_at, :ended_at
+              )
+            """,
+            {
+                "actor": self_person_ref,
+                "operation_id": normalized,
+                "fingerprint": fingerprint,
+                "session_ref": new_native_ref(),
+                "state_ref": new_material_state_ref(),
+                "activity_ref": activity_ref,
+                "started_at": started_at,
+                "ended_at": ended_at,
             },
         )
         return await self._hydrate(self_person_ref, view)
@@ -440,15 +488,17 @@ class SessionApplication:
     def _raise_known(self, exc: BaseException) -> None:
         name = _constraint_name(exc)
         message = str(getattr(exc, "orig", exc))
-        if name == "session_operation_reused" or "reused" in message:
+        if name in {"session_operation_reused", "session_manual_record_operation_reused"} or "reused" in message:
             raise SessionOperationReuseError("Session operation id was reused.") from exc
-        if name == "session_execution_policy_live_required":
-            raise SessionCaptureDisabledError("Live Session capture is disabled.") from exc
+        if name in {"session_execution_policy_live_required", "session_manual_record_policy_required"}:
+            raise SessionCaptureDisabledError("Session capture is disabled by Activity policy.") from exc
+        if name == "session_manual_record_invalid":
+            raise SessionInputError("Manual Session requires a past, ordered absolute interval.") from exc
         if name == "session_end_conflict" or "conflicts with current timing" in message:
             raise SessionEndConflictError("Session end conflicts with current timing.") from exc
         if name == "session_pause_conflict":
             raise SessionPauseConflictError("Session pause conflicts with current timing.") from exc
         if name == "session_resume_conflict":
             raise SessionResumeConflictError("Session resume conflicts with current timing.") from exc
-        if name == "session_subject_unavailable" or "unavailable" in message:
+        if name in {"session_subject_unavailable", "session_manual_record_owner_unavailable"} or "unavailable" in message:
             raise SessionNotFoundError("Session subject unavailable.") from exc

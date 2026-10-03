@@ -157,6 +157,8 @@ class ActualApplication:
             raise ActualInputError("Actual subjects are Activity, Event and Occurrence only.")
         if acknowledge_unresolved_children and subject_kind != "activity":
             raise ActualInputError("Only an Activity can acknowledge unresolved children.")
+        if acknowledge_unresolved_children and not realization_occurred:
+            raise ActualInputError("Only a positive Activity realization can acknowledge children.")
         normalized = _normalize_operation_id(operation_id)
         bases = tuple(
             sorted(

@@ -178,6 +178,7 @@ import type {
   ScheduledEventNamedZoneResponse,
   SessionCommand,
   SessionEndCommand,
+  SessionManualCommand,
   SessionResponse,
   SetExpectedParticipationRequest,
   SetMovementPolicyBody,
@@ -4722,6 +4723,77 @@ export const temporalStartActivitySession = async (
     status: res.status,
     headers: res.headers,
   } as temporalStartActivitySessionResponse;
+};
+
+export type temporalRecordManualActivitySessionResponse200 = {
+  data: SessionResponse;
+  status: 200;
+};
+
+export type temporalRecordManualActivitySessionResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalRecordManualActivitySessionResponseSuccess =
+  temporalRecordManualActivitySessionResponse200 & {
+    headers: Headers;
+  };
+export type temporalRecordManualActivitySessionResponseError =
+  temporalRecordManualActivitySessionResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalRecordManualActivitySessionResponse =
+  | temporalRecordManualActivitySessionResponseSuccess
+  | temporalRecordManualActivitySessionResponseError;
+
+export const getTemporalRecordManualActivitySessionUrl = (
+  activityRef: string,
+) => {
+  return `/api/v1/temporal/activities/${activityRef}/sessions/manual`;
+};
+
+/**
+ * @summary Record Manual Activity Session
+ */
+export const temporalRecordManualActivitySession = async (
+  activityRef: string,
+  sessionManualCommand: SessionManualCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalRecordManualActivitySessionResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalRecordManualActivitySessionUrl(activityRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(sessionManualCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalRecordManualActivitySessionResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalRecordManualActivitySessionResponse;
 };
 
 export type temporalAttachActivityTagResponse200 = {

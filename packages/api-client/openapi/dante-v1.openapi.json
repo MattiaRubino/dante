@@ -12115,6 +12115,30 @@
         "title": "SessionEndCommand",
         "type": "object"
       },
+      "SessionManualCommand": {
+        "additionalProperties": false,
+        "properties": {
+          "ended_at": {
+            "format": "date-time",
+            "title": "Ended At",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "started_at", "ended_at"],
+        "title": "SessionManualCommand",
+        "type": "object"
+      },
       "SessionMinimumDurationRuleRequest": {
         "additionalProperties": false,
         "properties": {
@@ -24538,6 +24562,57 @@
           }
         },
         "summary": "Start Activity Session",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/activities/{activity_ref}/sessions/manual": {
+      "post": {
+        "operationId": "temporal_record_manual_activity_session",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionManualCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Record Manual Activity Session",
         "tags": ["temporal"]
       }
     },

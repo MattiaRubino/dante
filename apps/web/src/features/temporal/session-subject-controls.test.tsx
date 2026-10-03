@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { TemporalSessionView } from './remote-session-data-source';
@@ -10,6 +16,7 @@ const source = vi.hoisted(() => ({
   pause: vi.fn(),
   resume: vi.fn(),
   end: vi.fn(),
+  recordManual: vi.fn(),
 }));
 
 vi.mock('./remote-session-data-source', () => ({
@@ -59,6 +66,32 @@ afterEach(() => {
 });
 
 describe('SessionSubjectControls B08-D whole workflow', () => {
+  it('records a past Activity Session only with manual capture enabled', async () => {
+    source.list.mockResolvedValue([]);
+    source.recordManual.mockResolvedValue(
+      session({ open: false, endedAt: '2026-09-24T10:30:00Z' }),
+    );
+    render(
+      <SessionSubjectControls
+        kind="activity"
+        subjectRef={activityRef}
+        label="Focus"
+        allowLive={false}
+        allowManual
+      />,
+    );
+    expect(screen.queryByRole('button', { name: 'Avvia' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Registra sessione' }));
+    const form = screen.getByRole('form', {
+      name: 'Registra sessione · Focus',
+    });
+    const inputs = form.querySelectorAll('input');
+    fireEvent.change(inputs[0]!, { target: { value: '2026-09-24T10:00' } });
+    fireEvent.change(inputs[1]!, { target: { value: '2026-09-24T10:30' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Salva sessione' }));
+    await waitFor(() => expect(source.recordManual).toHaveBeenCalledTimes(1));
+    expect(source.start).not.toHaveBeenCalled();
+  });
   it('rehydrates an unplaced Activity through pause, resume, end and a separate start', async () => {
     const started = session();
     const paused = session({
@@ -107,42 +140,88 @@ describe('SessionSubjectControls B08-D whole workflow', () => {
     });
 
     const mounted = render(
-      <SessionSubjectControls kind="activity" subjectRef={activityRef} label="Focus" />,
+      <SessionSubjectControls
+        kind="activity"
+        subjectRef={activityRef}
+        label="Focus"
+      />,
     );
-    await waitFor(() => expect(source.list).toHaveBeenCalledWith('activity', activityRef));
+    await waitFor(() =>
+      expect(source.list).toHaveBeenCalledWith('activity', activityRef),
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Avvia' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Pausa' })).toBeTruthy());
-    expect(source.start).toHaveBeenCalledWith('activity', activityRef, 'operation-id');
-    expect(document.querySelector('[data-session-duration-evaluation="pending"]')?.textContent)
-      .toContain('in corso');
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Pausa' })).toBeTruthy(),
+    );
+    expect(source.start).toHaveBeenCalledWith(
+      'activity',
+      activityRef,
+      'operation-id',
+    );
+    expect(
+      document.querySelector('[data-session-duration-evaluation="pending"]')
+        ?.textContent,
+    ).toContain('in corso');
 
     fireEvent.click(screen.getByRole('button', { name: 'Pausa' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Riprendi' })).toBeTruthy());
-    expect(source.pause).toHaveBeenCalledWith(sessionRef, 'timing-start', 'operation-id');
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Riprendi' })).toBeTruthy(),
+    );
+    expect(source.pause).toHaveBeenCalledWith(
+      sessionRef,
+      'timing-start',
+      'operation-id',
+    );
     expect(screen.queryByRole('button', { name: 'Termina' })).toBeNull();
     mounted.unmount();
 
-    render(<SessionSubjectControls kind="activity" subjectRef={activityRef} label="Focus" />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Riprendi' })).toBeTruthy());
-    expect(screen.getByLabelText('Durata sessione').textContent)
-      .toContain('Attiva 1:00 · Pausa 0:10 · Totale 1:10');
+    render(
+      <SessionSubjectControls
+        kind="activity"
+        subjectRef={activityRef}
+        label="Focus"
+      />,
+    );
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Riprendi' })).toBeTruthy(),
+    );
+    expect(screen.getByLabelText('Durata sessione').textContent).toContain(
+      'Attiva 1:00 · Pausa 0:10 · Totale 1:10',
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Riprendi' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Termina' })).toBeTruthy());
-    expect(source.resume).toHaveBeenCalledWith(sessionRef, 'timing-paused', 'operation-id');
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Termina' })).toBeTruthy(),
+    );
+    expect(source.resume).toHaveBeenCalledWith(
+      sessionRef,
+      'timing-paused',
+      'operation-id',
+    );
 
     fireEvent.click(screen.getByRole('button', { name: 'Termina' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Avvia' })).toBeTruthy());
-    expect(source.end).toHaveBeenCalledWith(sessionRef, 'timing-resumed', 'operation-id');
-    expect(document.querySelector('[data-session-duration-evaluation="violated"]')?.textContent)
-      .toContain('non raggiunto');
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Avvia' })).toBeTruthy(),
+    );
+    expect(source.end).toHaveBeenCalledWith(
+      sessionRef,
+      'timing-resumed',
+      'operation-id',
+    );
+    expect(
+      document.querySelector('[data-session-duration-evaluation="violated"]')
+        ?.textContent,
+    ).toContain('non raggiunto');
 
     fireEvent.click(screen.getByRole('button', { name: 'Avvia' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Pausa' })).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Pausa' })).toBeTruthy(),
+    );
     expect(source.start).toHaveBeenCalledTimes(2);
-    expect(document.querySelector('[data-session-duration-evaluation="pending"]')?.textContent)
-      .toContain('in corso');
+    expect(
+      document.querySelector('[data-session-duration-evaluation="pending"]')
+        ?.textContent,
+    ).toContain('in corso');
   });
-
 
   it('reloads canonical state and exposes the conflict when this view is stale', async () => {
     const started = session();
@@ -159,15 +238,24 @@ describe('SessionSubjectControls B08-D whole workflow', () => {
     );
 
     render(
-      <SessionSubjectControls kind="activity" subjectRef={activityRef} label="Focus" />,
+      <SessionSubjectControls
+        kind="activity"
+        subjectRef={activityRef}
+        label="Focus"
+      />,
     );
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Pausa' })).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Pausa' })).toBeTruthy(),
+    );
 
     fireEvent.click(screen.getByRole('button', { name: 'Pausa' }));
 
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Riprendi' })).toBeTruthy());
-    expect(screen.getByRole('status').textContent)
-      .toContain('Session pause conflicts with current timing.');
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Riprendi' })).toBeTruthy(),
+    );
+    expect(screen.getByRole('status').textContent).toContain(
+      'Session pause conflicts with current timing.',
+    );
   });
 
   it('keeps an Occurrence Session free of the direct Activity TC-009 badge', async () => {
@@ -175,10 +263,18 @@ describe('SessionSubjectControls B08-D whole workflow', () => {
       session({ subjectNativeRef: occurrenceRef, durationEvaluations: [] }),
     ]);
     render(
-      <SessionSubjectControls kind="occurrence" subjectRef={occurrenceRef} label="Routine" />,
+      <SessionSubjectControls
+        kind="occurrence"
+        subjectRef={occurrenceRef}
+        label="Routine"
+      />,
     );
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Pausa' })).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Pausa' })).toBeTruthy(),
+    );
     expect(source.list).toHaveBeenCalledWith('occurrence', occurrenceRef);
-    expect(document.querySelector('[data-session-duration-evaluation]')).toBeNull();
+    expect(
+      document.querySelector('[data-session-duration-evaluation]'),
+    ).toBeNull();
   });
 });

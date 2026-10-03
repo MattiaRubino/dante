@@ -184,6 +184,7 @@ MAPPED_TABLES: tuple[Table, ...] = cast(
         session.SessionTimingCurrentHistoryRow.__table__,
         session.SessionExecutionSubjectRow.__table__,
         session.SessionStartOperationRow.__table__,
+        session.SessionManualRecordOperationRow.__table__,
         session.SessionEndOperationRow.__table__,
         session.SessionPauseOperationRow.__table__,
         session.SessionResumeOperationRow.__table__,

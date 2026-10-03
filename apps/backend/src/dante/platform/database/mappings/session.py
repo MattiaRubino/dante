@@ -3,7 +3,16 @@
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKeyConstraint, Index, Numeric, Text, text
+from sqlalchemy import (
+    CheckConstraint,
+    DateTime,
+    ForeignKeyConstraint,
+    Index,
+    Numeric,
+    Text,
+    UniqueConstraint,
+    text,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from dante.platform.database.metadata import Base
@@ -269,6 +278,38 @@ class SessionStartOperationRow(Base):
             onupdate="NO ACTION",
             ondelete="NO ACTION",
             deferrable=False,
+        ),
+    )
+
+    self_person_ref: Mapped[NativeRef] = mapped_column(primary_key=True)
+    operation_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    intent_fingerprint: Mapped[str] = mapped_column(Text, nullable=False)
+    session_ref: Mapped[NativeRef] = mapped_column(nullable=False)
+    subject_native_ref: Mapped[NativeRef] = mapped_column(nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class SessionManualRecordOperationRow(Base):
+    """Immutable receipt for one retrospective self-owned Activity Session."""
+
+    __tablename__ = "session_manual_record_operation"
+    __table_args__ = (
+        UniqueConstraint("session_ref", name="uq_session_manual_record_operation_session_ref"),
+        CheckConstraint(
+            "operation_id=btrim(operation_id) AND operation_id<>'' "
+            "AND char_length(operation_id)<=200",
+            name="operation_id",
+        ),
+        CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name="fingerprint"),
+        ForeignKeyConstraint(
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
+            name="fk_session_manual_record_operation_person",
+        ),
+        ForeignKeyConstraint(
+            ["session_ref"],
+            ["dante.session.session_ref"],
+            name="fk_session_manual_record_operation_session",
         ),
     )
 
