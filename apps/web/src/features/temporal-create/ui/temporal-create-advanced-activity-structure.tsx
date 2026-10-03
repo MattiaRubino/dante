@@ -60,6 +60,11 @@ function plannedSlice(
   });
 }
 
+/**
+ * Session capability is execution truth, not planning truth.
+ * Enabling it means that the Activity can start a live B08 Session after
+ * creation. Planned Session rows below remain Schedule-only intent.
+ */
 export function TemporalCreateAdvancedActivityHeaderActions() {
   const { i18n } = useTranslation('common');
   const italian = i18n.language.toLowerCase().startsWith('it');
@@ -71,6 +76,7 @@ export function TemporalCreateAdvancedActivityHeaderActions() {
     <label
       className="temporal-create-structure-session-toggle"
       data-create-structure-actions
+      data-session-capability="activity"
     >
       <input
         type="checkbox"
@@ -79,9 +85,7 @@ export function TemporalCreateAdvancedActivityHeaderActions() {
           patch({
             activityStructure: Object.freeze({
               ...structure,
-              captureMode: event.currentTarget.checked
-                ? 'record_and_live'
-                : 'disabled',
+              captureMode: event.currentTarget.checked ? 'live' : 'disabled',
             }),
           })
         }
@@ -112,10 +116,6 @@ export function TemporalCreateAdvancedActivityStructure({
 
   const addRootSession = () => {
     patchStructure({
-      captureMode:
-        structure.captureMode === 'disabled'
-          ? 'record_and_live'
-          : structure.captureMode,
       plannedSlices: [...structure.plannedSlices, plannedSlice(fields)],
     });
   };
@@ -345,14 +345,17 @@ export function TemporalCreateAdvancedActivityStructure({
                   }
                 />
                 <div className="temporal-create-tree-row__actions">
-                  <label className="temporal-create-tree-session-toggle">
+                  <label
+                    className="temporal-create-tree-session-toggle"
+                    data-session-capability="sub-activity"
+                  >
                     <input
                       type="checkbox"
                       checked={child.captureMode !== 'disabled'}
                       onChange={(event) =>
                         updateChild(child.id, {
                           captureMode: event.currentTarget.checked
-                            ? 'record_and_live'
+                            ? 'live'
                             : 'disabled',
                         })
                       }
@@ -374,7 +377,11 @@ export function TemporalCreateAdvancedActivityStructure({
                   </button>
                   <select
                     value={child.requirementCode}
-                    aria-label={italian ? 'Requisito sotto-attività' : 'Sub-activity requirement'}
+                    aria-label={
+                      italian
+                        ? 'Requisito sotto-attività'
+                        : 'Sub-activity requirement'
+                    }
                     onChange={(event) =>
                       updateChild(child.id, {
                         requirementCode: event.currentTarget.value as
@@ -516,10 +523,6 @@ export function TemporalCreateAdvancedActivityStructure({
                   type="button"
                   onClick={() =>
                     updateChild(child.id, {
-                      captureMode:
-                        child.captureMode === 'disabled'
-                          ? 'record_and_live'
-                          : child.captureMode,
                       plannedSlices: [
                         ...child.plannedSlices,
                         plannedSlice(fields, child),
