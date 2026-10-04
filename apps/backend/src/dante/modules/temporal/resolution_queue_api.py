@@ -1,11 +1,12 @@
-"""Read-only product inbox derived from accepted B10 owner state.
+"""Read-only product inbox derived from accepted owner/runtime state.
 
 The inbox has no independent truth or generic resolution mutation. Each item
-routes to the exact B10 reconciliation owner and its guarded command.
+routes to its owning vertical: B10 Reconciliation or B10 Actual realization.
 """
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Annotated, Literal
 from uuid import UUID
 
@@ -20,18 +21,25 @@ from dante.platform.http.problem import ProblemError
 
 router = APIRouter(prefix="/api/v1/temporal", tags=["temporal"])
 Context = Annotated[DanteContext, Depends(require_dante_context)]
+ResolutionReason = Literal["reconciliation_open", "realization_review"]
+ResolutionAction = Literal["open_reconciliation", "record_realization"]
 
 
 class ResolutionQueueItem(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    reason_code: Literal["reconciliation_open"] = "reconciliation_open"
+    reason_code: ResolutionReason
     subject_kind: Literal["activity", "event"]
     subject_ref: UUID
     title: str
-    reconciliation_ref: UUID
-    outcome_ref: UUID
+    summary: str
+    effective_at: datetime
+    reconciliation_ref: UUID | None
+    outcome_ref: UUID | None
     purpose_code: str
+    session_ref: UUID | None
+    session_timing_material_state_ref: UUID | None
+    actions: list[ResolutionAction]
 
 
 class ResolutionQueueResponse(BaseModel):
@@ -39,6 +47,24 @@ class ResolutionQueueResponse(BaseModel):
 
     items: list[ResolutionQueueItem]
     count: int
+
+
+def _item(row: object) -> ResolutionQueueItem:
+    values = dict(row)  # SQLAlchemy RowMapping -> ordinary validated payload.
+    reason = values["reason_code"]
+    if reason == "reconciliation_open":
+        return ResolutionQueueItem(
+            **values,
+            summary="An accepted Outcome has an open reconciliation decision.",
+            actions=["open_reconciliation"],
+        )
+    if reason == "realization_review":
+        return ResolutionQueueItem(
+            **values,
+            summary="A real Session ended and this Activity asks you to record what happened.",
+            actions=["record_realization"],
+        )
+    raise ValueError("Unsupported resolution queue reason.")
 
 
 @router.get(
@@ -49,11 +75,11 @@ class ResolutionQueueResponse(BaseModel):
 async def list_resolution_queue(
     request: Request, context: Context
 ) -> ResolutionQueueResponse:
-    """Only current unresolved reconciliations on current self-owned truth.
+    """Derived current product work, never inferred failure from time passage.
 
-    A missing Actual, Outcome, or Session is never interpreted as failure.
-    Outdated reconciliation targets are excluded until the owning B10 vertical
-    explicitly creates/updates a decision for the accepted Outcome state.
+    `realization_review` exists only when the Activity explicitly requests
+    review-on-end and a bounded B08 Session really exists. Schedule expiry or
+    absence of Actual never creates an item by itself.
     """
     try:
         async with (
@@ -70,7 +96,8 @@ async def list_resolution_queue(
                 .mappings()
                 .all()
             )
-    except SQLAlchemyError as exc:
+            items = [_item(row) for row in rows]
+    except (SQLAlchemyError, ValueError) as exc:
         raise ProblemError(
             status=503,
             code="temporal.resolution_queue.unavailable",
@@ -80,5 +107,4 @@ async def list_resolution_queue(
             retryable=True,
         ) from exc
 
-    items = [ResolutionQueueItem.model_validate(row) for row in rows]
     return ResolutionQueueResponse(items=items, count=len(items))
