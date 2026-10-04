@@ -319,6 +319,243 @@
   max-width: 100%;
 }
 
+/* U6 Create IA — the root Activity uses the same structural grammar as its
+   Session/Sub-Activity rows: icon, divider, flexible title, compact capabilities. */
+.temporal-create-backdrop.is-advanced
+  .temporal-create-title-row:has([data-session-capability='activity']) {
+  position: relative;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  min-height: 52px;
+  align-items: stretch;
+  gap: 0;
+  overflow: visible;
+  border: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
+  border-radius: 11px;
+  background:
+    linear-gradient(90deg, rgba(234, 92, 18, 0.035), transparent 30%),
+    color-mix(
+      in srgb,
+      var(--dante-semantic-color-home-surface-control, #151f2e) 78%,
+      transparent
+    );
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.temporal-create-backdrop.is-advanced
+  .temporal-create-title-row:has([data-session-capability='activity'])::before {
+  display: grid;
+  min-width: 34px;
+  place-items: center;
+  border-right: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
+  color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
+  content: '◇';
+  font-size: 16px;
+}
+
+.temporal-create-backdrop.is-advanced
+  .temporal-create-title-row:has([data-session-capability='activity']):focus-within {
+  border-color: color-mix(in srgb, #ea5c12 68%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, #ea5c12 13%, transparent);
+}
+
+.temporal-create-backdrop.is-advanced
+  .temporal-create-title-row:has([data-session-capability='activity'])
+  .temporal-create-title-row__name {
+  display: grid;
+  min-width: 0;
+  align-items: center;
+}
+
+.temporal-create-backdrop.is-advanced
+  .temporal-create-title-row:has([data-session-capability='activity'])
+  .temporal-create-title-input.temporal-create-title-input {
+  width: 100%;
+  min-width: 0;
+  min-height: 50px !important;
+  height: 50px;
+  padding: 0 14px;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-size: 17px !important;
+}
+
+.temporal-create-backdrop.is-advanced
+  .temporal-create-title-row:has([data-session-capability='activity'])
+  .temporal-create-title-input.temporal-create-title-input:placeholder-shown,
+.temporal-create-backdrop.is-advanced
+  .temporal-create-title-row:has([data-session-capability='activity'])
+  .temporal-create-title-input.temporal-create-title-input:focus,
+.temporal-create-backdrop.is-advanced
+  .temporal-create-title-row:has([data-session-capability='activity'])
+  .temporal-create-title-input.temporal-create-title-input:focus-visible {
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.temporal-create-backdrop.is-advanced
+  .temporal-create-title-row:has([data-session-capability='activity'])
+  .temporal-create-title-row__tools {
+  display: flex;
+  min-width: max-content;
+  align-items: stretch;
+  justify-content: flex-end;
+  gap: 0;
+  padding: 0;
+  border-left: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
+}
+
+.temporal-create-backdrop.is-advanced
+  .temporal-create-title-row__tools
+  .temporal-create-structure-session-toggle {
+  order: 1;
+  min-height: 50px;
+  padding: 0 12px;
+  border: 0 !important;
+  border-radius: 0;
+  background: transparent;
+  white-space: nowrap;
+}
+
+.temporal-create-backdrop.is-advanced
+  .temporal-create-title-row__tools
+  .temporal-create-structure-session-toggle:hover {
+  color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
+  background: color-mix(in srgb, #ea5c12 6%, transparent);
+}
+
+.temporal-create-backdrop.is-advanced
+  .temporal-create-title-row__tools
+  .temporal-create-reality-section {
+  position: relative;
+  order: 2;
+  display: inline-flex;
+  width: auto;
+  min-width: 0;
+  min-height: 50px;
+  align-items: stretch;
+  padding: 0;
+  border: 0;
+  border-left: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
+  border-radius: 0;
+  background: transparent;
+}
+
+.temporal-create-backdrop.is-advanced
+  .temporal-create-title-row__tools
+  .temporal-create-reality-section.is-enabled {
+  background: color-mix(in srgb, #ea5c12 5%, transparent);
+}
+
+.temporal-create-reality-toggle {
+  display: inline-flex;
+  min-height: 50px;
+  align-items: center;
+  gap: 7px;
+  padding: 0 11px;
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.temporal-create-composer .temporal-create-reality-toggle input,
+.temporal-create-composer .temporal-create-reality-options input {
+  width: 15px;
+  min-width: 15px;
+  height: 15px;
+  min-height: 15px;
+  margin: 0;
+  padding: 0;
+  accent-color: #ea5c12;
+}
+
+.temporal-create-reality-options-trigger {
+  display: grid;
+  width: 26px;
+  min-width: 26px;
+  min-height: 50px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.075);
+  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
+  background: transparent;
+  cursor: pointer;
+}
+
+.temporal-create-reality-options-trigger:hover,
+.temporal-create-reality-options-trigger[aria-expanded='true'] {
+  color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
+  background: color-mix(in srgb, #ea5c12 5%, transparent);
+}
+
+.temporal-create-reality-options {
+  position: absolute;
+  z-index: 180;
+  top: calc(100% + 7px);
+  right: 0;
+  display: grid;
+  width: 220px;
+  gap: 2px;
+  padding: 6px;
+  border: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
+  border-radius: 11px;
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-surface-raised, #151f2e) 98%,
+    black
+  );
+  box-shadow: 0 18px 52px rgba(0, 0, 0, 0.44);
+}
+
+.temporal-create-reality-options > label {
+  display: flex;
+  min-height: 36px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px;
+  border-radius: 8px;
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.temporal-create-reality-options > label:hover {
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.temporal-create-reality-options > label:has(input:checked) {
+  color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
+  background: color-mix(in srgb, #ea5c12 7%, transparent);
+}
+
+@media (max-width: 820px) {
+  .temporal-create-backdrop.is-advanced
+    .temporal-create-title-row:has([data-session-capability='activity']) {
+    grid-template-columns: 34px minmax(0, 1fr);
+  }
+
+  .temporal-create-backdrop.is-advanced
+    .temporal-create-title-row:has([data-session-capability='activity'])
+    .temporal-create-title-row__tools {
+    grid-column: 2;
+    justify-content: flex-start;
+    border-top: 1px solid
+      var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
+    border-left: 0;
+  }
+}
+
 @media (max-width: 560px) {
   .temporal-create-composer .temporal-create-composer__body.temporal-create-composer__body {
     padding-bottom: 132px;
@@ -334,5 +571,10 @@
   .temporal-create-composer .temporal-create-actions .temporal-create-advanced-toggle {
     flex: 1 0 100%;
     margin-right: 0;
+  }
+
+  .temporal-create-reality-options {
+    right: auto;
+    left: 0;
   }
 }
