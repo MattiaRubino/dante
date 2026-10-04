@@ -58,6 +58,7 @@ export type TemporalCreateActivityChildDraft = Readonly<{
 export type TemporalCreateActivityStructureDraft = Readonly<{
   captureMode: TemporalSessionCaptureMode;
   realityMode: TemporalCreateRealityMode;
+  placementProtected: boolean;
   childGuardMode: 'none' | 'confirm' | 'block';
   children: readonly TemporalCreateActivityChildDraft[];
   plannedSlices: readonly TemporalCreatePlannedSliceDraft[];
@@ -87,6 +88,7 @@ export function createTemporalCreateU2AuthoringDraft(
     activityStructure: Object.freeze({
       captureMode: 'disabled' as const,
       realityMode: 'manual' as const,
+      placementProtected: false,
       childGuardMode: 'none' as const,
       children: Object.freeze([]),
       plannedSlices: Object.freeze([]),
