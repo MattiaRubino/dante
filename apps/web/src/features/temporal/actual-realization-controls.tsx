@@ -26,9 +26,11 @@ function rejection(fallback: string, error: unknown): string {
 export function ActualRealizationControls({
   kind,
   subjectRef,
+  onRecorded,
 }: Readonly<{
   kind: ActualSubjectKind;
   subjectRef: string;
+  onRecorded?: () => void;
 }>) {
   const source = useMemo(
     () => createRemoteTemporalActualDataSource(globalThis.fetch),
@@ -91,6 +93,7 @@ export function ActualRealizationControls({
             ? 'Stato reale registrato: avvenuto.'
             : 'Stato reale registrato: non avvenuto.',
         );
+        onRecorded?.();
       })
       .catch((error: unknown) => {
         if (
