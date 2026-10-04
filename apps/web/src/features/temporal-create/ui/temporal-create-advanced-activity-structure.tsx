@@ -130,6 +130,7 @@ export function TemporalCreateAdvancedActivityStructure({
           title: '',
           requirementCode: 'required' as const,
           captureMode: 'disabled' as const,
+          realityMode: 'manual' as const,
           scheduleEnabled: false,
           startDate: interval.startDate,
           startTime: interval.startTime,
@@ -375,6 +376,30 @@ export function TemporalCreateAdvancedActivityStructure({
                   >
                     {italian ? 'Orario' : 'Time'}
                   </button>
+                  <select
+                    value={child.realityMode}
+                    aria-label={
+                      italian ? 'Realtà sotto-attività' : 'Sub-activity Reality'
+                    }
+                    onChange={(event) =>
+                      updateChild(child.id, {
+                        realityMode: event.currentTarget
+                          .value as TemporalCreateActivityChildDraft['realityMode'],
+                      })
+                    }
+                  >
+                    <option value="manual">
+                      {italian ? 'Realtà: manuale' : 'Reality: manual'}
+                    </option>
+                    <option value="review_on_end">
+                      {italian ? 'Realtà: chiedi alla fine' : 'Reality: ask at end'}
+                    </option>
+                    <option value="auto_confirm_outcome">
+                      {italian
+                        ? 'Realtà: conferma esito'
+                        : 'Reality: confirm outcome'}
+                    </option>
+                  </select>
                   <select
                     value={child.requirementCode}
                     aria-label={
