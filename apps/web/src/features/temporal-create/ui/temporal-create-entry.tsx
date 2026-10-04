@@ -24,6 +24,7 @@ import {
   temporalCreateTimelinePreviewFromFields,
   type TemporalCreateTimelineProjection,
 } from '../application/temporal-create-projection';
+import { createTemporalCreateRealityFinalizer } from '../application/temporal-create-reality-finalizer';
 import {
   buildTemporalCreateU2Request,
   temporalCreateHasU6Structure,
@@ -115,7 +116,7 @@ export function TemporalCreateEntry({
   );
   const requestSeenRef = useRef<number | null>(null);
   const preparedRef = useRef<TemporalCreatePreparedOperation | null>(null);
-  const partialReminderRef = useRef<(() => Promise<void>) | null>(null);
+  const partialPostCreateRef = useRef<(() => Promise<void>) | null>(null);
   const u2DraftRef = useRef<TemporalCreateU2AuthoringDraft>(
     createTemporalCreateU2AuthoringDraft(createTemporalCreateFields()),
   );
@@ -181,7 +182,7 @@ export function TemporalCreateEntry({
       setFailureMessage('');
       setLifecycle('idle');
       preparedRef.current = null;
-      partialReminderRef.current = null;
+      partialPostCreateRef.current = null;
       setReminderRetry(false);
       commitInFlightRef.current = false;
       onPreview(null);
@@ -207,7 +208,7 @@ export function TemporalCreateEntry({
       setFailureMessage('');
       setLifecycle('idle');
       preparedRef.current = null;
-      partialReminderRef.current = null;
+      partialPostCreateRef.current = null;
       setReminderRetry(false);
       focusReturnRef.current = focusReturnTarget ?? triggerRef.current;
       void externalAnchor;
@@ -256,7 +257,7 @@ export function TemporalCreateEntry({
   };
 
   const patch = (next: Partial<TemporalCreateSession['draft']['current']>) => {
-    if (partialReminderRef.current !== null) return;
+    if (partialPostCreateRef.current !== null) return;
     const merged = { ...session.draft.current, ...next };
     const eligibleReminder =
       merged.timeSemantics === 'timed' &&
@@ -311,41 +312,63 @@ export function TemporalCreateEntry({
     setIssues([]);
     setFailureMessage('');
     try {
-      const authored =
+      const activityAuthored =
         mapped.kind === 'activity'
           ? await authoringDataSource.authorActivity(mapped.request)
-          : await authoringDataSource.authorEvent(mapped.request);
+          : null;
+      const eventAuthored =
+        mapped.kind === 'event'
+          ? await authoringDataSource.authorEvent(mapped.request)
+          : null;
+      const authored = activityAuthored ?? eventAuthored;
+      if (!authored) throw new Error('Temporal authoring returned no result.');
 
+      const finalizeReality = activityAuthored
+        ? createTemporalCreateRealityFinalizer(
+            activityAuthored,
+            u2DraftRef.current,
+          )
+        : null;
       const reminderLeadMinutes = fields.confirmation.reminderLeadMinutes;
-      if (reminderLeadMinutes !== null) {
-        const scheduleRef = authored.schedule?.scheduleRef;
-        if (!scheduleRef) {
-          throw new Error(
-            i18n.language.toLowerCase().startsWith('en')
-              ? 'The item was created, but no Schedule is available for its reminder.'
-              : 'La creazione è riuscita, ma non esiste uno Schedule a cui collegare il promemoria.',
-          );
-        }
-        const reminderOperationId = systemTemporalIdFactory.operationId();
-        const retryReminder = async () => {
+      const scheduleRef = authored.schedule?.scheduleRef ?? null;
+      if (reminderLeadMinutes !== null && scheduleRef === null) {
+        throw new Error(
+          i18n.language.toLowerCase().startsWith('en')
+            ? 'The item was created, but no Schedule is available for its reminder.'
+            : 'La creazione è riuscita, ma non esiste uno Schedule a cui collegare il promemoria.',
+        );
+      }
+      const reminderOperationId =
+        reminderLeadMinutes === null
+          ? null
+          : systemTemporalIdFactory.operationId();
+      const finalizePostCreate = async () => {
+        await finalizeReality?.();
+        if (
+          reminderLeadMinutes !== null &&
+          scheduleRef !== null &&
+          reminderOperationId !== null
+        ) {
           await reminderDataSource.configure(scheduleRef, {
             operationId: reminderOperationId,
             expectedMaterialStateRef: null,
             enabled: true,
             leadMinutes: reminderLeadMinutes,
           });
-        };
-        try {
-          await retryReminder();
-        } catch {
-          partialReminderRef.current = retryReminder;
-          setReminderRetry(true);
-          setLifecycle('failed');
-          setFailureMessage(
-            t(($) => $.common.home.timeline.create.reminderPartial),
-          );
-          return false;
         }
+      };
+      try {
+        await finalizePostCreate();
+      } catch {
+        partialPostCreateRef.current = finalizePostCreate;
+        setReminderRetry(true);
+        setLifecycle('failed');
+        setFailureMessage(
+          i18n.language.toLowerCase().startsWith('en')
+            ? 'The item was created, but a follow-up configuration was not saved. Retry safely without creating a duplicate.'
+            : 'La creazione è riuscita, ma una configurazione successiva non è stata salvata. Riprova in sicurezza senza creare un duplicato.',
+        );
+        return false;
       }
 
       setSession(discardTemporalCreateSession(freshFields(defaultDate)));
@@ -368,17 +391,21 @@ export function TemporalCreateEntry({
     fieldsOverride?: Partial<TemporalCreateSession['draft']['current']>,
   ) => {
     if (commitInFlightRef.current) return;
-    if (partialReminderRef.current !== null) {
+    if (partialPostCreateRef.current !== null) {
       commitInFlightRef.current = true;
       setLifecycle('pending');
       try {
-        await partialReminderRef.current();
+        await partialPostCreateRef.current();
+        partialPostCreateRef.current = null;
+        setReminderRetry(false);
         setSession(discardTemporalCreateSession(freshFields(defaultDate)));
         closeComposer();
       } catch {
         setLifecycle('failed');
         setFailureMessage(
-          t(($) => $.common.home.timeline.create.reminderPartial),
+          i18n.language.toLowerCase().startsWith('en')
+            ? 'The follow-up configuration still could not be saved. Retry the configuration; the item will not be created again.'
+            : 'La configurazione successiva non è ancora stata salvata. Riprova: l’elemento non verrà creato di nuovo.',
         );
       } finally {
         commitInFlightRef.current = false;
@@ -448,7 +475,7 @@ export function TemporalCreateEntry({
           ? onApplied(execution.effect)
           : false;
         if (execution.reminderRetry) {
-          partialReminderRef.current = execution.reminderRetry;
+          partialPostCreateRef.current = execution.reminderRetry;
           setReminderRetry(true);
           setLifecycle('failed');
           setFailureMessage(
