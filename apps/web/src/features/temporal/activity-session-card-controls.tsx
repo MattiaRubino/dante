@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import './activity-session-card-controls.css';
 
+import { ActivityPlannedSessionsCardDetail } from './activity-planned-sessions-card-detail';
 import {
   createRemoteTemporalSessionCapabilityDataSource,
   type TemporalSessionCapabilityDataSource,
@@ -75,23 +76,24 @@ export function ActivitySessionCardControls({
     };
   }, [activityRef, source]);
 
-  if (mode !== 'live' && mode !== 'record_and_live') {
-    return null;
-  }
+  const live = mode === 'live' || mode === 'record_and_live';
 
   return (
     <div
       className="timeline-activity-session-card-controls"
       data-timeline-activity-session-controls={activityRef}
     >
-      <SessionSubjectControls
-        kind="activity"
-        subjectRef={activityRef}
-        label={label}
-        variant="card"
-        interactive={interactive}
-        allowLive={mode === 'live' || mode === 'record_and_live'}
-      />
+      {live ? (
+        <SessionSubjectControls
+          kind="activity"
+          subjectRef={activityRef}
+          label={label}
+          variant="card"
+          interactive={interactive}
+          allowLive
+        />
+      ) : null}
+      <ActivityPlannedSessionsCardDetail activityRef={activityRef} visible />
     </div>
   );
 }
