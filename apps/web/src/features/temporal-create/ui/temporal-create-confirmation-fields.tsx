@@ -50,9 +50,13 @@ export function TemporalCreateConfirmationFields({
           checked={enabled}
           onChange={(event) => {
             const nextEnabled = event.currentTarget.checked;
+            const hasRequiredChild = structure.children.some(
+              (child) => child.requirementCode === 'required',
+            );
             patchStructure({
               realityMode: nextEnabled ? 'review_on_end' : 'manual',
-              childGuardMode: nextEnabled ? 'confirm' : 'none',
+              childGuardMode:
+                nextEnabled && hasRequiredChild ? 'confirm' : 'none',
             });
             setOpen(nextEnabled);
           }}
