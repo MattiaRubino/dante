@@ -132,7 +132,7 @@ export function TemporalCreateAdvancedActivityStructure({
         Object.freeze({
           id: newRowId(),
           title: '',
-          requirementCode: 'required' as const,
+          requirementCode: 'optional' as const,
           captureMode: 'disabled' as const,
           realityMode: 'manual' as const,
           scheduleEnabled: false,
@@ -155,6 +155,25 @@ export function TemporalCreateAdvancedActivityStructure({
         child.id === id ? Object.freeze({ ...child, ...changes }) : child,
       ),
     });
+
+  const updateChildRequirement = (id: string, required: boolean) => {
+    const children = structure.children.map((child) =>
+      child.id === id
+        ? Object.freeze({
+            ...child,
+            requirementCode: required ? ('required' as const) : ('optional' as const),
+          })
+        : child,
+    );
+    patchStructure({
+      children,
+      childGuardMode:
+        structure.realityMode !== 'manual' &&
+        children.some((child) => child.requirementCode === 'required')
+          ? 'confirm'
+          : 'none',
+    });
+  };
 
   const updateSlice = (
     owner: string | null,
@@ -468,11 +487,10 @@ export function TemporalCreateAdvancedActivityStructure({
                               type="checkbox"
                               checked={child.requirementCode === 'required'}
                               onChange={(event) =>
-                                updateChild(child.id, {
-                                  requirementCode: event.currentTarget.checked
-                                    ? 'required'
-                                    : 'optional',
-                                })
+                                updateChildRequirement(
+                                  child.id,
+                                  event.currentTarget.checked,
+                                )
                               }
                             />
                             <span>
