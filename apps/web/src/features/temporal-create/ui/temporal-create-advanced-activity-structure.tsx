@@ -55,9 +55,9 @@ function plannedSlice(fields: TemporalCreateFields): TemporalCreatePlannedSliceD
 }
 
 /**
- * Session capability is execution truth, not planning truth.
- * Enabling it means that the Activity can start a live B08 Session after
- * creation. Planned Session rows below remain Schedule-only intent.
+ * Root Activity product capabilities. Session enables truthful B08 live
+ * execution after creation. Placement protection maps to the canonical B04
+ * Movement Policy (`blocked + direct`) and never constrains real execution.
  */
 export function TemporalCreateAdvancedActivityHeaderActions() {
   const { i18n } = useTranslation('common');
@@ -66,26 +66,41 @@ export function TemporalCreateAdvancedActivityHeaderActions() {
   const structure = draft.activityStructure;
   const enabled = structure.captureMode !== 'disabled';
 
+  const patchStructure = (changes: Partial<typeof structure>) =>
+    patch({ activityStructure: Object.freeze({ ...structure, ...changes }) });
+
   return (
-    <label
-      className="temporal-create-structure-session-toggle"
-      data-create-structure-actions
-      data-session-capability="activity"
-    >
-      <input
-        type="checkbox"
-        checked={enabled}
-        onChange={(event) =>
-          patch({
-            activityStructure: Object.freeze({
-              ...structure,
+    <>
+      <label
+        className="temporal-create-structure-session-toggle"
+        data-create-structure-actions
+        data-session-capability="activity"
+      >
+        <input
+          type="checkbox"
+          checked={enabled}
+          onChange={(event) =>
+            patchStructure({
               captureMode: event.currentTarget.checked ? 'live' : 'disabled',
-            }),
-          })
-        }
-      />
-      {italian ? 'Sessione' : 'Session'}
-    </label>
+            })
+          }
+        />
+        {italian ? 'Sessione' : 'Session'}
+      </label>
+      <label
+        className="temporal-create-structure-session-toggle is-placement-protection"
+        data-placement-protection="activity"
+      >
+        <input
+          type="checkbox"
+          checked={structure.placementProtected}
+          onChange={(event) =>
+            patchStructure({ placementProtected: event.currentTarget.checked })
+          }
+        />
+        {italian ? 'Proteggi collocazione' : 'Protect placement'}
+      </label>
+    </>
   );
 }
 
