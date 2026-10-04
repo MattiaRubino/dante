@@ -5,6 +5,11 @@ import type { TemporalSessionCaptureMode } from '../../temporal/authoring-data-s
 
 export const TEMPORAL_CREATE_U2_DEFAULT_COLOR = '#EA5C12';
 
+export type TemporalCreateRealityMode =
+  | 'manual'
+  | 'review_on_end'
+  | 'auto_confirm_outcome';
+
 export type TemporalCreateU2LifeAreaDraft =
   | Readonly<{ kind: 'none' }>
   | Readonly<{
@@ -41,6 +46,7 @@ export type TemporalCreateActivityChildDraft = Readonly<{
   title: string;
   requirementCode: 'required' | 'optional';
   captureMode: TemporalSessionCaptureMode;
+  realityMode: TemporalCreateRealityMode;
   scheduleEnabled: boolean;
   startDate: string;
   startTime: string;
@@ -51,6 +57,7 @@ export type TemporalCreateActivityChildDraft = Readonly<{
 
 export type TemporalCreateActivityStructureDraft = Readonly<{
   captureMode: TemporalSessionCaptureMode;
+  realityMode: TemporalCreateRealityMode;
   childGuardMode: 'none' | 'confirm' | 'block';
   children: readonly TemporalCreateActivityChildDraft[];
   plannedSlices: readonly TemporalCreatePlannedSliceDraft[];
@@ -79,6 +86,7 @@ export function createTemporalCreateU2AuthoringDraft(
     itemColorCode: TEMPORAL_CREATE_U2_DEFAULT_COLOR,
     activityStructure: Object.freeze({
       captureMode: 'disabled' as const,
+      realityMode: 'manual' as const,
       childGuardMode: 'none' as const,
       children: Object.freeze([]),
       plannedSlices: Object.freeze([]),
