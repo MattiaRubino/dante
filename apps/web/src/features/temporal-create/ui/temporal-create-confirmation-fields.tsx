@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { TemporalCreateFields } from '../model/temporal-create-session';
@@ -16,69 +16,96 @@ export function TemporalCreateConfirmationFields({
 }: TemporalCreateConfirmationFieldsProps) {
   const { i18n } = useTranslation('common');
   const italian = i18n.language.toLowerCase().startsWith('it');
+  const optionsId = useId();
+  const radioName = useId();
   const [open, setOpen] = useState(false);
   const { draft, patch } = useTemporalCreateU2Draft();
 
   if (fields.kind !== 'activity') return null;
 
   const structure = draft.activityStructure;
-  const setMode = (realityMode: TemporalCreateRealityMode) =>
+  const enabled = structure.realityMode !== 'manual';
+
+  const patchStructure = (
+    changes: Partial<typeof structure>,
+  ) =>
     patch({
-      activityStructure: Object.freeze({ ...structure, realityMode }),
+      activityStructure: Object.freeze({ ...structure, ...changes }),
     });
+
+  const setMode = (realityMode: TemporalCreateRealityMode) => {
+    patchStructure({ realityMode });
+    setOpen(false);
+  };
 
   return (
     <section
-      className="temporal-create-section temporal-create-reality-section"
-      aria-labelledby="temporal-create-reality-heading"
+      className={`temporal-create-reality-section${enabled ? ' is-enabled' : ''}`}
+      data-outcome-confirmation="activity"
+      aria-label={italian ? 'Conferma esito' : 'Outcome confirmation'}
     >
-      <button
-        type="button"
-        className="temporal-create-reality-trigger"
-        aria-expanded={open}
-        aria-controls="temporal-create-reality-options"
-        onClick={() => setOpen((current) => !current)}
-      >
-        <span id="temporal-create-reality-heading">
-          {italian ? 'Realtà' : 'Reality'}
-        </span>
-        <span aria-hidden="true">{open ? '⌃' : '⌄'}</span>
-      </button>
+      <label className="temporal-create-reality-toggle">
+        <input
+          type="checkbox"
+          checked={enabled}
+          onChange={(event) => {
+            const nextEnabled = event.currentTarget.checked;
+            patchStructure({
+              realityMode: nextEnabled ? 'review_on_end' : 'manual',
+              childGuardMode: nextEnabled ? 'confirm' : 'none',
+            });
+            setOpen(nextEnabled);
+          }}
+        />
+        <span>{italian ? 'Conferma esito' : 'Confirm outcome'}</span>
+      </label>
 
-      {open ? (
-        <div
-          className="temporal-create-reality-section__body"
-          id="temporal-create-reality-options"
+      {enabled ? (
+        <button
+          type="button"
+          className="temporal-create-reality-options-trigger"
+          aria-expanded={open}
+          aria-controls={optionsId}
+          aria-label={
+            italian
+              ? 'Scegli come confermare l’esito'
+              : 'Choose how to confirm the outcome'
+          }
+          onClick={() => setOpen((current) => !current)}
         >
-          <h4>{italian ? 'Gestione dell’esito' : 'Outcome handling'}</h4>
-          <label className="temporal-create-control">
-            <span>{italian ? 'Quando verificare' : 'When to verify'}</span>
-            <select
-              data-create-path="activity.realityMode"
-              aria-label={italian ? 'Gestione realtà' : 'Reality handling'}
-              value={structure.realityMode}
-              onChange={(event) =>
-                setMode(event.currentTarget.value as TemporalCreateRealityMode)
-              }
-            >
-              <option value="manual">
-                {italian ? 'Gestione manuale' : 'Manual handling'}
-              </option>
-              <option value="review_on_end">
-                {italian ? 'Chiedimi alla fine' : 'Ask me at the end'}
-              </option>
-              <option value="auto_confirm_outcome">
-                {italian
-                  ? 'Conferma l’esito registrato'
-                  : 'Confirm the recorded outcome'}
-              </option>
-            </select>
+          <span aria-hidden="true">{open ? '⌃' : '⌄'}</span>
+        </button>
+      ) : null}
+
+      {enabled && open ? (
+        <div
+          className="temporal-create-reality-options"
+          id={optionsId}
+          role="group"
+          aria-label={italian ? 'Modalità conferma esito' : 'Outcome confirmation mode'}
+        >
+          <label>
+            <input
+              type="radio"
+              name={radioName}
+              value="review_on_end"
+              checked={structure.realityMode === 'review_on_end'}
+              onChange={() => setMode('review_on_end')}
+            />
+            <span>{italian ? 'Ricordami alla fine' : 'Remind me at the end'}</span>
           </label>
-          <p className="temporal-create-reality-note">
-            {italian
-              ? 'Questa regola non crea automaticamente ciò che è successo: Actual e Outcome restano verità separate.'
-              : 'This rule never invents what happened: Actual and Outcome remain separate truth.'}
-          </p>
+          <label>
+            <input
+              type="radio"
+              name={radioName}
+              value="auto_confirm_outcome"
+              checked={structure.realityMode === 'auto_confirm_outcome'}
+              onChange={() => setMode('auto_confirm_outcome')}
+            />
+            <span>
+              {italian ? 'Conferma automaticamente' : 'Confirm automatically'}
+            </span>
+          </label>
         </div>
       ) : null}
     </section>
