@@ -40,8 +40,8 @@ class SessionEndCommand(SessionCommand):
 
 
 class SessionManualCommand(SessionCommand):
-    started_at: datetime
-    ended_at: datetime
+    started_at: datetime = Field(strict=False)
+    ended_at: datetime = Field(strict=False)
 
 
 SessionTransitionCommand = SessionEndCommand
