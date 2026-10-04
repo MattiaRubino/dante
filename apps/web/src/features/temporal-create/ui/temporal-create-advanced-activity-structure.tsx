@@ -6,6 +6,7 @@ import type { TemporalCreateFields } from '../model/temporal-create-session';
 import type {
   TemporalCreateActivityChildDraft,
   TemporalCreatePlannedSliceDraft,
+  TemporalCreateRealityMode,
 } from '../model/temporal-create-u2-authoring';
 import { useTemporalCreateU2Draft } from './temporal-create-u2-draft-context';
 
@@ -102,17 +103,20 @@ export function TemporalCreateAdvancedActivityStructure({
   const italian = i18n.language.toLowerCase().startsWith('it');
   const { draft, patch } = useTemporalCreateU2Draft();
   const structure = draft.activityStructure;
-  const [openTimes, setOpenTimes] = useState<readonly string[]>([]);
+  const [openPanels, setOpenPanels] = useState<readonly string[]>([]);
 
   const patchStructure = (changes: Partial<typeof structure>) =>
     patch({ activityStructure: Object.freeze({ ...structure, ...changes }) });
 
-  const toggleTime = (id: string) =>
-    setOpenTimes((current) =>
+  const togglePanel = (id: string) =>
+    setOpenPanels((current) =>
       current.includes(id)
         ? current.filter((entry) => entry !== id)
         : [...current, id],
     );
+
+  const closePanel = (id: string) =>
+    setOpenPanels((current) => current.filter((entry) => entry !== id));
 
   const addRootSession = () => {
     patchStructure({
@@ -198,7 +202,7 @@ export function TemporalCreateAdvancedActivityStructure({
     level: 'root' | 'child',
   ) => {
     const timeId = `session:${slice.id}`;
-    const timeOpen = openTimes.includes(timeId);
+    const timeOpen = openPanels.includes(timeId);
     return (
       <div
         className={`temporal-create-tree-item is-session is-${level}`}
@@ -228,7 +232,7 @@ export function TemporalCreateAdvancedActivityStructure({
               className={timeOpen ? 'is-active' : undefined}
               aria-expanded={timeOpen}
               aria-controls={`${timeId}:editor`}
-              onClick={() => toggleTime(timeId)}
+              onClick={() => togglePanel(timeId)}
             >
               {italian ? 'Orario' : 'Time'}
             </button>
@@ -289,6 +293,8 @@ export function TemporalCreateAdvancedActivityStructure({
     );
   };
 
+  const rootOutcomeConfirmationEnabled = structure.realityMode !== 'manual';
+
   return (
     <section
       className="temporal-create-activity-tree"
@@ -311,7 +317,17 @@ export function TemporalCreateAdvancedActivityStructure({
       <div className="temporal-create-activity-tree__children">
         {structure.children.map((child, index) => {
           const childTimeId = `child:${child.id}`;
-          const childTimeOpen = openTimes.includes(childTimeId);
+          const childRealityId = `reality:${child.id}`;
+          const childTimeOpen = openPanels.includes(childTimeId);
+          const childRealityOpen = openPanels.includes(childRealityId);
+          const childRealityMode = child.realityMode ?? 'manual';
+          const childRealityEnabled = childRealityMode !== 'manual';
+
+          const setChildRealityMode = (mode: TemporalCreateRealityMode) => {
+            updateChild(child.id, { realityMode: mode });
+            closePanel(childRealityId);
+          };
+
           return (
             <div
               className="temporal-create-tree-item is-child"
@@ -363,6 +379,113 @@ export function TemporalCreateAdvancedActivityStructure({
                     />
                     {italian ? 'Sessione' : 'Session'}
                   </label>
+
+                  <div
+                    className={`temporal-create-tree-confirmation${childRealityEnabled ? ' is-enabled' : ''}`}
+                    data-outcome-confirmation="sub-activity"
+                  >
+                    <label className="temporal-create-tree-confirmation__toggle">
+                      <input
+                        type="checkbox"
+                        checked={childRealityEnabled}
+                        onChange={(event) => {
+                          const enabled = event.currentTarget.checked;
+                          updateChild(child.id, {
+                            realityMode: enabled ? 'review_on_end' : 'manual',
+                          });
+                          if (enabled) togglePanel(childRealityId);
+                          else closePanel(childRealityId);
+                        }}
+                      />
+                      <span>
+                        {italian ? 'Conferma esito' : 'Confirm outcome'}
+                      </span>
+                    </label>
+                    {childRealityEnabled ? (
+                      <button
+                        type="button"
+                        className="temporal-create-tree-confirmation__options"
+                        aria-expanded={childRealityOpen}
+                        aria-controls={`${childRealityId}:options`}
+                        aria-label={
+                          italian
+                            ? 'Scegli come confermare l’esito della sotto-attività'
+                            : 'Choose how to confirm the sub-activity outcome'
+                        }
+                        onClick={() => togglePanel(childRealityId)}
+                      >
+                        <span aria-hidden="true">
+                          {childRealityOpen ? '⌃' : '⌄'}
+                        </span>
+                      </button>
+                    ) : null}
+                    {childRealityEnabled && childRealityOpen ? (
+                      <div
+                        id={`${childRealityId}:options`}
+                        className="temporal-create-tree-confirmation__popover"
+                        role="group"
+                        aria-label={
+                          italian
+                            ? 'Modalità conferma esito sotto-attività'
+                            : 'Sub-activity outcome confirmation mode'
+                        }
+                      >
+                        <label>
+                          <input
+                            type="radio"
+                            name={`child-reality-${child.id}`}
+                            checked={childRealityMode === 'review_on_end'}
+                            onChange={() =>
+                              setChildRealityMode('review_on_end')
+                            }
+                          />
+                          <span>
+                            {italian
+                              ? 'Ricordami alla fine'
+                              : 'Remind me at the end'}
+                          </span>
+                        </label>
+                        <label>
+                          <input
+                            type="radio"
+                            name={`child-reality-${child.id}`}
+                            checked={
+                              childRealityMode === 'auto_confirm_outcome'
+                            }
+                            onChange={() =>
+                              setChildRealityMode('auto_confirm_outcome')
+                            }
+                          />
+                          <span>
+                            {italian
+                              ? 'Conferma automaticamente'
+                              : 'Confirm automatically'}
+                          </span>
+                        </label>
+                        {rootOutcomeConfirmationEnabled ? (
+                          <label className="temporal-create-tree-confirmation__parent-link">
+                            <input
+                              type="checkbox"
+                              checked={child.requirementCode === 'required'}
+                              onChange={(event) =>
+                                updateChild(child.id, {
+                                  requirementCode: event.currentTarget.checked
+                                    ? 'required'
+                                    : 'optional',
+                                })
+                              }
+                            />
+                            <span>
+                              {italian
+                                ? 'Conta per l’esito dell’attività principale'
+                                : 'Counts toward the parent Activity outcome'}
+                            </span>
+                          </label>
+                        ) : null}
+                      </div>
+                    ) : null}
+                  </div>
+
                   <button
                     type="button"
                     className={child.scheduleEnabled ? 'is-active' : undefined}
@@ -371,57 +494,11 @@ export function TemporalCreateAdvancedActivityStructure({
                       if (!child.scheduleEnabled) {
                         updateChild(child.id, { scheduleEnabled: true });
                       }
-                      toggleTime(childTimeId);
+                      togglePanel(childTimeId);
                     }}
                   >
                     {italian ? 'Orario' : 'Time'}
                   </button>
-                  <select
-                    value={child.realityMode}
-                    aria-label={
-                      italian ? 'Realtà sotto-attività' : 'Sub-activity Reality'
-                    }
-                    onChange={(event) =>
-                      updateChild(child.id, {
-                        realityMode: event.currentTarget
-                          .value as TemporalCreateActivityChildDraft['realityMode'],
-                      })
-                    }
-                  >
-                    <option value="manual">
-                      {italian ? 'Realtà: manuale' : 'Reality: manual'}
-                    </option>
-                    <option value="review_on_end">
-                      {italian ? 'Realtà: chiedi alla fine' : 'Reality: ask at end'}
-                    </option>
-                    <option value="auto_confirm_outcome">
-                      {italian
-                        ? 'Realtà: conferma esito'
-                        : 'Reality: confirm outcome'}
-                    </option>
-                  </select>
-                  <select
-                    value={child.requirementCode}
-                    aria-label={
-                      italian
-                        ? 'Requisito sotto-attività'
-                        : 'Sub-activity requirement'
-                    }
-                    onChange={(event) =>
-                      updateChild(child.id, {
-                        requirementCode: event.currentTarget.value as
-                          | 'required'
-                          | 'optional',
-                      })
-                    }
-                  >
-                    <option value="required">
-                      {italian ? 'Richiesta' : 'Required'}
-                    </option>
-                    <option value="optional">
-                      {italian ? 'Facoltativa' : 'Optional'}
-                    </option>
-                  </select>
                   <button
                     type="button"
                     disabled={index === 0}
@@ -529,9 +606,7 @@ export function TemporalCreateAdvancedActivityStructure({
                     className="temporal-create-tree-time-editor__clear"
                     onClick={() => {
                       updateChild(child.id, { scheduleEnabled: false });
-                      setOpenTimes((current) =>
-                        current.filter((entry) => entry !== childTimeId),
-                      );
+                      closePanel(childTimeId);
                     }}
                   >
                     {italian ? 'Rimuovi orario' : 'Remove time'}
