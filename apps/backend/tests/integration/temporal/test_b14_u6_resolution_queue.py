@@ -84,8 +84,10 @@ def test_resolution_queue_follows_canonical_reconciliation_and_self_scope(
         confirmation = client.post(
             f"/api/v1/temporal/outcomes/{outcome_ref}/confirmations",
             json=_confirmation_command(
-                "u6:queue:confirmation", outcome_state_ref=outcome_state,
-                purpose_code="review.personal", stance_code="attested",
+                "u6:queue:confirmation",
+                outcome_state_ref=outcome_state,
+                purpose_code="review.personal",
+                stance_code="attested",
             ),
             headers=headers,
         )
@@ -94,28 +96,38 @@ def test_resolution_queue_follows_canonical_reconciliation_and_self_scope(
         opened = client.post(
             reconciliation_path,
             json=_reconciliation_command(
-                "u6:queue:open", outcome_state_ref=outcome_state,
-                action_code="unresolved", evidence=[],
+                "u6:queue:open",
+                outcome_state_ref=outcome_state,
+                action_code="unresolved",
+                evidence=[],
             ),
             headers=headers,
         )
         assert opened.status_code == 201
-        item = client.get(queue_path, headers=_base_headers()).json()
-        assert item["count"] == 1
-        assert item["items"] == [{
-            "reason_code": "reconciliation_open",
-            "subject_kind": "activity",
-            "subject_ref": subject_ref,
-            "title": "Review the evidence",
-            "reconciliation_ref": opened.json()["reconciliation_ref"],
-            "outcome_ref": outcome_ref,
-            "purpose_code": "review.personal",
-        }]
+        queued = client.get(queue_path, headers=_base_headers()).json()
+        assert queued["count"] == 1
+        assert len(queued["items"]) == 1
+        item = queued["items"][0]
+        assert item["reason_code"] == "reconciliation_open"
+        assert item["subject_kind"] == "activity"
+        assert item["subject_ref"] == subject_ref
+        assert item["title"] == "Review the evidence"
+        assert item["reconciliation_ref"] == opened.json()["reconciliation_ref"]
+        assert item["outcome_ref"] == outcome_ref
+        assert item["purpose_code"] == "review.personal"
+        assert item["session_ref"] is None
+        assert item["session_timing_material_state_ref"] is None
+        assert item["summary"] == (
+            "An accepted Outcome has an open reconciliation decision."
+        )
+        assert item["effective_at"]
+        assert item["actions"] == ["open_reconciliation"]
 
     with TestClient(app, base_url=_CANONICAL_ORIGIN) as other:
         _signin(other, other_email)
         assert other.get(queue_path, headers=_base_headers()).json() == {
-            "items": [], "count": 0,
+            "items": [],
+            "count": 0,
         }
 
     with TestClient(app, base_url=_CANONICAL_ORIGIN) as client:
@@ -124,13 +136,16 @@ def test_resolution_queue_follows_canonical_reconciliation_and_self_scope(
         resolved = client.post(
             reconciliation_path,
             json=_reconciliation_command(
-                "u6:queue:resolve", outcome_state_ref=outcome_state,
-                action_code="select", evidence=[_evidence(confirmation.json(), "selected")],
+                "u6:queue:resolve",
+                outcome_state_ref=outcome_state,
+                action_code="select",
+                evidence=[_evidence(confirmation.json(), "selected")],
                 expected=opened.json()["material_state_ref"],
             ),
             headers=headers,
         )
         assert resolved.status_code == 201
         assert client.get(queue_path, headers=_base_headers()).json() == {
-            "items": [], "count": 0,
+            "items": [],
+            "count": 0,
         }
