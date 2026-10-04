@@ -1,14 +1,41 @@
 import { createWebFetch } from '../../../../platform/api/web-fetch';
 
-export type ResolutionItem = Readonly<{
-  reasonCode: 'reconciliation_open';
-  subjectKind: 'activity' | 'event';
+type ResolutionSubjectKind = 'activity' | 'event';
+type ResolutionAction = 'open_reconciliation' | 'record_realization';
+
+type ResolutionItemBase = Readonly<{
   subjectRef: string;
   title: string;
-  reconciliationRef: string;
-  outcomeRef: string;
+  summary: string;
+  effectiveAt: string;
   purposeCode: string;
 }>;
+
+export type ReconciliationResolutionItem = ResolutionItemBase &
+  Readonly<{
+    reasonCode: 'reconciliation_open';
+    subjectKind: ResolutionSubjectKind;
+    reconciliationRef: string;
+    outcomeRef: string;
+    sessionRef: string | null;
+    sessionTimingMaterialStateRef: string | null;
+    actions: readonly ['open_reconciliation'];
+  }>;
+
+export type RealizationReviewResolutionItem = ResolutionItemBase &
+  Readonly<{
+    reasonCode: 'realization_review';
+    subjectKind: 'activity';
+    reconciliationRef: null;
+    outcomeRef: null;
+    sessionRef: string;
+    sessionTimingMaterialStateRef: string;
+    actions: readonly ['record_realization'];
+  }>;
+
+export type ResolutionItem =
+  | ReconciliationResolutionItem
+  | RealizationReviewResolutionItem;
 
 export type ResolutionQueue = Readonly<{
   items: readonly ResolutionItem[];
@@ -29,33 +56,104 @@ function record(value: unknown): Record<string, unknown> {
   return value as Record<string, unknown>;
 }
 
+function requiredUuid(value: unknown): string | null {
+  return typeof value === 'string' && uuid.test(value) ? value : null;
+}
+
+function nullableUuid(value: unknown): string | null | undefined {
+  if (value === null) return null;
+  const parsed = requiredUuid(value);
+  return parsed ?? undefined;
+}
+
+function requiredText(value: unknown): string | null {
+  return typeof value === 'string' && value.trim() ? value : null;
+}
+
+function hasOnlyAction(
+  value: unknown,
+  expected: ResolutionAction,
+): value is [ResolutionAction] {
+  return Array.isArray(value) && value.length === 1 && value[0] === expected;
+}
+
 function parseItem(value: unknown): ResolutionItem {
   const item = record(value);
+  const subjectRef = requiredUuid(item.subject_ref);
+  const title = requiredText(item.title);
+  const summary = requiredText(item.summary);
+  const effectiveAt = requiredText(item.effective_at);
+  const purposeCode = requiredText(item.purpose_code);
+  const reconciliationRef = nullableUuid(item.reconciliation_ref);
+  const outcomeRef = nullableUuid(item.outcome_ref);
+  const sessionRef = nullableUuid(item.session_ref);
+  const sessionTimingMaterialStateRef = nullableUuid(
+    item.session_timing_material_state_ref,
+  );
+
   if (
-    item.reason_code !== 'reconciliation_open' ||
-    (item.subject_kind !== 'activity' && item.subject_kind !== 'event') ||
-    typeof item.subject_ref !== 'string' ||
-    !uuid.test(item.subject_ref) ||
-    typeof item.title !== 'string' ||
-    !item.title.trim() ||
-    typeof item.reconciliation_ref !== 'string' ||
-    !uuid.test(item.reconciliation_ref) ||
-    typeof item.outcome_ref !== 'string' ||
-    !uuid.test(item.outcome_ref) ||
-    typeof item.purpose_code !== 'string' ||
-    !item.purpose_code.trim()
+    subjectRef === null ||
+    title === null ||
+    summary === null ||
+    effectiveAt === null ||
+    purposeCode === null ||
+    reconciliationRef === undefined ||
+    outcomeRef === undefined ||
+    sessionRef === undefined ||
+    sessionTimingMaterialStateRef === undefined
   ) {
     throw new Error('Elemento Da risolvere non valido.');
   }
-  return {
-    reasonCode: item.reason_code,
-    subjectKind: item.subject_kind,
-    subjectRef: item.subject_ref,
-    title: item.title,
-    reconciliationRef: item.reconciliation_ref,
-    outcomeRef: item.outcome_ref,
-    purposeCode: item.purpose_code,
-  };
+
+  if (
+    item.reason_code === 'reconciliation_open' &&
+    (item.subject_kind === 'activity' || item.subject_kind === 'event') &&
+    reconciliationRef !== null &&
+    outcomeRef !== null &&
+    hasOnlyAction(item.actions, 'open_reconciliation')
+  ) {
+    return {
+      reasonCode: 'reconciliation_open',
+      subjectKind: item.subject_kind,
+      subjectRef,
+      title,
+      summary,
+      effectiveAt,
+      reconciliationRef,
+      outcomeRef,
+      purposeCode,
+      sessionRef,
+      sessionTimingMaterialStateRef,
+      actions: ['open_reconciliation'],
+    };
+  }
+
+  if (
+    item.reason_code === 'realization_review' &&
+    item.subject_kind === 'activity' &&
+    reconciliationRef === null &&
+    outcomeRef === null &&
+    sessionRef !== null &&
+    sessionTimingMaterialStateRef !== null &&
+    hasOnlyAction(item.actions, 'record_realization')
+  ) {
+    return {
+      reasonCode: 'realization_review',
+      subjectKind: 'activity',
+      subjectRef,
+      title,
+      summary,
+      effectiveAt,
+      reconciliationRef: null,
+      outcomeRef: null,
+      purposeCode,
+      sessionRef,
+      sessionTimingMaterialStateRef,
+      actions: ['record_realization'],
+    };
+  }
+
+  throw new Error('Elemento Da risolvere non valido.');
 }
 
 export function createResolutionQueueSource(
