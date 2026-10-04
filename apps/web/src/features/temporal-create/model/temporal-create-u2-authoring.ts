@@ -46,7 +46,7 @@ export type TemporalCreateActivityChildDraft = Readonly<{
   title: string;
   requirementCode: 'required' | 'optional';
   captureMode: TemporalSessionCaptureMode;
-  realityMode?: TemporalCreateRealityMode;
+  realityMode?: TemporalCreateRealityMode | undefined;
   scheduleEnabled: boolean;
   startDate: string;
   startTime: string;
