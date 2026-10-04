@@ -48,8 +48,9 @@ describe('Actual realization controls', () => {
     vi.unstubAllGlobals();
   });
 
-  it('keeps absence as unknown and records the first realization with no expected state', async () => {
+  it('keeps absence as unknown, records the first realization and reports the owner mutation', async () => {
     const bodies: unknown[] = [];
+    const onRecorded = vi.fn();
     let current: ReturnType<typeof actual> | null = null;
     const fetchFn = vi.fn<Fetch>(async (input, init) => {
       const url = String(input);
@@ -66,7 +67,13 @@ describe('Actual realization controls', () => {
     });
     vi.stubGlobal('fetch', fetchFn);
 
-    render(<ActualRealizationControls kind="event" subjectRef={SUBJECT} />);
+    render(
+      <ActualRealizationControls
+        kind="event"
+        subjectRef={SUBJECT}
+        onRecorded={onRecorded}
+      />,
+    );
     await screen.findByText('Stato reale: sconosciuto');
     expect(screen.queryByText('Stato reale: non avvenuto')).toBeNull();
 
@@ -82,6 +89,7 @@ describe('Actual realization controls', () => {
         session_bases: [],
       },
     ]);
+    expect(onRecorded).toHaveBeenCalledTimes(1);
   });
 
   it('uses the current MaterialState as compare-and-set input for a later realization', async () => {
