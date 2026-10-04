@@ -7,6 +7,7 @@ import type { TemporalCreatePlannedSliceDraft } from '../model/temporal-create-u
 import { useTemporalCreateU2Draft } from './temporal-create-u2-draft-context';
 
 import './temporal-create-advanced-activity-structure.css';
+import './temporal-create-product-freeze.css';
 
 type TemporalCreateAdvancedActivityStructureProps = Readonly<{
   fields: TemporalCreateFields;
