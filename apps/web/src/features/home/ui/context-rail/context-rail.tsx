@@ -1,11 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { ActualRealizationControls } from '../../../temporal/actual-realization-controls';
 import { ReconciliationControls } from '../../../temporal/reconciliation-controls';
 import {
   createResolutionQueueSource,
+  type ResolutionItem,
   type ResolutionQueue,
 } from './resolution-queue-data-source';
+
+function resolutionItemKey(item: ResolutionItem): string {
+  return item.reasonCode === 'reconciliation_open'
+    ? `${item.reasonCode}:${item.reconciliationRef}`
+    : `${item.reasonCode}:${item.sessionRef}`;
+}
 
 export function ContextRail() {
   const { t } = useTranslation('common');
@@ -33,6 +41,11 @@ export function ContextRail() {
     },
     [source],
   );
+
+  const ownerRecorded = useCallback(() => {
+    setExpanded(null);
+    refresh();
+  }, [refresh]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -117,39 +130,54 @@ export function ContextRail() {
         <div className="home-resolution-list">
           {error ? <p role="alert">{error}</p> : null}
           {queue?.count === 0 ? <p>Non ci sono decisioni aperte.</p> : null}
-          {queue?.items.map((item) => (
-            <article key={item.reconciliationRef}>
-              <div className="home-resolution-row">
-                <span className="home-resolution-status is-partial">
-                  Reconciliation
-                </span>
-              </div>
-              <strong>{item.title}</strong>
-              <p>Decisione aperta · {item.purposeCode}</p>
-              <button
-                className="home-resolution-details"
-                type="button"
-                aria-expanded={expanded === item.reconciliationRef}
-                onClick={() =>
-                  setExpanded((current) =>
-                    current === item.reconciliationRef
-                      ? null
-                      : item.reconciliationRef,
-                  )
-                }
-              >
-                {expanded === item.reconciliationRef ? 'Chiudi' : 'Risolvi'}
-              </button>
-              {expanded === item.reconciliationRef ? (
-                <ReconciliationControls
-                  kind={item.subjectKind}
-                  subjectRef={item.subjectRef}
-                  initialPurposeCode={item.purposeCode}
-                  onRecorded={() => refresh()}
-                />
-              ) : null}
-            </article>
-          ))}
+          {queue?.items.map((item) => {
+            const itemKey = resolutionItemKey(item);
+            const isExpanded = expanded === itemKey;
+            return (
+              <article key={itemKey}>
+                <div className="home-resolution-row">
+                  <span className="home-resolution-status is-partial">
+                    {item.reasonCode === 'reconciliation_open'
+                      ? 'Decisione'
+                      : 'Realtà'}
+                  </span>
+                </div>
+                <strong>{item.title}</strong>
+                <p>
+                  {item.reasonCode === 'reconciliation_open'
+                    ? 'Decisione aperta sul risultato registrato.'
+                    : 'Sessione conclusa · registra cosa è successo.'}
+                </p>
+                <button
+                  className="home-resolution-details"
+                  type="button"
+                  aria-expanded={isExpanded}
+                  onClick={() =>
+                    setExpanded((current) =>
+                      current === itemKey ? null : itemKey,
+                    )
+                  }
+                >
+                  {isExpanded ? 'Chiudi' : 'Risolvi'}
+                </button>
+                {isExpanded && item.reasonCode === 'reconciliation_open' ? (
+                  <ReconciliationControls
+                    kind={item.subjectKind}
+                    subjectRef={item.subjectRef}
+                    initialPurposeCode={item.purposeCode}
+                    onRecorded={ownerRecorded}
+                  />
+                ) : null}
+                {isExpanded && item.reasonCode === 'realization_review' ? (
+                  <ActualRealizationControls
+                    kind="activity"
+                    subjectRef={item.subjectRef}
+                    onRecorded={ownerRecorded}
+                  />
+                ) : null}
+              </article>
+            );
+          })}
         </div>
       </section>
       <div className="home-create-panel-host" data-home-context-create-host />
