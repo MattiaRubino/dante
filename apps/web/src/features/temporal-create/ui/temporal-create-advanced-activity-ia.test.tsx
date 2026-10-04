@@ -172,9 +172,9 @@ describe('Temporal Create Advanced Activity IA', () => {
     const countsForParent = within(childOutcome).getByRole('checkbox', {
       name: 'Conta per l’esito dell’attività principale',
     }) as HTMLInputElement;
-    expect(countsForParent.checked).toBe(true);
-    fireEvent.click(countsForParent);
     expect(countsForParent.checked).toBe(false);
+    fireEvent.click(countsForParent);
+    expect(countsForParent.checked).toBe(true);
 
     const childTime = within(child).getByRole('button', { name: 'Orario' });
     fireEvent.click(childTime);
