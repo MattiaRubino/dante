@@ -47,7 +47,7 @@ function openAdvanced() {
 }
 
 describe('Temporal Create Advanced Activity IA', () => {
-  it('keeps Activity planning compact and does not expose Sub-Activities', () => {
+  it('keeps Activity planning compact and exposes only root capabilities', () => {
     openAdvanced();
 
     const title = screen.getByPlaceholderText('Titolo');
@@ -63,6 +63,17 @@ describe('Temporal Create Advanced Activity IA', () => {
     ) as HTMLInputElement;
     expect(rootCapabilityCheckbox.checked).toBe(false);
 
+    const protection = titleRow?.querySelector<HTMLElement>(
+      '[data-placement-protection="activity"]',
+    );
+    if (!protection) throw new Error('Expected placement protection.');
+    const protectionCheckbox = within(protection).getByRole('checkbox', {
+      name: 'Proteggi collocazione',
+    }) as HTMLInputElement;
+    expect(protectionCheckbox.checked).toBe(false);
+    fireEvent.click(protectionCheckbox);
+    expect(protectionCheckbox.checked).toBe(true);
+
     const rootOutcome = titleRow?.querySelector<HTMLElement>(
       '[data-outcome-confirmation="activity"]',
     );
@@ -71,7 +82,6 @@ describe('Temporal Create Advanced Activity IA', () => {
       name: 'Conferma esito',
     }) as HTMLInputElement;
     expect(rootOutcomeCheckbox.checked).toBe(false);
-
     fireEvent.click(rootOutcomeCheckbox);
     expect(
       within(rootOutcome).getByRole('radio', { name: 'Ricordami alla fine' }),
@@ -114,7 +124,6 @@ describe('Temporal Create Advanced Activity IA', () => {
         name: 'Proteggi collocazione, da collegare',
       }),
     ).toBeNull();
-
     expect(screen.queryByRole('button', { name: 'Avvia' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Pausa' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Riprendi' })).toBeNull();
