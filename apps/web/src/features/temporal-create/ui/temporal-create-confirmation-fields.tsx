@@ -7,6 +7,8 @@ import { useTemporalCreateU2Draft } from './temporal-create-u2-draft-context';
 
 type TemporalCreateConfirmationFieldsProps = Readonly<{
   fields: TemporalCreateFields;
+  onPatch?: (patch: Partial<TemporalCreateFields>) => void;
+  renderError?: (path: string) => React.ReactNode;
 }>;
 
 export function TemporalCreateConfirmationFields({
