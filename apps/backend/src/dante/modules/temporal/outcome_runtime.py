@@ -23,6 +23,8 @@ from dante.platform.database.references import (
 )
 
 _DISPOSITION_CODE = re.compile(r"^[a-z0-9][a-z0-9._:-]{0,119}$")
+_AUTO_CONFIRM_PURPOSE = "activity.policy.auto"
+_AUTO_CONFIRM_STANCE = "attested"
 
 
 class OutcomeInputError(ValueError):
@@ -141,7 +143,7 @@ class OutcomeApplication:
                 "disposition_code": normalized_disposition,
             }
         )
-        rows = await self._rows(
+        rows = await self._record_rows(
             """
             SELECT outcome_ref, actual_ref, actual_realization_material_state_ref,
                    material_state_ref, disposition_code, replayed
@@ -162,6 +164,8 @@ class OutcomeApplication:
                 "expected_state": expected_material_state_ref,
                 "disposition_code": normalized_disposition,
             },
+            self_person_ref=self_person_ref,
+            source_operation_id=normalized_operation_id,
         )
         if not rows:
             raise OutcomeNotFoundError("Outcome Actual unavailable.")
@@ -203,6 +207,69 @@ class OutcomeApplication:
         if not rows:
             raise OutcomeNotFoundError("Outcome is not in the authenticated self scope.")
         return tuple(_view(row) for row in rows)
+
+    async def _record_rows(
+        self,
+        statement: str,
+        parameters: dict[str, object],
+        *,
+        self_person_ref: NativeRef,
+        source_operation_id: str,
+    ) -> list[RowMapping]:
+        """Record Outcome and policy-owned Confirmation in one transaction."""
+
+        try:
+            async with self._session_factory() as database_session, database_session.begin():
+                result = await database_session.execute(text(statement), parameters)
+                rows = list(result.mappings().all())
+                if not rows:
+                    return rows
+
+                row = rows[0]
+                outcome_ref = str(row["outcome_ref"])
+                outcome_state_ref = str(row["material_state_ref"])
+                confirmation_operation = (
+                    "b14-u6-auto-confirm:"
+                    + hashlib.sha256(source_operation_id.encode("utf-8")).hexdigest()
+                )
+                confirmation_fingerprint = _fingerprint(
+                    {
+                        "version": "1",
+                        "command": "record_outcome_confirmation",
+                        "outcome_ref": outcome_ref,
+                        "outcome_disposition_material_state_ref": outcome_state_ref,
+                        "expected_material_state_ref": None,
+                        "purpose_code": _AUTO_CONFIRM_PURPOSE,
+                        "stance_code": _AUTO_CONFIRM_STANCE,
+                    }
+                )
+                await database_session.execute(
+                    text("""
+                        SELECT *
+                          FROM dante.apply_self_activity_outcome_review_confirmation(
+                            :actor,:operation,:fingerprint,:outcome,:outcome_state,
+                            :confirmation,:confirmation_state
+                          )
+                    """),
+                    {
+                        "actor": self_person_ref,
+                        "operation": confirmation_operation,
+                        "fingerprint": confirmation_fingerprint,
+                        "outcome": row["outcome_ref"],
+                        "outcome_state": row["material_state_ref"],
+                        "confirmation": new_scoped_record_ref(),
+                        "confirmation_state": new_material_state_ref(),
+                    },
+                )
+                return rows
+        except IntegrityError as exc:
+            self._raise_known(exc)
+            raise OutcomePersistenceError("Outcome command was rejected.") from exc
+        except DBAPIError as exc:
+            self._raise_known(exc)
+            raise OutcomePersistenceError("Outcome command was rejected.") from exc
+        except SQLAlchemyError as exc:
+            raise OutcomePersistenceError("Outcome command was rejected.") from exc
 
     async def _rows(self, statement: str, parameters: dict[str, object]) -> list[RowMapping]:
         try:
