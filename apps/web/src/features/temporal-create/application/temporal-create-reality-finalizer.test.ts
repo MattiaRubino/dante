@@ -8,8 +8,8 @@ import {
 } from '../model/temporal-create-u2-authoring';
 import { createTemporalCreateRealityFinalizer } from './temporal-create-reality-finalizer';
 
-describe('Temporal Create Reality finalizer', () => {
-  it('keeps root and child Reality independent and reuses operation ids on retry', async () => {
+describe('Temporal Create policy finalizer', () => {
+  it('keeps policy operation ids stable across safe retry', async () => {
     const base = createTemporalCreateU2AuthoringDraft(
       createTemporalCreateFields({ kind: 'activity' }),
     );
@@ -17,46 +17,24 @@ describe('Temporal Create Reality finalizer', () => {
       activityStructure: Object.freeze({
         ...base.activityStructure,
         realityMode: 'review_on_end',
-        children: Object.freeze([
-          Object.freeze({
-            id: 'child-1',
-            title: 'One',
-            requirementCode: 'required' as const,
-            captureMode: 'disabled' as const,
-            realityMode: 'auto_confirm_outcome' as const,
-            scheduleEnabled: false,
-            startDate: '2026-10-04',
-            startTime: '09:00',
-            endDate: '2026-10-04',
-            endTime: '10:00',
-            plannedSlices: Object.freeze([]),
-          }),
-          Object.freeze({
-            id: 'child-2',
-            title: 'Two',
-            requirementCode: 'optional' as const,
-            captureMode: 'disabled' as const,
-            realityMode: 'manual' as const,
-            scheduleEnabled: false,
-            startDate: '2026-10-04',
-            startTime: '10:00',
-            endDate: '2026-10-04',
-            endTime: '11:00',
-            plannedSlices: Object.freeze([]),
-          }),
-        ]),
+        placementProtected: true,
       }),
     });
     const authored = {
       item: { subjectRef: '0199aaaa-aaaa-7aaa-8aaa-aaaaaaaaaaaa' },
-      children: [
-        { activityRef: '0199bbbb-bbbb-7bbb-8bbb-bbbbbbbbbbbb' },
-        { activityRef: '0199cccc-cccc-7ccc-8ccc-cccccccccccc' },
-      ],
+      schedule: {
+        scheduleRef: '0199dddd-dddd-7ddd-8ddd-dddddddddddd',
+      },
+      children: [],
     } as unknown as TemporalAuthoredActivityResult;
 
-    const calls: Array<Readonly<{ activityRef: string; operationId: string; mode: string }>> = [];
-    const dataSource = {
+    const realityCalls: Array<
+      Readonly<{ activityRef: string; operationId: string; mode: string }>
+    > = [];
+    const movementCalls: Array<
+      Readonly<{ scheduleRef: string; operationId: string }>
+    > = [];
+    const realitySource = {
       get: async () => {
         throw new Error('not used');
       },
@@ -64,12 +42,26 @@ describe('Temporal Create Reality finalizer', () => {
         activityRef: string,
         command: Readonly<{ operationId: string; mode: string }>,
       ) => {
-        calls.push({ activityRef, operationId: command.operationId, mode: command.mode });
+        realityCalls.push({
+          activityRef,
+          operationId: command.operationId,
+          mode: command.mode,
+        });
         return {
           activityRef,
           stateRef: null,
           mode: command.mode,
-          replayed: calls.length > 2,
+          replayed: realityCalls.length > 1,
+        };
+      },
+    };
+    const movementSource = {
+      protect: async (scheduleRef: string, operationId: string) => {
+        movementCalls.push({ scheduleRef, operationId });
+        return {
+          scheduleRef,
+          materialStateRef: '0199eeee-eeee-7eee-8eee-eeeeeeeeeeee',
+          replayed: movementCalls.length > 1,
         };
       },
     };
@@ -77,30 +69,48 @@ describe('Temporal Create Reality finalizer', () => {
     const finalize = createTemporalCreateRealityFinalizer(
       authored,
       draft,
-      dataSource as never,
+      realitySource as never,
+      movementSource as never,
     );
     await finalize();
     await finalize();
 
-    expect(calls.map(({ activityRef, mode }) => ({ activityRef, mode }))).toEqual([
+    expect(realityCalls.map(({ activityRef, mode }) => ({ activityRef, mode }))).toEqual([
       {
         activityRef: '0199aaaa-aaaa-7aaa-8aaa-aaaaaaaaaaaa',
         mode: 'review_on_end',
       },
       {
-        activityRef: '0199bbbb-bbbb-7bbb-8bbb-bbbbbbbbbbbb',
-        mode: 'auto_confirm_outcome',
-      },
-      {
         activityRef: '0199aaaa-aaaa-7aaa-8aaa-aaaaaaaaaaaa',
         mode: 'review_on_end',
-      },
-      {
-        activityRef: '0199bbbb-bbbb-7bbb-8bbb-bbbbbbbbbbbb',
-        mode: 'auto_confirm_outcome',
       },
     ]);
-    expect(calls[0]?.operationId).toBe(calls[2]?.operationId);
-    expect(calls[1]?.operationId).toBe(calls[3]?.operationId);
+    expect(movementCalls.map(({ scheduleRef }) => scheduleRef)).toEqual([
+      '0199dddd-dddd-7ddd-8ddd-dddddddddddd',
+      '0199dddd-dddd-7ddd-8ddd-dddddddddddd',
+    ]);
+    expect(realityCalls[0]?.operationId).toBe(realityCalls[1]?.operationId);
+    expect(movementCalls[0]?.operationId).toBe(movementCalls[1]?.operationId);
+  });
+
+  it('refuses placement protection when authoring produced no Activity Schedule', () => {
+    const base = createTemporalCreateU2AuthoringDraft(
+      createTemporalCreateFields({ kind: 'activity' }),
+    );
+    const draft = patchTemporalCreateU2AuthoringDraft(base, {
+      activityStructure: Object.freeze({
+        ...base.activityStructure,
+        placementProtected: true,
+      }),
+    });
+    const authored = {
+      item: { subjectRef: '0199aaaa-aaaa-7aaa-8aaa-aaaaaaaaaaaa' },
+      schedule: null,
+      children: [],
+    } as unknown as TemporalAuthoredActivityResult;
+
+    expect(() => createTemporalCreateRealityFinalizer(authored, draft)).toThrow(
+      'Placement protection requires an accepted Activity Schedule.',
+    );
   });
 });
