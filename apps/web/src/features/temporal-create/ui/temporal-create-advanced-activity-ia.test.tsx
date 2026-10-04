@@ -53,7 +53,7 @@ function openAdvanced() {
 }
 
 describe('Temporal Create Advanced Activity IA', () => {
-  it('keeps planned Sessions independent from live Session capability', () => {
+  it('keeps planned Sessions independent and exposes compact outcome confirmation', () => {
     openAdvanced();
 
     expect(
@@ -62,12 +62,46 @@ describe('Temporal Create Advanced Activity IA', () => {
     expect(
       screen.getByRole('heading', { name: 'Pianificazione' }),
     ).toBeTruthy();
-    const reality = screen.getByRole('button', { name: 'Realtà' });
-    expect(reality.closest('.temporal-create-title-row')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Realtà' })).toBeNull();
+    expect(screen.queryByText('Gestione manuale')).toBeNull();
     expect(screen.getByRole('heading', { name: 'Descrizione' })).toBeTruthy();
 
     const title = screen.getByPlaceholderText('Titolo');
-    expect(title.closest('.temporal-create-title-row')).toBeTruthy();
+    const titleRow = title.closest('.temporal-create-title-row');
+    expect(titleRow).toBeTruthy();
+
+    const rootCapability = titleRow?.querySelector<HTMLElement>(
+      '[data-session-capability="activity"]',
+    );
+    if (!rootCapability) throw new Error('Expected root Session capability.');
+    const rootCapabilityCheckbox = within(rootCapability).getByRole(
+      'checkbox',
+    ) as HTMLInputElement;
+    expect(rootCapabilityCheckbox.checked).toBe(false);
+
+    const rootOutcome = titleRow?.querySelector<HTMLElement>(
+      '[data-outcome-confirmation="activity"]',
+    );
+    if (!rootOutcome) throw new Error('Expected root outcome confirmation.');
+    const rootOutcomeCheckbox = within(rootOutcome).getByRole('checkbox', {
+      name: 'Conferma esito',
+    }) as HTMLInputElement;
+    expect(rootOutcomeCheckbox.checked).toBe(false);
+    expect(
+      within(rootOutcome).queryByText('Ricordami alla fine'),
+    ).toBeNull();
+
+    fireEvent.click(rootOutcomeCheckbox);
+    expect(rootOutcomeCheckbox.checked).toBe(true);
+    expect(
+      within(rootOutcome).getByRole('radio', { name: 'Ricordami alla fine' }),
+    ).toBeTruthy();
+    const autoConfirm = within(rootOutcome).getByRole('radio', {
+      name: 'Conferma automaticamente',
+    }) as HTMLInputElement;
+    expect(autoConfirm.checked).toBe(false);
+    fireEvent.click(autoConfirm);
+    expect(autoConfirm.checked).toBe(true);
 
     const tree = document.querySelector<HTMLElement>(
       '[data-create-activity-structure]',
@@ -86,15 +120,6 @@ describe('Temporal Create Advanced Activity IA', () => {
     expect(
       screen.queryByRole('button', { name: 'Aggiungi alla struttura' }),
     ).toBeNull();
-
-    const rootCapability = document.querySelector<HTMLElement>(
-      '[data-session-capability="activity"]',
-    );
-    if (!rootCapability) throw new Error('Expected root Session capability.');
-    const rootCapabilityCheckbox = within(rootCapability).getByRole(
-      'checkbox',
-    ) as HTMLInputElement;
-    expect(rootCapabilityCheckbox.checked).toBe(false);
 
     fireEvent.click(
       within(rootActions).getByRole('button', { name: 'Sessione' }),
@@ -121,6 +146,35 @@ describe('Temporal Create Advanced Activity IA', () => {
       'checkbox',
     ) as HTMLInputElement;
     expect(childCapabilityCheckbox.checked).toBe(false);
+
+    const childOutcome = child.querySelector<HTMLElement>(
+      '[data-outcome-confirmation="sub-activity"]',
+    );
+    if (!childOutcome)
+      throw new Error('Expected Sub-Activity outcome confirmation.');
+    const childOutcomeCheckbox = within(childOutcome).getByRole('checkbox', {
+      name: 'Conferma esito',
+    }) as HTMLInputElement;
+    expect(childOutcomeCheckbox.checked).toBe(false);
+    expect(within(child).queryByText('Richiesta')).toBeNull();
+    expect(within(child).queryByText('Facoltativa')).toBeNull();
+
+    fireEvent.click(childOutcomeCheckbox);
+    expect(childOutcomeCheckbox.checked).toBe(true);
+    expect(
+      within(childOutcome).getByRole('radio', { name: 'Ricordami alla fine' }),
+    ).toBeTruthy();
+    expect(
+      within(childOutcome).getByRole('radio', {
+        name: 'Conferma automaticamente',
+      }),
+    ).toBeTruthy();
+    const countsForParent = within(childOutcome).getByRole('checkbox', {
+      name: 'Conta per l’esito dell’attività principale',
+    }) as HTMLInputElement;
+    expect(countsForParent.checked).toBe(true);
+    fireEvent.click(countsForParent);
+    expect(countsForParent.checked).toBe(false);
 
     const childTime = within(child).getByRole('button', { name: 'Orario' });
     fireEvent.click(childTime);
