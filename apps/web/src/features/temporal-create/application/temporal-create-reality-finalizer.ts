@@ -6,10 +6,14 @@ import {
   createRemoteActivityRealityPolicyDataSource,
   type ActivityRealityMode,
 } from '../../temporal/remote-outcome-review-policy-data-source';
+import { createRemoteScheduleMovementPolicyDataSource } from '../../temporal/remote-movement-policy-data-source';
 import type { TemporalCreateU2AuthoringDraft } from '../model/temporal-create-u2-authoring';
 
 type RealityPolicyDataSource = ReturnType<
   typeof createRemoteActivityRealityPolicyDataSource
+>;
+type MovementPolicyDataSource = ReturnType<
+  typeof createRemoteScheduleMovementPolicyDataSource
 >;
 
 type RealityPolicyTask = Readonly<{
@@ -18,18 +22,26 @@ type RealityPolicyTask = Readonly<{
   mode: ActivityRealityMode;
 }>;
 
+type PlacementProtectionTask = Readonly<{
+  scheduleRef: string;
+  operationId: string;
+}>;
+
 /**
- * Build the idempotent post-authoring policy work once, so a transport failure
- * can retry only the missing configuration without authoring a second Activity.
+ * Build idempotent post-authoring policy work once, so a transport failure can
+ * retry only missing configuration without authoring a second Activity.
  *
- * `manual` is the canonical default returned when no policy row exists, so a
- * new Activity needs an explicit write only for the two non-default modes.
+ * `manual` is the canonical Reality default returned when no policy row exists.
+ * Placement protection reuses B04 Movement Policy: `blocked + direct` means
+ * solver/AI/automation movement is forbidden without inventing a second lock.
  */
 export function createTemporalCreateRealityFinalizer(
   authored: TemporalAuthoredActivityResult,
   draft: TemporalCreateU2AuthoringDraft,
   dataSource: RealityPolicyDataSource =
     createRemoteActivityRealityPolicyDataSource(),
+  movementSource: MovementPolicyDataSource =
+    createRemoteScheduleMovementPolicyDataSource(),
 ): () => Promise<void> {
   if (authored.children.length !== draft.activityStructure.children.length) {
     throw new Error('Created Sub-Activities do not match the Reality policy draft.');
@@ -59,6 +71,19 @@ export function createTemporalCreateRealityFinalizer(
     );
   });
 
+  let protectionTask: PlacementProtectionTask | null = null;
+  if (draft.activityStructure.placementProtected) {
+    if (authored.schedule === null) {
+      throw new Error(
+        'Placement protection requires an accepted Activity Schedule.',
+      );
+    }
+    protectionTask = Object.freeze({
+      scheduleRef: authored.schedule.scheduleRef,
+      operationId: systemTemporalIdFactory.operationId(),
+    });
+  }
+
   return async () => {
     for (const task of tasks) {
       await dataSource.configure(task.activityRef, {
@@ -66,6 +91,12 @@ export function createTemporalCreateRealityFinalizer(
         mode: task.mode,
         expectedStateRef: null,
       });
+    }
+    if (protectionTask !== null) {
+      await movementSource.protect(
+        protectionTask.scheduleRef,
+        protectionTask.operationId,
+      );
     }
   };
 }
