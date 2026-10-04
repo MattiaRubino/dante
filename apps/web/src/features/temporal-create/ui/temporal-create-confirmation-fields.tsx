@@ -2,25 +2,28 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { TemporalCreateFields } from '../model/temporal-create-session';
+import type { TemporalCreateRealityMode } from '../model/temporal-create-u2-authoring';
+import { useTemporalCreateU2Draft } from './temporal-create-u2-draft-context';
 
 type TemporalCreateConfirmationFieldsProps = Readonly<{
   fields: TemporalCreateFields;
-  onPatch: (patch: Partial<TemporalCreateFields>) => void;
-  renderError: (path: string) => React.ReactNode;
 }>;
 
 export function TemporalCreateConfirmationFields({
   fields,
-  onPatch,
-  renderError,
 }: TemporalCreateConfirmationFieldsProps) {
   const { i18n } = useTranslation('common');
   const italian = i18n.language.toLowerCase().startsWith('it');
-  const confirmation = fields.confirmation;
   const [open, setOpen] = useState(false);
-  const patchConfirmation = (
-    patch: Partial<TemporalCreateFields['confirmation']>,
-  ) => onPatch({ confirmation: { ...confirmation, ...patch } });
+  const { draft, patch } = useTemporalCreateU2Draft();
+
+  if (fields.kind !== 'activity') return null;
+
+  const structure = draft.activityStructure;
+  const setMode = (realityMode: TemporalCreateRealityMode) =>
+    patch({
+      activityStructure: Object.freeze({ ...structure, realityMode }),
+    });
 
   return (
     <section
@@ -45,40 +48,35 @@ export function TemporalCreateConfirmationFields({
           className="temporal-create-reality-section__body"
           id="temporal-create-reality-options"
         >
-          <h4>{italian ? 'Verifica esito' : 'Outcome verification'}</h4>
+          <h4>{italian ? 'Gestione dell’esito' : 'Outcome handling'}</h4>
           <label className="temporal-create-control">
-            <span>{italian ? 'Regola di verifica' : 'Verification rule'}</span>
+            <span>{italian ? 'Quando verificare' : 'When to verify'}</span>
             <select
-              data-create-path="confirmation.outcomePolicy"
-              value={confirmation.outcomePolicy}
+              data-create-path="activity.realityMode"
+              aria-label={italian ? 'Gestione realtà' : 'Reality handling'}
+              value={structure.realityMode}
               onChange={(event) =>
-                patchConfirmation({
-                  outcomePolicy: event.currentTarget
-                    .value as TemporalCreateFields['confirmation']['outcomePolicy'],
-                })
+                setMode(event.currentTarget.value as TemporalCreateRealityMode)
               }
             >
-              <option value="inherit">
-                {italian ? 'Eredita impostazione' : 'Use inherited setting'}
+              <option value="manual">
+                {italian ? 'Gestione manuale' : 'Manual handling'}
+              </option>
+              <option value="review_on_end">
+                {italian ? 'Chiedimi alla fine' : 'Ask me at the end'}
+              </option>
+              <option value="auto_confirm_outcome">
+                {italian
+                  ? 'Conferma l’esito registrato'
+                  : 'Confirm the recorded outcome'}
               </option>
             </select>
-            {renderError('confirmation.outcomePolicy')}
           </label>
-
-          <div
-            className="temporal-create-reality-flow"
-            aria-label={
-              italian ? 'Flusso realtà ed esito' : 'Reality and outcome flow'
-            }
-          >
-            <span>Actual</span>
-            <span aria-hidden="true">→</span>
-            <span>Outcome</span>
-            <span aria-hidden="true">→</span>
-            <span>Confirmation</span>
-            <span aria-hidden="true">→</span>
-            <span>Reconciliation</span>
-          </div>
+          <p className="temporal-create-reality-note">
+            {italian
+              ? 'Questa regola non crea automaticamente ciò che è successo: Actual e Outcome restano verità separate.'
+              : 'This rule never invents what happened: Actual and Outcome remain separate truth.'}
+          </p>
         </div>
       ) : null}
     </section>
