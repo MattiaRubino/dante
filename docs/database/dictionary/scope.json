@@ -49,21 +49,22 @@
       "B14-U6-GUARD",
       "B14-U6-MANUAL",
       "B14-U6-ROLE",
-      "B14-U6-NAME"
+      "B14-U6-NAME",
+      "B14-U6-REALITY"
     ],
     "standalone_entries": {
-      "tables": 211,
+      "tables": 215,
       "views": 5,
-      "routines": 171,
-      "total": 387
+      "routines": 174,
+      "total": 394
     },
     "embedded_objects": {
       "triggers": 102,
-      "physical_indexes": 434
+      "physical_indexes": 444
     },
     "constraints": {
-      "foreign_keys": 369,
-      "check_constraints": 530
+      "foreign_keys": 375,
+      "check_constraints": 536
     }
   },
   "technical_foundation": {
