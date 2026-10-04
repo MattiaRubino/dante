@@ -27,7 +27,7 @@ export type TemporalAuthorActivityChildRequest = Readonly<{
   description?: string;
   requirementCode?: 'required' | 'optional';
   presentationOrder?: number;
-  placement?: TemporalSchedulePlacementInput;
+  placement?: TemporalSchedulePlacementInput | undefined;
   plannedSlices?: readonly TemporalSchedulePlacementInput[];
   plannedSliceNames?: readonly string[];
   sessionCaptureMode?: TemporalSessionCaptureMode;
