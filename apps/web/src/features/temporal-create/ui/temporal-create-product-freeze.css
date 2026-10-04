@@ -1,0 +1,14 @@
+/* Product consolidation overrides for the advanced Create surface.
+   Keep the action footer anchored to the bottom when content is short and
+   sticky while the form body scrolls. */
+.temporal-create-backdrop.is-advanced
+  .temporal-create-actions.temporal-create-actions {
+  margin-top: auto !important;
+}
+
+/* Placement protection is an accepted product capability, but the current U2
+   authoring contract does not persist it together with planned Sessions yet.
+   Do not expose a decorative/disabled control until that canonical path exists. */
+.temporal-create-backdrop.is-advanced .temporal-create-candidate-control {
+  display: none !important;
+}
