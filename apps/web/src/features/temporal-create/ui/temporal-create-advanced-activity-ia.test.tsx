@@ -67,28 +67,54 @@ describe('Temporal Create Advanced Activity IA', () => {
       '[data-placement-protection="activity"]',
     );
     if (!protection) throw new Error('Expected placement protection.');
-    const protectionCheckbox = within(protection).getByRole('checkbox', {
-      name: 'Proteggi collocazione',
-    }) as HTMLInputElement;
-    expect(protectionCheckbox.checked).toBe(false);
-    fireEvent.click(protectionCheckbox);
-    expect(protectionCheckbox.checked).toBe(true);
+
+    const protectionButton = within(protection).getByRole('button', {
+      name: 'Blocca spostamenti',
+    });
+    expect(protectionButton.getAttribute('aria-pressed')).toBe('false');
+    fireEvent.click(protectionButton);
+    expect(protectionButton.getAttribute('aria-pressed')).toBe('true');
+    expect(protectionButton.getAttribute('aria-label')).toBe(
+      'Sblocca spostamenti',
+    );
 
     const rootOutcome = titleRow?.querySelector<HTMLElement>(
       '[data-outcome-confirmation="activity"]',
     );
     if (!rootOutcome) throw new Error('Expected root outcome confirmation.');
+
     const rootOutcomeCheckbox = within(rootOutcome).getByRole('checkbox', {
-      name: 'Conferma esito',
+      name: 'Abilita verifica esito',
     }) as HTMLInputElement;
     expect(rootOutcomeCheckbox.checked).toBe(false);
-    fireEvent.click(rootOutcomeCheckbox);
+
+    const outcomeMode = within(rootOutcome).getByRole('button', {
+      name: 'Verifica esito',
+    });
+    fireEvent.click(outcomeMode);
+    expect(rootOutcomeCheckbox.checked).toBe(true);
+
+    const askAtEnd = within(rootOutcome).getByRole('button', {
+      name: 'Chiedi al termine',
+    });
+    fireEvent.click(askAtEnd);
+
+    const outcomeMenu = within(rootOutcome).getByRole('menu', {
+      name: 'Modalità verifica esito',
+    });
+    const autoConfirm = within(outcomeMenu).getByRole('menuitem', {
+      name: 'Conferma automatica',
+    });
+    fireEvent.click(autoConfirm);
+
     expect(
-      within(rootOutcome).getByRole('radio', { name: 'Ricordami alla fine' }),
+      within(rootOutcome).getByRole('button', {
+        name: 'Conferma automatica',
+      }),
     ).toBeTruthy();
     expect(
-      within(rootOutcome).getByRole('radio', {
-        name: 'Conferma automaticamente',
+      within(rootOutcome).getByRole('checkbox', {
+        name: 'Disabilita verifica esito',
       }),
     ).toBeTruthy();
 
