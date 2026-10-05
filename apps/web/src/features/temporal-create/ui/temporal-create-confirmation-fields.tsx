@@ -1,93 +1,108 @@
-import { useId } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { TemporalCreateFields } from '../model/temporal-create-session';
 import type { TemporalCreateRealityMode } from '../model/temporal-create-u2-authoring';
 import { useTemporalCreateU2Draft } from './temporal-create-u2-draft-context';
 
-type TemporalCreateConfirmationFieldsProps = Readonly<{
-  fields: TemporalCreateFields;
-  onPatch?: (patch: Partial<TemporalCreateFields>) => void;
-  renderError?: (path: string) => React.ReactNode;
-}>;
+type Props = Readonly<{ fields: TemporalCreateFields }>;
 
-export function TemporalCreateConfirmationFields({
-  fields,
-}: TemporalCreateConfirmationFieldsProps) {
+const MODES: readonly TemporalCreateRealityMode[] = [
+  'manual',
+  'review_on_end',
+  'auto_confirm_outcome',
+];
+
+export function TemporalCreateConfirmationFields({ fields }: Props) {
   const { i18n } = useTranslation('common');
   const italian = i18n.language.toLowerCase().startsWith('it');
-  const radioName = useId();
   const { draft, patch } = useTemporalCreateU2Draft();
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const dismiss = (event: PointerEvent) => {
+      if (event.target instanceof Node && !rootRef.current?.contains(event.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('pointerdown', dismiss, true);
+    return () => document.removeEventListener('pointerdown', dismiss, true);
+  }, [open]);
 
   if (fields.kind !== 'activity') return null;
 
   const structure = draft.activityStructure;
-  const enabled = structure.realityMode !== 'manual';
+  const mode = structure.realityMode;
+  const labels: Record<TemporalCreateRealityMode, string> = italian
+    ? {
+        manual: 'Manuale',
+        review_on_end: 'Ricordami alla fine',
+        auto_confirm_outcome: 'Conferma automaticamente',
+      }
+    : {
+        manual: 'Manual',
+        review_on_end: 'Remind me at the end',
+        auto_confirm_outcome: 'Confirm automatically',
+      };
 
-  const patchStructure = (
-    changes: Partial<typeof structure>,
-  ) =>
+  const choose = (realityMode: TemporalCreateRealityMode) => {
+    const hasRequiredChild = structure.children.some(
+      (child) => child.requirementCode === 'required',
+    );
     patch({
-      activityStructure: Object.freeze({ ...structure, ...changes }),
+      activityStructure: Object.freeze({
+        ...structure,
+        realityMode,
+        childGuardMode:
+          realityMode !== 'manual' && hasRequiredChild ? 'confirm' : 'none',
+      }),
     });
-
-  const setMode = (realityMode: TemporalCreateRealityMode) => {
-    patchStructure({ realityMode });
+    setOpen(false);
   };
 
   return (
     <section
-      className={`temporal-create-reality-section${enabled ? ' is-enabled' : ''}`}
+      ref={rootRef}
+      className="temporal-create-outcome-field"
       data-outcome-confirmation="activity"
-      aria-label={italian ? 'Conferma esito' : 'Outcome confirmation'}
+      aria-label={italian ? 'Esito al termine' : 'Outcome at the end'}
+      onKeyDown={(event) => {
+        if (event.key === 'Escape') setOpen(false);
+      }}
     >
-      <label className="temporal-create-reality-toggle">
-        <input
-          type="checkbox"
-          checked={enabled}
-          onChange={(event) => {
-            const nextEnabled = event.currentTarget.checked;
-            const hasRequiredChild = structure.children.some(
-              (child) => child.requirementCode === 'required',
-            );
-            patchStructure({
-              realityMode: nextEnabled ? 'review_on_end' : 'manual',
-              childGuardMode:
-                nextEnabled && hasRequiredChild ? 'confirm' : 'none',
-            });
-          }}
-        />
-        <span>{italian ? 'Conferma esito' : 'Confirm outcome'}</span>
-      </label>
-
-      {enabled ? (
+      <button
+        className="temporal-create-outcome-field__trigger"
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen((current) => !current)}
+      >
+        <span className="temporal-create-outcome-field__icon" aria-hidden="true">✓</span>
+        <span className="temporal-create-outcome-field__label">
+          {italian ? 'Esito al termine' : 'Outcome at the end'} · {labels[mode]}
+        </span>
+        <span className="temporal-create-outcome-field__chevron" aria-hidden="true">
+          {open ? '⌃' : '⌄'}
+        </span>
+      </button>
+      {open ? (
         <div
-          className="temporal-create-reality-options"
+          className="temporal-create-outcome-field__options"
           role="group"
-          aria-label={italian ? 'Modalità conferma esito' : 'Outcome confirmation mode'}
+          aria-label={italian ? 'Modalità esito' : 'Outcome mode'}
         >
-          <label>
-            <input
-              type="radio"
-              name={radioName}
-              value="review_on_end"
-              checked={structure.realityMode === 'review_on_end'}
-              onChange={() => setMode('review_on_end')}
-            />
-            <span>{italian ? 'Ricordami alla fine' : 'Remind me at the end'}</span>
-          </label>
-          <label>
-            <input
-              type="radio"
-              name={radioName}
-              value="auto_confirm_outcome"
-              checked={structure.realityMode === 'auto_confirm_outcome'}
-              onChange={() => setMode('auto_confirm_outcome')}
-            />
-            <span>
-              {italian ? 'Conferma automaticamente' : 'Confirm automatically'}
-            </span>
-          </label>
+          {MODES.map((option) => (
+            <button
+              key={option}
+              type="button"
+              aria-pressed={mode === option}
+              className={mode === option ? 'is-selected' : undefined}
+              onClick={() => choose(option)}
+            >
+              {labels[option]}
+            </button>
+          ))}
         </div>
       ) : null}
     </section>

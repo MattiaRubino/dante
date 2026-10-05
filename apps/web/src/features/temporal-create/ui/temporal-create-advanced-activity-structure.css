@@ -231,6 +231,34 @@
   cursor: pointer;
 }
 
+.temporal-create-placement-lock {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  gap: 7px;
+  padding: 0 11px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9px;
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.temporal-create-placement-lock svg {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+
+.temporal-create-placement-lock:hover,
+.temporal-create-placement-lock[aria-pressed='true'] {
+  color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
+  background: color-mix(in srgb, #ea5c12 7%, transparent);
+}
+
 .temporal-create-tree-time-editor {
   display: grid;
   grid-template-columns: minmax(132px, 1fr) repeat(2, minmax(145px, 1fr));

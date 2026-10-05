@@ -49,20 +49,49 @@
   .temporal-create-timezone-control {
   grid-column: 1 / -1;
   grid-row: 2;
-  justify-self: start;
+  width: 100%;
   margin-top: 2px;
 }
 
 .temporal-create-composer.is-advanced
   .temporal-create-u2-when .temporal-create-timezone-trigger {
   display: inline-flex;
-  width: auto !important;
-  min-height: 28px;
-  height: auto !important;
+  width: 100% !important;
+  min-height: 38px;
+  height: 38px !important;
   align-items: center;
-  gap: 7px;
-  padding: 4px 8px;
-  font-size: 11px;
+  justify-content: flex-start;
+  gap: 0;
+  padding: 0 12px;
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  font-size: 12px;
+  text-align: left;
+}
+
+.temporal-create-composer.is-advanced
+  .temporal-create-u2-when .temporal-create-timezone-divider {
+  align-self: stretch;
+  width: 1px;
+  margin: 8px 12px;
+  background: var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
+}
+
+.temporal-create-composer.is-advanced
+  .temporal-create-u2-when .temporal-create-timezone-label {
+  flex: 1;
+  min-width: 0;
+}
+
+.temporal-create-composer.is-advanced
+  .temporal-create-u2-when .temporal-create-timezone-chevron {
+  margin-left: 12px;
+  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
+}
+
+.temporal-create-composer.is-advanced
+  .temporal-create-u2-when .temporal-create-timezone-panel {
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .temporal-create-u2-when .temporal-create-time-band-trigger {

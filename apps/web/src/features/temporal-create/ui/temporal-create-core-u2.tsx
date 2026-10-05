@@ -710,15 +710,31 @@ export function TemporalCreateCoreFieldsU2({
                 onClick={() => setTimeZoneOpen((current) => !current)}
               >
                 <GlobeIcon />
-                {!showCompactTimezone ? <span>{italian ? 'Fuso' : 'Time zone'}: {timeZoneLabel}</span> : null}
+                {!showCompactTimezone ? (
+                  <>
+                    <span className="temporal-create-timezone-divider" aria-hidden="true" />
+                    <span className="temporal-create-timezone-label">
+                      {italian ? 'Fuso orario' : 'Time zone'} · {timeZoneLabel}
+                    </span>
+                    <span className="temporal-create-timezone-chevron" aria-hidden="true">
+                      {timeZoneOpen ? '⌃' : '⌄'}
+                    </span>
+                  </>
+                ) : null}
               </button>
               {timeZoneOpen ? (
                 <div className="temporal-create-timezone-panel">
                   <div className="temporal-create-timezone-current"><GlobeIcon /><span>{timeZoneLabel}</span></div>
                   <div className="temporal-create-timezone-list">
-                    <button type="button" className={fields.timeMode === 'floating' ? 'is-selected' : ''} onClick={() => onPatch({ timeMode: 'floating' })}>Ora locale</button>
+                    <button type="button" className={fields.timeMode === 'floating' ? 'is-selected' : ''} onClick={() => {
+                      onPatch({ timeMode: 'floating' });
+                      if (!showCompactTimezone) setTimeZoneOpen(false);
+                    }}>Ora locale</button>
                     {TIME_ZONES.map((zoneId) => (
-                      <button key={zoneId} type="button" className={fields.timeMode === 'zoned' && fields.timeZoneId === zoneId ? 'is-selected' : ''} onClick={() => onPatch({ timeMode: 'zoned', timeZoneId: zoneId })}>{zoneId.replaceAll('_', ' ')}</button>
+                      <button key={zoneId} type="button" className={fields.timeMode === 'zoned' && fields.timeZoneId === zoneId ? 'is-selected' : ''} onClick={() => {
+                        onPatch({ timeMode: 'zoned', timeZoneId: zoneId });
+                        if (!showCompactTimezone) setTimeZoneOpen(false);
+                      }}>{zoneId.replaceAll('_', ' ')}</button>
                     ))}
                   </div>
                 </div>

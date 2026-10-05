@@ -448,17 +448,15 @@ export function TemporalCreateComposer({
                 </div>
                 {advanced ? (
                   <div className="temporal-create-title-row__tools">
-                    <TemporalCreateConfirmationFields
-                      fields={fields}
-                      onPatch={onPatch}
-                      renderError={renderError}
-                    />
                     {fields.kind === 'activity' ? (
                       <TemporalCreateAdvancedActivityHeaderActions />
                     ) : null}
                   </div>
                 ) : null}
               </div>
+              {advanced && fields.kind === 'activity' ? (
+                <TemporalCreateConfirmationFields fields={fields} />
+              ) : null}
               {advanced && fields.kind === 'activity' ? (
                 <TemporalCreateAdvancedActivityStructure fields={fields} />
               ) : null}
