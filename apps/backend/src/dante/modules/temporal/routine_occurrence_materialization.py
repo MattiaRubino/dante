@@ -9,7 +9,7 @@ Routine policy to newly/readably materialized Occurrences.
 from __future__ import annotations
 
 from datetime import UTC, date, datetime, timedelta
-from typing import cast
+from typing import Literal, cast
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
@@ -23,6 +23,7 @@ from dante.modules.temporal.occurrence import (
     OccurrenceApplication,
     OccurrenceCheckpoint,
     OccurrenceInputError,
+    OccurrenceOwner,
     OccurrencePersistenceError,
     OccurrenceWindowCheckpoint,
     _window_source_operation_id,
@@ -56,7 +57,9 @@ class RoutineOccurrenceMaterializationApplication:
         self._schedules = TemporalScheduleApplication(session_factory)
         self._reminders = ScheduleReminderApplication(session_factory)
 
-    async def _sources(self, self_person_ref: NativeRef) -> tuple[tuple[str, UUID], ...]:
+    async def _sources(
+        self, self_person_ref: NativeRef
+    ) -> tuple[tuple[OccurrenceOwner, UUID], ...]:
         statement = text(
             """
             WITH self_routine AS (
@@ -86,11 +89,16 @@ class RoutineOccurrenceMaterializationApplication:
                 ).mappings().all()
         except SQLAlchemyError as exc:
             raise OccurrencePersistenceError() from exc
-        return tuple((str(row["owner"]), UUID(str(row["source_ref"]))) for row in rows)
+        sources: list[tuple[OccurrenceOwner, UUID]] = []
+        for row in rows:
+            owner = str(row["owner"])
+            if owner not in {"routine", "event"}:
+                raise OccurrencePersistenceError()
+            sources.append((cast(OccurrenceOwner, owner), UUID(str(row["source_ref"]))))
+        return tuple(sources)
 
     @staticmethod
     def _placement(
-        checkpoint: OccurrenceCheckpoint,
         occurrence_ref: UUID,
         coordinate: CalendarCoordinate | ElapsedCoordinate,
         policy: RoutineOccurrencePolicyView,
@@ -122,7 +130,7 @@ class RoutineOccurrenceMaterializationApplication:
             )
         if coordinate.zone_id is None:
             raise OccurrenceInputError("Named-zone Routine Occurrence has no zone id.")
-        disambiguation = "earlier"
+        disambiguation: Literal["earlier", "later"] = "earlier"
         if coordinate.resolved_at is not None:
             local = coordinate.resolved_at.astimezone(ZoneInfo(coordinate.zone_id))
             disambiguation = "later" if local.fold == 1 else "earlier"
@@ -130,7 +138,7 @@ class RoutineOccurrenceMaterializationApplication:
             starts_local_at=starts_local,
             ends_local_at=ends_local,
             zone_id=coordinate.zone_id,
-            disambiguation=cast("str", disambiguation),
+            disambiguation=disambiguation,
         )
 
     async def _apply_routine_policy(
@@ -160,7 +168,6 @@ class RoutineOccurrenceMaterializationApplication:
                 operation_id=f"b14:schedule:{occurrence.occurrence_ref}",
                 subject_native_ref=NativeRef(occurrence.occurrence_ref),
                 placement=self._placement(
-                    checkpoint,
                     occurrence.occurrence_ref,
                     coordinate,
                     policy,
@@ -188,8 +195,6 @@ class RoutineOccurrenceMaterializationApplication:
         checkpoints: list[OccurrenceCheckpoint] = []
         try:
             for owner, source_ref in await self._sources(self_person_ref):
-                if owner not in {"routine", "event"}:
-                    raise OccurrencePersistenceError()
                 checkpoint = await self._occurrences.checkpoint(
                     owner=owner,
                     self_person_ref=self_person_ref,
