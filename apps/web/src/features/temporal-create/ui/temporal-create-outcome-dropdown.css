@@ -1,6 +1,6 @@
 .temporal-create-backdrop.is-advanced
   .temporal-create-title-row:has(.temporal-create-outcome-control) {
-  grid-template-columns: minmax(0, 1fr) 444px;
+  grid-template-columns: minmax(0, 1fr) 448px;
 }
 
 .temporal-create-backdrop.is-advanced
@@ -8,10 +8,10 @@
   .temporal-create-title-row__tools {
   box-sizing: border-box;
   display: grid;
-  width: 444px;
-  min-width: 444px;
-  max-width: 444px;
-  grid-template-columns: 170px 88px 186px;
+  width: 448px;
+  min-width: 448px;
+  max-width: 448px;
+  grid-template-columns: 172px 96px 180px;
   align-items: stretch;
   justify-content: stretch;
   gap: 0;
@@ -23,9 +23,9 @@
   .temporal-create-placement-lock {
   order: 1;
   box-sizing: border-box;
-  width: 170px;
-  min-width: 170px;
-  max-width: 170px;
+  width: 172px;
+  min-width: 172px;
+  max-width: 172px;
   justify-content: center;
   border-left: 0 !important;
 }
@@ -36,12 +36,59 @@
   .temporal-create-structure-session-toggle {
   order: 2;
   box-sizing: border-box;
-  width: 88px;
-  min-width: 88px;
-  max-width: 88px;
+  width: 96px;
+  min-width: 96px;
+  max-width: 96px;
   justify-content: center;
+  gap: 7px;
   border-left: 1px solid
     var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09)) !important;
+}
+
+/* Sessione and Verifica esito deliberately share the same compact checkbox.
+   This avoids browser/global form styles turning one of them into a radio-like
+   dot or an oversized native control. */
+.temporal-create-backdrop.is-advanced
+  .temporal-create-title-row__tools
+  .temporal-create-structure-session-toggle
+  input[type='checkbox'] {
+  appearance: none !important;
+  box-sizing: border-box;
+  display: inline-block;
+  width: 13px !important;
+  min-width: 13px !important;
+  max-width: 13px !important;
+  height: 13px !important;
+  min-height: 13px !important;
+  max-height: 13px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  flex: 0 0 13px;
+  border: 1px solid color-mix(in srgb, currentColor 48%, transparent) !important;
+  border-radius: 4px !important;
+  background-color: transparent !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-size: 12px 12px !important;
+  box-shadow: none !important;
+  cursor: pointer;
+}
+
+.temporal-create-backdrop.is-advanced
+  .temporal-create-title-row__tools
+  .temporal-create-structure-session-toggle
+  input[type='checkbox']:checked {
+  border-color: #ea5c12 !important;
+  background-color: #ea5c12 !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M3.1 7.1 5.7 9.6 10.9 4.5' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+}
+
+.temporal-create-backdrop.is-advanced
+  .temporal-create-title-row__tools
+  .temporal-create-structure-session-toggle
+  input[type='checkbox']:focus-visible {
+  outline: 2px solid color-mix(in srgb, #ea5c12 42%, transparent);
+  outline-offset: 2px;
 }
 
 .temporal-create-backdrop.is-advanced
@@ -51,19 +98,17 @@
   order: 3;
   display: grid;
   box-sizing: border-box;
-  width: 186px;
-  min-width: 186px;
-  max-width: 186px;
+  width: 180px;
+  min-width: 180px;
+  max-width: 180px;
   min-height: 50px;
-  grid-template-columns: 30px minmax(0, 1fr);
+  grid-template-columns: 27px minmax(0, 1fr);
   align-items: stretch;
   border-left: 1px solid
     var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
   background: transparent;
 }
 
-/* The enabled state is communicated by the check itself and the active mode.
-   Do not turn the whole header segment into an orange pill. */
 .temporal-create-backdrop.is-advanced
   .temporal-create-title-row__tools
   .temporal-create-outcome-control.is-enabled {
@@ -73,20 +118,17 @@
 .temporal-create-outcome-control__check {
   position: relative;
   display: grid;
-  width: 30px;
-  min-width: 30px;
+  width: 27px;
+  min-width: 27px;
   min-height: 50px;
   place-items: center;
-  border-right: 1px solid rgba(255, 255, 255, 0.065);
   cursor: pointer;
 }
 
 .temporal-create-outcome-control__check:hover {
-  background: rgba(255, 255, 255, 0.025);
+  background: rgba(255, 255, 255, 0.018);
 }
 
-/* Hide the browser checkbox completely: global form styles must never be able
-   to resize this compact header control. */
 .temporal-create-outcome-control__check input {
   position: absolute !important;
   width: 1px !important;
@@ -107,7 +149,7 @@
   box-sizing: border-box;
   width: 13px;
   height: 13px;
-  border: 1px solid color-mix(in srgb, currentColor 46%, transparent);
+  border: 1px solid color-mix(in srgb, currentColor 48%, transparent);
   border-radius: 4px;
   background: transparent;
   content: '';
@@ -130,7 +172,7 @@
 .temporal-create-outcome-control__mode {
   min-width: 0;
   min-height: 50px;
-  padding: 0 11px;
+  padding: 0 10px 0 3px;
   overflow: hidden;
   border: 0 !important;
   border-radius: 0 !important;
@@ -144,8 +186,6 @@
   white-space: nowrap;
 }
 
-/* Some generic controls draw chevrons from pseudo-elements. Outcome review is
-   intentionally text-only: the right-hand label itself is the menu trigger. */
 .temporal-create-outcome-control__mode::before,
 .temporal-create-outcome-control__mode::after {
   display: none !important;
@@ -159,7 +199,7 @@
 .temporal-create-outcome-control__mode:not(:disabled):hover,
 .temporal-create-outcome-control__mode[aria-expanded='true'] {
   color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
-  background: rgba(255, 255, 255, 0.025) !important;
+  background: rgba(255, 255, 255, 0.022) !important;
 }
 
 .temporal-create-outcome-control__mode:disabled {
@@ -168,27 +208,34 @@
   opacity: 1;
 }
 
+/* The menu belongs to the mode text, not to the whole title row and not to the
+   checkbox. It therefore opens directly below the right-hand outcome area. */
 .temporal-create-outcome-control__menu {
   position: absolute;
   z-index: 240;
-  top: calc(100% + 5px);
+  top: calc(100% + 4px);
   right: 0;
+  left: 27px;
   display: grid;
   box-sizing: border-box;
-  width: 210px;
+  width: auto;
   padding: 4px;
   border: 1px solid
     var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
-  border-radius: 9px;
-  background: var(--dante-semantic-color-home-surface-raised, #151f2e);
-  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.38);
+  border-radius: 8px;
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-surface-raised, #151f2e) 98%,
+    black
+  );
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.34);
 }
 
 .temporal-create-outcome-control__menu > button {
   min-height: 34px;
-  padding: 0 10px;
+  padding: 0 9px;
   border: 0;
-  border-radius: 7px;
+  border-radius: 6px;
   color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
   background: transparent;
   font: inherit;
@@ -247,7 +294,7 @@
   }
 
   .temporal-create-outcome-control__menu {
-    right: auto;
-    left: 0;
+    right: 0;
+    left: 27px;
   }
 }
