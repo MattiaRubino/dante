@@ -71,6 +71,22 @@ export function TemporalCreateAdvancedActivityHeaderActions() {
   const patchStructure = (changes: Partial<typeof structure>) =>
     patch({ activityStructure: Object.freeze({ ...structure, ...changes }) });
 
+  const placementActionLabel = italian
+    ? structure.placementProtected
+      ? 'Sblocca spostamenti'
+      : 'Blocca spostamenti'
+    : structure.placementProtected
+      ? 'Unlock placement'
+      : 'Lock placement';
+
+  const placementActionTitle = italian
+    ? structure.placementProtected
+      ? 'Consenti di nuovo gli spostamenti manuali e automatici della collocazione'
+      : 'Blocca gli spostamenti manuali e automatici della collocazione'
+    : structure.placementProtected
+      ? 'Allow manual and automatic placement changes again'
+      : 'Block manual and automatic placement changes';
+
   return (
     <>
       <label
@@ -94,24 +110,29 @@ export function TemporalCreateAdvancedActivityHeaderActions() {
         className="temporal-create-placement-lock"
         data-placement-protection="activity"
         aria-pressed={structure.placementProtected}
-        aria-label={italian ? 'Blocca spostamenti' : 'Lock placement changes'}
-        title={italian
-          ? 'Blocca gli spostamenti manuali e automatici della collocazione'
-          : 'Block manual and automatic placement changes'}
+        aria-label={placementActionLabel}
+        title={placementActionTitle}
         onClick={() =>
           patchStructure({ placementProtected: !structure.placementProtected })
         }
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
           <rect x="5" y="10" width="14" height="11" rx="2" />
-          {structure.placementProtected
-            ? <path d="M8 10V7a4 4 0 0 1 8 0v3" />
-            : <path d="M8 10V7a4 4 0 0 1 8 0" />}
+          {structure.placementProtected ? (
+            <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+          ) : (
+            <path d="M8 10V7a4 4 0 0 1 7.5-1.9" />
+          )}
         </svg>
-        <span>{italian
-          ? structure.placementProtected ? 'Spostamenti bloccati' : 'Blocca spostamenti'
-          : structure.placementProtected ? 'Placement locked' : 'Lock placement'}</span>
+        <span>{placementActionLabel}</span>
       </button>
     </>
   );
