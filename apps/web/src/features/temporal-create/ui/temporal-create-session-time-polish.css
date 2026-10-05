@@ -1,0 +1,189 @@
+/* Planned Session time authoring reuses the canonical Activity date/time controls.
+   Keep the Session editor visually in the same compact language instead of
+   wrapping those controls in a second oversized form card. */
+.temporal-create-tree-time-editor {
+  position: relative;
+  display: grid;
+  width: max-content;
+  max-width: calc(100% - 36px);
+  grid-template-columns: 156px 168px 22px 168px;
+  grid-template-rows: auto;
+  align-items: start;
+  gap: 8px;
+  margin: 7px 0 2px 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.temporal-create-tree-time-editor::before {
+  grid-column: 3;
+  grid-row: 1;
+  align-self: center;
+  justify-self: center;
+  color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
+  font-size: 13px;
+  content: '→';
+}
+
+.temporal-create-tree-time-editor > .temporal-create-date-picker {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+}
+
+.temporal-create-tree-time-editor > .temporal-create-time-control:nth-child(2) {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.temporal-create-tree-time-editor > .temporal-create-time-control:nth-child(3) {
+  grid-column: 4;
+  grid-row: 1;
+}
+
+.temporal-create-tree-time-editor > .temporal-create-time-control {
+  width: 168px;
+  min-width: 0;
+}
+
+.temporal-create-tree-time-editor .temporal-create-date-picker__trigger {
+  box-sizing: border-box;
+  display: flex;
+  width: 156px;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  border: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
+  border-radius: 10px;
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-surface-control, #151f2e) 76%,
+    black
+  );
+  font-size: 0.7rem;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+  text-align: center;
+}
+
+.temporal-create-tree-time-editor .temporal-create-date-picker__trigger:hover,
+.temporal-create-tree-time-editor .temporal-create-date-picker__trigger:focus-visible,
+.temporal-create-tree-time-editor
+  .temporal-create-date-picker__trigger[aria-expanded='true'] {
+  border-color: color-mix(in srgb, #ff8a3d 44%, transparent);
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-surface-control, #151f2e) 86%,
+    #ff8a3d 4%
+  );
+  outline: none;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #ff8a3d 10%, transparent);
+}
+
+.temporal-create-tree-time-editor .temporal-create-time-control__field {
+  grid-template-columns: minmax(0, 1fr) 22px;
+  width: 168px;
+  min-width: 0;
+  min-height: 42px;
+}
+
+.temporal-create-tree-time-editor .temporal-create-inline-time-editor {
+  min-width: 0;
+  grid-template-columns: minmax(31px, 1fr) 6px minmax(31px, 1fr);
+  padding-inline: 2px;
+}
+
+.temporal-create-tree-time-editor
+  .temporal-create-time-segment.temporal-create-time-segment
+  > button {
+  width: 24px;
+  min-width: 24px;
+}
+
+.temporal-create-tree-time-editor .temporal-create-time-segment input {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font-size: 13px;
+}
+
+.temporal-create-tree-time-editor .temporal-create-clock-trigger {
+  width: 22px;
+  min-width: 22px;
+}
+
+.temporal-create-tree-time-editor .temporal-create-clock-trigger svg {
+  width: 13px;
+  height: 13px;
+}
+
+.temporal-create-tree-time-editor .temporal-create-time-control > small {
+  display: none;
+}
+
+.temporal-create-tree-time-editor .temporal-create-time-picker,
+.temporal-create-tree-time-editor .temporal-create-date-picker__popover {
+  z-index: 180;
+}
+
+@media (max-width: 720px) {
+  .temporal-create-tree-time-editor {
+    width: 100%;
+    max-width: calc(100% - 22px);
+    grid-template-columns: minmax(112px, 0.8fr) minmax(132px, 1fr) minmax(132px, 1fr);
+    margin-left: 22px;
+  }
+
+  .temporal-create-tree-time-editor::before {
+    display: none;
+  }
+
+  .temporal-create-tree-time-editor > .temporal-create-date-picker {
+    grid-column: 1;
+  }
+
+  .temporal-create-tree-time-editor > .temporal-create-time-control:nth-child(2) {
+    grid-column: 2;
+  }
+
+  .temporal-create-tree-time-editor > .temporal-create-time-control:nth-child(3) {
+    grid-column: 3;
+  }
+
+  .temporal-create-tree-time-editor > .temporal-create-time-control,
+  .temporal-create-tree-time-editor .temporal-create-date-picker__trigger,
+  .temporal-create-tree-time-editor .temporal-create-time-control__field {
+    width: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  .temporal-create-tree-time-editor {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .temporal-create-tree-time-editor > .temporal-create-date-picker,
+  .temporal-create-tree-time-editor > .temporal-create-time-control:nth-child(2),
+  .temporal-create-tree-time-editor > .temporal-create-time-control:nth-child(3) {
+    grid-column: 1;
+  }
+
+  .temporal-create-tree-time-editor > .temporal-create-date-picker {
+    grid-row: 1;
+  }
+
+  .temporal-create-tree-time-editor > .temporal-create-time-control:nth-child(2) {
+    grid-row: 2;
+  }
+
+  .temporal-create-tree-time-editor > .temporal-create-time-control:nth-child(3) {
+    grid-row: 3;
+  }
+}
