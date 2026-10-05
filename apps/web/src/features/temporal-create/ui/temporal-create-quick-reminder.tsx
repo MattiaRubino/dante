@@ -29,17 +29,13 @@ function reminderLabel(value: number | null): string {
 
 export function TemporalCreateQuickReminder({ fields, onPatch }: Props) {
   const eligible =
-    fields.timeSemantics === 'timed' &&
-    fields.timeMode === 'zoned' &&
-    fields.eventRecurrence.patternKind === 'none';
+    fields.timeSemantics === 'timed' && fields.timeMode === 'zoned';
   const value = eligible ? fields.confirmation.reminderLeadMinutes : null;
 
   const unavailableReason =
     fields.timeSemantics !== 'timed'
       ? 'Il promemoria richiede un orario preciso.'
-      : fields.timeMode !== 'zoned'
-        ? 'Il promemoria richiede un fuso orario specifico.'
-        : 'Il promemoria Quick non è disponibile sulle ricorrenze.';
+      : 'Il promemoria richiede un fuso orario specifico.';
 
   return (
     <label
