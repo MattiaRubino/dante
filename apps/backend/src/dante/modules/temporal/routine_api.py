@@ -70,9 +70,9 @@ class RoutineResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     lifecycle_changed_at: datetime
-    life_area_ref: UUID
-    life_area_assignment_revision: int = Field(ge=1)
-    life_area_assigned_at: datetime
+    life_area_ref: UUID | None
+    life_area_assignment_revision: int = Field(ge=0)
+    life_area_assigned_at: datetime | None
     tag_refs: list[UUID]
     replayed: bool = False
 
