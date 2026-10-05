@@ -36,6 +36,7 @@ type Props = Readonly<{
   fields: TemporalCreateFields;
   contexts: readonly TemporalCreateContextOption[];
   showCompactTimezone?: boolean;
+  repeatDetails?: ReactNode;
   onPatch: (patch: Partial<TemporalCreateFields>) => void;
   onRequestAdvanced: (target?: 'recurrence') => void;
   renderError: (path: string) => ReactNode;
@@ -454,6 +455,7 @@ export function TemporalCreateCoreFieldsU2({
   fields,
   contexts,
   showCompactTimezone = true,
+  repeatDetails,
   onPatch,
   onRequestAdvanced,
   renderError,
@@ -1154,24 +1156,27 @@ export function TemporalCreateCoreFieldsU2({
       ) : null}
 
       {fields.timeSemantics !== 'unscheduled' ? (
-        <div className="temporal-create-u2-repeat">
-          <select
-            aria-label={copy.event.repeat}
-            value={quickRecurrence(fields)}
-            onChange={(event) =>
-              changeQuickRecurrence(
-                event.currentTarget.value as QuickRecurrence,
-              )
-            }
-          >
-            <option value="none">{copy.event.repeatNever}</option>
-            <option value="daily">{copy.event.repeatDaily}</option>
-            <option value="weekly">{copy.event.repeatWeekly}</option>
-            <option value="monthly">{copy.event.repeatMonthly}</option>
-            <option value="yearly">{copy.event.repeatYearly}</option>
-            <option value="custom">{copy.event.repeatCustom}</option>
-          </select>
-        </div>
+        <>
+          <div className="temporal-create-u2-repeat">
+            <select
+              aria-label={copy.event.repeat}
+              value={quickRecurrence(fields)}
+              onChange={(event) =>
+                changeQuickRecurrence(
+                  event.currentTarget.value as QuickRecurrence,
+                )
+              }
+            >
+              <option value="none">{copy.event.repeatNever}</option>
+              <option value="daily">{copy.event.repeatDaily}</option>
+              <option value="weekly">{copy.event.repeatWeekly}</option>
+              <option value="monthly">{copy.event.repeatMonthly}</option>
+              <option value="yearly">{copy.event.repeatYearly}</option>
+              <option value="custom">{copy.event.repeatCustom}</option>
+            </select>
+          </div>
+          {repeatDetails}
+        </>
       ) : null}
 
       <TemporalCreateLifeAreaField
