@@ -40,6 +40,13 @@ from dante.modules.temporal.routine import (
     RoutinePersistenceError,
     RoutineStateConflictError,
 )
+from dante.modules.temporal.routine_occurrence_policy import (
+    RoutineOccurrencePolicyApplication,
+    RoutineOccurrencePolicyConflictError,
+    RoutineOccurrencePolicyInputError,
+    RoutineOccurrencePolicyNotFoundError,
+    RoutineOccurrencePolicyPersistenceError,
+)
 from dante.platform.http.problem import ProblemError
 
 router = APIRouter(prefix="/api/v1/temporal", tags=["temporal"])
@@ -50,9 +57,11 @@ class CreateRecurringRoutineRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     operation_id: str = Field(min_length=1, max_length=200)
     title: str = Field(min_length=1, max_length=300)
-    life_area_ref: UUID
+    life_area_ref: UUID | None = None
     tag_refs: list[UUID] = Field(default_factory=list, max_length=100)
     recurrence: RecurrenceRequest
+    duration_minutes: int = Field(ge=1, le=525_600)
+    reminder_lead_minutes: int | None = Field(default=None, ge=0, le=10_080)
 
 
 class CreateRecurringEventRequest(BaseModel):
@@ -78,11 +87,19 @@ def _application(request: Request) -> RecurringAuthoringApplication:
     return RecurringAuthoringApplication(request.app.state.database_runtime.session_factory)
 
 
+def _policy_application(request: Request) -> RoutineOccurrencePolicyApplication:
+    return RoutineOccurrencePolicyApplication(request.app.state.database_runtime.session_factory)
+
+
 Application = Annotated[RecurringAuthoringApplication, Depends(_application)]
+PolicyApplication = Annotated[RoutineOccurrencePolicyApplication, Depends(_policy_application)]
 
 
 def _problem(exc: Exception) -> ProblemError:
-    if isinstance(exc, (RoutineInputError, EventInputError, RecurrenceInputError)):
+    if isinstance(
+        exc,
+        (RoutineInputError, EventInputError, RecurrenceInputError, RoutineOccurrencePolicyInputError),
+    ):
         return ProblemError(
             status=422,
             code="temporal.recurring_authoring.invalid_input",
@@ -97,6 +114,7 @@ def _problem(exc: Exception) -> ProblemError:
             RoutineOperationReuseError,
             EventOperationIdReuseError,
             RecurrenceOperationReuseError,
+            RoutineOccurrencePolicyConflictError,
         ),
     ):
         return ProblemError(
@@ -106,7 +124,10 @@ def _problem(exc: Exception) -> ProblemError:
             title="Recurring authoring operation id reused",
             detail="Use a fresh operation id for a different source or Recurrence intent.",
         )
-    if isinstance(exc, (RoutineStateConflictError, EventAgendaRevisionConflictError, RecurrenceStateConflictError)):
+    if isinstance(
+        exc,
+        (RoutineStateConflictError, EventAgendaRevisionConflictError, RecurrenceStateConflictError),
+    ):
         return ProblemError(
             status=409,
             code="temporal.recurring_authoring.state_conflict",
@@ -114,7 +135,16 @@ def _problem(exc: Exception) -> ProblemError:
             title="Recurring authoring state changed",
             detail="Reload canonical state and retry.",
         )
-    if isinstance(exc, (RoutineNotFoundError, EventLifeAreaUnavailableError, EventNotFoundError, RecurrenceNotFoundError)):
+    if isinstance(
+        exc,
+        (
+            RoutineNotFoundError,
+            EventLifeAreaUnavailableError,
+            EventNotFoundError,
+            RecurrenceNotFoundError,
+            RoutineOccurrencePolicyNotFoundError,
+        ),
+    ):
         return ProblemError(
             status=404,
             code="temporal.recurring_authoring.unavailable",
@@ -122,7 +152,16 @@ def _problem(exc: Exception) -> ProblemError:
             title="Recurring authoring target unavailable",
             detail="The source organization target is unavailable in this account.",
         )
-    if isinstance(exc, (RoutinePersistenceError, EventPersistenceError, RecurrencePersistenceError, RecurringAuthoringPersistenceError)):
+    if isinstance(
+        exc,
+        (
+            RoutinePersistenceError,
+            EventPersistenceError,
+            RecurrencePersistenceError,
+            RecurringAuthoringPersistenceError,
+            RoutineOccurrencePolicyPersistenceError,
+        ),
+    ):
         return ProblemError(
             status=503,
             code="temporal.recurring_authoring.persistence_unavailable",
@@ -150,6 +189,7 @@ async def create_recurring_routine(
     payload: CreateRecurringRoutineRequest,
     context: MutatingContext,
     application: Application,
+    policy_application: PolicyApplication,
     response: Response,
 ) -> RecurringAuthoringResponse:
     response.headers["Cache-Control"] = "no-store"
@@ -161,6 +201,12 @@ async def create_recurring_routine(
             life_area_ref=payload.life_area_ref,
             tag_refs=tuple(payload.tag_refs),
             recurrence=_spec(payload.recurrence),
+        )
+        await policy_application.set(
+            self_person_ref=context.self_person_ref,
+            routine_ref=value.source_ref,
+            duration_minutes=payload.duration_minutes,
+            reminder_lead_minutes=payload.reminder_lead_minutes,
         )
         return RecurringAuthoringResponse(**asdict(value))
     except Exception as exc:
