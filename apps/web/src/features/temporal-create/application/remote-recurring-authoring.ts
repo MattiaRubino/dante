@@ -90,8 +90,8 @@ export type CreateRecurringRoutineRequest = Readonly<{
   lifeAreaRef: string | null;
   tagRefs?: readonly string[];
   recurrence: RecurringAuthoringRecurrence;
-  durationMinutes: number;
-  reminderLeadMinutes: number | null;
+  durationMinutes?: number;
+  reminderLeadMinutes?: number | null;
 }>;
 
 export type CreateRecurringEventRequest = Readonly<{
@@ -289,8 +289,8 @@ export function createRemoteRecurringAuthoringDataSource(
         life_area_ref: request.lifeAreaRef,
         tag_refs: [...(request.tagRefs ?? [])],
         recurrence: request.recurrence,
-        duration_minutes: request.durationMinutes,
-        reminder_lead_minutes: request.reminderLeadMinutes,
+        duration_minutes: request.durationMinutes ?? 30,
+        reminder_lead_minutes: request.reminderLeadMinutes ?? null,
       });
     },
     createEvent(request: CreateRecurringEventRequest) {
