@@ -63,20 +63,16 @@ describe('Temporal Create Advanced Activity IA', () => {
     ) as HTMLInputElement;
     expect(rootCapabilityCheckbox.checked).toBe(false);
 
-    const protection = titleRow?.querySelector<HTMLElement>(
+    const protection = titleRow?.querySelector<HTMLButtonElement>(
       '[data-placement-protection="activity"]',
     );
     if (!protection) throw new Error('Expected placement protection.');
 
-    const protectionButton = within(protection).getByRole('button', {
-      name: 'Blocca spostamenti',
-    });
-    expect(protectionButton.getAttribute('aria-pressed')).toBe('false');
-    fireEvent.click(protectionButton);
-    expect(protectionButton.getAttribute('aria-pressed')).toBe('true');
-    expect(protectionButton.getAttribute('aria-label')).toBe(
-      'Sblocca spostamenti',
-    );
+    expect(protection.getAttribute('aria-label')).toBe('Blocca spostamenti');
+    expect(protection.getAttribute('aria-pressed')).toBe('false');
+    fireEvent.click(protection);
+    expect(protection.getAttribute('aria-pressed')).toBe('true');
+    expect(protection.getAttribute('aria-label')).toBe('Sblocca spostamenti');
 
     const rootOutcome = titleRow?.querySelector<HTMLElement>(
       '[data-outcome-confirmation="activity"]',
