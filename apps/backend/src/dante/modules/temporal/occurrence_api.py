@@ -33,6 +33,9 @@ from dante.modules.temporal.occurrence import (
     OccurrenceView,
     OccurrenceWindowCheckpoint,
 )
+from dante.modules.temporal.routine_occurrence_materialization import (
+    RoutineOccurrenceMaterializationApplication,
+)
 from dante.modules.temporal.schedule import (
     AbsoluteIntervalPlacement,
     CoarseLocalPeriodPlacement,
@@ -250,6 +253,19 @@ def _application(request: Request) -> OccurrenceApplication:
 
 
 Application = Annotated[OccurrenceApplication, Depends(_application)]
+
+
+def _materialization_application(
+    request: Request,
+) -> RoutineOccurrenceMaterializationApplication:
+    return RoutineOccurrenceMaterializationApplication(
+        request.app.state.database_runtime.session_factory
+    )
+
+
+MaterializationApplication = Annotated[
+    RoutineOccurrenceMaterializationApplication, Depends(_materialization_application)
+]
 _Errors = (
     OccurrenceInputError,
     OccurrenceOperationReuseError,
@@ -414,13 +430,13 @@ async def checkpoint_event_occurrences(
 async def checkpoint_occurrence_window(
     payload: OccurrenceWindowCheckpointRequest,
     context: MutatingContext,
-    application: Application,
+    materialization: MaterializationApplication,
     response: Response,
 ) -> OccurrenceWindowCheckpointResponse:
-    """Checkpoint every current self recurrence source before a Timeline read."""
+    """Checkpoint sources and apply recurring Activity Schedule/Reminder policy."""
     response.headers["Cache-Control"] = "no-store"
     try:
-        value: OccurrenceWindowCheckpoint = await application.checkpoint_window(
+        value: OccurrenceWindowCheckpoint = await materialization.checkpoint_window(
             self_person_ref=context.self_person_ref,
             operation_id=payload.operation_id,
             start_date=payload.start_date,
