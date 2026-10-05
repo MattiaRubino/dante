@@ -233,13 +233,54 @@
 
 .temporal-create-tree-time-editor {
   display: grid;
-  grid-template-columns: minmax(132px, 1fr) minmax(100px, 0.7fr) minmax(100px, 0.7fr);
+  grid-template-columns: minmax(132px, 1fr) repeat(2, minmax(145px, 1fr));
   gap: 8px;
   margin: 6px 0 2px 36px;
   padding: 10px;
   border: 1px solid rgba(255, 255, 255, 0.075);
   border-radius: 9px;
   background: rgba(0, 0, 0, 0.13);
+}
+
+.temporal-create-tree-time-editor > .temporal-create-time-control {
+  min-width: 0;
+}
+
+.temporal-create-tree-time-editor .temporal-create-time-control__field {
+  min-width: 0;
+}
+
+.temporal-create-tree-time-editor .temporal-create-time-picker {
+  z-index: 30;
+}
+
+.temporal-create-tree-time-editor .temporal-create-date-picker__trigger {
+  width: 100%;
+  min-height: 42px;
+}
+
+.temporal-create-tree-time-editor .temporal-create-time-control__field {
+  min-height: 42px;
+  grid-template-columns: minmax(0, 1fr) 24px;
+}
+
+.temporal-create-tree-time-editor .temporal-create-inline-time-editor {
+  min-width: 0;
+  grid-template-columns: minmax(31px, 1fr) 6px minmax(31px, 1fr);
+}
+
+.temporal-create-tree-time-editor .temporal-create-time-control input {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+@media (max-width: 640px) {
+  .temporal-create-tree-time-editor {
+    grid-template-columns: minmax(0, 1fr);
+    margin-left: 0;
+  }
 }
 
 .temporal-create-tree-time-editor.is-child-time {

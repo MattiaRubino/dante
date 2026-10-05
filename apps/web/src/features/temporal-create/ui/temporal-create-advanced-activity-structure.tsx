@@ -4,6 +4,8 @@ import { Temporal } from '@dante/time';
 
 import type { TemporalCreateFields } from '../model/temporal-create-session';
 import type { TemporalCreatePlannedSliceDraft } from '../model/temporal-create-u2-authoring';
+import { TemporalCreateDatePicker } from './temporal-create-date-picker';
+import { TimeControl } from './temporal-create-core-u2';
 import { useTemporalCreateU2Draft } from './temporal-create-u2-draft-context';
 
 import './temporal-create-advanced-activity-structure.css';
@@ -43,7 +45,7 @@ function rootInterval(fields: TemporalCreateFields): Readonly<{
   }
 }
 
-function plannedSlice(fields: TemporalCreateFields): TemporalCreatePlannedSliceDraft {
+export function plannedSlice(fields: TemporalCreateFields): TemporalCreatePlannedSliceDraft {
   const root = rootInterval(fields);
   return Object.freeze({
     id: newRowId(),
@@ -115,6 +117,7 @@ export function TemporalCreateAdvancedActivityStructure({
 }: TemporalCreateAdvancedActivityStructureProps) {
   const { i18n } = useTranslation('common');
   const italian = i18n.language.toLowerCase().startsWith('it');
+  const locale = i18n.resolvedLanguage ?? i18n.language ?? 'it';
   const { draft, patch } = useTemporalCreateU2Draft();
   const structure = draft.activityStructure;
   const [openTimes, setOpenTimes] = useState<readonly string[]>([]);
@@ -226,42 +229,24 @@ export function TemporalCreateAdvancedActivityStructure({
                     id={`${timeId}:editor`}
                     className="temporal-create-tree-time-editor"
                   >
-                    <label>
-                      <span>{italian ? 'Data' : 'Date'}</span>
-                      <input
-                        type="date"
-                        value={slice.date}
-                        onChange={(event) =>
-                          updateSlice(slice.id, {
-                            date: event.currentTarget.value,
-                          })
-                        }
-                      />
-                    </label>
-                    <label>
-                      <span>{italian ? 'Inizio' : 'Start'}</span>
-                      <input
-                        type="time"
-                        value={slice.startTime}
-                        onChange={(event) =>
-                          updateSlice(slice.id, {
-                            startTime: event.currentTarget.value,
-                          })
-                        }
-                      />
-                    </label>
-                    <label>
-                      <span>{italian ? 'Fine' : 'End'}</span>
-                      <input
-                        type="time"
-                        value={slice.endTime}
-                        onChange={(event) =>
-                          updateSlice(slice.id, {
-                            endTime: event.currentTarget.value,
-                          })
-                        }
-                      />
-                    </label>
+                    <TemporalCreateDatePicker
+                      label={italian ? 'Data Sessione' : 'Session date'}
+                      value={slice.date}
+                      locale={locale}
+                      onChange={(date) => updateSlice(slice.id, { date })}
+                    />
+                    <TimeControl
+                      label={italian ? 'Inizio Sessione' : 'Session start'}
+                      value={slice.startTime}
+                      dataPath={`plannedSlices.${slice.id}.startTime`}
+                      onChange={(startTime) => updateSlice(slice.id, { startTime })}
+                    />
+                    <TimeControl
+                      label={italian ? 'Fine Sessione' : 'Session end'}
+                      value={slice.endTime}
+                      dataPath={`plannedSlices.${slice.id}.endTime`}
+                      onChange={(endTime) => updateSlice(slice.id, { endTime })}
+                    />
                   </div>
                 ) : null}
               </div>

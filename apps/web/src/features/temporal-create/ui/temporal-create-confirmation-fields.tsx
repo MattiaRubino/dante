@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { TemporalCreateFields } from '../model/temporal-create-session';
@@ -16,9 +16,7 @@ export function TemporalCreateConfirmationFields({
 }: TemporalCreateConfirmationFieldsProps) {
   const { i18n } = useTranslation('common');
   const italian = i18n.language.toLowerCase().startsWith('it');
-  const optionsId = useId();
   const radioName = useId();
-  const [open, setOpen] = useState(false);
   const { draft, patch } = useTemporalCreateU2Draft();
 
   if (fields.kind !== 'activity') return null;
@@ -35,7 +33,6 @@ export function TemporalCreateConfirmationFields({
 
   const setMode = (realityMode: TemporalCreateRealityMode) => {
     patchStructure({ realityMode });
-    setOpen(false);
   };
 
   return (
@@ -58,33 +55,14 @@ export function TemporalCreateConfirmationFields({
               childGuardMode:
                 nextEnabled && hasRequiredChild ? 'confirm' : 'none',
             });
-            setOpen(nextEnabled);
           }}
         />
         <span>{italian ? 'Conferma esito' : 'Confirm outcome'}</span>
       </label>
 
       {enabled ? (
-        <button
-          type="button"
-          className="temporal-create-reality-options-trigger"
-          aria-expanded={open}
-          aria-controls={optionsId}
-          aria-label={
-            italian
-              ? 'Scegli come confermare l’esito'
-              : 'Choose how to confirm the outcome'
-          }
-          onClick={() => setOpen((current) => !current)}
-        >
-          <span aria-hidden="true">{open ? '⌃' : '⌄'}</span>
-        </button>
-      ) : null}
-
-      {enabled && open ? (
         <div
           className="temporal-create-reality-options"
-          id={optionsId}
           role="group"
           aria-label={italian ? 'Modalità conferma esito' : 'Outcome confirmation mode'}
         >

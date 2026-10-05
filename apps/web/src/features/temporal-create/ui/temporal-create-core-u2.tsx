@@ -205,7 +205,7 @@ function GlobeIcon() {
   );
 }
 
-function TimeControl({
+export function TimeControl({
   label,
   value,
   dataPath,
@@ -435,10 +435,6 @@ export function TemporalCreateCoreFieldsU2({
 
   const patchEvent = (patch: Partial<TemporalCreateFields['event']>) =>
     onPatch({ event: { ...fields.event, ...patch } });
-
-  useEffect(() => {
-    if (!showCompactTimezone && timeZoneOpen) setTimeZoneOpen(false);
-  }, [showCompactTimezone, timeZoneOpen]);
 
   useEffect(() => {
     if (!timeZoneOpen) return;
@@ -704,8 +700,7 @@ export function TemporalCreateCoreFieldsU2({
 
       {fields.timeSemantics === 'timed' ? (
         <div className="temporal-create-u2-when">
-          {showCompactTimezone ? (
-            <div ref={timeZoneRootRef} className="temporal-create-timezone-control">
+          <div ref={timeZoneRootRef} className="temporal-create-timezone-control">
               <button
                 className={`temporal-create-timezone-trigger${timeZoneOpen ? ' is-open' : ''}`}
                 type="button"
@@ -715,6 +710,7 @@ export function TemporalCreateCoreFieldsU2({
                 onClick={() => setTimeZoneOpen((current) => !current)}
               >
                 <GlobeIcon />
+                {!showCompactTimezone ? <span>{italian ? 'Fuso' : 'Time zone'}: {timeZoneLabel}</span> : null}
               </button>
               {timeZoneOpen ? (
                 <div className="temporal-create-timezone-panel">
@@ -727,8 +723,7 @@ export function TemporalCreateCoreFieldsU2({
                   </div>
                 </div>
               ) : null}
-            </div>
-          ) : null}
+          </div>
 
           <input
             className="temporal-create-u2-date-bridge"

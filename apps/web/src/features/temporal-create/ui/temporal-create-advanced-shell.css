@@ -124,6 +124,16 @@
   border-radius: 9px;
 }
 
+.temporal-create-title-row__tools .temporal-create-reality-section.is-enabled {
+  flex-basis: 100%;
+  flex-wrap: wrap;
+}
+
+.temporal-create-title-row__tools .temporal-create-reality-section.is-enabled
+  .temporal-create-reality-options {
+  flex-basis: 100%;
+}
+
 .temporal-create-title-row__tools .temporal-create-reality-trigger {
   display: flex;
   width: 100%;

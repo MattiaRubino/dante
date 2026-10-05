@@ -5,6 +5,8 @@ import type {
   TemporalCreateFields,
   TemporalCreateSurface,
 } from '../model/temporal-create-session';
+import { plannedSlice } from './temporal-create-advanced-activity-structure';
+import { useTemporalCreateU2Draft } from './temporal-create-u2-draft-context';
 
 type ActivityFieldsProps = Readonly<{
   fields: TemporalCreateFields;
@@ -22,6 +24,8 @@ export function TemporalCreateActivityFields({
   const italian = i18n.language.toLowerCase().startsWith('it');
   const scheduling = fields.scheduling;
   const unplaced = fields.timeSemantics === 'unscheduled';
+  const { draft, patch } = useTemporalCreateU2Draft();
+  const slices = draft.activityStructure.plannedSlices;
 
   const patchScheduling = (
     patch: Partial<TemporalCreateFields['scheduling']>,
@@ -44,18 +48,39 @@ export function TemporalCreateActivityFields({
           role="group"
           aria-label={italian ? 'Modalità di pianificazione' : 'Planning mode'}
         >
-          <button type="button" className="is-active" aria-pressed="true">
+          <button
+            type="button"
+            className={slices.length === 0 ? 'is-active' : ''}
+            aria-pressed={slices.length === 0}
+            onClick={() => {
+              if (slices.length > 0) {
+                patch({
+                  activityStructure: Object.freeze({
+                    ...draft.activityStructure,
+                    plannedSlices: [],
+                  }),
+                });
+              }
+            }}
+          >
             {italian ? 'Unica' : 'Single'}
           </button>
           <button
             type="button"
-            disabled
-            aria-pressed="false"
-            title={
-              italian
-                ? 'La pianificazione suddivisa sarà collegata al percorso canonico multi-placement nel prossimo slice.'
-                : 'Split planning will be connected to the canonical multi-placement path in the next slice.'
-            }
+            className={slices.length > 0 ? 'is-active' : ''}
+            aria-pressed={slices.length > 0}
+            onClick={() => {
+              if (slices.length === 0) {
+                patch({
+                  activityStructure: Object.freeze({
+                    ...draft.activityStructure,
+                    plannedSlices: [plannedSlice(fields)],
+                  }),
+                });
+              }
+              document.querySelector('[data-create-activity-structure]')
+                ?.scrollIntoView?.({ behavior: 'smooth', block: 'nearest' });
+            }}
           >
             {italian ? 'Suddivisa' : 'Split'}
           </button>
@@ -91,29 +116,7 @@ export function TemporalCreateActivityFields({
             </option>
           </select>
         </label>
-      ) : (
-        <div className="temporal-create-candidate-control" aria-disabled="true">
-          <div>
-            <strong>{italian ? 'Proteggi collocazione' : 'Protect placement'}</strong>
-            <small>
-              {italian
-                ? 'utente + automazioni Dante'
-                : 'user + Dante automations'}
-            </small>
-          </div>
-          <button
-            type="button"
-            disabled
-            aria-label={
-              italian
-                ? 'Proteggi collocazione, da collegare'
-                : 'Protect placement, not wired yet'
-            }
-          >
-            {italian ? 'Da collegare' : 'Not wired'}
-          </button>
-        </div>
-      )}
+      ) : null}
 
       {unplaced && scheduling.constraintKind === 'bounded-window' ? (
         <div

@@ -52,6 +52,20 @@ export function ContextRail() {
     refresh(controller.signal);
     return () => controller.abort();
   }, [refresh]);
+
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') refresh();
+    };
+    window.addEventListener('focus', onVisible);
+    document.addEventListener('visibilitychange', onVisible);
+    const interval = window.setInterval(onVisible, 60_000);
+    return () => {
+      window.removeEventListener('focus', onVisible);
+      document.removeEventListener('visibilitychange', onVisible);
+      window.clearInterval(interval);
+    };
+  }, [refresh]);
   return (
     <aside
       className="home-context-rail"
@@ -128,7 +142,12 @@ export function ContextRail() {
           </span>
         </header>
         <div className="home-resolution-list">
-          {error ? <p role="alert">{error}</p> : null}
+          {error ? (
+            <p role="alert">
+              {error} <button type="button" onClick={() => refresh()}>Riprova</button>
+            </p>
+          ) : null}
+          {queue === null && error === null ? <p>Caricamento…</p> : null}
           {queue?.count === 0 ? <p>Non ci sono decisioni aperte.</p> : null}
           {queue?.items.map((item) => {
             const itemKey = resolutionItemKey(item);
@@ -143,11 +162,9 @@ export function ContextRail() {
                   </span>
                 </div>
                 <strong>{item.title}</strong>
-                <p>
-                  {item.reasonCode === 'reconciliation_open'
-                    ? 'Decisione aperta sul risultato registrato.'
-                    : 'Sessione conclusa · registra cosa è successo.'}
-                </p>
+                <p>{item.reasonCode === 'reconciliation_open'
+                  ? 'Decisione aperta sul risultato registrato.'
+                  : 'Sessione conclusa · registra cosa è successo.'}</p>
                 <button
                   className="home-resolution-details"
                   type="button"

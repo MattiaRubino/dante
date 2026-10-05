@@ -46,56 +46,6 @@ export function TemporalCreateAdvancedFields({
       className="temporal-create-advanced"
       data-create-advanced={fields.kind}
     >
-      {fields.timeSemantics === 'timed' ? (
-        <section
-          className="temporal-create-section is-compact is-wide"
-          aria-labelledby="temporal-create-time-heading"
-        >
-          <div className="temporal-create-section__heading">
-            <h3 id="temporal-create-time-heading">
-              {italian ? 'Riferimento orario' : 'Time reference'}
-            </h3>
-          </div>
-          <div className="temporal-create-grid two">
-            <label className="temporal-create-control">
-              <span>{italian ? 'Modalità' : 'Mode'}</span>
-              <select
-                data-create-path="timeMode"
-                value={fields.timeMode}
-                onChange={(event) =>
-                  onPatch({
-                    timeMode: event.currentTarget
-                      .value as TemporalCreateFields['timeMode'],
-                  })
-                }
-              >
-                <option value="floating">
-                  {italian ? 'Ora locale' : 'Local time'}
-                </option>
-                <option value="zoned">
-                  {italian ? 'Fuso specifico' : 'Named time zone'}
-                </option>
-              </select>
-            </label>
-            {fields.timeMode === 'zoned' ? (
-              <label className="temporal-create-control">
-                <span>{italian ? 'Fuso orario' : 'Time zone'}</span>
-                <input
-                  data-create-path="timeZoneId"
-                  type="text"
-                  value={fields.timeZoneId}
-                  onChange={(event) =>
-                    onPatch({ timeZoneId: event.currentTarget.value })
-                  }
-                  autoComplete="off"
-                />
-                {renderError('timeZoneId')}
-              </label>
-            ) : null}
-          </div>
-        </section>
-      ) : null}
-
       {fields.kind === 'activity' ? (
         <TemporalCreateActivityFields
           fields={fields}

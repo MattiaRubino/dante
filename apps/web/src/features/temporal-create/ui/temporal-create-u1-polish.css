@@ -499,12 +499,9 @@
 }
 
 .temporal-create-reality-options {
-  position: absolute;
-  z-index: 180;
-  top: calc(100% + 7px);
-  right: 0;
+  position: static;
   display: grid;
-  width: 220px;
+  width: 100%;
   gap: 2px;
   padding: 6px;
   border: 1px solid
@@ -515,7 +512,7 @@
     var(--dante-semantic-color-home-surface-raised, #151f2e) 98%,
     black
   );
-  box-shadow: 0 18px 52px rgba(0, 0, 0, 0.44);
+  box-shadow: none;
 }
 
 .temporal-create-reality-options > label {

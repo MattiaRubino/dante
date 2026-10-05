@@ -36,9 +36,7 @@
   height: 14px;
 }
 
-/* Quick keeps the compact globe. Advanced owns the same timeMode/timeZoneId
-   explicitly in its Time/Timezone section, so the icon is intentionally absent
-   there rather than duplicating the same control twice. */
+/* Advanced places the same timezone control below the date/time row. */
 .temporal-create-composer.is-advanced .temporal-create-u2-when {
   grid-template-columns:
     minmax(92px, 0.8fr) minmax(132px, 1.2fr) 22px
@@ -49,7 +47,22 @@
 .temporal-create-composer.is-advanced
   .temporal-create-u2-when
   .temporal-create-timezone-control {
-  display: none;
+  grid-column: 1 / -1;
+  grid-row: 2;
+  justify-self: start;
+  margin-top: 2px;
+}
+
+.temporal-create-composer.is-advanced
+  .temporal-create-u2-when .temporal-create-timezone-trigger {
+  display: inline-flex;
+  width: auto !important;
+  min-height: 28px;
+  height: auto !important;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 8px;
+  font-size: 11px;
 }
 
 .temporal-create-u2-when .temporal-create-time-band-trigger {
