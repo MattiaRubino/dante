@@ -260,9 +260,7 @@ export function TemporalCreateEntry({
     if (partialPostCreateRef.current !== null) return;
     const merged = { ...session.draft.current, ...next };
     const eligibleReminder =
-      merged.timeSemantics === 'timed' &&
-      merged.timeMode === 'zoned' &&
-      merged.eventRecurrence.patternKind === 'none';
+      merged.timeSemantics === 'timed' && merged.timeMode === 'zoned';
     const boundedNext = eligibleReminder
       ? next
       : {
@@ -458,6 +456,7 @@ export function TemporalCreateEntry({
       const execution = await runtime.execute(preparation.prepared);
       if (execution.result.status === 'applied' && execution.effect) {
         if (
+          preparation.prepared.metadata.recurrenceOwner === null &&
           preparation.prepared.command.payload.placement !== null &&
           execution.effect.projection.placement === null
         ) {
