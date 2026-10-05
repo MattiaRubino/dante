@@ -1,15 +1,19 @@
 .temporal-create-backdrop.is-advanced
   .temporal-create-title-row:has(.temporal-create-outcome-control) {
-  grid-template-columns: minmax(0, 1fr) 470px;
+  grid-template-columns: minmax(0, 1fr) 444px;
 }
 
 .temporal-create-backdrop.is-advanced
   .temporal-create-title-row:has(.temporal-create-outcome-control)
   .temporal-create-title-row__tools {
-  width: 470px;
-  min-width: 470px;
-  max-width: 470px;
-  flex-wrap: nowrap;
+  box-sizing: border-box;
+  display: grid;
+  width: 444px;
+  min-width: 444px;
+  max-width: 444px;
+  grid-template-columns: 170px 88px 186px;
+  align-items: stretch;
+  justify-content: stretch;
   gap: 0;
 }
 
@@ -19,11 +23,11 @@
   .temporal-create-placement-lock {
   order: 1;
   box-sizing: border-box;
-  width: 178px;
-  min-width: 178px;
-  max-width: 178px;
-  flex: 0 0 178px;
+  width: 170px;
+  min-width: 170px;
+  max-width: 170px;
   justify-content: center;
+  border-left: 0 !important;
 }
 
 .temporal-create-backdrop.is-advanced
@@ -32,11 +36,12 @@
   .temporal-create-structure-session-toggle {
   order: 2;
   box-sizing: border-box;
-  width: 94px;
-  min-width: 94px;
-  max-width: 94px;
-  flex: 0 0 94px;
+  width: 88px;
+  min-width: 88px;
+  max-width: 88px;
   justify-content: center;
+  border-left: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09)) !important;
 }
 
 .temporal-create-backdrop.is-advanced
@@ -46,45 +51,80 @@
   order: 3;
   display: grid;
   box-sizing: border-box;
-  width: 198px;
-  min-width: 198px;
-  max-width: 198px;
+  width: 186px;
+  min-width: 186px;
+  max-width: 186px;
   min-height: 50px;
-  flex: 0 0 198px;
-  grid-template-columns: 38px minmax(0, 1fr);
+  grid-template-columns: 30px minmax(0, 1fr);
   align-items: stretch;
   border-left: 1px solid
     var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
   background: transparent;
 }
 
+/* The enabled state is communicated by the check itself and the active mode.
+   Do not turn the whole header segment into an orange pill. */
 .temporal-create-backdrop.is-advanced
   .temporal-create-title-row__tools
   .temporal-create-outcome-control.is-enabled {
-  background: color-mix(in srgb, #ea5c12 5%, transparent);
+  background: transparent;
 }
 
 .temporal-create-outcome-control__check {
+  position: relative;
   display: grid;
-  min-width: 0;
+  width: 30px;
+  min-width: 30px;
   min-height: 50px;
   place-items: center;
-  border-right: 1px solid rgba(255, 255, 255, 0.075);
+  border-right: 1px solid rgba(255, 255, 255, 0.065);
   cursor: pointer;
 }
 
 .temporal-create-outcome-control__check:hover {
-  background: color-mix(in srgb, #ea5c12 6%, transparent);
+  background: rgba(255, 255, 255, 0.025);
 }
 
+/* Hide the browser checkbox completely: global form styles must never be able
+   to resize this compact header control. */
 .temporal-create-outcome-control__check input {
-  width: 15px;
-  min-width: 15px;
-  height: 15px;
-  min-height: 15px;
-  margin: 0;
-  padding: 0;
-  accent-color: #ea5c12;
+  position: absolute !important;
+  width: 1px !important;
+  min-width: 1px !important;
+  max-width: 1px !important;
+  height: 1px !important;
+  min-height: 1px !important;
+  max-height: 1px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden;
+  border: 0 !important;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.temporal-create-outcome-control__check::before {
+  box-sizing: border-box;
+  width: 13px;
+  height: 13px;
+  border: 1px solid color-mix(in srgb, currentColor 46%, transparent);
+  border-radius: 4px;
+  background: transparent;
+  content: '';
+}
+
+.temporal-create-outcome-control__check:has(input:checked)::before {
+  border-color: #ea5c12;
+  background-color: #ea5c12;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M3.1 7.1 5.7 9.6 10.9 4.5' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 12px 12px;
+}
+
+.temporal-create-outcome-control__check:has(input:focus-visible)::before {
+  outline: 2px solid color-mix(in srgb, #ea5c12 42%, transparent);
+  outline-offset: 2px;
 }
 
 .temporal-create-outcome-control__mode {
@@ -92,21 +132,34 @@
   min-height: 50px;
   padding: 0 11px;
   overflow: hidden;
-  border: 0;
+  border: 0 !important;
+  border-radius: 0 !important;
   color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
-  background: transparent;
+  background: transparent !important;
+  box-shadow: none !important;
   font: inherit;
   font-size: 12px;
   text-align: left;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Some generic controls draw chevrons from pseudo-elements. Outcome review is
+   intentionally text-only: the right-hand label itself is the menu trigger. */
+.temporal-create-outcome-control__mode::before,
+.temporal-create-outcome-control__mode::after {
+  display: none !important;
+  content: none !important;
+}
+
+.temporal-create-outcome-control__mode:not(:disabled) {
   cursor: pointer;
 }
 
 .temporal-create-outcome-control__mode:not(:disabled):hover,
 .temporal-create-outcome-control__mode[aria-expanded='true'] {
   color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
-  background: color-mix(in srgb, #ea5c12 6%, transparent);
+  background: rgba(255, 255, 255, 0.025) !important;
 }
 
 .temporal-create-outcome-control__mode:disabled {
@@ -118,24 +171,21 @@
 .temporal-create-outcome-control__menu {
   position: absolute;
   z-index: 240;
-  top: calc(100% + 6px);
+  top: calc(100% + 5px);
   right: 0;
   display: grid;
-  width: 220px;
-  padding: 6px;
+  box-sizing: border-box;
+  width: 210px;
+  padding: 4px;
   border: 1px solid
     var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
-  border-radius: 10px;
-  background: color-mix(
-    in srgb,
-    var(--dante-semantic-color-home-surface-raised, #151f2e) 98%,
-    black
-  );
-  box-shadow: 0 18px 52px rgba(0, 0, 0, 0.44);
+  border-radius: 9px;
+  background: var(--dante-semantic-color-home-surface-raised, #151f2e);
+  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.38);
 }
 
 .temporal-create-outcome-control__menu > button {
-  min-height: 36px;
+  min-height: 34px;
   padding: 0 10px;
   border: 0;
   border-radius: 7px;
@@ -148,10 +198,16 @@
   white-space: nowrap;
 }
 
+.temporal-create-outcome-control__menu > button::before,
+.temporal-create-outcome-control__menu > button::after {
+  display: none !important;
+  content: none !important;
+}
+
 .temporal-create-outcome-control__menu > button:hover,
 .temporal-create-outcome-control__menu > button:focus-visible {
   color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
-  background: color-mix(in srgb, #ea5c12 7%, transparent);
+  background: color-mix(in srgb, #ea5c12 6%, transparent);
   outline: none;
 }
 
@@ -165,6 +221,7 @@
     .temporal-create-title-row:has(.temporal-create-outcome-control)
     .temporal-create-title-row__tools {
     grid-column: 1;
+    display: flex;
     width: 100%;
     min-width: 0;
     max-width: none;
