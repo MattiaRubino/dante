@@ -56,7 +56,7 @@ class ActivityScheduleResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     schedule_ref: UUID
-    role_code: Literal["envelope", "planned"] | None
+    role_code: Literal["envelope", "planned", "interval"] | None
     presentation_order: int | None
     display_name: str | None
     placement_material_state_ref: UUID
@@ -160,7 +160,7 @@ def _problem(exc: DBAPIError) -> ProblemError:
 def _owner_schedules(
     rows: list,
     activity_ref: UUID,
-    roles: dict[UUID, tuple[Literal["envelope", "planned"], int, str | None]],
+    roles: dict[UUID, tuple[Literal["envelope", "planned", "interval"], int, str | None]],
 ) -> list[ActivityScheduleResponse]:
     return [
         ActivityScheduleResponse(
@@ -177,8 +177,10 @@ def _owner_schedules(
                 0
                 if roles.get(row["schedule_ref"], (None, 0))[0] == "envelope"
                 else 1
+                if roles.get(row["schedule_ref"], (None, 0))[0] == "interval"
+                else 2
                 if roles.get(row["schedule_ref"], (None, 0))[0] == "planned"
-                else 2,
+                else 3,
                 roles.get(row["schedule_ref"], (None, 0))[1],
                 str(row["schedule_ref"]),
             ),

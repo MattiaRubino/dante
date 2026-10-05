@@ -6,19 +6,35 @@
  */
 import * as zod from 'zod/mini';
 
-export const resolutionQueueItemReasonCodeDefault = `reconciliation_open`;
 export const ResolutionQueueItem = /*#__PURE__*/ zod.object({
-  outcome_ref: /*#__PURE__*/ zod.uuid(),
+  actions: /*#__PURE__*/ zod.array(
+    /*#__PURE__*/ zod.enum(['open_reconciliation', 'record_realization']),
+  ),
+  effective_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+  outcome_ref: /*#__PURE__*/ zod.union([
+    /*#__PURE__*/ zod.uuid(),
+    /*#__PURE__*/ zod.null(),
+  ]),
   purpose_code: /*#__PURE__*/ zod.string(),
-  reason_code: /*#__PURE__*/ zod
-    ._default(
-      /*#__PURE__*/ zod.literal('reconciliation_open'),
-      resolutionQueueItemReasonCodeDefault,
-    )
-    .check(/*#__PURE__*/ zod.meta({ title: 'Reason Code' })),
-  reconciliation_ref: /*#__PURE__*/ zod.uuid(),
+  reason_code: /*#__PURE__*/ zod.enum([
+    'reconciliation_open',
+    'realization_review',
+  ]),
+  reconciliation_ref: /*#__PURE__*/ zod.union([
+    /*#__PURE__*/ zod.uuid(),
+    /*#__PURE__*/ zod.null(),
+  ]),
+  session_ref: /*#__PURE__*/ zod.union([
+    /*#__PURE__*/ zod.uuid(),
+    /*#__PURE__*/ zod.null(),
+  ]),
+  session_timing_material_state_ref: /*#__PURE__*/ zod.union([
+    /*#__PURE__*/ zod.uuid(),
+    /*#__PURE__*/ zod.null(),
+  ]),
   subject_kind: /*#__PURE__*/ zod.enum(['activity', 'event']),
   subject_ref: /*#__PURE__*/ zod.uuid(),
+  summary: /*#__PURE__*/ zod.string(),
   title: /*#__PURE__*/ zod.string(),
 });
 

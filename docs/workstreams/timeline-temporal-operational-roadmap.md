@@ -6,6 +6,7 @@
 - **Completed functional frontier:** B12 ✅ CLOSED / qualified user-reported B12-D acceptance 2026-09-30
 - **Current block:** B14 + B07 user-guided product/UI consolidation
 - **U6:** ACTIVE / CANDIDATE at `_103`. The user's real-app screenshots triggered Advanced Create layout and language corrections plus a canonical name for future planned Session rows. The `_102` PostgreSQL/catalog gate passed 9 tests and the atomic B08 minimum test passed (1); `_103` PostgreSQL/catalog proof and corrected real-app acceptance remain pending. See `timeline-temporal-operational-b14-u6-candidate-2026-10-02.md`.
+- **Activity intervals (2026-10-05):** Branch candidate `_106` separates occupied Activity intervals (`interval`) from future planned Sessions (`planned`), replaces `Unica / Suddivisa` with `+ Aggiungi intervallo`, and projects each Activity interval as a separate Timeline card. Current semantics: `docs/domain/decisions/activity-intervals-and-sessions-v2.md`. Local migration/build/visual proof remains open; no PASS claimed.
 - **Current gate:** B12-D and B12 closed on qualified user-reported acceptance; B14/B07 is a live user-directed implementation cycle
 - **B14/B07 working ledger:** `docs/workstreams/timeline-temporal-operational-b14-ui-consolidation-2026-09-30.md`
 - **B12 block scope:** `docs/workstreams/timeline-temporal-operational-b12-scope-2026-09-29.md`

@@ -16,6 +16,10 @@ export const ActivityChildResponse = /*#__PURE__*/ zod.object({
   schedules: /*#__PURE__*/ zod.array(
     /*#__PURE__*/ zod
       .object({
+        display_name: /*#__PURE__*/ zod.union([
+          /*#__PURE__*/ zod.string(),
+          /*#__PURE__*/ zod.null(),
+        ]),
         end_date_exclusive: /*#__PURE__*/ zod.union([
           /*#__PURE__*/ zod.iso.date(),
           /*#__PURE__*/ zod.null(),
@@ -50,7 +54,7 @@ export const ActivityChildResponse = /*#__PURE__*/ zod.object({
           /*#__PURE__*/ zod.null(),
         ]),
         role_code: /*#__PURE__*/ zod.union([
-          /*#__PURE__*/ zod.enum(['envelope', 'planned']),
+          /*#__PURE__*/ zod.enum(['envelope', 'planned', 'interval']),
           /*#__PURE__*/ zod.null(),
         ]),
         schedule_ref: /*#__PURE__*/ zod.uuid(),

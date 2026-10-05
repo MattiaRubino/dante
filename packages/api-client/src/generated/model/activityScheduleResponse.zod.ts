@@ -46,7 +46,7 @@ export const ActivityScheduleResponse = /*#__PURE__*/ zod
       /*#__PURE__*/ zod.null(),
     ]),
     role_code: /*#__PURE__*/ zod.union([
-      /*#__PURE__*/ zod.enum(['envelope', 'planned']),
+      /*#__PURE__*/ zod.enum(['envelope', 'planned', 'interval']),
       /*#__PURE__*/ zod.null(),
     ]),
     schedule_ref: /*#__PURE__*/ zod.uuid(),

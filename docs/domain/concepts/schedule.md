@@ -64,6 +64,7 @@ The accepted Intention & Execution concepts already require a reusable temporal 
 - Activity identity to remain stable when work is rescheduled;
 - estimated effort, scheduled duration, and actual effort to remain distinct;
 - a single Activity to potentially be split across several planned execution periods;
+- distinct accepted Activity intervals to remain Schedule placements of that one Activity, separate from future planned Sessions and real execution Sessions;
 - calendar placement not to transform Activity into Event.
 
 `Event v0` requires:

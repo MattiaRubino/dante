@@ -17,6 +17,7 @@
   "semantic_traceability": {
     "authority_sources": [
       "docs/domain/concepts/schedule.md",
+      "docs/domain/decisions/activity-intervals-and-sessions-v2.md",
       "docs/workstreams/timeline-temporal-operational-b14-u6-end-to-end-gate-2026-10-02.md"
     ],
     "domain_concepts": [

@@ -38,13 +38,13 @@ type PlacementProtectionTask = Readonly<{
 export function createTemporalCreateRealityFinalizer(
   authored: TemporalAuthoredActivityResult,
   draft: TemporalCreateU2AuthoringDraft,
-  dataSource: RealityPolicyDataSource =
-    createRemoteActivityRealityPolicyDataSource(),
-  movementSource: MovementPolicyDataSource =
-    createRemoteScheduleMovementPolicyDataSource(),
+  dataSource: RealityPolicyDataSource = createRemoteActivityRealityPolicyDataSource(),
+  movementSource: MovementPolicyDataSource = createRemoteScheduleMovementPolicyDataSource(),
 ): () => Promise<void> {
   if (authored.children.length !== draft.activityStructure.children.length) {
-    throw new Error('Created Sub-Activities do not match the Reality policy draft.');
+    throw new Error(
+      'Created Sub-Activities do not match the Reality policy draft.',
+    );
   }
 
   const tasks: RealityPolicyTask[] = [];
@@ -60,7 +60,8 @@ export function createTemporalCreateRealityFinalizer(
   }
 
   authored.children.forEach((child, index) => {
-    const mode = draft.activityStructure.children[index]?.realityMode ?? 'manual';
+    const mode =
+      draft.activityStructure.children[index]?.realityMode ?? 'manual';
     if (mode === 'manual') return;
     tasks.push(
       Object.freeze({
@@ -71,17 +72,24 @@ export function createTemporalCreateRealityFinalizer(
     );
   });
 
-  let protectionTask: PlacementProtectionTask | null = null;
+  const protectionTasks: PlacementProtectionTask[] = [];
   if (draft.activityStructure.placementProtected) {
     if (authored.schedule === null) {
       throw new Error(
         'Placement protection requires an accepted Activity Schedule.',
       );
     }
-    protectionTask = Object.freeze({
-      scheduleRef: authored.schedule.scheduleRef,
-      operationId: systemTemporalIdFactory.operationId(),
-    });
+    for (const accepted of [
+      authored.schedule,
+      ...(authored.activityIntervals ?? []),
+    ]) {
+      protectionTasks.push(
+        Object.freeze({
+          scheduleRef: accepted.scheduleRef,
+          operationId: systemTemporalIdFactory.operationId(),
+        }),
+      );
+    }
   }
 
   return async () => {
@@ -92,7 +100,7 @@ export function createTemporalCreateRealityFinalizer(
         expectedStateRef: null,
       });
     }
-    if (protectionTask !== null) {
+    for (const protectionTask of protectionTasks) {
       await movementSource.protect(
         protectionTask.scheduleRef,
         protectionTask.operationId,

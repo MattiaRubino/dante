@@ -1,12 +1,13 @@
 # Timeline / Temporal-Operational — Candidate Database Overlay
 
-- **Status:** CURRENT CANDIDATE DATABASE OVERLAY — B12-C `_93` focused local proof
-- **Reconciled:** 2026-09-29
+- **Status:** CURRENT CANDIDATE DATABASE OVERLAY — `_106` Activity intervals pending local proof
+- **Reconciled:** 2026-10-05
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
-- **Current migration source head:** `20260929_93` (B12-C focused local proof)
-- **Focused local proof frontier:** B12-C `_93` (19 PostgreSQL tests reported passed in 39.83s)
-- **Reported current catalog topology:** `_93` / `196|5|155|100|397|344|497|0|0|0`
+- **Current migration source head:** `20261005_106` (candidate; migration not locally proven)
+- **Focused local proof frontier:** `_102` atomic/catalog 9 PostgreSQL tests and B08 minimum 1 test user-reported passed; `_103`–`_106` database gate unreported.
+- **Later candidate stages:** `_94`–`_105` include B14/U6 work; `_106` extends `activity_schedule_role` with `interval` without changing table or routine counts. `planned` keeps its future Session meaning. See `../domain/decisions/activity-intervals-and-sessions-v2.md`. Current materialization totals in the Dictionary are unverified for `_106` until the user runs the local database gate.
+- **Historical catalog topology:** `_93` / `196|5|155|100|397|344|497|0|0|0`. Current Dictionary counts are in `dictionary/scope.json`; `_106` has not been locally proved.
 - **Whole-DB SoR:** `README.md`
 - **Machine-readable authority:** `dictionary/`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`

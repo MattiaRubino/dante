@@ -6,9 +6,7 @@ import type { TemporalSessionCaptureMode } from '../../temporal/authoring-data-s
 export const TEMPORAL_CREATE_U2_DEFAULT_COLOR = '#EA5C12';
 
 export type TemporalCreateRealityMode =
-  | 'manual'
-  | 'review_on_end'
-  | 'auto_confirm_outcome';
+  'manual' | 'review_on_end' | 'auto_confirm_outcome';
 
 export type TemporalCreateU2LifeAreaDraft =
   | Readonly<{ kind: 'none' }>
@@ -41,6 +39,15 @@ export type TemporalCreatePlannedSliceDraft = Readonly<{
   endTime: string;
 }>;
 
+/** Extra occupied Activity bands. The first band uses the main date/time fields. */
+export type TemporalCreateActivityIntervalDraft = Readonly<{
+  id: string;
+  date: string;
+  startTime: string;
+  endDate: string;
+  endTime: string;
+}>;
+
 export type TemporalCreateActivityChildDraft = Readonly<{
   id: string;
   title: string;
@@ -62,6 +69,7 @@ export type TemporalCreateActivityStructureDraft = Readonly<{
   childGuardMode: 'none' | 'confirm' | 'block';
   children: readonly TemporalCreateActivityChildDraft[];
   plannedSlices: readonly TemporalCreatePlannedSliceDraft[];
+  activityIntervals: readonly TemporalCreateActivityIntervalDraft[];
 }>;
 
 function inferredEndDate(fields: TemporalCreateFields): string {
@@ -92,6 +100,7 @@ export function createTemporalCreateU2AuthoringDraft(
       childGuardMode: 'none' as const,
       children: Object.freeze([]),
       plannedSlices: Object.freeze([]),
+      activityIntervals: Object.freeze([]),
     }),
   });
 }

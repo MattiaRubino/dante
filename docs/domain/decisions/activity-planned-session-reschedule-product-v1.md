@@ -1,9 +1,11 @@
 # Activity / Planned Session / Real Session — product rules v1
 
-- **Status:** PRODUCT / DOMAIN FREEZE — ACCEPTED FOR IMPLEMENTATION
+- **Status:** HISTORICAL PRODUCT FREEZE — Timeline card rule superseded by `activity-intervals-and-sessions-v2.md` (2026-10-05)
 - **Date:** 2026-10-04
 - **Workstream:** Timeline / Temporal-Operational B14/B07 consolidation
 - **Scope:** normal placed Activity creation, planned Session slices, real Session execution, Timeline projection, reschedule/resize admission, Reality interaction
+
+For current Activity placement and Timeline projection, read `activity-intervals-and-sessions-v2.md`. The `planned` role in this historical decision still refers to future planned Sessions, while the new `interval` role represents the Activity's separate occupied periods. The single envelope-card rule in section 4.1 is historical.
 
 ## 1. Purpose
 

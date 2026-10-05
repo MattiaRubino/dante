@@ -35,6 +35,7 @@
 - **Completed functional frontier:** B12 ✅ CLOSED / qualified user-reported acceptance 2026-09-30
 - **Current implementation cursor:** B12-D and B12 closed on qualified user-reported acceptance; B14/B07 active as one user-guided product/UI cycle; U1 Create-entry candidate is ready for user visual proof; B13-D post-repair web rerun unreported
 - **U6 cursor:** Candidate `_103` adds named future planned Schedule rows and corrects Advanced Create placement and controls after the user's real-app screenshots. The `_102` atomic/catalog gate passed 9 PostgreSQL tests at `39c846d0`; the atomic B08 minimum test passed (1) at `8b9e9158`. The `_103` PostgreSQL/catalog gate and corrected real-app acceptance are pending. Follow `timeline-temporal-operational-b14-u6-candidate-2026-10-02.md`.
+- **Activity interval cursor (2026-10-05):** Candidate `_106` adds separate Activity `interval` roles and authoring while preserving `planned` for future Sessions; Timeline projects distinct intervals and hides the technical envelope for these Activities. Product decision: `docs/domain/decisions/activity-intervals-and-sessions-v2.md`. Local migration/build and real-app acceptance pending; direct coordinated interval replanning remains open.
 - **CI:** not authorized; local tests are run by the user
 
 ---

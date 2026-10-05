@@ -86,6 +86,8 @@ import type {
   OutcomeCommand,
   OutcomeHistoryResponse,
   OutcomeResponse,
+  OutcomeReviewPolicyCommand,
+  OutcomeReviewPolicyResponse,
   PasskeyAuthenticationCompleteRequest,
   PasskeyBeginRequest,
   PasskeyCeremonyResponse,
@@ -4392,6 +4394,134 @@ export const temporalSetActivityExecutionPolicy = async (
     status: res.status,
     headers: res.headers,
   } as temporalSetActivityExecutionPolicyResponse;
+};
+
+export type temporalGetActivityOutcomeReviewPolicyResponse200 = {
+  data: OutcomeReviewPolicyResponse;
+  status: 200;
+};
+
+export type temporalGetActivityOutcomeReviewPolicyResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetActivityOutcomeReviewPolicyResponseSuccess =
+  temporalGetActivityOutcomeReviewPolicyResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetActivityOutcomeReviewPolicyResponseError =
+  temporalGetActivityOutcomeReviewPolicyResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalGetActivityOutcomeReviewPolicyResponse =
+  | temporalGetActivityOutcomeReviewPolicyResponseSuccess
+  | temporalGetActivityOutcomeReviewPolicyResponseError;
+
+export const getTemporalGetActivityOutcomeReviewPolicyUrl = (
+  activityRef: string,
+) => {
+  return `/api/v1/temporal/activities/${activityRef}/outcome-review-policy`;
+};
+
+/**
+ * @summary Get Outcome Review Policy
+ */
+export const temporalGetActivityOutcomeReviewPolicy = async (
+  activityRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetActivityOutcomeReviewPolicyResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetActivityOutcomeReviewPolicyUrl(activityRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetActivityOutcomeReviewPolicyResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetActivityOutcomeReviewPolicyResponse;
+};
+
+export type temporalSetActivityOutcomeReviewPolicyResponse200 = {
+  data: OutcomeReviewPolicyResponse;
+  status: 200;
+};
+
+export type temporalSetActivityOutcomeReviewPolicyResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalSetActivityOutcomeReviewPolicyResponseSuccess =
+  temporalSetActivityOutcomeReviewPolicyResponse200 & {
+    headers: Headers;
+  };
+export type temporalSetActivityOutcomeReviewPolicyResponseError =
+  temporalSetActivityOutcomeReviewPolicyResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalSetActivityOutcomeReviewPolicyResponse =
+  | temporalSetActivityOutcomeReviewPolicyResponseSuccess
+  | temporalSetActivityOutcomeReviewPolicyResponseError;
+
+export const getTemporalSetActivityOutcomeReviewPolicyUrl = (
+  activityRef: string,
+) => {
+  return `/api/v1/temporal/activities/${activityRef}/outcome-review-policy`;
+};
+
+/**
+ * @summary Set Outcome Review Policy
+ */
+export const temporalSetActivityOutcomeReviewPolicy = async (
+  activityRef: string,
+  outcomeReviewPolicyCommand: OutcomeReviewPolicyCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalSetActivityOutcomeReviewPolicyResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalSetActivityOutcomeReviewPolicyUrl(activityRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(outcomeReviewPolicyCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalSetActivityOutcomeReviewPolicyResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalSetActivityOutcomeReviewPolicyResponse;
 };
 
 export type temporalGetActivityResponsibilityResponse200 = {
@@ -11100,11 +11230,11 @@ export const getTemporalListResolutionQueueUrl = () => {
 };
 
 /**
- * Only current unresolved reconciliations on current self-owned truth.
+ * Derived current product work, never inferred failure from time passage.
  *
- * A missing Actual, Outcome, or Session is never interpreted as failure.
- * Outdated reconciliation targets are excluded until the owning B10 vertical
- * explicitly creates/updates a decision for the accepted Outcome state.
+ * `realization_review` exists only when the Activity explicitly requests
+ * review-on-end and a bounded B08 Session really exists. Schedule expiry or
+ * absence of Actual never creates an item by itself.
  * @summary List Resolution Queue
  */
 export const temporalListResolutionQueue = async (

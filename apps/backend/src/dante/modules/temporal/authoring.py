@@ -22,6 +22,8 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from dante.modules.temporal.schedule import (
     EstablishedScheduleView,
+    FloatingLocalIntervalPlacement,
+    NamedZoneLocalIntervalPlacement,
     ScheduleInputError,
     ScheduleOperationIdReuseError,
     SchedulePlacement,
@@ -105,6 +107,7 @@ class AuthoringResult:
     session_capture_mode: Literal["disabled", "record", "live", "record_and_live"] = "disabled"
     child_guard_mode: Literal["none", "confirm", "block"] = "none"
     planned_slices: tuple[EstablishedScheduleView, ...] = ()
+    activity_intervals: tuple[EstablishedScheduleView, ...] = ()
     children: tuple[AuthoredActivityChild, ...] = ()
 
 
@@ -168,7 +171,7 @@ async def _schedule_role(
     self_person_ref: NativeRef,
     activity_ref: NativeRef,
     schedule: EstablishedScheduleView,
-    role_code: Literal["envelope", "planned"],
+    role_code: Literal["envelope", "planned", "interval"],
     presentation_order: int,
     display_name: str | None = None,
 ) -> None:
@@ -603,6 +606,7 @@ class TemporalAuthoringApplication:
         minimum_session_duration_microseconds: int | None = None,
         child_guard_mode: str | None = None,
         planned_slices: tuple[SchedulePlacement, ...] = (),
+        activity_intervals: tuple[SchedulePlacement, ...] = (),
         planned_slice_names: tuple[str, ...] = (),
         children: tuple[ActivityChildIntent, ...] = (),
     ) -> AuthoringResult:
@@ -626,14 +630,52 @@ class TemporalAuthoringApplication:
             or minimum_session_duration_microseconds > 9_223_372_036_854_775_807
         ):
             raise TemporalAuthoringInputError("Activity Session minimum duration is invalid.")
-        if subject_kind != "activity" and (planned_slices or children):
+        if subject_kind != "activity" and (planned_slices or activity_intervals or children):
             raise TemporalAuthoringInputError("Only an Activity can own planned execution rows.")
         if child_guard_mode is not None and (
             subject_kind != "activity" or child_guard_mode not in {"none", "confirm", "block"}
         ):
             raise TemporalAuthoringInputError("Activity parent child policy is invalid.")
-        if len(children) > 100 or len(planned_slices) > 100:
+        if len(children) > 100 or len(planned_slices) > 100 or len(activity_intervals) > 100:
             raise TemporalAuthoringInputError("Activity structure exceeds its bounded size.")
+        if activity_intervals and placement is None:
+            raise TemporalAuthoringInputError("Activity intervals require a parent placement.")
+        if activity_intervals:
+            if not isinstance(
+                placement, (FloatingLocalIntervalPlacement, NamedZoneLocalIntervalPlacement)
+            ):
+                raise TemporalAuthoringInputError("Activity intervals require a timed Activity.")
+            previous_end = None
+            for interval in activity_intervals:
+                if type(interval) is not type(placement):
+                    raise TemporalAuthoringInputError(
+                        "Activity intervals must use the Activity time frame."
+                    )
+                if (
+                    isinstance(interval, NamedZoneLocalIntervalPlacement)
+                    and isinstance(placement, NamedZoneLocalIntervalPlacement)
+                    and interval.zone_id != placement.zone_id
+                ):
+                    raise TemporalAuthoringInputError(
+                        "Activity intervals must use the Activity time zone."
+                    )
+                start, end = interval.starts_local_at, interval.ends_local_at
+                if start < placement.starts_local_at or end > placement.ends_local_at:
+                    raise TemporalAuthoringInputError(
+                        "Activity interval falls outside the Activity envelope."
+                    )
+                if previous_end is not None and start < previous_end:
+                    raise TemporalAuthoringInputError(
+                        "Activity intervals must be ordered and non-overlapping."
+                    )
+                previous_end = end
+            if (
+                activity_intervals[0].starts_local_at != placement.starts_local_at
+                or activity_intervals[-1].ends_local_at != placement.ends_local_at
+            ):
+                raise TemporalAuthoringInputError(
+                    "Activity envelope must exactly cover its first and last interval."
+                )
         if planned_slice_names and len(planned_slice_names) != len(planned_slices):
             raise TemporalAuthoringInputError("Planned Session names must match planned rows.")
         if any(len(name.strip()) > 300 for name in planned_slice_names):
@@ -661,6 +703,7 @@ class TemporalAuthoringApplication:
         if (
             children
             or planned_slices
+            or activity_intervals
             or child_guard_mode is not None
             or minimum_session_duration_microseconds is not None
         ):
@@ -671,6 +714,15 @@ class TemporalAuthoringApplication:
                     "minimum_session_duration_microseconds": minimum_session_duration_microseconds,
                     "root_placement": None if placement is None else _placement_payload(placement),
                     "planned_slices": [_placement_payload(value) for value in planned_slices],
+                    **(
+                        {
+                            "activity_intervals": [
+                                _placement_payload(value) for value in activity_intervals
+                            ]
+                        }
+                        if activity_intervals
+                        else {}
+                    ),
                     **(
                         {"planned_slice_names": [name.strip() for name in planned_slice_names]}
                         if any(name.strip() for name in planned_slice_names)
@@ -869,6 +921,30 @@ class TemporalAuthoringApplication:
                             "Create and parent policy replay state diverged."
                         )
                 planned_results: list[EstablishedScheduleView] = []
+                interval_results: list[EstablishedScheduleView] = []
+                for index, interval in enumerate(activity_intervals):
+                    accepted = await establish_schedule_in_session(
+                        session,
+                        self_person_ref=self_person_ref,
+                        operation_id=_derived_operation(
+                            f"b14-activity-interval-{index}", normalized_operation
+                        ),
+                        subject_native_ref=item.subject_native_ref,
+                        placement=interval,
+                    )
+                    if accepted.replayed is not replayed:
+                        raise TemporalAuthoringOperationIdReuseError(
+                            "Create and Activity interval replay state diverged."
+                        )
+                    await _schedule_role(
+                        session,
+                        self_person_ref=self_person_ref,
+                        activity_ref=item.subject_native_ref,
+                        schedule=accepted,
+                        role_code="interval",
+                        presentation_order=index + 1,
+                    )
+                    interval_results.append(accepted)
                 for index, planned in enumerate(planned_slices):
                     accepted = await establish_schedule_in_session(
                         session,
@@ -1062,6 +1138,7 @@ class TemporalAuthoringApplication:
                     session_capture_mode=session_capture_mode or "disabled",
                     child_guard_mode=child_guard_mode or "none",
                     planned_slices=tuple(planned_results),
+                    activity_intervals=tuple(interval_results),
                     children=tuple(child_results),
                 )
         except (
@@ -1141,6 +1218,7 @@ class TemporalAuthoringApplication:
         minimum_session_duration_microseconds: int | None = None,
         child_guard_mode: str | None = None,
         planned_slices: tuple[SchedulePlacement, ...] = (),
+        activity_intervals: tuple[SchedulePlacement, ...] = (),
         planned_slice_names: tuple[str, ...] = (),
         children: tuple[ActivityChildIntent, ...] = (),
     ) -> AuthoringResult:
@@ -1159,6 +1237,7 @@ class TemporalAuthoringApplication:
             minimum_session_duration_microseconds=minimum_session_duration_microseconds,
             child_guard_mode=child_guard_mode,
             planned_slices=planned_slices,
+            activity_intervals=activity_intervals,
             planned_slice_names=planned_slice_names,
             children=children,
         )

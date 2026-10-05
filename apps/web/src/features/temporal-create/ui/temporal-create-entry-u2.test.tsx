@@ -67,6 +67,7 @@ function activityResult(
     sessionCaptureMode: 'record',
     childGuardMode: 'none',
     plannedSlices: Object.freeze([]),
+    activityIntervals: Object.freeze([]),
     children: Object.freeze([]),
     replayed: false,
   });

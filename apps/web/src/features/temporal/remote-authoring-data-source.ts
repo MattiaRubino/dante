@@ -495,6 +495,7 @@ function activityResult(payload: unknown): TemporalAuthoredActivityResult {
     'session_capture_mode',
     'child_guard_mode',
     'planned_slices',
+    'activity_intervals',
     'children',
   ]);
   if (typeof payload.replayed !== 'boolean') {
@@ -521,6 +522,10 @@ function activityResult(payload: unknown): TemporalAuthoredActivityResult {
       );
     })(),
     plannedSlices: schedules(payload.planned_slices, 'planned_slices'),
+    activityIntervals: schedules(
+      payload.activity_intervals,
+      'activity_intervals',
+    ),
     children: (() => {
       if (!Array.isArray(payload.children)) {
         throw new TemporalAuthoringRemoteError(
@@ -663,6 +668,10 @@ function requestBody(
     }
     if (request.plannedSlices !== undefined) {
       result.planned_slices = request.plannedSlices.map(serializePlacement);
+    }
+    if (request.activityIntervals !== undefined) {
+      result.activity_intervals =
+        request.activityIntervals.map(serializePlacement);
     }
     if (request.plannedSliceNames !== undefined) {
       result.planned_slice_names = [...request.plannedSliceNames];

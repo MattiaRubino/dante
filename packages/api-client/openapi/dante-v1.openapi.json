@@ -1161,7 +1161,7 @@
           "role_code": {
             "anyOf": [
               {
-                "enum": ["envelope", "planned"],
+                "enum": ["envelope", "planned", "interval"],
                 "type": "string"
               },
               {
@@ -2497,6 +2497,40 @@
         "additionalProperties": false,
         "description": "Atomic root, direct children and planned placements.",
         "properties": {
+          "activity_intervals": {
+            "items": {
+              "discriminator": {
+                "mapping": {
+                  "absolute_interval": "#/components/schemas/dante__modules__temporal__api__AbsoluteIntervalPlacementRequest",
+                  "coarse_local_period": "#/components/schemas/CoarseLocalPeriodPlacementRequest",
+                  "date_span": "#/components/schemas/DateSpanPlacementRequest",
+                  "floating_local_interval": "#/components/schemas/FloatingLocalIntervalPlacementRequest",
+                  "named_zone_local_interval": "#/components/schemas/NamedZoneLocalIntervalPlacementRequest"
+                },
+                "propertyName": "kind"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/DateSpanPlacementRequest"
+                },
+                {
+                  "$ref": "#/components/schemas/FloatingLocalIntervalPlacementRequest"
+                },
+                {
+                  "$ref": "#/components/schemas/NamedZoneLocalIntervalPlacementRequest"
+                },
+                {
+                  "$ref": "#/components/schemas/dante__modules__temporal__api__AbsoluteIntervalPlacementRequest"
+                },
+                {
+                  "$ref": "#/components/schemas/CoarseLocalPeriodPlacementRequest"
+                }
+              ]
+            },
+            "maxItems": 100,
+            "title": "Activity Intervals",
+            "type": "array"
+          },
           "child_guard_mode": {
             "anyOf": [
               {
@@ -2863,6 +2897,13 @@
       "AuthoredActivityResponse": {
         "additionalProperties": false,
         "properties": {
+          "activity_intervals": {
+            "items": {
+              "$ref": "#/components/schemas/AcceptedAuthoringScheduleResponse"
+            },
+            "title": "Activity Intervals",
+            "type": "array"
+          },
           "activity_ref": {
             "format": "uuid",
             "title": "Activity Ref",
@@ -6922,6 +6963,72 @@
         "title": "OutcomeResponse",
         "type": "object"
       },
+      "OutcomeReviewPolicyCommand": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected State Ref"
+          },
+          "mode_code": {
+            "enum": ["manual", "review_on_end", "auto_confirm_outcome"],
+            "title": "Mode Code",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "mode_code"],
+        "title": "OutcomeReviewPolicyCommand",
+        "type": "object"
+      },
+      "OutcomeReviewPolicyResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "activity_ref": {
+            "format": "uuid",
+            "title": "Activity Ref",
+            "type": "string"
+          },
+          "mode_code": {
+            "enum": ["manual", "review_on_end", "auto_confirm_outcome"],
+            "title": "Mode Code",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "State Ref"
+          }
+        },
+        "required": ["activity_ref", "state_ref", "mode_code"],
+        "title": "OutcomeReviewPolicyResponse",
+        "type": "object"
+      },
       "PasskeyAuthenticationCompleteRequest": {
         "additionalProperties": false,
         "description": "Complete username-less passkey authentication.",
@@ -9826,25 +9933,75 @@
       "ResolutionQueueItem": {
         "additionalProperties": false,
         "properties": {
-          "outcome_ref": {
-            "format": "uuid",
-            "title": "Outcome Ref",
+          "actions": {
+            "items": {
+              "enum": ["open_reconciliation", "record_realization"],
+              "type": "string"
+            },
+            "title": "Actions",
+            "type": "array"
+          },
+          "effective_at": {
+            "format": "date-time",
+            "title": "Effective At",
             "type": "string"
+          },
+          "outcome_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outcome Ref"
           },
           "purpose_code": {
             "title": "Purpose Code",
             "type": "string"
           },
           "reason_code": {
-            "const": "reconciliation_open",
-            "default": "reconciliation_open",
+            "enum": ["reconciliation_open", "realization_review"],
             "title": "Reason Code",
             "type": "string"
           },
           "reconciliation_ref": {
-            "format": "uuid",
-            "title": "Reconciliation Ref",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reconciliation Ref"
+          },
+          "session_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Ref"
+          },
+          "session_timing_material_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Timing Material State Ref"
           },
           "subject_kind": {
             "enum": ["activity", "event"],
@@ -9856,18 +10013,28 @@
             "title": "Subject Ref",
             "type": "string"
           },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          },
           "title": {
             "title": "Title",
             "type": "string"
           }
         },
         "required": [
+          "reason_code",
           "subject_kind",
           "subject_ref",
           "title",
+          "summary",
+          "effective_at",
           "reconciliation_ref",
           "outcome_ref",
-          "purpose_code"
+          "purpose_code",
+          "session_ref",
+          "session_timing_material_state_ref",
+          "actions"
         ],
         "title": "ResolutionQueueItem",
         "type": "object"
@@ -14925,7 +15092,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -15267,7 +15434,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -15540,7 +15707,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -15820,7 +15987,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -16144,7 +16311,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -16434,7 +16601,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -16714,7 +16881,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -17013,7 +17180,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -17306,7 +17473,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -17615,7 +17782,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -17918,7 +18085,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -18227,7 +18394,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -18538,7 +18705,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -18844,7 +19011,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -19144,7 +19311,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -19454,7 +19621,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -19747,7 +19914,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -20033,7 +20200,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -20337,7 +20504,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -20649,7 +20816,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -20937,7 +21104,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -21223,7 +21390,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -21535,7 +21702,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -21795,7 +21962,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -22049,7 +22216,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -22293,7 +22460,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -22536,7 +22703,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -23027,7 +23194,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -23271,7 +23438,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -23515,7 +23682,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -23773,7 +23940,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity",
+            "description": "Unprocessable Content",
             "headers": {
               "Cache-Control": {
                 "description": "Auth responses are never cacheable by shared or browser caches.",
@@ -24366,6 +24533,96 @@
           }
         },
         "summary": "Set Execution Policy",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/activities/{activity_ref}/outcome-review-policy": {
+      "get": {
+        "operationId": "temporal_get_activity_outcome_review_policy",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutcomeReviewPolicyResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Outcome Review Policy",
+        "tags": ["temporal"]
+      },
+      "post": {
+        "operationId": "temporal_set_activity_outcome_review_policy",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OutcomeReviewPolicyCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutcomeReviewPolicyResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Outcome Review Policy",
         "tags": ["temporal"]
       }
     },
@@ -28560,7 +28817,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "500": {
             "content": {
@@ -28750,7 +29007,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "500": {
             "content": {
@@ -28851,7 +29108,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "500": {
             "content": {
@@ -29035,7 +29292,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Create Self Plan Dependency",
@@ -29225,7 +29482,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Revise Self Plan Dependency",
@@ -29411,7 +29668,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "500": {
             "content": {
@@ -29532,7 +29789,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "500": {
             "content": {
@@ -29643,7 +29900,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "500": {
             "content": {
@@ -29734,7 +29991,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Assess Plan Step Execution",
@@ -29876,7 +30133,7 @@
     },
     "/api/v1/temporal/resolution-queue": {
       "get": {
-        "description": "Only current unresolved reconciliations on current self-owned truth.\n\nA missing Actual, Outcome, or Session is never interpreted as failure.\nOutdated reconciliation targets are excluded until the owning B10 vertical\nexplicitly creates/updates a decision for the accepted Outcome state.",
+        "description": "Derived current product work, never inferred failure from time passage.\n\n`realization_review` exists only when the Activity explicitly requests\nreview-on-end and a bounded B08 Session really exists. Schedule expiry or\nabsence of Actual never creates an item by itself.",
         "operationId": "temporal_list_resolution_queue",
         "responses": {
           "200": {
@@ -30949,7 +31206,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {

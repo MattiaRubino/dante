@@ -50,7 +50,8 @@
       "B14-U6-MANUAL",
       "B14-U6-ROLE",
       "B14-U6-NAME",
-      "B14-U6-REALITY"
+      "B14-U6-REALITY",
+      "B14-ACTIVITY-INTERVALS"
     ],
     "standalone_entries": {
       "tables": 215,

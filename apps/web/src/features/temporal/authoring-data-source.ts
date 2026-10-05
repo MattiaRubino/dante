@@ -43,6 +43,7 @@ export type TemporalAuthorActivityRequest = TemporalAuthoringBaseRequest &
     childGuardMode?: 'none' | 'confirm' | 'block';
     plannedSlices?: readonly TemporalSchedulePlacementInput[];
     plannedSliceNames?: readonly string[];
+    activityIntervals?: readonly TemporalSchedulePlacementInput[];
     children?: readonly TemporalAuthorActivityChildRequest[];
   }>;
 
@@ -93,6 +94,7 @@ export type TemporalAuthoredActivityResult = TemporalAuthoredItemResult &
     sessionCaptureMode: TemporalSessionCaptureMode;
     childGuardMode: 'none' | 'confirm' | 'block';
     plannedSlices: readonly TemporalAuthoringSchedule[];
+    activityIntervals: readonly TemporalAuthoringSchedule[];
     children: readonly TemporalAuthoredActivityChild[];
   }>;
 

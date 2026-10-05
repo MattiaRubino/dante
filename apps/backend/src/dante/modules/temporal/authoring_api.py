@@ -103,6 +103,7 @@ class AuthorActivityRequest(AuthorItemRequest):
     )
     child_guard_mode: Literal["none", "confirm", "block"] | None = None
     planned_slices: list[SchedulePlacementRequest] = Field(default_factory=list, max_length=100)
+    activity_intervals: list[SchedulePlacementRequest] = Field(default_factory=list, max_length=100)
     planned_slice_names: list[str] = Field(default_factory=list, max_length=100)
     children: list[AuthorActivityChildRequest] = Field(default_factory=list, max_length=100)
 
@@ -201,6 +202,7 @@ class AuthoredActivityResponse(BaseModel):
     session_capture_mode: Literal["disabled", "record", "live", "record_and_live"]
     child_guard_mode: Literal["none", "confirm", "block"]
     planned_slices: list[AcceptedAuthoringScheduleResponse] = Field(default_factory=list)
+    activity_intervals: list[AcceptedAuthoringScheduleResponse] = Field(default_factory=list)
     children: list[AuthoredActivityChildResponse] = Field(default_factory=list)
     replayed: bool
 
@@ -389,6 +391,9 @@ async def author_activity(
             planned_slices=tuple(
                 _placement_from_request(value) for value in payload.planned_slices
             ),
+            activity_intervals=tuple(
+                _placement_from_request(value) for value in payload.activity_intervals
+            ),
             planned_slice_names=tuple(payload.planned_slice_names),
             children=tuple(
                 ActivityChildIntent(
@@ -430,6 +435,7 @@ async def author_activity(
         session_capture_mode=result.session_capture_mode,
         child_guard_mode=result.child_guard_mode,
         planned_slices=[_accepted_schedule(value) for value in result.planned_slices],
+        activity_intervals=[_accepted_schedule(value) for value in result.activity_intervals],
         children=[
             AuthoredActivityChildResponse(
                 activity_ref=child.item.subject_native_ref,

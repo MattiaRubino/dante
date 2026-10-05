@@ -424,8 +424,8 @@ export function TemporalCreateEntry({
       setLifecycle('failed');
       setFailureMessage(
         i18n.language.toLowerCase().startsWith('en')
-          ? 'This Activity configuration cannot yet be combined with Sub-Activities or planned Sessions.'
-          : 'Questa configurazione non può ancora essere combinata con sotto-attività o Sessioni pianificate.',
+          ? 'These advanced settings cannot yet be combined with Activity intervals, Sub-Activities or planned Sessions.'
+          : 'Queste impostazioni avanzate non possono ancora essere combinate con intervalli dell’attività, sotto-attività o Sessioni pianificate.',
       );
       return;
     }

@@ -114,7 +114,8 @@ export function temporalCreateHasU6Structure(
     structure.captureMode !== 'disabled' ||
     structure.childGuardMode !== 'none' ||
     structure.children.length > 0 ||
-    structure.plannedSlices.length > 0
+    structure.plannedSlices.length > 0 ||
+    structure.activityIntervals.length > 0
   );
 }
 
@@ -136,9 +137,37 @@ function activityLocalWindow(fields: TemporalCreateFields): Readonly<{
   }
 }
 
-function childLocalWindow(
-  child: TemporalCreateActivityChildDraft,
-): Readonly<{
+function activityBands(
+  fields: TemporalCreateFields,
+  draft: TemporalCreateU2AuthoringDraft,
+):
+  | readonly Readonly<{
+      start: Temporal.PlainDateTime;
+      end: Temporal.PlainDateTime;
+    }>[]
+  | null {
+  const first = activityLocalWindow(fields);
+  if (first === null) return null;
+  try {
+    return [
+      first,
+      ...draft.activityStructure.activityIntervals.map((interval) => ({
+        start: Temporal.PlainDateTime.from(
+          `${interval.date}T${interval.startTime}`,
+        ),
+        end: Temporal.PlainDateTime.from(
+          `${interval.endDate}T${interval.endTime}`,
+        ),
+      })),
+    ].sort((left, right) =>
+      Temporal.PlainDateTime.compare(left.start, right.start),
+    );
+  } catch {
+    return null;
+  }
+}
+
+function childLocalWindow(child: TemporalCreateActivityChildDraft): Readonly<{
   start: Temporal.PlainDateTime;
   end: Temporal.PlainDateTime;
 }> | null {
@@ -155,9 +184,7 @@ function childLocalWindow(
   }
 }
 
-function sliceLocalWindow(
-  slice: TemporalCreatePlannedSliceDraft,
-): Readonly<{
+function sliceLocalWindow(slice: TemporalCreatePlannedSliceDraft): Readonly<{
   start: Temporal.PlainDateTime;
   end: Temporal.PlainDateTime;
 }> | null {
@@ -196,7 +223,11 @@ export function validateTemporalCreateU6Structure(
   if (fields.kind !== 'activity' && temporalCreateHasU6Structure(draft)) {
     return 'Only an Activity can own Sub-Activities and planned Sessions.';
   }
-  if (structure.children.length > 100 || structure.plannedSlices.length > 100) {
+  if (
+    structure.children.length > 100 ||
+    structure.plannedSlices.length > 100 ||
+    structure.activityIntervals.length > 99
+  ) {
     return 'An Activity can contain at most 100 direct children and 100 planned Sessions.';
   }
   if (
@@ -207,7 +238,29 @@ export function validateTemporalCreateU6Structure(
     return 'Every Sub-Activity requires a title and at most 100 planned Sessions.';
   }
 
-  const parent = activityLocalWindow(fields);
+  const bands = activityBands(fields, draft);
+  if (
+    structure.activityIntervals.length > 0 &&
+    (fields.timeSemantics !== 'timed' || bands === null)
+  ) {
+    return 'Complete each Activity interval date, start and end time.';
+  }
+  if (
+    bands !== null &&
+    bands.some(
+      (band, index) =>
+        Temporal.PlainDateTime.compare(band.start, band.end) >= 0 ||
+        (index > 0 &&
+          Temporal.PlainDateTime.compare(band.start, bands[index - 1]!.end) <
+            0),
+    )
+  ) {
+    return 'Activity intervals must have a valid duration and must not overlap.';
+  }
+  const parent =
+    bands === null
+      ? null
+      : { start: bands[0]!.start, end: bands[bands.length - 1]!.end };
   if (
     (structure.plannedSlices.length > 0 ||
       structure.children.some(
@@ -405,7 +458,17 @@ export function buildTemporalCreateU2Request(
   const lifeArea = lifeAreaInput(draft);
   const description = optionalText(fields.notes);
   const location = optionalText(fields.event.location);
-  const placement = placementInput(fields, draft);
+  const bands = activityBands(fields, draft);
+  const placement =
+    fields.kind === 'activity' &&
+    draft.activityStructure.activityIntervals.length > 0 &&
+    bands !== null
+      ? localIntervalPlacement(
+          fields,
+          bands[0]!.start,
+          bands[bands.length - 1]!.end,
+        )
+      : placementInput(fields, draft);
   const base = {
     operationId,
     title: fields.title.trim(),
@@ -445,6 +508,14 @@ export function buildTemporalCreateU2Request(
             plannedSlices: draft.activityStructure.plannedSlices.map((slice) =>
               plannedSliceInput(fields, slice),
             ),
+            ...(draft.activityStructure.activityIntervals.length > 0 &&
+            bands !== null
+              ? {
+                  activityIntervals: bands.map((band) =>
+                    localIntervalPlacement(fields, band.start, band.end),
+                  ),
+                }
+              : {}),
             plannedSliceNames: draft.activityStructure.plannedSlices.map(
               (slice) => slice.title.trim(),
             ),

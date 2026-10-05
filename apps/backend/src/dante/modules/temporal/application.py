@@ -322,9 +322,7 @@ def _schedule_placement(row: RowMapping) -> SchedulePlacement:
 def _expected_occurrence_from_row(row: RowMapping) -> TimelineExpectedOccurrenceItem:
     source_kind = str(row["source_kind"])
     if source_kind not in {"routine", "event"}:
-        raise ValueError(
-            "Timeline Occurrence source family is outside the activated projection"
-        )
+        raise ValueError("Timeline Occurrence source family is outside the activated projection")
     coordinate = _occurrence_coordinate(row)
     if coordinate is None:
         raise ValueError("Expected Timeline Occurrence has no generation coordinate")
@@ -624,6 +622,11 @@ class TemporalTimelineApplication:
               FROM self_subject AS subject
               JOIN dante.schedule AS schedule
                 ON schedule.subject_native_ref=subject.subject_native_ref
+              LEFT JOIN LATERAL dante.get_self_activity_schedule_roles(
+                  :self_person_ref, ARRAY[subject.subject_native_ref]
+              ) AS activity_role
+                ON subject.owner_kind='activity'
+               AND activity_role.schedule_ref=schedule.schedule_ref
               JOIN dante.schedule_current_placement AS current
                 ON current.scoped_owner_ref=schedule.schedule_ref
               JOIN dante.schedule_placement_state AS placement
@@ -642,6 +645,22 @@ class TemporalTimelineApplication:
               LEFT JOIN scheduled_occurrence AS occurrence
                 ON occurrence.occurrence_ref=subject.occurrence_ref
              WHERE subject.self_person_ref=:self_person_ref
+               AND (
+                   subject.owner_kind <> 'activity'
+                   OR (
+                       activity_role.role_code IS DISTINCT FROM 'planned'
+                       AND (
+                           activity_role.role_code IS DISTINCT FROM 'envelope'
+                           OR NOT EXISTS (
+                               SELECT 1
+                                 FROM dante.get_self_activity_schedule_roles(
+                                     :self_person_ref, ARRAY[subject.subject_native_ref]
+                                 ) AS occupied
+                                WHERE occupied.role_code='interval'
+                           )
+                       )
+                   )
+               )
                AND (
                     subject.owner_kind <> 'occurrence'
                     OR schedule.schedule_ref = (
@@ -797,12 +816,9 @@ class TemporalTimelineApplication:
                     .all()
                 )
             scheduled_items = tuple(
-                _item_from_row(row, effective_zone_id=context.effective_zone_id)
-                for row in rows
+                _item_from_row(row, effective_zone_id=context.effective_zone_id) for row in rows
             )
-            expected_items = tuple(
-                _expected_occurrence_from_row(row) for row in expected_rows
-            )
+            expected_items = tuple(_expected_occurrence_from_row(row) for row in expected_rows)
             items = scheduled_items + expected_items
         except (SQLAlchemyError, KeyError, TypeError, ValueError) as exc:
             raise TimelinePersistenceError() from exc

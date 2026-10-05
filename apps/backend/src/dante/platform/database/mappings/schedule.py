@@ -57,10 +57,10 @@ class ActivityScheduleRoleRow(Base):
             "activity_ref", "role_code", "presentation_order",
             name="uq_activity_schedule_role_owner_role_order",
         ),
-        CheckConstraint("role_code IN ('envelope','planned')", name="role"),
+        CheckConstraint("role_code IN ('envelope','planned','interval')", name="role"),
         CheckConstraint(
             "(role_code='envelope' AND presentation_order=0) OR "
-            "(role_code='planned' AND presentation_order BETWEEN 1 AND 100)",
+            "(role_code IN ('planned','interval') AND presentation_order BETWEEN 1 AND 100)",
             name="order",
         ),
         CheckConstraint(

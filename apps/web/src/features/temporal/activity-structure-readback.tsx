@@ -8,7 +8,7 @@ type CaptureMode = 'disabled' | 'record' | 'live' | 'record_and_live';
 
 type Schedule = Readonly<{
   scheduleRef: string;
-  roleCode: 'envelope' | 'planned' | null;
+  roleCode: 'envelope' | 'planned' | 'interval' | null;
   presentationOrder: number | null;
   displayName: string | null;
   temporalForm: string;
@@ -47,7 +47,8 @@ function schedule(value: unknown): Schedule {
     (row.role_code !== null &&
       row.role_code !== undefined &&
       row.role_code !== 'envelope' &&
-      row.role_code !== 'planned') ||
+      row.role_code !== 'planned' &&
+      row.role_code !== 'interval') ||
     (row.presentation_order !== null &&
       row.presentation_order !== undefined &&
       (typeof row.presentation_order !== 'number' ||
@@ -143,9 +144,11 @@ function Schedules({ rows }: Readonly<{ rows: readonly Schedule[] }>) {
           {row.roleCode === 'planned'
             ? row.displayName ||
               `Sessione pianificata ${row.presentationOrder ?? ''}`
-            : row.roleCode === 'envelope'
-              ? 'Finestra Activity'
-              : 'Schedule'}{' '}
+            : row.roleCode === 'interval'
+              ? `Intervallo attività ${row.presentationOrder ?? ''}`
+              : row.roleCode === 'envelope'
+                ? 'Estensione complessiva attività'
+                : 'Schedule'}{' '}
           · {row.temporalForm} · {row.start ?? 'senza inizio'}
           {row.end === null ? '' : ` → ${row.end}`}
           {row.roleCode === 'planned' &&

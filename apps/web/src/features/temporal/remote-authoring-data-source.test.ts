@@ -48,6 +48,7 @@ describe('remote U2 authoring data source', () => {
             session_capture_mode: 'record',
             child_guard_mode: 'none',
             planned_slices: [],
+            activity_intervals: [],
             children: [],
             replayed: false,
           },
@@ -169,6 +170,7 @@ describe('remote U2 authoring data source', () => {
             life_area_revision: null,
             schedule: null,
             planned_slices: [planned],
+            activity_intervals: [],
             session_capture_mode: 'disabled',
             child_guard_mode: 'block',
             children: [

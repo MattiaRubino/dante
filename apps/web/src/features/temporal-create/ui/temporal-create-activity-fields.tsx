@@ -5,8 +5,6 @@ import type {
   TemporalCreateFields,
   TemporalCreateSurface,
 } from '../model/temporal-create-session';
-import { plannedSlice } from './temporal-create-advanced-activity-structure';
-import { useTemporalCreateU2Draft } from './temporal-create-u2-draft-context';
 
 type ActivityFieldsProps = Readonly<{
   fields: TemporalCreateFields;
@@ -24,8 +22,6 @@ export function TemporalCreateActivityFields({
   const italian = i18n.language.toLowerCase().startsWith('it');
   const scheduling = fields.scheduling;
   const unplaced = fields.timeSemantics === 'unscheduled';
-  const { draft, patch } = useTemporalCreateU2Draft();
-  const slices = draft.activityStructure.plannedSlices;
 
   const patchScheduling = (
     patch: Partial<TemporalCreateFields['scheduling']>,
@@ -41,51 +37,6 @@ export function TemporalCreateActivityFields({
           {italian ? 'Pianificazione' : 'Planning'}
         </h3>
       </div>
-
-      {!unplaced ? (
-        <div
-          className="temporal-create-planning-mode"
-          role="group"
-          aria-label={italian ? 'Modalità di pianificazione' : 'Planning mode'}
-        >
-          <button
-            type="button"
-            className={slices.length === 0 ? 'is-active' : ''}
-            aria-pressed={slices.length === 0}
-            onClick={() => {
-              if (slices.length > 0) {
-                patch({
-                  activityStructure: Object.freeze({
-                    ...draft.activityStructure,
-                    plannedSlices: [],
-                  }),
-                });
-              }
-            }}
-          >
-            {italian ? 'Unica' : 'Single'}
-          </button>
-          <button
-            type="button"
-            className={slices.length > 0 ? 'is-active' : ''}
-            aria-pressed={slices.length > 0}
-            onClick={() => {
-              if (slices.length === 0) {
-                patch({
-                  activityStructure: Object.freeze({
-                    ...draft.activityStructure,
-                    plannedSlices: [plannedSlice(fields)],
-                  }),
-                });
-              }
-              document.querySelector('[data-create-activity-structure]')
-                ?.scrollIntoView?.({ behavior: 'smooth', block: 'nearest' });
-            }}
-          >
-            {italian ? 'Suddivisa' : 'Split'}
-          </button>
-        </div>
-      ) : null}
 
       {unplaced ? (
         <label className="temporal-create-control">
@@ -106,13 +57,21 @@ export function TemporalCreateActivityFields({
               {t(($) => $.common.home.timeline.create.planning.constraintOpen)}
             </option>
             <option value="bounded-window">
-              {t(($) => $.common.home.timeline.create.planning.constraintWindow)}
+              {t(
+                ($) => $.common.home.timeline.create.planning.constraintWindow,
+              )}
             </option>
             <option value="deadline">
-              {t(($) => $.common.home.timeline.create.planning.constraintDeadline)}
+              {t(
+                ($) =>
+                  $.common.home.timeline.create.planning.constraintDeadline,
+              )}
             </option>
             <option value="preferred-window">
-              {t(($) => $.common.home.timeline.create.planning.constraintPreferred)}
+              {t(
+                ($) =>
+                  $.common.home.timeline.create.planning.constraintPreferred,
+              )}
             </option>
           </select>
         </label>
@@ -188,7 +147,9 @@ export function TemporalCreateActivityFields({
               type="date"
               value={scheduling.earliestStartDate}
               onChange={(event) =>
-                patchScheduling({ earliestStartDate: event.currentTarget.value })
+                patchScheduling({
+                  earliestStartDate: event.currentTarget.value,
+                })
               }
             />
           </label>
@@ -200,7 +161,9 @@ export function TemporalCreateActivityFields({
               type="time"
               value={scheduling.earliestStartTime}
               onChange={(event) =>
-                patchScheduling({ earliestStartTime: event.currentTarget.value })
+                patchScheduling({
+                  earliestStartTime: event.currentTarget.value,
+                })
               }
             />
           </label>
@@ -245,7 +208,9 @@ export function TemporalCreateActivityFields({
               type="time"
               value={scheduling.preferredStartTime}
               onChange={(event) =>
-                patchScheduling({ preferredStartTime: event.currentTarget.value })
+                patchScheduling({
+                  preferredStartTime: event.currentTarget.value,
+                })
               }
             />
           </label>

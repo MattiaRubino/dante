@@ -13,6 +13,74 @@
   min-width: 0;
 }
 
+.temporal-create-activity-intervals {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding-top: 3px;
+}
+
+.temporal-create-activity-interval {
+  display: grid;
+  gap: 5px;
+}
+
+.temporal-create-activity-interval__label {
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  font-size: 12px;
+}
+
+.temporal-create-activity-interval__fields {
+  display: grid;
+  grid-template-columns: minmax(80px, 0.8fr) minmax(100px, 1.2fr) 22px minmax(
+      100px,
+      1.2fr
+    ) minmax(80px, 0.8fr) 28px;
+  gap: 6px;
+  align-items: start;
+  min-width: 0;
+}
+
+.temporal-create-activity-interval__fields > * {
+  min-width: 0;
+}
+.temporal-create-activity-interval__arrow {
+  align-self: center;
+  text-align: center;
+}
+
+.temporal-create-activity-interval__remove,
+.temporal-create-activity-intervals__add {
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  background: transparent;
+  border: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
+  border-radius: 8px;
+  cursor: pointer;
+}
+.temporal-create-activity-interval__remove {
+  height: 42px;
+}
+.temporal-create-activity-intervals__add {
+  justify-self: start;
+  padding: 7px 11px;
+}
+.temporal-create-activity-interval__remove:hover,
+.temporal-create-activity-intervals__add:hover {
+  color: #fff;
+  border-color: #ff8a3d;
+}
+
+@media (max-width: 640px) {
+  .temporal-create-activity-interval__fields {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 22px;
+  }
+  .temporal-create-activity-interval__arrow {
+    display: none;
+  }
+}
+
 .temporal-create-u2-date-bridge {
   position: absolute;
   width: 1px;
@@ -54,7 +122,8 @@
 }
 
 .temporal-create-composer.is-advanced
-  .temporal-create-u2-when .temporal-create-timezone-trigger {
+  .temporal-create-u2-when
+  .temporal-create-timezone-trigger {
   display: inline-flex;
   width: 100% !important;
   min-height: 38px;
@@ -69,27 +138,34 @@
 }
 
 .temporal-create-composer.is-advanced
-  .temporal-create-u2-when .temporal-create-timezone-divider {
+  .temporal-create-u2-when
+  .temporal-create-timezone-divider {
   align-self: stretch;
   width: 1px;
   margin: 8px 12px;
-  background: var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
+  background: var(
+    --dante-semantic-color-home-border-subtle,
+    rgba(255, 255, 255, 0.09)
+  );
 }
 
 .temporal-create-composer.is-advanced
-  .temporal-create-u2-when .temporal-create-timezone-label {
+  .temporal-create-u2-when
+  .temporal-create-timezone-label {
   flex: 1;
   min-width: 0;
 }
 
 .temporal-create-composer.is-advanced
-  .temporal-create-u2-when .temporal-create-timezone-chevron {
+  .temporal-create-u2-when
+  .temporal-create-timezone-chevron {
   margin-left: 12px;
   color: var(--dante-semantic-color-home-text-muted, #8f9bad);
 }
 
 .temporal-create-composer.is-advanced
-  .temporal-create-u2-when .temporal-create-timezone-panel {
+  .temporal-create-u2-when
+  .temporal-create-timezone-panel {
   box-sizing: border-box;
   width: 100%;
 }
@@ -124,7 +200,8 @@
 
 .temporal-create-u2-when .temporal-create-date-picker__trigger:hover,
 .temporal-create-u2-when .temporal-create-date-picker__trigger:focus-visible,
-.temporal-create-u2-when .temporal-create-date-picker__trigger[aria-expanded='true'] {
+.temporal-create-u2-when
+  .temporal-create-date-picker__trigger[aria-expanded='true'] {
   border-color: color-mix(in srgb, #ff8a3d 44%, transparent);
   background: color-mix(
     in srgb,
@@ -147,7 +224,9 @@
   padding-inline: 2px;
 }
 
-.temporal-create-u2-when .temporal-create-time-segment.temporal-create-time-segment > button {
+.temporal-create-u2-when
+  .temporal-create-time-segment.temporal-create-time-segment
+  > button {
   width: 24px;
   min-width: 24px;
 }
@@ -219,8 +298,12 @@
       transparent 34px
     ) !important;
   background-repeat: no-repeat !important;
-  background-position: 13px center, 41px center !important;
-  background-size: 18px 18px, 1px 42px !important;
+  background-position:
+    13px center,
+    41px center !important;
+  background-size:
+    18px 18px,
+    1px 42px !important;
   background-clip: padding-box !important;
 }
 
@@ -281,7 +364,10 @@
 
 @media (max-width: 720px) {
   .temporal-create-u2-when {
-    grid-template-columns: 20px minmax(68px, 0.8fr) minmax(92px, 1fr) 18px minmax(92px, 1fr) minmax(68px, 0.8fr);
+    grid-template-columns: 20px minmax(68px, 0.8fr) minmax(
+        92px,
+        1fr
+      ) 18px minmax(92px, 1fr) minmax(68px, 0.8fr);
     gap: 3px;
   }
 

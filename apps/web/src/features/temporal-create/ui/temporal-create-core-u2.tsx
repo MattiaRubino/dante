@@ -42,12 +42,7 @@ type Props = Readonly<{
 }>;
 
 type QuickRecurrence =
-  | 'none'
-  | 'daily'
-  | 'weekly'
-  | 'monthly'
-  | 'yearly'
-  | 'custom';
+  'none' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom';
 
 type TimeBand = Readonly<{
   key: 'morning' | 'afternoon' | 'evening' | 'night';
@@ -251,7 +246,8 @@ export function TimeControl({
     const frame = requestAnimationFrame(() => {
       const selected = nearestQuarter(lastValidRef.current);
       Array.from(
-        listRef.current?.querySelectorAll<HTMLElement>('[data-time-value]') ?? [],
+        listRef.current?.querySelectorAll<HTMLElement>('[data-time-value]') ??
+          [],
       )
         .find((candidate) => candidate.dataset.timeValue === selected)
         ?.scrollIntoView({ block: 'center' });
@@ -301,7 +297,12 @@ export function TimeControl({
   };
 
   return (
-    <div ref={rootRef} className="temporal-create-time-control" role="group" aria-label={label}>
+    <div
+      ref={rootRef}
+      className="temporal-create-time-control"
+      role="group"
+      aria-label={label}
+    >
       <input
         className="temporal-create-time-raw-input"
         data-create-path={dataPath}
@@ -317,7 +318,13 @@ export function TimeControl({
       <div className="temporal-create-time-control__field">
         <div className="temporal-create-inline-time-editor">
           <div className="temporal-create-time-segment">
-            <button type="button" aria-label={`${label}: aumenta ora`} onClick={() => syncDraft(shiftTime(lastValidRef.current, 60))}>▲</button>
+            <button
+              type="button"
+              aria-label={`${label}: aumenta ora`}
+              onClick={() => syncDraft(shiftTime(lastValidRef.current, 60))}
+            >
+              ▲
+            </button>
             <input
               type="text"
               inputMode="numeric"
@@ -345,11 +352,28 @@ export function TimeControl({
               autoComplete="off"
               spellCheck="false"
             />
-            <button type="button" aria-label={`${label}: diminuisci ora`} onClick={() => syncDraft(shiftTime(lastValidRef.current, -60))}>▼</button>
+            <button
+              type="button"
+              aria-label={`${label}: diminuisci ora`}
+              onClick={() => syncDraft(shiftTime(lastValidRef.current, -60))}
+            >
+              ▼
+            </button>
           </div>
-          <span className="temporal-create-inline-time-editor__separator" aria-hidden="true">:</span>
+          <span
+            className="temporal-create-inline-time-editor__separator"
+            aria-hidden="true"
+          >
+            :
+          </span>
           <div className="temporal-create-time-segment">
-            <button type="button" aria-label={`${label}: aumenta 15 minuti`} onClick={() => syncDraft(shiftTime(lastValidRef.current, 15))}>▲</button>
+            <button
+              type="button"
+              aria-label={`${label}: aumenta 15 minuti`}
+              onClick={() => syncDraft(shiftTime(lastValidRef.current, 15))}
+            >
+              ▲
+            </button>
             <input
               ref={minuteRef}
               type="text"
@@ -374,7 +398,13 @@ export function TimeControl({
               autoComplete="off"
               spellCheck="false"
             />
-            <button type="button" aria-label={`${label}: diminuisci 15 minuti`} onClick={() => syncDraft(shiftTime(lastValidRef.current, -15))}>▼</button>
+            <button
+              type="button"
+              aria-label={`${label}: diminuisci 15 minuti`}
+              onClick={() => syncDraft(shiftTime(lastValidRef.current, -15))}
+            >
+              ▼
+            </button>
           </div>
         </div>
         <button
@@ -389,14 +419,22 @@ export function TimeControl({
       </div>
       {helper ? <small>{helper}</small> : null}
       {pickerOpen ? (
-        <div className="temporal-create-time-picker" role="dialog" aria-label={label}>
+        <div
+          className="temporal-create-time-picker"
+          role="dialog"
+          aria-label={label}
+        >
           <div ref={listRef} className="temporal-create-time-list">
             {TIME_OPTIONS.map((option) => (
               <button
                 key={option}
                 type="button"
                 data-time-value={option}
-                className={nearestQuarter(lastValidRef.current) === option ? 'is-selected' : ''}
+                className={
+                  nearestQuarter(lastValidRef.current) === option
+                    ? 'is-selected'
+                    : ''
+                }
                 onClick={() => {
                   syncDraft(option);
                   setPickerOpen(false);
@@ -421,8 +459,11 @@ export function TemporalCreateCoreFieldsU2({
   renderError,
 }: Props) {
   const { t, i18n } = useTranslation('common');
-  const { draft: authoringDraft, patch: patchAuthoring } = useTemporalCreateU2Draft();
-  const copy = temporalCreateProductCopy(i18n.resolvedLanguage ?? i18n.language);
+  const { draft: authoringDraft, patch: patchAuthoring } =
+    useTemporalCreateU2Draft();
+  const copy = temporalCreateProductCopy(
+    i18n.resolvedLanguage ?? i18n.language,
+  );
   const locale = i18n.resolvedLanguage ?? i18n.language ?? 'it';
   const italian = locale.toLowerCase().startsWith('it');
   const typeRegistry = temporalCreateTypeRegistry();
@@ -436,10 +477,59 @@ export function TemporalCreateCoreFieldsU2({
   const patchEvent = (patch: Partial<TemporalCreateFields['event']>) =>
     onPatch({ event: { ...fields.event, ...patch } });
 
+  const patchActivityIntervals = (
+    intervals: typeof authoringDraft.activityStructure.activityIntervals,
+  ) =>
+    patchAuthoring({
+      activityStructure: Object.freeze({
+        ...authoringDraft.activityStructure,
+        activityIntervals: intervals,
+      }),
+    });
+
+  const addActivityInterval = () => {
+    const last = authoringDraft.activityStructure.activityIntervals.at(-1);
+    const after = last
+      ? Temporal.PlainDateTime.from(`${last.endDate}T${last.endTime}`).add({
+          minutes: 30,
+        })
+      : Temporal.PlainDateTime.from(`${fields.date}T${fields.startTime}`).add({
+          minutes: fields.durationMinutes + 30,
+        });
+    const end = after.add({ hours: 1 });
+    patchActivityIntervals([
+      ...authoringDraft.activityStructure.activityIntervals,
+      Object.freeze({
+        id: globalThis.crypto.randomUUID(),
+        date: after.toPlainDate().toString(),
+        startTime: after.toPlainTime().toString({ smallestUnit: 'minute' }),
+        endDate: end.toPlainDate().toString(),
+        endTime: end.toPlainTime().toString({ smallestUnit: 'minute' }),
+      }),
+    ]);
+  };
+
+  const updateActivityInterval = (
+    id: string,
+    changes: Partial<
+      (typeof authoringDraft.activityStructure.activityIntervals)[number]
+    >,
+  ) =>
+    patchActivityIntervals(
+      authoringDraft.activityStructure.activityIntervals.map((interval) =>
+        interval.id === id
+          ? Object.freeze({ ...interval, ...changes })
+          : interval,
+      ),
+    );
+
   useEffect(() => {
     if (!timeZoneOpen) return;
     const dismiss = (event: PointerEvent) => {
-      if (event.target instanceof Node && !timeZoneRootRef.current?.contains(event.target)) {
+      if (
+        event.target instanceof Node &&
+        !timeZoneRootRef.current?.contains(event.target)
+      ) {
         setTimeZoneOpen(false);
       }
     };
@@ -450,7 +540,10 @@ export function TemporalCreateCoreFieldsU2({
   useEffect(() => {
     if (!timeBandOpen) return;
     const dismiss = (event: PointerEvent) => {
-      if (event.target instanceof Node && !timeBandRootRef.current?.contains(event.target)) {
+      if (
+        event.target instanceof Node &&
+        !timeBandRootRef.current?.contains(event.target)
+      ) {
         setTimeBandOpen(false);
       }
     };
@@ -460,6 +553,11 @@ export function TemporalCreateCoreFieldsU2({
 
   const changeKind = (kind: TemporalCreateKind) => {
     if (kind === fields.kind) return;
+    if (
+      kind !== 'activity' &&
+      authoringDraft.activityStructure.activityIntervals.length > 0
+    )
+      return;
     const targetOwner = kind === 'event' ? 'event' : 'routine';
     const eventRecurrence = {
       ...fields.eventRecurrence,
@@ -488,7 +586,11 @@ export function TemporalCreateCoreFieldsU2({
       scheduling:
         semantics === 'unscheduled'
           ? { ...fields.scheduling, constraintKind: 'none' }
-          : { ...fields.scheduling, constraintKind: 'none', fallbackPolicy: 'inherit' },
+          : {
+              ...fields.scheduling,
+              constraintKind: 'none',
+              fallbackPolicy: 'inherit',
+            },
       ...(semantics === 'unscheduled'
         ? {
             eventRecurrence: {
@@ -518,7 +620,10 @@ export function TemporalCreateCoreFieldsU2({
       : safeAllDayEndDate(fields.date, authoringDraft.endDate);
 
   const patchEnd = (endDate: string, endTime: string) => {
-    const normalizedEndDate = normalizeTemporalCreateU2EndDate(fields.date, endDate);
+    const normalizedEndDate = normalizeTemporalCreateU2EndDate(
+      fields.date,
+      endDate,
+    );
     const duration = temporalCreateDurationFromEndDateTime(
       fields.date,
       fields.startTime,
@@ -603,8 +708,18 @@ export function TemporalCreateCoreFieldsU2({
   };
 
   const bandLabels: Readonly<Record<TimeBand['key'], string>> = italian
-    ? { morning: 'Mattina', afternoon: 'Pomeriggio', evening: 'Sera', night: 'Notte' }
-    : { morning: 'Morning', afternoon: 'Afternoon', evening: 'Evening', night: 'Night' };
+    ? {
+        morning: 'Mattina',
+        afternoon: 'Pomeriggio',
+        evening: 'Sera',
+        night: 'Notte',
+      }
+    : {
+        morning: 'Morning',
+        afternoon: 'Afternoon',
+        evening: 'Evening',
+        night: 'Night',
+      };
 
   const applyTimeBand = (band: TimeBand) => {
     const startMinute = timeToMinute(band.start) ?? 0;
@@ -622,7 +737,8 @@ export function TemporalCreateCoreFieldsU2({
       fields.timeZoneId,
     );
     patchAuthoring({ endDate });
-    if (duration !== null) onPatch({ startTime: band.start, durationMinutes: duration });
+    if (duration !== null)
+      onPatch({ startTime: band.start, durationMinutes: duration });
     setTimeBandOpen(false);
   };
 
@@ -645,7 +761,13 @@ export function TemporalCreateCoreFieldsU2({
       return;
     }
     if (value === 'none') {
-      onPatch({ eventRecurrence: { ...fields.eventRecurrence, owner: null, patternKind: 'none' } });
+      onPatch({
+        eventRecurrence: {
+          ...fields.eventRecurrence,
+          owner: null,
+          patternKind: 'none',
+        },
+      });
       return;
     }
     const frequency = value satisfies TemporalCreateEventCalendarFrequency;
@@ -664,12 +786,19 @@ export function TemporalCreateCoreFieldsU2({
     });
   };
 
-  const timeZoneLabel = fields.timeMode === 'floating' ? (italian ? 'Ora locale' : 'Local time') : fields.timeZoneId;
+  const timeZoneLabel =
+    fields.timeMode === 'floating'
+      ? italian
+        ? 'Ora locale'
+        : 'Local time'
+      : fields.timeZoneId;
 
   return (
     <>
       <fieldset className="temporal-create-type-fieldset">
-        <legend className="temporal-create-visually-hidden">{copy.typeLabel}</legend>
+        <legend className="temporal-create-visually-hidden">
+          {copy.typeLabel}
+        </legend>
         <div className="temporal-create-type-grid is-four">
           {typeRegistry.map((descriptor) => (
             <button
@@ -677,68 +806,171 @@ export function TemporalCreateCoreFieldsU2({
               type="button"
               role="radio"
               aria-checked={fields.kind === descriptor.kind}
+              disabled={
+                descriptor.kind !== 'activity' &&
+                authoringDraft.activityStructure.activityIntervals.length > 0
+              }
+              title={
+                descriptor.kind !== 'activity' &&
+                authoringDraft.activityStructure.activityIntervals.length > 0
+                  ? italian
+                    ? 'Rimuovi prima gli intervalli aggiuntivi'
+                    : 'Remove the additional intervals first'
+                  : undefined
+              }
               className={fields.kind === descriptor.kind ? 'is-active' : ''}
               onClick={() => changeKind(descriptor.kind)}
             >
-              <strong>{descriptor.kind === 'activity' ? 'Attività' : 'Evento'}</strong>
+              <strong>
+                {descriptor.kind === 'activity' ? 'Attività' : 'Evento'}
+              </strong>
             </button>
           ))}
-          <button type="button" className="is-deferred" disabled><strong>Timer</strong><small>Prossimamente</small></button>
-          <button type="button" className="is-deferred" disabled><strong>Sveglia</strong><small>Prossimamente</small></button>
+          <button type="button" className="is-deferred" disabled>
+            <strong>Timer</strong>
+            <small>Prossimamente</small>
+          </button>
+          <button type="button" className="is-deferred" disabled>
+            <strong>Sveglia</strong>
+            <small>Prossimamente</small>
+          </button>
         </div>
       </fieldset>
 
-      <fieldset className="temporal-create-choice-group" data-create-path="timeSemantics">
-        <legend className="temporal-create-visually-hidden">Collocazione</legend>
+      <fieldset
+        className="temporal-create-choice-group"
+        data-create-path="timeSemantics"
+      >
+        <legend className="temporal-create-visually-hidden">
+          Collocazione
+        </legend>
         <div className="temporal-create-choice-row">
-          <button type="button" role="radio" aria-checked={fields.timeSemantics === 'timed'} className={fields.timeSemantics === 'timed' ? 'is-active' : ''} onClick={() => changeTimeSemantics('timed')}>Orario</button>
-          <button type="button" role="radio" aria-checked={fields.timeSemantics === 'all-day'} className={fields.timeSemantics === 'all-day' ? 'is-active' : ''} onClick={() => changeTimeSemantics('all-day')}>Tutto il giorno</button>
-          <button type="button" role="radio" aria-checked={fields.timeSemantics === 'unscheduled'} className={fields.timeSemantics === 'unscheduled' ? 'is-active' : ''} onClick={() => changeTimeSemantics('unscheduled')}>Da collocare</button>
+          <button
+            type="button"
+            role="radio"
+            aria-checked={fields.timeSemantics === 'timed'}
+            className={fields.timeSemantics === 'timed' ? 'is-active' : ''}
+            onClick={() => changeTimeSemantics('timed')}
+          >
+            Orario
+          </button>
+          <button
+            type="button"
+            role="radio"
+            aria-checked={fields.timeSemantics === 'all-day'}
+            className={fields.timeSemantics === 'all-day' ? 'is-active' : ''}
+            disabled={
+              fields.kind === 'activity' &&
+              authoringDraft.activityStructure.activityIntervals.length > 0
+            }
+            title={
+              fields.kind === 'activity' &&
+              authoringDraft.activityStructure.activityIntervals.length > 0
+                ? 'Rimuovi prima gli intervalli aggiuntivi'
+                : undefined
+            }
+            onClick={() => changeTimeSemantics('all-day')}
+          >
+            Tutto il giorno
+          </button>
+          <button
+            type="button"
+            role="radio"
+            aria-checked={fields.timeSemantics === 'unscheduled'}
+            className={
+              fields.timeSemantics === 'unscheduled' ? 'is-active' : ''
+            }
+            disabled={
+              fields.kind === 'activity' &&
+              authoringDraft.activityStructure.activityIntervals.length > 0
+            }
+            title={
+              fields.kind === 'activity' &&
+              authoringDraft.activityStructure.activityIntervals.length > 0
+                ? 'Rimuovi prima gli intervalli aggiuntivi'
+                : undefined
+            }
+            onClick={() => changeTimeSemantics('unscheduled')}
+          >
+            Da collocare
+          </button>
         </div>
       </fieldset>
       {renderError('timeSemantics')}
 
       {fields.timeSemantics === 'timed' ? (
         <div className="temporal-create-u2-when">
-          <div ref={timeZoneRootRef} className="temporal-create-timezone-control">
-              <button
-                className={`temporal-create-timezone-trigger${timeZoneOpen ? ' is-open' : ''}`}
-                type="button"
-                aria-label={`Fuso orario: ${timeZoneLabel}`}
-                aria-expanded={timeZoneOpen}
-                title={timeZoneLabel}
-                onClick={() => setTimeZoneOpen((current) => !current)}
-              >
-                <GlobeIcon />
-                {!showCompactTimezone ? (
-                  <>
-                    <span className="temporal-create-timezone-divider" aria-hidden="true" />
-                    <span className="temporal-create-timezone-label">
-                      {italian ? 'Fuso orario' : 'Time zone'} · {timeZoneLabel}
-                    </span>
-                    <span className="temporal-create-timezone-chevron" aria-hidden="true">
-                      {timeZoneOpen ? '⌃' : '⌄'}
-                    </span>
-                  </>
-                ) : null}
-              </button>
-              {timeZoneOpen ? (
-                <div className="temporal-create-timezone-panel">
-                  <div className="temporal-create-timezone-current"><GlobeIcon /><span>{timeZoneLabel}</span></div>
-                  <div className="temporal-create-timezone-list">
-                    <button type="button" className={fields.timeMode === 'floating' ? 'is-selected' : ''} onClick={() => {
+          <div
+            ref={timeZoneRootRef}
+            className="temporal-create-timezone-control"
+          >
+            <button
+              className={`temporal-create-timezone-trigger${timeZoneOpen ? ' is-open' : ''}`}
+              type="button"
+              aria-label={`Fuso orario: ${timeZoneLabel}`}
+              aria-expanded={timeZoneOpen}
+              title={timeZoneLabel}
+              onClick={() => setTimeZoneOpen((current) => !current)}
+            >
+              <GlobeIcon />
+              {!showCompactTimezone ? (
+                <>
+                  <span
+                    className="temporal-create-timezone-divider"
+                    aria-hidden="true"
+                  />
+                  <span className="temporal-create-timezone-label">
+                    {italian ? 'Fuso orario' : 'Time zone'} · {timeZoneLabel}
+                  </span>
+                  <span
+                    className="temporal-create-timezone-chevron"
+                    aria-hidden="true"
+                  >
+                    {timeZoneOpen ? '⌃' : '⌄'}
+                  </span>
+                </>
+              ) : null}
+            </button>
+            {timeZoneOpen ? (
+              <div className="temporal-create-timezone-panel">
+                <div className="temporal-create-timezone-current">
+                  <GlobeIcon />
+                  <span>{timeZoneLabel}</span>
+                </div>
+                <div className="temporal-create-timezone-list">
+                  <button
+                    type="button"
+                    className={
+                      fields.timeMode === 'floating' ? 'is-selected' : ''
+                    }
+                    onClick={() => {
                       onPatch({ timeMode: 'floating' });
                       if (!showCompactTimezone) setTimeZoneOpen(false);
-                    }}>Ora locale</button>
-                    {TIME_ZONES.map((zoneId) => (
-                      <button key={zoneId} type="button" className={fields.timeMode === 'zoned' && fields.timeZoneId === zoneId ? 'is-selected' : ''} onClick={() => {
+                    }}
+                  >
+                    Ora locale
+                  </button>
+                  {TIME_ZONES.map((zoneId) => (
+                    <button
+                      key={zoneId}
+                      type="button"
+                      className={
+                        fields.timeMode === 'zoned' &&
+                        fields.timeZoneId === zoneId
+                          ? 'is-selected'
+                          : ''
+                      }
+                      onClick={() => {
                         onPatch({ timeMode: 'zoned', timeZoneId: zoneId });
                         if (!showCompactTimezone) setTimeZoneOpen(false);
-                      }}>{zoneId.replaceAll('_', ' ')}</button>
-                    ))}
-                  </div>
+                      }}
+                    >
+                      {zoneId.replaceAll('_', ' ')}
+                    </button>
+                  ))}
                 </div>
-              ) : null}
+              </div>
+            ) : null}
           </div>
 
           <input
@@ -765,14 +997,35 @@ export function TemporalCreateCoreFieldsU2({
             helper={renderError('startTime')}
           />
 
-          <div ref={timeBandRootRef} className="temporal-create-time-band-control">
-            <button type="button" className="temporal-create-time-band-trigger" aria-label="Fasce orarie" aria-expanded={timeBandOpen} onClick={() => setTimeBandOpen((current) => !current)}>
-              <span aria-hidden="true">→</span><small aria-hidden="true">⌄</small>
+          <div
+            ref={timeBandRootRef}
+            className="temporal-create-time-band-control"
+          >
+            <button
+              type="button"
+              className="temporal-create-time-band-trigger"
+              aria-label="Fasce orarie"
+              aria-expanded={timeBandOpen}
+              onClick={() => setTimeBandOpen((current) => !current)}
+            >
+              <span aria-hidden="true">→</span>
+              <small aria-hidden="true">⌄</small>
             </button>
             {timeBandOpen ? (
-              <div className="temporal-create-time-band-panel" role="dialog" aria-label="Fasce orarie">
+              <div
+                className="temporal-create-time-band-panel"
+                role="dialog"
+                aria-label="Fasce orarie"
+              >
                 {TIME_BANDS.map((band) => (
-                  <button key={band.key} type="button" onClick={() => applyTimeBand(band)}><strong>{bandLabels[band.key]}</strong><small>{`${band.start}–${band.end}`}</small></button>
+                  <button
+                    key={band.key}
+                    type="button"
+                    onClick={() => applyTimeBand(band)}
+                  >
+                    <strong>{bandLabels[band.key]}</strong>
+                    <small>{`${band.start}–${band.end}`}</small>
+                  </button>
                 ))}
               </div>
             ) : null}
@@ -783,7 +1036,12 @@ export function TemporalCreateCoreFieldsU2({
             value={calculatedEnd.time}
             dataPath="endTime"
             onChange={(endTime) => patchEnd(visibleEndDate, endTime)}
-            helper={<>{temporalCreateDurationLabel(fields.durationMinutes)}{renderError('durationMinutes')}</>}
+            helper={
+              <>
+                {temporalCreateDurationLabel(fields.durationMinutes)}
+                {renderError('durationMinutes')}
+              </>
+            }
           />
 
           <TemporalCreateDatePicker
@@ -793,6 +1051,99 @@ export function TemporalCreateCoreFieldsU2({
             locale={locale}
             onChange={(date) => patchEnd(date, calculatedEnd.time)}
           />
+
+          {fields.kind === 'activity' &&
+          (!showCompactTimezone ||
+            authoringDraft.activityStructure.activityIntervals.length > 0) ? (
+            <div
+              className="temporal-create-activity-intervals"
+              data-create-activity-intervals
+            >
+              {authoringDraft.activityStructure.activityIntervals.map(
+                (interval, index) => (
+                  <div
+                    className="temporal-create-activity-interval"
+                    key={interval.id}
+                  >
+                    <span className="temporal-create-activity-interval__label">
+                      {italian
+                        ? `Intervallo ${index + 2}`
+                        : `Interval ${index + 2}`}
+                    </span>
+                    <div className="temporal-create-activity-interval__fields">
+                      <TemporalCreateDatePicker
+                        label={italian ? 'Data inizio' : 'Start date'}
+                        value={interval.date}
+                        locale={locale}
+                        onChange={(date) =>
+                          updateActivityInterval(interval.id, { date })
+                        }
+                      />
+                      <TimeControl
+                        label={italian ? 'Inizio' : 'Start'}
+                        value={interval.startTime}
+                        dataPath={`activityIntervals.${interval.id}.startTime`}
+                        onChange={(startTime) =>
+                          updateActivityInterval(interval.id, { startTime })
+                        }
+                      />
+                      <span
+                        className="temporal-create-activity-interval__arrow"
+                        aria-hidden="true"
+                      >
+                        →
+                      </span>
+                      <TimeControl
+                        label={italian ? 'Fine' : 'End'}
+                        value={interval.endTime}
+                        dataPath={`activityIntervals.${interval.id}.endTime`}
+                        onChange={(endTime) =>
+                          updateActivityInterval(interval.id, { endTime })
+                        }
+                      />
+                      <TemporalCreateDatePicker
+                        label={italian ? 'Data fine' : 'End date'}
+                        value={interval.endDate}
+                        locale={locale}
+                        onChange={(endDate) =>
+                          updateActivityInterval(interval.id, { endDate })
+                        }
+                      />
+                      <button
+                        type="button"
+                        className="temporal-create-activity-interval__remove"
+                        aria-label={
+                          italian
+                            ? `Rimuovi intervallo ${index + 2}`
+                            : `Remove interval ${index + 2}`
+                        }
+                        onClick={() =>
+                          patchActivityIntervals(
+                            authoringDraft.activityStructure.activityIntervals.filter(
+                              (item) => item.id !== interval.id,
+                            ),
+                          )
+                        }
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </div>
+                ),
+              )}
+              {authoringDraft.activityStructure.activityIntervals.length <
+              99 ? (
+                <button
+                  type="button"
+                  className="temporal-create-activity-intervals__add"
+                  onClick={addActivityInterval}
+                >
+                  <span aria-hidden="true">＋</span>{' '}
+                  {italian ? 'Aggiungi intervallo' : 'Add interval'}
+                </button>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       ) : null}
 
@@ -816,7 +1167,15 @@ export function TemporalCreateCoreFieldsU2({
 
       {fields.timeSemantics !== 'unscheduled' ? (
         <div className="temporal-create-u2-repeat">
-          <select aria-label={copy.event.repeat} value={quickRecurrence(fields)} onChange={(event) => changeQuickRecurrence(event.currentTarget.value as QuickRecurrence)}>
+          <select
+            aria-label={copy.event.repeat}
+            value={quickRecurrence(fields)}
+            onChange={(event) =>
+              changeQuickRecurrence(
+                event.currentTarget.value as QuickRecurrence,
+              )
+            }
+          >
             <option value="none">{copy.event.repeatNever}</option>
             <option value="daily">{copy.event.repeatDaily}</option>
             <option value="weekly">{copy.event.repeatWeekly}</option>
@@ -842,7 +1201,9 @@ export function TemporalCreateCoreFieldsU2({
         aria-label="Località"
         placeholder="Località"
         autoComplete="off"
-        onChange={(event) => patchEvent({ location: event.currentTarget.value })}
+        onChange={(event) =>
+          patchEvent({ location: event.currentTarget.value })
+        }
       />
 
       {fields.timeSemantics !== 'unscheduled' ? (
