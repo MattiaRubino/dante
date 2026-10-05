@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { createB06TemporalCreateRuntime } from '../application/temporal-create-b06-runtime';
+import { createB14TemporalCreateRuntime } from '../application/temporal-create-b14-runtime';
 import {
   TemporalCreateEntry as BaseTemporalCreateEntry,
   type TemporalCreateEntryProps,
@@ -11,7 +11,7 @@ export type { TemporalCreateEntryProps, TemporalCreateInvocation };
 
 export function TemporalCreateEntry(props: TemporalCreateEntryProps) {
   const [runtime] = useState(
-    () => props.runtime ?? createB06TemporalCreateRuntime(),
+    () => props.runtime ?? createB14TemporalCreateRuntime(),
   );
   return <BaseTemporalCreateEntry {...props} runtime={runtime} />;
 }
