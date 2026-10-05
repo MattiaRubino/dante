@@ -2,6 +2,56 @@
    surface. Keep the primary interval visually quiet until an additional
    interval exists; once split, number every interval consistently. */
 
+/* Keep the Activity time row compact. Dates may absorb the remaining width;
+   time controls stay intentionally narrow instead of stretching to fill the
+   whole modal. */
+.temporal-create-composer.is-advanced .temporal-create-u2-when {
+  grid-template-columns:
+    minmax(128px, 1fr) 164px 20px 164px minmax(128px, 1fr);
+  column-gap: 8px;
+  row-gap: 6px;
+}
+
+.temporal-create-composer.is-advanced
+  .temporal-create-activity-interval__fields {
+  grid-template-columns:
+    minmax(128px, 1fr) 164px 20px 164px minmax(128px, 1fr) 28px;
+  gap: 8px;
+}
+
+.temporal-create-composer.is-advanced
+  .temporal-create-u2-when
+  .temporal-create-inline-time-editor,
+.temporal-create-composer.is-advanced
+  .temporal-create-activity-interval__fields
+  .temporal-create-inline-time-editor {
+  grid-template-columns: 42px 7px 42px !important;
+  justify-content: center;
+  padding-inline: 0;
+}
+
+.temporal-create-composer.is-advanced
+  .temporal-create-u2-when
+  .temporal-create-time-segment,
+.temporal-create-composer.is-advanced
+  .temporal-create-activity-interval__fields
+  .temporal-create-time-segment {
+  min-width: 0;
+}
+
+/* Duration is derivable from start/end and does not deserve a second visual
+   line under the primary interval. Removing it also keeps interval 1 aligned
+   with interval 2+ vertically. */
+.temporal-create-composer.is-advanced
+  .temporal-create-time-control:has(
+    > .temporal-create-time-raw-input[data-create-path='endTime']
+  )
+  > small {
+  display: none !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+}
+
 .temporal-create-composer.is-advanced
   .temporal-create-u2-when:has(
     > .temporal-create-activity-intervals .temporal-create-activity-interval
@@ -17,7 +67,7 @@
     > .temporal-create-activity-intervals .temporal-create-activity-interval
   )
   > .temporal-create-time-band-control {
-  margin-top: 20px;
+  margin-top: 16px;
 }
 
 .temporal-create-composer.is-advanced
@@ -26,14 +76,14 @@
   )
   > .temporal-create-date-picker:has(+ .temporal-create-time-control)::before {
   position: absolute;
-  top: -18px;
+  top: -15px;
   left: 2px;
   color: var(--dante-semantic-color-home-text-muted, #8f9bad);
   content: 'Intervallo 1';
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.045em;
-  line-height: 14px;
+  line-height: 12px;
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -48,8 +98,13 @@ html[lang^='en']
 }
 
 .temporal-create-composer.is-advanced .temporal-create-activity-intervals {
-  gap: 10px;
-  padding-top: 4px;
+  gap: 6px;
+  margin-top: -3px;
+  padding-top: 0;
+}
+
+.temporal-create-composer.is-advanced .temporal-create-activity-interval {
+  gap: 4px;
 }
 
 .temporal-create-composer.is-advanced
@@ -59,12 +114,12 @@ html[lang^='en']
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.045em;
-  line-height: 14px;
+  line-height: 12px;
   text-transform: uppercase;
 }
 
-/* Match the compact + Sessione action instead of presenting interval authoring
-   as a primary form control. */
+/* Match the compact + Sessione action and keep it immediately below the last
+   interval instead of letting it float as a separate form row. */
 .temporal-create-composer.is-advanced
   .temporal-create-activity-intervals
   > .temporal-create-activity-intervals__add {
@@ -73,7 +128,7 @@ html[lang^='en']
   align-items: center;
   justify-self: start;
   gap: 6px;
-  margin: 1px 0 0 28px;
+  margin: 0 0 0 28px;
   padding: 0 10px;
   border: 1px dashed color-mix(in srgb, currentColor 23%, transparent) !important;
   border-radius: 8px;
@@ -122,4 +177,21 @@ html[lang^='en']
   color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
   background: color-mix(in srgb, #ea5c12 5%, transparent) !important;
   outline: none;
+}
+
+@media (max-width: 720px) {
+  .temporal-create-composer.is-advanced .temporal-create-u2-when {
+    grid-template-columns:
+      minmax(92px, 1fr) minmax(118px, 0.82fr) 18px
+      minmax(118px, 0.82fr) minmax(92px, 1fr);
+    gap: 4px;
+  }
+
+  .temporal-create-composer.is-advanced
+    .temporal-create-activity-interval__fields {
+    grid-template-columns:
+      minmax(92px, 1fr) minmax(118px, 0.82fr) 18px
+      minmax(118px, 0.82fr) minmax(92px, 1fr) 28px;
+    gap: 4px;
+  }
 }
