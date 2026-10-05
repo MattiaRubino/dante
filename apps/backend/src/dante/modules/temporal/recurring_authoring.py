@@ -230,7 +230,7 @@ async def _create_routine_source_in_session(
     self_person_ref: NativeRef,
     operation_id: str,
     title: str,
-    life_area_ref: UUID,
+    life_area_ref: UUID | None,
     tag_refs: tuple[UUID, ...],
     starts_on: date,
     wall_time: time | None,
@@ -245,7 +245,7 @@ async def _create_routine_source_in_session(
             "version": 1,
             "kind": "create",
             "title": label,
-            "life_area_ref": str(life_area_ref),
+            "life_area_ref": (str(life_area_ref) if life_area_ref else None),
             "tag_refs": sorted(str(tag) for tag in tag_refs),
             "initial_recurrence": {
                 "family": "calendar_wall_clock",
@@ -318,7 +318,7 @@ class RecurringAuthoringApplication:
         self_person_ref: NativeRef,
         operation_id: str,
         title: str,
-        life_area_ref: UUID,
+        life_area_ref: UUID | None,
         recurrence: RecurrenceSpec,
         tag_refs: tuple[UUID, ...] = (),
     ) -> RecurringAuthoringResult:
