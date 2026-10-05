@@ -54,9 +54,9 @@ class RoutineView:
     created_at: datetime
     updated_at: datetime
     lifecycle_changed_at: datetime
-    life_area_ref: UUID
+    life_area_ref: UUID | None
     life_area_assignment_revision: int
-    life_area_assigned_at: datetime
+    life_area_assigned_at: datetime | None
     tag_refs: tuple[UUID, ...] = ()
     replayed: bool = False
 
@@ -107,7 +107,9 @@ def _as_view(row: RowMapping, tags: tuple[UUID, ...] = (), *, replayed: bool = F
         created_at=row["created_at"],
         updated_at=row["updated_at"],
         lifecycle_changed_at=row["lifecycle_changed_at"],
-        life_area_ref=UUID(str(row["life_area_ref"])),
+        life_area_ref=(
+            UUID(str(row["life_area_ref"])) if row["life_area_ref"] is not None else None
+        ),
         life_area_assignment_revision=int(row["life_area_assignment_revision"]),
         life_area_assigned_at=row["life_area_assigned_at"],
         tag_refs=tags,
