@@ -129,4 +129,39 @@ describe('Temporal Create Advanced Activity IA', () => {
     expect(screen.queryByRole('button', { name: 'Riprendi' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Termina' })).toBeNull();
   });
+
+  it('expands Activity repeat immediately below Ripeti and uses direct ending choices', () => {
+    openAdvanced();
+
+    const repeatRow = document.querySelector<HTMLElement>(
+      '.temporal-create-u2-repeat',
+    );
+    const repeatSelect = repeatRow?.querySelector<HTMLSelectElement>('select');
+    if (!repeatRow || !repeatSelect) {
+      throw new Error('Expected Activity repeat selector.');
+    }
+
+    fireEvent.change(repeatSelect, { target: { value: 'custom' } });
+
+    const repeatDetails = document.querySelector<HTMLElement>(
+      '[data-create-recurrence-owner="routine"]',
+    );
+    if (!repeatDetails) throw new Error('Expected Activity repeat details.');
+
+    expect(repeatRow.nextElementSibling).toBe(repeatDetails);
+    expect(within(repeatDetails).getByText('Ripetizione')).toBeTruthy();
+
+    const ending = within(repeatDetails).getByRole('radiogroup', {
+      name: 'Fine ripetizione',
+    });
+    expect(within(ending).getByRole('radio', { name: 'Mai' })).toBeTruthy();
+    expect(within(ending).getByRole('radio', { name: 'Data' })).toBeTruthy();
+
+    const after = within(ending).getByRole('radio', { name: 'Dopo' });
+    fireEvent.click(after);
+
+    expect(within(ending).getByLabelText('Numero di occorrenze')).toBeTruthy();
+    expect(within(ending).getByText('occorrenze')).toBeTruthy();
+    expect(within(ending).queryByText('Dopo un numero di volte')).toBeNull();
+  });
 });
