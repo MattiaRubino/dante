@@ -20,7 +20,10 @@ import {
   TemporalCreateAdvancedActivityHeaderActions,
   TemporalCreateAdvancedActivityStructure,
 } from './temporal-create-advanced-activity-structure';
-import { TemporalCreateConfirmationFields } from './temporal-create-confirmation-fields';
+import {
+  TemporalCreateConfirmationFields,
+  TemporalCreateConfirmationToggle,
+} from './temporal-create-confirmation-fields';
 import {
   TemporalCreateAdvancedFields,
   TemporalCreateCoreFields,
@@ -449,7 +452,10 @@ export function TemporalCreateComposer({
                 {advanced ? (
                   <div className="temporal-create-title-row__tools">
                     {fields.kind === 'activity' ? (
-                      <TemporalCreateAdvancedActivityHeaderActions />
+                      <>
+                        <TemporalCreateAdvancedActivityHeaderActions />
+                        <TemporalCreateConfirmationToggle fields={fields} />
+                      </>
                     ) : null}
                   </div>
                 ) : null}

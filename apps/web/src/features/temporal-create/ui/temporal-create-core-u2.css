@@ -1,7 +1,7 @@
 .temporal-create-u2-when {
   display: grid;
   grid-template-columns:
-    20px minmax(64px, 0.72fr) minmax(100px, 1.12fr) 18px
+    minmax(64px, 0.72fr) minmax(100px, 1.12fr) 18px
     minmax(100px, 1.12fr) minmax(64px, 0.72fr);
   align-items: start;
   gap: 4px;
@@ -90,21 +90,59 @@
 }
 
 .temporal-create-u2-when .temporal-create-timezone-control {
+  grid-column: 1 / -1;
   align-self: start;
   margin-top: 0;
+  min-width: 0;
 }
 
 .temporal-create-u2-when .temporal-create-timezone-trigger {
-  width: 20px !important;
+  display: flex;
+  width: 100% !important;
+  min-height: 42px;
   height: 42px !important;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 12px;
+  text-align: left;
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  border: 1px solid var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09)) !important;
+  border-radius: 10px !important;
+  background: color-mix(in srgb, var(--dante-semantic-color-home-surface-control, #151f2e) 76%, black) !important;
+  filter: none !important;
 }
 
 .temporal-create-u2-when .temporal-create-timezone-trigger svg {
   width: 14px;
   height: 14px;
+  flex: none;
 }
 
-/* Advanced places the same timezone control below the date/time row. */
+.temporal-create-u2-when .temporal-create-timezone-divider {
+  align-self: stretch;
+  width: 1px;
+  margin: 8px 12px;
+  background: var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
+}
+
+.temporal-create-u2-when .temporal-create-timezone-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.temporal-create-u2-when .temporal-create-timezone-chevron {
+  margin-left: 12px;
+}
+
+.temporal-create-u2-when .temporal-create-timezone-panel {
+  box-sizing: border-box;
+  width: 100%;
+}
+
+/* The timezone is the first full-width control above the date/time row. */
 .temporal-create-composer.is-advanced .temporal-create-u2-when {
   grid-template-columns:
     minmax(92px, 0.8fr) minmax(132px, 1.2fr) 22px
@@ -116,9 +154,9 @@
   .temporal-create-u2-when
   .temporal-create-timezone-control {
   grid-column: 1 / -1;
-  grid-row: 2;
+  grid-row: 1;
   width: 100%;
-  margin-top: 2px;
+  margin-top: 0;
 }
 
 .temporal-create-composer.is-advanced
@@ -126,8 +164,8 @@
   .temporal-create-timezone-trigger {
   display: inline-flex;
   width: 100% !important;
-  min-height: 38px;
-  height: 38px !important;
+  min-height: 42px;
+  height: 42px !important;
   align-items: center;
   justify-content: flex-start;
   gap: 0;
@@ -364,7 +402,7 @@
 
 @media (max-width: 720px) {
   .temporal-create-u2-when {
-    grid-template-columns: 20px minmax(68px, 0.8fr) minmax(
+    grid-template-columns: minmax(68px, 0.8fr) minmax(
         92px,
         1fr
       ) 18px minmax(92px, 1fr) minmax(68px, 0.8fr);

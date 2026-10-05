@@ -20,7 +20,7 @@
   height: calc(100dvh - 56px);
   flex-direction: column;
   max-height: calc(100dvh - 56px) !important;
-  padding: 0 24px 24px !important;
+  padding: 0 24px !important;
   transform: none !important;
   border: 1px solid
     color-mix(
@@ -54,16 +54,24 @@
   display: flex;
   flex: 1 1 auto;
   min-height: 0;
+  width: 100%;
+  box-sizing: border-box;
   max-width: none;
   flex-direction: column;
   gap: 12px;
   margin-top: 0;
   padding-top: 18px;
   padding-right: 4px;
-  padding-bottom: 0;
+  padding-bottom: 76px;
   overflow-x: hidden;
   overflow-y: auto;
   scrollbar-gutter: stable;
+}
+
+.temporal-create-backdrop.is-advanced .temporal-create-actions.temporal-create-actions {
+  padding-right: 24px;
+  padding-left: 24px;
+  background: var(--dante-semantic-color-home-surface-primary, #0d1522);
 }
 
 /* Advanced starts from the kind of thing being authored, then names it. The
@@ -315,23 +323,18 @@
 
 .temporal-create-backdrop.is-advanced
   .temporal-create-actions.temporal-create-actions {
-  position: sticky !important;
+  position: absolute !important;
   z-index: 20;
-  right: auto;
+  right: 0;
   bottom: 0;
-  left: auto;
-  order: 40;
+  left: 0;
   justify-content: flex-end;
-  margin: 8px -4px 0;
-  padding: 12px 4px 16px;
+  margin: 0 !important;
+  padding: 12px 24px max(14px, env(safe-area-inset-bottom));
   border-top: 1px solid
     var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08));
-  background: color-mix(
-    in srgb,
-    var(--dante-semantic-color-home-surface-primary, #0d1522) 98%,
-    black
-  );
-  backdrop-filter: blur(14px);
+  background: var(--dante-semantic-color-home-surface-primary, #0d1522);
+  backdrop-filter: none;
 }
 
 .temporal-create-backdrop.is-advanced

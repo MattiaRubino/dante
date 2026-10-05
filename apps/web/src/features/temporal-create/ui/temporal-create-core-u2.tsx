@@ -913,23 +913,13 @@ export function TemporalCreateCoreFieldsU2({
               onClick={() => setTimeZoneOpen((current) => !current)}
             >
               <GlobeIcon />
-              {!showCompactTimezone ? (
-                <>
-                  <span
-                    className="temporal-create-timezone-divider"
-                    aria-hidden="true"
-                  />
-                  <span className="temporal-create-timezone-label">
-                    {italian ? 'Fuso orario' : 'Time zone'} · {timeZoneLabel}
-                  </span>
-                  <span
-                    className="temporal-create-timezone-chevron"
-                    aria-hidden="true"
-                  >
-                    {timeZoneOpen ? '⌃' : '⌄'}
-                  </span>
-                </>
-              ) : null}
+              <span className="temporal-create-timezone-divider" aria-hidden="true" />
+              <span className="temporal-create-timezone-label">
+                {italian ? 'Fuso orario' : 'Time zone'} · {timeZoneLabel}
+              </span>
+              <span className="temporal-create-timezone-chevron" aria-hidden="true">
+                {timeZoneOpen ? '⌃' : '⌄'}
+              </span>
             </button>
             {timeZoneOpen ? (
               <div className="temporal-create-timezone-panel">
@@ -945,7 +935,7 @@ export function TemporalCreateCoreFieldsU2({
                     }
                     onClick={() => {
                       onPatch({ timeMode: 'floating' });
-                      if (!showCompactTimezone) setTimeZoneOpen(false);
+                      setTimeZoneOpen(false);
                     }}
                   >
                     Ora locale
@@ -962,7 +952,7 @@ export function TemporalCreateCoreFieldsU2({
                       }
                       onClick={() => {
                         onPatch({ timeMode: 'zoned', timeZoneId: zoneId });
-                        if (!showCompactTimezone) setTimeZoneOpen(false);
+                        setTimeZoneOpen(false);
                       }}
                     >
                       {zoneId.replaceAll('_', ' ')}
