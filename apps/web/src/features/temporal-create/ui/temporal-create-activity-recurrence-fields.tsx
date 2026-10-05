@@ -52,24 +52,8 @@ export function TemporalCreateActivityRecurrenceFields({
 
   const weekdayShortLabel = (weekday: TemporalCreateWeekday): string => {
     const labels: Record<TemporalCreateWeekday, string> = italian
-      ? {
-          MO: 'L',
-          TU: 'M',
-          WE: 'M',
-          TH: 'G',
-          FR: 'V',
-          SA: 'S',
-          SU: 'D',
-        }
-      : {
-          MO: 'M',
-          TU: 'T',
-          WE: 'W',
-          TH: 'T',
-          FR: 'F',
-          SA: 'S',
-          SU: 'S',
-        };
+      ? { MO: 'L', TU: 'M', WE: 'M', TH: 'G', FR: 'V', SA: 'S', SU: 'D' }
+      : { MO: 'M', TU: 'T', WE: 'W', TH: 'T', FR: 'F', SA: 'S', SU: 'S' };
     return labels[weekday];
   };
 
@@ -99,14 +83,12 @@ export function TemporalCreateActivityRecurrenceFields({
   const toggleWeekday = (weekday: TemporalCreateWeekday) => {
     const selected = recurrence.weekdays.includes(weekday);
     if (selected && recurrence.weekdays.length <= 1) return;
-
     const canonical = temporalCreateWeekdays();
     const next = selected
       ? recurrence.weekdays.filter((candidate) => candidate !== weekday)
       : [...recurrence.weekdays, weekday].sort(
           (left, right) => canonical.indexOf(left) - canonical.indexOf(right),
         );
-
     patchRecurrence({ weekdays: Object.freeze(next) });
   };
 
@@ -114,10 +96,6 @@ export function TemporalCreateActivityRecurrenceFields({
     recurrence.calendarFrequency === 'monthly-ordinal'
       ? 'monthly'
       : recurrence.calendarFrequency;
-
-  const setFrequency = (next: CalendarFrequency) => {
-    patchRecurrence({ calendarFrequency: next });
-  };
 
   const setEndMode = (endMode: EndMode) => {
     patchRecurrence({
@@ -145,6 +123,20 @@ export function TemporalCreateActivityRecurrenceFields({
     return 'Quinto';
   };
 
+  const unitLabel = (() => {
+    const plural = recurrence.calendarInterval !== 1;
+    if (italian) {
+      if (frequency === 'daily') return plural ? 'giorni' : 'giorno';
+      if (frequency === 'weekly') return plural ? 'settimane' : 'settimana';
+      if (frequency === 'monthly') return plural ? 'mesi' : 'mese';
+      return plural ? 'anni' : 'anno';
+    }
+    if (frequency === 'daily') return plural ? 'days' : 'day';
+    if (frequency === 'weekly') return plural ? 'weeks' : 'week';
+    if (frequency === 'monthly') return plural ? 'months' : 'month';
+    return plural ? 'years' : 'year';
+  })();
+
   const anchorDate = new Date(`${fields.date}T00:00:00Z`);
   const anchorDay = new Intl.DateTimeFormat(locale, {
     day: 'numeric',
@@ -166,10 +158,7 @@ export function TemporalCreateActivityRecurrenceFields({
       }`}
       onClick={() => setEndMode(mode)}
     >
-      <span
-        className="temporal-create-activity-repeat__radio-dot"
-        aria-hidden="true"
-      />
+      <span className="temporal-create-activity-repeat__radio-dot" aria-hidden="true" />
       <span>{label}</span>
     </button>
   );
@@ -181,16 +170,9 @@ export function TemporalCreateActivityRecurrenceFields({
       data-create-recurrence-owner="routine"
     >
       <div className="temporal-create-section__heading temporal-create-activity-repeat__heading">
-        <div>
-          <h3 id="temporal-create-activity-repeat-heading">
-            {italian ? 'Ripetizione' : 'Repeat'}
-          </h3>
-          <p>
-            {italian
-              ? 'Imposta quando questa attività deve ripetersi.'
-              : 'Choose when this activity should repeat.'}
-          </p>
-        </div>
+        <h3 id="temporal-create-activity-repeat-heading">
+          {italian ? 'Ripetizione' : 'Repeat'}
+        </h3>
       </div>
 
       <div className="temporal-create-activity-repeat__row">
@@ -211,19 +193,7 @@ export function TemporalCreateActivityRecurrenceFields({
             })
           }
         />
-        <select
-          className="temporal-create-activity-repeat__unit"
-          aria-label={italian ? 'Unità di ripetizione' : 'Repeat unit'}
-          value={frequency}
-          onChange={(event) =>
-            setFrequency(event.currentTarget.value as CalendarFrequency)
-          }
-        >
-          <option value="daily">{italian ? 'giorno' : 'day'}</option>
-          <option value="weekly">{italian ? 'settimana' : 'week'}</option>
-          <option value="monthly">{italian ? 'mese' : 'month'}</option>
-          <option value="yearly">{italian ? 'anno' : 'year'}</option>
-        </select>
+        <span className="temporal-create-activity-repeat__unit-label">{unitLabel}</span>
         {renderError('eventRecurrence.calendarInterval')}
       </div>
 
@@ -266,9 +236,7 @@ export function TemporalCreateActivityRecurrenceFields({
           <div className="temporal-create-activity-repeat__segmented">
             <button
               type="button"
-              className={
-                recurrence.calendarFrequency === 'monthly' ? 'is-active' : ''
-              }
+              className={recurrence.calendarFrequency === 'monthly' ? 'is-active' : ''}
               aria-pressed={recurrence.calendarFrequency === 'monthly'}
               onClick={() => patchRecurrence({ calendarFrequency: 'monthly' })}
             >
@@ -277,14 +245,10 @@ export function TemporalCreateActivityRecurrenceFields({
             <button
               type="button"
               className={
-                recurrence.calendarFrequency === 'monthly-ordinal'
-                  ? 'is-active'
-                  : ''
+                recurrence.calendarFrequency === 'monthly-ordinal' ? 'is-active' : ''
               }
               aria-pressed={recurrence.calendarFrequency === 'monthly-ordinal'}
-              onClick={() =>
-                patchRecurrence({ calendarFrequency: 'monthly-ordinal' })
-              }
+              onClick={() => patchRecurrence({ calendarFrequency: 'monthly-ordinal' })}
             >
               {italian ? 'Per posizione' : 'By position'}
             </button>
@@ -296,15 +260,11 @@ export function TemporalCreateActivityRecurrenceFields({
                 aria-label={italian ? 'Posizione nel mese' : 'Position in month'}
                 value={recurrence.calendarOrdinal}
                 onChange={(event) =>
-                  patchRecurrence({
-                    calendarOrdinal: Number(event.currentTarget.value),
-                  })
+                  patchRecurrence({ calendarOrdinal: Number(event.currentTarget.value) })
                 }
               >
                 {ORDINALS.map((ordinal) => (
-                  <option key={ordinal} value={ordinal}>
-                    {ordinalLabel(ordinal)}
-                  </option>
+                  <option key={ordinal} value={ordinal}>{ordinalLabel(ordinal)}</option>
                 ))}
               </select>
               <select
@@ -312,15 +272,12 @@ export function TemporalCreateActivityRecurrenceFields({
                 value={recurrence.calendarOrdinalWeekday}
                 onChange={(event) =>
                   patchRecurrence({
-                    calendarOrdinalWeekday: event.currentTarget
-                      .value as TemporalCreateWeekday,
+                    calendarOrdinalWeekday: event.currentTarget.value as TemporalCreateWeekday,
                   })
                 }
               >
                 {temporalCreateWeekdays().map((weekday) => (
-                  <option key={weekday} value={weekday}>
-                    {weekdayLongLabel(weekday)}
-                  </option>
+                  <option key={weekday} value={weekday}>{weekdayLongLabel(weekday)}</option>
                 ))}
               </select>
               {renderError('eventRecurrence.calendarOrdinal')}
@@ -331,9 +288,7 @@ export function TemporalCreateActivityRecurrenceFields({
 
       {frequency === 'yearly' ? (
         <p className="temporal-create-activity-repeat__anchor-note">
-          {italian
-            ? `Si ripete il ${anchorDayMonth}.`
-            : `Repeats on ${anchorDayMonth}.`}
+          {italian ? `Si ripete il ${anchorDayMonth}.` : `Repeats on ${anchorDayMonth}.`}
         </p>
       ) : null}
 
@@ -350,45 +305,50 @@ export function TemporalCreateActivityRecurrenceFields({
             {endChoice('none', italian ? 'Mai' : 'Never')}
           </div>
 
-          <div className="temporal-create-activity-repeat__end-option">
+          <div
+            className={`temporal-create-activity-repeat__end-option${
+              recurrence.endMode === 'until-date' ? ' is-active' : ''
+            }`}
+            onPointerDown={() => setEndMode('until-date')}
+          >
             {endChoice('until-date', italian ? 'Data' : 'Date')}
-            {recurrence.endMode === 'until-date' ? (
-              <div className="temporal-create-activity-repeat__end-date">
-                <TemporalCreateDatePicker
-                  label={italian ? 'Data di fine ripetizione' : 'Repeat end date'}
-                  value={recurrence.untilDate || fields.date}
-                  min={fields.date}
-                  locale={locale}
-                  onChange={(untilDate) => patchRecurrence({ untilDate })}
-                />
-                {renderError('eventRecurrence.untilDate')}
-              </div>
-            ) : null}
+            <div className="temporal-create-activity-repeat__end-date">
+              <TemporalCreateDatePicker
+                label={italian ? 'Data di fine ripetizione' : 'Repeat end date'}
+                value={recurrence.untilDate || fields.date}
+                min={fields.date}
+                locale={locale}
+                onChange={(untilDate) => patchRecurrence({ untilDate, endMode: 'until-date' })}
+              />
+              {renderError('eventRecurrence.untilDate')}
+            </div>
           </div>
 
-          <div className="temporal-create-activity-repeat__end-option">
+          <div
+            className={`temporal-create-activity-repeat__end-option${
+              recurrence.endMode === 'count' ? ' is-active' : ''
+            }`}
+          >
             {endChoice('count', italian ? 'Dopo' : 'After')}
-            {recurrence.endMode === 'count' ? (
-              <label className="temporal-create-activity-repeat__count">
-                <input
-                  data-create-path="eventRecurrence.count"
-                  type="number"
-                  min="1"
-                  max="999"
-                  aria-label={
-                    italian ? 'Numero di occorrenze' : 'Number of occurrences'
-                  }
-                  value={recurrence.count}
-                  onChange={(event) =>
-                    patchRecurrence({
-                      count: Math.max(1, Number(event.currentTarget.value) || 1),
-                    })
-                  }
-                />
-                <span>{italian ? 'occorrenze' : 'occurrences'}</span>
-                {renderError('eventRecurrence.count')}
-              </label>
-            ) : null}
+            <label className="temporal-create-activity-repeat__count">
+              <input
+                data-create-path="eventRecurrence.count"
+                type="number"
+                min="1"
+                max="999"
+                aria-label={italian ? 'Numero di occorrenze' : 'Number of occurrences'}
+                value={recurrence.count}
+                onFocus={() => setEndMode('count')}
+                onChange={(event) =>
+                  patchRecurrence({
+                    endMode: 'count',
+                    count: Math.max(1, Number(event.currentTarget.value) || 1),
+                  })
+                }
+              />
+              <span>{italian ? 'occorrenze' : 'occurrences'}</span>
+              {renderError('eventRecurrence.count')}
+            </label>
           </div>
         </div>
       </div>
