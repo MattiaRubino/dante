@@ -72,12 +72,34 @@ Ripeti ogni [N] [giorno | settimana | mese | anno]
 weekly  -> Giorni [L M M G V S D]
 monthly -> giorno del mese | posizione nel mese
 
-Termina -> Mai | In una data | Dopo N volte
+Termina -> Mai | Data | Dopo [N] occorrenze
 ```
 
 The Activity date remains the calendar anchor for ordinary monthly/yearly repetition. Monthly positional repetition may use ordinal + weekday.
 
 The UI must not expose the engine label `calendar-wall-clock`.
+
+### Placement and expansion rule
+
+The detailed Activity repeat editor belongs **directly to the `Ripeti` control**.
+
+When Advanced Create is open and a calendar recurrence is active, the repeat detail block is rendered immediately below the `Ripeti` selector, before Life Area, Location, Reminder and the remaining Advanced sections. It must not be moved to the bottom of the form or separated from the selector by unrelated controls.
+
+This is both a visual and DOM-order rule: keyboard/focus order must follow the same information architecture shown on screen. No CSS-only visual reordering or detached fallback panel is accepted for this relationship.
+
+### End-of-series vocabulary and interaction
+
+The end policy is not a dropdown. Advanced has enough space to expose all three choices directly in DANTE styling:
+
+```text
+Mai
+Data
+Dopo [N] occorrenze
+```
+
+The choices use direct radio-style selection. `Data` reveals the DANTE date picker; `Dopo` reveals the numeric occurrence count.
+
+The user-facing term is **occorrenze**, not “numero di volte”. The persisted meaning remains the canonical recurrence count; this is a product-language decision, not a Domain rename.
 
 ## What is deliberately NOT exposed here
 
@@ -153,6 +175,8 @@ Activity Create already exposes the relevant Outcome verification and Reminder c
 ## Code/UI consequence
 
 Activity Advanced Create uses a focused Activity repeat surface for calendar recurrence.
+
+The focused repeat surface is injected into the core Create flow immediately after the shared `Ripeti` selector. It is no longer owned by the lower generic Advanced-fields block. This prevents Life Area / Location / Reminder from splitting the selector from its detailed recurrence configuration.
 
 The legacy generic recurrence surface is retained only for Event while Event authoring is reviewed separately. This is intentional compatibility, not an Activity fallback.
 
