@@ -80,41 +80,36 @@ export function TemporalCreateConfirmationToggle({ fields }: Props) {
       data-outcome-confirmation="activity"
       aria-label={italian ? 'Verifica esito' : 'Outcome review'}
     >
-      <label className="temporal-create-outcome-control__toggle">
+      <label
+        className="temporal-create-outcome-control__check"
+        title={italian ? 'Abilita verifica esito' : 'Enable outcome review'}
+      >
         <input
           type="checkbox"
           checked={enabled}
+          aria-label={italian ? 'Abilita verifica esito' : 'Enable outcome review'}
           onChange={(event) => {
             const nextEnabled = event.currentTarget.checked;
             applyMode(nextEnabled ? 'review_on_end' : 'manual');
             setOpen(false);
           }}
         />
-        <span>
-          {enabled
-            ? selectedLabel
-            : italian
-              ? 'Verifica esito'
-              : 'Review outcome'}
-        </span>
       </label>
 
-      {enabled ? (
-        <button
-          type="button"
-          className="temporal-create-outcome-control__menu-trigger"
-          aria-expanded={open}
-          aria-haspopup="menu"
-          aria-label={
-            italian
-              ? 'Cambia modalità verifica esito'
-              : 'Change outcome review mode'
-          }
-          onClick={() => setOpen((current) => !current)}
-        >
-          <span aria-hidden="true">{open ? '⌃' : '⌄'}</span>
-        </button>
-      ) : null}
+      <button
+        type="button"
+        className="temporal-create-outcome-control__mode"
+        disabled={!enabled}
+        aria-expanded={enabled ? open : false}
+        aria-haspopup="menu"
+        onClick={() => setOpen((current) => !current)}
+      >
+        {enabled
+          ? selectedLabel
+          : italian
+            ? 'Verifica esito'
+            : 'Review outcome'}
+      </button>
 
       {enabled && open ? (
         <div
@@ -126,8 +121,7 @@ export function TemporalCreateConfirmationToggle({ fields }: Props) {
         >
           <button
             type="button"
-            role="menuitemradio"
-            aria-checked="false"
+            role="menuitem"
             onClick={() => {
               applyMode(alternateMode);
               setOpen(false);
