@@ -82,12 +82,28 @@ export function TemporalCreateConfirmationToggle({ fields }: Props) {
     >
       <label
         className="temporal-create-outcome-control__check"
-        title={italian ? 'Abilita verifica esito' : 'Enable outcome review'}
+        title={
+          enabled
+            ? italian
+              ? 'Disabilita verifica esito'
+              : 'Disable outcome review'
+            : italian
+              ? 'Abilita verifica esito'
+              : 'Enable outcome review'
+        }
       >
         <input
           type="checkbox"
           checked={enabled}
-          aria-label={italian ? 'Abilita verifica esito' : 'Enable outcome review'}
+          aria-label={
+            enabled
+              ? italian
+                ? 'Disabilita verifica esito'
+                : 'Disable outcome review'
+              : italian
+                ? 'Abilita verifica esito'
+                : 'Enable outcome review'
+          }
           onChange={(event) => {
             const nextEnabled = event.currentTarget.checked;
             applyMode(nextEnabled ? 'review_on_end' : 'manual');
@@ -99,16 +115,32 @@ export function TemporalCreateConfirmationToggle({ fields }: Props) {
       <button
         type="button"
         className="temporal-create-outcome-control__mode"
-        disabled={!enabled}
-        aria-expanded={enabled ? open : false}
-        aria-haspopup="menu"
-        onClick={() => setOpen((current) => !current)}
+        aria-expanded={enabled ? open : undefined}
+        aria-haspopup={enabled ? 'menu' : undefined}
+        onClick={() => {
+          if (!enabled) {
+            applyMode('review_on_end');
+            setOpen(false);
+            return;
+          }
+          setOpen((current) => !current);
+        }}
       >
-        {enabled
-          ? selectedLabel
-          : italian
-            ? 'Verifica esito'
-            : 'Review outcome'}
+        <span className="temporal-create-outcome-control__label">
+          {enabled
+            ? selectedLabel
+            : italian
+              ? 'Verifica esito'
+              : 'Review outcome'}
+        </span>
+        {enabled ? (
+          <span
+            className="temporal-create-outcome-control__chevron"
+            aria-hidden="true"
+          >
+            {open ? '⌃' : '⌄'}
+          </span>
+        ) : null}
       </button>
 
       {enabled && open ? (
