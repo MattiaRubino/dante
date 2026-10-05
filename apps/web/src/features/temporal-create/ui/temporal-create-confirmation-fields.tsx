@@ -1,8 +1,11 @@
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { TemporalCreateFields } from '../model/temporal-create-session';
 import type { TemporalCreateRealityMode } from '../model/temporal-create-u2-authoring';
 import { useTemporalCreateU2Draft } from './temporal-create-u2-draft-context';
+
+import './temporal-create-outcome-dropdown.css';
 
 type Props = Readonly<{ fields: TemporalCreateFields }>;
 
@@ -10,74 +13,139 @@ export function TemporalCreateConfirmationToggle({ fields }: Props) {
   const { i18n } = useTranslation('common');
   const italian = i18n.language.toLowerCase().startsWith('it');
   const { draft, patch } = useTemporalCreateU2Draft();
-  if (fields.kind !== 'activity') return null;
-
+  const rootRef = useRef<HTMLElement | null>(null);
+  const [open, setOpen] = useState(false);
   const structure = draft.activityStructure;
   const enabled = structure.realityMode !== 'manual';
+
+  useEffect(() => {
+    if (!open) return;
+
+    const dismiss = (event: PointerEvent) => {
+      if (
+        event.target instanceof Node &&
+        !rootRef.current?.contains(event.target)
+      ) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', dismiss, true);
+    return () => document.removeEventListener('pointerdown', dismiss, true);
+  }, [open]);
+
+  if (fields.kind !== 'activity') return null;
+
+  const applyMode = (realityMode: TemporalCreateRealityMode) => {
+    const hasRequiredChild = structure.children.some(
+      (child) => child.requirementCode === 'required',
+    );
+
+    patch({
+      activityStructure: Object.freeze({
+        ...structure,
+        realityMode,
+        childGuardMode:
+          realityMode !== 'manual' && hasRequiredChild ? 'confirm' : 'none',
+      }),
+    });
+  };
+
+  const selectedMode = structure.realityMode;
+  const selectedLabel =
+    selectedMode === 'auto_confirm_outcome'
+      ? italian
+        ? 'Conferma automatica'
+        : 'Confirm automatically'
+      : italian
+        ? 'Chiedi al termine'
+        : 'Ask at the end';
+  const alternateMode: TemporalCreateRealityMode =
+    selectedMode === 'auto_confirm_outcome'
+      ? 'review_on_end'
+      : 'auto_confirm_outcome';
+  const alternateLabel =
+    alternateMode === 'auto_confirm_outcome'
+      ? italian
+        ? 'Conferma automatica alla fine'
+        : 'Confirm automatically at the end'
+      : italian
+        ? 'Chiedi al termine'
+        : 'Ask at the end';
+
   return (
-    <label className="temporal-create-outcome-toggle" data-outcome-confirmation="activity">
-      <input
-        type="checkbox"
-        checked={enabled}
-        onChange={(event) => {
-          const realityMode = event.currentTarget.checked ? 'review_on_end' : 'manual';
-          const hasRequiredChild = structure.children.some(
-            (child) => child.requirementCode === 'required',
-          );
-          patch({
-            activityStructure: Object.freeze({
-              ...structure,
-              realityMode,
-              childGuardMode: realityMode !== 'manual' && hasRequiredChild ? 'confirm' : 'none',
-            }),
-          });
-        }}
-      />
-      {italian ? 'Verifica esito' : 'Review outcome'}
-    </label>
+    <section
+      ref={rootRef}
+      className={`temporal-create-outcome-control${enabled ? ' is-enabled' : ''}`}
+      data-outcome-confirmation="activity"
+      aria-label={italian ? 'Verifica esito' : 'Outcome review'}
+    >
+      <label className="temporal-create-outcome-control__toggle">
+        <input
+          type="checkbox"
+          checked={enabled}
+          onChange={(event) => {
+            const nextEnabled = event.currentTarget.checked;
+            applyMode(nextEnabled ? 'review_on_end' : 'manual');
+            setOpen(false);
+          }}
+        />
+        <span>
+          {enabled
+            ? selectedLabel
+            : italian
+              ? 'Verifica esito'
+              : 'Review outcome'}
+        </span>
+      </label>
+
+      {enabled ? (
+        <button
+          type="button"
+          className="temporal-create-outcome-control__menu-trigger"
+          aria-expanded={open}
+          aria-haspopup="menu"
+          aria-label={
+            italian
+              ? 'Cambia modalità verifica esito'
+              : 'Change outcome review mode'
+          }
+          onClick={() => setOpen((current) => !current)}
+        >
+          <span aria-hidden="true">{open ? '⌃' : '⌄'}</span>
+        </button>
+      ) : null}
+
+      {enabled && open ? (
+        <div
+          className="temporal-create-outcome-control__menu"
+          role="menu"
+          aria-label={
+            italian ? 'Modalità verifica esito' : 'Outcome review mode'
+          }
+        >
+          <button
+            type="button"
+            role="menuitemradio"
+            aria-checked="false"
+            onClick={() => {
+              applyMode(alternateMode);
+              setOpen(false);
+            }}
+          >
+            {alternateLabel}
+          </button>
+        </div>
+      ) : null}
+    </section>
   );
 }
 
-export function TemporalCreateConfirmationFields({ fields }: Props) {
-  const { i18n } = useTranslation('common');
-  const italian = i18n.language.toLowerCase().startsWith('it');
-  const { draft, patch } = useTemporalCreateU2Draft();
-  if (fields.kind !== 'activity' || draft.activityStructure.realityMode === 'manual') {
-    return null;
-  }
-
-  const structure = draft.activityStructure;
-  const options: readonly [TemporalCreateRealityMode, string][] = italian
-    ? [
-        ['review_on_end', 'Chiedi conferma alla fine'],
-        ['auto_confirm_outcome', 'Conferma automaticamente'],
-      ]
-    : [
-        ['review_on_end', 'Ask for confirmation at the end'],
-        ['auto_confirm_outcome', 'Confirm automatically'],
-      ];
-
-  return (
-    <fieldset
-      className="temporal-create-outcome-field"
-      aria-label={italian ? 'Modalità verifica esito' : 'Outcome review mode'}
-    >
-      <legend className="temporal-create-visually-hidden">
-        {italian ? 'Modalità verifica esito' : 'Outcome review mode'}
-      </legend>
-      {options.map(([realityMode, label]) => (
-        <label key={realityMode} className="temporal-create-outcome-field__option">
-          <input
-            type="radio"
-            name="temporal-create-outcome-mode"
-            checked={structure.realityMode === realityMode}
-            onChange={() => patch({
-              activityStructure: Object.freeze({ ...structure, realityMode }),
-            })}
-          />
-          {label}
-        </label>
-      ))}
-    </fieldset>
-  );
+/**
+ * The outcome mode used to expand as a full-width row below the title.
+ * Advanced Create now owns that choice from the compact header control, so
+ * this historical body slot deliberately renders nothing.
+ */
+export function TemporalCreateConfirmationFields({ fields: _fields }: Props) {
+  return null;
 }
