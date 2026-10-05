@@ -1,0 +1,125 @@
+/* Activity interval presentation belongs to the canonical interval authoring
+   surface. Keep the primary interval visually quiet until an additional
+   interval exists; once split, number every interval consistently. */
+
+.temporal-create-composer.is-advanced
+  .temporal-create-u2-when:has(
+    > .temporal-create-activity-intervals .temporal-create-activity-interval
+  )
+  > .temporal-create-date-picker,
+.temporal-create-composer.is-advanced
+  .temporal-create-u2-when:has(
+    > .temporal-create-activity-intervals .temporal-create-activity-interval
+  )
+  > .temporal-create-time-control,
+.temporal-create-composer.is-advanced
+  .temporal-create-u2-when:has(
+    > .temporal-create-activity-intervals .temporal-create-activity-interval
+  )
+  > .temporal-create-time-band-control {
+  margin-top: 20px;
+}
+
+.temporal-create-composer.is-advanced
+  .temporal-create-u2-when:has(
+    > .temporal-create-activity-intervals .temporal-create-activity-interval
+  )
+  > .temporal-create-date-picker:has(+ .temporal-create-time-control)::before {
+  position: absolute;
+  top: -18px;
+  left: 2px;
+  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
+  content: 'Intervallo 1';
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.045em;
+  line-height: 14px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+html[lang^='en']
+  .temporal-create-composer.is-advanced
+  .temporal-create-u2-when:has(
+    > .temporal-create-activity-intervals .temporal-create-activity-interval
+  )
+  > .temporal-create-date-picker:has(+ .temporal-create-time-control)::before {
+  content: 'Interval 1';
+}
+
+.temporal-create-composer.is-advanced .temporal-create-activity-intervals {
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.temporal-create-composer.is-advanced
+  .temporal-create-activity-interval__label {
+  margin-left: 2px;
+  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.045em;
+  line-height: 14px;
+  text-transform: uppercase;
+}
+
+/* Match the compact + Sessione action instead of presenting interval authoring
+   as a primary form control. */
+.temporal-create-composer.is-advanced
+  .temporal-create-activity-intervals
+  > .temporal-create-activity-intervals__add {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  justify-self: start;
+  gap: 6px;
+  margin: 1px 0 0 28px;
+  padding: 0 10px;
+  border: 1px dashed color-mix(in srgb, currentColor 23%, transparent) !important;
+  border-radius: 8px;
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  background: transparent !important;
+  font-size: 0 !important;
+  font-weight: 650;
+  line-height: 1;
+}
+
+.temporal-create-composer.is-advanced
+  .temporal-create-activity-intervals
+  > .temporal-create-activity-intervals__add
+  > span {
+  display: none;
+}
+
+.temporal-create-composer.is-advanced
+  .temporal-create-activity-intervals
+  > .temporal-create-activity-intervals__add::before {
+  content: '＋';
+  font-size: 11px;
+}
+
+.temporal-create-composer.is-advanced
+  .temporal-create-activity-intervals
+  > .temporal-create-activity-intervals__add::after {
+  content: 'Intervallo';
+  font-size: 11px;
+}
+
+html[lang^='en']
+  .temporal-create-composer.is-advanced
+  .temporal-create-activity-intervals
+  > .temporal-create-activity-intervals__add::after {
+  content: 'Interval';
+}
+
+.temporal-create-composer.is-advanced
+  .temporal-create-activity-intervals
+  > .temporal-create-activity-intervals__add:hover,
+.temporal-create-composer.is-advanced
+  .temporal-create-activity-intervals
+  > .temporal-create-activity-intervals__add:focus-visible {
+  border-color: color-mix(in srgb, #ea5c12 55%, transparent) !important;
+  color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
+  background: color-mix(in srgb, #ea5c12 5%, transparent) !important;
+  outline: none;
+}
