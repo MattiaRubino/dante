@@ -6,7 +6,6 @@ import type {
   TemporalCreateSurface,
 } from '../model/temporal-create-session';
 import { TemporalCreateActivityFields } from './temporal-create-activity-fields';
-import { TemporalCreateActivityRecurrenceFields } from './temporal-create-activity-recurrence-fields';
 import { TemporalCreateCoreFieldsU2 } from './temporal-create-core-u2';
 import { TemporalCreateEventFields } from './temporal-create-event-fields';
 import { TemporalCreateRecurrenceFields } from './temporal-create-recurrence-fields';
@@ -37,10 +36,6 @@ export function TemporalCreateAdvancedFields({
     return null;
   }
 
-  const activityRecurrenceVisible =
-    fields.kind === 'activity' &&
-    fields.eventRecurrence.patternKind === 'calendar-wall-clock';
-
   return (
     <div
       className="temporal-create-advanced"
@@ -61,14 +56,6 @@ export function TemporalCreateAdvancedFields({
           renderError={renderError}
         />
       )}
-
-      {activityRecurrenceVisible ? (
-        <TemporalCreateActivityRecurrenceFields
-          fields={fields}
-          onPatch={onPatch}
-          renderError={renderError}
-        />
-      ) : null}
 
       {fields.kind === 'event' ? (
         <TemporalCreateRecurrenceFields
