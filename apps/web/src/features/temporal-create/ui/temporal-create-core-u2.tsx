@@ -581,6 +581,14 @@ export function TemporalCreateCoreFieldsU2({
   };
 
   const changeTimeSemantics = (semantics: TemporalCreateTimeSemantics) => {
+    if (
+      semantics === 'all-day' &&
+      fields.kind === 'activity' &&
+      authoringDraft.activityStructure.activityIntervals.length > 0
+    ) {
+      patchActivityIntervals([]);
+    }
+
     onPatch({
       timeSemantics: semantics,
       scheduling:
@@ -859,16 +867,6 @@ export function TemporalCreateCoreFieldsU2({
             role="radio"
             aria-checked={fields.timeSemantics === 'all-day'}
             className={fields.timeSemantics === 'all-day' ? 'is-active' : ''}
-            disabled={
-              fields.kind === 'activity' &&
-              authoringDraft.activityStructure.activityIntervals.length > 0
-            }
-            title={
-              fields.kind === 'activity' &&
-              authoringDraft.activityStructure.activityIntervals.length > 0
-                ? 'Rimuovi prima gli intervalli aggiuntivi'
-                : undefined
-            }
             onClick={() => changeTimeSemantics('all-day')}
           >
             Tutto il giorno
