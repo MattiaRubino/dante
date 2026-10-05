@@ -67,8 +67,8 @@ export function TemporalCreateConfirmationToggle({ fields }: Props) {
   const alternateLabel =
     alternateMode === 'auto_confirm_outcome'
       ? italian
-        ? 'Conferma automatica alla fine'
-        : 'Confirm automatically at the end'
+        ? 'Conferma automatica'
+        : 'Confirm automatically'
       : italian
         ? 'Chiedi al termine'
         : 'Ask at the end';
