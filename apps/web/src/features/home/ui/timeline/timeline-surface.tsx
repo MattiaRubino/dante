@@ -433,21 +433,30 @@ export function TimelineSurface({
           });
         })
         .catch((error: unknown) => {
+          const intervalConflict =
+            error instanceof TemporalScheduleRemoteError &&
+            error.code ===
+              'temporal.schedule.activity_interval_requires_replan';
           const conflict =
             error instanceof TemporalScheduleRemoteError &&
             error.status === 409 &&
             error.code === 'temporal.schedule.revision_conflict';
           showScheduleNotice({
             kind: 'error',
-            message: conflict
-              ? t(
-                  ($) =>
-                    $.common.home.timeline.feedback.scheduleRevisionConflict,
-                )
-              : t(
-                  ($) =>
-                    $.common.home.timeline.feedback.scheduleRevisionUnavailable,
-                ),
+            message: intervalConflict
+              ? i18n.language.startsWith('it')
+                ? 'Per spostare questa fascia serve modificare insieme gli intervalli dell’attività.'
+                : 'Moving this interval requires a coordinated Activity replan.'
+              : conflict
+                ? t(
+                    ($) =>
+                      $.common.home.timeline.feedback.scheduleRevisionConflict,
+                  )
+                : t(
+                    ($) =>
+                      $.common.home.timeline.feedback
+                        .scheduleRevisionUnavailable,
+                  ),
           });
         })
         .finally(() => {
@@ -457,7 +466,14 @@ export function TimelineSurface({
           );
         });
     },
-    [effectiveZoneId, reviseSchedule, showCanonicalUndo, showScheduleNotice, t],
+    [
+      effectiveZoneId,
+      i18n,
+      reviseSchedule,
+      showCanonicalUndo,
+      showScheduleNotice,
+      t,
+    ],
   );
 
   const unscheduleCanonicalBasis = useCallback(
@@ -490,22 +506,31 @@ export function TimelineSurface({
           });
         })
         .catch((error: unknown) => {
+          const intervalConflict =
+            error instanceof TemporalScheduleRemoteError &&
+            error.code ===
+              'temporal.schedule.activity_interval_requires_replan';
           const conflict =
             error instanceof TemporalScheduleRemoteError &&
             error.status === 409 &&
             error.code === 'temporal.schedule.unschedule_conflict';
           showScheduleNotice({
             kind: 'error',
-            message: conflict
-              ? t(
-                  ($) =>
-                    $.common.home.timeline.feedback.scheduleUnscheduleConflict,
-                )
-              : t(
-                  ($) =>
-                    $.common.home.timeline.feedback
-                      .scheduleUnscheduleUnavailable,
-                ),
+            message: intervalConflict
+              ? i18n.language.startsWith('it')
+                ? 'Per rimuovere questa fascia serve modificare insieme gli intervalli dell’attività.'
+                : 'Removing this interval requires a coordinated Activity replan.'
+              : conflict
+                ? t(
+                    ($) =>
+                      $.common.home.timeline.feedback
+                        .scheduleUnscheduleConflict,
+                  )
+                : t(
+                    ($) =>
+                      $.common.home.timeline.feedback
+                        .scheduleUnscheduleUnavailable,
+                  ),
           });
         })
         .finally(() => {
@@ -515,7 +540,7 @@ export function TimelineSurface({
           );
         });
     },
-    [showCanonicalUndo, showScheduleNotice, t, unscheduleSchedule],
+    [i18n, showCanonicalUndo, showScheduleNotice, t, unscheduleSchedule],
   );
 
   const undoCanonicalSchedule = useCallback(() => {
@@ -1399,7 +1424,10 @@ export function TimelineSurface({
         })()}
         reminderScheduleRef={(() => {
           const basis = detailState?.event.canonicalBasis;
-          if (basis?.placement.kind === 'absolute' || basis?.placement.kind === 'named-zone-local') {
+          if (
+            basis?.placement.kind === 'absolute' ||
+            basis?.placement.kind === 'named-zone-local'
+          ) {
             return basis.scheduleRef;
           }
           return null;

@@ -48,7 +48,6 @@ from dante.modules.temporal.contracts import (
 )
 from dante.modules.temporal.occurrence import (
     CalendarCoordinate,
-    CyclicCoordinate,
     ElapsedCoordinate,
     OccurrenceCoordinate,
     QuotaCoordinate,
@@ -61,6 +60,7 @@ from dante.modules.temporal.schedule import (
     NamedZoneLocalIntervalPlacement,
     RestoredScheduleView,
     RevisedScheduleView,
+    ScheduleActivityIntervalConflictError,
     ScheduleInputError,
     ScheduleNotFoundError,
     ScheduleOperationIdReuseError,
@@ -1530,6 +1530,15 @@ async def revise_schedule_placement(
             detail="The operation id was already used for a different Schedule revision.",
             retryable=False,
         ) from exc
+    except ScheduleActivityIntervalConflictError as exc:
+        raise ProblemError(
+            status=409,
+            code="temporal.schedule.activity_interval_requires_replan",
+            category="conflict",
+            title="Activity interval replan required",
+            detail="Move Activity intervals together through a coordinated Activity replan.",
+            retryable=False,
+        ) from exc
     except ScheduleRevisionConflictError as exc:
         raise ProblemError(
             status=409,
@@ -1597,6 +1606,15 @@ async def unschedule_schedule(
             category="conflict",
             title="Schedule operation conflict",
             detail="The operation id was already used for a different unschedule intent.",
+            retryable=False,
+        ) from exc
+    except ScheduleActivityIntervalConflictError as exc:
+        raise ProblemError(
+            status=409,
+            code="temporal.schedule.activity_interval_requires_replan",
+            category="conflict",
+            title="Activity interval replan required",
+            detail="Move Activity intervals together through a coordinated Activity replan.",
             retryable=False,
         ) from exc
     except ScheduleUnscheduleConflictError as exc:

@@ -44,6 +44,12 @@ class ScheduleUnscheduleConflictError(RuntimeError):
     """The expected placement is no longer current for unschedule."""
 
 
+class ScheduleActivityIntervalConflictError(
+    ScheduleRevisionConflictError, ScheduleUnscheduleConflictError
+):
+    """An Activity interval and its envelope need one coordinated replan."""
+
+
 class ScheduleUndoConflictError(RuntimeError):
     """The exact Schedule effect targeted by Undo is no longer current."""
 
@@ -495,6 +501,38 @@ async def establish_floating_schedule_in_session(
     )
 
 
+async def _requires_coordinated_activity_interval_change(
+    database_session: AsyncSession,
+    *,
+    self_person_ref: NativeRef,
+    schedule_ref: ScopedRecordRef,
+) -> bool:
+    """Keep an Activity's interval set and envelope coherent on direct edits."""
+    return bool(
+        (
+            await database_session.execute(
+                text("""
+                    SELECT purpose.role_code = 'interval' OR
+                           (purpose.role_code = 'envelope' AND EXISTS (
+                               SELECT 1 FROM dante.get_self_activity_schedule_roles(
+                                   :actor, ARRAY[activity.activity_ref]
+                               ) AS sibling WHERE sibling.role_code = 'interval'
+                           ))
+                      FROM dante.schedule AS schedule
+                      JOIN dante.activity_intention AS activity
+                        ON activity.activity_ref = schedule.subject_native_ref
+                       AND activity.self_person_ref = :actor
+                      JOIN LATERAL dante.get_self_activity_schedule_roles(
+                          :actor, ARRAY[activity.activity_ref]
+                      ) AS purpose ON purpose.schedule_ref = schedule.schedule_ref
+                     WHERE schedule.schedule_ref = :schedule
+                """),
+                {"actor": self_person_ref, "schedule": schedule_ref},
+            )
+        ).scalar_one_or_none()
+    )
+
+
 async def revise_schedule_in_session(
     database_session: AsyncSession,
     *,
@@ -505,6 +543,12 @@ async def revise_schedule_in_session(
     placement: SchedulePlacement,
 ) -> RevisedScheduleView:
     """Create one new typed placement MaterialState in the caller transaction."""
+    if await _requires_coordinated_activity_interval_change(
+        database_session, self_person_ref=self_person_ref, schedule_ref=schedule_ref
+    ):
+        raise ScheduleActivityIntervalConflictError(
+            "An Activity interval requires a coordinated Activity replan."
+        )
     normalized_operation_id = _normalize_operation_id(operation_id)
     material_state_ref = new_material_state_ref()
     payload = _placement_payload(placement)
@@ -586,6 +630,12 @@ async def unschedule_schedule_in_session(
     expected_material_state_ref: MaterialStateRef,
 ) -> UnscheduledScheduleView:
     """Withdraw one exact current placement inside the caller transaction."""
+    if await _requires_coordinated_activity_interval_change(
+        database_session, self_person_ref=self_person_ref, schedule_ref=schedule_ref
+    ):
+        raise ScheduleActivityIntervalConflictError(
+            "An Activity interval requires a coordinated Activity replan."
+        )
     normalized_operation_id = _normalize_operation_id(operation_id)
     row = (
         (
