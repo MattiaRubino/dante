@@ -549,9 +549,6 @@ class TemporalTimelineApplication:
                 SELECT DISTINCT ON (schedule.subject_native_ref)
                        occurrence.*
                   FROM dante.schedule AS schedule
-                  LEFT JOIN LATERAL dante.get_self_schedule_placement_lock(
-                   :self_person_ref,schedule.schedule_ref
-               ) AS user_lock ON subject.owner_kind='activity'
                JOIN dante.schedule_current_placement AS current
                     ON current.scoped_owner_ref=schedule.schedule_ref
                   CROSS JOIN LATERAL dante.get_self_occurrence(
@@ -628,6 +625,10 @@ class TemporalTimelineApplication:
               FROM self_subject AS subject
               JOIN dante.schedule AS schedule
                 ON schedule.subject_native_ref=subject.subject_native_ref
+              LEFT JOIN LATERAL dante.get_self_schedule_placement_lock(
+                  :self_person_ref, schedule.schedule_ref
+              ) AS user_lock
+                ON subject.owner_kind='activity'
               LEFT JOIN LATERAL dante.get_self_activity_schedule_roles(
                   :self_person_ref, ARRAY[subject.subject_native_ref]
               ) AS activity_role
