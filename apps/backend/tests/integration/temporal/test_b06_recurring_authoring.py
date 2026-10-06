@@ -8,6 +8,7 @@ from typing import Any
 import pytest
 from tests.integration.temporal.test_b05_primary_life_area_assignment import _seed_self
 
+from dante.modules.temporal.authoring import AuthoringLifeAreaIntent
 from dante.modules.temporal.event import TemporalEventApplication
 from dante.modules.temporal.life_area import LifeAreaApplication
 from dante.modules.temporal.recurrence import (
@@ -73,7 +74,7 @@ async def test_recurring_routine_authoring_is_atomic_replayable_and_self_scoped(
             self_person_ref=alice,
             operation_id="b06-d:authoring:routine",
             title="Allenamento",
-            life_area_ref=area.life_area_ref,
+            life_area_intent=AuthoringLifeAreaIntent(life_area_ref=area.life_area_ref),
             recurrence=requested,
         )
         assert created.owner_kind == "routine"
@@ -95,7 +96,7 @@ async def test_recurring_routine_authoring_is_atomic_replayable_and_self_scoped(
             self_person_ref=alice,
             operation_id="b06-d:authoring:routine",
             title="Allenamento",
-            life_area_ref=area.life_area_ref,
+            life_area_intent=AuthoringLifeAreaIntent(life_area_ref=area.life_area_ref),
             recurrence=requested,
         )
         assert replay.replayed
@@ -107,7 +108,9 @@ async def test_recurring_routine_authoring_is_atomic_replayable_and_self_scoped(
                 self_person_ref=alice,
                 operation_id="b06-d:authoring:routine",
                 title="Allenamento",
-                life_area_ref=area.life_area_ref,
+                life_area_intent=AuthoringLifeAreaIntent(
+                    life_area_ref=area.life_area_ref
+                ),
                 recurrence=_weekly(2, 4),
             )
 
@@ -117,6 +120,60 @@ async def test_recurring_routine_authoring_is_atomic_replayable_and_self_scoped(
                 self_person_ref=bob,
                 owner_ref=created.source_ref,
             )
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_recurring_routine_authoring_creates_new_life_area_with_appearance_atomically(
+    migrated_database: Any,
+) -> None:
+    alice = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    areas = LifeAreaApplication(runtime.session_factory)
+    authoring = RecurringAuthoringApplication(runtime.session_factory)
+    routines = RoutineApplication(runtime.session_factory)
+    try:
+        created = await authoring.create_routine(
+            self_person_ref=alice,
+            operation_id="b06-d:authoring:routine:new-area",
+            title="Allenamento",
+            life_area_intent=AuthoringLifeAreaIntent(
+                new_name="Corpo",
+                color_code="#4285F4",
+            ),
+            recurrence=_weekly(1, 3, 5),
+        )
+        routine = next(
+            item
+            for item in await routines.list(self_person_ref=alice)
+            if item.routine_ref == created.source_ref
+        )
+        assert routine.life_area_ref is not None
+
+        area = next(
+            item
+            for item in await areas.list(self_person_ref=alice)
+            if item.life_area_ref == routine.life_area_ref
+        )
+        assert area.name == "Corpo"
+        assert area.color_code == "#4285F4"
+
+        replay = await authoring.create_routine(
+            self_person_ref=alice,
+            operation_id="b06-d:authoring:routine:new-area",
+            title="Allenamento",
+            life_area_intent=AuthoringLifeAreaIntent(
+                new_name="Corpo",
+                color_code="#4285F4",
+            ),
+            recurrence=_weekly(1, 3, 5),
+        )
+        assert replay.replayed
+        assert replay.source_ref == created.source_ref
+        assert len(
+            [item for item in await areas.list(self_person_ref=alice) if item.name == "Corpo"]
+        ) == 1
     finally:
         await runtime.dispose()
 
