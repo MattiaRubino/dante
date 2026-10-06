@@ -143,8 +143,11 @@ describe('Temporal Create U2 entry', () => {
     if (!settings) throw new Error('Expected Activity settings.');
     fireEvent.click(within(settings as HTMLElement).getByLabelText('Sessione'));
 
+    const sessionActions = screen.getByLabelText(
+      'Aggiungi Sessione pianificata',
+    );
     fireEvent.click(
-      screen.getByRole('button', { name: 'Aggiungi Sessione pianificata' }),
+      within(sessionActions).getByRole('button', { name: 'Sessione' }),
     );
     const planned = document.querySelector('[data-create-planned-session]');
     if (!planned) throw new Error('Expected planned Session.');
