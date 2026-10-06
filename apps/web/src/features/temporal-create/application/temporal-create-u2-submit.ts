@@ -68,8 +68,9 @@ export function buildTemporalCreateObjectiveTemplates(
       }
 
       if (objective.resultKind === 'quantity') {
-        const target = Number(objective.targetValue);
-        if (!Number.isFinite(target)) {
+        const targetText = objective.targetValue.trim();
+        const target = Number(targetText);
+        if (!targetText || !Number.isFinite(target)) {
           throw new Error(`Obiettivo ${index + 1}: inserisci un target numerico valido.`);
         }
         const comparator = objective.comparatorCode;
@@ -88,9 +89,17 @@ export function buildTemporalCreateObjectiveTemplates(
         });
       }
 
-      const minimum = Number(objective.targetMin);
-      const maximum = Number(objective.targetMax);
-      if (!Number.isFinite(minimum) || !Number.isFinite(maximum) || minimum > maximum) {
+      const minimumText = objective.targetMin.trim();
+      const maximumText = objective.targetMax.trim();
+      const minimum = Number(minimumText);
+      const maximum = Number(maximumText);
+      if (
+        !minimumText ||
+        !maximumText ||
+        !Number.isFinite(minimum) ||
+        !Number.isFinite(maximum) ||
+        minimum > maximum
+      ) {
         throw new Error(
           `Obiettivo ${index + 1}: inserisci un intervallo numerico valido.`,
         );
