@@ -21,6 +21,7 @@ import {
   TemporalCreateAdvancedActivityStructure,
 } from './temporal-create-advanced-activity-structure';
 import { TemporalCreateEventAgenda } from './temporal-create-event-agenda';
+import { TemporalCreateEventParticipants } from './temporal-create-event-participants';
 import { TemporalCreateCalendarRecurrenceFields } from './temporal-create-calendar-recurrence-fields';
 import { TemporalCreateConfirmationToggle } from './temporal-create-confirmation-fields';
 import {
@@ -463,17 +464,20 @@ export function TemporalCreateComposer({
                 <TemporalCreateAdvancedActivityStructure fields={fields} />
               ) : null}
               {advanced && fields.kind === 'event' ? (
-                <TemporalCreateEventAgenda
-                  parts={fields.event.agendaParts}
-                  onChange={(agendaParts) =>
-                    onPatch({
-                      event: Object.freeze({
-                        ...fields.event,
-                        agendaParts,
-                      }),
-                    })
-                  }
-                />
+                <>
+                  <TemporalCreateEventAgenda
+                    parts={fields.event.agendaParts}
+                    onChange={(agendaParts) =>
+                      onPatch({
+                        event: Object.freeze({
+                          ...fields.event,
+                          agendaParts,
+                        }),
+                      })
+                    }
+                  />
+                  <TemporalCreateEventParticipants />
+                </>
               ) : null}
               <TemporalCreateCoreFields
                 fields={fields}
