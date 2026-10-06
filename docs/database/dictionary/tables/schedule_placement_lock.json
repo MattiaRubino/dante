@@ -166,7 +166,7 @@
     "unique_constraints": [],
     "check_constraints": [
       {
-        "name": "ck_schedule_placement_lock_revision",
+        "name": "ck_schedule_placement_lock_ck_schedule_placement_lock_revision",
         "expression_contract": "revision >= 1",
         "reason": "Enforce the ck_schedule_placement_lock_revision invariant.",
         "enforced": true,
