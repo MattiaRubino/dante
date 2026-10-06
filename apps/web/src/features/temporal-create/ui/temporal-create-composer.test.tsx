@@ -195,7 +195,8 @@ describe('TemporalCreateComposer', () => {
       '[data-temporal-create="composer"]',
     );
 
-    expect(backdrop?.classList.contains('is-modal')).toBe(true);
+    expect(backdrop?.classList.contains('is-advanced')).toBe(true);
+    expect(backdrop?.classList.contains('is-modal')).toBe(false);
     expect(composer?.getAttribute('aria-modal')).toBe('true');
     expect(document.documentElement.style.overflow).toBe('hidden');
     expect(document.body.style.overflow).toBe('hidden');
