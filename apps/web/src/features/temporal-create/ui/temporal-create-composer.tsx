@@ -114,6 +114,7 @@ export function TemporalCreateComposer({
   const discardTitleId = useId();
   const discardDescriptionId = useId();
   const dialogRef = useRef<HTMLDivElement | null>(null);
+  const scrollBodyRef = useRef<HTMLFormElement | null>(null);
   const discardRef = useRef<HTMLDivElement | null>(null);
   const titleRef = useRef<HTMLInputElement | null>(null);
   const continueRef = useRef<HTMLButtonElement | null>(null);
@@ -158,6 +159,37 @@ export function TemporalCreateComposer({
       delete root.dataset.temporalCreateScrollLock;
     };
   }, [advanced]);
+
+  useEffect(() => {
+    if (!advanced || discardPending) return;
+
+    const redirectWheel = (event: WheelEvent) => {
+      const scrollBody = scrollBodyRef.current;
+      if (
+        !scrollBody ||
+        event.ctrlKey ||
+        event.deltaY === 0 ||
+        (event.target instanceof Node && scrollBody.contains(event.target))
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      const unit =
+        event.deltaMode === WheelEvent.DOM_DELTA_LINE
+          ? 16
+          : event.deltaMode === WheelEvent.DOM_DELTA_PAGE
+            ? scrollBody.clientHeight
+            : 1;
+      scrollBody.scrollTop += event.deltaY * unit;
+    };
+
+    document.addEventListener('wheel', redirectWheel, {
+      capture: true,
+      passive: false,
+    });
+    return () => document.removeEventListener('wheel', redirectWheel, true);
+  }, [advanced, discardPending]);
 
   useEffect(() => {
     if (!advanced || advancedTargetRef.current !== 'recurrence') return;
@@ -430,6 +462,7 @@ export function TemporalCreateComposer({
           </div>
         ) : (
           <form
+            ref={scrollBodyRef}
             className="temporal-create-composer__body"
             inert={discardPending || undefined}
             onSubmit={submitForm}
