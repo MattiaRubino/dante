@@ -227,7 +227,7 @@ The remaining Create work is intentionally compressed into three coherent batche
 ## 2026-10-06 — Today verification rail candidate
 
 - The Today row extends downward by 48 px; Timeline, Context Rail and Quick Create share the same bottom boundary.
-- The derived Resolution Queue at forward revision `20261006_116` reads explicit shared Reality review policy (while respecting legacy Activity policy only when no shared policy exists) and unassessed Objectives. Activity work requires a completed bounded Session; timed Event/Occurrence work requires an ended current placement. A missing Actual is never inferred as a failure.
+- The derived Resolution Queue at forward revisions `20261006_116`–`20261006_117` reads explicit shared Reality review policy (while respecting legacy Activity policy only when no shared policy exists) and unassessed Objectives. Activity work requires a completed bounded Session; Event/Occurrence work requires an ended current placement resolved in the effective IANA zone. A missing Actual is never inferred as a failure.
 - The lower Context Rail lists pending Reality, Objective and B10 Reconciliation cards. Reality actions record the exact Session timing basis when provided; Objective controls use the canonical Observation/Evaluation endpoint and refresh the queue after mutation.
-- Date-only Event placements have no accepted instant end for this queue yet. Historical review and post-creation editing remain separate product work; no completed-state register is presented by this candidate.
+- Date-only Event placements use the exclusive local end date in the effective zone. Historical review and post-creation editing remain separate product work; no completed-state register is presented by this candidate.
 - Candidate is unproven until the user-run local migration, focused backend/web and real-app checks pass. No CI or GitHub Actions are requested.
