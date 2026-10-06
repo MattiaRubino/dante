@@ -4,8 +4,6 @@ import './home-skin.css';
 import './home-u1-layout.css';
 import './central-stage/central-stage-m1-geometry.css';
 
-import { TimelineTruthInspector } from '../../temporal/timeline-truth-inspector';
-import { PlanWorkPanel } from '../../temporal/plan-work-panel';
 import { TemporalTimelineRuntimeBoundary } from '../../temporal/timeline-runtime-boundary';
 import type { HomeWorldOpenIntent } from '../model/home-world-focus';
 import { HomeCreateInteractionBridge } from './home-create-interaction-bridge';
@@ -23,8 +21,6 @@ export function HomePage(props: HomePageProps) {
     <TemporalTimelineRuntimeBoundary viewedDateIso={props.viewedDateIso}>
       <HomeCreateInteractionBridge />
       <HomeShell {...props} />
-      <TimelineTruthInspector />
-      <PlanWorkPanel />
     </TemporalTimelineRuntimeBoundary>
   );
 }
