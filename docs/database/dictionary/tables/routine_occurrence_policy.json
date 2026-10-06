@@ -1,0 +1,281 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "table:dante.routine_occurrence_policy",
+    "type": "table",
+    "schema": "dante",
+    "name": "routine_occurrence_policy",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Canonical B14 Create-closure persistence for routine_occurrence_policy.",
+  "classification": {
+    "persistence_role": "routine_occurrence_policy",
+    "canonicality": "canonical",
+    "family": "B14CreateClosure"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/workstreams/timeline-temporal-operational-create-closure-mini-roadmap-2026-10-06.md",
+      "docs/database/timeline-temporal-operational.md"
+    ],
+    "domain_concepts": [
+      "Routine",
+      "Occurrence",
+      "Activity"
+    ],
+    "logical_families": [
+      "Routine occurrence policy",
+      "Recurring Activity template"
+    ],
+    "reference_families": [
+      "NativeRef"
+    ],
+    "material_facets": []
+  },
+  "implementation": {
+    "introducing_stage": "B14-CREATE-CLOSURE",
+    "alembic_revision": "20261005_107",
+    "sqlalchemy": {
+      "mode": "orm_row",
+      "module": "dante.platform.database.mappings.b14_create_closure",
+      "symbol": "RoutineOccurrencePolicyRow"
+    },
+    "runtime_acl_stage": "B14-CREATE-CLOSURE"
+  },
+  "structure": {
+    "columns": [
+      {
+        "name": "self_person_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Canonical self_person_ref field for the B14 Create-closure capability.",
+        "semantic_type": "NativeRef",
+        "value_contract": "Validated by the self_person_ref PostgreSQL contract."
+      },
+      {
+        "name": "routine_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Canonical routine_ref field for the B14 Create-closure capability.",
+        "semantic_type": "NativeRef",
+        "value_contract": "Validated by the routine_ref PostgreSQL contract."
+      },
+      {
+        "name": "duration_minutes",
+        "postgres_type": "integer",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Canonical duration_minutes field for the B14 Create-closure capability.",
+        "semantic_type": null,
+        "value_contract": "Validated by the duration_minutes PostgreSQL contract."
+      },
+      {
+        "name": "reminder_lead_minutes",
+        "postgres_type": "integer",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Canonical reminder_lead_minutes field for the B14 Create-closure capability.",
+        "semantic_type": null,
+        "value_contract": "Validated by the reminder_lead_minutes PostgreSQL contract."
+      },
+      {
+        "name": "created_at",
+        "postgres_type": "timestamp with time zone",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Canonical created_at field for the B14 Create-closure capability.",
+        "semantic_type": null,
+        "value_contract": "Validated by the created_at PostgreSQL contract."
+      },
+      {
+        "name": "activity_template",
+        "postgres_type": "jsonb",
+        "nullable": false,
+        "default": {
+          "kind": "server",
+          "expression": "'{}'::jsonb"
+        },
+        "meaning": "Canonical activity_template field for the B14 Create-closure capability.",
+        "semantic_type": null,
+        "value_contract": "Validated by the activity_template PostgreSQL contract."
+      }
+    ],
+    "primary_key": {
+      "name": "pk_routine_occurrence_policy",
+      "columns": [
+        "self_person_ref",
+        "routine_ref"
+      ],
+      "reason": "One occurrence policy per self-owned Routine.",
+      "deferrable": false,
+      "initially": "NOT DEFERRABLE",
+      "enforced": true
+    },
+    "foreign_keys": [
+      {
+        "name": "fk_routine_occurrence_policy_person",
+        "columns": [
+          "self_person_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "person",
+          "columns": [
+            "person_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "NativeRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Keep self_person_ref bound to canonical dante.person."
+      },
+      {
+        "name": "fk_routine_occurrence_policy_routine",
+        "columns": [
+          "routine_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "routine",
+          "columns": [
+            "routine_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "NativeRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Keep routine_ref bound to canonical dante.routine."
+      }
+    ],
+    "unique_constraints": [],
+    "check_constraints": [
+      {
+        "name": "ck_routine_occurrence_policy_duration",
+        "expression_contract": "duration_minutes BETWEEN 1 AND 525600",
+        "reason": "Enforce the ck_routine_occurrence_policy_duration invariant.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_routine_occurrence_policy_reminder",
+        "expression_contract": "reminder_lead_minutes IS NULL OR reminder_lead_minutes BETWEEN 0 AND 10080",
+        "reason": "Enforce the ck_routine_occurrence_policy_reminder invariant.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_routine_occurrence_policy_activity_template",
+        "expression_contract": "jsonb_typeof(activity_template)='object'",
+        "reason": "Enforce the ck_routine_occurrence_policy_activity_template invariant.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "pk_routine_occurrence_policy",
+        "method": "btree",
+        "unique": true,
+        "keys": [
+          "self_person_ref",
+          "routine_ref"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "primary_key",
+        "reason": "Bounded pk_routine_occurrence_policy lookup.",
+        "valid": true,
+        "ready": true,
+        "live": true
+      },
+      {
+        "name": "ix_routine_occurrence_policy_routine",
+        "method": "btree",
+        "unique": false,
+        "keys": [
+          "routine_ref"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "explicit_index",
+        "reason": "Bounded ix_routine_occurrence_policy_routine lookup.",
+        "valid": true,
+        "ready": true,
+        "live": true
+      }
+    ],
+    "triggers": [],
+    "table": {
+      "persistence": "permanent",
+      "access_method": "heap",
+      "partitioned": false,
+      "row_security": false,
+      "force_row_security": false,
+      "replica_identity": "default",
+      "reloptions": []
+    },
+    "view": null,
+    "routine": null
+  },
+  "state_history": {
+    "material_state_behavior": null,
+    "current_binding": null,
+    "chronology": null,
+    "immutability_policy": "Runtime mutation is capability-mediated; no broad direct DML is granted."
+  },
+  "lifecycle": {
+    "retention": "Retain canonical Create-closure truth and operation history.",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No direct runtime delete."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": []
+  },
+  "proof": {
+    "obligations": [
+      "PostgreSQL remains the canonical authority.",
+      "Self-scoped capability boundaries remain explicit."
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/database/test_current_catalog.py",
+      "apps/backend/tests/integration/database/test_database_current_catalog.py"
+    ],
+    "staged_evidence": []
+  }
+}

@@ -1,0 +1,279 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "table:dante.temporal_objective_evaluation_state",
+    "type": "table",
+    "schema": "dante",
+    "name": "temporal_objective_evaluation_state",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Canonical B14 Create-closure persistence for temporal_objective_evaluation_state.",
+  "classification": {
+    "persistence_role": "temporal_objective_evaluation_state",
+    "canonicality": "state_history",
+    "family": "B14CreateClosure"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/workstreams/timeline-temporal-operational-create-closure-mini-roadmap-2026-10-06.md",
+      "docs/database/timeline-temporal-operational.md"
+    ],
+    "domain_concepts": [
+      "Observation"
+    ],
+    "logical_families": [
+      "Criterion Evaluation state"
+    ],
+    "reference_families": [
+      "NativeRef",
+      "ScopedRecordRef",
+      "MaterialStateRef"
+    ],
+    "material_facets": []
+  },
+  "implementation": {
+    "introducing_stage": "B14-CREATE-CLOSURE",
+    "alembic_revision": "20261006_113",
+    "sqlalchemy": {
+      "mode": "orm_row",
+      "module": "dante.platform.database.mappings.b14_create_closure",
+      "symbol": "TemporalObjectiveEvaluationStateRow"
+    },
+    "runtime_acl_stage": "B14-CREATE-CLOSURE"
+  },
+  "structure": {
+    "columns": [
+      {
+        "name": "state_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Canonical state_ref field for the B14 Create-closure capability.",
+        "semantic_type": "MaterialStateRef",
+        "value_contract": "Validated by the state_ref PostgreSQL contract."
+      },
+      {
+        "name": "objective_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Canonical objective_ref field for the B14 Create-closure capability.",
+        "semantic_type": "ScopedRecordRef",
+        "value_contract": "Validated by the objective_ref PostgreSQL contract."
+      },
+      {
+        "name": "observation_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Canonical observation_ref field for the B14 Create-closure capability.",
+        "semantic_type": "NativeRef",
+        "value_contract": "Validated by the observation_ref PostgreSQL contract."
+      },
+      {
+        "name": "assessment_code",
+        "postgres_type": "text",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Canonical assessment_code field for the B14 Create-closure capability.",
+        "semantic_type": null,
+        "value_contract": "Validated by the assessment_code PostgreSQL contract."
+      },
+      {
+        "name": "recorded_at",
+        "postgres_type": "timestamp with time zone",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Canonical recorded_at field for the B14 Create-closure capability.",
+        "semantic_type": null,
+        "value_contract": "Validated by the recorded_at PostgreSQL contract."
+      }
+    ],
+    "primary_key": {
+      "name": "pk_temporal_objective_evaluation_state",
+      "columns": [
+        "state_ref"
+      ],
+      "reason": "Immutable Objective Evaluation state identity.",
+      "deferrable": false,
+      "initially": "NOT DEFERRABLE",
+      "enforced": true
+    },
+    "foreign_keys": [
+      {
+        "name": "fk_temporal_objective_evaluation_state_objective",
+        "columns": [
+          "objective_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "temporal_objective",
+          "columns": [
+            "objective_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "ScopedRecordRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Keep objective_ref bound to canonical dante.temporal_objective."
+      },
+      {
+        "name": "fk_temporal_objective_evaluation_state_observation",
+        "columns": [
+          "observation_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "temporal_objective_observation",
+          "columns": [
+            "observation_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "NativeRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Keep observation_ref bound to canonical dante.temporal_objective_observation."
+      }
+    ],
+    "unique_constraints": [
+      {
+        "name": "uq_temporal_objective_evaluation_state_owner",
+        "columns": [
+          "objective_ref",
+          "state_ref"
+        ],
+        "reason": "Support exact Objective current-history binding.",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true
+      }
+    ],
+    "check_constraints": [
+      {
+        "name": "ck_temporal_objective_evaluation_state_uuidv7",
+        "expression_contract": "uuid_extract_version(state_ref) IS NOT DISTINCT FROM 7",
+        "reason": "Enforce the ck_temporal_objective_evaluation_state_uuidv7 invariant.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_temporal_objective_evaluation_state_assessment",
+        "expression_contract": "assessment_code IN ('satisfied','partial','not_satisfied','unknown','indeterminate')",
+        "reason": "Enforce the ck_temporal_objective_evaluation_state_assessment invariant.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_temporal_objective_evaluation_state_recorded_at",
+        "expression_contract": "isfinite(recorded_at)",
+        "reason": "Enforce the ck_temporal_objective_evaluation_state_recorded_at invariant.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "pk_temporal_objective_evaluation_state",
+        "method": "btree",
+        "unique": true,
+        "keys": [
+          "state_ref"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "primary_key",
+        "reason": "Bounded pk_temporal_objective_evaluation_state lookup.",
+        "valid": true,
+        "ready": true,
+        "live": true
+      },
+      {
+        "name": "uq_temporal_objective_evaluation_state_owner",
+        "method": "btree",
+        "unique": true,
+        "keys": [
+          "objective_ref",
+          "state_ref"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "unique_constraint",
+        "reason": "Bounded uq_temporal_objective_evaluation_state_owner lookup.",
+        "valid": true,
+        "ready": true,
+        "live": true
+      }
+    ],
+    "triggers": [],
+    "table": {
+      "persistence": "permanent",
+      "access_method": "heap",
+      "partitioned": false,
+      "row_security": false,
+      "force_row_security": false,
+      "replica_identity": "default",
+      "reloptions": []
+    },
+    "view": null,
+    "routine": null
+  },
+  "state_history": {
+    "material_state_behavior": null,
+    "current_binding": null,
+    "chronology": null,
+    "immutability_policy": "Runtime mutation is capability-mediated; no broad direct DML is granted."
+  },
+  "lifecycle": {
+    "retention": "Retain canonical Create-closure truth and operation history.",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No direct runtime delete."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": []
+  },
+  "proof": {
+    "obligations": [
+      "PostgreSQL remains the canonical authority.",
+      "Self-scoped capability boundaries remain explicit."
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/database/test_current_catalog.py",
+      "apps/backend/tests/integration/database/test_database_current_catalog.py"
+    ],
+    "staged_evidence": []
+  }
+}

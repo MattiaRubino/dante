@@ -1,0 +1,376 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "table:dante.temporal_objective",
+    "type": "table",
+    "schema": "dante",
+    "name": "temporal_objective",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Canonical B14 Create-closure persistence for temporal_objective.",
+  "classification": {
+    "persistence_role": "temporal_objective",
+    "canonicality": "canonical",
+    "family": "B14CreateClosure"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/workstreams/timeline-temporal-operational-create-closure-mini-roadmap-2026-10-06.md",
+      "docs/database/timeline-temporal-operational.md"
+    ],
+    "domain_concepts": [
+      "Activity",
+      "Event",
+      "Occurrence",
+      "Observation"
+    ],
+    "logical_families": [
+      "Objective criterion"
+    ],
+    "reference_families": [
+      "NativeRef",
+      "ScopedRecordRef"
+    ],
+    "material_facets": []
+  },
+  "implementation": {
+    "introducing_stage": "B14-CREATE-CLOSURE",
+    "alembic_revision": "20261006_113",
+    "sqlalchemy": {
+      "mode": "orm_row",
+      "module": "dante.platform.database.mappings.b14_create_closure",
+      "symbol": "TemporalObjectiveRow"
+    },
+    "runtime_acl_stage": "B14-CREATE-CLOSURE"
+  },
+  "structure": {
+    "columns": [
+      {
+        "name": "objective_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Canonical objective_ref field for the B14 Create-closure capability.",
+        "semantic_type": "ScopedRecordRef",
+        "value_contract": "Validated by the objective_ref PostgreSQL contract."
+      },
+      {
+        "name": "self_person_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Canonical self_person_ref field for the B14 Create-closure capability.",
+        "semantic_type": "NativeRef",
+        "value_contract": "Validated by the self_person_ref PostgreSQL contract."
+      },
+      {
+        "name": "subject_kind",
+        "postgres_type": "text",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Canonical subject_kind field for the B14 Create-closure capability.",
+        "semantic_type": null,
+        "value_contract": "Validated by the subject_kind PostgreSQL contract."
+      },
+      {
+        "name": "subject_native_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Canonical subject_native_ref field for the B14 Create-closure capability.",
+        "semantic_type": "NativeRef",
+        "value_contract": "Validated by the subject_native_ref PostgreSQL contract."
+      },
+      {
+        "name": "label",
+        "postgres_type": "text",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Canonical label field for the B14 Create-closure capability.",
+        "semantic_type": null,
+        "value_contract": "Validated by the label PostgreSQL contract."
+      },
+      {
+        "name": "result_kind",
+        "postgres_type": "text",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Canonical result_kind field for the B14 Create-closure capability.",
+        "semantic_type": null,
+        "value_contract": "Validated by the result_kind PostgreSQL contract."
+      },
+      {
+        "name": "comparator_code",
+        "postgres_type": "text",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Canonical comparator_code field for the B14 Create-closure capability.",
+        "semantic_type": null,
+        "value_contract": "Validated by the comparator_code PostgreSQL contract."
+      },
+      {
+        "name": "target_value",
+        "postgres_type": "numeric",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Canonical target_value field for the B14 Create-closure capability.",
+        "semantic_type": null,
+        "value_contract": "Validated by the target_value PostgreSQL contract."
+      },
+      {
+        "name": "target_min",
+        "postgres_type": "numeric",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Canonical target_min field for the B14 Create-closure capability.",
+        "semantic_type": null,
+        "value_contract": "Validated by the target_min PostgreSQL contract."
+      },
+      {
+        "name": "target_max",
+        "postgres_type": "numeric",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Canonical target_max field for the B14 Create-closure capability.",
+        "semantic_type": null,
+        "value_contract": "Validated by the target_max PostgreSQL contract."
+      },
+      {
+        "name": "unit_code",
+        "postgres_type": "text",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Canonical unit_code field for the B14 Create-closure capability.",
+        "semantic_type": null,
+        "value_contract": "Validated by the unit_code PostgreSQL contract."
+      },
+      {
+        "name": "presentation_order",
+        "postgres_type": "integer",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Canonical presentation_order field for the B14 Create-closure capability.",
+        "semantic_type": null,
+        "value_contract": "Validated by the presentation_order PostgreSQL contract."
+      },
+      {
+        "name": "created_at",
+        "postgres_type": "timestamp with time zone",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Canonical created_at field for the B14 Create-closure capability.",
+        "semantic_type": null,
+        "value_contract": "Validated by the created_at PostgreSQL contract."
+      }
+    ],
+    "primary_key": {
+      "name": "pk_temporal_objective",
+      "columns": [
+        "objective_ref"
+      ],
+      "reason": "Stable Objective identity.",
+      "deferrable": false,
+      "initially": "NOT DEFERRABLE",
+      "enforced": true
+    },
+    "foreign_keys": [
+      {
+        "name": "fk_temporal_objective_person",
+        "columns": [
+          "self_person_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "person",
+          "columns": [
+            "person_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "NativeRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Keep self_person_ref bound to canonical dante.person."
+      }
+    ],
+    "unique_constraints": [],
+    "check_constraints": [
+      {
+        "name": "ck_temporal_objective_uuidv7",
+        "expression_contract": "uuid_extract_version(objective_ref) IS NOT DISTINCT FROM 7",
+        "reason": "Enforce the ck_temporal_objective_uuidv7 invariant.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_temporal_objective_subject_kind",
+        "expression_contract": "subject_kind IN ('activity','event','occurrence')",
+        "reason": "Enforce the ck_temporal_objective_subject_kind invariant.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_temporal_objective_label",
+        "expression_contract": "label=btrim(label) AND label<>'' AND char_length(label)<=300",
+        "reason": "Enforce the ck_temporal_objective_label invariant.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_temporal_objective_result_kind",
+        "expression_contract": "result_kind IN ('boolean','quantity','qualitative','range')",
+        "reason": "Enforce the ck_temporal_objective_result_kind invariant.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_temporal_objective_presentation_order",
+        "expression_contract": "presentation_order>=0",
+        "reason": "Enforce the ck_temporal_objective_presentation_order invariant.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_temporal_objective_unit",
+        "expression_contract": "unit_code IS NULL OR (unit_code=btrim(unit_code) AND unit_code<>'' AND char_length(unit_code)<=40)",
+        "reason": "Enforce the ck_temporal_objective_unit invariant.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_temporal_objective_shape",
+        "expression_contract": "(result_kind IN ('boolean','qualitative') AND comparator_code IS NULL AND target_value IS NULL AND target_min IS NULL AND target_max IS NULL AND unit_code IS NULL) OR (result_kind='quantity' AND comparator_code IN ('eq','gte','lte') AND target_value IS NOT NULL AND target_min IS NULL AND target_max IS NULL) OR (result_kind='range' AND comparator_code='between' AND target_value IS NULL AND target_min IS NOT NULL AND target_max IS NOT NULL AND target_min<=target_max)",
+        "reason": "Enforce the ck_temporal_objective_shape invariant.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "pk_temporal_objective",
+        "method": "btree",
+        "unique": true,
+        "keys": [
+          "objective_ref"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "primary_key",
+        "reason": "Bounded pk_temporal_objective lookup.",
+        "valid": true,
+        "ready": true,
+        "live": true
+      },
+      {
+        "name": "ix_temporal_objective_subject",
+        "method": "btree",
+        "unique": false,
+        "keys": [
+          "self_person_ref",
+          "subject_kind",
+          "subject_native_ref",
+          "presentation_order"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "explicit_index",
+        "reason": "Bounded ix_temporal_objective_subject lookup.",
+        "valid": true,
+        "ready": true,
+        "live": true
+      }
+    ],
+    "triggers": [],
+    "table": {
+      "persistence": "permanent",
+      "access_method": "heap",
+      "partitioned": false,
+      "row_security": false,
+      "force_row_security": false,
+      "replica_identity": "default",
+      "reloptions": []
+    },
+    "view": null,
+    "routine": null
+  },
+  "state_history": {
+    "material_state_behavior": null,
+    "current_binding": null,
+    "chronology": null,
+    "immutability_policy": "Runtime mutation is capability-mediated; no broad direct DML is granted."
+  },
+  "lifecycle": {
+    "retention": "Retain canonical Create-closure truth and operation history.",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No direct runtime delete."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": []
+  },
+  "proof": {
+    "obligations": [
+      "PostgreSQL remains the canonical authority.",
+      "Self-scoped capability boundaries remain explicit."
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/database/test_current_catalog.py",
+      "apps/backend/tests/integration/database/test_database_current_catalog.py"
+    ],
+    "staged_evidence": []
+  }
+}
