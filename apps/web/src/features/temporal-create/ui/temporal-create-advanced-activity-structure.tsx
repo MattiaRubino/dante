@@ -192,12 +192,16 @@ export function TemporalCreateAdvancedActivityStructure({
     <section
       className="temporal-create-activity-tree"
       data-create-activity-structure
+      data-create-path="activityStructure"
       aria-label={italian ? 'Sessioni pianificate' : 'Planned Sessions'}
     >
       <div className="temporal-create-activity-tree__spine" aria-hidden="true" />
 
       {structure.plannedSlices.length > 0 ? (
-        <div className="temporal-create-activity-tree__root-sessions">
+        <div
+          className="temporal-create-activity-tree__root-sessions"
+          data-create-path="plannedSessions"
+        >
           <div className="temporal-create-activity-tree__group-label">
             {italian ? 'Sessioni attività' : 'Activity sessions'}
           </div>
