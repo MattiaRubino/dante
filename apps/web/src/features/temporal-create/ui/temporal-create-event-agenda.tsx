@@ -1,4 +1,4 @@
-import { useRef, useState, type KeyboardEvent } from 'react';
+import { useRef, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import './temporal-create-event-agenda.css';
@@ -8,47 +8,35 @@ type TemporalCreateEventAgendaProps = Readonly<{
   onChange: (parts: readonly string[]) => void;
 }>;
 
-type AgendaPartEditorProps = Readonly<{
+type ScalettaRowProps = Readonly<{
   part: string;
   index: number;
   total: number;
-  onCommit: (index: number, value: string) => void;
-  onMove: (index: number, direction: -1 | 1, value: string) => void;
+  onChange: (index: number, value: string) => void;
+  onMove: (index: number, direction: -1 | 1) => void;
   onRemove: (index: number) => void;
 }>;
 
-function AgendaPartEditor({
+function ScalettaRow({
   part,
   index,
   total,
-  onCommit,
+  onChange,
   onMove,
   onRemove,
-}: AgendaPartEditorProps) {
-  const { t } = useTranslation('common');
-  const [draft, setDraft] = useState(part);
-  const commit = () => onCommit(index, draft);
+}: ScalettaRowProps) {
+  const { i18n } = useTranslation('common');
+  const italian = i18n.language.toLowerCase().startsWith('it');
 
   const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.altKey && event.key === 'ArrowUp' && index > 0) {
       event.preventDefault();
-      onMove(index, -1, draft);
+      onMove(index, -1);
       return;
     }
     if (event.altKey && event.key === 'ArrowDown' && index < total - 1) {
       event.preventDefault();
-      onMove(index, 1, draft);
-      return;
-    }
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      event.currentTarget.blur();
-      return;
-    }
-    if (event.key === 'Escape' && draft !== part) {
-      event.preventDefault();
-      event.stopPropagation();
-      setDraft(part);
+      onMove(index, 1);
     }
   };
 
@@ -58,59 +46,53 @@ function AgendaPartEditor({
       data-temporal-create-agenda-part
       role="listitem"
     >
-      <span
-        className="temporal-create-event-agenda__position"
-        aria-hidden="true"
-      >
+      <span className="temporal-create-event-agenda__position" aria-hidden="true">
         {index + 1}
       </span>
+      <span
+        className="temporal-create-event-agenda__divider"
+        aria-hidden="true"
+      />
       <input
         data-temporal-create-agenda-input
         data-agenda-index={index}
         type="text"
-        value={draft}
-        onChange={(event) => setDraft(event.currentTarget.value)}
-        onBlur={commit}
+        value={part}
+        maxLength={300}
+        onChange={(event) => onChange(index, event.currentTarget.value)}
         onKeyDown={onKeyDown}
-        aria-label={t(
-          ($) => $.common.home.timeline.create.eventDetails.agendaEdit,
-          { position: index + 1 },
-        )}
-        aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"
+        aria-label={
+          italian
+            ? `Punto scaletta ${index + 1}`
+            : `Run of show item ${index + 1}`
+        }
+        placeholder={italian ? 'Punto della scaletta' : 'Run of show item'}
         autoComplete="off"
       />
       <div className="temporal-create-event-agenda__actions">
         <button
           type="button"
           disabled={index === 0}
-          onClick={() => onMove(index, -1, draft)}
-          aria-label={t(
-            ($) => $.common.home.timeline.create.eventDetails.agendaMoveUp,
-            { position: index + 1 },
-          )}
+          onClick={() => onMove(index, -1)}
+          aria-label={italian ? 'Sposta su' : 'Move up'}
         >
-          <span aria-hidden="true">↑</span>
+          ↑
         </button>
         <button
           type="button"
           disabled={index === total - 1}
-          onClick={() => onMove(index, 1, draft)}
-          aria-label={t(
-            ($) => $.common.home.timeline.create.eventDetails.agendaMoveDown,
-            { position: index + 1 },
-          )}
+          onClick={() => onMove(index, 1)}
+          aria-label={italian ? 'Sposta giù' : 'Move down'}
         >
-          <span aria-hidden="true">↓</span>
+          ↓
         </button>
         <button
           type="button"
+          className="is-remove"
           onClick={() => onRemove(index)}
-          aria-label={t(
-            ($) => $.common.home.timeline.create.eventDetails.agendaRemove,
-            { position: index + 1 },
-          )}
+          aria-label={italian ? 'Rimuovi punto' : 'Remove item'}
         >
-          <span aria-hidden="true">×</span>
+          ×
         </button>
       </div>
     </div>
@@ -121,10 +103,9 @@ export function TemporalCreateEventAgenda({
   parts,
   onChange,
 }: TemporalCreateEventAgendaProps) {
-  const { t } = useTranslation('common');
-  const [newPart, setNewPart] = useState('');
-  const rootRef = useRef<HTMLFieldSetElement>(null);
-  const newPartRef = useRef<HTMLInputElement>(null);
+  const { i18n } = useTranslation('common');
+  const italian = i18n.language.toLowerCase().startsWith('it');
+  const rootRef = useRef<HTMLElement>(null);
 
   const publish = (next: readonly string[]) => {
     onChange(Object.freeze([...next]));
@@ -140,156 +121,72 @@ export function TemporalCreateEventAgenda({
     });
   };
 
-  const focusAfterRemoval = (index: number, nextLength: number) => {
-    requestAnimationFrame(() => {
-      if (nextLength === 0) {
-        newPartRef.current?.focus();
-        return;
-      }
-      const target = Math.min(index, nextLength - 1);
-      rootRef.current
-        ?.querySelector<HTMLInputElement>(
-          `[data-temporal-create-agenda-input][data-agenda-index="${target}"]`,
-        )
-        ?.focus();
-    });
-  };
-
-  const commitPart = (index: number, value: string) => {
-    const normalized = value.trim();
-    if (normalized.length === 0) {
-      const next = parts.filter(
-        (_, candidateIndex) => candidateIndex !== index,
-      );
-      if (next.length !== parts.length) {
-        publish(next);
-        focusAfterRemoval(index, next.length);
-      }
-      return;
-    }
-    if (parts[index] === normalized) {
-      return;
-    }
+  const updatePart = (index: number, value: string) => {
     const next = [...parts];
-    next[index] = normalized;
+    next[index] = value;
     publish(next);
   };
 
-  const movePart = (index: number, direction: -1 | 1, value: string) => {
+  const movePart = (index: number, direction: -1 | 1) => {
     const target = index + direction;
-    if (target < 0 || target >= parts.length) {
-      return;
-    }
-    const normalized = value.trim();
-    if (normalized.length === 0) {
-      const next = parts.filter(
-        (_, candidateIndex) => candidateIndex !== index,
-      );
-      publish(next);
-      focusAfterRemoval(index, next.length);
-      return;
-    }
+    if (target < 0 || target >= parts.length) return;
     const next = [...parts];
-    next[index] = normalized;
     [next[index], next[target]] = [next[target] ?? '', next[index] ?? ''];
     publish(next);
     focusPart(target);
   };
 
   const removePart = (index: number) => {
-    const next = parts.filter((_, candidateIndex) => candidateIndex !== index);
-    publish(next);
-    focusAfterRemoval(index, next.length);
+    publish(parts.filter((_, candidateIndex) => candidateIndex !== index));
+    requestAnimationFrame(() => {
+      const nextIndex = Math.min(index, parts.length - 2);
+      if (nextIndex >= 0) focusPart(nextIndex);
+    });
   };
 
   const addPart = () => {
-    const normalized = newPart.trim();
-    if (normalized.length === 0) {
-      return;
-    }
-    publish([...parts, normalized]);
-    setNewPart('');
-    requestAnimationFrame(() => newPartRef.current?.focus());
+    const nextIndex = parts.length;
+    publish([...parts, '']);
+    focusPart(nextIndex);
   };
 
   return (
-    <fieldset
+    <section
       ref={rootRef}
       className="temporal-create-event-agenda"
       data-temporal-create-agenda
+      aria-label={italian ? 'Scaletta evento' : 'Event run of show'}
     >
-      <legend>
-        {t(($) => $.common.home.timeline.create.eventDetails.agenda)}
-      </legend>
-      <p className="temporal-create-event-agenda__description">
-        {t(($) => $.common.home.timeline.create.eventDetails.agendaDescription)}
-      </p>
-
       {parts.length > 0 ? (
         <div className="temporal-create-event-agenda__list" role="list">
+          <div className="temporal-create-event-agenda__group-label">
+            {italian ? 'Scaletta' : 'Run of show'}
+          </div>
           {parts.map((part, index) => (
-            <AgendaPartEditor
-              key={`${index}:${part}`}
+            <ScalettaRow
+              key={index}
               part={part}
               index={index}
               total={parts.length}
-              onCommit={commitPart}
+              onChange={updatePart}
               onMove={movePart}
               onRemove={removePart}
             />
           ))}
         </div>
-      ) : (
-        <p className="temporal-create-event-agenda__empty">
-          {t(($) => $.common.home.timeline.create.eventDetails.agendaEmpty)}
-        </p>
-      )}
+      ) : null}
 
-      <div className="temporal-create-event-agenda__add">
-        <label className="temporal-create-control">
-          <span>
-            {t(($) => $.common.home.timeline.create.eventDetails.agendaNewItem)}
-          </span>
-          <input
-            ref={newPartRef}
-            type="text"
-            value={newPart}
-            onChange={(event) => setNewPart(event.currentTarget.value)}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                event.preventDefault();
-                addPart();
-                return;
-              }
-              if (event.key === 'Escape' && newPart.length > 0) {
-                event.preventDefault();
-                event.stopPropagation();
-                setNewPart('');
-              }
-            }}
-            placeholder={t(
-              ($) =>
-                $.common.home.timeline.create.eventDetails
-                  .agendaNewItemPlaceholder,
-            )}
-            autoComplete="off"
-          />
-        </label>
+      <div className="temporal-create-event-agenda__root-actions">
         <button
-          className="temporal-create-event-agenda__add-button"
+          className="temporal-create-event-agenda__add"
           type="button"
           onClick={addPart}
-          disabled={newPart.trim().length === 0}
+          aria-label={italian ? 'Aggiungi punto alla scaletta' : 'Add run of show item'}
         >
-          {t(($) => $.common.home.timeline.create.eventDetails.agendaAdd)}
+          <span aria-hidden="true">＋</span>
+          {italian ? 'Scaletta' : 'Run of show'}
         </button>
       </div>
-
-      <p className="temporal-create-event-agenda__hint">
-        {t(
-          ($) => $.common.home.timeline.create.eventDetails.agendaKeyboardHint,
-        )}
-      </p>
-    </fieldset>
+    </section>
   );
 }
