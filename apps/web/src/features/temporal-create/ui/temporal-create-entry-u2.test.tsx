@@ -211,6 +211,33 @@ describe('Temporal Create U2 entry', () => {
     expect(activityRequests[0]?.description).toBe('Lungo il fiume');
   });
 
+  it('never exposes the presentation-only unassigned Timeline bucket as a selectable Life Area', () => {
+    renderEntry([
+      {
+        id: 'legacy-unassigned',
+        label: 'Senza Life Area',
+        tone: 'personal',
+      },
+      {
+        id: '0199a111-1111-7111-8111-111111111130',
+        label: 'Corpo',
+        tone: 'personal',
+        revision: 1,
+        colorCode: '#8E24AA',
+      },
+    ]);
+
+    fireEvent.focus(screen.getByLabelText('Life Area (opzionale)'));
+
+    expect(
+      screen.getByRole('option', { name: 'Nessuna Life Area' }),
+    ).toBeTruthy();
+    expect(screen.getByRole('option', { name: 'Corpo' })).toBeTruthy();
+    expect(
+      screen.queryByRole('option', { name: 'Senza Life Area' }),
+    ).toBeNull();
+  });
+
   it('stages a new Life Area locally and sends the real default orange only with accepted Add', async () => {
     const { activityRequests } = renderEntry();
 
