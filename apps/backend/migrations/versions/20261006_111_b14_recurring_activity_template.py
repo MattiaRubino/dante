@@ -68,7 +68,7 @@ RETURNS TABLE(duration_minutes integer,reminder_lead_minutes integer,
               activity_template jsonb,created_at timestamptz,replayed boolean)
 LANGUAGE plpgsql SECURITY DEFINER VOLATILE PARALLEL UNSAFE
 SET search_path=pg_catalog,dante,pg_temp AS $$
-DECLARE prior dante.routine_occurrence_policy%ROWTYPE;
+DECLARE prior dante.routine_occurrence_policy%%ROWTYPE;
         template jsonb:=COALESCE($5,'{}'::jsonb);
         ts timestamptz:=statement_timestamp();
 BEGIN
@@ -104,7 +104,7 @@ CREATE FUNCTION dante.bind_self_routine_occurrence_activity(uuid,uuid,uuid)
 RETURNS TABLE(occurrence_ref uuid,activity_ref uuid,created_at timestamptz,replayed boolean)
 LANGUAGE plpgsql SECURITY DEFINER VOLATILE PARALLEL UNSAFE
 SET search_path=pg_catalog,dante,pg_temp AS $$
-DECLARE prior dante.routine_occurrence_activity_instance%ROWTYPE;
+DECLARE prior dante.routine_occurrence_activity_instance%%ROWTYPE;
         ts timestamptz:=statement_timestamp();
 BEGIN
  IF NOT EXISTS(
