@@ -30,10 +30,31 @@ export type TemporalCreateEventParticipantDraft = Readonly<{
   requirementCode: 'required' | 'optional';
 }>;
 
+export type TemporalCreateObjectiveKind =
+  | 'boolean'
+  | 'quantity'
+  | 'qualitative'
+  | 'range';
+
+export type TemporalCreateObjectiveComparator = 'eq' | 'gte' | 'lte' | 'between';
+
+export type TemporalCreateObjectiveDraft = Readonly<{
+  id: string;
+  label: string;
+  resultKind: TemporalCreateObjectiveKind;
+  comparatorCode: TemporalCreateObjectiveComparator | null;
+  targetValue: string;
+  targetMin: string;
+  targetMax: string;
+  unitCode: string;
+}>;
+
 export type TemporalCreateU2AuthoringDraft = Readonly<{
   endDate: string;
   lifeArea: TemporalCreateU2LifeAreaDraft;
   itemColorCode: string | null;
+  realityMode: TemporalCreateRealityMode;
+  objectives: readonly TemporalCreateObjectiveDraft[];
   eventParticipants: readonly TemporalCreateEventParticipantDraft[];
   activityStructure: TemporalCreateActivityStructureDraft;
 }>;
@@ -100,6 +121,8 @@ export function createTemporalCreateU2AuthoringDraft(
     endDate: inferredEndDate(fields),
     lifeArea: Object.freeze({ kind: 'none' as const }),
     itemColorCode: TEMPORAL_CREATE_U2_DEFAULT_COLOR,
+    realityMode: 'manual' as const,
+    objectives: Object.freeze([]),
     eventParticipants: Object.freeze([]),
     activityStructure: Object.freeze({
       captureMode: 'disabled' as const,
