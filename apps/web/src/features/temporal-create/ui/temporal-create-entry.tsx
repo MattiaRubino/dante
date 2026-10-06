@@ -152,6 +152,7 @@ export function TemporalCreateEntry({
     'idle',
   );
   const [failureMessage, setFailureMessage] = useState('');
+  const [failureTarget, setFailureTarget] = useState<string | null>(null);
 
   const freshFields = useCallback(
     (
@@ -305,6 +306,7 @@ export function TemporalCreateEntry({
     preparedRef.current = null;
     setIssues([]);
     setFailureMessage('');
+    setFailureTarget(null);
     setLifecycle('idle');
     setSession((current) => updateTemporalCreateFields(current, boundedNext));
   };
@@ -325,6 +327,13 @@ export function TemporalCreateEntry({
       u2DraftRef.current,
     );
     if (structureIssue !== null) {
+      setFailureTarget(
+        /interval/i.test(structureIssue)
+          ? 'activityIntervals'
+          : /session/i.test(structureIssue)
+            ? 'plannedSessions'
+            : 'activityStructure',
+      );
       setFailureMessage(structureIssue);
       setLifecycle('failed');
       return false;
@@ -338,6 +347,7 @@ export function TemporalCreateEntry({
     try {
       buildTemporalCreateObjectiveTemplates(u2DraftRef.current);
     } catch (reason) {
+      setFailureTarget('objectives');
       setFailureMessage(
         reason instanceof Error ? reason.message : 'Obiettivi non validi.',
       );
@@ -468,6 +478,13 @@ export function TemporalCreateEntry({
       u2DraftRef.current,
     );
     if (structureIssue !== null) {
+      setFailureTarget(
+        /interval/i.test(structureIssue)
+          ? 'activityIntervals'
+          : /session/i.test(structureIssue)
+            ? 'plannedSessions'
+            : 'activityStructure',
+      );
       setFailureMessage(structureIssue);
       setLifecycle('failed');
       return false;
@@ -480,6 +497,7 @@ export function TemporalCreateEntry({
     try {
       buildTemporalCreateObjectiveTemplates(u2DraftRef.current);
     } catch (reason) {
+      setFailureTarget('objectives');
       setFailureMessage(
         reason instanceof Error ? reason.message : 'Obiettivi non validi.',
       );
@@ -535,6 +553,7 @@ export function TemporalCreateEntry({
     try {
       buildTemporalCreateObjectiveTemplates(u2DraftRef.current);
     } catch (reason) {
+      setFailureTarget('objectives');
       setFailureMessage(
         reason instanceof Error ? reason.message : 'Obiettivi non validi.',
       );
@@ -665,6 +684,7 @@ export function TemporalCreateEntry({
     const fields = fieldsOverride
       ? { ...session.draft.current, ...fieldsOverride }
       : session.draft.current;
+    setFailureTarget(null);
     if (
       fields.kind === 'activity' &&
       fields.eventRecurrence.patternKind !== 'none'
@@ -685,6 +705,14 @@ export function TemporalCreateEntry({
         import.meta.env.MODE !== 'test') &&
       temporalCreateU2QuickIntentSupported(fields);
     if (!useU2Quick && temporalCreateHasU6Structure(u2DraftRef.current)) {
+      const structure = u2DraftRef.current.activityStructure;
+      setFailureTarget(
+        structure.activityIntervals.length > 0
+          ? 'activityIntervals'
+          : structure.plannedSlices.length > 0
+            ? 'plannedSessions'
+            : 'activityStructure',
+      );
       setLifecycle('failed');
       setFailureMessage(
         i18n.language.toLowerCase().startsWith('en')
@@ -787,6 +815,7 @@ export function TemporalCreateEntry({
       issues={issues}
       lifecycle={lifecycle}
       failureMessage={failureMessage}
+      failureTarget={failureTarget}
       postCreateRetry={postCreateRetry}
       u2Draft={u2DraftRef.current}
       onPatch={patch}
@@ -798,6 +827,10 @@ export function TemporalCreateEntry({
       onSubmit={() => void submit()}
       onU2DraftChange={(draft) => {
         u2DraftRef.current = draft;
+        queueMicrotask(() => {
+          setFailureMessage('');
+          setFailureTarget(null);
+        });
       }}
     />
   ) : null;
