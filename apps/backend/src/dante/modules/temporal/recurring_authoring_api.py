@@ -20,6 +20,13 @@ from dante.modules.temporal.authoring import (
     TemporalAuthoringPersistenceError,
 )
 from dante.modules.temporal.authoring_api import AuthoringLifeAreaRequest
+from dante.modules.temporal.event_occurrence_policy import (
+    EventOccurrencePolicyApplication,
+    EventOccurrencePolicyConflictError,
+    EventOccurrencePolicyInputError,
+    EventOccurrencePolicyNotFoundError,
+    EventOccurrencePolicyPersistenceError,
+)
 from dante.modules.temporal.event import (
     EventAgendaRevisionConflictError,
     EventInputError,
@@ -77,9 +84,16 @@ class CreateRecurringEventRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     operation_id: str = Field(min_length=1, max_length=200)
     title: str = Field(min_length=1, max_length=300)
-    life_area_ref: UUID
+    life_area: AuthoringLifeAreaRequest | None = None
+    description: str | None = None
+    location: str | None = None
+    item_color_code: str | None = None
     agenda_parts: list[str] = Field(default_factory=list, max_length=100)
     recurrence: RecurrenceRequest
+    placement_kind: Literal["timed", "all_day"]
+    duration_minutes: int | None = Field(default=None, ge=1, le=525_600)
+    duration_days: int | None = Field(default=None, ge=1, le=3660)
+    reminder_lead_minutes: int | None = Field(default=None, ge=0, le=10_080)
 
 
 class RecurringAuthoringResponse(BaseModel):
@@ -100,8 +114,15 @@ def _policy_application(request: Request) -> RoutineOccurrencePolicyApplication:
     return RoutineOccurrencePolicyApplication(request.app.state.database_runtime.session_factory)
 
 
+def _event_policy_application(request: Request) -> EventOccurrencePolicyApplication:
+    return EventOccurrencePolicyApplication(request.app.state.database_runtime.session_factory)
+
+
 Application = Annotated[RecurringAuthoringApplication, Depends(_application)]
 PolicyApplication = Annotated[RoutineOccurrencePolicyApplication, Depends(_policy_application)]
+EventPolicyApplication = Annotated[
+    EventOccurrencePolicyApplication, Depends(_event_policy_application)
+]
 
 
 def _life_area_intent(payload: AuthoringLifeAreaRequest | None) -> AuthoringLifeAreaIntent | None:
@@ -123,6 +144,7 @@ def _problem(exc: Exception) -> ProblemError:
             EventInputError,
             RecurrenceInputError,
             RoutineOccurrencePolicyInputError,
+            EventOccurrencePolicyInputError,
             TemporalAuthoringInputError,
         ),
     ):
@@ -141,6 +163,7 @@ def _problem(exc: Exception) -> ProblemError:
             EventOperationIdReuseError,
             RecurrenceOperationReuseError,
             RoutineOccurrencePolicyConflictError,
+            EventOccurrencePolicyConflictError,
             TemporalAuthoringLifeAreaConflictError,
         ),
     ):
@@ -170,6 +193,7 @@ def _problem(exc: Exception) -> ProblemError:
             EventNotFoundError,
             RecurrenceNotFoundError,
             RoutineOccurrencePolicyNotFoundError,
+            EventOccurrencePolicyNotFoundError,
             TemporalAuthoringLifeAreaUnavailableError,
         ),
     ):
@@ -188,6 +212,7 @@ def _problem(exc: Exception) -> ProblemError:
             RecurrencePersistenceError,
             RecurringAuthoringPersistenceError,
             RoutineOccurrencePolicyPersistenceError,
+            EventOccurrencePolicyPersistenceError,
             TemporalAuthoringPersistenceError,
         ),
     ):
@@ -252,6 +277,7 @@ async def create_recurring_event(
     payload: CreateRecurringEventRequest,
     context: MutatingContext,
     application: Application,
+    policy_application: EventPolicyApplication,
     response: Response,
 ) -> RecurringAuthoringResponse:
     response.headers["Cache-Control"] = "no-store"
@@ -260,9 +286,20 @@ async def create_recurring_event(
             self_person_ref=context.self_person_ref,
             operation_id=payload.operation_id,
             title=payload.title,
-            life_area_ref=payload.life_area_ref,
+            life_area_intent=_life_area_intent(payload.life_area),
             agenda_parts=tuple(payload.agenda_parts),
+            description=payload.description,
+            location=payload.location,
+            item_color_code=payload.item_color_code,
             recurrence=_spec(payload.recurrence),
+        )
+        await policy_application.set(
+            self_person_ref=context.self_person_ref,
+            event_ref=value.source_ref,
+            placement_kind=payload.placement_kind,
+            duration_minutes=payload.duration_minutes,
+            duration_days=payload.duration_days,
+            reminder_lead_minutes=payload.reminder_lead_minutes,
         )
         return RecurringAuthoringResponse(**asdict(value))
     except Exception as exc:
