@@ -929,14 +929,6 @@ export function validateTemporalCreateFields(
     }
   }
 
-  if (fields.contextId.trim().length === 0) {
-    issues.push(
-      temporalValidationIssue('temporal.create.context.required', [
-        'contextId',
-      ]),
-    );
-  }
-
   if (fields.kind === 'activity') {
     const scheduling = fields.scheduling;
     if (scheduling.constraintKind === 'bounded-window') {

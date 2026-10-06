@@ -1186,6 +1186,7 @@ export function TemporalCreateCoreFieldsU2({
         onItemColorChange={(itemColorCode) => patchAuthoring({ itemColorCode })}
         onLegacyContextChange={(contextId) => onPatch({ contextId })}
       />
+      {renderError('contextId')}
 
       <input
         className="temporal-create-u2-location"

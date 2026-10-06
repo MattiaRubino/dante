@@ -402,7 +402,7 @@ export function TemporalCreateLifeAreaField({
 
   return (
     <>
-      <div ref={rootRef} className="temporal-create-life-area-field">
+      <div ref={rootRef} className="temporal-create-life-area-field" data-create-path="contextId">
         <div className="temporal-create-life-area-field__color-cell">
           <button
             className="temporal-create-life-area-field__color-trigger"

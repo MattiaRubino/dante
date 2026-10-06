@@ -157,7 +157,7 @@ export function TemporalCreateEntry({
         durationMinutes: seed?.durationMinutes ?? durationMinutes ?? 30,
         timeMode: 'zoned',
         timeZoneId: seed?.timeZoneId ?? zone,
-        contextId: seed?.contextId ?? contexts[0]?.id ?? '',
+        contextId: seed?.contextId ?? '',
       });
       return seed ? applyTemporalCreateFieldSeed(base, seed) : base;
     },
@@ -202,7 +202,21 @@ export function TemporalCreateEntry({
     ) => {
       onBeforeOpen?.();
       const fields = freshFields(date, startMinute, durationMinutes, seed);
-      u2DraftRef.current = createTemporalCreateU2AuthoringDraft(fields);
+      const initialDraft = createTemporalCreateU2AuthoringDraft(fields);
+      const seededArea = contexts.find((context) => context.id === fields.contextId);
+      u2DraftRef.current = seededArea
+        ? Object.freeze({
+            ...initialDraft,
+            lifeArea: Object.freeze({
+              kind: 'existing' as const,
+              lifeAreaRef: seededArea.id,
+              label: seededArea.label,
+              expectedRevision: seededArea.revision ?? 1,
+              colorCode: seededArea.colorCode ?? null,
+              colorChanged: false,
+            }),
+          })
+        : initialDraft;
       setSession(createTemporalCreateSession(fields));
       setIssues([]);
       setFailureMessage('');
@@ -214,7 +228,7 @@ export function TemporalCreateEntry({
       void externalAnchor;
       setOpen(true);
     },
-    [freshFields, onBeforeOpen],
+    [contexts, freshFields, onBeforeOpen],
   );
 
   useEffect(() => {
@@ -389,6 +403,19 @@ export function TemporalCreateEntry({
     fieldsOverride?: Partial<TemporalCreateSession['draft']['current']>,
   ) => {
     if (commitInFlightRef.current) return;
+    if (
+      session.draft.current.kind === 'activity' &&
+      session.draft.current.eventRecurrence.patternKind !== 'none' &&
+      u2DraftRef.current.lifeArea.kind === 'new'
+    ) {
+      setLifecycle('failed');
+      setFailureMessage(
+        i18n.language.toLowerCase().startsWith('en')
+          ? 'For a routine, select an existing Life Area or none. Creating a new Life Area together with a routine is not supported yet.'
+          : 'Per una routine, scegli una Life Area esistente oppure nessuna. Non è ancora possibile crearne una nuova insieme alla routine.',
+      );
+      return;
+    }
     if (partialPostCreateRef.current !== null) {
       commitInFlightRef.current = true;
       setLifecycle('pending');
