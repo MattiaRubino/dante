@@ -623,3 +623,35 @@
     left: 0;
   }
 }
+
+/* Keep actionable validation at its field instead of the bottom of Create. */
+.temporal-create-composer [data-create-path][data-create-invalid='true']:not(input):not(select):not(textarea) {
+  outline: 1px solid var(--dante-timeline-tone-urgent, #ff5b64);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+.temporal-create-composer .temporal-create-title-input.temporal-create-title-input[data-create-invalid='true'],
+.temporal-create-composer input[data-create-invalid='true'],
+.temporal-create-composer select[data-create-invalid='true'],
+.temporal-create-composer textarea[data-create-invalid='true'] {
+  border-color: var(--dante-timeline-tone-urgent, #ff5b64) !important;
+}
+
+.temporal-create-composer .temporal-create-time-control:has([data-create-invalid='true'])
+  .temporal-create-time-control__field {
+  border-color: var(--dante-timeline-tone-urgent, #ff5b64) !important;
+}
+
+.temporal-create-composer [data-create-path] > .temporal-create-field-error {
+  grid-column: 1 / -1;
+  margin-top: 4px;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.temporal-create-backdrop.is-advanced
+  .temporal-create-composer__body
+  > .temporal-create-operation-error {
+  order: -50;
+}
