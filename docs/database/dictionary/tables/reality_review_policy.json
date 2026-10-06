@@ -133,7 +133,7 @@
     "unique_constraints": [],
     "check_constraints": [
       {
-        "name": "ck_reality_review_policy_subject_kind",
+        "name": "ck_reality_review_policy_ck_reality_review_policy_subject_kind",
         "expression_contract": "subject_kind IN ('activity','event','occurrence')",
         "reason": "Enforce the ck_reality_review_policy_subject_kind invariant.",
         "enforced": true,
