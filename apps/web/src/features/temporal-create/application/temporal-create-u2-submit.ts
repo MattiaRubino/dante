@@ -364,7 +364,7 @@ export function validateTemporalCreateU2QuickFields(
   );
 }
 
-function lifeAreaInput(
+export function buildTemporalCreateLifeAreaInput(
   draft: TemporalCreateU2AuthoringDraft,
 ): TemporalAuthoringLifeAreaInput | undefined {
   switch (draft.lifeArea.kind) {
@@ -556,7 +556,7 @@ export function buildTemporalCreateU2Request(
   draft: TemporalCreateU2AuthoringDraft,
   operationId: string,
 ): TemporalCreateU2Request {
-  const lifeArea = lifeAreaInput(draft);
+  const lifeArea = buildTemporalCreateLifeAreaInput(draft);
   const description = optionalText(fields.notes);
   const location = optionalText(fields.event.location);
   const bands = activityBands(fields, draft);
