@@ -157,7 +157,7 @@
     ],
     "check_constraints": [
       {
-        "name": "ck_reality_review_policy_state_uuidv7",
+        "name": "ck_reality_review_policy_state_ck_reality_review_policy_9aac",
         "expression_contract": "uuid_extract_version(state_ref) IS NOT DISTINCT FROM 7",
         "reason": "Enforce the ck_reality_review_policy_state_uuidv7 invariant.",
         "enforced": true,
@@ -165,7 +165,7 @@
         "no_inherit": false
       },
       {
-        "name": "ck_reality_review_policy_state_mode",
+        "name": "ck_reality_review_policy_state_ck_reality_review_policy_f186",
         "expression_contract": "mode_code IN ('manual','review_on_end','auto_confirm_outcome')",
         "reason": "Enforce the ck_reality_review_policy_state_mode invariant.",
         "enforced": true,
@@ -173,7 +173,7 @@
         "no_inherit": false
       },
       {
-        "name": "ck_reality_review_policy_state_recorded_at",
+        "name": "ck_reality_review_policy_state_ck_reality_review_policy_cb4e",
         "expression_contract": "isfinite(recorded_at)",
         "reason": "Enforce the ck_reality_review_policy_state_recorded_at invariant.",
         "enforced": true,
