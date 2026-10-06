@@ -128,8 +128,12 @@ describe('TemporalCreateComposer', () => {
     fireEvent.click(screen.getByRole('button', { name: '＋ Aggiungi' }));
     expect(screen.getByText('Io')).toBeTruthy();
     expect(
-      screen.getByRole('combobox', { name: 'Partecipazione di Io' }),
-    ).toHaveValue('required');
+      (
+        screen.getByRole('combobox', {
+          name: 'Partecipazione di Io',
+        }) as HTMLSelectElement
+      ).value,
+    ).toBe('required');
 
     fireEvent.click(
       screen.getByRole('button', { name: 'Aggiungi punto alla scaletta' }),
