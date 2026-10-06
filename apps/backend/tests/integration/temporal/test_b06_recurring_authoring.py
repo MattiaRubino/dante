@@ -202,7 +202,7 @@ async def test_recurring_event_authoring_commits_source_and_recurrence_together(
             self_person_ref=alice,
             operation_id="b06-d:authoring:event",
             title="Sync progetto",
-            life_area_ref=area.life_area_ref,
+            life_area_intent=AuthoringLifeAreaIntent(life_area_ref=area.life_area_ref),
             agenda_parts=("Stato", "Blocchi"),
             recurrence=requested,
         )
@@ -227,7 +227,7 @@ async def test_recurring_event_authoring_commits_source_and_recurrence_together(
             self_person_ref=alice,
             operation_id="b06-d:authoring:event",
             title="Sync progetto",
-            life_area_ref=area.life_area_ref,
+            life_area_intent=AuthoringLifeAreaIntent(life_area_ref=area.life_area_ref),
             agenda_parts=("Stato", "Blocchi"),
             recurrence=requested,
         )
@@ -239,7 +239,7 @@ async def test_recurring_event_authoring_commits_source_and_recurrence_together(
                 self_person_ref=alice,
                 operation_id="b06-d:authoring:event",
                 title="Sync progetto",
-                life_area_ref=area.life_area_ref,
+                life_area_intent=AuthoringLifeAreaIntent(life_area_ref=area.life_area_ref),
                 agenda_parts=("Stato", "Blocchi"),
                 recurrence=_weekly(1),
             )
