@@ -348,6 +348,12 @@ export function TimelineCreateBridge({
           id: group.id,
           label: group.label,
           tone: group.tone,
+          ...(group.organizationRevision === undefined
+            ? {}
+            : { revision: group.organizationRevision }),
+          ...(group.colorCode === undefined
+            ? {}
+            : { colorCode: group.colorCode }),
           local: group.id.startsWith('local-context:'),
         })),
     [groups],
