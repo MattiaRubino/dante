@@ -107,6 +107,40 @@ export function temporalCreateU2QuickIntentSupported(
   return true;
 }
 
+export function temporalCreateRecurringEventSharedIntentSupported(
+  fields: TemporalCreateFields,
+): boolean {
+  if (fields.kind !== 'event') return false;
+  if (fields.appearanceTone !== null) return false;
+
+  const defaults = defaultFieldsFor(fields);
+  if (!sameJson(fields.scheduling, defaults.scheduling)) return false;
+  if (!sameJson(fields.execution, defaults.execution)) return false;
+
+  const confirmationWithoutReminder = {
+    ...fields.confirmation,
+    reminderLeadMinutes: defaults.confirmation.reminderLeadMinutes,
+  };
+  if (!sameJson(confirmationWithoutReminder, defaults.confirmation)) return false;
+
+  const event = fields.event;
+  const baseline = defaults.event;
+  return (
+    event.availability === baseline.availability &&
+    event.visibility === baseline.visibility &&
+    event.purpose === baseline.purpose &&
+    event.expectedOutcome === baseline.expectedOutcome &&
+    event.decisionRequired === baseline.decisionRequired &&
+    event.requiredParticipants === baseline.requiredParticipants &&
+    event.optionalParticipants === baseline.optionalParticipants &&
+    event.resources === baseline.resources &&
+    event.preRead === baseline.preRead &&
+    event.preparationMinutes === baseline.preparationMinutes &&
+    event.recoveryMinutes === baseline.recoveryMinutes &&
+    event.conferenceMode === baseline.conferenceMode
+  );
+}
+
 export function temporalCreateHasU6Structure(
   draft: TemporalCreateU2AuthoringDraft,
 ): boolean {
