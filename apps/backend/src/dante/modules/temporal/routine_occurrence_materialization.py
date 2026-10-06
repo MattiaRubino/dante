@@ -9,14 +9,27 @@ Routine policy to newly/readably materialized Occurrences.
 from __future__ import annotations
 
 from datetime import UTC, date, datetime, timedelta
+import hashlib
+import json
 from typing import Literal, cast
-from uuid import UUID
+from uuid import UUID, uuid7
 from zoneinfo import ZoneInfo
 
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from dante.modules.temporal.authoring import (
+    ActivityChildIntent,
+    AuthoringLifeAreaIntent,
+    AuthoringResult,
+    TemporalAuthoringApplication,
+)
+from dante.modules.temporal.movement_policy import (
+    MovementPolicyApplication,
+    MovementPolicyRule,
+)
+from dante.modules.temporal.placement_lock import PlacementLockApplication
 from dante.modules.temporal.occurrence import (
     CalendarCoordinate,
     ElapsedCoordinate,
@@ -56,6 +69,9 @@ class RoutineOccurrenceMaterializationApplication:
         self._policies = RoutineOccurrencePolicyApplication(session_factory)
         self._schedules = TemporalScheduleApplication(session_factory)
         self._reminders = ScheduleReminderApplication(session_factory)
+        self._authoring = TemporalAuthoringApplication(session_factory)
+        self._movement = MovementPolicyApplication(session_factory)
+        self._locks = PlacementLockApplication(session_factory)
 
     async def _sources(
         self, self_person_ref: NativeRef
