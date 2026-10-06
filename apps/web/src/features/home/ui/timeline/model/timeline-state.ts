@@ -210,6 +210,7 @@ function sameEvent(left: TimelineEvent, right: TimelineEvent): boolean {
     left.title === right.title &&
     left.groupId === right.groupId &&
     left.appearanceTone === right.appearanceTone &&
+    left.appearanceColorCode === right.appearanceColorCode &&
     left.origin === right.origin &&
     left.meta === right.meta &&
     left.canonicalBasis?.kind === right.canonicalBasis?.kind &&
