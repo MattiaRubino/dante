@@ -186,7 +186,12 @@ describe('Temporal Create U2 entry', () => {
   it('creates an Activity without requiring any Life Area and persists the DANTE default color', async () => {
     const { activityRequests } = renderEntry();
 
-    expect(screen.getByRole('option', { name: 'Ripeti · Mai' })).toBeTruthy();
+    expect(screen.queryByLabelText('Ripeti')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: /Opzioni avanzate/ }));
+    expect(screen.getByLabelText('Ripeti')).toBeTruthy();
+    fireEvent.click(
+      screen.getByRole('button', { name: /Nascondi opzioni avanzate/ }),
+    );
     expect(
       (screen.getByLabelText('Ricorda') as HTMLSelectElement).disabled,
     ).toBe(false);
