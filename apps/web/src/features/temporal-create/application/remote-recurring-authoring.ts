@@ -133,9 +133,16 @@ export type CreateRecurringRoutineRequest = Readonly<{
 export type CreateRecurringEventRequest = Readonly<{
   operationId: string;
   title: string;
-  lifeAreaRef: string;
+  lifeArea?: TemporalAuthoringLifeAreaInput;
+  description?: string;
+  location?: string;
+  itemColorCode?: string;
   agendaParts?: readonly string[];
   recurrence: RecurringAuthoringRecurrence;
+  placementKind: 'timed' | 'all_day';
+  durationMinutes?: number | null;
+  durationDays?: number | null;
+  reminderLeadMinutes?: number | null;
 }>;
 
 export type RecurringAuthoringResult = Readonly<{
@@ -350,9 +357,16 @@ export function createRemoteRecurringAuthoringDataSource(
       return post('/api/v1/temporal/recurring/events', {
         operation_id: request.operationId,
         title: request.title,
-        life_area_ref: request.lifeAreaRef,
+        life_area: lifeAreaPayload(request.lifeArea) ?? null,
+        description: request.description ?? null,
+        location: request.location ?? null,
+        item_color_code: request.itemColorCode ?? null,
         agenda_parts: [...(request.agendaParts ?? [])],
         recurrence: request.recurrence,
+        placement_kind: request.placementKind,
+        duration_minutes: request.durationMinutes ?? null,
+        duration_days: request.durationDays ?? null,
+        reminder_lead_minutes: request.reminderLeadMinutes ?? null,
       });
     },
   });
