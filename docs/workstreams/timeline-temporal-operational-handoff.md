@@ -360,3 +360,7 @@ Sub-Activities are implementation/backward-compatibility residue, not an active
 Create product surface. Do not reintroduce them while aligning Activity and
 Event. Shared Event work should cover recurrence, Life Area/color, location,
 description, Reminder and other genuinely shared capabilities only.
+
+## 2026-10-06 — Create closure decision freeze
+
+The active Activity/Event Create cleanup is now governed by `timeline-temporal-operational-create-closure-mini-roadmap-2026-10-06.md`. It freezes the compact three-batch plan: existing Event/B09/common capability consolidation; shared Reality + Objectives; then cleanup and user-run closure gate. Product copy uses **Scaletta** for B03-D Agenda; Sub-Activities are not a current Create product capability; sharing one item does not imply shared calendar/free-busy access.
