@@ -31,6 +31,7 @@ export type RecordActualCommand = Readonly<{
   operationId: string;
   expectedMaterialStateRef: string | null;
   realizationOccurred: boolean;
+  sessionBases?: readonly TemporalActualSessionBasis[];
   acknowledgeUnresolvedChildren?: boolean;
 }>;
 
@@ -232,7 +233,10 @@ export function createRemoteTemporalActualDataSource(
             ? { acknowledge_unresolved_children: true }
             : {}),
           timing: null,
-          session_bases: [],
+          session_bases: (command.sessionBases ?? []).map((basis) => ({
+            session_ref: basis.sessionRef,
+            session_timing_material_state_ref: basis.sessionTimingMaterialStateRef,
+          })),
         }),
       });
       if (!response.ok) throw await problem(response);
