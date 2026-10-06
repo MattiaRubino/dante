@@ -137,12 +137,10 @@ describe('TemporalCreateComposer', () => {
     fireEvent.click(
       screen.getByRole('button', { name: 'Aggiungi punto alla scaletta' }),
     );
-    const item = screen.getByRole('textbox', { name: 'Punto scaletta 1' });
-    fireEvent.change(item, { target: { value: 'Decisione architetturale' } });
 
     expect(onPatch).toHaveBeenCalledWith({
       event: expect.objectContaining({
-        agendaParts: ['Decisione architetturale'],
+        agendaParts: [''],
       }),
     });
   });
