@@ -135,6 +135,31 @@ export function TemporalCreateComposer({
   }, [discardPending]);
 
   useEffect(() => {
+    if (!advanced) return;
+
+    const root = document.documentElement;
+    const body = document.body;
+    const previousRootOverflow = root.style.overflow;
+    const previousBodyOverflow = body.style.overflow;
+    const previousRootOverscroll = root.style.overscrollBehavior;
+    const previousBodyOverscroll = body.style.overscrollBehavior;
+
+    root.style.overflow = 'hidden';
+    body.style.overflow = 'hidden';
+    root.style.overscrollBehavior = 'none';
+    body.style.overscrollBehavior = 'none';
+    root.dataset.temporalCreateScrollLock = 'true';
+
+    return () => {
+      root.style.overflow = previousRootOverflow;
+      body.style.overflow = previousBodyOverflow;
+      root.style.overscrollBehavior = previousRootOverscroll;
+      body.style.overscrollBehavior = previousBodyOverscroll;
+      delete root.dataset.temporalCreateScrollLock;
+    };
+  }, [advanced]);
+
+  useEffect(() => {
     if (!advanced || advancedTargetRef.current !== 'recurrence') return;
     const frame = requestAnimationFrame(() => {
       dialogRef.current
@@ -328,7 +353,7 @@ export function TemporalCreateComposer({
 
   return (
     <div
-      className={`temporal-create-backdrop${advanced ? ' is-advanced' : ''}${discardPending ? ' is-modal' : ''}`}
+      className={`temporal-create-backdrop${advanced ? ' is-advanced is-modal' : ''}${discardPending && !advanced ? ' is-modal' : ''}`}
       data-temporal-create="backdrop"
       onPointerDown={(event) => {
         if (event.target === event.currentTarget) requestCloseFromBackdrop();
@@ -341,7 +366,7 @@ export function TemporalCreateComposer({
         data-temporal-create-surface={advanced ? 'advanced' : 'base'}
         data-pinned={pinned || undefined}
         role="dialog"
-        aria-modal={discardPending || undefined}
+        aria-modal={advanced || discardPending || undefined}
         aria-label={t(($) => $.common.home.timeline.create.title)}
         aria-busy={pending || undefined}
         onKeyDown={handleKeyDown}
