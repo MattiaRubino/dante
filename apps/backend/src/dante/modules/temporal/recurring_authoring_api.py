@@ -94,6 +94,8 @@ class CreateRecurringEventRequest(BaseModel):
     duration_minutes: int | None = Field(default=None, ge=1, le=525_600)
     duration_days: int | None = Field(default=None, ge=1, le=3660)
     reminder_lead_minutes: int | None = Field(default=None, ge=0, le=10_080)
+    reality_mode: Literal["manual", "review_on_end", "auto_confirm_outcome"] = "manual"
+    objectives: list[dict[str, Any]] = Field(default_factory=list, max_length=100)
 
 
 class RecurringAuthoringResponse(BaseModel):
@@ -300,6 +302,8 @@ async def create_recurring_event(
             duration_minutes=payload.duration_minutes,
             duration_days=payload.duration_days,
             reminder_lead_minutes=payload.reminder_lead_minutes,
+            reality_mode=payload.reality_mode,
+            objectives=tuple(payload.objectives),
         )
         return RecurringAuthoringResponse(**asdict(value))
     except Exception as exc:
