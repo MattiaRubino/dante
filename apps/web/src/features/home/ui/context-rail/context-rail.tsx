@@ -192,15 +192,15 @@ export function ContextRail() {
                     kind={item.subjectKind}
                     subjectRef={item.subjectRef}
                     showObjectives={false}
-                    sessionBasis={
-                      item.sessionRef && item.sessionTimingMaterialStateRef
-                        ? {
+                    {...(item.sessionRef && item.sessionTimingMaterialStateRef
+                      ? {
+                          sessionBasis: {
                             sessionRef: item.sessionRef,
                             sessionTimingMaterialStateRef:
                               item.sessionTimingMaterialStateRef,
-                          }
-                        : undefined
-                    }
+                          },
+                        }
+                      : {})}
                     onRecorded={ownerRecorded}
                   />
                 ) : (
