@@ -104,15 +104,11 @@ export function TimelineTruthInspector() {
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
 
   useEffect(() => {
-    if (subjects.length === 0) {
-      setSelectedKey(null);
-      return;
-    }
     if (
-      selectedKey === null ||
+      selectedKey !== null &&
       !subjects.some((item) => item.key === selectedKey)
     ) {
-      setSelectedKey(subjects[0]?.key ?? null);
+      setSelectedKey(null);
     }
   }, [selectedKey, subjects]);
 
