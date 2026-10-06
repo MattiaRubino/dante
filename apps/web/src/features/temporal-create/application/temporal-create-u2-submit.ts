@@ -466,20 +466,24 @@ export function buildTemporalCreateRecurringActivityTemplate(
   if (fields.kind !== 'activity' || fields.timeSemantics !== 'timed' || bands === null) {
     throw new Error('Recurring Activity template requires a timed Activity.');
   }
-  const anchor = bands[0]!.start;
+  const recurrenceAnchor = Temporal.PlainDateTime.from(
+    `${fields.date}T${fields.startTime}`,
+  );
+  const envelopeStart = bands[0]!.start;
   const envelopeEnd = bands[bands.length - 1]!.end;
   const window = (
     start: Temporal.PlainDateTime,
     end: Temporal.PlainDateTime,
   ) =>
     Object.freeze({
-      start_offset_minutes: localMinutesBetween(anchor, start),
+      start_offset_minutes: localMinutesBetween(recurrenceAnchor, start),
       duration_minutes: localMinutesBetween(start, end),
     });
 
   const structure = draft.activityStructure;
   const template: RecurringActivityTemplate = Object.freeze({
     version: 1 as const,
+    root_window: window(envelopeStart, envelopeEnd),
     description: optionalText(fields.notes) ?? null,
     location: optionalText(fields.event.location) ?? null,
     item_color_code:
@@ -542,7 +546,7 @@ export function buildTemporalCreateRecurringActivityTemplate(
   });
 
   return Object.freeze({
-    durationMinutes: localMinutesBetween(anchor, envelopeEnd),
+    durationMinutes: localMinutesBetween(envelopeStart, envelopeEnd),
     template,
   });
 }
