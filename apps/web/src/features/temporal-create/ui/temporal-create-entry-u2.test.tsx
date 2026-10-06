@@ -177,7 +177,7 @@ describe('Temporal Create U2 entry', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Aggiungi' }));
 
     await waitFor(() => expect(activityRequests).toHaveLength(1));
-    expect(activityRequests[0]?.sessionCaptureMode).toBe('record_and_live');
+    expect(activityRequests[0]?.sessionCaptureMode).toBe('live');
     expect(activityRequests[0]?.plannedSliceNames).toEqual(['Ricerca fonti']);
     expect(activityRequests[0]?.plannedSlices).toHaveLength(1);
     expect(activityRequests[0]?.children).toEqual([]);
