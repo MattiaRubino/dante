@@ -1,5 +1,6 @@
 import { Temporal } from '@dante/time';
 
+import type { RecurringActivityTemplate } from './remote-recurring-authoring';
 import type {
   TemporalAuthorActivityRequest,
   TemporalAuthorEventRequest,
@@ -448,6 +449,102 @@ function placementInput(
         period: placement.period,
       });
   }
+}
+
+function localMinutesBetween(
+  start: Temporal.PlainDateTime,
+  end: Temporal.PlainDateTime,
+): number {
+  return Math.round(end.since(start).total({ unit: 'minutes' }));
+}
+
+export function buildTemporalCreateRecurringActivityTemplate(
+  fields: TemporalCreateFields,
+  draft: TemporalCreateU2AuthoringDraft,
+): Readonly<{ durationMinutes: number; template: RecurringActivityTemplate }> {
+  const bands = activityBands(fields, draft);
+  if (fields.kind !== 'activity' || fields.timeSemantics !== 'timed' || bands === null) {
+    throw new Error('Recurring Activity template requires a timed Activity.');
+  }
+  const anchor = bands[0]!.start;
+  const envelopeEnd = bands[bands.length - 1]!.end;
+  const window = (
+    start: Temporal.PlainDateTime,
+    end: Temporal.PlainDateTime,
+  ) =>
+    Object.freeze({
+      start_offset_minutes: localMinutesBetween(anchor, start),
+      duration_minutes: localMinutesBetween(start, end),
+    });
+
+  const structure = draft.activityStructure;
+  const template: RecurringActivityTemplate = Object.freeze({
+    version: 1 as const,
+    description: optionalText(fields.notes) ?? null,
+    location: optionalText(fields.event.location) ?? null,
+    item_color_code:
+      draft.lifeArea.kind === 'none' ? draft.itemColorCode : null,
+    session_capture_mode: structure.captureMode,
+    minimum_session_duration_microseconds:
+      fields.execution.sessionMode === 'splittable'
+        ? fields.execution.minSessionMinutes * 60 * 1_000_000
+        : null,
+    child_guard_mode: structure.childGuardMode,
+    reality_mode: structure.realityMode,
+    placement_protected: structure.placementProtected,
+    activity_intervals:
+      structure.activityIntervals.length === 0
+        ? Object.freeze([])
+        : Object.freeze(
+            bands.map((band) => window(band.start, band.end)),
+          ),
+    planned_slices: Object.freeze(
+      structure.plannedSlices.map((slice) => {
+        const value = sliceLocalWindow(slice);
+        if (value === null) {
+          throw new Error('Recurring Activity Session has an invalid time.');
+        }
+        return Object.freeze({
+          ...window(value.start, value.end),
+          name: slice.title.trim(),
+        });
+      }),
+    ),
+    children: Object.freeze(
+      structure.children.map((child) => {
+        const placement = childLocalWindow(child);
+        return Object.freeze({
+          title: child.title.trim(),
+          requirement_code: child.requirementCode,
+          session_capture_mode: child.captureMode,
+          reality_mode: child.realityMode ?? 'manual',
+          placement:
+            placement === null
+              ? null
+              : window(placement.start, placement.end),
+          planned_slices: Object.freeze(
+            child.plannedSlices.map((slice) => {
+              const value = sliceLocalWindow(slice);
+              if (value === null) {
+                throw new Error(
+                  'Recurring Sub-Activity Session has an invalid time.',
+                );
+              }
+              return Object.freeze({
+                ...window(value.start, value.end),
+                name: slice.title.trim(),
+              });
+            }),
+          ),
+        });
+      }),
+    ),
+  });
+
+  return Object.freeze({
+    durationMinutes: localMinutesBetween(anchor, envelopeEnd),
+    template,
+  });
 }
 
 export function buildTemporalCreateU2Request(
