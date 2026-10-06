@@ -24,10 +24,17 @@ export type TemporalCreateU2LifeAreaDraft =
       colorCode: string | null;
     }>;
 
+export type TemporalCreateEventParticipantDraft = Readonly<{
+  personRef: string;
+  displayLabel: string;
+  requirementCode: 'required' | 'optional';
+}>;
+
 export type TemporalCreateU2AuthoringDraft = Readonly<{
   endDate: string;
   lifeArea: TemporalCreateU2LifeAreaDraft;
   itemColorCode: string | null;
+  eventParticipants: readonly TemporalCreateEventParticipantDraft[];
   activityStructure: TemporalCreateActivityStructureDraft;
 }>;
 
@@ -93,6 +100,7 @@ export function createTemporalCreateU2AuthoringDraft(
     endDate: inferredEndDate(fields),
     lifeArea: Object.freeze({ kind: 'none' as const }),
     itemColorCode: TEMPORAL_CREATE_U2_DEFAULT_COLOR,
+    eventParticipants: Object.freeze([]),
     activityStructure: Object.freeze({
       captureMode: 'disabled' as const,
       realityMode: 'manual' as const,
