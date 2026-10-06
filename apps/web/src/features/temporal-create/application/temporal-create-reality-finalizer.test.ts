@@ -37,24 +37,24 @@ describe('Temporal Create policy finalizer', () => {
     > = [];
     const lockCalls: string[] = [];
     const realitySource = {
-      get: async () => {
-        throw new Error('not used');
-      },
-      configure: async (
+      configureReality: async (
+        kind: 'activity' | 'event' | 'occurrence',
         activityRef: string,
         command: Readonly<{ operationId: string; mode: string }>,
       ) => {
+        expect(kind).toBe('activity');
         realityCalls.push({
           activityRef,
           operationId: command.operationId,
           mode: command.mode,
         });
-        return {
-          activityRef,
-          stateRef: null,
-          mode: command.mode,
-          replayed: realityCalls.length > 1,
-        };
+      },
+      createObjective: async () => {
+        throw new Error('not used');
+      },
+      listObjectives: async () => Object.freeze([]),
+      recordResult: async () => {
+        throw new Error('not used');
       },
     };
     const movementSource = {
