@@ -254,6 +254,19 @@ class RoutineOccurrenceMaterializationApplication:
                     enabled=True,
                     lead_minutes=policy.reminder_lead_minutes,
                 )
+            await self._set_reality(
+                self_person_ref=self_person_ref,
+                subject_kind="occurrence",
+                subject_ref=occurrence.occurrence_ref,
+                mode=policy.reality_mode,
+                operation_suffix=f"event:{source_ref}",
+            )
+            await self._create_objectives(
+                self_person_ref=self_person_ref,
+                subject_kind="occurrence",
+                subject_ref=occurrence.occurrence_ref,
+                objectives=policy.objectives,
+            )
 
     async def _routine_source(
         self, *, self_person_ref: NativeRef, routine_ref: UUID
@@ -346,19 +359,20 @@ class RoutineOccurrenceMaterializationApplication:
         self,
         *,
         self_person_ref: NativeRef,
-        occurrence_ref: UUID,
-        activity_ref: NativeRef,
+        subject_kind: Literal["activity", "event", "occurrence"],
+        subject_ref: UUID,
         mode: object,
-        suffix: str,
+        operation_suffix: str,
     ) -> None:
         if mode == "manual":
             return
         if mode not in {"review_on_end", "auto_confirm_outcome"}:
-            raise OccurrenceInputError("Recurring Activity Reality policy is invalid.")
-        operation_id = f"b14:reality:{suffix}:{occurrence_ref}"
+            raise OccurrenceInputError("Recurring Reality policy is invalid.")
+        operation_id = f"b14:reality:{operation_suffix}:{subject_ref}"
         intent = {
             "version": 1,
-            "activity_ref": str(activity_ref),
+            "subject_kind": subject_kind,
+            "subject_native_ref": str(subject_ref),
             "mode_code": mode,
             "expected_state_ref": None,
         }
@@ -369,20 +383,104 @@ class RoutineOccurrenceMaterializationApplication:
             async with self._session_factory() as session, session.begin():
                 await session.execute(
                     text(
-                        """SELECT * FROM dante.set_self_activity_outcome_review_policy(
-                             :actor,:operation,:fingerprint,:activity,:state,:mode,NULL)"""
+                        """SELECT * FROM dante.set_self_reality_review_policy(
+                             :actor,:operation,:fingerprint,:kind,:subject,
+                             :state,:mode,NULL)"""
                     ),
                     {
                         "actor": self_person_ref,
                         "operation": operation_id,
                         "fingerprint": fingerprint,
-                        "activity": activity_ref,
+                        "kind": subject_kind,
+                        "subject": subject_ref,
                         "state": uuid7(),
                         "mode": mode,
                     },
                 )
         except SQLAlchemyError as exc:
             raise OccurrencePersistenceError() from exc
+
+    async def _create_objectives(
+        self,
+        *,
+        self_person_ref: NativeRef,
+        subject_kind: Literal["activity", "event", "occurrence"],
+        subject_ref: UUID,
+        objectives: object,
+    ) -> None:
+        if objectives is None:
+            return
+        if not isinstance(objectives, (list, tuple)) or len(objectives) > 100:
+            raise OccurrenceInputError("Recurring Objectives template is invalid.")
+
+        for index, raw in enumerate(objectives):
+            if not isinstance(raw, dict):
+                raise OccurrenceInputError("Recurring Objective template is invalid.")
+            label = str(raw.get("label", "")).strip()
+            result_kind = raw.get("result_kind")
+            comparator = raw.get("comparator_code")
+            target_value = raw.get("target_value")
+            target_min = raw.get("target_min")
+            target_max = raw.get("target_max")
+            unit_code = raw.get("unit_code")
+            presentation_order = raw.get("presentation_order", index)
+            if not label or not isinstance(presentation_order, int):
+                raise OccurrenceInputError("Recurring Objective template is invalid.")
+
+            intent = {
+                "version": 1,
+                "subject_kind": subject_kind,
+                "subject_native_ref": str(subject_ref),
+                "label": label,
+                "result_kind": result_kind,
+                "comparator_code": comparator,
+                "target_value": target_value,
+                "target_min": target_min,
+                "target_max": target_max,
+                "unit_code": unit_code,
+                "presentation_order": presentation_order,
+            }
+            fingerprint = hashlib.sha256(
+                json.dumps(intent, sort_keys=True, separators=(",", ":")).encode("utf-8")
+            ).hexdigest()
+            operation_id = f"b14:objective:{subject_kind}:{subject_ref}:{index}"
+            params = {
+                "actor": self_person_ref,
+                "operation": operation_id,
+                "fingerprint": fingerprint,
+                "objective": uuid7(),
+                "subject": subject_ref,
+                "label": label,
+                "result_kind": result_kind,
+                "comparator": comparator,
+                "target_value": target_value,
+                "target_min": target_min,
+                "target_max": target_max,
+                "unit": unit_code,
+                "presentation_order": presentation_order,
+            }
+            if subject_kind == "occurrence":
+                statement = """
+                    SELECT * FROM dante.create_self_occurrence_objective(
+                        :actor,:operation,:fingerprint,:objective,:subject,
+                        :label,:result_kind,:comparator,:target_value,
+                        :target_min,:target_max,:unit,:presentation_order
+                    )
+                """
+            else:
+                statement = """
+                    SELECT * FROM dante.create_self_temporal_objective(
+                        :actor,:operation,:fingerprint,:objective,:kind,:subject,
+                        :label,:result_kind,:comparator,:target_value,
+                        :target_min,:target_max,:unit,:presentation_order
+                    )
+                """
+                params["kind"] = subject_kind
+            try:
+                async with self._session_factory() as session, session.begin():
+                    await session.execute(text(statement), params)
+            except SQLAlchemyError as exc:
+                raise OccurrencePersistenceError() from exc
 
     async def _protect_schedules(
         self,
@@ -541,18 +639,24 @@ class RoutineOccurrenceMaterializationApplication:
         )
         await self._set_reality(
             self_person_ref=self_person_ref,
-            occurrence_ref=occurrence_ref,
-            activity_ref=result.item.subject_native_ref,
+            subject_kind="activity",
+            subject_ref=result.item.subject_native_ref,
             mode=template.get("reality_mode", "manual"),
-            suffix="root",
+            operation_suffix=f"routine-root:{occurrence_ref}",
+        )
+        await self._create_objectives(
+            self_person_ref=self_person_ref,
+            subject_kind="activity",
+            subject_ref=result.item.subject_native_ref,
+            objectives=template.get("objectives", []),
         )
         for index, child in enumerate(result.children):
             await self._set_reality(
                 self_person_ref=self_person_ref,
-                occurrence_ref=occurrence_ref,
-                activity_ref=child.item.subject_native_ref,
+                subject_kind="activity",
+                subject_ref=child.item.subject_native_ref,
                 mode=child_reality[index] if index < len(child_reality) else "manual",
-                suffix=f"child-{index}",
+                operation_suffix=f"routine-child:{occurrence_ref}:{index}",
             )
         if bool(template.get("placement_protected", False)):
             await self._protect_schedules(
