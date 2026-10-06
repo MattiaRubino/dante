@@ -32,6 +32,7 @@ import type {
   TimelineTimeMapper,
 } from './model/timeline-types';
 import { TimelineAllDayLane } from './timeline-all-day-layer';
+import { LEGACY_UNASSIGNED_GROUP } from './timeline-organization';
 
 export type TimelineRenderedDay = Readonly<{
   date: PlainDate;
@@ -181,6 +182,11 @@ function TimelineEventCard({
       ? undefined
       : group?.itemColorCodes?.[organizationKey]) ??
     group?.colorCode;
+  const groupLabel =
+    event.groupId === LEGACY_UNASSIGNED_GROUP
+      ? null
+      : (group?.label ?? event.groupId);
+  const cardMeta = [groupLabel, event.meta].filter(Boolean).join(' · ');
   const isFocused = focusedEvent?.id === event.id;
   const isGroupmate =
     focusedEvent !== null &&
@@ -294,10 +300,9 @@ function TimelineEventCard({
           {formatTimelineMinute(event.startMinute)}–
           {formatTimelineMinute(event.endMinute)}
         </button>
-        <div className="timeline-event-card__meta">
-          {group?.label ?? event.groupId}
-          {event.meta ? ` · ${event.meta}` : ''}
-        </div>
+        {cardMeta ? (
+        <div className="timeline-event-card__meta">{cardMeta}</div>
+      ) : null}
         {sessionActivityRef === null ? null : (
           <ActivitySessionCardControls
             activityRef={sessionActivityRef}
