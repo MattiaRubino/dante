@@ -215,3 +215,4 @@ SELECT policy.placement_kind,policy.duration_minutes,policy.duration_days,
    AND policy.event_ref=$2
    AND event.self_person_ref=$1
 $$;
+"""
