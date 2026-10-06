@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Literal
+from typing import Any, Literal
 from uuid import UUID
 
 from sqlalchemy import text
@@ -38,6 +38,8 @@ class EventOccurrencePolicyView:
     duration_minutes: int | None
     duration_days: int | None
     reminder_lead_minutes: int | None
+    reality_mode: Literal["manual", "review_on_end", "auto_confirm_outcome"]
+    objectives: tuple[dict[str, Any], ...]
     created_at: datetime
     replayed: bool = False
 
@@ -70,6 +72,8 @@ class EventOccurrencePolicyApplication:
         duration_minutes: int | None,
         duration_days: int | None,
         reminder_lead_minutes: int | None,
+        reality_mode: Literal["manual", "review_on_end", "auto_confirm_outcome"] = "manual",
+        objectives: tuple[dict[str, Any], ...] = (),
     ) -> EventOccurrencePolicyView:
         if placement_kind == "timed":
             if duration_minutes is None or not 1 <= duration_minutes <= 525_600:
@@ -100,13 +104,19 @@ class EventOccurrencePolicyApplication:
                 "Event Reminder lead must contain 0 to 10080 minutes."
             )
 
+        if reality_mode not in {"manual", "review_on_end", "auto_confirm_outcome"}:
+            raise EventOccurrencePolicyInputError("Event Reality policy is invalid.")
+        if len(objectives) > 100 or any(not isinstance(value, dict) for value in objectives):
+            raise EventOccurrencePolicyInputError("Event Objectives template is invalid.")
+
         try:
             async with self._session_factory() as session, session.begin():
                 row = (
                     await session.execute(
                         text(
-                            """SELECT * FROM dante.set_self_event_occurrence_policy(
-                                 :actor,:event,:kind,:minutes,:days,:reminder)"""
+                            """SELECT * FROM dante.set_self_event_occurrence_policy_v2(
+                                 :actor,:event,:kind,:minutes,:days,:reminder,
+                                 :reality,:objectives)"""
                         ),
                         {
                             "actor": self_person_ref,
@@ -115,6 +125,8 @@ class EventOccurrencePolicyApplication:
                             "minutes": duration_minutes,
                             "days": duration_days,
                             "reminder": reminder_lead_minutes,
+                            "reality": reality_mode,
+                            "objectives": list(objectives),
                         },
                     )
                 ).mappings().one()
@@ -133,6 +145,8 @@ class EventOccurrencePolicyApplication:
                 if row["reminder_lead_minutes"] is None
                 else int(row["reminder_lead_minutes"])
             ),
+            reality_mode=row["reality_mode"],
+            objectives=tuple(dict(value) for value in (row["objectives"] or [])),
             created_at=row["created_at"],
             replayed=bool(row["replayed"]),
         )
@@ -148,7 +162,7 @@ class EventOccurrencePolicyApplication:
                 row = (
                     await session.execute(
                         text(
-                            "SELECT * FROM dante.get_self_event_occurrence_policy(:actor,:event)"
+                            "SELECT * FROM dante.get_self_event_occurrence_policy_v2(:actor,:event)"
                         ),
                         {"actor": self_person_ref, "event": event_ref},
                     )
@@ -170,5 +184,7 @@ class EventOccurrencePolicyApplication:
                 if row["reminder_lead_minutes"] is None
                 else int(row["reminder_lead_minutes"])
             ),
+            reality_mode=row["reality_mode"],
+            objectives=tuple(dict(value) for value in (row["objectives"] or [])),
             created_at=row["created_at"],
         )
