@@ -75,7 +75,7 @@ function calendarRange(fields: TemporalCreateFields) {
   }
 }
 
-function activityRecurrence(
+export function buildTemporalCreateActivityRecurrence(
   fields: TemporalCreateFields,
 ): RecurringAuthoringRecurrence {
   if (fields.eventRecurrence.patternKind !== 'calendar-wall-clock') {
@@ -361,7 +361,7 @@ class B14TemporalCreateRuntime implements TemporalCreateRuntime {
           ? prepared.metadata.contextId
           : null,
         tagRefs: Object.freeze([]),
-        recurrence: activityRecurrence(fields),
+        recurrence: buildTemporalCreateActivityRecurrence(fields),
         durationMinutes: fields.durationMinutes,
         reminderLeadMinutes: fields.confirmation.reminderLeadMinutes,
       });
