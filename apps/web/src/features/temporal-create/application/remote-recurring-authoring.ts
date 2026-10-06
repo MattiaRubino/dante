@@ -84,6 +84,39 @@ export type RecurringAuthoringRecurrence =
   | RecurringAuthoringQuotaRecurrence
   | RecurringAuthoringCyclicRecurrence;
 
+export type RecurringActivityWindowTemplate = Readonly<{
+  start_offset_minutes: number;
+  duration_minutes: number;
+}>;
+
+export type RecurringActivityPlannedSliceTemplate =
+  RecurringActivityWindowTemplate &
+    Readonly<{ name: string }>;
+
+export type RecurringActivityChildTemplate = Readonly<{
+  title: string;
+  requirement_code: 'required' | 'optional';
+  session_capture_mode: 'disabled' | 'record' | 'live' | 'record_and_live';
+  reality_mode: 'manual' | 'review_on_end' | 'auto_confirm_outcome';
+  placement: RecurringActivityWindowTemplate | null;
+  planned_slices: readonly RecurringActivityPlannedSliceTemplate[];
+}>;
+
+export type RecurringActivityTemplate = Readonly<{
+  version: 1;
+  description: string | null;
+  location: string | null;
+  item_color_code: string | null;
+  session_capture_mode: 'disabled' | 'record' | 'live' | 'record_and_live';
+  minimum_session_duration_microseconds: number | null;
+  child_guard_mode: 'none' | 'confirm' | 'block';
+  reality_mode: 'manual' | 'review_on_end' | 'auto_confirm_outcome';
+  placement_protected: boolean;
+  activity_intervals: readonly RecurringActivityWindowTemplate[];
+  planned_slices: readonly RecurringActivityPlannedSliceTemplate[];
+  children: readonly RecurringActivityChildTemplate[];
+}>;
+
 export type CreateRecurringRoutineRequest = Readonly<{
   operationId: string;
   title: string;
@@ -92,6 +125,7 @@ export type CreateRecurringRoutineRequest = Readonly<{
   recurrence: RecurringAuthoringRecurrence;
   durationMinutes?: number;
   reminderLeadMinutes?: number | null;
+  activityTemplate?: RecurringActivityTemplate | null;
 }>;
 
 export type CreateRecurringEventRequest = Readonly<{
@@ -291,6 +325,7 @@ export function createRemoteRecurringAuthoringDataSource(
         recurrence: request.recurrence,
         duration_minutes: request.durationMinutes ?? 30,
         reminder_lead_minutes: request.reminderLeadMinutes ?? null,
+        activity_template: request.activityTemplate ?? null,
       });
     },
     createEvent(request: CreateRecurringEventRequest) {
