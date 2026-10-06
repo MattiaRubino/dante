@@ -115,9 +115,32 @@ def test_inbox_reviews_shared_reality_and_objectives_without_inventing_actual(
         )
         assert event_objective.status_code == 201
 
+        all_day = _post_scheduled_event(
+            client,
+            csrf=csrf,
+            operation_id="inbox:all-day:create",
+            title="Giornata studio",
+            placement={
+                "kind": "date_span",
+                "start_date": "2026-10-03",
+                "end_date_exclusive": "2026-10-04",
+            },
+        )
+        assert all_day.status_code == 201
+        all_day_ref = all_day.json()["event_ref"]
+        all_day_policy = client.post(
+            f"/api/v1/temporal/events/{all_day_ref}/reality-policy",
+            json={
+                "operation_id": "inbox:all-day:policy",
+                "mode_code": "review_on_end",
+            },
+            headers=headers,
+        )
+        assert all_day_policy.status_code == 201
+
         queued = client.get(queue_path, headers=_base_headers())
         assert queued.status_code == 200
-        assert queued.json()["count"] == 4
+        assert queued.json()["count"] == 5
         assert {
             (item["subject_ref"], item["reason_code"])
             for item in queued.json()["items"]
@@ -126,6 +149,7 @@ def test_inbox_reviews_shared_reality_and_objectives_without_inventing_actual(
             (activity_ref, "objective_review"),
             (event_ref, "realization_review"),
             (event_ref, "objective_review"),
+            (all_day_ref, "realization_review"),
         }
 
         actual = client.post(
@@ -149,5 +173,8 @@ def test_inbox_reviews_shared_reality_and_objectives_without_inventing_actual(
         )
         assert assessment.status_code == 201
         remaining = client.get(queue_path, headers=_base_headers()).json()
-        assert remaining["count"] == 2
-        assert {item["subject_ref"] for item in remaining["items"]} == {event_ref}
+        assert remaining["count"] == 3
+        assert {item["subject_ref"] for item in remaining["items"]} == {
+            event_ref,
+            all_day_ref,
+        }
