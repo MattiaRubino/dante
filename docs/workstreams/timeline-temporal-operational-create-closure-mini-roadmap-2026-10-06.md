@@ -86,3 +86,22 @@ The branch now contains the first consolidated Event Create candidate:
 - A focused PostgreSQL test candidate now covers recurring Event policy → Occurrence Schedule → Reminder → replay.
 
 This is an **implementation candidate**, not a PASS claim. The user-run local web/backend/generated gates remain required before Batch A is marked proven.
+
+## 2026-10-06 — Batch B implementation candidate
+
+The branch now contains the shared Reality/Objectives product vertical:
+
+- **Reality** is a shared Activity/Event product policy, separate from Actual itself. Product modes are manual, ask-at-end and automatic confirmation; the latter remains policy, not fabricated reality.
+- **Objectives** are optional `0..N` ordered targets for Activity/Event with the first bounded product forms: boolean, quantity (`= / >= / <=` + unit), qualitative and numeric range.
+- Objective definitions are persisted separately from B10 Outcome. Recorded objective values create Observation-backed facts and a bounded Evaluation assessment (`satisfied | partial | not_satisfied | unknown | indeterminate`).
+- One-off Activity/Event Create persists Reality/Objectives through idempotent post-authoring follow-up; failure is retried without recreating the Activity/Event.
+- Recurring Activity templates inherit Reality/Objectives into each materialized Activity.
+- Recurring Event policy inherits Reality/Objectives into each concrete Event Occurrence.
+- Timeline Reality inspection now presents the two product levels directly: global **Realtà** plus **Obiettivi**. Raw B10 Outcome/Confirmation/Reconciliation controls remain kernel capabilities but are no longer the default product truth surface for this Create flow.
+- Event Scaletta and B09 participants from Batch A remain unchanged and compose with the shared Reality/Objectives surface.
+
+Persistence candidates are Alembic `20261006_113` and `20261006_114`. They are forward-only and **not locally proved yet**.
+
+## Current closure position
+
+Implementation for Batch A + Batch B is complete as a repository candidate. No CI/GitHub Actions were run. The next step is Batch C only: generated/database-dictionary reconciliation plus one user-run local gate and visual acceptance. Any failures found there are fixes to this candidate, not a reason to reopen the product model.
