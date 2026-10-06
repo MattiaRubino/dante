@@ -173,7 +173,7 @@ describe('temporal create session', () => {
     ]);
   });
 
-  it('normalizes Event creation away from Activity-only unscheduled/flexible states', () => {
+  it('keeps an intentionally unplaced Event while removing Activity-only flexible constraints', () => {
     const activity = createTemporalCreateFields({
       title: 'Leggere',
       kind: 'activity',
@@ -194,8 +194,10 @@ describe('temporal create session', () => {
     expect(temporalCreateHasFlexibleIntent(activity)).toBe(true);
     expect(buildTemporalCreatePlacement(activity)).toBeNull();
     expect(eventSession.draft.current.kind).toBe('event');
-    expect(eventSession.draft.current.timeSemantics).toBe('timed');
+    expect(eventSession.draft.current.timeSemantics).toBe('unscheduled');
     expect(eventSession.draft.current.scheduling.constraintKind).toBe('none');
+    expect(buildTemporalCreatePlacement(eventSession.draft.current)).toBeNull();
+    expect(validateTemporalCreateFields(eventSession.draft.current)).toEqual([]);
   });
 
   it('drops Event-owned recurrence when switching to Activity without explicit Routine ownership', () => {
@@ -248,18 +250,24 @@ describe('temporal create session', () => {
     expect(repeated.eventRecurrence.quotaPeriodKind).toBe('week');
   });
 
-  it('still rejects an externally malformed Event without placement', () => {
+  it('accepts an intentionally unplaced Event but still rejects the legacy coarse Event shortcut', () => {
     const activity = createTemporalCreateFields({
       title: 'Leggere',
       kind: 'activity',
       timeSemantics: 'unscheduled',
       date: '2026-09-01',
     });
-    const malformedEvent = { ...activity, kind: 'event' as const };
+    const unplacedEvent = { ...activity, kind: 'event' as const };
+    const coarseEvent = {
+      ...activity,
+      kind: 'event' as const,
+      timeSemantics: 'coarse' as const,
+    };
 
     expect(validateTemporalCreateFields(activity)).toEqual([]);
+    expect(validateTemporalCreateFields(unplacedEvent)).toEqual([]);
     expect(
-      validateTemporalCreateFields(malformedEvent).map((issue) => issue.code),
+      validateTemporalCreateFields(coarseEvent).map((issue) => issue.code),
     ).toContain('temporal.create.event.requires_placement');
   });
 
