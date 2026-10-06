@@ -64,6 +64,8 @@ describe('HomePage M1 visual materialization', () => {
     const homeShell = container.querySelector('[data-home-region="shell"]');
     expect(homeShell?.getAttribute('data-home-visual-source')).toBe('b2-v27');
     expect(container.querySelector('[data-app-region="topbar"]')).toBeNull();
+    expect(container.querySelector('[data-timeline-truth-inspector]')).toBeNull();
+    expect(container.querySelector('.plan-work-panel')).toBeNull();
 
     for (const region of [
       'orientation',
