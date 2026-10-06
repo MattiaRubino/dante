@@ -70,7 +70,7 @@ LANGUAGE plpgsql SECURITY DEFINER VOLATILE PARALLEL UNSAFE
 SET search_path=pg_catalog,dante,pg_temp AS $function$
 #variable_conflict error
 DECLARE
-    prior dante.schedule_placement_lock%ROWTYPE;
+    prior dante.schedule_placement_lock%%ROWTYPE;
     recorded_at timestamptz := statement_timestamp();
 BEGIN
     IF requested_locked IS NULL THEN
