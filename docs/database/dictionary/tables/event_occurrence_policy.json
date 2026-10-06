@@ -216,7 +216,7 @@
     "unique_constraints": [],
     "check_constraints": [
       {
-        "name": "ck_event_occurrence_policy_placement_kind",
+        "name": "ck_event_occurrence_policy_ck_event_occurrence_policy_p_04ad",
         "expression_contract": "placement_kind IN ('timed','all_day')",
         "reason": "Enforce the ck_event_occurrence_policy_placement_kind invariant.",
         "enforced": true,
@@ -224,7 +224,7 @@
         "no_inherit": false
       },
       {
-        "name": "ck_event_occurrence_policy_duration",
+        "name": "ck_event_occurrence_policy_ck_event_occurrence_policy_duration",
         "expression_contract": "(placement_kind='timed' AND duration_minutes BETWEEN 1 AND 525600 AND duration_days IS NULL) OR (placement_kind='all_day' AND duration_days BETWEEN 1 AND 3660 AND duration_minutes IS NULL AND reminder_lead_minutes IS NULL)",
         "reason": "Enforce the ck_event_occurrence_policy_duration invariant.",
         "enforced": true,
@@ -232,7 +232,7 @@
         "no_inherit": false
       },
       {
-        "name": "ck_event_occurrence_policy_reminder",
+        "name": "ck_event_occurrence_policy_ck_event_occurrence_policy_reminder",
         "expression_contract": "reminder_lead_minutes IS NULL OR reminder_lead_minutes BETWEEN 0 AND 10080",
         "reason": "Enforce the ck_event_occurrence_policy_reminder invariant.",
         "enforced": true,
@@ -240,7 +240,7 @@
         "no_inherit": false
       },
       {
-        "name": "ck_event_occurrence_policy_reality_mode",
+        "name": "ck_event_occurrence_policy_ck_event_occurrence_policy_r_afc5",
         "expression_contract": "reality_mode IN ('manual','review_on_end','auto_confirm_outcome')",
         "reason": "Enforce the ck_event_occurrence_policy_reality_mode invariant.",
         "enforced": true,
@@ -248,7 +248,7 @@
         "no_inherit": false
       },
       {
-        "name": "ck_event_occurrence_policy_objectives",
+        "name": "ck_event_occurrence_policy_ck_event_occurrence_policy_o_9019",
         "expression_contract": "jsonb_typeof(objectives)='array'",
         "reason": "Enforce the ck_event_occurrence_policy_objectives invariant.",
         "enforced": true,
