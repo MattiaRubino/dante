@@ -391,6 +391,7 @@ export function TemporalCreateEntry({
         return false;
       }
 
+      invalidateTemporalTimelineRead();
       setSession(discardTemporalCreateSession(freshFields(defaultDate)));
       closeComposer();
       return true;
