@@ -441,13 +441,11 @@ def main() -> None:
     signal.signal(signal.SIGTERM, request_stop)
     signal.signal(signal.SIGINT, request_stop)
 
-    postgres_port = _free_loopback_port()
-    api_port = _free_loopback_port()
     admin_password = secrets.token_urlsafe(32)
     migrator_password = secrets.token_urlsafe(32)
     runtime_password = secrets.token_urlsafe(32)
     observer_password = secrets.token_urlsafe(32)
-    container_name = f"dante-fullstack-{uuid.uuid4().hex[:12]}"
+    container_name = ""
 
     hibp_server = ThreadingHTTPServer(("127.0.0.1", 0), _HibpHandler)
     hibp_thread = threading.Thread(target=hibp_server.serve_forever, daemon=True)
@@ -462,29 +460,66 @@ def main() -> None:
     container_started = False
 
     try:
-        _docker(
-            "run",
-            "--detach",
-            "--name",
-            container_name,
-            "--label",
-            f"{_SMTP_CONTROL_LABEL}={smtp_capture.control_port}",
-            "--publish",
-            f"127.0.0.1:{postgres_port}:5432",
-            "--env",
-            f"POSTGRES_DB={_DATABASE_NAME}",
-            "--env",
-            "POSTGRES_USER=postgres",
-            "--env",
-            f"POSTGRES_PASSWORD={admin_password}",
-            _POSTGRES_IMAGE,
-            "postgres",
-            "-c",
-            "shared_preload_libraries=pg_stat_statements",
-            "-c",
-            "compute_query_id=on",
-        )
-        container_started = True
+        postgres_port: int | None = None
+        last_bind_error: subprocess.CalledProcessError | None = None
+        for _attempt in range(3):
+            postgres_port = _free_loopback_port()
+            container_name = f"dante-fullstack-{uuid.uuid4().hex[:12]}"
+            try:
+                _docker(
+                    "run",
+                    "--detach",
+                    "--name",
+                    container_name,
+                    "--label",
+                    f"{_SMTP_CONTROL_LABEL}={smtp_capture.control_port}",
+                    "--publish",
+                    f"127.0.0.1:{postgres_port}:5432",
+                    "--env",
+                    f"POSTGRES_DB={_DATABASE_NAME}",
+                    "--env",
+                    "POSTGRES_USER=postgres",
+                    "--env",
+                    f"POSTGRES_PASSWORD={admin_password}",
+                    _POSTGRES_IMAGE,
+                    "postgres",
+                    "-c",
+                    "shared_preload_libraries=pg_stat_statements",
+                    "-c",
+                    "compute_query_id=on",
+                )
+                container_started = True
+                last_bind_error = None
+                break
+            except subprocess.CalledProcessError as exc:
+                stderr = (exc.stderr or "").strip()
+                _docker("rm", "--force", container_name, check=False)
+                bind_collision = any(
+                    marker in stderr.lower()
+                    for marker in (
+                        "port is already allocated",
+                        "address already in use",
+                        "failed to bind host port",
+                    )
+                )
+                if bind_collision:
+                    last_bind_error = exc
+                    continue
+                raise RuntimeError(
+                    "Disposable PostgreSQL container failed to start. "
+                    f"Docker stderr: {stderr or '<empty>'}"
+                ) from exc
+
+        if not container_started or postgres_port is None:
+            stderr = (
+                (last_bind_error.stderr or "").strip()
+                if last_bind_error is not None
+                else ""
+            )
+            raise RuntimeError(
+                "Disposable PostgreSQL could not reserve a loopback port after 3 attempts. "
+                f"Docker stderr: {stderr or '<empty>'}"
+            )
 
         _wait_for_postgres(port=postgres_port, password=admin_password)
         _create_extensions(port=postgres_port, password=admin_password)
@@ -504,6 +539,7 @@ def main() -> None:
             auth_settings=auth_settings,
         )
 
+        api_port = _free_loopback_port()
         api_server, api_thread = _start_api(
             _runtime_settings(
                 port=postgres_port,
