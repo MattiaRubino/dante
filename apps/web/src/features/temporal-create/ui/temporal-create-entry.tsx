@@ -524,9 +524,13 @@ export function TemporalCreateEntry({
             : null) ?? t(($) => $.common.home.timeline.create.failure),
         );
       }
-    } catch {
+    } catch (reason) {
       setLifecycle('failed');
-      setFailureMessage(t(($) => $.common.home.timeline.create.failure));
+      setFailureMessage(
+        reason instanceof Error
+          ? reason.message
+          : t(($) => $.common.home.timeline.create.failure),
+      );
     } finally {
       commitInFlightRef.current = false;
     }

@@ -277,7 +277,8 @@ function failed(
             error.kind === 'transport'
               ? ('transport' as const)
               : ('unavailable' as const),
-          code: 'temporal.recurring_authoring.remote_unavailable',
+          code: error.code ?? 'temporal.recurring_authoring.remote_unavailable',
+          message: error.code ? `${error.message} (${error.code})` : error.message,
           retryable: error.kind === 'transport' || (error.status ?? 0) >= 500,
         }),
       }),
