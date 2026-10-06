@@ -20,20 +20,19 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from dante.modules.temporal.authoring import (
     AuthoringLifeAreaIntent,
+    TemporalAuthoringApplication,
+    TemporalAuthoringInputError,
+    TemporalAuthoringLifeAreaConflictError,
+    TemporalAuthoringLifeAreaUnavailableError,
+    TemporalAuthoringOperationIdReuseError,
+    TemporalAuthoringPersistenceError,
+    _agenda as _authoring_agenda,
+    _color as _authoring_color,
+    _constraint_name as _authoring_constraint_name,
+    _operation as _authoring_operation,
+    _optional_text as _authoring_optional_text,
+    _title as _authoring_title,
     resolve_authoring_life_area,
-)
-from dante.modules.temporal.event import (
-    EventAgendaRevisionConflictError,
-    EventInputError,
-    EventLifeAreaUnavailableError,
-    EventNotFoundError,
-    EventOperationIdReuseError,
-    EventPersistenceError,
-    TemporalEventApplication,
-    _constraint_name as _event_constraint_name,
-    _normalize_agenda_parts,
-    _normalize_operation_id as _normalize_event_operation_id,
-    _normalize_title as _normalize_event_title,
 )
 from dante.modules.temporal.recurrence import (
     CalendarRecurrence,
@@ -314,7 +313,7 @@ class RecurringAuthoringApplication:
     def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
         self._session_factory = session_factory
         self._routine_application = RoutineApplication(session_factory)
-        self._event_application = TemporalEventApplication(session_factory)
+        self._authoring_application = TemporalAuthoringApplication(session_factory)
 
     async def create_routine(
         self,
@@ -427,38 +426,63 @@ class RecurringAuthoringApplication:
         self_person_ref: NativeRef,
         operation_id: str,
         title: str,
-        life_area_ref: UUID,
+        life_area_intent: AuthoringLifeAreaIntent | None,
         recurrence: RecurrenceSpec,
         agenda_parts: tuple[str, ...] | list[str] = (),
+        description: str | None = None,
+        location: str | None = None,
+        item_color_code: str | None = None,
     ) -> RecurringAuthoringResult:
         _validate_recurrence(recurrence)
-        normalized_operation_id = _normalize_event_operation_id(operation_id)
-        normalized_title = _normalize_event_title(title)
-        normalized_agenda = _normalize_agenda_parts(agenda_parts)
+        normalized_operation_id = _authoring_operation(operation_id)
+        normalized_title = _authoring_title(title)
+        normalized_agenda = _authoring_agenda(agenda_parts)
+        normalized_description = _authoring_optional_text(description)
+        normalized_location = _authoring_optional_text(location)
+        normalized_item_color = _authoring_color(item_color_code)
 
         try:
             async with self._session_factory() as session, session.begin():
+                resolved_life_area = await resolve_authoring_life_area(
+                    session,
+                    self_person_ref=self_person_ref,
+                    operation_id=normalized_operation_id,
+                    intent=life_area_intent,
+                )
                 try:
-                    source = await self._event_application._execute_create_event(
+                    item, replayed = await self._authoring_application._create_event(
                         session,
                         self_person_ref=self_person_ref,
                         operation_id=normalized_operation_id,
                         title=normalized_title,
                         agenda_parts=normalized_agenda,
-                        requested_event_ref=new_native_ref(),
-                        life_area_ref=life_area_ref,
+                        description=normalized_description,
+                        location=normalized_location,
+                        item_color_code=normalized_item_color,
+                        life_area=resolved_life_area,
                     )
                 except IntegrityError as exc:
-                    constraint = _event_constraint_name(exc)
-                    if constraint == "pk_event_create_operation":
-                        raise EventOperationIdReuseError() from exc
+                    constraint = _authoring_constraint_name(exc)
+                    if constraint in {
+                        "pk_event_create_operation",
+                        "pk_life_area_create_operation",
+                        "pk_life_area_mutation_operation",
+                    }:
+                        raise RecurringAuthoringOperationReuseError() from exc
                     if constraint == "life_area_assignment_target_unavailable":
-                        raise EventLifeAreaUnavailableError() from exc
-                    raise EventPersistenceError() from exc
+                        raise TemporalAuthoringLifeAreaUnavailableError() from exc
+                    if constraint in {"life_area_expected_revision", "life_area_no_change"}:
+                        raise TemporalAuthoringLifeAreaConflictError() from exc
+                    raise TemporalAuthoringPersistenceError() from exc
                 except DBAPIError as exc:
-                    raise EventPersistenceError() from exc
+                    constraint = _authoring_constraint_name(exc)
+                    if constraint == "life_area_assignment_target_unavailable":
+                        raise TemporalAuthoringLifeAreaUnavailableError() from exc
+                    if constraint in {"life_area_expected_revision", "life_area_no_change"}:
+                        raise TemporalAuthoringLifeAreaConflictError() from exc
+                    raise TemporalAuthoringPersistenceError() from exc
 
-                event_ref = UUID(str(source.event.event_ref))
+                event_ref = UUID(str(item.subject_native_ref))
                 current = await _read_recurrence_in_session(
                     session,
                     owner="event",
@@ -466,14 +490,14 @@ class RecurringAuthoringApplication:
                     owner_ref=event_ref,
                 )
 
-                if source.replayed:
+                if replayed:
                     if current is None or current.recurrence != recurrence:
                         raise RecurringAuthoringOperationReuseError()
                     return RecurringAuthoringResult(
                         owner_kind="event",
                         source_ref=event_ref,
-                        title=source.event.title,
-                        created_at=source.event.created_at,
+                        title=item.title,
+                        created_at=item.created_at,
                         recurrence_material_state_ref=current.material_state_ref,
                         replayed=True,
                     )
@@ -496,25 +520,21 @@ class RecurringAuthoringApplication:
                 return RecurringAuthoringResult(
                     owner_kind="event",
                     source_ref=event_ref,
-                    title=source.event.title,
-                    created_at=source.event.created_at,
+                    title=item.title,
+                    created_at=item.created_at,
                     recurrence_material_state_ref=mutation.recurrence.material_state_ref,
                     replayed=False,
                 )
         except RecurringAuthoringOperationReuseError:
             raise
-        except (EventOperationIdReuseError, RecurrenceOperationReuseError) as exc:
+        except (TemporalAuthoringOperationIdReuseError, RecurrenceOperationReuseError) as exc:
             raise RecurringAuthoringOperationReuseError() from exc
         except (
-            EventInputError,
-            EventAgendaRevisionConflictError,
+            TemporalAuthoringInputError,
+            TemporalAuthoringLifeAreaUnavailableError,
+            TemporalAuthoringLifeAreaConflictError,
+            TemporalAuthoringPersistenceError,
             RecurrenceInputError,
-        ):
-            raise
-        except (
-            EventLifeAreaUnavailableError,
-            EventNotFoundError,
-            EventPersistenceError,
             RecurrenceNotFoundError,
             RecurrenceStateConflictError,
             RecurrencePersistenceError,
