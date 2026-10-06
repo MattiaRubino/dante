@@ -10,6 +10,9 @@ import {
   type TemporalValidationIssue,
 } from '../../temporal';
 import { createRemoteScheduleReminderDataSource } from '../../temporal/remote-schedule-reminder-data-source';
+import { invalidateTemporalTimelineRead } from '../../temporal/timeline-invalidation';
+import { createRemoteRecurringAuthoringDataSource } from '../application/remote-recurring-authoring';
+import { buildTemporalCreateActivityRecurrence } from '../application/temporal-create-b14-runtime';
 import {
   createLocalTemporalCreateRuntime,
   type TemporalCreateAppliedEffect,
@@ -26,6 +29,7 @@ import {
 } from '../application/temporal-create-projection';
 import { createTemporalCreateRealityFinalizer } from '../application/temporal-create-reality-finalizer';
 import {
+  buildTemporalCreateRecurringActivityTemplate,
   buildTemporalCreateU2Request,
   temporalCreateHasU6Structure,
   temporalCreateU2QuickIntentSupported,
@@ -113,6 +117,9 @@ export function TemporalCreateEntry({
   );
   const [reminderDataSource] = useState(() =>
     createRemoteScheduleReminderDataSource(),
+  );
+  const [recurringAuthoringDataSource] = useState(() =>
+    createRemoteRecurringAuthoringDataSource(),
   );
   const requestSeenRef = useRef<number | null>(null);
   const preparedRef = useRef<TemporalCreatePreparedOperation | null>(null);
@@ -399,6 +406,63 @@ export function TemporalCreateEntry({
     }
   };
 
+  const executeRecurringActivity = async (
+    fields: TemporalCreateSession['draft']['current'],
+  ): Promise<boolean> => {
+    const structureIssue = validateTemporalCreateU6Structure(
+      fields,
+      u2DraftRef.current,
+    );
+    if (structureIssue !== null) {
+      setFailureMessage(structureIssue);
+      setLifecycle('failed');
+      return false;
+    }
+    const validation = validateTemporalCreateU2QuickFields(fields);
+    if (validation.length > 0) {
+      setIssues(validation);
+      return false;
+    }
+
+    commitInFlightRef.current = true;
+    setLifecycle('pending');
+    setIssues([]);
+    setFailureMessage('');
+    try {
+      const recurring = buildTemporalCreateRecurringActivityTemplate(
+        fields,
+        u2DraftRef.current,
+      );
+      await recurringAuthoringDataSource.createRoutine({
+        operationId: systemTemporalIdFactory.operationId(),
+        title: fields.title.trim(),
+        lifeAreaRef:
+          u2DraftRef.current.lifeArea.kind === 'existing'
+            ? u2DraftRef.current.lifeArea.lifeAreaRef
+            : null,
+        tagRefs: Object.freeze([]),
+        recurrence: buildTemporalCreateActivityRecurrence(fields),
+        durationMinutes: recurring.durationMinutes,
+        reminderLeadMinutes: fields.confirmation.reminderLeadMinutes,
+        activityTemplate: recurring.template,
+      });
+      invalidateTemporalTimelineRead();
+      setSession(discardTemporalCreateSession(freshFields(defaultDate)));
+      closeComposer();
+      return true;
+    } catch (reason) {
+      setLifecycle('failed');
+      setFailureMessage(
+        reason instanceof Error
+          ? reason.message
+          : t(($) => $.common.home.timeline.create.failure),
+      );
+      return false;
+    } finally {
+      commitInFlightRef.current = false;
+    }
+  };
+
   const submit = async (
     fieldsOverride?: Partial<TemporalCreateSession['draft']['current']>,
   ) => {
@@ -441,6 +505,14 @@ export function TemporalCreateEntry({
     const fields = fieldsOverride
       ? { ...session.draft.current, ...fieldsOverride }
       : session.draft.current;
+    if (
+      fields.kind === 'activity' &&
+      fields.eventRecurrence.patternKind !== 'none'
+    ) {
+      await executeRecurringActivity(fields);
+      return;
+    }
+
     const useU2Quick =
       (authoringDataSourceOverride !== undefined ||
         import.meta.env.MODE !== 'test') &&
