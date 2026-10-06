@@ -178,7 +178,7 @@
     ],
     "check_constraints": [
       {
-        "name": "ck_temporal_objective_evaluation_state_uuidv7",
+        "name": "ck_temporal_objective_evaluation_state_ck_temporal_obje_2274",
         "expression_contract": "uuid_extract_version(state_ref) IS NOT DISTINCT FROM 7",
         "reason": "Enforce the ck_temporal_objective_evaluation_state_uuidv7 invariant.",
         "enforced": true,
@@ -186,7 +186,7 @@
         "no_inherit": false
       },
       {
-        "name": "ck_temporal_objective_evaluation_state_assessment",
+        "name": "ck_temporal_objective_evaluation_state_ck_temporal_obje_5297",
         "expression_contract": "assessment_code IN ('satisfied','partial','not_satisfied','unknown','indeterminate')",
         "reason": "Enforce the ck_temporal_objective_evaluation_state_assessment invariant.",
         "enforced": true,
@@ -194,7 +194,7 @@
         "no_inherit": false
       },
       {
-        "name": "ck_temporal_objective_evaluation_state_recorded_at",
+        "name": "ck_temporal_objective_evaluation_state_ck_temporal_obje_d1ea",
         "expression_contract": "isfinite(recorded_at)",
         "reason": "Enforce the ck_temporal_objective_evaluation_state_recorded_at invariant.",
         "enforced": true,
