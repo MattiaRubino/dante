@@ -508,8 +508,8 @@ export function TemporalCreateEntry({
       setLifecycle('failed');
       setFailureMessage(
         i18n.language.toLowerCase().startsWith('en')
-          ? 'These Event-specific advanced options are not connected to recurring Event Create yet. Recurrence, Life Area, color, location, description, Agenda and Reminder are supported.'
-          : 'Queste opzioni avanzate specifiche dell’Evento non sono ancora collegate alla creazione ricorrente. Ricorrenza, Life Area, colore, località, descrizione, Agenda e promemoria sono supportati.',
+          ? 'These legacy Event-specific options are no longer part of recurring Event Create. Recurrence, Life Area, color, location, description, run of show, participants and Reminder are supported.'
+          : 'Queste vecchie opzioni specifiche dell’Evento non fanno più parte del Create ricorrente. Ricorrenza, Life Area, colore, località, descrizione, Scaletta, partecipanti e promemoria sono supportati.',
       );
       return false;
     }
