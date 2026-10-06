@@ -192,9 +192,7 @@ export function TimelineSurface({
         : canonicalOrganizationGroups(organization.snapshot),
     [organization.snapshot],
   );
-  const creationEnabled =
-    prototypeMode ||
-    (organization.snapshot?.areas.some((area) => !area.archived) ?? false);
+  const creationEnabled = prototypeMode || organization.snapshot !== null;
   useEffect(() => {
     if (canonicalGroups !== null) {
       dispatch({ type: 'reconcile-canonical-groups', groups: canonicalGroups });
