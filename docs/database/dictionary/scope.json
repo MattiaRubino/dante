@@ -60,7 +60,8 @@
       "B14-EVENT-OCCURRENCE-POLICY",
       "B14-REALITY-OBJECTIVES",
       "B14-RECURRING-REALITY-OBJECTIVES",
-      "B14-ROUTINE-POLICY-CLEANUP"
+      "B14-ROUTINE-POLICY-CLEANUP",
+      "B14-RESOLUTION-INBOX"
     ],
     "standalone_entries": {
       "tables": 229,
