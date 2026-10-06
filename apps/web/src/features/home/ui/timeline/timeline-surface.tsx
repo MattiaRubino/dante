@@ -205,16 +205,32 @@ export function TimelineSurface({
       ),
     [organization.snapshot],
   );
+  const organizationKeyForItem = useCallback(
+    (item: import('../../../temporal/timeline-read').TemporalTimelineItem) =>
+      item.kind === 'scheduled_activity'
+        ? `activity:${item.activityRef}`
+        : item.kind === 'scheduled_event'
+          ? `event:${item.eventRef}`
+          : `${item.sourceKind}:${item.sourceNativeRef}`,
+    [],
+  );
   const resolveGroupId = useCallback(
     (item: import('../../../temporal/timeline-read').TemporalTimelineItem) =>
-      assignmentBySubject.get(
-        item.kind === 'scheduled_activity'
-          ? `activity:${item.activityRef}`
-          : item.kind === 'scheduled_event'
-            ? `event:${item.eventRef}`
-            : `${item.sourceKind}:${item.sourceNativeRef}`,
-      ) ?? LEGACY_UNASSIGNED_GROUP,
-    [assignmentBySubject],
+      assignmentBySubject.get(organizationKeyForItem(item)) ??
+      LEGACY_UNASSIGNED_GROUP,
+    [assignmentBySubject, organizationKeyForItem],
+  );
+  const resolveAppearanceColorCode = useCallback(
+    (item: import('../../../temporal/timeline-read').TemporalTimelineItem) => {
+      const groupId = resolveGroupId(item);
+      const group = canonicalGroups?.find((candidate) => candidate.id === groupId);
+      if (!group) return null;
+      if (groupId === LEGACY_UNASSIGNED_GROUP) {
+        return group.itemColorCodes?.[organizationKeyForItem(item)] ?? null;
+      }
+      return group.colorCode ?? null;
+    },
+    [canonicalGroups, organizationKeyForItem, resolveGroupId],
   );
   const visibleGroups = useMemo(
     () => state.groups.filter((group) => !group.hidden),
@@ -313,6 +329,11 @@ export function TimelineSurface({
       : organization.snapshot === null
         ? null
         : resolveGroupId,
+    prototypeMode
+      ? undefined
+      : organization.snapshot === null
+        ? null
+        : resolveAppearanceColorCode,
   );
 
   const renderedDayInputs = useMemo(
