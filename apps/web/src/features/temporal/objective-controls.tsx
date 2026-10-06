@@ -51,9 +51,11 @@ function targetLabel(objective: ObjectiveView): string {
 export function ObjectiveControls({
   kind,
   subjectRef,
+  onRecorded,
 }: Readonly<{
   kind: RealitySubjectKind;
   subjectRef: string;
+  onRecorded?: () => void;
 }>) {
   const source = useMemo(
     () => createRemoteRealityObjectiveDataSource(globalThis.fetch),
@@ -93,6 +95,7 @@ export function ObjectiveControls({
     void source
       .recordResult(objective.objectiveRef, command)
       .then(() => reload())
+      .then(() => onRecorded?.())
       .catch((error: unknown) =>
         setMessage(
           error instanceof Error
@@ -170,7 +173,7 @@ export function ObjectiveControls({
                 {objective.unitCode ? <span>{objective.unitCode}</span> : null}
                 <button
                   type="button"
-                  disabled={pending || !Number.isFinite(Number(currentValue))}
+                  disabled={pending || currentValue.trim() === '' || !Number.isFinite(Number(currentValue))}
                   onClick={() =>
                     save(objective, {
                       operationId: operationId(),
