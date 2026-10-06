@@ -184,7 +184,7 @@ export function createRemoteRealityObjectiveDataSource(
     },
 
     async listObjectives(
-      kind: 'activity' | 'event',
+      kind: RealitySubjectKind,
       subjectRef: string,
     ): Promise<readonly ObjectiveView[]> {
       const payload = await send(
