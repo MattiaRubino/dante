@@ -1,0 +1,78 @@
+.timeline-objective-controls {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.timeline-objective-controls > strong {
+  font-size: 12px;
+}
+
+.timeline-objective-controls__item {
+  display: grid;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 9px;
+  background: rgba(255,255,255,.018);
+}
+
+.timeline-objective-controls__summary {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.timeline-objective-controls__summary small {
+  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
+}
+
+.timeline-objective-controls__summary em {
+  color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
+  font-style: normal;
+  font-size: 10px;
+}
+
+.timeline-objective-controls__actions,
+.timeline-objective-controls__value {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.timeline-objective-controls button,
+.timeline-objective-controls select,
+.timeline-objective-controls input {
+  min-height: 30px;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 7px;
+  color: inherit;
+  background: rgba(255,255,255,.025);
+  font: inherit;
+  font-size: 10px;
+}
+
+.timeline-objective-controls button {
+  padding: 0 9px;
+  cursor: pointer;
+}
+
+.timeline-objective-controls input {
+  width: 110px;
+  padding: 0 7px;
+}
+
+.timeline-objective-controls select {
+  width: fit-content;
+  min-width: 150px;
+  padding: 0 7px;
+}
+
+.timeline-objective-controls__value > span,
+.timeline-objective-controls__observation,
+.timeline-objective-controls > [role='alert'] {
+  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
+  font-size: 9px;
+}
