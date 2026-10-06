@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
 from datetime import datetime
 from typing import Any, Literal
 from uuid import UUID
@@ -116,7 +117,7 @@ class EventOccurrencePolicyApplication:
                         text(
                             """SELECT * FROM dante.set_self_event_occurrence_policy_v2(
                                  :actor,:event,:kind,:minutes,:days,:reminder,
-                                 :reality,:objectives)"""
+                                 :reality,CAST(:objectives AS jsonb))"""
                         ),
                         {
                             "actor": self_person_ref,
@@ -126,7 +127,11 @@ class EventOccurrencePolicyApplication:
                             "days": duration_days,
                             "reminder": reminder_lead_minutes,
                             "reality": reality_mode,
-                            "objectives": list(objectives),
+                            "objectives": json.dumps(
+                                list(objectives),
+                                sort_keys=True,
+                                separators=(",", ":"),
+                            ),
                         },
                     )
                 ).mappings().one()
