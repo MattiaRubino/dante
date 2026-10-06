@@ -1,6 +1,9 @@
 import { Temporal } from '@dante/time';
 
-import type { RecurringActivityTemplate } from './remote-recurring-authoring';
+import type {
+  RecurringActivityTemplate,
+  RecurringObjectiveTemplate,
+} from './remote-recurring-authoring';
 import type {
   TemporalAuthorActivityRequest,
   TemporalAuthorEventRequest,
@@ -23,6 +26,88 @@ import type {
 export type TemporalCreateU2Request =
   | Readonly<{ kind: 'activity'; request: TemporalAuthorActivityRequest }>
   | Readonly<{ kind: 'event'; request: TemporalAuthorEventRequest }>;
+
+export function buildTemporalCreateObjectiveTemplates(
+  draft: TemporalCreateU2AuthoringDraft,
+): readonly RecurringObjectiveTemplate[] {
+  return Object.freeze(
+    draft.objectives.map((objective, index) => {
+      const label = objective.label.trim();
+      if (!label) {
+        throw new Error(`Obiettivo ${index + 1}: inserisci una descrizione.`);
+      }
+      const unit = objective.unitCode.trim() || null;
+      if (unit !== null && unit.length > 40) {
+        throw new Error(`Obiettivo ${index + 1}: l’unità è troppo lunga.`);
+      }
+
+      if (objective.resultKind === 'boolean') {
+        return Object.freeze({
+          label,
+          result_kind: 'boolean' as const,
+          comparator_code: null,
+          target_value: null,
+          target_min: null,
+          target_max: null,
+          unit_code: null,
+          presentation_order: index,
+        });
+      }
+
+      if (objective.resultKind === 'qualitative') {
+        return Object.freeze({
+          label,
+          result_kind: 'qualitative' as const,
+          comparator_code: null,
+          target_value: null,
+          target_min: null,
+          target_max: null,
+          unit_code: null,
+          presentation_order: index,
+        });
+      }
+
+      if (objective.resultKind === 'quantity') {
+        const target = Number(objective.targetValue);
+        if (!Number.isFinite(target)) {
+          throw new Error(`Obiettivo ${index + 1}: inserisci un target numerico valido.`);
+        }
+        const comparator = objective.comparatorCode;
+        if (comparator !== 'eq' && comparator !== 'gte' && comparator !== 'lte') {
+          throw new Error(`Obiettivo ${index + 1}: seleziona una regola valida.`);
+        }
+        return Object.freeze({
+          label,
+          result_kind: 'quantity' as const,
+          comparator_code: comparator,
+          target_value: target,
+          target_min: null,
+          target_max: null,
+          unit_code: unit,
+          presentation_order: index,
+        });
+      }
+
+      const minimum = Number(objective.targetMin);
+      const maximum = Number(objective.targetMax);
+      if (!Number.isFinite(minimum) || !Number.isFinite(maximum) || minimum > maximum) {
+        throw new Error(
+          `Obiettivo ${index + 1}: inserisci un intervallo numerico valido.`,
+        );
+      }
+      return Object.freeze({
+        label,
+        result_kind: 'range' as const,
+        comparator_code: 'between' as const,
+        target_value: null,
+        target_min: minimum,
+        target_max: maximum,
+        unit_code: unit,
+        presentation_order: index,
+      });
+    }),
+  );
+}
 
 function optionalText(value: string): string | undefined {
   const normalized = value.trim();
@@ -528,8 +613,9 @@ export function buildTemporalCreateRecurringActivityTemplate(
         ? fields.execution.minSessionMinutes * 60 * 1_000_000
         : null,
     child_guard_mode: structure.childGuardMode,
-    reality_mode: structure.realityMode,
+    reality_mode: draft.realityMode,
     placement_protected: structure.placementProtected,
+    objectives: buildTemporalCreateObjectiveTemplates(draft),
     activity_intervals:
       structure.activityIntervals.length === 0
         ? Object.freeze([])
