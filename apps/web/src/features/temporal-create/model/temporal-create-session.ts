@@ -247,9 +247,10 @@ function freezeConfirmation(
 }
 
 function freezeAgendaParts(value: readonly string[]): readonly string[] {
-  return Object.freeze(
-    value.map((part) => part.trim()).filter((part) => part.length > 0),
-  );
+  // Create owns an editable draft, so blank rows must survive long enough for
+  // the user to type into them. Canonical trimming/filtering happens only when
+  // the authoring request is built.
+  return Object.freeze([...value]);
 }
 
 function freezeEvent(
