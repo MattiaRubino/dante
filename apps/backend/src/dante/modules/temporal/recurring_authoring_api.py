@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import asdict
 from datetime import datetime
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request, Response
@@ -62,6 +62,7 @@ class CreateRecurringRoutineRequest(BaseModel):
     recurrence: RecurrenceRequest
     duration_minutes: int = Field(ge=1, le=525_600)
     reminder_lead_minutes: int | None = Field(default=None, ge=0, le=10_080)
+    activity_template: dict[str, Any] | None = None
 
 
 class CreateRecurringEventRequest(BaseModel):
@@ -207,6 +208,7 @@ async def create_recurring_routine(
             routine_ref=value.source_ref,
             duration_minutes=payload.duration_minutes,
             reminder_lead_minutes=payload.reminder_lead_minutes,
+            activity_template=payload.activity_template,
         )
         return RecurringAuthoringResponse(**asdict(value))
     except Exception as exc:
