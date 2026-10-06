@@ -550,17 +550,11 @@ describe('Temporal Create U2 entry', () => {
     const { eventRequests } = renderEntry();
 
     fireEvent.click(screen.getByRole('radio', { name: 'Evento' }));
-    fireEvent.change(screen.getByLabelText('Ripeti'), {
-      target: { value: 'daily' },
-    });
+    expect(screen.queryByLabelText('Ripeti')).toBeNull();
     fireEvent.click(screen.getByRole('radio', { name: 'Da collocare' }));
-    expect(screen.queryByRole('option', { name: 'Ripeti · Mai' })).toBeNull();
     expect(screen.queryByLabelText('Ricorda')).toBeNull();
 
     fireEvent.click(screen.getByRole('radio', { name: 'Orario' }));
-    expect((screen.getByLabelText('Ripeti') as HTMLSelectElement).value).toBe(
-      'none',
-    );
     fireEvent.click(screen.getByRole('radio', { name: 'Da collocare' }));
 
     fireEvent.change(screen.getByPlaceholderText('Titolo'), {
