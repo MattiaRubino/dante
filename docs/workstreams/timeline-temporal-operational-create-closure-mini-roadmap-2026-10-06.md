@@ -105,3 +105,17 @@ Persistence candidates are Alembic `20261006_113` and `20261006_114`. They are f
 ## Current closure position
 
 Implementation for Batch A + Batch B is complete as a repository candidate. No CI/GitHub Actions were run. The next step is Batch C only: generated/database-dictionary reconciliation plus one user-run local gate and visual acceptance. Any failures found there are fixes to this candidate, not a reason to reopen the product model.
+
+
+## 2026-10-06 — Batch C reconciliation checkpoint
+
+Repository reconciliation is now published through Alembic head `20261006_115`.
+
+- web/type-level failures reported by the first local gate were repaired against the accepted Reality/Scaletta/Session product surface;
+- the superseded four-argument Routine occurrence-policy overload is removed at `_115`, leaving one canonical routine name/signature for Dictionary reconciliation;
+- all 14 B14 Create-closure persistence tables are registered in SQLAlchemy mappings and Database Dictionary;
+- all 17 new B14 capability routine names are registered in Database Dictionary;
+- the manual placement-lock trigger is recorded on Schedule placement current-history;
+- Dictionary scope and exact-catalog tests are advanced to the final candidate topology: 229 tables, 5 views, 191 routines, 103 triggers, 467 physical indexes, 401 foreign keys and 569 CHECK constraints.
+
+No CI/GitHub Actions were run. The remaining gate is mechanical local generation plus the focused web/backend/catalog suite and real-stack visual acceptance.
