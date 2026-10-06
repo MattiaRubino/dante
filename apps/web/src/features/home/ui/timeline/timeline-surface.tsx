@@ -167,6 +167,24 @@ export function TimelineSurface({
     (today) => createInitialTimelineState(today, prototypeMode),
   );
   const organization = useTimelineOrganization(!prototypeMode);
+  useEffect(() => {
+    if (
+      prototypeMode ||
+      temporalRuntimeState.status !== 'ready' ||
+      temporalRuntimeState.window === null
+    ) {
+      return;
+    }
+    // Timeline checkpointing may materialize recurring Activity instances and
+    // their Life Area assignments. Refresh organization only after that read
+    // completed so group/color projection cannot race ahead of canonical truth.
+    organization.refresh();
+  }, [
+    organization.refresh,
+    prototypeMode,
+    temporalRuntimeState.status,
+    temporalRuntimeState.window,
+  ]);
   const canonicalGroups = useMemo(
     () =>
       organization.snapshot === null
