@@ -14,6 +14,7 @@ describe('Temporal Create policy finalizer', () => {
       createTemporalCreateFields({ kind: 'activity' }),
     );
     const draft = patchTemporalCreateU2AuthoringDraft(base, {
+      realityMode: 'review_on_end',
       activityStructure: Object.freeze({
         ...base.activityStructure,
         realityMode: 'review_on_end',
