@@ -179,7 +179,7 @@
     ],
     "check_constraints": [
       {
-        "name": "ck_activity_execution_policy_operation_ck_activity_exec_b676",
+        "name": "ck_activity_execution_policy_operation_fingerprint",
         "expression_contract": "intent_fingerprint ~ '^[0-9a-f]{64}$'",
         "reason": "Enforce typed, finite and replay-safe policy values.",
         "enforced": true,
@@ -187,7 +187,7 @@
         "no_inherit": false
       },
       {
-        "name": "ck_activity_execution_policy_operation_ck_activity_exec_3f30",
+        "name": "ck_activity_execution_policy_operation_id",
         "expression_contract": "operation_id=btrim(operation_id) AND char_length(operation_id) BETWEEN 1 AND 200",
         "reason": "Enforce typed, finite and replay-safe policy values.",
         "enforced": true,
