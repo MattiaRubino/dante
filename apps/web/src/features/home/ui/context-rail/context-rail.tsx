@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { ActualRealizationControls } from '../../../temporal/actual-realization-controls';
+import { ObjectiveControls } from '../../../temporal/objective-controls';
 import { ReconciliationControls } from '../../../temporal/reconciliation-controls';
 import {
   createResolutionQueueSource,
@@ -12,7 +13,7 @@ import {
 function resolutionItemKey(item: ResolutionItem): string {
   return item.reasonCode === 'reconciliation_open'
     ? `${item.reasonCode}:${item.reconciliationRef}`
-    : `${item.reasonCode}:${item.sessionRef}`;
+    : `${item.reasonCode}:${item.subjectKind}:${item.subjectRef}`;
 }
 
 export function ContextRail() {
@@ -132,7 +133,7 @@ export function ContextRail() {
         <header className="home-context-heading">
           <div>
             <span className="home-context-kicker">DA DANTE A TE</span>
-            <h2>Da risolvere</h2>
+            <h2>Da verificare</h2>
           </div>
           <span
             className="home-resolution-count"
@@ -141,6 +142,9 @@ export function ContextRail() {
             {queue?.count ?? '…'}
           </span>
         </header>
+        <p className="home-resolution-intro">
+          Realtà, obiettivi e decisioni che aspettano una risposta.
+        </p>
         <div className="home-resolution-list">
           {error ? (
             <p role="alert">
@@ -148,50 +152,89 @@ export function ContextRail() {
             </p>
           ) : null}
           {queue === null && error === null ? <p>Caricamento…</p> : null}
-          {queue?.count === 0 ? <p>Non ci sono decisioni aperte.</p> : null}
+          {queue?.count === 0 ? (
+            <p className="home-resolution-empty">Niente da verificare per ora.</p>
+          ) : null}
           {queue?.items.map((item) => {
             const itemKey = resolutionItemKey(item);
             const isExpanded = expanded === itemKey;
+            const isReality = item.reasonCode === 'realization_review';
+            const isObjective = item.reasonCode === 'objective_review';
+            const label = isReality
+              ? 'Realtà'
+              : isObjective
+                ? 'Obiettivi'
+                : 'Decisione';
+            const description = isReality
+              ? item.subjectKind === 'activity'
+                ? 'Sessione conclusa · registra cosa è successo.'
+                : 'Evento concluso · registra cosa è successo.'
+              : isObjective
+                ? 'Registra e valuta gli obiettivi.'
+                : 'Decisione aperta sul risultato registrato.';
             return (
-              <article key={itemKey}>
+              <article key={itemKey} className="home-resolution-card">
                 <div className="home-resolution-row">
-                  <span className="home-resolution-status is-partial">
-                    {item.reasonCode === 'reconciliation_open'
-                      ? 'Decisione'
-                      : 'Realtà'}
-                  </span>
+                  <span className="home-resolution-status is-partial">{label}</span>
+                  <time dateTime={item.effectiveAt}>
+                    {new Intl.DateTimeFormat('it-IT', {
+                      day: 'numeric',
+                      month: 'short',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    }).format(new Date(item.effectiveAt))}
+                  </time>
                 </div>
                 <strong>{item.title}</strong>
-                <p>{item.reasonCode === 'reconciliation_open'
-                  ? 'Decisione aperta sul risultato registrato.'
-                  : 'Sessione conclusa · registra cosa è successo.'}</p>
-                <button
-                  className="home-resolution-details"
-                  type="button"
-                  aria-expanded={isExpanded}
-                  onClick={() =>
-                    setExpanded((current) =>
-                      current === itemKey ? null : itemKey,
-                    )
-                  }
-                >
-                  {isExpanded ? 'Chiudi' : 'Risolvi'}
-                </button>
-                {isExpanded && item.reasonCode === 'reconciliation_open' ? (
-                  <ReconciliationControls
+                <p>{description}</p>
+                {isReality ? (
+                  <ActualRealizationControls
                     kind={item.subjectKind}
                     subjectRef={item.subjectRef}
-                    initialPurposeCode={item.purposeCode}
+                    showObjectives={false}
+                    sessionBasis={
+                      item.sessionRef && item.sessionTimingMaterialStateRef
+                        ? {
+                            sessionRef: item.sessionRef,
+                            sessionTimingMaterialStateRef:
+                              item.sessionTimingMaterialStateRef,
+                          }
+                        : undefined
+                    }
                     onRecorded={ownerRecorded}
                   />
-                ) : null}
-                {isExpanded && item.reasonCode === 'realization_review' ? (
-                  <ActualRealizationControls
-                    kind="activity"
-                    subjectRef={item.subjectRef}
-                    onRecorded={ownerRecorded}
-                  />
-                ) : null}
+                ) : (
+                  <>
+                    <button
+                      className="home-resolution-details"
+                      type="button"
+                      aria-expanded={isExpanded}
+                      aria-label={`${isExpanded ? 'Chiudi' : isObjective ? 'Valuta obiettivi' : 'Apri decisione'}: ${item.title}`}
+                      onClick={() =>
+                        setExpanded((current) =>
+                          current === itemKey ? null : itemKey,
+                        )
+                      }
+                    >
+                      {isExpanded ? 'Chiudi' : isObjective ? 'Valuta obiettivi' : 'Apri decisione'}
+                    </button>
+                    {isExpanded && item.reasonCode === 'reconciliation_open' ? (
+                      <ReconciliationControls
+                        kind={item.subjectKind}
+                        subjectRef={item.subjectRef}
+                        initialPurposeCode={item.purposeCode}
+                        onRecorded={ownerRecorded}
+                      />
+                    ) : null}
+                    {isExpanded && item.reasonCode === 'objective_review' ? (
+                      <ObjectiveControls
+                        kind={item.subjectKind}
+                        subjectRef={item.subjectRef}
+                        onRecorded={refresh}
+                      />
+                    ) : null}
+                  </>
+                )}
               </article>
             );
           })}
