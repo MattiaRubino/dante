@@ -167,12 +167,10 @@ export function TimelineSurface({
     (today) => createInitialTimelineState(today, prototypeMode),
   );
   const organization = useTimelineOrganization(!prototypeMode);
+  const readyRuntimeWindow =
+    temporalRuntimeState.status === 'ready' ? temporalRuntimeState.window : null;
   useEffect(() => {
-    if (
-      prototypeMode ||
-      temporalRuntimeState.status !== 'ready' ||
-      temporalRuntimeState.window === null
-    ) {
+    if (prototypeMode || readyRuntimeWindow === null) {
       return;
     }
     // Timeline checkpointing may materialize recurring Activity instances and
@@ -182,8 +180,7 @@ export function TimelineSurface({
   }, [
     organization.refresh,
     prototypeMode,
-    temporalRuntimeState.status,
-    temporalRuntimeState.window,
+    readyRuntimeWindow,
   ]);
   const canonicalGroups = useMemo(
     () =>
