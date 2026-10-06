@@ -353,7 +353,7 @@ export function TemporalCreateComposer({
 
   return (
     <div
-      className={`temporal-create-backdrop${advanced ? ' is-advanced is-modal' : ''}${discardPending && !advanced ? ' is-modal' : ''}`}
+      className={`temporal-create-backdrop${advanced ? ' is-advanced' : ''}${discardPending ? ' is-modal' : ''}`}
       data-temporal-create="backdrop"
       onPointerDown={(event) => {
         if (event.target === event.currentTarget) requestCloseFromBackdrop();
