@@ -171,3 +171,38 @@ gates; no CI or unreported PASS claim.
 Commit `9d2b6130` introduced forward migration `_110` and an explicit Activity Schedule user placement lock. Create applies it alongside B04 automatic movement protection to the root, Activity intervals, planned Session rows and child Schedules. A database history guard rejects revisions/unschedule while locked, including non-UI callers; Timeline readback, drag/keyboard/time-editor guards and an explicit detail-panel toggle are candidate code. Commit `84161fa5` makes lock-only Timeline updates reconcile without a placement revision. This candidate has **not** received the user's PostgreSQL/OpenAPI/web gate or real-app acceptance. Existing B04 `blocked + direct` states were not backfilled as user locks because that policy intentionally allows manual edits; existing cards can be locked explicitly in their detail panel.
 
 Complete recurring Activity template inheritance remains **open**. The `_110` lock infrastructure must not be described as solving recurring intervals, planned Sessions, outcome review, Reminder propagation or per-Occurrence independence. Generated API client and Database Dictionary reconciliation are pending the user's local gate.
+
+
+## 2026-10-06 — recurring Activity Create parity repair candidate
+
+The current branch now has a candidate complete recurring-Activity template path:
+Activity intervals, named planned Sessions, configured Sub-Activities, Session
+capture/minimum, outcome-review mode, Reminder lead and explicit placement
+protection are copied into the Routine occurrence template and materialized per
+Occurrence. This is candidate code, not a proven closure; the user still owns
+the local automated and real-app acceptance gate.
+
+Create parity rules are now explicit:
+
+- the Timeline's synthetic `legacy-unassigned` / “Senza Life Area” bucket is
+  presentation-only and must never appear as an authorable Life Area choice;
+- no Life Area remains valid and preserves the Activity item color in the
+  recurring template;
+- existing Life Area selection and create-new Life Area use the same canonical
+  authoring intent as one-off Activity Create, including Life Area appearance;
+- Timeline organization is refreshed after an authoritative Timeline read,
+  because checkpointing can materialize recurring Activities and their accepted
+  Life Area assignments during that read;
+- an assigned card uses its Life Area color; an unassigned card uses its accepted
+  item color; the virtual unassigned bucket is not shown as if it were a real
+  Life Area in card metadata;
+- changing the root Activity start time preserves duration and recomputes the
+  end date/time. It must not silently reinterpret a same-day edit as an
+  overnight interval, because that can create false overlap with later Activity
+  intervals.
+
+Event parity is the next separate product pass. Shared recurrence, Life Area,
+color, Reminder and Timeline presentation rules should be reused rather than
+reimplemented. Activity-only concepts (Activity intervals, planned Activity
+Sessions, Sub-Activities and Activity execution policy) must not be copied into
+Event merely for UI symmetry.
