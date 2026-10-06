@@ -125,7 +125,7 @@ export type RecurringActivityTemplate = Readonly<{
   child_guard_mode: 'none' | 'confirm' | 'block';
   reality_mode: 'manual' | 'review_on_end' | 'auto_confirm_outcome';
   placement_protected: boolean;
-  objectives: readonly RecurringObjectiveTemplate[];
+  objectives?: readonly RecurringObjectiveTemplate[];
   activity_intervals: readonly RecurringActivityWindowTemplate[];
   planned_slices: readonly RecurringActivityPlannedSliceTemplate[];
   children: readonly RecurringActivityChildTemplate[];
