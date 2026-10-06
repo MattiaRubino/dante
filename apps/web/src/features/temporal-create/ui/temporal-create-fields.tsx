@@ -8,7 +8,6 @@ import type {
 import { TemporalCreateActivityFields } from './temporal-create-activity-fields';
 import { TemporalCreateCoreFieldsU2 } from './temporal-create-core-u2';
 import { TemporalCreateEventFields } from './temporal-create-event-fields';
-import { TemporalCreateRecurrenceFields } from './temporal-create-recurrence-fields';
 import type { TemporalCreateContextOption } from './temporal-create-ui-types';
 
 import './temporal-create-advanced-shell.css';
@@ -56,15 +55,6 @@ export function TemporalCreateAdvancedFields({
           renderError={renderError}
         />
       )}
-
-      {fields.kind === 'event' ? (
-        <TemporalCreateRecurrenceFields
-          fields={fields}
-          depth="full"
-          onPatch={onPatch}
-          renderError={renderError}
-        />
-      ) : null}
 
       <section
         className="temporal-create-section is-wide temporal-create-description-section"
