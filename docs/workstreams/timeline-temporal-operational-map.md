@@ -380,3 +380,7 @@ duration and cannot silently manufacture an overnight first interval.
 Status remains **candidate / unproven**. Event recurrence parity is a subsequent
 shared-infrastructure pass; Activity-only structure semantics are not Event
 semantics.
+
+## 2026-10-06 — Create closure mini-roadmap
+
+Use `timeline-temporal-operational-create-closure-mini-roadmap-2026-10-06.md` as the current product/UI execution cursor for Activity/Event Create. It does not reopen B01-B13 closures; it selects and composes already-proven capabilities, plus one new bounded Objectives vertical using accepted Criterion/Evaluation/Observation semantics.
