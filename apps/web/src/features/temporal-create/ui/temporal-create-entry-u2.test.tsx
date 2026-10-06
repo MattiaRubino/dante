@@ -226,10 +226,10 @@ describe('Temporal Create U2 entry', () => {
 
     fireEvent.focus(screen.getByLabelText('Life Area (opzionale)'));
 
-    expect(
-      screen.getByRole('option', { name: 'Nessuna Life Area' }),
-    ).toBeTruthy();
     expect(screen.getByRole('option', { name: 'Corpo' })).toBeTruthy();
+    expect(
+      screen.queryByRole('option', { name: 'Nessuna Life Area' }),
+    ).toBeNull();
     expect(
       screen.queryByRole('option', { name: 'Senza Life Area' }),
     ).toBeNull();
