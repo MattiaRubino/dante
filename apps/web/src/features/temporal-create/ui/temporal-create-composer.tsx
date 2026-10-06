@@ -8,6 +8,7 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
 import type { TemporalValidationIssue } from '../../temporal';
@@ -39,6 +40,7 @@ type TemporalCreateComposerProps = Readonly<{
   issues: readonly TemporalValidationIssue[];
   lifecycle: 'idle' | 'pending' | 'failed';
   failureMessage: string;
+  failureTarget?: string | null;
   postCreateRetry: boolean;
   u2Draft: TemporalCreateU2AuthoringDraft;
   onPatch: (patch: Partial<TemporalCreateSession['draft']['current']>) => void;
@@ -95,6 +97,7 @@ export function TemporalCreateComposer({
   issues,
   lifecycle,
   failureMessage,
+  failureTarget = null,
   postCreateRetry,
   u2Draft,
   onPatch,
@@ -159,6 +162,42 @@ export function TemporalCreateComposer({
       delete root.dataset.temporalCreateScrollLock;
     };
   }, [advanced]);
+
+  useLayoutEffect(() => {
+    const root = dialogRef.current;
+    if (!root) return;
+    const invalidPaths = [
+      ...issues.map((issue) => issue.path[0]).filter((path): path is string => Boolean(path)),
+      ...(failureTarget ? [failureTarget] : []),
+    ];
+    const marked = new Map<HTMLElement, string | null>();
+    for (const path of invalidPaths) {
+      const region = root.querySelector<HTMLElement>(
+        `[data-create-path="${path}"]`,
+      );
+      if (!region || marked.has(region)) continue;
+      marked.set(region, region.getAttribute('aria-invalid'));
+      region.dataset.createInvalid = 'true';
+      region.setAttribute('aria-invalid', 'true');
+    }
+    return () => {
+      for (const [region, previousAriaInvalid] of marked) {
+        delete region.dataset.createInvalid;
+        if (previousAriaInvalid === null) region.removeAttribute('aria-invalid');
+        else region.setAttribute('aria-invalid', previousAriaInvalid);
+      }
+    };
+  }, [issues, failureTarget, session.surface]);
+
+  useEffect(() => {
+    if (!failureTarget) return;
+    const frame = requestAnimationFrame(() => {
+      dialogRef.current
+        ?.querySelector<HTMLElement>(`[data-create-path="${failureTarget}"]`)
+        ?.scrollIntoView?.({ block: 'center' });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [failureTarget, failureMessage]);
 
   useEffect(() => {
     if (!advanced || discardPending) return;
@@ -382,6 +421,11 @@ export function TemporalCreateComposer({
   };
 
   const resetKey = `${session.draft.baseline.date}|${session.draft.baseline.startTime}|${session.draft.baseline.title}`;
+  const inlineFailureHost = failureTarget
+    ? dialogRef.current?.querySelector<HTMLElement>(
+        `[data-create-path="${failureTarget}"]`,
+      )
+    : null;
 
   return (
     <div
@@ -467,6 +511,11 @@ export function TemporalCreateComposer({
             inert={discardPending || undefined}
             onSubmit={submitForm}
           >
+            {failureMessage && !inlineFailureHost ? (
+              <div className="temporal-create-operation-error" role="alert">
+                {failureMessage}
+              </div>
+            ) : null}
             <TemporalCreateU2DraftProvider
               fields={fields}
               resetKey={resetKey}
@@ -534,6 +583,7 @@ export function TemporalCreateComposer({
                 fields={fields}
                 contexts={contexts}
                 showCompactTimezone={!advanced}
+                showRecurrence={advanced}
                 repeatDetails={
                   advanced &&
                   fields.eventRecurrence.patternKind === 'calendar-wall-clock' ? (
@@ -563,11 +613,14 @@ export function TemporalCreateComposer({
               />
             </TemporalCreateU2DraftProvider>
 
-            {failureMessage ? (
-              <div className="temporal-create-operation-error" role="alert">
-                {failureMessage}
-              </div>
-            ) : null}
+            {failureMessage && inlineFailureHost
+              ? createPortal(
+                  <span className="temporal-create-field-error" role="alert">
+                    {failureMessage}
+                  </span>,
+                  inlineFailureHost,
+                )
+              : null}
 
             <div className="temporal-create-actions">
               <button
