@@ -8,6 +8,7 @@ truth on the resulting Schedule.
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
 from datetime import datetime
 from uuid import UUID
 
@@ -38,6 +39,7 @@ class RoutineOccurrencePolicyPersistenceError(RuntimeError):
 class RoutineOccurrencePolicyView:
     duration_minutes: int
     reminder_lead_minutes: int | None
+    activity_template: dict[str, object]
     created_at: datetime
     replayed: bool = False
 
@@ -70,6 +72,7 @@ class RoutineOccurrencePolicyApplication:
         routine_ref: UUID,
         duration_minutes: int,
         reminder_lead_minutes: int | None,
+        activity_template: dict[str, object] | None = None,
     ) -> RoutineOccurrencePolicyView:
         if not 1 <= duration_minutes <= 525_600:
             raise RoutineOccurrencePolicyInputError(
@@ -79,19 +82,29 @@ class RoutineOccurrencePolicyApplication:
             raise RoutineOccurrencePolicyInputError(
                 "Routine Reminder lead must contain 0 to 10080 minutes."
             )
+        normalized_template = dict(activity_template or {})
+        if normalized_template and normalized_template.get("version") != 1:
+            raise RoutineOccurrencePolicyInputError(
+                "Routine Activity template version is unsupported."
+            )
         try:
             async with self._session_factory() as session, session.begin():
                 row = (
                     await session.execute(
                         text(
                             """SELECT * FROM dante.set_self_routine_occurrence_policy(
-                                 :actor,:routine,:duration,:reminder)"""
+                                 :actor,:routine,:duration,:reminder,CAST(:template AS jsonb))"""
                         ),
                         {
                             "actor": self_person_ref,
                             "routine": routine_ref,
                             "duration": duration_minutes,
                             "reminder": reminder_lead_minutes,
+                            "template": json.dumps(
+                                normalized_template,
+                                separators=(",", ":"),
+                                sort_keys=True,
+                            ),
                         },
                     )
                 ).mappings().one()
@@ -106,6 +119,7 @@ class RoutineOccurrencePolicyApplication:
                 if row["reminder_lead_minutes"] is not None
                 else None
             ),
+            activity_template=dict(row["activity_template"] or {}),
             created_at=row["created_at"],
             replayed=bool(row["replayed"]),
         )
@@ -139,5 +153,6 @@ class RoutineOccurrencePolicyApplication:
                 if row["reminder_lead_minutes"] is not None
                 else None
             ),
+            activity_template=dict(row["activity_template"] or {}),
             created_at=row["created_at"],
         )
