@@ -13,6 +13,7 @@ export const timelineNamedZoneLocalActivityResponseDisplayStartsLocalAtRegExp =
 export const timelineNamedZoneLocalActivityResponseEndsLocalAtRegExp =
   new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
 export const timelineNamedZoneLocalActivityResponseKindDefault = `scheduled_activity`;
+export const timelineNamedZoneLocalActivityResponsePlacementLockedDefault = false;
 export const timelineNamedZoneLocalActivityResponseStartsLocalAtRegExp =
   new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
 export const timelineNamedZoneLocalActivityResponseTemporalFormDefault = `named_zone_local`;
@@ -46,6 +47,10 @@ export const TimelineNamedZoneLocalActivityResponse = /*#__PURE__*/ zod
         timelineNamedZoneLocalActivityResponseKindDefault,
       )
       .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+    placement_locked: /*#__PURE__*/ zod._default(
+      /*#__PURE__*/ zod.boolean(),
+      timelineNamedZoneLocalActivityResponsePlacementLockedDefault,
+    ),
     placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
     resolved_end_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
     resolved_start_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),

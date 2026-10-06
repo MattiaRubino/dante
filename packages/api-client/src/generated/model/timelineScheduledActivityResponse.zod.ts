@@ -10,6 +10,7 @@ export const timelineScheduledActivityResponseEndsLocalAtRegExp = new RegExp(
   '^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$',
 );
 export const timelineScheduledActivityResponseKindDefault = `scheduled_activity`;
+export const timelineScheduledActivityResponsePlacementLockedDefault = false;
 export const timelineScheduledActivityResponseStartsLocalAtRegExp = new RegExp(
   '^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$',
 );
@@ -30,6 +31,10 @@ export const TimelineScheduledActivityResponse = /*#__PURE__*/ zod
         timelineScheduledActivityResponseKindDefault,
       )
       .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+    placement_locked: /*#__PURE__*/ zod._default(
+      /*#__PURE__*/ zod.boolean(),
+      timelineScheduledActivityResponsePlacementLockedDefault,
+    ),
     placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
     schedule_ref: /*#__PURE__*/ zod.uuid(),
     starts_local_at: /*#__PURE__*/ zod

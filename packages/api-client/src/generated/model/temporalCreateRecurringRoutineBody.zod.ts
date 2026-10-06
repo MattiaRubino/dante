@@ -6,6 +6,13 @@
  */
 import * as zod from 'zod/mini';
 
+export const temporalCreateRecurringRoutineBodyDurationMinutesMax = 525600;
+
+export const temporalCreateRecurringRoutineBodyLifeAreaOneColorCodeOneRegExp =
+  new RegExp('^#[0-9A-Fa-f]{6}$');
+
+export const temporalCreateRecurringRoutineBodyLifeAreaOneNewNameOneMax = 100;
+
 export const temporalCreateRecurringRoutineBodyOperationIdMax = 200;
 
 export const temporalCreateRecurringRoutineBodyRecurrenceOneFamilyCodeDefault = `calendar_wall_clock`;
@@ -57,12 +64,81 @@ export const temporalCreateRecurringRoutineBodyRecurrenceFourCycleLengthMax = 10
 export const temporalCreateRecurringRoutineBodyRecurrenceFourFamilyCodeDefault = `cyclic_positional`;
 export const temporalCreateRecurringRoutineBodyRecurrenceFourGeneratesExpectedMax = 10000;
 
+export const temporalCreateRecurringRoutineBodyReminderLeadMinutesOneMin = 0;
+export const temporalCreateRecurringRoutineBodyReminderLeadMinutesOneMax = 10080;
+
 export const temporalCreateRecurringRoutineBodyTagRefsMax = 100;
 
 export const temporalCreateRecurringRoutineBodyTitleMax = 300;
 
 export const TemporalCreateRecurringRoutineBody = /*#__PURE__*/ zod.object({
-  life_area_ref: /*#__PURE__*/ zod.uuid(),
+  activity_template: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.record(
+        /*#__PURE__*/ zod.string(),
+        /*#__PURE__*/ zod.unknown(),
+      ),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
+  duration_minutes: /*#__PURE__*/ zod
+    .int()
+    .check(/*#__PURE__*/ zod.gte(1))
+    .check(
+      /*#__PURE__*/ zod.lte(
+        temporalCreateRecurringRoutineBodyDurationMinutesMax,
+      ),
+    ),
+  life_area: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod
+        .object({
+          color_code: /*#__PURE__*/ zod.optional(
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod
+                .string()
+                .check(
+                  /*#__PURE__*/ zod.regex(
+                    temporalCreateRecurringRoutineBodyLifeAreaOneColorCodeOneRegExp,
+                  ),
+                ),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
+          expected_revision: /*#__PURE__*/ zod.optional(
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod.int().check(/*#__PURE__*/ zod.gte(1)),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
+          life_area_ref: /*#__PURE__*/ zod.optional(
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod.uuid(),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
+          new_name: /*#__PURE__*/ zod.optional(
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod
+                .string()
+                .check(/*#__PURE__*/ zod.minLength(1))
+                .check(
+                  /*#__PURE__*/ zod.maxLength(
+                    temporalCreateRecurringRoutineBodyLifeAreaOneNewNameOneMax,
+                  ),
+                ),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
+        })
+        .check(
+          /*#__PURE__*/ zod.describe(
+            'Select one existing Life Area or request creation of one new area.',
+          ),
+        ),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
   operation_id: /*#__PURE__*/ zod
     .string()
     .check(/*#__PURE__*/ zod.minLength(1))
@@ -417,6 +493,23 @@ export const TemporalCreateRecurringRoutineBody = /*#__PURE__*/ zod.object({
       ]),
     }),
   ]),
+  reminder_lead_minutes: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod
+        .int()
+        .check(
+          /*#__PURE__*/ zod.gte(
+            temporalCreateRecurringRoutineBodyReminderLeadMinutesOneMin,
+          ),
+        )
+        .check(
+          /*#__PURE__*/ zod.lte(
+            temporalCreateRecurringRoutineBodyReminderLeadMinutesOneMax,
+          ),
+        ),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
   tag_refs: /*#__PURE__*/ zod.optional(
     /*#__PURE__*/ zod
       .array(/*#__PURE__*/ zod.uuid())

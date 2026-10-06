@@ -8,8 +8,20 @@ import * as zod from 'zod/mini';
 
 export const createRecurringEventRequestAgendaPartsMax = 100;
 
+export const createRecurringEventRequestDurationDaysOneMax = 3660;
+
+export const createRecurringEventRequestDurationMinutesOneMax = 525600;
+
+export const createRecurringEventRequestLifeAreaOneColorCodeOneRegExp =
+  new RegExp('^#[0-9A-Fa-f]{6}$');
+
+export const createRecurringEventRequestLifeAreaOneNewNameOneMax = 100;
+
+export const createRecurringEventRequestObjectivesMax = 100;
+
 export const createRecurringEventRequestOperationIdMax = 200;
 
+export const createRecurringEventRequestRealityModeDefault = `manual`;
 export const createRecurringEventRequestRecurrenceOneFamilyCodeDefault = `calendar_wall_clock`;
 export const createRecurringEventRequestRecurrenceOneIntervalCountMax = 10000;
 
@@ -59,6 +71,9 @@ export const createRecurringEventRequestRecurrenceFourCycleLengthMax = 10000;
 export const createRecurringEventRequestRecurrenceFourFamilyCodeDefault = `cyclic_positional`;
 export const createRecurringEventRequestRecurrenceFourGeneratesExpectedMax = 10000;
 
+export const createRecurringEventRequestReminderLeadMinutesOneMin = 0;
+export const createRecurringEventRequestReminderLeadMinutesOneMax = 10080;
+
 export const createRecurringEventRequestTitleMax = 300;
 
 export const CreateRecurringEventRequest = /*#__PURE__*/ zod.object({
@@ -69,13 +84,121 @@ export const CreateRecurringEventRequest = /*#__PURE__*/ zod.object({
         /*#__PURE__*/ zod.maxLength(createRecurringEventRequestAgendaPartsMax),
       ),
   ),
-  life_area_ref: /*#__PURE__*/ zod.uuid(),
+  description: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.string(),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
+  duration_days: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod
+        .int()
+        .check(/*#__PURE__*/ zod.gte(1))
+        .check(
+          /*#__PURE__*/ zod.lte(createRecurringEventRequestDurationDaysOneMax),
+        ),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
+  duration_minutes: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod
+        .int()
+        .check(/*#__PURE__*/ zod.gte(1))
+        .check(
+          /*#__PURE__*/ zod.lte(
+            createRecurringEventRequestDurationMinutesOneMax,
+          ),
+        ),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
+  item_color_code: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.string(),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
+  life_area: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod
+        .object({
+          color_code: /*#__PURE__*/ zod.optional(
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod
+                .string()
+                .check(
+                  /*#__PURE__*/ zod.regex(
+                    createRecurringEventRequestLifeAreaOneColorCodeOneRegExp,
+                  ),
+                ),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
+          expected_revision: /*#__PURE__*/ zod.optional(
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod.int().check(/*#__PURE__*/ zod.gte(1)),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
+          life_area_ref: /*#__PURE__*/ zod.optional(
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod.uuid(),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
+          new_name: /*#__PURE__*/ zod.optional(
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod
+                .string()
+                .check(/*#__PURE__*/ zod.minLength(1))
+                .check(
+                  /*#__PURE__*/ zod.maxLength(
+                    createRecurringEventRequestLifeAreaOneNewNameOneMax,
+                  ),
+                ),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
+        })
+        .check(
+          /*#__PURE__*/ zod.describe(
+            'Select one existing Life Area or request creation of one new area.',
+          ),
+        ),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
+  location: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.string(),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
+  objectives: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod
+      .array(
+        /*#__PURE__*/ zod.record(
+          /*#__PURE__*/ zod.string(),
+          /*#__PURE__*/ zod.unknown(),
+        ),
+      )
+      .check(
+        /*#__PURE__*/ zod.maxLength(createRecurringEventRequestObjectivesMax),
+      ),
+  ),
   operation_id: /*#__PURE__*/ zod
     .string()
     .check(/*#__PURE__*/ zod.minLength(1))
     .check(
       /*#__PURE__*/ zod.maxLength(createRecurringEventRequestOperationIdMax),
     ),
+  placement_kind: /*#__PURE__*/ zod.enum(['timed', 'all_day']),
+  reality_mode: /*#__PURE__*/ zod._default(
+    /*#__PURE__*/ zod.enum(['manual', 'review_on_end', 'auto_confirm_outcome']),
+    createRecurringEventRequestRealityModeDefault,
+  ),
   recurrence: /*#__PURE__*/ zod.union([
     /*#__PURE__*/ zod.object({
       ambiguous_local_time_policy: /*#__PURE__*/ zod.optional(
@@ -422,6 +545,23 @@ export const CreateRecurringEventRequest = /*#__PURE__*/ zod.object({
       ]),
     }),
   ]),
+  reminder_lead_minutes: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod
+        .int()
+        .check(
+          /*#__PURE__*/ zod.gte(
+            createRecurringEventRequestReminderLeadMinutesOneMin,
+          ),
+        )
+        .check(
+          /*#__PURE__*/ zod.lte(
+            createRecurringEventRequestReminderLeadMinutesOneMax,
+          ),
+        ),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
   title: /*#__PURE__*/ zod
     .string()
     .check(/*#__PURE__*/ zod.minLength(1))

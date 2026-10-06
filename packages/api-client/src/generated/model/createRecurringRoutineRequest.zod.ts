@@ -6,6 +6,13 @@
  */
 import * as zod from 'zod/mini';
 
+export const createRecurringRoutineRequestDurationMinutesMax = 525600;
+
+export const createRecurringRoutineRequestLifeAreaOneColorCodeOneRegExp =
+  new RegExp('^#[0-9A-Fa-f]{6}$');
+
+export const createRecurringRoutineRequestLifeAreaOneNewNameOneMax = 100;
+
 export const createRecurringRoutineRequestOperationIdMax = 200;
 
 export const createRecurringRoutineRequestRecurrenceOneFamilyCodeDefault = `calendar_wall_clock`;
@@ -57,12 +64,79 @@ export const createRecurringRoutineRequestRecurrenceFourCycleLengthMax = 10000;
 export const createRecurringRoutineRequestRecurrenceFourFamilyCodeDefault = `cyclic_positional`;
 export const createRecurringRoutineRequestRecurrenceFourGeneratesExpectedMax = 10000;
 
+export const createRecurringRoutineRequestReminderLeadMinutesOneMin = 0;
+export const createRecurringRoutineRequestReminderLeadMinutesOneMax = 10080;
+
 export const createRecurringRoutineRequestTagRefsMax = 100;
 
 export const createRecurringRoutineRequestTitleMax = 300;
 
 export const CreateRecurringRoutineRequest = /*#__PURE__*/ zod.object({
-  life_area_ref: /*#__PURE__*/ zod.uuid(),
+  activity_template: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.record(
+        /*#__PURE__*/ zod.string(),
+        /*#__PURE__*/ zod.unknown(),
+      ),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
+  duration_minutes: /*#__PURE__*/ zod
+    .int()
+    .check(/*#__PURE__*/ zod.gte(1))
+    .check(
+      /*#__PURE__*/ zod.lte(createRecurringRoutineRequestDurationMinutesMax),
+    ),
+  life_area: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod
+        .object({
+          color_code: /*#__PURE__*/ zod.optional(
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod
+                .string()
+                .check(
+                  /*#__PURE__*/ zod.regex(
+                    createRecurringRoutineRequestLifeAreaOneColorCodeOneRegExp,
+                  ),
+                ),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
+          expected_revision: /*#__PURE__*/ zod.optional(
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod.int().check(/*#__PURE__*/ zod.gte(1)),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
+          life_area_ref: /*#__PURE__*/ zod.optional(
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod.uuid(),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
+          new_name: /*#__PURE__*/ zod.optional(
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod
+                .string()
+                .check(/*#__PURE__*/ zod.minLength(1))
+                .check(
+                  /*#__PURE__*/ zod.maxLength(
+                    createRecurringRoutineRequestLifeAreaOneNewNameOneMax,
+                  ),
+                ),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
+        })
+        .check(
+          /*#__PURE__*/ zod.describe(
+            'Select one existing Life Area or request creation of one new area.',
+          ),
+        ),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
   operation_id: /*#__PURE__*/ zod
     .string()
     .check(/*#__PURE__*/ zod.minLength(1))
@@ -415,6 +489,23 @@ export const CreateRecurringRoutineRequest = /*#__PURE__*/ zod.object({
       ]),
     }),
   ]),
+  reminder_lead_minutes: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod
+        .int()
+        .check(
+          /*#__PURE__*/ zod.gte(
+            createRecurringRoutineRequestReminderLeadMinutesOneMin,
+          ),
+        )
+        .check(
+          /*#__PURE__*/ zod.lte(
+            createRecurringRoutineRequestReminderLeadMinutesOneMax,
+          ),
+        ),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
   tag_refs: /*#__PURE__*/ zod.optional(
     /*#__PURE__*/ zod
       .array(/*#__PURE__*/ zod.uuid())

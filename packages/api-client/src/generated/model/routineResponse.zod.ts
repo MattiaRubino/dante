@@ -6,15 +6,23 @@
  */
 import * as zod from 'zod/mini';
 
+export const routineResponseLifeAreaAssignmentRevisionMin = 0;
+
 export const routineResponseReplayedDefault = false;
 
 export const RoutineResponse = /*#__PURE__*/ zod.object({
   created_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-  life_area_assigned_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+  life_area_assigned_at: /*#__PURE__*/ zod.union([
+    /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+    /*#__PURE__*/ zod.null(),
+  ]),
   life_area_assignment_revision: /*#__PURE__*/ zod
     .int()
-    .check(/*#__PURE__*/ zod.gte(1)),
-  life_area_ref: /*#__PURE__*/ zod.uuid(),
+    .check(/*#__PURE__*/ zod.gte(routineResponseLifeAreaAssignmentRevisionMin)),
+  life_area_ref: /*#__PURE__*/ zod.union([
+    /*#__PURE__*/ zod.uuid(),
+    /*#__PURE__*/ zod.null(),
+  ]),
   lifecycle_changed_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
   lifecycle_state: /*#__PURE__*/ zod.enum(['active', 'paused', 'ended']),
   replayed: /*#__PURE__*/ zod._default(

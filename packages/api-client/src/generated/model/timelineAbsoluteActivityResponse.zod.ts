@@ -11,6 +11,7 @@ export const timelineAbsoluteActivityResponseDisplayEndsLocalAtRegExp =
 export const timelineAbsoluteActivityResponseDisplayStartsLocalAtRegExp =
   new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
 export const timelineAbsoluteActivityResponseKindDefault = `scheduled_activity`;
+export const timelineAbsoluteActivityResponsePlacementLockedDefault = false;
 export const timelineAbsoluteActivityResponseTemporalFormDefault = `absolute`;
 export const TimelineAbsoluteActivityResponse = /*#__PURE__*/ zod
   .object({
@@ -36,6 +37,10 @@ export const TimelineAbsoluteActivityResponse = /*#__PURE__*/ zod
         timelineAbsoluteActivityResponseKindDefault,
       )
       .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+    placement_locked: /*#__PURE__*/ zod._default(
+      /*#__PURE__*/ zod.boolean(),
+      timelineAbsoluteActivityResponsePlacementLockedDefault,
+    ),
     placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
     schedule_ref: /*#__PURE__*/ zod.uuid(),
     starts_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),

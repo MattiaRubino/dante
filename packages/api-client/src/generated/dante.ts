@@ -76,6 +76,10 @@ import type {
   LifeAreaResponse,
   MovementPolicyMutationResponse,
   MutationRequest,
+  ObjectiveCreateCommand,
+  ObjectiveResponse,
+  ObjectiveResultCommand,
+  ObjectiveResultResponse,
   OccurrenceCheckpointRequest,
   OccurrenceCheckpointResponse,
   OccurrenceMutationResponse,
@@ -101,6 +105,8 @@ import type {
   PersonReferentResponse,
   PlacePlanningTrayItemRequest,
   PlacePlanningTrayItemResponse,
+  PlacementLockRequest,
+  PlacementLockResponse,
   PlanAdmissionResponse,
   PlanCandidateResponse,
   PlanDependencyHistoryResponse,
@@ -123,6 +129,8 @@ import type {
   ProviderLinkConfirmRequest,
   ProviderLinkRequiredResponse,
   ProviderLinkResponse,
+  RealityPolicyCommand,
+  RealityPolicyResponse,
   ReauthenticateRequest,
   ReconciliationCommand,
   ReconciliationHistoryResponse,
@@ -5202,6 +5210,254 @@ export const temporalSetActivityChild = async (
   } as temporalSetActivityChildResponse;
 };
 
+export type temporalListActivityObjectivesResponse200 = {
+  data: ObjectiveResponse[];
+  status: 200;
+};
+
+export type temporalListActivityObjectivesResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalListActivityObjectivesResponseSuccess =
+  temporalListActivityObjectivesResponse200 & {
+    headers: Headers;
+  };
+export type temporalListActivityObjectivesResponseError =
+  temporalListActivityObjectivesResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalListActivityObjectivesResponse =
+  | temporalListActivityObjectivesResponseSuccess
+  | temporalListActivityObjectivesResponseError;
+
+export const getTemporalListActivityObjectivesUrl = (subjectRef: string) => {
+  return `/api/v1/temporal/activities/${subjectRef}/objectives`;
+};
+
+/**
+ * @summary List Activity Objectives
+ */
+export const temporalListActivityObjectives = async (
+  subjectRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListActivityObjectivesResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalListActivityObjectivesUrl(subjectRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListActivityObjectivesResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListActivityObjectivesResponse;
+};
+
+export type temporalCreateActivityObjectiveResponse200 = {
+  data: ObjectiveResponse;
+  status: 200;
+};
+
+export type temporalCreateActivityObjectiveResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalCreateActivityObjectiveResponseSuccess =
+  temporalCreateActivityObjectiveResponse200 & {
+    headers: Headers;
+  };
+export type temporalCreateActivityObjectiveResponseError =
+  temporalCreateActivityObjectiveResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalCreateActivityObjectiveResponse =
+  | temporalCreateActivityObjectiveResponseSuccess
+  | temporalCreateActivityObjectiveResponseError;
+
+export const getTemporalCreateActivityObjectiveUrl = (subjectRef: string) => {
+  return `/api/v1/temporal/activities/${subjectRef}/objectives`;
+};
+
+/**
+ * @summary Create Activity Objective
+ */
+export const temporalCreateActivityObjective = async (
+  subjectRef: string,
+  objectiveCreateCommand: ObjectiveCreateCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalCreateActivityObjectiveResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalCreateActivityObjectiveUrl(subjectRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(objectiveCreateCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalCreateActivityObjectiveResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalCreateActivityObjectiveResponse;
+};
+
+export type temporalGetActivityRealityPolicyResponse200 = {
+  data: RealityPolicyResponse;
+  status: 200;
+};
+
+export type temporalGetActivityRealityPolicyResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetActivityRealityPolicyResponseSuccess =
+  temporalGetActivityRealityPolicyResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetActivityRealityPolicyResponseError =
+  temporalGetActivityRealityPolicyResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalGetActivityRealityPolicyResponse =
+  | temporalGetActivityRealityPolicyResponseSuccess
+  | temporalGetActivityRealityPolicyResponseError;
+
+export const getTemporalGetActivityRealityPolicyUrl = (subjectRef: string) => {
+  return `/api/v1/temporal/activities/${subjectRef}/reality-policy`;
+};
+
+/**
+ * @summary Get Activity Reality Policy
+ */
+export const temporalGetActivityRealityPolicy = async (
+  subjectRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetActivityRealityPolicyResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetActivityRealityPolicyUrl(subjectRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetActivityRealityPolicyResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetActivityRealityPolicyResponse;
+};
+
+export type temporalSetActivityRealityPolicyResponse200 = {
+  data: RealityPolicyResponse;
+  status: 200;
+};
+
+export type temporalSetActivityRealityPolicyResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalSetActivityRealityPolicyResponseSuccess =
+  temporalSetActivityRealityPolicyResponse200 & {
+    headers: Headers;
+  };
+export type temporalSetActivityRealityPolicyResponseError =
+  temporalSetActivityRealityPolicyResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalSetActivityRealityPolicyResponse =
+  | temporalSetActivityRealityPolicyResponseSuccess
+  | temporalSetActivityRealityPolicyResponseError;
+
+export const getTemporalSetActivityRealityPolicyUrl = (subjectRef: string) => {
+  return `/api/v1/temporal/activities/${subjectRef}/reality-policy`;
+};
+
+/**
+ * @summary Set Activity Reality Policy
+ */
+export const temporalSetActivityRealityPolicy = async (
+  subjectRef: string,
+  realityPolicyCommand: RealityPolicyCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalSetActivityRealityPolicyResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalSetActivityRealityPolicyUrl(subjectRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(realityPolicyCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalSetActivityRealityPolicyResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalSetActivityRealityPolicyResponse;
+};
+
 export type temporalListActualHistoryResponse200 = {
   data: ActualRealizationHistoryResponse[];
   status: 200;
@@ -7865,6 +8121,254 @@ export const temporalCheckpointEventAdvancedRecurrence = async (
   } as temporalCheckpointEventAdvancedRecurrenceResponse;
 };
 
+export type temporalListEventObjectivesResponse200 = {
+  data: ObjectiveResponse[];
+  status: 200;
+};
+
+export type temporalListEventObjectivesResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalListEventObjectivesResponseSuccess =
+  temporalListEventObjectivesResponse200 & {
+    headers: Headers;
+  };
+export type temporalListEventObjectivesResponseError =
+  temporalListEventObjectivesResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalListEventObjectivesResponse =
+  | temporalListEventObjectivesResponseSuccess
+  | temporalListEventObjectivesResponseError;
+
+export const getTemporalListEventObjectivesUrl = (subjectRef: string) => {
+  return `/api/v1/temporal/events/${subjectRef}/objectives`;
+};
+
+/**
+ * @summary List Event Objectives
+ */
+export const temporalListEventObjectives = async (
+  subjectRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListEventObjectivesResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalListEventObjectivesUrl(subjectRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListEventObjectivesResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListEventObjectivesResponse;
+};
+
+export type temporalCreateEventObjectiveResponse200 = {
+  data: ObjectiveResponse;
+  status: 200;
+};
+
+export type temporalCreateEventObjectiveResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalCreateEventObjectiveResponseSuccess =
+  temporalCreateEventObjectiveResponse200 & {
+    headers: Headers;
+  };
+export type temporalCreateEventObjectiveResponseError =
+  temporalCreateEventObjectiveResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalCreateEventObjectiveResponse =
+  | temporalCreateEventObjectiveResponseSuccess
+  | temporalCreateEventObjectiveResponseError;
+
+export const getTemporalCreateEventObjectiveUrl = (subjectRef: string) => {
+  return `/api/v1/temporal/events/${subjectRef}/objectives`;
+};
+
+/**
+ * @summary Create Event Objective
+ */
+export const temporalCreateEventObjective = async (
+  subjectRef: string,
+  objectiveCreateCommand: ObjectiveCreateCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalCreateEventObjectiveResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalCreateEventObjectiveUrl(subjectRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(objectiveCreateCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalCreateEventObjectiveResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalCreateEventObjectiveResponse;
+};
+
+export type temporalGetEventRealityPolicyResponse200 = {
+  data: RealityPolicyResponse;
+  status: 200;
+};
+
+export type temporalGetEventRealityPolicyResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetEventRealityPolicyResponseSuccess =
+  temporalGetEventRealityPolicyResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetEventRealityPolicyResponseError =
+  temporalGetEventRealityPolicyResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalGetEventRealityPolicyResponse =
+  | temporalGetEventRealityPolicyResponseSuccess
+  | temporalGetEventRealityPolicyResponseError;
+
+export const getTemporalGetEventRealityPolicyUrl = (subjectRef: string) => {
+  return `/api/v1/temporal/events/${subjectRef}/reality-policy`;
+};
+
+/**
+ * @summary Get Event Reality Policy
+ */
+export const temporalGetEventRealityPolicy = async (
+  subjectRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetEventRealityPolicyResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetEventRealityPolicyUrl(subjectRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetEventRealityPolicyResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetEventRealityPolicyResponse;
+};
+
+export type temporalSetEventRealityPolicyResponse200 = {
+  data: RealityPolicyResponse;
+  status: 200;
+};
+
+export type temporalSetEventRealityPolicyResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalSetEventRealityPolicyResponseSuccess =
+  temporalSetEventRealityPolicyResponse200 & {
+    headers: Headers;
+  };
+export type temporalSetEventRealityPolicyResponseError =
+  temporalSetEventRealityPolicyResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalSetEventRealityPolicyResponse =
+  | temporalSetEventRealityPolicyResponseSuccess
+  | temporalSetEventRealityPolicyResponseError;
+
+export const getTemporalSetEventRealityPolicyUrl = (subjectRef: string) => {
+  return `/api/v1/temporal/events/${subjectRef}/reality-policy`;
+};
+
+/**
+ * @summary Set Event Reality Policy
+ */
+export const temporalSetEventRealityPolicy = async (
+  subjectRef: string,
+  realityPolicyCommand: RealityPolicyCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalSetEventRealityPolicyResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalSetEventRealityPolicyUrl(subjectRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(realityPolicyCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalSetEventRealityPolicyResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalSetEventRealityPolicyResponse;
+};
+
 export type temporalListLifeAreaAssignmentsResponse200 = {
   data: LifeAreaAssignmentResponse[];
   status: 200;
@@ -8532,6 +9036,75 @@ export const temporalSetLifeAreaVisibility = async (
   } as temporalSetLifeAreaVisibilityResponse;
 };
 
+export type temporalRecordObjectiveResultResponse200 = {
+  data: ObjectiveResultResponse;
+  status: 200;
+};
+
+export type temporalRecordObjectiveResultResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalRecordObjectiveResultResponseSuccess =
+  temporalRecordObjectiveResultResponse200 & {
+    headers: Headers;
+  };
+export type temporalRecordObjectiveResultResponseError =
+  temporalRecordObjectiveResultResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalRecordObjectiveResultResponse =
+  | temporalRecordObjectiveResultResponseSuccess
+  | temporalRecordObjectiveResultResponseError;
+
+export const getTemporalRecordObjectiveResultUrl = (objectiveRef: string) => {
+  return `/api/v1/temporal/objectives/${objectiveRef}/result`;
+};
+
+/**
+ * @summary Record Objective Result
+ */
+export const temporalRecordObjectiveResult = async (
+  objectiveRef: string,
+  objectiveResultCommand: ObjectiveResultCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalRecordObjectiveResultResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalRecordObjectiveResultUrl(objectiveRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(objectiveResultCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalRecordObjectiveResultResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalRecordObjectiveResultResponse;
+};
+
 export type temporalCheckpointOccurrenceWindowResponse200 = {
   data: OccurrenceWindowCheckpointResponse;
   status: 200;
@@ -8560,7 +9133,7 @@ export const getTemporalCheckpointOccurrenceWindowUrl = () => {
 };
 
 /**
- * Checkpoint every current self recurrence source before a Timeline read.
+ * Checkpoint sources and apply recurring Activity Schedule/Reminder policy.
  * @summary Checkpoint Occurrence Window
  */
 export const temporalCheckpointOccurrenceWindow = async (
@@ -9041,6 +9614,189 @@ export const temporalSkipOccurrence = async (
     status: res.status,
     headers: res.headers,
   } as temporalSkipOccurrenceResponse;
+};
+
+export type temporalListOccurrenceObjectivesResponse200 = {
+  data: ObjectiveResponse[];
+  status: 200;
+};
+
+export type temporalListOccurrenceObjectivesResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalListOccurrenceObjectivesResponseSuccess =
+  temporalListOccurrenceObjectivesResponse200 & {
+    headers: Headers;
+  };
+export type temporalListOccurrenceObjectivesResponseError =
+  temporalListOccurrenceObjectivesResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalListOccurrenceObjectivesResponse =
+  | temporalListOccurrenceObjectivesResponseSuccess
+  | temporalListOccurrenceObjectivesResponseError;
+
+export const getTemporalListOccurrenceObjectivesUrl = (subjectRef: string) => {
+  return `/api/v1/temporal/occurrences/${subjectRef}/objectives`;
+};
+
+/**
+ * @summary List Occurrence Objectives
+ */
+export const temporalListOccurrenceObjectives = async (
+  subjectRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListOccurrenceObjectivesResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalListOccurrenceObjectivesUrl(subjectRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListOccurrenceObjectivesResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListOccurrenceObjectivesResponse;
+};
+
+export type temporalGetOccurrenceRealityPolicyResponse200 = {
+  data: RealityPolicyResponse;
+  status: 200;
+};
+
+export type temporalGetOccurrenceRealityPolicyResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetOccurrenceRealityPolicyResponseSuccess =
+  temporalGetOccurrenceRealityPolicyResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetOccurrenceRealityPolicyResponseError =
+  temporalGetOccurrenceRealityPolicyResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalGetOccurrenceRealityPolicyResponse =
+  | temporalGetOccurrenceRealityPolicyResponseSuccess
+  | temporalGetOccurrenceRealityPolicyResponseError;
+
+export const getTemporalGetOccurrenceRealityPolicyUrl = (
+  subjectRef: string,
+) => {
+  return `/api/v1/temporal/occurrences/${subjectRef}/reality-policy`;
+};
+
+/**
+ * @summary Get Occurrence Reality Policy
+ */
+export const temporalGetOccurrenceRealityPolicy = async (
+  subjectRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetOccurrenceRealityPolicyResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetOccurrenceRealityPolicyUrl(subjectRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetOccurrenceRealityPolicyResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetOccurrenceRealityPolicyResponse;
+};
+
+export type temporalSetOccurrenceRealityPolicyResponse200 = {
+  data: RealityPolicyResponse;
+  status: 200;
+};
+
+export type temporalSetOccurrenceRealityPolicyResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalSetOccurrenceRealityPolicyResponseSuccess =
+  temporalSetOccurrenceRealityPolicyResponse200 & {
+    headers: Headers;
+  };
+export type temporalSetOccurrenceRealityPolicyResponseError =
+  temporalSetOccurrenceRealityPolicyResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalSetOccurrenceRealityPolicyResponse =
+  | temporalSetOccurrenceRealityPolicyResponseSuccess
+  | temporalSetOccurrenceRealityPolicyResponseError;
+
+export const getTemporalSetOccurrenceRealityPolicyUrl = (
+  subjectRef: string,
+) => {
+  return `/api/v1/temporal/occurrences/${subjectRef}/reality-policy`;
+};
+
+/**
+ * @summary Set Occurrence Reality Policy
+ */
+export const temporalSetOccurrenceRealityPolicy = async (
+  subjectRef: string,
+  realityPolicyCommand: RealityPolicyCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalSetOccurrenceRealityPolicyResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalSetOccurrenceRealityPolicyUrl(subjectRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(realityPolicyCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalSetOccurrenceRealityPolicyResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalSetOccurrenceRealityPolicyResponse;
 };
 
 export type temporalListOutcomeConfirmationsResponse200 = {
@@ -11232,9 +11988,10 @@ export const getTemporalListResolutionQueueUrl = () => {
 /**
  * Derived current product work, never inferred failure from time passage.
  *
- * `realization_review` exists only when the Activity explicitly requests
- * review-on-end and a bounded B08 Session really exists. Schedule expiry or
- * absence of Actual never creates an item by itself.
+ * Reality review requires an explicit review-on-end policy and a completed
+ * bounded Session (Activity) or ended Event placement. Objectives can request
+ * assessment independently after the same bounded completion. Absence of
+ * Actual never means that the subject did not happen.
  * @summary List Resolution Queue
  */
 export const temporalListResolutionQueue = async (
@@ -12650,6 +13407,134 @@ export const reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPa
       headers: res.headers,
     } as reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchResponse;
   };
+
+export type temporalGetSelfSchedulePlacementLockResponse200 = {
+  data: PlacementLockResponse;
+  status: 200;
+};
+
+export type temporalGetSelfSchedulePlacementLockResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetSelfSchedulePlacementLockResponseSuccess =
+  temporalGetSelfSchedulePlacementLockResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetSelfSchedulePlacementLockResponseError =
+  temporalGetSelfSchedulePlacementLockResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalGetSelfSchedulePlacementLockResponse =
+  | temporalGetSelfSchedulePlacementLockResponseSuccess
+  | temporalGetSelfSchedulePlacementLockResponseError;
+
+export const getTemporalGetSelfSchedulePlacementLockUrl = (
+  scheduleRef: string,
+) => {
+  return `/api/v1/temporal/schedules/${scheduleRef}/placement-lock`;
+};
+
+/**
+ * @summary Get Self Schedule Placement Lock
+ */
+export const temporalGetSelfSchedulePlacementLock = async (
+  scheduleRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetSelfSchedulePlacementLockResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetSelfSchedulePlacementLockUrl(scheduleRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetSelfSchedulePlacementLockResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetSelfSchedulePlacementLockResponse;
+};
+
+export type temporalSetSelfSchedulePlacementLockResponse200 = {
+  data: PlacementLockResponse;
+  status: 200;
+};
+
+export type temporalSetSelfSchedulePlacementLockResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalSetSelfSchedulePlacementLockResponseSuccess =
+  temporalSetSelfSchedulePlacementLockResponse200 & {
+    headers: Headers;
+  };
+export type temporalSetSelfSchedulePlacementLockResponseError =
+  temporalSetSelfSchedulePlacementLockResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalSetSelfSchedulePlacementLockResponse =
+  | temporalSetSelfSchedulePlacementLockResponseSuccess
+  | temporalSetSelfSchedulePlacementLockResponseError;
+
+export const getTemporalSetSelfSchedulePlacementLockUrl = (
+  scheduleRef: string,
+) => {
+  return `/api/v1/temporal/schedules/${scheduleRef}/placement-lock`;
+};
+
+/**
+ * @summary Set Self Schedule Placement Lock
+ */
+export const temporalSetSelfSchedulePlacementLock = async (
+  scheduleRef: string,
+  placementLockRequest: PlacementLockRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalSetSelfSchedulePlacementLockResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalSetSelfSchedulePlacementLockUrl(scheduleRef),
+    {
+      ...options,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(placementLockRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalSetSelfSchedulePlacementLockResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalSetSelfSchedulePlacementLockResponse;
+};
 
 export type temporalGetScheduleReminderResponse200 = {
   data: ScheduleReminderResponse;

@@ -4394,15 +4394,99 @@
             "title": "Agenda Parts",
             "type": "array"
           },
-          "life_area_ref": {
-            "format": "uuid",
-            "title": "Life Area Ref",
-            "type": "string"
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "duration_days": {
+            "anyOf": [
+              {
+                "maximum": 3660.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Days"
+          },
+          "duration_minutes": {
+            "anyOf": [
+              {
+                "maximum": 525600.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Minutes"
+          },
+          "item_color_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Item Color Code"
+          },
+          "life_area": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AuthoringLifeAreaRequest"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "objectives": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "maxItems": 100,
+            "title": "Objectives",
+            "type": "array"
           },
           "operation_id": {
             "maxLength": 200,
             "minLength": 1,
             "title": "Operation Id",
+            "type": "string"
+          },
+          "placement_kind": {
+            "enum": ["timed", "all_day"],
+            "title": "Placement Kind",
+            "type": "string"
+          },
+          "reality_mode": {
+            "default": "manual",
+            "enum": ["manual", "review_on_end", "auto_confirm_outcome"],
+            "title": "Reality Mode",
             "type": "string"
           },
           "recurrence": {
@@ -4430,6 +4514,19 @@
               }
             ],
             "title": "Recurrence"
+          },
+          "reminder_lead_minutes": {
+            "anyOf": [
+              {
+                "maximum": 10080.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reminder Lead Minutes"
           },
           "title": {
             "maxLength": 300,
@@ -4438,17 +4535,40 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "title", "life_area_ref", "recurrence"],
+        "required": ["operation_id", "title", "recurrence", "placement_kind"],
         "title": "CreateRecurringEventRequest",
         "type": "object"
       },
       "CreateRecurringRoutineRequest": {
         "additionalProperties": false,
         "properties": {
-          "life_area_ref": {
-            "format": "uuid",
-            "title": "Life Area Ref",
-            "type": "string"
+          "activity_template": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Activity Template"
+          },
+          "duration_minutes": {
+            "maximum": 525600.0,
+            "minimum": 1.0,
+            "title": "Duration Minutes",
+            "type": "integer"
+          },
+          "life_area": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AuthoringLifeAreaRequest"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "operation_id": {
             "maxLength": 200,
@@ -4481,6 +4601,19 @@
               }
             ],
             "title": "Recurrence"
+          },
+          "reminder_lead_minutes": {
+            "anyOf": [
+              {
+                "maximum": 10080.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reminder Lead Minutes"
           },
           "tag_refs": {
             "items": {
@@ -4498,7 +4631,7 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "title", "life_area_ref", "recurrence"],
+        "required": ["operation_id", "title", "recurrence", "duration_minutes"],
         "title": "CreateRecurringRoutineRequest",
         "type": "object"
       },
@@ -6318,6 +6451,401 @@
         "title": "NamedZoneLocalIntervalPlacementRequest",
         "type": "object"
       },
+      "ObjectiveCreateCommand": {
+        "additionalProperties": false,
+        "properties": {
+          "comparator_code": {
+            "anyOf": [
+              {
+                "enum": ["eq", "gte", "lte", "between"],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comparator Code"
+          },
+          "label": {
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Label",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "presentation_order": {
+            "maximum": 999.0,
+            "minimum": 0.0,
+            "title": "Presentation Order",
+            "type": "integer"
+          },
+          "result_kind": {
+            "enum": ["boolean", "quantity", "qualitative", "range"],
+            "title": "Result Kind",
+            "type": "string"
+          },
+          "target_max": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Max"
+          },
+          "target_min": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Min"
+          },
+          "target_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Value"
+          },
+          "unit_code": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Code"
+          }
+        },
+        "required": [
+          "operation_id",
+          "label",
+          "result_kind",
+          "presentation_order"
+        ],
+        "title": "ObjectiveCreateCommand",
+        "type": "object"
+      },
+      "ObjectiveResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "assessment_code": {
+            "anyOf": [
+              {
+                "enum": [
+                  "satisfied",
+                  "partial",
+                  "not_satisfied",
+                  "unknown",
+                  "indeterminate"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assessment Code"
+          },
+          "comparator_code": {
+            "anyOf": [
+              {
+                "enum": ["eq", "gte", "lte", "between"],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comparator Code"
+          },
+          "evaluation_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evaluation State Ref"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "objective_ref": {
+            "format": "uuid",
+            "title": "Objective Ref",
+            "type": "string"
+          },
+          "observation_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observation Ref"
+          },
+          "observed_boolean": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed Boolean"
+          },
+          "observed_numeric": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed Numeric"
+          },
+          "presentation_order": {
+            "title": "Presentation Order",
+            "type": "integer"
+          },
+          "qualitative_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Qualitative Code"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "result_kind": {
+            "enum": ["boolean", "quantity", "qualitative", "range"],
+            "title": "Result Kind",
+            "type": "string"
+          },
+          "target_max": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Max"
+          },
+          "target_min": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Min"
+          },
+          "target_value": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Value"
+          },
+          "unit_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Code"
+          }
+        },
+        "required": [
+          "objective_ref",
+          "label",
+          "result_kind",
+          "comparator_code",
+          "target_value",
+          "target_min",
+          "target_max",
+          "unit_code",
+          "presentation_order"
+        ],
+        "title": "ObjectiveResponse",
+        "type": "object"
+      },
+      "ObjectiveResultCommand": {
+        "additionalProperties": false,
+        "properties": {
+          "assessment_code": {
+            "anyOf": [
+              {
+                "enum": [
+                  "satisfied",
+                  "partial",
+                  "not_satisfied",
+                  "unknown",
+                  "indeterminate"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assessment Code"
+          },
+          "observed_boolean": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed Boolean"
+          },
+          "observed_numeric": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed Numeric"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "qualitative_code": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Qualitative Code"
+          }
+        },
+        "required": ["operation_id"],
+        "title": "ObjectiveResultCommand",
+        "type": "object"
+      },
+      "ObjectiveResultResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "assessment_code": {
+            "enum": [
+              "satisfied",
+              "partial",
+              "not_satisfied",
+              "unknown",
+              "indeterminate"
+            ],
+            "title": "Assessment Code",
+            "type": "string"
+          },
+          "evaluation_state_ref": {
+            "format": "uuid",
+            "title": "Evaluation State Ref",
+            "type": "string"
+          },
+          "objective_ref": {
+            "format": "uuid",
+            "title": "Objective Ref",
+            "type": "string"
+          },
+          "observation_ref": {
+            "format": "uuid",
+            "title": "Observation Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "objective_ref",
+          "observation_ref",
+          "evaluation_state_ref",
+          "assessment_code"
+        ],
+        "title": "ObjectiveResultResponse",
+        "type": "object"
+      },
       "OccurrenceAbsoluteSchedulePlacementResponse": {
         "additionalProperties": false,
         "properties": {
@@ -7436,6 +7964,73 @@
           "ends_at"
         ],
         "title": "PlacementBasisResponse",
+        "type": "object"
+      },
+      "PlacementLockRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_revision": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Revision"
+          },
+          "locked": {
+            "title": "Locked",
+            "type": "boolean"
+          }
+        },
+        "required": ["locked"],
+        "title": "PlacementLockRequest",
+        "type": "object"
+      },
+      "PlacementLockResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "locked": {
+            "title": "Locked",
+            "type": "boolean"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "revision": {
+            "title": "Revision",
+            "type": "integer"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "required": [
+          "schedule_ref",
+          "locked",
+          "revision",
+          "updated_at",
+          "replayed"
+        ],
+        "title": "PlacementLockResponse",
         "type": "object"
       },
       "PlanAdmissionResponse": {
@@ -9122,6 +9717,82 @@
         "title": "QuotaRecurrenceResponse",
         "type": "object"
       },
+      "RealityPolicyCommand": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected State Ref"
+          },
+          "mode_code": {
+            "enum": ["manual", "review_on_end", "auto_confirm_outcome"],
+            "title": "Mode Code",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "mode_code"],
+        "title": "RealityPolicyCommand",
+        "type": "object"
+      },
+      "RealityPolicyResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "mode_code": {
+            "enum": ["manual", "review_on_end", "auto_confirm_outcome"],
+            "title": "Mode Code",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "State Ref"
+          },
+          "subject_kind": {
+            "enum": ["activity", "event", "occurrence"],
+            "title": "Subject Kind",
+            "type": "string"
+          },
+          "subject_native_ref": {
+            "format": "uuid",
+            "title": "Subject Native Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "subject_kind",
+          "subject_native_ref",
+          "state_ref",
+          "mode_code"
+        ],
+        "title": "RealityPolicyResponse",
+        "type": "object"
+      },
       "ReauthenticateRequest": {
         "additionalProperties": false,
         "description": "Present fresh password evidence for the current AuthSession.",
@@ -9935,7 +10606,11 @@
         "properties": {
           "actions": {
             "items": {
-              "enum": ["open_reconciliation", "record_realization"],
+              "enum": [
+                "open_reconciliation",
+                "record_realization",
+                "open_objectives"
+              ],
               "type": "string"
             },
             "title": "Actions",
@@ -9963,7 +10638,11 @@
             "type": "string"
           },
           "reason_code": {
-            "enum": ["reconciliation_open", "realization_review"],
+            "enum": [
+              "reconciliation_open",
+              "realization_review",
+              "objective_review"
+            ],
             "title": "Reason Code",
             "type": "string"
           },
@@ -10004,7 +10683,7 @@
             "title": "Session Timing Material State Ref"
           },
           "subject_kind": {
-            "enum": ["activity", "event"],
+            "enum": ["activity", "event", "occurrence"],
             "title": "Subject Kind",
             "type": "string"
           },
@@ -11104,19 +11783,33 @@
             "type": "string"
           },
           "life_area_assigned_at": {
-            "format": "date-time",
-            "title": "Life Area Assigned At",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Assigned At"
           },
           "life_area_assignment_revision": {
-            "minimum": 1.0,
+            "minimum": 0.0,
             "title": "Life Area Assignment Revision",
             "type": "integer"
           },
           "life_area_ref": {
-            "format": "uuid",
-            "title": "Life Area Ref",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Ref"
           },
           "lifecycle_changed_at": {
             "format": "date-time",
@@ -13353,6 +14046,11 @@
             "title": "Kind",
             "type": "string"
           },
+          "placement_locked": {
+            "default": false,
+            "title": "Placement Locked",
+            "type": "boolean"
+          },
           "placement_material_state_ref": {
             "format": "uuid",
             "title": "Placement Material State Ref",
@@ -13594,6 +14292,11 @@
             "title": "Period",
             "type": "string"
           },
+          "placement_locked": {
+            "default": false,
+            "title": "Placement Locked",
+            "type": "boolean"
+          },
           "placement_material_state_ref": {
             "format": "uuid",
             "title": "Placement Material State Ref",
@@ -13750,6 +14453,11 @@
             "default": "scheduled_activity",
             "title": "Kind",
             "type": "string"
+          },
+          "placement_locked": {
+            "default": false,
+            "title": "Placement Locked",
+            "type": "boolean"
           },
           "placement_material_state_ref": {
             "format": "uuid",
@@ -14011,6 +14719,11 @@
             "default": "scheduled_activity",
             "title": "Kind",
             "type": "string"
+          },
+          "placement_locked": {
+            "default": false,
+            "title": "Placement Locked",
+            "type": "boolean"
           },
           "placement_material_state_ref": {
             "format": "uuid",
@@ -14284,6 +14997,11 @@
             "default": "scheduled_activity",
             "title": "Kind",
             "type": "string"
+          },
+          "placement_locked": {
+            "default": false,
+            "title": "Placement Locked",
+            "type": "boolean"
           },
           "placement_material_state_ref": {
             "format": "uuid",
@@ -25163,6 +25881,190 @@
         "tags": ["temporal"]
       }
     },
+    "/api/v1/temporal/activities/{subject_ref}/objectives": {
+      "get": {
+        "operationId": "temporal_list_activity_objectives",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "subject_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Subject Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ObjectiveResponse"
+                  },
+                  "title": "Response Temporal List Activity Objectives",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Activity Objectives",
+        "tags": ["temporal"]
+      },
+      "post": {
+        "operationId": "temporal_create_activity_objective",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "subject_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Subject Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ObjectiveCreateCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectiveResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Activity Objective",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/activities/{subject_ref}/reality-policy": {
+      "get": {
+        "operationId": "temporal_get_activity_reality_policy",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "subject_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Subject Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RealityPolicyResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Activity Reality Policy",
+        "tags": ["temporal"]
+      },
+      "post": {
+        "operationId": "temporal_set_activity_reality_policy",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "subject_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Subject Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RealityPolicyCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RealityPolicyResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Activity Reality Policy",
+        "tags": ["temporal"]
+      }
+    },
     "/api/v1/temporal/actuals/{actual_ref}/history": {
       "get": {
         "operationId": "temporal_list_actual_history",
@@ -27287,6 +28189,190 @@
         "tags": ["temporal"]
       }
     },
+    "/api/v1/temporal/events/{subject_ref}/objectives": {
+      "get": {
+        "operationId": "temporal_list_event_objectives",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "subject_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Subject Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ObjectiveResponse"
+                  },
+                  "title": "Response Temporal List Event Objectives",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Event Objectives",
+        "tags": ["temporal"]
+      },
+      "post": {
+        "operationId": "temporal_create_event_objective",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "subject_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Subject Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ObjectiveCreateCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectiveResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Event Objective",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/events/{subject_ref}/reality-policy": {
+      "get": {
+        "operationId": "temporal_get_event_reality_policy",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "subject_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Subject Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RealityPolicyResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Event Reality Policy",
+        "tags": ["temporal"]
+      },
+      "post": {
+        "operationId": "temporal_set_event_reality_policy",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "subject_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Subject Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RealityPolicyCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RealityPolicyResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Event Reality Policy",
+        "tags": ["temporal"]
+      }
+    },
     "/api/v1/temporal/life-area-assignments": {
       "get": {
         "operationId": "temporal_list_life_area_assignments",
@@ -27738,9 +28824,60 @@
         "tags": ["temporal"]
       }
     },
+    "/api/v1/temporal/objectives/{objective_ref}/result": {
+      "post": {
+        "operationId": "temporal_record_objective_result",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "objective_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Objective Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ObjectiveResultCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectiveResultResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Record Objective Result",
+        "tags": ["temporal"]
+      }
+    },
     "/api/v1/temporal/occurrences/checkpoint": {
       "post": {
-        "description": "Checkpoint every current self recurrence source before a Timeline read.",
+        "description": "Checkpoint sources and apply recurring Activity Schedule/Reminder policy.",
         "operationId": "temporal_checkpoint_occurrence_window",
         "requestBody": {
           "content": {
@@ -28103,6 +29240,141 @@
           }
         },
         "summary": "Skip Occurrence",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/occurrences/{subject_ref}/objectives": {
+      "get": {
+        "operationId": "temporal_list_occurrence_objectives",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "subject_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Subject Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ObjectiveResponse"
+                  },
+                  "title": "Response Temporal List Occurrence Objectives",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Occurrence Objectives",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/occurrences/{subject_ref}/reality-policy": {
+      "get": {
+        "operationId": "temporal_get_occurrence_reality_policy",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "subject_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Subject Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RealityPolicyResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Occurrence Reality Policy",
+        "tags": ["temporal"]
+      },
+      "post": {
+        "operationId": "temporal_set_occurrence_reality_policy",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "subject_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Subject Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RealityPolicyCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RealityPolicyResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Occurrence Reality Policy",
         "tags": ["temporal"]
       }
     },
@@ -30133,7 +31405,7 @@
     },
     "/api/v1/temporal/resolution-queue": {
       "get": {
-        "description": "Derived current product work, never inferred failure from time passage.\n\n`realization_review` exists only when the Activity explicitly requests\nreview-on-end and a bounded B08 Session really exists. Schedule expiry or\nabsence of Actual never creates an item by itself.",
+        "description": "Derived current product work, never inferred failure from time passage.\n\nReality review requires an explicit review-on-end policy and a completed\nbounded Session (Activity) or ended Event placement. Objectives can request\nassessment independently after the same bounded completion. Absence of\nActual never means that the subject did not happen.",
         "operationId": "temporal_list_resolution_queue",
         "responses": {
           "200": {
@@ -31298,6 +32570,96 @@
           }
         },
         "summary": "Revise Schedule Placement",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/schedules/{schedule_ref}/placement-lock": {
+      "get": {
+        "operationId": "temporal_get_self_schedule_placement_lock",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "schedule_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Schedule Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlacementLockResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Self Schedule Placement Lock",
+        "tags": ["temporal"]
+      },
+      "put": {
+        "operationId": "temporal_set_self_schedule_placement_lock",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "schedule_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Schedule Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlacementLockRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlacementLockResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Self Schedule Placement Lock",
         "tags": ["temporal"]
       }
     },

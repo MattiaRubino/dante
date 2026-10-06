@@ -9,10 +9,12 @@ import * as zod from 'zod/mini';
 export const timelineWindowItemsResponseItemsItemOneOneEndsLocalAtRegExp =
   new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
 export const timelineWindowItemsResponseItemsItemOneOneKindDefault = `scheduled_activity`;
+export const timelineWindowItemsResponseItemsItemOneOnePlacementLockedDefault = false;
 export const timelineWindowItemsResponseItemsItemOneOneStartsLocalAtRegExp =
   new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
 export const timelineWindowItemsResponseItemsItemOneOneTemporalFormDefault = `floating_local`;
 export const timelineWindowItemsResponseItemsItemOneTwoKindDefault = `scheduled_activity`;
+export const timelineWindowItemsResponseItemsItemOneTwoPlacementLockedDefault = false;
 export const timelineWindowItemsResponseItemsItemOneTwoTemporalFormDefault = `date_span`;
 export const timelineWindowItemsResponseItemsItemOneThreeDisplayEndsLocalAtRegExp =
   new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
@@ -21,6 +23,7 @@ export const timelineWindowItemsResponseItemsItemOneThreeDisplayStartsLocalAtReg
 export const timelineWindowItemsResponseItemsItemOneThreeEndsLocalAtRegExp =
   new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
 export const timelineWindowItemsResponseItemsItemOneThreeKindDefault = `scheduled_activity`;
+export const timelineWindowItemsResponseItemsItemOneThreePlacementLockedDefault = false;
 export const timelineWindowItemsResponseItemsItemOneThreeStartsLocalAtRegExp =
   new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
 export const timelineWindowItemsResponseItemsItemOneThreeTemporalFormDefault = `named_zone_local`;
@@ -29,8 +32,10 @@ export const timelineWindowItemsResponseItemsItemOneFourDisplayEndsLocalAtRegExp
 export const timelineWindowItemsResponseItemsItemOneFourDisplayStartsLocalAtRegExp =
   new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
 export const timelineWindowItemsResponseItemsItemOneFourKindDefault = `scheduled_activity`;
+export const timelineWindowItemsResponseItemsItemOneFourPlacementLockedDefault = false;
 export const timelineWindowItemsResponseItemsItemOneFourTemporalFormDefault = `absolute`;
 export const timelineWindowItemsResponseItemsItemOneFiveKindDefault = `scheduled_activity`;
+export const timelineWindowItemsResponseItemsItemOneFivePlacementLockedDefault = false;
 export const timelineWindowItemsResponseItemsItemOneFiveTemporalFormDefault = `coarse_local_period`;
 export const timelineWindowItemsResponseItemsItemTwoOneEndsLocalAtRegExp =
   new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
@@ -117,6 +122,10 @@ export const TimelineWindowItemsResponse = /*#__PURE__*/ zod
                   timelineWindowItemsResponseItemsItemOneOneKindDefault,
                 )
                 .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+              placement_locked: /*#__PURE__*/ zod._default(
+                /*#__PURE__*/ zod.boolean(),
+                timelineWindowItemsResponseItemsItemOneOnePlacementLockedDefault,
+              ),
               placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
               schedule_ref: /*#__PURE__*/ zod.uuid(),
               starts_local_at: /*#__PURE__*/ zod
@@ -149,6 +158,10 @@ export const TimelineWindowItemsResponse = /*#__PURE__*/ zod
                   timelineWindowItemsResponseItemsItemOneTwoKindDefault,
                 )
                 .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+              placement_locked: /*#__PURE__*/ zod._default(
+                /*#__PURE__*/ zod.boolean(),
+                timelineWindowItemsResponseItemsItemOneTwoPlacementLockedDefault,
+              ),
               placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
               schedule_ref: /*#__PURE__*/ zod.uuid(),
               start_date: /*#__PURE__*/ zod.iso.date(),
@@ -195,6 +208,10 @@ export const TimelineWindowItemsResponse = /*#__PURE__*/ zod
                   timelineWindowItemsResponseItemsItemOneThreeKindDefault,
                 )
                 .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+              placement_locked: /*#__PURE__*/ zod._default(
+                /*#__PURE__*/ zod.boolean(),
+                timelineWindowItemsResponseItemsItemOneThreePlacementLockedDefault,
+              ),
               placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
               resolved_end_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
               resolved_start_at: /*#__PURE__*/ zod.iso.datetime({
@@ -246,6 +263,10 @@ export const TimelineWindowItemsResponse = /*#__PURE__*/ zod
                   timelineWindowItemsResponseItemsItemOneFourKindDefault,
                 )
                 .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+              placement_locked: /*#__PURE__*/ zod._default(
+                /*#__PURE__*/ zod.boolean(),
+                timelineWindowItemsResponseItemsItemOneFourPlacementLockedDefault,
+              ),
               placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
               schedule_ref: /*#__PURE__*/ zod.uuid(),
               starts_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
@@ -277,6 +298,10 @@ export const TimelineWindowItemsResponse = /*#__PURE__*/ zod
                 'afternoon',
                 'evening',
               ]),
+              placement_locked: /*#__PURE__*/ zod._default(
+                /*#__PURE__*/ zod.boolean(),
+                timelineWindowItemsResponseItemsItemOneFivePlacementLockedDefault,
+              ),
               placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
               schedule_ref: /*#__PURE__*/ zod.uuid(),
               temporal_form: /*#__PURE__*/ zod

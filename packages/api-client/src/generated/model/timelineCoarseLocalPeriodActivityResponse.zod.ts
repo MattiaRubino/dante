@@ -7,6 +7,7 @@
 import * as zod from 'zod/mini';
 
 export const timelineCoarseLocalPeriodActivityResponseKindDefault = `scheduled_activity`;
+export const timelineCoarseLocalPeriodActivityResponsePlacementLockedDefault = false;
 export const timelineCoarseLocalPeriodActivityResponseTemporalFormDefault = `coarse_local_period`;
 export const TimelineCoarseLocalPeriodActivityResponse = /*#__PURE__*/ zod
   .object({
@@ -19,6 +20,10 @@ export const TimelineCoarseLocalPeriodActivityResponse = /*#__PURE__*/ zod
       .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
     local_date: /*#__PURE__*/ zod.iso.date(),
     period: /*#__PURE__*/ zod.enum(['morning', 'afternoon', 'evening']),
+    placement_locked: /*#__PURE__*/ zod._default(
+      /*#__PURE__*/ zod.boolean(),
+      timelineCoarseLocalPeriodActivityResponsePlacementLockedDefault,
+    ),
     placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
     schedule_ref: /*#__PURE__*/ zod.uuid(),
     temporal_form: /*#__PURE__*/ zod

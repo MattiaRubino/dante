@@ -7,6 +7,7 @@
 import * as zod from 'zod/mini';
 
 export const timelineDateSpanActivityResponseKindDefault = `scheduled_activity`;
+export const timelineDateSpanActivityResponsePlacementLockedDefault = false;
 export const timelineDateSpanActivityResponseTemporalFormDefault = `date_span`;
 export const TimelineDateSpanActivityResponse = /*#__PURE__*/ zod
   .object({
@@ -18,6 +19,10 @@ export const TimelineDateSpanActivityResponse = /*#__PURE__*/ zod
         timelineDateSpanActivityResponseKindDefault,
       )
       .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+    placement_locked: /*#__PURE__*/ zod._default(
+      /*#__PURE__*/ zod.boolean(),
+      timelineDateSpanActivityResponsePlacementLockedDefault,
+    ),
     placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
     schedule_ref: /*#__PURE__*/ zod.uuid(),
     start_date: /*#__PURE__*/ zod.iso.date(),

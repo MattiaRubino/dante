@@ -11,7 +11,11 @@ export const ResolutionQueueResponse = /*#__PURE__*/ zod.object({
   items: /*#__PURE__*/ zod.array(
     /*#__PURE__*/ zod.object({
       actions: /*#__PURE__*/ zod.array(
-        /*#__PURE__*/ zod.enum(['open_reconciliation', 'record_realization']),
+        /*#__PURE__*/ zod.enum([
+          'open_reconciliation',
+          'record_realization',
+          'open_objectives',
+        ]),
       ),
       effective_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
       outcome_ref: /*#__PURE__*/ zod.union([
@@ -22,6 +26,7 @@ export const ResolutionQueueResponse = /*#__PURE__*/ zod.object({
       reason_code: /*#__PURE__*/ zod.enum([
         'reconciliation_open',
         'realization_review',
+        'objective_review',
       ]),
       reconciliation_ref: /*#__PURE__*/ zod.union([
         /*#__PURE__*/ zod.uuid(),
@@ -35,7 +40,7 @@ export const ResolutionQueueResponse = /*#__PURE__*/ zod.object({
         /*#__PURE__*/ zod.uuid(),
         /*#__PURE__*/ zod.null(),
       ]),
-      subject_kind: /*#__PURE__*/ zod.enum(['activity', 'event']),
+      subject_kind: /*#__PURE__*/ zod.enum(['activity', 'event', 'occurrence']),
       subject_ref: /*#__PURE__*/ zod.uuid(),
       summary: /*#__PURE__*/ zod.string(),
       title: /*#__PURE__*/ zod.string(),
