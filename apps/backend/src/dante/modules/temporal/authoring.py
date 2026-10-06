@@ -136,7 +136,7 @@ class AuthoredActivityChild:
 
 
 @dataclass(frozen=True, slots=True)
-class _ResolvedLifeArea:
+class ResolvedAuthoringLifeArea:
     life_area_ref: UUID
     revision: int
     color_code: str | None
@@ -323,13 +323,13 @@ async def _list_area(
     return next((row for row in rows if UUID(str(row["life_area_ref"])) == life_area_ref), None)
 
 
-async def _resolve_life_area(
+async def resolve_authoring_life_area(
     session: AsyncSession,
     *,
     self_person_ref: NativeRef,
     operation_id: str,
     intent: AuthoringLifeAreaIntent | None,
-) -> _ResolvedLifeArea | None:
+) -> ResolvedAuthoringLifeArea | None:
     if intent is None:
         return None
     if intent.life_area_ref is not None and intent.new_name is not None:
@@ -425,14 +425,14 @@ async def _resolve_life_area(
         current_revision = int(mutation["accepted_revision"])
         current_color = desired_color
 
-    return _ResolvedLifeArea(
+    return ResolvedAuthoringLifeArea(
         life_area_ref=area_ref,
         revision=current_revision,
         color_code=current_color,
     )
 
 
-def _activity_from_row(row: RowMapping, *, area: _ResolvedLifeArea | None) -> AuthoredItemView:
+def _activity_from_row(row: RowMapping, *, area: ResolvedAuthoringLifeArea | None) -> AuthoredItemView:
     return AuthoredItemView(
         subject_kind="activity",
         subject_native_ref=NativeRef(UUID(str(row["activity_ref"]))),
@@ -450,7 +450,7 @@ def _activity_from_row(row: RowMapping, *, area: _ResolvedLifeArea | None) -> Au
     )
 
 
-def _event_from_row(row: RowMapping, *, area: _ResolvedLifeArea | None) -> AuthoredItemView:
+def _event_from_row(row: RowMapping, *, area: ResolvedAuthoringLifeArea | None) -> AuthoredItemView:
     return AuthoredItemView(
         subject_kind="event",
         subject_native_ref=NativeRef(UUID(str(row["event_ref"]))),
@@ -486,7 +486,7 @@ class TemporalAuthoringApplication:
         description: str | None,
         location: str | None,
         item_color_code: str | None,
-        life_area: _ResolvedLifeArea | None,
+        life_area: ResolvedAuthoringLifeArea | None,
         session_capture_mode: str | None,
         structure_digest: str | None = None,
     ) -> tuple[AuthoredItemView, bool]:
@@ -544,7 +544,7 @@ class TemporalAuthoringApplication:
         description: str | None,
         location: str | None,
         item_color_code: str | None,
-        life_area: _ResolvedLifeArea | None,
+        life_area: ResolvedAuthoringLifeArea | None,
     ) -> tuple[AuthoredItemView, bool]:
         if life_area is not None and item_color_code is not None:
             raise TemporalAuthoringInputError(
@@ -760,7 +760,7 @@ class TemporalAuthoringApplication:
 
         try:
             async with self._session_factory() as session, session.begin():
-                life_area = await _resolve_life_area(
+                life_area = await resolve_authoring_life_area(
                     session,
                     self_person_ref=self_person_ref,
                     operation_id=normalized_operation,
