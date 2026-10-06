@@ -90,6 +90,17 @@ export type RecurringActivityWindowTemplate = Readonly<{
   duration_minutes: number;
 }>;
 
+export type RecurringObjectiveTemplate = Readonly<{
+  label: string;
+  result_kind: 'boolean' | 'quantity' | 'qualitative' | 'range';
+  comparator_code: 'eq' | 'gte' | 'lte' | 'between' | null;
+  target_value: number | null;
+  target_min: number | null;
+  target_max: number | null;
+  unit_code: string | null;
+  presentation_order: number;
+}>;
+
 export type RecurringActivityPlannedSliceTemplate =
   RecurringActivityWindowTemplate &
     Readonly<{ name: string }>;
@@ -114,6 +125,7 @@ export type RecurringActivityTemplate = Readonly<{
   child_guard_mode: 'none' | 'confirm' | 'block';
   reality_mode: 'manual' | 'review_on_end' | 'auto_confirm_outcome';
   placement_protected: boolean;
+  objectives: readonly RecurringObjectiveTemplate[];
   activity_intervals: readonly RecurringActivityWindowTemplate[];
   planned_slices: readonly RecurringActivityPlannedSliceTemplate[];
   children: readonly RecurringActivityChildTemplate[];
@@ -143,6 +155,8 @@ export type CreateRecurringEventRequest = Readonly<{
   durationMinutes?: number | null;
   durationDays?: number | null;
   reminderLeadMinutes?: number | null;
+  realityMode?: 'manual' | 'review_on_end' | 'auto_confirm_outcome';
+  objectives?: readonly RecurringObjectiveTemplate[];
 }>;
 
 export type RecurringAuthoringResult = Readonly<{
