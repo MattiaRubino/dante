@@ -1285,13 +1285,35 @@
   font-size: 9px;
 }
 
+.home-m1 .home-resolution-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.home-resolution-intro {
+  margin: 8px 0 0;
+  color: #91a0aa;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
 .home-resolution-list {
   display: grid;
+  align-content: start;
   gap: 9px;
+  flex: 1 1 auto;
   margin-top: 13px;
   min-width: 0;
-  max-height: min(46vh, 430px);
+  min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 4px;
+}
+
+.home-resolution-empty {
+  color: #9caaae;
+  font-size: 12px;
 }
 .home-resolution-list article {
   min-width: 0;
@@ -1338,6 +1360,37 @@
   max-width: 100%;
   overflow-wrap: anywhere;
 }
+
+.home-resolution-card .timeline-actual-controls,
+.home-resolution-card .timeline-objective-controls,
+.home-resolution-card .timeline-reconciliation-controls {
+  min-width: 0;
+  margin-top: 10px;
+  overflow-wrap: anywhere;
+}
+
+.home-resolution-card .timeline-actual-controls__actions,
+.home-resolution-card .timeline-objective-controls__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.home-resolution-card .timeline-actual-controls__actions button {
+  min-height: 32px;
+  padding: 5px 10px;
+}
+
+.home-resolution-card .timeline-objective-controls__value {
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.home-resolution-card .timeline-objective-controls__value input {
+  min-width: 0;
+  max-width: 140px;
+}
+
 .home-resolution-actions {
   display: flex;
   gap: 6px;
