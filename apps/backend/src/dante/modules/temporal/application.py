@@ -773,6 +773,13 @@ class TemporalTimelineApplication:
               JOIN self_source AS source
                 ON source.source_native_ref=occurrence.source_native_ref
                AND source.self_person_ref=:self_person_ref
+             WHERE NOT EXISTS (
+                       SELECT 1
+                         FROM dante.list_self_routine_occurrence_activities(
+                                  :self_person_ref,
+                                  ARRAY[occurrence.occurrence_ref]
+                              ) AS materialized
+                   )
              ORDER BY COALESCE(
                           occurrence.generated_date,
                           timezone(
