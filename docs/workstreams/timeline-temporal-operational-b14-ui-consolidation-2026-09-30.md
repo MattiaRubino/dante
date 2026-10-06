@@ -231,3 +231,32 @@ The remaining Create work is intentionally compressed into three coherent batche
 - The lower Context Rail lists pending Reality, Objective and B10 Reconciliation cards. Reality actions record the exact Session timing basis when provided; Objective controls use the canonical Observation/Evaluation endpoint and refresh the queue after mutation.
 - Date-only Event placements use the exclusive local end date in the effective zone. Historical review and post-creation editing remain separate product work; no completed-state register is presented by this candidate.
 - Candidate is unproven until the user-run local migration, focused backend/web and real-app checks pass. No CI or GitHub Actions are requested.
+
+### Local gate for the verification rail candidate
+
+The user runs these checks in `~/projects/dante` after pulling the branch; no CI is run. The API response adds `objective_review`, so regenerate the checked-in client before checking its determinism. Review and publish generated file changes as generated output only.
+
+```bash
+pnpm api:generate
+pnpm generated:check
+pnpm --filter @dante/api-client typecheck
+pnpm --filter @dante/web typecheck
+pnpm --filter @dante/web exec vitest run \
+  src/features/home/ui/context-rail/context-rail.test.tsx \
+  src/features/temporal/actual-realization-controls.test.tsx \
+  src/features/home/ui/home-page.test.tsx
+cd apps/backend
+uv run --locked pytest -q --no-cov --tb=short -m postgres \
+  tests/integration/temporal/test_b14_resolution_reality_objectives.py \
+  tests/integration/temporal/test_b14_u6_reality_policy.py \
+  tests/integration/temporal/test_b14_u6_resolution_queue.py \
+  tests/integration/database/test_current_catalog.py \
+  tests/integration/database/test_database_current_catalog.py
+uv run --locked ruff check \
+  migrations/versions/20261006_116_b14_resolution_reality_objectives.py \
+  migrations/versions/20261006_117_b14_resolution_effective_zone.py \
+  src/dante/modules/temporal/resolution_queue_api.py \
+  tests/integration/temporal/test_b14_resolution_reality_objectives.py
+```
+
+Visual acceptance: a completed real Session with `Chiedi al termine` yields one Reality card; an unassessed Objective yields its own card independently. A past timed or all-day Event with the same explicit policy yields a Reality card. Registering an Actual with the exact Session basis or an Objective result removes only its corresponding pending card. Quick Create and the rail share the new lower edge.
