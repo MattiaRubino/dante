@@ -364,3 +364,19 @@ Final whole-vertical reconciliation, regressions and dogfood after all functiona
 ## 2026-10-06 — B14 placement lock candidate
 
 The Activity Create placement lock candidate is at `_110` / `9d2b6130` with Timeline reconciliation follow-up `84161fa5`. It separates a persisted user lock from B04 automatic movement policy and guards canonical Schedule placement history. This is **candidate / unproven**: user-run PostgreSQL, OpenAPI/generated-client, web and real-app gates are pending. Complete recurring-Activity template inheritance (intervals, planned Sessions, Sub-Activities, Reminder, outcome review, protection) is approved but **not implemented**; the explicit Create guard remains. Follow the current B14 recurring authoring contract for the product boundary.
+
+
+## 2026-10-06 — B14 recurring Activity current candidate
+
+Current Create/Timeline candidate now carries full per-Occurrence Activity
+template inheritance (intervals, planned Sessions, Sub-Activities, Session
+settings, outcome review, Reminder lead and placement protection) and restores
+Life Area/color parity with one-off Activity Create. The virtual unassigned
+Timeline bucket is presentation-only and non-authorable. Timeline organization
+refresh is sequenced after authoritative read/checkpoint so newly materialized
+Activity assignments and colors are visible. Root start-time edits preserve
+duration and cannot silently manufacture an overnight first interval.
+
+Status remains **candidate / unproven**. Event recurrence parity is a subsequent
+shared-infrastructure pass; Activity-only structure semantics are not Event
+semantics.
