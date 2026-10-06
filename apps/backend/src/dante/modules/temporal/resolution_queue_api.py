@@ -96,8 +96,14 @@ async def list_resolution_queue(
             rows = (
                 (
                     await session.execute(
-                        text("SELECT * FROM dante.list_self_resolution_queue(:self_person_ref)"),
-                        {"self_person_ref": context.self_person_ref},
+                        text(
+                            "SELECT * FROM dante.list_self_resolution_queue("
+                            ":self_person_ref,:effective_zone_id)"
+                        ),
+                        {
+                            "self_person_ref": context.self_person_ref,
+                            "effective_zone_id": context.effective_zone_id,
+                        },
                     )
                 )
                 .mappings()
