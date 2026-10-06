@@ -110,9 +110,13 @@
 
 .temporal-create-backdrop.is-advanced .temporal-create-title-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  grid-template-columns: minmax(0, 1fr);
   align-items: start;
   gap: 12px;
+}
+
+.temporal-create-backdrop.is-advanced .temporal-create-title-row.has-tools {
+  grid-template-columns: minmax(0, 1fr) auto;
 }
 
 .temporal-create-title-row__tools {
