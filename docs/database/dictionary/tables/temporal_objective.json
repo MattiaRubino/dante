@@ -241,7 +241,7 @@
     "unique_constraints": [],
     "check_constraints": [
       {
-        "name": "ck_temporal_objective_uuidv7",
+        "name": "ck_temporal_objective_ck_temporal_objective_uuidv7",
         "expression_contract": "uuid_extract_version(objective_ref) IS NOT DISTINCT FROM 7",
         "reason": "Enforce the ck_temporal_objective_uuidv7 invariant.",
         "enforced": true,
@@ -249,7 +249,7 @@
         "no_inherit": false
       },
       {
-        "name": "ck_temporal_objective_subject_kind",
+        "name": "ck_temporal_objective_ck_temporal_objective_subject_kind",
         "expression_contract": "subject_kind IN ('activity','event','occurrence')",
         "reason": "Enforce the ck_temporal_objective_subject_kind invariant.",
         "enforced": true,
@@ -257,7 +257,7 @@
         "no_inherit": false
       },
       {
-        "name": "ck_temporal_objective_label",
+        "name": "ck_temporal_objective_ck_temporal_objective_label",
         "expression_contract": "label=btrim(label) AND label<>'' AND char_length(label)<=300",
         "reason": "Enforce the ck_temporal_objective_label invariant.",
         "enforced": true,
@@ -265,7 +265,7 @@
         "no_inherit": false
       },
       {
-        "name": "ck_temporal_objective_result_kind",
+        "name": "ck_temporal_objective_ck_temporal_objective_result_kind",
         "expression_contract": "result_kind IN ('boolean','quantity','qualitative','range')",
         "reason": "Enforce the ck_temporal_objective_result_kind invariant.",
         "enforced": true,
@@ -273,7 +273,7 @@
         "no_inherit": false
       },
       {
-        "name": "ck_temporal_objective_presentation_order",
+        "name": "ck_temporal_objective_ck_temporal_objective_presentation_order",
         "expression_contract": "presentation_order>=0",
         "reason": "Enforce the ck_temporal_objective_presentation_order invariant.",
         "enforced": true,
@@ -281,7 +281,7 @@
         "no_inherit": false
       },
       {
-        "name": "ck_temporal_objective_unit",
+        "name": "ck_temporal_objective_ck_temporal_objective_unit",
         "expression_contract": "unit_code IS NULL OR (unit_code=btrim(unit_code) AND unit_code<>'' AND char_length(unit_code)<=40)",
         "reason": "Enforce the ck_temporal_objective_unit invariant.",
         "enforced": true,
@@ -289,7 +289,7 @@
         "no_inherit": false
       },
       {
-        "name": "ck_temporal_objective_shape",
+        "name": "ck_temporal_objective_ck_temporal_objective_shape",
         "expression_contract": "(result_kind IN ('boolean','qualitative') AND comparator_code IS NULL AND target_value IS NULL AND target_min IS NULL AND target_max IS NULL AND unit_code IS NULL) OR (result_kind='quantity' AND comparator_code IN ('eq','gte','lte') AND target_value IS NOT NULL AND target_min IS NULL AND target_max IS NULL) OR (result_kind='range' AND comparator_code='between' AND target_value IS NULL AND target_min IS NOT NULL AND target_max IS NOT NULL AND target_min<=target_max)",
         "reason": "Enforce the ck_temporal_objective_shape invariant.",
         "enforced": true,
