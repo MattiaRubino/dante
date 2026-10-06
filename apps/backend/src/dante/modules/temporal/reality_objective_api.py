@@ -555,6 +555,17 @@ async def list_event_objectives(
     return await _list_objectives("event", subject_ref, context, request)
 
 
+@router.get(
+    "/occurrences/{subject_ref}/objectives",
+    response_model=list[ObjectiveResponse],
+    operation_id="temporal_list_occurrence_objectives",
+)
+async def list_occurrence_objectives(
+    subject_ref: UUID, context: Context, request: Request
+) -> list[ObjectiveResponse]:
+    return await _list_objectives("occurrence", subject_ref, context, request)
+
+
 @router.post(
     "/objectives/{objective_ref}/result",
     response_model=ObjectiveResultResponse,
