@@ -119,6 +119,28 @@ function uuidField(payload: Record<string, unknown>, field: string): string {
   return value;
 }
 
+async function fillTimedWindow(
+  dialog: Locator,
+  start: string,
+  end: string,
+): Promise<void> {
+  const [startHour, startMinute] = start.split(':');
+  const [endHour, endMinute] = end.split(':');
+  if (
+    startHour === undefined ||
+    startMinute === undefined ||
+    endHour === undefined ||
+    endMinute === undefined
+  ) {
+    throw new Error('Expected HH:MM start/end values.');
+  }
+
+  await dialog.getByLabel('Inizio: ore', { exact: true }).fill(startHour);
+  await dialog.getByLabel('Inizio: minuti', { exact: true }).fill(startMinute);
+  await dialog.getByLabel('Fine: ore', { exact: true }).fill(endHour);
+  await dialog.getByLabel('Fine: minuti', { exact: true }).fill(endMinute);
+}
+
 async function chooseBlue(dialog: Locator): Promise<void> {
   await dialog
     .getByRole('button', { name: 'Colore attività o evento' })
@@ -222,7 +244,7 @@ test.describe('Temporal Create Life Area golden gate', () => {
 
       let dialog = await openCreate(page);
       await dialog.getByRole('textbox', { name: 'Titolo' }).fill(activityTitle);
-      await dialog.getByLabel('Ora').fill('09:10');
+      await fillTimedWindow(dialog, '09:10', '09:40');
       await chooseBlue(dialog);
 
       const lifeAreaInput = dialog.getByLabel('Life Area (opzionale)');
@@ -270,7 +292,7 @@ test.describe('Temporal Create Life Area golden gate', () => {
 
       dialog = await openCreate(page, 'event');
       await dialog.getByRole('textbox', { name: 'Titolo' }).fill(eventTitle);
-      await dialog.getByLabel('Ora').fill('11:10');
+      await fillTimedWindow(dialog, '11:10', '11:40');
       const eventLifeArea = dialog.getByLabel('Life Area (opzionale)');
       await eventLifeArea.focus();
       await expect(dialog.getByRole('listbox')).toBeVisible();
@@ -306,7 +328,7 @@ test.describe('Temporal Create Life Area golden gate', () => {
       await dialog
         .getByRole('textbox', { name: 'Titolo' })
         .fill(noAreaActivityTitle);
-      await dialog.getByLabel('Ora').fill('13:10');
+      await fillTimedWindow(dialog, '13:10', '13:40');
       await expect(dialog.getByLabel('Life Area (opzionale)')).toHaveValue('');
 
       const noAreaActivityResponsePromise = page.waitForResponse(
@@ -327,7 +349,7 @@ test.describe('Temporal Create Life Area golden gate', () => {
       await dialog
         .getByRole('textbox', { name: 'Titolo' })
         .fill(noAreaEventTitle);
-      await dialog.getByLabel('Ora').fill('15:10');
+      await fillTimedWindow(dialog, '15:10', '15:40');
 
       const noAreaEventResponsePromise = page.waitForResponse(
         (response) =>
@@ -416,7 +438,7 @@ test.describe('Temporal Create Life Area golden gate', () => {
 
       let dialog = await openCreate(page);
       await dialog.getByRole('textbox', { name: 'Titolo' }).fill(routineTitle);
-      await dialog.getByLabel('Ora').fill('08:20');
+      await fillTimedWindow(dialog, '08:20', '08:50');
       await chooseBlue(dialog);
       await dialog.getByLabel('Life Area (opzionale)').fill(areaName);
       await expect(dialog.getByRole('listbox')).toHaveCount(0);
@@ -462,7 +484,7 @@ test.describe('Temporal Create Life Area golden gate', () => {
       await dialog
         .getByRole('textbox', { name: 'Titolo' })
         .fill(recurringEventTitle);
-      await dialog.getByLabel('Ora').fill('10:20');
+      await fillTimedWindow(dialog, '10:20', '10:50');
       const eventArea = dialog.getByLabel('Life Area (opzionale)');
       await eventArea.focus();
       await dialog.getByRole('option', { name: areaName }).click();
@@ -498,7 +520,7 @@ test.describe('Temporal Create Life Area golden gate', () => {
       await dialog
         .getByRole('textbox', { name: 'Titolo' })
         .fill(noAreaRoutineTitle);
-      await dialog.getByLabel('Ora').fill('12:20');
+      await fillTimedWindow(dialog, '12:20', '12:50');
       await dialog.getByLabel('Ripeti').selectOption('daily');
 
       const noAreaRoutineResponsePromise = page.waitForResponse(
@@ -536,7 +558,7 @@ test.describe('Temporal Create Life Area golden gate', () => {
       await dialog
         .getByRole('textbox', { name: 'Titolo' })
         .fill(noAreaEventTitle);
-      await dialog.getByLabel('Ora').fill('14:20');
+      await fillTimedWindow(dialog, '14:20', '14:50');
       await dialog.getByLabel('Ripeti').selectOption('daily');
 
       const noAreaEventResponsePromise = page.waitForResponse(
