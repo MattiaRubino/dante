@@ -179,7 +179,8 @@ function TimelineEventCard({
     event.appearanceColorCode ??
     (organizationKey === null
       ? undefined
-      : group?.itemColorCodes?.[organizationKey]);
+      : group?.itemColorCodes?.[organizationKey]) ??
+    group?.colorCode;
   const isFocused = focusedEvent?.id === event.id;
   const isGroupmate =
     focusedEvent !== null &&
