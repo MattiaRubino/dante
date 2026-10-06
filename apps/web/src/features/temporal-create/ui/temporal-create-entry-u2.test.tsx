@@ -159,16 +159,20 @@ describe('Temporal Create U2 entry', () => {
     );
     fireEvent.click(within(planned as HTMLElement).getByRole('button', { name: 'Orario' }));
     fireEvent.change(
-      within(planned as HTMLElement).getByLabelText('Inizio Sessione'),
-      {
-        target: { value: '09:15' },
-      },
+      within(planned as HTMLElement).getByLabelText('Inizio Sessione: ore'),
+      { target: { value: '09' } },
     );
     fireEvent.change(
-      within(planned as HTMLElement).getByLabelText('Fine Sessione'),
-      {
-        target: { value: '09:30' },
-      },
+      within(planned as HTMLElement).getByLabelText('Inizio Sessione: minuti'),
+      { target: { value: '15' } },
+    );
+    fireEvent.change(
+      within(planned as HTMLElement).getByLabelText('Fine Sessione: ore'),
+      { target: { value: '09' } },
+    );
+    fireEvent.change(
+      within(planned as HTMLElement).getByLabelText('Fine Sessione: minuti'),
+      { target: { value: '30' } },
     );
     fireEvent.click(screen.getByRole('button', { name: 'Aggiungi' }));
 
