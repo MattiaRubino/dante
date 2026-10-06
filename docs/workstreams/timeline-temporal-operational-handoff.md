@@ -364,3 +364,24 @@ description, Reminder and other genuinely shared capabilities only.
 ## 2026-10-06 — Create closure decision freeze
 
 The active Activity/Event Create cleanup is now governed by `timeline-temporal-operational-create-closure-mini-roadmap-2026-10-06.md`. It freezes the compact three-batch plan: existing Event/B09/common capability consolidation; shared Reality + Objectives; then cleanup and user-run closure gate. Product copy uses **Scaletta** for B03-D Agenda; Sub-Activities are not a current Create product capability; sharing one item does not imply shared calendar/free-busy access.
+
+## 2026-10-06 — Create closure candidate
+
+Current migration source head is now `20261006_114`.
+
+The accepted Create product model is frozen for the closure gate:
+
+```text
+Activity/Event
+├─ shared authoring: placement / Life Area / color / description / location / recurrence / Reminder
+├─ Activity-only: Activity intervals / planned Sessions / placement protection
+├─ Event-only: Scaletta / expected participants
+├─ Reality: optional global realization-review policy
+└─ Objectives 0..N: boolean / quantity / qualitative / range
+```
+
+Reality and Objectives are independent. Objective measurements are Observation-backed and evaluated; they are not B10 Outcome payloads. Raw B10 Outcome remains available as a lower-level contextual disposition capability but is not the default Create product field.
+
+Recurring Activity materializes Reality/Objectives onto each Activity instance. Recurring Event materializes them onto each Occurrence. Sub-Activities remain non-product/internal compatibility only.
+
+Status is **IMPLEMENTATION CANDIDATE / USER LOCAL GATE PENDING**. No CI or GitHub Actions were used for this candidate; user runs the final local gate.
