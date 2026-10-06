@@ -8,6 +8,7 @@ import {
   TemporalActualRemoteError,
   type ActualSubjectKind,
   type TemporalActualView,
+  type TemporalActualSessionBasis,
 } from './remote-actual-data-source';
 
 function operationId(): string {
@@ -25,10 +26,14 @@ export function ActualRealizationControls({
   kind,
   subjectRef,
   onRecorded,
+  showObjectives = true,
+  sessionBasis,
 }: Readonly<{
   kind: ActualSubjectKind;
   subjectRef: string;
   onRecorded?: () => void;
+  showObjectives?: boolean;
+  sessionBasis?: TemporalActualSessionBasis;
 }>) {
   const source = useMemo(
     () => createRemoteTemporalActualDataSource(globalThis.fetch),
@@ -81,6 +86,7 @@ export function ActualRealizationControls({
         operationId: operationId(),
         expectedMaterialStateRef: actual?.materialStateRef ?? null,
         realizationOccurred,
+        ...(sessionBasis ? { sessionBases: [sessionBasis] } : {}),
         ...(acknowledge ? { acknowledgeUnresolvedChildren: true } : {}),
       })
       .then((saved) => {
@@ -123,6 +129,15 @@ export function ActualRealizationControls({
         ? 'Stato reale: avvenuto'
         : 'Stato reale: non avvenuto';
 
+  const hasRequestedSessionBasis =
+    sessionBasis === undefined ||
+    actual?.sessionBases.some(
+      (basis) =>
+        basis.sessionRef === sessionBasis.sessionRef &&
+        basis.sessionTimingMaterialStateRef ===
+          sessionBasis.sessionTimingMaterialStateRef,
+    ) === true;
+
   const messageNode =
     message === null ? null : message.startsWith('Aggiornamento') ? (
       <span role="alert">{message}</span>
@@ -142,7 +157,7 @@ export function ActualRealizationControls({
       <div className="timeline-actual-controls__actions">
         <button
           type="button"
-          disabled={pending || !loaded || actual?.realizationOccurred === true}
+          disabled={pending || !loaded || (actual?.realizationOccurred === true && hasRequestedSessionBasis)}
           data-timeline-actual-set="occurred"
           onClick={() => setRealization(true)}
         >
@@ -150,7 +165,7 @@ export function ActualRealizationControls({
         </button>
         <button
           type="button"
-          disabled={pending || !loaded || actual?.realizationOccurred === false}
+          disabled={pending || !loaded || (actual?.realizationOccurred === false && hasRequestedSessionBasis)}
           data-timeline-actual-set="not-occurred"
           onClick={() => setRealization(false)}
         >
@@ -187,7 +202,7 @@ export function ActualRealizationControls({
         equivale a “non avvenuto”.
       </small>
       {messageNode}
-      <ObjectiveControls kind={kind} subjectRef={subjectRef} />
+      {showObjectives ? <ObjectiveControls kind={kind} subjectRef={subjectRef} /> : null}
     </div>
   );
 }
