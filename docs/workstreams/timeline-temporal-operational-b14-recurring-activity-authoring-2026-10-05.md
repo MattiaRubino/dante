@@ -120,3 +120,46 @@ a nullable revision) so source creation can read its own accepted current state.
 
 This is a B14 implementation repair only; the recurring-Activity vertical remains
 open until every requirement in the implementation gate is proven.
+
+## 2026-10-06 — approved complete occurrence inheritance (implementation open)
+
+The user approved the expanded Create contract after a real-app Create rejected
+recurrence combined with Activity intervals and planned Sessions. The prior
+bounded implementation guard is **not** the desired final product behavior.
+It remains necessary until the following contract is implemented; removing it
+alone would silently lose authoring intent.
+
+Each materialized Occurrence must start from a complete, versioned copy of the
+Create template: the Activity's temporal intervals and named planned Sessions,
+Sub-Activities/blocks when configured, capture/session settings, Reminder lead,
+outcome-review settings, and placement protection. A generated Occurrence has
+its own stable identity and independent accepted Schedule(s), planned Session
+rows and subsequent Session/Actual/outcome state. Execution or editing of one
+Occurrence must not mutate another or rewrite the source template.
+
+The template is source policy, not a pre-created collection of future
+Activities or Schedules. Materialization must apply it to every newly generated
+Occurrence (including later checkpoints), with deterministic idempotency and
+explicit zone/DST handling for multiple local intervals. No finite client-side
+loop, duplicated generic Activity detached from its Occurrence, or ignored
+field is an acceptable substitute. A Reminder is configured on the appropriate
+concrete Occurrence Schedule once, rather than multiplied merely because an
+Occurrence has several planned rows. Post-create editing of one, future and
+whole series remains a separate scope and must not be claimed by Create.
+
+The Create lock labelled "Blocca spostamenti" currently maps to B04 Movement
+Policy `blocked + direct`, which prohibits only automatic movement. Manual
+Timeline drag and time-editor revision remain possible. This is **not** the
+approved meaning of that control. A real placement lock must persist a
+distinct manual-movement prohibition, reject manual placement revisions at
+the canonical server/database boundary as well as automatic movement, expose
+its state to the Timeline, and provide explicit unlock before either path
+can move the card. Do not reinterpret the existing B04 automation policy as
+a global manual lock: its documented contract deliberately permits manual
+edits when automation is blocked.
+
+Acceptance is open until recurrence plus each supported structure/policy
+combination survives Create, readback, later checkpoint and independent
+per-Occurrence execution, and until a locked card cannot be moved by pointer,
+keyboard, time editor or direct Schedule revision. The user runs the local
+gates; no CI or unreported PASS claim.
