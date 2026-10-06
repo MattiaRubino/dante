@@ -9,6 +9,7 @@ import { TimeControl } from './temporal-create-core-u2';
 import { useTemporalCreateU2Draft } from './temporal-create-u2-draft-context';
 
 import './temporal-create-advanced-activity-structure.css';
+import './temporal-create-outcome-dropdown.css';
 import './temporal-create-product-freeze.css';
 import './temporal-create-session-time-polish.css';
 
