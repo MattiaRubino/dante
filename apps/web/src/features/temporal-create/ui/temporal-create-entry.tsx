@@ -32,9 +32,13 @@ import {
   temporalCreateTimelinePreviewFromFields,
   type TemporalCreateTimelineProjection,
 } from '../application/temporal-create-projection';
-import { createTemporalCreateRealityFinalizer } from '../application/temporal-create-reality-finalizer';
+import {
+  createTemporalCreateEventRealityFinalizer,
+  createTemporalCreateRealityFinalizer,
+} from '../application/temporal-create-reality-finalizer';
 import {
   buildTemporalCreateLifeAreaInput,
+  buildTemporalCreateObjectiveTemplates,
   buildTemporalCreateRecurringActivityTemplate,
   buildTemporalCreateU2Request,
   temporalCreateHasU6Structure,
@@ -331,6 +335,16 @@ export function TemporalCreateEntry({
       return false;
     }
 
+    try {
+      buildTemporalCreateObjectiveTemplates(u2DraftRef.current);
+    } catch (reason) {
+      setFailureMessage(
+        reason instanceof Error ? reason.message : 'Obiettivi non validi.',
+      );
+      setLifecycle('failed');
+      return false;
+    }
+
     const mapped = buildTemporalCreateU2Request(
       fields,
       u2DraftRef.current,
@@ -357,7 +371,12 @@ export function TemporalCreateEntry({
             activityAuthored,
             u2DraftRef.current,
           )
-        : null;
+        : eventAuthored
+          ? createTemporalCreateEventRealityFinalizer(
+              eventAuthored,
+              u2DraftRef.current,
+            )
+          : null;
       const reminderLeadMinutes = fields.confirmation.reminderLeadMinutes;
       const scheduleRef = authored.schedule?.scheduleRef ?? null;
       const eventRef = eventAuthored?.item.subjectRef ?? null;
@@ -458,6 +477,15 @@ export function TemporalCreateEntry({
       setIssues(validation);
       return false;
     }
+    try {
+      buildTemporalCreateObjectiveTemplates(u2DraftRef.current);
+    } catch (reason) {
+      setFailureMessage(
+        reason instanceof Error ? reason.message : 'Obiettivi non validi.',
+      );
+      setLifecycle('failed');
+      return false;
+    }
 
     commitInFlightRef.current = true;
     setLifecycle('pending');
@@ -504,6 +532,15 @@ export function TemporalCreateEntry({
       setIssues(validation);
       return false;
     }
+    try {
+      buildTemporalCreateObjectiveTemplates(u2DraftRef.current);
+    } catch (reason) {
+      setFailureMessage(
+        reason instanceof Error ? reason.message : 'Obiettivi non validi.',
+      );
+      setLifecycle('failed');
+      return false;
+    }
     if (!temporalCreateRecurringEventSharedIntentSupported(fields)) {
       setLifecycle('failed');
       setFailureMessage(
@@ -543,6 +580,8 @@ export function TemporalCreateEntry({
         durationMinutes: policy.durationMinutes,
         durationDays: policy.durationDays,
         reminderLeadMinutes: fields.confirmation.reminderLeadMinutes,
+        realityMode: u2DraftRef.current.realityMode,
+        objectives: buildTemporalCreateObjectiveTemplates(u2DraftRef.current),
       });
       const participantCommands = Object.freeze(
         u2DraftRef.current.eventParticipants.map((participant) =>
