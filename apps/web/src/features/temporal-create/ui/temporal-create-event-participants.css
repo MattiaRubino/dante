@@ -1,0 +1,113 @@
+.temporal-create-event-participants {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  padding: 10px 0 2px;
+}
+
+.temporal-create-event-participants__heading {
+  display: grid;
+  gap: 2px;
+}
+
+.temporal-create-event-participants__heading strong {
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  font-size: 11px;
+}
+
+.temporal-create-event-participants__heading span,
+.temporal-create-event-participants > [role='alert'] {
+  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+.temporal-create-event-participants__list {
+  display: grid;
+  gap: 6px;
+}
+
+.temporal-create-event-participants__row {
+  display: grid;
+  grid-template-columns: minmax(130px, 1fr) minmax(110px, 0.5fr) 30px;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 4px 5px 4px 10px;
+  border: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.018);
+  font-size: 11px;
+}
+
+.temporal-create-event-participants__row select,
+.temporal-create-event-participants__add select,
+.temporal-create-event-participants__new-person input {
+  min-height: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.105);
+  border-radius: 8px;
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  background: rgba(255, 255, 255, 0.028);
+  font: inherit;
+  font-size: 11px;
+}
+
+.temporal-create-event-participants__row button,
+.temporal-create-event-participants__add button,
+.temporal-create-event-participants__new-person button {
+  min-height: 32px;
+  padding: 0 9px;
+  border: 1px solid rgba(255, 255, 255, 0.105);
+  border-radius: 8px;
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  background: rgba(255, 255, 255, 0.028);
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.temporal-create-event-participants__row button {
+  width: 30px;
+  min-width: 30px;
+  padding: 0;
+  color: rgba(255, 174, 150, 0.88);
+}
+
+.temporal-create-event-participants__add {
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) minmax(110px, 0.55fr) auto;
+  gap: 6px;
+}
+
+.temporal-create-event-participants__new-person {
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) auto;
+  gap: 6px;
+}
+
+.temporal-create-event-participants button:disabled {
+  cursor: default;
+  opacity: 0.35;
+}
+
+.temporal-create-event-participants button:hover:not(:disabled),
+.temporal-create-event-participants button:focus-visible {
+  border-color: color-mix(in srgb, #ea5c12 46%, transparent);
+  color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
+  background: color-mix(in srgb, #ea5c12 7%, transparent);
+  outline: none;
+}
+
+@media (max-width: 700px) {
+  .temporal-create-event-participants__row,
+  .temporal-create-event-participants__add,
+  .temporal-create-event-participants__new-person {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .temporal-create-event-participants__row button {
+    width: 100%;
+  }
+}
