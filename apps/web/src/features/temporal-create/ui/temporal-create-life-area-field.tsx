@@ -450,7 +450,7 @@ export function TemporalCreateLifeAreaField({
             </button>
           ) : null}
 
-          {areaOpen ? (
+          {areaOpen && filtered.length > 0 ? (
             <div
               className="temporal-create-life-area-field__options"
               role="listbox"
@@ -479,14 +479,6 @@ export function TemporalCreateLifeAreaField({
                   <span>{context.label}</span>
                 </button>
               ))}
-              {draft.lifeArea.kind === 'new' ? (
-                <div className="temporal-create-life-area-field__new">
-                  <span aria-hidden="true">＋</span>
-                  <span>
-                    Crea <strong>{draft.lifeArea.name}</strong> quando premi Aggiungi
-                  </span>
-                </div>
-              ) : null}
             </div>
           ) : null}
         </div>
