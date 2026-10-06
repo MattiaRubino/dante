@@ -18,6 +18,10 @@ from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError, IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from dante.modules.temporal.authoring import (
+    AuthoringLifeAreaIntent,
+    resolve_authoring_life_area,
+)
 from dante.modules.temporal.event import (
     EventAgendaRevisionConflictError,
     EventInputError,
@@ -318,7 +322,7 @@ class RecurringAuthoringApplication:
         self_person_ref: NativeRef,
         operation_id: str,
         title: str,
-        life_area_ref: UUID | None,
+        life_area_intent: AuthoringLifeAreaIntent | None,
         recurrence: RecurrenceSpec,
         tag_refs: tuple[UUID, ...] = (),
     ) -> RecurringAuthoringResult:
@@ -328,12 +332,22 @@ class RecurringAuthoringApplication:
 
         try:
             async with self._session_factory() as session, session.begin():
+                resolved_life_area = await resolve_authoring_life_area(
+                    session,
+                    self_person_ref=self_person_ref,
+                    operation_id=normalized_operation_id,
+                    intent=life_area_intent,
+                )
                 source = await _create_routine_source_in_session(
                     session,
                     self_person_ref=self_person_ref,
                     operation_id=normalized_operation_id,
                     title=title,
-                    life_area_ref=life_area_ref,
+                    life_area_ref=(
+                        None
+                        if resolved_life_area is None
+                        else resolved_life_area.life_area_ref
+                    ),
                     tag_refs=tag_refs,
                     starts_on=starts_on,
                     wall_time=wall_time,
