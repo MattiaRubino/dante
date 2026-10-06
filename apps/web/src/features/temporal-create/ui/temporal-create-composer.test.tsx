@@ -19,6 +19,7 @@ beforeAll(async () => {
 });
 
 afterEach(() => {
+  vi.unstubAllGlobals();
   cleanup();
 });
 
@@ -73,7 +74,19 @@ function renderComposer(options?: { dirty?: boolean }) {
 }
 
 describe('TemporalCreateComposer', () => {
-  it('presents Event Agenda as compact Scaletta and hides prototype-only Event fields', () => {
+  it('presents Event Scaletta and B09 participant staging while hiding prototype-only fields', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() =>
+        Promise.resolve(
+          new Response(JSON.stringify([]), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          }),
+        ),
+      ),
+    );
+
     const fields = createTemporalCreateFields({
       kind: 'event',
       date: '2026-10-06',
@@ -110,6 +123,13 @@ describe('TemporalCreateComposer', () => {
     expect(screen.queryByText('Visibilità')).toBeNull();
     expect(screen.queryByText('Risorse')).toBeNull();
     expect(screen.queryByText('Videocall')).toBeNull();
+
+    expect(await screen.findByRole('button', { name: '＋ Aggiungi' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: '＋ Aggiungi' }));
+    expect(screen.getByText('Io')).toBeTruthy();
+    expect(
+      screen.getByRole('combobox', { name: 'Partecipazione di Io' }),
+    ).toHaveValue('required');
 
     fireEvent.click(
       screen.getByRole('button', { name: 'Aggiungi punto alla scaletta' }),
