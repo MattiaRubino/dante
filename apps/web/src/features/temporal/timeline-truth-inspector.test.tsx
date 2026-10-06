@@ -149,9 +149,11 @@ describe('Timeline truth inspector', () => {
       expect(screen.getByLabelText('Elemento per stato reale')).toBeTruthy();
       expect(screen.getByText('Stato reale: sconosciuto')).toBeTruthy();
     });
-    expect(screen.getByText('Outcome', { selector: 'strong' })).toBeTruthy();
-    expect(screen.getByText('Confirmation', { selector: 'strong' })).toBeTruthy();
-    expect(screen.getByText('Reconciliation', { selector: 'strong' })).toBeTruthy();
+    expect(screen.getByText('Realtà', { selector: 'strong' })).toBeTruthy();
+    expect(screen.getByText('Obiettivi', { selector: 'strong' })).toBeTruthy();
+    expect(screen.queryByText('Outcome', { selector: 'strong' })).toBeNull();
+    expect(screen.queryByText('Confirmation', { selector: 'strong' })).toBeNull();
+    expect(screen.queryByText('Reconciliation', { selector: 'strong' })).toBeNull();
     expect(screen.getByText('Condizione Actual', { selector: 'strong' })).toBeTruthy();
   });
 
