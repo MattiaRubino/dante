@@ -463,3 +463,19 @@ editable UI value
 Final whole-vertical reconciliation across migrations/catalog/Dictionary, backend/API/client, frontend, negative invariants, local automated proof and dogfood.
 
 B15 does not reopen closed semantic boundaries without explicit evidence.
+
+
+## 2026-10-06 — B14 recurring Activity candidate update
+
+The current branch now carries the complete recurring-Activity template candidate
+for Create: Activity intervals, planned Sessions, Sub-Activities, Session
+settings, outcome review, Reminder lead and explicit placement protection are
+inherited per materialized Occurrence. Life Area authoring is aligned with
+one-off Activity Create (none / existing / create-new), the virtual unassigned
+Timeline bucket is non-authorable, Timeline organization refresh follows
+authoritative checkpoint/materialization, and root start-time edits preserve
+duration instead of silently manufacturing an overnight interval.
+
+This remains **candidate / unproven** until the user-run local gate and real-app
+acceptance pass. Event recurrence parity is a subsequent shared-infrastructure
+pass; Activity-only structure semantics must not be copied into Event.
