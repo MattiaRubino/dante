@@ -384,3 +384,7 @@ semantics.
 ## 2026-10-06 — Create closure mini-roadmap
 
 Use `timeline-temporal-operational-create-closure-mini-roadmap-2026-10-06.md` as the current product/UI execution cursor for Activity/Event Create. It does not reopen B01-B13 closures; it selects and composes already-proven capabilities, plus one new bounded Objectives vertical using accepted Criterion/Evaluation/Observation semantics.
+
+## 2026-10-06 — Verification rail candidate
+
+The B14/B07 Today rail candidate at Alembic `20261006_117` extends the shared lower edge of Timeline, Context Rail and Quick Create by 48 px and derives pending Reality/Objective/B10 Reconciliation cards from canonical state. Activity review requires a completed bounded Session; Event and Event Occurrence review uses the accepted placement end in the person's effective IANA zone, including date spans. The Reality response carries the exact Session/timing basis; Objective responses write Observation/Evaluation through the existing owner API. The branch candidate is unproven pending user-run local migration, generated-client/typecheck, focused PostgreSQL/web and real-app acceptance. The active details and gate are in `timeline-temporal-operational-b14-ui-consolidation-2026-09-30.md`.
