@@ -130,26 +130,22 @@ function renderEntry(
 }
 
 describe('Temporal Create U2 entry', () => {
-  it('submits named future Session planning and a child in one authoring command', async () => {
+  it('submits named future Session planning without exposing Sub-Activities', async () => {
     const { activityRequests } = renderEntry([], false, '2132-03-06');
     fireEvent.change(screen.getByPlaceholderText('Titolo'), {
       target: { value: 'Progetto' },
     });
     fireEvent.click(screen.getByRole('button', { name: /Opzioni avanzate/ }));
+
+    expect(screen.queryByText('Sotto-attività')).toBeNull();
+
     const settings = document.querySelector('[data-create-structure-actions]');
     if (!settings) throw new Error('Expected Activity settings.');
     fireEvent.click(within(settings as HTMLElement).getByLabelText('Sessione'));
+
     fireEvent.click(
-      screen.getByRole('button', { name: 'Aggiungi alla struttura' }),
+      screen.getByRole('button', { name: 'Aggiungi Sessione pianificata' }),
     );
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Sotto-attività' }));
-    fireEvent.change(screen.getByLabelText('Titolo sotto-attività'), {
-      target: { value: 'Prima fase' },
-    });
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Aggiungi alla struttura' }),
-    );
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Sessione' }));
     const planned = document.querySelector('[data-create-planned-session]');
     if (!planned) throw new Error('Expected planned Session.');
     fireEvent.change(
@@ -158,32 +154,26 @@ describe('Temporal Create U2 entry', () => {
         target: { value: 'Ricerca fonti' },
       },
     );
-    fireEvent.change(within(planned as HTMLElement).getByLabelText('Inizio'), {
-      target: { value: '09:15' },
-    });
-    fireEvent.change(within(planned as HTMLElement).getByLabelText('Fine'), {
-      target: { value: '09:30' },
-    });
-    fireEvent.click(
-      screen.getByRole('button', { name: /Nascondi opzioni avanzate/ }),
+    fireEvent.click(within(planned as HTMLElement).getByRole('button', { name: 'Orario' }));
+    fireEvent.change(
+      within(planned as HTMLElement).getByLabelText('Inizio Sessione'),
+      {
+        target: { value: '09:15' },
+      },
     );
-    fireEvent.click(screen.getByRole('button', { name: /Opzioni avanzate/ }));
-    expect(
-      (screen.getByLabelText('Titolo sotto-attività') as HTMLInputElement)
-        .value,
-    ).toBe('Prima fase');
+    fireEvent.change(
+      within(planned as HTMLElement).getByLabelText('Fine Sessione'),
+      {
+        target: { value: '09:30' },
+      },
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Aggiungi' }));
 
     await waitFor(() => expect(activityRequests).toHaveLength(1));
     expect(activityRequests[0]?.sessionCaptureMode).toBe('record_and_live');
-    expect(activityRequests[0]?.childGuardMode).toBe('none');
     expect(activityRequests[0]?.plannedSliceNames).toEqual(['Ricerca fonti']);
-    expect(activityRequests[0]?.children?.[0]).toMatchObject({
-      title: 'Prima fase',
-      requirementCode: 'required',
-      presentationOrder: 1,
-    });
     expect(activityRequests[0]?.plannedSlices).toHaveLength(1);
+    expect(activityRequests[0]?.children).toEqual([]);
   });
 
   it('creates an Activity without requiring any Life Area and persists the DANTE default color', async () => {
@@ -418,6 +408,74 @@ describe('Temporal Create U2 entry', () => {
     expect(eventRequests[0]?.itemColorCode).toBe(DEFAULT_COLOR);
     expect(eventRequests[0]?.location).toBe('Sala A');
     expect(eventRequests[0]?.placement).toBeDefined();
+  });
+
+  it('persists Event expected participation through the proven B09 vertical', async () => {
+    const eventRef = '0199a111-1111-7111-8111-111111111111';
+    const participationBodies: Record<string, unknown>[] = [];
+    const fetchMock = vi.fn(
+      async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+        if (url.endsWith('/api/v1/temporal/person-referents')) {
+          return new Response(JSON.stringify([]), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+        if (url.endsWith('/api/v1/auth/session')) {
+          return new Response(
+            JSON.stringify({ authenticated: true, csrf_token: 'csrf-test' }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } },
+          );
+        }
+        if (
+          url.endsWith(
+            `/api/v1/temporal/events/${eventRef}/expected-participation`,
+          )
+        ) {
+          expect(init?.method).toBe('PUT');
+          const body = JSON.parse(String(init?.body ?? '{}')) as Record<
+            string,
+            unknown
+          >;
+          participationBodies.push(body);
+          return new Response(
+            JSON.stringify({
+              event_ref: eventRef,
+              participant_person_ref: eventRef,
+              participant_is_self: true,
+              requirement_code: body.requirement_code,
+              established_at: '2026-10-06T12:00:00Z',
+              replayed: false,
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } },
+          );
+        }
+        throw new Error(`Unexpected fetch ${url}`);
+      },
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const { eventRequests } = renderEntry();
+    fireEvent.click(screen.getByRole('radio', { name: 'Evento' }));
+    fireEvent.change(screen.getByPlaceholderText('Titolo'), {
+      target: { value: 'Riunione partecipata' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Opzioni avanzate/ }));
+
+    fireEvent.click(await screen.findByRole('button', { name: '＋ Aggiungi' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi' }));
+
+    await waitFor(() => expect(eventRequests).toHaveLength(1));
+    await waitFor(() => expect(participationBodies).toHaveLength(1));
+    expect(participationBodies[0]).toMatchObject({
+      participant: 'self',
+      requirement_code: 'required',
+      expected_requirement_code: null,
+    });
+    expect(
+      document.querySelector('[data-temporal-create="composer"]'),
+    ).toBeNull();
   });
 
   it('shows the same explicit all-day start/end date controls for Activity and Event', async () => {
