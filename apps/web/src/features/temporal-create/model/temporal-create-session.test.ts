@@ -57,7 +57,7 @@ describe('temporal create session', () => {
     expect(restored.draft.editRevision).toBe(2);
   });
 
-  it('normalizes Event agenda into ordered non-empty internal parts', () => {
+  it('preserves Event Scaletta draft rows, including a newly added blank row', () => {
     const baseline = createTemporalCreateFields({
       title: 'Lezione inglese',
       kind: 'event',
@@ -77,21 +77,30 @@ describe('temporal create session', () => {
       },
     });
 
-    expect(fields.event.agendaParts).toEqual(['Listening', 'Orale', 'Scritto']);
+    expect(fields.event.agendaParts).toEqual([
+      ' Listening ',
+      '',
+      'Orale',
+      '  ',
+      'Scritto ',
+    ]);
     expect(Object.isFrozen(fields.event.agendaParts)).toBe(true);
 
     const session = createTemporalCreateSession(fields);
     const edited = updateTemporalCreateFields(session, {
       event: {
         ...session.draft.current.event,
-        agendaParts: Object.freeze(['Listening', 'Scritto', 'Orale']),
+        agendaParts: Object.freeze([...session.draft.current.event.agendaParts, '']),
       },
     });
 
     expect(edited.draft.current.event.agendaParts).toEqual([
-      'Listening',
-      'Scritto',
+      ' Listening ',
+      '',
       'Orale',
+      '  ',
+      'Scritto ',
+      '',
     ]);
     expect(edited.draft.dirty).toBe(true);
   });
