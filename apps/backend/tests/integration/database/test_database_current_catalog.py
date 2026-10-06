@@ -210,6 +210,7 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
         "B14-REALITY-OBJECTIVES",
         "B14-RECURRING-REALITY-OBJECTIVES",
         "B14-ROUTINE-POLICY-CLEANUP",
+        "B14-RESOLUTION-INBOX",
     ]
     assert current["standalone_entries"] == {
         "tables": 229,
