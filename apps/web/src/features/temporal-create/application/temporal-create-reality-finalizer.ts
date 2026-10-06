@@ -1,17 +1,19 @@
 import {
   systemTemporalIdFactory,
   type TemporalAuthoredActivityResult,
+  type TemporalAuthoredEventResult,
 } from '../../temporal';
 import {
-  createRemoteActivityRealityPolicyDataSource,
-  type ActivityRealityMode,
-} from '../../temporal/remote-outcome-review-policy-data-source';
+  createRemoteRealityObjectiveDataSource,
+  type RealityMode,
+} from '../../temporal/remote-reality-objective-data-source';
 import { createRemoteScheduleMovementPolicyDataSource } from '../../temporal/remote-movement-policy-data-source';
 import { createRemotePlacementLockDataSource } from '../../temporal/remote-placement-lock-data-source';
 import type { TemporalCreateU2AuthoringDraft } from '../model/temporal-create-u2-authoring';
+import { buildTemporalCreateObjectiveTemplates } from './temporal-create-u2-submit';
 
-type RealityPolicyDataSource = ReturnType<
-  typeof createRemoteActivityRealityPolicyDataSource
+type RealityObjectiveDataSource = ReturnType<
+  typeof createRemoteRealityObjectiveDataSource
 >;
 type MovementPolicyDataSource = ReturnType<
   typeof createRemoteScheduleMovementPolicyDataSource
@@ -19,9 +21,10 @@ type MovementPolicyDataSource = ReturnType<
 type PlacementLockDataSource = ReturnType<typeof createRemotePlacementLockDataSource>;
 
 type RealityPolicyTask = Readonly<{
-  activityRef: string;
+  kind: 'activity' | 'event';
+  subjectRef: string;
   operationId: string;
-  mode: ActivityRealityMode;
+  mode: RealityMode;
 }>;
 
 type PlacementProtectionTask = Readonly<{
@@ -29,46 +32,130 @@ type PlacementProtectionTask = Readonly<{
   operationId: string;
 }>;
 
+function sharedTasks(
+  kind: 'activity' | 'event',
+  subjectRef: string,
+  draft: TemporalCreateU2AuthoringDraft,
+) {
+  const realityTask: RealityPolicyTask | null =
+    draft.realityMode === 'manual'
+      ? null
+      : Object.freeze({
+          kind,
+          subjectRef,
+          operationId: systemTemporalIdFactory.operationId(),
+          mode: draft.realityMode,
+        });
+  const objectives = buildTemporalCreateObjectiveTemplates(draft).map(
+    (objective) =>
+      Object.freeze({
+        operationId: systemTemporalIdFactory.operationId(),
+        objective,
+      }),
+  );
+  return Object.freeze({ realityTask, objectives: Object.freeze(objectives) });
+}
+
+async function applySharedTasks(
+  tasks: ReturnType<typeof sharedTasks>,
+  source: RealityObjectiveDataSource,
+) {
+  if (tasks.realityTask !== null) {
+    await source.configureReality(
+      tasks.realityTask.kind,
+      tasks.realityTask.subjectRef,
+      {
+        operationId: tasks.realityTask.operationId,
+        mode: tasks.realityTask.mode,
+        expectedStateRef: null,
+      },
+    );
+  }
+  for (const task of tasks.objectives) {
+    await source.createObjective(
+      tasks.realityTask?.kind ?? 'activity',
+      // The caller supplies a fallback below when Reality is manual.
+      tasks.realityTask?.subjectRef ?? '',
+      {
+        operationId: task.operationId,
+        label: task.objective.label,
+        resultKind: task.objective.result_kind,
+        comparatorCode: task.objective.comparator_code,
+        targetValue: task.objective.target_value,
+        targetMin: task.objective.target_min,
+        targetMax: task.objective.target_max,
+        unitCode: task.objective.unit_code,
+        presentationOrder: task.objective.presentation_order,
+      },
+    );
+  }
+}
+
+function sharedFinalizer(
+  kind: 'activity' | 'event',
+  subjectRef: string,
+  draft: TemporalCreateU2AuthoringDraft,
+  source: RealityObjectiveDataSource,
+): () => Promise<void> {
+  const tasks = sharedTasks(kind, subjectRef, draft);
+  const objectiveTasks = tasks.objectives;
+  return async () => {
+    if (tasks.realityTask !== null) {
+      await source.configureReality(kind, subjectRef, {
+        operationId: tasks.realityTask.operationId,
+        mode: tasks.realityTask.mode,
+        expectedStateRef: null,
+      });
+    }
+    for (const task of objectiveTasks) {
+      await source.createObjective(kind, subjectRef, {
+        operationId: task.operationId,
+        label: task.objective.label,
+        resultKind: task.objective.result_kind,
+        comparatorCode: task.objective.comparator_code,
+        targetValue: task.objective.target_value,
+        targetMin: task.objective.target_min,
+        targetMax: task.objective.target_max,
+        unitCode: task.objective.unit_code,
+        presentationOrder: task.objective.presentation_order,
+      });
+    }
+  };
+}
+
 /**
- * Build idempotent post-authoring policy work once, so a transport failure can
- * retry only missing configuration without authoring a second Activity.
- *
- * `manual` is the canonical Reality default returned when no policy row exists.
- * Placement protection composes B04 automation policy with an independent
- * canonical user lock: neither automatic nor manual revisions may move it.
+ * Build idempotent post-authoring Reality/Objectives and Activity placement
+ * policy work once, so retries never author a duplicate source.
  */
 export function createTemporalCreateRealityFinalizer(
   authored: TemporalAuthoredActivityResult,
   draft: TemporalCreateU2AuthoringDraft,
-  dataSource: RealityPolicyDataSource = createRemoteActivityRealityPolicyDataSource(),
+  realitySource: RealityObjectiveDataSource = createRemoteRealityObjectiveDataSource(),
   movementSource: MovementPolicyDataSource = createRemoteScheduleMovementPolicyDataSource(),
   lockSource: PlacementLockDataSource = createRemotePlacementLockDataSource(),
 ): () => Promise<void> {
   if (authored.children.length !== draft.activityStructure.children.length) {
     throw new Error(
-      'Created Sub-Activities do not match the Reality policy draft.',
+      'Created internal Activity children do not match the policy draft.',
     );
   }
 
-  const tasks: RealityPolicyTask[] = [];
-  const rootMode = draft.activityStructure.realityMode;
-  if (rootMode !== 'manual') {
-    tasks.push(
-      Object.freeze({
-        activityRef: authored.item.subjectRef,
-        operationId: systemTemporalIdFactory.operationId(),
-        mode: rootMode,
-      }),
-    );
-  }
+  const rootFinalizer = sharedFinalizer(
+    'activity',
+    authored.item.subjectRef,
+    draft,
+    realitySource,
+  );
 
+  const childRealityTasks: RealityPolicyTask[] = [];
   authored.children.forEach((child, index) => {
     const mode =
       draft.activityStructure.children[index]?.realityMode ?? 'manual';
     if (mode === 'manual') return;
-    tasks.push(
+    childRealityTasks.push(
       Object.freeze({
-        activityRef: child.activityRef,
+        kind: 'activity',
+        subjectRef: child.activityRef,
         operationId: systemTemporalIdFactory.operationId(),
         mode,
       }),
@@ -101,8 +188,9 @@ export function createTemporalCreateRealityFinalizer(
   }
 
   return async () => {
-    for (const task of tasks) {
-      await dataSource.configure(task.activityRef, {
+    await rootFinalizer();
+    for (const task of childRealityTasks) {
+      await realitySource.configureReality(task.kind, task.subjectRef, {
         operationId: task.operationId,
         mode: task.mode,
         expectedStateRef: null,
@@ -116,4 +204,17 @@ export function createTemporalCreateRealityFinalizer(
       await lockSource.lock(protectionTask.scheduleRef);
     }
   };
+}
+
+export function createTemporalCreateEventRealityFinalizer(
+  authored: TemporalAuthoredEventResult,
+  draft: TemporalCreateU2AuthoringDraft,
+  realitySource: RealityObjectiveDataSource = createRemoteRealityObjectiveDataSource(),
+): () => Promise<void> {
+  return sharedFinalizer(
+    'event',
+    authored.item.subjectRef,
+    draft,
+    realitySource,
+  );
 }
