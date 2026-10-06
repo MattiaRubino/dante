@@ -123,3 +123,11 @@ No CI/GitHub Actions were run. The remaining gate is mechanical local generation
 ## 2026-10-06 — Automatic gate PASS
 
 Local user-run acceptance on branch head `6371768b01c54dcf7ae6e8800ae73e8488d7d67e` is green for the final catalog gate: `tests/integration/database/test_current_catalog.py` + `tests/integration/database/test_database_current_catalog.py` => **8 passed**. Earlier generated check, web/API typechecks and focused web suite were also green. Automatic closure gate is therefore complete; remaining work is only the real-stack visual/product acceptance and bugfixes discovered there.
+
+## 2026-10-06 — Life Area golden gate PASS / FROZEN
+
+Life Area Create behavior is now frozen by focused UI regression plus a dedicated real-stack Playwright gate. User-run proof on branch head `a48eb93e41d7040aa540139efce7371b5b18ef83` is green: the focused Create UI suite passed **13/13** and `temporal-create-life-area-golden.spec.ts` passed **4 real-stack cases** across Chromium and Firefox (**2 WebKit cases intentionally skipped**).
+
+The frozen contract covers one-off Activity/Event and recurring Activity/Event, with Life Area absent/existing/create-new, canonical assignment/readback, accepted color propagation to Timeline, materialized recurring items, reload persistence, and the picker rule that only real existing Life Areas appear as suggestions (no synthetic unassigned bucket and no `Crea XXX quando premi Aggiungi` helper row).
+
+Treat any future break of this gate as a regression unless the product contract is explicitly reopened.
