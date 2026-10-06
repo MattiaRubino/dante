@@ -71,3 +71,18 @@ Implement one shared product model for Activity and Event:
 ## Stop line
 
 Do not add provider conferencing, shared calendar/free-busy exposure, invitation acceptance, resource booking, timed Agenda parts or new collaboration semantics merely to mimic external calendar products.
+
+
+## 2026-10-06 — Batch A implementation candidate
+
+The branch now contains the first consolidated Event Create candidate:
+
+- B03-D Agenda is presented as **Scaletta** in Create and Timeline copy while retaining the canonical Agenda persistence/API contract.
+- Scaletta uses the same compact structural grammar as Activity planned Sessions but remains ordered text only; no time, Schedule, Session or Reality identity is introduced.
+- The prototype-only Event advanced panel has been removed from the active Create surface.
+- Expected participants are staged through B09 Person referents and persisted as canonical Event Expected Participation (`required | optional`); no invitation/shared-calendar semantics are fabricated.
+- Post-create retry is generic so Reminder/Reality/Participation follow-up can be retried without authoring a duplicate source.
+- Stale Create tests that still exposed Sub-Activities were rewritten to the accepted Session-only product boundary.
+- A focused PostgreSQL test candidate now covers recurring Event policy → Occurrence Schedule → Reminder → replay.
+
+This is an **implementation candidate**, not a PASS claim. The user-run local web/backend/generated gates remain required before Batch A is marked proven.
