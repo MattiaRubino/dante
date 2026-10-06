@@ -217,6 +217,8 @@ function sameEvent(left: TimelineEvent, right: TimelineEvent): boolean {
     left.canonicalBasis?.scheduleRef === right.canonicalBasis?.scheduleRef &&
     left.canonicalBasis?.placementMaterialStateRef ===
       right.canonicalBasis?.placementMaterialStateRef &&
+    (left.canonicalBasis?.kind === 'scheduled-activity' ? left.canonicalBasis.placementLocked : false) ===
+      (right.canonicalBasis?.kind === 'scheduled-activity' ? right.canonicalBasis.placementLocked : false) &&
     (left.subitems ?? []).length === (right.subitems ?? []).length &&
     (left.subitems ?? []).every(
       (subitem, index) => subitem === right.subitems?.[index],
