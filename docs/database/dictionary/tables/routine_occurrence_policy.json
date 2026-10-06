@@ -180,7 +180,7 @@
     "unique_constraints": [],
     "check_constraints": [
       {
-        "name": "ck_routine_occurrence_policy_duration",
+        "name": "ck_routine_occurrence_policy_ck_routine_occurrence_poli_a9a0",
         "expression_contract": "duration_minutes BETWEEN 1 AND 525600",
         "reason": "Enforce the ck_routine_occurrence_policy_duration invariant.",
         "enforced": true,
@@ -188,7 +188,7 @@
         "no_inherit": false
       },
       {
-        "name": "ck_routine_occurrence_policy_reminder",
+        "name": "ck_routine_occurrence_policy_ck_routine_occurrence_poli_3020",
         "expression_contract": "reminder_lead_minutes IS NULL OR reminder_lead_minutes BETWEEN 0 AND 10080",
         "reason": "Enforce the ck_routine_occurrence_policy_reminder invariant.",
         "enforced": true,
@@ -196,7 +196,7 @@
         "no_inherit": false
       },
       {
-        "name": "ck_routine_occurrence_policy_activity_template",
+        "name": "ck_routine_occurrence_policy_ck_routine_occurrence_poli_3426",
         "expression_contract": "jsonb_typeof(activity_template)='object'",
         "reason": "Enforce the ck_routine_occurrence_policy_activity_template invariant.",
         "enforced": true,
