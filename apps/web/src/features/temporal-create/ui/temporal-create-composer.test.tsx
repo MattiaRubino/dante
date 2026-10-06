@@ -119,6 +119,18 @@ describe('TemporalCreateComposer', () => {
     );
 
     expect(screen.getByRole('button', { name: 'Aggiungi punto alla scaletta' })).toBeTruthy();
+    expect(
+      screen.getByRole('region', { name: 'Svolgimento e obiettivi' }),
+    ).toBeTruthy();
+    const eventReality = document.querySelector<HTMLElement>(
+      '[data-reality-policy="event"]',
+    );
+    if (!eventReality) throw new Error('Expected Event occurrence review.');
+    expect(
+      within(eventReality)
+        .getByRole('radio', { name: 'Nessuna verifica' })
+        .getAttribute('aria-checked'),
+    ).toBe('true');
     expect(screen.queryByText('Disponibilità')).toBeNull();
     expect(screen.queryByText('Visibilità')).toBeNull();
     expect(screen.queryByText('Risorse')).toBeNull();
