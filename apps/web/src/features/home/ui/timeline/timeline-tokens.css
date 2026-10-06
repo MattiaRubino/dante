@@ -10,7 +10,8 @@
   --dante-timeline-header-row-height: 72px;
   --dante-timeline-group-row-height: 52px;
   --dante-timeline-frame-height: 570px;
-  --dante-timeline-home-min-height: 694px;
+  /* The Today row grows downwards; the Context Rail and Create host share its bottom. */
+  --dante-timeline-home-min-height: 758px;
   --dante-timeline-home-bottom-gap: 10px;
 
   --dante-timeline-ruler-width: 84px;
