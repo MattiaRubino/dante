@@ -1,0 +1,116 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "routine:dante.list_self_temporal_objectives",
+    "type": "routine",
+    "schema": "dante",
+    "name": "list_self_temporal_objectives",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "List Objectives with their accepted-current Observation/Evaluation truth for a self-owned subject.",
+  "classification": {
+    "persistence_role": "list_self_temporal_objectives",
+    "canonicality": "capability_surface",
+    "family": "temporal_operational"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/workstreams/timeline-temporal-operational-create-closure-mini-roadmap-2026-10-06.md",
+      "docs/database/timeline-temporal-operational.md"
+    ],
+    "domain_concepts": [
+      "Activity",
+      "Event",
+      "Occurrence",
+      "Schedule",
+      "Actual",
+      "Observation"
+    ],
+    "logical_families": [
+      "B14 Create closure"
+    ],
+    "reference_families": [
+      "NativeRef",
+      "ScopedRecordRef",
+      "MaterialStateRef"
+    ],
+    "material_facets": []
+  },
+  "implementation": {
+    "introducing_stage": "B14-CREATE-CLOSURE",
+    "alembic_revision": "20261006_113",
+    "sqlalchemy": {
+      "mode": "none",
+      "module": null,
+      "symbol": null
+    },
+    "runtime_acl_stage": "B14-CREATE-CLOSURE"
+  },
+  "structure": {
+    "columns": [],
+    "primary_key": null,
+    "foreign_keys": [],
+    "unique_constraints": [],
+    "check_constraints": [],
+    "indexes": [],
+    "triggers": [],
+    "table": null,
+    "view": null,
+    "routine": {
+      "routine_kind": "function",
+      "language": "sql",
+      "argument_types": [
+        "uuid",
+        "text",
+        "uuid"
+      ],
+      "return_type": "TABLE(objective_ref uuid, label text, result_kind text, comparator_code text, target_value numeric, target_min numeric, target_max numeric, unit_code text, presentation_order integer, observation_ref uuid, observed_boolean boolean, observed_numeric numeric, qualitative_code text, evaluation_state_ref uuid, assessment_code text)",
+      "security": "DEFINER",
+      "volatility": "STABLE",
+      "parallel_safety": "RESTRICTED",
+      "leakproof": false,
+      "function_search_path": [
+        "pg_catalog",
+        "dante",
+        "pg_temp"
+      ],
+      "direct_runtime_execute": true
+    }
+  },
+  "state_history": {
+    "material_state_behavior": null,
+    "current_binding": null,
+    "chronology": null,
+    "immutability_policy": "Capability-mediated runtime surface."
+  },
+  "lifecycle": {
+    "retention": "Retain canonical truth and operation history according to the owned persistence families.",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No direct runtime delete capability."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": [
+      {
+        "grantee": "dante_runtime",
+        "privilege": "EXECUTE",
+        "columns": [],
+        "grant_option": false
+      }
+    ]
+  },
+  "proof": {
+    "obligations": [
+      "Self scope is enforced in PostgreSQL.",
+      "Replay/CAS semantics remain capability-owned where applicable."
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/database/test_current_catalog.py",
+      "apps/backend/tests/integration/database/test_database_current_catalog.py"
+    ],
+    "staged_evidence": []
+  }
+}
