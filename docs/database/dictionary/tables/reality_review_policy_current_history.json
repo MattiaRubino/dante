@@ -148,7 +148,7 @@
     "unique_constraints": [],
     "check_constraints": [
       {
-        "name": "ck_reality_review_policy_current_history_interval",
+        "name": "ck_reality_review_policy_current_history_ck_reality_rev_6854",
         "expression_contract": "isfinite(current_from_at) AND (current_until_at IS NULL OR (isfinite(current_until_at) AND current_until_at>current_from_at))",
         "reason": "Enforce the ck_reality_review_policy_current_history_interval invariant.",
         "enforced": true,
