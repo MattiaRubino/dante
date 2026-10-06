@@ -104,6 +104,7 @@ export type RecurringActivityChildTemplate = Readonly<{
 
 export type RecurringActivityTemplate = Readonly<{
   version: 1;
+  root_window: RecurringActivityWindowTemplate;
   description: string | null;
   location: string | null;
   item_color_code: string | null;
