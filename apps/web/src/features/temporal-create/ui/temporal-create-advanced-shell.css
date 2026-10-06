@@ -50,18 +50,21 @@
   border-radius: 18px 18px 0 0;
 }
 
-.temporal-create-backdrop.is-advanced .temporal-create-composer__body {
+.temporal-create-backdrop.is-advanced
+  .temporal-create-composer
+  .temporal-create-composer__body.temporal-create-composer__body {
   display: flex;
   flex: 1 1 auto;
   min-height: 0;
-  width: 100%;
+  width: calc(100% + 24px);
   box-sizing: border-box;
   max-width: none;
   flex-direction: column;
   gap: 12px;
   margin-top: 0;
+  margin-right: -24px;
   padding-top: 18px;
-  padding-right: 4px;
+  padding-right: 28px;
   padding-bottom: 76px;
   overflow-x: hidden;
   overflow-y: auto;
