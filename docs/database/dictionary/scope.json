@@ -51,21 +51,30 @@
       "B14-U6-ROLE",
       "B14-U6-NAME",
       "B14-U6-REALITY",
-      "B14-ACTIVITY-INTERVALS"
+      "B14-ACTIVITY-INTERVALS",
+      "B14-ROUTINE-OCCURRENCE-POLICY",
+      "B14-OPTIONAL-ROUTINE-LIFE-AREA",
+      "B14-ROUTINE-LISTING",
+      "B14-PLACEMENT-LOCK",
+      "B14-RECURRING-ACTIVITY-TEMPLATE",
+      "B14-EVENT-OCCURRENCE-POLICY",
+      "B14-REALITY-OBJECTIVES",
+      "B14-RECURRING-REALITY-OBJECTIVES",
+      "B14-ROUTINE-POLICY-CLEANUP"
     ],
     "standalone_entries": {
-      "tables": 215,
+      "tables": 229,
       "views": 5,
-      "routines": 174,
-      "total": 394
+      "routines": 191,
+      "total": 425
     },
     "embedded_objects": {
-      "triggers": 102,
-      "physical_indexes": 444
+      "triggers": 103,
+      "physical_indexes": 467
     },
     "constraints": {
-      "foreign_keys": 375,
-      "check_constraints": 536
+      "foreign_keys": 401,
+      "check_constraints": 569
     }
   },
   "technical_foundation": {
