@@ -381,6 +381,8 @@ export function createRemoteRecurringAuthoringDataSource(
         duration_minutes: request.durationMinutes ?? null,
         duration_days: request.durationDays ?? null,
         reminder_lead_minutes: request.reminderLeadMinutes ?? null,
+        reality_mode: request.realityMode ?? 'manual',
+        objectives: [...(request.objectives ?? [])],
       });
     },
   });
