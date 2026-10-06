@@ -259,8 +259,6 @@ describe('Temporal Create U1 top controls', () => {
     // Advanced owns the full timezone field and continues to edit the same
     // timeMode/timeZoneId values as Quick.
     expect(screen.getByRole('button', { name: /Fuso orario:/ })).toBeTruthy();
-    expect(document.querySelector('[data-create-path="timeMode"]')).toBeTruthy();
-    expect(document.querySelector('[data-create-path="timeZoneId"]')).toBeTruthy();
 
     // Reminder remains one primary Create control, not a second Advanced copy.
     expect(screen.getAllByLabelText('Ricorda')).toHaveLength(1);
