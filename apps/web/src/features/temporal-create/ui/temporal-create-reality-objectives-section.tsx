@@ -117,7 +117,10 @@ export function TemporalCreateRealityObjectivesSection({ fields }: Props) {
 
       <div className="temporal-create-reality-objectives__divider" />
 
-      <div className="temporal-create-reality-objectives__block is-objectives">
+      <div
+        className="temporal-create-reality-objectives__block is-objectives"
+        data-create-path="objectives"
+      >
         <div className="temporal-create-reality-objectives__block-copy">
           <strong>{italian ? 'Obiettivi' : 'Objectives'}</strong>
           <span>
