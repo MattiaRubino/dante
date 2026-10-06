@@ -111,3 +111,12 @@ This vertical is complete only when all of the following are true:
 8. no Activity-only metadata is silently discarded;
 9. OpenAPI and generated client are regenerated from source, never hand-edited;
 10. focused PostgreSQL/API/web gates pass locally before this candidate is marked proven.
+
+## 2026-10-06 — unassigned Routine readback correction
+
+Migration `20261006_109` repairs the Routine listing capability after `_108` made
+Life Area optional. An unassigned Routine returns assignment revision `0` (not
+a nullable revision) so source creation can read its own accepted current state.
+
+This is a B14 implementation repair only; the recurring-Activity vertical remains
+open until every requirement in the implementation gate is proven.

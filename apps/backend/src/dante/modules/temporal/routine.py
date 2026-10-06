@@ -110,7 +110,7 @@ def _as_view(row: RowMapping, tags: tuple[UUID, ...] = (), *, replayed: bool = F
         life_area_ref=(
             UUID(str(row["life_area_ref"])) if row["life_area_ref"] is not None else None
         ),
-        life_area_assignment_revision=int(row["life_area_assignment_revision"]),
+        life_area_assignment_revision=int(row["life_area_assignment_revision"] or 0),
         life_area_assigned_at=row["life_area_assigned_at"],
         tag_refs=tags,
         replayed=replayed,
