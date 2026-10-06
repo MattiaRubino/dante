@@ -206,3 +206,13 @@ color, Reminder and Timeline presentation rules should be reused rather than
 reimplemented. Activity-only concepts (Activity intervals, planned Activity
 Sessions, Sub-Activities and Activity execution policy) must not be copied into
 Event merely for UI symmetry.
+
+
+## 2026-10-06 — Sub-Activities are not a Create product surface
+
+`Sub-Activities` are no longer a user-facing product capability in Temporal
+Create. Some child-activity structures remain in persistence/materialization for
+backward compatibility and internal implementation, but new UI/vertical work
+must not re-expose them or treat them as part of the Activity/Event product
+contract. Event parity must therefore not copy child/sub-activity controls from
+legacy Activity infrastructure.
