@@ -67,9 +67,9 @@ describe('B03-D canonical Event Agenda editor', () => {
     expect(await screen.findByRole('button', { name: 'Apertura' })).toBeTruthy();
     expect(loadEvent).toHaveBeenCalledTimes(1);
 
-    const newItem = screen.getByRole('textbox', { name: 'Nuova voce agenda' });
+    const newItem = screen.getByRole('textbox', { name: 'Nuovo punto scaletta' });
     fireEvent.change(newItem, { target: { value: 'Chiusura' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi voce' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi punto' }));
     await waitFor(() => expect(replaceAgenda).toHaveBeenCalledTimes(1));
     expect(replaceAgenda.mock.calls[0]?.[0]).toMatchObject({
       operationId: 'b03-d-agenda:operation:1',
@@ -79,14 +79,14 @@ describe('B03-D canonical Event Agenda editor', () => {
     expect(await screen.findByRole('button', { name: 'Chiusura' })).toBeTruthy();
 
     fireEvent.click(screen.getByRole('button', { name: 'Decisione' }));
-    let editor = screen.getByRole('textbox', { name: 'Voce agenda 2' });
+    let editor = screen.getByRole('textbox', { name: 'Punto scaletta 2' });
     fireEvent.change(editor, { target: { value: 'Da annullare' } });
     fireEvent.click(screen.getByRole('button', { name: 'Annulla' }));
     expect(replaceAgenda).toHaveBeenCalledTimes(1);
     expect(screen.getByRole('button', { name: 'Decisione' })).toBeTruthy();
 
     fireEvent.click(screen.getByRole('button', { name: 'Decisione' }));
-    editor = screen.getByRole('textbox', { name: 'Voce agenda 2' });
+    editor = screen.getByRole('textbox', { name: 'Punto scaletta 2' });
     fireEvent.change(editor, { target: { value: 'Decisione finale' } });
     fireEvent.click(screen.getByRole('button', { name: 'Salva' }));
     await waitFor(() => expect(replaceAgenda).toHaveBeenCalledTimes(2));
@@ -96,14 +96,14 @@ describe('B03-D canonical Event Agenda editor', () => {
       agendaParts: ['Apertura', 'Decisione finale', 'Chiusura'],
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Sposta voce 3 su' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Sposta punto 3 su' }));
     await waitFor(() => expect(replaceAgenda).toHaveBeenCalledTimes(3));
     expect(replaceAgenda.mock.calls[2]?.[0]).toMatchObject({
       expectedRevision: 2,
       agendaParts: ['Apertura', 'Chiusura', 'Decisione finale'],
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Rimuovi voce 2' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Rimuovi punto 2' }));
     await waitFor(() => expect(replaceAgenda).toHaveBeenCalledTimes(4));
     expect(replaceAgenda.mock.calls[3]?.[0]).toMatchObject({
       expectedRevision: 3,
@@ -145,7 +145,7 @@ describe('B03-D canonical Event Agenda editor', () => {
     expect(await screen.findByRole('button', { name: 'Remoto' })).toBeTruthy();
     expect(
       screen.getByText(
-        'L’Agenda è cambiata altrove. È stata ricaricata la versione corrente senza sovrascrivere nulla.',
+        'La Scaletta è cambiata altrove. È stata ricaricata la versione corrente senza sovrascrivere nulla.',
       ),
     ).toBeTruthy();
   });
