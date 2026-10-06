@@ -29,6 +29,7 @@ import {
 } from '../application/temporal-create-projection';
 import { createTemporalCreateRealityFinalizer } from '../application/temporal-create-reality-finalizer';
 import {
+  buildTemporalCreateLifeAreaInput,
   buildTemporalCreateRecurringActivityTemplate,
   buildTemporalCreateU2Request,
   temporalCreateHasU6Structure,
@@ -433,13 +434,11 @@ export function TemporalCreateEntry({
         fields,
         u2DraftRef.current,
       );
+      const lifeArea = buildTemporalCreateLifeAreaInput(u2DraftRef.current);
       await recurringAuthoringDataSource.createRoutine({
         operationId: systemTemporalIdFactory.operationId(),
         title: fields.title.trim(),
-        lifeAreaRef:
-          u2DraftRef.current.lifeArea.kind === 'existing'
-            ? u2DraftRef.current.lifeArea.lifeAreaRef
-            : null,
+        ...(lifeArea ? { lifeArea } : {}),
         tagRefs: Object.freeze([]),
         recurrence: buildTemporalCreateActivityRecurrence(fields),
         durationMinutes: recurring.durationMinutes,
@@ -467,19 +466,6 @@ export function TemporalCreateEntry({
     fieldsOverride?: Partial<TemporalCreateSession['draft']['current']>,
   ) => {
     if (commitInFlightRef.current) return;
-    if (
-      session.draft.current.kind === 'activity' &&
-      session.draft.current.eventRecurrence.patternKind !== 'none' &&
-      u2DraftRef.current.lifeArea.kind === 'new'
-    ) {
-      setLifecycle('failed');
-      setFailureMessage(
-        i18n.language.toLowerCase().startsWith('en')
-          ? 'For a routine, select an existing Life Area or none. Creating a new Life Area together with a routine is not supported yet.'
-          : 'Per una routine, scegli una Life Area esistente oppure nessuna. Non è ancora possibile crearne una nuova insieme alla routine.',
-      );
-      return;
-    }
     if (partialPostCreateRef.current !== null) {
       commitInFlightRef.current = true;
       setLifecycle('pending');
