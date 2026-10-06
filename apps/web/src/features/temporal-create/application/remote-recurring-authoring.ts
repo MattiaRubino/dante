@@ -1,6 +1,7 @@
 import { Temporal, type Instant } from '@dante/time';
 
 import { createWebFetch } from '../../../platform/api/web-fetch';
+import type { TemporalAuthoringLifeAreaInput } from '../../temporal/authoring-data-source';
 
 const UUID_V7 =
   /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -121,7 +122,7 @@ export type RecurringActivityTemplate = Readonly<{
 export type CreateRecurringRoutineRequest = Readonly<{
   operationId: string;
   title: string;
-  lifeAreaRef: string | null;
+  lifeArea?: TemporalAuthoringLifeAreaInput;
   tagRefs?: readonly string[];
   recurrence: RecurringAuthoringRecurrence;
   durationMinutes?: number;
@@ -182,6 +183,22 @@ function uuid(value: unknown, field: string): string {
     );
   }
   return value.toLowerCase();
+}
+
+function lifeAreaPayload(
+  value: TemporalAuthoringLifeAreaInput | undefined,
+): Record<string, unknown> | undefined {
+  if (value === undefined) return undefined;
+  const result: Record<string, unknown> = {};
+  if (value.lifeAreaRef !== undefined) result.life_area_ref = value.lifeAreaRef;
+  if (value.newName !== undefined) result.new_name = value.newName.trim();
+  if (value.expectedRevision !== undefined) {
+    result.expected_revision = value.expectedRevision;
+  }
+  if (value.colorCode !== undefined) {
+    result.color_code = value.colorCode.toUpperCase();
+  }
+  return result;
 }
 
 function parseResult(value: unknown): RecurringAuthoringResult {
@@ -321,7 +338,7 @@ export function createRemoteRecurringAuthoringDataSource(
       return post('/api/v1/temporal/recurring/routines', {
         operation_id: request.operationId,
         title: request.title,
-        life_area_ref: request.lifeAreaRef,
+        life_area: lifeAreaPayload(request.lifeArea) ?? null,
         tag_refs: [...(request.tagRefs ?? [])],
         recurrence: request.recurrence,
         duration_minutes: request.durationMinutes ?? 30,
