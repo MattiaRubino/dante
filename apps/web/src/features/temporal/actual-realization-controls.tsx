@@ -2,9 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import './actual-realization-controls.css';
 
-import { ConfirmationControls } from './confirmation-controls';
-import { OutcomeControls } from './outcome-controls';
-import { ReconciliationControls } from './reconciliation-controls';
+import { ObjectiveControls } from './objective-controls';
 import {
   createRemoteTemporalActualDataSource,
   TemporalActualRemoteError,
@@ -102,7 +100,7 @@ export function ActualRealizationControls({
         ) {
           setNeedsParentAcknowledgement(true);
           setMessage(
-            'Una sotto-attività richiesta non risulta ancora avvenuta. Conferma esplicitamente per registrare comunque la realtà del padre.',
+            'Un elemento interno richiesto non risulta ancora avvenuto. Conferma esplicitamente per registrare comunque la realtà dell’Attività.',
           );
           return;
         }
@@ -189,9 +187,7 @@ export function ActualRealizationControls({
         equivale a “non avvenuto”.
       </small>
       {messageNode}
-      <OutcomeControls kind={kind} subjectRef={subjectRef} />
-      <ConfirmationControls kind={kind} subjectRef={subjectRef} />
-      <ReconciliationControls kind={kind} subjectRef={subjectRef} />
+      <ObjectiveControls kind={kind} subjectRef={subjectRef} />
     </div>
   );
 }
