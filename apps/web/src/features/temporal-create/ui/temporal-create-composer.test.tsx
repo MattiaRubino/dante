@@ -157,6 +157,59 @@ describe('TemporalCreateComposer', () => {
     });
   });
 
+  it('locks background scrolling while Advanced Create owns the viewport', () => {
+    const fields = createTemporalCreateFields({
+      kind: 'activity',
+      date: '2026-10-06',
+      timeZoneId: 'Europe/Rome',
+      contextId: 'personale',
+    });
+    const session = setTemporalCreateSurface(
+      createTemporalCreateSession(fields),
+      'full',
+    );
+
+    const view = render(
+      <TemporalCreateComposer
+        session={session}
+        contexts={context}
+        issues={[]}
+        lifecycle="idle"
+        failureMessage=""
+        postCreateRetry={false}
+        u2Draft={createTemporalCreateU2AuthoringDraft(session.draft.current)}
+        onPatch={vi.fn()}
+        onSurfaceChange={vi.fn()}
+        onRequestClose={vi.fn()}
+        onContinueEditing={vi.fn()}
+        onDiscard={vi.fn()}
+        onMoveToUnplaced={vi.fn()}
+        onSubmit={vi.fn()}
+      />,
+    );
+
+    const backdrop = view.container.querySelector<HTMLElement>(
+      '[data-temporal-create="backdrop"]',
+    );
+    const composer = view.container.querySelector<HTMLElement>(
+      '[data-temporal-create="composer"]',
+    );
+
+    expect(backdrop?.classList.contains('is-modal')).toBe(true);
+    expect(composer?.getAttribute('aria-modal')).toBe('true');
+    expect(document.documentElement.style.overflow).toBe('hidden');
+    expect(document.body.style.overflow).toBe('hidden');
+    expect(document.documentElement.dataset.temporalCreateScrollLock).toBe(
+      'true',
+    );
+
+    view.unmount();
+
+    expect(document.documentElement.style.overflow).toBe('');
+    expect(document.body.style.overflow).toBe('');
+    expect(document.documentElement.dataset.temporalCreateScrollLock).toBeUndefined();
+  });
+
   it('asks the entry to close when an untouched draft is clicked outside', () => {
     const { container, onRequestClose } = renderComposer();
     const backdrop = container.querySelector<HTMLElement>(
