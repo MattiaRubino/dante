@@ -25,6 +25,11 @@ from dante.modules.temporal.authoring import (
     AuthoringResult,
     TemporalAuthoringApplication,
 )
+from dante.modules.temporal.event_occurrence_policy import (
+    EventOccurrencePolicyApplication,
+    EventOccurrencePolicyPersistenceError,
+    EventOccurrencePolicyView,
+)
 from dante.modules.temporal.movement_policy import (
     MovementPolicyApplication,
     MovementPolicyRule,
@@ -48,6 +53,7 @@ from dante.modules.temporal.routine_occurrence_policy import (
 )
 from dante.modules.temporal.schedule import (
     AbsoluteIntervalPlacement,
+    DateSpanPlacement,
     FloatingLocalIntervalPlacement,
     NamedZoneLocalIntervalPlacement,
     SchedulePersistenceError,
@@ -67,6 +73,7 @@ class RoutineOccurrenceMaterializationApplication:
         self._session_factory = session_factory
         self._occurrences = OccurrenceApplication(session_factory)
         self._policies = RoutineOccurrencePolicyApplication(session_factory)
+        self._event_policies = EventOccurrencePolicyApplication(session_factory)
         self._schedules = TemporalScheduleApplication(session_factory)
         self._reminders = ScheduleReminderApplication(session_factory)
         self._authoring = TemporalAuthoringApplication(session_factory)
@@ -156,6 +163,97 @@ class RoutineOccurrenceMaterializationApplication:
             zone_id=coordinate.zone_id,
             disambiguation=disambiguation,
         )
+
+    @staticmethod
+    def _event_placement(
+        occurrence_ref: UUID,
+        coordinate: CalendarCoordinate,
+        policy: EventOccurrencePolicyView,
+    ):
+        if policy.placement_kind == "all_day":
+            if policy.duration_days is None:
+                raise OccurrenceInputError(
+                    "Recurring all-day Event policy has no duration."
+                )
+            start_date = coordinate.generated_date
+            return DateSpanPlacement(
+                start_date=start_date,
+                end_date_exclusive=start_date + timedelta(days=policy.duration_days),
+            )
+
+        if policy.duration_minutes is None:
+            raise OccurrenceInputError("Recurring timed Event policy has no duration.")
+        wall_time = coordinate.generated_wall_time
+        if wall_time is None:
+            raise OccurrenceInputError(
+                f"Event Occurrence {occurrence_ref} has no wall time for its Schedule policy."
+            )
+        starts_local = datetime.combine(coordinate.generated_date, wall_time)
+        ends_local = starts_local + timedelta(minutes=policy.duration_minutes)
+        if coordinate.clock_basis_code == "floating_local":
+            return FloatingLocalIntervalPlacement(
+                starts_local_at=starts_local,
+                ends_local_at=ends_local,
+            )
+        if coordinate.clock_basis_code == "absolute_utc":
+            starts_at = starts_local.replace(tzinfo=UTC)
+            return AbsoluteIntervalPlacement(
+                starts_at=starts_at,
+                ends_at=starts_at + timedelta(minutes=policy.duration_minutes),
+            )
+        if coordinate.zone_id is None:
+            raise OccurrenceInputError("Named-zone Event Occurrence has no zone id.")
+        disambiguation: Literal["earlier", "later"] = "earlier"
+        if coordinate.resolved_at is not None:
+            local = coordinate.resolved_at.astimezone(ZoneInfo(coordinate.zone_id))
+            disambiguation = "later" if local.fold == 1 else "earlier"
+        return NamedZoneLocalIntervalPlacement(
+            starts_local_at=starts_local,
+            ends_local_at=ends_local,
+            zone_id=coordinate.zone_id,
+            disambiguation=disambiguation,
+        )
+
+    async def _apply_event_policy(
+        self,
+        *,
+        self_person_ref: NativeRef,
+        source_ref: UUID,
+        checkpoint: OccurrenceCheckpoint,
+    ) -> None:
+        policy = await self._event_policies.get(
+            self_person_ref=self_person_ref,
+            event_ref=source_ref,
+        )
+        if policy is None:
+            return
+
+        for occurrence in checkpoint.occurrences:
+            if occurrence.skipped or occurrence.coordinate is None:
+                continue
+            if not isinstance(occurrence.coordinate, CalendarCoordinate):
+                raise OccurrenceInputError(
+                    "Recurring Event Create currently requires calendar Occurrences."
+                )
+            schedule = await self._schedules.establish_schedule(
+                self_person_ref=self_person_ref,
+                operation_id=f"b14:event-schedule:{occurrence.occurrence_ref}",
+                subject_native_ref=NativeRef(occurrence.occurrence_ref),
+                placement=self._event_placement(
+                    occurrence.occurrence_ref,
+                    occurrence.coordinate,
+                    policy,
+                ),
+            )
+            if policy.reminder_lead_minutes is not None:
+                await self._reminders.configure(
+                    self_person_ref=self_person_ref,
+                    schedule_ref=schedule.schedule_ref,
+                    operation_id=f"b14:event-reminder:{occurrence.occurrence_ref}",
+                    expected_material_state_ref=None,
+                    enabled=True,
+                    lead_minutes=policy.reminder_lead_minutes,
+                )
 
     async def _routine_source(
         self, *, self_person_ref: NativeRef, routine_ref: UUID
@@ -574,8 +672,15 @@ class RoutineOccurrenceMaterializationApplication:
                         source_ref=source_ref,
                         checkpoint=checkpoint,
                     )
+                elif owner == "event":
+                    await self._apply_event_policy(
+                        self_person_ref=self_person_ref,
+                        source_ref=source_ref,
+                        checkpoint=checkpoint,
+                    )
         except (
             RoutineOccurrencePolicyPersistenceError,
+            EventOccurrencePolicyPersistenceError,
             SchedulePersistenceError,
             ScheduleReminderPersistenceError,
         ) as exc:
