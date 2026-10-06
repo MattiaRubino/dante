@@ -40,7 +40,7 @@ type TemporalCreateComposerProps = Readonly<{
   issues: readonly TemporalValidationIssue[];
   lifecycle: 'idle' | 'pending' | 'failed';
   failureMessage: string;
-  reminderRetry: boolean;
+  postCreateRetry: boolean;
   u2Draft: TemporalCreateU2AuthoringDraft;
   onPatch: (patch: Partial<TemporalCreateSession['draft']['current']>) => void;
   onSurfaceChange: (surface: TemporalCreateSurface) => void;
@@ -96,7 +96,7 @@ export function TemporalCreateComposer({
   issues,
   lifecycle,
   failureMessage,
-  reminderRetry,
+  postCreateRetry,
   u2Draft,
   onPatch,
   onSurfaceChange,
@@ -383,7 +383,7 @@ export function TemporalCreateComposer({
           </div>
         </div>
 
-        {reminderRetry ? (
+        {postCreateRetry ? (
           <div className="temporal-create-composer__body" role="status">
             <p>{failureMessage}</p>
             <div className="temporal-create-actions">
@@ -400,7 +400,7 @@ export function TemporalCreateComposer({
                 disabled={pending}
                 onClick={onSubmit}
               >
-                {t(($) => $.common.home.timeline.create.reminderRetry)}
+                {italian ? 'Riprova configurazione' : 'Retry configuration'}
               </button>
             </div>
           </div>
