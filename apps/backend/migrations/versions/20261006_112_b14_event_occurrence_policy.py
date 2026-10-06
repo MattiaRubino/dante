@@ -111,7 +111,7 @@ CREATE FUNCTION dante.set_self_event_occurrence_policy(
 LANGUAGE plpgsql SECURITY DEFINER VOLATILE PARALLEL UNSAFE
 SET search_path=pg_catalog,dante,pg_temp AS $$
 DECLARE
-    prior dante.event_occurrence_policy%%ROWTYPE;
+    prior record;
     ts timestamptz := statement_timestamp();
 BEGIN
     IF requested_placement_kind NOT IN ('timed','all_day')
