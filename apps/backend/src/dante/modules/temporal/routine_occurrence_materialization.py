@@ -8,9 +8,9 @@ Routine policy to newly/readably materialized Occurrences.
 
 from __future__ import annotations
 
-from datetime import UTC, date, datetime, timedelta
 import hashlib
 import json
+from datetime import UTC, date, datetime, timedelta
 from typing import Literal, cast
 from uuid import UUID, uuid7
 from zoneinfo import ZoneInfo
@@ -34,7 +34,6 @@ from dante.modules.temporal.movement_policy import (
     MovementPolicyApplication,
     MovementPolicyRule,
 )
-from dante.modules.temporal.placement_lock import PlacementLockApplication
 from dante.modules.temporal.occurrence import (
     CalendarCoordinate,
     ElapsedCoordinate,
@@ -46,6 +45,7 @@ from dante.modules.temporal.occurrence import (
     OccurrenceWindowCheckpoint,
     _window_source_operation_id,
 )
+from dante.modules.temporal.placement_lock import PlacementLockApplication
 from dante.modules.temporal.routine_occurrence_policy import (
     RoutineOccurrencePolicyApplication,
     RoutineOccurrencePolicyPersistenceError,
