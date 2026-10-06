@@ -11,6 +11,7 @@ from collections.abc import Sequence
 
 import sqlalchemy as sa
 from alembic import op
+from sqlalchemy.dialects import postgresql
 
 revision: str = "20261006_114"
 down_revision: str | None = "20261006_113"
@@ -54,7 +55,7 @@ def upgrade() -> None:
         "event_occurrence_policy",
         sa.Column(
             "objectives",
-            sa.dialects.postgresql.JSONB(astext_type=sa.Text()),
+            postgresql.JSONB(astext_type=sa.Text()),
             nullable=False,
             server_default=sa.text("'[]'::jsonb"),
         ),
