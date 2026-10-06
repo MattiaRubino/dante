@@ -151,7 +151,7 @@ export function TemporalCreateConfirmationToggle({ fields }: Props) {
           className="temporal-create-outcome-control__menu"
           role="menu"
           aria-label={
-            italian ? 'Modalità verifica realtà' : 'Outcome review mode'
+            italian ? 'Modalità verifica realtà' : 'Reality review mode'
           }
         >
           <button
