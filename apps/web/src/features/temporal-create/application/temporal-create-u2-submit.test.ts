@@ -140,7 +140,12 @@ describe('U2 Quick Create submit mapping', () => {
       event: {
         ...baseline.event,
         location: 'Sala A',
-        agendaParts: Object.freeze(['Revisione', 'Decisioni']),
+        agendaParts: Object.freeze([
+          ' Revisione ',
+          '',
+          'Decisioni',
+          '   ',
+        ]),
       },
     });
     const draft = createTemporalCreateU2AuthoringDraft(fields);
