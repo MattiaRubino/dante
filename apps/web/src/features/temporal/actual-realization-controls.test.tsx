@@ -227,7 +227,11 @@ describe('Actual realization controls', () => {
     vi.stubGlobal('fetch', fetchFn);
 
     render(
-      <ActualRealizationControls kind="occurrence" subjectRef={SUBJECT} />,
+      <ActualRealizationControls
+        kind="occurrence"
+        subjectRef={SUBJECT}
+        showObjectives={false}
+      />,
     );
     await screen.findByText('Stato reale: avvenuto');
 
