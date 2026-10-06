@@ -23,6 +23,7 @@ import {
 import { TemporalCreateEventAgenda } from './temporal-create-event-agenda';
 import { TemporalCreateCalendarRecurrenceFields } from './temporal-create-calendar-recurrence-fields';
 import { TemporalCreateConfirmationToggle } from './temporal-create-confirmation-fields';
+import { TemporalCreateObjectives } from './temporal-create-objectives';
 import {
   TemporalCreateAdvancedFields,
   TemporalCreateCoreFields,
@@ -451,14 +452,13 @@ export function TemporalCreateComposer({
                 {advanced ? (
                   <div className="temporal-create-title-row__tools">
                     {fields.kind === 'activity' ? (
-                      <>
-                        <TemporalCreateAdvancedActivityHeaderActions />
-                        <TemporalCreateConfirmationToggle fields={fields} />
-                      </>
+                      <TemporalCreateAdvancedActivityHeaderActions />
                     ) : null}
+                    <TemporalCreateConfirmationToggle fields={fields} />
                   </div>
                 ) : null}
               </div>
+              {advanced ? <TemporalCreateObjectives /> : null}
               {advanced && fields.kind === 'activity' ? (
                 <TemporalCreateAdvancedActivityStructure fields={fields} />
               ) : null}
