@@ -133,7 +133,7 @@
     "unique_constraints": [],
     "check_constraints": [
       {
-        "name": "ck_activity_execution_policy_current_history_interval",
+        "name": "ck_activity_execution_policy_current_history_ck_activit_1afe",
         "expression_contract": "isfinite(current_from_at) AND (current_until_at IS NULL OR (isfinite(current_until_at) AND current_until_at>current_from_at))",
         "reason": "Enforce typed, finite and replay-safe policy values.",
         "enforced": true,

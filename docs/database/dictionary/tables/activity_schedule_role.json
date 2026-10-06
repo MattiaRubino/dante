@@ -182,7 +182,7 @@
     ],
     "check_constraints": [
       {
-        "name": "ck_activity_schedule_role_role",
+        "name": "ck_activity_schedule_role_ck_activity_schedule_role_role",
         "expression_contract": "role_code IN ('envelope','planned','interval')",
         "reason": "Only planning purpose values.",
         "enforced": true,
@@ -190,7 +190,7 @@
         "no_inherit": false
       },
       {
-        "name": "ck_activity_schedule_role_order",
+        "name": "ck_activity_schedule_role_ck_activity_schedule_role_order",
         "expression_contract": "(role_code='envelope' AND presentation_order=0) OR (role_code IN ('planned','interval') AND presentation_order BETWEEN 1 AND 100)",
         "reason": "Bounded independent intervals and planned Sessions plus single envelope position.",
         "enforced": true,

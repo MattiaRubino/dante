@@ -142,7 +142,7 @@
     ],
     "check_constraints": [
       {
-        "name": "ck_activity_execution_policy_state_mode",
+        "name": "ck_activity_execution_policy_state_ck_activity_executio_de31",
         "expression_contract": "mode_code IN ('disabled','record','live','record_and_live')",
         "reason": "Enforce typed, finite and replay-safe policy values.",
         "enforced": true,
@@ -150,7 +150,7 @@
         "no_inherit": false
       },
       {
-        "name": "ck_activity_execution_policy_state_recorded_at",
+        "name": "ck_activity_execution_policy_state_ck_activity_executio_5dd7",
         "expression_contract": "isfinite(recorded_at)",
         "reason": "Enforce typed, finite and replay-safe policy values.",
         "enforced": true,
@@ -158,7 +158,7 @@
         "no_inherit": false
       },
       {
-        "name": "ck_activity_execution_policy_state_uuidv7",
+        "name": "ck_activity_execution_policy_state_ck_activity_executio_24b9",
         "expression_contract": "uuid_extract_version(state_ref) IS NOT DISTINCT FROM 7",
         "reason": "Enforce typed, finite and replay-safe policy values.",
         "enforced": true,
