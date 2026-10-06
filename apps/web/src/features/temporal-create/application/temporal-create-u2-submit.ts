@@ -256,21 +256,21 @@ export function validateTemporalCreateU6Structure(
 ): string | null {
   const structure = draft.activityStructure;
   if (fields.kind !== 'activity' && temporalCreateHasU6Structure(draft)) {
-    return 'Only an Activity can own Sub-Activities and planned Sessions.';
+    return 'Only an Activity can own planned Sessions and internal decomposition.';
   }
   if (
     structure.children.length > 100 ||
     structure.plannedSlices.length > 100 ||
     structure.activityIntervals.length > 99
   ) {
-    return 'An Activity can contain at most 100 direct children and 100 planned Sessions.';
+    return 'Activity structure exceeds the supported planning limits.';
   }
   if (
     structure.children.some(
       (child) => !child.title.trim() || child.plannedSlices.length > 100,
     )
   ) {
-    return 'Every Sub-Activity requires a title and at most 100 planned Sessions.';
+    return 'Internal Activity decomposition is invalid.';
   }
 
   const bands = activityBands(fields, draft);
@@ -303,7 +303,7 @@ export function validateTemporalCreateU6Structure(
       )) &&
     parent === null
   ) {
-    return 'Place the parent Activity before assigning times to Sub-Activities or Sessions.';
+    return 'Place the Activity before assigning times to planned Sessions.';
   }
 
   for (const slice of structure.plannedSlices) {
@@ -320,10 +320,10 @@ export function validateTemporalCreateU6Structure(
     const childWindow = childLocalWindow(child);
     if (child.scheduleEnabled) {
       if (childWindow === null || parent === null) {
-        return 'Complete the Sub-Activity start and end time.';
+        return 'Internal Activity decomposition has an incomplete time range.';
       }
       if (!contained(childWindow, parent)) {
-        return 'Every Sub-Activity time range must stay inside the parent Activity.';
+        return 'Internal Activity decomposition must stay inside the Activity time range.';
       }
     }
     for (const slice of child.plannedSlices) {
@@ -334,8 +334,8 @@ export function validateTemporalCreateU6Structure(
       const ownerWindow = childWindow ?? parent;
       if (!contained(window, ownerWindow)) {
         return child.scheduleEnabled
-          ? 'Every Sub-Activity Session must stay inside its Sub-Activity time range.'
-          : 'Every Sub-Activity Session must stay inside the parent Activity time range.';
+          ? 'An internal planned Session must stay inside its owner time range.'
+          : 'An internal planned Session must stay inside the Activity time range.';
       }
     }
   }
@@ -565,7 +565,7 @@ export function buildTemporalCreateRecurringActivityTemplate(
               const value = sliceLocalWindow(slice);
               if (value === null) {
                 throw new Error(
-                  'Recurring Sub-Activity Session has an invalid time.',
+                  'Recurring internal Activity Session has an invalid time.',
                 );
               }
               return Object.freeze({
