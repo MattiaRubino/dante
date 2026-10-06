@@ -157,6 +157,326 @@ class RoutineOccurrenceMaterializationApplication:
             disambiguation=disambiguation,
         )
 
+    async def _routine_source(
+        self, *, self_person_ref: NativeRef, routine_ref: UUID
+    ) -> tuple[str, UUID | None]:
+        try:
+            async with self._session_factory() as session, session.begin():
+                row = (
+                    await session.execute(
+                        text(
+                            """SELECT title,life_area_ref
+                                 FROM dante.list_self_routines(:actor)
+                                WHERE routine_ref=:routine"""
+                        ),
+                        {"actor": self_person_ref, "routine": routine_ref},
+                    )
+                ).mappings().one_or_none()
+        except SQLAlchemyError as exc:
+            raise OccurrencePersistenceError() from exc
+        if row is None:
+            raise OccurrencePersistenceError()
+        return str(row["title"]), (
+            None if row["life_area_ref"] is None else UUID(str(row["life_area_ref"]))
+        )
+
+    @staticmethod
+    def _template_window(
+        occurrence_ref: UUID,
+        coordinate: CalendarCoordinate,
+        value: object,
+    ) -> NamedZoneLocalIntervalPlacement:
+        if not isinstance(value, dict):
+            raise OccurrenceInputError("Recurring Activity template window is invalid.")
+        offset = value.get("start_offset_minutes")
+        duration = value.get("duration_minutes")
+        if (
+            isinstance(offset, bool)
+            or not isinstance(offset, int)
+            or isinstance(duration, bool)
+            or not isinstance(duration, int)
+            or duration <= 0
+        ):
+            raise OccurrenceInputError("Recurring Activity template window is invalid.")
+        wall_time = coordinate.generated_wall_time
+        if wall_time is None or coordinate.zone_id is None:
+            raise OccurrenceInputError(
+                f"Routine Occurrence {occurrence_ref} cannot resolve its Activity template."
+            )
+        if coordinate.clock_basis_code != "named_zone":
+            raise OccurrenceInputError(
+                "Manual recurring Activity templates require named-zone calendar recurrence."
+            )
+        base = datetime.combine(coordinate.generated_date, wall_time)
+        starts_local = base + timedelta(minutes=offset)
+        ends_local = starts_local + timedelta(minutes=duration)
+        disambiguation: Literal["earlier", "later"] = "earlier"
+        if coordinate.resolved_at is not None:
+            local = coordinate.resolved_at.astimezone(ZoneInfo(coordinate.zone_id))
+            disambiguation = "later" if local.fold == 1 else "earlier"
+        return NamedZoneLocalIntervalPlacement(
+            starts_local_at=starts_local,
+            ends_local_at=ends_local,
+            zone_id=coordinate.zone_id,
+            disambiguation=disambiguation,
+        )
+
+    async def _bind_activity(
+        self,
+        *,
+        self_person_ref: NativeRef,
+        occurrence_ref: UUID,
+        activity_ref: NativeRef,
+    ) -> None:
+        try:
+            async with self._session_factory() as session, session.begin():
+                await session.execute(
+                    text(
+                        "SELECT * FROM dante.bind_self_routine_occurrence_activity("
+                        ":actor,:occurrence,:activity)"
+                    ),
+                    {
+                        "actor": self_person_ref,
+                        "occurrence": occurrence_ref,
+                        "activity": activity_ref,
+                    },
+                )
+        except SQLAlchemyError as exc:
+            raise OccurrencePersistenceError() from exc
+
+    async def _set_reality(
+        self,
+        *,
+        self_person_ref: NativeRef,
+        occurrence_ref: UUID,
+        activity_ref: NativeRef,
+        mode: object,
+        suffix: str,
+    ) -> None:
+        if mode == "manual":
+            return
+        if mode not in {"review_on_end", "auto_confirm_outcome"}:
+            raise OccurrenceInputError("Recurring Activity Reality policy is invalid.")
+        operation_id = f"b14:reality:{suffix}:{occurrence_ref}"
+        intent = {
+            "version": 1,
+            "activity_ref": str(activity_ref),
+            "mode_code": mode,
+            "expected_state_ref": None,
+        }
+        fingerprint = hashlib.sha256(
+            json.dumps(intent, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        ).hexdigest()
+        try:
+            async with self._session_factory() as session, session.begin():
+                await session.execute(
+                    text(
+                        """SELECT * FROM dante.set_self_activity_outcome_review_policy(
+                             :actor,:operation,:fingerprint,:activity,:state,:mode,NULL)"""
+                    ),
+                    {
+                        "actor": self_person_ref,
+                        "operation": operation_id,
+                        "fingerprint": fingerprint,
+                        "activity": activity_ref,
+                        "state": uuid7(),
+                        "mode": mode,
+                    },
+                )
+        except SQLAlchemyError as exc:
+            raise OccurrencePersistenceError() from exc
+
+    async def _protect_schedules(
+        self,
+        *,
+        self_person_ref: NativeRef,
+        occurrence_ref: UUID,
+        result: AuthoringResult,
+    ) -> None:
+        schedules = [
+            *( [result.schedule] if result.schedule is not None else [] ),
+            *result.activity_intervals,
+            *result.planned_slices,
+            *[
+                schedule
+                for child in result.children
+                for schedule in (
+                    *( [child.schedule] if child.schedule is not None else [] ),
+                    *child.planned_slices,
+                )
+            ],
+        ]
+        for index, schedule in enumerate(schedules):
+            await self._movement.create_policy(
+                self_person_ref=self_person_ref,
+                operation_id=f"b14:movement-lock:{index}:{occurrence_ref}",
+                schedule_ref=schedule.schedule_ref,
+                rule=MovementPolicyRule(
+                    automatic_movement="blocked",
+                    acceptance_path="direct",
+                ),
+            )
+            await self._locks.set(
+                self_person_ref=self_person_ref,
+                schedule_ref=schedule.schedule_ref,
+                locked=True,
+                expected_revision=None,
+            )
+
+    async def _materialize_activity(
+        self,
+        *,
+        self_person_ref: NativeRef,
+        source_ref: UUID,
+        occurrence_ref: UUID,
+        coordinate: CalendarCoordinate,
+        policy: RoutineOccurrencePolicyView,
+    ) -> None:
+        template = policy.activity_template
+        title, life_area_ref = await self._routine_source(
+            self_person_ref=self_person_ref,
+            routine_ref=source_ref,
+        )
+        root_placement = self._template_window(
+            occurrence_ref,
+            coordinate,
+            {
+                "start_offset_minutes": 0,
+                "duration_minutes": policy.duration_minutes,
+            },
+        )
+        intervals = tuple(
+            self._template_window(occurrence_ref, coordinate, value)
+            for value in template.get("activity_intervals", [])
+        )
+        planned_rows = template.get("planned_slices", [])
+        if not isinstance(planned_rows, list):
+            raise OccurrenceInputError("Recurring Activity planned Sessions are invalid.")
+        planned_slices = tuple(
+            self._template_window(occurrence_ref, coordinate, value)
+            for value in planned_rows
+        )
+        planned_names = tuple(
+            str(value.get("name", "")).strip()
+            for value in planned_rows
+            if isinstance(value, dict)
+        )
+        if len(planned_names) != len(planned_slices):
+            raise OccurrenceInputError("Recurring Activity Session names are invalid.")
+
+        child_rows = template.get("children", [])
+        if not isinstance(child_rows, list):
+            raise OccurrenceInputError("Recurring Activity children are invalid.")
+        children: list[ActivityChildIntent] = []
+        child_reality: list[object] = []
+        for row in child_rows:
+            if not isinstance(row, dict):
+                raise OccurrenceInputError("Recurring Activity child is invalid.")
+            child_planned = row.get("planned_slices", [])
+            if not isinstance(child_planned, list):
+                raise OccurrenceInputError("Recurring child Sessions are invalid.")
+            placement_value = row.get("placement")
+            children.append(
+                ActivityChildIntent(
+                    title=str(row.get("title", "")).strip(),
+                    requirement_code=cast(
+                        Literal["required", "optional"],
+                        row.get("requirement_code", "required"),
+                    ),
+                    presentation_order=len(children) + 1,
+                    placement=(
+                        None
+                        if placement_value is None
+                        else self._template_window(
+                            occurrence_ref, coordinate, placement_value
+                        )
+                    ),
+                    planned_slices=tuple(
+                        self._template_window(occurrence_ref, coordinate, value)
+                        for value in child_planned
+                    ),
+                    planned_slice_names=tuple(
+                        str(value.get("name", "")).strip()
+                        for value in child_planned
+                        if isinstance(value, dict)
+                    ),
+                    session_capture_mode=cast(
+                        Literal["disabled", "record", "live", "record_and_live"],
+                        row.get("session_capture_mode", "disabled"),
+                    ),
+                )
+            )
+            child_reality.append(row.get("reality_mode", "manual"))
+
+        minimum = template.get("minimum_session_duration_microseconds")
+        if minimum is not None and (
+            isinstance(minimum, bool) or not isinstance(minimum, int) or minimum <= 0
+        ):
+            raise OccurrenceInputError("Recurring Activity Session minimum is invalid.")
+
+        result = await self._authoring.create_activity(
+            self_person_ref=self_person_ref,
+            operation_id=f"b14:occurrence-activity:{occurrence_ref}",
+            title=title,
+            life_area_intent=(
+                None
+                if life_area_ref is None
+                else AuthoringLifeAreaIntent(life_area_ref=life_area_ref)
+            ),
+            description=cast(str | None, template.get("description")),
+            location=cast(str | None, template.get("location")),
+            item_color_code=cast(str | None, template.get("item_color_code")),
+            placement=root_placement,
+            session_capture_mode=cast(
+                str, template.get("session_capture_mode", "disabled")
+            ),
+            minimum_session_duration_microseconds=cast(int | None, minimum),
+            child_guard_mode=cast(str, template.get("child_guard_mode", "none")),
+            planned_slices=planned_slices,
+            activity_intervals=intervals,
+            planned_slice_names=planned_names,
+            children=tuple(children),
+        )
+        await self._bind_activity(
+            self_person_ref=self_person_ref,
+            occurrence_ref=occurrence_ref,
+            activity_ref=result.item.subject_native_ref,
+        )
+        await self._set_reality(
+            self_person_ref=self_person_ref,
+            occurrence_ref=occurrence_ref,
+            activity_ref=result.item.subject_native_ref,
+            mode=template.get("reality_mode", "manual"),
+            suffix="root",
+        )
+        for index, child in enumerate(result.children):
+            await self._set_reality(
+                self_person_ref=self_person_ref,
+                occurrence_ref=occurrence_ref,
+                activity_ref=child.item.subject_native_ref,
+                mode=child_reality[index] if index < len(child_reality) else "manual",
+                suffix=f"child-{index}",
+            )
+        if bool(template.get("placement_protected", False)):
+            await self._protect_schedules(
+                self_person_ref=self_person_ref,
+                occurrence_ref=occurrence_ref,
+                result=result,
+            )
+        if policy.reminder_lead_minutes is not None:
+            if result.schedule is None:
+                raise OccurrenceInputError(
+                    "Recurring Activity Reminder requires an accepted root Schedule."
+                )
+            await self._reminders.configure(
+                self_person_ref=self_person_ref,
+                schedule_ref=result.schedule.schedule_ref,
+                operation_id=f"b14:reminder:{occurrence_ref}",
+                expected_material_state_ref=None,
+                enabled=True,
+                lead_minutes=policy.reminder_lead_minutes,
+            )
+
     async def _apply_routine_policy(
         self,
         *,
@@ -175,6 +495,19 @@ class RoutineOccurrenceMaterializationApplication:
             if occurrence.skipped or occurrence.coordinate is None:
                 continue
             coordinate = occurrence.coordinate
+            if policy.activity_template:
+                if not isinstance(coordinate, CalendarCoordinate):
+                    raise OccurrenceInputError(
+                        "Recurring Activity templates require calendar Occurrences."
+                    )
+                await self._materialize_activity(
+                    self_person_ref=self_person_ref,
+                    source_ref=source_ref,
+                    occurrence_ref=occurrence.occurrence_ref,
+                    coordinate=coordinate,
+                    policy=policy,
+                )
+                continue
             if not isinstance(coordinate, CalendarCoordinate | ElapsedCoordinate):
                 raise OccurrenceInputError(
                     "Manual recurring Activity policy requires a concrete calendar or elapsed coordinate."
