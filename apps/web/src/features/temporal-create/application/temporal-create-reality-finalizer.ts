@@ -56,41 +56,6 @@ function sharedTasks(
   return Object.freeze({ realityTask, objectives: Object.freeze(objectives) });
 }
 
-async function applySharedTasks(
-  tasks: ReturnType<typeof sharedTasks>,
-  source: RealityObjectiveDataSource,
-) {
-  if (tasks.realityTask !== null) {
-    await source.configureReality(
-      tasks.realityTask.kind,
-      tasks.realityTask.subjectRef,
-      {
-        operationId: tasks.realityTask.operationId,
-        mode: tasks.realityTask.mode,
-        expectedStateRef: null,
-      },
-    );
-  }
-  for (const task of tasks.objectives) {
-    await source.createObjective(
-      tasks.realityTask?.kind ?? 'activity',
-      // The caller supplies a fallback below when Reality is manual.
-      tasks.realityTask?.subjectRef ?? '',
-      {
-        operationId: task.operationId,
-        label: task.objective.label,
-        resultKind: task.objective.result_kind,
-        comparatorCode: task.objective.comparator_code,
-        targetValue: task.objective.target_value,
-        targetMin: task.objective.target_min,
-        targetMax: task.objective.target_max,
-        unitCode: task.objective.unit_code,
-        presentationOrder: task.objective.presentation_order,
-      },
-    );
-  }
-}
-
 function sharedFinalizer(
   kind: 'activity' | 'event',
   subjectRef: string,
