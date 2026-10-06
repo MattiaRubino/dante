@@ -163,3 +163,9 @@ combination survives Create, readback, later checkpoint and independent
 per-Occurrence execution, and until a locked card cannot be moved by pointer,
 keyboard, time editor or direct Schedule revision. The user runs the local
 gates; no CI or unreported PASS claim.
+
+## 2026-10-06 — placement lock candidate (not proven)
+
+Commit `9d2b6130` introduced forward migration `_110` and an explicit Activity Schedule user placement lock. Create applies it alongside B04 automatic movement protection to the root, Activity intervals, planned Session rows and child Schedules. A database history guard rejects revisions/unschedule while locked, including non-UI callers; Timeline readback, drag/keyboard/time-editor guards and an explicit detail-panel toggle are candidate code. Commit `84161fa5` makes lock-only Timeline updates reconcile without a placement revision. This candidate has **not** received the user's PostgreSQL/OpenAPI/web gate or real-app acceptance. Existing B04 `blocked + direct` states were not backfilled as user locks because that policy intentionally allows manual edits; existing cards can be locked explicitly in their detail panel.
+
+Complete recurring Activity template inheritance remains **open**. The `_110` lock infrastructure must not be described as solving recurring intervals, planned Sessions, outcome review, Reminder propagation or per-Occurrence independence. Generated API client and Database Dictionary reconciliation are pending the user's local gate.
