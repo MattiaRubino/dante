@@ -43,7 +43,7 @@ export type OrganizationSnapshot = Readonly<{
 }>;
 
 type RoutineOrganization = Readonly<{
-  assignment: LifeAreaAssignment;
+  assignment: LifeAreaAssignment | null;
   tagEdges: readonly ProductTagEdge[];
 }>;
 
@@ -176,13 +176,17 @@ function routineOrganization(value: unknown): RoutineOrganization {
   if (!Array.isArray(rawTags)) {
     throw new TemporalOrganizationError('Invalid Routine Tag collection.');
   }
+  const assignment =
+    row.life_area_ref === null
+      ? null
+      : Object.freeze({
+          kind: 'routine' as const,
+          itemRef: routineRef,
+          areaRef: uuid(row.life_area_ref),
+          revision: revision(row.life_area_assignment_revision),
+        });
   return Object.freeze({
-    assignment: Object.freeze({
-      kind: 'routine' as const,
-      itemRef: routineRef,
-      areaRef: uuid(row.life_area_ref),
-      revision: revision(row.life_area_assignment_revision),
-    }),
+    assignment,
     tagEdges: Object.freeze(
       rawTags.map((tagRef) =>
         Object.freeze({
@@ -267,7 +271,9 @@ export function createRemoteTemporalOrganizationDataSource(
         areas: list(areas, area),
         assignments: Object.freeze([
           ...list(assignments, assignment),
-          ...routineRows.map((item) => item.assignment),
+          ...routineRows.flatMap((item) =>
+            item.assignment === null ? [] : [item.assignment],
+          ),
         ]),
         unassigned: list(unassignedItems, unassigned),
         tags: list(tags, tag),
