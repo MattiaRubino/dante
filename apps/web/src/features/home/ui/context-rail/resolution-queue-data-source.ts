@@ -1,7 +1,7 @@
 import { createWebFetch } from '../../../../platform/api/web-fetch';
 
-type ResolutionSubjectKind = 'activity' | 'event';
-type ResolutionAction = 'open_reconciliation' | 'record_realization';
+type ResolutionSubjectKind = 'activity' | 'event' | 'occurrence';
+type ResolutionAction = 'open_reconciliation' | 'record_realization' | 'open_objectives';
 
 type ResolutionItemBase = Readonly<{
   subjectRef: string;
@@ -14,7 +14,7 @@ type ResolutionItemBase = Readonly<{
 export type ReconciliationResolutionItem = ResolutionItemBase &
   Readonly<{
     reasonCode: 'reconciliation_open';
-    subjectKind: ResolutionSubjectKind;
+    subjectKind: 'activity' | 'event';
     reconciliationRef: string;
     outcomeRef: string;
     sessionRef: string | null;
@@ -25,17 +25,29 @@ export type ReconciliationResolutionItem = ResolutionItemBase &
 export type RealizationReviewResolutionItem = ResolutionItemBase &
   Readonly<{
     reasonCode: 'realization_review';
-    subjectKind: 'activity';
+    subjectKind: ResolutionSubjectKind;
     reconciliationRef: null;
     outcomeRef: null;
-    sessionRef: string;
-    sessionTimingMaterialStateRef: string;
+    sessionRef: string | null;
+    sessionTimingMaterialStateRef: string | null;
     actions: readonly ['record_realization'];
+  }>;
+
+export type ObjectiveReviewResolutionItem = ResolutionItemBase &
+  Readonly<{
+    reasonCode: 'objective_review';
+    subjectKind: ResolutionSubjectKind;
+    reconciliationRef: null;
+    outcomeRef: null;
+    sessionRef: string | null;
+    sessionTimingMaterialStateRef: string | null;
+    actions: readonly ['open_objectives'];
   }>;
 
 export type ResolutionItem =
   | ReconciliationResolutionItem
-  | RealizationReviewResolutionItem;
+  | RealizationReviewResolutionItem
+  | ObjectiveReviewResolutionItem;
 
 export type ResolutionQueue = Readonly<{
   items: readonly ResolutionItem[];
@@ -130,16 +142,16 @@ function parseItem(value: unknown): ResolutionItem {
 
   if (
     item.reason_code === 'realization_review' &&
-    item.subject_kind === 'activity' &&
+    (item.subject_kind === 'activity' || item.subject_kind === 'event' || item.subject_kind === 'occurrence') &&
     reconciliationRef === null &&
     outcomeRef === null &&
-    sessionRef !== null &&
-    sessionTimingMaterialStateRef !== null &&
+    (item.subject_kind !== 'activity' ||
+      (sessionRef !== null && sessionTimingMaterialStateRef !== null)) &&
     hasOnlyAction(item.actions, 'record_realization')
   ) {
     return {
       reasonCode: 'realization_review',
-      subjectKind: 'activity',
+      subjectKind: item.subject_kind,
       subjectRef,
       title,
       summary,
@@ -150,6 +162,29 @@ function parseItem(value: unknown): ResolutionItem {
       sessionRef,
       sessionTimingMaterialStateRef,
       actions: ['record_realization'],
+    };
+  }
+
+  if (
+    item.reason_code === 'objective_review' &&
+    (item.subject_kind === 'activity' || item.subject_kind === 'event' || item.subject_kind === 'occurrence') &&
+    reconciliationRef === null &&
+    outcomeRef === null &&
+    hasOnlyAction(item.actions, 'open_objectives')
+  ) {
+    return {
+      reasonCode: 'objective_review',
+      subjectKind: item.subject_kind,
+      subjectRef,
+      title,
+      summary,
+      effectiveAt,
+      reconciliationRef: null,
+      outcomeRef: null,
+      purposeCode,
+      sessionRef,
+      sessionTimingMaterialStateRef,
+      actions: ['open_objectives'],
     };
   }
 
