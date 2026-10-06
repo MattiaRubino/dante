@@ -167,11 +167,3 @@ export function TemporalCreateConfirmationToggle({ fields }: Props) {
   );
 }
 
-/**
- * The outcome mode used to expand as a full-width row below the title.
- * Advanced Create now owns that choice from the compact header control, so
- * this historical body slot deliberately renders nothing.
- */
-export function TemporalCreateConfirmationFields({ fields: _fields }: Props) {
-  return null;
-}
