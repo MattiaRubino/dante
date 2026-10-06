@@ -455,18 +455,6 @@ export function TemporalCreateLifeAreaField({
               className="temporal-create-life-area-field__options"
               role="listbox"
             >
-              <button
-                type="button"
-                role="option"
-                aria-selected={draft.lifeArea.kind === 'none'}
-                onClick={() => {
-                  clear();
-                  setAreaOpen(false);
-                }}
-              >
-                <span className="is-empty" aria-hidden="true" />
-                <span>Nessuna Life Area</span>
-              </button>
               {filtered.map((context) => (
                 <button
                   key={context.id}
