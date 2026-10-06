@@ -235,6 +235,39 @@ describe('Temporal Create U2 entry', () => {
     ).toBeNull();
   });
 
+  it('keeps Life Area suggestions limited to existing canonical areas', () => {
+    const first = renderEntry();
+    const input = screen.getByLabelText('Life Area (opzionale)');
+
+    fireEvent.focus(input);
+    expect(screen.queryByRole('listbox')).toBeNull();
+
+    fireEvent.change(input, { target: { value: 'Nuova area golden' } });
+    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByText(/quando premi Aggiungi/i)).toBeNull();
+
+    first.unmount();
+
+    renderEntry([
+      {
+        id: '0199a111-1111-7111-8111-111111111130',
+        label: 'Corpo',
+        tone: 'personal',
+        revision: 1,
+        colorCode: '#8E24AA',
+      },
+    ]);
+
+    const existingInput = screen.getByLabelText('Life Area (opzionale)');
+    fireEvent.focus(existingInput);
+    expect(screen.getByRole('listbox')).toBeTruthy();
+    expect(screen.getByRole('option', { name: 'Corpo' })).toBeTruthy();
+
+    fireEvent.change(existingInput, { target: { value: 'Non esiste' } });
+    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByText(/quando premi Aggiungi/i)).toBeNull();
+  });
+
   it('stages a new Life Area locally and sends the real default orange only with accepted Add', async () => {
     const { activityRequests } = renderEntry();
 
