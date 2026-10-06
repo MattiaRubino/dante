@@ -1,11 +1,10 @@
 .temporal-create-objectives {
   position: relative;
-  order: -26;
   display: grid;
   gap: 8px;
   width: 100%;
   min-width: 0;
-  padding: 2px 0 6px;
+  padding: 0;
 }
 
 .temporal-create-objectives__list {
@@ -27,7 +26,7 @@
   display: grid;
   gap: 6px;
   min-width: 0;
-  margin-left: 28px;
+  margin-left: 0;
 }
 
 .temporal-create-objective__row {
@@ -117,7 +116,7 @@
   flex-wrap: wrap;
   align-items: end;
   gap: 6px;
-  margin-left: 36px;
+  margin-left: 0;
   padding: 7px 8px;
   border: 1px solid rgba(255,255,255,.07);
   border-radius: 9px;
@@ -157,13 +156,13 @@
   align-items: center;
   gap: 6px;
   padding: 0 10px;
-  border: 1px dashed color-mix(in srgb, currentColor 23%, transparent);
+  border: 1px solid rgba(255,255,255,.105);
   border-radius: 8px;
   color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
-  background: transparent;
+  background: rgba(255,255,255,.025);
   font: inherit;
   font-size: 11px;
-  font-weight: 650;
+  font-weight: 680;
   cursor: pointer;
 }
 
