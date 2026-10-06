@@ -74,43 +74,43 @@ describe('Temporal Create Advanced Activity IA', () => {
     expect(protection.getAttribute('aria-pressed')).toBe('true');
     expect(protection.getAttribute('aria-label')).toBe('Sblocca spostamenti');
 
-    const rootOutcome = titleRow?.querySelector<HTMLElement>(
-      '[data-outcome-confirmation="activity"]',
+    const rootReality = titleRow?.querySelector<HTMLElement>(
+      '[data-reality-policy="activity"]',
     );
-    if (!rootOutcome) throw new Error('Expected root outcome confirmation.');
+    if (!rootReality) throw new Error('Expected root Reality policy.');
 
-    const rootOutcomeCheckbox = within(rootOutcome).getByRole('checkbox', {
-      name: 'Abilita verifica esito',
+    const rootRealityCheckbox = within(rootReality).getByRole('checkbox', {
+      name: 'Abilita verifica realtà',
     }) as HTMLInputElement;
-    expect(rootOutcomeCheckbox.checked).toBe(false);
+    expect(rootRealityCheckbox.checked).toBe(false);
 
-    const outcomeMode = within(rootOutcome).getByRole('button', {
-      name: 'Verifica esito',
+    const realityMode = within(rootReality).getByRole('button', {
+      name: 'Verifica realtà',
     });
-    fireEvent.click(outcomeMode);
-    expect(rootOutcomeCheckbox.checked).toBe(true);
+    fireEvent.click(realityMode);
+    expect(rootRealityCheckbox.checked).toBe(true);
 
-    const askAtEnd = within(rootOutcome).getByRole('button', {
+    const askAtEnd = within(rootReality).getByRole('button', {
       name: 'Chiedi al termine',
     });
     fireEvent.click(askAtEnd);
 
-    const outcomeMenu = within(rootOutcome).getByRole('menu', {
-      name: 'Modalità verifica esito',
+    const realityMenu = within(rootReality).getByRole('menu', {
+      name: 'Modalità verifica realtà',
     });
-    const autoConfirm = within(outcomeMenu).getByRole('menuitem', {
+    const autoConfirm = within(realityMenu).getByRole('menuitem', {
       name: 'Conferma automatica',
     });
     fireEvent.click(autoConfirm);
 
     expect(
-      within(rootOutcome).getByRole('button', {
+      within(rootReality).getByRole('button', {
         name: 'Conferma automatica',
       }),
     ).toBeTruthy();
     expect(
-      within(rootOutcome).getByRole('checkbox', {
-        name: 'Disabilita verifica esito',
+      within(rootReality).getByRole('checkbox', {
+        name: 'Disabilita verifica realtà',
       }),
     ).toBeTruthy();
 
