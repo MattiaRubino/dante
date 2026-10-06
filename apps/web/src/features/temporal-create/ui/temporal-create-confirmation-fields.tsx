@@ -16,7 +16,7 @@ export function TemporalCreateConfirmationToggle({ fields }: Props) {
   const rootRef = useRef<HTMLElement | null>(null);
   const [open, setOpen] = useState(false);
   const structure = draft.activityStructure;
-  const enabled = structure.realityMode !== 'manual';
+  const enabled = draft.realityMode !== 'manual';
 
   useEffect(() => {
     if (!open) return;
@@ -34,24 +34,27 @@ export function TemporalCreateConfirmationToggle({ fields }: Props) {
     return () => document.removeEventListener('pointerdown', dismiss, true);
   }, [open]);
 
-  if (fields.kind !== 'activity') return null;
-
   const applyMode = (realityMode: TemporalCreateRealityMode) => {
     const hasRequiredChild = structure.children.some(
       (child) => child.requirementCode === 'required',
     );
 
     patch({
+      realityMode,
       activityStructure: Object.freeze({
         ...structure,
         realityMode,
         childGuardMode:
-          realityMode !== 'manual' && hasRequiredChild ? 'confirm' : 'none',
+          fields.kind === 'activity' &&
+          realityMode !== 'manual' &&
+          hasRequiredChild
+            ? 'confirm'
+            : 'none',
       }),
     });
   };
 
-  const selectedMode = structure.realityMode;
+  const selectedMode = draft.realityMode;
   const selectedLabel =
     selectedMode === 'auto_confirm_outcome'
       ? italian
@@ -77,19 +80,19 @@ export function TemporalCreateConfirmationToggle({ fields }: Props) {
     <section
       ref={rootRef}
       className={`temporal-create-outcome-control${enabled ? ' is-enabled' : ''}`}
-      data-outcome-confirmation="activity"
-      aria-label={italian ? 'Verifica esito' : 'Outcome review'}
+      data-reality-policy={fields.kind}
+      aria-label={italian ? 'Verifica realtà' : 'Reality review'}
     >
       <label
         className="temporal-create-outcome-control__check"
         title={
           enabled
             ? italian
-              ? 'Disabilita verifica esito'
-              : 'Disable outcome review'
+              ? 'Disabilita verifica realtà'
+              : 'Disable reality review'
             : italian
-              ? 'Abilita verifica esito'
-              : 'Enable outcome review'
+              ? 'Abilita verifica realtà'
+              : 'Enable reality review'
         }
       >
         <input
@@ -98,11 +101,11 @@ export function TemporalCreateConfirmationToggle({ fields }: Props) {
           aria-label={
             enabled
               ? italian
-                ? 'Disabilita verifica esito'
-                : 'Disable outcome review'
+                ? 'Disabilita verifica realtà'
+                : 'Disable reality review'
               : italian
-                ? 'Abilita verifica esito'
-                : 'Enable outcome review'
+                ? 'Abilita verifica realtà'
+                : 'Enable reality review'
           }
           onChange={(event) => {
             const nextEnabled = event.currentTarget.checked;
@@ -130,8 +133,8 @@ export function TemporalCreateConfirmationToggle({ fields }: Props) {
           {enabled
             ? selectedLabel
             : italian
-              ? 'Verifica esito'
-              : 'Review outcome'}
+              ? 'Verifica realtà'
+              : 'Review reality'}
         </span>
         {enabled ? (
           <span
@@ -148,7 +151,7 @@ export function TemporalCreateConfirmationToggle({ fields }: Props) {
           className="temporal-create-outcome-control__menu"
           role="menu"
           aria-label={
-            italian ? 'Modalità verifica esito' : 'Outcome review mode'
+            italian ? 'Modalità verifica realtà' : 'Outcome review mode'
           }
         >
           <button
