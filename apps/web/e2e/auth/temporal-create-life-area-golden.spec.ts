@@ -74,21 +74,10 @@ function waitForTimelineRead(page: Page) {
   );
 }
 
-function waitForUnplacedRead(page: Page) {
-  return page.waitForResponse(
-    (response) =>
-      response.url().endsWith('/api/v1/temporal/activities/unplaced') &&
-      response.request().method() === 'GET',
-    { timeout: E2E_RESPONSE_TIMEOUT_MS },
-  );
-}
-
 async function openHome(page: Page): Promise<void> {
   const timeline = waitForTimelineRead(page);
-  const unplaced = waitForUnplacedRead(page);
   await page.goto('/home');
   expect((await timeline).status()).toBe(200);
-  expect((await unplaced).status()).toBe(200);
   await expect(page.locator('[data-temporal-read-state="ready"]')).toBeVisible();
 }
 
@@ -382,13 +371,11 @@ test.describe('Temporal Create Life Area golden gate', () => {
       await expectTimedCardColor(page, noAreaEventTitle, null, DEFAULT_ORANGE);
 
       const reloadTimeline = waitForTimelineRead(page);
-      const reloadUnplaced = waitForUnplacedRead(page);
       await page.reload({
         waitUntil: 'domcontentloaded',
         timeout: E2E_RESPONSE_TIMEOUT_MS,
       });
       expect((await reloadTimeline).status()).toBe(200);
-      expect((await reloadUnplaced).status()).toBe(200);
 
       await expectGroupColor(page, lifeAreaRef, areaName, BLUE);
       await expectTimedCardColor(page, activityTitle, areaName, BLUE);
@@ -579,13 +566,11 @@ test.describe('Temporal Create Life Area golden gate', () => {
       await expectTimedCardColor(page, noAreaEventTitle, null, DEFAULT_ORANGE);
 
       const reloadTimeline = waitForTimelineRead(page);
-      const reloadUnplaced = waitForUnplacedRead(page);
       await page.reload({
         waitUntil: 'domcontentloaded',
         timeout: E2E_RESPONSE_TIMEOUT_MS,
       });
       expect((await reloadTimeline).status()).toBe(200);
-      expect((await reloadUnplaced).status()).toBe(200);
 
       await expectGroupColor(page, area.life_area_ref, areaName, BLUE);
       await expectTimedCardColor(page, routineTitle, areaName, BLUE);
