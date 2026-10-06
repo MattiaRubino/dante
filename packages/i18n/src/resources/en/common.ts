@@ -43,9 +43,9 @@ const homeWithB02D = {
         'A later Schedule change prevents this undo. Nothing was overwritten.',
       scheduleUndoUnavailable: 'This Schedule change could not be undone.',
       eventAgendaConflict:
-        'The Agenda changed elsewhere. The current version was reloaded without overwriting anything.',
+        'The run of show changed elsewhere. The current version was reloaded without overwriting anything.',
       eventAgendaUnavailable:
-        'The Agenda could not be updated safely. The current version was reloaded.',
+        'The run of show could not be updated safely. The current version was reloaded.',
     },
   },
 } as const;
