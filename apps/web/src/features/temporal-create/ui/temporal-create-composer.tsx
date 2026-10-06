@@ -20,11 +20,8 @@ import {
   TemporalCreateAdvancedActivityHeaderActions,
   TemporalCreateAdvancedActivityStructure,
 } from './temporal-create-advanced-activity-structure';
-import { TemporalCreateActivityRecurrenceFields } from './temporal-create-activity-recurrence-fields';
-import {
-  TemporalCreateConfirmationFields,
-  TemporalCreateConfirmationToggle,
-} from './temporal-create-confirmation-fields';
+import { TemporalCreateCalendarRecurrenceFields } from './temporal-create-calendar-recurrence-fields';
+import { TemporalCreateConfirmationToggle } from './temporal-create-confirmation-fields';
 import {
   TemporalCreateAdvancedFields,
   TemporalCreateCoreFields,
@@ -462,9 +459,6 @@ export function TemporalCreateComposer({
                 ) : null}
               </div>
               {advanced && fields.kind === 'activity' ? (
-                <TemporalCreateConfirmationFields fields={fields} />
-              ) : null}
-              {advanced && fields.kind === 'activity' ? (
                 <TemporalCreateAdvancedActivityStructure fields={fields} />
               ) : null}
               <TemporalCreateCoreFields
@@ -473,9 +467,8 @@ export function TemporalCreateComposer({
                 showCompactTimezone={!advanced}
                 repeatDetails={
                   advanced &&
-                  fields.kind === 'activity' &&
                   fields.eventRecurrence.patternKind === 'calendar-wall-clock' ? (
-                    <TemporalCreateActivityRecurrenceFields
+                    <TemporalCreateCalendarRecurrenceFields
                       fields={fields}
                       onPatch={onPatch}
                       renderError={renderError}
