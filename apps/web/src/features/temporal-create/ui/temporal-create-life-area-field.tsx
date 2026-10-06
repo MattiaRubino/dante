@@ -35,6 +35,15 @@ type FloatingPanelPosition = Readonly<{
 }>;
 
 const DEFAULT_COLOR = TEMPORAL_CREATE_DEFAULT_COLOR;
+const UNASSIGNED_PRESENTATION_CONTEXT_ID = 'legacy-unassigned';
+
+function authorableContexts(
+  contexts: readonly TemporalCreateContextOption[],
+): readonly TemporalCreateContextOption[] {
+  return Object.freeze(
+    contexts.filter((context) => context.id !== UNASSIGNED_PRESENTATION_CONTEXT_ID),
+  );
+}
 const COLOR_PRESETS: readonly ColorPreset[] = Object.freeze([
   Object.freeze({ value: '#D50000', label: 'Rosso' }),
   Object.freeze({ value: '#E67C73', label: 'Salmone' }),
@@ -93,7 +102,9 @@ function canonicalOptions(
     ReturnType<ReturnType<typeof createRemoteTemporalOrganizationDataSource>['load']>
   >['areas'],
 ): readonly TemporalCreateContextOption[] {
-  const byRef = new Map(contexts.map((context) => [context.id, context]));
+  const byRef = new Map(
+    authorableContexts(contexts).map((context) => [context.id, context]),
+  );
   return Object.freeze(
     areas
       .filter((area) => !area.archived)
@@ -145,7 +156,9 @@ export function TemporalCreateLifeAreaField({
   const [colorPanelPosition, setColorPanelPosition] =
     useState<FloatingPanelPosition | null>(null);
   const [query, setQuery] = useState(() => selectedLabel(draft));
-  const [availableContexts, setAvailableContexts] = useState(contexts);
+  const [availableContexts, setAvailableContexts] = useState(() =>
+    authorableContexts(contexts),
+  );
   const [recentColors] = useState<readonly string[]>(() =>
     typeof window === 'undefined'
       ? Object.freeze([])
@@ -163,7 +176,7 @@ export function TemporalCreateLifeAreaField({
   }, [draft.lifeArea]);
 
   useEffect(() => {
-    setAvailableContexts(contexts);
+    setAvailableContexts(authorableContexts(contexts));
   }, [contexts]);
 
   useEffect(() => {
