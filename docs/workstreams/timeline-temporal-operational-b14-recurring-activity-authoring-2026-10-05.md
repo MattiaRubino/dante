@@ -78,6 +78,8 @@ The first recurring-Activity vertical is therefore bounded to the product fields
 
 Life Area remains optional at the Activity product level. Recurring Activity authoring must not reintroduce the superseded B05 rule that every item requires a Life Area.
 
+Recurring Activity Create uses the **same Life Area authoring contract as one-off Activity Create**: no Life Area, select an existing Life Area, or create a new Life Area are all valid. New Life Area creation and its selected appearance/color are resolved inside the same recurring source transaction; Create must not stage a separate orphan-prone pre-create side effect. With no Life Area, `item_color_code` stays in the recurring Activity template and is inherited by every materialized Activity. With a Life Area, color belongs to the Life Area and item color stays null, exactly like normal Activity authoring.
+
 ## UI decision
 
 The main `Ripeti` selector is the single family selector. The expanded panel must not contain a second `giorno / settimana / mese / anno` selector.
