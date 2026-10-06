@@ -7,6 +7,7 @@ import type {
 } from '../model/temporal-create-session';
 import { TemporalCreateActivityFields } from './temporal-create-activity-fields';
 import { TemporalCreateCoreFieldsU2 } from './temporal-create-core-u2';
+import { TemporalCreateEventParticipants } from './temporal-create-event-participants';
 import type { TemporalCreateContextOption } from './temporal-create-ui-types';
 
 import './temporal-create-advanced-shell.css';
@@ -46,7 +47,9 @@ export function TemporalCreateAdvancedFields({
           onPatch={onPatch}
           renderError={renderError}
         />
-      ) : null}
+      ) : (
+        <TemporalCreateEventParticipants />
+      )}
 
       <section
         className="temporal-create-section is-wide temporal-create-description-section"
