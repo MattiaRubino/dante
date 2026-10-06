@@ -12,7 +12,11 @@ import {
 import { createRemoteScheduleReminderDataSource } from '../../temporal/remote-schedule-reminder-data-source';
 import { invalidateTemporalTimelineRead } from '../../temporal/timeline-invalidation';
 import { createRemoteRecurringAuthoringDataSource } from '../application/remote-recurring-authoring';
-import { buildTemporalCreateActivityRecurrence } from '../application/temporal-create-b14-runtime';
+import {
+  buildTemporalCreateActivityRecurrence,
+  buildTemporalCreateEventRecurrence,
+  buildTemporalCreateRecurringEventPolicy,
+} from '../application/temporal-create-b14-runtime';
 import {
   createLocalTemporalCreateRuntime,
   type TemporalCreateAppliedEffect,
@@ -33,6 +37,7 @@ import {
   buildTemporalCreateRecurringActivityTemplate,
   buildTemporalCreateU2Request,
   temporalCreateHasU6Structure,
+  temporalCreateRecurringEventSharedIntentSupported,
   temporalCreateU2QuickIntentSupported,
   validateTemporalCreateU2QuickFields,
   validateTemporalCreateU6Structure,
@@ -463,6 +468,67 @@ export function TemporalCreateEntry({
     }
   };
 
+  const executeRecurringEvent = async (
+    fields: TemporalCreateSession['draft']['current'],
+  ): Promise<boolean> => {
+    const validation = validateTemporalCreateU2QuickFields(fields);
+    if (validation.length > 0) {
+      setIssues(validation);
+      return false;
+    }
+    if (!temporalCreateRecurringEventSharedIntentSupported(fields)) {
+      setLifecycle('failed');
+      setFailureMessage(
+        i18n.language.toLowerCase().startsWith('en')
+          ? 'These Event-specific advanced options are not connected to recurring Event Create yet. Recurrence, Life Area, color, location, description, Agenda and Reminder are supported.'
+          : 'Queste opzioni avanzate specifiche dell’Evento non sono ancora collegate alla creazione ricorrente. Ricorrenza, Life Area, colore, località, descrizione, Agenda e promemoria sono supportati.',
+      );
+      return false;
+    }
+
+    commitInFlightRef.current = true;
+    setLifecycle('pending');
+    setIssues([]);
+    setFailureMessage('');
+    try {
+      const lifeArea = buildTemporalCreateLifeAreaInput(u2DraftRef.current);
+      const policy = buildTemporalCreateRecurringEventPolicy(fields);
+      const description = fields.notes.trim();
+      const location = fields.event.location.trim();
+      await recurringAuthoringDataSource.createEvent({
+        operationId: systemTemporalIdFactory.operationId(),
+        title: fields.title.trim(),
+        ...(lifeArea ? { lifeArea } : {}),
+        ...(description ? { description } : {}),
+        ...(location ? { location } : {}),
+        ...(u2DraftRef.current.lifeArea.kind === 'none' &&
+        u2DraftRef.current.itemColorCode
+          ? { itemColorCode: u2DraftRef.current.itemColorCode }
+          : {}),
+        agendaParts: Object.freeze([...fields.event.agendaParts]),
+        recurrence: buildTemporalCreateEventRecurrence(fields),
+        placementKind: policy.placementKind,
+        durationMinutes: policy.durationMinutes,
+        durationDays: policy.durationDays,
+        reminderLeadMinutes: fields.confirmation.reminderLeadMinutes,
+      });
+      invalidateTemporalTimelineRead();
+      setSession(discardTemporalCreateSession(freshFields(defaultDate)));
+      closeComposer();
+      return true;
+    } catch (reason) {
+      setLifecycle('failed');
+      setFailureMessage(
+        reason instanceof Error
+          ? reason.message
+          : t(($) => $.common.home.timeline.create.failure),
+      );
+      return false;
+    } finally {
+      commitInFlightRef.current = false;
+    }
+  };
+
   const submit = async (
     fieldsOverride?: Partial<TemporalCreateSession['draft']['current']>,
   ) => {
@@ -497,6 +563,13 @@ export function TemporalCreateEntry({
       fields.eventRecurrence.patternKind !== 'none'
     ) {
       await executeRecurringActivity(fields);
+      return;
+    }
+    if (
+      fields.kind === 'event' &&
+      fields.eventRecurrence.patternKind !== 'none'
+    ) {
+      await executeRecurringEvent(fields);
       return;
     }
 
