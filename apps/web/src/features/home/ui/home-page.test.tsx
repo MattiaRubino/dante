@@ -161,7 +161,7 @@ describe('HomePage M1 visual materialization', () => {
     expect(screen.getByText('Per te')).toBeTruthy();
     expect(screen.getAllByText('Corpo').length).toBeGreaterThan(0);
     expect(screen.getByText('Cattura')).toBeTruthy();
-    expect(screen.getByText('Da risolvere')).toBeTruthy();
+    expect(screen.getByText('Da verificare')).toBeTruthy();
   });
 
   it('renders the preferred profile name only when an identity is supplied', () => {
