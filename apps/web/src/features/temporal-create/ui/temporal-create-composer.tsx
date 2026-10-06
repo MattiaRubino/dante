@@ -21,9 +21,8 @@ import {
   TemporalCreateAdvancedActivityStructure,
 } from './temporal-create-advanced-activity-structure';
 import { TemporalCreateEventAgenda } from './temporal-create-event-agenda';
+import { TemporalCreateRealityObjectivesSection } from './temporal-create-reality-objectives-section';
 import { TemporalCreateCalendarRecurrenceFields } from './temporal-create-calendar-recurrence-fields';
-import { TemporalCreateConfirmationToggle } from './temporal-create-confirmation-fields';
-import { TemporalCreateObjectives } from './temporal-create-objectives';
 import {
   TemporalCreateAdvancedFields,
   TemporalCreateCoreFields,
@@ -419,7 +418,9 @@ export function TemporalCreateComposer({
               <div
                 className={
                   advanced
-                    ? 'temporal-create-title-row'
+                    ? fields.kind === 'activity'
+                      ? 'temporal-create-title-row has-tools'
+                      : 'temporal-create-title-row'
                     : 'temporal-create-title-row is-quick'
                 }
               >
@@ -449,16 +450,12 @@ export function TemporalCreateComposer({
                   />
                   {renderError('title')}
                 </div>
-                {advanced ? (
+                {advanced && fields.kind === 'activity' ? (
                   <div className="temporal-create-title-row__tools">
-                    {fields.kind === 'activity' ? (
-                      <TemporalCreateAdvancedActivityHeaderActions />
-                    ) : null}
-                    <TemporalCreateConfirmationToggle fields={fields} />
+                    <TemporalCreateAdvancedActivityHeaderActions />
                   </div>
                 ) : null}
               </div>
-              {advanced ? <TemporalCreateObjectives /> : null}
               {advanced && fields.kind === 'activity' ? (
                 <TemporalCreateAdvancedActivityStructure fields={fields} />
               ) : null}
@@ -487,6 +484,11 @@ export function TemporalCreateComposer({
                       onPatch={onPatch}
                       renderError={renderError}
                     />
+                  ) : null
+                }
+                realityObjectives={
+                  advanced ? (
+                    <TemporalCreateRealityObjectivesSection fields={fields} />
                   ) : null
                 }
                 onPatch={onPatch}
