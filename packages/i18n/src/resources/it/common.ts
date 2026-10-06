@@ -44,9 +44,9 @@ const homeWithB02D = {
       scheduleUndoUnavailable:
         'Impossibile annullare questa modifica della pianificazione.',
       eventAgendaConflict:
-        'L’Agenda è cambiata altrove. È stata ricaricata la versione corrente senza sovrascrivere nulla.',
+        'La Scaletta è cambiata altrove. È stata ricaricata la versione corrente senza sovrascrivere nulla.',
       eventAgendaUnavailable:
-        'Impossibile aggiornare l’Agenda in sicurezza. È stata ricaricata la versione corrente.',
+        'Impossibile aggiornare la Scaletta in sicurezza. È stata ricaricata la versione corrente.',
     },
   },
 } as const;
