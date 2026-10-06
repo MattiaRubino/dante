@@ -330,3 +330,25 @@ The user then ran the focused `_102` atomic Activity structure and both catalog 
 ## B14 placement lock continuation, 2026-10-06
 
 The current branch includes `_110` explicit user Schedule placement lock and backend/Timeline/Create candidate wiring (`9d2b6130`, reconciliation repair `84161fa5`). Distinguish it from B04 automatic movement policy. No user-run PostgreSQL migration, generated OpenAPI/client, web typecheck or real-app proof is reported; do not mark the lock closed. Existing B04 blocked policies cannot be safely reinterpreted/backfilled as user locks. The separate complete recurring-Activity inheritance vertical is still open and the Create incompatibility guard remains. See the 2026-10-06 addenda in the B14 recurring authoring contract and live map before continuing.
+
+
+## B14 recurring Activity parity continuation — 2026-10-06
+
+The recurring Activity Create candidate now carries the complete occurrence
+template implemented on the current branch (intervals, planned Sessions,
+Sub-Activities, Session settings, outcome review, Reminder lead and explicit
+placement protection). The earlier statement that complete recurring
+inheritance was not implemented is superseded by this candidate state; it is
+still **unproven** until the user-run local and real-app gates pass.
+
+The same Create Life Area contract now applies to one-off and recurring
+Activities: none, existing, or create-new. The virtual Timeline unassigned
+bucket is presentation-only and is not an authorable Life Area. Timeline
+organization/color projection is refreshed after checkpoint/materialization so
+materialized recurring Activities can resolve their accepted assignment and
+appearance. Root start-time editing preserves Activity duration instead of
+silently turning a same-day Activity into an overnight window.
+
+Do not clone Activity-only interval/Session/Sub-Activity semantics into Event.
+The next Event pass should share recurrence/Life-Area/color/Reminder/Timeline
+infrastructure while keeping Event-specific semantics separate.
