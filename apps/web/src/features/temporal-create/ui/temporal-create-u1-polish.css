@@ -67,7 +67,8 @@
   overflow-x: hidden;
   overflow-y: auto;
   box-sizing: border-box;
-  padding-right: 4px;
+  margin-right: -18px;
+  padding-right: 22px;
   padding-bottom: 86px;
   scrollbar-gutter: stable;
 }
