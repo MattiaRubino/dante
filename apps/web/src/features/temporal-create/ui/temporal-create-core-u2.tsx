@@ -36,6 +36,7 @@ type Props = Readonly<{
   fields: TemporalCreateFields;
   contexts: readonly TemporalCreateContextOption[];
   showCompactTimezone?: boolean;
+  showRecurrence?: boolean;
   repeatDetails?: ReactNode;
   realityObjectives?: ReactNode;
   onPatch: (patch: Partial<TemporalCreateFields>) => void;
@@ -456,6 +457,7 @@ export function TemporalCreateCoreFieldsU2({
   fields,
   contexts,
   showCompactTimezone = true,
+  showRecurrence = true,
   repeatDetails,
   realityObjectives,
   onPatch,
@@ -1030,6 +1032,7 @@ export function TemporalCreateCoreFieldsU2({
             <div
               className="temporal-create-activity-intervals"
               data-create-activity-intervals
+              data-create-path="activityIntervals"
             >
               {authoringDraft.activityStructure.activityIntervals.map(
                 (interval, index) => (
@@ -1137,7 +1140,7 @@ export function TemporalCreateCoreFieldsU2({
         </div>
       ) : null}
 
-      {fields.timeSemantics !== 'unscheduled' ? (
+      {showRecurrence && fields.timeSemantics !== 'unscheduled' ? (
         <>
           <div className="temporal-create-u2-repeat">
             <select
