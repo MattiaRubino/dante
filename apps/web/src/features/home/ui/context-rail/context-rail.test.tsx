@@ -10,6 +10,23 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ContextRail } from './context-rail';
 
+vi.mock('../../../temporal/objective-controls', () => ({
+  ObjectiveControls: ({
+    kind,
+    subjectRef,
+    onRecorded,
+  }: {
+    kind: string;
+    subjectRef: string;
+    onRecorded: () => void;
+  }) => (
+    <div data-testid="objective-owner">
+      <span>{`${kind}:${subjectRef}`}</span>
+      <button type="button" onClick={onRecorded}>Obiettivo valutato</button>
+    </div>
+  ),
+}));
+
 vi.mock('../../../temporal/reconciliation-controls', () => ({
   ReconciliationControls: ({ onRecorded }: { onRecorded: () => void }) => (
     <button type="button" onClick={onRecorded}>
@@ -23,13 +40,16 @@ vi.mock('../../../temporal/actual-realization-controls', () => ({
     kind,
     subjectRef,
     onRecorded,
+    sessionBasis,
   }: {
     kind: string;
     subjectRef: string;
     onRecorded: () => void;
+    sessionBasis?: { sessionRef: string; sessionTimingMaterialStateRef: string };
   }) => (
     <div data-testid="actual-realization-owner">
       <span>{`${kind}:${subjectRef}`}</span>
+      <span>{sessionBasis?.sessionRef ?? 'no-session'}</span>
       <button type="button" onClick={onRecorded}>
         Realtà B10 registrata
       </button>
@@ -100,7 +120,7 @@ describe('Home resolution rail', () => {
     expect(within(panel).getByText('Decisione')).toBeTruthy();
     expect(within(panel).queryByText('Revisione concept')).toBeNull();
 
-    fireEvent.click(within(panel).getByRole('button', { name: 'Risolvi' }));
+    fireEvent.click(within(panel).getByRole('button', { name: 'Apri decisione: Preparare le slide' }));
     open = false;
     fireEvent.click(
       screen.getByRole('button', { name: 'Decisione B10 registrata' }),
@@ -140,9 +160,11 @@ describe('Home resolution rail', () => {
       within(panel).getByText('Sessione conclusa · registra cosa è successo.'),
     ).toBeTruthy();
 
-    fireEvent.click(within(panel).getByRole('button', { name: 'Risolvi' }));
     expect(screen.getByTestId('actual-realization-owner').textContent).toContain(
       `activity:${realizationReviewItem.subject_ref}`,
+    );
+    expect(screen.getByTestId('actual-realization-owner').textContent).toContain(
+      realizationReviewItem.session_ref,
     );
     expect(
       screen.queryByRole('button', { name: 'Decisione B10 registrata' }),
@@ -159,4 +181,39 @@ describe('Home resolution rail', () => {
       '0',
     );
   });
+  it('opens pending Event Objectives through their canonical owner and refreshes after assessment', async () => {
+    const objectiveReviewItem = {
+      reason_code: 'objective_review',
+      subject_kind: 'event',
+      subject_ref: '019a45a2-7180-7000-8000-000000000021',
+      title: 'Gara',
+      summary: 'One or more Objectives are ready for assessment.',
+      effective_at: '2026-10-04T12:00:00Z',
+      reconciliation_ref: null,
+      outcome_ref: null,
+      purpose_code: 'objective.review',
+      session_ref: null,
+      session_timing_material_state_ref: null,
+      actions: ['open_objectives'],
+    };
+    let open = true;
+    vi.stubGlobal('fetch', vi.fn(async () =>
+      Response.json(open
+        ? { items: [objectiveReviewItem], count: 1 }
+        : { items: [], count: 0 }),
+    ));
+
+    const { container } = render(<ContextRail />);
+    const panel = container.querySelector<HTMLElement>('[data-home-context="resolution"]');
+    if (!panel) throw new Error('Resolution panel absent.');
+    await waitFor(() => expect(within(panel).getByText('Gara')).toBeTruthy());
+    fireEvent.click(within(panel).getByRole('button', { name: 'Valuta obiettivi: Gara' }));
+    expect(screen.getByTestId('objective-owner').textContent).toContain(
+      `event:${objectiveReviewItem.subject_ref}`,
+    );
+    open = false;
+    fireEvent.click(screen.getByRole('button', { name: 'Obiettivo valutato' }));
+    await waitFor(() => expect(within(panel).queryByText('Gara')).toBeNull());
+  });
+
 });
