@@ -179,8 +179,9 @@ async function expectTimedCardColor(
   lifeAreaName: string | null,
   colorCode: string,
 ): Promise<void> {
-  const card = page.locator('.timeline-event-card').filter({ hasText: title });
-  await expect(card).toBeVisible();
+  const matches = page.locator('.timeline-event-card').filter({ hasText: title });
+  await expect(matches.first()).toBeVisible();
+  const card = matches.first();
   if (lifeAreaName === null) {
     await expect(card).not.toContainText(/Senza Life Area/);
   } else {
@@ -254,7 +255,7 @@ test.describe('Temporal Create Life Area golden gate', () => {
 
       const activityResponsePromise = page.waitForResponse(
         (response) =>
-          response.url().endsWith('/api/v1/temporal/activities/scheduled') &&
+          response.url().endsWith('/api/v1/temporal/authoring/activities') &&
           response.request().method() === 'POST',
         { timeout: E2E_RESPONSE_TIMEOUT_MS },
       );
@@ -300,7 +301,7 @@ test.describe('Temporal Create Life Area golden gate', () => {
 
       const eventResponsePromise = page.waitForResponse(
         (response) =>
-          response.url().endsWith('/api/v1/temporal/events/scheduled') &&
+          response.url().endsWith('/api/v1/temporal/authoring/events') &&
           response.request().method() === 'POST',
         { timeout: E2E_RESPONSE_TIMEOUT_MS },
       );
@@ -333,7 +334,7 @@ test.describe('Temporal Create Life Area golden gate', () => {
 
       const noAreaActivityResponsePromise = page.waitForResponse(
         (response) =>
-          response.url().endsWith('/api/v1/temporal/activities/scheduled') &&
+          response.url().endsWith('/api/v1/temporal/authoring/activities') &&
           response.request().method() === 'POST',
         { timeout: E2E_RESPONSE_TIMEOUT_MS },
       );
@@ -353,7 +354,7 @@ test.describe('Temporal Create Life Area golden gate', () => {
 
       const noAreaEventResponsePromise = page.waitForResponse(
         (response) =>
-          response.url().endsWith('/api/v1/temporal/events/scheduled') &&
+          response.url().endsWith('/api/v1/temporal/authoring/events') &&
           response.request().method() === 'POST',
         { timeout: E2E_RESPONSE_TIMEOUT_MS },
       );
