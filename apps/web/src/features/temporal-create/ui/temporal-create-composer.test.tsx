@@ -8,6 +8,7 @@ import {
   createTemporalCreateFields,
   createTemporalCreateSession,
   requestTemporalCreateClose,
+  setTemporalCreateSurface,
   updateTemporalCreateFields,
 } from '../model/temporal-create-session';
 import { createTemporalCreateU2AuthoringDraft } from '../model/temporal-create-u2-authoring';
@@ -72,6 +73,57 @@ function renderComposer(options?: { dirty?: boolean }) {
 }
 
 describe('TemporalCreateComposer', () => {
+  it('presents Event Agenda as compact Scaletta and hides prototype-only Event fields', () => {
+    const fields = createTemporalCreateFields({
+      kind: 'event',
+      date: '2026-10-06',
+      timeZoneId: 'Europe/Rome',
+      contextId: 'personale',
+    });
+    const session = setTemporalCreateSurface(
+      createTemporalCreateSession(fields),
+      'full',
+    );
+    const onPatch = vi.fn();
+
+    render(
+      <TemporalCreateComposer
+        session={session}
+        contexts={context}
+        issues={[]}
+        lifecycle="idle"
+        failureMessage=""
+        reminderRetry={false}
+        u2Draft={createTemporalCreateU2AuthoringDraft(session.draft.current)}
+        onPatch={onPatch}
+        onSurfaceChange={vi.fn()}
+        onRequestClose={vi.fn()}
+        onContinueEditing={vi.fn()}
+        onDiscard={vi.fn()}
+        onMoveToUnplaced={vi.fn()}
+        onSubmit={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: 'Aggiungi punto alla scaletta' })).toBeTruthy();
+    expect(screen.queryByText('Disponibilità')).toBeNull();
+    expect(screen.queryByText('Visibilità')).toBeNull();
+    expect(screen.queryByText('Risorse')).toBeNull();
+    expect(screen.queryByText('Videocall')).toBeNull();
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Aggiungi punto alla scaletta' }),
+    );
+    const item = screen.getByRole('textbox', { name: 'Punto scaletta 1' });
+    fireEvent.change(item, { target: { value: 'Decisione architetturale' } });
+
+    expect(onPatch).toHaveBeenCalledWith({
+      event: expect.objectContaining({
+        agendaParts: ['Decisione architetturale'],
+      }),
+    });
+  });
+
   it('asks the entry to close when an untouched draft is clicked outside', () => {
     const { container, onRequestClose } = renderComposer();
     const backdrop = container.querySelector<HTMLElement>(
