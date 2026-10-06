@@ -154,7 +154,7 @@
     "unique_constraints": [],
     "check_constraints": [
       {
-        "name": "ck_temporal_objective_create_operation_id",
+        "name": "ck_temporal_objective_create_operation_ck_temporal_obje_ce6a",
         "expression_contract": "operation_id=btrim(operation_id) AND char_length(operation_id) BETWEEN 1 AND 200",
         "reason": "Enforce the ck_temporal_objective_create_operation_id invariant.",
         "enforced": true,
@@ -162,7 +162,7 @@
         "no_inherit": false
       },
       {
-        "name": "ck_temporal_objective_create_operation_fingerprint",
+        "name": "ck_temporal_objective_create_operation_ck_temporal_obje_666a",
         "expression_contract": "intent_fingerprint ~ '^[0-9a-f]{64}$'",
         "reason": "Enforce the ck_temporal_objective_create_operation_fingerprint invariant.",
         "enforced": true,
