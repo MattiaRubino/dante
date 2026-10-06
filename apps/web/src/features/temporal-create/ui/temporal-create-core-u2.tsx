@@ -37,6 +37,7 @@ type Props = Readonly<{
   contexts: readonly TemporalCreateContextOption[];
   showCompactTimezone?: boolean;
   repeatDetails?: ReactNode;
+  realityObjectives?: ReactNode;
   onPatch: (patch: Partial<TemporalCreateFields>) => void;
   onRequestAdvanced: (target?: 'recurrence') => void;
   renderError: (path: string) => ReactNode;
@@ -456,6 +457,7 @@ export function TemporalCreateCoreFieldsU2({
   contexts,
   showCompactTimezone = true,
   repeatDetails,
+  realityObjectives,
   onPatch,
   onRequestAdvanced,
   renderError,
@@ -1167,6 +1169,8 @@ export function TemporalCreateCoreFieldsU2({
         onLegacyContextChange={(contextId) => onPatch({ contextId })}
       />
       {renderError('contextId')}
+
+      {realityObjectives}
 
       <input
         className="temporal-create-u2-location"
