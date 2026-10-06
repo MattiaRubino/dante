@@ -137,7 +137,7 @@ export function TemporalCreateEntry({
   const u2DraftRef = useRef<TemporalCreateU2AuthoringDraft>(
     createTemporalCreateU2AuthoringDraft(createTemporalCreateFields()),
   );
-  const [reminderRetry, setReminderRetry] = useState(false);
+  const [postCreateRetry, setPostCreateRetry] = useState(false);
   const commitInFlightRef = useRef(false);
   const [open, setOpen] = useState(false);
   const [session, setSession] = useState<TemporalCreateSession>(() =>
@@ -200,7 +200,7 @@ export function TemporalCreateEntry({
       setLifecycle('idle');
       preparedRef.current = null;
       partialPostCreateRef.current = null;
-      setReminderRetry(false);
+      setPostCreateRetry(false);
       commitInFlightRef.current = false;
       onPreview(null);
       if (restoreFocus) restoreComposerFocus();
@@ -240,7 +240,7 @@ export function TemporalCreateEntry({
       setLifecycle('idle');
       preparedRef.current = null;
       partialPostCreateRef.current = null;
-      setReminderRetry(false);
+      setPostCreateRetry(false);
       focusReturnRef.current = focusReturnTarget ?? triggerRef.current;
       void externalAnchor;
       setOpen(true);
@@ -414,7 +414,7 @@ export function TemporalCreateEntry({
         await finalizePostCreate();
       } catch {
         partialPostCreateRef.current = finalizePostCreate;
-        setReminderRetry(true);
+        setPostCreateRetry(true);
         setLifecycle('failed');
         setFailureMessage(
           i18n.language.toLowerCase().startsWith('en')
@@ -571,7 +571,7 @@ export function TemporalCreateEntry({
         await finalizeParticipants();
       } catch {
         partialPostCreateRef.current = finalizeParticipants;
-        setReminderRetry(true);
+        setPostCreateRetry(true);
         setLifecycle('failed');
         setFailureMessage(
           i18n.language.toLowerCase().startsWith('en')
@@ -607,7 +607,7 @@ export function TemporalCreateEntry({
       try {
         await partialPostCreateRef.current();
         partialPostCreateRef.current = null;
-        setReminderRetry(false);
+        setPostCreateRetry(false);
         setSession(discardTemporalCreateSession(freshFields(defaultDate)));
         closeComposer();
       } catch {
@@ -702,7 +702,7 @@ export function TemporalCreateEntry({
           : false;
         if (execution.reminderRetry) {
           partialPostCreateRef.current = execution.reminderRetry;
-          setReminderRetry(true);
+          setPostCreateRetry(true);
           setLifecycle('failed');
           setFailureMessage(
             t(($) => $.common.home.timeline.create.reminderPartial),
@@ -748,7 +748,7 @@ export function TemporalCreateEntry({
       issues={issues}
       lifecycle={lifecycle}
       failureMessage={failureMessage}
-      reminderRetry={reminderRetry}
+      postCreateRetry={postCreateRetry}
       u2Draft={u2DraftRef.current}
       onPatch={patch}
       onSurfaceChange={changeSurface}
