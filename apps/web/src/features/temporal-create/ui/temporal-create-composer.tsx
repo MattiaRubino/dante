@@ -426,6 +426,12 @@ export function TemporalCreateComposer({
         `[data-create-path="${failureTarget}"]`,
       )
     : null;
+  const unlocatedIssues = issues.filter(
+    (issue) =>
+      !dialogRef.current?.querySelector(
+        `[data-create-path="${issue.path[0]}"]`,
+      ),
+  );
 
   return (
     <div
@@ -514,6 +520,13 @@ export function TemporalCreateComposer({
             {failureMessage && !inlineFailureHost ? (
               <div className="temporal-create-operation-error" role="alert">
                 {failureMessage}
+              </div>
+            ) : null}
+            {unlocatedIssues.length > 0 ? (
+              <div className="temporal-create-operation-error" role="alert">
+                {unlocatedIssues.map((issue, index) => (
+                  <div key={`${issue.code}:${index}`}>{validationText(issue)}</div>
+                ))}
               </div>
             ) : null}
             <TemporalCreateU2DraftProvider
