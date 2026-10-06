@@ -162,6 +162,71 @@ export function buildTemporalCreateActivityRecurrence(
   });
 }
 
+
+export function buildTemporalCreateEventRecurrence(
+  fields: TemporalCreateFields,
+): RecurringAuthoringRecurrence {
+  if (fields.kind !== 'event') {
+    throw new Error('temporal.create.event_recurrence.event_required');
+  }
+  if (fields.eventRecurrence.patternKind !== 'calendar-wall-clock') {
+    throw new Error('temporal.create.event_recurrence.calendar_only');
+  }
+  if (fields.timeSemantics === 'unscheduled') {
+    throw new Error('temporal.create.event_recurrence.placement_required');
+  }
+
+  if (fields.timeSemantics === 'timed') {
+    return buildTemporalCreateActivityRecurrence(fields);
+  }
+
+  const midnightFields: TemporalCreateFields = {
+    ...fields,
+    timeSemantics: 'timed',
+    timeMode: 'zoned',
+    startTime: '00:00',
+  };
+  const base = buildTemporalCreateActivityRecurrence(midnightFields);
+  return Object.freeze({
+    ...base,
+    wall_times: Object.freeze([]),
+  });
+}
+
+export function buildTemporalCreateRecurringEventPolicy(
+  fields: TemporalCreateFields,
+): Readonly<{
+  placementKind: 'timed' | 'all_day';
+  durationMinutes: number | null;
+  durationDays: number | null;
+}> {
+  if (fields.kind !== 'event' || fields.timeSemantics === 'unscheduled') {
+    throw new Error('temporal.create.event_recurrence.placement_required');
+  }
+  if (fields.timeSemantics === 'timed') {
+    if (fields.timeMode !== 'zoned') {
+      throw new Error('temporal.create.event_recurrence.timed_zoned_required');
+    }
+    return Object.freeze({
+      placementKind: 'timed' as const,
+      durationMinutes: fields.durationMinutes,
+      durationDays: null,
+    });
+  }
+
+  const start = Temporal.PlainDate.from(fields.date);
+  const endInclusive = Temporal.PlainDate.from(fields.event.allDayEndDate);
+  const durationDays = endInclusive.since(start).days + 1;
+  if (durationDays < 1) {
+    throw new Error('temporal.create.event_recurrence.all_day_range_invalid');
+  }
+  return Object.freeze({
+    placementKind: 'all_day' as const,
+    durationMinutes: null,
+    durationDays,
+  });
+}
+
 function recurringProjection(
   created: RecurringAuthoringResult,
   operationId: TemporalOperationId,
