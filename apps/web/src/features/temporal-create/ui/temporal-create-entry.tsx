@@ -10,6 +10,7 @@ import {
   type TemporalValidationIssue,
 } from '../../temporal';
 import { createRemoteScheduleReminderDataSource } from '../../temporal/remote-schedule-reminder-data-source';
+import { createRemoteTemporalResponsibilityDataSource } from '../../temporal/remote-responsibility-data-source';
 import { invalidateTemporalTimelineRead } from '../../temporal/timeline-invalidation';
 import { createRemoteRecurringAuthoringDataSource } from '../application/remote-recurring-authoring';
 import {
@@ -126,6 +127,9 @@ export function TemporalCreateEntry({
   );
   const [recurringAuthoringDataSource] = useState(() =>
     createRemoteRecurringAuthoringDataSource(),
+  );
+  const [responsibilityDataSource] = useState(() =>
+    createRemoteTemporalResponsibilityDataSource(),
   );
   const requestSeenRef = useRef<number | null>(null);
   const preparedRef = useRef<TemporalCreatePreparedOperation | null>(null);
@@ -356,6 +360,18 @@ export function TemporalCreateEntry({
         : null;
       const reminderLeadMinutes = fields.confirmation.reminderLeadMinutes;
       const scheduleRef = authored.schedule?.scheduleRef ?? null;
+      const eventRef = eventAuthored?.item.subjectRef ?? null;
+      const participantCommands =
+        eventRef === null
+          ? Object.freeze([])
+          : Object.freeze(
+              u2DraftRef.current.eventParticipants.map((participant) =>
+                Object.freeze({
+                  participant,
+                  operationId: systemTemporalIdFactory.operationId(),
+                }),
+              ),
+            );
       if (reminderLeadMinutes !== null && scheduleRef === null) {
         throw new Error(
           i18n.language.toLowerCase().startsWith('en')
@@ -380,6 +396,18 @@ export function TemporalCreateEntry({
             enabled: true,
             leadMinutes: reminderLeadMinutes,
           });
+        }
+        if (eventRef !== null) {
+          for (const command of participantCommands) {
+            await responsibilityDataSource.setExpectedParticipation(eventRef, {
+              operationId: command.operationId,
+              ...(command.participant.personRef === 'self'
+                ? {}
+                : { participant: command.participant.personRef }),
+              requirementCode: command.participant.requirementCode,
+              expectedRequirementCode: null,
+            });
+          }
         }
       };
       try {
@@ -495,7 +523,7 @@ export function TemporalCreateEntry({
       const policy = buildTemporalCreateRecurringEventPolicy(fields);
       const description = fields.notes.trim();
       const location = fields.event.location.trim();
-      await recurringAuthoringDataSource.createEvent({
+      const created = await recurringAuthoringDataSource.createEvent({
         operationId: systemTemporalIdFactory.operationId(),
         title: fields.title.trim(),
         ...(lifeArea ? { lifeArea } : {}),
@@ -505,13 +533,53 @@ export function TemporalCreateEntry({
         u2DraftRef.current.itemColorCode
           ? { itemColorCode: u2DraftRef.current.itemColorCode }
           : {}),
-        agendaParts: Object.freeze([...fields.event.agendaParts]),
+        agendaParts: Object.freeze(
+          fields.event.agendaParts
+            .map((part) => part.trim())
+            .filter((part) => part.length > 0),
+        ),
         recurrence: buildTemporalCreateEventRecurrence(fields),
         placementKind: policy.placementKind,
         durationMinutes: policy.durationMinutes,
         durationDays: policy.durationDays,
         reminderLeadMinutes: fields.confirmation.reminderLeadMinutes,
       });
+      const participantCommands = Object.freeze(
+        u2DraftRef.current.eventParticipants.map((participant) =>
+          Object.freeze({
+            participant,
+            operationId: systemTemporalIdFactory.operationId(),
+          }),
+        ),
+      );
+      const finalizeParticipants = async () => {
+        for (const command of participantCommands) {
+          await responsibilityDataSource.setExpectedParticipation(
+            created.sourceRef,
+            {
+              operationId: command.operationId,
+              ...(command.participant.personRef === 'self'
+                ? {}
+                : { participant: command.participant.personRef }),
+              requirementCode: command.participant.requirementCode,
+              expectedRequirementCode: null,
+            },
+          );
+        }
+      };
+      try {
+        await finalizeParticipants();
+      } catch {
+        partialPostCreateRef.current = finalizeParticipants;
+        setReminderRetry(true);
+        setLifecycle('failed');
+        setFailureMessage(
+          i18n.language.toLowerCase().startsWith('en')
+            ? 'The Event was created, but its expected participants were not fully saved. Retry safely without creating the Event again.'
+            : 'L’Evento è stato creato, ma i partecipanti attesi non sono stati salvati completamente. Riprova in sicurezza senza creare di nuovo l’Evento.',
+        );
+        return false;
+      }
       invalidateTemporalTimelineRead();
       setSession(discardTemporalCreateSession(freshFields(defaultDate)));
       closeComposer();
