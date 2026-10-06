@@ -102,7 +102,7 @@ describe('Temporal Create U1 top controls', () => {
     expect(within(calendar).queryByText('Cancella')).toBeNull();
   });
 
-  it('keeps start/end time controls independent and rejects invalid manual time', () => {
+  it('keeps the duration stable when start time changes and rejects invalid manual time', () => {
     renderEntry();
 
     const startRaw = document.querySelector<HTMLInputElement>(
@@ -124,7 +124,7 @@ describe('Temporal Create U1 top controls', () => {
       screen.getByRole('button', { name: 'Inizio: aumenta 15 minuti' }),
     );
     expect(startRaw.value).toBe(addMinutes(before, 15));
-    expect(endRaw.value).toBe(endBefore);
+    expect(endRaw.value).toBe(addMinutes(endBefore, 15));
 
     const validHour = hour.value;
     fireEvent.change(hour, { target: { value: 'ab' } });
@@ -181,8 +181,9 @@ describe('Temporal Create U1 top controls', () => {
     ).toBeTruthy();
     expect((screen.getByLabelText('Ricorda') as HTMLSelectElement).disabled).toBe(true);
 
-    // The timezone panel deliberately remains open while choosing between
-    // floating-local and a named zone, so select the named zone directly.
+    fireEvent.click(
+      screen.getByRole('button', { name: /Fuso orario: Ora locale/ }),
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Europe/Rome' }));
     expect(
       screen.getByRole('button', { name: /Fuso orario: Europe\/Rome/ }),
@@ -255,9 +256,9 @@ describe('Temporal Create U1 top controls', () => {
       'Nuova Area',
     );
 
-    // Advanced owns the timezone explicitly. The compact Quick globe is hidden,
-    // while both surfaces still edit the same timeMode/timeZoneId fields.
-    expect(screen.queryByRole('button', { name: /Fuso orario:/ })).toBeNull();
+    // Advanced owns the full timezone field and continues to edit the same
+    // timeMode/timeZoneId values as Quick.
+    expect(screen.getByRole('button', { name: /Fuso orario:/ })).toBeTruthy();
     expect(document.querySelector('[data-create-path="timeMode"]')).toBeTruthy();
     expect(document.querySelector('[data-create-path="timeZoneId"]')).toBeTruthy();
 
