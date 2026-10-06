@@ -22,7 +22,7 @@ Context = Annotated[DanteContext, Depends(require_dante_context)]
 MutatingContext = Annotated[DanteContext, Depends(require_mutating_dante_context)]
 
 RealitySubjectKind = Literal["activity", "event", "occurrence"]
-ObjectiveSubjectKind = Literal["activity", "event"]
+ObjectiveSubjectKind = Literal["activity", "event", "occurrence"]
 RealityMode = Literal["manual", "review_on_end", "auto_confirm_outcome"]
 ObjectiveKind = Literal["boolean", "quantity", "qualitative", "range"]
 ComparatorCode = Literal["eq", "gte", "lte", "between"]
