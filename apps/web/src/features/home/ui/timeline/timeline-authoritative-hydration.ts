@@ -110,6 +110,7 @@ function canonicalBasis(
     return Object.freeze({
       kind: 'scheduled-activity' as const,
       activityRef: item.activityRef,
+      placementLocked: item.placementLocked ?? false,
       ...shared,
     });
   }

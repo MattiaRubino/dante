@@ -55,6 +55,7 @@ export type TimelineCanonicalScheduledActivityBasis = Readonly<{
   kind: 'scheduled-activity';
   activityRef: string;
   eventRef?: never;
+  placementLocked?: boolean;
   scheduleRef: string;
   placementMaterialStateRef: string;
   placement: TimelineCanonicalSchedulePlacement;

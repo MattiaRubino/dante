@@ -809,6 +809,9 @@ export function TimelineDayStream({
     ) {
       return;
     }
+    if (event.canonicalBasis?.kind === 'scheduled-activity' && event.canonicalBasis.placementLocked) {
+      return;
+    }
     const target = pointerEvent.target;
     if (
       target instanceof Element &&
@@ -919,6 +922,9 @@ export function TimelineDayStream({
     dateKey: string,
     direction: 'earlier' | 'later' | 'previous-day' | 'next-day',
   ) => {
+    if (event.canonicalBasis?.kind === 'scheduled-activity' && event.canonicalBasis.placementLocked) {
+      return;
+    }
     const commitKeyboardMove = (
       toDateKey: string,
       startMinute: number,

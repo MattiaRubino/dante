@@ -40,6 +40,10 @@ class ScheduleRevisionConflictError(RuntimeError):
     """The expected placement state is no longer the Schedule current state."""
 
 
+class SchedulePlacementLockedError(RuntimeError):
+    """The owner locked the accepted Schedule placement against changes."""
+
+
 class ScheduleUnscheduleConflictError(RuntimeError):
     """The expected placement is no longer current for unschedule."""
 
@@ -813,6 +817,8 @@ class TemporalScheduleApplication:
                 raise ScheduleRevisionConflictError() from exc
             if constraint == "schedule_revision_schedule_not_found":
                 raise ScheduleNotFoundError() from exc
+            if constraint == "schedule_placement_manually_locked":
+                raise SchedulePlacementLockedError() from exc
             raise SchedulePersistenceError() from exc
         except DBAPIError as exc:
             raise SchedulePersistenceError() from exc
@@ -865,6 +871,8 @@ class TemporalScheduleApplication:
                 raise ScheduleUnscheduleConflictError() from exc
             if constraint == "schedule_unschedule_schedule_not_found":
                 raise ScheduleNotFoundError() from exc
+            if constraint == "schedule_placement_manually_locked":
+                raise SchedulePlacementLockedError() from exc
             raise SchedulePersistenceError() from exc
         except DBAPIError as exc:
             raise SchedulePersistenceError() from exc

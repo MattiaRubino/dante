@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, datetime, time
 from typing import Any, Literal, cast
 from uuid import UUID
@@ -46,6 +46,7 @@ class _TimelineScheduledActivityBase:
     schedule_ref: ScopedRecordRef
     placement_material_state_ref: MaterialStateRef
     title: str
+    placement_locked: bool = field(default=False, kw_only=True)
 
 
 @dataclass(frozen=True, slots=True)
@@ -388,6 +389,7 @@ def _item_from_row(
         )
 
     if owner_kind == "activity":
+        identity["placement_locked"] = bool(row["placement_locked"])
         if temporal_form == "date_span":
             return TimelineDateSpanActivityItem(
                 activity_ref=subject_ref,
@@ -547,7 +549,10 @@ class TemporalTimelineApplication:
                 SELECT DISTINCT ON (schedule.subject_native_ref)
                        occurrence.*
                   FROM dante.schedule AS schedule
-                  JOIN dante.schedule_current_placement AS current
+                  LEFT JOIN LATERAL dante.get_self_schedule_placement_lock(
+                   :self_person_ref,schedule.schedule_ref
+               ) AS user_lock ON subject.owner_kind='activity'
+               JOIN dante.schedule_current_placement AS current
                     ON current.scoped_owner_ref=schedule.schedule_ref
                   CROSS JOIN LATERAL dante.get_self_occurrence(
                       :self_person_ref,
@@ -592,6 +597,7 @@ class TemporalTimelineApplication:
                    subject.source_native_ref,
                    subject.occurrence_ref,
                    schedule.schedule_ref,
+                   COALESCE(user_lock.locked,false) AS placement_locked,
                    current.material_state_ref,
                    placement.temporal_form_code,
                    lower(date_payload.date_span) AS start_date,

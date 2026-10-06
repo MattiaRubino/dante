@@ -33,6 +33,7 @@ from dante.modules.temporal.life_area_assignment_api import (
     router as temporal_life_area_assignment_router,
 )
 from dante.modules.temporal.movement_policy_api import router as temporal_movement_policy_router
+from dante.modules.temporal.placement_lock_api import router as temporal_placement_lock_router
 from dante.modules.temporal.occurrence_api import router as temporal_occurrence_router
 from dante.modules.temporal.outcome_api import router as temporal_outcome_router
 from dante.modules.temporal.outcome_review_policy_api import (
@@ -130,6 +131,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(temporal_constrained_activity_router)
     app.include_router(temporal_schedule_reminder_router)
     app.include_router(temporal_movement_policy_router)
+    app.include_router(temporal_placement_lock_router)
     app.include_router(temporal_planning_tray_router)
     app.include_router(temporal_plan_work_router)
     app.include_router(temporal_plan_dependency_router)

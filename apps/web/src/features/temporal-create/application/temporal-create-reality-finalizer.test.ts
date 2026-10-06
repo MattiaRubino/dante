@@ -34,6 +34,7 @@ describe('Temporal Create policy finalizer', () => {
     const movementCalls: Array<
       Readonly<{ scheduleRef: string; operationId: string }>
     > = [];
+    const lockCalls: string[] = [];
     const realitySource = {
       get: async () => {
         throw new Error('not used');
@@ -65,12 +66,19 @@ describe('Temporal Create policy finalizer', () => {
         };
       },
     };
+    const lockSource = {
+      lock: async (scheduleRef: string) => {
+        lockCalls.push(scheduleRef);
+        return { scheduleRef, locked: true, revision: 1 };
+      },
+    };
 
     const finalize = createTemporalCreateRealityFinalizer(
       authored,
       draft,
       realitySource as never,
       movementSource as never,
+      lockSource as never,
     );
     await finalize();
     await finalize();
@@ -86,6 +94,10 @@ describe('Temporal Create policy finalizer', () => {
       },
     ]);
     expect(movementCalls.map(({ scheduleRef }) => scheduleRef)).toEqual([
+      '0199dddd-dddd-7ddd-8ddd-dddddddddddd',
+      '0199dddd-dddd-7ddd-8ddd-dddddddddddd',
+    ]);
+    expect(lockCalls).toEqual([
       '0199dddd-dddd-7ddd-8ddd-dddddddddddd',
       '0199dddd-dddd-7ddd-8ddd-dddddddddddd',
     ]);

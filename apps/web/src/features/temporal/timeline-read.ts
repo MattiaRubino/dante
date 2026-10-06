@@ -30,6 +30,7 @@ export type TemporalTimelineEmptyWindow = Readonly<{
 type TemporalTimelineScheduledActivityBase = Readonly<{
   kind: 'scheduled_activity';
   activityRef: string;
+  placementLocked?: boolean;
   scheduleRef: string;
   placementMaterialStateRef: string;
   title: string;

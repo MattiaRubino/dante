@@ -16,6 +16,7 @@ import { ActualRealizationControls } from '../../../temporal/actual-realization-
 import { ResponsibilityControls } from '../../../temporal/responsibility-controls';
 import { SessionSubjectControls } from '../../../temporal/session-subject-controls';
 import { ScheduleReminderControls } from '../../../temporal/schedule-reminder-controls';
+import { PlacementLockControls } from '../../../temporal/placement-lock-controls';
 
 import {
   buildCalendarMonthGrid,
@@ -821,6 +822,7 @@ type EventDetailDialogProps = Readonly<{
     | Readonly<{ kind: 'activity' | 'event'; ref: string }>
     | null;
   reminderScheduleRef?: string | null;
+  placementLockScheduleRef?: string | null;
   onUnschedule: () => void;
   onClose: () => void;
 }>;
@@ -833,6 +835,7 @@ export function EventDetailDialog({
   sessionSubject = null,
   responsibilitySubject = null,
   reminderScheduleRef = null,
+  placementLockScheduleRef = null,
   onUnschedule,
   onClose,
 }: EventDetailDialogProps) {
@@ -918,6 +921,9 @@ export function EventDetailDialog({
         </div>
         {reminderScheduleRef === null ? null : (
           <ScheduleReminderControls key={reminderScheduleRef} scheduleRef={reminderScheduleRef} />
+        )}
+        {placementLockScheduleRef === null ? null : (
+          <PlacementLockControls key={placementLockScheduleRef} scheduleRef={placementLockScheduleRef} />
         )}
         {detail.realitySubject === undefined ? null : (
           <div className="timeline-event-modal__reality" data-timeline-runtime-reality>

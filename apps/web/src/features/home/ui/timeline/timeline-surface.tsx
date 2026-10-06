@@ -380,6 +380,15 @@ export function TimelineSurface({
       endMinute: number,
     ) => {
       const basis = event.canonicalBasis;
+      if (basis?.kind === 'scheduled-activity' && basis.placementLocked) {
+        showScheduleNotice({
+          kind: 'error',
+          message: i18n.language.startsWith('it')
+            ? 'Sblocca gli spostamenti prima di modificare l’orario.'
+            : 'Unlock placement before changing the time.',
+        });
+        return;
+      }
       if (
         basis === undefined ||
         effectiveZoneId === null ||
@@ -437,13 +446,20 @@ export function TimelineSurface({
             error instanceof TemporalScheduleRemoteError &&
             error.code ===
               'temporal.schedule.activity_interval_requires_replan';
+          const locked =
+            error instanceof TemporalScheduleRemoteError &&
+            error.code === 'temporal.schedule.placement_locked';
           const conflict =
             error instanceof TemporalScheduleRemoteError &&
             error.status === 409 &&
             error.code === 'temporal.schedule.revision_conflict';
           showScheduleNotice({
             kind: 'error',
-            message: intervalConflict
+            message: locked
+              ? i18n.language.startsWith('it')
+                ? 'Sblocca gli spostamenti prima di modificare l’orario.'
+                : 'Unlock placement before changing the time.'
+              : intervalConflict
               ? i18n.language.startsWith('it')
                 ? 'Per spostare questa fascia serve modificare insieme gli intervalli dell’attività.'
                 : 'Moving this interval requires a coordinated Activity replan.'
@@ -1259,9 +1275,10 @@ export function TimelineSurface({
               opener,
             })
           }
-          onOpenTimeEditor={(dateKey, event, editorAnchor) =>
-            setTimeEditor({ dateKey, event, anchor: editorAnchor })
-          }
+          onOpenTimeEditor={(dateKey, event, editorAnchor) => {
+            if (event.canonicalBasis?.kind === 'scheduled-activity' && event.canonicalBasis.placementLocked) return;
+            setTimeEditor({ dateKey, event, anchor: editorAnchor });
+          }}
           onMoveEvent={(move) => {
             const current = findTimelineEvent(state, move.eventId)?.event;
             if (current?.canonicalBasis !== undefined) {
@@ -1395,7 +1412,9 @@ export function TimelineSurface({
         opener={detailState?.opener ?? null}
         canUnschedule={
           detailState?.allowUnschedule === true &&
-          detailState.event.canonicalBasis !== undefined
+          detailState.event.canonicalBasis !== undefined &&
+          !(detailState.event.canonicalBasis.kind === 'scheduled-activity' &&
+            detailState.event.canonicalBasis.placementLocked)
         }
         pending={
           detailState?.allowUnschedule === true &&
@@ -1431,6 +1450,10 @@ export function TimelineSurface({
             return basis.scheduleRef;
           }
           return null;
+        })()}
+        placementLockScheduleRef={(() => {
+          const basis = detailState?.event.canonicalBasis;
+          return basis?.kind === 'scheduled-activity' ? basis.scheduleRef : null;
         })()}
         onUnschedule={() => {
           const basis = detailState?.event.canonicalBasis;

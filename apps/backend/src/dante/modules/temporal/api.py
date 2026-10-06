@@ -65,6 +65,7 @@ from dante.modules.temporal.schedule import (
     ScheduleNotFoundError,
     ScheduleOperationIdReuseError,
     SchedulePersistenceError,
+    SchedulePlacementLockedError,
     SchedulePlacement,
     ScheduleRevisionConflictError,
     ScheduleUndoConflictError,
@@ -116,6 +117,7 @@ class TimelineScheduledActivityResponse(BaseModel):
     schedule_ref: UUID
     placement_material_state_ref: UUID
     title: str
+    placement_locked: bool = False
     temporal_form: Literal["floating_local"] = "floating_local"
     starts_local_at: LocalDateTimeText
     ends_local_at: LocalDateTimeText
@@ -131,6 +133,7 @@ class TimelineDateSpanActivityResponse(BaseModel):
     schedule_ref: UUID
     placement_material_state_ref: UUID
     title: str
+    placement_locked: bool = False
     temporal_form: Literal["date_span"] = "date_span"
     start_date: date
     end_date_exclusive: date
@@ -146,6 +149,7 @@ class TimelineNamedZoneLocalActivityResponse(BaseModel):
     schedule_ref: UUID
     placement_material_state_ref: UUID
     title: str
+    placement_locked: bool = False
     temporal_form: Literal["named_zone_local"] = "named_zone_local"
     starts_local_at: LocalDateTimeText
     ends_local_at: LocalDateTimeText
@@ -166,6 +170,7 @@ class TimelineAbsoluteActivityResponse(BaseModel):
     schedule_ref: UUID
     placement_material_state_ref: UUID
     title: str
+    placement_locked: bool = False
     temporal_form: Literal["absolute"] = "absolute"
     starts_at: datetime
     ends_at: datetime
@@ -183,6 +188,7 @@ class TimelineCoarseLocalPeriodActivityResponse(BaseModel):
     schedule_ref: UUID
     placement_material_state_ref: UUID
     title: str
+    placement_locked: bool = False
     temporal_form: Literal["coarse_local_period"] = "coarse_local_period"
     local_date: date
     period: Literal["morning", "afternoon", "evening"]
@@ -874,6 +880,7 @@ def _timeline_activity_item_response(
         "schedule_ref": item.schedule_ref,
         "placement_material_state_ref": item.placement_material_state_ref,
         "title": item.title,
+        "placement_locked": item.placement_locked,
     }
     if isinstance(item, TimelineFloatingLocalActivityItem):
         return TimelineScheduledActivityResponse(
@@ -1539,6 +1546,12 @@ async def revise_schedule_placement(
             detail="Move Activity intervals together through a coordinated Activity replan.",
             retryable=False,
         ) from exc
+    except SchedulePlacementLockedError as exc:
+        raise ProblemError(
+            status=409, code="temporal.schedule.placement_locked",
+            category="conflict", title="Schedule placement locked",
+            detail="Unlock this Schedule before changing its placement.", retryable=False,
+        ) from exc
     except ScheduleRevisionConflictError as exc:
         raise ProblemError(
             status=409,
@@ -1616,6 +1629,12 @@ async def unschedule_schedule(
             title="Activity interval replan required",
             detail="Move Activity intervals together through a coordinated Activity replan.",
             retryable=False,
+        ) from exc
+    except SchedulePlacementLockedError as exc:
+        raise ProblemError(
+            status=409, code="temporal.schedule.placement_locked",
+            category="conflict", title="Schedule placement locked",
+            detail="Unlock this Schedule before removing its placement.", retryable=False,
         ) from exc
     except ScheduleUnscheduleConflictError as exc:
         raise ProblemError(

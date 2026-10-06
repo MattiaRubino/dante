@@ -7,6 +7,7 @@ import {
   type ActivityRealityMode,
 } from '../../temporal/remote-outcome-review-policy-data-source';
 import { createRemoteScheduleMovementPolicyDataSource } from '../../temporal/remote-movement-policy-data-source';
+import { createRemotePlacementLockDataSource } from '../../temporal/remote-placement-lock-data-source';
 import type { TemporalCreateU2AuthoringDraft } from '../model/temporal-create-u2-authoring';
 
 type RealityPolicyDataSource = ReturnType<
@@ -15,6 +16,7 @@ type RealityPolicyDataSource = ReturnType<
 type MovementPolicyDataSource = ReturnType<
   typeof createRemoteScheduleMovementPolicyDataSource
 >;
+type PlacementLockDataSource = ReturnType<typeof createRemotePlacementLockDataSource>;
 
 type RealityPolicyTask = Readonly<{
   activityRef: string;
@@ -32,14 +34,15 @@ type PlacementProtectionTask = Readonly<{
  * retry only missing configuration without authoring a second Activity.
  *
  * `manual` is the canonical Reality default returned when no policy row exists.
- * Placement protection reuses B04 Movement Policy: `blocked + direct` means
- * solver/AI/automation movement is forbidden without inventing a second lock.
+ * Placement protection composes B04 automation policy with an independent
+ * canonical user lock: neither automatic nor manual revisions may move it.
  */
 export function createTemporalCreateRealityFinalizer(
   authored: TemporalAuthoredActivityResult,
   draft: TemporalCreateU2AuthoringDraft,
   dataSource: RealityPolicyDataSource = createRemoteActivityRealityPolicyDataSource(),
   movementSource: MovementPolicyDataSource = createRemoteScheduleMovementPolicyDataSource(),
+  lockSource: PlacementLockDataSource = createRemotePlacementLockDataSource(),
 ): () => Promise<void> {
   if (authored.children.length !== draft.activityStructure.children.length) {
     throw new Error(
@@ -82,6 +85,11 @@ export function createTemporalCreateRealityFinalizer(
     for (const accepted of [
       authored.schedule,
       ...(authored.activityIntervals ?? []),
+      ...(authored.plannedSlices ?? []),
+      ...authored.children.flatMap((child) => [
+        ...(child.schedule ? [child.schedule] : []),
+        ...child.plannedSlices,
+      ]),
     ]) {
       protectionTasks.push(
         Object.freeze({
@@ -105,6 +113,7 @@ export function createTemporalCreateRealityFinalizer(
         protectionTask.scheduleRef,
         protectionTask.operationId,
       );
+      await lockSource.lock(protectionTask.scheduleRef);
     }
   };
 }
