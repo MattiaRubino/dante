@@ -126,14 +126,13 @@ describe('TemporalCreateComposer', () => {
 
     expect(await screen.findByRole('button', { name: '＋ Aggiungi' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: '＋ Aggiungi' }));
-    expect(screen.getByText('Io')).toBeTruthy();
-    expect(
-      (
-        screen.getByRole('combobox', {
-          name: 'Partecipazione di Io',
-        }) as HTMLSelectElement
-      ).value,
-    ).toBe('required');
+    const selfParticipation = screen.getByRole('combobox', {
+      name: 'Partecipazione di Io',
+    }) as HTMLSelectElement;
+    expect(selfParticipation.value).toBe('required');
+    expect(selfParticipation.closest('.temporal-create-event-participants__row')?.textContent).toContain(
+      'Io',
+    );
 
     fireEvent.click(
       screen.getByRole('button', { name: 'Aggiungi punto alla scaletta' }),
