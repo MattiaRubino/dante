@@ -352,3 +352,11 @@ silently turning a same-day Activity into an overnight window.
 Do not clone Activity-only interval/Session/Sub-Activity semantics into Event.
 The next Event pass should share recurrence/Life-Area/color/Reminder/Timeline
 infrastructure while keeping Event-specific semantics separate.
+
+
+### Product correction — Sub-Activities
+
+Sub-Activities are implementation/backward-compatibility residue, not an active
+Create product surface. Do not reintroduce them while aligning Activity and
+Event. Shared Event work should cover recurrence, Life Area/color, location,
+description, Reminder and other genuinely shared capabilities only.
