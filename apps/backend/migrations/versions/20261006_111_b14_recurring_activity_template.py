@@ -141,4 +141,4 @@ JOIN dante.activity_intention a ON a.activity_ref=b.activity_ref
 WHERE b.self_person_ref=$1 AND a.self_person_ref=$1 AND b.occurrence_ref=ANY($2)
 ORDER BY b.occurrence_ref
 $$;
-""
+"""
