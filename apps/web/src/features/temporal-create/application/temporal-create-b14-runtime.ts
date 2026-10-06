@@ -422,9 +422,13 @@ class B14TemporalCreateRuntime implements TemporalCreateRuntime {
       const created = await this.authoring.createRoutine({
         operationId: prepared.operationId,
         title: prepared.command.payload.title,
-        lifeAreaRef: isCanonicalLifeAreaRef(prepared.metadata.contextId)
-          ? prepared.metadata.contextId
-          : null,
+        ...(isCanonicalLifeAreaRef(prepared.metadata.contextId)
+          ? {
+              lifeArea: Object.freeze({
+                lifeAreaRef: prepared.metadata.contextId,
+              }),
+            }
+          : {}),
         tagRefs: Object.freeze([]),
         recurrence: buildTemporalCreateActivityRecurrence(fields),
         durationMinutes: fields.durationMinutes,
