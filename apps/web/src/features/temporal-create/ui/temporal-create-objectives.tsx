@@ -78,9 +78,6 @@ export function TemporalCreateObjectives() {
     >
       {draft.objectives.length > 0 ? (
         <div className="temporal-create-objectives__list">
-          <div className="temporal-create-objectives__group-label">
-            {italian ? 'Obiettivi' : 'Objectives'}
-          </div>
           {draft.objectives.map((objective, index) => (
             <div
               className="temporal-create-objective"
@@ -300,7 +297,7 @@ export function TemporalCreateObjectives() {
           onClick={() => publish([...draft.objectives, newObjective()])}
         >
           <span aria-hidden="true">＋</span>
-          {italian ? 'Obiettivo' : 'Objective'}
+          {italian ? 'Aggiungi obiettivo' : 'Add objective'}
         </button>
       </div>
     </section>
