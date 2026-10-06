@@ -628,17 +628,33 @@ class B06TemporalCreateRuntime implements TemporalCreateRuntime {
 
     try {
       const recurrence = recurrencePayload(prepared.metadata.specification);
+      const lifeArea = Object.freeze({
+        lifeAreaRef: prepared.metadata.contextId,
+      });
       const common = {
         operationId: prepared.operationId,
         title: prepared.command.payload.title,
-        lifeAreaRef: prepared.metadata.contextId,
+        lifeArea,
         recurrence,
       } as const;
+      const fields = prepared.metadata.specification;
       const created =
         owner === 'event'
           ? await this.authoring.createEvent({
               ...common,
-              agendaParts: prepared.metadata.specification.event.agendaParts,
+              agendaParts: fields.event.agendaParts,
+              placementKind:
+                fields.timeSemantics === 'all-day' ? 'all_day' : 'timed',
+              durationMinutes:
+                fields.timeSemantics === 'all-day'
+                  ? null
+                  : fields.durationMinutes,
+              durationDays:
+                fields.timeSemantics === 'all-day'
+                  ? Temporal.PlainDate.from(fields.event.allDayEndDate)
+                      .since(Temporal.PlainDate.from(fields.date))
+                      .days + 1
+                  : null,
             })
           : await this.authoring.createRoutine({
               ...common,
