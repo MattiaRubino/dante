@@ -337,13 +337,17 @@ class RoutineOccurrenceMaterializationApplication:
             self_person_ref=self_person_ref,
             routine_ref=source_ref,
         )
-        root_placement = self._template_window(
-            occurrence_ref,
-            coordinate,
+        root_window = template.get(
+            "root_window",
             {
                 "start_offset_minutes": 0,
                 "duration_minutes": policy.duration_minutes,
             },
+        )
+        root_placement = self._template_window(
+            occurrence_ref,
+            coordinate,
+            root_window,
         )
         intervals = tuple(
             self._template_window(occurrence_ref, coordinate, value)
@@ -437,11 +441,6 @@ class RoutineOccurrenceMaterializationApplication:
             planned_slice_names=planned_names,
             children=tuple(children),
         )
-        await self._bind_activity(
-            self_person_ref=self_person_ref,
-            occurrence_ref=occurrence_ref,
-            activity_ref=result.item.subject_native_ref,
-        )
         await self._set_reality(
             self_person_ref=self_person_ref,
             occurrence_ref=occurrence_ref,
@@ -476,6 +475,14 @@ class RoutineOccurrenceMaterializationApplication:
                 enabled=True,
                 lead_minutes=policy.reminder_lead_minutes,
             )
+        # Binding is the completion marker for one occurrence instance. Keep it
+        # last so a partial policy application is retried deterministically
+        # instead of being mistaken for a fully materialized Activity.
+        await self._bind_activity(
+            self_person_ref=self_person_ref,
+            occurrence_ref=occurrence_ref,
+            activity_ref=result.item.subject_native_ref,
+        )
 
     async def _apply_routine_policy(
         self,
