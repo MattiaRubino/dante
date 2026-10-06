@@ -219,3 +219,7 @@ Il current Create slice U3 è quindi provato lato automated focused gate. Il pro
 3. integrare B04 vincoli temporali + movement policy nella superficie Advanced;
 4. progettare e spostare Session / Actual / Outcome / Confirmation / Reconciliation prima di ripulire definitivamente il planning tray;
 5. definire il sistema di delivery delle notifiche Reminder solo verso la fine del ciclo.
+
+## 2026-10-06 — compact closure cursor
+
+The remaining Create work is intentionally compressed into three coherent batches documented in `timeline-temporal-operational-create-closure-mini-roadmap-2026-10-06.md`: (A) Event/Scaletta/B09/common parity, (B) shared Reality + Objectives, (C) cleanup + closure gate. Avoid further prototype-only fields or artificial micro-slices.
