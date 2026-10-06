@@ -21,15 +21,15 @@ from dante.platform.http.problem import ProblemError
 
 router = APIRouter(prefix="/api/v1/temporal", tags=["temporal"])
 Context = Annotated[DanteContext, Depends(require_dante_context)]
-ResolutionReason = Literal["reconciliation_open", "realization_review"]
-ResolutionAction = Literal["open_reconciliation", "record_realization"]
+ResolutionReason = Literal["reconciliation_open", "realization_review", "objective_review"]
+ResolutionAction = Literal["open_reconciliation", "record_realization", "open_objectives"]
 
 
 class ResolutionQueueItem(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     reason_code: ResolutionReason
-    subject_kind: Literal["activity", "event"]
+    subject_kind: Literal["activity", "event", "occurrence"]
     subject_ref: UUID
     title: str
     summary: str
@@ -61,8 +61,14 @@ def _item(row: object) -> ResolutionQueueItem:
     if reason == "realization_review":
         return ResolutionQueueItem(
             **values,
-            summary="A real Session ended and this Activity asks you to record what happened.",
+            summary="The requested Reality review is ready.",
             actions=["record_realization"],
+        )
+    if reason == "objective_review":
+        return ResolutionQueueItem(
+            **values,
+            summary="One or more Objectives are ready for assessment.",
+            actions=["open_objectives"],
         )
     raise ValueError("Unsupported resolution queue reason.")
 
@@ -77,9 +83,10 @@ async def list_resolution_queue(
 ) -> ResolutionQueueResponse:
     """Derived current product work, never inferred failure from time passage.
 
-    `realization_review` exists only when the Activity explicitly requests
-    review-on-end and a bounded B08 Session really exists. Schedule expiry or
-    absence of Actual never creates an item by itself.
+    Reality review requires an explicit review-on-end policy and a completed
+    bounded Session (Activity) or ended Event placement. Objectives can request
+    assessment independently after the same bounded completion. Absence of
+    Actual never means that the subject did not happen.
     """
     try:
         async with (
