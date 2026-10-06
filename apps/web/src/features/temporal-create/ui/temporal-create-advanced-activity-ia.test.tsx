@@ -74,44 +74,33 @@ describe('Temporal Create Advanced Activity IA', () => {
     expect(protection.getAttribute('aria-pressed')).toBe('true');
     expect(protection.getAttribute('aria-label')).toBe('Sblocca spostamenti');
 
-    const rootReality = titleRow?.querySelector<HTMLElement>(
+    expect(
+      titleRow?.querySelector('[data-reality-policy="activity"]'),
+    ).toBeNull();
+
+    const rootReality = document.querySelector<HTMLElement>(
       '[data-reality-policy="activity"]',
     );
-    if (!rootReality) throw new Error('Expected root Reality policy.');
+    if (!rootReality) throw new Error('Expected Activity occurrence review.');
 
-    const rootRealityCheckbox = within(rootReality).getByRole('checkbox', {
-      name: 'Abilita verifica realtà',
-    }) as HTMLInputElement;
-    expect(rootRealityCheckbox.checked).toBe(false);
-
-    const realityMode = within(rootReality).getByRole('button', {
-      name: 'Verifica realtà',
+    const noReview = within(rootReality).getByRole('radio', {
+      name: 'Nessuna verifica',
     });
-    fireEvent.click(realityMode);
-    expect(rootRealityCheckbox.checked).toBe(true);
-
-    const askAtEnd = within(rootReality).getByRole('button', {
+    const askAtEnd = within(rootReality).getByRole('radio', {
       name: 'Chiedi al termine',
     });
-    fireEvent.click(askAtEnd);
-
-    const realityMenu = within(rootReality).getByRole('menu', {
-      name: 'Modalità verifica realtà',
-    });
-    const autoConfirm = within(realityMenu).getByRole('menuitem', {
+    const autoConfirm = within(rootReality).getByRole('radio', {
       name: 'Conferma automatica',
     });
-    fireEvent.click(autoConfirm);
 
+    expect(noReview.getAttribute('aria-checked')).toBe('true');
+    fireEvent.click(askAtEnd);
+    expect(askAtEnd.getAttribute('aria-checked')).toBe('true');
+    fireEvent.click(autoConfirm);
+    expect(autoConfirm.getAttribute('aria-checked')).toBe('true');
+    expect(screen.getByText('Svolgimento e obiettivi')).toBeTruthy();
     expect(
-      within(rootReality).getByRole('button', {
-        name: 'Conferma automatica',
-      }),
-    ).toBeTruthy();
-    expect(
-      within(rootReality).getByRole('checkbox', {
-        name: 'Disabilita verifica realtà',
-      }),
+      screen.getByRole('button', { name: 'Aggiungi obiettivo' }),
     ).toBeTruthy();
 
     const tree = document.querySelector<HTMLElement>(
