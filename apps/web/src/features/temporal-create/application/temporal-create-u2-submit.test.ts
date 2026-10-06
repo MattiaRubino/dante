@@ -6,6 +6,7 @@ import {
   patchTemporalCreateU2AuthoringDraft,
 } from '../model/temporal-create-u2-authoring';
 import {
+  buildTemporalCreateObjectiveTemplates,
   buildTemporalCreateU2Request,
   temporalCreateU2QuickIntentSupported,
   validateTemporalCreateU2QuickFields,
@@ -173,7 +174,7 @@ describe('U2 Quick Create submit mapping', () => {
     expect(temporalCreateU2QuickIntentSupported(recurring)).toBe(false);
   });
 
-  it('authors a Session minimum and a bounded Sub-Activity in the same Activity command', () => {
+  it('authors a Session minimum and internal decomposition in the same Activity command', () => {
     const baseline = createTemporalCreateFields({
       kind: 'activity',
       date: '2026-10-20',
@@ -227,6 +228,88 @@ describe('U2 Quick Create submit mapping', () => {
     expect(temporalCreateU2QuickIntentSupported(unsupported)).toBe(false);
   });
 
+  it('serializes shared Objective forms without collapsing measurements into Outcome', () => {
+    const fields = createTemporalCreateFields({
+      kind: 'activity',
+      date: '2026-10-20',
+    });
+    const initial = createTemporalCreateU2AuthoringDraft(fields);
+    const draft = patchTemporalCreateU2AuthoringDraft(initial, {
+      realityMode: 'review_on_end',
+      objectives: Object.freeze([
+        Object.freeze({
+          id: 'distance',
+          label: 'Correre 10 km',
+          resultKind: 'quantity' as const,
+          comparatorCode: 'gte' as const,
+          targetValue: '10',
+          targetMin: '',
+          targetMax: '',
+          unitCode: 'km',
+        }),
+        Object.freeze({
+          id: 'quality',
+          label: 'Tecnica',
+          resultKind: 'qualitative' as const,
+          comparatorCode: null,
+          targetValue: '',
+          targetMin: '',
+          targetMax: '',
+          unitCode: '',
+        }),
+      ]),
+    });
+
+    expect(buildTemporalCreateObjectiveTemplates(draft)).toEqual([
+      {
+        label: 'Correre 10 km',
+        result_kind: 'quantity',
+        comparator_code: 'gte',
+        target_value: 10,
+        target_min: null,
+        target_max: null,
+        unit_code: 'km',
+        presentation_order: 0,
+      },
+      {
+        label: 'Tecnica',
+        result_kind: 'qualitative',
+        comparator_code: null,
+        target_value: null,
+        target_min: null,
+        target_max: null,
+        unit_code: null,
+        presentation_order: 1,
+      },
+    ]);
+  });
+
+  it('rejects empty numeric Objective targets instead of treating them as zero', () => {
+    const fields = createTemporalCreateFields({
+      kind: 'event',
+      date: '2026-10-20',
+    });
+    const initial = createTemporalCreateU2AuthoringDraft(fields);
+    const draft = patchTemporalCreateU2AuthoringDraft(initial, {
+      objectives: Object.freeze([
+        Object.freeze({
+          id: 'count',
+          label: 'Raccogli mele',
+          resultKind: 'quantity' as const,
+          comparatorCode: 'gte' as const,
+          targetValue: '',
+          targetMin: '',
+          targetMax: '',
+          unitCode: 'mele',
+        }),
+      ]),
+    });
+
+    expect(() => buildTemporalCreateObjectiveTemplates(draft)).toThrow(
+      'inserisci un target numerico valido',
+    );
+  });
+
   it('rejects child and Session time ranges outside the root Activity envelope', () => {
     const fields = createTemporalCreateFields({
       kind: 'activity',
@@ -255,7 +338,7 @@ describe('U2 Quick Create submit mapping', () => {
       },
     });
     expect(validateTemporalCreateU6Structure(fields, outsideChild)).toBe(
-      'Every Sub-Activity time range must stay inside the parent Activity.',
+      'Internal Activity decomposition must stay inside the Activity time range.',
     );
 
     const outsideSession = patchTemporalCreateU2AuthoringDraft(initial, {
