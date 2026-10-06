@@ -177,7 +177,7 @@
     "unique_constraints": [],
     "check_constraints": [
       {
-        "name": "ck_temporal_objective_observation_recorded_at",
+        "name": "ck_temporal_objective_observation_ck_temporal_objective_fec4",
         "expression_contract": "isfinite(recorded_at)",
         "reason": "Enforce the ck_temporal_objective_observation_recorded_at invariant.",
         "enforced": true,
@@ -185,7 +185,7 @@
         "no_inherit": false
       },
       {
-        "name": "ck_temporal_objective_observation_qualitative",
+        "name": "ck_temporal_objective_observation_ck_temporal_objective_2428",
         "expression_contract": "qualitative_code IS NULL OR (qualitative_code=btrim(qualitative_code) AND qualitative_code<>'' AND char_length(qualitative_code)<=120)",
         "reason": "Enforce the ck_temporal_objective_observation_qualitative invariant.",
         "enforced": true,
