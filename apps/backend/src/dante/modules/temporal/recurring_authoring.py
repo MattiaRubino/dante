@@ -66,7 +66,7 @@ from dante.modules.temporal.routine import (
     _error as _routine_error,
     _fingerprint as _routine_fingerprint,
 )
-from dante.platform.database.references import NativeRef, new_native_ref
+from dante.platform.database.references import NativeRef
 
 RecurringOwner = Literal["routine", "event"]
 
