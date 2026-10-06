@@ -119,3 +119,7 @@ Repository reconciliation is now published through Alembic head `20261006_115`.
 - Dictionary scope and exact-catalog tests are advanced to the final candidate topology: 229 tables, 5 views, 191 routines, 103 triggers, 467 physical indexes, 401 foreign keys and 569 CHECK constraints.
 
 No CI/GitHub Actions were run. The remaining gate is mechanical local generation plus the focused web/backend/catalog suite and real-stack visual acceptance.
+
+## 2026-10-06 — Automatic gate PASS
+
+Local user-run acceptance on branch head `6371768b01c54dcf7ae6e8800ae73e8488d7d67e` is green for the final catalog gate: `tests/integration/database/test_current_catalog.py` + `tests/integration/database/test_database_current_catalog.py` => **8 passed**. Earlier generated check, web/API typechecks and focused web suite were also green. Automatic closure gate is therefore complete; remaining work is only the real-stack visual/product acceptance and bugfixes discovered there.
