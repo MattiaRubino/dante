@@ -262,7 +262,11 @@ describe('Temporal Create U1 top controls', () => {
 
     // Reminder remains one primary Create control, not a second Advanced copy.
     expect(screen.getAllByLabelText('Ricorda')).toHaveLength(1);
-    expect(screen.getByRole('heading', { name: 'Verifica esito' })).toBeTruthy();
+    expect(
+      screen.getByRole('radiogroup', {
+        name: 'Modalità svolgimento dell’attività',
+      }),
+    ).toBeTruthy();
     expect(screen.queryByText('Aspetto')).toBeNull();
 
     const backToQuick = screen.getByRole('button', {
