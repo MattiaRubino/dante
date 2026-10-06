@@ -51,7 +51,7 @@ function renderComposer(options?: { dirty?: boolean }) {
       issues={[]}
       lifecycle="idle"
       failureMessage=""
-      reminderRetry={false}
+      postCreateRetry={false}
       u2Draft={createTemporalCreateU2AuthoringDraft(session.draft.current)}
       onPatch={vi.fn()}
       onSurfaceChange={vi.fn()}
@@ -93,7 +93,7 @@ describe('TemporalCreateComposer', () => {
         issues={[]}
         lifecycle="idle"
         failureMessage=""
-        reminderRetry={false}
+        postCreateRetry={false}
         u2Draft={createTemporalCreateU2AuthoringDraft(session.draft.current)}
         onPatch={onPatch}
         onSurfaceChange={vi.fn()}
