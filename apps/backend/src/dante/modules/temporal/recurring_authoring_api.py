@@ -12,6 +12,14 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from dante.context.contracts import DanteContext
 from dante.context.dependencies import require_mutating_dante_context
+from dante.modules.temporal.authoring import (
+    AuthoringLifeAreaIntent,
+    TemporalAuthoringInputError,
+    TemporalAuthoringLifeAreaConflictError,
+    TemporalAuthoringLifeAreaUnavailableError,
+    TemporalAuthoringPersistenceError,
+)
+from dante.modules.temporal.authoring_api import AuthoringLifeAreaRequest
 from dante.modules.temporal.event import (
     EventAgendaRevisionConflictError,
     EventInputError,
@@ -57,7 +65,7 @@ class CreateRecurringRoutineRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     operation_id: str = Field(min_length=1, max_length=200)
     title: str = Field(min_length=1, max_length=300)
-    life_area_ref: UUID | None = None
+    life_area: AuthoringLifeAreaRequest | None = None
     tag_refs: list[UUID] = Field(default_factory=list, max_length=100)
     recurrence: RecurrenceRequest
     duration_minutes: int = Field(ge=1, le=525_600)
@@ -96,10 +104,27 @@ Application = Annotated[RecurringAuthoringApplication, Depends(_application)]
 PolicyApplication = Annotated[RoutineOccurrencePolicyApplication, Depends(_policy_application)]
 
 
+def _life_area_intent(payload: AuthoringLifeAreaRequest | None) -> AuthoringLifeAreaIntent | None:
+    if payload is None:
+        return None
+    return AuthoringLifeAreaIntent(
+        life_area_ref=payload.life_area_ref,
+        new_name=payload.new_name,
+        expected_revision=payload.expected_revision,
+        color_code=payload.color_code,
+    )
+
+
 def _problem(exc: Exception) -> ProblemError:
     if isinstance(
         exc,
-        (RoutineInputError, EventInputError, RecurrenceInputError, RoutineOccurrencePolicyInputError),
+        (
+            RoutineInputError,
+            EventInputError,
+            RecurrenceInputError,
+            RoutineOccurrencePolicyInputError,
+            TemporalAuthoringInputError,
+        ),
     ):
         return ProblemError(
             status=422,
@@ -116,6 +141,7 @@ def _problem(exc: Exception) -> ProblemError:
             EventOperationIdReuseError,
             RecurrenceOperationReuseError,
             RoutineOccurrencePolicyConflictError,
+            TemporalAuthoringLifeAreaConflictError,
         ),
     ):
         return ProblemError(
@@ -144,6 +170,7 @@ def _problem(exc: Exception) -> ProblemError:
             EventNotFoundError,
             RecurrenceNotFoundError,
             RoutineOccurrencePolicyNotFoundError,
+            TemporalAuthoringLifeAreaUnavailableError,
         ),
     ):
         return ProblemError(
@@ -161,6 +188,7 @@ def _problem(exc: Exception) -> ProblemError:
             RecurrencePersistenceError,
             RecurringAuthoringPersistenceError,
             RoutineOccurrencePolicyPersistenceError,
+            TemporalAuthoringPersistenceError,
         ),
     ):
         return ProblemError(
@@ -199,7 +227,7 @@ async def create_recurring_routine(
             self_person_ref=context.self_person_ref,
             operation_id=payload.operation_id,
             title=payload.title,
-            life_area_ref=payload.life_area_ref,
+            life_area_intent=_life_area_intent(payload.life_area),
             tag_refs=tuple(payload.tag_refs),
             recurrence=_spec(payload.recurrence),
         )
