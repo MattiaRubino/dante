@@ -48,6 +48,12 @@ export const SessionResponse = /*#__PURE__*/ zod.object({
   paused_seconds: /*#__PURE__*/ zod
     .number()
     .check(/*#__PURE__*/ zod.gte(sessionResponsePausedSecondsMin)),
+  planned_schedule_ref: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.uuid(),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
   replayed: /*#__PURE__*/ zod.boolean(),
   session_ref: /*#__PURE__*/ zod.uuid(),
   started_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),

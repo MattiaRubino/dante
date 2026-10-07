@@ -4532,6 +4532,79 @@ export const temporalSetActivityOutcomeReviewPolicy = async (
   } as temporalSetActivityOutcomeReviewPolicyResponse;
 };
 
+export type temporalStartPlannedActivitySessionResponse200 = {
+  data: SessionResponse;
+  status: 200;
+};
+
+export type temporalStartPlannedActivitySessionResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalStartPlannedActivitySessionResponseSuccess =
+  temporalStartPlannedActivitySessionResponse200 & {
+    headers: Headers;
+  };
+export type temporalStartPlannedActivitySessionResponseError =
+  temporalStartPlannedActivitySessionResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalStartPlannedActivitySessionResponse =
+  | temporalStartPlannedActivitySessionResponseSuccess
+  | temporalStartPlannedActivitySessionResponseError;
+
+export const getTemporalStartPlannedActivitySessionUrl = (
+  activityRef: string,
+  scheduleRef: string,
+) => {
+  return `/api/v1/temporal/activities/${activityRef}/planned-sessions/${scheduleRef}/sessions`;
+};
+
+/**
+ * @summary Start Planned Activity Session
+ */
+export const temporalStartPlannedActivitySession = async (
+  activityRef: string,
+  scheduleRef: string,
+  sessionCommand: SessionCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalStartPlannedActivitySessionResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalStartPlannedActivitySessionUrl(activityRef, scheduleRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(sessionCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalStartPlannedActivitySessionResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalStartPlannedActivitySessionResponse;
+};
+
 export type temporalGetActivityResponsibilityResponse200 = {
   data: ResponsibilityResponse;
   status: 200;

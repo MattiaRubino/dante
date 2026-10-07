@@ -424,6 +424,7 @@ export * from './temporalSetSelfSchedulePlacementLockBody.zod';
 export * from './temporalSkipOccurrenceBody.zod';
 export * from './temporalStartActivitySessionBody.zod';
 export * from './temporalStartOccurrenceSessionBody.zod';
+export * from './temporalStartPlannedActivitySessionBody.zod';
 export * from './timelineAbsoluteActivityResponse.zod';
 export * from './timelineAbsoluteEventResponse.zod';
 export * from './timelineAbsoluteOccurrencePlacementResponse.zod';
