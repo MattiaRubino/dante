@@ -18,6 +18,8 @@ import { SessionSubjectControls } from '../../../temporal/session-subject-contro
 import { ActivityPlannedSessionsCardDetail } from '../../../temporal/activity-planned-sessions-card-detail';
 import { ScheduleReminderControls } from '../../../temporal/schedule-reminder-controls';
 import { PlacementLockControls } from '../../../temporal/placement-lock-controls';
+import type { ActivityProfile } from '../../../temporal/remote-activity-inspector';
+import { ActivityInspectorActions } from './activity-inspector-actions';
 
 import {
   buildCalendarMonthGrid,
@@ -827,6 +829,8 @@ type EventDetailDialogProps = Readonly<{
   reminderScheduleRef?: string | null;
   placementLockScheduleRef?: string | null;
   onUnschedule: () => void;
+  onActivitySaved?: (profile: ActivityProfile) => void;
+  onActivityDeleted?: () => void;
   onClose: () => void;
 }>;
 
@@ -840,6 +844,8 @@ export function EventDetailDialog({
   reminderScheduleRef = null,
   placementLockScheduleRef = null,
   onUnschedule,
+  onActivitySaved,
+  onActivityDeleted,
   onClose,
 }: EventDetailDialogProps) {
   const { t } = useTranslation('common');
@@ -926,6 +932,13 @@ export function EventDetailDialog({
             </button>
           </div>
         </div>
+        {sessionSubject?.kind === 'activity' && onActivitySaved && onActivityDeleted ? (
+          <ActivityInspectorActions
+            activityRef={sessionSubject.ref}
+            onSaved={onActivitySaved}
+            onDeleted={onActivityDeleted}
+          />
+        ) : null}
         <p>
           {formatTimelineMinute(detail.startMinute)}–
           {formatTimelineMinute(detail.endMinute)} · {detail.groupLabel}

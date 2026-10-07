@@ -97,8 +97,13 @@ async def list_resolution_queue(
                 (
                     await session.execute(
                         text(
-                            "SELECT * FROM dante.list_self_resolution_queue("
-                            ":self_person_ref,:effective_zone_id)"
+                            "SELECT queue.* FROM dante.list_self_resolution_queue("
+                            ":self_person_ref,:effective_zone_id) AS queue "
+                            "WHERE queue.subject_kind <> 'activity' OR NOT EXISTS ("
+                            "SELECT 1 FROM dante.activity_intention AS activity "
+                            "WHERE activity.activity_ref=queue.subject_ref "
+                            "AND activity.self_person_ref=:self_person_ref "
+                            "AND activity.retired_at IS NOT NULL)"
                         ),
                         {
                             "self_person_ref": context.self_person_ref,

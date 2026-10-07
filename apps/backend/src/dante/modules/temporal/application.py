@@ -566,6 +566,7 @@ class TemporalTimelineApplication:
                        NULL::uuid AS source_native_ref,
                        NULL::uuid AS occurrence_ref
                   FROM dante.activity_intention AS intention
+                 WHERE intention.retired_at IS NULL
                 UNION ALL
                 SELECT 'event'::text AS owner_kind,
                        expectation.event_ref AS subject_native_ref,

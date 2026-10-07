@@ -410,6 +410,7 @@ class TemporalActivityApplication:
               ON assignment.subject_kind='activity'
              AND assignment.subject_native_ref=intention.activity_ref
             WHERE intention.self_person_ref = :self_person_ref
+              AND intention.retired_at IS NULL
               AND NOT EXISTS (
                   SELECT 1
                   FROM dante.schedule AS schedule
@@ -450,6 +451,7 @@ class TemporalActivityApplication:
         statement = select(ActivityIntentionRow).where(
             ActivityIntentionRow.activity_ref == activity_ref,
             ActivityIntentionRow.self_person_ref == self_person_ref,
+            ActivityIntentionRow.retired_at.is_(None),
         )
 
         try:

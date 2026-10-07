@@ -1495,6 +1495,31 @@ export function TimelineSurface({
             unscheduleCanonicalBasis(basis);
           }
         }}
+        onActivitySaved={(profile) => {
+          if (!detailState) return;
+          const existing = findTimelineEvent(state, detailState.event.id);
+          if (existing) {
+            const { appearanceColorCode: _previousColor, ...eventWithoutColor } = existing.event;
+            dispatch({
+              type: 'materialize-event',
+              dateKey: existing.dateKey,
+              event: {
+                ...eventWithoutColor,
+                title: profile.title,
+                ...(profile.colorCode ? { appearanceColorCode: profile.colorCode } : {}),
+              },
+            });
+          }
+          setDetailState((current) => current && {
+            ...current,
+            detail: { ...current.detail, title: profile.title },
+          });
+        }}
+        onActivityDeleted={() => {
+          if (detailState) dispatch({ type: 'remove-event', eventId: detailState.event.id });
+          setDetailState(null);
+          showScheduleNotice({ kind: 'status', message: 'Attività eliminata.' });
+        }}
         onClose={() => setDetailState(null)}
       />
 

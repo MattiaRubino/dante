@@ -21,9 +21,15 @@
       "docs/workstreams/timeline-temporal-operational-b14-ui-consolidation-2026-09-30.md",
       "docs/workstreams/domain-model.md"
     ],
-    "domain_concepts": ["Activity"],
-    "logical_families": ["LR-02 dependent contextual record"],
-    "reference_families": ["NativeRef"],
+    "domain_concepts": [
+      "Activity"
+    ],
+    "logical_families": [
+      "LR-02 dependent contextual record"
+    ],
+    "reference_families": [
+      "NativeRef"
+    ],
     "material_facets": []
   },
   "implementation": {
@@ -42,7 +48,10 @@
         "name": "activity_ref",
         "postgres_type": "uuid",
         "nullable": false,
-        "default": {"kind": "none", "expression": null},
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
         "meaning": "Stable Activity NativeRef whose intention descriptor this row carries.",
         "semantic_type": "NativeRef",
         "value_contract": "References one existing UUIDv7 Activity identity; this row does not mint or replace that identity."
@@ -51,7 +60,10 @@
         "name": "self_person_ref",
         "postgres_type": "uuid",
         "nullable": false,
-        "default": {"kind": "none", "expression": null},
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
         "meaning": "Authenticated DANTE self Person whose personal Activity context owns this descriptor.",
         "semantic_type": "NativeRef",
         "value_contract": "Existing Person NativeRef resolved through DanteContext; Person remains distinct from Account, Principal and Actor."
@@ -60,7 +72,10 @@
         "name": "title",
         "postgres_type": "text",
         "nullable": false,
-        "default": {"kind": "none", "expression": null},
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
         "meaning": "User-authored actionable-intention title for the Activity.",
         "semantic_type": null,
         "value_contract": "Trimmed, non-empty, at most 300 characters."
@@ -69,7 +84,10 @@
         "name": "description",
         "postgres_type": "text",
         "nullable": true,
-        "default": {"kind": "none", "expression": null},
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
         "meaning": "Optional canonical descriptive text captured with Activity authoring.",
         "semantic_type": null,
         "value_contract": "NULL or trimmed non-empty text; description is not Schedule, Context, Tag or Outcome state."
@@ -78,7 +96,10 @@
         "name": "location",
         "postgres_type": "text",
         "nullable": true,
-        "default": {"kind": "none", "expression": null},
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
         "meaning": "Optional canonical Activity location supplied by the author.",
         "semantic_type": null,
         "value_contract": "NULL or trimmed non-empty text; location is descriptive authoring metadata and does not become temporal placement."
@@ -87,7 +108,10 @@
         "name": "color_code",
         "postgres_type": "text",
         "nullable": true,
-        "default": {"kind": "none", "expression": null},
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
         "meaning": "Optional per-Activity presentation color override independent of Life Area color.",
         "semantic_type": null,
         "value_contract": "NULL or uppercase #RRGGBB. It does not create or imply a Life Area assignment."
@@ -96,15 +120,56 @@
         "name": "created_at",
         "postgres_type": "timestamp with time zone",
         "nullable": false,
-        "default": {"kind": "none", "expression": null},
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
         "meaning": "Canonical creation instant recorded by the bounded CreateActivity capability.",
         "semantic_type": null,
         "value_contract": "Statement-time instant supplied inside the authoritative PostgreSQL create capability."
+      },
+      {
+        "name": "profile_revision",
+        "postgres_type": "bigint",
+        "nullable": false,
+        "default": {
+          "kind": "expression",
+          "expression": "0"
+        },
+        "meaning": "Optimistic revision of the authored Activity metadata.",
+        "semantic_type": null,
+        "value_contract": "Non-negative; starts at zero."
+      },
+      {
+        "name": "retired_at",
+        "postgres_type": "timestamp with time zone",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Time this Activity was hidden from active product views.",
+        "semantic_type": null,
+        "value_contract": "NULL until removed."
+      },
+      {
+        "name": "retired_operation_id",
+        "postgres_type": "text",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Idempotent receipt of confirmed Activity removal.",
+        "semantic_type": null,
+        "value_contract": "NULL until removed."
       }
     ],
     "primary_key": {
       "name": "pk_activity_intention",
-      "columns": ["activity_ref"],
+      "columns": [
+        "activity_ref"
+      ],
       "reason": "Exactly one current Activity intention descriptor is materialized per Activity identity.",
       "deferrable": false,
       "initially": "NOT DEFERRABLE",
@@ -113,8 +178,16 @@
     "foreign_keys": [
       {
         "name": "fk_activity_intention_activity_ref_activity",
-        "columns": ["activity_ref"],
-        "target": {"schema": "dante", "table": "activity", "columns": ["activity_ref"]},
+        "columns": [
+          "activity_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "activity",
+          "columns": [
+            "activity_ref"
+          ]
+        },
         "on_delete": "NO ACTION",
         "on_update": "NO ACTION",
         "match_type": "SIMPLE",
@@ -128,8 +201,16 @@
       },
       {
         "name": "fk_activity_intention_self_person_ref_person",
-        "columns": ["self_person_ref"],
-        "target": {"schema": "dante", "table": "person", "columns": ["person_ref"]},
+        "columns": [
+          "self_person_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "person",
+          "columns": [
+            "person_ref"
+          ]
+        },
         "on_delete": "NO ACTION",
         "on_update": "NO ACTION",
         "match_type": "SIMPLE",
@@ -175,6 +256,22 @@
         "enforced": true,
         "validated": true,
         "no_inherit": false
+      },
+      {
+        "name": "ck_activity_intention_profile_revision",
+        "expression_contract": "profile_revision >= 0",
+        "reason": "Revision is never negative.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_activity_intention_retired_pair",
+        "expression_contract": "(retired_at IS NULL) = (retired_operation_id IS NULL)",
+        "reason": "Removal timestamp and operation receipt are set together.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
       }
     ],
     "indexes": [
@@ -182,7 +279,9 @@
         "name": "pk_activity_intention",
         "method": "btree",
         "unique": true,
-        "keys": ["activity_ref"],
+        "keys": [
+          "activity_ref"
+        ],
         "predicate": null,
         "include": [],
         "source": "primary_key",
@@ -195,7 +294,11 @@
         "name": "ix_activity_intention_self_person_created",
         "method": "btree",
         "unique": false,
-        "keys": ["self_person_ref", "created_at", "activity_ref"],
+        "keys": [
+          "self_person_ref",
+          "created_at",
+          "activity_ref"
+        ],
         "predicate": null,
         "include": [],
         "source": "explicit_index",
@@ -222,19 +325,24 @@
     "material_state_behavior": null,
     "current_binding": "The Activity descriptor is selected directly by Activity NativeRef; Schedule, Actual and Session remain separate families.",
     "chronology": "created_at records the authoritative creation instant; UUIDv7 ordering is never substituted for chronology.",
-    "immutability_policy": "Runtime has no generic descriptor UPDATE authority. B14-U2 authoring may initialize description, location and color atomically during creation through a bounded SECURITY DEFINER capability; later editing requires its own governed mutation design."
+    "immutability_policy": "Self-scoped profile changes use a revision-checked bounded capability; removal is a one-way tombstone, never direct runtime table mutation."
   },
   "lifecycle": {
     "retention": "Retained with the canonical Activity while that Activity remains part of accepted DANTE product truth.",
     "redaction": null,
-    "retirement_tombstone": null,
-    "delete_behavior": "No runtime DELETE. Destructive evolution requires a separately reviewed forward migration."
+    "retirement_tombstone": "retired_at and retired_operation_id retain the Activity identity and historical Sessions but hide it from active views.",
+    "delete_behavior": "No physical runtime deletion."
   },
   "security": {
     "owner_role": "dante_owner",
     "default_deny_non_owner": true,
     "expected_grants": [
-      {"grantee": "dante_runtime", "privilege": "SELECT", "columns": [], "grant_option": false}
+      {
+        "grantee": "dante_runtime",
+        "privilege": "SELECT",
+        "columns": [],
+        "grant_option": false
+      }
     ]
   },
   "proof": {
@@ -250,7 +358,8 @@
       "apps/backend/tests/integration/temporal/test_b14_u2_authoring.py",
       "apps/backend/tests/integration/database/test_current_catalog.py",
       "apps/backend/tests/integration/database/test_database_current_catalog.py",
-      "apps/backend/tests/integration/database/test_migrations.py"
+      "apps/backend/tests/integration/database/test_migrations.py",
+      "apps/backend/tests/integration/temporal/test_b14_activity_inspector.py"
     ],
     "staged_evidence": []
   }

@@ -84,6 +84,7 @@ class TemporalPlanningTrayApplication:
                 ON assignment.subject_kind='activity'
                AND assignment.subject_native_ref=intention.activity_ref
              WHERE intention.self_person_ref=:self_person_ref
+               AND intention.retired_at IS NULL
                AND NOT EXISTS (
                    SELECT 1
                      FROM dante.schedule AS schedule

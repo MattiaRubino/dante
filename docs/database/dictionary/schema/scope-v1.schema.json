@@ -124,7 +124,7 @@
       "properties": {
         "completed_stages": {
           "type": "array",
-          "maxItems": 39,
+          "maxItems": 40,
           "uniqueItems": true,
           "items": {
             "enum": [
@@ -166,7 +166,8 @@
               "B14-RECURRING-REALITY-OBJECTIVES",
               "B14-ROUTINE-POLICY-CLEANUP",
               "B14-RESOLUTION-INBOX",
-              "B14-PLANNED-SESSION-EXECUTION"
+              "B14-PLANNED-SESSION-EXECUTION",
+              "B14-ACTIVITY-INSPECTOR"
             ]
           }
         },
@@ -444,7 +445,8 @@
                   "B14-RECURRING-REALITY-OBJECTIVES",
                   "B14-ROUTINE-POLICY-CLEANUP",
                   "B14-RESOLUTION-INBOX",
-                  "B14-PLANNED-SESSION-EXECUTION"
+                  "B14-PLANNED-SESSION-EXECUTION",
+              "B14-ACTIVITY-INSPECTOR"
                 ]
               }
             }
