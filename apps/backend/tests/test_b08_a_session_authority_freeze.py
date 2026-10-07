@@ -97,6 +97,7 @@ def test_b08_session_http_operations_and_duration_contract_are_explicit() -> Non
     }
     assert session_paths == {
         "/api/v1/temporal/activities/{activity_ref}/sessions",
+        "/api/v1/temporal/activities/{activity_ref}/sessions/manual",
         "/api/v1/temporal/activities/{activity_ref}/planned-sessions/{schedule_ref}/sessions",
         "/api/v1/temporal/occurrences/{occurrence_ref}/sessions",
         "/api/v1/temporal/sessions/{session_ref}",
