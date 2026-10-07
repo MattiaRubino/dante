@@ -495,22 +495,26 @@
 }
 
 
-/* Activity keeps the existing card surface. This is only the subtle,
- * continuous reinforcement around its lower-right corner. */
+/* Activity retains the exact Timeline card surface. The frame only draws
+ * its continuous outline; it never colors or lights the card interior. */
+.home-m1 .home-timeline--production .timeline-event-card.timeline-event-card--activity,
+.timeline-event-drag-overlay.timeline-event-card--activity {
+  border: 0;
+}
+
 .timeline-activity-frame {
   position: absolute;
-  z-index: 1;
-  right: -1px;
-  bottom: -1px;
-  width: 48px;
-  height: 48px;
+  z-index: 0;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   overflow: visible;
-  color: color-mix(in srgb, var(--timeline-group-color) 88%, white 2%);
   pointer-events: none;
 }
 
-.timeline-activity-frame__rim {
-  fill: currentColor;
+/* One solid group-colour rim: no glow, filter or luminous gradient. */
+.timeline-activity-frame stop {
+  stop-color: var(--timeline-group-color);
 }
 
 .home-m1 .home-timeline--production .timeline-event-card__top {
