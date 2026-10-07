@@ -1,4 +1,10 @@
-import { useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type RefObject,
+} from 'react';
 
 import {
   createRemoteActivityInspector,
@@ -9,10 +15,12 @@ export function ActivityEditPanel({
   profile,
   onSaved,
   onCancel,
+  closeRequestRef,
 }: Readonly<{
   profile: ActivityProfile;
   onSaved: (profile: ActivityProfile) => void;
   onCancel: () => void;
+  closeRequestRef: RefObject<(() => void) | null>;
 }>) {
   const [source] = useState(createRemoteActivityInspector);
   const [draft, setDraft] = useState(() => ({
@@ -23,6 +31,35 @@ export function ActivityEditPanel({
   }));
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
+  const [confirmingDiscard, setConfirmingDiscard] = useState(false);
+  const discardButtonRef = useRef<HTMLButtonElement | null>(null);
+  const dirty =
+    draft.title !== profile.title ||
+    draft.description !== (profile.description ?? '') ||
+    draft.location !== (profile.location ?? '') ||
+    draft.colorCode !== (profile.colorCode ?? '');
+
+  const requestClose = useCallback(() => {
+    if (pending) return;
+    if (confirmingDiscard) {
+      setConfirmingDiscard(false);
+    } else if (dirty) {
+      setConfirmingDiscard(true);
+    } else {
+      onCancel();
+    }
+  }, [confirmingDiscard, dirty, onCancel, pending]);
+
+  useEffect(() => {
+    closeRequestRef.current = requestClose;
+    return () => {
+      closeRequestRef.current = null;
+    };
+  }, [closeRequestRef, requestClose]);
+
+  useEffect(() => {
+    if (confirmingDiscard) discardButtonRef.current?.focus();
+  }, [confirmingDiscard]);
 
   return (
     <form
@@ -50,7 +87,10 @@ export function ActivityEditPanel({
           .finally(() => setPending(false));
       }}
     >
-      <div className="timeline-activity-editor__body">
+      <div
+        className="timeline-activity-editor__body"
+        inert={confirmingDiscard || undefined}
+      >
         {error ? <p role="alert">{error}</p> : null}
         <label className="timeline-activity-editor__title">
           Titolo
@@ -113,14 +153,28 @@ export function ActivityEditPanel({
           </fieldset>
         </div>
       </div>
-      <div className="timeline-activity-editor__actions">
-        <button type="button" disabled={pending} onClick={onCancel}>
+      <div
+        className="timeline-activity-editor__actions"
+        inert={confirmingDiscard || undefined}
+      >
+        <button type="button" disabled={pending} onClick={requestClose}>
           Annulla
         </button>
         <button type="submit" disabled={pending || !draft.title.trim()}>
           {pending ? 'Salvataggio…' : 'Salva modifiche'}
         </button>
       </div>
+      {confirmingDiscard ? (
+        <div className="timeline-activity-editor__discard" role="alert">
+          <p>Scartare le modifiche non salvate?</p>
+          <button ref={discardButtonRef} type="button" onClick={onCancel}>
+            Scarta modifiche
+          </button>
+          <button type="button" onClick={() => setConfirmingDiscard(false)}>
+            Continua a modificare
+          </button>
+        </div>
+      ) : null}
     </form>
   );
 }

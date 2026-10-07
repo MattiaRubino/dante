@@ -1,5 +1,7 @@
 // @vitest-environment jsdom
+import { createRef } from 'react';
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -56,6 +58,7 @@ describe('Activity Inspector', () => {
     render(
       <ActivityEditPanel
         profile={profile}
+        closeRequestRef={createRef()}
         onSaved={onSaved}
         onCancel={() => undefined}
       />,
@@ -74,6 +77,35 @@ describe('Activity Inspector', () => {
         expect.objectContaining({ title: 'Dopo', revision: 1 }),
       ),
     );
+  });
+
+  it('guards unsaved changes for external close requests', () => {
+    const onCancel = vi.fn();
+    const closeRequestRef = createRef<(() => void) | null>();
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={closeRequestRef}
+        onSaved={() => undefined}
+        onCancel={onCancel}
+      />,
+    );
+    fireEvent.change(screen.getByRole('textbox', { name: 'Titolo' }), {
+      target: { value: 'Bozza' },
+    });
+    act(() => closeRequestRef.current?.());
+    expect(screen.getByText('Scartare le modifiche non salvate?')).toBeTruthy();
+    expect(onCancel).not.toHaveBeenCalled();
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Continua a modificare' }),
+    );
+    expect(screen.getByRole('textbox', { name: 'Titolo' })).toHaveProperty(
+      'value',
+      'Bozza',
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Annulla' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Scarta modifiche' }));
+    expect(onCancel).toHaveBeenCalledOnce();
   });
 
   it('requires confirmation before retirement', async () => {

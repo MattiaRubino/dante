@@ -1597,6 +1597,7 @@
 }
 
 .timeline-activity-editor {
+  position: relative;
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
@@ -1640,6 +1641,24 @@
   gap: 10px;
   padding: 16px 0;
   border-top: 1px solid var(--dante-semantic-color-home-border-subtle);
+}
+
+.timeline-activity-editor__discard {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  align-content: center;
+  gap: 12px;
+  padding: 24px;
+  background: rgba(3, 7, 13, 0.86);
+}
+
+.timeline-activity-editor__discard p {
+  flex-basis: 100%;
+  text-align: center;
 }
 
 @media (max-width: 620px) {

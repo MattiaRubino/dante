@@ -3,6 +3,7 @@ import {
   type KeyboardEvent,
   type PointerEvent as ReactPointerEvent,
   type RefObject,
+  useCallback,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -853,11 +854,17 @@ export function EventDetailDialog({
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const unscheduleButtonRef = useRef<HTMLButtonElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const editCloseRequestRef = useRef<(() => void) | null>(null);
   const [editingProfile, setEditingProfile] = useState<ActivityProfile | null>(
     null,
   );
   const currentEditingProfile =
     editingProfile?.activityRef === sessionSubject?.ref ? editingProfile : null;
+
+  const requestCloseCurrent = useCallback(() => {
+    if (currentEditingProfile) editCloseRequestRef.current?.();
+    else onClose();
+  }, [currentEditingProfile, onClose]);
 
   useEffect(() => {
     if (!detail) {
@@ -867,14 +874,13 @@ export function EventDetailDialog({
     const keydown = (event: globalThis.KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.preventDefault();
-        if (currentEditingProfile) setEditingProfile(null);
-        else onClose();
+        requestCloseCurrent();
       } else if (event.key === 'Tab') {
         const focusable = Array.from(
           dialogRef.current?.querySelectorAll<HTMLElement>(
             'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
           ) ?? [],
-        );
+        ).filter((element) => !element.closest('[inert]'));
         if (focusable.length === 0) {
           return;
         }
@@ -892,7 +898,7 @@ export function EventDetailDialog({
     return () => {
       document.removeEventListener('keydown', keydown, true);
     };
-  }, [currentEditingProfile, detail, onClose]);
+  }, [detail, requestCloseCurrent]);
 
   const isOpen = detail !== null;
   useEffect(() => {
@@ -912,8 +918,7 @@ export function EventDetailDialog({
       role="presentation"
       onPointerDown={(event: ReactPointerEvent<HTMLDivElement>) => {
         if (event.currentTarget === event.target) {
-          if (currentEditingProfile) setEditingProfile(null);
-          else onClose();
+          requestCloseCurrent();
         }
       }}
     >
@@ -950,10 +955,7 @@ export function EventDetailDialog({
                   ? 'Torna all’Inspector'
                   : 'Chiudi Inspector'
               }
-              onClick={() => {
-                if (currentEditingProfile) setEditingProfile(null);
-                else onClose();
-              }}
+              onClick={requestCloseCurrent}
             >
               ×
             </button>
@@ -963,6 +965,7 @@ export function EventDetailDialog({
           <ActivityEditPanel
             key={`${currentEditingProfile.activityRef}:${currentEditingProfile.revision}`}
             profile={currentEditingProfile}
+            closeRequestRef={editCloseRequestRef}
             onSaved={(saved) => {
               onActivitySaved?.(saved);
               setEditingProfile(null);
