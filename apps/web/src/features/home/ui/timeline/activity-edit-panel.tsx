@@ -121,6 +121,7 @@ export function ActivityEditPanel({
           return;
         setPending(true);
         setError('');
+        let savedParts = 0;
         void (async () => {
           if (captureMode !== settings.capture.mode) {
             const operationId = (operations.current.capture ??=
@@ -132,6 +133,7 @@ export function ActivityEditPanel({
               operationId,
             );
             setSettings((current) => current && { ...current, capture: saved });
+            savedParts += 1;
             operations.current.capture = undefined;
           }
           if (realityMode !== settings.reality.mode) {
@@ -144,6 +146,7 @@ export function ActivityEditPanel({
               operationId,
             );
             setSettings((current) => current && { ...current, reality: saved });
+            savedParts += 1;
             operations.current.reality = undefined;
           }
           const changed = {
@@ -161,10 +164,14 @@ export function ActivityEditPanel({
           onSaved(saved);
         })()
           .catch((reason: unknown) => {
-            setError(
+            const message =
               reason instanceof Error
                 ? reason.message
-                : 'Operazione non riuscita.',
+                : 'Operazione non riuscita.';
+            setError(
+              savedParts > 0
+                ? `Alcune impostazioni sono già state salvate. ${message} Riprova per completare.`
+                : message,
             );
           })
           .finally(() => setPending(false));

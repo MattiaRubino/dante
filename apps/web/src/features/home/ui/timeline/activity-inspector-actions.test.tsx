@@ -128,7 +128,7 @@ describe('Activity Inspector', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
     expect(await screen.findByRole('alert')).toHaveProperty(
       'textContent',
-      'Connessione interrotta',
+      expect.stringContaining('Alcune impostazioni sono già state salvate.'),
     );
     expect(setCapture).toHaveBeenCalledWith(
       ref,
