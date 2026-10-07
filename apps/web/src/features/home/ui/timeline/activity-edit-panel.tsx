@@ -10,6 +10,12 @@ import {
   createRemoteActivityInspector,
   type ActivityProfile,
 } from '../../../temporal/remote-activity-inspector';
+import {
+  createRemoteActivityEditSettings,
+  type ActivityEditSettings,
+} from '../../../temporal/remote-activity-edit-settings';
+import type { RealityMode } from '../../../temporal/remote-reality-objective-data-source';
+import type { SessionCaptureMode } from '../../../temporal/remote-session-capability-data-source';
 
 export function ActivityEditPanel({
   profile,
@@ -23,6 +29,18 @@ export function ActivityEditPanel({
   closeRequestRef: RefObject<(() => void) | null>;
 }>) {
   const [source] = useState(createRemoteActivityInspector);
+  const [settingsSource] = useState(createRemoteActivityEditSettings);
+  const [settings, setSettings] = useState<ActivityEditSettings | null>(null);
+  const [loadingSettings, setLoadingSettings] = useState(true);
+  const [settingsError, setSettingsError] = useState('');
+  const [captureMode, setCaptureMode] = useState<SessionCaptureMode | null>(
+    null,
+  );
+  const [realityMode, setRealityMode] = useState<RealityMode | null>(null);
+  const operations = useRef<{
+    capture: string | undefined;
+    reality: string | undefined;
+  }>({ capture: undefined, reality: undefined });
   const [draft, setDraft] = useState(() => ({
     title: profile.title,
     description: profile.description ?? '',
@@ -37,7 +55,32 @@ export function ActivityEditPanel({
     draft.title !== profile.title ||
     draft.description !== (profile.description ?? '') ||
     draft.location !== (profile.location ?? '') ||
-    draft.colorCode !== (profile.colorCode ?? '');
+    draft.colorCode !== (profile.colorCode ?? '') ||
+    (settings !== null &&
+      (captureMode !== settings.capture.mode ||
+        realityMode !== settings.reality.mode));
+
+  const loadSettings = useCallback(() => {
+    return settingsSource
+      .load(profile.activityRef)
+      .then((loaded) => {
+        setSettings(loaded);
+        setCaptureMode(loaded.capture.mode);
+        setRealityMode(loaded.reality.mode);
+      })
+      .catch((reason: unknown) => {
+        setSettingsError(
+          reason instanceof Error
+            ? reason.message
+            : 'Impostazioni non disponibili.',
+        );
+      })
+      .finally(() => setLoadingSettings(false));
+  }, [profile.activityRef, settingsSource]);
+
+  useEffect(() => {
+    void loadSettings();
+  }, [loadSettings]);
 
   const requestClose = useCallback(() => {
     if (pending) return;
@@ -66,17 +109,57 @@ export function ActivityEditPanel({
       className="timeline-activity-editor"
       onSubmit={(event) => {
         event.preventDefault();
-        if (pending || !draft.title.trim()) return;
+        if (
+          pending ||
+          !settings ||
+          loadingSettings ||
+          settingsError ||
+          !captureMode ||
+          !realityMode ||
+          !draft.title.trim()
+        )
+          return;
         setPending(true);
         setError('');
-        void source
-          .revise(profile, {
+        void (async () => {
+          if (captureMode !== settings.capture.mode) {
+            const operationId = (operations.current.capture ??=
+              crypto.randomUUID());
+            const saved = await settingsSource.setCapture(
+              profile.activityRef,
+              settings.capture,
+              captureMode,
+              operationId,
+            );
+            setSettings((current) => current && { ...current, capture: saved });
+            operations.current.capture = undefined;
+          }
+          if (realityMode !== settings.reality.mode) {
+            const operationId = (operations.current.reality ??=
+              crypto.randomUUID());
+            const saved = await settingsSource.setReality(
+              profile.activityRef,
+              settings.reality,
+              realityMode,
+              operationId,
+            );
+            setSettings((current) => current && { ...current, reality: saved });
+            operations.current.reality = undefined;
+          }
+          const changed = {
             title: draft.title.trim(),
             description: draft.description.trim() || null,
             location: draft.location.trim() || null,
             colorCode: draft.colorCode || null,
-          })
-          .then(onSaved)
+          };
+          const metadataChanged = Object.entries(changed).some(
+            ([key, value]) => value !== profile[key as keyof typeof changed],
+          );
+          const saved = metadataChanged
+            ? await source.revise(profile, changed)
+            : profile;
+          onSaved(saved);
+        })()
           .catch((reason: unknown) => {
             setError(
               reason instanceof Error
@@ -92,6 +175,24 @@ export function ActivityEditPanel({
         inert={confirmingDiscard || undefined}
       >
         {error ? <p role="alert">{error}</p> : null}
+        {loadingSettings ? (
+          <p role="status">Caricamento impostazioni…</p>
+        ) : null}
+        {settingsError ? (
+          <div role="alert">
+            {settingsError}
+            <button
+              type="button"
+              onClick={() => {
+                setLoadingSettings(true);
+                setSettingsError('');
+                void loadSettings();
+              }}
+            >
+              Riprova
+            </button>
+          </div>
+        ) : null}
         <label className="timeline-activity-editor__title">
           Titolo
           <input
@@ -152,6 +253,82 @@ export function ActivityEditPanel({
             ) : null}
           </fieldset>
         </div>
+        {settings ? (
+          <>
+            <div className="timeline-activity-editor__fields">
+              <label>
+                Registrazione sessioni
+                <select
+                  value={captureMode ?? settings.capture.mode}
+                  onChange={(event) => {
+                    operations.current.capture = undefined;
+                    setCaptureMode(event.target.value as SessionCaptureMode);
+                  }}
+                >
+                  <option value="disabled">Disattivata</option>
+                  <option value="record">Registrazione</option>
+                  <option value="live">Sessione in diretta</option>
+                  <option value="record_and_live">
+                    Registrazione e diretta
+                  </option>
+                </select>
+              </label>
+              <label>
+                Verifica dello svolgimento
+                <select
+                  value={realityMode ?? settings.reality.mode}
+                  onChange={(event) => {
+                    operations.current.reality = undefined;
+                    setRealityMode(event.target.value as RealityMode);
+                  }}
+                >
+                  <option value="manual">Manuale</option>
+                  <option value="review_on_end">Chiedi al termine</option>
+                  <option value="auto_confirm_outcome">
+                    Conferma automaticamente
+                  </option>
+                </select>
+              </label>
+            </div>
+            <section
+              className="timeline-activity-editor__readback"
+              aria-label="Programmazione attuale"
+            >
+              <h3>Programmazione attuale</h3>
+              {settings.schedules.length ? (
+                <ul>
+                  {settings.schedules.map((schedule) => (
+                    <li key={schedule.scheduleRef}>
+                      {schedule.name ||
+                        (schedule.role === 'planned'
+                          ? 'Sessione programmata'
+                          : schedule.role === 'envelope'
+                            ? 'Intervallo complessivo'
+                            : 'Intervallo')}
+                      {schedule.start ? ` · ${schedule.start}` : ''}
+                      {schedule.end ? ` – ${schedule.end}` : ''}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p>Nessun intervallo programmato.</p>
+              )}
+            </section>
+            {settings.objectives.length ? (
+              <section
+                className="timeline-activity-editor__readback"
+                aria-label="Obiettivi attuali"
+              >
+                <h3>Obiettivi attuali</h3>
+                <ul>
+                  {settings.objectives.map((objective) => (
+                    <li key={objective.objectiveRef}>{objective.label}</li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
+          </>
+        ) : null}
       </div>
       <div
         className="timeline-activity-editor__actions"
@@ -160,7 +337,16 @@ export function ActivityEditPanel({
         <button type="button" disabled={pending} onClick={requestClose}>
           Annulla
         </button>
-        <button type="submit" disabled={pending || !draft.title.trim()}>
+        <button
+          type="submit"
+          disabled={
+            pending ||
+            !settings ||
+            loadingSettings ||
+            !!settingsError ||
+            !draft.title.trim()
+          }
+        >
           {pending ? 'Salvataggio…' : 'Salva modifiche'}
         </button>
       </div>

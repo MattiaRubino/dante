@@ -1568,7 +1568,8 @@
 }
 
 .timeline-activity-editor input:not([type='checkbox']):not([type='color']),
-.timeline-activity-editor textarea {
+.timeline-activity-editor textarea,
+.timeline-activity-editor select {
   width: 100%;
   padding: 8px;
   border: 1px solid var(--dante-semantic-color-home-border-strong);
@@ -1632,6 +1633,21 @@
 .timeline-activity-editor__fields fieldset {
   border: 1px solid var(--dante-semantic-color-home-border-subtle);
   border-radius: 12px;
+}
+
+.timeline-activity-editor__readback {
+  border-top: 1px solid var(--dante-semantic-color-home-border-subtle);
+  padding-top: 14px;
+}
+
+.timeline-activity-editor__readback h3 {
+  margin: 0 0 10px;
+  font-size: 14px;
+}
+
+.timeline-activity-editor__readback ul {
+  margin: 0;
+  padding-left: 20px;
 }
 
 .timeline-activity-editor__actions {

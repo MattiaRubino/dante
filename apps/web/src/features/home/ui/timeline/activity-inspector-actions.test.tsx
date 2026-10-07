@@ -16,8 +16,18 @@ import { ActivityEditPanel } from './activity-edit-panel';
 const get = vi.fn();
 const revise = vi.fn();
 const retire = vi.fn();
+const loadSettings = vi.fn();
+const setCapture = vi.fn();
+const setReality = vi.fn();
 vi.mock('../../../temporal/remote-activity-inspector', () => ({
   createRemoteActivityInspector: () => ({ get, revise, retire }),
+}));
+vi.mock('../../../temporal/remote-activity-edit-settings', () => ({
+  createRemoteActivityEditSettings: () => ({
+    load: loadSettings,
+    setCapture,
+    setReality,
+  }),
 }));
 
 const ref = '0199a111-1111-7111-8111-111111111111';
@@ -34,6 +44,15 @@ afterEach(() => {
   cleanup();
   vi.clearAllMocks();
 });
+
+const currentSettings = {
+  capture: { mode: 'disabled', stateRef: null },
+  reality: { mode: 'manual', stateRef: null },
+  schedules: [],
+  objectives: [],
+};
+
+loadSettings.mockResolvedValue(currentSettings);
 
 describe('Activity Inspector', () => {
   it('opens the separate editor with the persisted profile', async () => {
@@ -65,6 +84,7 @@ describe('Activity Inspector', () => {
     );
     const title = await screen.findByRole('textbox', { name: 'Titolo' });
     fireEvent.change(title, { target: { value: 'Dopo' } });
+    await screen.findByRole('combobox', { name: 'Registrazione sessioni' });
     fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
     await waitFor(() =>
       expect(revise).toHaveBeenCalledWith(
@@ -77,6 +97,59 @@ describe('Activity Inspector', () => {
         expect.objectContaining({ title: 'Dopo', revision: 1 }),
       ),
     );
+  });
+
+  it('saves policy changes with their current state and retries after a partial failure', async () => {
+    setCapture.mockResolvedValue({ mode: 'live', stateRef: 'capture-1' });
+    setReality
+      .mockRejectedValueOnce(new Error('Connessione interrotta'))
+      .mockResolvedValueOnce({ mode: 'review_on_end', stateRef: 'reality-1' });
+    const onSaved = vi.fn();
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={onSaved}
+        onCancel={() => undefined}
+      />,
+    );
+    fireEvent.change(
+      await screen.findByRole('combobox', { name: 'Registrazione sessioni' }),
+      {
+        target: { value: 'live' },
+      },
+    );
+    fireEvent.change(
+      screen.getByRole('combobox', { name: 'Verifica dello svolgimento' }),
+      {
+        target: { value: 'review_on_end' },
+      },
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
+    expect(await screen.findByRole('alert')).toHaveProperty(
+      'textContent',
+      'Connessione interrotta',
+    );
+    expect(setCapture).toHaveBeenCalledWith(
+      ref,
+      currentSettings.capture,
+      'live',
+      expect.any(String),
+    );
+    expect(setReality).toHaveBeenCalledWith(
+      ref,
+      currentSettings.reality,
+      'review_on_end',
+      expect.any(String),
+    );
+    expect(onSaved).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
+    await waitFor(() => expect(onSaved).toHaveBeenCalledWith(profile));
+    expect(setCapture).toHaveBeenCalledTimes(1);
+    expect(setReality).toHaveBeenCalledTimes(2);
+    expect(setReality.mock.calls[1]?.[3]).toBe(setReality.mock.calls[0]?.[3]);
+    expect(revise).not.toHaveBeenCalled();
   });
 
   it('guards unsaved changes for external close requests', () => {
