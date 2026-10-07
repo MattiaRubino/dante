@@ -12,6 +12,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ActivityInspectorActions } from './activity-inspector-actions';
 import { ActivityEditPanel } from './activity-edit-panel';
+import type { ActivityDuplicateSeed } from '../../../temporal-create/application/activity-duplicate-seed';
 
 const get = vi.fn();
 const revise = vi.fn();
@@ -50,6 +51,10 @@ const currentSettings = {
   reality: { mode: 'manual', stateRef: null },
   schedules: [],
   objectives: [],
+  lifeAreaRef: null,
+  placementProtected: false,
+  reminderLeadMinutes: null,
+  childGuardMode: 'none',
 };
 
 loadSettings.mockResolvedValue(currentSettings);
@@ -63,6 +68,7 @@ describe('Activity Inspector', () => {
         activityRef={ref}
         onEdit={onEdit}
         onDeleted={() => undefined}
+        onDuplicate={() => undefined}
       />,
     );
     expect(await screen.findByText('Nota')).toBeTruthy();
@@ -189,6 +195,7 @@ describe('Activity Inspector', () => {
         activityRef={ref}
         onEdit={() => undefined}
         onDeleted={onDeleted}
+        onDuplicate={() => undefined}
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: 'Elimina' }));
@@ -198,5 +205,26 @@ describe('Activity Inspector', () => {
     );
     await waitFor(() => expect(retire).toHaveBeenCalledWith(ref));
     expect(onDeleted).toHaveBeenCalledOnce();
+  });
+
+  it('opens a new Advanced Create draft from persisted Activity settings', async () => {
+    get.mockResolvedValue(profile);
+    const onDuplicate = vi.fn<(seed: ActivityDuplicateSeed) => void>();
+    render(
+      <ActivityInspectorActions
+        activityRef={ref}
+        onEdit={() => undefined}
+        onDeleted={() => undefined}
+        onDuplicate={onDuplicate}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Duplica' }));
+    await waitFor(() => expect(onDuplicate).toHaveBeenCalledOnce());
+    expect(onDuplicate.mock.calls[0]?.[0].fields).toMatchObject({
+      kind: 'activity',
+      title: 'Prima',
+      notes: 'Nota',
+    });
+    expect(loadSettings).toHaveBeenCalledWith(ref);
   });
 });

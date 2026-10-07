@@ -62,6 +62,7 @@ import {
   createTemporalCreateU2AuthoringDraft,
   type TemporalCreateU2AuthoringDraft,
 } from '../model/temporal-create-u2-authoring';
+import type { ActivityDuplicateSeed } from '../application/activity-duplicate-seed';
 import {
   TemporalCreateComposer,
   type TemporalCreateContextOption,
@@ -83,6 +84,7 @@ export type TemporalCreateInvocation = Readonly<{
   startMinute?: number;
   durationMinutes?: number;
   seed?: TemporalCreateFieldSeed;
+  duplicate?: ActivityDuplicateSeed;
   anchor?: InvocationAnchor;
 }>;
 
@@ -138,9 +140,10 @@ export function TemporalCreateEntry({
   const requestSeenRef = useRef<number | null>(null);
   const preparedRef = useRef<TemporalCreatePreparedOperation | null>(null);
   const partialPostCreateRef = useRef<(() => Promise<void>) | null>(null);
-  const u2DraftRef = useRef<TemporalCreateU2AuthoringDraft>(
+  const [u2Draft, setU2Draft] = useState<TemporalCreateU2AuthoringDraft>(() =>
     createTemporalCreateU2AuthoringDraft(createTemporalCreateFields()),
   );
+  const u2DraftRef = useRef(u2Draft);
   const [postCreateRetry, setPostCreateRetry] = useState(false);
   const commitInFlightRef = useRef(false);
   const [open, setOpen] = useState(false);
@@ -183,7 +186,7 @@ export function TemporalCreateEntry({
       });
       return seed ? applyTemporalCreateFieldSeed(base, seed) : base;
     },
-    [contexts, runtime],
+    [runtime],
   );
 
   const restoreComposerFocus = useCallback(() => {
@@ -219,14 +222,17 @@ export function TemporalCreateEntry({
       startMinute?: number,
       durationMinutes?: number,
       seed?: TemporalCreateFieldSeed,
+      duplicate?: ActivityDuplicateSeed,
       externalAnchor?: InvocationAnchor,
       focusReturnTarget?: HTMLElement | null,
     ) => {
       onBeforeOpen?.();
       const fields = freshFields(date, startMinute, durationMinutes, seed);
       const initialDraft = createTemporalCreateU2AuthoringDraft(fields);
-      const seededArea = contexts.find((context) => context.id === fields.contextId);
-      u2DraftRef.current = seededArea
+      const seededArea = contexts.find(
+        (context) => context.id === fields.contextId,
+      );
+      const areaDraft = seededArea
         ? Object.freeze({
             ...initialDraft,
             lifeArea: Object.freeze({
@@ -239,7 +245,18 @@ export function TemporalCreateEntry({
             }),
           })
         : initialDraft;
-      setSession(createTemporalCreateSession(fields));
+      u2DraftRef.current = duplicate
+        ? Object.freeze({ ...areaDraft, ...duplicate.advanced })
+        : areaDraft;
+      setU2Draft(u2DraftRef.current);
+      setSession(
+        duplicate
+          ? setTemporalCreateSurface(
+              createTemporalCreateSession(fields),
+              'full',
+            )
+          : createTemporalCreateSession(fields),
+      );
       setIssues([]);
       setFailureMessage('');
       setLifecycle('idle');
@@ -262,6 +279,7 @@ export function TemporalCreateEntry({
         request.startMinute,
         request.durationMinutes,
         request.seed,
+        request.duplicate,
         request.anchor,
         document.querySelector<HTMLElement>('.timeline-grid'),
       );
@@ -817,7 +835,7 @@ export function TemporalCreateEntry({
       failureMessage={failureMessage}
       failureTarget={failureTarget}
       postCreateRetry={postCreateRetry}
-      u2Draft={u2DraftRef.current}
+      u2Draft={u2Draft}
       onPatch={patch}
       onSurfaceChange={changeSurface}
       onRequestClose={requestClose}
@@ -827,6 +845,7 @@ export function TemporalCreateEntry({
       onSubmit={() => void submit()}
       onU2DraftChange={(draft) => {
         u2DraftRef.current = draft;
+        setU2Draft(draft);
         queueMicrotask(() => {
           setFailureMessage('');
           setFailureTarget(null);
@@ -894,6 +913,7 @@ export function TemporalCreateEntry({
         onClick={() =>
           openComposer(
             defaultDate,
+            undefined,
             undefined,
             undefined,
             undefined,

@@ -21,7 +21,10 @@ import type {
   TemporalAuthoredEventResult,
 } from '../../temporal';
 import { TEMPORAL_CREATE_RECENT_COLORS_KEY } from './temporal-create-recent-colors';
-import { TemporalCreateEntry } from './temporal-create-entry';
+import {
+  TemporalCreateEntry,
+  type TemporalCreateInvocation,
+} from './temporal-create-entry';
 
 const DEFAULT_COLOR = '#EA5C12';
 const SCHEDULE_REF = '0199a111-1111-7111-8111-111111111120';
@@ -94,6 +97,7 @@ function renderEntry(
   }[] = [],
   scheduledResult = false,
   defaultDate = '2026-09-30',
+  invocation?: TemporalCreateInvocation,
 ) {
   const activityRequests: TemporalAuthorActivityRequest[] = [];
   const eventRequests: TemporalAuthorEventRequest[] = [];
@@ -113,6 +117,7 @@ function renderEntry(
       <div data-home-context-create-host />
       <TemporalCreateEntry
         defaultDate={Temporal.PlainDate.from(defaultDate)}
+        request={invocation ?? null}
         contexts={contexts}
         authoringDataSource={source}
         onPreview={() => undefined}
@@ -125,11 +130,51 @@ function renderEntry(
     '.dante-timeline-quick-add',
   );
   if (!quickAdd) throw new Error('Expected Create trigger.');
-  fireEvent.click(quickAdd);
+  if (!invocation) fireEvent.click(quickAdd);
   return { ...rendered, activityRequests, eventRequests };
 }
 
 describe('Temporal Create U2 entry', () => {
+  it('opens a duplicated Activity directly in Advanced with its saved draft', async () => {
+    const fields = {
+      kind: 'activity' as const,
+      title: 'Copia lavoro',
+      date: '2026-10-07',
+      startTime: '09:00',
+      durationMinutes: 60,
+      timeSemantics: 'timed' as const,
+    };
+    renderEntry([], false, '2026-10-07', {
+      id: 1,
+      date: Temporal.PlainDate.from('2026-10-07'),
+      seed: fields,
+      duplicate: {
+        fields,
+        advanced: {
+          realityMode: 'review_on_end',
+          objectives: [
+            {
+              id: 'new-goal',
+              label: 'Finire',
+              resultKind: 'boolean',
+              comparatorCode: null,
+              targetValue: '',
+              targetMin: '',
+              targetMax: '',
+              unitCode: '',
+            },
+          ],
+        },
+      },
+    });
+    await waitFor(() =>
+      expect(
+        document.querySelector('[data-temporal-create-surface="advanced"]'),
+      ).toBeTruthy(),
+    );
+    expect(screen.getByDisplayValue('Copia lavoro')).toBeTruthy();
+    expect(screen.getByDisplayValue('Finire')).toBeTruthy();
+  });
   it('submits named future Session planning without exposing Sub-Activities', async () => {
     const { activityRequests } = renderEntry([], false, '2132-03-06');
     fireEvent.change(screen.getByPlaceholderText('Titolo'), {
@@ -157,7 +202,9 @@ describe('Temporal Create U2 entry', () => {
         target: { value: 'Ricerca fonti' },
       },
     );
-    fireEvent.click(within(planned as HTMLElement).getByRole('button', { name: 'Orario' }));
+    fireEvent.click(
+      within(planned as HTMLElement).getByRole('button', { name: 'Orario' }),
+    );
     fireEvent.change(
       within(planned as HTMLElement).getByLabelText('Inizio Sessione: ore'),
       { target: { value: '09' } },

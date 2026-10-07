@@ -21,6 +21,7 @@ import { ScheduleReminderControls } from '../../../temporal/schedule-reminder-co
 import { PlacementLockControls } from '../../../temporal/placement-lock-controls';
 import type { ActivityProfile } from '../../../temporal/remote-activity-inspector';
 import { ActivityEditPanel } from './activity-edit-panel';
+import { requestTemporalCreateDuplicate } from '../../../temporal-create/ui/temporal-create-duplicate-request';
 import { ActivityInspectorActions } from './activity-inspector-actions';
 
 import {
@@ -981,6 +982,10 @@ export function EventDetailDialog({
                 activityRef={sessionSubject.ref}
                 onEdit={setEditingProfile}
                 onDeleted={onActivityDeleted}
+                onDuplicate={(seed) => {
+                  onClose();
+                  requestTemporalCreateDuplicate(seed);
+                }}
               />
             ) : null}
             <p>

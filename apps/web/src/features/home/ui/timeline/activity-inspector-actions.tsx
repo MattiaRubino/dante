@@ -4,17 +4,25 @@ import {
   createRemoteActivityInspector,
   type ActivityProfile,
 } from '../../../temporal/remote-activity-inspector';
+import { createRemoteActivityEditSettings } from '../../../temporal/remote-activity-edit-settings';
+import {
+  buildActivityDuplicateSeed,
+  type ActivityDuplicateSeed,
+} from '../../../temporal-create/application/activity-duplicate-seed';
 
 export function ActivityInspectorActions({
   activityRef,
   onEdit,
   onDeleted,
+  onDuplicate,
 }: Readonly<{
   activityRef: string;
   onEdit: (profile: ActivityProfile) => void;
   onDeleted: () => void;
+  onDuplicate: (seed: ActivityDuplicateSeed) => void;
 }>) {
   const [source] = useState(createRemoteActivityInspector);
+  const [settingsSource] = useState(createRemoteActivityEditSettings);
   const [profile, setProfile] = useState<ActivityProfile | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [pending, setPending] = useState(false);
@@ -74,6 +82,21 @@ export function ActivityInspectorActions({
           onClick={() => setConfirming(true)}
         >
           Elimina
+        </button>
+        <button
+          type="button"
+          disabled={pending}
+          onClick={() =>
+            void action(async () => {
+              const [savedProfile, settings] = await Promise.all([
+                source.get(activityRef),
+                settingsSource.load(activityRef),
+              ]);
+              onDuplicate(buildActivityDuplicateSeed(savedProfile, settings));
+            })
+          }
+        >
+          Duplica
         </button>
       </div>
       {profile?.description || profile?.location ? (

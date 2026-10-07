@@ -11,6 +11,7 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
 import type { TemporalPlacement } from '../../../temporal';
+import { subscribeTemporalCreateDuplicate } from '../../../temporal-create/ui/temporal-create-duplicate-request';
 import {
   createB14TemporalCreateRuntime,
   TemporalCreateContextCatalogProvider,
@@ -336,6 +337,20 @@ export function TimelineCreateBridge({
   const [planningFeedback, setPlanningFeedback] = useState('');
   const [toastVisible, setToastVisible] = useState(false);
   const requestIdRef = useRef(0);
+  useEffect(
+    () =>
+      subscribeTemporalCreateDuplicate((duplicate) => {
+        setRequest({
+          id: ++requestIdRef.current,
+          date: duplicate.fields.date
+            ? Temporal.PlainDate.from(duplicate.fields.date)
+            : defaultDate,
+          seed: duplicate.fields,
+          duplicate,
+        });
+      }),
+    [defaultDate],
+  );
   const layoutFrameRef = useRef<number | null>(null);
   const toastTimerRef = useRef<number | null>(null);
   const rangeGestureRef = useRef<RangeGesture | null>(null);

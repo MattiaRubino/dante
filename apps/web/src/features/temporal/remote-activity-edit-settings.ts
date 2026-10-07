@@ -5,6 +5,8 @@ import {
   type RealityMode,
 } from './remote-reality-objective-data-source';
 import type { SessionCaptureMode } from './remote-session-capability-data-source';
+import { createRemotePlacementLockDataSource } from './remote-placement-lock-data-source';
+import { createRemoteScheduleReminderDataSource } from './remote-schedule-reminder-data-source';
 
 export type ActivityEditPolicy<T extends string> = Readonly<{
   mode: T;
@@ -20,6 +22,7 @@ export type ActivityEditSchedule = Readonly<{
   temporalForm: string;
   start: string | null;
   end: string | null;
+  zoneId: string | null;
 }>;
 
 export type ActivityEditSettings = Readonly<{
@@ -27,6 +30,10 @@ export type ActivityEditSettings = Readonly<{
   reality: ActivityEditPolicy<RealityMode>;
   schedules: readonly ActivityEditSchedule[];
   objectives: readonly ObjectiveView[];
+  lifeAreaRef: string | null;
+  placementProtected: boolean;
+  reminderLeadMinutes: number | null;
+  childGuardMode: 'none' | 'confirm' | 'block';
 }>;
 
 function object(value: unknown): Record<string, unknown> {
@@ -122,6 +129,7 @@ function schedules(
         end: optionalText(
           row.ends_local_at ?? row.ends_at ?? row.end_date_exclusive,
         ),
+        zoneId: optionalText(row.zone_id),
       });
     }),
   );
@@ -132,6 +140,8 @@ export function createRemoteActivityEditSettings(
 ) {
   const request = createWebFetch(fetchFn);
   const objectiveSource = createRemoteRealityObjectiveDataSource(fetchFn);
+  const lockSource = createRemotePlacementLockDataSource(fetchFn);
+  const reminderSource = createRemoteScheduleReminderDataSource(fetchFn);
   const endpoint = (ref: string, suffix: string) =>
     `/api/v1/temporal/activities/${encodeURIComponent(ref)}/${suffix}`;
 
@@ -186,18 +196,51 @@ export function createRemoteActivityEditSettings(
 
   return Object.freeze({
     async load(ref: string): Promise<ActivityEditSettings> {
-      const [capturePayload, realityPayload, schedulePayload, objectives] =
-        await Promise.all([
-          read(endpoint(ref, 'execution-policy')),
-          read(endpoint(ref, 'reality-policy')),
-          read(endpoint(ref, 'children')),
-          objectiveSource.listObjectives('activity', ref),
-        ]);
+      const [
+        capturePayload,
+        realityPayload,
+        schedulePayload,
+        objectives,
+        activityPayload,
+      ] = await Promise.all([
+        read(endpoint(ref, 'execution-policy')),
+        read(endpoint(ref, 'reality-policy')),
+        read(endpoint(ref, 'children')),
+        objectiveSource.listObjectives('activity', ref),
+        read(`/api/v1/temporal/activities/${encodeURIComponent(ref)}`),
+      ]);
+      const activity = object(activityPayload);
+      if (activity.activity_ref !== ref) {
+        throw new Error('Identità dell’attività non valida.');
+      }
+      const acceptedSchedules = schedules(schedulePayload, ref);
+      const children = object(schedulePayload);
+      if (
+        !['none', 'confirm', 'block'].includes(
+          String(children.child_guard_mode),
+        )
+      ) {
+        throw new Error('Regola dell’attività non valida.');
+      }
+      const primary =
+        acceptedSchedules.find((item) => item.role === 'envelope') ??
+        acceptedSchedules.find((item) => item.role === null);
+      const [lock, reminder] = primary
+        ? await Promise.all([
+            lockSource.get(primary.scheduleRef),
+            reminderSource.get(primary.scheduleRef),
+          ])
+        : [null, null];
       return Object.freeze({
         capture: capture(capturePayload, ref),
         reality: reality(realityPayload, ref),
-        schedules: schedules(schedulePayload, ref),
+        schedules: acceptedSchedules,
         objectives,
+        lifeAreaRef: optionalText(activity.life_area_ref),
+        placementProtected: lock?.locked ?? false,
+        reminderLeadMinutes: reminder?.enabled ? reminder.leadMinutes : null,
+        childGuardMode:
+          children.child_guard_mode as ActivityEditSettings['childGuardMode'],
       });
     },
     async setCapture(

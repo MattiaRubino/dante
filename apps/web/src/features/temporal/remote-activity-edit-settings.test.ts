@@ -70,6 +70,7 @@ describe('Activity editor settings remote contract', () => {
           return Promise.resolve(
             response({
               parent_activity_ref: ref,
+              child_guard_mode: 'none',
               schedules: [
                 {
                   schedule_ref: 'schedule',
@@ -85,6 +86,10 @@ describe('Activity editor settings remote contract', () => {
             }),
           );
         if (path.endsWith('/objectives')) return Promise.resolve(response([]));
+        if (path.endsWith(`/activities/${ref}`))
+          return Promise.resolve(
+            response({ activity_ref: ref, life_area_ref: null }),
+          );
         throw new Error(`Unexpected path ${path}`);
       },
     );
