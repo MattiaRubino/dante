@@ -44,6 +44,7 @@ describe('Activity Inspector', () => {
         onDeleted={() => undefined}
       />,
     );
+    expect(await screen.findByText('Nota')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Modifica' }));
     await waitFor(() => expect(onEdit).toHaveBeenCalledWith(profile));
     expect(screen.queryByRole('textbox', { name: 'Titolo' })).toBeNull();

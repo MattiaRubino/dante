@@ -1542,6 +1542,12 @@
   margin: 8px 0;
 }
 
+.timeline-activity-inspector__details {
+  padding: 8px 0;
+  color: var(--dante-semantic-color-home-text-secondary, #b8c0c5);
+  white-space: pre-wrap;
+}
+
 .timeline-activity-inspector__confirmation {
   display: grid;
   gap: 10px;
