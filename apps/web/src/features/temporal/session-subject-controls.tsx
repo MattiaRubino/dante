@@ -68,6 +68,7 @@ export function SessionSubjectControls({
   interactive = true,
   allowLive = true,
   allowManual = false,
+  plannedScheduleRef = null,
 }: Readonly<{
   kind: SessionSubjectKind;
   subjectRef: string;
@@ -76,6 +77,7 @@ export function SessionSubjectControls({
   interactive?: boolean;
   allowLive?: boolean;
   allowManual?: boolean;
+  plannedScheduleRef?: string | null;
 }>) {
   const [sessions, setSessions] = useState<readonly TemporalSessionView[]>([]);
   const [pending, setPending] = useState(false);
@@ -86,8 +88,29 @@ export function SessionSubjectControls({
 
   const reload = useCallback(async () => {
     const listed = await source.list(kind, subjectRef);
-    setSessions(listed);
-  }, [kind, subjectRef]);
+    setSessions(
+      listed.filter(
+        (item) => (item.plannedScheduleRef ?? null) === plannedScheduleRef,
+      ),
+    );
+  }, [kind, subjectRef, plannedScheduleRef]);
+
+  useEffect(() => {
+    const refresh = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail === subjectRef) {
+        void reload().catch(() => undefined);
+      }
+    };
+    window.addEventListener('dante:session-changed', refresh);
+    return () => window.removeEventListener('dante:session-changed', refresh);
+  }, [reload, subjectRef]);
+
+  const changed = () => {
+    window.dispatchEvent(
+      new CustomEvent('dante:session-changed', { detail: subjectRef }),
+    );
+    return reload();
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -95,7 +118,12 @@ export function SessionSubjectControls({
       .list(kind, subjectRef)
       .then((listed) => {
         if (!cancelled) {
-          setSessions(listed);
+          setSessions(
+            listed.filter(
+              (item) =>
+                (item.plannedScheduleRef ?? null) === plannedScheduleRef,
+            ),
+          );
         }
       })
       .catch(() => {
@@ -106,7 +134,7 @@ export function SessionSubjectControls({
     return () => {
       cancelled = true;
     };
-  }, [kind, subjectRef]);
+  }, [kind, subjectRef, plannedScheduleRef]);
 
   const openSession = sessions.find((session) => session.open) ?? null;
   const durationSession = openSession ?? sessions[sessions.length - 1] ?? null;
@@ -119,9 +147,12 @@ export function SessionSubjectControls({
   const start = () => {
     if (!interactive) return;
     setPending(true);
-    void source
-      .start(kind, subjectRef, operationId())
-      .then(() => reload())
+    const command =
+      plannedScheduleRef === null
+        ? source.start(kind, subjectRef, operationId())
+        : source.startPlanned(subjectRef, plannedScheduleRef, operationId());
+    void command
+      .then(changed)
       .then(() => setMessage(`Sessione avviata · ${label}`))
       .catch((error: unknown) =>
         recoverAfterRejection('Avvio sessione rifiutato.', error),
@@ -138,7 +169,7 @@ export function SessionSubjectControls({
         openSession.timingMaterialStateRef,
         operationId(),
       )
-      .then(() => reload())
+      .then(changed)
       .then(() => setMessage(`Sessione chiusa · ${label}`))
       .catch((error: unknown) =>
         recoverAfterRejection('Chiusura sessione rifiutata.', error),
@@ -155,7 +186,7 @@ export function SessionSubjectControls({
         openSession.timingMaterialStateRef,
         operationId(),
       )
-      .then(() => reload())
+      .then(changed)
       .then(() => setMessage('Sessione in pausa · ' + label))
       .catch((error: unknown) =>
         recoverAfterRejection('Pausa sessione rifiutata.', error),
@@ -172,7 +203,7 @@ export function SessionSubjectControls({
         openSession.timingMaterialStateRef,
         operationId(),
       )
-      .then(() => reload())
+      .then(changed)
       .then(() => setMessage('Sessione ripresa · ' + label))
       .catch((error: unknown) =>
         recoverAfterRejection('Ripresa sessione rifiutata.', error),
@@ -203,7 +234,7 @@ export function SessionSubjectControls({
         started.toISOString(),
         ended.toISOString(),
       )
-      .then(() => reload())
+      .then(changed)
       .then(() => {
         setManualOpen(false);
         setManualStart('');
@@ -227,7 +258,35 @@ export function SessionSubjectControls({
         className="timeline-session-controls__runtime-actions"
         aria-label={`Sessione · ${label}`}
       >
-        {openSession === null ? (
+        {allowLive ? (
+          <>
+            <RuntimeButton
+              label={openSession?.paused ? 'Riprendi' : 'Avvia'}
+              symbol="▶"
+              pending={pending}
+              interactive={
+                interactive && (openSession === null || openSession.paused)
+              }
+              onClick={openSession?.paused ? resume : start}
+            />
+            <RuntimeButton
+              label="Pausa"
+              symbol="⏸"
+              pending={pending}
+              interactive={
+                interactive && openSession !== null && !openSession.paused
+              }
+              onClick={pause}
+            />
+            <RuntimeButton
+              label="Termina"
+              symbol="■"
+              pending={pending}
+              interactive={interactive && openSession !== null}
+              onClick={end}
+            />
+          </>
+        ) : openSession === null ? (
           allowLive ? (
             <RuntimeButton
               label="Avvia"

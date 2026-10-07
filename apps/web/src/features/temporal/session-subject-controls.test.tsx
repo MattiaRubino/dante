@@ -186,7 +186,9 @@ describe('SessionSubjectControls B08-D whole workflow', () => {
       'timing-start',
       'operation-id',
     );
-    expect(screen.queryByRole('button', { name: 'Termina' })).toBeNull();
+    expect(
+      screen.getByRole('button', { name: 'Termina' }).hasAttribute('disabled'),
+    ).toBe(false);
     mounted.unmount();
 
     render(

@@ -61,20 +61,21 @@
       "B14-REALITY-OBJECTIVES",
       "B14-RECURRING-REALITY-OBJECTIVES",
       "B14-ROUTINE-POLICY-CLEANUP",
-      "B14-RESOLUTION-INBOX"
+      "B14-RESOLUTION-INBOX",
+      "B14-PLANNED-SESSION-EXECUTION"
     ],
     "standalone_entries": {
-      "tables": 229,
+      "tables": 230,
       "views": 5,
-      "routines": 191,
-      "total": 425
+      "routines": 193,
+      "total": 428
     },
     "embedded_objects": {
       "triggers": 103,
-      "physical_indexes": 467
+      "physical_indexes": 469
     },
     "constraints": {
-      "foreign_keys": 401,
+      "foreign_keys": 403,
       "check_constraints": 569
     }
   },

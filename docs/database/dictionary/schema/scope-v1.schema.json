@@ -124,7 +124,7 @@
       "properties": {
         "completed_stages": {
           "type": "array",
-          "maxItems": 26,
+          "maxItems": 39,
           "uniqueItems": true,
           "items": {
             "enum": [
@@ -153,7 +153,20 @@
               "B14-U6-GUARD",
               "B14-U6-MANUAL",
               "B14-U6-ROLE",
-              "B14-U6-NAME"
+              "B14-U6-NAME",
+              "B14-U6-REALITY",
+              "B14-ACTIVITY-INTERVALS",
+              "B14-ROUTINE-OCCURRENCE-POLICY",
+              "B14-OPTIONAL-ROUTINE-LIFE-AREA",
+              "B14-ROUTINE-LISTING",
+              "B14-PLACEMENT-LOCK",
+              "B14-RECURRING-ACTIVITY-TEMPLATE",
+              "B14-EVENT-OCCURRENCE-POLICY",
+              "B14-REALITY-OBJECTIVES",
+              "B14-RECURRING-REALITY-OBJECTIVES",
+              "B14-ROUTINE-POLICY-CLEANUP",
+              "B14-RESOLUTION-INBOX",
+              "B14-PLANNED-SESSION-EXECUTION"
             ]
           }
         },
@@ -418,7 +431,20 @@
                   "B14-U6-GUARD",
                   "B14-U6-MANUAL",
                   "B14-U6-ROLE",
-                  "B14-U6-NAME"
+                  "B14-U6-NAME",
+                  "B14-U6-REALITY",
+                  "B14-ACTIVITY-INTERVALS",
+                  "B14-ROUTINE-OCCURRENCE-POLICY",
+                  "B14-OPTIONAL-ROUTINE-LIFE-AREA",
+                  "B14-ROUTINE-LISTING",
+                  "B14-PLACEMENT-LOCK",
+                  "B14-RECURRING-ACTIVITY-TEMPLATE",
+                  "B14-EVENT-OCCURRENCE-POLICY",
+                  "B14-REALITY-OBJECTIVES",
+                  "B14-RECURRING-REALITY-OBJECTIVES",
+                  "B14-ROUTINE-POLICY-CLEANUP",
+                  "B14-RESOLUTION-INBOX",
+                  "B14-PLANNED-SESSION-EXECUTION"
                 ]
               }
             }

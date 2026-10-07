@@ -1,0 +1,48 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "table:dante.session_planned_schedule_link",
+    "type": "table", "schema": "dante", "name": "session_planned_schedule_link",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Immutable provenance of an explicitly started real Session from one planned Activity Schedule; not an Actual realization.",
+  "classification": {"persistence_role":"session_control","canonicality":"canonical","family":"session"},
+  "semantic_traceability": {
+    "authority_sources": ["docs/domain/concepts/session.md", "docs/domain/decisions/activity-intervals-and-sessions-v2.md"],
+    "domain_concepts": ["Session", "Schedule", "Activity"],
+    "logical_families": ["Session"],
+    "reference_families": ["NativeRef", "ScopedRecordRef"],
+    "material_facets": []
+  },
+  "implementation": {
+    "introducing_stage": "B14-PLANNED-SESSION-EXECUTION",
+    "alembic_revision": "20261007_118",
+    "sqlalchemy": {"mode":"orm_row","module":"dante.platform.database.mappings.session","symbol":"SessionPlannedScheduleLinkRow"},
+    "runtime_acl_stage": "B14-PLANNED-SESSION-EXECUTION"
+  },
+  "structure": {
+    "columns": [
+      {"name":"session_ref","postgres_type":"uuid","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Real Session identity.","semantic_type":"NativeRef","value_contract":"UUIDv7."},
+      {"name":"schedule_ref","postgres_type":"uuid","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Planned Activity Schedule selected by the user.","semantic_type":"ScopedRecordRef","value_contract":"Accepted planned role."},
+      {"name":"linked_at","postgres_type":"timestamp with time zone","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Instant of explicit start association.","semantic_type":null,"value_contract":null}
+    ],
+    "primary_key": {"name":"pk_session_planned_schedule_link","columns":["session_ref"],"reason":"A real Session originates from at most one planned Schedule.","deferrable":false,"initially":"NOT DEFERRABLE","enforced":true},
+    "foreign_keys": [
+      {"name":"fk_session_planned_schedule_link_session","columns":["session_ref"],"target":{"schema":"dante","table":"session_execution_subject","columns":["session_ref"]},"on_delete":"NO ACTION","on_update":"NO ACTION","match_type":"SIMPLE","deferrable":false,"initially":"NOT DEFERRABLE","enforced":true,"validated":true,"reference_family":"NativeRef","cardinality":"many_to_one","semantic_reason":"The execution fact must exist."},
+      {"name":"fk_session_planned_schedule_link_role","columns":["schedule_ref"],"target":{"schema":"dante","table":"activity_schedule_role","columns":["schedule_ref"]},"on_delete":"NO ACTION","on_update":"NO ACTION","match_type":"SIMPLE","deferrable":false,"initially":"NOT DEFERRABLE","enforced":true,"validated":true,"reference_family":"ScopedRecordRef","cardinality":"many_to_one","semantic_reason":"Provenance survives later planning revisions."}
+    ],
+    "unique_constraints": [], "check_constraints": [],
+    "indexes": [
+      {"name":"pk_session_planned_schedule_link","method":"btree","unique":true,"keys":["session_ref"],"predicate":null,"include":[],"source":"primary_key","reason":"Session provenance lookup.","valid":true,"ready":true,"live":true},
+      {"name":"ix_session_planned_schedule_link_schedule_ref","method":"btree","unique":false,"keys":["schedule_ref"],"predicate":null,"include":[],"source":"explicit_index","reason":"Planned Schedule execution lookup.","valid":true,"ready":true,"live":true}
+    ],
+    "triggers": [],
+    "table": {"persistence":"permanent","access_method":"heap","partitioned":false,"row_security":false,"force_row_security":false,"replica_identity":"default","reloptions":[]},
+    "view": null, "routine": null
+  },
+  "state_history": {"material_state_behavior":null,"current_binding":"Link is established atomically with Session start.","chronology":"Start never infers Actual realization.","immutability_policy":"Insert once, no runtime update or delete."},
+  "lifecycle": {"retention":"Retained with Session execution history.","redaction":null,"retirement_tombstone":null,"delete_behavior":"No runtime deletion."},
+  "security": {"owner_role":"dante_owner","default_deny_non_owner":true,"expected_grants":[]},
+  "proof": {"obligations":["Self-owned planned role only", "Replay preserves one link", "No inferred Actual"],"test_refs":["apps/backend/tests/integration/temporal/test_b14_planned_session_execution_link.py"],"staged_evidence":[]}
+}

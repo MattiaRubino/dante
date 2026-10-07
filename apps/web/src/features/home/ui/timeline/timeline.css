@@ -918,6 +918,23 @@
   padding: 7px 9px 3px 12px;
 }
 
+.timeline-event-card__heading {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.timeline-event-card__heading .timeline-event-card__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: auto;
+}
+
+.timeline-event-card__heading .timeline-activity-session-card-controls {
+  flex: 0 0 auto;
+}
+
 .timeline-event-card__title,
 .timeline-event-card__time {
   position: relative;
@@ -1492,6 +1509,8 @@
 
 .timeline-event-modal {
   width: min(520px, calc(100vw - 40px));
+  max-height: min(78vh, 720px);
+  overflow: auto;
   padding: 20px;
   border: 1px solid
     var(--dante-semantic-color-home-border-strong, rgba(177, 192, 198, 0.19));
@@ -1499,6 +1518,36 @@
   color: var(--dante-semantic-color-home-text-primary, #f2f4f2);
   background: var(--dante-semantic-color-home-surface-overlay, #080f1d);
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.38);
+}
+
+.timeline-event-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.timeline-event-modal__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.timeline-event-modal__header-actions button {
+  min-width: 29px;
+  min-height: 29px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle);
+  border-radius: 8px;
+  color: inherit;
+  background: var(--dante-semantic-color-home-surface-control);
+  cursor: pointer;
+}
+
+.timeline-event-modal__planned .timeline-activity-planned-sessions {
+  position: static;
+  margin-top: 12px;
+  box-shadow: none;
 }
 
 .timeline-event-modal h3 {

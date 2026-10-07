@@ -12,6 +12,7 @@ import {
 import { useTranslation } from 'react-i18next';
 
 import { ActivitySessionCardControls } from '../../../temporal/activity-session-card-controls';
+import { ActivityPlannedSessionsCardDetail } from '../../../temporal/activity-planned-sessions-card-detail';
 import { computeTimelineGaps } from './model/timeline-layout';
 import {
   TIMELINE_MINUTES_PER_DAY,
@@ -272,19 +273,34 @@ function TimelineEventCard({
         }
         onFocusEvent(event.id);
       }}
+      onDoubleClick={(clickEvent) => {
+        if ((clickEvent.target as Element).closest('button')) return;
+        clickEvent.stopPropagation();
+        onOpenEventDetail(event, clickEvent.currentTarget);
+      }}
     >
       {isActivity ? <TimelineActivityFrame /> : null}
       <div className="timeline-event-card__top">
-        <button
-          className="timeline-event-card__title"
-          type="button"
-          onClick={(clickEvent) => {
-            clickEvent.stopPropagation();
-            onOpenEventDetail(event, clickEvent.currentTarget);
-          }}
-        >
-          {event.title}
-        </button>
+        <div className="timeline-event-card__heading">
+          <button
+            className="timeline-event-card__title"
+            type="button"
+            onClick={(clickEvent) => {
+              clickEvent.stopPropagation();
+              onOpenEventDetail(event, clickEvent.currentTarget);
+            }}
+          >
+            {event.title}
+          </button>
+          {sessionActivityRef === null ? null : (
+            <ActivitySessionCardControls
+              activityRef={sessionActivityRef}
+              label={event.title}
+              interactive={inlineActionsEnabled}
+              showPlanned={false}
+            />
+          )}
+        </div>
         <button
           className="timeline-event-card__time"
           type="button"
@@ -305,13 +321,13 @@ function TimelineEventCard({
           {formatTimelineMinute(event.endMinute)}
         </button>
         {cardMeta ? (
-        <div className="timeline-event-card__meta">{cardMeta}</div>
-      ) : null}
+          <div className="timeline-event-card__meta">{cardMeta}</div>
+        ) : null}
         {sessionActivityRef === null ? null : (
-          <ActivitySessionCardControls
+          <ActivityPlannedSessionsCardDetail
             activityRef={sessionActivityRef}
-            label={event.title}
-            interactive={inlineActionsEnabled}
+            visible
+            variant="indicator"
           />
         )}
       </div>
@@ -819,7 +835,10 @@ export function TimelineDayStream({
     ) {
       return;
     }
-    if (event.canonicalBasis?.kind === 'scheduled-activity' && event.canonicalBasis.placementLocked) {
+    if (
+      event.canonicalBasis?.kind === 'scheduled-activity' &&
+      event.canonicalBasis.placementLocked
+    ) {
       return;
     }
     const target = pointerEvent.target;
@@ -932,7 +951,10 @@ export function TimelineDayStream({
     dateKey: string,
     direction: 'earlier' | 'later' | 'previous-day' | 'next-day',
   ) => {
-    if (event.canonicalBasis?.kind === 'scheduled-activity' && event.canonicalBasis.placementLocked) {
+    if (
+      event.canonicalBasis?.kind === 'scheduled-activity' &&
+      event.canonicalBasis.placementLocked
+    ) {
       return;
     }
     const commitKeyboardMove = (

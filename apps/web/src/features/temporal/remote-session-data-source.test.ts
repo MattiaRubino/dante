@@ -8,6 +8,7 @@ import {
 const SESSION = '01991f2a-1234-7abc-8def-1234567890ab';
 const SUBJECT = '01991f2a-1234-7abc-8def-1234567890ac';
 const STATE = '01991f2a-1234-7abc-8def-1234567890ad';
+const PLANNED = '01991f2a-1234-7abc-8def-1234567890b0';
 
 const openSession = {
   session_ref: SESSION,
@@ -34,6 +35,25 @@ const minimumEvaluation = {
 } as const;
 
 describe('remote session data source', () => {
+  it('starts one planned Activity row as a linked real Session', async () => {
+    const fetchFn = vi.fn<typeof fetch>(async (input, init) => {
+      if (String(input).endsWith('/api/v1/auth/session')) {
+        return Response.json({ authenticated: true, csrf_token: 'csrf' });
+      }
+      expect(String(input)).toBe(
+        `/api/v1/temporal/activities/${SUBJECT}/planned-sessions/${PLANNED}/sessions`,
+      );
+      expect(init?.method).toBe('POST');
+      expect(JSON.parse(String(init?.body))).toEqual({
+        operation_id: 'planned-1',
+      });
+      return Response.json({ ...openSession, planned_schedule_ref: PLANNED });
+    });
+    const started = await createRemoteTemporalSessionDataSource(
+      fetchFn,
+    ).startPlanned(SUBJECT, PLANNED, 'planned-1');
+    expect(started.plannedScheduleRef).toBe(PLANNED);
+  });
   it('starts an Activity Session through the canonical endpoint', async () => {
     const fetchFn = vi.fn<typeof fetch>(async (input, init) => {
       const url = String(input);
@@ -73,7 +93,9 @@ describe('remote session data source', () => {
 
   it('lists authoritative Sessions without acquiring a CSRF token', async () => {
     const fetchFn = vi.fn<typeof fetch>(async (input, init) => {
-      expect(String(input)).toBe(`/api/v1/temporal/activities/${SUBJECT}/sessions`);
+      expect(String(input)).toBe(
+        `/api/v1/temporal/activities/${SUBJECT}/sessions`,
+      );
       expect(init?.method).toBe('GET');
       return Response.json([openSession]);
     });
@@ -97,7 +119,8 @@ describe('remote session data source', () => {
       {
         constraintRef: minimumEvaluation.constraint_ref,
         materialStateRef: minimumEvaluation.material_state_ref,
-        minimumDurationMicroseconds: minimumEvaluation.minimum_duration_microseconds,
+        minimumDurationMicroseconds:
+          minimumEvaluation.minimum_duration_microseconds,
         strength: 'soft',
         evaluation: 'pending',
       },
@@ -153,8 +176,12 @@ describe('remote session data source', () => {
     const source = createRemoteTemporalSessionDataSource(fetchFn);
     const paused = await source.pause(SESSION, STATE, 'op-transition');
     expect(paused.paused).toBe(true);
-    expect(paused.elapsedSeconds).toBe(paused.activeSeconds + paused.pausedSeconds);
-    expect((await source.resume(SESSION, STATE, 'op-transition')).paused).toBe(false);
+    expect(paused.elapsedSeconds).toBe(
+      paused.activeSeconds + paused.pausedSeconds,
+    );
+    expect((await source.resume(SESSION, STATE, 'op-transition')).paused).toBe(
+      false,
+    );
   });
 
   it('rejects malformed duration totals at the transport boundary', async () => {

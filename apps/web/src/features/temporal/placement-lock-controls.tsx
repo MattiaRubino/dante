@@ -8,7 +8,10 @@ import { invalidateTemporalTimelineRead } from './timeline-invalidation';
 
 const source = createRemotePlacementLockDataSource();
 
-export function PlacementLockControls({ scheduleRef }: Readonly<{ scheduleRef: string }>) {
+export function PlacementLockControls({
+  scheduleRef,
+  variant = 'text',
+}: Readonly<{ scheduleRef: string; variant?: 'text' | 'icon' }>) {
   const [state, setState] = useState<PlacementLockState | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -18,10 +21,16 @@ export function PlacementLockControls({ scheduleRef }: Readonly<{ scheduleRef: s
     setState(null);
     setError(null);
     void source.get(scheduleRef).then(
-      (value) => { if (active) setState(value); },
-      () => { if (active) setError('Impossibile leggere il blocco spostamenti.'); },
+      (value) => {
+        if (active) setState(value);
+      },
+      () => {
+        if (active) setError('Impossibile leggere il blocco spostamenti.');
+      },
     );
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [scheduleRef]);
 
   const toggle = async () => {
@@ -29,7 +38,11 @@ export function PlacementLockControls({ scheduleRef }: Readonly<{ scheduleRef: s
     setPending(true);
     setError(null);
     try {
-      const next = await source.set(scheduleRef, !state.locked, state.revision || null);
+      const next = await source.set(
+        scheduleRef,
+        !state.locked,
+        state.revision || null,
+      );
       setState(next);
       invalidateTemporalTimelineRead();
     } catch {
@@ -41,9 +54,23 @@ export function PlacementLockControls({ scheduleRef }: Readonly<{ scheduleRef: s
 
   return (
     <div className="timeline-placement-lock-controls">
-      <button type="button" disabled={pending || state === null} onClick={() => void toggle()}
-        aria-pressed={state?.locked ?? false}>
-        {state?.locked ? 'Sblocca spostamenti' : 'Blocca spostamenti'}
+      <button
+        type="button"
+        disabled={pending || state === null}
+        onClick={() => void toggle()}
+        aria-pressed={state?.locked ?? false}
+        aria-label={
+          state?.locked ? 'Sblocca spostamenti' : 'Blocca spostamenti'
+        }
+        title={state?.locked ? 'Sblocca spostamenti' : 'Blocca spostamenti'}
+      >
+        {variant === 'icon' ? (
+          <span aria-hidden="true">{state?.locked ? '▣' : '▢'}</span>
+        ) : state?.locked ? (
+          'Sblocca spostamenti'
+        ) : (
+          'Blocca spostamenti'
+        )}
       </button>
       {error ? <span role="alert">{error}</span> : null}
     </div>

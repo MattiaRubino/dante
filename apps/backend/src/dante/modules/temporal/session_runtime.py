@@ -78,6 +78,7 @@ class SessionView:
     timing_material_state_ref: MaterialStateRef
     started_at: datetime
     ended_at: datetime | None
+    planned_schedule_ref: ScopedRecordRef | None = None
     replayed: bool = False
     paused: bool = False
     evaluated_at: datetime | None = None
@@ -163,6 +164,44 @@ class SessionApplication:
                 "state_ref": new_material_state_ref(),
                 "subject_kind": subject_kind,
                 "subject": subject_native_ref,
+            },
+        )
+        return await self._hydrate(self_person_ref, view)
+
+    async def start_planned(
+        self,
+        *,
+        self_person_ref: NativeRef,
+        operation_id: str,
+        activity_ref: NativeRef,
+        schedule_ref: ScopedRecordRef,
+    ) -> SessionView:
+        normalized = _normalize_operation_id(operation_id)
+        fingerprint = _fingerprint(
+            {
+                "version": "1",
+                "command": "start_planned",
+                "activity_ref": str(activity_ref),
+                "schedule_ref": str(schedule_ref),
+            }
+        )
+        view = await self._call(
+            """
+            SELECT session_ref, subject_native_ref, timing_material_state_ref,
+                   started_at, ended_at, replayed
+              FROM dante.start_self_planned_activity_session(
+                :actor, :operation_id, :fingerprint, :session_ref, :state_ref,
+                :activity_ref, :schedule_ref
+              )
+            """,
+            {
+                "actor": self_person_ref,
+                "operation_id": normalized,
+                "fingerprint": fingerprint,
+                "session_ref": new_native_ref(),
+                "state_ref": new_material_state_ref(),
+                "activity_ref": activity_ref,
+                "schedule_ref": schedule_ref,
             },
         )
         return await self._hydrate(self_person_ref, view)
@@ -363,7 +402,9 @@ class SessionApplication:
                    constraint_row.constraint_ref,
                    state.material_state_ref AS constraint_material_state_ref,
                    state.strength_code,
-                   duration_state.duration_microseconds
+                   duration_state.duration_microseconds,
+                   dante.get_self_session_planned_schedule(:actor, :session_ref)
+                     AS planned_schedule_ref
               FROM dante.get_self_session_runtime_metrics(
                 :actor, :session_ref, :material_state_ref
               ) AS metrics
@@ -409,6 +450,11 @@ class SessionApplication:
             elapsed_seconds=float(row["elapsed_seconds"]),
             paused_seconds=float(row["paused_seconds"]),
             active_seconds=float(row["active_seconds"]),
+            planned_schedule_ref=(
+                ScopedRecordRef(UUID(str(row["planned_schedule_ref"])))
+                if row["planned_schedule_ref"] is not None
+                else None
+            ),
             duration_evaluations=self._duration_evaluations(
                 rows=rows,
                 session=view,
@@ -488,7 +534,7 @@ class SessionApplication:
     def _raise_known(self, exc: BaseException) -> None:
         name = _constraint_name(exc)
         message = str(getattr(exc, "orig", exc))
-        if name in {"session_operation_reused", "session_manual_record_operation_reused"} or "reused" in message:
+        if name in {"session_operation_reused", "session_manual_record_operation_reused", "session_planned_schedule_operation_conflict"} or "reused" in message:
             raise SessionOperationReuseError("Session operation id was reused.") from exc
         if name in {"session_execution_policy_live_required", "session_manual_record_policy_required"}:
             raise SessionCaptureDisabledError("Session capture is disabled by Activity policy.") from exc

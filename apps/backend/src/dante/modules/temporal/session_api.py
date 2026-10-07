@@ -23,7 +23,7 @@ from dante.modules.temporal.session_runtime import (
     SessionResumeConflictError,
     SessionView,
 )
-from dante.platform.database.references import MaterialStateRef, NativeRef
+from dante.platform.database.references import MaterialStateRef, NativeRef, ScopedRecordRef
 from dante.platform.http.problem import ProblemError
 
 router = APIRouter(prefix="/api/v1/temporal", tags=["temporal"])
@@ -61,6 +61,7 @@ class SessionResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     session_ref: UUID
+    planned_schedule_ref: UUID | None = None
     subject_native_ref: UUID
     timing_material_state_ref: UUID
     started_at: datetime
@@ -89,6 +90,7 @@ def _response(view: SessionView) -> SessionResponse:
         raise SessionPersistenceError("Session runtime metrics are unavailable.")
     return SessionResponse(
         session_ref=view.session_ref,
+        planned_schedule_ref=view.planned_schedule_ref,
         subject_native_ref=view.subject_native_ref,
         timing_material_state_ref=view.timing_material_state_ref,
         started_at=view.started_at,
@@ -219,6 +221,38 @@ async def start_activity_session(
     response: Response,
 ) -> SessionResponse:
     return await _start("activity", activity_ref, payload, context, application, response)
+
+
+@router.post(
+    "/activities/{activity_ref}/planned-sessions/{schedule_ref}/sessions",
+    response_model=SessionResponse,
+    operation_id="temporal_start_planned_activity_session",
+)
+async def start_planned_activity_session(
+    activity_ref: UUID,
+    schedule_ref: UUID,
+    payload: SessionCommand,
+    context: MutatingContext,
+    application: Application,
+    response: Response,
+) -> SessionResponse:
+    try:
+        view = await application.start_planned(
+            self_person_ref=context.self_person_ref,
+            operation_id=payload.operation_id,
+            activity_ref=NativeRef(activity_ref),
+            schedule_ref=ScopedRecordRef(schedule_ref),
+        )
+    except (
+        SessionInputError,
+        SessionNotFoundError,
+        SessionOperationReuseError,
+        SessionPersistenceError,
+        SessionCaptureDisabledError,
+    ) as exc:
+        raise _problem(exc) from exc
+    response.status_code = 200 if view.replayed else 201
+    return _response(view)
 
 
 @router.post(

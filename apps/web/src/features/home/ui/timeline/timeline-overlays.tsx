@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { ActualRealizationControls } from '../../../temporal/actual-realization-controls';
 import { ResponsibilityControls } from '../../../temporal/responsibility-controls';
 import { SessionSubjectControls } from '../../../temporal/session-subject-controls';
+import { ActivityPlannedSessionsCardDetail } from '../../../temporal/activity-planned-sessions-card-detail';
 import { ScheduleReminderControls } from '../../../temporal/schedule-reminder-controls';
 import { PlacementLockControls } from '../../../temporal/placement-lock-controls';
 
@@ -815,12 +816,14 @@ type EventDetailDialogProps = Readonly<{
   opener: HTMLElement | null;
   canUnschedule: boolean;
   pending: boolean;
-  sessionSubject?:
-    | Readonly<{ kind: 'activity' | 'occurrence'; ref: string }>
-    | null;
-  responsibilitySubject?:
-    | Readonly<{ kind: 'activity' | 'event'; ref: string }>
-    | null;
+  sessionSubject?: Readonly<{
+    kind: 'activity' | 'occurrence';
+    ref: string;
+  }> | null;
+  responsibilitySubject?: Readonly<{
+    kind: 'activity' | 'event';
+    ref: string;
+  }> | null;
   reminderScheduleRef?: string | null;
   placementLockScheduleRef?: string | null;
   onUnschedule: () => void;
@@ -863,7 +866,9 @@ export function EventDetailDialog({
           return;
         }
         event.preventDefault();
-        const activeIndex = focusable.indexOf(document.activeElement as HTMLElement);
+        const activeIndex = focusable.indexOf(
+          document.activeElement as HTMLElement,
+        );
         const offset = event.shiftKey ? -1 : 1;
         const nextIndex =
           (activeIndex + offset + focusable.length) % focusable.length;
@@ -900,7 +905,27 @@ export function EventDetailDialog({
         aria-modal="true"
         aria-labelledby="timeline-event-dialog-title"
       >
-        <h3 id="timeline-event-dialog-title">{detail.title}</h3>
+        <div className="timeline-event-modal__header">
+          <h3 id="timeline-event-dialog-title">{detail.title}</h3>
+          <div className="timeline-event-modal__header-actions">
+            {placementLockScheduleRef === null ? null : (
+              <PlacementLockControls
+                key={placementLockScheduleRef}
+                scheduleRef={placementLockScheduleRef}
+                variant="icon"
+              />
+            )}
+            <button
+              ref={closeButtonRef}
+              type="button"
+              aria-label="Chiudi Inspector"
+              title="Chiudi Inspector"
+              onClick={onClose}
+            >
+              ×
+            </button>
+          </div>
+        </div>
         <p>
           {formatTimelineMinute(detail.startMinute)}–
           {formatTimelineMinute(detail.endMinute)} · {detail.groupLabel}
@@ -913,20 +938,36 @@ export function EventDetailDialog({
             })}
           </p>
         ) : null}
+        {sessionSubject?.kind === 'activity' ? (
+          <section
+            className="timeline-event-modal__planned"
+            aria-label="Sessioni pianificate"
+          >
+            <ActivityPlannedSessionsCardDetail
+              activityRef={sessionSubject.ref}
+              visible
+            />
+          </section>
+        ) : null}
         {detail.ownerKind === 'event' && detail.eventRef ? (
           <TimelineEventAgendaEditor eventRef={detail.eventRef} />
         ) : null}
-        <div className="timeline-event-ai-note">
-          {t(($) => $.common.home.timeline.detail.aiNote)}
-        </div>
+        {detail.ownerKind === undefined ? (
+          <div className="timeline-event-ai-note">
+            {t(($) => $.common.home.timeline.detail.aiNote)}
+          </div>
+        ) : null}
         {reminderScheduleRef === null ? null : (
-          <ScheduleReminderControls key={reminderScheduleRef} scheduleRef={reminderScheduleRef} />
-        )}
-        {placementLockScheduleRef === null ? null : (
-          <PlacementLockControls key={placementLockScheduleRef} scheduleRef={placementLockScheduleRef} />
+          <ScheduleReminderControls
+            key={reminderScheduleRef}
+            scheduleRef={reminderScheduleRef}
+          />
         )}
         {detail.realitySubject === undefined ? null : (
-          <div className="timeline-event-modal__reality" data-timeline-runtime-reality>
+          <div
+            className="timeline-event-modal__reality"
+            data-timeline-runtime-reality
+          >
             <ActualRealizationControls
               kind={detail.realitySubject.kind}
               subjectRef={detail.realitySubject.ref}
@@ -964,12 +1005,7 @@ export function EventDetailDialog({
                   : t(($) => $.common.home.timeline.detail.unschedule)}
             </button>
           ) : null}
-          <button
-            ref={closeButtonRef}
-            type="button"
-            disabled={pending}
-            onClick={onClose}
-          >
+          <button type="button" disabled={pending} onClick={onClose}>
             {t(($) => $.common.home.timeline.detail.close)}
           </button>
         </div>

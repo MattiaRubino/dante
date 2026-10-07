@@ -15,6 +15,7 @@ export type TemporalSessionDurationEvaluation = Readonly<{
 
 export type TemporalSessionView = Readonly<{
   sessionRef: string;
+  plannedScheduleRef?: string | null;
   subjectNativeRef: string;
   timingMaterialStateRef: string;
   startedAt: string;
@@ -156,6 +157,10 @@ function view(value: unknown): TemporalSessionView {
   }
   return Object.freeze({
     sessionRef: uuid(payload.session_ref, 'session_ref'),
+    plannedScheduleRef:
+      payload.planned_schedule_ref == null
+        ? null
+        : uuid(payload.planned_schedule_ref, 'planned_schedule_ref'),
     subjectNativeRef: uuid(payload.subject_native_ref, 'subject_native_ref'),
     timingMaterialStateRef: uuid(
       payload.timing_material_state_ref,
@@ -255,6 +260,19 @@ export function createRemoteTemporalSessionDataSource(
           ? `/api/v1/temporal/activities/${encodeURIComponent(subjectRef)}/sessions`
           : `/api/v1/temporal/occurrences/${encodeURIComponent(subjectRef)}/sessions`;
       return view(await send(path, 'POST', { operation_id: operationId }));
+    },
+    async startPlanned(
+      activityRef: string,
+      scheduleRef: string,
+      operationId: string,
+    ): Promise<TemporalSessionView> {
+      return view(
+        await send(
+          `/api/v1/temporal/activities/${encodeURIComponent(activityRef)}/planned-sessions/${encodeURIComponent(scheduleRef)}/sessions`,
+          'POST',
+          { operation_id: operationId },
+        ),
+      );
     },
     async recordManual(
       activityRef: string,

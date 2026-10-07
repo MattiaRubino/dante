@@ -16,7 +16,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column
 
 from dante.platform.database.metadata import Base
-from dante.platform.database.references import MaterialStateRef, NativeRef
+from dante.platform.database.references import MaterialStateRef, NativeRef, ScopedRecordRef
 
 
 class SessionTimingStateRow(Base):
@@ -248,6 +248,29 @@ class SessionExecutionSubjectRow(Base):
 
     session_ref: Mapped[NativeRef] = mapped_column(primary_key=True)
     subject_native_ref: Mapped[NativeRef] = mapped_column(nullable=False)
+
+
+class SessionPlannedScheduleLinkRow(Base):
+    """Optional immutable provenance from a real Session to one planned Schedule."""
+
+    __tablename__ = "session_planned_schedule_link"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["session_ref"], ["dante.session_execution_subject.session_ref"],
+            name="fk_session_planned_schedule_link_session",
+            onupdate="NO ACTION", ondelete="NO ACTION",
+        ),
+        ForeignKeyConstraint(
+            ["schedule_ref"], ["dante.activity_schedule_role.schedule_ref"],
+            name="fk_session_planned_schedule_link_role",
+            onupdate="NO ACTION", ondelete="NO ACTION",
+        ),
+        Index("ix_session_planned_schedule_link_schedule_ref", "schedule_ref"),
+    )
+
+    session_ref: Mapped[NativeRef] = mapped_column(primary_key=True)
+    schedule_ref: Mapped[ScopedRecordRef] = mapped_column(nullable=False)
+    linked_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
 
 class SessionStartOperationRow(Base):

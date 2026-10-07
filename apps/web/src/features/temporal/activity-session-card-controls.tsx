@@ -40,11 +40,13 @@ export function ActivitySessionCardControls({
   activityRef,
   label,
   interactive = true,
+  showPlanned = true,
   source = defaultSource,
 }: Readonly<{
   activityRef: string;
   label: string;
   interactive?: boolean;
+  showPlanned?: boolean;
   source?: TemporalSessionCapabilityDataSource;
 }>) {
   const [mode, setMode] = useState<SessionCaptureMode | null>(null);
@@ -93,7 +95,13 @@ export function ActivitySessionCardControls({
           allowLive
         />
       ) : null}
-      <ActivityPlannedSessionsCardDetail activityRef={activityRef} visible />
+      {showPlanned ? (
+        <ActivityPlannedSessionsCardDetail
+          activityRef={activityRef}
+          visible
+          variant="indicator"
+        />
+      ) : null}
     </div>
   );
 }

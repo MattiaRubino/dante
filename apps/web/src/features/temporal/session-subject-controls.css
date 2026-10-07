@@ -62,8 +62,13 @@
 }
 
 .timeline-session-controls__runtime-button:disabled {
-  cursor: wait;
+  cursor: default;
   opacity: 0.58;
+}
+
+.timeline-session-controls__runtime-button[aria-label='Termina'] {
+  border-color: rgba(236, 81, 88, 0.45);
+  color: #ff8990;
 }
 
 .timeline-session-duration,
