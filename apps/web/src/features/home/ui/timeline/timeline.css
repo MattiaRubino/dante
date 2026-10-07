@@ -1520,9 +1520,19 @@
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.38);
 }
 
-.timeline-event-modal:has(.timeline-activity-inspector__editor) {
-  width: min(760px, calc(100vw - 40px));
-  max-height: min(88vh, 900px);
+.timeline-event-modal--edit {
+  display: flex;
+  flex-direction: column;
+  width: min(1040px, calc(100vw - 56px));
+  height: calc(100dvh - 56px);
+  max-height: calc(100dvh - 56px);
+  padding: 0 24px;
+  overflow: hidden;
+  border-color: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-border-subtle) 78%,
+    var(--dante-semantic-color-home-chrome-active, #ea5c12)
+  );
 }
 
 .timeline-activity-inspector__toolbar {
@@ -1532,7 +1542,6 @@
   margin: 8px 0;
 }
 
-.timeline-activity-inspector__editor,
 .timeline-activity-inspector__confirmation {
   display: grid;
   gap: 10px;
@@ -1541,19 +1550,19 @@
   border-radius: 12px;
 }
 
-.timeline-activity-inspector__editor label {
+.timeline-activity-editor label {
   display: grid;
   gap: 5px;
   font-size: 12px;
 }
 
-.timeline-activity-inspector__editor label:has(input[type='checkbox']) {
+.timeline-activity-editor label:has(input[type='checkbox']) {
   display: flex;
   align-items: center;
 }
 
-.timeline-activity-inspector__editor input:not([type='checkbox']):not([type='color']),
-.timeline-activity-inspector__editor textarea {
+.timeline-activity-editor input:not([type='checkbox']):not([type='color']),
+.timeline-activity-editor textarea {
   width: 100%;
   padding: 8px;
   border: 1px solid var(--dante-semantic-color-home-border-strong);
@@ -1563,7 +1572,7 @@
 }
 
 .timeline-activity-inspector__toolbar button,
-.timeline-activity-inspector__editor button,
+.timeline-activity-editor button,
 .timeline-activity-inspector__confirmation button {
   padding: 7px 10px;
   border: 1px solid var(--dante-semantic-color-home-border-subtle);
@@ -1571,6 +1580,66 @@
   color: inherit;
   background: var(--dante-semantic-color-home-surface-control);
   cursor: pointer;
+}
+
+.timeline-event-modal--edit .timeline-event-modal__header {
+  flex: 0 0 auto;
+  align-items: center;
+  margin: 0 -24px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--dante-semantic-color-home-border-subtle);
+}
+
+.timeline-activity-editor {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.timeline-activity-editor__body {
+  flex: 1 1 auto;
+  display: grid;
+  align-content: start;
+  gap: 24px;
+  padding: 26px 4px;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+.timeline-activity-editor__title input {
+  font-size: 22px;
+}
+
+.timeline-activity-editor__fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.timeline-activity-editor__fields textarea {
+  min-height: 128px;
+  resize: vertical;
+}
+
+.timeline-activity-editor__fields fieldset {
+  border: 1px solid var(--dante-semantic-color-home-border-subtle);
+  border-radius: 12px;
+}
+
+.timeline-activity-editor__actions {
+  display: flex;
+  flex: 0 0 auto;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 0;
+  border-top: 1px solid var(--dante-semantic-color-home-border-subtle);
+}
+
+@media (max-width: 620px) {
+  .timeline-activity-editor__fields {
+    grid-template-columns: 1fr;
+  }
 }
 
 .timeline-event-modal__header {

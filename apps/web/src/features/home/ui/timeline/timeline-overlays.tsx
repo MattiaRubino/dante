@@ -19,6 +19,7 @@ import { ActivityPlannedSessionsCardDetail } from '../../../temporal/activity-pl
 import { ScheduleReminderControls } from '../../../temporal/schedule-reminder-controls';
 import { PlacementLockControls } from '../../../temporal/placement-lock-controls';
 import type { ActivityProfile } from '../../../temporal/remote-activity-inspector';
+import { ActivityEditPanel } from './activity-edit-panel';
 import { ActivityInspectorActions } from './activity-inspector-actions';
 
 import {
@@ -852,6 +853,11 @@ export function EventDetailDialog({
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const unscheduleButtonRef = useRef<HTMLButtonElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const [editingProfile, setEditingProfile] = useState<ActivityProfile | null>(
+    null,
+  );
+  const currentEditingProfile =
+    editingProfile?.activityRef === sessionSubject?.ref ? editingProfile : null;
 
   useEffect(() => {
     if (!detail) {
@@ -861,7 +867,8 @@ export function EventDetailDialog({
     const keydown = (event: globalThis.KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.preventDefault();
-        onClose();
+        if (currentEditingProfile) setEditingProfile(null);
+        else onClose();
       } else if (event.key === 'Tab') {
         const focusable = Array.from(
           dialogRef.current?.querySelectorAll<HTMLElement>(
@@ -884,9 +891,14 @@ export function EventDetailDialog({
     document.addEventListener('keydown', keydown, true);
     return () => {
       document.removeEventListener('keydown', keydown, true);
-      opener?.focus();
     };
-  }, [detail, onClose, opener]);
+  }, [currentEditingProfile, detail, onClose]);
+
+  const isOpen = detail !== null;
+  useEffect(() => {
+    if (!isOpen) return;
+    return () => opener?.focus();
+  }, [isOpen, opener]);
 
   if (!detail) {
     return null;
@@ -900,21 +912,25 @@ export function EventDetailDialog({
       role="presentation"
       onPointerDown={(event: ReactPointerEvent<HTMLDivElement>) => {
         if (event.currentTarget === event.target) {
-          onClose();
+          if (currentEditingProfile) setEditingProfile(null);
+          else onClose();
         }
       }}
     >
       <div
         ref={dialogRef}
-        className="timeline-event-modal"
+        className={`timeline-event-modal${currentEditingProfile ? ' timeline-event-modal--edit' : ''}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="timeline-event-dialog-title"
       >
         <div className="timeline-event-modal__header">
-          <h3 id="timeline-event-dialog-title">{detail.title}</h3>
+          <h3 id="timeline-event-dialog-title">
+            {currentEditingProfile ? 'Modifica attività' : detail.title}
+          </h3>
           <div className="timeline-event-modal__header-actions">
-            {placementLockScheduleRef === null ? null : (
+            {currentEditingProfile ||
+            placementLockScheduleRef === null ? null : (
               <PlacementLockControls
                 key={placementLockScheduleRef}
                 scheduleRef={placementLockScheduleRef}
@@ -924,104 +940,131 @@ export function EventDetailDialog({
             <button
               ref={closeButtonRef}
               type="button"
-              aria-label="Chiudi Inspector"
-              title="Chiudi Inspector"
-              onClick={onClose}
+              aria-label={
+                currentEditingProfile
+                  ? 'Torna all’Inspector'
+                  : 'Chiudi Inspector'
+              }
+              title={
+                currentEditingProfile
+                  ? 'Torna all’Inspector'
+                  : 'Chiudi Inspector'
+              }
+              onClick={() => {
+                if (currentEditingProfile) setEditingProfile(null);
+                else onClose();
+              }}
             >
               ×
             </button>
           </div>
         </div>
-        {sessionSubject?.kind === 'activity' && onActivitySaved && onActivityDeleted ? (
-          <ActivityInspectorActions
-            activityRef={sessionSubject.ref}
-            onSaved={onActivitySaved}
-            onDeleted={onActivityDeleted}
+        {currentEditingProfile ? (
+          <ActivityEditPanel
+            key={`${currentEditingProfile.activityRef}:${currentEditingProfile.revision}`}
+            profile={currentEditingProfile}
+            onSaved={(saved) => {
+              onActivitySaved?.(saved);
+              setEditingProfile(null);
+            }}
+            onCancel={() => setEditingProfile(null)}
           />
-        ) : null}
-        <p>
-          {formatTimelineMinute(detail.startMinute)}–
-          {formatTimelineMinute(detail.endMinute)} · {detail.groupLabel}
-          {detail.meta ? ` · ${detail.meta}` : ''}
-        </p>
-        {detail.subitemsCount ? (
-          <p>
-            {t(($) => $.common.home.timeline.detail.subitems, {
-              count: detail.subitemsCount,
-            })}
-          </p>
-        ) : null}
-        {sessionSubject?.kind === 'activity' ? (
-          <section
-            className="timeline-event-modal__planned"
-            aria-label="Sessioni pianificate"
-          >
-            <ActivityPlannedSessionsCardDetail
-              activityRef={sessionSubject.ref}
-              visible
-            />
-          </section>
-        ) : null}
-        {detail.ownerKind === 'event' && detail.eventRef ? (
-          <TimelineEventAgendaEditor eventRef={detail.eventRef} />
-        ) : null}
-        {detail.ownerKind === undefined ? (
-          <div className="timeline-event-ai-note">
-            {t(($) => $.common.home.timeline.detail.aiNote)}
-          </div>
-        ) : null}
-        {reminderScheduleRef === null ? null : (
-          <ScheduleReminderControls
-            key={reminderScheduleRef}
-            scheduleRef={reminderScheduleRef}
-          />
+        ) : (
+          <>
+            {sessionSubject?.kind === 'activity' &&
+            onActivitySaved &&
+            onActivityDeleted ? (
+              <ActivityInspectorActions
+                activityRef={sessionSubject.ref}
+                onEdit={setEditingProfile}
+                onDeleted={onActivityDeleted}
+              />
+            ) : null}
+            <p>
+              {formatTimelineMinute(detail.startMinute)}–
+              {formatTimelineMinute(detail.endMinute)} · {detail.groupLabel}
+              {detail.meta ? ` · ${detail.meta}` : ''}
+            </p>
+            {detail.subitemsCount ? (
+              <p>
+                {t(($) => $.common.home.timeline.detail.subitems, {
+                  count: detail.subitemsCount,
+                })}
+              </p>
+            ) : null}
+            {sessionSubject?.kind === 'activity' ? (
+              <section
+                className="timeline-event-modal__planned"
+                aria-label="Sessioni pianificate"
+              >
+                <ActivityPlannedSessionsCardDetail
+                  activityRef={sessionSubject.ref}
+                  visible
+                />
+              </section>
+            ) : null}
+            {detail.ownerKind === 'event' && detail.eventRef ? (
+              <TimelineEventAgendaEditor eventRef={detail.eventRef} />
+            ) : null}
+            {detail.ownerKind === undefined ? (
+              <div className="timeline-event-ai-note">
+                {t(($) => $.common.home.timeline.detail.aiNote)}
+              </div>
+            ) : null}
+            {reminderScheduleRef === null ? null : (
+              <ScheduleReminderControls
+                key={reminderScheduleRef}
+                scheduleRef={reminderScheduleRef}
+              />
+            )}
+            {detail.realitySubject === undefined ? null : (
+              <div
+                className="timeline-event-modal__reality"
+                data-timeline-runtime-reality
+              >
+                <ActualRealizationControls
+                  kind={detail.realitySubject.kind}
+                  subjectRef={detail.realitySubject.ref}
+                />
+              </div>
+            )}
+            <div className="timeline-event-modal__actions">
+              {responsibilitySubject === null ? null : (
+                <ResponsibilityControls
+                  kind={responsibilitySubject.kind}
+                  subjectRef={responsibilitySubject.ref}
+                />
+              )}
+              {sessionSubject === null ? null : (
+                <SessionSubjectControls
+                  kind={sessionSubject.kind}
+                  subjectRef={sessionSubject.ref}
+                  label={detail.title}
+                />
+              )}
+              {canUnschedule ? (
+                <button
+                  ref={unscheduleButtonRef}
+                  className="is-unschedule"
+                  type="button"
+                  disabled={pending}
+                  onClick={onUnschedule}
+                >
+                  {pending
+                    ? eventPostpone
+                      ? t(($) => $.common.home.timeline.detail.eventPostponing)
+                      : t(($) => $.common.home.timeline.detail.unscheduling)
+                    : eventPostpone
+                      ? t(($) => $.common.home.timeline.detail.eventPostpone)
+                      : t(($) => $.common.home.timeline.detail.unschedule)}
+                </button>
+              ) : null}
+              <button type="button" disabled={pending} onClick={onClose}>
+                {t(($) => $.common.home.timeline.detail.close)}
+              </button>
+            </div>
+          </>
         )}
-        {detail.realitySubject === undefined ? null : (
-          <div
-            className="timeline-event-modal__reality"
-            data-timeline-runtime-reality
-          >
-            <ActualRealizationControls
-              kind={detail.realitySubject.kind}
-              subjectRef={detail.realitySubject.ref}
-            />
-          </div>
-        )}
-        <div className="timeline-event-modal__actions">
-          {responsibilitySubject === null ? null : (
-            <ResponsibilityControls
-              kind={responsibilitySubject.kind}
-              subjectRef={responsibilitySubject.ref}
-            />
-          )}
-          {sessionSubject === null ? null : (
-            <SessionSubjectControls
-              kind={sessionSubject.kind}
-              subjectRef={sessionSubject.ref}
-              label={detail.title}
-            />
-          )}
-          {canUnschedule ? (
-            <button
-              ref={unscheduleButtonRef}
-              className="is-unschedule"
-              type="button"
-              disabled={pending}
-              onClick={onUnschedule}
-            >
-              {pending
-                ? eventPostpone
-                  ? t(($) => $.common.home.timeline.detail.eventPostponing)
-                  : t(($) => $.common.home.timeline.detail.unscheduling)
-                : eventPostpone
-                  ? t(($) => $.common.home.timeline.detail.eventPostpone)
-                  : t(($) => $.common.home.timeline.detail.unschedule)}
-            </button>
-          ) : null}
-          <button type="button" disabled={pending} onClick={onClose}>
-            {t(($) => $.common.home.timeline.detail.close)}
-          </button>
-        </div>
       </div>
     </div>,
     document.body,
