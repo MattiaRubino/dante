@@ -40,7 +40,7 @@ def upgrade() -> None:
     )
     bind = op.get_bind()
     for statement in (_READ, _REVISE, _RETIRE):
-        bind.exec_driver_sql(statement)
+        bind.execute(sa.text(statement))
     bind.exec_driver_sql("ALTER TABLE dante.activity_profile_revision OWNER TO dante_owner")
     bind.exec_driver_sql("REVOKE ALL ON dante.activity_profile_revision FROM PUBLIC,dante_runtime,dante_migrator")
     for signature in (
