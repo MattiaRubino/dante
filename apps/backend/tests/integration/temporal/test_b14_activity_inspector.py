@@ -4,13 +4,13 @@ from __future__ import annotations
 
 from typing import Any
 
-import pytest
 import psycopg
+import pytest
 from sqlalchemy import text
+from tests.integration.temporal.test_b14_u2_authoring import _seed_self
 
 from dante.modules.temporal.authoring import TemporalAuthoringApplication
 from dante.platform.database.runtime import create_database_runtime
-from tests.integration.temporal.test_b14_u2_authoring import _seed_self
 
 pytestmark = pytest.mark.postgres
 
@@ -45,11 +45,16 @@ async def test_profile_revision_and_retirement_are_guarded_and_replayable(
             )).first() is None
 
         async with runtime.session_factory() as session, session.begin():
-            params = dict(
-                actor=actor, activity=activity, operation="inspector:edit",
-                revision=0, title="Dopo", description="Nuove note",
-                location=None, color="#AABBCC",
-            )
+            params = {
+                "actor": actor,
+                "activity": activity,
+                "operation": "inspector:edit",
+                "revision": 0,
+                "title": "Dopo",
+                "description": "Nuove note",
+                "location": None,
+                "color": "#AABBCC",
+            }
             sql = text("SELECT * FROM dante.revise_self_activity_profile("
                        ":actor,:activity,:operation,:revision,:title,:description,:location,:color)")
             first = (await session.execute(sql, params)).mappings().one()
