@@ -343,13 +343,22 @@ class SessionApplication:
                 "expected_material_state_ref": str(expected_material_state_ref),
             }
         )
+        query = {
+            "pause": """SELECT session_ref, subject_native_ref, timing_material_state_ref,
+                              started_at, ended_at, replayed
+                         FROM dante.pause_self_session(
+                           :actor, :operation_id, :fingerprint, :session_ref,
+                           :expected_state, :resulting_state
+                         )""",
+            "resume": """SELECT session_ref, subject_native_ref, timing_material_state_ref,
+                               started_at, ended_at, replayed
+                          FROM dante.resume_self_session(
+                            :actor, :operation_id, :fingerprint, :session_ref,
+                            :expected_state, :resulting_state
+                          )""",
+        }[command]
         return await self._call(
-            f"""SELECT session_ref, subject_native_ref, timing_material_state_ref,
-                       started_at, ended_at, replayed
-                  FROM dante.{command}_self_session(
-                    :actor, :operation_id, :fingerprint, :session_ref,
-                    :expected_state, :resulting_state
-                  )""",
+            query,
             {
                 "actor": self_person_ref,
                 "operation_id": normalized,
@@ -371,9 +380,7 @@ class SessionApplication:
             """,
             {"actor": self_person_ref, "subject": subject_native_ref},
         )
-        hydrated: list[SessionView] = []
-        for view in views:
-            hydrated.append(await self._hydrate(self_person_ref, view))
+        hydrated = [await self._hydrate(self_person_ref, view) for view in views]
         return tuple(hydrated)
 
     async def get(
