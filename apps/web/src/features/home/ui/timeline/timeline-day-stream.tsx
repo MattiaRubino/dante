@@ -31,6 +31,7 @@ import type {
   TimelineGroup,
   TimelineTimeMapper,
 } from './model/timeline-types';
+import { TimelineActivityFrame } from './timeline-activity-frame';
 import { TimelineAllDayLane } from './timeline-all-day-layer';
 import { LEGACY_UNASSIGNED_GROUP } from './timeline-organization';
 
@@ -199,6 +200,8 @@ function TimelineEventCard({
       ? event.canonicalBasis.activityRef
       : null;
 
+  const isActivity = sessionActivityRef !== null;
+
   if (filtered) {
     return null;
   }
@@ -241,7 +244,7 @@ function TimelineEventCard({
 
   return (
     <article
-      className={`timeline-event-card${expandedSubitems ? ' is-expanded' : ''}${isFocused ? ' is-focused' : ''}${isGroupmate ? ' is-groupmate' : ''}${isDim ? ' is-dim' : ''}`}
+      className={`timeline-event-card${isActivity ? ' timeline-event-card--activity' : ''}${expandedSubitems ? ' is-expanded' : ''}${isFocused ? ' is-focused' : ''}${isGroupmate ? ' is-groupmate' : ''}${isDim ? ' is-dim' : ''}`}
       data-timeline-event={event.id}
       data-timeline-tone={tone}
       data-compact-left={layout.compactLeftPercent}
@@ -270,6 +273,7 @@ function TimelineEventCard({
         onFocusEvent(event.id);
       }}
     >
+      {isActivity ? <TimelineActivityFrame /> : null}
       <div className="timeline-event-card__top">
         <button
           className="timeline-event-card__title"
