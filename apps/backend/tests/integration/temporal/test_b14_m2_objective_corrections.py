@@ -211,21 +211,20 @@ def test_objective_definition_and_result_corrections_are_canonical_without_delet
             runtime = create_database_runtime(migrated_database.runtime_settings())
             try:
                 async with runtime.session_factory() as session, session.begin():
-                    values = (
-                        await session.execute(
-                            text("""
-                                SELECT
-                                    (SELECT count(*) FROM dante.temporal_objective_definition_revision
-                                      WHERE objective_ref=:objective),
-                                    (SELECT count(*) FROM dante.temporal_objective_observation
-                                      WHERE objective_ref=:objective),
-                                    (SELECT count(*) FROM dante.temporal_objective_evaluation_state
-                                      WHERE objective_ref=:objective)
-                            """),
-                            {"objective": objective_ref},
-                        )
-                    ).one()
-                    return (int(values[0]), int(values[1]), int(values[2])
+                    result = await session.execute(
+                        text("""
+                            SELECT
+                                (SELECT count(*) FROM dante.temporal_objective_definition_revision
+                                  WHERE objective_ref=:objective),
+                                (SELECT count(*) FROM dante.temporal_objective_observation
+                                  WHERE objective_ref=:objective),
+                                (SELECT count(*) FROM dante.temporal_objective_evaluation_state
+                                  WHERE objective_ref=:objective)
+                        """),
+                        {"objective": objective_ref},
+                    )
+                    values = result.one()
+                    return (int(values[0]), int(values[1]), int(values[2]))
             finally:
                 await runtime.dispose()
 
