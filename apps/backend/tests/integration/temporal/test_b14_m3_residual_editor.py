@@ -7,6 +7,7 @@ from typing import Any
 
 import pytest
 from sqlalchemy import text
+from sqlalchemy.exc import DBAPIError
 
 from tests.integration.temporal.test_b05_primary_life_area_assignment import (
     _legacy_activity,
@@ -138,7 +139,7 @@ async def test_planned_session_rename_keeps_schedule_identity_and_owner(
             assert not changed["replayed"]
             replay = (await session.execute(sql, args)).mappings().one()
             assert replay["replayed"]
-        with pytest.raises(Exception):
+        with pytest.raises(DBAPIError):
             async with runtime.session_factory() as session, session.begin():
                 await session.execute(sql, {**args, "expected": "Lettura", "next": "Errato"})
         # The rejected command runs in a separate transaction and cannot undo the accepted label.
