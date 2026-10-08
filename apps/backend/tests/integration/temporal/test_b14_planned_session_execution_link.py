@@ -7,6 +7,7 @@ from typing import Any
 
 import psycopg
 import pytest
+from sqlalchemy import text
 from tests.integration.temporal.test_b14_u2_authoring import _seed_self
 
 from dante.modules.temporal.authoring import TemporalAuthoringApplication
@@ -72,6 +73,18 @@ async def test_planned_start_is_linked_replayable_and_never_actual(
         assert started.planned_schedule_ref == schedule_ref
         assert started.subject_native_ref == activity_ref
         assert started.open
+        # The Activity editor must detect linked execution through existing
+        # self-scoped functions; dante_runtime has no direct table SELECT grant.
+        async with runtime.session_factory() as session, session.begin():
+            linked = await session.scalar(text("""
+                SELECT EXISTS(
+                    SELECT 1
+                      FROM dante.list_self_subject_sessions(:actor,:activity) AS execution
+                     WHERE dante.get_self_session_planned_schedule(
+                         :actor,execution.session_ref)=:schedule
+                )
+            """), {"actor": actor, "activity": activity_ref, "schedule": schedule_ref})
+        assert linked is True
         replayed = await sessions.start_planned(
             self_person_ref=actor,
             operation_id="planned:start",
