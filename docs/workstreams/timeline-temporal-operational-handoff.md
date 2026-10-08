@@ -404,3 +404,26 @@ User-run Life Area regression is green at `a48eb93e41d7040aa540139efce7371b5b18e
 ## 2026-10-06 — Verification rail candidate
 
 The B14/B07 Today rail candidate at Alembic `20261006_117` extends the shared lower edge of Timeline, Context Rail and Quick Create by 48 px and derives pending Reality/Objective/B10 Reconciliation cards from canonical state. Activity review requires a completed bounded Session; Event and Event Occurrence review uses the accepted placement end in the person's effective IANA zone, including date spans. The Reality response carries the exact Session/timing basis; Objective responses write Observation/Evaluation through the existing owner API. The branch candidate is unproven pending user-run local migration, generated-client/typecheck, focused PostgreSQL/web and real-app acceptance. The active details and gate are in `timeline-temporal-operational-b14-ui-consolidation-2026-09-30.md`.
+
+## B14 recurrence edit scope correction — 2026-10-08
+
+**Newly user-confirmed product authority**, detailed in the final section of
+`timeline-temporal-operational-b14-ui-consolidation-2026-09-30.md`:
+For a selected recurring Activity/Event instance, the only save scopes are
+`Solo questa` and `Questa e le prossime`. **Both always include the clicked
+instance**. Following scope additionally includes future instances later than
+the selected recurrence position, NEVER other past instances. Example:
+past 1,2,3; NOW; future 4,5,6 — selecting 1 yields 1 or 1+4+5+6
+(not 2,3); selecting 4 yields 4 or 4+5+6; selecting 5 yields 5 or 5+6.
+No future-only choice without the selected instance.
+
+This governs **all edits**, not just Objectives. Past recorded facts and
+evaluated Objectives remain correctable with the user's corrected value
+becoming current canonical truth; they are not deletable. Correcting an
+Objective retains its logical product identity with internal immutable
+history, not a required new visible Objective. Current/future planned
+content can be edited/removed subject to domain rules and chosen scope.
+Dependent assessments must be reconciled without inventing manual
+judgments. Previous Objective versioning design gate was superseded.
+**Only the rule/documentation is approved; no code or schema implements
+the full scoped modification/correction lifecycle yet.**
