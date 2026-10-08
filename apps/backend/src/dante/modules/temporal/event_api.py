@@ -8,6 +8,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request, Response
 from pydantic import BaseModel, ConfigDict, Field
+from sqlalchemy import text
+from sqlalchemy.exc import DBAPIError, SQLAlchemyError
 
 from dante.context.contracts import DanteContext
 from dante.context.dependencies import (
@@ -150,6 +152,7 @@ class EventResponse(BaseModel):
     description: str | None = None
     location: str | None = None
     color_code: str | None = None
+    profile_revision: int = Field(default=0, ge=0)
     replayed: bool = False
 
 
@@ -300,6 +303,7 @@ def _event_response(event: EventView, *, replayed: bool = False) -> EventRespons
         description=event.description,
         location=event.location,
         color_code=event.color_code,
+        profile_revision=event.profile_revision,
         replayed=replayed,
     )
 
@@ -725,3 +729,86 @@ async def get_event(
     if event is None:
         raise _not_found_problem()
     return _event_response(event)
+
+
+class ReviseEventProfileRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    operation_id: str = Field(min_length=1, max_length=200)
+    expected_revision: int = Field(ge=0)
+    title: str = Field(min_length=1, max_length=300)
+    description: str | None = None
+    location: str | None = None
+    color_code: str | None = None
+
+
+class RevisedEventProfileResponse(BaseModel):
+    event_ref: UUID
+    title: str
+    description: str | None
+    location: str | None
+    color_code: str | None
+    revision: int = Field(ge=1)
+    replayed: bool
+
+
+@router.put(
+    "/events/{event_ref}/profile",
+    response_model=RevisedEventProfileResponse,
+    operation_id="temporal_revise_self_event_profile",
+)
+async def revise_event_profile(
+    event_ref: UUID, body: ReviseEventProfileRequest,
+    context: MutatingDanteContextDependency, request: Request, response: Response,
+) -> RevisedEventProfileResponse:
+    """Owner-serialized immutable revision of the current Event descriptor."""
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        runtime = cast(DatabaseRuntime, request.app.state.database_runtime)
+        async with runtime.session_factory() as session, session.begin():
+            accepted = (await session.execute(text("""
+                SELECT * FROM dante.revise_self_event_profile(
+                    :actor,:event,:operation,:expected,:title,:description,:location,:color)
+            """), {
+                "actor": context.self_person_ref,
+                "event": NativeRef(event_ref),
+                "operation": body.operation_id,
+                "expected": body.expected_revision,
+                "title": body.title,
+                "description": body.description,
+                "location": body.location,
+                "color": body.color_code,
+            })).mappings().one()
+    except DBAPIError as exc:
+        constraint = getattr(getattr(exc.orig, "diag", None), "constraint_name", None)
+        if constraint == "event_profile_unavailable":
+            raise _not_found_problem() from exc
+        if constraint in ("event_profile_revision_conflict",
+                          "uq_event_profile_revision_operation"):
+            raise ProblemError(
+                status=409, code="temporal.event.profile_conflict",
+                category="conflict", title="Event profile changed",
+                detail="Reload the Event before revising its metadata.",
+                retryable=False,
+            ) from exc
+        if constraint in ("event_profile_invalid", "event_profile_no_change"):
+            raise ProblemError(
+                status=422, code="temporal.event.profile_invalid",
+                category="validation", title="Invalid Event metadata",
+                detail="Use a nonempty title and canonical optional metadata.",
+                retryable=False,
+            ) from exc
+        raise ProblemError(
+            status=503, code="temporal.event.profile_unavailable",
+            category="service", title="Event profile unavailable",
+            detail="The Event profile could not be updated safely.",
+            retryable=True,
+        ) from exc
+    except SQLAlchemyError as exc:
+        raise ProblemError(
+            status=503, code="temporal.event.profile_unavailable",
+            category="service", title="Event profile unavailable",
+            detail="The Event profile could not be updated safely.",
+            retryable=True,
+        ) from exc
+    return RevisedEventProfileResponse(**accepted)
