@@ -149,6 +149,7 @@ MAPPED_TABLES: tuple[Table, ...] = cast(
         b14_create_closure.RealityReviewPolicyOperationRow.__table__,
         b14_create_closure.TemporalObjectiveRow.__table__,
         b14_create_closure.TemporalObjectiveDefinitionRevisionRow.__table__,
+        b14_create_closure.TemporalObjectiveSeriesEditRow.__table__,
         b14_create_closure.TemporalObjectiveCreateOperationRow.__table__,
         b14_create_closure.TemporalObjectiveObservationRow.__table__,
         b14_create_closure.TemporalObjectiveEvaluationStateRow.__table__,
