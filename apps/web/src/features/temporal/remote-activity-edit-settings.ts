@@ -32,6 +32,8 @@ export type ActivityEditSettings = Readonly<{
   objectives: readonly ObjectiveView[];
   lifeAreaRef: string | null;
   placementProtected: boolean;
+  placementLockRevision: number | null;
+  placementLockScheduleRef: string | null;
   reminderLeadMinutes: number | null;
   reminderScheduleRef: string | null;
   reminderStateRef: string | null;
@@ -215,6 +217,8 @@ export function createRemoteActivityEditSettings(
         objectives: Object.freeze(snapshot.objectives.map(parseObjectiveView)),
         lifeAreaRef: optionalText(snapshot.life_area_ref),
         placementProtected: lock?.locked === true,
+        placementLockRevision: lock === null ? null : Number(lock.revision),
+        placementLockScheduleRef: lock === null ? null : String(lock.schedule_ref),
         reminderLeadMinutes: reminder?.enabled === true ? Number(reminder.lead_minutes) : null,
         reminderScheduleRef: primary?.role === 'envelope' &&
           ['named_zone_local', 'absolute'].includes(primary.temporalForm)
@@ -306,6 +310,48 @@ export function createRemoteActivityEditSettings(
       invalidateTemporalTimelineRead();
       invalidateTemporalPlanningRead();
       return saved;
+    },
+    async setPlacementProtected(
+      ref: string,
+      settings: ActivityEditSettings,
+      locked: boolean,
+    ): Promise<ActivityEditSettings> {
+      if (!settings.placementLockScheduleRef || settings.placementLockRevision === null) {
+        throw new Error('La protezione non è disponibile per questa attività.');
+      }
+      const scheduleRef = settings.placementLockScheduleRef;
+      const response = await request(
+        `/api/v1/temporal/schedules/${encodeURIComponent(scheduleRef)}/placement-lock`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Dante-CSRF': await csrf(),
+          },
+          body: JSON.stringify({
+            locked,
+            expected_revision: settings.placementLockRevision,
+          }),
+        },
+      );
+      if (!response.ok) {
+        throw new Error(response.status === 409
+          ? 'La protezione è cambiata. Ricarica l’attività e riprova.'
+          : 'Impossibile aggiornare la protezione della collocazione.');
+      }
+      const saved = object(await response.json());
+      if (saved.schedule_ref !== scheduleRef ||
+          saved.locked !== locked ||
+          !Number.isInteger(saved.revision)) {
+        throw new Error('Risposta non valida per la protezione della collocazione.');
+      }
+      invalidateTemporalTimelineRead();
+      invalidateTemporalPlanningRead();
+      return Object.freeze({
+        ...settings,
+        placementProtected: locked,
+        placementLockRevision: Number(saved.revision),
+      });
     },
     async saveCore(
       profile: ActivityProfile,
