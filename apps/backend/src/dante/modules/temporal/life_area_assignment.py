@@ -43,7 +43,7 @@ class LifeAreaAssignmentPersistenceError(RuntimeError):
 class LifeAreaAssignmentView:
     subject_kind: SubjectKind
     subject_native_ref: NativeRef
-    life_area_ref: UUID
+    life_area_ref: UUID | None
     assignment_revision: int
     assigned_at: datetime
     replayed: bool = False
@@ -66,7 +66,7 @@ def _operation(value: str) -> str:
 
 
 def _fingerprint(
-    *, kind: SubjectKind, subject_ref: NativeRef, life_area_ref: UUID, expected: int
+    *, kind: SubjectKind, subject_ref: NativeRef, life_area_ref: UUID | None, expected: int
 ) -> str:
     return hashlib.sha256(
         json.dumps(
@@ -74,7 +74,7 @@ def _fingerprint(
                 "version": 1,
                 "subject_kind": kind,
                 "subject_native_ref": str(subject_ref),
-                "life_area_ref": str(life_area_ref),
+                "life_area_ref": str(life_area_ref) if life_area_ref is not None else None,
                 "expected_assignment_revision": expected,
             },
             separators=(",", ":"),
@@ -87,7 +87,7 @@ def _assignment_from_row(row: RowMapping, *, replayed: bool = False) -> LifeArea
     return LifeAreaAssignmentView(
         subject_kind=cast(SubjectKind, row["subject_kind"]),
         subject_native_ref=NativeRef(UUID(str(row["subject_native_ref"]))),
-        life_area_ref=UUID(str(row["life_area_ref"])),
+        life_area_ref=UUID(str(row["life_area_ref"])) if row["life_area_ref"] is not None else None,
         assignment_revision=int(row["assignment_revision"]),
         assigned_at=row["assigned_at"],
         replayed=replayed or bool(row.get("replayed", False)),
@@ -128,7 +128,7 @@ class LifeAreaAssignmentApplication:
         self_person_ref: NativeRef,
         subject_kind: SubjectKind,
         subject_native_ref: NativeRef,
-        life_area_ref: UUID,
+        life_area_ref: UUID | None,
         expected_assignment_revision: int,
         operation_id: str,
     ) -> LifeAreaAssignmentView:
