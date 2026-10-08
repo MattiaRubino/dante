@@ -232,6 +232,14 @@ The remaining Create work is intentionally compressed into three coherent batche
 - Date-only Event placements use the exclusive local end date in the effective zone. Historical review and post-creation editing remain separate product work; no completed-state register is presented by this candidate.
 - Candidate is unproven until the user-run local migration, focused backend/web and real-app checks pass. No CI or GitHub Actions are requested.
 
+## 2026-10-08 — Activity Inspector / edit checkpoint
+
+Branch candidate `6f6e60eb` adds one self-scoped edit snapshot request backed by a single SQL statement. It includes current Activity placement rows, planned Session Schedule rows, Objective evaluations, life area, capture/reality policies, the primary placement lock and Reminder. The Activity ID and authenticated self identity bound the read; this is a read model, not a second truth store. No latency benchmark or PostgreSQL execution proof is claimed.
+
+The editor's metadata, capture and reality changes now use one guarded HTTP command and one database transaction. Each existing canonical mutation retains its own idempotency/CAS authority, and a failure rolls back the group. The web typecheck, focused 8 tests and affected ESLint checks passed in the coding workspace. The focused PostgreSQL snapshot/rollback tests and Ruff require the user's local Python/PostgreSQL environment; they are unreported.
+
+This is **not** whole Inspector/edit closure. Editing or adding/removing accepted Activity intervals and planned Session Schedules, changing Objective definitions, full Reminder and organization editing, faithful duplication of every form, recurring scope, generated OpenAPI/client, and real-app visual acceptance remain open. Direct interval Schedule mutation remains blocked until a coordinated replan preserves the envelope, placement constraints and history.
+
 ### Local gate for the verification rail candidate
 
 The user runs these checks in `~/projects/dante` after pulling the branch; no CI is run. The API response adds `objective_review`, so regenerate the checked-in client before checking its determinism. Review and publish generated file changes as generated output only.
