@@ -452,3 +452,18 @@ planned Session display-name evolution, Life Area unassign, recurring update
 scope, advanced faithful duplication and whole Inspector/Event reconciliation.
 Do not describe the new Objective ADD slice as complete Objective lifecycle or
 finished Inspector.
+
+## 2026-10-08 — Post-create Activity Objective ADD user local gate GREEN
+
+The user's exact focused local gate after `d5da6d3e` reports:
+`pnpm --filter @dante/web typecheck` exit 0;
+`pnpm --filter @dante/web exec vitest run` over
+`activity-inspector-actions.test.tsx` and
+`remote-activity-edit-settings.test.ts`: **17/17 passed** (12+5),
+exit 0. No CI/GitHub Actions. This provides focused automated proof
+for adding an Objective after creating an Activity, including retry
+operation IDs and readback through the canonical authoring endpoint.
+It does **not** prove editing/retiring previously accepted Objective
+definitions, cross-Occurrence updates, or the full Inspector real-app UX.
+Next semantic gate: change Objective definition without retroactively
+reinterpreting recorded observations and accepted evaluations.
