@@ -323,6 +323,19 @@ export function createRemoteActivityEditSettings(
     async load(ref: string): Promise<ActivityEditSettings> {
       return parseSnapshot(ref, await read(endpoint(ref, 'edit-snapshot')));
     },
+    async loadChildCount(ref: string): Promise<number> {
+      const tree = object(await read(endpoint(ref, 'children')));
+      if (tree.parent_activity_ref !== ref || !Array.isArray(tree.children) ||
+          !tree.children.every((child: unknown) => {
+            if (typeof child !== 'object' || child === null || Array.isArray(child)) return false;
+            const record = child as Record<string, unknown>;
+            return typeof record.child_activity_ref === 'string' &&
+              typeof record.child_title === 'string';
+          })) {
+        throw new Error('La struttura delle sotto-attività non è verificabile.');
+      }
+      return tree.children.length;
+    },
     async previewReplan(
       ref: string, settings: ActivityEditSettings,
       draft: ActivityReplanDraft,
