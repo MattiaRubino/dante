@@ -2,15 +2,19 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+import hashlib
+from datetime import UTC, datetime, timedelta
 from typing import Any
+from uuid import uuid7
 
+import psycopg
 import pytest
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 
 from tests.integration.temporal.test_b05_primary_life_area_assignment import (
     _legacy_activity,
+    _legacy_event,
     _seed_self,
 )
 from dante.modules.temporal.authoring import TemporalAuthoringApplication
@@ -22,6 +26,7 @@ from dante.modules.temporal.life_area_assignment import (
     LifeAreaAssignmentOperationIdReuseError,
 )
 from dante.modules.temporal.schedule import NamedZoneLocalIntervalPlacement
+from dante.modules.temporal.session_runtime import SessionApplication
 from dante.platform.database.runtime import create_database_runtime
 
 pytestmark = pytest.mark.postgres
@@ -156,5 +161,79 @@ async def test_planned_session_rename_keeps_schedule_identity_and_owner(
                     :actor,CAST(ARRAY[:activity] AS uuid[]))
                 WHERE role_code='planned'
             """), {"actor": other, "activity": activity})).first() is None
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_event_unassignment_has_the_same_cas_and_replay_policy(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    event = _legacy_event(migrated_database, actor, "Evento da classificare")
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    app = LifeAreaAssignmentApplication(runtime.session_factory)
+    try:
+        area = (await LifeAreaApplication(runtime.session_factory).create(
+            self_person_ref=actor, operation_id="m3:event:area", name="Evento",
+        )).area
+        first = await app.assign(
+            self_person_ref=actor, subject_kind="event", subject_native_ref=event,
+            life_area_ref=area.life_area_ref,
+            expected_assignment_revision=0, operation_id="m3:event:assigned",
+        )
+        assert first.assignment_revision == 1
+        removed = await app.assign(
+            self_person_ref=actor, subject_kind="event", subject_native_ref=event,
+            life_area_ref=None, expected_assignment_revision=1,
+            operation_id="m3:event:unassigned",
+        )
+        assert removed.life_area_ref is None
+        assert removed.assignment_revision == 2
+        assert (await app.assign(
+            self_person_ref=actor, subject_kind="event", subject_native_ref=event,
+            life_area_ref=None, expected_assignment_revision=1,
+            operation_id="m3:event:unassigned",
+        )).replayed
+        assert any(row.subject_native_ref == event for row in
+                   await app.list_unassigned(self_person_ref=actor))
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_retirement_rejects_recorded_past_execution_without_erasing_it(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    activity = _legacy_activity(migrated_database, actor, "Lavoro svolto")
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    sessions = SessionApplication(runtime.session_factory)
+    end = datetime.now(UTC) - timedelta(hours=2)
+    start = end - timedelta(minutes=30)
+    try:
+        with psycopg.connect(**migrated_database.connection_kwargs(
+            "dante_runtime", migrated_database.cluster.runtime_password,
+        )) as connection:
+            connection.execute(
+                "SELECT * FROM dante.set_self_activity_execution_policy(%s,%s,%s,%s,%s,%s,%s)",
+                (actor, "m3:record-policy", hashlib.sha256(b"m3:record-policy").hexdigest(),
+                 activity, uuid7(), "record", None),
+            )
+        recorded = await sessions.record_manual(
+            self_person_ref=actor, operation_id="m3:manual",
+            activity_ref=activity, started_at=start, ended_at=end,
+        )
+        with pytest.raises(DBAPIError) as failure:
+            async with runtime.session_factory() as session, session.begin():
+                await session.scalar(text(
+                    "SELECT dante.retire_self_activity(:actor,:activity,:operation)"
+                ), {"actor": actor, "activity": activity, "operation": "m3:retire"})
+        assert getattr(failure.value.orig.diag, "constraint_name", None) == (
+            "activity_profile_recorded_truth"
+        )
+        assert [row.session_ref for row in await sessions.list_for_subject(
+            self_person_ref=actor, subject_native_ref=activity,
+        )] == [recorded.session_ref]
     finally:
         await runtime.dispose()
