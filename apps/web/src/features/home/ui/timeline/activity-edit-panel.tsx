@@ -208,7 +208,7 @@ export function ActivityEditPanel({
       onSubmit={(event) => {
         event.preventDefault();
         if (
-          pending || planPending || lockPending ||
+          pending || planPending || lockPending || lockDirty || planDirty ||
           !settings ||
           loadingSettings ||
           settingsError ||
@@ -596,7 +596,7 @@ export function ActivityEditPanel({
         <button
           type="submit"
           disabled={
-            pending || planPending || lockPending || planDirty ||
+            pending || planPending || lockPending || lockDirty || planDirty ||
             !settings ||
             loadingSettings ||
             !!settingsError ||
