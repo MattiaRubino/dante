@@ -9,8 +9,13 @@ const loadEvent = vi.fn();
 const listExpectedParticipation = vi.fn();
 const listPersonReferents = vi.fn();
 const loadArea = vi.fn();
+const loadProfile = vi.fn();
+const reviseProfile = vi.fn();
 const assignArea = vi.fn();
 
+vi.mock('../../../temporal/remote-event-profile-data-source', () => ({
+  createRemoteEventProfileDataSource: () => ({ load: loadProfile, revise: reviseProfile }),
+}));
 vi.mock('../../../temporal/remote-event-life-area-settings', () => ({
   createRemoteEventLifeAreaSettings: () => ({ load: loadArea, assign: assignArea }),
 }));
@@ -116,4 +121,51 @@ describe('Event Inspector duplication', () => {
       .toContain('un partecipante non è più disponibile');
     expect(onDuplicate).not.toHaveBeenCalled();
   });
+
+  it('edits current Event metadata with canonical CAS and leaves the existing identity intact', async () => {
+    const current = {
+      eventRef, title: 'Conferenza', description: 'Prima', location: 'Roma',
+      colorCode: '#ABCDEF', profileRevision: 2, agendaRevision: 1,
+      agendaParts: ['Parte 1'], createdAt: Temporal.Instant.from('2026-10-01T09:00:00Z'),
+    };
+    loadProfile.mockResolvedValue(current);
+    reviseProfile.mockResolvedValue({ ...current, title: 'Incontro', profileRevision: 3 });
+    const onDuplicate = vi.fn();
+    render(<EventInspectorActions eventRef={eventRef} placement={placement}
+      onDuplicate={onDuplicate} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Modifica', exact: true }));
+    fireEvent.change(await screen.findByRole('textbox', { name: 'Titolo Event' }), {
+      target: { value: 'Incontro' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Salva metadati Event' }));
+    await waitFor(() => expect(reviseProfile).toHaveBeenCalledWith(
+      eventRef,
+      current,
+      { title: 'Incontro', description: 'Prima', location: 'Roma', colorCode: '#ABCDEF' },
+      expect.any(String),
+    ));
+    expect(await screen.findByText('Metadati Event aggiornati.')).toBeTruthy();
+    expect(onDuplicate).not.toHaveBeenCalled();
+  });
+
+  it('keeps the Event edit draft open on a canonical stale CAS conflict', async () => {
+    const current = {
+      eventRef, title: 'Conferenza', description: null, location: null,
+      colorCode: null, profileRevision: 2, agendaRevision: 0,
+      agendaParts: [], createdAt: Temporal.Instant.from('2026-10-01T09:00:00Z'),
+    };
+    loadProfile.mockResolvedValue(current);
+    reviseProfile.mockRejectedValue(new Error('Il profilo Event è cambiato: ricarica e riprova.'));
+    render(<EventInspectorActions eventRef={eventRef} placement={placement}
+      onDuplicate={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Modifica', exact: true }));
+    const title = await screen.findByRole('textbox', { name: 'Titolo Event' });
+    fireEvent.change(title, { target: { value: 'Nuovo titolo' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Salva metadati Event' }));
+    expect((await screen.findByRole('alert')).textContent)
+      .toContain('è cambiato');
+    expect(screen.getByRole('textbox', { name: 'Titolo Event' }))
+      .toHaveProperty('value', 'Nuovo titolo');
+  });
+
 });
