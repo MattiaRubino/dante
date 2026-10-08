@@ -52,7 +52,7 @@
     "view": null,
     "routine": {
       "routine_kind": "function",
-      "language": "plpgsql",
+      "language": "sql",
       "argument_types": [
         "uuid",
         "uuid"
