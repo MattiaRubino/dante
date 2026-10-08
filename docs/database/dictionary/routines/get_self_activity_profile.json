@@ -8,7 +8,7 @@
     "name": "get_self_activity_profile",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Self-scoped effective Activity Inspector read; for Routine-materialized Activity it overlays canonical accepted single/following Occurrence metadata corrections while preserving immutable stored profile history.",
+  "purpose": "Self-owned effective Activity profile: avoid invoking strict Occurrence access for one-off Activities; overlay accepted scoped profile corrections on Routine-materialized Activities.",
   "classification": {
     "persistence_role": "activity_capability",
     "canonicality": "capability_surface",
@@ -32,7 +32,7 @@
   },
   "implementation": {
     "introducing_stage": "B14-ACTIVITY-INSPECTOR",
-    "alembic_revision": "20261007_119",
+    "alembic_revision": "20261008_124",
     "sqlalchemy": {
       "mode": "none",
       "module": null,
@@ -52,7 +52,7 @@
     "view": null,
     "routine": {
       "routine_kind": "function",
-      "language": "sql",
+      "language": "plpgsql",
       "argument_types": [
         "uuid",
         "uuid"
@@ -97,10 +97,12 @@
   "proof": {
     "obligations": [
       "Self scope",
-      "Runtime has function execute but no direct Activity mutation"
+      "Runtime has function execute but no direct Activity mutation",
+      "One-off Activity profile cannot call the Occurrence lookup with NULL"
     ],
     "test_refs": [
-      "apps/backend/tests/integration/temporal/test_b14_activity_inspector.py"
+      "apps/backend/tests/integration/temporal/test_b14_activity_inspector.py",
+      "apps/backend/tests/integration/temporal/test_b14_m1_activity_profile_guard.py"
     ],
     "staged_evidence": []
   }
