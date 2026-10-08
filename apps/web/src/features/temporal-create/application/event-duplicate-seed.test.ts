@@ -10,6 +10,9 @@ const event = {
   agendaParts: ['Introduzione', 'Domande'],
   createdAt: Temporal.Instant.from('2026-10-01T09:00:00Z'),
   lifeAreaRef: '0199a222-2222-7222-8222-222222222222',
+  description: 'Relazione tecnica',
+  location: 'Sala conferenze',
+  colorCode: '#ABCDEF',
 } as const;
 
 const participants = [{
@@ -33,9 +36,11 @@ describe('canonical Event duplicate seed', () => {
       kind: 'event', title: 'Conferenza', contextId: event.lifeAreaRef,
       date: '2026-10-09', timeSemantics: 'timed', timeMode: 'zoned',
       timeZoneId: 'Europe/Rome', startTime: '09:00', durationMinutes: 90,
-      event: { agendaParts: ['Introduzione', 'Domande'] },
+      notes: 'Relazione tecnica',
+      event: { agendaParts: ['Introduzione', 'Domande'], location: 'Sala conferenze' },
     });
     expect(result.advanced.eventParticipants).toEqual(participants);
+    expect(result.advanced.itemColorCode).toBe('#ABCDEF');
     expect(result.fields).not.toHaveProperty('eventRef');
     expect(result.advanced).not.toHaveProperty('actual');
     expect(event.agendaParts).toEqual(['Introduzione', 'Domande']);
