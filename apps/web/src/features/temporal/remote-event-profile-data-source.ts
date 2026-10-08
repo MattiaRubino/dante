@@ -34,9 +34,9 @@ export function createRemoteEventProfileDataSource(
         throw new Error('Revisione Event non disponibile: ricarica il profilo.');
       }
       const title = next.title.trim();
-      if (!title || title !== next.title || title.length > 300 ||
-          [next.description, next.location].some((value) =>
-            value !== null && (!value || value !== value.trim())) ||
+      const description = next.description?.trim() || null;
+      const location = next.location?.trim() || null;
+      if (!title || title.length > 300 ||
           (next.colorCode !== null && !/^#[0-9A-F]{6}$/.test(next.colorCode))) {
         throw new Error('Il titolo o i metadati Event non sono validi.');
       }
@@ -55,8 +55,8 @@ export function createRemoteEventProfileDataSource(
             operation_id: operationId,
             expected_revision: current.profileRevision,
             title,
-            description: next.description,
-            location: next.location,
+            description,
+            location,
             color_code: next.colorCode,
           }),
         },
@@ -67,9 +67,9 @@ export function createRemoteEventProfileDataSource(
       const accepted = object(await response.json());
       if (accepted.event_ref !== eventRef ||
           accepted.revision !== current.profileRevision + 1 ||
-          accepted.title !== next.title ||
-          accepted.description !== next.description ||
-          accepted.location !== next.location ||
+          accepted.title !== title ||
+          accepted.description !== description ||
+          accepted.location !== location ||
           accepted.color_code !== next.colorCode) {
         throw new Error('Conferma modifica Event non valida.');
       }
