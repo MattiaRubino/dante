@@ -584,6 +584,22 @@ describe('Activity Inspector', () => {
     expect(onDeleted).toHaveBeenCalledOnce();
   });
 
+  it('refuses a deceptively incomplete duplicate when an Activity contains children', async () => {
+    const onDuplicate = vi.fn();
+    render(<ActivityInspectorActions
+      activityRef={ref}
+      subitemsCount={2}
+      onEdit={() => undefined}
+      onDeleted={() => undefined}
+      onDuplicate={onDuplicate}
+    />);
+    fireEvent.click(screen.getByRole('button', { name: 'Duplica' }));
+    expect((await screen.findByRole('alert')).textContent)
+      .toContain('duplicazione fedele della struttura');
+    expect(onDuplicate).not.toHaveBeenCalled();
+    expect(loadSettings).not.toHaveBeenCalled();
+  });
+
   it('opens a new Advanced Create draft from persisted Activity settings', async () => {
     get.mockResolvedValue(profile);
     const onDuplicate = vi.fn<(seed: ActivityDuplicateSeed) => void>();
