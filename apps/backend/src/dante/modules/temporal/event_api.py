@@ -783,6 +783,13 @@ async def revise_event_profile(
         constraint = getattr(getattr(exc.orig, "diag", None), "constraint_name", None)
         if constraint == "event_profile_unavailable":
             raise _not_found_problem() from exc
+        if constraint == "event_profile_recurring_source":
+            raise ProblemError(
+                status=409, code="temporal.event.profile_recurring_source",
+                category="conflict", title="Recurring Event scope required",
+                detail="Select an Occurrence and an explicit edit scope; this source is not editable as one Event.",
+                retryable=False,
+            ) from exc
         if constraint in ("event_profile_revision_conflict",
                           "uq_event_profile_revision_operation"):
             raise ProblemError(
