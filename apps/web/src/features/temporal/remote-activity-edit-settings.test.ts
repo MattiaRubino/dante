@@ -134,7 +134,7 @@ describe('Activity editor settings remote contract', () => {
     const source = createRemoteActivityEditSettings(fetchFn);
     const before = await source.load(ref);
     expect(before.placementLockRevision).toBe(3);
-    const after = await source.setPlacementProtected(ref, before, true);
+    const after = await source.setPlacementProtected(before, true);
     expect(received).toEqual([{ locked: true, expected_revision: 3 }]);
     expect(after.placementProtected).toBe(true);
     expect(after.placementLockRevision).toBe(4);
