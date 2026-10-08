@@ -166,6 +166,8 @@ export function ActivityEditPanel({
 
   useEffect(() => {
     let active = true;
+    setRecurringContext(null);
+    setEditScope('only_this');
     setRecurringLoading(true);
     setRecurringError('');
     void recurringSource.loadActivityContext(profile.activityRef).then((loaded) => {
