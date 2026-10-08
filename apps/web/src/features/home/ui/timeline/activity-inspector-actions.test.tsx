@@ -641,18 +641,26 @@ describe('Activity Inspector', () => {
   });
 
   it('blocks rescheduling until a planned-name draft is saved or discarded', async () => {
-    loadSettings.mockResolvedValueOnce({ ...currentSettings, schedules: [{
-      scheduleRef: 'planned-replan', role: 'planned', name: 'Allenamento', order: 0,
-      placementStateRef: 'state-3', temporalForm: 'named_zone_local',
-      start: '2026-10-09T09:00:00', end: '2026-10-09T10:00:00',
-      zoneId: 'Europe/Rome',
-    }] });
+    loadSettings.mockResolvedValueOnce({ ...currentSettings, schedules: [
+      {
+        scheduleRef: 'interval-replan', role: 'interval', name: null, order: 0,
+        placementStateRef: 'state-interval', temporalForm: 'named_zone_local',
+        start: '2026-10-09T08:00:00', end: '2026-10-09T11:00:00',
+        zoneId: 'Europe/Rome',
+      },
+      {
+        scheduleRef: 'planned-replan', role: 'planned', name: 'Allenamento', order: 1,
+        placementStateRef: 'state-3', temporalForm: 'named_zone_local',
+        start: '2026-10-09T09:00:00', end: '2026-10-09T10:00:00',
+        zoneId: 'Europe/Rome',
+      },
+    ] });
     render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
       onSaved={() => undefined} onCancel={() => undefined} />);
     const name = await screen.findByRole('textbox', { name: 'Nome sessione pianificata' });
     fireEvent.change(name, { target: { value: 'Allenamento lungo' } });
-    fireEvent.change(screen.getByLabelText('Inizio'), {
-      target: { value: '2026-10-09T08:00' },
+    fireEvent.change(screen.getAllByLabelText('Inizio')[0], {
+      target: { value: '2026-10-09T07:30' },
     });
     expect(screen.getByText(/Salva prima i nomi delle Session/)).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Verifica spostamento' }))
