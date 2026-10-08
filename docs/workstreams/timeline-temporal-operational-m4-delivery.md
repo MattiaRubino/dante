@@ -28,3 +28,7 @@ M1 scoped profile and M2 Objective edit/history are user-verified. M3-A `2026100
 5. End-to-end product visual and keyboard acceptance remains M5/B15, not an automatic result of M4 green tests.
 
 **M4 status: in development, unverified.** Do not describe the Event Duplicate candidate as full Inspector/Edit/Duplica parity until the remaining contract is delivered and the user-local integrated gate passes.
+
+### Current M4 added regression
+
+`timeline-authoritative-event-hydration.test.ts` now checks that the Event Inspector receives the **canonical persisted placement** passed from the Timeline projection rather than constructing a new placement from display-minute geometry. The focused M4 test set additionally includes `event-duplicate-seed.test.ts`, `event-inspector-actions.test.tsx`, `activity-inspector-actions.test.tsx`, and `remote-event-agenda-data-source.test.ts`. No results claimed until a single integrated M4 user-local gate.
