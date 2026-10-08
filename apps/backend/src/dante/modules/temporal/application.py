@@ -567,16 +567,17 @@ class TemporalTimelineApplication:
                        NULL::uuid AS occurrence_ref
                   FROM dante.activity_intention AS intention
              LEFT JOIN LATERAL (
-                 SELECT dante.get_self_occurrence_profile_patch(
-                     :self_person_ref,
-                     origin.occurrence_ref
-                 ) AS patch
+                 SELECT CASE
+                     WHEN origin.occurrence_ref IS NULL THEN '{}'::jsonb
+                     ELSE dante.get_self_occurrence_profile_patch(
+                         :self_person_ref,origin.occurrence_ref
+                     )
+                 END AS patch
                    FROM (
                        SELECT dante.get_self_materialized_activity_occurrence(
                            :self_person_ref,intention.activity_ref
                        ) AS occurrence_ref
                    ) origin
-                  WHERE origin.occurrence_ref IS NOT NULL
              ) profile_edit ON true
                  WHERE intention.retired_at IS NULL
                 UNION ALL
