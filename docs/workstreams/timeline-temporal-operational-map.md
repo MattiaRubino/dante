@@ -413,3 +413,16 @@ A past selected instance is ALWAYS included, even when following future
 instances are also selected; **other past instances are never rewritten**.
 No unanchored `Le prossime` scope and no silent rewrite of current
 Objective results. B14+B07 stay ACTIVE; B15 stays OPEN.
+
+## 2026-10-08 — M1-A green / M1-B read-only inventory candidate
+
+M1-A: focused Ruff PASS / 18 unit PASS reported by the user.
+M1-B: forward-only `_122`, new self-scoped 10k bounded
+materialized-Occurrence inventory function + GET read API and
+PostgreSQL/catalog tests. Exact Dictionary now expects 197 routines,
+unchanged 231 tables, 5 views, 103 triggers, 471 indexes, 405 FK,
+572 CHECK. Status **candidate / no user local gate yet**.
+Returned inventory is materialized-only, not permission to apply.
+M1-C transactional CAS/scope apply, Activity/Event binding,
+overrides and future source-template revision remain OPEN. Details
+and user gate in the B14 UI consolidation ledger. No CI.
