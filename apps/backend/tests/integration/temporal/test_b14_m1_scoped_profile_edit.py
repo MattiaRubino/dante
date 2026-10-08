@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, time, timedelta
 from typing import Any
-from uuid import UUID, uuid4
+from uuid import UUID
 from zoneinfo import ZoneInfo
 
 import pytest
