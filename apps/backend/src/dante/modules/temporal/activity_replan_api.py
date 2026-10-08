@@ -144,7 +144,10 @@ def _validated_plan(snapshot: ActivityEditSnapshot, command: ActivityReplanComma
             or len(command.intervals) + len(command.new_intervals) > 100
             or len(command.planned_sessions) + len(command.remove_planned_sessions) != len(planned)
             or len(command.planned_sessions) + len(command.new_planned_sessions) > 100):
-        raise _invalid("Every current row must be accounted for, with 1–100 current Activity intervals and at most 100 planned Sessions.")
+        raise _invalid(
+            "Every current row must be accounted for: 1–100 Activity intervals "
+            "and at most 100 planned Sessions."
+        )
     current = {row.schedule_ref: row for row in (*intervals, *planned)}
     retained = (*command.intervals, *command.planned_sessions)
     accounted = (*retained, *command.remove_intervals, *command.remove_planned_sessions)
