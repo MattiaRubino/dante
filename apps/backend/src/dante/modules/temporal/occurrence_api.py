@@ -35,6 +35,7 @@ from dante.modules.temporal.occurrence import (
 )
 from dante.modules.temporal.occurrence_edit_inventory import (
     OccurrenceEditInventoryApplication,
+    OccurrenceEditInventoryLimitError,
 )
 from dante.modules.temporal.routine_occurrence_materialization import (
     RoutineOccurrenceMaterializationApplication,
@@ -290,10 +291,19 @@ _Errors = (
     OccurrenceCheckpointLimitError,
     OccurrencePersistenceError,
     OccurrenceSourceInactiveError,
+    OccurrenceEditInventoryLimitError,
 )
 
 
 def _problem(exc: Exception) -> ProblemError:
+    if isinstance(exc, OccurrenceEditInventoryLimitError):
+        return ProblemError(
+            status=422,
+            code="temporal.occurrence.edit_inventory_limit",
+            category="validation",
+            title="Recurrence edit inventory too large",
+            detail=str(exc),
+        )
     if isinstance(exc, OccurrenceInputError):
         return ProblemError(
             status=422,
