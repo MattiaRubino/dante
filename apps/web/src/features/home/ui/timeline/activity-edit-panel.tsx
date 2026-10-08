@@ -601,6 +601,13 @@ export function ActivityEditPanel({
             </button>
           </div>
         ) : null}
+        <div className="timeline-activity-editor__kind" role="group" aria-label="Tipo: Attività">
+          <span className="is-selected">Attività</span>
+          <span aria-hidden="true">Evento</span>
+          <span aria-hidden="true">Timer</span>
+          <span aria-hidden="true">Sveglia</span>
+        </div>
+        <div className="timeline-activity-editor__title-row">
         <label className="timeline-activity-editor__title">
           Titolo
           <input
@@ -613,140 +620,25 @@ export function ActivityEditPanel({
             }}
           />
         </label>
-        <div className="timeline-activity-editor__fields">
-          <label>
-            Descrizione
-            <textarea
-              value={draft.description}
-              onChange={(event) => {
-                operation.current = undefined;
-                setDraft({ ...draft, description: event.target.value });
-              }}
-            />
-          </label>
-          <label>
-            Località
-            <input
-              value={draft.location}
-              onChange={(event) => {
-                operation.current = undefined;
-                setDraft({ ...draft, location: event.target.value });
-              }}
-            />
-          </label>
-          <fieldset>
-            <legend>Colore</legend>
-            <label className="timeline-activity-editor__checkbox">
-              <input
-                type="checkbox"
-                checked={!!draft.colorCode}
-              onChange={(event) => {
-                operation.current = undefined;
-                setDraft({
-                    ...draft,
-                    colorCode: event.target.checked ? '#EA5C12' : '',
-                });
-              }}
-              />
-              Colore personalizzato
-            </label>
-            {draft.colorCode ? (
-              <input
-                aria-label="Scegli colore"
-                type="color"
-                value={draft.colorCode}
-                onChange={(event) => {
-                  operation.current = undefined;
-                  setDraft({
-                    ...draft,
-                    colorCode: event.target.value.toUpperCase(),
-                  });
-                }}
-              />
-            ) : null}
-          </fieldset>
-        </div>
         {settings ? (
-          <>
-            <fieldset aria-label="Life Area">
-              <legend>Life Area</legend>
-              {areaError ? <p role="alert">{areaError}</p> : null}
-              {!areaChoice && !areaError ? <p role="status">Caricamento Life Area…</p> : null}
-              {areaChoice ? (
-                <>
-                  {scopedDomainUnsupported && areaDirty ? (
-                    <p role="status">Per modificare la Life Area scegli «Solo questa»: non propaghiamo modifiche parziali alla serie.</p>
-                  ) : null}
-                  <label>
-                    Area assegnata
-                    <select
-                      value={selectedArea}
-                      disabled={pending || planPending || lockPending || areaPending}
-                      onChange={(event) => {
-                        setSelectedArea(event.target.value);
-                        areaOperation.current = null;
-                        setAreaError('');
-                      }}
-                    >
-                      <option value="">
-                        Nessuna Life Area
-                      </option>
-                      {areaChoice.currentRef &&
-                        !areaChoice.options.some((area) => area.ref === areaChoice.currentRef) ? (
-                          <option value={areaChoice.currentRef} disabled>
-                            Area precedente non più disponibile
-                          </option>
-                        ) : null}
-                      {areaChoice.options.map((area) => (
-                        <option key={area.ref} value={area.ref}>{area.name}</option>
-                      ))}
-                    </select>
-                  </label>
-                  {areaDirty ? (
-                    <button type="button" disabled={pending || planPending || lockPending || areaPending || scopedDomainUnsupported}
-                      onClick={applyLifeArea}>
-                      {areaPending ? 'Salvataggio…' : 'Applica Life Area'}
-                    </button>
-                  ) : null}
-                </>
-              ) : null}
-            </fieldset>
-            <div className="timeline-activity-editor__fields">
-              <label>
-                Registrazione sessioni
-                <select
-                  value={captureMode ?? settings.capture.mode}
-                  onChange={(event) => {
-                    operation.current = undefined;
-                    setCaptureMode(event.target.value as SessionCaptureMode);
-                  }}
-                >
-                  <option value="disabled">Disattivata</option>
-                  <option value="record">Registrazione</option>
-                  <option value="live">Sessione in diretta</option>
-                  <option value="record_and_live">
-                    Registrazione e diretta
-                  </option>
-                </select>
-              </label>
-              <label>
-                Verifica dello svolgimento
-                <select
-                  value={realityMode ?? settings.reality.mode}
-                  onChange={(event) => {
-                    operation.current = undefined;
-                    setRealityMode(event.target.value as RealityMode);
-                  }}
-                >
-                  <option value="manual">Manuale</option>
-                  <option value="review_on_end">Chiedi al termine</option>
-                  <option value="auto_confirm_outcome">
-                    Conferma automaticamente
-                  </option>
-                </select>
-              </label>
-            </div>
-            {settings.placementLockScheduleRef ? (
+          <label className="timeline-activity-editor__capture">
+            Sessione
+            <select
+              aria-label="Registrazione sessioni"
+              value={captureMode ?? settings.capture.mode}
+              onChange={(event) => {
+                operation.current = undefined;
+                setCaptureMode(event.target.value as SessionCaptureMode);
+              }}
+            >
+              <option value="disabled">Disattivata</option>
+              <option value="record">Registrazione</option>
+              <option value="live">Sessione in diretta</option>
+              <option value="record_and_live">Registrazione e diretta</option>
+            </select>
+          </label>
+        ) : null}
+            {settings?.placementLockScheduleRef ? (
                <fieldset aria-label="Protezione collocazione">
                  <legend>Protezione collocazione</legend>
                  {lockError ? <p role="alert">{lockError}</p> : null}
@@ -773,43 +665,25 @@ export function ActivityEditPanel({
                  ) : null}
                </fieldset>
              ) : null}
-             {settings.reminderScheduleRef ? (
-              <fieldset>
-                <legend>Promemoria</legend>
-                <label className="timeline-activity-editor__checkbox">
-                  <input
-                    type="checkbox"
-                    checked={reminderLeadMinutes !== null}
-                    onChange={(event) => {
-                      operation.current = undefined;
-                      setReminderLeadMinutes(event.target.checked ? 15 : null);
-                    }}
-                  />
-                  Attiva promemoria
-                </label>
-                {reminderLeadMinutes !== null ? (
-                  <label>
-                    Minuti prima dell’inizio
-                    <input
-                      type="number"
-                      min={0}
-                      max={10080}
-                      required
-                      value={reminderLeadMinutes}
-                      onChange={(event) => {
-                        operation.current = undefined;
-                        setReminderLeadMinutes(Number(event.target.value));
-                      }}
-                    />
-                  </label>
-                ) : null}
-              </fieldset>
-            ) : null}
+        </div>
+        {settings ? (
+          <>
             <section
               className="timeline-activity-editor__readback"
               aria-label="Programmazione attuale"
             >
+              <div className="timeline-activity-editor__placement" role="group" aria-label="Collocazione attuale">
+                <span className={settings.schedules.length > 0 &&
+                    settings.schedules[0]?.temporalForm !== 'date_span' ? 'is-selected' : ''}>Orario</span>
+                <span className={settings.schedules[0]?.temporalForm === 'date_span' ? 'is-selected' : ''}>Tutto il giorno</span>
+                <span className={settings.schedules.length === 0 ? 'is-selected' : ''}>Da collocare</span>
+              </div>
               <h3>Programmazione attuale</h3>
+              {settings.schedules.find((schedule) => schedule.zoneId)?.zoneId ? (
+                <p className="timeline-activity-editor__timezone">
+                  ◉ &nbsp; Fuso orario · {settings.schedules.find((schedule) => schedule.zoneId)?.zoneId}
+                </p>
+              ) : null}
               {planError ? <p role="alert">{planError}</p> : null}
               {nameError ? <p role="alert">{nameError}</p> : null}
               {scopedDomainUnsupported && nameDirty ? (
@@ -1047,6 +921,105 @@ export function ActivityEditPanel({
                 </div>
               ) : null}
             </section>
+            <div className="timeline-activity-editor__area-color">
+          <fieldset>
+            <legend>Colore</legend>
+            <label className="timeline-activity-editor__checkbox">
+              <input
+                type="checkbox"
+                checked={!!draft.colorCode}
+              onChange={(event) => {
+                operation.current = undefined;
+                setDraft({
+                    ...draft,
+                    colorCode: event.target.checked ? '#EA5C12' : '',
+                });
+              }}
+              />
+              Colore personalizzato
+            </label>
+            {draft.colorCode ? (
+              <input
+                aria-label="Scegli colore"
+                type="color"
+                value={draft.colorCode}
+                onChange={(event) => {
+                  operation.current = undefined;
+                  setDraft({
+                    ...draft,
+                    colorCode: event.target.value.toUpperCase(),
+                  });
+                }}
+              />
+            ) : null}
+          </fieldset>
+            <fieldset aria-label="Life Area">
+              <legend>Life Area</legend>
+              {areaError ? <p role="alert">{areaError}</p> : null}
+              {!areaChoice && !areaError ? <p role="status">Caricamento Life Area…</p> : null}
+              {areaChoice ? (
+                <>
+                  {scopedDomainUnsupported && areaDirty ? (
+                    <p role="status">Per modificare la Life Area scegli «Solo questa»: non propaghiamo modifiche parziali alla serie.</p>
+                  ) : null}
+                  <label>
+                    Area assegnata
+                    <select
+                      value={selectedArea}
+                      disabled={pending || planPending || lockPending || areaPending}
+                      onChange={(event) => {
+                        setSelectedArea(event.target.value);
+                        areaOperation.current = null;
+                        setAreaError('');
+                      }}
+                    >
+                      <option value="">
+                        Nessuna Life Area
+                      </option>
+                      {areaChoice.currentRef &&
+                        !areaChoice.options.some((area) => area.ref === areaChoice.currentRef) ? (
+                          <option value={areaChoice.currentRef} disabled>
+                            Area precedente non più disponibile
+                          </option>
+                        ) : null}
+                      {areaChoice.options.map((area) => (
+                        <option key={area.ref} value={area.ref}>{area.name}</option>
+                      ))}
+                    </select>
+                  </label>
+                  {areaDirty ? (
+                    <button type="button" disabled={pending || planPending || lockPending || areaPending || scopedDomainUnsupported}
+                      onClick={applyLifeArea}>
+                      {areaPending ? 'Salvataggio…' : 'Applica Life Area'}
+                    </button>
+                  ) : null}
+                </>
+              ) : null}
+            </fieldset>
+            </div>
+            <section className="timeline-activity-editor__outcome" aria-label="Svolgimento e obiettivi">
+              <div className="timeline-activity-editor__section-heading">
+                <h3>Svolgimento e obiettivi</h3>
+                <p>Decidi se verificare lo svolgimento e quali risultati misurare.</p>
+              </div>
+            <div className="timeline-activity-editor__fields">
+              <label>
+                Verifica dello svolgimento
+                <select
+                  value={realityMode ?? settings.reality.mode}
+                  onChange={(event) => {
+                    operation.current = undefined;
+                    setRealityMode(event.target.value as RealityMode);
+                  }}
+                >
+                  <option value="manual">Manuale</option>
+                  <option value="review_on_end">Chiedi al termine</option>
+                  <option value="auto_confirm_outcome">
+                    Conferma automaticamente
+                  </option>
+                </select>
+              </label>
+            </div>
             <section
               className="timeline-activity-editor__readback"
               aria-label="Obiettivi attuali"
@@ -1235,8 +1208,66 @@ export function ActivityEditPanel({
                 </fieldset>
               ) : null}
             </section>
+            </section>
+            <div className="timeline-activity-editor__location">
+          <label>
+            Località
+            <input
+              value={draft.location}
+              onChange={(event) => {
+                operation.current = undefined;
+                setDraft({ ...draft, location: event.target.value });
+              }}
+            />
+          </label>
+            </div>
+             {settings.reminderScheduleRef ? (
+              <fieldset>
+                <legend>Promemoria</legend>
+                <label className="timeline-activity-editor__checkbox">
+                  <input
+                    type="checkbox"
+                    checked={reminderLeadMinutes !== null}
+                    onChange={(event) => {
+                      operation.current = undefined;
+                      setReminderLeadMinutes(event.target.checked ? 15 : null);
+                    }}
+                  />
+                  Attiva promemoria
+                </label>
+                {reminderLeadMinutes !== null ? (
+                  <label>
+                    Minuti prima dell’inizio
+                    <input
+                      type="number"
+                      min={0}
+                      max={10080}
+                      required
+                      value={reminderLeadMinutes}
+                      onChange={(event) => {
+                        operation.current = undefined;
+                        setReminderLeadMinutes(Number(event.target.value));
+                      }}
+                    />
+                  </label>
+                ) : null}
+              </fieldset>
+            ) : null}
           </>
         ) : null}
+        <section className="timeline-activity-editor__description" aria-label="Descrizione">
+          <h3>Descrizione</h3>
+          <label>
+            Descrizione
+            <textarea
+              value={draft.description}
+              onChange={(event) => {
+                operation.current = undefined;
+                setDraft({ ...draft, description: event.target.value });
+              }}
+            />
+          </label>
+        </section>
       </div>
       {recurringContext && (metadataDirty || areaDirty || nameDirty) ? (
         <fieldset className="timeline-activity-editor__fields">

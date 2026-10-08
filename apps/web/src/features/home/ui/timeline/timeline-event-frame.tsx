@@ -23,25 +23,16 @@ const ribbon = `M 8 218
 export function eventFrameGeometry(width: number, height: number) {
   const w = Math.max(1, width);
   const h = Math.max(1, height);
-  const sx = w / 772;
-  // Scale the original short-card corners within a fixed pixel band. Only
-  // the straight middle can grow when a Schedule spans several hours.
-  const top = Math.min(4, h * 0.035);
-  const tail = Math.min(70, Math.max(22, h * 0.26));
-  const sy = Math.max(0.01, (tail - top) / (218 - 27));
-  const offset = top - 27 * sy;
-  const leftTop = 8 * sx;
-  const leftBottom = w - 679 * sx;
-  const rightTop = 679 * sx;
-  const rightBottom = w - 8 * sx;
-  const bridge = h > 2 * tail + 8
-    ? `M ${leftTop} ${tail} L ${leftTop} ${h - tail - 16} L ${leftBottom} ${h - tail}
-       M ${rightTop} ${tail} L ${rightTop} ${h - tail - 16} L ${rightBottom} ${h - tail}`
-    : '';
+  // The source art is 772×305. Short cards retain its exact original shape.
+  // Taller cards insert a stretched horizontal slice through the unchanged
+  // artwork, so the sides grow without moving either corner or adding joins.
+  const originalHeight = (w * 305) / 772;
+  const addedHeight = h <= originalHeight + 4 ? 0 : h - originalHeight;
+  const topHeight = (Math.min(h, originalHeight) * 140.5) / 305;
   return {
-    topTransform: `matrix(${sx} 0 0 ${sy} 0 ${offset})`,
-    bottomTransform: `matrix(${-sx} 0 0 ${-sy} ${w} ${h - offset})`,
-    bridge,
+    addedHeight,
+    topHeight,
+    bottomHeight: h - topHeight - addedHeight,
   };
 }
 
@@ -65,10 +56,15 @@ export function TimelineEventFrame() {
     observer.observe(card);
     return () => observer.disconnect();
   }, []);
-  const { topTransform, bottomTransform, bridge } = eventFrameGeometry(
+  const { addedHeight, topHeight, bottomHeight } = eventFrameGeometry(
     size.width,
     size.height,
   );
+  const ribbons = <>
+    <use href={`#${id}-ribbon`} fill={`url(#${id}-paint)`} filter={`url(#${id}-glow)`} />
+    <use href={`#${id}-ribbon`} transform="translate(772 281) scale(-1 -1)"
+      fill={`url(#${id}-paint)`} filter={`url(#${id}-glow)`} />
+  </>;
   return (
     <svg
       ref={ref}
@@ -119,28 +115,19 @@ export function TimelineEventFrame() {
         </filter>
         <path id={`${id}-ribbon`} d={ribbon} />
       </defs>
-      <use
-        href={`#${id}-ribbon`}
-        transform={topTransform}
-        fill={`url(#${id}-paint)`}
-        filter={`url(#${id}-glow)`}
-      />
-      <use
-        href={`#${id}-ribbon`}
-        transform={bottomTransform}
-        fill={`url(#${id}-paint)`}
-        filter={`url(#${id}-glow)`}
-      />
-      {bridge ? (
-        <path
-          d={bridge}
-          fill="none"
-          stroke={`url(#${id}-paint)`}
-          strokeWidth="1.6"
-          strokeLinejoin="round"
-          filter={`url(#${id}-glow)`}
-        />
-      ) : null}
+      {addedHeight === 0 ? (
+        <svg width={size.width} height={size.height} viewBox="0 0 772 305"
+          preserveAspectRatio="none">{ribbons}</svg>
+      ) : (
+        <>
+          <svg width={size.width} height={topHeight} viewBox="0 0 772 140.5"
+            preserveAspectRatio="none">{ribbons}</svg>
+          <svg y={topHeight} width={size.width} height={addedHeight}
+            viewBox="0 140 772 1" preserveAspectRatio="none">{ribbons}</svg>
+          <svg y={topHeight + addedHeight} width={size.width} height={bottomHeight}
+            viewBox="0 140.5 772 164.5" preserveAspectRatio="none">{ribbons}</svg>
+        </>
+      )}
     </svg>
   );
 }

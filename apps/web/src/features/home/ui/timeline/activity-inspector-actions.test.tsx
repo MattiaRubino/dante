@@ -109,6 +109,30 @@ loadLifeAreaChoice.mockResolvedValue({
 });
 
 describe('Recurring Activity profile scope', () => {
+  it('keeps the Advanced create order in the edit surface', async () => {
+    const { container } = render(
+      <ActivityEditPanel profile={profile} closeRequestRef={createRef()}
+        onSaved={() => undefined} onCancel={() => undefined} />,
+    );
+    await screen.findByRole('group', { name: 'Collocazione attuale' });
+    const body = container.querySelector('.timeline-activity-editor__body');
+    expect(body).not.toBeNull();
+    const sections = [
+      '.timeline-activity-editor__kind',
+      '.timeline-activity-editor__title-row',
+      '[aria-label="Programmazione attuale"]',
+      '.timeline-activity-editor__area-color',
+      '[aria-label="Svolgimento e obiettivi"]',
+      '.timeline-activity-editor__location',
+      '.timeline-activity-editor__description',
+    ].map((selector) => body?.querySelector(selector));
+    expect(sections.every(Boolean)).toBe(true);
+    for (let index = 1; index < sections.length; index += 1) {
+      expect(sections[index - 1]?.compareDocumentPosition(sections[index]!))
+        .toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    }
+  });
+
   it('includes the clicked instance for both available save scopes', async () => {
     const occurrenceRef = '0199a222-2222-7222-8222-222222222222';
     const recurrenceStateRef = '0199a333-3333-7333-8333-333333333333';

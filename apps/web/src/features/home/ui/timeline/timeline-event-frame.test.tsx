@@ -1,25 +1,24 @@
+// @vitest-environment jsdom
+import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { eventFrameGeometry } from './timeline-event-frame';
+import { eventFrameGeometry, TimelineEventFrame } from './timeline-event-frame';
 
-describe('Event frame at different schedule heights', () => {
-  it('keeps the corner geometry fixed and connects both side ribbons on tall cards', () => {
-    const medium = eventFrameGeometry(280, 300);
-    const tall = eventFrameGeometry(280, 900);
-    expect(medium.topTransform).toBe(tall.topTransform);
-    expect(tall.bridge).toContain('830');
-    const bottomOffset = Number(tall.bottomTransform.match(/ 280 ([^)]+)\)/)?.[1]);
-    expect(bottomOffset).toBeGreaterThan(900);
-    expect(tall.bridge).not.toBe('');
+describe('Event frame geometry', () => {
+  it('uses the original uncut artwork for a short card', () => {
+    const { container } = render(<TimelineEventFrame />);
+    const frame = container.querySelector('.timeline-event-frame');
+    expect(frame?.querySelectorAll('svg')).toHaveLength(1);
+    expect(frame?.querySelector('svg')?.getAttribute('viewBox')).toBe('0 0 772 305');
+    expect(frame?.querySelectorAll('path')).toHaveLength(1);
   });
 
-  it('does not stretch a short card corner into a thick diagonal', () => {
-    const short = eventFrameGeometry(280, 100);
-    const medium = eventFrameGeometry(280, 300);
-    const shortScale = Number(short.topTransform.match(/matrix\([^ ]+ 0 0 ([^ ]+)/)?.[1]);
-    const mediumScale = Number(medium.topTransform.match(/matrix\([^ ]+ 0 0 ([^ ]+)/)?.[1]);
-    expect(shortScale).toBeGreaterThan(0);
-    expect(shortScale).toBeLessThan(mediumScale);
-    expect(short.bridge).not.toBe('');
+  it('changes only the straight middle when the height grows', () => {
+    const standard = eventFrameGeometry(280, 300);
+    const tall = eventFrameGeometry(280, 900);
+    expect(standard.topHeight).toBe(tall.topHeight);
+    expect(standard.bottomHeight).toBe(tall.bottomHeight);
+    expect(tall.addedHeight - standard.addedHeight).toBe(600);
+    expect(tall.topHeight + tall.addedHeight + tall.bottomHeight).toBeCloseTo(900);
   });
 });
