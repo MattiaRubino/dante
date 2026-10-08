@@ -1,3 +1,4 @@
+import { Temporal } from '@dante/time';
 import { describe, expect, it, vi } from 'vitest';
 
 import { createRemoteEventProfileDataSource } from './remote-event-profile-data-source';
@@ -73,7 +74,7 @@ describe('owner-scoped Event profile CAS source', () => {
     await expect(source.revise(EVENT, {
       eventRef: EVENT, title: 'Conferenza', profileRevision: 1,
       agendaRevision: 0, agendaParts: [],
-      createdAt: {} as never,
+      createdAt: Temporal.Instant.from('2026-10-01T09:00:00Z'),
     }, {
       title: 'Nuovo', description: null, location: null, colorCode: null,
     }, 'm4:stale')).rejects.toThrow('è cambiato');
