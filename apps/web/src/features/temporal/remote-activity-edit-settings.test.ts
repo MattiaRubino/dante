@@ -96,5 +96,46 @@ describe('Activity editor settings remote contract', () => {
       reminder: { schedule_ref: 'schedule', expected_state_ref: 'old-reminder',
         enabled: true, lead_minutes: 30 },
     });
+
+  it('updates Activity placement protection through the canonical CAS endpoint', async () => {
+    const received: Record<string, unknown>[] = [];
+    const fetchFn = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const path = typeof input === 'string' ? input :
+        input instanceof URL ? input.href : input.url;
+      if (path.endsWith('/edit-snapshot')) return Promise.resolve(response({
+        activity_ref: ref,
+        execution_policy: { activity_ref: ref, mode_code: 'disabled', state_ref: null },
+        reality_policy: { subject_kind: 'activity', subject_native_ref: ref,
+          mode_code: 'manual', state_ref: null },
+        child_guard_mode: 'none',
+        life_area_ref: null,
+        objectives: [],
+        placement_lock: { schedule_ref: 'schedule', locked: false, revision: 3 },
+        reminder: null,
+        schedules: [{ schedule_ref: 'schedule', role_code: 'envelope',
+          display_name: null, presentation_order: 0,
+          placement_material_state_ref: 'state', temporal_form: 'named_zone_local',
+          zone_id: 'Europe/Rome', starts_local_at: '2026-10-08T09:00:00',
+          ends_local_at: '2026-10-08T10:00:00' }],
+      }));
+      if (path.endsWith('/auth/session'))
+        return Promise.resolve(response({ authenticated: true, csrf_token: 'token' }));
+      if (path.endsWith('/placement-lock') && init?.method === 'PUT') {
+        received.push(JSON.parse(String(init.body)) as Record<string, unknown>);
+        expect(new Headers(init.headers).get('X-Dante-CSRF')).toBe('token');
+        return Promise.resolve(response({
+          schedule_ref: 'schedule', locked: true, revision: 4,
+          updated_at: '2026-10-08T09:00:00Z', replayed: false,
+        }));
+      }
+      throw new Error(`Unexpected path: ${path}`);
+    });
+    const source = createRemoteActivityEditSettings(fetchFn);
+    const before = await source.load(ref);
+    expect(before.placementLockRevision).toBe(3);
+    const after = await source.setPlacementProtected(ref, before, true);
+    expect(received).toEqual([{ locked: true, expected_revision: 3 }]);
+    expect(after.placementProtected).toBe(true);
+    expect(after.placementLockRevision).toBe(4);
   });
 });
