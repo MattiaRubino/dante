@@ -1,12 +1,10 @@
 import { createWebFetch } from '../../platform/api/web-fetch';
 import {
-  createRemoteRealityObjectiveDataSource,
+  parseObjectiveView,
   type ObjectiveView,
   type RealityMode,
 } from './remote-reality-objective-data-source';
 import type { SessionCaptureMode } from './remote-session-capability-data-source';
-import { createRemotePlacementLockDataSource } from './remote-placement-lock-data-source';
-import { createRemoteScheduleReminderDataSource } from './remote-schedule-reminder-data-source';
 
 export type ActivityEditPolicy<T extends string> = Readonly<{
   mode: T;
@@ -139,9 +137,6 @@ export function createRemoteActivityEditSettings(
   fetchFn: typeof globalThis.fetch = globalThis.fetch,
 ) {
   const request = createWebFetch(fetchFn);
-  const objectiveSource = createRemoteRealityObjectiveDataSource(fetchFn);
-  const lockSource = createRemotePlacementLockDataSource(fetchFn);
-  const reminderSource = createRemoteScheduleReminderDataSource(fetchFn);
   const endpoint = (ref: string, suffix: string) =>
     `/api/v1/temporal/activities/${encodeURIComponent(ref)}/${suffix}`;
 
@@ -196,51 +191,40 @@ export function createRemoteActivityEditSettings(
 
   return Object.freeze({
     async load(ref: string): Promise<ActivityEditSettings> {
-      const [
-        capturePayload,
-        realityPayload,
-        schedulePayload,
-        objectives,
-        activityPayload,
-      ] = await Promise.all([
-        read(endpoint(ref, 'execution-policy')),
-        read(endpoint(ref, 'reality-policy')),
-        read(endpoint(ref, 'children')),
-        objectiveSource.listObjectives('activity', ref),
-        read(`/api/v1/temporal/activities/${encodeURIComponent(ref)}`),
-      ]);
-      const activity = object(activityPayload);
-      if (activity.activity_ref !== ref) {
+      const snapshot = object(await read(endpoint(ref, 'edit-snapshot')));
+      if (snapshot.activity_ref !== ref || !Array.isArray(snapshot.objectives)) {
         throw new Error('Identità dell’attività non valida.');
       }
-      const acceptedSchedules = schedules(schedulePayload, ref);
-      const children = object(schedulePayload);
+      const acceptedSchedules = schedules({
+        parent_activity_ref: ref,
+        schedules: snapshot.schedules,
+      }, ref);
       if (
         !['none', 'confirm', 'block'].includes(
-          String(children.child_guard_mode),
+          String(snapshot.child_guard_mode),
         )
       ) {
         throw new Error('Regola dell’attività non valida.');
       }
-      const primary =
-        acceptedSchedules.find((item) => item.role === 'envelope') ??
+      const lock = snapshot.placement_lock === null ? null : object(snapshot.placement_lock);
+      const reminder = snapshot.reminder === null ? null : object(snapshot.reminder);
+      const primary = acceptedSchedules.find((item) => item.role === 'envelope') ??
         acceptedSchedules.find((item) => item.role === null);
-      const [lock, reminder] = primary
-        ? await Promise.all([
-            lockSource.get(primary.scheduleRef),
-            reminderSource.get(primary.scheduleRef),
-          ])
-        : [null, null];
+      if ((lock !== null && (lock.schedule_ref !== primary?.scheduleRef || typeof lock.locked !== 'boolean')) ||
+          (reminder !== null && (typeof reminder.enabled !== 'boolean' ||
+            !Number.isInteger(reminder.lead_minutes)))) {
+        throw new Error('Blocco o promemoria dell’attività non valido.');
+      }
       return Object.freeze({
-        capture: capture(capturePayload, ref),
-        reality: reality(realityPayload, ref),
+        capture: capture(snapshot.execution_policy, ref),
+        reality: reality(snapshot.reality_policy, ref),
         schedules: acceptedSchedules,
-        objectives,
-        lifeAreaRef: optionalText(activity.life_area_ref),
-        placementProtected: lock?.locked ?? false,
-        reminderLeadMinutes: reminder?.enabled ? reminder.leadMinutes : null,
+        objectives: Object.freeze(snapshot.objectives.map(parseObjectiveView)),
+        lifeAreaRef: optionalText(snapshot.life_area_ref),
+        placementProtected: lock?.locked === true,
+        reminderLeadMinutes: reminder?.enabled === true ? Number(reminder.lead_minutes) : null,
         childGuardMode:
-          children.child_guard_mode as ActivityEditSettings['childGuardMode'],
+          snapshot.child_guard_mode as ActivityEditSettings['childGuardMode'],
       });
     },
     async setCapture(

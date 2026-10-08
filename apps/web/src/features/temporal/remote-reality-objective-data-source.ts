@@ -42,7 +42,13 @@ function nullableNumber(value: unknown): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-function objective(value: unknown): ObjectiveView {
+function nullableString(value: unknown): string | null {
+  if (value === null) return null;
+  if (typeof value !== 'string') throw new Error('Invalid Objective response.');
+  return value;
+}
+
+export function parseObjectiveView(value: unknown): ObjectiveView {
   const row = record(value);
   return Object.freeze({
     objectiveRef: String(row.objective_ref),
@@ -55,19 +61,14 @@ function objective(value: unknown): ObjectiveView {
     targetValue: nullableNumber(row.target_value),
     targetMin: nullableNumber(row.target_min),
     targetMax: nullableNumber(row.target_max),
-    unitCode: row.unit_code === null ? null : String(row.unit_code),
+    unitCode: nullableString(row.unit_code),
     presentationOrder: Number(row.presentation_order),
-    observationRef:
-      row.observation_ref === null ? null : String(row.observation_ref),
+    observationRef: nullableString(row.observation_ref),
     observedBoolean:
       row.observed_boolean === null ? null : Boolean(row.observed_boolean),
     observedNumeric: nullableNumber(row.observed_numeric),
-    qualitativeCode:
-      row.qualitative_code === null ? null : String(row.qualitative_code),
-    evaluationStateRef:
-      row.evaluation_state_ref === null
-        ? null
-        : String(row.evaluation_state_ref),
+    qualitativeCode: nullableString(row.qualitative_code),
+    evaluationStateRef: nullableString(row.evaluation_state_ref),
     assessmentCode:
       row.assessment_code === null
         ? null
@@ -164,7 +165,7 @@ export function createRemoteRealityObjectiveDataSource(
         presentationOrder: number;
       }>,
     ): Promise<ObjectiveView> {
-      return objective(
+      return parseObjectiveView(
         await send(
           `/api/v1/temporal/${collection(kind)}/${encodeURIComponent(subjectRef)}/objectives`,
           'POST',
@@ -192,7 +193,7 @@ export function createRemoteRealityObjectiveDataSource(
         'GET',
       );
       if (!Array.isArray(payload)) throw new Error('Objectives must be a list.');
-      return Object.freeze(payload.map(objective));
+      return Object.freeze(payload.map(parseObjectiveView));
     },
 
     async recordResult(

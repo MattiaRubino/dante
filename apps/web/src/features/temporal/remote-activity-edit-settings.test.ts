@@ -49,28 +49,18 @@ describe('Activity editor settings remote contract', () => {
           return Promise.resolve(
             response({ authenticated: true, csrf_token: 'token' }),
           );
-        if (path.endsWith('/execution-policy'))
+        if (path.endsWith('/edit-snapshot'))
           return Promise.resolve(
             response({
               activity_ref: ref,
-              mode_code: 'disabled',
-              state_ref: 'old-capture',
-            }),
-          );
-        if (path.endsWith('/reality-policy'))
-          return Promise.resolve(
-            response({
-              subject_kind: 'activity',
-              subject_native_ref: ref,
-              mode_code: 'manual',
-              state_ref: 'old-reality',
-            }),
-          );
-        if (path.endsWith('/children'))
-          return Promise.resolve(
-            response({
-              parent_activity_ref: ref,
+              execution_policy: { activity_ref: ref, mode_code: 'disabled', state_ref: 'old-capture' },
+              reality_policy: { subject_kind: 'activity', subject_native_ref: ref,
+                mode_code: 'manual', state_ref: 'old-reality' },
               child_guard_mode: 'none',
+              life_area_ref: null,
+              objectives: [],
+              placement_lock: null,
+              reminder: null,
               schedules: [
                 {
                   schedule_ref: 'schedule',
@@ -85,17 +75,12 @@ describe('Activity editor settings remote contract', () => {
               ],
             }),
           );
-        if (path.endsWith('/objectives')) return Promise.resolve(response([]));
-        if (path.endsWith(`/activities/${ref}`))
-          return Promise.resolve(
-            response({ activity_ref: ref, life_area_ref: null }),
-          );
         throw new Error(`Unexpected path ${path}`);
       },
     );
     const source = createRemoteActivityEditSettings(fetchFn);
     const settings = await source.load(ref);
-    expect(paths).toContain(`/api/v1/temporal/activities/${ref}/children`);
+    expect(paths).toEqual([`/api/v1/temporal/activities/${ref}/edit-snapshot`]);
     expect(settings.schedules[0]).toMatchObject({
       role: 'interval',
       name: 'Mattina',
