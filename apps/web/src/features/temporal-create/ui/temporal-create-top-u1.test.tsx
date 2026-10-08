@@ -77,7 +77,139 @@ function addMinutes(value: string, delta: number): string {
   ).padStart(2, '0')}`;
 }
 
+function clockValues() {
+  const start = document.querySelector<HTMLInputElement>(
+    '[data-create-path="startTime"]',
+  );
+  const end = document.querySelector<HTMLInputElement>(
+    '[data-create-path="endTime"]',
+  );
+  if (!start || !end) throw new Error('Expected both canonical time inputs.');
+  return { start, end };
+}
+
+function setClock(label: 'Inizio' | 'Fine', value: string) {
+  const { start, end } = clockValues();
+  fireEvent.change(label === 'Inizio' ? start : end, {
+    target: { value },
+  });
+}
+
 describe('Temporal Create U1 top controls', () => {
+  it.each([
+    ['Quick', 'Attività'],
+    ['Quick', 'Evento'],
+    ['Advanced', 'Attività'],
+    ['Advanced', 'Evento'],
+  ] as const)(
+    'golden clock contract: %s %s arrows and manual edits change only their own endpoint',
+    (surface, kind) => {
+      renderEntry();
+      if (kind === 'Evento') {
+        fireEvent.click(screen.getByRole('radio', { name: 'Evento' }));
+      }
+      if (surface === 'Advanced') {
+        fireEvent.click(
+          screen.getByRole('button', { name: /Opzioni avanzate/ }),
+        );
+      }
+
+      setClock('Inizio', '09:00');
+      setClock('Fine', '12:00');
+      expect([clockValues().start.value, clockValues().end.value]).toEqual([
+        '09:00',
+        '12:00',
+      ]);
+      expect(
+        within(screen.getByRole('group', { name: 'Fine' })).getByText('3 h'),
+      ).toBeTruthy();
+
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Inizio: aumenta ora' }),
+      );
+      expect([clockValues().start.value, clockValues().end.value]).toEqual([
+        '10:00',
+        '12:00',
+      ]);
+      expect(
+        within(screen.getByRole('group', { name: 'Fine' })).getByText('2 h'),
+      ).toBeTruthy();
+
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Inizio: diminuisci 15 minuti' }),
+      );
+      expect([clockValues().start.value, clockValues().end.value]).toEqual([
+        '09:45',
+        '12:00',
+      ]);
+      expect(
+        within(screen.getByRole('group', { name: 'Fine' })).getByText(
+          '2 h 15 min',
+        ),
+      ).toBeTruthy();
+
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Fine: diminuisci ora' }),
+      );
+      expect([clockValues().start.value, clockValues().end.value]).toEqual([
+        '09:45',
+        '11:00',
+      ]);
+      expect(
+        within(screen.getByRole('group', { name: 'Fine' })).getByText(
+          '1 h 15 min',
+        ),
+      ).toBeTruthy();
+
+      setClock('Inizio', '08:30');
+      expect([clockValues().start.value, clockValues().end.value]).toEqual([
+        '08:30',
+        '11:00',
+      ]);
+      expect(
+        within(screen.getByRole('group', { name: 'Fine' })).getByText(
+          '2 h 30 min',
+        ),
+      ).toBeTruthy();
+    },
+  );
+
+  it.each(['Quick', 'Advanced'] as const)(
+    'golden overnight contract: %s preserves the end clock when start crosses it',
+    (surface) => {
+      renderEntry();
+      if (surface === 'Advanced') {
+        fireEvent.click(
+          screen.getByRole('button', { name: /Opzioni avanzate/ }),
+        );
+      }
+      setClock('Inizio', '21:30');
+      setClock('Fine', '23:00');
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Inizio: aumenta ora' }),
+      );
+      expect([clockValues().start.value, clockValues().end.value]).toEqual([
+        '22:30',
+        '23:00',
+      ]);
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Inizio: aumenta ora' }),
+      );
+      expect([clockValues().start.value, clockValues().end.value]).toEqual([
+        '23:30',
+        '23:00',
+      ]);
+      expect(
+        screen.getByRole('button', { name: /Data fine:.*1 ott/i }),
+      ).toBeTruthy();
+      expect(
+        within(screen.getByRole('group', { name: 'Fine' })).getByText(
+          '23 h 30 min',
+        ),
+      ).toBeTruthy();
+    },
+  );
+
   it('keeps the top hierarchy compact and honest about deferred types', () => {
     renderEntry();
 
