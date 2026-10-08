@@ -834,7 +834,7 @@ Focused PostgreSQL integration tests cover: 1 vs 1+future targeting,
 isolation of other past instances, unmaterialized future inheritance,
 replay/fingerprint conflict, stale state, cross-owner refusal, Event
 single-target and protected-future rejection, capability-only grants,
-and direct API read/save. Focused web tests cover scope choice, accepted
+direct API read/save, and scheduled Event Timeline title readback. Focused web tests cover scope choice, accepted
 remote operation payload and conflict handling. These are
 **implemented but NOT YET USER-RUN**.
 
