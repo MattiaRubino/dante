@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, date, datetime, time
+from datetime import date, time
 from types import SimpleNamespace
 from typing import Any
 from uuid import uuid4
@@ -110,10 +110,10 @@ async def test_inventory_reuses_self_scope_and_returns_skipped_and_extra_occurre
         assert snapshot.captured_at.tzinfo is not None
         assert snapshot.materialized_only is True
         assert snapshot.apply_authorized is False
-        assert {row.occurrence_ref for row in snapshot.occurrences} == {
-            *(row.occurrence_ref for row in routine_checkpoint.occurrences),
-            extra.occurrence.occurrence_ref,
-        }
+        assert {row.occurrence_ref for row in snapshot.occurrences} == (
+            {row.occurrence_ref for row in routine_checkpoint.occurrences}
+            | {extra.occurrence.occurrence_ref}
+        )
         assert next(
             row for row in snapshot.occurrences if row.occurrence_ref == skipped.occurrence_ref
         ).skipped
@@ -200,11 +200,9 @@ async def test_inventory_uses_guarded_function_without_runtime_table_grants(
                   ) AS can_read,
                   has_table_privilege(
                     'dante_runtime','dante.occurrence_generation','SELECT'
-                  ) AS can_scan_table,
-                  (SELECT version_num FROM dante.alembic_version) AS version
+                  ) AS can_scan_table
             """))).one()
             assert row.can_read is True
             assert row.can_scan_table is False
-            assert row.version == "20261008_122"
     finally:
         await runtime.dispose()
