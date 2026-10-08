@@ -96,6 +96,7 @@ describe('Activity editor settings remote contract', () => {
       reminder: { schedule_ref: 'schedule', expected_state_ref: 'old-reminder',
         enabled: true, lead_minutes: 30 },
     });
+  });
 
   it('updates Activity placement protection through the canonical CAS endpoint', async () => {
     const received: Record<string, unknown>[] = [];
