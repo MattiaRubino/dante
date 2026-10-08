@@ -147,6 +147,9 @@ class EventResponse(BaseModel):
     created_at: datetime
     life_area_ref: UUID | None = None
     life_area_assignment_revision: int | None = Field(default=None, ge=1)
+    description: str | None = None
+    location: str | None = None
+    color_code: str | None = None
     replayed: bool = False
 
 
@@ -294,6 +297,9 @@ def _event_response(event: EventView, *, replayed: bool = False) -> EventRespons
         created_at=event.created_at,
         life_area_ref=event.life_area_ref,
         life_area_assignment_revision=event.life_area_assignment_revision,
+        description=event.description,
+        location=event.location,
+        color_code=event.color_code,
         replayed=replayed,
     )
 
