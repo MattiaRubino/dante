@@ -25,6 +25,14 @@ const loadLifeAreaChoice = vi.fn();
 const assignLifeArea = vi.fn();
 const setPlacementProtected = vi.fn();
 const addObjective = vi.fn();
+const loadRecurringContext = vi.fn().mockResolvedValue(null);
+const saveRecurringProfile = vi.fn();
+vi.mock('../../../temporal/remote-recurring-profile-edit', () => ({
+  createRemoteRecurringProfileEdit: () => ({
+    loadActivityContext: loadRecurringContext,
+    saveActivityProfile: saveRecurringProfile,
+  }),
+}));
 vi.mock('../../../temporal/remote-activity-inspector', () => ({
   createRemoteActivityInspector: () => ({ get, revise, retire }),
 }));
@@ -72,6 +80,43 @@ const currentSettings = {
 loadSettings.mockResolvedValue(currentSettings);
 loadLifeAreaChoice.mockResolvedValue({
   options: [], currentRef: null, currentRevision: 0,
+});
+
+describe('Recurring Activity profile scope', () => {
+  it('includes the clicked instance for both available save scopes', async () => {
+    const occurrenceRef = '0199a222-2222-7222-8222-222222222222';
+    const recurrenceStateRef = '0199a333-3333-7333-8333-333333333333';
+    const context = {
+      occurrenceRef, sourceRef: '0199a444-4444-7444-8444-444444444444',
+      editRevision: 3, recurrenceStateRef,
+    };
+    loadRecurringContext.mockResolvedValueOnce(context);
+    saveRecurringProfile.mockResolvedValue({ ...profile, title: 'Dopo' });
+    const onSaved = vi.fn();
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={onSaved}
+        onCancel={() => undefined}
+      />,
+    );
+    fireEvent.change(await screen.findByRole('textbox', { name: 'Titolo' }), {
+      target: { value: 'Dopo' },
+    });
+    expect(await screen.findByLabelText('Solo questa')).toBeTruthy();
+    fireEvent.click(screen.getByLabelText('Questa e le prossime'));
+    fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
+    await waitFor(() => expect(saveRecurringProfile).toHaveBeenCalledWith(
+      ref, context, 'this_and_following', {
+        title: 'Dopo', description: 'Nota', location: 'Casa', colorCode: '#EA5C12',
+      }, expect.any(String),
+    ));
+    expect(saveCore).not.toHaveBeenCalled();
+    await waitFor(() => expect(onSaved).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Dopo' }),
+    ));
+  });
 });
 
 describe('Activity Inspector', () => {
