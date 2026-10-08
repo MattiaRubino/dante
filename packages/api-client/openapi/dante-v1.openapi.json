@@ -2575,9 +2575,16 @@
             "type": "integer"
           },
           "life_area_ref": {
-            "format": "uuid",
-            "title": "Life Area Ref",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Ref"
           },
           "operation_id": {
             "maxLength": 200,
@@ -6798,9 +6805,16 @@
             "type": "integer"
           },
           "life_area_ref": {
-            "format": "uuid",
-            "title": "Life Area Ref",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Ref"
           },
           "replayed": {
             "default": false,
@@ -9882,6 +9896,64 @@
           "replayed"
         ],
         "title": "PlanWorkResponse",
+        "type": "object"
+      },
+      "PlannedSessionNameChange": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_name": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Name"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "title": "PlannedSessionNameChange",
+        "type": "object"
+      },
+      "PlannedSessionNameResponse": {
+        "properties": {
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          }
+        },
+        "required": ["schedule_ref", "display_name", "replayed"],
+        "title": "PlannedSessionNameResponse",
         "type": "object"
       },
       "PlanningTrayAbsolutePlacementRequest": {
@@ -26875,6 +26947,67 @@
           }
         },
         "summary": "Set Outcome Review Policy",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/activities/{activity_ref}/planned-sessions/{schedule_ref}/name": {
+      "put": {
+        "operationId": "temporal_revise_self_planned_session_name",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "schedule_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Schedule Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlannedSessionNameChange"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlannedSessionNameResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Revise Self Planned Session Name",
         "tags": ["temporal"]
       }
     },

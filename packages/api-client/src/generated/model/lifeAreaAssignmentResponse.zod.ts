@@ -10,7 +10,10 @@ export const lifeAreaAssignmentResponseReplayedDefault = false;
 export const LifeAreaAssignmentResponse = /*#__PURE__*/ zod.object({
   assigned_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
   assignment_revision: /*#__PURE__*/ zod.int().check(/*#__PURE__*/ zod.gte(1)),
-  life_area_ref: /*#__PURE__*/ zod.uuid(),
+  life_area_ref: /*#__PURE__*/ zod.union([
+    /*#__PURE__*/ zod.uuid(),
+    /*#__PURE__*/ zod.null(),
+  ]),
   replayed: /*#__PURE__*/ zod._default(
     /*#__PURE__*/ zod.boolean(),
     lifeAreaAssignmentResponseReplayedDefault,

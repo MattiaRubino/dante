@@ -18,7 +18,10 @@ export const TemporalAssignEventLifeAreaBody = /*#__PURE__*/ zod.object({
         temporalAssignEventLifeAreaBodyExpectedAssignmentRevisionMin,
       ),
     ),
-  life_area_ref: /*#__PURE__*/ zod.uuid(),
+  life_area_ref: /*#__PURE__*/ zod.union([
+    /*#__PURE__*/ zod.uuid(),
+    /*#__PURE__*/ zod.null(),
+  ]),
   operation_id: /*#__PURE__*/ zod
     .string()
     .check(/*#__PURE__*/ zod.minLength(1))

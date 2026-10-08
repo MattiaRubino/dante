@@ -129,6 +129,8 @@ import type {
   PlanDependencyResponse,
   PlanDiagnosisResponse,
   PlanWorkResponse,
+  PlannedSessionNameChange,
+  PlannedSessionNameResponse,
   PlanningTrayItemResponse,
   PostponedEventResponse,
   ProblemDetails,
@@ -4674,6 +4676,79 @@ export const temporalSetActivityOutcomeReviewPolicy = async (
     status: res.status,
     headers: res.headers,
   } as temporalSetActivityOutcomeReviewPolicyResponse;
+};
+
+export type temporalReviseSelfPlannedSessionNameResponse200 = {
+  data: PlannedSessionNameResponse;
+  status: 200;
+};
+
+export type temporalReviseSelfPlannedSessionNameResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalReviseSelfPlannedSessionNameResponseSuccess =
+  temporalReviseSelfPlannedSessionNameResponse200 & {
+    headers: Headers;
+  };
+export type temporalReviseSelfPlannedSessionNameResponseError =
+  temporalReviseSelfPlannedSessionNameResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalReviseSelfPlannedSessionNameResponse =
+  | temporalReviseSelfPlannedSessionNameResponseSuccess
+  | temporalReviseSelfPlannedSessionNameResponseError;
+
+export const getTemporalReviseSelfPlannedSessionNameUrl = (
+  activityRef: string,
+  scheduleRef: string,
+) => {
+  return `/api/v1/temporal/activities/${activityRef}/planned-sessions/${scheduleRef}/name`;
+};
+
+/**
+ * @summary Revise Self Planned Session Name
+ */
+export const temporalReviseSelfPlannedSessionName = async (
+  activityRef: string,
+  scheduleRef: string,
+  plannedSessionNameChange: PlannedSessionNameChange,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalReviseSelfPlannedSessionNameResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalReviseSelfPlannedSessionNameUrl(activityRef, scheduleRef),
+    {
+      ...options,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(plannedSessionNameChange),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalReviseSelfPlannedSessionNameResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalReviseSelfPlannedSessionNameResponse;
 };
 
 export type temporalStartPlannedActivitySessionResponse200 = {
