@@ -62,6 +62,11 @@ def _problem(exc: DBAPIError) -> ProblemError:
             status=409, code="temporal.activity_profile.active_session", category="conflict",
             title="Session active", detail="End the active Session before deleting the Activity.",
         )
+    if constraint == "activity_profile_recorded_truth":
+        return ProblemError(
+            status=409, code="temporal.activity_profile.recorded_truth", category="conflict",
+            title="Historical Activity", detail="Correct the factual record: it cannot be deleted.",
+        )
     if constraint in ("activity_profile_stale", "activity_profile_operation_reused"):
         return ProblemError(
             status=409, code="temporal.activity_profile.conflict", category="conflict",
@@ -158,3 +163,63 @@ async def retire_self_activity(
     except SQLAlchemyError as exc:
         raise _unavailable() from exc
     return ActivityRetirementResponse(activity_ref=activity_ref, replayed=bool(replayed))
+
+
+class PlannedSessionNameChange(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    expected_name: str | None = Field(default=None, max_length=300)
+    name: str | None = Field(default=None, max_length=300)
+
+
+class PlannedSessionNameResponse(BaseModel):
+    schedule_ref: UUID
+    display_name: str | None
+    replayed: bool
+
+
+@router.put(
+    "/{activity_ref}/planned-sessions/{schedule_ref}/name",
+    response_model=PlannedSessionNameResponse,
+    operation_id="temporal_revise_self_planned_session_name",
+)
+async def revise_self_planned_session_name(
+    activity_ref: UUID, schedule_ref: UUID, body: PlannedSessionNameChange,
+    context: WriteContext, request: Request, response: Response,
+) -> PlannedSessionNameResponse:
+    response.headers["Cache-Control"] = "no-store"
+    if body.name is not None and (body.name != body.name.strip() or not body.name):
+        raise ProblemError(
+            status=422, code="temporal.activity_planned_name.invalid",
+            category="validation", title="Invalid planned Session name",
+            detail="The planned Session name must be trimmed or omitted.",
+        )
+    try:
+        async with request.app.state.database_runtime.session_factory() as session, session.begin():
+            row = (await session.execute(text("""
+                SELECT * FROM dante.revise_self_planned_session_name(
+                    :actor,:activity,:schedule,:expected,:name)
+            """), {
+                "actor": context.self_person_ref,
+                "activity": NativeRef(activity_ref),
+                "schedule": schedule_ref,
+                "expected": body.expected_name,
+                "name": body.name,
+            })).mappings().one()
+    except DBAPIError as exc:
+        constraint = getattr(getattr(exc.orig, "diag", None), "constraint_name", None)
+        if constraint == "activity_planned_name_unavailable":
+            raise ProblemError(
+                status=404, code="temporal.activity_planned_name.not_found",
+                category="not_found", title="Planned Session unavailable",
+                detail="No such planned Session belongs to this Activity.",
+            ) from exc
+        if constraint == "activity_planned_name_stale":
+            raise ProblemError(
+                status=409, code="temporal.activity_planned_name.stale",
+                category="conflict", title="Planned Session changed",
+                detail="Reload the current planned Session before renaming.",
+            ) from exc
+        raise _problem(exc) from exc
+    except SQLAlchemyError as exc:
+        raise _unavailable() from exc
+    return PlannedSessionNameResponse(**row)
