@@ -1,4 +1,4 @@
-import { createWebFetch } from '../../shared/api/web-fetch';
+import { createWebFetch } from '../../platform/api/web-fetch';
 import {
   createRemoteActivityInspector,
   type ActivityProfile,
@@ -6,7 +6,7 @@ import {
 import {
   invalidateTemporalPlanningRead,
   invalidateTemporalTimelineRead,
-} from './remote-temporal-data-source';
+} from './timeline-invalidation';
 
 export type RecurringProfileEditScope = 'only_this' | 'this_and_following';
 
