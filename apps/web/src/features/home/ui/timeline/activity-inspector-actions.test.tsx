@@ -673,6 +673,29 @@ describe('Activity Inspector', () => {
     expect(saveRecurringProfile).not.toHaveBeenCalled();
   });
 
+  it('never offers a following-series Life Area edit without a source-policy capability', async () => {
+    loadRecurringContext.mockResolvedValueOnce({
+      occurrenceRef: '0199a222-2222-7222-8222-222222222222',
+      sourceRef: '0199a444-4444-7444-8444-444444444444',
+      editRevision: 3, recurrenceStateRef: null,
+    });
+    loadSettings.mockResolvedValueOnce({ ...currentSettings, lifeAreaRef: 'area-1' });
+    loadLifeAreaChoice.mockResolvedValueOnce({
+      currentRef: 'area-1', currentRevision: 2,
+      options: [{ ref: 'area-1', name: 'Lavoro' }],
+    });
+    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
+      onSaved={() => undefined} onCancel={() => undefined} />);
+    fireEvent.change(await screen.findByRole('combobox', { name: 'Area assegnata' }), {
+      target: { value: '' },
+    });
+    expect(await screen.findByLabelText('Solo questa')).toHaveProperty('checked', true);
+    expect(screen.getByLabelText('Questa e le prossime')).toHaveProperty('disabled', true);
+    expect(screen.getByText(/non propaghiamo modifiche parziali alla serie/)).toBeTruthy();
+    expect(assignLifeArea).not.toHaveBeenCalled();
+    expect(saveRecurringProfile).not.toHaveBeenCalled();
+  });
+
   it('unassigns an existing Life Area using an explicit null target', async () => {
     const catalog = { currentRef: 'area-1', currentRevision: 4,
       options: [{ ref: 'area-1', name: 'Personale' }] };
