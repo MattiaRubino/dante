@@ -460,3 +460,17 @@ After user rerun of _124: `RUFF=0`, `POSTGRES=0`, `GENERATED_CHECK=0`, `API_TYPE
 ## 2026-10-08 — M2 bounded Objective edit+reality correction candidate
 
 M1 closed only for recurring general metadata on user green gate `55a017b9`; B14 overall active. Two new forward-only migrations `20261008_125` and `20261008_126` implement same-identity Objective definition revisions, immutable result correction and deterministic evaluation, and accepted selected/future Objective definition inheritance for canonically template-generated recurring occurrences. Strict owner/CAS, source-specific idempotency, protected future facts and rollback of an entire conflicting series apply. New Activity UI controls cover definition edit, result correction and trusted Objective series scope. Existing Activity/Event Objective create/read/record are reused. No manual-result copying or past deletion. Catalog target **234/5/207/103/477/414/586**; new local whole gate **PENDING**, not claimed green. M3–M5/B15 still open.
+
+## 2026-10-08 — M2 third user local gate: actual PostgreSQL frontier (supersedes earlier "pending" notes)
+
+User local gate on `2e5028df` reached `SYNTAX=0`, `POSTGRES=1` (**16 passed, 4 failed**), `GENERATE=0`, `GENERATED_CHECK=0`, `API_TYPECHECK=0`, `WEB_TYPECHECK=0`, `VITEST=0`. The sole Ruff failure `RUFF=1` was an import-format `I001` in `mappings/b14_create_closure.py`; the source was corrected on GitHub in `1ff3e500` but still needs local verification. Unlike the two earlier M2 gates, migrations through `20261008_126` ran and PostgreSQL executed the functional suite, so this is **not** a collection/syntax failure.
+
+The **four remaining failures** are exactly:
+1. `test_b14_m2_objective_corrections.py::test_objective_definition_and_result_corrections_are_canonical_without_deletion`
+2. `test_b14_m2_objective_scope.py::test_generated_routine_objective_scope_selected_past_and_later_future`
+3. `test_b14_m2_objective_scope.py::test_generated_event_objectives_share_future_scope_without_copying_results`
+4. `test_database_current_catalog.py::test_current_database_cross_representation_is_exact`
+
+The pasted gate output included the final summary and only the last 100 lines of the PostgreSQL log; the **individual failure tracebacks are not available** in the shared excerpt. Do not invent diagnoses or mark M2/test catalog green. The user's full traceback source is `/tmp/dante-m2-final.2m48YP/POSTGRES.log` in their local worktree. Read it **without re-running the suite**. `pnpm api:generate` created modified/untracked canonical OpenAPI/Orval files in the local working tree; deterministic generated check passed locally, **but these files are not yet committed/pushed**.
+
+**Current frontier:** M1 general-metadata recurring scope is user-proven and published in `55a017b9`. M2 Objective corrections, immutable history and template-derived selected/future policy are implemented as **candidate only** on `_125/_126`; clear four PostgreSQL failures and exact Dictionary/catalog comparison, rerun one consolidated user-local gate, then publish generated client and record closure. M3 remaining Activity/Session/Life Area/Schedule edits, M4 Event Inspector and faithful Activity/Event Duplica, M5 real app/visual acceptance, and B15 whole-vertical closure remain open. Preserve approved semantics: only `Solo questa` / `Questa e le prossime`, clicked always included, other past unaffected, no deleting factual history or fabricating future Observations. User runs tests in `~/projects/dante`; no Actions/CI; no extra micro-gates.
