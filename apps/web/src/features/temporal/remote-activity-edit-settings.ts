@@ -1,4 +1,6 @@
 import { createWebFetch } from '../../platform/api/web-fetch';
+import { parseProfile, type ActivityProfile } from './remote-activity-inspector';
+import { invalidateTemporalPlanningRead, invalidateTemporalTimelineRead } from './timeline-invalidation';
 import {
   parseObjectiveView,
   type ObjectiveView,
@@ -160,35 +162,6 @@ export function createRemoteActivityEditSettings(
     return row.csrf_token;
   }
 
-  async function set<T extends string>(
-    ref: string,
-    suffix: string,
-    mode: T,
-    expectedStateRef: string | null,
-    operationId: string,
-  ): Promise<unknown> {
-    const response = await request(endpoint(ref, suffix), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Dante-CSRF': await csrf(),
-      },
-      body: JSON.stringify({
-        operation_id: operationId,
-        mode_code: mode,
-        expected_state_ref: expectedStateRef,
-      }),
-    });
-    if (!response.ok) {
-      throw new Error(
-        response.status === 409
-          ? 'Questa impostazione è cambiata. Riapri Modifica e riprova.'
-          : 'Impossibile salvare le impostazioni dell’attività.',
-      );
-    }
-    return response.json();
-  }
-
   return Object.freeze({
     async load(ref: string): Promise<ActivityEditSettings> {
       const snapshot = object(await read(endpoint(ref, 'edit-snapshot')));
@@ -227,27 +200,57 @@ export function createRemoteActivityEditSettings(
           snapshot.child_guard_mode as ActivityEditSettings['childGuardMode'],
       });
     },
-    async setCapture(
-      ref: string,
-      policy: ActivityEditPolicy<SessionCaptureMode>,
-      mode: SessionCaptureMode,
+    async saveCore(
+      profile: ActivityProfile,
+      settings: ActivityEditSettings,
+      changes: Readonly<{
+        profile?: Pick<ActivityProfile, 'title' | 'description' | 'location' | 'colorCode'>;
+        capture?: SessionCaptureMode;
+        reality?: RealityMode;
+      }>,
       operationId: string,
-    ) {
-      return capture(
-        await set(ref, 'execution-policy', mode, policy.stateRef, operationId),
-        ref,
-      );
-    },
-    async setReality(
-      ref: string,
-      policy: ActivityEditPolicy<RealityMode>,
-      mode: RealityMode,
-      operationId: string,
-    ) {
-      return reality(
-        await set(ref, 'reality-policy', mode, policy.stateRef, operationId),
-        ref,
-      );
+    ): Promise<{ profile: ActivityProfile; settings: ActivityEditSettings }> {
+      const response = await request(endpoint(profile.activityRef, 'core-edit'), {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Dante-CSRF': await csrf(),
+        },
+        body: JSON.stringify({
+          operation_id: operationId,
+          ...(changes.profile ? { profile: {
+            expected_revision: profile.revision,
+            title: changes.profile.title,
+            description: changes.profile.description,
+            location: changes.profile.location,
+            color_code: changes.profile.colorCode,
+          } } : {}),
+          ...(changes.capture ? { capture: {
+            mode_code: changes.capture,
+            expected_state_ref: settings.capture.stateRef,
+          } } : {}),
+          ...(changes.reality ? { reality: {
+            mode_code: changes.reality,
+            expected_state_ref: settings.reality.stateRef,
+          } } : {}),
+        }),
+      });
+      if (!response.ok) throw new Error(response.status === 409
+        ? 'L’attività è cambiata. Riapri Modifica e riprova.'
+        : 'Impossibile salvare le impostazioni dell’attività.');
+      const result = object(await response.json());
+      const savedProfile = parseProfile(result.profile);
+      if (savedProfile.activityRef !== profile.activityRef) {
+        throw new Error('Identità dell’attività non valida.');
+      }
+      const savedSettings = Object.freeze({
+        ...settings,
+        capture: capture(result.capture, profile.activityRef),
+        reality: reality(result.reality, profile.activityRef),
+      });
+      invalidateTemporalTimelineRead();
+      invalidateTemporalPlanningRead();
+      return { profile: savedProfile, settings: savedSettings };
     },
   });
 }

@@ -10,7 +10,7 @@ const response = (body: unknown, status = 200) =>
   });
 
 describe('Activity editor settings remote contract', () => {
-  it('loads canonical policies and schedules, then sends state guarded updates', async () => {
+  it('loads one snapshot and saves core changes in one guarded request', async () => {
     const paths: string[] = [];
     const requests: Record<string, unknown>[] = [];
     const fetchFn = vi.fn(
@@ -22,28 +22,17 @@ describe('Activity editor settings remote contract', () => {
               ? input.href
               : input.url;
         paths.push(path);
-        if (init?.method === 'POST') {
-          if (typeof init.body !== 'string')
-            throw new Error('Expected JSON body');
-          requests.push(JSON.parse(init.body) as Record<string, unknown>);
+        if (init?.method === 'PUT') {
+          if (typeof init.body !== 'string') throw new Error('Expected JSON body');
           expect(new Headers(init.headers).get('X-Dante-CSRF')).toBe('token');
-          return Promise.resolve(
-            response(
-              path.endsWith('execution-policy')
-                ? {
-                    activity_ref: ref,
-                    mode_code: 'live',
-                    state_ref: 'new-capture',
-                  }
-                : {
-                    subject_kind: 'activity',
-                    subject_native_ref: ref,
-                    mode_code: 'review_on_end',
-                    state_ref: 'new-reality',
-                  },
-              201,
-            ),
-          );
+          requests.push(JSON.parse(init.body) as Record<string, unknown>);
+          return Promise.resolve(response({
+            profile: { activity_ref: ref, title: 'Dopo', description: null,
+              location: null, color_code: null, revision: 2 },
+            capture: { activity_ref: ref, mode_code: 'live', state_ref: 'new-capture' },
+            reality: { subject_kind: 'activity', subject_native_ref: ref,
+              mode_code: 'review_on_end', state_ref: 'new-reality' },
+          }));
         }
         if (path.endsWith('/auth/session'))
           return Promise.resolve(
@@ -86,28 +75,18 @@ describe('Activity editor settings remote contract', () => {
       name: 'Mattina',
       start: '2026-10-07T09:00:00',
     });
-    expect(
-      await source.setCapture(ref, settings.capture, 'live', 'op-capture'),
-    ).toEqual({ mode: 'live', stateRef: 'new-capture' });
-    expect(
-      await source.setReality(
-        ref,
-        settings.reality,
-        'review_on_end',
-        'op-reality',
-      ),
-    ).toEqual({ mode: 'review_on_end', stateRef: 'new-reality' });
-    expect(requests).toEqual([
-      {
-        operation_id: 'op-capture',
-        mode_code: 'live',
-        expected_state_ref: 'old-capture',
-      },
-      {
-        operation_id: 'op-reality',
-        mode_code: 'review_on_end',
-        expected_state_ref: 'old-reality',
-      },
-    ]);
+    const saved = await source.saveCore({ activityRef: ref, title: 'Prima',
+      description: null, location: null, colorCode: null, revision: 1 },
+    settings, { profile: { title: 'Dopo', description: null, location: null,
+      colorCode: null }, capture: 'live', reality: 'review_on_end' }, 'edit-op');
+    expect(saved.profile).toMatchObject({ title: 'Dopo', revision: 2 });
+    expect(saved.settings.capture).toEqual({ mode: 'live', stateRef: 'new-capture' });
+    expect(requests[0]).toEqual({
+      operation_id: 'edit-op',
+      profile: { expected_revision: 1, title: 'Dopo', description: null,
+        location: null, color_code: null },
+      capture: { mode_code: 'live', expected_state_ref: 'old-capture' },
+      reality: { mode_code: 'review_on_end', expected_state_ref: 'old-reality' },
+    });
   });
 });

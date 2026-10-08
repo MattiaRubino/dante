@@ -6,10 +6,7 @@ import {
   type RefObject,
 } from 'react';
 
-import {
-  createRemoteActivityInspector,
-  type ActivityProfile,
-} from '../../../temporal/remote-activity-inspector';
+import type { ActivityProfile } from '../../../temporal/remote-activity-inspector';
 import {
   createRemoteActivityEditSettings,
   type ActivityEditSettings,
@@ -28,7 +25,6 @@ export function ActivityEditPanel({
   onCancel: () => void;
   closeRequestRef: RefObject<(() => void) | null>;
 }>) {
-  const [source] = useState(createRemoteActivityInspector);
   const [settingsSource] = useState(createRemoteActivityEditSettings);
   const [settings, setSettings] = useState<ActivityEditSettings | null>(null);
   const [loadingSettings, setLoadingSettings] = useState(true);
@@ -37,10 +33,7 @@ export function ActivityEditPanel({
     null,
   );
   const [realityMode, setRealityMode] = useState<RealityMode | null>(null);
-  const operations = useRef<{
-    capture: string | undefined;
-    reality: string | undefined;
-  }>({ capture: undefined, reality: undefined });
+  const operation = useRef<string | undefined>(undefined);
   const [draft, setDraft] = useState(() => ({
     title: profile.title,
     description: profile.description ?? '',
@@ -121,34 +114,7 @@ export function ActivityEditPanel({
           return;
         setPending(true);
         setError('');
-        let savedParts = 0;
         void (async () => {
-          if (captureMode !== settings.capture.mode) {
-            const operationId = (operations.current.capture ??=
-              crypto.randomUUID());
-            const saved = await settingsSource.setCapture(
-              profile.activityRef,
-              settings.capture,
-              captureMode,
-              operationId,
-            );
-            setSettings((current) => current && { ...current, capture: saved });
-            savedParts += 1;
-            operations.current.capture = undefined;
-          }
-          if (realityMode !== settings.reality.mode) {
-            const operationId = (operations.current.reality ??=
-              crypto.randomUUID());
-            const saved = await settingsSource.setReality(
-              profile.activityRef,
-              settings.reality,
-              realityMode,
-              operationId,
-            );
-            setSettings((current) => current && { ...current, reality: saved });
-            savedParts += 1;
-            operations.current.reality = undefined;
-          }
           const changed = {
             title: draft.title.trim(),
             description: draft.description.trim() || null,
@@ -158,21 +124,27 @@ export function ActivityEditPanel({
           const metadataChanged = Object.entries(changed).some(
             ([key, value]) => value !== profile[key as keyof typeof changed],
           );
-          const saved = metadataChanged
-            ? await source.revise(profile, changed)
-            : profile;
-          onSaved(saved);
+          const captureChanged = captureMode !== settings.capture.mode;
+          const realityChanged = realityMode !== settings.reality.mode;
+          if (!metadataChanged && !captureChanged && !realityChanged) {
+            onSaved(profile);
+            return;
+          }
+          const saved = await settingsSource.saveCore(profile, settings, {
+            ...(metadataChanged ? { profile: changed } : {}),
+            ...(captureChanged ? { capture: captureMode } : {}),
+            ...(realityChanged ? { reality: realityMode } : {}),
+          }, operation.current ??= crypto.randomUUID());
+          operation.current = undefined;
+          setSettings(saved.settings);
+          onSaved(saved.profile);
         })()
           .catch((reason: unknown) => {
             const message =
               reason instanceof Error
                 ? reason.message
                 : 'Operazione non riuscita.';
-            setError(
-              savedParts > 0
-                ? `Alcune impostazioni sono già state salvate. ${message} Riprova per completare.`
-                : message,
-            );
+            setError(message);
           })
           .finally(() => setPending(false));
       }}
@@ -206,9 +178,10 @@ export function ActivityEditPanel({
             required
             maxLength={300}
             value={draft.title}
-            onChange={(event) =>
-              setDraft({ ...draft, title: event.target.value })
-            }
+            onChange={(event) => {
+              operation.current = undefined;
+              setDraft({ ...draft, title: event.target.value });
+            }}
           />
         </label>
         <div className="timeline-activity-editor__fields">
@@ -216,18 +189,20 @@ export function ActivityEditPanel({
             Descrizione
             <textarea
               value={draft.description}
-              onChange={(event) =>
-                setDraft({ ...draft, description: event.target.value })
-              }
+              onChange={(event) => {
+                operation.current = undefined;
+                setDraft({ ...draft, description: event.target.value });
+              }}
             />
           </label>
           <label>
             Località
             <input
               value={draft.location}
-              onChange={(event) =>
-                setDraft({ ...draft, location: event.target.value })
-              }
+              onChange={(event) => {
+                operation.current = undefined;
+                setDraft({ ...draft, location: event.target.value });
+              }}
             />
           </label>
           <fieldset>
@@ -236,12 +211,13 @@ export function ActivityEditPanel({
               <input
                 type="checkbox"
                 checked={!!draft.colorCode}
-                onChange={(event) =>
-                  setDraft({
+              onChange={(event) => {
+                operation.current = undefined;
+                setDraft({
                     ...draft,
                     colorCode: event.target.checked ? '#EA5C12' : '',
-                  })
-                }
+                });
+              }}
               />
               Colore personalizzato
             </label>
@@ -250,12 +226,13 @@ export function ActivityEditPanel({
                 aria-label="Scegli colore"
                 type="color"
                 value={draft.colorCode}
-                onChange={(event) =>
+                onChange={(event) => {
+                  operation.current = undefined;
                   setDraft({
                     ...draft,
                     colorCode: event.target.value.toUpperCase(),
-                  })
-                }
+                  });
+                }}
               />
             ) : null}
           </fieldset>
@@ -268,7 +245,7 @@ export function ActivityEditPanel({
                 <select
                   value={captureMode ?? settings.capture.mode}
                   onChange={(event) => {
-                    operations.current.capture = undefined;
+                    operation.current = undefined;
                     setCaptureMode(event.target.value as SessionCaptureMode);
                   }}
                 >
@@ -285,7 +262,7 @@ export function ActivityEditPanel({
                 <select
                   value={realityMode ?? settings.reality.mode}
                   onChange={(event) => {
-                    operations.current.reality = undefined;
+                    operation.current = undefined;
                     setRealityMode(event.target.value as RealityMode);
                   }}
                 >

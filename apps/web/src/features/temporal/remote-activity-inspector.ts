@@ -10,7 +10,7 @@ export type ActivityProfile = Readonly<{
   revision: number;
 }>;
 
-function parseProfile(value: unknown): ActivityProfile {
+export function parseProfile(value: unknown): ActivityProfile {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Risposta non valida.');
   const row = value as Record<string, unknown>;
   if (typeof row.activity_ref !== 'string' || typeof row.title !== 'string' ||

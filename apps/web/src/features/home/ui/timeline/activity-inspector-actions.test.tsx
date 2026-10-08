@@ -18,16 +18,14 @@ const get = vi.fn();
 const revise = vi.fn();
 const retire = vi.fn();
 const loadSettings = vi.fn();
-const setCapture = vi.fn();
-const setReality = vi.fn();
+const saveCore = vi.fn();
 vi.mock('../../../temporal/remote-activity-inspector', () => ({
   createRemoteActivityInspector: () => ({ get, revise, retire }),
 }));
 vi.mock('../../../temporal/remote-activity-edit-settings', () => ({
   createRemoteActivityEditSettings: () => ({
     load: loadSettings,
-    setCapture,
-    setReality,
+    saveCore,
   }),
 }));
 
@@ -78,7 +76,8 @@ describe('Activity Inspector', () => {
   });
 
   it('saves changes in the editor and returns to the Inspector', async () => {
-    revise.mockResolvedValue({ ...profile, title: 'Dopo', revision: 1 });
+    saveCore.mockResolvedValue({ profile: { ...profile, title: 'Dopo', revision: 1 },
+      settings: currentSettings });
     const onSaved = vi.fn();
     render(
       <ActivityEditPanel
@@ -93,9 +92,12 @@ describe('Activity Inspector', () => {
     await screen.findByRole('combobox', { name: 'Registrazione sessioni' });
     fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
     await waitFor(() =>
-      expect(revise).toHaveBeenCalledWith(
+      expect(saveCore).toHaveBeenCalledWith(
         profile,
-        expect.objectContaining({ title: 'Dopo', description: 'Nota' }),
+        currentSettings,
+        { profile: { title: 'Dopo', description: 'Nota', location: 'Casa',
+          colorCode: '#EA5C12' } },
+        expect.any(String),
       ),
     );
     await waitFor(() =>
@@ -105,11 +107,9 @@ describe('Activity Inspector', () => {
     );
   });
 
-  it('saves policy changes with their current state and retries after a partial failure', async () => {
-    setCapture.mockResolvedValue({ mode: 'live', stateRef: 'capture-1' });
-    setReality
-      .mockRejectedValueOnce(new Error('Connessione interrotta'))
-      .mockResolvedValueOnce({ mode: 'review_on_end', stateRef: 'reality-1' });
+  it('retries one atomic policy change with the same operation ID', async () => {
+    saveCore.mockRejectedValueOnce(new Error('Connessione interrotta'))
+      .mockResolvedValueOnce({ profile, settings: currentSettings });
     const onSaved = vi.fn();
     render(
       <ActivityEditPanel
@@ -134,27 +134,16 @@ describe('Activity Inspector', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
     expect(await screen.findByRole('alert')).toHaveProperty(
       'textContent',
-      expect.stringContaining('Alcune impostazioni sono già state salvate.'),
+      expect.stringContaining('Connessione interrotta'),
     );
-    expect(setCapture).toHaveBeenCalledWith(
-      ref,
-      currentSettings.capture,
-      'live',
-      expect.any(String),
-    );
-    expect(setReality).toHaveBeenCalledWith(
-      ref,
-      currentSettings.reality,
-      'review_on_end',
-      expect.any(String),
-    );
+    expect(saveCore).toHaveBeenCalledWith(profile, currentSettings,
+      { capture: 'live', reality: 'review_on_end' }, expect.any(String));
     expect(onSaved).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
     await waitFor(() => expect(onSaved).toHaveBeenCalledWith(profile));
-    expect(setCapture).toHaveBeenCalledTimes(1);
-    expect(setReality).toHaveBeenCalledTimes(2);
-    expect(setReality.mock.calls[1]?.[3]).toBe(setReality.mock.calls[0]?.[3]);
+    expect(saveCore).toHaveBeenCalledTimes(2);
+    expect(saveCore.mock.calls[1]?.[3]).toBe(saveCore.mock.calls[0]?.[3]);
     expect(revise).not.toHaveBeenCalled();
   });
 

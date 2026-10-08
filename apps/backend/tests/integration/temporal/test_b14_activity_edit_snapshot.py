@@ -3,15 +3,25 @@
 from __future__ import annotations
 
 from datetime import datetime
+from types import SimpleNamespace
 from typing import Any
 
 import pytest
+from fastapi import Response
 from sqlalchemy import text
 
-from dante.modules.temporal.activity_edit_snapshot_api import ActivityEditSnapshot, _SNAPSHOT
+from dante.modules.temporal.activity_edit_snapshot_api import (
+    ActivityCoreEditCommand,
+    ActivityEditSnapshot,
+    EditPolicyChange,
+    EditProfileChange,
+    _SNAPSHOT,
+    revise_activity_core,
+)
 from dante.modules.temporal.authoring import TemporalAuthoringApplication
 from dante.modules.temporal.schedule import FloatingLocalIntervalPlacement
 from dante.platform.database.runtime import create_database_runtime
+from dante.platform.http.problem import ProblemError
 from tests.integration.temporal.test_b14_u2_authoring import _seed_self
 
 pytestmark = pytest.mark.postgres
@@ -63,5 +73,50 @@ async def test_activity_edit_snapshot_is_scoped_and_contains_current_settings(
                 text("SELECT count(*) FROM dante.activity_intention WHERE activity_ref=:activity"),
                 {"activity": activity},
             ) == 1
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_core_edit_rolls_back_policy_when_profile_revision_is_stale(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    try:
+        created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
+            self_person_ref=actor, operation_id="core-edit:created", title="Prima",
+        )
+        activity = created.item.subject_native_ref
+        context = SimpleNamespace(self_person_ref=actor)
+        request = SimpleNamespace(app=SimpleNamespace(
+            state=SimpleNamespace(database_runtime=runtime)))
+        accepted = await revise_activity_core(
+            activity, ActivityCoreEditCommand(
+                operation_id="core-edit:accepted",
+                capture=EditPolicyChange(mode_code="record", expected_state_ref=None),
+                profile=EditProfileChange(expected_revision=0, title="Accettata"),
+            ), context, request, Response(),
+        )
+        assert accepted.profile.title == "Accettata"
+        assert accepted.profile.revision == 1
+        assert accepted.capture.mode_code == "record"
+        with pytest.raises(ProblemError) as failure:
+            await revise_activity_core(
+                activity, ActivityCoreEditCommand(
+                    operation_id="core-edit:stale",
+                    capture=EditPolicyChange(
+                        mode_code="live", expected_state_ref=accepted.capture.state_ref,
+                    ),
+                    profile=EditProfileChange(expected_revision=9, title="Dopo"),
+                ), context, request, Response(),
+            )
+        assert failure.value.status == 409
+        async with runtime.session_factory() as session, session.begin():
+            snapshot = ActivityEditSnapshot.model_validate(await session.scalar(
+                _SNAPSHOT, {"actor": actor, "activity": activity},
+            ))
+            assert snapshot.execution_policy.mode_code == "record"
+            assert snapshot.execution_policy.state_ref == accepted.capture.state_ref
     finally:
         await runtime.dispose()
