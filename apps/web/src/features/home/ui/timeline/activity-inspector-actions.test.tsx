@@ -659,7 +659,7 @@ describe('Activity Inspector', () => {
       onSaved={() => undefined} onCancel={() => undefined} />);
     const name = await screen.findByRole('textbox', { name: 'Nome sessione pianificata' });
     fireEvent.change(name, { target: { value: 'Allenamento lungo' } });
-    fireEvent.change(screen.getAllByLabelText('Inizio')[0], {
+    fireEvent.change(screen.getAllByLabelText('Inizio')[0]!, {
       target: { value: '2026-10-09T07:30' },
     });
     expect(screen.getByText(/Salva prima i nomi delle Session/)).toBeTruthy();
@@ -714,7 +714,7 @@ describe('Activity Inspector', () => {
     });
     expect(await screen.findByLabelText('Solo questa')).toHaveProperty('checked', true);
     expect(screen.getByLabelText('Questa e le prossime')).toHaveProperty('disabled', true);
-    expect(screen.getByText(/non propaghiamo modifiche parziali alla serie/)).toBeTruthy();
+    expect(screen.getByText(/Life Area e nomi delle Session pianificate si salvano soltanto/)).toBeTruthy();
     expect(assignLifeArea).not.toHaveBeenCalled();
     expect(saveRecurringProfile).not.toHaveBeenCalled();
   });
