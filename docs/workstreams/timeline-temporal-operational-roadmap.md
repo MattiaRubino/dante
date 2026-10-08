@@ -500,3 +500,20 @@ history; M3 Activity residual edit surfaces; M4 faithful duplicate
 and Event parity; M5 product dogfood and B15 exact whole-vertical
 acceptance. These M1–M5 are OPEN; B01–B13 closures retain their
 previously qualified evidence, not an invented fresh full suite.
+
+## 2026-10-08 — M1-A green / M1-B read candidate
+
+M1-A pure selected-instance targeting **CLOSED ON FOCUSED LOCAL PROOF**:
+Ruff PASS and 18/18 unit tests reported by the user. M1 overall
+remains OPEN. M1-B is a new `20261008_122` self-scoped,
+non-truncating, maximum-10,000 **materialized** Occurrence inventory
+read, delivered via a read-only API for Routine/Event source parity.
+`materialized_only=true` and `apply_authorized=false` are explicit;
+it is not a hidden bulk-edit or a guarantee that future unmaterialized
+Occurrences have been updated. Database Dictionary and catalog
+target 231/5/197/103/471/405/572. M1-B user-run local tests and
+generated-client reconciliation remain pending. M1-C still needs
+save-time CAS, future-template update, exception handling, and atomic
+application for all editable Activity/Event fields. Scope truth:
+`Solo questa` or `Questa e le prossime`, clicked always included,
+other already-past instances never touched.
