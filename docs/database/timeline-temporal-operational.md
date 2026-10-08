@@ -369,3 +369,18 @@ through a bounded SECURITY DEFINER read. It creates no queue table and does not
 infer skipped or failed execution from elapsed Schedule time. This is a candidate
 until the user reports the local PostgreSQL gate. The rest of U6 persistence is
 not claimed by this revision.
+
+## B14 M1-B recurring edit inventory read (2026-10-08)
+
+Forward-only candidate `20261008_122` adds
+`dante.list_self_recurrence_edit_occurrences(uuid,uuid)`: selected
+Occurrence ownership through B06 `get_self_occurrence`, all
+already-materialized same-source Occurrences (including current
+Schedules, skip states and explicit extras), and a hard 10,000 row
+cap that **raises** instead of truncating. This is a SECURITY DEFINER
+STABLE read, grant-only EXECUTE to `dante_runtime`; no table grants,
+no new stored history, no source rewrite. The API is read-only and
+marks both its materialized-only coverage and lack of apply authority.
+Dictionary/canonical catalog candidate: `231|5|197|103|471|405|572`.
+Implementation is not PostgreSQL-proven until the user's local gate;
+M1-C atomic CAS/apply remains open.
