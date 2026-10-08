@@ -98,9 +98,8 @@ async def test_selected_activity_life_area_and_planned_name_do_not_propagate(
             end=tomorrow + timedelta(days=2),
         )
         assert len(early) == 2
-        selected, untouched = (
-            await _activity(runtime, actor, occurrence) for occurrence in early
-        )
+        selected = await _activity(runtime, actor, early[0])
+        untouched = await _activity(runtime, actor, early[1])
         area = (await LifeAreaApplication(runtime.session_factory).create(
             self_person_ref=actor, operation_id="m3b:area", name="Sport",
         )).area
