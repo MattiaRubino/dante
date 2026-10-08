@@ -531,3 +531,15 @@ User-run gate for _123 and canonical generated artifacts remains
 pending; **do not mark full B14/B07 closed**. Follow the accepted
 two-scope semantics throughout M2 Objective, M3 remaining Activity
 settings and M4 Event Inspector/Duplica, then M5/B15 real UX acceptance.
+
+## 2026-10-08 — M1 _124 corrective gate, existing domain stages intact
+
+The _123 user-run gate exposed a shared one-off Activity
+profile read regression (4 failing PostgreSQL B14 tests)
+and two Ruff I001; all 18 unit, 21 Web, generation 489,
+API/Web typecheck passed. New _124 adds an explicit safe
+one-off Activity branch and Timeline guard, with a PostgreSQL
+regression case; no new object, same database topology.
+M1 metadata candidate now awaits one _124 user-run whole
+gate. Domain stages M2–M5 remain open by design, no
+separate micro-step churn.
