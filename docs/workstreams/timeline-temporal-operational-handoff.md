@@ -427,3 +427,33 @@ Dependent assessments must be reconciled without inventing manual
 judgments. Previous Objective versioning design gate was superseded.
 **Only the rule/documentation is approved; no code or schema implements
 the full scoped modification/correction lifecycle yet.**
+
+## B14 inspector scope and implementation checkpoint — 2026-10-08
+
+Reconciled against live branch `39e8ab96`, road map/map,
+B14 consolidation ledger, current API/Activity editor/duplicate seed, and
+_121 migration/DB Dictionary. **Use the complete M1–M5 status and evidence
+matrix in the B14 ledger** rather than older U6 candidate descriptions.
+
+Recent user-run green gates: Activity interval replan Ruff 0,
+backend unit **4/4**, PostgreSQL/catalog **15/15**, previous web **15/15**,
+API client source-generation deterministic **483**; six generator-produced
+artifacts published by the user in `c22f04ae`. Post-create Activity
+Objective ADD web typecheck 0 and **17/17 Vitest**, also user run.
+Focused PASS is not final real-app Inspector acceptance.
+
+Global modification policy is approved but **not yet implemented**:
+`Solo questa` or `Questa e le prossime`, always including the clicked
+instance; the second targets additional *future* instances only, never other
+past occurrences. Past Objective/Observation corrections become current
+truth, with immutable audit; past realized facts cannot be deleted.
+No inference about the user's reason for editing. Applies to ALL relevant
+Activity/Event modifications, not Objectives alone.
+
+**Next**: M1 canonical recurrence-instance scope + safe preview/CAS,
+then M2 Objective definition/recorded-fact correction, M3 Activity edit
+gaps and past retirement policy, M4 faithful duplication/Event parity,
+M5 user local end-to-end real-stack and B15 closure. Do not implement
+future-only scope, direct Objective target mutation or copy of Actual/
+Observation/Evaluation into duplicates. No CI/Actions; user alone runs
+local WSL tests.
