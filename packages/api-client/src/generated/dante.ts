@@ -177,9 +177,11 @@ import type {
   RetireTemporalConstraintRequest,
   RetiredTemporalConstraintResponse,
   ReviewedMoveBody,
+  ReviseEventProfileRequest,
   RevisePlanDependencyBody,
   ReviseScheduleRequest,
   ReviseTemporalConstraintRequest,
+  RevisedEventProfileResponse,
   RevisedScheduleAbsoluteResponse,
   RevisedScheduleCoarseResponse,
   RevisedScheduleDateSpanResponse,
@@ -8039,6 +8041,76 @@ export const temporalCreateEventExtraOccurrence = async (
     status: res.status,
     headers: res.headers,
   } as temporalCreateEventExtraOccurrenceResponse;
+};
+
+export type temporalReviseSelfEventProfileResponse200 = {
+  data: RevisedEventProfileResponse;
+  status: 200;
+};
+
+export type temporalReviseSelfEventProfileResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalReviseSelfEventProfileResponseSuccess =
+  temporalReviseSelfEventProfileResponse200 & {
+    headers: Headers;
+  };
+export type temporalReviseSelfEventProfileResponseError =
+  temporalReviseSelfEventProfileResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalReviseSelfEventProfileResponse =
+  | temporalReviseSelfEventProfileResponseSuccess
+  | temporalReviseSelfEventProfileResponseError;
+
+export const getTemporalReviseSelfEventProfileUrl = (eventRef: string) => {
+  return `/api/v1/temporal/events/${eventRef}/profile`;
+};
+
+/**
+ * Owner-serialized immutable revision of the current Event descriptor.
+ * @summary Revise Event Profile
+ */
+export const temporalReviseSelfEventProfile = async (
+  eventRef: string,
+  reviseEventProfileRequest: ReviseEventProfileRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalReviseSelfEventProfileResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalReviseSelfEventProfileUrl(eventRef),
+    {
+      ...options,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(reviseEventProfileRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalReviseSelfEventProfileResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalReviseSelfEventProfileResponse;
 };
 
 export type temporalGetEventRecurrenceResponse200 = {

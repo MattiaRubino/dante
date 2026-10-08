@@ -8,13 +8,28 @@ import * as zod from 'zod/mini';
 
 export const eventResponseAgendaRevisionMin = 0;
 
+export const eventResponseProfileRevisionDefault = 0;
+export const eventResponseProfileRevisionMin = 0;
+
 export const eventResponseReplayedDefault = false;
 export const EventResponse = /*#__PURE__*/ zod.object({
   agenda_parts: /*#__PURE__*/ zod.array(/*#__PURE__*/ zod.string()),
   agenda_revision: /*#__PURE__*/ zod
     .int()
     .check(/*#__PURE__*/ zod.gte(eventResponseAgendaRevisionMin)),
+  color_code: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.string(),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
   created_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+  description: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.string(),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
   event_ref: /*#__PURE__*/ zod.uuid(),
   life_area_assignment_revision: /*#__PURE__*/ zod.optional(
     /*#__PURE__*/ zod.union([
@@ -27,6 +42,18 @@ export const EventResponse = /*#__PURE__*/ zod.object({
       /*#__PURE__*/ zod.uuid(),
       /*#__PURE__*/ zod.null(),
     ]),
+  ),
+  location: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.string(),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
+  profile_revision: /*#__PURE__*/ zod._default(
+    /*#__PURE__*/ zod
+      .int()
+      .check(/*#__PURE__*/ zod.gte(eventResponseProfileRevisionMin)),
+    eventResponseProfileRevisionDefault,
   ),
   replayed: /*#__PURE__*/ zod._default(
     /*#__PURE__*/ zod.boolean(),

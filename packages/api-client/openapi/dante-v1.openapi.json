@@ -6400,10 +6400,32 @@
             "title": "Agenda Revision",
             "type": "integer"
           },
+          "color_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color Code"
+          },
           "created_at": {
             "format": "date-time",
             "title": "Created At",
             "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
           },
           "event_ref": {
             "format": "uuid",
@@ -6433,6 +6455,23 @@
               }
             ],
             "title": "Life Area Ref"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "profile_revision": {
+            "default": 0,
+            "minimum": 0.0,
+            "title": "Profile Revision",
+            "type": "integer"
           },
           "replayed": {
             "default": false,
@@ -12523,6 +12562,64 @@
         "title": "ReviewedMoveBody",
         "type": "object"
       },
+      "ReviseEventProfileRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "color_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color Code"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "expected_revision": {
+            "minimum": 0.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "expected_revision", "title"],
+        "title": "ReviseEventProfileRequest",
+        "type": "object"
+      },
       "RevisePlanDependencyBody": {
         "additionalProperties": false,
         "properties": {
@@ -12678,6 +12775,72 @@
         },
         "required": ["operation_id", "expected_material_state_ref", "rule"],
         "title": "ReviseTemporalConstraintRequest",
+        "type": "object"
+      },
+      "RevisedEventProfileResponse": {
+        "properties": {
+          "color_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color Code"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "event_ref": {
+            "format": "uuid",
+            "title": "Event Ref",
+            "type": "string"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "revision": {
+            "minimum": 1.0,
+            "title": "Revision",
+            "type": "integer"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "event_ref",
+          "title",
+          "description",
+          "location",
+          "color_code",
+          "revision",
+          "replayed"
+        ],
+        "title": "RevisedEventProfileResponse",
         "type": "object"
       },
       "RevisedScheduleAbsoluteResponse": {
@@ -29509,6 +29672,58 @@
           }
         },
         "summary": "Create Event Extra Occurrence",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/events/{event_ref}/profile": {
+      "put": {
+        "description": "Owner-serialized immutable revision of the current Event descriptor.",
+        "operationId": "temporal_revise_self_event_profile",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviseEventProfileRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevisedEventProfileResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Revise Event Profile",
         "tags": ["temporal"]
       }
     },
