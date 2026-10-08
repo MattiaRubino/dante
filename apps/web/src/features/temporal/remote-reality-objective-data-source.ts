@@ -29,6 +29,33 @@ export type ObjectiveView = Readonly<{
   assessmentCode: ObjectiveAssessment | null;
 }>;
 
+export type ObjectiveDefinitionState = Readonly<{
+  objectiveRef: string;
+  definitionRevision: number;
+  label: string;
+  resultKind: ObjectiveKind;
+  comparatorCode: ObjectiveComparator | null;
+  targetValue: number | null;
+  targetMin: number | null;
+  targetMax: number | null;
+  unitCode: string | null;
+  presentationOrder: number;
+  evaluationStateRef: string | null;
+}>;
+
+export type ObjectiveDefinitionChange = Readonly<{
+  operationId: string;
+  expectedRevision: number;
+  label: string;
+  resultKind: ObjectiveKind;
+  comparatorCode: ObjectiveComparator | null;
+  targetValue: number | null;
+  targetMin: number | null;
+  targetMax: number | null;
+  unitCode: string | null;
+  presentationOrder: number;
+}>;
+
 function record(value: unknown): Record<string, unknown> {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
     throw new Error('Invalid Reality/Objectives response.');
@@ -97,7 +124,7 @@ export function createRemoteRealityObjectiveDataSource(
 
   async function send(
     path: string,
-    method: 'GET' | 'POST',
+    method: 'GET' | 'POST' | 'PUT',
     body?: unknown,
   ): Promise<unknown> {
     const headers = new Headers();
@@ -194,6 +221,84 @@ export function createRemoteRealityObjectiveDataSource(
       );
       if (!Array.isArray(payload)) throw new Error('Objectives must be a list.');
       return Object.freeze(payload.map(parseObjectiveView));
+    },
+
+    async getDefinition(objectiveRef: string): Promise<ObjectiveDefinitionState> {
+      const row = record(await send(
+        `/api/v1/temporal/objectives/${encodeURIComponent(objectiveRef)}/definition`,
+        'GET',
+      ));
+      if (row.objective_ref !== objectiveRef ||
+          !Number.isSafeInteger(row.definition_revision) ||
+          (row.definition_revision as number) < 0) {
+        throw new Error('Versione della definizione non valida.');
+      }
+      return Object.freeze({
+        objectiveRef,
+        definitionRevision: row.definition_revision as number,
+        label: String(row.label),
+        resultKind: row.result_kind as ObjectiveKind,
+        comparatorCode: nullableString(row.comparator_code) as ObjectiveComparator | null,
+        targetValue: nullableNumber(row.target_value),
+        targetMin: nullableNumber(row.target_min),
+        targetMax: nullableNumber(row.target_max),
+        unitCode: nullableString(row.unit_code),
+        presentationOrder: Number(row.presentation_order),
+        evaluationStateRef: nullableString(row.evaluation_state_ref),
+      });
+    },
+
+    async reviseDefinition(
+      objectiveRef: string,
+      change: ObjectiveDefinitionChange,
+    ): Promise<void> {
+      const row = record(await send(
+        `/api/v1/temporal/objectives/${encodeURIComponent(objectiveRef)}/definition`,
+        'PUT',
+        {
+          operation_id: change.operationId,
+          expected_revision: change.expectedRevision,
+          label: change.label,
+          result_kind: change.resultKind,
+          comparator_code: change.comparatorCode,
+          target_value: change.targetValue,
+          target_min: change.targetMin,
+          target_max: change.targetMax,
+          unit_code: change.unitCode,
+          presentation_order: change.presentationOrder,
+        },
+      ));
+      if (row.objective_ref !== objectiveRef) {
+        throw new Error('Identità dell’obiettivo modificato non coerente.');
+      }
+    },
+
+    async correctResult(
+      objectiveRef: string,
+      command: Readonly<{
+        operationId: string;
+        expectedEvaluationStateRef: string | null;
+        observedBoolean: boolean | null;
+        observedNumeric: number | null;
+        qualitativeCode: string | null;
+        assessmentCode: ObjectiveAssessment | null;
+      }>,
+    ): Promise<void> {
+      const row = record(await send(
+        `/api/v1/temporal/objectives/${encodeURIComponent(objectiveRef)}/correction`,
+        'POST',
+        {
+          operation_id: command.operationId,
+          expected_evaluation_state_ref: command.expectedEvaluationStateRef,
+          observed_boolean: command.observedBoolean,
+          observed_numeric: command.observedNumeric,
+          qualitative_code: command.qualitativeCode,
+          assessment_code: command.assessmentCode,
+        },
+      ));
+      if (row.objective_ref !== objectiveRef) {
+        throw new Error('La correzione non corrisponde all’obiettivo richiesto.');
+      }
     },
 
     async recordResult(
