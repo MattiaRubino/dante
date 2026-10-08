@@ -48,8 +48,11 @@ export type ActivityLifeAreaChoice = Readonly<{
 
 export type ActivityReplanTime = Readonly<{ start: string; end: string }>;
 export type ActivityNewPlanned = Readonly<ActivityReplanTime & { clientRef: string; name: string }>;
+export type ActivityNewInterval = Readonly<ActivityReplanTime & { clientRef: string }>;
 export type ActivityReplanDraft = Readonly<{
   times: Record<string, ActivityReplanTime>;
+  removedIntervals: readonly string[];
+  newIntervals: readonly ActivityNewInterval[];
   removedPlanned: readonly string[];
   newPlanned: readonly ActivityNewPlanned[];
 }>;
@@ -248,7 +251,14 @@ export function createRemoteActivityEditSettings(
     });
     return {
       operation_id: operationId,
-      intervals: settings.schedules.filter((item) => item.role === 'interval').map(row),
+      intervals: settings.schedules.filter((item) =>
+        item.role === 'interval' && !draft.removedIntervals.includes(item.scheduleRef)).map(row),
+      remove_intervals: settings.schedules.filter((item) =>
+        item.role === 'interval' && draft.removedIntervals.includes(item.scheduleRef)).map(row),
+      new_intervals: draft.newIntervals.map((item) => ({
+        client_ref: item.clientRef,
+        starts_local_at: item.start, ends_local_at: item.end,
+      })),
       planned_sessions: settings.schedules.filter((item) =>
         item.role === 'planned' && !draft.removedPlanned.includes(item.scheduleRef)).map(row),
       remove_planned_sessions: settings.schedules.filter((item) =>
