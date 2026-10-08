@@ -18,6 +18,7 @@ from tests.integration.temporal.test_b05_primary_life_area_assignment import (
 )
 
 from dante.modules.temporal.authoring import TemporalAuthoringApplication
+from dante.modules.temporal.event import TemporalEventApplication
 from dante.modules.temporal.life_area import LifeAreaApplication
 from dante.modules.temporal.life_area_assignment import (
     LifeAreaAssignmentApplication,
@@ -191,6 +192,12 @@ async def test_event_unassignment_has_the_same_cas_and_replay_policy(
         )
         assert removed.life_area_ref is None
         assert removed.assignment_revision == 2
+        detail = await TemporalEventApplication(runtime.session_factory).get_event(
+            self_person_ref=actor, event_ref=event,
+        )
+        assert detail is not None
+        assert detail.life_area_ref is None
+        assert detail.life_area_assignment_revision == 2
         assert (await app.assign(
             self_person_ref=actor, subject_kind="event", subject_native_ref=event,
             life_area_ref=None, expected_assignment_revision=1,
