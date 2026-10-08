@@ -67,21 +67,22 @@
       "B14-M1-EDIT-INVENTORY",
       "B14-M1-SCOPED-PROFILE-EDIT",
       "B14-M1-ACTIVITY-PROFILE-READ-GUARD",
-      "B14-M2-OBJECTIVE-CORRECTION"
+      "B14-M2-OBJECTIVE-CORRECTION",
+      "B14-M2-OBJECTIVE-SERIES"
     ],
     "standalone_entries": {
-      "tables": 233,
+      "tables": 234,
       "views": 5,
-      "routines": 205,
-      "total": 443
+      "routines": 207,
+      "total": 446
     },
     "embedded_objects": {
       "triggers": 103,
-      "physical_indexes": 475
+      "physical_indexes": 477
     },
     "constraints": {
-      "foreign_keys": 410,
-      "check_constraints": 582
+      "foreign_keys": 414,
+      "check_constraints": 586
     }
   },
   "technical_foundation": {
