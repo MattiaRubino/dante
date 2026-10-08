@@ -8,7 +8,7 @@
     "name": "list_self_temporal_objectives",
     "ownership_class": "dante_owned"
   },
-  "purpose": "List Objectives with their accepted-current Observation/Evaluation truth for a self-owned subject.",
+  "purpose": "List Objectives with current canonical versioned definitions but the same logical objective_ref, and the current recorded Observation/Evaluation.",
   "classification": {
     "persistence_role": "list_self_temporal_objectives",
     "canonicality": "capability_surface",
@@ -39,7 +39,7 @@
   },
   "implementation": {
     "introducing_stage": "B14-CREATE-CLOSURE",
-    "alembic_revision": "20261006_113",
+    "alembic_revision": "20261008_125",
     "sqlalchemy": {
       "mode": "none",
       "module": null,
