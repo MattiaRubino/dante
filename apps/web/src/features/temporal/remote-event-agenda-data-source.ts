@@ -163,6 +163,9 @@ function parseEvent(payload: unknown): TemporalEventDetailRecord {
       'created_at',
       'life_area_ref',
       'life_area_assignment_revision',
+      'description',
+      'location',
+      'color_code',
       'replayed',
     ],
     'Event response',
@@ -188,6 +191,9 @@ function parseEvent(payload: unknown): TemporalEventDetailRecord {
     lifeAreaRef: payload.life_area_ref === null
       ? null
       : parseEventRef(payload.life_area_ref, 'life_area_ref'),
+    description: optionalEventText(payload.description, 'description'),
+    location: optionalEventText(payload.location, 'location'),
+    colorCode: optionalEventColor(payload.color_code),
   });
 }
 
