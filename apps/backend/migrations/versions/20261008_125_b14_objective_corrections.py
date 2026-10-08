@@ -26,6 +26,8 @@ def upgrade() -> None:
         sa.Column("unit_code",sa.Text()),
         sa.Column("presentation_order",sa.Integer(),nullable=False),
         sa.Column("accepted_at",sa.DateTime(timezone=True),nullable=False),
+        sa.Column("applied_evaluation_state_ref",sa.Uuid()),
+        sa.Column("applied_assessment_code",sa.Text()),
         sa.PrimaryKeyConstraint("objective_ref","revision",
             name="pk_temporal_objective_definition_revision"),
         sa.UniqueConstraint("self_person_ref","operation_id",
@@ -193,7 +195,8 @@ BEGIN
           JOIN dante.temporal_objective_evaluation_state s ON s.state_ref=h.state_ref
          WHERE h.objective_ref=requested_objective AND h.current_until_at IS NULL;
         RETURN QUERY SELECT requested_objective,prior.revision,
-                            new_state,new_assessment,true;
+                            prior.applied_evaluation_state_ref,
+                            prior.applied_assessment_code,true;
         RETURN;
     END IF;
     SELECT * INTO current FROM dante.get_self_temporal_objective_definition(
@@ -242,16 +245,6 @@ BEGIN
         END IF;
     END IF;
     accepted:=clock_timestamp();
-    INSERT INTO dante.temporal_objective_definition_revision(
-        objective_ref,revision,self_person_ref,operation_id,intent_fingerprint,
-        label,result_kind,comparator_code,target_value,target_min,target_max,
-        unit_code,presentation_order,accepted_at
-    ) VALUES (
-        requested_objective,requested_revision+1,actor,requested_operation,
-        requested_fingerprint,requested_label,requested_kind,
-        requested_comparator,requested_value,requested_min,requested_max,
-        requested_unit,requested_order,accepted
-    );
     new_state:=current_eval.state_ref;
     IF current_eval.observation_ref IS NOT NULL
        AND new_assessment IS DISTINCT FROM current_eval.assessment_code THEN
@@ -274,6 +267,17 @@ BEGIN
         );
         new_state:=requested_new_evaluation;
     END IF;
+    INSERT INTO dante.temporal_objective_definition_revision(
+        objective_ref,revision,self_person_ref,operation_id,intent_fingerprint,
+        label,result_kind,comparator_code,target_value,target_min,target_max,
+        unit_code,presentation_order,accepted_at,
+        applied_evaluation_state_ref,applied_assessment_code
+    ) VALUES (
+        requested_objective,requested_revision+1,actor,requested_operation,
+        requested_fingerprint,requested_label,requested_kind,
+        requested_comparator,requested_value,requested_min,requested_max,
+        requested_unit,requested_order,accepted,new_state,new_assessment
+    );
     RETURN QUERY SELECT requested_objective,requested_revision+1,
                         new_state,new_assessment,false;
 END;
