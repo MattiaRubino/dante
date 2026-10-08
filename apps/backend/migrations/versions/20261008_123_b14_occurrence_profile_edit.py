@@ -42,15 +42,15 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["selected_occurrence_ref"],["dante.occurrence.occurrence_ref"],
                                 name="fk_occurrence_profile_edit_occurrence"),
         sa.CheckConstraint("revision>=1 AND expected_revision>=0",
-                           name="ck_occurrence_profile_edit_revision"),
+                           name=op.f("ck_occurrence_profile_edit_revision")),
         sa.CheckConstraint("operation_id=btrim(operation_id) AND operation_id<>'' "
                            "AND char_length(operation_id)<=200",
-                           name="ck_occurrence_profile_edit_operation"),
+                           name=op.f("ck_occurrence_profile_edit_operation")),
         sa.CheckConstraint("scope_code IN ('only_this','this_and_following')",
-                           name="ck_occurrence_profile_edit_scope"),
+                           name=op.f("ck_occurrence_profile_edit_scope")),
         sa.CheckConstraint("jsonb_typeof(profile_patch)='object' AND "
                            "profile_patch<>'{}'::jsonb",
-                           name="ck_occurrence_profile_edit_patch"),
+                           name=op.f("ck_occurrence_profile_edit_patch")),
         schema="dante"
     )
     db=op.get_bind()
