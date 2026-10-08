@@ -8,7 +8,7 @@
     "name": "list_self_unassigned_life_area_items",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Explicitly inventory existing self-owned pre-B05 Activity/Event rows without a primary Life Area; no inferred default or silent migration.",
+  "purpose": "Owner-scoped inventory of items with no primary Life Area, including never-assigned and explicitly null-unassigned Activities/Events.",
   "classification": {
     "persistence_role": "list_self_unassigned_life_area_items",
     "canonicality": "capability_surface",
