@@ -271,3 +271,69 @@ def test_event_objective_same_identity_definition_revision(
         assert result.status_code == 200
         assert result.json()[0]["objective_ref"] == objective
         assert result.json()[0]["label"] == "Partenza puntuale"
+
+
+
+def test_qualitative_objective_never_synthesizes_manual_assessment(
+    migrated_database: Any,
+    activity_hibp_stub_url: str,
+) -> None:
+    email = "b14.m2.qualitative@example.com"
+    _seed_account(migrated_database, _auth_settings(activity_hibp_stub_url), email)
+    app = create_app(_settings(migrated_database, activity_hibp_stub_url))
+    with TestClient(app, base_url=_CANONICAL_ORIGIN) as client:
+        csrf = _signin(client, email)
+        headers = {**_base_headers(), CSRF_HEADER_NAME: csrf}
+        created = client.post(
+            "/api/v1/temporal/authoring/activities",
+            json={"operation_id": "m2:qual:activity", "title": "Esercizio",
+                  "session_capture_mode": "record"},
+            headers=headers,
+        )
+        assert created.status_code == 201, created.text
+        subject = created.json()["activity_ref"]
+        created_objective = client.post(
+            f"/api/v1/temporal/activities/{subject}/objectives",
+            json={"operation_id": "m2:qual:objective", "label": "Qualità",
+                  "result_kind": "qualitative", "presentation_order": 0},
+            headers=headers,
+        )
+        assert created_objective.status_code == 201, created_objective.text
+        objective = created_objective.json()["objective_ref"]
+        result = client.post(
+            f"/api/v1/temporal/objectives/{objective}/result",
+            json={"operation_id": "m2:qual:result",
+                  "qualitative_code": "buono", "assessment_code": "partial"},
+            headers=headers,
+        )
+        assert result.status_code == 201, result.text
+        state_ref = result.json()["evaluation_state_ref"]
+        renamed = client.put(
+            f"/api/v1/temporal/objectives/{objective}/definition",
+            json={"operation_id": "m2:qual:rename",
+                  "expected_revision": 0,
+                  "label": "Qualità corretta",
+                  "result_kind": "qualitative",
+                  "presentation_order": 0},
+            headers=headers,
+        )
+        assert renamed.status_code == 200, renamed.text
+        assert renamed.json()["assessment_code"] == "partial"
+        assert renamed.json()["evaluation_state_ref"] == state_ref
+        impossible = client.put(
+            f"/api/v1/temporal/objectives/{objective}/definition",
+            json={"operation_id": "m2:qual:kind-switch",
+                  "expected_revision": 1,
+                  "label": "Quantità", "result_kind": "quantity",
+                  "comparator_code": "gte", "target_value": 2,
+                  "presentation_order": 0},
+            headers=headers,
+        )
+        assert impossible.status_code == 409, impossible.text
+        latest = client.get(
+            f"/api/v1/temporal/activities/{subject}/objectives",
+            headers=_base_headers(),
+        ).json()
+        assert latest[0]["objective_ref"] == objective
+        assert latest[0]["label"] == "Qualità corretta"
+        assert latest[0]["assessment_code"] == "partial"
