@@ -36,7 +36,9 @@ async function checked(response: Response): Promise<unknown> {
     throw new Error(
       code === 'temporal.activity_profile.active_session'
         ? 'Termina prima la sessione attiva su questa attività.'
-        : response.status === 409
+        : code === 'temporal.activity_profile.recorded_truth'
+          ? 'L’attività contiene sessioni o risultati registrati: correggi i dati storici senza eliminarli.'
+          : response.status === 409
           ? 'L’attività è cambiata. Aggiorna e riprova.'
           : response.status === 404
             ? 'Attività non disponibile.'
