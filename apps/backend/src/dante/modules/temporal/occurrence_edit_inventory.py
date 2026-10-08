@@ -17,13 +17,16 @@ from sqlalchemy.exc import DBAPIError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from dante.modules.temporal.occurrence import (
-    OccurrenceCheckpointLimitError,
     OccurrencePersistenceError,
     OccurrenceSourceNotFoundError,
     OccurrenceView,
     _occurrence,
 )
 from dante.platform.database.references import NativeRef
+
+
+class OccurrenceEditInventoryLimitError(ValueError):
+    """The authoritative materialized-source inventory exceeds its hard bound."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -79,7 +82,9 @@ class OccurrenceEditInventoryApplication:
             if identifier == "recurrence_edit_occurrence_unavailable":
                 raise OccurrenceSourceNotFoundError() from exc
             if identifier == "recurrence_edit_inventory_limit":
-                raise OccurrenceCheckpointLimitError() from exc
+                raise OccurrenceEditInventoryLimitError(
+                    "The recurrence has more than 10,000 materialized Occurrences."
+                ) from exc
             raise OccurrencePersistenceError() from exc
         except SQLAlchemyError as exc:
             raise OccurrencePersistenceError() from exc
