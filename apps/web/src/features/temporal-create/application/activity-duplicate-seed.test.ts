@@ -17,6 +17,8 @@ const settings: ActivityEditSettings = {
   reality: { mode: 'review_on_end', stateRef: 'reality' },
   lifeAreaRef: 'area',
   placementProtected: true,
+  placementLockRevision: 2,
+  placementLockScheduleRef: 'envelope',
   reminderLeadMinutes: 15,
   reminderScheduleRef: 'envelope',
   reminderStateRef: 'reminder-state',
