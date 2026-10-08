@@ -1,0 +1,109 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "routine:dante.get_self_event_profile_revision",
+    "type": "routine",
+    "schema": "dante",
+    "name": "get_self_event_profile_revision",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Actor-owned revision read for Event current metadata, with no runtime raw table SELECT.",
+  "classification": {
+    "persistence_role": "event_profile_revision_read",
+    "canonicality": "capability_surface",
+    "family": "temporal_event"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/domain/concepts/event.md",
+      "docs/workstreams/timeline-temporal-operational-m4-delivery.md"
+    ],
+    "domain_concepts": [
+      "Event"
+    ],
+    "logical_families": [
+      "Event metadata revision history"
+    ],
+    "reference_families": [
+      "NativeRef"
+    ],
+    "material_facets": []
+  },
+  "implementation": {
+    "introducing_stage": "B14-M4-EVENT-PROFILE",
+    "alembic_revision": "20261008_128",
+    "sqlalchemy": {
+      "mode": "none",
+      "module": null,
+      "symbol": null
+    },
+    "runtime_acl_stage": "B14-M4-EVENT-PROFILE"
+  },
+  "structure": {
+    "columns": [],
+    "primary_key": null,
+    "foreign_keys": [],
+    "unique_constraints": [],
+    "check_constraints": [],
+    "indexes": [],
+    "triggers": [],
+    "table": null,
+    "view": null,
+    "routine": {
+      "routine_kind": "function",
+      "language": "plpgsql",
+      "argument_types": [
+        "uuid",
+        "uuid"
+      ],
+      "return_type": "bigint",
+      "security": "DEFINER",
+      "volatility": "STABLE",
+      "parallel_safety": "SAFE",
+      "leakproof": false,
+      "function_search_path": [
+        "pg_catalog",
+        "dante",
+        "pg_temp"
+      ],
+      "direct_runtime_execute": true
+    }
+  },
+  "state_history": {
+    "material_state_behavior": "None; owner-only read of highest accepted Event metadata revision.",
+    "current_binding": "MAX revision for one owned Event, 0 before the first revision.",
+    "chronology": "All prior accepted revisions and receipts remain in append-only history.",
+    "immutability_policy": "Read-only function, no mutations or historical deletion."
+  },
+  "lifecycle": {
+    "retention": "Read-only capability.",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No deletion; unauthenticated or unowned Event returns null."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": [
+      {
+        "grantee": "dante_runtime",
+        "privilege": "EXECUTE",
+        "columns": [],
+        "grant_option": false
+      }
+    ]
+  },
+  "proof": {
+    "obligations": [
+      "Actor-owned Event source gate",
+      "No runtime raw audit table SELECT",
+      "Exact _128 schema and function catalog"
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b14_m4_event_profile.py",
+      "apps/backend/tests/integration/database/test_database_current_catalog.py"
+    ],
+    "staged_evidence": []
+  }
+}
