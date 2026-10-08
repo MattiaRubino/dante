@@ -23,6 +23,7 @@ export type TemporalCreateFieldSeed = Readonly<{
   kind?: TemporalCreateFields['kind'];
   date?: TemporalCreateFields['date'];
   timeSemantics?: TemporalCreateFields['timeSemantics'];
+  coarsePeriod?: TemporalCreateFields['coarsePeriod'];
   startTime?: TemporalCreateFields['startTime'];
   durationMinutes?: TemporalCreateFields['durationMinutes'];
   timeMode?: TemporalCreateFields['timeMode'];
@@ -46,6 +47,7 @@ export function applyTemporalCreateFieldSeed(
     kind: seed.kind ?? base.kind,
     date: seed.date ?? base.date,
     timeSemantics: seed.timeSemantics ?? base.timeSemantics,
+    coarsePeriod: seed.coarsePeriod ?? base.coarsePeriod,
     startTime: seed.startTime ?? base.startTime,
     durationMinutes: seed.durationMinutes ?? base.durationMinutes,
     timeMode: seed.timeMode ?? base.timeMode,
