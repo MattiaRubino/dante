@@ -781,3 +781,88 @@ M1-A selector as if it proved future source-policy propagation.
 
 No CI/GitHub Actions. User runs all gates in local
 `~/projects/dante`.
+
+## 2026-10-08 — M1 consolidated owner-scoped save candidate and whole-gate request
+
+**User-run local proof of _122/M1-B (reported Oct 8):**
+Ruff 0; focused PostgreSQL + exact current catalog **10 passed /
+POSTGRES=0**; `pnpm api:generate` 0; deterministic
+`pnpm generated:check` **484 current files / 0**; API and
+web typechecks both 0. Generated client was left deliberately modified
+locally: OpenAPI JSON, `generated/dante.ts`, model index,
+`occurrenceEditInventoryResponse.zod.ts`. This is expected source
+generation, not a failure. Do not claim these files already pushed.
+
+**The following is a new, wider implementation candidate atop _122.**
+Forward-only `20261008_123` adds the single append-only table
+`occurrence_profile_edit` and five SECURITY DEFINER functions:
+typed zone-aware occurrence ordering, current merged profile patch,
+owned Activity→Occurrence lookup, current source edit CAS state,
+and atomic accepted profile edit with immutable affected-ref receipt.
+It reuses B06 immutable Occurrence ownership and _122 full inventory,
+locks owner Recurrence source + current Recurrence state, CAS-checks
+source profile edit revision and governing state, idempotently replays
+the *same* operation, and rejects conflicting future local profile
+overrides or recorded Actual/Objective Observations. A failed write
+leaves no partial application or new accepted operation.
+
+`Solo questa` addresses **the selected Occurrence always**.
+`Questa e le prossime` addresses **the selected plus later future
+same-source generated Occurrences**, excluding every other already-past
+Occurrence. The immutable revision is the future inheritance policy:
+current effective patch is determined for materialized past and future
+and for later as-yet-unmaterialized future Occurrences. The receipt
+contains the exact *currently materialized* affected refs; the
+policy additionally affects unmaterialized future instances.
+
+One-off Activity continues using existing core-edit. A
+Routine-materialized Activity is mapped to its governing Occurrence
+through a self-owned read; Activity Inspector projects the effective
+accepted profile, Activity/Event Timeline projects the accepted title,
+and newly created Routine-derived Activities inherit their accepted
+title/description/location/color corrections at materialization.
+The Activity editor now offers exactly `Solo questa` and
+`Questa e le prossime` when editing the recurring Activity's
+**general metadata**, using a stable retry operation ID and rejecting
+mixed general-profile and non-profile saves rather than splitting a
+single perceived action into multiple non-atomic writes. It sends
+**only changed fields**, to avoid reverting unrelated future values.
+The backend mutation endpoint also works for Event Occurrence metadata
+without copying Activity Session semantics into Event.
+
+Focused PostgreSQL integration tests cover: 1 vs 1+future targeting,
+isolation of other past instances, unmaterialized future inheritance,
+replay/fingerprint conflict, stale state, cross-owner refusal, Event
+single-target and protected-future rejection, capability-only grants,
+and direct API read/save. Focused web tests cover scope choice, accepted
+remote operation payload and conflict handling. These are
+**implemented but NOT YET USER-RUN**.
+
+**Exact current Dictionary candidate:** _123, tables=232, views=5,
+routines=202, triggers=103, indexes=473, FK=408, CHECK=576.
+SQLAlchemy row and Dictionary parity updated. The `get_self_activity_profile`
+function now uses PARALLEL RESTRICTED rather than SAFE due to its
+effective scoped patch dependency. New API/schema requires a fresh
+canonical OpenAPI/Orval generation, client typecheck, web and
+PostgreSQL gates. No CI or GitHub Actions.
+
+**Honest scope boundary:** M1 now has an implemented end-to-end
+**metadata** recurrence edit candidate, including backend support
+for recurring Event metadata, but it is not legitimate to label
+ALL modifications closed. Existing Objectves, Reality,
+Session/Scaletta, Reminder, Life Area, Schedule and other domain-specific
+writes must consume the same selected-anchor contract with their own
+audit/safety semantics (M2/M3/M4); the entire B14/B07 Inspector/Modifica/
+Duplica journey and B15 visual acceptance remain OPEN. Recurring Event
+Inspector UI parity is still M4. Do not silently broaden the metadata
+route to accept unimplemented domain commands.
+
+**Whole user gate once** (rather than piecemeal micro-gates):
+Ruff _123 + all touched APIs/mappings/tests; PostgreSQL
+`test_b14_m1_scoped_profile_edit.py`, `test_b14_m1_edit_inventory.py`,
+both exact catalog probes, previous focused selector unit, touched
+Activity/Event snapshot/integration tests; `pnpm api:generate`,
+`pnpm generated:check`, TypeScript client/web typechecks and focused
+Vitest Activity Inspector/remote recurring profile editor. Inspect
+local generated diff, then commit canonical generated files once
+after the entire gate is green.
