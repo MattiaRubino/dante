@@ -3,18 +3,26 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
+from types import SimpleNamespace
 from typing import Any
 from uuid import UUID, uuid7
 from zoneinfo import ZoneInfo
 
 import pytest
+from fastapi import Response
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
+from tests.integration.temporal.test_b02_schedule_place import _context
 from tests.integration.temporal.test_b05_primary_life_area_assignment import _seed_self
 from tests.integration.temporal.test_b14_m1_scoped_profile_edit import _daily
 from tests.integration.temporal.test_b14_recurring_event_create import _daily_named_zone
 
 from dante.modules.temporal.event_occurrence_policy import EventOccurrencePolicyApplication
+from dante.modules.temporal.reality_objective_api import (
+    ObjectiveDefinitionReviseCommand,
+    get_objective_series_state,
+    revise_objective_definition,
+)
 from dante.modules.temporal.recurring_authoring import RecurringAuthoringApplication
 from dante.modules.temporal.routine_occurrence_materialization import (
     RoutineOccurrenceMaterializationApplication,
@@ -290,24 +298,32 @@ async def test_generated_event_objectives_share_future_scope_without_copying_res
         assert state is not None
         assert state.source_native_ref == source.source_ref
         assert state.template_slot == 0
-        # A boolean Objective remains boolean. The template propagation is
-        # driven by canonical Objective slot, not by UI display ordering.
-        async with runtime.session_factory() as session, session.begin():
-            row = (await session.execute(
-                text(
-                    "SELECT * FROM dante.accept_self_objective_series_edit("
-                    ":actor,:objective,:operation,:fingerprint,0,0,:recurrence,"
-                    ":zone,:label,'boolean',NULL,NULL,NULL,NULL,NULL,0,:evaluation)"
-                ),
-                {
-                    "actor": actor, "objective": past,
-                    "operation": "m2scope:event:series",
-                    "fingerprint": "c" * 64,
-                    "recurrence": state.recurrence_state_ref,
-                    "zone": ZONE, "label": "Partenza puntuale",
-                    "evaluation": uuid7(),
-                },
-            )).mappings().one()
+        # Exercise the real shared Event/Occurrence Objective API, not
+        # merely its backing SQL function.
+        request = SimpleNamespace(
+            app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))
+        )
+        ctx = _context(actor)
+        api_state = await get_objective_series_state(
+            past, ctx, request, Response()
+        )
+        assert api_state is not None
+        assert api_state.template_slot == 0
+        assert api_state.source_revision == 0
+        row = await revise_objective_definition(
+            past,
+            ObjectiveDefinitionReviseCommand(
+                operation_id="m2scope:event:series",
+                expected_revision=0,
+                scope_code="this_and_following",
+                expected_source_revision=api_state.source_revision,
+                expected_recurrence_state_ref=api_state.recurrence_state_ref,
+                label="Partenza puntuale",
+                result_kind="boolean",
+                presentation_order=0,
+            ),
+            ctx, request, Response(),
+        )
         assert row.source_revision == 1
         assert (await _definition(runtime, actor, past)).label == "Partenza puntuale"
         assert (await _definition(runtime, actor, future)).label == "Partenza puntuale"
