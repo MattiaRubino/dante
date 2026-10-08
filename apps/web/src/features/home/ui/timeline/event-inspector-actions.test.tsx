@@ -73,6 +73,30 @@ describe('Event Inspector duplication', () => {
     });
   });
 
+  it('updates the current Event Life Area without creating another Event', async () => {
+    const area = {
+      currentRef: '0199a222-2222-7222-8222-222222222222',
+      currentRevision: 4,
+      options: [{ ref: '0199a222-2222-7222-8222-222222222222', name: 'Lavoro' }],
+    };
+    loadArea.mockResolvedValue(area);
+    assignArea.mockResolvedValue({ ...area, currentRef: null, currentRevision: 5 });
+    const onDuplicate = vi.fn();
+    render(<EventInspectorActions eventRef={eventRef} placement={placement}
+      onDuplicate={onDuplicate} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Modifica Life Area' }));
+    const select = await screen.findByRole('combobox', { name: 'Life Area Event' });
+    fireEvent.change(select, { target: { value: '' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Salva Life Area Event' }));
+    await waitFor(() => expect(assignArea).toHaveBeenCalledWith(
+      eventRef, area, null, expect.any(String),
+    ));
+    expect(await screen.findByRole('status')).toHaveProperty(
+      'textContent', 'Life Area Event aggiornata.',
+    );
+    expect(onDuplicate).not.toHaveBeenCalled();
+  });
+
   it('does not open an incomplete duplicate when an expected participant cannot be resolved', async () => {
     loadEvent.mockResolvedValue({
       eventRef, title: 'Conferenza', agendaRevision: 0,
