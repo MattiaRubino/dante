@@ -570,3 +570,110 @@ API/OpenAPI/generated client + web tests + user-run real-app proof.
 design requiring a newly visible successor Objective for every edit, and
 past-anchor "Le prossime" excluding the clicked instance, are explicitly
 **superseded**.
+
+## 2026-10-08 — Consolidated Inspector / Edit / Duplicate delivery cursor
+
+This checkpoint was reconciled against the **live GitHub branch at
+`39e8ab961e98efe8c5fa5b329c5a91f125007714`**, including roadmap,
+map, handoff, DB overlay/Dictionary, _121 migration, backend API, web
+Inspector/Edit/Duplicate, recurrence authoring and user-run local gates.
+It does not claim a fresh local test run after this documentation checkpoint.
+
+### Closed with explicitly reported focused proof
+
+- B01–B13 remain closed at their **qualified evidence levels** recorded
+  in their own closure files. B14+B07 and final B15 are active/open.
+- Create Activity/Event consolidation (Reality + Objectives, Activity planned
+  Sessions, Event Scaletta/participants and common recurrence/Reminder)
+  has its **reported automatic gate**, not a universal post-create dogfood
+  pass. Life Area in one-off/recurring Create is **frozen** on 13/13
+  focused web and 4 real-stack Chromium/Firefox cases (WebKit intentionally
+  skipped). The Create UI does not expose Sub-Activities.
+- Activity post-create **Inspector profile, combined core editor, Life Area
+  reassignment, envelope placement protection, placement planning, new/
+  removed planned Session Schedule rows** have implemented frontend/API
+  paths with focused snapshot/replan tests. Do not confuse partial
+  coverage with a final combined Inspector real-app acceptance.
+- Activity interval **reposition / add / remove**, coordinated with envelope
+  and planned Session Schedule rows: canonical preview + CAS/atomic apply,
+  history-preserving unschedule. User-run gate after `d084e6e9`: Ruff
+  exit 0; 4/4 backend unit; 15/15 focused PostgreSQL/catalog; earlier
+  frontend gate 15/15, web/API typechecks and deterministic generated check
+  483. Canonically generated six OpenAPI/Orval files were pushed to the
+  branch in `c22f04ae`. **Focused automation PROVEN; real-app UX pending.**
+- Add **new** Objective post-Create in Activity editor: user-run
+  `pnpm --filter @dante/web typecheck` exit 0 and focused Vitest
+  17/17 exit 0 (12 UI + 5 remote). Existing Objective definitions remain
+  read-only in this editor. This proves the focused web authoring slice,
+  **not edit/correct/remove or cross-recurrence behavior**.
+
+### Accepted policy, NOT implemented
+
+The user-approved **global modification scope** in the preceding section
+supersedes all old "future-only" options: **Solo questa** vs
+**Questa e le prossime**; both always include the selected/clicked instance.
+Selecting past #1 among past #1/#2/#3 and future #4/#5/#6 yields
+`{1}` or `{1,4,5,6}`, **never #2/#3**. Selecting future #4
+yields `{4}` or `{4,5,6}`. Other past records stay untouched.
+Past factual/Objective records may be corrected and the user's corrected
+value becomes current canonical truth; they cannot be deleted.
+Future/unrealized content may be edited/removed in its owner-approved scope.
+Keep append-only internal history and reconcile dependent evaluation without
+inventing qualitative/manual judgments. The policy applies to **all**
+relevant Activity/Event fields and modifications, not just Objectives.
+
+### Open implementation gaps, ordered by dependency
+
+1. **M1 — Cross-cutting recurrence edit scope and authoritative targeting.**
+   One selected-instance anchor, canonical past/current/future classification,
+   current accepted Recurrence/Occurrence association, future-instance
+   propagation with explicit exception/override handling, bounded preview,
+   idempotent self-scoped CAS/rollback. No mutation to other already-past
+   instances. Do not silently update generated Occurrence vs Activity identities.
+2. **M2 — Editable Objective lifecycle and correction of recorded facts.**
+   Maintain one logical product Objective identity with immutable definition
+   versions/current binding, allow corrections to old target and old observed
+   result, update current dependent deterministic Evaluation while preserving
+   previous assessments, ask for manual reassessment when necessary.
+   Current/future removals and accepted reorder; retirement not destruction
+   of historical facts. Scope consistently in Activity **and Event**.
+   Present backend currently only creates/lists/records Objectives.
+3. **M3 — Remaining post-create Activity editor breadth.**
+   Rename existing planned Session display names without replacing a
+   Schedule/execution history; primary Life Area **unassign/null** (current
+   API only assigns another valid area); other unhandled Create settings/
+   temporal forms; confirm Reminder/policy paths and guarded operation
+   boundaries. Audit `ActivityInspectorActions` current `Elimina` action
+   (Activity retirement) against the approved no-deletion-of-past-recorded-
+   facts policy: do not assume existing retirement is safe in every case.
+4. **M4 — Duplication and Event Inspector parity.** Activity Duplica
+   seeds metadata, intervals, planned Sessions, Objectives and some policy,
+   but rejects unsupported stored temporal forms, and recurring-template
+   duplication is not faithfully implemented. Must not copy past Actual,
+   Observation, Evaluation, execution sessions, historical operation IDs or
+   authority as if new facts. Event has working B03 lifecycle/Scaletta
+   editing but **not** the equivalent complete Inspector/Edit/Duplicate
+   product flow. Include Event-specific attendees/Scaletta semantics,
+   common fields and Event Occurrence vs source identity; do not transfer
+   Activity-only intervals/Session semantics to Event.
+5. **M5 — Whole product acceptance and B15.** Desktop/mobile layout,
+   focus/keyboard/panel lifecycle and unsaved-change guard; real-stack
+   one-off/recurring Activity/Event tests, present/past/future edits, scopes
+   `1` vs `1+4+5+6`, revisions and replay, failed operations,
+   duplicates, null Life Area, Objective correction/deletion limits;
+   exact migration + SQLAlchemy/Dictionary/ACL/catalog reconciliation;
+   canonical OpenAPI/client generation, focused backend/web tests and
+   user-run visual acceptance. No GitHub Actions or CI.
+
+### Exact next execution
+
+Start with **M1 bounded scope foundation and tests**, then make M2 Objective
+edit/correction consume that shared selection contract; avoid implementing
+incompatible one-off Objective edit and later duplicating scope semantics.
+Before changing the database, inspect the current B06/B11 recurrence/
+checkpoint and _113 Objective definition ownership/Observation/Evaluation
+invariants. Continue to use live GitHub as source of truth; user executes
+tests only in local WSL `~/projects/dante`. No remote CI.
+
+**Status: CHECKPOINT DOCUMENTED / M1–M5 OPEN.** No code, migrations,
+client artifacts or frontend were changed by this checkpoint.
