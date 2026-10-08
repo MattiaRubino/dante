@@ -49,6 +49,23 @@ describe('remote Activity Inspector', () => {
     }
   });
 
+  it('keeps recorded history intact and explains the retirement veto', async () => {
+    const invalidated = vi.fn();
+    const unsubscribe = subscribeTemporalTimelineInvalidation(invalidated);
+    const fetchFn = vi.fn<typeof globalThis.fetch>((input) => Promise.resolve(
+      input === '/api/v1/auth/session'
+        ? json({ authenticated: true, csrf_token: 'token' })
+        : json({ code: 'temporal.activity_profile.recorded_truth' }, 409),
+    ));
+    try {
+      await expect(createRemoteActivityInspector(fetchFn).retire(ref))
+        .rejects.toThrow('sessioni o risultati registrati');
+      expect(invalidated).not.toHaveBeenCalled();
+    } finally {
+      unsubscribe();
+    }
+  });
+
   it('does not invalidate the Timeline when deletion is rejected', async () => {
     const invalidated = vi.fn();
     const unsubscribe = subscribeTemporalTimelineInvalidation(invalidated);
