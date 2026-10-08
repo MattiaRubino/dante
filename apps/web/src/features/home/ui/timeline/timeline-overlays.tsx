@@ -1014,7 +1014,19 @@ export function EventDetailDialog({
               </section>
             ) : null}
             {detail.ownerKind === 'event' && detail.eventRef ? (
-              <TimelineEventAgendaEditor eventRef={detail.eventRef} />
+              <>
+                {detail.eventPlacement ? (
+                  <EventInspectorActions
+                    eventRef={detail.eventRef}
+                    placement={detail.eventPlacement}
+                    onDuplicate={(seed) => {
+                      onClose();
+                      requestTemporalCreateDuplicate(seed);
+                    }}
+                  />
+                ) : null}
+                <TimelineEventAgendaEditor eventRef={detail.eventRef} />
+              </>
             ) : null}
             {detail.ownerKind === undefined ? (
               <div className="timeline-event-ai-note">
