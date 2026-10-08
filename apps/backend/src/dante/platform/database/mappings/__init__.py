@@ -129,6 +129,7 @@ MAPPED_TABLES: tuple[Table, ...] = cast(
         routine.RoutineTagRow.__table__,
         routine.RoutineTagOperationRow.__table__,
         event.EventExpectationRow.__table__,
+        event.EventProfileRevisionRow.__table__,
         event.EventAgendaPartRow.__table__,
         event.EventAgendaCurrentRow.__table__,
         event.EventAgendaMutationOperationRow.__table__,
