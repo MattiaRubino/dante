@@ -11,8 +11,12 @@ const listPersonReferents = vi.fn();
 const loadArea = vi.fn();
 const loadProfile = vi.fn();
 const reviseProfile = vi.fn();
+const isRecurring = vi.fn().mockResolvedValue(false);
 const assignArea = vi.fn();
 
+vi.mock('../../../temporal/remote-event-recurrence-guard', () => ({
+  createRemoteEventRecurrenceGuard: () => ({ isRecurring }),
+}));
 vi.mock('../../../temporal/remote-event-profile-data-source', () => ({
   createRemoteEventProfileDataSource: () => ({ load: loadProfile, revise: reviseProfile }),
 }));
@@ -41,6 +45,7 @@ const eventRef = '0199a111-1111-7111-8111-111111111111';
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  isRecurring.mockResolvedValue(false);
 });
 
 describe('Event Inspector duplication', () => {
@@ -166,6 +171,26 @@ describe('Event Inspector duplication', () => {
       .toContain('è cambiato');
     expect(screen.getByRole('textbox', { name: 'Titolo Event' }))
       .toHaveProperty('value', 'Nuovo titolo');
+  });
+
+
+  it('rejects flattening a recurring Event source into one standalone Event', async () => {
+    loadEvent.mockResolvedValue({
+      eventRef, title: 'Serie Eventi', agendaRevision: 1,
+      agendaParts: ['Introduzione'], lifeAreaRef: null,
+      createdAt: Temporal.Instant.from('2026-10-01T09:00:00Z'),
+    });
+    listExpectedParticipation.mockResolvedValue([]);
+    listPersonReferents.mockResolvedValue([]);
+    isRecurring.mockResolvedValue(true);
+    const onDuplicate = vi.fn();
+    render(<EventInspectorActions eventRef={eventRef} placement={placement}
+      onDuplicate={onDuplicate} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Duplica' }));
+    expect((await screen.findByRole('alert')).textContent)
+      .toContain('sorgente ricorrente');
+    expect(isRecurring).toHaveBeenCalledWith(eventRef);
+    expect(onDuplicate).not.toHaveBeenCalled();
   });
 
 });
