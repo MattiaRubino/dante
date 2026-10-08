@@ -142,10 +142,12 @@ async def test_generated_routine_objective_scope_selected_past_and_later_future(
         async with runtime.session_factory() as session, session.begin():
             occurrences = (await session.execute(
                 text("""
-                    SELECT g.occurrence_ref,g.generated_date
+                    SELECT g.occurrence_ref,cal.generated_date
                       FROM dante.occurrence_generation g
+                      JOIN dante.occurrence_generation_calendar cal
+                        ON cal.occurrence_ref=g.occurrence_ref
                      WHERE g.source_native_ref=:source
-                     ORDER BY g.generated_date,g.occurrence_ref
+                     ORDER BY cal.generated_date,g.occurrence_ref
                 """),
                 {"source": created.source_ref},
             )).all()
@@ -185,8 +187,10 @@ async def test_generated_routine_objective_scope_selected_past_and_later_future(
         async with runtime.session_factory() as session, session.begin():
             later_ref = (await session.execute(
                 text("""
-                    SELECT occurrence_ref FROM dante.occurrence_generation
-                     WHERE source_native_ref=:source AND generated_date=:day
+                    SELECT g.occurrence_ref FROM dante.occurrence_generation g
+                      JOIN dante.occurrence_generation_calendar cal
+                        ON cal.occurrence_ref=g.occurrence_ref
+                     WHERE g.source_native_ref=:source AND cal.generated_date=:day
                 """),
                 {"source": created.source_ref, "day": now + timedelta(days=5)},
             )).scalar_one()
@@ -286,9 +290,11 @@ async def test_generated_event_objectives_share_future_scope_without_copying_res
                       FROM dante.temporal_objective obj
                       JOIN dante.occurrence_generation generation
                         ON generation.occurrence_ref=obj.subject_native_ref
+                      JOIN dante.occurrence_generation_calendar cal
+                        ON cal.occurrence_ref=generation.occurrence_ref
                      WHERE generation.source_native_ref=:source
                        AND obj.subject_kind='occurrence'
-                     ORDER BY generation.generated_date
+                     ORDER BY cal.generated_date
                 """),
                 {"source": source.source_ref},
             )).scalars().all()
