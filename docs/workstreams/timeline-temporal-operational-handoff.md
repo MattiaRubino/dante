@@ -475,3 +475,25 @@ source CAS/preview/apply integration, reusing B06/B11 functions rather
 than rebuilding their already-proven functionality. The user explicitly
 noted that several original backlog capabilities already exist, so
 avoid counting implemented individual features as missing.
+
+## 2026-10-08 — M1-A passed; M1-B guarded inventory checkpoint
+
+**User-local PASS** at `a62ab230`: M1-A Ruff 0; 18/18 focused
+unit tests. M1-A pure selector closed. **M1 remains OPEN**.
+M1-B adds forward-only `20261008_122` a bounded owner-only
+materialized Occurrence read via existing B06 `get_self_occurrence`,
+a Python read application and read-only HTTP
+`GET /temporal/occurrences/{ref}/edit-inventory`. It includes
+skipped/Scheduled/extra materialized instances for both Routine and
+Event source, with 10k hard failure and no newly generated future
+assumptions; no apply authorization. The database Dictionary and
+exact topology probes were advanced to 231/5/**197**/103/471/405/572.
+New focused integration test is
+`test_b14_m1_edit_inventory.py`.
+
+**UNPROVEN candidate** until user local PostgreSQL, catalog, Ruff,
+OpenAPI/generated client and typechecks. No multi-instance mutation
+or scope UI is yet implemented. Next M1-C must add authoritative
+write-time CAS, override/recorded-fact conflict resolution,
+Activity/Event identity linking, future template revision and one
+atomic idempotent apply. User runs tests locally, no CI.
