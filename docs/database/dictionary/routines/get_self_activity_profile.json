@@ -8,7 +8,7 @@
     "name": "get_self_activity_profile",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Self-scoped Activity Inspector capability: get_self_activity_profile.",
+  "purpose": "Self-scoped effective Activity Inspector read; for Routine-materialized Activity it overlays canonical accepted single/following Occurrence metadata corrections while preserving immutable stored profile history.",
   "classification": {
     "persistence_role": "activity_capability",
     "canonicality": "capability_surface",
@@ -16,7 +16,8 @@
   },
   "semantic_traceability": {
     "authority_sources": [
-      "docs/domain/concepts/activity.md"
+      "docs/domain/concepts/activity.md",
+      "docs/workstreams/timeline-temporal-operational-b14-ui-consolidation-2026-09-30.md"
     ],
     "domain_concepts": [
       "Activity"
@@ -59,7 +60,7 @@
       "return_type": "TABLE(activity_ref uuid, title text, description text, location text, color_code text, revision bigint)",
       "security": "DEFINER",
       "volatility": "STABLE",
-      "parallel_safety": "SAFE",
+      "parallel_safety": "RESTRICTED",
       "leakproof": false,
       "function_search_path": [
         "pg_catalog",
@@ -71,9 +72,9 @@
   },
   "state_history": {
     "material_state_behavior": null,
-    "current_binding": "Optional immutable execution provenance.",
+    "current_binding": "Activity baseline profile plus canonical accepted Occurrence override patch for its bound Routine Occurrence.",
     "chronology": null,
-    "immutability_policy": "Read only."
+    "immutability_policy": "Read-only derived projection; underlying authored Activity revisions and accepted scoped edit history remain intact."
   },
   "lifecycle": {
     "retention": "Session read capability.",
