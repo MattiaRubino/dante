@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from dataclasses import replace
+from datetime import date, datetime, timedelta
 from types import SimpleNamespace
 from typing import Any
 from uuid import UUID, uuid7
@@ -18,6 +19,7 @@ from tests.integration.temporal.test_b14_m1_scoped_profile_edit import _daily
 from tests.integration.temporal.test_b14_recurring_event_create import _daily_named_zone
 
 from dante.modules.temporal.event_occurrence_policy import EventOccurrencePolicyApplication
+from dante.modules.temporal.occurrence import OccurrenceApplication, _window_source_operation_id
 from dante.modules.temporal.reality_objective_api import (
     ObjectiveDefinitionReviseCommand,
     get_objective_series_state,
@@ -75,19 +77,61 @@ async def _apply(
         )).mappings().one()
 
 
-async def _objective_for_occurrence(runtime: Any, actor: UUID, occurrence: UUID) -> UUID:
+async def _read_checkpoint_refs(
+    runtime: Any,
+    actor: UUID,
+    source: UUID,
+    *,
+    owner: str,
+    operation: str,
+    start: date,
+    end: date,
+) -> tuple[UUID, ...]:
+    """Read the exact authoritatively materialized checkpoint via its B06 replay."""
+    checkpoint = await OccurrenceApplication(runtime.session_factory).checkpoint(
+        owner=owner,
+        self_person_ref=actor,
+        source_ref=source,
+        operation_id=_window_source_operation_id(
+            root_operation_id=operation,
+            owner=owner,
+            source_ref=source,
+            start_date=start,
+            end_date_exclusive=end,
+            effective_zone_id=ZONE,
+        ),
+        start_date=start,
+        end_date_exclusive=end,
+        effective_zone_id=ZONE,
+    )
+    assert checkpoint.replayed
+    return tuple(occurrence.occurrence_ref for occurrence in checkpoint.occurrences)
+
+
+async def _objective_for_occurrence(
+    runtime: Any, actor: UUID, occurrence: UUID, *, kind: str = "activity",
+) -> UUID:
+    """Use owner-scoped capabilities, never SELECT protected tables as runtime."""
     async with runtime.session_factory() as session, session.begin():
-        return (await session.execute(
-            text("""
-                SELECT obj.objective_ref
-                  FROM dante.routine_occurrence_activity_instance link
-                  JOIN dante.temporal_objective obj
-                    ON obj.subject_native_ref=link.activity_ref
-                   AND obj.self_person_ref=:actor AND obj.subject_kind='activity'
-                 WHERE link.occurrence_ref=:occurrence AND link.self_person_ref=:actor
-            """),
-            {"actor": actor, "occurrence": occurrence},
-        )).scalar_one()
+        subject = occurrence
+        if kind == "activity":
+            activity = await session.execute(
+                text(
+                    "SELECT activity_ref "
+                    "FROM dante.list_self_routine_occurrence_activities("
+                    ":actor,:occurrences) WHERE occurrence_ref=:occurrence"
+                ),
+                {"actor": actor, "occurrences": [occurrence], "occurrence": occurrence},
+            )
+            subject = activity.scalar_one()
+        result = await session.execute(
+            text(
+                "SELECT objective_ref FROM dante.list_self_temporal_objectives("
+                ":actor,:kind,:subject)"
+            ),
+            {"actor": actor, "kind": kind, "subject": subject},
+        )
+        return result.scalar_one()
 
 
 @pytest.mark.asyncio
@@ -107,7 +151,13 @@ async def test_generated_routine_objective_scope_selected_past_and_later_future(
             operation_id="m2scope:routine",
             title="Corsa",
             life_area_intent=None,
-            recurrence=_daily(now - timedelta(days=3)),
+            recurrence=replace(
+                _daily(now - timedelta(days=3)),
+                clock_basis_code="named_zone",
+                zone_id=ZONE,
+                nonexistent_local_time_policy="skip_civil_candidate",
+                ambiguous_local_time_policy="earlier",
+            ),
         )
         await policy.set(
             self_person_ref=alice,
@@ -139,20 +189,18 @@ async def test_generated_routine_objective_scope_selected_past_and_later_future(
             end_date_exclusive=now + timedelta(days=5),
             effective_zone_id=ZONE,
         )
-        async with runtime.session_factory() as session, session.begin():
-            occurrences = (await session.execute(
-                text("""
-                    SELECT g.occurrence_ref,cal.generated_date
-                      FROM dante.occurrence_generation g
-                      JOIN dante.occurrence_generation_calendar cal
-                        ON cal.occurrence_ref=g.occurrence_ref
-                     WHERE g.source_native_ref=:source
-                     ORDER BY cal.generated_date,g.occurrence_ref
-                """),
-                {"source": created.source_ref},
-            )).all()
-        assert len(occurrences) == 6
-        ids = [row[0] for row in occurrences]
+        earlier = await _read_checkpoint_refs(
+            runtime, alice, created.source_ref, owner="routine",
+            operation="m2scope:past",
+            start=now - timedelta(days=3), end=now,
+        )
+        following = await _read_checkpoint_refs(
+            runtime, alice, created.source_ref, owner="routine",
+            operation="m2scope:future",
+            start=now + timedelta(days=2), end=now + timedelta(days=5),
+        )
+        assert len(earlier) == len(following) == 3
+        ids = [*earlier, *following]
         objectives = [
             await _objective_for_occurrence(runtime, alice, occurrence)
             for occurrence in ids
@@ -184,16 +232,11 @@ async def test_generated_routine_objective_scope_selected_past_and_later_future(
             end_date_exclusive=now + timedelta(days=6),
             effective_zone_id=ZONE,
         )
-        async with runtime.session_factory() as session, session.begin():
-            later_ref = (await session.execute(
-                text("""
-                    SELECT g.occurrence_ref FROM dante.occurrence_generation g
-                      JOIN dante.occurrence_generation_calendar cal
-                        ON cal.occurrence_ref=g.occurrence_ref
-                     WHERE g.source_native_ref=:source AND cal.generated_date=:day
-                """),
-                {"source": created.source_ref, "day": now + timedelta(days=5)},
-            )).scalar_one()
+        (later_ref,) = await _read_checkpoint_refs(
+            runtime, alice, created.source_ref, owner="routine",
+            operation="m2scope:later",
+            start=now + timedelta(days=5), end=now + timedelta(days=6),
+        )
         later_objective = await _objective_for_occurrence(runtime, alice, later_ref)
         assert (await _definition(runtime, alice, later_objective)).label == "Corsa sette km"
 
@@ -283,23 +326,22 @@ async def test_generated_event_objectives_share_future_scope_without_copying_res
                 ).date() + timedelta(days=1),
                 effective_zone_id=ZONE,
             )
-        async with runtime.session_factory() as session, session.begin():
-            matches = (await session.execute(
-                text("""
-                    SELECT obj.objective_ref
-                      FROM dante.temporal_objective obj
-                      JOIN dante.occurrence_generation generation
-                        ON generation.occurrence_ref=obj.subject_native_ref
-                      JOIN dante.occurrence_generation_calendar cal
-                        ON cal.occurrence_ref=generation.occurrence_ref
-                     WHERE generation.source_native_ref=:source
-                       AND obj.subject_kind='occurrence'
-                     ORDER BY cal.generated_date
-                """),
-                {"source": source.source_ref},
-            )).scalars().all()
-        assert len(matches) == 2
-        past, future = matches
+        (past_occurrence,) = await _read_checkpoint_refs(
+            runtime, actor, source.source_ref, owner="event",
+            operation="m2scope:event:past",
+            start=date(2026, 10, 6), end=date(2026, 10, 7),
+        )
+        (future_occurrence,) = await _read_checkpoint_refs(
+            runtime, actor, source.source_ref, owner="event",
+            operation="m2scope:event:future",
+            start=date(2026, 10, 13), end=date(2026, 10, 14),
+        )
+        past = await _objective_for_occurrence(
+            runtime, actor, past_occurrence, kind="occurrence",
+        )
+        future = await _objective_for_occurrence(
+            runtime, actor, future_occurrence, kind="occurrence",
+        )
         state = await _series_state(runtime, actor, past)
         assert state is not None
         assert state.source_native_ref == source.source_ref
