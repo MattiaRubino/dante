@@ -12,7 +12,9 @@ from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 from tests.integration.temporal.test_b05_primary_life_area_assignment import _seed_self
 from tests.integration.temporal.test_b14_m1_scoped_profile_edit import _daily
+from tests.integration.temporal.test_b14_recurring_event_create import _daily_named_zone
 
+from dante.modules.temporal.event_occurrence_policy import EventOccurrencePolicyApplication
 from dante.modules.temporal.recurring_authoring import RecurringAuthoringApplication
 from dante.modules.temporal.routine_occurrence_materialization import (
     RoutineOccurrenceMaterializationApplication,
@@ -229,5 +231,86 @@ async def test_generated_routine_objective_scope_selected_past_and_later_future(
         assert (await _definition(runtime, alice, objectives[1])).label == (
             "Corsa dieci km"
         )
+    finally:
+        await runtime.dispose()
+
+
+
+@pytest.mark.asyncio
+async def test_generated_event_objectives_share_future_scope_without_copying_results(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    authoring = RecurringAuthoringApplication(runtime.session_factory)
+    policy = EventOccurrencePolicyApplication(runtime.session_factory)
+    materializer = RoutineOccurrenceMaterializationApplication(runtime.session_factory)
+    try:
+        source = await authoring.create_event(
+            self_person_ref=actor, operation_id="m2scope:event",
+            title="Riunione", life_area_intent=None,
+            recurrence=_daily_named_zone(),
+        )
+        await policy.set(
+            self_person_ref=actor, event_ref=source.source_ref,
+            placement_kind="timed", duration_minutes=60,
+            duration_days=None, reminder_lead_minutes=None,
+            objectives=({
+                "label": "Arrivare puntuale",
+                "result_kind": "boolean",
+                "presentation_order": 0,
+            },),
+        )
+        for token, day in (("past", 6), ("future", 13)):
+            await materializer.checkpoint_window(
+                self_person_ref=actor,
+                operation_id=f"m2scope:event:{token}",
+                start_date=datetime(2026, 10, day, tzinfo=ZoneInfo(ZONE)).date(),
+                end_date_exclusive=datetime(
+                    2026, 10, day, tzinfo=ZoneInfo(ZONE)
+                ).date() + timedelta(days=1),
+                effective_zone_id=ZONE,
+            )
+        async with runtime.session_factory() as session, session.begin():
+            matches = (await session.execute(
+                text("""
+                    SELECT obj.objective_ref
+                      FROM dante.temporal_objective obj
+                      JOIN dante.occurrence_generation generation
+                        ON generation.occurrence_ref=obj.subject_native_ref
+                     WHERE generation.source_native_ref=:source
+                       AND obj.subject_kind='occurrence'
+                     ORDER BY generation.generated_date
+                """),
+                {"source": source.source_ref},
+            )).scalars().all()
+        assert len(matches) == 2
+        past, future = matches
+        state = await _series_state(runtime, actor, past)
+        assert state is not None
+        assert state.source_native_ref == source.source_ref
+        assert state.template_slot == 0
+        # A boolean Objective remains boolean. The template propagation is
+        # driven by canonical Objective slot, not by UI display ordering.
+        async with runtime.session_factory() as session, session.begin():
+            row = (await session.execute(
+                text(
+                    "SELECT * FROM dante.accept_self_objective_series_edit("
+                    ":actor,:objective,:operation,:fingerprint,0,0,:recurrence,"
+                    ":zone,:label,'boolean',NULL,NULL,NULL,NULL,NULL,0,:evaluation)"
+                ),
+                {
+                    "actor": actor, "objective": past,
+                    "operation": "m2scope:event:series",
+                    "fingerprint": "c" * 64,
+                    "recurrence": state.recurrence_state_ref,
+                    "zone": ZONE, "label": "Partenza puntuale",
+                    "evaluation": uuid7(),
+                },
+            )).mappings().one()
+        assert row.source_revision == 1
+        assert (await _definition(runtime, actor, past)).label == "Partenza puntuale"
+        assert (await _definition(runtime, actor, future)).label == "Partenza puntuale"
+        assert (await _definition(runtime, actor, future)).evaluation_state_ref is None
     finally:
         await runtime.dispose()
