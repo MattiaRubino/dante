@@ -479,3 +479,24 @@ duration instead of silently manufacturing an overnight interval.
 This remains **candidate / unproven** until the user-run local gate and real-app
 acceptance pass. Event recurrence parity is a subsequent shared-infrastructure
 pass; Activity-only structure semantics must not be copied into Event.
+
+## 2026-10-08 — B14/B07 post-create consolidation cursor
+
+Active B14 authority: latest section of
+`timeline-temporal-operational-b14-ui-consolidation-2026-09-30.md`.
+Following successful focused Activity interval replan (Ruff/4 unit/
+15 PostgreSQL/15 web + deterministic 483 generated output published
+in `c22f04ae`) and post-create Objective ADD (web typecheck,
+17/17 focused web), Inspector/Edit/Duplicate is **not** yet closed.
+User-approved recurrence edit scopes are **Solo questa** and
+**Questa e le prossime** only; the selected instance is always
+included, other already-past instances excluded. Past factual
+correction is allowed and becomes canonical; deletion of recorded
+past facts is not.
+
+Work order: M1 recurrence-instance scope targeting/preview/CAS;
+M2 logical Objective definition/reality correction with immutable
+history; M3 Activity residual edit surfaces; M4 faithful duplicate
+and Event parity; M5 product dogfood and B15 exact whole-vertical
+acceptance. These M1–M5 are OPEN; B01–B13 closures retain their
+previously qualified evidence, not an invented fresh full suite.
