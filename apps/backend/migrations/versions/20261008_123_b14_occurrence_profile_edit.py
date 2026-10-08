@@ -30,6 +30,7 @@ def upgrade() -> None:
         sa.Column("anchor_at", sa.DateTime(timezone=True)),
         sa.Column("accepted_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("profile_patch", JSONB(), nullable=False),
+        sa.Column("target_occurrence_refs", sa.ARRAY(sa.Uuid()), nullable=False),
         sa.PrimaryKeyConstraint("self_person_ref","operation_id",
                                 name="pk_occurrence_profile_edit"),
         sa.UniqueConstraint("source_native_ref","revision",
@@ -121,6 +122,42 @@ BEGIN
             MESSAGE='Invalid local DST time';
     END IF;
     RETURN resolved;
+END;
+$$;
+"""
+
+_PROFILE_PATCH = r"""
+CREATE FUNCTION dante.get_self_occurrence_profile_patch(
+    actor uuid, requested_occurrence uuid
+) RETURNS jsonb
+LANGUAGE plpgsql SECURITY DEFINER STABLE PARALLEL RESTRICTED
+SET search_path=pg_catalog,dante,pg_temp AS $$
+#variable_conflict error
+DECLARE bound_source uuid; combined jsonb;
+BEGIN
+    SELECT o.source_native_ref INTO bound_source
+      FROM dante.get_self_occurrence(actor,requested_occurrence) o;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION USING ERRCODE='23503',
+            CONSTRAINT='occurrence_edit_unavailable',
+            MESSAGE='Occurrence outside self scope';
+    END IF;
+    SELECT jsonb_object_agg(field.key,field.value ORDER BY edits.revision)
+      INTO combined
+      FROM dante.occurrence_profile_edit edits
+      CROSS JOIN LATERAL jsonb_each(edits.profile_patch) field
+     WHERE edits.self_person_ref=actor
+       AND edits.source_native_ref=bound_source
+       AND (
+           edits.selected_occurrence_ref=requested_occurrence
+           OR (
+               edits.scope_code='this_and_following'
+               AND dante.occurrence_edit_coordinate_instant(
+                   actor,requested_occurrence,edits.effective_zone_id
+               ) > GREATEST(edits.anchor_at,edits.accepted_at)
+           )
+       );
+    RETURN COALESCE(combined,'{}'::jsonb);
 END;
 $$;
 """
