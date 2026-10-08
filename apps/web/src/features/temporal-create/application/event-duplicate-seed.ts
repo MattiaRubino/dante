@@ -19,7 +19,8 @@ export function buildEventDuplicateSeed(
     kind: 'event' as const,
     title: event.title,
     contextId: event.lifeAreaRef ?? '',
-    event: { agendaParts: [...event.agendaParts] },
+    notes: event.description ?? '',
+    event: { agendaParts: [...event.agendaParts], location: event.location ?? '' },
   };
 
   if (placement.kind === 'absolute') {
@@ -43,6 +44,7 @@ export function buildEventDuplicateSeed(
       },
       advanced: {
         endDate: finalDate,
+        itemColorCode: event.colorCode ?? null,
         eventParticipants: [...expectedParticipants],
       },
     };
@@ -55,7 +57,7 @@ export function buildEventDuplicateSeed(
         timeSemantics: 'coarse',
         coarsePeriod: placement.period,
       },
-      advanced: { eventParticipants: [...expectedParticipants] },
+      advanced: { itemColorCode: event.colorCode ?? null, eventParticipants: [...expectedParticipants] },
     };
   }
 
@@ -81,6 +83,6 @@ export function buildEventDuplicateSeed(
       timeMode: zone ? 'zoned' : 'floating',
       ...(zone ? { timeZoneId: zone } : {}),
     },
-    advanced: { eventParticipants: [...expectedParticipants] },
+    advanced: { itemColorCode: event.colorCode ?? null, eventParticipants: [...expectedParticipants] },
   };
 }
