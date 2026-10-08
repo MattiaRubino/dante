@@ -89,6 +89,7 @@ def _problem(exc: DBAPIError, *, noun: str) -> ProblemError:
         "temporal_objective_result_shape_invalid",
         "temporal_objective_definition_invalid",
         "temporal_objective_series_unsupported",
+        "temporal_objective_result_correction_requires_fact",
     }:
         return ProblemError(
             status=422,
