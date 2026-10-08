@@ -410,9 +410,14 @@ export function ActivityEditPanel({
                 'separatamente da Sessioni, Reality e Promemoria.',
               );
             }
+            const changedKeys = Object.fromEntries(
+              Object.entries(changed).filter(
+                ([key, value]) => value !== profile[key as keyof typeof changed],
+              ),
+            );
             const nextProfile = await recurringSource.saveActivityProfile(
               profile.activityRef, recurringContext, editScope,
-              changed, operation.current ??= crypto.randomUUID(),
+              changedKeys, operation.current ??= crypto.randomUUID(),
             );
             operation.current = undefined;
             onSaved(nextProfile);
