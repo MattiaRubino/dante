@@ -179,4 +179,60 @@ describe('Activity editor settings remote contract', () => {
     expect(saved.currentRevision).toBe(8);
   });
 
+
+  it('sends complete interval retain/remove/add intent to coordinated preview', async () => {
+    const requests: Record<string, unknown>[] = [];
+    const fetchFn = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const path = typeof input === 'string' ? input :
+        input instanceof URL ? input.href : input.url;
+      if (path.endsWith('/auth/session'))
+        return Promise.resolve(response({ authenticated: true, csrf_token: 'token' }));
+      if (path.endsWith('/replan-preview') && init?.method === 'POST') {
+        requests.push(JSON.parse(String(init.body)) as Record<string, unknown>);
+        return Promise.resolve(response({ activity_ref: ref, changes: [] }));
+      }
+      throw new Error(`Unexpected path: ${path}`);
+    });
+    const source = createRemoteActivityEditSettings(fetchFn);
+    const current = {
+      capture: { mode: 'disabled' as const, stateRef: null },
+      reality: { mode: 'manual' as const, stateRef: null },
+      schedules: [
+        { scheduleRef: 'keep', role: 'interval' as const, name: null, order: 1,
+          placementStateRef: 'keep-state', temporalForm: 'named_zone_local',
+          start: '2026-10-09T09:00:00', end: '2026-10-09T10:00:00',
+          zoneId: 'Europe/Rome' },
+        { scheduleRef: 'remove', role: 'interval' as const, name: null, order: 2,
+          placementStateRef: 'remove-state', temporalForm: 'named_zone_local',
+          start: '2026-10-09T11:00:00', end: '2026-10-09T12:00:00',
+          zoneId: 'Europe/Rome' },
+      ],
+      objectives: [], lifeAreaRef: null,
+      placementProtected: false, placementLockRevision: null,
+      placementLockScheduleRef: null, reminderLeadMinutes: null,
+      reminderScheduleRef: null, reminderStateRef: null, childGuardMode: 'none' as const,
+    };
+    await source.previewReplan(ref, current, {
+      times: {
+        keep: { start: '2026-10-09T09:00:00', end: '2026-10-09T10:00:00' },
+        remove: { start: '2026-10-09T11:00:00', end: '2026-10-09T12:00:00' },
+      },
+      removedIntervals: ['remove'],
+      newIntervals: [{ clientRef: 'new-interval', start: '2026-10-09T10:00',
+        end: '2026-10-09T11:00' }],
+      removedPlanned: [], newPlanned: [],
+    }, 'replan-interval');
+    expect(requests).toEqual([{
+      operation_id: 'replan-interval',
+      intervals: [{ schedule_ref: 'keep', expected_material_state_ref: 'keep-state',
+        starts_local_at: '2026-10-09T09:00:00', ends_local_at: '2026-10-09T10:00:00' }],
+      remove_intervals: [{ schedule_ref: 'remove',
+        expected_material_state_ref: 'remove-state',
+        starts_local_at: '2026-10-09T11:00:00', ends_local_at: '2026-10-09T12:00:00' }],
+      new_intervals: [{ client_ref: 'new-interval',
+        starts_local_at: '2026-10-09T10:00', ends_local_at: '2026-10-09T11:00' }],
+      planned_sessions: [], remove_planned_sessions: [], new_planned_sessions: [],
+    }]);
+  });
+
 });
