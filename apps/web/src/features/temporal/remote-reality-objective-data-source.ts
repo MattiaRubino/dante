@@ -43,6 +43,14 @@ export type ObjectiveDefinitionState = Readonly<{
   evaluationStateRef: string | null;
 }>;
 
+export type ObjectiveSeriesEditState = Readonly<{
+  sourceNativeRef: string;
+  occurrenceRef: string;
+  templateSlot: number;
+  sourceRevision: number;
+  recurrenceStateRef: string | null;
+}>;
+
 export type ObjectiveDefinitionChange = Readonly<{
   operationId: string;
   expectedRevision: number;
@@ -54,6 +62,8 @@ export type ObjectiveDefinitionChange = Readonly<{
   targetMax: number | null;
   unitCode: string | null;
   presentationOrder: number;
+  scopeCode?: 'only_this' | 'this_and_following';
+  seriesState?: ObjectiveSeriesEditState | null;
 }>;
 
 function record(value: unknown): Record<string, unknown> {
@@ -223,6 +233,32 @@ export function createRemoteRealityObjectiveDataSource(
       return Object.freeze(payload.map(parseObjectiveView));
     },
 
+    async getSeriesState(
+      objectiveRef: string,
+    ): Promise<ObjectiveSeriesEditState | null> {
+      const payload = await send(
+        `/api/v1/temporal/objectives/${encodeURIComponent(objectiveRef)}/series-state`,
+        'GET',
+      );
+      if (payload === null) return null;
+      const state = record(payload);
+      if (typeof state.source_native_ref !== 'string' ||
+          typeof state.occurrence_ref !== 'string' ||
+          !Number.isSafeInteger(state.template_slot) ||
+          !Number.isSafeInteger(state.source_revision) ||
+          typeof state.source_revision !== 'number' ||
+          state.source_revision < 0) {
+        throw new Error('Provenienza ricorrente dell’obiettivo non valida.');
+      }
+      return Object.freeze({
+        sourceNativeRef: state.source_native_ref,
+        occurrenceRef: state.occurrence_ref,
+        templateSlot: state.template_slot as number,
+        sourceRevision: state.source_revision,
+        recurrenceStateRef: nullableString(state.recurrence_state_ref),
+      });
+    },
+
     async getDefinition(objectiveRef: string): Promise<ObjectiveDefinitionState> {
       const row = record(await send(
         `/api/v1/temporal/objectives/${encodeURIComponent(objectiveRef)}/definition`,
@@ -258,6 +294,9 @@ export function createRemoteRealityObjectiveDataSource(
         {
           operation_id: change.operationId,
           expected_revision: change.expectedRevision,
+          scope_code: change.scopeCode ?? 'only_this',
+          expected_source_revision: change.seriesState?.sourceRevision ?? null,
+          expected_recurrence_state_ref: change.seriesState?.recurrenceStateRef ?? null,
           label: change.label,
           result_kind: change.resultKind,
           comparator_code: change.comparatorCode,
