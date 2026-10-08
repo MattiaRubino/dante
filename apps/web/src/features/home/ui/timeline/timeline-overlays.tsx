@@ -982,6 +982,7 @@ export function EventDetailDialog({
             onActivityDeleted ? (
               <ActivityInspectorActions
                 activityRef={sessionSubject.ref}
+                subitemsCount={detail.subitemsCount ?? 0}
                 onEdit={setEditingProfile}
                 onDeleted={onActivityDeleted}
                 onDuplicate={(seed) => {
