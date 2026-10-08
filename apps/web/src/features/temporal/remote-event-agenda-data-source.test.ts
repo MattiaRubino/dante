@@ -46,6 +46,7 @@ describe('remote Event Agenda data source', () => {
       title: 'Evento B03-D',
       agendaRevision: 2,
       agendaParts: ['A', 'B'],
+      lifeAreaRef: EVENT_REF,
     });
     expect(fetchFn).toHaveBeenCalledTimes(1);
   });
