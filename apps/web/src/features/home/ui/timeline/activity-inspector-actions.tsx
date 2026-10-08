@@ -5,6 +5,7 @@ import {
   type ActivityProfile,
 } from '../../../temporal/remote-activity-inspector';
 import { createRemoteActivityEditSettings } from '../../../temporal/remote-activity-edit-settings';
+import { createRemoteRecurringProfileEdit } from '../../../temporal/remote-recurring-profile-edit';
 import {
   buildActivityDuplicateSeed,
   type ActivityDuplicateSeed,
@@ -25,6 +26,7 @@ export function ActivityInspectorActions({
 }>) {
   const [source] = useState(createRemoteActivityInspector);
   const [settingsSource] = useState(createRemoteActivityEditSettings);
+  const [recurringSource] = useState(createRemoteRecurringProfileEdit);
   const [profile, setProfile] = useState<ActivityProfile | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [pending, setPending] = useState(false);
@@ -95,11 +97,17 @@ export function ActivityInspectorActions({
                   'Questa attività contiene sotto-attività: la duplicazione fedele della struttura non è ancora disponibile.',
                 );
               }
-              const [savedProfile, settings, childCount] = await Promise.all([
+              const [savedProfile, settings, childCount, recurring] = await Promise.all([
                 source.get(activityRef),
                 settingsSource.load(activityRef),
                 settingsSource.loadChildCount(activityRef),
+                recurringSource.loadActivityContext(activityRef),
               ]);
+              if (recurring !== null) {
+                throw new Error(
+                  'La duplicazione fedele della ricorrenza richiede di copiare la sorgente: questa azione non la trasforma in una singola attività.',
+                );
+              }
               if (childCount !== 0) {
                 throw new Error(
                   'Questa attività contiene sotto-attività: la duplicazione fedele della struttura non è ancora disponibile.',
