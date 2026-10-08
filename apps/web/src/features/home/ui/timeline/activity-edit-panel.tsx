@@ -22,6 +22,7 @@ import {
   type ObjectiveComparator,
   type ObjectiveKind,
   type ObjectiveView,
+  type ObjectiveSeriesEditState,
   type RealityMode,
 } from '../../../temporal/remote-reality-objective-data-source';
 import type { SessionCaptureMode } from '../../../temporal/remote-session-capability-data-source';
@@ -82,7 +83,11 @@ export function ActivityEditPanel({
     objectiveRef: string;
     definitionRevision: number;
     presentationOrder: number;
+    seriesState: ObjectiveSeriesEditState | null;
   } | null>(null);
+  const [objectiveScope, setObjectiveScope] = useState<'only_this' | 'this_and_following'>(
+    'only_this',
+  );
   const [correctingObjective, setCorrectingObjective] = useState<ObjectiveView | null>(null);
   const [correctedValue, setCorrectedValue] = useState('');
   const [correctedBoolean, setCorrectedBoolean] = useState('true');
@@ -252,12 +257,17 @@ export function ActivityEditPanel({
     if (objectivePending || !settings) return;
     setObjectivePending(true);
     setObjectiveError('');
-    void objectiveSource.getDefinition(objective.objectiveRef).then((definition) => {
+    void Promise.all([
+      objectiveSource.getDefinition(objective.objectiveRef),
+      objectiveSource.getSeriesState(objective.objectiveRef),
+    ]).then(([definition, seriesState]) => {
       setEditingObjective({
         objectiveRef: definition.objectiveRef,
         definitionRevision: definition.definitionRevision,
         presentationOrder: definition.presentationOrder,
+        seriesState,
       });
+      setObjectiveScope('only_this');
       setObjectiveDraft({
         label: definition.label,
         resultKind: definition.resultKind,
@@ -352,6 +362,8 @@ export function ActivityEditPanel({
           ...definition,
           presentationOrder: editingObjective.presentationOrder,
           expectedRevision: editingObjective.definitionRevision,
+          scopeCode: objectiveScope,
+          seriesState: editingObjective.seriesState,
           operationId,
         }).then(() => settingsSource.refreshObjectives(profile.activityRef, settings))
       : settingsSource.addObjective(
@@ -1051,8 +1063,27 @@ export function ActivityEditPanel({
                       })} />
                   </label>
                 ) : null}
+                {editingObjective?.seriesState ? (
+                  <fieldset>
+                    <legend>Ambito della modifica dell’obiettivo</legend>
+                    <label>
+                      <input type="radio" name="objective-edit-scope"
+                        checked={objectiveScope === 'only_this'}
+                        onChange={() => setObjectiveScope('only_this')} />
+                      Solo questa
+                    </label>
+                    <label>
+                      <input type="radio" name="objective-edit-scope"
+                        checked={objectiveScope === 'this_and_following'}
+                        onChange={() => setObjectiveScope('this_and_following')} />
+                      Questa e le prossime
+                    </label>
+                    <p>La definizione comprende sempre l’istanza selezionata.
+                      Le altre già passate restano invariate.</p>
+                  </fieldset>
+                ) : null}
                 {objectiveError ? <p role="alert">{objectiveError}</p> : null}
-                <button type="button" onClick={addObjective}
+                <button type="button" onClick={addObjective
                   disabled={objectivePending || pending || planPending ||
                     lockPending || areaPending || !objectiveDraft.label.trim()}>
                   {objectivePending ? 'Salvataggio…' :
