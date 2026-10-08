@@ -442,7 +442,7 @@ export function ActivityEditPanel({
 
   const previewPlan = () => {
     if (!settings || !canReplan || !planDirty || coreDirty || lockDirty || areaDirty ||
-        planPending || lockPending || areaPending) return;
+        nameDirty || namePending || planPending || lockPending || areaPending) return;
     const operationId = crypto.randomUUID();
     setPlanPending(true);
     setPlanError('');
@@ -988,11 +988,11 @@ export function ActivityEditPanel({
               ) : null}
               {planDirty ? (
                 <div>
-                  {coreDirty || lockDirty || areaDirty ? (
-                    <p>Applica le altre impostazioni prima di modificare la programmazione.</p>
+                  {coreDirty || lockDirty || areaDirty || nameDirty ? (
+                    <p>Salva prima i nomi delle Session e le altre impostazioni; la programmazione si applica separatamente.</p>
                   ) : null}
                   <button type="button" disabled={planPending || pending || lockPending || areaPending ||
-                      coreDirty || lockDirty || areaDirty}
+                      !!namePending || coreDirty || lockDirty || areaDirty || nameDirty}
                     onClick={previewPlan}>
                     {planPending ? 'Verifica…' : 'Verifica spostamento'}
                   </button>
@@ -1028,7 +1028,7 @@ export function ActivityEditPanel({
                     </li>
                   ))}</ul>
                   <button type="button" disabled={planPending || pending || lockPending || areaPending ||
-                      coreDirty || lockDirty || areaDirty} onClick={applyPlan}>
+                      !!namePending || coreDirty || lockDirty || areaDirty || nameDirty} onClick={applyPlan}>
                     Applica programmazione
                   </button>
                   <button type="button" disabled={planPending} onClick={() => {
