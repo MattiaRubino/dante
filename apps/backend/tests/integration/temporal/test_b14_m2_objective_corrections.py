@@ -7,7 +7,6 @@ from typing import Any
 from uuid import UUID
 
 import psycopg
-
 import pytest
 from fastapi.testclient import TestClient
 from tests.integration.temporal.test_b01_activity_core import (
