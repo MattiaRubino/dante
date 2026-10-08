@@ -522,3 +522,23 @@ once it passes. Do not claim that scoped editing already handles
 Objective facts, Session/Scaletta, Schedule or all other fields;
 M2/M3/M4 will integrate those owners with the global
 `Solo questa / Questa e le prossime` contract.
+
+## 2026-10-08 — _124 fixes M1 gate regression (user proof pending)
+
+M1 _123 local user gate results: Ruff 1 (2 I001), 18/18 unit
+PASS, PostgreSQL 16 PASS / 4 FAIL; OpenAPI generation PASS,
+generated 489 deterministic PASS, API/Web typecheck PASS,
+Vitest 21 PASS. Four PostgreSQL failures share a single
+one-off Activity Inspector profile NULL Occurrence access,
+not a security failure in the strict Occurrence function.
+
+On branch: `20261008_124_b14_scoped_activity_profile_guard.py`
+forward-only existing function replacement (explicit null guard);
+Timeline one-off Activity CASE guard; two import sort fixes;
+Dictionary (one routine now PL/pgSQL) and _124 exact catalog
+expected revision; focused one-off Activity regression test.
+No new objects; topology unchanged 232|5|202|103|473|408|576.
+_124 user-run local proof **PENDING**. User should run one
+combined focused local gate, preserving locally generated
+API client artifacts. No CI. M1 metadata candidate is NOT yet
+closed until that proof.
