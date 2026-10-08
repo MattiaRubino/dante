@@ -13,7 +13,7 @@ depends_on: str | Sequence[str] | None = None
 def _assign_sql(kind: str, descriptor: str) -> str:
     assignment = f"{kind}_life_area_assignment"
     operation = f"{assignment}_operation"
-    return f"""
+    return f"""  # noqa: S608
 CREATE OR REPLACE FUNCTION dante.assign_self_{kind}_life_area(
   requested_self_person_ref uuid, requested_operation_id text,
   requested_intent_fingerprint text, requested_{kind}_ref uuid,
