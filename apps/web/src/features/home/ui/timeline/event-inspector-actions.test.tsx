@@ -83,9 +83,8 @@ describe('Event Inspector duplication', () => {
     render(<EventInspectorActions eventRef={eventRef} placement={placement}
       onDuplicate={onDuplicate} />);
     fireEvent.click(screen.getByRole('button', { name: 'Duplica' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      'un partecipante non è più disponibile',
-    );
+    expect((await screen.findByRole('alert')).textContent)
+      .toContain('un partecipante non è più disponibile');
     expect(onDuplicate).not.toHaveBeenCalled();
   });
 });
