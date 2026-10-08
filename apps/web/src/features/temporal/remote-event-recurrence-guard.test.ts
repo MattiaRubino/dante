@@ -16,9 +16,8 @@ describe('Event duplicate recurrence ownership guard', () => {
     const fetchFn = vi.fn<typeof fetch>(() => Promise.resolve(response(null)));
     await expect(createRemoteEventRecurrenceGuard(fetchFn)
       .isRecurring(EVENT)).resolves.toBe(false);
-    expect(fetchFn).toHaveBeenCalledWith(
+    expect(fetchFn.mock.calls[0]?.[0]).toBe(
       `/api/v1/temporal/events/${EVENT}/recurrence`,
-      expect.anything(),
     );
   });
 
