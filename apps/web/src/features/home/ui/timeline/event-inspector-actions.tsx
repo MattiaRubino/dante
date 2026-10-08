@@ -9,6 +9,7 @@ import {
   createRemoteEventProfileDataSource,
   type EventProfileDraft,
 } from '../../../temporal/remote-event-profile-data-source';
+import { createRemoteEventRecurrenceGuard } from '../../../temporal/remote-event-recurrence-guard';
 import { createRemoteTemporalEventAgendaDataSource } from '../../../temporal/remote-event-agenda-data-source';
 import { createRemoteTemporalResponsibilityDataSource } from '../../../temporal/remote-responsibility-data-source';
 import { systemTemporalIdFactory } from '../../../temporal/model';
@@ -27,6 +28,7 @@ export function EventInspectorActions({
 }>) {
   const [eventSource] = useState(createRemoteTemporalEventAgendaDataSource);
   const [participationSource] = useState(createRemoteTemporalResponsibilityDataSource);
+  const [recurrenceGuard] = useState(createRemoteEventRecurrenceGuard);
   const [profileSource] = useState(createRemoteEventProfileDataSource);
   const [areaSource] = useState(createRemoteEventLifeAreaSettings);
   const [profile, setProfile] = useState<TemporalEventDetailRecord | null>(null);
@@ -144,11 +146,17 @@ export function EventInspectorActions({
     setBusy(true);
     setError('');
     try {
-      const [event, participants, referents] = await Promise.all([
+      const [event, participants, referents, recurring] = await Promise.all([
         eventSource.loadEvent(eventRef),
         participationSource.listExpectedParticipation(eventRef),
         participationSource.listPersonReferents(),
+        recurrenceGuard.isRecurring(eventRef),
       ]);
+      if (recurring) {
+        throw new Error(
+          'Questo evento è una sorgente ricorrente: Duplica non può trasformarla in un singolo evento.',
+        );
+      }
       const labels = new Map(referents.map((row) => [row.personRef, row.displayLabel]));
       const expectedParticipants = participants
         .filter((row) => row.requirementCode !== null)
