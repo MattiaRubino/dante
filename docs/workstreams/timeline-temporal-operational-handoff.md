@@ -580,3 +580,11 @@ User local first M2 gate at branch `4f7c90d3`: `RUFF=1` (malformed ORM mapping a
 Fixes since gate: rebuilt `b14_create_closure.py` from pre-M2 stable mapping and added exactly one immutable Objective definition row and one series row with exact named constraints and complete fingerprint regex; repaired test's `asyncio` audit count closure; repaired `activity-edit-panel.tsx` JSX handler. Additionally tightened historical recorded-result replay to precede current definition type/shape validation, and made result correction require an actual previous Evaluation state under CAS in SQL, FastAPI and the Web UI/data source. No Alembic revision/count changes; catalog target remains `20261008_126`, `234/5/207/103/477/414/586`.
 
 **Status remains M2 CANDIDATE, NOT GATE-GREEN**. User must run ONE complete new local gate for Ruff, Postgres, generation/check, typecheck and Vitest. Generated OpenAPI/Orval files are not published yet. M3/M4/M5/B15 remain open; no Actions/CI.
+
+## 2026-10-08 — Second user local M2 gate, remaining blockers fixed in branch
+
+Second user gate at `7b3f1df1`: `RUFF=1`, `POSTGRES=2` (collection aborted), `GENERATE=1` and `GENERATED_CHECK=1`, all cascading from **two remaining orphan trailing ORM CheckConstraint snippets** in `b14_create_closure.py` (lines 223, 302). `WEB_TYPECHECK=2` reported nullable `objective.evaluationStateRef` at Activity editor line 313. `API_TYPECHECK=0`, **`VITEST=0`** with the prior TSX syntax already fixed.
+
+Branch repairs: surgically removed both malformed orphan fragments after legitimate class `__table_args__` (commit `302a74ac`, readback confirms 16 unique classes and no orphan line), added explicit non-null Evaluation guard at correction call site before submitting required correction state (commit `96b3ecf6`). These changes are syntax/call-site corrections, not a migration revision bump. Current expected catalog remains `20261008_126`, `234/5/207/103/477/414/586`. Source readbacks verified correct base classes, legacy Objective methods and template-generated Event/Activity origin contract.
+
+**M2 NOT GREEN: functional PostgreSQL tests still have not executed, and generated OpenAPI/Orval files have not been committed.** Rerun one complete local gate before claiming any M2 closure; avoid CI.
