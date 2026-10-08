@@ -195,7 +195,7 @@ CREATE OR REPLACE FUNCTION dante.retire_self_activity(
  actor uuid, requested_activity uuid, operation text
 ) RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER VOLATILE PARALLEL UNSAFE
 SET search_path=pg_catalog,dante,pg_temp AS $function$
-DECLARE owned dante.activity_intention%ROWTYPE;
+DECLARE owned record;
 BEGIN
  IF operation IS NULL OR operation<>btrim(operation)
     OR operation='' OR char_length(operation)>200 THEN
