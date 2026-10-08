@@ -42,7 +42,7 @@ class AssignLifeAreaRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     operation_id: str = Field(min_length=1, max_length=200)
-    life_area_ref: UUID
+    life_area_ref: UUID | None
     expected_assignment_revision: int = Field(ge=0)
 
 
@@ -51,7 +51,7 @@ class LifeAreaAssignmentResponse(BaseModel):
 
     subject_kind: Literal["activity", "event"]
     subject_native_ref: UUID
-    life_area_ref: UUID
+    life_area_ref: UUID | None
     assignment_revision: int = Field(ge=1)
     assigned_at: datetime
     replayed: bool = False
