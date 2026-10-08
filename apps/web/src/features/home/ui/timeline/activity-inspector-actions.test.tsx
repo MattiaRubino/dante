@@ -247,7 +247,7 @@ describe('Activity Inspector', () => {
       .toHaveProperty('disabled', true);
     fireEvent.click(screen.getByRole('button', { name: 'Applica protezione' }));
     await waitFor(() => expect(setPlacementProtected).toHaveBeenCalledWith(
-      ref, settings, true,
+      settings, true,
     ));
     await waitFor(() => expect(toggle).toHaveProperty('checked', true));
     expect(onSaved).not.toHaveBeenCalled();
