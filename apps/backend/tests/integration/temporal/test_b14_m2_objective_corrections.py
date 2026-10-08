@@ -72,6 +72,18 @@ def test_objective_definition_and_result_corrections_are_canonical_without_delet
             headers=headers,
         )
         assert created_objective.status_code == 201, created_objective.text
+        # Only the internal materializer can mint generated template lineage.
+        forged = client.post(
+            f"/api/v1/temporal/activities/{activity_ref}/objectives",
+            json={
+                "operation_id": f"b14:objective:activity:{activity_ref}:0",
+                "label": "Origine falsa",
+                "result_kind": "boolean",
+                "presentation_order": 0,
+            },
+            headers=headers,
+        )
+        assert forged.status_code == 422
         objective_ref = created_objective.json()["objective_ref"]
         definition_url = f"/api/v1/temporal/objectives/{objective_ref}/definition"
         result_url = f"/api/v1/temporal/objectives/{objective_ref}/result"
