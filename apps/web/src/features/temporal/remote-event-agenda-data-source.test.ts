@@ -26,6 +26,7 @@ function eventResponse(revision = 2, agendaParts: readonly string[] = ['A', 'B']
     description: 'Discussione',
     location: 'Roma',
     color_code: '#ABCDEF',
+    profile_revision: 0,
     replayed: false,
   } as const;
 }
