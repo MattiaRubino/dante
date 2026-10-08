@@ -23,6 +23,9 @@ function eventResponse(revision = 2, agendaParts: readonly string[] = ['A', 'B']
     created_at: '2026-09-17T10:00:00Z',
     life_area_ref: EVENT_REF,
     life_area_assignment_revision: 1,
+    description: 'Discussione',
+    location: 'Roma',
+    color_code: '#ABCDEF',
     replayed: false,
   } as const;
 }
@@ -47,6 +50,9 @@ describe('remote Event Agenda data source', () => {
       agendaRevision: 2,
       agendaParts: ['A', 'B'],
       lifeAreaRef: EVENT_REF,
+      description: 'Discussione',
+      location: 'Roma',
+      colorCode: '#ABCDEF',
     });
     expect(fetchFn).toHaveBeenCalledTimes(1);
   });
