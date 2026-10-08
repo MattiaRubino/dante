@@ -33,6 +33,9 @@ from dante.modules.temporal.occurrence import (
     OccurrenceView,
     OccurrenceWindowCheckpoint,
 )
+from dante.modules.temporal.occurrence_edit_inventory import (
+    OccurrenceEditInventoryApplication,
+)
 from dante.modules.temporal.routine_occurrence_materialization import (
     RoutineOccurrenceMaterializationApplication,
 )
@@ -206,6 +209,18 @@ class OccurrenceResponse(BaseModel):
     skipped: bool
     skip_reason: str | None
     skipped_at: datetime | None
+
+
+class OccurrenceEditInventoryResponse(BaseModel):
+    """Self-owned, fully enumerated *materialized* instances, not write permission."""
+
+    model_config = ConfigDict(extra="forbid")
+    selected_occurrence_ref: UUID
+    source_native_ref: UUID
+    captured_at: datetime
+    occurrences: list[OccurrenceResponse]
+    materialized_only: Literal[True] = True
+    apply_authorized: Literal[False] = False
 
 
 class OccurrenceCheckpointResponse(BaseModel):
@@ -623,6 +638,38 @@ async def get_occurrence(
         )
     except _Errors as exc:
         raise _problem(exc) from exc
+
+
+@router.get(
+    "/occurrences/{occurrence_ref}/edit-inventory",
+    response_model=OccurrenceEditInventoryResponse,
+    operation_id="temporal_get_occurrence_edit_inventory",
+)
+async def get_occurrence_edit_inventory(
+    occurrence_ref: UUID,
+    context: Context,
+    request: Request,
+    response: Response,
+) -> OccurrenceEditInventoryResponse:
+    """Do not infer that as-yet-unmaterialized future occurrences are covered."""
+
+    response.headers["Cache-Control"] = "no-store"
+    application = OccurrenceEditInventoryApplication(
+        request.app.state.database_runtime.session_factory
+    )
+    try:
+        view = await application.read(
+            self_person_ref=context.self_person_ref,
+            selected_occurrence_ref=occurrence_ref,
+        )
+    except _Errors as exc:
+        raise _problem(exc) from exc
+    return OccurrenceEditInventoryResponse(
+        selected_occurrence_ref=view.selected_occurrence_ref,
+        source_native_ref=view.source_native_ref,
+        captured_at=view.captured_at,
+        occurrences=[_response(item) for item in view.occurrences],
+    )
 
 
 @router.post(
