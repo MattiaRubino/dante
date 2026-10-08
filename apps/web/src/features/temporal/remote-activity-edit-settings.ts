@@ -275,6 +275,18 @@ export function createRemoteActivityEditSettings(
   }
 
   return Object.freeze({
+    async refreshObjectives(
+      ref: string, settings: ActivityEditSettings,
+    ): Promise<ActivityEditSettings> {
+      const objectives = await objectiveSource.listObjectives('activity', ref);
+      invalidateTemporalPlanningRead();
+      invalidateTemporalTimelineRead();
+      return Object.freeze({
+        ...settings,
+        objectives: Object.freeze([...objectives]),
+      });
+    },
+
     async addObjective(
       ref: string,
       settings: ActivityEditSettings,
