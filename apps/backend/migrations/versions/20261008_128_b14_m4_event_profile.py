@@ -116,6 +116,23 @@ $function$;
 """
 
 
+_PROFILE_REVISION_READ = """
+CREATE FUNCTION dante.get_self_event_profile_revision(
+  actor uuid, requested_event uuid
+) RETURNS bigint
+LANGUAGE sql SECURITY DEFINER STABLE PARALLEL SAFE
+SET search_path=pg_catalog,dante,pg_temp AS $function$
+  SELECT CASE WHEN EXISTS (
+    SELECT 1 FROM dante.event_expectation e
+    WHERE e.event_ref=requested_event AND e.self_person_ref=actor
+  ) THEN (
+    SELECT COALESCE(MAX(r.revision),0) FROM dante.event_profile_revision r
+    WHERE r.event_ref=requested_event AND r.self_person_ref=actor
+  ) ELSE NULL END
+$function$;
+"""
+
+
 def upgrade() -> None:
     op.create_table(
         "event_profile_revision",
@@ -142,10 +159,16 @@ def upgrade() -> None:
     db.exec_driver_sql("ALTER TABLE dante.event_profile_revision OWNER TO dante_owner")
     db.exec_driver_sql("REVOKE ALL ON dante.event_profile_revision FROM PUBLIC,dante_runtime,dante_migrator")
     db.exec_driver_sql(_PROFILE_EDIT)
-    sig = "dante.revise_self_event_profile(uuid,uuid,text,bigint,text,text,text,text)"
-    db.exec_driver_sql(f"ALTER FUNCTION {sig} OWNER TO dante_owner")
-    db.exec_driver_sql(f"REVOKE ALL ON FUNCTION {sig} FROM PUBLIC,dante_migrator,dante_runtime")
-    db.exec_driver_sql(f"GRANT EXECUTE ON FUNCTION {sig} TO dante_runtime")
+    db.exec_driver_sql(_PROFILE_REVISION_READ)
+    for sig in (
+        "dante.revise_self_event_profile(uuid,uuid,text,bigint,text,text,text,text)",
+        "dante.get_self_event_profile_revision(uuid,uuid)",
+    ):
+        db.exec_driver_sql(f"ALTER FUNCTION {sig} OWNER TO dante_owner")
+        db.exec_driver_sql(
+            f"REVOKE ALL ON FUNCTION {sig} FROM PUBLIC,dante_migrator,dante_runtime"
+        )
+        db.exec_driver_sql(f"GRANT EXECUTE ON FUNCTION {sig} TO dante_runtime")
 
 
 def downgrade() -> None:
