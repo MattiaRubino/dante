@@ -409,3 +409,23 @@ _123 and client generation/whole user local gate are pending.
 Metadata edit semantics are not a license to overwrite other
 domain owners' Session, Objective, Schedule, Event agenda or
 Reality histories.
+
+## B14 M1 _124 guarded Activity Inspector read (2026-10-08)
+
+_123 local gate showed four B14 Activity profile read/edit
+failures because a planner-inlineable LATERAL WHERE guard
+did not prevent calling the strict self-Occurrence accessor
+with a NULL Occurrence on one-off Activities. The function
+correctly rejected missing ownership; the caller was
+incorrect. Forward _124 replaces existing
+`get_self_activity_profile(uuid,uuid)` with a branch-executed
+PL/pgSQL owner read that only invokes the scoped patch
+accessor on a real canonical materialized Routine Occurrence.
+Returns no row for non-self, missing or retired Activity.
+Activity Timeline uses a CASE guard on the analogous path.
+No new database objects: physical topology remains
+232 tables, 5 views, 202 routines, 103 triggers, 473 indexes,
+408 foreign keys, 576 CHECK. Dictionary reflects the
+existing profile function language change SQL -> PL/pgSQL.
+User-run _124 gate pending. No previous materialized
+Occurrence/Actual history changes.
