@@ -1,0 +1,569 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "table:dante.temporal_objective_series_edit",
+    "type": "table",
+    "schema": "dante",
+    "name": "temporal_objective_series_edit",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Immutable source-template Objective definition edit applying to the selected generated Occurrence plus later future generated Occurrences of the same stable template slot, never other past instances.",
+  "classification": {
+    "persistence_role": "temporal_objective_series_edit",
+    "canonicality": "canonical",
+    "family": "B14ObjectiveCorrection"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/workstreams/timeline-temporal-operational-b14-ui-consolidation-2026-09-30.md"
+    ],
+    "domain_concepts": [
+      "Activity",
+      "Event",
+      "Occurrence",
+      "Observation"
+    ],
+    "logical_families": [
+      "Objective criterion"
+    ],
+    "reference_families": [
+      "NativeRef",
+      "ScopedRecordRef"
+    ],
+    "material_facets": []
+  },
+  "implementation": {
+    "introducing_stage": "B14-M2-OBJECTIVE-SERIES",
+    "alembic_revision": "20261008_126",
+    "sqlalchemy": {
+      "mode": "orm_row",
+      "module": "dante.platform.database.mappings.b14_create_closure",
+      "symbol": "TemporalObjectiveSeriesEditRow"
+    },
+    "runtime_acl_stage": "B14-M2-OBJECTIVE-SERIES"
+  },
+  "structure": {
+    "columns": [
+      {
+        "name": "self_person_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Owner-accepted recurring Objective policy self_person_ref",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "operation_id",
+        "postgres_type": "text",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Owner-accepted recurring Objective policy operation_id",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "intent_fingerprint",
+        "postgres_type": "text",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Owner-accepted recurring Objective policy intent_fingerprint",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "source_native_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Owner-accepted recurring Objective policy source_native_ref",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "selected_objective_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Owner-accepted recurring Objective policy selected_objective_ref",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "selected_occurrence_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Owner-accepted recurring Objective policy selected_occurrence_ref",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "template_slot",
+        "postgres_type": "integer",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Owner-accepted recurring Objective policy template_slot",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "revision",
+        "postgres_type": "bigint",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Owner-accepted recurring Objective policy revision",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "expected_revision",
+        "postgres_type": "bigint",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Owner-accepted recurring Objective policy expected_revision",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "expected_recurrence_state_ref",
+        "postgres_type": "uuid",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Owner-accepted recurring Objective policy expected_recurrence_state_ref",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "selected_definition_revision",
+        "postgres_type": "bigint",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Owner-accepted recurring Objective policy selected_definition_revision",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "effective_zone_id",
+        "postgres_type": "text",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Owner-accepted recurring Objective policy effective_zone_id",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "anchor_at",
+        "postgres_type": "timestamp with time zone",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Owner-accepted recurring Objective policy anchor_at",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "accepted_at",
+        "postgres_type": "timestamp with time zone",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Owner-accepted recurring Objective policy accepted_at",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "label",
+        "postgres_type": "text",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Owner-accepted recurring Objective policy label",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "result_kind",
+        "postgres_type": "text",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Owner-accepted recurring Objective policy result_kind",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "comparator_code",
+        "postgres_type": "text",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Owner-accepted recurring Objective policy comparator_code",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "target_value",
+        "postgres_type": "numeric",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Owner-accepted recurring Objective policy target_value",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "target_min",
+        "postgres_type": "numeric",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Owner-accepted recurring Objective policy target_min",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "target_max",
+        "postgres_type": "numeric",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Owner-accepted recurring Objective policy target_max",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "unit_code",
+        "postgres_type": "text",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Owner-accepted recurring Objective policy unit_code",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "presentation_order",
+        "postgres_type": "integer",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Owner-accepted recurring Objective policy presentation_order",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "applied_evaluation_state_ref",
+        "postgres_type": "uuid",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Owner-accepted recurring Objective policy applied_evaluation_state_ref",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "applied_assessment_code",
+        "postgres_type": "text",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Owner-accepted recurring Objective policy applied_assessment_code",
+        "semantic_type": null,
+        "value_contract": null
+      }
+    ],
+    "primary_key": {
+      "name": "pk_temporal_objective_series_edit",
+      "columns": [
+        "self_person_ref",
+        "operation_id"
+      ],
+      "reason": "Owner scoped replay identity",
+      "deferrable": false,
+      "initially": "NOT DEFERRABLE",
+      "enforced": true
+    },
+    "foreign_keys": [
+      {
+        "name": "fk_temporal_objective_series_edit_person",
+        "columns": [
+          "self_person_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "person",
+          "columns": [
+            "person_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "NativeRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Bind selected recurring Objective to an authorized canonical source and Occurrence"
+      },
+      {
+        "name": "fk_temporal_objective_series_edit_source",
+        "columns": [
+          "source_native_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "native_address",
+          "columns": [
+            "native_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "NativeRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Bind selected recurring Objective to an authorized canonical source and Occurrence"
+      },
+      {
+        "name": "fk_temporal_objective_series_edit_objective",
+        "columns": [
+          "selected_objective_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "temporal_objective",
+          "columns": [
+            "objective_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "NativeRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Bind selected recurring Objective to an authorized canonical source and Occurrence"
+      },
+      {
+        "name": "fk_temporal_objective_series_edit_occurrence",
+        "columns": [
+          "selected_occurrence_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "occurrence",
+          "columns": [
+            "occurrence_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "NativeRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Bind selected recurring Objective to an authorized canonical source and Occurrence"
+      }
+    ],
+    "unique_constraints": [
+      {
+        "name": "uq_temporal_objective_series_edit_revision",
+        "columns": [
+          "source_native_ref",
+          "template_slot",
+          "revision"
+        ],
+        "reason": "CAS revision per source-template slot",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true
+      }
+    ],
+    "check_constraints": [
+      {
+        "name": "ck_temporal_objective_series_edit_revision",
+        "expression_contract": "template_slot BETWEEN 0 AND 99 AND revision>=1 AND expected_revision>=0 AND selected_definition_revision>=1",
+        "reason": "Enforce bounded immutable series definition intent",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_temporal_objective_series_edit_operation",
+        "expression_contract": "operation_id=btrim(operation_id) AND char_length(operation_id) BETWEEN 1 AND 200",
+        "reason": "Enforce bounded immutable series definition intent",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_temporal_objective_series_edit_fingerprint",
+        "expression_contract": "intent_fingerprint ~ '^[0-9a-f]{64}$'",
+        "reason": "Enforce bounded immutable series definition intent",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_temporal_objective_series_edit_label",
+        "expression_contract": "label=btrim(label) AND label<>'' AND char_length(label)<=300 AND presentation_order BETWEEN 0 AND 999",
+        "reason": "Enforce bounded immutable series definition intent",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "pk_temporal_objective_series_edit",
+        "method": "btree",
+        "unique": true,
+        "keys": [
+          "self_person_ref",
+          "operation_id"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "primary_key",
+        "reason": "Replay identity",
+        "valid": true,
+        "ready": true,
+        "live": true
+      },
+      {
+        "name": "uq_temporal_objective_series_edit_revision",
+        "method": "btree",
+        "unique": true,
+        "keys": [
+          "source_native_ref",
+          "template_slot",
+          "revision"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "unique_constraint",
+        "reason": "Source template CAS",
+        "valid": true,
+        "ready": true,
+        "live": true
+      }
+    ],
+    "triggers": [],
+    "table": {
+      "persistence": "permanent",
+      "access_method": "heap",
+      "partitioned": false,
+      "row_security": false,
+      "force_row_security": false,
+      "replica_identity": "default",
+      "reloptions": []
+    },
+    "view": null,
+    "routine": null
+  },
+  "state_history": {
+    "material_state_behavior": null,
+    "current_binding": "Latest accepted source policy for the immutable generated template slot, subject to a selected anchor and database acceptance time, provides effective future definition when newer than individual local revision.",
+    "chronology": "Selected instance always included even if past; other past excluded; only later future instances inherit across checkpoint/materialization, with conflicts for protected future facts.",
+    "immutability_policy": "Never mutate accepted past Observer/Evaluation or original Objective identity. Append-only source-policy rows and local revision receipt."
+  },
+  "lifecycle": {
+    "retention": "Retain with Recurrence and Objective audit",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No runtime delete"
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": []
+  },
+  "proof": {
+    "obligations": [
+      "Trusted materializer-generated template slot provenance not presentation_order",
+      "Bounded source inventory, owner protection, source CAS, idempotent replay",
+      "Past selected + later future only",
+      "Fail on future skipped, Actual, local Objective revisions or recorded Observation",
+      "Future checkpoint inheritance with same logical per-instance Objective identity"
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b14_m2_objective_scope.py",
+      "apps/backend/tests/integration/database/test_database_current_catalog.py"
+    ],
+    "staged_evidence": []
+  }
+}
