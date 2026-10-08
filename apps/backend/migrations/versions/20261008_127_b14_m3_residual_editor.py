@@ -65,9 +65,9 @@ BEGIN
       MESSAGE='Item unavailable to this actor';
   END IF;
   IF requested_life_area_ref IS NOT NULL AND NOT EXISTS (
-    SELECT 1 FROM dante.life_area
-     WHERE life_area_ref=requested_life_area_ref
-       AND self_person_ref=requested_self_person_ref AND archived=false
+    SELECT 1 FROM dante.life_area AS target
+     WHERE target.life_area_ref=requested_life_area_ref
+       AND target.self_person_ref=requested_self_person_ref AND target.archived=false
   ) THEN
     RAISE EXCEPTION USING ERRCODE='23503',
       CONSTRAINT='life_area_assignment_target_unavailable',
