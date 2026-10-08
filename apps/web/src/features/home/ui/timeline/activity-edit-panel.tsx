@@ -340,7 +340,8 @@ export function ActivityEditPanel({
       onSubmit={(event) => {
         event.preventDefault();
         if (
-          pending || planPending || lockPending || areaPending || areaDirty || lockDirty || planDirty ||
+          pending || planPending || lockPending || areaPending || objectivePending ||
+          areaDirty || lockDirty || planDirty || objectiveDirty ||
           !settings ||
           loadingSettings ||
           settingsError ||
