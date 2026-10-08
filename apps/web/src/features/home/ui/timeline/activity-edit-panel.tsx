@@ -1063,6 +1063,13 @@ export function ActivityEditPanel({
                       })} />
                   </label>
                 ) : null}
+                {editingObjective && recurringContext &&
+                  !editingObjective.seriesState ? (
+                    <p>Questo obiettivo è stato aggiunto individualmente:
+                      non esiste ancora una provenienza comune verificabile
+                      per modificarlo anche nelle istanze future.
+                      La correzione riguarda solo questa istanza.</p>
+                  ) : null}
                 {editingObjective?.seriesState ? (
                   <fieldset>
                     <legend>Ambito della modifica dell’obiettivo</legend>
