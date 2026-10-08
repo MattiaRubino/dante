@@ -426,3 +426,17 @@ Returned inventory is materialized-only, not permission to apply.
 M1-C transactional CAS/scope apply, Activity/Event binding,
 overrides and future source-template revision remain OPEN. Details
 and user gate in the B14 UI consolidation ledger. No CI.
+
+## 2026-10-08 — M1 _123 atomic metadata edit candidate
+
+_122 user local green: Ruff 0, PostgreSQL 10/10, client generation/
+deterministic 484, API/Web typechecks 0. New _123 source-wide
+immutable revision, scope/past isolation, conflict guarded CAS,
+readback in Activity and Event Timeline, Activity materialization,
+Activity profile save UI and shared API are a candidate pending ONE
+whole local gate. Candidate Dictionary `232|5|202|103|473|408|576`.
+Global scope is `Solo questa` or `Questa e le prossime`, clicked
+always included, other past never changed. Application to Objective,
+Session/Scaletta, Schedule and remaining independently-governed
+settings remains open under M2/M3/M4, not implicitly implemented
+by the metadata endpoint.
