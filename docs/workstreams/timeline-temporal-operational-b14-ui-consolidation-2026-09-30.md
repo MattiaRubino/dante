@@ -400,3 +400,30 @@ artifacts (OpenAPI JSON, model index, ActivityReplanCommand model, apply/preview
 models and NewIntervalRow model). They passed deterministic verification but
 still must enter the Git branch via generated-source tooling output; they must
 not be discarded or hand-edited. No CI or GitHub Actions were used.
+
+## 2026-10-08 — Activity interval editor focused gate GREEN
+
+The user ran the post-fix local gate after commit `d084e6e9`, reporting:
+- `ruff check` **PASS / exit 0** for the changed backend and test files;
+- `tests/test_b14_activity_replan.py` **4/4 PASS / exit 0**;
+- focused temporal replan, edit snapshot, planned Session link and exact catalog
+  PostgreSQL suites **15/15 PASS / exit 0**, 32.62s.
+
+The immediately preceding same-source frontend/generated gate reported:
+- canonical `pnpm api:generate` **PASS**;
+- deterministic `pnpm generated:check` **PASS** (483 files);
+- web and API-client TypeScript **PASS**;
+- focused Vitest **15/15 PASS**.
+
+Thus **Activity interval add/remove + coordinated replan automated scope is
+PROVEN by focused local tests**, including historical Schedule-role retention.
+It still lacks a separate user-reported real-app visual/dogfood acceptance.
+The six canonical generated OpenAPI/Orval outputs exist as *uncommitted edits
+in the user's local worktree*, NOT yet in this GitHub branch. The user must
+publish the exact generator-produced files without rewriting or discarding them.
+No CI/GitHub Actions were run.
+
+This does not close all Activity/Event Inspector/Edit/Duplicate: Objective
+definition lifecycle, planned Session title revisions, optional Life Area
+unassign, recurring edit scope, robust duplication and real-stack acceptance
+remain outstanding.
