@@ -69,6 +69,9 @@ def _problem(exc: DBAPIError, *, noun: str) -> ProblemError:
         "temporal_objective_definition_stale",
         "temporal_objective_definition_observation_incompatible",
         "temporal_objective_result_stale",
+        "temporal_objective_series_operation_reused",
+        "temporal_objective_series_stale",
+        "temporal_objective_series_future_conflict",
     }:
         return ProblemError(
             status=409,
@@ -85,6 +88,7 @@ def _problem(exc: DBAPIError, *, noun: str) -> ProblemError:
         "temporal_objective_result_invalid",
         "temporal_objective_result_shape_invalid",
         "temporal_objective_definition_invalid",
+        "temporal_objective_series_unsupported",
     }:
         return ProblemError(
             status=422,
@@ -226,12 +230,25 @@ class ObjectiveDefinitionStateResponse(BaseModel):
 
 class ObjectiveDefinitionReviseCommand(ObjectiveCreateCommand):
     expected_revision: int = Field(ge=0)
+    scope_code: Literal["only_this", "this_and_following"] = "only_this"
+    expected_source_revision: int | None = Field(default=None, ge=0)
+    expected_recurrence_state_ref: UUID | None = None
+
+
+class ObjectiveSeriesStateResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    source_native_ref: UUID
+    occurrence_ref: UUID
+    template_slot: int
+    source_revision: int
+    recurrence_state_ref: UUID | None
 
 
 class ObjectiveDefinitionReviseResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
     objective_ref: UUID
     definition_revision: int
+    source_revision: int | None = None
     evaluation_state_ref: UUID | None
     assessment_code: AssessmentCode | None
     replayed: bool
@@ -637,6 +654,35 @@ async def get_objective_definition(
     return ObjectiveDefinitionStateResponse(**dict(row))
 
 
+@router.get(
+    "/objectives/{objective_ref}/series-state",
+    response_model=ObjectiveSeriesStateResponse | None,
+    operation_id="temporal_get_objective_series_state",
+)
+async def get_objective_series_state(
+    objective_ref: UUID, context: Context, request: Request, response: Response,
+) -> ObjectiveSeriesStateResponse | None:
+    """Only template-generated Objectives have a canonical following scope."""
+    try:
+        async with request.app.state.database_runtime.session_factory() as session, session.begin():
+            row = (await session.execute(
+                text(
+                    "SELECT * FROM dante.get_self_objective_series_state("
+                    ":actor,:objective)"
+                ),
+                {"actor": context.self_person_ref, "objective": objective_ref},
+            )).mappings().one_or_none()
+    except SQLAlchemyError as exc:
+        raise ProblemError(
+            status=503, code="temporal.objective.series_read_unavailable",
+            category="service", title="Objective series unavailable",
+            detail="Could not verify the Objective's recurrence origin.",
+            retryable=True,
+        ) from exc
+    response.headers["Cache-Control"] = "no-store"
+    return ObjectiveSeriesStateResponse(**dict(row)) if row is not None else None
+
+
 @router.put(
     "/objectives/{objective_ref}/definition",
     response_model=ObjectiveDefinitionReviseResponse,
@@ -655,19 +701,37 @@ async def revise_objective_definition(
     }
     try:
         async with request.app.state.database_runtime.session_factory() as session, session.begin():
-            row = (await session.execute(
-                text(
+            if payload.scope_code == "this_and_following":
+                if payload.expected_source_revision is None:
+                    raise ProblemError(
+                        status=422, code="temporal.objective.series_revision_required",
+                        category="validation", title="Objective series state required",
+                        detail="Reload the canonical recurring Objective state before saving.",
+                    )
+                statement = (
+                    "SELECT * FROM dante.accept_self_objective_series_edit("
+                    ":actor,:objective,:operation,:fingerprint,:expected,"
+                    ":source_expected,:recurrence_expected,:zone,:label,:kind,"
+                    ":comparator,:target,:minimum,:maximum,:unit,:ordering,:evaluation)"
+                )
+            else:
+                statement = (
                     "SELECT * FROM dante.revise_self_temporal_objective_definition("
                     ":actor,:operation,:fingerprint,:objective,:expected,"
                     ":label,:kind,:comparator,:target,:minimum,:maximum,"
                     ":unit,:ordering,:evaluation)"
-                ),
+                )
+            row = (await session.execute(
+                text(statement),
                 {
                     "actor": context.self_person_ref,
                     "operation": payload.operation_id,
                     "fingerprint": _fingerprint(intent),
                     "objective": objective_ref,
                     "expected": payload.expected_revision,
+                    "source_expected": payload.expected_source_revision,
+                    "recurrence_expected": payload.expected_recurrence_state_ref,
+                    "zone": context.effective_zone_id,
                     "label": payload.label,
                     "kind": payload.result_kind,
                     "comparator": payload.comparator_code,
