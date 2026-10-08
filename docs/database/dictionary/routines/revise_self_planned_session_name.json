@@ -1,0 +1,116 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "routine:dante.revise_self_planned_session_name",
+    "type": "routine",
+    "schema": "dante",
+    "name": "revise_self_planned_session_name",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Self-owned planned Activity Schedule name correction, without replacing Schedule or actual Session identity.",
+  "classification": {
+    "persistence_role": "planned_session_name_change",
+    "canonicality": "capability_surface",
+    "family": "activity_schedule"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/domain/concepts/session.md",
+      "docs/domain/concepts/schedule.md",
+      "docs/workstreams/timeline-temporal-operational-b14-ui-consolidation-2026-09-30.md"
+    ],
+    "domain_concepts": [
+      "Activity",
+      "Schedule",
+      "Session"
+    ],
+    "logical_families": [
+      "Planned Session name"
+    ],
+    "reference_families": [
+      "NativeRef"
+    ],
+    "material_facets": []
+  },
+  "implementation": {
+    "introducing_stage": "B14-M3-RESIDUAL-EDITOR",
+    "alembic_revision": "20261008_127",
+    "sqlalchemy": {
+      "mode": "none",
+      "module": null,
+      "symbol": null
+    },
+    "runtime_acl_stage": "B14-M3-RESIDUAL-EDITOR"
+  },
+  "structure": {
+    "columns": [],
+    "primary_key": null,
+    "foreign_keys": [],
+    "unique_constraints": [],
+    "check_constraints": [],
+    "indexes": [],
+    "triggers": [],
+    "table": null,
+    "view": null,
+    "routine": {
+      "routine_kind": "function",
+      "language": "plpgsql",
+      "argument_types": [
+        "uuid",
+        "uuid",
+        "uuid",
+        "text",
+        "text"
+      ],
+      "return_type": "TABLE(schedule_ref uuid, display_name text, replayed boolean)",
+      "security": "DEFINER",
+      "volatility": "VOLATILE",
+      "parallel_safety": "UNSAFE",
+      "leakproof": false,
+      "function_search_path": [
+        "pg_catalog",
+        "dante",
+        "pg_temp"
+      ],
+      "direct_runtime_execute": true
+    }
+  },
+  "state_history": {
+    "material_state_behavior": "Presentation-only name change; never a new Session, Schedule or MaterialStateRef.",
+    "current_binding": "Same planned Schedule identity; label change guarded by compare-and-swap.",
+    "chronology": "Accepted current presentation label, with recorded execution untouched.",
+    "immutability_policy": "No historical Session, Schedule or Actual records are mutated by the label capability."
+  },
+  "lifecycle": {
+    "retention": "Schedule and linked Session history retained.",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No deletion; a null label means an unnamed planned row."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": [
+      {
+        "grantee": "dante_runtime",
+        "privilege": "EXECUTE",
+        "columns": [],
+        "grant_option": false
+      }
+    ]
+  },
+  "proof": {
+    "obligations": [
+      "True typed FK to item, Person and Life Area; no polymorphic owner or NativeAddress pollution.",
+      "Actor self scope, archived-target rejection, idempotency and CAS are verified in PostgreSQL.",
+      "No runtime raw table access; B04 scheduling is unaffected.",
+      "An archived target is rejected for new assignment, while previously assigned items remain readable and replayable."
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b05_primary_life_area_assignment.py",
+      "apps/backend/tests/integration/database/test_database_current_catalog.py"
+    ],
+    "staged_evidence": []
+  }
+}
