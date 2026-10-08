@@ -9,12 +9,13 @@ import pytest
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 
-from dante.modules.temporal.event import TemporalEventApplication
-from dante.platform.database.runtime import create_database_runtime
 from tests.integration.temporal.test_b05_primary_life_area_assignment import (
     _legacy_event,
     _seed_self,
 )
+
+from dante.modules.temporal.event import TemporalEventApplication
+from dante.platform.database.runtime import create_database_runtime
 
 pytestmark = pytest.mark.postgres
 
