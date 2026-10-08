@@ -214,6 +214,7 @@ SELECT o.objective_ref,COALESCE(local_edit.revision,0::bigint),
        WHERE p.source_native_ref=origin.source_native_ref
          AND p.template_slot=origin.template_slot
          AND CASE
+             WHEN origin.occurrence_ref IS NULL THEN FALSE
              WHEN p.selected_objective_ref=o.objective_ref THEN TRUE
              ELSE dante.occurrence_edit_coordinate_instant(
                  actor,origin.occurrence_ref,p.effective_zone_id
