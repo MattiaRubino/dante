@@ -152,6 +152,17 @@ def test_objective_definition_and_result_corrections_are_canonical_without_delet
         assert last["objective_ref"] == objective_ref
         assert last["observation_ref"] != first["observation_ref"]
         assert last["assessment_code"] == "not_satisfied"
+        # A definition replay must retain its original accepted evaluation,
+        # not silently return this later corrected Observation's assessment.
+        definition_replay = client.put(
+            definition_url,
+            json=_definition(operation="m2:definition", expected=0),
+            headers=headers,
+        )
+        assert definition_replay.status_code == 200
+        assert definition_replay.json()["replayed"] is True
+        assert definition_replay.json()["evaluation_state_ref"] == changed["evaluation_state_ref"]
+        assert definition_replay.json()["assessment_code"] == "satisfied"
         replayed = client.post(
             correction_url,
             json={
