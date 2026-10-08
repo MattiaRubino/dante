@@ -64,6 +64,13 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
+async function submitEditor() {
+  await waitFor(() => expect(
+    screen.getByRole('button', { name: 'Salva modifiche' }),
+  ).toHaveProperty('disabled', false));
+  fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
+}
+
 const currentSettings = {
   capture: { mode: 'disabled', stateRef: null },
   reality: { mode: 'manual', stateRef: null },
@@ -106,7 +113,7 @@ describe('Recurring Activity profile scope', () => {
     });
     expect(await screen.findByLabelText('Solo questa')).toBeTruthy();
     fireEvent.click(screen.getByLabelText('Questa e le prossime'));
-    fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
+    await submitEditor();
     await waitFor(() => expect(saveRecurringProfile).toHaveBeenCalledWith(
       ref, context, 'this_and_following', { title: 'Dopo' }, expect.any(String),
     ));
@@ -150,7 +157,7 @@ describe('Activity Inspector', () => {
     const title = await screen.findByRole('textbox', { name: 'Titolo' });
     fireEvent.change(title, { target: { value: 'Dopo' } });
     await screen.findByRole('combobox', { name: 'Registrazione sessioni' });
-    fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
+    await submitEditor();
     await waitFor(() =>
       expect(saveCore).toHaveBeenCalledWith(
         profile,
@@ -191,7 +198,7 @@ describe('Activity Inspector', () => {
         target: { value: 'review_on_end' },
       },
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
+    await submitEditor();
     expect(await screen.findByRole('alert')).toHaveProperty(
       'textContent',
       expect.stringContaining('Connessione interrotta'),
@@ -200,7 +207,7 @@ describe('Activity Inspector', () => {
       { capture: 'live', reality: 'review_on_end' }, expect.any(String));
     expect(onSaved).not.toHaveBeenCalled();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
+    await submitEditor();
     await waitFor(() => expect(onSaved).toHaveBeenCalledWith(profile));
     expect(saveCore).toHaveBeenCalledTimes(2);
     expect(saveCore.mock.calls[1]?.[3]).toBe(saveCore.mock.calls[0]?.[3]);
