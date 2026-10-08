@@ -220,19 +220,6 @@ class TemporalObjectiveDefinitionRevisionRow(Base):
         ),
         CheckConstraint("isfinite(accepted_at)", name="time"),
     )
-", name="revision_fingerprint"),
-        CheckConstraint(
-            "result_kind IN ('boolean','quantity','qualitative','range')",
-            name="revision_kind",
-        ),
-        CheckConstraint(
-            "label=btrim(label) AND label<>'' AND "
-            "char_length(label)<=300 AND presentation_order BETWEEN 0 AND 999",
-            name="revision_label",
-        ),
-        CheckConstraint("isfinite(accepted_at)", name="revision_time"),
-    )
-
 class TemporalObjectiveSeriesEditRow(Base):
     __tablename__ = "temporal_objective_series_edit"
 
@@ -293,13 +280,6 @@ class TemporalObjectiveSeriesEditRow(Base):
             name="operation",
         ),
         CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name="fingerprint"),
-        CheckConstraint(
-            "label=btrim(label) AND label<>'' "
-            "AND char_length(label)<=300 AND presentation_order BETWEEN 0 AND 999",
-            name="label",
-        ),
-    )
-", name="fingerprint"),
         CheckConstraint(
             "label=btrim(label) AND label<>'' "
             "AND char_length(label)<=300 AND presentation_order BETWEEN 0 AND 999",
