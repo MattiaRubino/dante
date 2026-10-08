@@ -30,14 +30,14 @@
     "material_facets": []
   },
   "implementation": {
-    "introducing_stage": "B14-ACTIVITY-INSPECTOR",
-    "alembic_revision": "20261007_119",
+    "introducing_stage": "B14-M4-EVENT-PROFILE",
+    "alembic_revision": "20261008_128",
     "sqlalchemy": {
       "mode": "orm_row",
-      "module": "dante.platform.database.mappings.event_profile",
+      "module": "dante.platform.database.mappings.event",
       "symbol": "EventProfileRevisionRow"
     },
-    "runtime_acl_stage": "B14-ACTIVITY-INSPECTOR",
+    "runtime_acl_stage": "B14-M4-EVENT-PROFILE",
     "migration": "20261008_128_b14_m4_event_profile.py"
   },
   "structure": {
