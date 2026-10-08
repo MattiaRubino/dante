@@ -16,12 +16,16 @@ depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
+    # _106 created the already-expanded physical CHECK name. Our Alembic
+    # ck_<table>_<constraint_name> convention would expand that name again
+    # unless op.f() marks it as a completed identifier.
+    physical_order_check = op.f("ck_activity_schedule_role_ck_activity_schedule_role_order")
     op.drop_constraint(
-        "ck_activity_schedule_role_ck_activity_schedule_role_order",
+        physical_order_check,
         "activity_schedule_role", schema="dante", type_="check",
     )
     op.create_check_constraint(
-        "ck_activity_schedule_role_order", "activity_schedule_role",
+        physical_order_check, "activity_schedule_role",
         "(role_code='envelope' AND presentation_order=0) OR "
         "(role_code IN ('planned','interval') AND presentation_order BETWEEN 1 AND 2147483647)",
         schema="dante",
