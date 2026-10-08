@@ -57,11 +57,13 @@ def upgrade() -> None:
     db.exec_driver_sql("ALTER TABLE dante.occurrence_profile_edit OWNER TO dante_owner")
     db.exec_driver_sql("REVOKE ALL ON dante.occurrence_profile_edit "
                        "FROM PUBLIC,dante_runtime,dante_migrator")
-    for ddl in (_COORDINATE_INSTANT,_PROFILE_PATCH,_ACCEPT_EDIT):
+    for ddl in (_COORDINATE_INSTANT,_PROFILE_PATCH,_ACTIVITY_ORIGIN,_EDIT_STATE,_ACCEPT_EDIT):
         db.execute(sa.text(ddl))
     for signature in (
         "occurrence_edit_coordinate_instant(uuid,uuid,text)",
         "get_self_occurrence_profile_patch(uuid,uuid)",
+        "get_self_materialized_activity_occurrence(uuid,uuid)",
+        "get_self_occurrence_edit_revision(uuid,uuid)",
         "accept_self_occurrence_profile_edit(uuid,uuid,text,bigint,uuid,text,text,jsonb)",
     ):
         db.exec_driver_sql(f"ALTER FUNCTION dante.{signature} OWNER TO dante_owner")
@@ -344,6 +346,59 @@ BEGIN
     accepted_at:=accepted;
     replayed:=false;
     RETURN NEXT;
+END;
+$$;
+"""
+
+_ACTIVITY_ORIGIN = r"""
+CREATE FUNCTION dante.get_self_materialized_activity_occurrence(
+    actor uuid, requested_activity uuid
+) RETURNS uuid
+LANGUAGE sql SECURITY DEFINER STABLE PARALLEL SAFE
+SET search_path=pg_catalog,dante,pg_temp AS $$
+    SELECT link.occurrence_ref
+      FROM dante.routine_occurrence_activity_instance link
+      JOIN dante.activity_intention activity
+        ON activity.activity_ref=link.activity_ref
+     WHERE activity.activity_ref=requested_activity
+       AND activity.self_person_ref=actor
+       AND link.self_person_ref=actor
+$$;
+"""
+
+_EDIT_STATE = r"""
+CREATE FUNCTION dante.get_self_occurrence_edit_revision(
+    actor uuid, requested_occurrence uuid
+) RETURNS TABLE(
+    edit_revision bigint,
+    source_native_ref uuid,
+    recurrence_state_ref uuid
+)
+LANGUAGE plpgsql SECURITY DEFINER STABLE PARALLEL RESTRICTED
+SET search_path=pg_catalog,dante,pg_temp AS $$
+#variable_conflict error
+DECLARE bound_source uuid; current_ref uuid;
+BEGIN
+    SELECT item.source_native_ref INTO bound_source
+      FROM dante.get_self_occurrence(actor,requested_occurrence) item;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION USING ERRCODE='23503',
+            CONSTRAINT='occurrence_edit_unavailable',
+            MESSAGE='Occurrence outside self scope';
+    END IF;
+    IF EXISTS(SELECT 1 FROM dante.routine_intention r
+               WHERE r.routine_ref=bound_source AND r.self_person_ref=actor) THEN
+        SELECT r.material_state_ref INTO current_ref
+          FROM dante.get_self_routine_recurrence(actor,bound_source) r;
+    ELSE
+        SELECT r.material_state_ref INTO current_ref
+          FROM dante.get_self_event_recurrence(actor,bound_source) r;
+    END IF;
+    RETURN QUERY SELECT
+        (SELECT COALESCE(MAX(e.revision),0)
+           FROM dante.occurrence_profile_edit e
+          WHERE e.source_native_ref=bound_source),
+        bound_source,current_ref;
 END;
 $$;
 """
