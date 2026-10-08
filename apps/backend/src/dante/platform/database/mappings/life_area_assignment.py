@@ -51,7 +51,7 @@ class ActivityLifeAreaAssignmentRow(Base):
 
     self_person_ref: Mapped[NativeRef] = mapped_column(primary_key=True)
     activity_ref: Mapped[NativeRef] = mapped_column(primary_key=True)
-    life_area_ref: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
+    life_area_ref: Mapped[UUID | None] = mapped_column(PGUUID(as_uuid=True), nullable=True)
     revision: Mapped[int] = mapped_column(BigInteger, nullable=False)
     assigned_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
@@ -96,7 +96,7 @@ class EventLifeAreaAssignmentRow(Base):
 
     self_person_ref: Mapped[NativeRef] = mapped_column(primary_key=True)
     event_ref: Mapped[NativeRef] = mapped_column(primary_key=True)
-    life_area_ref: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
+    life_area_ref: Mapped[UUID | None] = mapped_column(PGUUID(as_uuid=True), nullable=True)
     revision: Mapped[int] = mapped_column(BigInteger, nullable=False)
     assigned_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
@@ -143,7 +143,7 @@ class ActivityLifeAreaAssignmentOperationRow(Base):
     operation_id: Mapped[str] = mapped_column(Text, primary_key=True)
     intent_fingerprint: Mapped[str] = mapped_column(Text, nullable=False)
     activity_ref: Mapped[NativeRef] = mapped_column(nullable=False)
-    life_area_ref: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
+    life_area_ref: Mapped[UUID | None] = mapped_column(PGUUID(as_uuid=True), nullable=True)
     expected_revision: Mapped[int] = mapped_column(BigInteger, nullable=False)
     accepted_revision: Mapped[int] = mapped_column(BigInteger, nullable=False)
     accepted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
@@ -191,7 +191,7 @@ class EventLifeAreaAssignmentOperationRow(Base):
     operation_id: Mapped[str] = mapped_column(Text, primary_key=True)
     intent_fingerprint: Mapped[str] = mapped_column(Text, nullable=False)
     event_ref: Mapped[NativeRef] = mapped_column(nullable=False)
-    life_area_ref: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
+    life_area_ref: Mapped[UUID | None] = mapped_column(PGUUID(as_uuid=True), nullable=True)
     expected_revision: Mapped[int] = mapped_column(BigInteger, nullable=False)
     accepted_revision: Mapped[int] = mapped_column(BigInteger, nullable=False)
     accepted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
