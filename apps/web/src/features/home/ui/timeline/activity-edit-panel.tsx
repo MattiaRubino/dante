@@ -149,6 +149,7 @@ export function ActivityEditPanel({
     placementProtected !== null && placementProtected !== settings.placementProtected;
   const areaDirty = areaChoice !== null &&
     (selectedArea || null) !== areaChoice.currentRef;
+  const scopedDomainUnsupported = !!recurringContext && editScope === 'this_and_following';
   const nameDirty = !!settings && settings.schedules.some((schedule) =>
     schedule.role === 'planned' && (plannedNames[schedule.scheduleRef] ?? '') !== (schedule.name ?? ''));
   const objectiveDirty = !!objectiveDraft.label || objectiveDraft.resultKind !== 'boolean' ||
@@ -236,6 +237,10 @@ export function ActivityEditPanel({
   const applyLifeArea = () => {
     if (!areaChoice || !areaDirty || !settings || pending || planPending ||
         lockPending || areaPending) return;
+    if (scopedDomainUnsupported) {
+      setAreaError('La Life Area si può modificare solo con «Solo questa»; la propagazione alla serie non è disponibile.');
+      return;
+    }
     if (areaChoice.currentRef !== settings.lifeAreaRef) {
       setAreaError('Assegnazione cambiata. Chiudi Modifica e riapri.');
       return;
@@ -667,6 +672,9 @@ export function ActivityEditPanel({
               {!areaChoice && !areaError ? <p role="status">Caricamento Life Area…</p> : null}
               {areaChoice ? (
                 <>
+                  {scopedDomainUnsupported && areaDirty ? (
+                    <p role="status">Per modificare la Life Area scegli «Solo questa»: non propaghiamo modifiche parziali alla serie.</p>
+                  ) : null}
                   <label>
                     Area assegnata
                     <select
@@ -693,7 +701,7 @@ export function ActivityEditPanel({
                     </select>
                   </label>
                   {areaDirty ? (
-                    <button type="button" disabled={pending || planPending || lockPending || areaPending}
+                    <button type="button" disabled={pending || planPending || lockPending || areaPending || scopedDomainUnsupported}
                       onClick={applyLifeArea}>
                       {areaPending ? 'Salvataggio…' : 'Applica Life Area'}
                     </button>
@@ -802,6 +810,9 @@ export function ActivityEditPanel({
               <h3>Programmazione attuale</h3>
               {planError ? <p role="alert">{planError}</p> : null}
               {nameError ? <p role="alert">{nameError}</p> : null}
+              {scopedDomainUnsupported && nameDirty ? (
+                <p role="status">La rinomina di Session pianificate per tutta la serie non è ancora supportata. Seleziona «Solo questa».</p>
+              ) : null}
               {settings.schedules.length ? (
                 <ul>
                   {settings.schedules.map((schedule) => (
@@ -829,7 +840,7 @@ export function ActivityEditPanel({
                           </label>
                           {(plannedNames[schedule.scheduleRef] ?? '') !== (schedule.name ?? '') ? (
                             <button type="button" disabled={!!namePending || pending || planPending ||
-                              planDirty || areaDirty || coreDirty || lockDirty}
+                              planDirty || areaDirty || coreDirty || lockDirty || scopedDomainUnsupported}
                               onClick={() => {
                                 const next = plannedNames[schedule.scheduleRef]?.trim() || null;
                                 setNamePending(schedule.scheduleRef);
