@@ -272,6 +272,46 @@ describe('Activity Inspector', () => {
     ));
   });
 
+  it('previews replacing an Activity interval without deleting historical rows', async () => {
+    const settings = { ...currentSettings, schedules: [
+      { scheduleRef: 'envelope', role: 'envelope', name: null, order: 0,
+        placementStateRef: 'state-0', temporalForm: 'named_zone_local',
+        start: '2026-10-09T09:00:00', end: '2026-10-09T12:00:00', zoneId: 'Europe/Rome' },
+      { scheduleRef: 'interval', role: 'interval', name: null, order: 1,
+        placementStateRef: 'state-1', temporalForm: 'named_zone_local',
+        start: '2026-10-09T09:00:00', end: '2026-10-09T12:00:00', zoneId: 'Europe/Rome' },
+    ] };
+    loadSettings.mockResolvedValueOnce(settings);
+    previewReplan.mockResolvedValueOnce([
+      { scheduleRef: 'interval', clientRef: null, role: 'interval_removed',
+        previousStart: '2026-10-09T09:00:00', previousEnd: '2026-10-09T12:00:00',
+        proposedStart: null, proposedEnd: null },
+      { scheduleRef: null, clientRef: 'new', role: 'interval_added',
+        previousStart: null, previousEnd: null,
+        proposedStart: '2026-10-09T10:00:00', proposedEnd: '2026-10-09T11:00:00' },
+    ]);
+    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
+      onSaved={() => undefined} onCancel={() => undefined} />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Rimuovi intervallo' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi intervallo' }));
+    fireEvent.change(screen.getByLabelText('Inizio nuovo intervallo'),
+      { target: { value: '2026-10-09T10:00' } });
+    fireEvent.change(screen.getByLabelText('Fine nuovo intervallo'),
+      { target: { value: '2026-10-09T11:00' } });
+    expect(screen.getByRole('button', { name: 'Salva modifiche' })).toHaveProperty('disabled', true);
+    fireEvent.click(screen.getByRole('button', { name: 'Verifica spostamento' }));
+    await waitFor(() => expect(previewReplan).toHaveBeenCalledWith(
+      ref, settings, expect.objectContaining({
+        removedIntervals: ['interval'],
+        newIntervals: [expect.objectContaining({
+          start: '2026-10-09T10:00', end: '2026-10-09T11:00',
+        })],
+      }), expect.any(String),
+    ));
+    expect(screen.getByText(/Intervallo rimosso/)).toBeTruthy();
+    expect(screen.getByText(/Nuovo intervallo/)).toBeTruthy();
+  });
+
   it('guards unsaved changes for external close requests', () => {
     const onCancel = vi.fn();
     const closeRequestRef = createRef<(() => void) | null>();
