@@ -187,6 +187,7 @@ function parseEvent(payload: unknown): TemporalEventDetailRecord {
       'description',
       'location',
       'color_code',
+      'profile_revision',
       'replayed',
     ],
     'Event response',
@@ -215,6 +216,7 @@ function parseEvent(payload: unknown): TemporalEventDetailRecord {
     description: optionalEventText(payload.description, 'description'),
     location: optionalEventText(payload.location, 'location'),
     colorCode: optionalEventColor(payload.color_code),
+    profileRevision: parseRevision(payload.profile_revision, 0, 'profile_revision'),
   });
 }
 
