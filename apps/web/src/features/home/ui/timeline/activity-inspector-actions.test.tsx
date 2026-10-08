@@ -23,6 +23,7 @@ const previewReplan = vi.fn();
 const applyReplan = vi.fn();
 const loadLifeAreaChoice = vi.fn();
 const assignLifeArea = vi.fn();
+const revisePlannedName = vi.fn();
 const setPlacementProtected = vi.fn();
 const addObjective = vi.fn();
 const refreshObjectives = vi.fn();
@@ -58,6 +59,7 @@ vi.mock('../../../temporal/remote-activity-edit-settings', () => ({
     applyReplan,
     loadLifeAreaChoice,
     assignLifeArea,
+    revisePlannedName,
     setPlacementProtected,
     addObjective,
     refreshObjectives,
@@ -602,4 +604,42 @@ describe('Activity Inspector', () => {
     });
     expect(loadSettings).toHaveBeenCalledWith(ref);
   });
+
+  it('unassigns an existing Life Area using an explicit null target', async () => {
+    const catalog = { currentRef: 'area-1', currentRevision: 4,
+      options: [{ ref: 'area-1', name: 'Personale' }] };
+    loadSettings.mockResolvedValueOnce({ ...currentSettings, lifeAreaRef: 'area-1' });
+    loadLifeAreaChoice.mockResolvedValueOnce(catalog);
+    assignLifeArea.mockResolvedValueOnce({
+      ...catalog, currentRef: null, currentRevision: 5,
+    });
+    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
+      onSaved={() => undefined} onCancel={() => undefined} />);
+    const select = await screen.findByRole('combobox', { name: 'Area assegnata' });
+    fireEvent.change(select, { target: { value: '' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Applica Life Area' }));
+    await waitFor(() => expect(assignLifeArea).toHaveBeenCalledWith(
+      ref, catalog, null, expect.any(String),
+    ));
+  });
+
+  it('renames an existing planned Session without rescheduling it', async () => {
+    loadSettings.mockResolvedValueOnce({ ...currentSettings, schedules: [
+      { scheduleRef: 'planned', role: 'planned', name: 'Lettura', order: 1,
+        placementStateRef: 'state-planned', temporalForm: 'named_zone_local',
+        start: '2026-10-09T09:00:00', end: '2026-10-09T10:00:00',
+        zoneId: 'Europe/Rome' },
+    ] });
+    revisePlannedName.mockResolvedValueOnce('Ripasso');
+    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
+      onSaved={() => undefined} onCancel={() => undefined} />);
+    const field = await screen.findByRole('textbox', { name: 'Nome sessione pianificata' });
+    fireEvent.change(field, { target: { value: 'Ripasso' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Salva nome sessione' }));
+    await waitFor(() => expect(revisePlannedName).toHaveBeenCalledWith(
+      ref, 'planned', 'Lettura', 'Ripasso',
+    ));
+    expect(applyReplan).not.toHaveBeenCalled();
+  });
+
 });
