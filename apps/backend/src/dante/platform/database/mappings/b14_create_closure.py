@@ -142,6 +142,8 @@ class TemporalObjectiveDefinitionRevisionRow(Base):
     unit_code: Mapped[str | None] = mapped_column(Text)
     presentation_order: Mapped[int] = mapped_column(Integer, nullable=False)
     accepted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    applied_evaluation_state_ref: Mapped[UUID | None] = mapped_column()
+    applied_assessment_code: Mapped[str | None] = mapped_column(Text)
 
     __table_args__ = (
         UniqueConstraint(
