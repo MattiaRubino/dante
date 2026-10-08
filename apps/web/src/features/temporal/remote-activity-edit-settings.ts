@@ -399,7 +399,7 @@ export function createRemoteActivityEditSettings(
         throw new Error('Assegnazioni Life Area incoerenti.');
       }
       const current = rows[0];
-      if (current && (typeof current.life_area_ref !== 'string' ||
+      if (current && ((current.life_area_ref !== null && typeof current.life_area_ref !== 'string') ||
           typeof current.assignment_revision !== 'number' ||
           !Number.isSafeInteger(current.assignment_revision) ||
           current.assignment_revision < 1)) {
@@ -407,17 +407,17 @@ export function createRemoteActivityEditSettings(
       }
       return Object.freeze({
         options: Object.freeze(options),
-        currentRef: current ? String(current.life_area_ref) : null,
+        currentRef: current?.life_area_ref == null ? null : String(current.life_area_ref),
         currentRevision: current ? Number(current.assignment_revision) : 0,
       });
     },
     async assignLifeArea(
       ref: string,
       current: ActivityLifeAreaChoice,
-      nextRef: string,
+      nextRef: string | null,
       operationId: string,
     ): Promise<ActivityLifeAreaChoice> {
-      if (!current.options.some((area) => area.ref === nextRef)) {
+      if (nextRef !== null && !current.options.some((area) => area.ref === nextRef)) {
         throw new Error('Seleziona una Life Area valida.');
       }
       const response = await request(
@@ -453,6 +453,31 @@ export function createRemoteActivityEditSettings(
         currentRef: nextRef,
         currentRevision: Number(saved.assignment_revision),
       });
+    },
+    async revisePlannedName(
+      activityRef: string, scheduleRef: string, expectedName: string | null,
+      newName: string | null,
+    ): Promise<string | null> {
+      if (newName !== null && (!newName.trim() || newName !== newName.trim() ||
+        newName.length > 300)) throw new Error('Nome sessione non valido.');
+      const response = await request(
+        '/api/v1/temporal/activities/' + encodeURIComponent(activityRef) +
+        '/planned-sessions/' + encodeURIComponent(scheduleRef) + '/name', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'X-Dante-CSRF': await csrf() },
+          body: JSON.stringify({ expected_name: expectedName, name: newName }),
+        },
+      );
+      if (!response.ok) throw new Error(response.status === 409
+        ? 'Il nome della sessione è cambiato. Ricarica l’attività.'
+        : 'Impossibile modificare il nome della sessione.');
+      const saved = object(await response.json());
+      if (saved.schedule_ref !== scheduleRef || saved.display_name !== newName) {
+        throw new Error('Risposta sessione non valida.');
+      }
+      invalidateTemporalTimelineRead();
+      invalidateTemporalPlanningRead();
+      return newName;
     },
     async setPlacementProtected(
       settings: ActivityEditSettings,
