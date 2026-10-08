@@ -254,7 +254,7 @@ export function createRemoteRealityObjectiveDataSource(
         sourceNativeRef: state.source_native_ref,
         occurrenceRef: state.occurrence_ref,
         templateSlot: state.template_slot as number,
-        sourceRevision: state.source_revision,
+        sourceRevision: state.source_revision as number,
         recurrenceStateRef: nullableString(state.recurrence_state_ref),
       });
     },
