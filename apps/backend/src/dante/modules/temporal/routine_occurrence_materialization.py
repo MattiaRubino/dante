@@ -519,6 +519,29 @@ class RoutineOccurrenceMaterializationApplication:
                 expected_revision=None,
             )
 
+    async def _profile_override(
+        self,
+        *,
+        self_person_ref: NativeRef,
+        occurrence_ref: UUID,
+    ) -> dict[str, object]:
+        """Accepted future/single metadata corrections, not historical Actual."""
+
+        try:
+            async with self._session_factory() as session, session.begin():
+                row = await session.scalar(
+                    text(
+                        "SELECT dante.get_self_occurrence_profile_patch("
+                        ":actor,:occurrence)"
+                    ),
+                    {"actor": self_person_ref, "occurrence": occurrence_ref},
+                )
+        except SQLAlchemyError as exc:
+            raise OccurrencePersistenceError() from exc
+        if row is None or not isinstance(row, dict):
+            raise OccurrencePersistenceError()
+        return row
+
     async def _materialize_activity(
         self,
         *,
@@ -533,6 +556,11 @@ class RoutineOccurrenceMaterializationApplication:
             self_person_ref=self_person_ref,
             routine_ref=source_ref,
         )
+        correction = await self._profile_override(
+            self_person_ref=self_person_ref,
+            occurrence_ref=occurrence_ref,
+        )
+        title = cast(str, correction.get("title", title))
         root_window = template.get(
             "root_window",
             {
@@ -623,9 +651,15 @@ class RoutineOccurrenceMaterializationApplication:
                 if life_area_ref is None
                 else AuthoringLifeAreaIntent(life_area_ref=life_area_ref)
             ),
-            description=cast(str | None, template.get("description")),
-            location=cast(str | None, template.get("location")),
-            item_color_code=cast(str | None, template.get("item_color_code")),
+            description=cast(
+                str | None, correction.get("description", template.get("description"))
+            ),
+            location=cast(
+                str | None, correction.get("location", template.get("location"))
+            ),
+            item_color_code=cast(
+                str | None, correction.get("color_code", template.get("item_color_code"))
+            ),
             placement=root_placement,
             session_capture_mode=cast(
                 str, template.get("session_capture_mode", "disabled")
