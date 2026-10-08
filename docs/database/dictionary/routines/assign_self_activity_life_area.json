@@ -8,7 +8,7 @@
     "name": "assign_self_activity_life_area",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Guarded idempotent actor-local initial assignment or CAS reassignment of one existing activity to a non-archived Life Area.",
+  "purpose": "Self-scoped initial primary Life Area assignment, reassignment or explicit unassignment, with CAS and immutable receipt.",
   "classification": {
     "persistence_role": "assign_self_life_area",
     "canonicality": "capability_surface",
@@ -78,7 +78,7 @@
   },
   "state_history": {
     "material_state_behavior": "Organizational assignment is product state; never a Domain MaterialStateRef.",
-    "current_binding": "Exactly one current actor-local primary Life Area per assigned item; older unassigned items remain explicit.",
+    "current_binding": "Retained current row can reference an active Life Area or NULL after an explicit unassignment; monotonic revision is preserved.",
     "chronology": "Current assignment revision and assigned_at are server-accepted organizational state.",
     "immutability_policy": "CAS advances the actor-local revision; earlier transitions persist as receipts."
   },
