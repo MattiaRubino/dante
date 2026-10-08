@@ -320,9 +320,10 @@ async def apply_activity_replan(
             if body.new_planned_sessions:
                 next_order = await session.scalar(text("""
                     SELECT COALESCE(MAX(presentation_order),0)
-                      FROM dante.activity_schedule_role
-                     WHERE activity_ref=:activity AND role_code='planned'
-                """), {"activity": activity_ref})
+                      FROM dante.get_self_activity_schedule_roles(
+                          :actor, CAST(ARRAY[:activity] AS uuid[]))
+                     WHERE role_code='planned'
+                """), {"actor": actor, "activity": activity_ref})
                 for row in body.new_planned_sessions:
                     next_order += 1
                     try:
