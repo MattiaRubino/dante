@@ -22,6 +22,11 @@ import type {
   RealityMode,
 } from '../../../temporal/remote-reality-objective-data-source';
 import type { SessionCaptureMode } from '../../../temporal/remote-session-capability-data-source';
+import {
+  createRemoteRecurringProfileEdit,
+  type RecurringProfileContext,
+  type RecurringProfileEditScope,
+} from '../../../temporal/remote-recurring-profile-edit';
 
 export function ActivityEditPanel({
   profile,
@@ -35,6 +40,11 @@ export function ActivityEditPanel({
   closeRequestRef: RefObject<(() => void) | null>;
 }>) {
   const [settingsSource] = useState(createRemoteActivityEditSettings);
+  const [recurringSource] = useState(createRemoteRecurringProfileEdit);
+  const [recurringContext, setRecurringContext] = useState<RecurringProfileContext | null>(null);
+  const [recurringLoading, setRecurringLoading] = useState(true);
+  const [recurringError, setRecurringError] = useState('');
+  const [editScope, setEditScope] = useState<RecurringProfileEditScope>('only_this');
   const [settings, setSettings] = useState<ActivityEditSettings | null>(null);
   const [loadingSettings, setLoadingSettings] = useState(true);
   const [settingsError, setSettingsError] = useState('');
@@ -81,6 +91,11 @@ export function ActivityEditPanel({
   const discardButtonRef = useRef<HTMLButtonElement | null>(null);
   const editablePlan = settings?.schedules.filter((schedule) =>
     schedule.role === 'interval' || schedule.role === 'planned') ?? [];
+  const metadataDirty =
+    draft.title !== profile.title ||
+    draft.description !== (profile.description ?? '') ||
+    draft.location !== (profile.location ?? '') ||
+    draft.colorCode !== (profile.colorCode ?? '');
   const coreDirty =
     draft.title !== profile.title ||
     draft.description !== (profile.description ?? '') ||
@@ -148,6 +163,21 @@ export function ActivityEditPanel({
   useEffect(() => {
     void loadSettings();
   }, [loadSettings]);
+
+  useEffect(() => {
+    let active = true;
+    setRecurringLoading(true);
+    setRecurringError('');
+    void recurringSource.loadActivityContext(profile.activityRef).then((loaded) => {
+      if (active) setRecurringContext(loaded);
+    }).catch((reason: unknown) => {
+      if (active) setRecurringError(reason instanceof Error
+        ? reason.message : 'Origine della ricorrenza non disponibile.');
+    }).finally(() => {
+      if (active) setRecurringLoading(false);
+    });
+    return () => { active = false; };
+  }, [profile.activityRef, recurringSource]);
 
   useEffect(() => {
     let active = true;
@@ -344,6 +374,8 @@ export function ActivityEditPanel({
           areaDirty || lockDirty || planDirty || objectiveDirty ||
           !settings ||
           loadingSettings ||
+          recurringLoading ||
+          !!recurringError ||
           settingsError ||
           !captureMode ||
           !realityMode ||
@@ -368,6 +400,28 @@ export function ActivityEditPanel({
           if (!metadataChanged && !captureChanged && !realityChanged && !reminderChanged) {
             onSaved(profile);
             return;
+          }
+          if (recurringContext && metadataChanged) {
+            // The recurring metadata edit is one atomic owner/CAS command.
+            // Do not split it into two independent partial saves.
+            if (captureChanged || realityChanged || reminderChanged) {
+              throw new Error(
+                'Per mantenere il salvataggio atomico, modifica i dati generali ' +
+                'separatamente da Sessioni, Reality e Promemoria.',
+              );
+            }
+            const nextProfile = await recurringSource.saveActivityProfile(
+              profile.activityRef, recurringContext, editScope,
+              changed, operation.current ??= crypto.randomUUID(),
+            );
+            operation.current = undefined;
+            onSaved(nextProfile);
+            return;
+          }
+          if (recurringContext && editScope === 'this_and_following') {
+            throw new Error(
+              'Questa e le prossime richiede una modifica ai dati generali.',
+            );
           }
           const saved = await settingsSource.saveCore(profile, settings, {
             ...(metadataChanged ? { profile: changed } : {}),
@@ -394,6 +448,7 @@ export function ActivityEditPanel({
         inert={confirmingDiscard || undefined}
       >
         {error ? <p role="alert">{error}</p> : null}
+        {recurringError ? <p role="alert">{recurringError}</p> : null}
         {loadingSettings ? (
           <p role="status">Caricamento impostazioni…</p>
         ) : null}
@@ -894,6 +949,28 @@ export function ActivityEditPanel({
           </>
         ) : null}
       </div>
+      {recurringContext && metadataDirty ? (
+        <fieldset className="timeline-activity-editor__fields">
+          <legend>Ambito della modifica</legend>
+          <label>
+            <input type="radio" name="recurring-edit-scope"
+              checked={editScope === 'only_this'}
+              onChange={() => setEditScope('only_this')} />
+            Solo questa
+          </label>
+          <label>
+            <input type="radio" name="recurring-edit-scope"
+              checked={editScope === 'this_and_following'}
+              onChange={() => setEditScope('this_and_following')} />
+            Questa e le prossime
+          </label>
+          <p>
+            L’istanza selezionata è sempre compresa. Le altre istanze
+            già passate restano invariate; le modifiche future possono
+            essere rifiutate se esistono eccezioni o dati già registrati.
+          </p>
+        </fieldset>
+      ) : null}
       <div
         className="timeline-activity-editor__actions"
         inert={confirmingDiscard || undefined}
@@ -909,6 +986,8 @@ export function ActivityEditPanel({
             areaDirty || lockDirty || planDirty || objectiveDirty ||
             !settings ||
             loadingSettings ||
+            recurringLoading ||
+            !!recurringError ||
             !!settingsError ||
             !draft.title.trim()
           }
