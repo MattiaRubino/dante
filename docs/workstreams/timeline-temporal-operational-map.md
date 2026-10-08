@@ -440,3 +440,15 @@ always included, other past never changed. Application to Objective,
 Session/Scaletta, Schedule and remaining independently-governed
 settings remains open under M2/M3/M4, not implicitly implemented
 by the metadata endpoint.
+
+## 2026-10-08 — M1 _124 one-off Activity read correction
+
+The _123 unified gate returned 18 unit PASS, 21 Web PASS,
+generation/check 489 PASS, API/Web typecheck PASS, and
+4 PostgreSQL Activity Inspector/read failures plus 2 Ruff I001.
+_124 is a forward repair with deterministic PL/pgSQL NULL
+Occurrence guard in `get_self_activity_profile`, CASE guard
+in Activity Timeline, import sort corrections and regression
+test. Dictionary/catalog stays 232/5/202/103/473/408/576.
+_124 local gate **PENDING**. Do not claim M1 whole domain or
+B14 closed.
