@@ -76,4 +76,42 @@ describe('canonical Event duplicate seed', () => {
       timeSemantics: 'coarse', date: '2026-10-09', coarsePeriod: 'morning',
     });
   });
+
+  it('preserves the accepted later overlap instant rather than defaulting to the earlier DST fold', () => {
+    const seed = buildEventDuplicateSeed(event, {
+      kind: 'named-zone-local',
+      startsLocalAt: Temporal.PlainDateTime.from('2026-10-25T02:15'),
+      endsLocalAt: Temporal.PlainDateTime.from('2026-10-25T02:45'),
+      zoneId: 'Europe/Rome',
+      resolvedStartAt: Temporal.Instant.from('2026-10-25T01:15:00Z'),
+      resolvedEndAt: Temporal.Instant.from('2026-10-25T01:45:00Z'),
+    });
+    expect(seed.fields).toMatchObject({
+      timeZoneId: 'Europe/Rome',
+      timeDisambiguation: 'later',
+    });
+  });
+
+  it('rejects a DST-cross-fold interval that one shared Create disambiguation cannot recreate', () => {
+    expect(() => buildEventDuplicateSeed(event, {
+      kind: 'named-zone-local',
+      startsLocalAt: Temporal.PlainDateTime.from('2026-10-25T02:15'),
+      endsLocalAt: Temporal.PlainDateTime.from('2026-10-25T02:45'),
+      zoneId: 'Europe/Rome',
+      resolvedStartAt: Temporal.Instant.from('2026-10-25T00:15:00Z'),
+      resolvedEndAt: Temporal.Instant.from('2026-10-25T01:45:00Z'),
+    })).toThrow('DST incompatibili');
+  });
+
+  it('rejects an inconsistent persisted named-zone instant rather than silently moving the duplicate', () => {
+    expect(() => buildEventDuplicateSeed(event, {
+      kind: 'named-zone-local',
+      startsLocalAt: Temporal.PlainDateTime.from('2026-10-09T09:00'),
+      endsLocalAt: Temporal.PlainDateTime.from('2026-10-09T10:00'),
+      zoneId: 'Europe/Rome',
+      resolvedStartAt: Temporal.Instant.from('2026-10-09T08:00:00Z'),
+      resolvedEndAt: Temporal.Instant.from('2026-10-09T08:00:00Z'),
+    })).toThrow('non sono ricostruibili');
+  });
+
 });

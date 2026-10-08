@@ -5,6 +5,27 @@ import type { TemporalEventDetailRecord } from '../../temporal/event-data-source
 import type { TemporalCreateEventParticipantDraft } from '../model/temporal-create-u2-authoring';
 import type { ActivityDuplicateSeed } from './activity-duplicate-seed';
 
+function resolveSourceZoneDisambiguation(
+  placement: Extract<TimelineCanonicalSchedulePlacement, { kind: 'named-zone-local' }>,
+): 'reject' | 'earlier' | 'later' {
+  const match = (local: Temporal.PlainDateTime, instant: Temporal.Instant) => {
+    const early = local.toZonedDateTime(placement.zoneId, { disambiguation: 'earlier' }).toInstant();
+    const late = local.toZonedDateTime(placement.zoneId, { disambiguation: 'later' }).toInstant();
+    const earlier = Temporal.Instant.compare(early, instant) === 0;
+    const later = Temporal.Instant.compare(late, instant) === 0;
+    if (!earlier && !later) {
+      throw new Error('Il fuso e gli istanti salvati non sono ricostruibili fedelmente.');
+    }
+    return earlier && later ? 'reject' : earlier ? 'earlier' : 'later';
+  };
+  const start = match(placement.startsLocalAt, placement.resolvedStartAt);
+  const end = match(placement.endsLocalAt, placement.resolvedEndAt);
+  if (start !== 'reject' && end !== 'reject' && start !== end) {
+    throw new Error('L’intervallo attraversa due scelte DST incompatibili nel Create attuale.');
+  }
+  return start !== 'reject' ? start : end;
+}
+
 /**
  * A new Event Create draft, not a copy of identity, accepted operations,
  * observations, assessments, execution or mutable Schedule state.
@@ -73,6 +94,9 @@ export function buildEventDuplicateSeed(
   }
 
   const zone = placement.kind === 'named-zone-local' ? placement.zoneId : null;
+  const disambiguation = placement.kind === 'named-zone-local'
+    ? resolveSourceZoneDisambiguation(placement)
+    : null;
   return {
     fields: {
       ...shared,
@@ -81,7 +105,7 @@ export function buildEventDuplicateSeed(
       startTime: start.toPlainTime().toString({ smallestUnit: 'minute' }),
       durationMinutes: duration,
       timeMode: zone ? 'zoned' : 'floating',
-      ...(zone ? { timeZoneId: zone } : {}),
+      ...(zone ? { timeZoneId: zone, timeDisambiguation: disambiguation ?? 'reject' } : {}),
     },
     advanced: { itemColorCode: event.colorCode ?? null, eventParticipants: [...expectedParticipants] },
   };

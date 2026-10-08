@@ -27,6 +27,7 @@ export type TemporalCreateFieldSeed = Readonly<{
   durationMinutes?: TemporalCreateFields['durationMinutes'];
   timeMode?: TemporalCreateFields['timeMode'];
   timeZoneId?: TemporalCreateFields['timeZoneId'];
+  timeDisambiguation?: TemporalCreateFields['timeDisambiguation'];
   contextId?: TemporalCreateFields['contextId'];
   notes?: TemporalCreateFields['notes'];
   scheduling?: Partial<TemporalCreateSchedulingIntent>;
@@ -49,6 +50,7 @@ export function applyTemporalCreateFieldSeed(
     durationMinutes: seed.durationMinutes ?? base.durationMinutes,
     timeMode: seed.timeMode ?? base.timeMode,
     timeZoneId: seed.timeZoneId ?? base.timeZoneId,
+    timeDisambiguation: seed.timeDisambiguation ?? base.timeDisambiguation,
     contextId: seed.contextId ?? base.contextId,
     notes: seed.notes ?? base.notes,
     scheduling: {
