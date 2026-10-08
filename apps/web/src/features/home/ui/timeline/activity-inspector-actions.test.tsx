@@ -24,6 +24,7 @@ const applyReplan = vi.fn();
 const loadLifeAreaChoice = vi.fn();
 const assignLifeArea = vi.fn();
 const setPlacementProtected = vi.fn();
+const addObjective = vi.fn();
 vi.mock('../../../temporal/remote-activity-inspector', () => ({
   createRemoteActivityInspector: () => ({ get, revise, retire }),
 }));
@@ -36,6 +37,7 @@ vi.mock('../../../temporal/remote-activity-edit-settings', () => ({
     loadLifeAreaChoice,
     assignLifeArea,
     setPlacementProtected,
+    addObjective,
   }),
 }));
 
@@ -160,6 +162,40 @@ describe('Activity Inspector', () => {
     expect(saveCore).toHaveBeenCalledTimes(2);
     expect(saveCore.mock.calls[1]?.[3]).toBe(saveCore.mock.calls[0]?.[3]);
     expect(revise).not.toHaveBeenCalled();
+  });
+
+  it('adds a post-create Objective with stable retry ID and readback', async () => {
+    addObjective.mockRejectedValueOnce(new Error('Errore temporaneo'))
+      .mockImplementationOnce(async (_ref, settings) => ({
+        ...settings,
+        objectives: [{ objectiveRef: 'new-objective', label: 'Percorrere 10 km',
+          presentationOrder: 0, assessmentCode: null }],
+      }));
+    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
+      onSaved={() => undefined} onCancel={() => undefined} />);
+    const name = await screen.findByRole('textbox', { name: 'Nome obiettivo' });
+    fireEvent.change(name, { target: { value: 'Percorrere 10 km' } });
+    fireEvent.change(screen.getByRole('combobox', { name: 'Tipo obiettivo' }),
+      { target: { value: 'quantity' } });
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Valore obiettivo' }),
+      { target: { value: '10' } });
+    fireEvent.change(screen.getByRole('textbox', { name: 'Unità di misura' }),
+      { target: { value: 'km' } });
+    expect(screen.getByRole('button', { name: 'Salva modifiche' }))
+      .toHaveProperty('disabled', true);
+    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi obiettivo' }));
+    expect(await screen.findByRole('alert')).toHaveProperty('textContent',
+      expect.stringContaining('Errore temporaneo'));
+    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi obiettivo' }));
+    await waitFor(() => expect(addObjective).toHaveBeenCalledTimes(2));
+    expect(addObjective.mock.calls[0]?.[3]).toEqual(addObjective.mock.calls[1]?.[3]);
+    expect(addObjective.mock.calls[0]?.[2]).toMatchObject({
+      label: 'Percorrere 10 km', resultKind: 'quantity',
+      comparatorCode: 'gte', targetValue: 10, unitCode: 'km',
+    });
+    expect(await screen.findByText('Percorrere 10 km', { selector: 'li' })).toBeTruthy();
+    expect(screen.getByRole('textbox', { name: 'Nome obiettivo' }))
+      .toHaveProperty('value', '');
   });
 
   it('requires an explicit preview before applying a planning change', async () => {
