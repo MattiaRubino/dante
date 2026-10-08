@@ -95,10 +95,16 @@ export function ActivityInspectorActions({
                   'Questa attività contiene sotto-attività: la duplicazione fedele della struttura non è ancora disponibile.',
                 );
               }
-              const [savedProfile, settings] = await Promise.all([
+              const [savedProfile, settings, childCount] = await Promise.all([
                 source.get(activityRef),
                 settingsSource.load(activityRef),
+                settingsSource.loadChildCount(activityRef),
               ]);
+              if (childCount !== 0) {
+                throw new Error(
+                  'Questa attività contiene sotto-attività: la duplicazione fedele della struttura non è ancora disponibile.',
+                );
+              }
               onDuplicate(buildActivityDuplicateSeed(savedProfile, settings));
             })
           }
