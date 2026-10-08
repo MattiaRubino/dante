@@ -918,6 +918,15 @@ export function ActivityEditPanel({
               ) : (
                 <p>Nessun intervallo programmato.</p>
               )}
+              {!canReplan && settings.schedules.length > 0 ? (
+                <p role="status">
+                  La modifica degli orari qui richiede almeno un intervallo e
+                  pianificazioni locali con inizio e fine. Le altre forme temporali
+                  restano inalterate: DANTE non le converte automaticamente.
+                  Puoi comunque correggere separatamente il nome delle Session
+                  pianificate, senza modificare lo Schedule.
+                </p>
+              ) : null}
               {canReplan ? (
                 <div>
                   {newIntervals.map((item) => (
