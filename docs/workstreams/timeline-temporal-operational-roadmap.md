@@ -543,3 +543,9 @@ regression case; no new object, same database topology.
 M1 metadata candidate now awaits one _124 user-run whole
 gate. Domain stages M2–M5 remain open by design, no
 separate micro-step churn.
+
+## 2026-10-08 — M1 metadata implementation: verified local gate / published
+
+M1 is **CLOSED for the explicitly limited Activity/Event recurring general-metadata vertical**, not for all Activity/Event modifications. User-run proof: M1-A pure selector 18/18 unit + Ruff, M1-B 10/10 PostgreSQL + client check, _124 whole focused PostgreSQL/Vitest/API/Web/generated gates all PASS, corrective Ruff PASS. The user then committed and pushed all nine generated OpenAPI/Orval artifacts in `55a017b9`; `git status --short` printed no changes. Current DB revision _124 and exact catalog 232/5/202/103/473/408/576. Local proof is focused automated proof, **not** real-app visual acceptance.
+
+The two scopes remain `Solo questa` and `Questa e le prossime` with clicked Occurrence included. The second also affects later future, not other already-past instances; inherited future changes use immutable source-wide profile edit revisions, owner/CAS, replay and protected conflict behavior. In M1 the edited fields are only general metadata (title, description, location, color), with Activity editor and Event API/Timeline support. M1 is NOT yet an implementation of scoped Objective, Session, Schedule, Reality policy, Life Area, Event Inspector UI or duplication changes. Continue with complete M2 Objective definition/current recorded-result correction under stable logical Objective identity, internal audit, and deterministic assessment reevaluation; then M3, M4, M5 and B15. No CI.
