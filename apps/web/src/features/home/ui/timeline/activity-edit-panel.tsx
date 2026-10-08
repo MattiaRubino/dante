@@ -63,6 +63,9 @@ export function ActivityEditPanel({
   const [lockError, setLockError] = useState('');
   const [areaChoice, setAreaChoice] = useState<ActivityLifeAreaChoice | null>(null);
   const [selectedArea, setSelectedArea] = useState('');
+  const [plannedNames, setPlannedNames] = useState<Record<string, string>>({});
+  const [namePending, setNamePending] = useState<string | null>(null);
+  const [nameError, setNameError] = useState('');
   const [areaPending, setAreaPending] = useState(false);
   const [areaError, setAreaError] = useState('');
   const areaOperation = useRef<string | null>(null);
@@ -144,12 +147,14 @@ export function ActivityEditPanel({
   };
   const lockDirty = settings !== null && settings.placementLockScheduleRef !== null &&
     placementProtected !== null && placementProtected !== settings.placementProtected;
-  const areaDirty = areaChoice !== null && !!selectedArea &&
-    selectedArea !== areaChoice.currentRef;
+  const areaDirty = areaChoice !== null &&
+    (selectedArea || null) !== areaChoice.currentRef;
+  const nameDirty = !!settings && settings.schedules.some((schedule) =>
+    schedule.role === 'planned' && (plannedNames[schedule.scheduleRef] ?? '') !== (schedule.name ?? ''));
   const objectiveDirty = !!objectiveDraft.label || objectiveDraft.resultKind !== 'boolean' ||
     !!objectiveDraft.targetValue || !!objectiveDraft.targetMin ||
     !!objectiveDraft.targetMax || !!objectiveDraft.unitCode;
-  const dirty = coreDirty || planDirty || lockDirty || areaDirty || objectiveDirty;
+  const dirty = coreDirty || planDirty || lockDirty || areaDirty || objectiveDirty || nameDirty;
 
   const loadSettings = useCallback(() => {
     return settingsSource
@@ -165,6 +170,8 @@ export function ActivityEditPanel({
           schedule.scheduleRef, { start: schedule.start ?? '', end: schedule.end ?? '' },
         ])));
         setNewPlanned([]);
+        setPlannedNames(Object.fromEntries(loaded.schedules.filter((row) => row.role === 'planned')
+          .map((row) => [row.scheduleRef, row.name ?? ''])));
         setRemovedPlanned([]);
         setNewIntervals([]);
         setRemovedIntervals([]);
@@ -215,7 +222,7 @@ export function ActivityEditPanel({
   }, [profile.activityRef, settingsSource]);
 
   const requestClose = useCallback(() => {
-    if (pending || planPending || lockPending || areaPending || objectivePending) return;
+    if (pending || planPending || lockPending || areaPending || objectivePending || namePending) return;
     if (confirmingDiscard) {
       setConfirmingDiscard(false);
     } else if (dirty) {
@@ -224,7 +231,7 @@ export function ActivityEditPanel({
       onCancel();
     }
   }, [areaPending, confirmingDiscard, dirty, lockPending, onCancel,
-    objectivePending, pending, planPending]);
+    objectivePending, pending, planPending, namePending]);
 
   const applyLifeArea = () => {
     if (!areaChoice || !areaDirty || !settings || pending || planPending ||
@@ -237,7 +244,7 @@ export function ActivityEditPanel({
     setAreaError('');
     const operationId = areaOperation.current ??= crypto.randomUUID();
     void settingsSource.assignLifeArea(
-      profile.activityRef, areaChoice, selectedArea, operationId,
+      profile.activityRef, areaChoice, selectedArea || null, operationId,
     ).then((saved) => {
       areaOperation.current = null;
       setAreaChoice(saved);
@@ -671,7 +678,7 @@ export function ActivityEditPanel({
                         setAreaError('');
                       }}
                     >
-                      <option value="" disabled={areaChoice.currentRef !== null}>
+                      <option value="">
                         Nessuna Life Area
                       </option>
                       {areaChoice.currentRef &&
