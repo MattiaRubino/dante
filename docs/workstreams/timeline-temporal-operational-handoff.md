@@ -497,3 +497,28 @@ or scope UI is yet implemented. Next M1-C must add authoritative
 write-time CAS, override/recorded-fact conflict resolution,
 Activity/Event identity linking, future template revision and one
 atomic idempotent apply. User runs tests locally, no CI.
+
+## 2026-10-08 — M1 whole-vertical candidate _123, user gate pending
+
+User-reported _122 inventory **Ruff PASS, PostgreSQL 10/10 PASS,
+OpenAPI generated/check 484 PASS, API/Web typecheck PASS**.
+Generated files currently uncommitted in local user worktree.
+
+Live branch now includes forward migration `20261008_123`,
+append-only `occurrence_profile_edit`, five self-scoped read/write
+functions, ORM/Database Dictionary exact target
+`232|5|202|103|473|408|576`, atomic recurrence-source
+metadata edit with CAS/replay/owner controls, selected-anchor/future
+inheritance, Activity readback/Timeline projection/materialization,
+and scoped Activity general-metadata save UI. Event Occurrence
+metadata patch has backend/Timeline support; M4 Event Inspector
+UI parity remains open. New PostgreSQL and Vitest tests are
+in the branch but not user-run. Latest work is one combined
+candidate, **not** a claim of final whole B14 acceptance.
+
+The user explicitly requests **no further small isolated steps**:
+request ONE combined local gate. Preserve generated client output
+once it passes. Do not claim that scoped editing already handles
+Objective facts, Session/Scaletta, Schedule or all other fields;
+M2/M3/M4 will integrate those owners with the global
+`Solo questa / Questa e le prossime` contract.
