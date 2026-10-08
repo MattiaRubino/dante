@@ -457,3 +457,21 @@ M5 user local end-to-end real-stack and B15 closure. Do not implement
 future-only scope, direct Objective target mutation or copy of Actual/
 Observation/Evaluation into duplicates. No CI/Actions; user alone runs
 local WSL tests.
+
+## B14 M1-A selector candidate — 2026-10-08
+
+Live GitHub contains `apps/backend/src/dante/modules/temporal/occurrence_edit_scope.py`
+and `apps/backend/tests/test_b14_occurrence_edit_scope.py`, plus a detailed
+scope note at the end of the B14 ledger. This is an independent,
+**not-yet-user-tested** pure selection candidate. It reuses existing B06/B11
+Occurrence/Recurrence identity and enforces selected-anchor plus later
+future only (not other past instances), detects skipped/overridden/
+recorded-fact conflicts, distinguishes future template inheritance,
+and rejects unverified/incomplete following inventories. It does NOT
+yet add an API, SQL function, web wiring or persist multi-instance edits;
+the full M1 block is OPEN. User runs Ruff and focused pytest in WSL.
+Next deliverable: guarded authoritative current occurrence inventory +
+source CAS/preview/apply integration, reusing B06/B11 functions rather
+than rebuilding their already-proven functionality. The user explicitly
+noted that several original backlog capabilities already exist, so
+avoid counting implemented individual features as missing.
