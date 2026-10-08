@@ -1,5 +1,6 @@
 """B14 M2: same-logical Objective revision and correction with immutable audit."""
 from collections.abc import Sequence
+
 import sqlalchemy as sa
 from alembic import op
 
