@@ -467,3 +467,44 @@ It does **not** prove editing/retiring previously accepted Objective
 definitions, cross-Occurrence updates, or the full Inspector real-app UX.
 Next semantic gate: change Objective definition without retroactively
 reinterpreting recorded observations and accepted evaluations.
+
+## 2026-10-08 — Objective post-create definition lifecycle contract (design gate)
+
+Current database reality, verified against `20261006_113` and API:
+`temporal_objective` stores the accepted bounded definition, keyed by
+`objective_ref`; `temporal_objective_observation` and
+`temporal_objective_evaluation_state` attach facts to that exact
+`objective_ref`. The Create API presently creates but never mutates or
+retires accepted definitions. The current listing exposes all definitions.
+
+**Semantic decisions for the next forward-only migration**:
+1. Editing an already accepted Objective must not `UPDATE` its definition:
+   create a *successor Objective identity* and persist an immutable
+   predecessor/successor lineage with the previous definition retired.
+   The old definition and every past Observation/Evaluation remain unchanged
+   and queryable by an explicitly historical read.
+2. Explicit retirement (without replacement) is a tombstone/state
+   transition, not `DELETE`, and excludes that Objective from *current*
+   Objective review surfaces and automatic pending Review counts.
+3. Reorder must preserve definition identities and assessment facts. Prefer a
+   versioned order projection; do not rewrite accepted initial
+   `presentation_order` values as if they had always been current.
+4. Apply/retry must be one self-scoped, idempotent, CAS-guarded command.
+   Conflicting concurrent changes or operation-ID reuse must produce a
+   truthful conflict, not duplicated successors or partial retirement.
+5. Same governed definition semantics are shared by Activity and Event.
+   Existing Occurrence materializations are independent accepted instances;
+   a series update must not silently rewrite their past/accepted truth.
+6. Runtime can reach private persistence only through SECURITY DEFINER
+   functions with explicit grants; migration, ORM mapping, Database
+   Dictionary, ACL, catalog counts, API/OpenAPI/Orval and real-stack proof
+   must reconcile in the same functional block.
+
+**Required proof**: create→record evaluated result→edit→old result still
+associated with previous definition; edit replay and concurrency conflict;
+retire with/without observed history; no phantom Objective review for retired
+definitions; owner isolation; reorder semantics; zero mutation to immutable
+facts; Activity and Event parity. UI exposes current definitions separately
+from read-only historical versions. This section freezes design **only**,
+not implementation; do not count lifecycle as closed until a user-run
+PostgreSQL, generated-client, web and product gate.
