@@ -1,9 +1,10 @@
 """SQLAlchemy rows for canonical B03/B14 Event persistence."""
 
 from datetime import datetime
+from typing import Any
 
-from sqlalchemy import BigInteger, CheckConstraint, DateTime, ForeignKeyConstraint, Index, Integer, Text, text
-from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy import BigInteger, CheckConstraint, DateTime, ForeignKeyConstraint, Index, Integer, Text, UniqueConstraint, text
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from dante.platform.database.metadata import Base
@@ -64,6 +65,38 @@ class EventExpectationRow(Base):
     location: Mapped[str | None] = mapped_column(Text, nullable=True)
     color_code: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class EventProfileRevisionRow(Base):
+    """Immutable Event metadata revision and actor-local operation receipt."""
+
+    __tablename__ = "event_profile_revision"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["event_ref"], ["dante.event_expectation.event_ref"],
+            name="fk_event_profile_revision_event",
+        ),
+        ForeignKeyConstraint(
+            ["self_person_ref"], ["dante.person.person_ref"],
+            name="fk_event_profile_revision_person",
+        ),
+        UniqueConstraint(
+            "self_person_ref", "operation_id",
+            name="uq_event_profile_revision_operation",
+        ),
+        CheckConstraint(
+            "revision>=1 AND expected_revision>=0", name="revision",
+        ),
+    )
+
+    event_ref: Mapped[NativeRef] = mapped_column(primary_key=True)
+    revision: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    self_person_ref: Mapped[NativeRef] = mapped_column(nullable=False)
+    operation_id: Mapped[str] = mapped_column(Text, nullable=False)
+    expected_revision: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    previous_profile: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    current_profile: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    revised_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
 
 class EventAgendaPartRow(Base):
