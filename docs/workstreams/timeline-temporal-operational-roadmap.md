@@ -517,3 +517,17 @@ save-time CAS, future-template update, exception handling, and atomic
 application for all editable Activity/Event fields. Scope truth:
 `Solo questa` or `Questa e le prossime`, clicked always included,
 other already-past instances never touched.
+
+## 2026-10-08 — M1 metadata end-to-end candidate; full domain integration remains
+
+M1-A (18 unit, Ruff) and M1-B (_122; 10 PostgreSQL,
+generation/484 deterministic, API/Web typecheck) are proven
+by user local output. Consolidated _123 M1 metadata integration
+is published in one branch candidate with append-only edit history,
+server owner/CAS/replay targeting, selected/past/future split,
+future materialization and Inspector/Timeline readback, Activity
+metadata scope choice, Event backend/Timeline parity and tests.
+User-run gate for _123 and canonical generated artifacts remains
+pending; **do not mark full B14/B07 closed**. Follow the accepted
+two-scope semantics throughout M2 Objective, M3 remaining Activity
+settings and M4 Event Inspector/Duplica, then M5/B15 real UX acceptance.
