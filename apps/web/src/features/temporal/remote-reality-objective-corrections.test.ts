@@ -67,6 +67,8 @@ describe('M2 Objective corrections', () => {
     expect(posts).toEqual([
       {
         operation_id: 'definition:3', expected_revision: 2,
+        scope_code: 'only_this', expected_source_revision: null,
+        expected_recurrence_state_ref: null,
         label: '6 km', result_kind: 'quantity', comparator_code: 'gte',
         target_value: 6, target_min: null, target_max: null,
         unit_code: 'km', presentation_order: 0,
@@ -77,6 +79,49 @@ describe('M2 Objective corrections', () => {
         qualitative_code: null, assessment_code: null,
       },
     ]);
+  });
+
+  it('loads authoritative template origin and submits the following CAS', async () => {
+    const received: unknown[] = [];
+    const fetchFn = vi.fn(
+      (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+        const uri = typeof input === 'string' ? input
+          : input instanceof URL ? input.href : input.url;
+        if (uri.endsWith('/auth/session')) return Promise.resolve(response({
+          authenticated: true, csrf_token: 'csrf',
+        }));
+        if (uri.endsWith('/series-state') && init?.method === 'GET') {
+          return Promise.resolve(response({
+            source_native_ref: 'source-ref', occurrence_ref: 'occurrence-ref',
+            template_slot: 0, source_revision: 3,
+            recurrence_state_ref: 'recurrence-ref',
+          }));
+        }
+        if (uri.endsWith('/definition') && init?.method === 'PUT') {
+          received.push(JSON.parse(String(init.body)) as unknown);
+          return Promise.resolve(response({
+            objective_ref: ref, definition_revision: 4, source_revision: 4,
+            evaluation_state_ref: null, assessment_code: null, replayed: false,
+          }));
+        }
+        throw new Error(`Unexpected URL ${uri}`);
+      },
+    );
+    const remote = createRemoteRealityObjectiveDataSource(fetchFn);
+    const state = await remote.getSeriesState(ref);
+    expect(state?.templateSlot).toBe(0);
+    expect(state?.sourceRevision).toBe(3);
+    await remote.reviseDefinition(ref, {
+      operationId: 'series:4', expectedRevision: 1,
+      scopeCode: 'this_and_following', seriesState: state,
+      label: '7 km', resultKind: 'quantity', comparatorCode: 'gte',
+      targetValue: 7, targetMin: null, targetMax: null,
+      unitCode: 'km', presentationOrder: 0,
+    });
+    expect(received).toEqual([expect.objectContaining({
+      scope_code: 'this_and_following', expected_source_revision: 3,
+      expected_recurrence_state_ref: 'recurrence-ref',
+    })]);
   });
 
   it('does not convert a correction conflict into a false success', async () => {
