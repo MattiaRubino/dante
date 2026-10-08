@@ -299,6 +299,10 @@ export function ActivityEditPanel({
   const applyResultCorrection = () => {
     if (!correctingObjective || !settings || objectivePending) return;
     const objective = correctingObjective;
+    if (!objective.evaluationStateRef) {
+      setObjectiveError('Manca la valutazione corrente: aggiorna la scheda prima di rettificare.');
+      return;
+    }
     const numeric = objective.resultKind === 'quantity' || objective.resultKind === 'range'
       ? Number(correctedValue) : null;
     if ((numeric !== null && (!correctedValue.trim() || !Number.isFinite(numeric))) ||
