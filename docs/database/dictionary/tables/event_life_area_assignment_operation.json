@@ -95,14 +95,14 @@
       {
         "name": "life_area_ref",
         "postgres_type": "uuid",
-        "nullable": false,
+        "nullable": true,
         "default": {
           "kind": "none",
           "expression": null
         },
         "meaning": "Accepted LR-12 area application identifier",
         "semantic_type": null,
-        "value_contract": null
+        "value_contract": "Explicitly nullable after accepted unassignment. Retained revision and immutable operation receipt distinguish prior state from never assigned."
       },
       {
         "name": "expected_revision",
