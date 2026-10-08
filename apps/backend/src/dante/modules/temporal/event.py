@@ -68,6 +68,9 @@ class EventView:
     created_at: datetime
     life_area_ref: UUID | None = None
     life_area_assignment_revision: int | None = None
+    description: str | None = None
+    location: str | None = None
+    color_code: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -251,10 +254,17 @@ async def _read_event_in_session(
         agenda_revision=0 if agenda_revision is None else int(agenda_revision),
         agenda_parts=agenda_parts,
         created_at=row.created_at,
-        life_area_ref=UUID(str(assignment["life_area_ref"])) if assignment else None,
+        life_area_ref=(
+            UUID(str(assignment["life_area_ref"]))
+            if assignment and assignment["life_area_ref"] is not None
+            else None
+        ),
         life_area_assignment_revision=(
             int(assignment["assignment_revision"]) if assignment else None
         ),
+        description=row.description,
+        location=row.location,
+        color_code=row.color_code,
     )
 
 
