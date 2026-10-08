@@ -1279,8 +1279,15 @@
               "$ref": "#/components/schemas/ReplanRow"
             },
             "maxItems": 100,
-            "minItems": 1,
             "title": "Intervals",
+            "type": "array"
+          },
+          "new_intervals": {
+            "items": {
+              "$ref": "#/components/schemas/NewIntervalRow"
+            },
+            "maxItems": 100,
+            "title": "New Intervals",
             "type": "array"
           },
           "new_planned_sessions": {
@@ -1305,6 +1312,14 @@
             "title": "Planned Sessions",
             "type": "array"
           },
+          "remove_intervals": {
+            "items": {
+              "$ref": "#/components/schemas/ReplanRow"
+            },
+            "maxItems": 100,
+            "title": "Remove Intervals",
+            "type": "array"
+          },
           "remove_planned_sessions": {
             "items": {
               "$ref": "#/components/schemas/ReplanRow"
@@ -1314,7 +1329,7 @@
             "type": "array"
           }
         },
-        "required": ["operation_id", "intervals"],
+        "required": ["operation_id"],
         "title": "ActivityReplanCommand",
         "type": "object"
       },
@@ -7014,6 +7029,29 @@
         },
         "required": ["starts_local_at", "ends_local_at", "zone_id"],
         "title": "NamedZoneLocalIntervalPlacementRequest",
+        "type": "object"
+      },
+      "NewIntervalRow": {
+        "additionalProperties": false,
+        "properties": {
+          "client_ref": {
+            "format": "uuid",
+            "title": "Client Ref",
+            "type": "string"
+          },
+          "ends_local_at": {
+            "format": "date-time",
+            "title": "Ends Local At",
+            "type": "string"
+          },
+          "starts_local_at": {
+            "format": "date-time",
+            "title": "Starts Local At",
+            "type": "string"
+          }
+        },
+        "required": ["client_ref", "starts_local_at", "ends_local_at"],
+        "title": "NewIntervalRow",
         "type": "object"
       },
       "NewPlannedRow": {
