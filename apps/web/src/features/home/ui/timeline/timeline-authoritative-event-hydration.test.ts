@@ -2,6 +2,7 @@ import { Temporal } from '@dante/time';
 import { describe, expect, it } from 'vitest';
 
 import type { TemporalTimelineScheduledEventItem } from '../../../temporal/timeline-read';
+import { detailFromEvent } from './timeline-overlays';
 import {
   canonicalScheduledDateLaneItem,
   canonicalScheduledTimelineEvents,
@@ -44,6 +45,23 @@ describe('authoritative Event Timeline hydration', () => {
       },
     });
     expect(projection?.event.canonicalBasis?.activityRef).toBeUndefined();
+  });
+
+  it('passes canonical accepted Event placement into its Inspector, never guessed minute geometry', () => {
+    const [projection] = canonicalScheduledTimelineEvents(floatingEvent());
+    if (!projection) throw new Error('Expected scheduled Event projection');
+    const detail = detailFromEvent(projection.event, [{
+      id: projection.event.groupId, label: 'Eventi', tone: 'meeting',
+    }]);
+    expect(detail).toMatchObject({
+      eventRef: EVENT_REF,
+      ownerKind: 'event',
+      eventPlacement: {
+        kind: 'floating-local',
+        startsLocalAt: Temporal.PlainDateTime.from('2026-09-17T18:30'),
+        endsLocalAt: Temporal.PlainDateTime.from('2026-09-17T20:00'),
+      },
+    });
   });
 
   it('renders a multi-day date-span Event in the date lane without clock geometry', () => {
