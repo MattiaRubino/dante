@@ -109,8 +109,8 @@ export function ActivityInspectorActions({
       {confirming ? (
         <div className="timeline-activity-inspector__confirmation">
           <p>
-            Eliminare questa attività? Le sessioni già registrate restano nello
-            storico.
+            Eliminare questa attività? Se ci sono sessioni o risultati registrati,
+            il sistema ne impedisce la cancellazione: puoi correggere i dati storici.
           </p>
           <button
             type="button"
