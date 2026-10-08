@@ -37,6 +37,8 @@ class EditPlacementLock(BaseModel):
 
 
 class EditReminder(BaseModel):
+    schedule_ref: UUID
+    material_state_ref: UUID
     enabled: bool
     lead_minutes: int
 
@@ -79,16 +81,27 @@ class EditPolicyChange(BaseModel):
     expected_state_ref: UUID | None = None
 
 
+class EditReminderChange(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    schedule_ref: UUID
+    expected_state_ref: UUID | None = None
+    enabled: bool
+    lead_minutes: int = Field(ge=0, le=10_080)
+
+
 class ActivityCoreEditCommand(BaseModel):
     model_config = ConfigDict(extra="forbid")
     operation_id: str = Field(min_length=1, max_length=200)
     profile: EditProfileChange | None = None
     capture: EditPolicyChange | None = None
     reality: EditPolicyChange | None = None
+    reminder: EditReminderChange | None = None
 
     @model_validator(mode="after")
     def validate_changes(self) -> ActivityCoreEditCommand:
-        if self.profile is None and self.capture is None and self.reality is None:
+        if all(value is None for value in (
+            self.profile, self.capture, self.reality, self.reminder,
+        )):
             raise ValueError("At least one change is required.")
         if self.capture is not None and self.capture.mode_code not in {
             "disabled", "record", "live", "record_and_live"
@@ -105,6 +118,7 @@ class ActivityCoreEditResponse(BaseModel):
     profile: ActivityProfileResponse
     capture: EditExecutionPolicy
     reality: RealityPolicyResponse
+    reminder: EditReminder | None
 
 
 # All collections are bounded by one Activity ID and fetched in one database statement.
@@ -219,7 +233,7 @@ async def revise_activity_core(
     activity_ref: UUID, body: ActivityCoreEditCommand,
     context: WriteContext, request: Request, response: Response,
 ) -> ActivityCoreEditResponse:
-    """Apply the three existing guarded commands in one all-or-nothing transaction."""
+    """Apply guarded changes in one all-or-nothing transaction."""
     response.headers["Cache-Control"] = "no-store"
     digest = hashlib.sha256(body.operation_id.encode("utf-8")).hexdigest()
     params = {"actor": context.self_person_ref, "activity": activity_ref}
@@ -271,6 +285,38 @@ async def revise_activity_core(
                     "location": change.location.strip() or None if change.location else None,
                     "color": change.color_code.upper() if change.color_code else None,
                 })
+            if body.reminder is not None:
+                change = body.reminder
+                primary = await session.scalar(text("""
+                    SELECT r.schedule_ref
+                      FROM dante.get_self_activity_schedule_roles(
+                        :actor, CAST(ARRAY[:activity] AS uuid[])) AS r
+                     WHERE r.schedule_ref=:schedule
+                       AND r.role_code='envelope'
+                """), {**params, "schedule": change.schedule_ref})
+                if primary is None:
+                    raise ProblemError(
+                        status=422, code="temporal.activity_edit.invalid_reminder_target",
+                        category="validation", title="Invalid reminder target",
+                        detail="The reminder must belong to this Activity's envelope.",
+                    )
+                intent = {
+                    "version": 1, "schedule_ref": str(change.schedule_ref),
+                    "expected_material_state_ref": str(change.expected_state_ref)
+                    if change.expected_state_ref is not None else None,
+                    "enabled": change.enabled, "lead_minutes": change.lead_minutes,
+                }
+                await session.execute(text("""
+                    SELECT * FROM dante.configure_self_schedule_reminder(
+                        :actor,:operation,:fingerprint,:schedule,:expected,
+                        :reminder_ref,:material_state_ref,:enabled,:lead)
+                """), {
+                    **params, "operation": f"edit:reminder:{digest}",
+                    "fingerprint": _fingerprint(intent),
+                    "schedule": change.schedule_ref, "expected": change.expected_state_ref,
+                    "reminder_ref": uuid7(), "material_state_ref": uuid7(),
+                    "enabled": change.enabled, "lead": change.lead_minutes,
+                })
             profile = (await session.execute(
                 text("SELECT * FROM dante.get_self_activity_profile(:actor,:activity)"), params,
             )).mappings().one()
@@ -281,6 +327,11 @@ async def revise_activity_core(
             reality = (await session.execute(text("""
                 SELECT * FROM dante.get_self_reality_review_policy(:actor,'activity',:activity)
             """), params)).mappings().one()
+            reminder = None
+            if body.reminder is not None:
+                reminder = (await session.execute(text("""
+                    SELECT * FROM dante.get_self_schedule_reminder(:actor,:schedule)
+                """), {**params, "schedule": body.reminder.schedule_ref})).mappings().one()
     except DBAPIError as exc:
         constraint = getattr(getattr(exc.orig, "diag", None), "constraint_name", None)
         if constraint and constraint.endswith("_unavailable"):
@@ -295,7 +346,9 @@ async def revise_activity_core(
                 status=409, code="temporal.activity_edit.conflict", category="conflict",
                 title="Activity changed", detail="Reload the Activity and retry.",
             ) from exc
-        if constraint and constraint.endswith("_invalid"):
+        if constraint and (constraint.endswith("_invalid") or constraint in {
+            "schedule_reminder_input", "schedule_reminder_schedule_unavailable",
+        }):
             raise ProblemError(
                 status=422, code="temporal.activity_edit.invalid", category="validation",
                 title="Invalid Activity change", detail="Check the submitted Activity fields.",
@@ -317,4 +370,5 @@ async def revise_activity_core(
                                     state_ref=capture["state_ref"]),
         reality=RealityPolicyResponse(subject_kind="activity", subject_native_ref=activity_ref,
                                       mode_code=reality["mode_code"], state_ref=reality["state_ref"]),
+        reminder=EditReminder(**dict(reminder)) if reminder is not None else None,
     )

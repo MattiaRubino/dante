@@ -32,6 +32,8 @@ describe('Activity editor settings remote contract', () => {
             capture: { activity_ref: ref, mode_code: 'live', state_ref: 'new-capture' },
             reality: { subject_kind: 'activity', subject_native_ref: ref,
               mode_code: 'review_on_end', state_ref: 'new-reality' },
+            reminder: { schedule_ref: 'schedule', material_state_ref: 'new-reminder',
+              enabled: true, lead_minutes: 30 },
           }));
         }
         if (path.endsWith('/auth/session'))
@@ -49,11 +51,12 @@ describe('Activity editor settings remote contract', () => {
               life_area_ref: null,
               objectives: [],
               placement_lock: null,
-              reminder: null,
+              reminder: { schedule_ref: 'schedule', material_state_ref: 'old-reminder',
+                enabled: true, lead_minutes: 15 },
               schedules: [
                 {
                   schedule_ref: 'schedule',
-                  role_code: 'interval',
+                  role_code: 'envelope',
                   display_name: 'Mattina',
                   presentation_order: 1,
                   placement_material_state_ref: 'placement',
@@ -71,22 +74,26 @@ describe('Activity editor settings remote contract', () => {
     const settings = await source.load(ref);
     expect(paths).toEqual([`/api/v1/temporal/activities/${ref}/edit-snapshot`]);
     expect(settings.schedules[0]).toMatchObject({
-      role: 'interval',
+      role: 'envelope',
       name: 'Mattina',
       start: '2026-10-07T09:00:00',
     });
     const saved = await source.saveCore({ activityRef: ref, title: 'Prima',
       description: null, location: null, colorCode: null, revision: 1 },
     settings, { profile: { title: 'Dopo', description: null, location: null,
-      colorCode: null }, capture: 'live', reality: 'review_on_end' }, 'edit-op');
+      colorCode: null }, capture: 'live', reality: 'review_on_end',
+      reminderLeadMinutes: 30 }, 'edit-op');
     expect(saved.profile).toMatchObject({ title: 'Dopo', revision: 2 });
     expect(saved.settings.capture).toEqual({ mode: 'live', stateRef: 'new-capture' });
+    expect(saved.settings.reminderStateRef).toBe('new-reminder');
     expect(requests[0]).toEqual({
       operation_id: 'edit-op',
       profile: { expected_revision: 1, title: 'Dopo', description: null,
         location: null, color_code: null },
       capture: { mode_code: 'live', expected_state_ref: 'old-capture' },
       reality: { mode_code: 'review_on_end', expected_state_ref: 'old-reality' },
+      reminder: { schedule_ref: 'schedule', expected_state_ref: 'old-reminder',
+        enabled: true, lead_minutes: 30 },
     });
   });
 });

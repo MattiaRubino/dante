@@ -33,6 +33,7 @@ export function ActivityEditPanel({
     null,
   );
   const [realityMode, setRealityMode] = useState<RealityMode | null>(null);
+  const [reminderLeadMinutes, setReminderLeadMinutes] = useState<number | null>(null);
   const operation = useRef<string | undefined>(undefined);
   const [draft, setDraft] = useState(() => ({
     title: profile.title,
@@ -51,7 +52,8 @@ export function ActivityEditPanel({
     draft.colorCode !== (profile.colorCode ?? '') ||
     (settings !== null &&
       (captureMode !== settings.capture.mode ||
-        realityMode !== settings.reality.mode));
+        realityMode !== settings.reality.mode ||
+        reminderLeadMinutes !== settings.reminderLeadMinutes));
 
   const loadSettings = useCallback(() => {
     return settingsSource
@@ -60,6 +62,7 @@ export function ActivityEditPanel({
         setSettings(loaded);
         setCaptureMode(loaded.capture.mode);
         setRealityMode(loaded.reality.mode);
+        setReminderLeadMinutes(loaded.reminderLeadMinutes);
       })
       .catch((reason: unknown) => {
         setSettingsError(
@@ -126,7 +129,8 @@ export function ActivityEditPanel({
           );
           const captureChanged = captureMode !== settings.capture.mode;
           const realityChanged = realityMode !== settings.reality.mode;
-          if (!metadataChanged && !captureChanged && !realityChanged) {
+          const reminderChanged = reminderLeadMinutes !== settings.reminderLeadMinutes;
+          if (!metadataChanged && !captureChanged && !realityChanged && !reminderChanged) {
             onSaved(profile);
             return;
           }
@@ -134,6 +138,7 @@ export function ActivityEditPanel({
             ...(metadataChanged ? { profile: changed } : {}),
             ...(captureChanged ? { capture: captureMode } : {}),
             ...(realityChanged ? { reality: realityMode } : {}),
+            ...(reminderChanged ? { reminderLeadMinutes } : {}),
           }, operation.current ??= crypto.randomUUID());
           operation.current = undefined;
           setSettings(saved.settings);
@@ -274,6 +279,38 @@ export function ActivityEditPanel({
                 </select>
               </label>
             </div>
+            {settings.reminderScheduleRef ? (
+              <fieldset>
+                <legend>Promemoria</legend>
+                <label className="timeline-activity-editor__checkbox">
+                  <input
+                    type="checkbox"
+                    checked={reminderLeadMinutes !== null}
+                    onChange={(event) => {
+                      operation.current = undefined;
+                      setReminderLeadMinutes(event.target.checked ? 15 : null);
+                    }}
+                  />
+                  Attiva promemoria
+                </label>
+                {reminderLeadMinutes !== null ? (
+                  <label>
+                    Minuti prima dell’inizio
+                    <input
+                      type="number"
+                      min={0}
+                      max={10080}
+                      required
+                      value={reminderLeadMinutes}
+                      onChange={(event) => {
+                        operation.current = undefined;
+                        setReminderLeadMinutes(Number(event.target.value));
+                      }}
+                    />
+                  </label>
+                ) : null}
+              </fieldset>
+            ) : null}
             <section
               className="timeline-activity-editor__readback"
               aria-label="Programmazione attuale"

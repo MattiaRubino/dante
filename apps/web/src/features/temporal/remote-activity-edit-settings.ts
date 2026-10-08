@@ -33,6 +33,8 @@ export type ActivityEditSettings = Readonly<{
   lifeAreaRef: string | null;
   placementProtected: boolean;
   reminderLeadMinutes: number | null;
+  reminderScheduleRef: string | null;
+  reminderStateRef: string | null;
   childGuardMode: 'none' | 'confirm' | 'block';
 }>;
 
@@ -184,7 +186,9 @@ export function createRemoteActivityEditSettings(
       const primary = acceptedSchedules.find((item) => item.role === 'envelope') ??
         acceptedSchedules.find((item) => item.role === null);
       if ((lock !== null && (lock.schedule_ref !== primary?.scheduleRef || typeof lock.locked !== 'boolean')) ||
-          (reminder !== null && (typeof reminder.enabled !== 'boolean' ||
+          (reminder !== null && (reminder.schedule_ref !== primary?.scheduleRef ||
+            typeof reminder.material_state_ref !== 'string' ||
+            typeof reminder.enabled !== 'boolean' ||
             !Number.isInteger(reminder.lead_minutes)))) {
         throw new Error('Blocco o promemoria dell’attività non valido.');
       }
@@ -196,6 +200,10 @@ export function createRemoteActivityEditSettings(
         lifeAreaRef: optionalText(snapshot.life_area_ref),
         placementProtected: lock?.locked === true,
         reminderLeadMinutes: reminder?.enabled === true ? Number(reminder.lead_minutes) : null,
+        reminderScheduleRef: primary?.role === 'envelope' &&
+          ['named_zone_local', 'absolute'].includes(primary.temporalForm)
+          ? primary.scheduleRef : null,
+        reminderStateRef: reminder ? state(reminder.material_state_ref) : null,
         childGuardMode:
           snapshot.child_guard_mode as ActivityEditSettings['childGuardMode'],
       });
@@ -207,6 +215,7 @@ export function createRemoteActivityEditSettings(
         profile?: Pick<ActivityProfile, 'title' | 'description' | 'location' | 'colorCode'>;
         capture?: SessionCaptureMode;
         reality?: RealityMode;
+        reminderLeadMinutes?: number | null;
       }>,
       operationId: string,
     ): Promise<{ profile: ActivityProfile; settings: ActivityEditSettings }> {
@@ -233,6 +242,14 @@ export function createRemoteActivityEditSettings(
             mode_code: changes.reality,
             expected_state_ref: settings.reality.stateRef,
           } } : {}),
+          ...('reminderLeadMinutes' in changes && settings.reminderScheduleRef ? {
+            reminder: {
+              schedule_ref: settings.reminderScheduleRef,
+              expected_state_ref: settings.reminderStateRef,
+              enabled: changes.reminderLeadMinutes !== null,
+              lead_minutes: changes.reminderLeadMinutes ?? 0,
+            },
+          } : {}),
         }),
       });
       if (!response.ok) throw new Error(response.status === 409
@@ -247,6 +264,10 @@ export function createRemoteActivityEditSettings(
         ...settings,
         capture: capture(result.capture, profile.activityRef),
         reality: reality(result.reality, profile.activityRef),
+        ...('reminderLeadMinutes' in changes ? {
+          reminderLeadMinutes: changes.reminderLeadMinutes ?? null,
+          reminderStateRef: state(object(result.reminder).material_state_ref),
+        } : {}),
       });
       invalidateTemporalTimelineRead();
       invalidateTemporalPlanningRead();

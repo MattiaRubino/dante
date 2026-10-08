@@ -18,6 +18,8 @@ const settings: ActivityEditSettings = {
   lifeAreaRef: 'area',
   placementProtected: true,
   reminderLeadMinutes: 15,
+  reminderScheduleRef: 'envelope',
+  reminderStateRef: 'reminder-state',
   childGuardMode: 'none',
   objectives: [
     {
