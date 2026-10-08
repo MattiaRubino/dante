@@ -561,11 +561,23 @@ class TemporalTimelineApplication:
                 SELECT 'activity'::text AS owner_kind,
                        intention.activity_ref AS subject_native_ref,
                        intention.self_person_ref,
-                       intention.title,
+                       COALESCE(profile_edit.patch->>'title',intention.title) AS title,
                        NULL::text AS source_kind,
                        NULL::uuid AS source_native_ref,
                        NULL::uuid AS occurrence_ref
                   FROM dante.activity_intention AS intention
+             LEFT JOIN LATERAL (
+                 SELECT dante.get_self_occurrence_profile_patch(
+                     :self_person_ref,
+                     origin.occurrence_ref
+                 ) AS patch
+                   FROM (
+                       SELECT dante.get_self_materialized_activity_occurrence(
+                           :self_person_ref,intention.activity_ref
+                       ) AS occurrence_ref
+                   ) origin
+                  WHERE origin.occurrence_ref IS NOT NULL
+             ) profile_edit ON true
                  WHERE intention.retired_at IS NULL
                 UNION ALL
                 SELECT 'event'::text AS owner_kind,
@@ -580,13 +592,18 @@ class TemporalTimelineApplication:
                 SELECT 'occurrence'::text AS owner_kind,
                        occurrence.occurrence_ref AS subject_native_ref,
                        source.self_person_ref,
-                       source.title,
+                       COALESCE(profile_edit.patch->>'title',source.title) AS title,
                        source.source_kind,
                        source.source_native_ref,
                        occurrence.occurrence_ref
                   FROM scheduled_occurrence AS occurrence
                   JOIN self_source AS source
                     ON source.source_native_ref=occurrence.source_native_ref
+             LEFT JOIN LATERAL (
+                 SELECT dante.get_self_occurrence_profile_patch(
+                     :self_person_ref,occurrence.occurrence_ref
+                 ) AS patch
+             ) profile_edit ON true
             )
             SELECT subject.owner_kind,
                    subject.subject_native_ref,
@@ -753,7 +770,7 @@ class TemporalTimelineApplication:
             SELECT occurrence.occurrence_ref,
                    occurrence.source_native_ref,
                    source.source_kind,
-                   source.title,
+                   COALESCE(profile_edit.patch->>'title',source.title) AS title,
                    occurrence.family_code,
                    occurrence.generated_date,
                    occurrence.generated_wall_time,
@@ -775,6 +792,11 @@ class TemporalTimelineApplication:
               JOIN self_source AS source
                 ON source.source_native_ref=occurrence.source_native_ref
                AND source.self_person_ref=:self_person_ref
+         LEFT JOIN LATERAL (
+             SELECT dante.get_self_occurrence_profile_patch(
+                 :self_person_ref,occurrence.occurrence_ref
+             ) AS patch
+         ) profile_edit ON true
              WHERE NOT EXISTS (
                        SELECT 1
                          FROM dante.list_self_routine_occurrence_activities(
