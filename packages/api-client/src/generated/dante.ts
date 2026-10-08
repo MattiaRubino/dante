@@ -87,9 +87,14 @@ import type {
   MovementPolicyMutationResponse,
   MutationRequest,
   ObjectiveCreateCommand,
+  ObjectiveDefinitionReviseCommand,
+  ObjectiveDefinitionReviseResponse,
+  ObjectiveDefinitionStateResponse,
   ObjectiveResponse,
   ObjectiveResultCommand,
+  ObjectiveResultCorrectionCommand,
   ObjectiveResultResponse,
+  ObjectiveSeriesStateResponse,
   OccurrenceCheckpointRequest,
   OccurrenceCheckpointResponse,
   OccurrenceEditInventoryResponse,
@@ -9638,6 +9643,201 @@ export const temporalSetLifeAreaVisibility = async (
   } as temporalSetLifeAreaVisibilityResponse;
 };
 
+export type temporalCorrectObjectiveResultResponse200 = {
+  data: ObjectiveResultResponse;
+  status: 200;
+};
+
+export type temporalCorrectObjectiveResultResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalCorrectObjectiveResultResponseSuccess =
+  temporalCorrectObjectiveResultResponse200 & {
+    headers: Headers;
+  };
+export type temporalCorrectObjectiveResultResponseError =
+  temporalCorrectObjectiveResultResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalCorrectObjectiveResultResponse =
+  | temporalCorrectObjectiveResultResponseSuccess
+  | temporalCorrectObjectiveResultResponseError;
+
+export const getTemporalCorrectObjectiveResultUrl = (objectiveRef: string) => {
+  return `/api/v1/temporal/objectives/${objectiveRef}/correction`;
+};
+
+/**
+ * @summary Correct Objective Result
+ */
+export const temporalCorrectObjectiveResult = async (
+  objectiveRef: string,
+  objectiveResultCorrectionCommand: ObjectiveResultCorrectionCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalCorrectObjectiveResultResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalCorrectObjectiveResultUrl(objectiveRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(objectiveResultCorrectionCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalCorrectObjectiveResultResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalCorrectObjectiveResultResponse;
+};
+
+export type temporalGetObjectiveDefinitionResponse200 = {
+  data: ObjectiveDefinitionStateResponse;
+  status: 200;
+};
+
+export type temporalGetObjectiveDefinitionResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetObjectiveDefinitionResponseSuccess =
+  temporalGetObjectiveDefinitionResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetObjectiveDefinitionResponseError =
+  temporalGetObjectiveDefinitionResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalGetObjectiveDefinitionResponse =
+  | temporalGetObjectiveDefinitionResponseSuccess
+  | temporalGetObjectiveDefinitionResponseError;
+
+export const getTemporalGetObjectiveDefinitionUrl = (objectiveRef: string) => {
+  return `/api/v1/temporal/objectives/${objectiveRef}/definition`;
+};
+
+/**
+ * @summary Get Objective Definition
+ */
+export const temporalGetObjectiveDefinition = async (
+  objectiveRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetObjectiveDefinitionResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetObjectiveDefinitionUrl(objectiveRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetObjectiveDefinitionResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetObjectiveDefinitionResponse;
+};
+
+export type temporalReviseObjectiveDefinitionResponse200 = {
+  data: ObjectiveDefinitionReviseResponse;
+  status: 200;
+};
+
+export type temporalReviseObjectiveDefinitionResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalReviseObjectiveDefinitionResponseSuccess =
+  temporalReviseObjectiveDefinitionResponse200 & {
+    headers: Headers;
+  };
+export type temporalReviseObjectiveDefinitionResponseError =
+  temporalReviseObjectiveDefinitionResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalReviseObjectiveDefinitionResponse =
+  | temporalReviseObjectiveDefinitionResponseSuccess
+  | temporalReviseObjectiveDefinitionResponseError;
+
+export const getTemporalReviseObjectiveDefinitionUrl = (
+  objectiveRef: string,
+) => {
+  return `/api/v1/temporal/objectives/${objectiveRef}/definition`;
+};
+
+/**
+ * @summary Revise Objective Definition
+ */
+export const temporalReviseObjectiveDefinition = async (
+  objectiveRef: string,
+  objectiveDefinitionReviseCommand: ObjectiveDefinitionReviseCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalReviseObjectiveDefinitionResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalReviseObjectiveDefinitionUrl(objectiveRef),
+    {
+      ...options,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(objectiveDefinitionReviseCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalReviseObjectiveDefinitionResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalReviseObjectiveDefinitionResponse;
+};
+
 export type temporalRecordObjectiveResultResponse200 = {
   data: ObjectiveResultResponse;
   status: 200;
@@ -9705,6 +9905,62 @@ export const temporalRecordObjectiveResult = async (
     status: res.status,
     headers: res.headers,
   } as temporalRecordObjectiveResultResponse;
+};
+
+export type temporalGetObjectiveSeriesStateResponse200 = {
+  data: ObjectiveSeriesStateResponse | null;
+  status: 200;
+};
+
+export type temporalGetObjectiveSeriesStateResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetObjectiveSeriesStateResponseSuccess =
+  temporalGetObjectiveSeriesStateResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetObjectiveSeriesStateResponseError =
+  temporalGetObjectiveSeriesStateResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalGetObjectiveSeriesStateResponse =
+  | temporalGetObjectiveSeriesStateResponseSuccess
+  | temporalGetObjectiveSeriesStateResponseError;
+
+export const getTemporalGetObjectiveSeriesStateUrl = (objectiveRef: string) => {
+  return `/api/v1/temporal/objectives/${objectiveRef}/series-state`;
+};
+
+/**
+ * Only template-generated Objectives have a canonical following scope.
+ * @summary Get Objective Series State
+ */
+export const temporalGetObjectiveSeriesState = async (
+  objectiveRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetObjectiveSeriesStateResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetObjectiveSeriesStateUrl(objectiveRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetObjectiveSeriesStateResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetObjectiveSeriesStateResponse;
 };
 
 export type temporalCheckpointOccurrenceWindowResponse200 = {

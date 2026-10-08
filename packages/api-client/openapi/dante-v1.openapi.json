@@ -7220,6 +7220,329 @@
         "title": "ObjectiveCreateCommand",
         "type": "object"
       },
+      "ObjectiveDefinitionReviseCommand": {
+        "additionalProperties": false,
+        "properties": {
+          "comparator_code": {
+            "anyOf": [
+              {
+                "enum": ["eq", "gte", "lte", "between"],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comparator Code"
+          },
+          "expected_recurrence_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Recurrence State Ref"
+          },
+          "expected_revision": {
+            "minimum": 0.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "expected_source_revision": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Source Revision"
+          },
+          "label": {
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Label",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "presentation_order": {
+            "maximum": 999.0,
+            "minimum": 0.0,
+            "title": "Presentation Order",
+            "type": "integer"
+          },
+          "result_kind": {
+            "enum": ["boolean", "quantity", "qualitative", "range"],
+            "title": "Result Kind",
+            "type": "string"
+          },
+          "scope_code": {
+            "default": "only_this",
+            "enum": ["only_this", "this_and_following"],
+            "title": "Scope Code",
+            "type": "string"
+          },
+          "target_max": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Max"
+          },
+          "target_min": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Min"
+          },
+          "target_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Value"
+          },
+          "unit_code": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Code"
+          }
+        },
+        "required": [
+          "operation_id",
+          "label",
+          "result_kind",
+          "presentation_order",
+          "expected_revision"
+        ],
+        "title": "ObjectiveDefinitionReviseCommand",
+        "type": "object"
+      },
+      "ObjectiveDefinitionReviseResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "assessment_code": {
+            "anyOf": [
+              {
+                "enum": [
+                  "satisfied",
+                  "partial",
+                  "not_satisfied",
+                  "unknown",
+                  "indeterminate"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assessment Code"
+          },
+          "definition_revision": {
+            "title": "Definition Revision",
+            "type": "integer"
+          },
+          "evaluation_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evaluation State Ref"
+          },
+          "objective_ref": {
+            "format": "uuid",
+            "title": "Objective Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "source_revision": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Revision"
+          }
+        },
+        "required": [
+          "objective_ref",
+          "definition_revision",
+          "evaluation_state_ref",
+          "assessment_code",
+          "replayed"
+        ],
+        "title": "ObjectiveDefinitionReviseResponse",
+        "type": "object"
+      },
+      "ObjectiveDefinitionStateResponse": {
+        "additionalProperties": false,
+        "description": "Current user-visible definition of the SAME logical Objective.",
+        "properties": {
+          "comparator_code": {
+            "anyOf": [
+              {
+                "enum": ["eq", "gte", "lte", "between"],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comparator Code"
+          },
+          "definition_revision": {
+            "title": "Definition Revision",
+            "type": "integer"
+          },
+          "evaluation_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evaluation State Ref"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "objective_ref": {
+            "format": "uuid",
+            "title": "Objective Ref",
+            "type": "string"
+          },
+          "presentation_order": {
+            "title": "Presentation Order",
+            "type": "integer"
+          },
+          "result_kind": {
+            "enum": ["boolean", "quantity", "qualitative", "range"],
+            "title": "Result Kind",
+            "type": "string"
+          },
+          "target_max": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Max"
+          },
+          "target_min": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Min"
+          },
+          "target_value": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Value"
+          },
+          "unit_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Code"
+          }
+        },
+        "required": [
+          "objective_ref",
+          "definition_revision",
+          "label",
+          "result_kind",
+          "comparator_code",
+          "target_value",
+          "target_min",
+          "target_max",
+          "unit_code",
+          "presentation_order",
+          "evaluation_state_ref"
+        ],
+        "title": "ObjectiveDefinitionStateResponse",
+        "type": "object"
+      },
       "ObjectiveResponse": {
         "additionalProperties": false,
         "properties": {
@@ -7466,6 +7789,81 @@
         "title": "ObjectiveResultCommand",
         "type": "object"
       },
+      "ObjectiveResultCorrectionCommand": {
+        "additionalProperties": false,
+        "properties": {
+          "assessment_code": {
+            "anyOf": [
+              {
+                "enum": [
+                  "satisfied",
+                  "partial",
+                  "not_satisfied",
+                  "unknown",
+                  "indeterminate"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assessment Code"
+          },
+          "expected_evaluation_state_ref": {
+            "format": "uuid",
+            "title": "Expected Evaluation State Ref",
+            "type": "string"
+          },
+          "observed_boolean": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed Boolean"
+          },
+          "observed_numeric": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed Numeric"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "qualitative_code": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Qualitative Code"
+          }
+        },
+        "required": ["operation_id", "expected_evaluation_state_ref"],
+        "title": "ObjectiveResultCorrectionCommand",
+        "type": "object"
+      },
       "ObjectiveResultResponse": {
         "additionalProperties": false,
         "properties": {
@@ -7508,6 +7906,50 @@
           "assessment_code"
         ],
         "title": "ObjectiveResultResponse",
+        "type": "object"
+      },
+      "ObjectiveSeriesStateResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "occurrence_ref": {
+            "format": "uuid",
+            "title": "Occurrence Ref",
+            "type": "string"
+          },
+          "recurrence_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recurrence State Ref"
+          },
+          "source_native_ref": {
+            "format": "uuid",
+            "title": "Source Native Ref",
+            "type": "string"
+          },
+          "source_revision": {
+            "title": "Source Revision",
+            "type": "integer"
+          },
+          "template_slot": {
+            "title": "Template Slot",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "source_native_ref",
+          "occurrence_ref",
+          "template_slot",
+          "source_revision",
+          "recurrence_state_ref"
+        ],
+        "title": "ObjectiveSeriesStateResponse",
         "type": "object"
       },
       "OccurrenceAbsoluteSchedulePlacementResponse": {
@@ -30261,6 +30703,147 @@
         "tags": ["temporal"]
       }
     },
+    "/api/v1/temporal/objectives/{objective_ref}/correction": {
+      "post": {
+        "operationId": "temporal_correct_objective_result",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "objective_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Objective Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ObjectiveResultCorrectionCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectiveResultResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Correct Objective Result",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/objectives/{objective_ref}/definition": {
+      "get": {
+        "operationId": "temporal_get_objective_definition",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "objective_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Objective Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectiveDefinitionStateResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Objective Definition",
+        "tags": ["temporal"]
+      },
+      "put": {
+        "operationId": "temporal_revise_objective_definition",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "objective_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Objective Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ObjectiveDefinitionReviseCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectiveDefinitionReviseResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Revise Objective Definition",
+        "tags": ["temporal"]
+      }
+    },
     "/api/v1/temporal/objectives/{objective_ref}/result": {
       "post": {
         "operationId": "temporal_record_objective_result",
@@ -30309,6 +30892,56 @@
           }
         },
         "summary": "Record Objective Result",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/objectives/{objective_ref}/series-state": {
+      "get": {
+        "description": "Only template-generated Objectives have a canonical following scope.",
+        "operationId": "temporal_get_objective_series_state",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "objective_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Objective Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ObjectiveSeriesStateResponse"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Temporal Get Objective Series State"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Objective Series State",
         "tags": ["temporal"]
       }
     },
