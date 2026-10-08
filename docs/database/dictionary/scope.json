@@ -63,13 +63,14 @@
       "B14-ROUTINE-POLICY-CLEANUP",
       "B14-RESOLUTION-INBOX",
       "B14-PLANNED-SESSION-EXECUTION",
-      "B14-ACTIVITY-INSPECTOR"
+      "B14-ACTIVITY-INSPECTOR",
+      "B14-M1-EDIT-INVENTORY"
     ],
     "standalone_entries": {
       "tables": 231,
       "views": 5,
-      "routines": 196,
-      "total": 432
+      "routines": 197,
+      "total": 433
     },
     "embedded_objects": {
       "triggers": 103,
