@@ -318,3 +318,25 @@ drop user data or rewrite any applied placement history.
 
 Post-fix PostgreSQL test results remain pending. Do not claim functional
 backend proof from the seven setup errors; rerun the focused gate first.
+
+## 2026-10-08 — Inspector PostgreSQL gate, second iteration
+
+User-reported local result after the _121 naming repair: Ruff PASS;
+15 focused PostgreSQL/catalog tests executed, **12 passed / 3 failed**.
+The earlier 7 fixture setup errors disappeared. Remaining failures:
+(1) Activity replan replacement attempted a direct runtime SELECT from
+`session_planned_schedule_link`, which is deliberately owner-only;
+(2–3) current catalog test constants still identified `_120`.
+
+Follow-up implementation switches execution-provenance lookup to the already
+granted, self-scoped `list_self_subject_sessions` and
+`get_self_session_planned_schedule` functions; historical role-slot allocation
+also switches to `get_self_activity_schedule_roles` to prevent the next
+owner-only SELECT failure. Runtime table privileges are **not broadened**.
+Both catalog test constants now specify `20261008_121`. A positive
+PostgreSQL regression assertion exercises linked Session readback via the
+canonical owned functions.
+
+These edits are published but **not yet verified by a fresh user-run local
+PostgreSQL gate**. Until that gate reports success, the complete Inspector
+post-create vertical remains open.
