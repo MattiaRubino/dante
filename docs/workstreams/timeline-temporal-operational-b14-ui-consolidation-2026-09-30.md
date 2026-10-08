@@ -734,3 +734,50 @@ Do not reopen the successful unit coverage solely to check formatting.
 M1 remains OPEN. Next is the authoritative self-scoped Recurrence/
 Occurrence inventory and transactional CAS preview/apply boundary;
 B06/B11 existing functions must be reused.
+
+## 2026-10-08 — M1-A proven; M1-B guarded materialized inventory candidate
+
+User local rerun after `a62ab230`: **Ruff PASS / RUFF=0** and
+`tests/test_b14_occurrence_edit_scope.py` **18 passed / UNIT=0**.
+Close **M1-A pure selector** on focused unit proof; do not mark M1
+complete or imply any accepted recurring edits.
+
+**M1-B implementation candidate**, forward-only Alembic
+`20261008_122_b14_recurrence_edit_inventory.py`:
+- `dante.list_self_recurrence_edit_occurrences(uuid,uuid)` is a
+  SECURITY DEFINER, self-owned read, authorized by existing B06
+  `get_self_occurrence` for the selected Occurrence. It enumerates
+  **all accepted materialized Occurrences** from the selected source,
+  including skipped, current-Scheduled and explicit extra instances,
+  without a browser Timeline window filter. It aborts above **10,000**
+  accepted rows rather than returning a truncated inventory; grants
+  EXECUTE only to runtime, not table SELECT/DML.
+- `OccurrenceEditInventoryApplication.read` uses a database transaction
+  timestamp and the canonical typed B06 row parser, verifies source
+  consistency and selected identity. The GET endpoint
+  `/api/v1/temporal/occurrences/{occurrence_ref}/edit-inventory`
+  returns a read-only snapshot with explicit
+  `materialized_only=true` and `apply_authorized=false`;
+  unseen/unmaterialized future occurrences are **not** implied to be
+  in the list.
+- M1-B integration test checks Routine/Event parity, self isolation,
+  skip, explicit extra, already-Scheduled selected row, endpoint
+  response and role-grant boundary. Dictionary now registers 197
+  routines, 231 tables, 5 views, 103 triggers, 471 indexes,
+  405 foreign keys, 572 CHECK; current Alembic is `_122`.
+  Both exact DB/catalog probes updated. No new physical tables/mappings.
+
+**Proof pending**: user-run migration, focused PostgreSQL and exact
+catalog checks, Ruff, OpenAPI schema/generation + API-client/web
+typechecks. These have not been run by the assistant and are NOT
+claimed green. The branch currently has no web save UI or actual
+recurrence batch mutation. **M1-C still open**: prove full apply-time
+inventory under concurrency, owner/Source CAS and replay, detect
+overridden and already-realized future instances, resolve selected
+Activity→Occurrence and Event source/Occurrence identity, and commit
+the chosen change plus future source-template policy **atomically**.
+Do not ever feed `materialized_only` snapshot into the pure
+M1-A selector as if it proved future source-policy propagation.
+
+No CI/GitHub Actions. User runs all gates in local
+`~/projects/dante`.
