@@ -5,8 +5,15 @@ from decimal import Decimal
 from uuid import UUID
 
 from sqlalchemy import (
-    BigInteger, Boolean, CheckConstraint, DateTime, ForeignKeyConstraint,
-    Integer, Numeric, Text, UniqueConstraint,
+    BigInteger,
+    Boolean,
+    CheckConstraint,
+    DateTime,
+    ForeignKeyConstraint,
+    Integer,
+    Numeric,
+    Text,
+    UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
