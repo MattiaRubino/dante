@@ -173,7 +173,7 @@ export function ActivityEditPanel({
     setLockPending(true);
     setLockError('');
     void settingsSource.setPlacementProtected(
-      profile.activityRef, settings, placementProtected,
+      settings, placementProtected,
     ).then((saved) => {
       setSettings(saved);
     }).catch((reason: unknown) => {
