@@ -259,7 +259,7 @@ class ObjectiveDefinitionReviseResponse(BaseModel):
 
 
 class ObjectiveResultCorrectionCommand(ObjectiveResultCommand):
-    expected_evaluation_state_ref: UUID | None
+    expected_evaluation_state_ref: UUID
 
 
 class ObjectiveResultResponse(BaseModel):
