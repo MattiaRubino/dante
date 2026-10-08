@@ -8,7 +8,7 @@
     "name": "record_self_temporal_objective_result",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Record an Objective Observation and its separate Evaluation state idempotently.",
+  "purpose": "Existing append-only user Objective result recording now derives its deterministic assessment from the newest accepted logical Objective definition revision; preserves Observation and Evaluation history.",
   "classification": {
     "persistence_role": "record_self_temporal_objective_result",
     "canonicality": "capability_surface",
@@ -39,7 +39,7 @@
   },
   "implementation": {
     "introducing_stage": "B14-CREATE-CLOSURE",
-    "alembic_revision": "20261006_113",
+    "alembic_revision": "20261008_125",
     "sqlalchemy": {
       "mode": "none",
       "module": null,
