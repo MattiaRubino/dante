@@ -71,14 +71,14 @@
       {
         "name": "life_area_ref",
         "postgres_type": "uuid",
-        "nullable": false,
+        "nullable": true,
         "default": {
           "kind": "none",
           "expression": null
         },
         "meaning": "Actor-local LR-12 application profile identifier",
         "semantic_type": null,
-        "value_contract": "Never a NativeRef or provider calendar."
+        "value_contract": "Explicitly nullable after accepted unassignment. Retained revision and immutable operation receipt distinguish prior state from never assigned."
       },
       {
         "name": "revision",
