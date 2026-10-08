@@ -20,6 +20,9 @@ export type TemporalEventDetailRecord = Readonly<{
   createdAt: Instant;
   /** Optional for legacy test fixtures; provided by canonical Event read. */
   lifeAreaRef?: string | null;
+  description?: string | null;
+  location?: string | null;
+  colorCode?: string | null;
 }>;
 
 export type TemporalEventScheduleRecord = Readonly<{
