@@ -8,7 +8,7 @@
     "name": "get_self_temporal_objective_definition",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Return the canonical current definition of the same logical Objective under owner scope with monotone revision and current Evaluation identity.",
+  "purpose": "Return the canonical current definition of the same logical Objective under owner scope with monotone revision and current Evaluation identity. For canonically template-generated future instances, overlays later accepted Objective source policies, without changing other past instances.",
   "classification": {
     "persistence_role": "get_self_temporal_objective_definition",
     "canonicality": "capability_surface",
@@ -38,7 +38,7 @@
   },
   "implementation": {
     "introducing_stage": "B14-M2-OBJECTIVE-CORRECTION",
-    "alembic_revision": "20261008_125",
+    "alembic_revision": "20261008_126",
     "sqlalchemy": {
       "mode": "none",
       "module": null,
