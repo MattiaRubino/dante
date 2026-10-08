@@ -6,11 +6,11 @@ from sqlalchemy import Table
 
 from . import (
     activity,
-    activity_profile,
     activity_decomposition,
     activity_decomposition_policy,
     activity_execution_policy,
     activity_outcome_review_policy,
+    activity_profile,
     actual,
     addressing,
     advanced_recurrence,
