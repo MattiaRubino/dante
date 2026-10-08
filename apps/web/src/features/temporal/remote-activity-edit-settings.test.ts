@@ -289,4 +289,62 @@ describe('Activity editor settings remote contract', () => {
     expect(settings.objectives).toHaveLength(1);
   });
 
+
+  it('explicitly unassigns a primary Life Area with the existing revision', async () => {
+    const requests: unknown[] = [];
+    const fetchFn = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const path = typeof input === 'string' ? input :
+        input instanceof URL ? input.href : input.url;
+      if (path.endsWith('/life-areas')) {
+        return Promise.resolve(response([{ life_area_ref: 'area-1',
+          name: 'Lavoro', archived: false }]));
+      }
+      if (path.endsWith('/life-area-assignments')) {
+        return Promise.resolve(response([{
+          subject_kind: 'activity', subject_native_ref: ref,
+          life_area_ref: 'area-1', assignment_revision: 4,
+        }]));
+      }
+      if (path.endsWith('/auth/session')) {
+        return Promise.resolve(response({ authenticated: true, csrf_token: 'token' }));
+      }
+      if (path.endsWith('/life-area-assignments/activities/' + ref) && init?.method === 'PUT') {
+        requests.push(JSON.parse(String(init.body)) as unknown);
+        return Promise.resolve(response({ subject_kind: 'activity', subject_native_ref: ref,
+          life_area_ref: null, assignment_revision: 5, replayed: false }));
+      }
+      throw new Error('Unexpected request ' + path);
+    });
+    const source = createRemoteActivityEditSettings(fetchFn);
+    const current = await source.loadLifeAreaChoice(ref);
+    expect(current).toMatchObject({ currentRef: 'area-1', currentRevision: 4 });
+    const updated = await source.assignLifeArea(ref, current, null, 'unassign-op');
+    expect(updated).toMatchObject({ currentRef: null, currentRevision: 5 });
+    expect(requests).toEqual([{ operation_id: 'unassign-op', life_area_ref: null,
+      expected_assignment_revision: 4 }]);
+  });
+
+  it('revises only an existing planned Session display name with CAS', async () => {
+    const requests: unknown[] = [];
+    const scheduleRef = '0199a111-1111-7111-8111-222222222222';
+    const fetchFn = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const path = typeof input === 'string' ? input :
+        input instanceof URL ? input.href : input.url;
+      if (path.endsWith('/auth/session')) {
+        return Promise.resolve(response({ authenticated: true, csrf_token: 'token' }));
+      }
+      if (path.endsWith('/planned-sessions/' + scheduleRef + '/name') && init?.method === 'PUT') {
+        requests.push(JSON.parse(String(init.body)) as unknown);
+        return Promise.resolve(response({
+          schedule_ref: scheduleRef, display_name: 'Ripasso', replayed: false,
+        }));
+      }
+      throw new Error('Unexpected request ' + path);
+    });
+    const source = createRemoteActivityEditSettings(fetchFn);
+    const saved = await source.revisePlannedName(ref, scheduleRef, 'Lettura', 'Ripasso');
+    expect(saved).toBe('Ripasso');
+    expect(requests).toEqual([{ expected_name: 'Lettura', name: 'Ripasso' }]);
+  });
+
 });
