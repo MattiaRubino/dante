@@ -625,6 +625,27 @@ describe('Activity Inspector', () => {
       .toHaveProperty('disabled', false);
   });
 
+  it('blocks rescheduling until a planned-name draft is saved or discarded', async () => {
+    loadSettings.mockResolvedValueOnce({ ...currentSettings, schedules: [{
+      scheduleRef: 'planned-replan', role: 'planned', name: 'Allenamento', order: 0,
+      placementStateRef: 'state-3', temporalForm: 'named_zone_local',
+      start: '2026-10-09T09:00:00', end: '2026-10-09T10:00:00',
+      zoneId: 'Europe/Rome',
+    }] });
+    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
+      onSaved={() => undefined} onCancel={() => undefined} />);
+    const name = await screen.findByRole('textbox', { name: 'Nome sessione pianificata' });
+    fireEvent.change(name, { target: { value: 'Allenamento lungo' } });
+    fireEvent.change(screen.getByLabelText('Inizio'), {
+      target: { value: '2026-10-09T08:00' },
+    });
+    expect(screen.getByText(/Salva prima i nomi delle Session/)).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Verifica spostamento' }))
+      .toHaveProperty('disabled', true);
+    expect(previewReplan).not.toHaveBeenCalled();
+    expect(applyReplan).not.toHaveBeenCalled();
+  });
+
   it('discloses selected-only owner-domain editing even with no metadata change', async () => {
     loadRecurringContext.mockResolvedValueOnce({
       occurrenceRef: '0199a222-2222-7222-8222-222222222222',
