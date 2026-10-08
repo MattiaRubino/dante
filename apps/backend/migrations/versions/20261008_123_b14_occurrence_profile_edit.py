@@ -266,10 +266,17 @@ BEGIN
             CONSTRAINT='occurrence_edit_stale',
             MESSAGE='Source edit revision changed';
     END IF;
+    -- Block concurrent Recurrence state replacement until acceptance commits.
     IF is_routine THEN
+        PERFORM 1 FROM dante.routine_recurrence_current_history h
+         WHERE h.routine_ref=source_ref AND h.current_until_at IS NULL
+         FOR SHARE;
         SELECT material_state_ref INTO current_state
           FROM dante.get_self_routine_recurrence(actor,source_ref);
     ELSE
+        PERFORM 1 FROM dante.event_recurrence_current_history h
+         WHERE h.event_ref=source_ref AND h.current_until_at IS NULL
+         FOR SHARE;
         SELECT material_state_ref INTO current_state
           FROM dante.get_self_event_recurrence(actor,source_ref);
     END IF;
@@ -314,6 +321,11 @@ BEGIN
             SELECT 1 FROM dante.actual a
              WHERE a.subject_native_ref=candidate.occurrence_ref
         ) OR EXISTS (
+            SELECT 1 FROM dante.temporal_objective obj
+              JOIN dante.temporal_objective_observation obs
+                ON obs.objective_ref=obj.objective_ref
+             WHERE obj.subject_native_ref=candidate.occurrence_ref
+        ) OR EXISTS (
             SELECT 1 FROM dante.routine_occurrence_activity_instance link
               JOIN dante.activity_intention activity
                 ON activity.activity_ref=link.activity_ref
@@ -321,6 +333,11 @@ BEGIN
                AND (activity.profile_revision>0 OR EXISTS (
                    SELECT 1 FROM dante.actual a
                     WHERE a.subject_native_ref=activity.activity_ref
+               ) OR EXISTS (
+                   SELECT 1 FROM dante.temporal_objective obj
+                    JOIN dante.temporal_objective_observation obs
+                      ON obs.objective_ref=obj.objective_ref
+                    WHERE obj.subject_native_ref=activity.activity_ref
                ))
         ) THEN
             RAISE EXCEPTION USING ERRCODE='23505',
