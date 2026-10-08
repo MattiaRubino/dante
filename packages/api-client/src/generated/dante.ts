@@ -6,7 +6,16 @@
  */
 import type {
   ActivityChildrenResponse,
+  ActivityCoreEditCommand,
+  ActivityCoreEditResponse,
+  ActivityEditSnapshot,
+  ActivityProfileChange,
+  ActivityProfileResponse,
+  ActivityReplanCommand,
+  ActivityReplanPreview,
   ActivityResponse,
+  ActivityRetirementCommand,
+  ActivityRetirementResponse,
   ActualRealizationCommand,
   ActualRealizationConditionRequest,
   ActualRealizationConditionResponse,
@@ -4276,6 +4285,131 @@ export const temporalSetActivityDecompositionPolicy = async (
   } as temporalSetActivityDecompositionPolicyResponse;
 };
 
+export type temporalReviseActivityCoreResponse200 = {
+  data: ActivityCoreEditResponse;
+  status: 200;
+};
+
+export type temporalReviseActivityCoreResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalReviseActivityCoreResponseSuccess =
+  temporalReviseActivityCoreResponse200 & {
+    headers: Headers;
+  };
+export type temporalReviseActivityCoreResponseError =
+  temporalReviseActivityCoreResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalReviseActivityCoreResponse =
+  | temporalReviseActivityCoreResponseSuccess
+  | temporalReviseActivityCoreResponseError;
+
+export const getTemporalReviseActivityCoreUrl = (activityRef: string) => {
+  return `/api/v1/temporal/activities/${activityRef}/core-edit`;
+};
+
+/**
+ * Apply guarded changes in one all-or-nothing transaction.
+ * @summary Revise Activity Core
+ */
+export const temporalReviseActivityCore = async (
+  activityRef: string,
+  activityCoreEditCommand: ActivityCoreEditCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalReviseActivityCoreResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalReviseActivityCoreUrl(activityRef),
+    {
+      ...options,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(activityCoreEditCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalReviseActivityCoreResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalReviseActivityCoreResponse;
+};
+
+export type temporalGetActivityEditSnapshotResponse200 = {
+  data: ActivityEditSnapshot;
+  status: 200;
+};
+
+export type temporalGetActivityEditSnapshotResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetActivityEditSnapshotResponseSuccess =
+  temporalGetActivityEditSnapshotResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetActivityEditSnapshotResponseError =
+  temporalGetActivityEditSnapshotResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalGetActivityEditSnapshotResponse =
+  | temporalGetActivityEditSnapshotResponseSuccess
+  | temporalGetActivityEditSnapshotResponseError;
+
+export const getTemporalGetActivityEditSnapshotUrl = (activityRef: string) => {
+  return `/api/v1/temporal/activities/${activityRef}/edit-snapshot`;
+};
+
+/**
+ * @summary Get Activity Edit Snapshot
+ */
+export const temporalGetActivityEditSnapshot = async (
+  activityRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetActivityEditSnapshotResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetActivityEditSnapshotUrl(activityRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetActivityEditSnapshotResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetActivityEditSnapshotResponse;
+};
+
 export type temporalGetActivityExecutionPolicyResponse200 = {
   data: ExecutionPolicyResponse;
   status: 200;
@@ -4605,6 +4739,270 @@ export const temporalStartPlannedActivitySession = async (
   } as temporalStartPlannedActivitySessionResponse;
 };
 
+export type temporalGetSelfActivityProfileResponse200 = {
+  data: ActivityProfileResponse;
+  status: 200;
+};
+
+export type temporalGetSelfActivityProfileResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetSelfActivityProfileResponseSuccess =
+  temporalGetSelfActivityProfileResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetSelfActivityProfileResponseError =
+  temporalGetSelfActivityProfileResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalGetSelfActivityProfileResponse =
+  | temporalGetSelfActivityProfileResponseSuccess
+  | temporalGetSelfActivityProfileResponseError;
+
+export const getTemporalGetSelfActivityProfileUrl = (activityRef: string) => {
+  return `/api/v1/temporal/activities/${activityRef}/profile`;
+};
+
+/**
+ * @summary Get Self Activity Profile
+ */
+export const temporalGetSelfActivityProfile = async (
+  activityRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetSelfActivityProfileResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetSelfActivityProfileUrl(activityRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetSelfActivityProfileResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetSelfActivityProfileResponse;
+};
+
+export type temporalReviseSelfActivityProfileResponse200 = {
+  data: ActivityProfileResponse;
+  status: 200;
+};
+
+export type temporalReviseSelfActivityProfileResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalReviseSelfActivityProfileResponseSuccess =
+  temporalReviseSelfActivityProfileResponse200 & {
+    headers: Headers;
+  };
+export type temporalReviseSelfActivityProfileResponseError =
+  temporalReviseSelfActivityProfileResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalReviseSelfActivityProfileResponse =
+  | temporalReviseSelfActivityProfileResponseSuccess
+  | temporalReviseSelfActivityProfileResponseError;
+
+export const getTemporalReviseSelfActivityProfileUrl = (
+  activityRef: string,
+) => {
+  return `/api/v1/temporal/activities/${activityRef}/profile`;
+};
+
+/**
+ * @summary Revise Self Activity Profile
+ */
+export const temporalReviseSelfActivityProfile = async (
+  activityRef: string,
+  activityProfileChange: ActivityProfileChange,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalReviseSelfActivityProfileResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalReviseSelfActivityProfileUrl(activityRef),
+    {
+      ...options,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(activityProfileChange),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalReviseSelfActivityProfileResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalReviseSelfActivityProfileResponse;
+};
+
+export type temporalApplyActivityReplanResponse200 = {
+  data: ActivityEditSnapshot;
+  status: 200;
+};
+
+export type temporalApplyActivityReplanResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalApplyActivityReplanResponseSuccess =
+  temporalApplyActivityReplanResponse200 & {
+    headers: Headers;
+  };
+export type temporalApplyActivityReplanResponseError =
+  temporalApplyActivityReplanResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalApplyActivityReplanResponse =
+  | temporalApplyActivityReplanResponseSuccess
+  | temporalApplyActivityReplanResponseError;
+
+export const getTemporalApplyActivityReplanUrl = (activityRef: string) => {
+  return `/api/v1/temporal/activities/${activityRef}/replan`;
+};
+
+/**
+ * @summary Apply Activity Replan
+ */
+export const temporalApplyActivityReplan = async (
+  activityRef: string,
+  activityReplanCommand: ActivityReplanCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalApplyActivityReplanResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalApplyActivityReplanUrl(activityRef),
+    {
+      ...options,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(activityReplanCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalApplyActivityReplanResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalApplyActivityReplanResponse;
+};
+
+export type temporalPreviewActivityReplanResponse200 = {
+  data: ActivityReplanPreview;
+  status: 200;
+};
+
+export type temporalPreviewActivityReplanResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalPreviewActivityReplanResponseSuccess =
+  temporalPreviewActivityReplanResponse200 & {
+    headers: Headers;
+  };
+export type temporalPreviewActivityReplanResponseError =
+  temporalPreviewActivityReplanResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalPreviewActivityReplanResponse =
+  | temporalPreviewActivityReplanResponseSuccess
+  | temporalPreviewActivityReplanResponseError;
+
+export const getTemporalPreviewActivityReplanUrl = (activityRef: string) => {
+  return `/api/v1/temporal/activities/${activityRef}/replan-preview`;
+};
+
+/**
+ * @summary Preview Activity Replan
+ */
+export const temporalPreviewActivityReplan = async (
+  activityRef: string,
+  activityReplanCommand: ActivityReplanCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalPreviewActivityReplanResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalPreviewActivityReplanUrl(activityRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(activityReplanCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalPreviewActivityReplanResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalPreviewActivityReplanResponse;
+};
+
 export type temporalGetActivityResponsibilityResponse200 = {
   data: ResponsibilityResponse;
   status: 200;
@@ -4731,6 +5129,75 @@ export const temporalSetActivityResponsibility = async (
     status: res.status,
     headers: res.headers,
   } as temporalSetActivityResponsibilityResponse;
+};
+
+export type temporalRetireSelfActivityResponse200 = {
+  data: ActivityRetirementResponse;
+  status: 200;
+};
+
+export type temporalRetireSelfActivityResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalRetireSelfActivityResponseSuccess =
+  temporalRetireSelfActivityResponse200 & {
+    headers: Headers;
+  };
+export type temporalRetireSelfActivityResponseError =
+  temporalRetireSelfActivityResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalRetireSelfActivityResponse =
+  | temporalRetireSelfActivityResponseSuccess
+  | temporalRetireSelfActivityResponseError;
+
+export const getTemporalRetireSelfActivityUrl = (activityRef: string) => {
+  return `/api/v1/temporal/activities/${activityRef}/retire`;
+};
+
+/**
+ * @summary Retire Self Activity
+ */
+export const temporalRetireSelfActivity = async (
+  activityRef: string,
+  activityRetirementCommand: ActivityRetirementCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalRetireSelfActivityResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalRetireSelfActivityUrl(activityRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(activityRetirementCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalRetireSelfActivityResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalRetireSelfActivityResponse;
 };
 
 export type establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostResponse201 =

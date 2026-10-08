@@ -992,6 +992,335 @@
         "title": "ActivityChildrenResponse",
         "type": "object"
       },
+      "ActivityCoreEditCommand": {
+        "additionalProperties": false,
+        "properties": {
+          "capture": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EditPolicyChange"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EditProfileChange"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reality": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EditPolicyChange"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reminder": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EditReminderChange"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": ["operation_id"],
+        "title": "ActivityCoreEditCommand",
+        "type": "object"
+      },
+      "ActivityCoreEditResponse": {
+        "properties": {
+          "capture": {
+            "$ref": "#/components/schemas/EditExecutionPolicy"
+          },
+          "profile": {
+            "$ref": "#/components/schemas/ActivityProfileResponse"
+          },
+          "reality": {
+            "$ref": "#/components/schemas/RealityPolicyResponse"
+          },
+          "reminder": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EditReminder"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": ["profile", "capture", "reality", "reminder"],
+        "title": "ActivityCoreEditResponse",
+        "type": "object"
+      },
+      "ActivityEditSnapshot": {
+        "additionalProperties": false,
+        "properties": {
+          "activity_ref": {
+            "format": "uuid",
+            "title": "Activity Ref",
+            "type": "string"
+          },
+          "child_guard_mode": {
+            "title": "Child Guard Mode",
+            "type": "string"
+          },
+          "execution_policy": {
+            "$ref": "#/components/schemas/EditExecutionPolicy"
+          },
+          "life_area_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Ref"
+          },
+          "objectives": {
+            "items": {
+              "$ref": "#/components/schemas/ObjectiveResponse"
+            },
+            "title": "Objectives",
+            "type": "array"
+          },
+          "placement_lock": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EditPlacementLock"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reality_policy": {
+            "$ref": "#/components/schemas/RealityPolicyResponse"
+          },
+          "reminder": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EditReminder"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "schedules": {
+            "items": {
+              "$ref": "#/components/schemas/ActivityScheduleResponse"
+            },
+            "title": "Schedules",
+            "type": "array"
+          }
+        },
+        "required": [
+          "activity_ref",
+          "execution_policy",
+          "reality_policy",
+          "child_guard_mode",
+          "life_area_ref",
+          "schedules",
+          "objectives",
+          "placement_lock",
+          "reminder"
+        ],
+        "title": "ActivityEditSnapshot",
+        "type": "object"
+      },
+      "ActivityProfileChange": {
+        "additionalProperties": false,
+        "properties": {
+          "color_code": {
+            "anyOf": [
+              {
+                "pattern": "^#[0-9A-Fa-f]{6}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color Code"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "expected_revision": {
+            "minimum": 0.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "expected_revision", "title"],
+        "title": "ActivityProfileChange",
+        "type": "object"
+      },
+      "ActivityProfileResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "activity_ref": {
+            "format": "uuid",
+            "title": "Activity Ref",
+            "type": "string"
+          },
+          "color_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color Code"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "revision": {
+            "title": "Revision",
+            "type": "integer"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "activity_ref",
+          "title",
+          "description",
+          "location",
+          "color_code",
+          "revision"
+        ],
+        "title": "ActivityProfileResponse",
+        "type": "object"
+      },
+      "ActivityReplanCommand": {
+        "additionalProperties": false,
+        "properties": {
+          "intervals": {
+            "items": {
+              "$ref": "#/components/schemas/ReplanRow"
+            },
+            "maxItems": 100,
+            "minItems": 1,
+            "title": "Intervals",
+            "type": "array"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "planned_sessions": {
+            "items": {
+              "$ref": "#/components/schemas/ReplanRow"
+            },
+            "maxItems": 100,
+            "title": "Planned Sessions",
+            "type": "array"
+          }
+        },
+        "required": ["operation_id", "intervals"],
+        "title": "ActivityReplanCommand",
+        "type": "object"
+      },
+      "ActivityReplanPreview": {
+        "properties": {
+          "activity_ref": {
+            "format": "uuid",
+            "title": "Activity Ref",
+            "type": "string"
+          },
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/ReplanChange"
+            },
+            "title": "Changes",
+            "type": "array"
+          }
+        },
+        "required": ["activity_ref", "changes"],
+        "title": "ActivityReplanPreview",
+        "type": "object"
+      },
       "ActivityResponse": {
         "additionalProperties": false,
         "description": "Minimum canonical Activity representation exposed by B01.",
@@ -1042,6 +1371,36 @@
         },
         "required": ["activity_ref", "title", "created_at"],
         "title": "ActivityResponse",
+        "type": "object"
+      },
+      "ActivityRetirementCommand": {
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id"],
+        "title": "ActivityRetirementCommand",
+        "type": "object"
+      },
+      "ActivityRetirementResponse": {
+        "properties": {
+          "activity_ref": {
+            "format": "uuid",
+            "title": "Activity Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          }
+        },
+        "required": ["activity_ref", "replayed"],
+        "title": "ActivityRetirementResponse",
         "type": "object"
       },
       "ActivityScheduleResponse": {
@@ -5364,6 +5723,196 @@
           "cycle"
         ],
         "title": "DependencyFindingResponse",
+        "type": "object"
+      },
+      "EditExecutionPolicy": {
+        "properties": {
+          "activity_ref": {
+            "format": "uuid",
+            "title": "Activity Ref",
+            "type": "string"
+          },
+          "mode_code": {
+            "title": "Mode Code",
+            "type": "string"
+          },
+          "state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "State Ref"
+          }
+        },
+        "required": ["activity_ref", "mode_code", "state_ref"],
+        "title": "EditExecutionPolicy",
+        "type": "object"
+      },
+      "EditPlacementLock": {
+        "properties": {
+          "locked": {
+            "title": "Locked",
+            "type": "boolean"
+          },
+          "revision": {
+            "title": "Revision",
+            "type": "integer"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          }
+        },
+        "required": ["schedule_ref", "locked", "revision"],
+        "title": "EditPlacementLock",
+        "type": "object"
+      },
+      "EditPolicyChange": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected State Ref"
+          },
+          "mode_code": {
+            "title": "Mode Code",
+            "type": "string"
+          }
+        },
+        "required": ["mode_code"],
+        "title": "EditPolicyChange",
+        "type": "object"
+      },
+      "EditProfileChange": {
+        "additionalProperties": false,
+        "properties": {
+          "color_code": {
+            "anyOf": [
+              {
+                "pattern": "^#[0-9A-Fa-f]{6}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color Code"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "expected_revision": {
+            "minimum": 0.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "title": {
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": ["expected_revision", "title"],
+        "title": "EditProfileChange",
+        "type": "object"
+      },
+      "EditReminder": {
+        "properties": {
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "lead_minutes": {
+            "title": "Lead Minutes",
+            "type": "integer"
+          },
+          "material_state_ref": {
+            "format": "uuid",
+            "title": "Material State Ref",
+            "type": "string"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schedule_ref",
+          "material_state_ref",
+          "enabled",
+          "lead_minutes"
+        ],
+        "title": "EditReminder",
+        "type": "object"
+      },
+      "EditReminderChange": {
+        "additionalProperties": false,
+        "properties": {
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "expected_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected State Ref"
+          },
+          "lead_minutes": {
+            "maximum": 10080.0,
+            "minimum": 0.0,
+            "title": "Lead Minutes",
+            "type": "integer"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          }
+        },
+        "required": ["schedule_ref", "enabled", "lead_minutes"],
+        "title": "EditReminderChange",
         "type": "object"
       },
       "ElapsedOccurrenceCoordinate": {
@@ -10551,6 +11100,49 @@
         "title": "ReplaceRecurrenceRequest",
         "type": "object"
       },
+      "ReplanChange": {
+        "properties": {
+          "previous_end": {
+            "format": "date-time",
+            "title": "Previous End",
+            "type": "string"
+          },
+          "previous_start": {
+            "format": "date-time",
+            "title": "Previous Start",
+            "type": "string"
+          },
+          "proposed_end": {
+            "format": "date-time",
+            "title": "Proposed End",
+            "type": "string"
+          },
+          "proposed_start": {
+            "format": "date-time",
+            "title": "Proposed Start",
+            "type": "string"
+          },
+          "role": {
+            "title": "Role",
+            "type": "string"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schedule_ref",
+          "role",
+          "previous_start",
+          "previous_end",
+          "proposed_start",
+          "proposed_end"
+        ],
+        "title": "ReplanChange",
+        "type": "object"
+      },
       "ReplanPostponedEventRequest": {
         "additionalProperties": false,
         "properties": {
@@ -10599,6 +11191,39 @@
         },
         "required": ["operation_id", "unschedule_operation_id", "placement"],
         "title": "ReplanPostponedEventRequest",
+        "type": "object"
+      },
+      "ReplanRow": {
+        "additionalProperties": false,
+        "properties": {
+          "ends_local_at": {
+            "format": "date-time",
+            "title": "Ends Local At",
+            "type": "string"
+          },
+          "expected_material_state_ref": {
+            "format": "uuid",
+            "title": "Expected Material State Ref",
+            "type": "string"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "starts_local_at": {
+            "format": "date-time",
+            "title": "Starts Local At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schedule_ref",
+          "expected_material_state_ref",
+          "starts_local_at",
+          "ends_local_at"
+        ],
+        "title": "ReplanRow",
         "type": "object"
       },
       "ResolutionQueueItem": {
@@ -25176,6 +25801,99 @@
         "tags": ["temporal"]
       }
     },
+    "/api/v1/temporal/activities/{activity_ref}/core-edit": {
+      "put": {
+        "description": "Apply guarded changes in one all-or-nothing transaction.",
+        "operationId": "temporal_revise_activity_core",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivityCoreEditCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityCoreEditResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Revise Activity Core",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/activities/{activity_ref}/edit-snapshot": {
+      "get": {
+        "operationId": "temporal_get_activity_edit_snapshot",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityEditSnapshot"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Activity Edit Snapshot",
+        "tags": ["temporal"]
+      }
+    },
     "/api/v1/temporal/activities/{activity_ref}/execution-policy": {
       "get": {
         "operationId": "temporal_get_activity_execution_policy",
@@ -25417,6 +26135,198 @@
         "tags": ["temporal"]
       }
     },
+    "/api/v1/temporal/activities/{activity_ref}/profile": {
+      "get": {
+        "operationId": "temporal_get_self_activity_profile",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityProfileResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Self Activity Profile",
+        "tags": ["temporal"]
+      },
+      "put": {
+        "operationId": "temporal_revise_self_activity_profile",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivityProfileChange"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityProfileResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Revise Self Activity Profile",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/activities/{activity_ref}/replan": {
+      "put": {
+        "operationId": "temporal_apply_activity_replan",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivityReplanCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityEditSnapshot"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Apply Activity Replan",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/activities/{activity_ref}/replan-preview": {
+      "post": {
+        "operationId": "temporal_preview_activity_replan",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivityReplanCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityReplanPreview"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Preview Activity Replan",
+        "tags": ["temporal"]
+      }
+    },
     "/api/v1/temporal/activities/{activity_ref}/responsibility": {
       "get": {
         "operationId": "temporal_get_activity_responsibility",
@@ -25504,6 +26414,57 @@
           }
         },
         "summary": "Set Activity Responsibility",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/activities/{activity_ref}/retire": {
+      "post": {
+        "operationId": "temporal_retire_self_activity",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivityRetirementCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityRetirementResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Retire Self Activity",
         "tags": ["temporal"]
       }
     },
