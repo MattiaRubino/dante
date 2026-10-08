@@ -185,6 +185,9 @@ function parseEvent(payload: unknown): TemporalEventDetailRecord {
     agendaRevision: parseRevision(payload.agenda_revision, 0, 'agenda_revision'),
     agendaParts: parseAgendaParts(payload.agenda_parts),
     createdAt: parseInstant(payload.created_at),
+    lifeAreaRef: payload.life_area_ref === null
+      ? null
+      : parseEventRef(payload.life_area_ref, 'life_area_ref'),
   });
 }
 
