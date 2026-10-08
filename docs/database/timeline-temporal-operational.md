@@ -384,3 +384,28 @@ marks both its materialized-only coverage and lack of apply authority.
 Dictionary/canonical catalog candidate: `231|5|197|103|471|405|572`.
 Implementation is not PostgreSQL-proven until the user's local gate;
 M1-C atomic CAS/apply remains open.
+
+## B14 M1 _123 scoped occurrence metadata edit (2026-10-08)
+
+New **candidate** forward revision `20261008_123` has one
+append-only, owner-keyed `occurrence_profile_edit` ledger table
+and five SECURITY DEFINER functions. Owner/Source row locks,
+Recurrence-current state row lock, edit CAS revision, idempotent
+operation replay, fixed accepted_at and typed Occurrence coordinates
+govern the selected anchor and additional future only. Already-past
+neighbors never enter effective policy. Accepted Actual and Objective
+observations on future materialized instances are conflict guarded;
+no historical recorded facts are deleted. Effective Activity metadata
+and Event/Activity Timeline titles are derived from the log; new
+Routine-derived Activity instances inherit applicable future metadata.
+Runtime gets function EXECUTE, no ledger table DML.
+
+Dictionary/canonical catalog target is
+`232 tables / 5 views / 202 routines / 103 triggers / 473 indexes /
+408 FK / 576 CHECK`, ORM adds one table mapping. Existing
+`get_self_activity_profile` function is replaced with the same
+return signature and PARALLEL RESTRICTED effective projection.
+_123 and client generation/whole user local gate are pending.
+Metadata edit semantics are not a license to overwrite other
+domain owners' Session, Objective, Schedule, Event agenda or
+Reality histories.
