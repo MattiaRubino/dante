@@ -1090,7 +1090,7 @@ export function ActivityEditPanel({
                   </fieldset>
                 ) : null}
                 {objectiveError ? <p role="alert">{objectiveError}</p> : null}
-                <button type="button" onClick={addObjective
+                <button type="button" onClick={addObjective}
                   disabled={objectivePending || pending || planPending ||
                     lockPending || areaPending || !objectiveDraft.label.trim()}>
                   {objectivePending ? 'Salvataggio…' :
