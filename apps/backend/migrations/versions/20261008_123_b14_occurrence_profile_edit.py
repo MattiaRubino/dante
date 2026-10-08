@@ -161,3 +161,189 @@ BEGIN
 END;
 $$;
 """
+
+_ACCEPT_EDIT = r"""
+CREATE FUNCTION dante.accept_self_occurrence_profile_edit(
+    actor uuid, selected_ref uuid, requested_operation text,
+    requested_expected_revision bigint, requested_expected_state uuid,
+    requested_scope text, requested_zone text, requested_patch jsonb
+) RETURNS TABLE(
+    revision bigint, source_native_ref uuid, selected_occurrence_ref uuid,
+    target_occurrence_refs uuid[], accepted_at timestamptz, replayed boolean
+)
+LANGUAGE plpgsql SECURITY DEFINER VOLATILE PARALLEL UNSAFE
+SET search_path=pg_catalog,dante,pg_temp AS $$
+#variable_conflict error
+DECLARE anchor_row record;
+        existing dante.occurrence_profile_edit%ROWTYPE;
+        source_ref uuid; is_routine boolean; current_revision bigint;
+        current_state uuid; anchor timestamptz; accepted timestamptz;
+        candidate record; instant timestamptz;
+        targets uuid[]; patch_key text; patch_value jsonb;
+BEGIN
+    IF requested_operation IS NULL OR requested_operation<>btrim(requested_operation)
+       OR requested_operation='' OR char_length(requested_operation)>200
+       OR requested_expected_revision IS NULL OR requested_expected_revision<0
+       OR requested_scope IS NULL
+       OR requested_scope NOT IN ('only_this','this_and_following')
+       OR requested_patch IS NULL OR jsonb_typeof(requested_patch)<>'object'
+       OR requested_patch='{}'::jsonb THEN
+        RAISE EXCEPTION USING ERRCODE='22023',
+            CONSTRAINT='occurrence_edit_invalid',
+            MESSAGE='Invalid scoped edit request';
+    END IF;
+    FOR patch_key,patch_value IN SELECT key,value FROM jsonb_each(requested_patch) LOOP
+        IF patch_key NOT IN ('title','description','location','color_code')
+           OR (patch_key='title' AND (
+               jsonb_typeof(patch_value)<>'string'
+               OR btrim(patch_value #>> '{}')=''
+               OR char_length(patch_value #>> '{}')>300
+               OR btrim(patch_value #>> '{}')<>(patch_value #>> '{}')))
+           OR (patch_key IN ('description','location') AND
+               patch_value<>'null'::jsonb AND (
+                  jsonb_typeof(patch_value)<>'string'
+                  OR btrim(patch_value #>> '{}')=''
+                  OR btrim(patch_value #>> '{}')<>(patch_value #>> '{}')))
+           OR (patch_key='color_code' AND patch_value<>'null'::jsonb AND
+               (jsonb_typeof(patch_value)<>'string'
+                OR (patch_value #>> '{}') !~ '^#[0-9A-F]{6}$')) THEN
+            RAISE EXCEPTION USING ERRCODE='22023',
+                CONSTRAINT='occurrence_edit_invalid_patch',
+                MESSAGE='Unsupported or invalid editable metadata field';
+        END IF;
+    END LOOP;
+    SELECT * INTO anchor_row FROM dante.get_self_occurrence(actor,selected_ref);
+    IF NOT FOUND THEN
+        RAISE EXCEPTION USING ERRCODE='23503',
+            CONSTRAINT='occurrence_edit_unavailable',
+            MESSAGE='Selected occurrence outside self scope';
+    END IF;
+    source_ref:=anchor_row.source_native_ref;
+    SELECT EXISTS (
+        SELECT 1 FROM dante.routine_intention r
+         WHERE r.routine_ref=source_ref AND r.self_person_ref=actor
+    ) INTO is_routine;
+    IF is_routine THEN
+        PERFORM 1 FROM dante.routine_intention r
+         WHERE r.routine_ref=source_ref AND r.self_person_ref=actor FOR UPDATE;
+    ELSE
+        PERFORM 1 FROM dante.event_expectation e
+         WHERE e.event_ref=source_ref AND e.self_person_ref=actor FOR UPDATE;
+        IF NOT FOUND THEN
+            RAISE EXCEPTION USING ERRCODE='23503',
+                CONSTRAINT='occurrence_edit_unavailable',
+                MESSAGE='Source outside self scope';
+        END IF;
+    END IF;
+    SELECT * INTO existing FROM dante.occurrence_profile_edit e
+     WHERE e.self_person_ref=actor AND e.operation_id=requested_operation;
+    IF FOUND THEN
+        IF existing.selected_occurrence_ref<>selected_ref
+           OR existing.expected_revision<>requested_expected_revision
+           OR existing.expected_recurrence_state_ref IS DISTINCT FROM requested_expected_state
+           OR existing.scope_code<>requested_scope
+           OR existing.effective_zone_id IS DISTINCT FROM requested_zone
+           OR existing.profile_patch IS DISTINCT FROM requested_patch THEN
+            RAISE EXCEPTION USING ERRCODE='23505',
+                CONSTRAINT='pk_occurrence_profile_edit',
+                MESSAGE='Operation reused for different scoped edit';
+        END IF;
+        revision:=existing.revision;
+        source_native_ref:=existing.source_native_ref;
+        selected_occurrence_ref:=existing.selected_occurrence_ref;
+        target_occurrence_refs:=existing.target_occurrence_refs;
+        accepted_at:=existing.accepted_at;
+        replayed:=true;
+        RETURN NEXT; RETURN;
+    END IF;
+    SELECT COALESCE(MAX(e.revision),0) INTO current_revision
+      FROM dante.occurrence_profile_edit e
+     WHERE e.source_native_ref=source_ref;
+    IF current_revision<>requested_expected_revision THEN
+        RAISE EXCEPTION USING ERRCODE='23505',
+            CONSTRAINT='occurrence_edit_stale',
+            MESSAGE='Source edit revision changed';
+    END IF;
+    IF is_routine THEN
+        SELECT material_state_ref INTO current_state
+          FROM dante.get_self_routine_recurrence(actor,source_ref);
+    ELSE
+        SELECT material_state_ref INTO current_state
+          FROM dante.get_self_event_recurrence(actor,source_ref);
+    END IF;
+    IF current_state IS DISTINCT FROM requested_expected_state THEN
+        RAISE EXCEPTION USING ERRCODE='23505',
+            CONSTRAINT='occurrence_edit_recurrence_stale',
+            MESSAGE='Recurrence changed since preview';
+    END IF;
+    accepted:=clock_timestamp();
+    targets:=ARRAY[selected_ref];
+    IF requested_scope='this_and_following' THEN
+        IF anchor_row.origin_code<>'recurrence_generated' THEN
+            RAISE EXCEPTION USING ERRCODE='22023',
+                CONSTRAINT='occurrence_edit_not_generated',
+                MESSAGE='Following scope requires a generated selected instance';
+        END IF;
+        anchor:=dante.occurrence_edit_coordinate_instant(actor,selected_ref,requested_zone);
+    ELSE
+        anchor:=NULL;
+    END IF;
+
+    -- This is the same fully materialized, bounded inventory as M1-B.
+    -- Its SELECT and all validations happen within this one source lock.
+    FOR candidate IN
+        SELECT * FROM dante.list_self_recurrence_edit_occurrences(actor,selected_ref)
+    LOOP
+        IF requested_scope='only_this'
+           OR candidate.occurrence_ref=selected_ref
+           OR candidate.origin_code<>'recurrence_generated' THEN
+            CONTINUE;
+        END IF;
+        instant:=dante.occurrence_edit_coordinate_instant(
+            actor,candidate.occurrence_ref,requested_zone
+        );
+        IF instant<=GREATEST(anchor,accepted) THEN CONTINUE; END IF;
+        IF candidate.skipped OR EXISTS (
+            SELECT 1 FROM dante.occurrence_profile_edit e
+             WHERE e.source_native_ref=source_ref
+               AND e.selected_occurrence_ref=candidate.occurrence_ref
+               AND e.scope_code='only_this'
+        ) OR EXISTS (
+            SELECT 1 FROM dante.actual a
+             WHERE a.subject_native_ref=candidate.occurrence_ref
+        ) OR EXISTS (
+            SELECT 1 FROM dante.routine_occurrence_activity_instance link
+              JOIN dante.activity_intention activity
+                ON activity.activity_ref=link.activity_ref
+             WHERE link.occurrence_ref=candidate.occurrence_ref
+               AND (activity.profile_revision>0 OR EXISTS (
+                   SELECT 1 FROM dante.actual a
+                    WHERE a.subject_native_ref=activity.activity_ref
+               ))
+        ) THEN
+            RAISE EXCEPTION USING ERRCODE='23505',
+                CONSTRAINT='occurrence_edit_future_conflict',
+                MESSAGE='A following future instance has protected changes or facts';
+        END IF;
+        targets:=array_append(targets,candidate.occurrence_ref);
+    END LOOP;
+    INSERT INTO dante.occurrence_profile_edit(
+        self_person_ref,operation_id,source_native_ref,selected_occurrence_ref,
+        revision,expected_revision,expected_recurrence_state_ref,scope_code,
+        effective_zone_id,anchor_at,accepted_at,profile_patch,
+        target_occurrence_refs
+    ) VALUES (
+        actor,requested_operation,source_ref,selected_ref,
+        current_revision+1,current_revision,current_state,requested_scope,
+        requested_zone,anchor,accepted,requested_patch,targets
+    );
+    revision:=current_revision+1;
+    source_native_ref:=source_ref;
+    selected_occurrence_ref:=selected_ref;
+    target_occurrence_refs:=targets;
+    accepted_at:=accepted;
+    replayed:=false;
+    RETURN NEXT;
+END;
+$$;
+"""
