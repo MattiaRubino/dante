@@ -547,6 +547,11 @@ BEGIN
     SELECT h.state_ref INTO current_ref
       FROM dante.temporal_objective_evaluation_current_history h
      WHERE h.objective_ref=requested_objective AND h.current_until_at IS NULL;
+    IF current_ref IS NULL OR requested_expected_evaluation IS NULL THEN
+        RAISE EXCEPTION USING ERRCODE='23514',
+           CONSTRAINT='temporal_objective_result_correction_requires_fact',
+           MESSAGE='Only a previously recorded Objective result can be corrected';
+    END IF;
     IF current_ref IS DISTINCT FROM requested_expected_evaluation THEN
         RAISE EXCEPTION USING ERRCODE='40001',
            CONSTRAINT='temporal_objective_result_stale',
