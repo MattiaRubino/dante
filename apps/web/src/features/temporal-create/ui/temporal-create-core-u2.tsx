@@ -690,15 +690,35 @@ export function TemporalCreateCoreFieldsU2({
   };
 
   const patchStartTime = (startTime: string) => {
-    const nextEnd = temporalCreateEndDateTime(
+    // The end displayed in the form is an explicit choice. Moving the start
+    // changes the duration, not the end clock (including overnight ranges).
+    let endDate = visibleEndDate;
+    let duration = temporalCreateDurationFromEndDateTime(
       fields.date,
       startTime,
-      fields.durationMinutes,
+      endDate,
+      calculatedEnd.time,
       fields.timeMode,
       fields.timeZoneId,
     );
-    patchAuthoring({ endDate: nextEnd.date });
-    onPatch({ startTime });
+    if (duration === null && endDate === fields.date) {
+      endDate = Temporal.PlainDate.from(fields.date)
+        .add({ days: 1 })
+        .toString();
+      duration = temporalCreateDurationFromEndDateTime(
+        fields.date,
+        startTime,
+        endDate,
+        calculatedEnd.time,
+        fields.timeMode,
+        fields.timeZoneId,
+      );
+    }
+    if (endDate !== visibleEndDate) patchAuthoring({ endDate });
+    onPatch({
+      startTime,
+      ...(duration === null ? {} : { durationMinutes: duration }),
+    });
   };
 
   const bandLabels: Readonly<Record<TimeBand['key'], string>> = italian
@@ -897,11 +917,17 @@ export function TemporalCreateCoreFieldsU2({
               onClick={() => setTimeZoneOpen((current) => !current)}
             >
               <GlobeIcon />
-              <span className="temporal-create-timezone-divider" aria-hidden="true" />
+              <span
+                className="temporal-create-timezone-divider"
+                aria-hidden="true"
+              />
               <span className="temporal-create-timezone-label">
                 {italian ? 'Fuso orario' : 'Time zone'} · {timeZoneLabel}
               </span>
-              <span className="temporal-create-timezone-chevron" aria-hidden="true">
+              <span
+                className="temporal-create-timezone-chevron"
+                aria-hidden="true"
+              >
                 {timeZoneOpen ? '⌃' : '⌄'}
               </span>
             </button>

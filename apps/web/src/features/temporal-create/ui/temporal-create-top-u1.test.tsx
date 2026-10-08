@@ -1,8 +1,22 @@
 // @vitest-environment jsdom
 
 import { Temporal } from '@dante/time';
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
-import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from '@testing-library/react';
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
 
 import { i18n } from '../../../bootstrap/i18n';
 import { HomeCreateInteractionBridge } from '../../home/ui/home-create-interaction-bridge';
@@ -57,7 +71,7 @@ function renderEntry() {
 function addMinutes(value: string, delta: number): string {
   const [hour = '0', minute = '0'] = value.split(':');
   const total =
-    ((Number(hour) * 60 + Number(minute) + delta) % 1440 + 1440) % 1440;
+    (((Number(hour) * 60 + Number(minute) + delta) % 1440) + 1440) % 1440;
   return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(
     total % 60,
   ).padStart(2, '0')}`;
@@ -84,7 +98,9 @@ describe('Temporal Create U1 top controls', () => {
     expect(
       document.querySelector('.temporal-create-composer__heading-copy'),
     ).toBeNull();
-    expect(document.querySelector('.temporal-create-intent-summary')).toBeNull();
+    expect(
+      document.querySelector('.temporal-create-intent-summary'),
+    ).toBeNull();
   });
 
   it('keeps explicit start/end dates on the timed row and uses only the DANTE calendar', () => {
@@ -102,7 +118,7 @@ describe('Temporal Create U1 top controls', () => {
     expect(within(calendar).queryByText('Cancella')).toBeNull();
   });
 
-  it('keeps the duration stable when start time changes and rejects invalid manual time', () => {
+  it('keeps the end clock stable when start time changes and rejects invalid manual time', () => {
     renderEntry();
 
     const startRaw = document.querySelector<HTMLInputElement>(
@@ -124,7 +140,12 @@ describe('Temporal Create U1 top controls', () => {
       screen.getByRole('button', { name: 'Inizio: aumenta 15 minuti' }),
     );
     expect(startRaw.value).toBe(addMinutes(before, 15));
-    expect(endRaw.value).toBe(addMinutes(endBefore, 15));
+    expect(endRaw.value).toBe(endBefore);
+
+    fireEvent.change(hour, { target: { value: '23' } });
+    fireEvent.blur(hour);
+    expect(startRaw.value).toMatch(/^23:/);
+    expect(endRaw.value).toBe(endBefore);
 
     const validHour = hour.value;
     fireEvent.change(hour, { target: { value: 'ab' } });
@@ -179,7 +200,9 @@ describe('Temporal Create U1 top controls', () => {
     expect(
       screen.getByRole('button', { name: /Fuso orario: Ora locale/ }),
     ).toBeTruthy();
-    expect((screen.getByLabelText('Ricorda') as HTMLSelectElement).disabled).toBe(true);
+    expect(
+      (screen.getByLabelText('Ricorda') as HTMLSelectElement).disabled,
+    ).toBe(true);
 
     fireEvent.click(
       screen.getByRole('button', { name: /Fuso orario: Ora locale/ }),
@@ -188,7 +211,9 @@ describe('Temporal Create U1 top controls', () => {
     expect(
       screen.getByRole('button', { name: /Fuso orario: Europe\/Rome/ }),
     ).toBeTruthy();
-    expect((screen.getByLabelText('Ricorda') as HTMLSelectElement).disabled).toBe(false);
+    expect(
+      (screen.getByLabelText('Ricorda') as HTMLSelectElement).disabled,
+    ).toBe(false);
   });
 
   it('keeps the rail open on outside clicks while pinned, including the global Home bridge', () => {
@@ -206,18 +231,24 @@ describe('Temporal Create U1 top controls', () => {
     expect(pin.getAttribute('aria-pressed')).toBe('true');
 
     fireEvent.pointerDown(backdrop);
-    expect(document.querySelector('[data-temporal-create="composer"]')).toBeTruthy();
+    expect(
+      document.querySelector('[data-temporal-create="composer"]'),
+    ).toBeTruthy();
 
     const outside = document.createElement('div');
     document.body.append(outside);
     fireEvent.pointerDown(outside);
-    expect(document.querySelector('[data-temporal-create="composer"]')).toBeTruthy();
+    expect(
+      document.querySelector('[data-temporal-create="composer"]'),
+    ).toBeTruthy();
     outside.remove();
 
     const unpin = screen.getByRole('button', { name: 'Sblocca pannello Crea' });
     fireEvent.click(unpin);
     fireEvent.pointerDown(backdrop);
-    expect(document.querySelector('[data-temporal-create="composer"]')).toBeNull();
+    expect(
+      document.querySelector('[data-temporal-create="composer"]'),
+    ).toBeNull();
   });
 
   it('promotes Advanced to a central viewport surface without losing the Quick draft', () => {
@@ -226,7 +257,9 @@ describe('Temporal Create U1 top controls', () => {
     const quickComposer = document.querySelector<HTMLElement>(
       '[data-temporal-create="composer"]',
     );
-    expect(quickComposer?.closest('[data-home-context-create-host]')).toBeTruthy();
+    expect(
+      quickComposer?.closest('[data-home-context-create-host]'),
+    ).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Annulla' })).toBeNull();
 
     fireEvent.change(screen.getByPlaceholderText('Titolo'), {
@@ -249,12 +282,13 @@ describe('Temporal Create U1 top controls', () => {
     expect(advancedComposer?.dataset.temporalCreateSurface).toBe('advanced');
     expect(advancedComposer?.parentElement).toBe(advancedBackdrop);
     expect(advancedBackdrop?.parentElement).toBe(document.body);
-    expect((screen.getByPlaceholderText('Titolo') as HTMLInputElement).value).toBe(
-      'Bozza preservata',
-    );
-    expect((screen.getByLabelText('Life Area (opzionale)') as HTMLInputElement).value).toBe(
-      'Nuova Area',
-    );
+    expect(
+      (screen.getByPlaceholderText('Titolo') as HTMLInputElement).value,
+    ).toBe('Bozza preservata');
+    expect(
+      (screen.getByLabelText('Life Area (opzionale)') as HTMLInputElement)
+        .value,
+    ).toBe('Nuova Area');
 
     // Advanced owns the full timezone field and continues to edit the same
     // timeMode/timeZoneId values as Quick.
@@ -279,12 +313,15 @@ describe('Temporal Create U1 top controls', () => {
       '[data-temporal-create="composer"]',
     );
     expect(returnedComposer?.dataset.temporalCreateSurface).toBe('base');
-    expect(returnedComposer?.closest('[data-home-context-create-host]')).toBeTruthy();
-    expect((screen.getByPlaceholderText('Titolo') as HTMLInputElement).value).toBe(
-      'Bozza preservata',
-    );
-    expect((screen.getByLabelText('Life Area (opzionale)') as HTMLInputElement).value).toBe(
-      'Nuova Area',
-    );
+    expect(
+      returnedComposer?.closest('[data-home-context-create-host]'),
+    ).toBeTruthy();
+    expect(
+      (screen.getByPlaceholderText('Titolo') as HTMLInputElement).value,
+    ).toBe('Bozza preservata');
+    expect(
+      (screen.getByLabelText('Life Area (opzionale)') as HTMLInputElement)
+        .value,
+    ).toBe('Nuova Area');
   });
 });

@@ -22,7 +22,8 @@ describe('Activity Timeline frame', () => {
       expect(d).not.toMatch(/NaN|Infinity/);
       expect(radius).toBeLessThan(Math.min(width, height) / 2);
     }
-    expect(activityFramePath(626, 198).radius).toBe(58);
+    expect(activityFramePath(626, 198).radius).toBe(30);
+    expect(activityFramePath(260, 460).radius).toBe(30);
   });
 
   it('gives each card its own gradient and keeps the frame out of the accessibility tree', () => {

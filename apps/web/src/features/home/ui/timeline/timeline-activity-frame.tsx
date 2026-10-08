@@ -14,10 +14,10 @@ export function activityFramePath(
   const w = width;
   const h = height;
   // At compact Timeline sizes, leave a straight segment between the corners.
-  const r = Math.max(1, Math.min(58, h * 0.35, w * 0.35));
-  const base = Math.min(3, Math.max(1, h * 0.015));
-  const left = Math.min(Math.max(base + 0.8, h * 0.06), r * 0.45);
-  const rightCorner = Math.min(Math.max(base + 2.7, h * 0.04), r * 0.26);
+  const r = Math.max(1, Math.min(30, h * 0.29, w * 0.17));
+  const base = Math.min(2, Math.max(1, h * 0.012));
+  const left = Math.min(base + 3.5, r * 0.28);
+  const rightCorner = Math.min(base + 3, r * 0.24);
   const rightSideRun = Math.max(0, Math.min(r * 1.24, h * 0.4, h - 2 * r));
   const bottomRun = Math.max(0, Math.min(r * 1.06, h * 0.32, w - 2 * r));
   const outside: Array<[number, number]> = [];

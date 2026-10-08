@@ -1,21 +1,29 @@
 // @vitest-environment jsdom
 
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { TimelineEvent, TimelineGroup } from './model/timeline-types';
 import { EventDetailDialog, detailFromEvent } from './timeline-overlays';
 
 vi.mock('../../../temporal/actual-realization-controls', () => ({
-  ActualRealizationControls: ({ kind, subjectRef }: { kind: string; subjectRef: string }) => (
-    <div data-testid="reality-controls">{`${kind}:${subjectRef}`}</div>
-  ),
+  ActualRealizationControls: ({
+    kind,
+    subjectRef,
+  }: {
+    kind: string;
+    subjectRef: string;
+  }) => <div data-testid="reality-controls">{`${kind}:${subjectRef}`}</div>,
 }));
 
 vi.mock('../../../temporal/session-subject-controls', () => ({
-  SessionSubjectControls: ({ kind, subjectRef }: { kind: string; subjectRef: string }) => (
-    <div data-testid="session-controls">{`${kind}:${subjectRef}`}</div>
-  ),
+  SessionSubjectControls: ({
+    kind,
+    subjectRef,
+  }: {
+    kind: string;
+    subjectRef: string;
+  }) => <div data-testid="session-controls">{`${kind}:${subjectRef}`}</div>,
 }));
 
 vi.mock('../../../temporal/responsibility-controls', () => ({
@@ -57,6 +65,50 @@ function baseEvent(): Omit<TimelineEvent, 'canonicalBasis'> {
 afterEach(() => cleanup());
 
 describe('Timeline post-create runtime destinations', () => {
+  it('anchors the Inspector beside the card without a dimming backdrop and truncates its title', () => {
+    const opener = document.createElement('button');
+    const card = document.createElement('article');
+    card.dataset.timelineEvent = SCHEDULE_REF;
+    card.append(opener);
+    document.body.append(card);
+    card.getBoundingClientRect = () => ({
+      left: 100,
+      right: 300,
+      top: 120,
+      bottom: 200,
+      width: 200,
+      height: 80,
+      x: 100,
+      y: 120,
+      toJSON: () => ({}),
+    });
+    const close = vi.fn();
+    render(
+      <EventDetailDialog
+        detail={{
+          title: 'X'.repeat(400),
+          startMinute: 600,
+          endMinute: 660,
+          groupLabel: 'Personale',
+          meta: '',
+        }}
+        opener={opener}
+        canUnschedule={false}
+        pending={false}
+        onUnschedule={() => undefined}
+        onClose={close}
+      />,
+    );
+    const dialog = screen.getByRole('dialog');
+    expect(dialog.getAttribute('aria-modal')).toBe('false');
+    expect(dialog.style.left).toBe('312px');
+    expect(dialog.style.top).toBe('120px');
+    expect(dialog.closest('.timeline-modal-backdrop--inspector')).toBeTruthy();
+    fireEvent.pointerDown(document.body);
+    expect(close).toHaveBeenCalledOnce();
+    card.remove();
+  });
+
   it('derives B10 subjects for Activity, Event and Occurrence independently from Session', () => {
     const activity = detailFromEvent(
       {
@@ -112,7 +164,10 @@ describe('Timeline post-create runtime destinations', () => {
       groups,
     );
 
-    expect(activity.realitySubject).toEqual({ kind: 'activity', ref: ACTIVITY_REF });
+    expect(activity.realitySubject).toEqual({
+      kind: 'activity',
+      ref: ACTIVITY_REF,
+    });
     expect(event.realitySubject).toEqual({ kind: 'event', ref: EVENT_REF });
     expect(occurrence.realitySubject).toEqual({
       kind: 'occurrence',

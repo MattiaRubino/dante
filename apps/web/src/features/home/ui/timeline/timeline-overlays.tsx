@@ -43,7 +43,11 @@ import {
   parseTimelineDate,
   timelineDateKey,
 } from './model/timeline-temporal';
-import type { TimelineEvent, TimelineGroup, TimelineCanonicalSchedulePlacement } from './model/timeline-types';
+import type {
+  TimelineEvent,
+  TimelineGroup,
+  TimelineCanonicalSchedulePlacement,
+} from './model/timeline-types';
 import { TimelineEventAgendaEditor } from './timeline-event-agenda-editor';
 
 type PopoverPosition = Readonly<{
@@ -861,6 +865,10 @@ export function EventDetailDialog({
   const [editingProfile, setEditingProfile] = useState<ActivityProfile | null>(
     null,
   );
+  const [inspectorPosition, setInspectorPosition] = useState({
+    left: 12,
+    top: 12,
+  });
   const currentEditingProfile =
     editingProfile?.activityRef === sessionSubject?.ref ? editingProfile : null;
 
@@ -868,6 +876,60 @@ export function EventDetailDialog({
     if (currentEditingProfile) editCloseRequestRef.current?.();
     else onClose();
   }, [currentEditingProfile, onClose]);
+
+  useLayoutEffect(() => {
+    if (!detail || currentEditingProfile || !opener) return;
+    const updatePosition = () => {
+      const anchor =
+        opener.closest<HTMLElement>('[data-timeline-event]') ?? opener;
+      const rect = anchor.getBoundingClientRect();
+      const panel = dialogRef.current;
+      const width = panel?.offsetWidth || Math.min(420, window.innerWidth - 24);
+      const height = panel?.offsetHeight || 320;
+      const gap = 12;
+      const right = rect.right + gap;
+      const left = rect.left - width - gap;
+      const preferredLeft =
+        right + width <= window.innerWidth - 12
+          ? right
+          : left >= 12
+            ? left
+            : right;
+      setInspectorPosition({
+        left: clamp(
+          preferredLeft,
+          12,
+          Math.max(12, window.innerWidth - width - 12),
+        ),
+        top: clamp(
+          rect.top,
+          12,
+          Math.max(12, window.innerHeight - height - 12),
+        ),
+      });
+    };
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    window.addEventListener('scroll', updatePosition, true);
+    return () => {
+      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', updatePosition, true);
+    };
+  }, [detail, opener, currentEditingProfile]);
+
+  useEffect(() => {
+    if (!detail || currentEditingProfile) return;
+    const dismiss = (event: globalThis.PointerEvent) => {
+      if (
+        event.target instanceof Node &&
+        !dialogRef.current?.contains(event.target) &&
+        !opener?.contains(event.target)
+      )
+        onClose();
+    };
+    document.addEventListener('pointerdown', dismiss, true);
+    return () => document.removeEventListener('pointerdown', dismiss, true);
+  }, [detail, opener, currentEditingProfile, onClose]);
 
   useEffect(() => {
     if (!detail) {
@@ -878,7 +940,7 @@ export function EventDetailDialog({
       if (event.key === 'Escape') {
         event.preventDefault();
         requestCloseCurrent();
-      } else if (event.key === 'Tab') {
+      } else if (event.key === 'Tab' && currentEditingProfile) {
         const focusable = Array.from(
           dialogRef.current?.querySelectorAll<HTMLElement>(
             'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
@@ -917,7 +979,7 @@ export function EventDetailDialog({
 
   return createPortal(
     <div
-      className="timeline-modal-backdrop is-open"
+      className={`timeline-modal-backdrop is-open${currentEditingProfile ? '' : ' timeline-modal-backdrop--inspector'}`}
       role="presentation"
       onPointerDown={(event: ReactPointerEvent<HTMLDivElement>) => {
         if (event.currentTarget === event.target) {
@@ -927,9 +989,10 @@ export function EventDetailDialog({
     >
       <div
         ref={dialogRef}
-        className={`timeline-event-modal${currentEditingProfile ? ' timeline-event-modal--edit' : ''}`}
+        className={`timeline-event-modal${currentEditingProfile ? ' timeline-event-modal--edit' : ' timeline-event-modal--inspector'}`}
+        style={currentEditingProfile ? undefined : inspectorPosition}
         role="dialog"
-        aria-modal="true"
+        aria-modal={Boolean(currentEditingProfile)}
         aria-labelledby="timeline-event-dialog-title"
       >
         <div className="timeline-event-modal__header">
@@ -1157,7 +1220,8 @@ export function detailFromEvent(
     ...(ownerKind === undefined ? {} : { ownerKind }),
     ...(eventRef === undefined ? {} : { eventRef }),
     ...(event.canonicalBasis?.kind === 'scheduled-event'
-      ? { eventPlacement: event.canonicalBasis.placement } : {}),
+      ? { eventPlacement: event.canonicalBasis.placement }
+      : {}),
     ...(realitySubject === undefined ? {} : { realitySubject }),
   };
   return event.subitems?.length

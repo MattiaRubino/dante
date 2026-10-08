@@ -36,12 +36,7 @@ type TemporalCreateCoreFieldsProps = Readonly<{
 }>;
 
 type QuickRecurrence =
-  | 'none'
-  | 'daily'
-  | 'weekly'
-  | 'monthly'
-  | 'yearly'
-  | 'custom';
+  'none' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom';
 
 type TimeControlProps = Readonly<{
   label: string;
@@ -257,7 +252,8 @@ function TemporalCreateTimeControl({
     const frame = requestAnimationFrame(() => {
       const selected = nearestQuarter(lastValidRef.current);
       const option = Array.from(
-        listRef.current?.querySelectorAll<HTMLElement>('[data-time-value]') ?? [],
+        listRef.current?.querySelectorAll<HTMLElement>('[data-time-value]') ??
+          [],
       ).find((candidate) => candidate.dataset.timeValue === selected);
       option?.scrollIntoView({ block: 'center' });
     });
@@ -287,16 +283,16 @@ function TemporalCreateTimeControl({
       restore();
       return;
     }
-    syncDraft(`${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`);
+    syncDraft(
+      `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`,
+    );
   };
 
   const adjust = (delta: number) => {
     syncDraft(shiftTime(lastValidRef.current, delta));
   };
 
-  const handleSegmentKeyDown = (
-    event: KeyboardEvent<HTMLInputElement>,
-  ) => {
+  const handleSegmentKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
       event.preventDefault();
       commitParts(hourDraft, minuteDraft);
@@ -309,7 +305,12 @@ function TemporalCreateTimeControl({
   };
 
   return (
-    <div ref={rootRef} className="temporal-create-time-control" role="group" aria-label={label}>
+    <div
+      ref={rootRef}
+      className="temporal-create-time-control"
+      role="group"
+      aria-label={label}
+    >
       <input
         className="temporal-create-time-raw-input"
         data-create-path={dataPath}
@@ -365,7 +366,10 @@ function TemporalCreateTimeControl({
             </button>
           </div>
 
-          <span className="temporal-create-inline-time-editor__separator" aria-hidden="true">
+          <span
+            className="temporal-create-inline-time-editor__separator"
+            aria-hidden="true"
+          >
             :
           </span>
 
@@ -421,7 +425,11 @@ function TemporalCreateTimeControl({
       {helper ? <small>{helper}</small> : null}
 
       {pickerOpen ? (
-        <div className="temporal-create-time-picker" role="dialog" aria-label={label}>
+        <div
+          className="temporal-create-time-picker"
+          role="dialog"
+          aria-label={label}
+        >
           <div ref={listRef} className="temporal-create-time-list">
             {TIME_OPTIONS.map((option) => (
               <button
@@ -599,6 +607,34 @@ export function TemporalCreateCoreFields({
     }
   };
 
+  const patchStartTime = (startTime: string) => {
+    let duration = temporalCreateDurationFromEndDateTime(
+      fields.date,
+      startTime,
+      end.date,
+      end.time,
+      fields.timeMode,
+      fields.timeZoneId,
+    );
+    if (duration === null && end.date === fields.date) {
+      const nextDate = Temporal.PlainDate.from(fields.date)
+        .add({ days: 1 })
+        .toString();
+      duration = temporalCreateDurationFromEndDateTime(
+        fields.date,
+        startTime,
+        nextDate,
+        end.time,
+        fields.timeMode,
+        fields.timeZoneId,
+      );
+    }
+    onPatch({
+      startTime,
+      ...(duration === null ? {} : { durationMinutes: duration }),
+    });
+  };
+
   const applyTimeBand = (band: TimeBand) => {
     let endDate = fields.date;
     const startMinute = timeToMinute(band.start);
@@ -691,7 +727,9 @@ export function TemporalCreateCoreFields({
   return (
     <>
       <fieldset className="temporal-create-type-fieldset">
-        <legend className="temporal-create-visually-hidden">{copy.typeLabel}</legend>
+        <legend className="temporal-create-visually-hidden">
+          {copy.typeLabel}
+        </legend>
         <div className="temporal-create-type-grid is-four">
           {typeRegistry.map((descriptor) => (
             <button
@@ -709,11 +747,21 @@ export function TemporalCreateCoreFields({
               </strong>
             </button>
           ))}
-          <button type="button" className="is-deferred" disabled aria-disabled="true">
+          <button
+            type="button"
+            className="is-deferred"
+            disabled
+            aria-disabled="true"
+          >
             <strong>Timer</strong>
             <small>{italian ? 'Prossimamente' : 'Coming soon'}</small>
           </button>
-          <button type="button" className="is-deferred" disabled aria-disabled="true">
+          <button
+            type="button"
+            className="is-deferred"
+            disabled
+            aria-disabled="true"
+          >
             <strong>{italian ? 'Sveglia' : 'Alarm'}</strong>
             <small>{italian ? 'Prossimamente' : 'Coming soon'}</small>
           </button>
@@ -772,7 +820,10 @@ export function TemporalCreateCoreFields({
       {fields.timeSemantics === 'timed' ? (
         <div className="temporal-create-when-block">
           <div className="temporal-create-date-time-row">
-            <div ref={timeZoneRootRef} className="temporal-create-timezone-control">
+            <div
+              ref={timeZoneRootRef}
+              className="temporal-create-timezone-control"
+            >
               <button
                 className={`temporal-create-timezone-trigger${timeZoneOpen ? ' is-open' : ''}`}
                 type="button"
@@ -792,7 +843,9 @@ export function TemporalCreateCoreFields({
                   <div className="temporal-create-timezone-list">
                     <button
                       type="button"
-                      className={fields.timeMode === 'floating' ? 'is-selected' : ''}
+                      className={
+                        fields.timeMode === 'floating' ? 'is-selected' : ''
+                      }
                       onClick={() => onPatch({ timeMode: 'floating' })}
                     >
                       {italian ? 'Ora locale' : 'Local time'}
@@ -802,7 +855,8 @@ export function TemporalCreateCoreFields({
                         key={zoneId}
                         type="button"
                         className={
-                          fields.timeMode === 'zoned' && fields.timeZoneId === zoneId
+                          fields.timeMode === 'zoned' &&
+                          fields.timeZoneId === zoneId
                             ? 'is-selected'
                             : ''
                         }
@@ -839,7 +893,7 @@ export function TemporalCreateCoreFields({
               label={startLabel}
               value={fields.startTime}
               dataPath="startTime"
-              onChange={(startTime) => onPatch({ startTime })}
+              onChange={patchStartTime}
               helper={renderError('startTime')}
             />
 
@@ -922,7 +976,9 @@ export function TemporalCreateCoreFields({
               data-create-path="date"
               type="date"
               value={fields.date}
-              aria-label={t(($) => $.common.home.timeline.create.eventDetails.startDate)}
+              aria-label={t(
+                ($) => $.common.home.timeline.create.eventDetails.startDate,
+              )}
               onChange={(event) => {
                 const date = event.currentTarget.value;
                 onPatch({
@@ -947,7 +1003,9 @@ export function TemporalCreateCoreFields({
               data-create-path="event.allDayEndDate"
               type="date"
               value={fields.event.allDayEndDate}
-              aria-label={t(($) => $.common.home.timeline.create.eventDetails.endDate)}
+              aria-label={t(
+                ($) => $.common.home.timeline.create.eventDetails.endDate,
+              )}
               onChange={(event) =>
                 patchEvent({ allDayEndDate: event.currentTarget.value })
               }
@@ -959,7 +1017,9 @@ export function TemporalCreateCoreFields({
 
       <div className="temporal-create-event-quick-row">
         <label className="temporal-create-control">
-          <span className="temporal-create-visually-hidden">{copy.event.repeat}</span>
+          <span className="temporal-create-visually-hidden">
+            {copy.event.repeat}
+          </span>
           <select
             aria-label={copy.event.repeat}
             value={quickRecurrence(fields)}
