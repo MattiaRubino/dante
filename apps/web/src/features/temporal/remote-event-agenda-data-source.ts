@@ -146,6 +146,27 @@ function parseInstant(value: unknown): Temporal.Instant {
   }
 }
 
+function optionalEventText(value: unknown, field: string): string | null {
+  if (value === null) return null;
+  if (typeof value !== 'string' || !value || value !== value.trim()) {
+    throw new TemporalEventAgendaRemoteError(
+      'protocol',
+      `Event ${field} must be canonical optional text.`,
+    );
+  }
+  return value;
+}
+
+function optionalEventColor(value: unknown): string | null {
+  if (value === null) return null;
+  if (typeof value !== 'string' || !/^#[0-9A-F]{6}$/.test(value)) {
+    throw new TemporalEventAgendaRemoteError(
+      'protocol', 'Event color must be a canonical #RRGGBB color.',
+    );
+  }
+  return value;
+}
+
 function parseEvent(payload: unknown): TemporalEventDetailRecord {
   if (!isRecord(payload)) {
     throw new TemporalEventAgendaRemoteError(
