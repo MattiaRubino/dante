@@ -212,6 +212,30 @@
         "meaning": "Accepted immutable Objective definition revision accepted_at",
         "semantic_type": null,
         "value_contract": null
+      },
+      {
+        "name": "applied_evaluation_state_ref",
+        "postgres_type": "uuid",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Immutable evaluated receipt accepted with this definition revision",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "applied_assessment_code",
+        "postgres_type": "text",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Immutable evaluated receipt accepted with this definition revision",
+        "semantic_type": null,
+        "value_contract": null
       }
     ],
     "primary_key": {
@@ -386,7 +410,7 @@
   "state_history": {
     "material_state_behavior": null,
     "current_binding": "Latest ordered revision per objective_ref becomes the effective definition; baseline is logical revision 0.",
-    "chronology": "Previous accepted definitions are retained, never mutated. Reinterpretations of deterministic recorded Observations issue Evaluation history.",
+    "chronology": "Previous accepted definitions are retained, never mutated. Reinterpretations of deterministic recorded Observations issue Evaluation history. Replayed revisions return their original evaluation state and assessment receipt, even after subsequent corrections.",
     "immutability_policy": "Append-only revision rows; no runtime direct table UPDATE/DELETE."
   },
   "lifecycle": {
