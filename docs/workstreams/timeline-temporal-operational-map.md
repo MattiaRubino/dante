@@ -452,3 +452,7 @@ in Activity Timeline, import sort corrections and regression
 test. Dictionary/catalog stays 232/5/202/103/473/408/576.
 _124 local gate **PENDING**. Do not claim M1 whole domain or
 B14 closed.
+
+## 2026-10-08 — M1 focused technical closure on published client
+
+After user rerun of _124: `RUFF=0`, `POSTGRES=0`, `GENERATED_CHECK=0`, `API_TYPECHECK=0`, `WEB_TYPECHECK=0`, `VITEST=0`. User published the nine generated API files in `55a017b9`, with clean `git status`. **M1 general-metadata recurrence edit vertical focused-gate CLOSED.** Preserve B06/B11 existing functional authority. _124 catalog 232 tables, 5 views, 202 functions, 103 triggers, 473 indexes, 408 FK, 576 CHECK. Final visual dogfood still B14 M5/B15. M2 Objective same-logical-identity definition/result correction and historically valid audit is OPEN; M3 remaining field/domain edits, M4 Event inspector/duplicate and M5/B15 also OPEN.
