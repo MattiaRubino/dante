@@ -199,7 +199,8 @@ export function ActivityEditPanel({
   };
 
   const previewPlan = () => {
-    if (!settings || !canReplan || !planDirty || coreDirty || planPending) return;
+    if (!settings || !canReplan || !planDirty || coreDirty || lockDirty || areaDirty ||
+        planPending || lockPending || areaPending) return;
     const operationId = crypto.randomUUID();
     setPlanPending(true);
     setPlanError('');
@@ -214,7 +215,8 @@ export function ActivityEditPanel({
   };
 
   const applyPlan = () => {
-    if (!settings || !planPreview || !planOperation || planPending || coreDirty) return;
+    if (!settings || !planPreview || !planOperation || planPending || coreDirty ||
+        lockDirty || areaDirty || lockPending || areaPending) return;
     setPlanPending(true);
     setPlanError('');
     void settingsSource.applyReplan(profile.activityRef, settings, replanDraft, planOperation)
@@ -611,8 +613,11 @@ export function ActivityEditPanel({
               ) : null}
               {planDirty ? (
                 <div>
-                  {coreDirty ? <p>Salva le altre impostazioni separatamente prima di spostare l’attività.</p> : null}
-                  <button type="button" disabled={planPending || pending || coreDirty}
+                  {coreDirty || lockDirty || areaDirty ? (
+                    <p>Applica le altre impostazioni prima di modificare la programmazione.</p>
+                  ) : null}
+                  <button type="button" disabled={planPending || pending || lockPending || areaPending ||
+                      coreDirty || lockDirty || areaDirty}
                     onClick={previewPlan}>
                     {planPending ? 'Verifica…' : 'Verifica spostamento'}
                   </button>
@@ -643,7 +648,8 @@ export function ActivityEditPanel({
                         `${change.proposedStart} – ${change.proposedEnd}` : 'rimossa'}
                     </li>
                   ))}</ul>
-                  <button type="button" disabled={planPending || pending || coreDirty} onClick={applyPlan}>
+                  <button type="button" disabled={planPending || pending || lockPending || areaPending ||
+                      coreDirty || lockDirty || areaDirty} onClick={applyPlan}>
                     Applica programmazione
                   </button>
                   <button type="button" disabled={planPending} onClick={() => {
