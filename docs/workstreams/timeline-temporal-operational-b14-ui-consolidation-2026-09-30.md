@@ -866,3 +866,45 @@ Activity/Event snapshot/integration tests; `pnpm api:generate`,
 Vitest Activity Inspector/remote recurring profile editor. Inspect
 local generated diff, then commit canonical generated files once
 after the entire gate is green.
+
+## 2026-10-08 — M1 _123 local gate failures, _124 forward repair candidate
+
+User actually ran the whole _123 local gate after `65519f96`.
+**Result:** Ruff **1** (two I001 import order violations in
+`occurrence_api.py` and `mappings/__init__.py`); 18 unit **PASS**;
+PostgreSQL **16 PASS / 4 FAIL** (all existing B14 Activity
+Inspector/edit-snapshot tests); OpenAPI generation **0**;
+deterministic generation **489 files / 0**; API/Web typechecks **0**;
+Vitest **21/21 PASS / 0**. New M1 scoped PostgreSQL tests and database
+catalog tests were among the passing tests. Client source was
+generated locally and remains uncommitted; **do not reset it**.
+
+**Confirmed shared root cause:** `20261008_123` replaced
+`dante.get_self_activity_profile` using a LATERAL subquery guarded
+by a `WHERE origin.occurrence_ref IS NOT NULL`. PostgreSQL
+inlining/optimization still evaluates the strict self-Occurrence
+patch accessor with NULL for non-recurring Activity.
+The accessor correctly raises `occurrence_edit_unavailable`; the
+**caller is wrong**, not the access policy. All four existing
+Activity read/edit tests fail with this same exception.
+
+**Repair:** do not rewrite an already-executed _123 migration.
+The appended forward-only `20261008_124` replaces only the existing
+Activity profile read using explicit PL/pgSQL owner fetch and
+`IF bound_occurrence IS NOT NULL` before invoking the strict
+self-Occurrence patch function. Nonexistent/retired/cross-owner
+Activity still returns no row. The equivalent one-off Activity
+path in the Timeline SQL now uses a `CASE` guard rather than a
+planner-flattenable `WHERE` in a LATERAL query. Both I001 imports
+were reordered. The Dictionary updates the one existing routine's
+language to PL/pgSQL and revision to _124, and catalog tests now
+expect _124 with the exact **unchanged** topology
+232/5/202/103/473/408/576. A targeted PostgreSQL regression test
+verifies one-off Activity profile, cross-owner isolation and
+scheduled Timeline projection.
+
+**Status: _124 published as candidate, user-run gate PENDING.
+Do not mark M1 or B14 accepted until the repaired whole gate runs.**
+The _123-based 489-file generated client should be reproducible
+under _124 because there are no API/schema type changes, but local
+deterministic generation must confirm. No CI/GitHub Actions.
