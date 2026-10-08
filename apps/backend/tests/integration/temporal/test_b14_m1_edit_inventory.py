@@ -23,6 +23,8 @@ from dante.modules.temporal.recurrence import (
     RecurrenceApplication,
 )
 from dante.modules.temporal.routine import RoutineApplication
+from dante.modules.temporal.schedule import DateSpanPlacement, TemporalScheduleApplication
+from dante.platform.database.references import NativeRef
 from dante.platform.database.runtime import create_database_runtime
 
 pytestmark = pytest.mark.postgres
@@ -63,6 +65,7 @@ async def test_inventory_reuses_self_scope_and_returns_skipped_and_extra_occurre
     recurrences = RecurrenceApplication(runtime.session_factory)
     occurrences = OccurrenceApplication(runtime.session_factory)
     inventory = OccurrenceEditInventoryApplication(runtime.session_factory)
+    schedules = TemporalScheduleApplication(runtime.session_factory)
     try:
         area = (await areas.create(
             self_person_ref=alice,
@@ -101,6 +104,17 @@ async def test_inventory_reuses_self_scope_and_returns_skipped_and_extra_occurre
             operation_id="m1:routine:extra",
         )
         selected_ref = routine_checkpoint.occurrences[0].occurrence_ref
+        # A current Schedule must not hide the selected Occurrence from
+        # the materialized source inventory (unlike the Timeline pending list).
+        await schedules.establish_schedule(
+            self_person_ref=alice,
+            operation_id="m1:routine:schedule",
+            subject_native_ref=NativeRef(selected_ref),
+            placement=DateSpanPlacement(
+                start_date=date(2026, 10, 5),
+                end_date_exclusive=date(2026, 10, 6),
+            ),
+        )
         snapshot = await inventory.read(
             self_person_ref=alice,
             selected_occurrence_ref=selected_ref,
