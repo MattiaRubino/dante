@@ -542,3 +542,21 @@ _124 user-run local proof **PENDING**. User should run one
 combined focused local gate, preserving locally generated
 API client artifacts. No CI. M1 metadata candidate is NOT yet
 closed until that proof.
+
+## 2026-10-08 — _124 user local gate: PostgreSQL/Web all green; lint-only fix
+
+User confirmed after pulling `14b38334`:
+`POSTGRES=0`, `GENERATED_CHECK=0`, `API_TYPECHECK=0`,
+`WEB_TYPECHECK=0`, `VITEST=0`. The previous four B14 Activity
+Inspector failures are gone and the new one-off profile regression
+test passed. Ruff found exactly one new test-only rule `DTZ011`
+(`date.today()` in
+`tests/integration/temporal/test_b14_m1_activity_profile_guard.py`).
+Commit `62c18771` replaces it with
+`datetime.now(ZoneInfo("Europe/Rome")).date()`.
+**Only focused Ruff rerun remains** for _124 technical gate.
+Generated client OpenAPI/TypeScript artifacts pass deterministic
+check but are still modified/untracked in the user's local worktree;
+they are NOT yet published to the remote branch. Preserve them and
+reconcile their commit before marking M1 metadata delivery closed.
+No CI. B14 domain M2–M5 remain open.
