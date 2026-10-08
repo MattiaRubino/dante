@@ -202,23 +202,23 @@ class TemporalObjectiveDefinitionRevisionRow(Base):
             ["self_person_ref"], ["dante.person.person_ref"],
             name="fk_temporal_objective_definition_person",
         ),
-        CheckConstraint("revision>=1", name="revision_positive"),
+        CheckConstraint("revision>=1", name="positive"),
         CheckConstraint(
             "operation_id=btrim(operation_id) AND "
             "char_length(operation_id) BETWEEN 1 AND 200",
-            name="revision_operation",
+            name="operation",
         ),
-        CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}", name="revision_fingerprint"),
+        CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name="fingerprint"),
         CheckConstraint(
             "result_kind IN ('boolean','quantity','qualitative','range')",
-            name="revision_kind",
+            name="kind",
         ),
         CheckConstraint(
             "label=btrim(label) AND label<>'' AND "
             "char_length(label)<=300 AND presentation_order BETWEEN 0 AND 999",
-            name="revision_label",
+            name="label",
         ),
-        CheckConstraint("isfinite(accepted_at)", name="revision_time"),
+        CheckConstraint("isfinite(accepted_at)", name="time"),
     )
 ", name="revision_fingerprint"),
         CheckConstraint(
@@ -292,7 +292,7 @@ class TemporalObjectiveSeriesEditRow(Base):
             "char_length(operation_id) BETWEEN 1 AND 200",
             name="operation",
         ),
-        CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}", name="fingerprint"),
+        CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name="fingerprint"),
         CheckConstraint(
             "label=btrim(label) AND label<>'' "
             "AND char_length(label)<=300 AND presentation_order BETWEEN 0 AND 999",
