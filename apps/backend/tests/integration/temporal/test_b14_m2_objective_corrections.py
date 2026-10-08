@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from typing import Any
 
 import pytest
@@ -183,9 +184,9 @@ def test_objective_definition_and_result_corrections_are_canonical_without_delet
 
         # Internal audit is append-only; neither the original observation,
         # original evaluation nor the objective identity was replaced.
-        runtime = create_database_runtime(migrated_database.runtime_settings())
-        try:
-            async def count_audit() -> tuple[int, int, int]:
+        async def count_audit() -> tuple[int, int, int]:
+            runtime = create_database_runtime(migrated_database.runtime_settings())
+            try:
                 async with runtime.session_factory() as session, session.begin():
                     values = (
                         await session.execute(
@@ -202,11 +203,10 @@ def test_objective_definition_and_result_corrections_are_canonical_without_delet
                         )
                     ).one()
                     return (int(values[0]), int(values[1]), int(values[2])
+            finally:
+                await runtime.dispose()
 
-            import asyncio
-            assert asyncio.run(count_audit()) == (1, 2, 3)
-        finally:
-            asyncio.run(runtime.dispose())
+        assert asyncio.run(count_audit()) == (1, 2, 3)
 
         bob_csrf = _signin(client, bob)
         bob_headers = {**_base_headers(), CSRF_HEADER_NAME: bob_csrf}
