@@ -1,0 +1,113 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "routine:dante.get_self_materialized_activity_occurrence",
+    "type": "routine",
+    "schema": "dante",
+    "name": "get_self_materialized_activity_occurrence",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Return canonical occurrence_ref for an owned Activity materialized from a Routine occurrence, or NULL for one-off Activity.",
+  "classification": {
+    "persistence_role": "occurrence_scoped_edit_capability",
+    "canonicality": "capability_surface",
+    "family": "Temporal scoped edit"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/workstreams/timeline-temporal-operational-b14-ui-consolidation-2026-09-30.md"
+    ],
+    "domain_concepts": [
+      "Activity",
+      "Occurrence",
+      "Recurrence"
+    ],
+    "logical_families": [
+      "Activity",
+      "Occurrence",
+      "Recurrence"
+    ],
+    "reference_families": [
+      "NativeRef",
+      "MaterialStateRef"
+    ],
+    "material_facets": []
+  },
+  "implementation": {
+    "introducing_stage": "B14-M1-SCOPED-PROFILE-EDIT",
+    "alembic_revision": "20261008_123",
+    "sqlalchemy": {
+      "mode": "none",
+      "module": null,
+      "symbol": null
+    },
+    "runtime_acl_stage": "B14-M1-SCOPED-PROFILE-EDIT"
+  },
+  "structure": {
+    "columns": [],
+    "primary_key": null,
+    "foreign_keys": [],
+    "unique_constraints": [],
+    "check_constraints": [],
+    "indexes": [],
+    "triggers": [],
+    "table": null,
+    "view": null,
+    "routine": {
+      "routine_kind": "function",
+      "language": "sql",
+      "argument_types": [
+        "uuid",
+        "uuid"
+      ],
+      "return_type": "uuid",
+      "security": "DEFINER",
+      "volatility": "STABLE",
+      "parallel_safety": "SAFE",
+      "leakproof": false,
+      "function_search_path": [
+        "pg_catalog",
+        "dante",
+        "pg_temp"
+      ],
+      "direct_runtime_execute": true
+    }
+  },
+  "state_history": {
+    "material_state_behavior": null,
+    "current_binding": "Read-only owner scoped canonical source and edit revision",
+    "chronology": "No modification of past instances",
+    "immutability_policy": "No write; SECURITY DEFINER only grants runtime EXECUTE"
+  },
+  "lifecycle": {
+    "retention": "Part of B14 scoped editing",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No delete"
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": [
+      {
+        "grantee": "dante_runtime",
+        "privilege": "EXECUTE",
+        "columns": [],
+        "grant_option": false
+      }
+    ]
+  },
+  "proof": {
+    "obligations": [
+      "Owner authorization",
+      "Canonical Activity-to-Occurrence identity",
+      "Source-wide CAS state"
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b14_m1_scoped_profile_edit.py",
+      "apps/backend/tests/integration/database/test_current_catalog.py"
+    ],
+    "staged_evidence": []
+  }
+}
