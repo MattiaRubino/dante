@@ -80,6 +80,12 @@ BEGIN
  END IF;
  SELECT COALESCE(MAX(r.revision),0) INTO current_revision
   FROM dante.event_profile_revision r WHERE r.event_ref=requested_event;
+ IF EXISTS(SELECT 1 FROM dante.event_recurrence_state er
+           WHERE er.event_ref=requested_event) THEN
+  RAISE EXCEPTION USING ERRCODE='23505',
+   CONSTRAINT='event_profile_recurring_source',
+   MESSAGE='Edit selected Occurrence through scoped profile, not recurring source';
+ END IF;
  IF current_revision<>requested_expected_revision THEN
   RAISE EXCEPTION USING ERRCODE='23505',
    CONSTRAINT='event_profile_revision_conflict',MESSAGE='Event changed';
