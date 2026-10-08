@@ -139,4 +139,44 @@ describe('Activity editor settings remote contract', () => {
     expect(after.placementProtected).toBe(true);
     expect(after.placementLockRevision).toBe(4);
   });
+
+  it('reassigns the Life Area using its current canonical revision', async () => {
+    const requests: Record<string, unknown>[] = [];
+    const fetchFn = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const path = typeof input === 'string' ? input :
+        input instanceof URL ? input.href : input.url;
+      if (path.endsWith('/life-areas')) return Promise.resolve(response([
+        { life_area_ref: 'area-1', name: 'Lavoro', archived: false },
+        { life_area_ref: 'area-2', name: 'Personale', archived: true },
+      ]));
+      if (path.endsWith('/life-area-assignments')) return Promise.resolve(response([
+        { subject_kind: 'activity', subject_native_ref: ref,
+          life_area_ref: 'area-2', assignment_revision: 7 },
+      ]));
+      if (path.endsWith('/auth/session'))
+        return Promise.resolve(response({ authenticated: true, csrf_token: 'token' }));
+      if (path.endsWith(`/life-area-assignments/activities/${ref}`) && init?.method === 'PUT') {
+        expect(new Headers(init.headers).get('X-Dante-CSRF')).toBe('token');
+        requests.push(JSON.parse(String(init.body)) as Record<string, unknown>);
+        return Promise.resolve(response({
+          subject_kind: 'activity', subject_native_ref: ref,
+          life_area_ref: 'area-1', assignment_revision: 8,
+        }));
+      }
+      throw new Error(`Unexpected path: ${path}`);
+    });
+    const source = createRemoteActivityEditSettings(fetchFn);
+    const choice = await source.loadLifeAreaChoice(ref);
+    expect(choice.currentRef).toBe('area-2');
+    expect(choice.options).toEqual([{ ref: 'area-1', name: 'Lavoro' }]);
+    const saved = await source.assignLifeArea(ref, choice, 'area-1', 'edit-area-op');
+    expect(requests).toEqual([{
+      operation_id: 'edit-area-op',
+      life_area_ref: 'area-1',
+      expected_assignment_revision: 7,
+    }]);
+    expect(saved.currentRef).toBe('area-1');
+    expect(saved.currentRevision).toBe(8);
+  });
+
 });
