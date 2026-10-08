@@ -268,3 +268,33 @@ uv run --locked ruff check \
 ```
 
 Visual acceptance: a completed real Session with `Chiedi al termine` yields one Reality card; an unassessed Objective yields its own card independently. A past timed or all-day Event with the same explicit policy yields a Reality card. Registering an Actual with the exact Session basis or an Objective result removes only its corresponding pending card. Quick Create and the rail share the new lower edge.
+
+## 2026-10-08 — Activity Inspector post-create continuation (candidate)
+
+The user requested completing the Inspector's real post-create edit/duplicate vertical
+before visual polish. Branch baseline was `24b3b934`, which already includes Activity
+profile/policy/reminder editing, coordinated time replan, and adding/removing planned
+Session Schedule rows. The accepted semantic boundary remains
+`Activity != Schedule != Session != Actual`.
+
+This continuation wires two additional **existing canonical capabilities**:
+- change an Activity's primary Life Area through the self-scoped
+  `life-area-assignments/activities/{ref}` endpoint using the accepted
+  assignment revision and a retry-stable operation ID;
+- protect/unprotect its accepted envelope Schedule through the existing
+  `placement-lock` endpoint using expected-revision CAS.
+
+Both operations invalidate authoritative Timeline/planning reads and do not invent
+a parallel frontend truth. The post-create editor shows explicit individual
+apply controls for these separate persistence transactions. Unsaved independent
+edits prevent the general core Save and coordinated replan from closing the
+editor and silently dropping intent. Focused web coverage was added for the
+requests and the user interaction. **No local web, PostgreSQL, generated,
+or real-app proof is claimed for this continuation yet.**
+
+This is **not full Inspector/Edit/Duplicate closure**. Still open: revisioned
+Objective definition edit/retire, null/unassign Life Area semantics, existing
+Activity interval add/remove, existing planned Session title edits, recurring
+edit scope, robust duplication of unsupported temporal/recurring forms,
+and integrated real-stack acceptance. Do not represent these as implemented.
+No CI/GitHub Actions were run.
