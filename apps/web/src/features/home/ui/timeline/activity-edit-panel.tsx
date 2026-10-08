@@ -458,12 +458,14 @@ export function ActivityEditPanel({
 
   const applyPlan = () => {
     if (!settings || !planPreview || !planOperation || planPending || coreDirty ||
-        lockDirty || areaDirty || lockPending || areaPending) return;
+        lockDirty || areaDirty || nameDirty || namePending || lockPending || areaPending) return;
     setPlanPending(true);
     setPlanError('');
     void settingsSource.applyReplan(profile.activityRef, settings, replanDraft, planOperation)
       .then((saved) => {
         setSettings(saved);
+        setPlannedNames(Object.fromEntries(saved.schedules.filter((row) => row.role === 'planned')
+          .map((row) => [row.scheduleRef, row.name ?? ''])));
         setPlanDraft(Object.fromEntries(saved.schedules.map((schedule) => [
           schedule.scheduleRef, { start: schedule.start ?? '', end: schedule.end ?? '' },
         ])));
@@ -497,8 +499,8 @@ export function ActivityEditPanel({
       onSubmit={(event) => {
         event.preventDefault();
         if (
-          pending || planPending || lockPending || areaPending || objectivePending ||
-          areaDirty || lockDirty || planDirty || objectiveDirty ||
+          pending || planPending || lockPending || areaPending || objectivePending || namePending ||
+          areaDirty || lockDirty || planDirty || objectiveDirty || nameDirty ||
           !settings ||
           loadingSettings ||
           recurringLoading ||
@@ -1227,7 +1229,7 @@ export function ActivityEditPanel({
           </>
         ) : null}
       </div>
-      {recurringContext && metadataDirty ? (
+      {recurringContext && (metadataDirty || areaDirty || nameDirty) ? (
         <fieldset className="timeline-activity-editor__fields">
           <legend>Ambito della modifica</legend>
           <label>
@@ -1239,9 +1241,17 @@ export function ActivityEditPanel({
           <label>
             <input type="radio" name="recurring-edit-scope"
               checked={editScope === 'this_and_following'}
+              disabled={!metadataDirty && (areaDirty || nameDirty)}
               onChange={() => setEditScope('this_and_following')} />
             Questa e le prossime
           </label>
+          {(areaDirty || nameDirty) ? (
+            <p role="status">
+              Life Area e nomi delle Session pianificate si salvano soltanto
+              per questa istanza. Per applicare i dati generali alle successive,
+              salva prima queste modifiche individuali.
+            </p>
+          ) : null}
           <p>
             L’istanza selezionata è sempre compresa. Le altre istanze
             già passate restano invariate; le modifiche future possono
@@ -1254,14 +1264,14 @@ export function ActivityEditPanel({
         inert={confirmingDiscard || undefined}
       >
         <button type="button" disabled={pending || planPending || lockPending ||
-          areaPending || objectivePending} onClick={requestClose}>
+          areaPending || objectivePending || !!namePending} onClick={requestClose}>
           Annulla
         </button>
         <button
           type="submit"
           disabled={
-            pending || planPending || lockPending || areaPending || objectivePending ||
-            areaDirty || lockDirty || planDirty || objectiveDirty ||
+            pending || planPending || lockPending || areaPending || objectivePending || !!namePending ||
+            areaDirty || lockDirty || planDirty || objectiveDirty || nameDirty ||
             !settings ||
             loadingSettings ||
             recurringLoading ||
