@@ -388,3 +388,28 @@ Use `timeline-temporal-operational-create-closure-mini-roadmap-2026-10-06.md` as
 ## 2026-10-06 — Verification rail candidate
 
 The B14/B07 Today rail candidate at Alembic `20261006_117` extends the shared lower edge of Timeline, Context Rail and Quick Create by 48 px and derives pending Reality/Objective/B10 Reconciliation cards from canonical state. Activity review requires a completed bounded Session; Event and Event Occurrence review uses the accepted placement end in the person's effective IANA zone, including date spans. The Reality response carries the exact Session/timing basis; Objective responses write Observation/Evaluation through the existing owner API. The branch candidate is unproven pending user-run local migration, generated-client/typecheck, focused PostgreSQL/web and real-app acceptance. The active details and gate are in `timeline-temporal-operational-b14-ui-consolidation-2026-09-30.md`.
+
+## 2026-10-08 — Active B14 Inspector / Edit / Duplicate cursor
+
+**This append-only checkpoint supersedes older M0/U6/B14 candidate status
+paragraphs above where newer local evidence is available.** Live branch
+baseline at reconciliation: `39e8ab96`. The authoritative, itemized status
+and newest user-approved global edit scope are at the end of
+`timeline-temporal-operational-b14-ui-consolidation-2026-09-30.md`.
+
+Focus: Activity Inspector/editor is partially implemented and **not**
+whole-block accepted. Coordinated Activity interval add/remove and planned
+Session replan is focused-gate green (Ruff, 4 unit, 15 PostgreSQL,
+15 web, generated/client proof; generated files published in `c22f04ae`).
+New post-create Activity Objective ADD is web-gate green (typecheck,
+17 Vitest). Remaining order: **M1** selected-instance edit scope
+`Solo questa / Questa e le prossime`, **M2** versioned Objective
+corrections and no-delete past facts, **M3** Activity residual fields
+(existing planned Session names, Life Area unassign, retirement guard),
+**M4** faithful Activity/Event duplication and Event Inspector parity,
+**M5** user real-stack acceptance / B15 whole vertical.
+
+A past selected instance is ALWAYS included, even when following future
+instances are also selected; **other past instances are never rewritten**.
+No unanchored `Le prossime` scope and no silent rewrite of current
+Objective results. B14+B07 stay ACTIVE; B15 stays OPEN.
