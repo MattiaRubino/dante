@@ -18,7 +18,7 @@ export type RecurringProfileContext = Readonly<{
 }>;
 
 type ProfileChanges = Readonly<
-  Pick<ActivityProfile, 'title' | 'description' | 'location' | 'colorCode'>
+  Partial<Pick<ActivityProfile, 'title' | 'description' | 'location' | 'colorCode'>>
 >;
 
 function record(value: unknown): Record<string, unknown> {
@@ -103,10 +103,10 @@ export function createRemoteRecurringProfileEdit(
             expected_recurrence_state_ref: context.recurrenceStateRef,
             scope_code: scope,
             profile_patch: {
-              title: changes.title,
-              description: changes.description,
-              location: changes.location,
-              color_code: changes.colorCode,
+              ...('title' in changes ? { title: changes.title } : {}),
+              ...('description' in changes ? { description: changes.description } : {}),
+              ...('location' in changes ? { location: changes.location } : {}),
+              ...('colorCode' in changes ? { color_code: changes.colorCode } : {}),
             },
           }),
         },
