@@ -427,3 +427,28 @@ This does not close all Activity/Event Inspector/Edit/Duplicate: Objective
 definition lifecycle, planned Session title revisions, optional Life Area
 unassign, recurring edit scope, robust duplication and real-stack acceptance
 remain outstanding.
+
+## 2026-10-08 — Generated interval-client publication and Objective post-create addition
+
+The user published and pushed canonical OpenAPI/Orval artifacts in
+`c22f04ae`. GitHub branch HEAD confirmed and the generated
+`newIntervalRow.zod.ts` path verified without any literal backslash.
+This completes the repository-publication step following the already green
+interval editor automated gate. Visual/real-stack acceptance is still pending.
+
+The next **bounded candidate** exposes post-create Activity Objective **ADD**
+using the existing self-scoped, idempotent Objective create endpoint and current
+editor snapshot. The editor now supports boolean, quantitative comparator,
+qualitative, and numeric range definitions; a separate write action and
+readback; stable operation ID across transport-error retries; no alteration of
+prior Objective observations/evaluations. Current objectives stay read-only.
+An unsaved Objective draft is included in close/discard guards and blocks
+accidental main core form submission. Focused remote-contract and UI tests
+were added. **User-run typecheck/Vitest are pending**.
+
+**Not implemented yet**: definition retirement and replacement/versioning with
+historical evaluation semantics, accepted reorder and existing Objective edits;
+planned Session display-name evolution, Life Area unassign, recurring update
+scope, advanced faithful duplication and whole Inspector/Event reconciliation.
+Do not describe the new Objective ADD slice as complete Objective lifecycle or
+finished Inspector.
