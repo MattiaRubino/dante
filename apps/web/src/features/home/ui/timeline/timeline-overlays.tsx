@@ -23,6 +23,7 @@ import type { ActivityProfile } from '../../../temporal/remote-activity-inspecto
 import { ActivityEditPanel } from './activity-edit-panel';
 import { requestTemporalCreateDuplicate } from '../../../temporal-create/ui/temporal-create-duplicate-request';
 import { ActivityInspectorActions } from './activity-inspector-actions';
+import { EventInspectorActions } from './event-inspector-actions';
 
 import {
   buildCalendarMonthGrid,
@@ -42,7 +43,7 @@ import {
   parseTimelineDate,
   timelineDateKey,
 } from './model/timeline-temporal';
-import type { TimelineEvent, TimelineGroup } from './model/timeline-types';
+import type { TimelineEvent, TimelineGroup, TimelineCanonicalSchedulePlacement } from './model/timeline-types';
 import { TimelineEventAgendaEditor } from './timeline-event-agenda-editor';
 
 type PopoverPosition = Readonly<{
