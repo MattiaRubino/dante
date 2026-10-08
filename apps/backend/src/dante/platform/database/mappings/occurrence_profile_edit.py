@@ -11,6 +11,7 @@ from sqlalchemy import (
     ForeignKeyConstraint,
     Text,
     UniqueConstraint,
+    Uuid,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
@@ -72,6 +73,6 @@ class OccurrenceProfileEditRow(Base):
     )
     profile_patch: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
     target_occurrence_refs: Mapped[list[NativeRef]] = mapped_column(
-        ARRAY(Base.metadata.tables["dante.occurrence"].c.occurrence_ref.type),
+        ARRAY(Uuid()),
         nullable=False,
     )
