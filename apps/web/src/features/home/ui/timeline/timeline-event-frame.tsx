@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useId, useLayoutEffect, useRef, useState } from 'react';
 
 // The two ribbons retain the selected reference's exact geometry. The second
 // is the first rotated through 180 degrees, so their points stay paired.
@@ -20,13 +20,60 @@ const ribbon = `M 8 218
   C 66 86, 58 108, 49 132
   C 36 166, 24 194, 8 218 Z`;
 
+export function eventFrameGeometry(width: number, height: number) {
+  const w = Math.max(1, width);
+  const h = Math.max(1, height);
+  const sx = w / 772;
+  // Scale the original short-card corners within a fixed pixel band. Only
+  // the straight middle can grow when a Schedule spans several hours.
+  const top = Math.min(4, h * 0.035);
+  const tail = Math.min(70, Math.max(22, h * 0.26));
+  const sy = Math.max(0.01, (tail - top) / (218 - 27));
+  const offset = top - 27 * sy;
+  const leftTop = 8 * sx;
+  const leftBottom = w - 679 * sx;
+  const rightTop = 679 * sx;
+  const rightBottom = w - 8 * sx;
+  const bridge = h > 2 * tail + 8
+    ? `M ${leftTop} ${tail} L ${leftTop} ${h - tail - 16} L ${leftBottom} ${h - tail}
+       M ${rightTop} ${tail} L ${rightTop} ${h - tail - 16} L ${rightBottom} ${h - tail}`
+    : '';
+  return {
+    topTransform: `matrix(${sx} 0 0 ${sy} 0 ${offset})`,
+    bottomTransform: `matrix(${-sx} 0 0 ${-sy} ${w} ${h - offset})`,
+    bridge,
+  };
+}
+
 export function TimelineEventFrame() {
   const id = useId().replaceAll(':', '');
+  const ref = useRef<SVGSVGElement>(null);
+  const [size, setSize] = useState({ width: 250, height: 100 });
+  useLayoutEffect(() => {
+    const card = ref.current?.parentElement;
+    if (!card) return;
+    const measure = () => {
+      const { width, height } = card.getBoundingClientRect();
+      if (width > 1 && height > 1) {
+        setSize((current) => current.width === width && current.height === height
+          ? current : { width, height });
+      }
+    };
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(card);
+    return () => observer.disconnect();
+  }, []);
+  const { topTransform, bottomTransform, bridge } = eventFrameGeometry(
+    size.width,
+    size.height,
+  );
   return (
     <svg
+      ref={ref}
       className="timeline-event-frame"
-      viewBox="0 0 772 305"
-      preserveAspectRatio="none"
+      viewBox={`0 0 ${size.width} ${size.height}`}
       aria-hidden="true"
       focusable="false"
     >
@@ -74,15 +121,26 @@ export function TimelineEventFrame() {
       </defs>
       <use
         href={`#${id}-ribbon`}
+        transform={topTransform}
         fill={`url(#${id}-paint)`}
         filter={`url(#${id}-glow)`}
       />
       <use
         href={`#${id}-ribbon`}
-        transform="translate(772 281) scale(-1 -1)"
+        transform={bottomTransform}
         fill={`url(#${id}-paint)`}
         filter={`url(#${id}-glow)`}
       />
+      {bridge ? (
+        <path
+          d={bridge}
+          fill="none"
+          stroke={`url(#${id}-paint)`}
+          strokeWidth="1.6"
+          strokeLinejoin="round"
+          filter={`url(#${id}-glow)`}
+        />
+      ) : null}
     </svg>
   );
 }

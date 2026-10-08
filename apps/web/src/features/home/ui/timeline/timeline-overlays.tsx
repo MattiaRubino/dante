@@ -13,9 +13,8 @@ import {
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
-import { ActualRealizationControls } from '../../../temporal/actual-realization-controls';
 import { ResponsibilityControls } from '../../../temporal/responsibility-controls';
-import { SessionSubjectControls } from '../../../temporal/session-subject-controls';
+import { ActivitySessionCardControls } from '../../../temporal/activity-session-card-controls';
 import { ActivityPlannedSessionsCardDetail } from '../../../temporal/activity-planned-sessions-card-detail';
 import { ScheduleReminderControls } from '../../../temporal/schedule-reminder-controls';
 import { PlacementLockControls } from '../../../temporal/placement-lock-controls';
@@ -24,6 +23,10 @@ import { ActivityEditPanel } from './activity-edit-panel';
 import { requestTemporalCreateDuplicate } from '../../../temporal-create/ui/temporal-create-duplicate-request';
 import { ActivityInspectorActions } from './activity-inspector-actions';
 import { EventInspectorActions } from './event-inspector-actions';
+import { TimelineInspectorIcon } from './timeline-inspector-icon';
+import { TimelineInspectorReality } from './timeline-inspector-reality';
+import { TimelineInspectorOccurrenceSession } from './timeline-inspector-occurrence-session';
+import { LEGACY_UNASSIGNED_GROUP } from './timeline-organization';
 
 import {
   buildCalendarMonthGrid,
@@ -859,7 +862,6 @@ export function EventDetailDialog({
 }: EventDetailDialogProps) {
   const { t } = useTranslation('common');
   const dialogRef = useRef<HTMLDivElement | null>(null);
-  const unscheduleButtonRef = useRef<HTMLButtonElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const editCloseRequestRef = useRef<(() => void) | null>(null);
   const [editingProfile, setEditingProfile] = useState<ActivityProfile | null>(
@@ -869,6 +871,13 @@ export function EventDetailDialog({
     left: 12,
     top: 12,
   });
+  const [toolbarTarget, setToolbarTarget] = useState<HTMLDivElement | null>(null);
+  const [confirmingMove, setConfirmingMove] = useState(false);
+  const [placementLockState, setPlacementLockState] = useState<{
+    scheduleRef: string; locked: boolean;
+  } | null>(null);
+  const placementLocked = placementLockState?.scheduleRef === placementLockScheduleRef
+    ? placementLockState.locked : null;
   const currentEditingProfile =
     editingProfile?.activityRef === sessionSubject?.ref ? editingProfile : null;
 
@@ -876,6 +885,26 @@ export function EventDetailDialog({
     if (currentEditingProfile) editCloseRequestRef.current?.();
     else onClose();
   }, [currentEditingProfile, onClose]);
+
+  useEffect(() => {
+    if (!detail) return;
+    const previousBody = document.body.style.overflow;
+    const previousRoot = document.documentElement.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+    const siblings = Array.from(document.body.children).filter(
+      (element) => !element.classList.contains('timeline-modal-backdrop'),
+    );
+    const previousInert = siblings.map((element) => element.hasAttribute('inert'));
+    siblings.forEach((element) => element.setAttribute('inert', ''));
+    return () => {
+      document.body.style.overflow = previousBody;
+      document.documentElement.style.overflow = previousRoot;
+      siblings.forEach((element, index) => {
+        if (!previousInert[index]) element.removeAttribute('inert');
+      });
+    };
+  }, [detail]);
 
   useLayoutEffect(() => {
     if (!detail || currentEditingProfile || !opener) return;
@@ -910,26 +939,14 @@ export function EventDetailDialog({
     };
     updatePosition();
     window.addEventListener('resize', updatePosition);
-    window.addEventListener('scroll', updatePosition, true);
+    const observer = typeof ResizeObserver === 'undefined' || !dialogRef.current
+      ? null : new ResizeObserver(updatePosition);
+    if (dialogRef.current) observer?.observe(dialogRef.current);
     return () => {
       window.removeEventListener('resize', updatePosition);
-      window.removeEventListener('scroll', updatePosition, true);
+      observer?.disconnect();
     };
   }, [detail, opener, currentEditingProfile]);
-
-  useEffect(() => {
-    if (!detail || currentEditingProfile) return;
-    const dismiss = (event: globalThis.PointerEvent) => {
-      if (
-        event.target instanceof Node &&
-        !dialogRef.current?.contains(event.target) &&
-        !opener?.contains(event.target)
-      )
-        onClose();
-    };
-    document.addEventListener('pointerdown', dismiss, true);
-    return () => document.removeEventListener('pointerdown', dismiss, true);
-  }, [detail, opener, currentEditingProfile, onClose]);
 
   useEffect(() => {
     if (!detail) {
@@ -940,7 +957,7 @@ export function EventDetailDialog({
       if (event.key === 'Escape') {
         event.preventDefault();
         requestCloseCurrent();
-      } else if (event.key === 'Tab' && currentEditingProfile) {
+      } else if (event.key === 'Tab') {
         const focusable = Array.from(
           dialogRef.current?.querySelectorAll<HTMLElement>(
             'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
@@ -975,8 +992,6 @@ export function EventDetailDialog({
     return null;
   }
 
-  const eventPostpone = detail.ownerKind === 'event';
-
   return createPortal(
     <div
       className={`timeline-modal-backdrop is-open${currentEditingProfile ? '' : ' timeline-modal-backdrop--inspector'}`}
@@ -992,23 +1007,38 @@ export function EventDetailDialog({
         className={`timeline-event-modal${currentEditingProfile ? ' timeline-event-modal--edit' : ' timeline-event-modal--inspector'}`}
         style={currentEditingProfile ? undefined : inspectorPosition}
         role="dialog"
-        aria-modal={Boolean(currentEditingProfile)}
+        aria-modal="true"
         aria-labelledby="timeline-event-dialog-title"
       >
         <div className="timeline-event-modal__header">
-          <h3 id="timeline-event-dialog-title">
-            {currentEditingProfile ? 'Modifica attività' : detail.title}
-          </h3>
           <div className="timeline-event-modal__header-actions">
-            {currentEditingProfile ||
-            placementLockScheduleRef === null ? null : (
+            {currentEditingProfile ? null : placementLockScheduleRef === null ? null : (
               <PlacementLockControls
                 key={placementLockScheduleRef}
                 scheduleRef={placementLockScheduleRef}
                 variant="icon"
+                onLockChanged={(locked) => setPlacementLockState({
+                  scheduleRef: placementLockScheduleRef, locked,
+                })}
               />
             )}
+            {currentEditingProfile ? null : <div ref={setToolbarTarget} className="timeline-event-modal__owner-actions" />}
+            {currentEditingProfile || detail.ownerKind !== 'event' ? null : (
+              <button type="button" disabled title="Eliminazione Event non disponibile"
+                aria-label="Elimina Event non disponibile">
+                <TimelineInspectorIcon name="trash" />
+              </button>
+            )}
+            {currentEditingProfile || placementLockScheduleRef === null ? null : (
+              <button type="button" disabled={pending || !canUnschedule || placementLocked !== false}
+                aria-label="Sposta in Da collocare"
+                title={placementLocked === false ? 'Sposta in Da collocare' : 'Sblocca prima di spostare'}
+                onClick={() => setConfirmingMove(true)}>
+                <TimelineInspectorIcon name="unschedule" />
+              </button>
+            )}
             <button
+              className="timeline-event-modal__close"
               ref={closeButtonRef}
               type="button"
               aria-label={
@@ -1023,10 +1053,13 @@ export function EventDetailDialog({
               }
               onClick={requestCloseCurrent}
             >
-              ×
+              <span aria-hidden="true">×</span>
             </button>
           </div>
         </div>
+        <h3 id="timeline-event-dialog-title" className="timeline-event-modal__title" title={detail.title}>
+          {currentEditingProfile ? 'Modifica attività' : detail.title}
+        </h3>
         {currentEditingProfile ? (
           <ActivityEditPanel
             key={`${currentEditingProfile.activityRef}:${currentEditingProfile.revision}`}
@@ -1044,6 +1077,7 @@ export function EventDetailDialog({
             onActivitySaved &&
             onActivityDeleted ? (
               <ActivityInspectorActions
+                toolbarTarget={toolbarTarget}
                 activityRef={sessionSubject.ref}
                 subitemsCount={detail.subitemsCount ?? 0}
                 onEdit={setEditingProfile}
@@ -1054,33 +1088,41 @@ export function EventDetailDialog({
                 }}
               />
             ) : null}
-            <p>
+            <p className="timeline-event-modal__time">
               {formatTimelineMinute(detail.startMinute)}–
-              {formatTimelineMinute(detail.endMinute)} · {detail.groupLabel}
+              {formatTimelineMinute(detail.endMinute)}
               {detail.meta ? ` · ${detail.meta}` : ''}
             </p>
-            {detail.subitemsCount ? (
-              <p>
-                {t(($) => $.common.home.timeline.detail.subitems, {
-                  count: detail.subitemsCount,
-                })}
-              </p>
+            {detail.groupLabel && detail.groupLabel !== LEGACY_UNASSIGNED_GROUP &&
+              detail.groupLabel !== 'Senza Life Area' ? (
+              <p className="timeline-event-modal__group">{detail.groupLabel}</p>
+            ) : null}
+            {confirmingMove ? (
+              <div className="timeline-activity-inspector__confirmation" role="group" aria-label="Sposta in Da collocare">
+                <p>Rimuovere questo orario e spostare l’elemento in Da collocare?</p>
+                <button type="button" disabled={pending} onClick={() => { setConfirmingMove(false); onUnschedule(); }}>Conferma</button>
+                <button type="button" onClick={() => setConfirmingMove(false)}>Annulla</button>
+              </div>
             ) : null}
             {sessionSubject?.kind === 'activity' ? (
-              <section
-                className="timeline-event-modal__planned"
-                aria-label="Sessioni pianificate"
-              >
+              <>
+                <ActivitySessionCardControls activityRef={sessionSubject.ref}
+                  label={detail.title} variant="inspector" showPlanned={false} />
                 <ActivityPlannedSessionsCardDetail
                   activityRef={sessionSubject.ref}
                   visible
                 />
-              </section>
+              </>
+            ) : null}
+            {sessionSubject?.kind === 'occurrence' ? (
+              <TimelineInspectorOccurrenceSession occurrenceRef={sessionSubject.ref}
+                label={detail.title} />
             ) : null}
             {detail.ownerKind === 'event' && detail.eventRef ? (
               <>
                 {detail.eventPlacement ? (
                   <EventInspectorActions
+                    toolbarTarget={toolbarTarget}
                     eventRef={detail.eventRef}
                     placement={detail.eventPlacement}
                     onDuplicate={(seed) => {
@@ -1089,7 +1131,7 @@ export function EventDetailDialog({
                     }}
                   />
                 ) : null}
-                <TimelineEventAgendaEditor eventRef={detail.eventRef} />
+                <TimelineEventAgendaEditor eventRef={detail.eventRef} hideWhenEmpty />
               </>
             ) : null}
             {detail.ownerKind === undefined ? (
@@ -1101,54 +1143,24 @@ export function EventDetailDialog({
               <ScheduleReminderControls
                 key={reminderScheduleRef}
                 scheduleRef={reminderScheduleRef}
+                hideWhenAbsent
               />
             )}
             {detail.realitySubject === undefined ? null : (
-              <div
-                className="timeline-event-modal__reality"
-                data-timeline-runtime-reality
-              >
-                <ActualRealizationControls
+              <TimelineInspectorReality
                   kind={detail.realitySubject.kind}
                   subjectRef={detail.realitySubject.ref}
-                />
-              </div>
+              />
             )}
-            <div className="timeline-event-modal__actions">
-              {responsibilitySubject === null ? null : (
+            {responsibilitySubject === null ? null : (
+              <div className="timeline-event-modal__actions">
                 <ResponsibilityControls
                   kind={responsibilitySubject.kind}
                   subjectRef={responsibilitySubject.ref}
+                  hideWhenEmpty
                 />
-              )}
-              {sessionSubject === null ? null : (
-                <SessionSubjectControls
-                  kind={sessionSubject.kind}
-                  subjectRef={sessionSubject.ref}
-                  label={detail.title}
-                />
-              )}
-              {canUnschedule ? (
-                <button
-                  ref={unscheduleButtonRef}
-                  className="is-unschedule"
-                  type="button"
-                  disabled={pending}
-                  onClick={onUnschedule}
-                >
-                  {pending
-                    ? eventPostpone
-                      ? t(($) => $.common.home.timeline.detail.eventPostponing)
-                      : t(($) => $.common.home.timeline.detail.unscheduling)
-                    : eventPostpone
-                      ? t(($) => $.common.home.timeline.detail.eventPostpone)
-                      : t(($) => $.common.home.timeline.detail.unschedule)}
-                </button>
-              ) : null}
-              <button type="button" disabled={pending} onClick={onClose}>
-                {t(($) => $.common.home.timeline.detail.close)}
-              </button>
-            </div>
+              </div>
+            )}
           </>
         )}
       </div>

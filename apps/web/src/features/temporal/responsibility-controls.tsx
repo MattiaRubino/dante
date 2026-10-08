@@ -27,9 +27,11 @@ function rejection(fallback: string, error: unknown): string {
 export function ResponsibilityControls({
   kind,
   subjectRef,
+  hideWhenEmpty = false,
 }: Readonly<{
   kind: ResponsibilitySubjectKind;
   subjectRef: string;
+  hideWhenEmpty?: boolean;
 }>) {
   const source = useMemo(
     () => createRemoteTemporalResponsibilityDataSource(globalThis.fetch),
@@ -37,6 +39,7 @@ export function ResponsibilityControls({
   );
   const [responsibility, setResponsibility] =
     useState<TemporalResponsibilityView | null>(null);
+  const [loaded, setLoaded] = useState(false);
   const [participation, setParticipation] = useState<
     readonly TemporalExpectedParticipationView[]
   >([]);
@@ -53,6 +56,7 @@ export function ResponsibilityControls({
       source.listPersonReferents(),
     ]);
     setResponsibility(current);
+    setLoaded(true);
     setPeople(referents);
     if (kind === 'event') {
       setParticipation(await source.listExpectedParticipation(subjectRef));
@@ -69,6 +73,7 @@ export function ResponsibilityControls({
         ]);
         if (cancelled) return;
         setResponsibility(current);
+        setLoaded(true);
         setPeople(referents);
         if (kind === 'event') {
           const listed = await source.listExpectedParticipation(subjectRef);
@@ -115,6 +120,8 @@ export function ResponsibilityControls({
     ) ?? null;
   const selectedLabel = selectedPerson === 'self' ? 'me' : labelFor(selectedPerson);
   const selectedIsHolder = holder !== null && holder === selectedPerson;
+
+  if (hideWhenEmpty && message === null && (!loaded || (holder === null && participation.length === 0))) return null;
 
   return (
     <div

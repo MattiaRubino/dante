@@ -8,7 +8,7 @@ import {
 
 const REMINDER_LEADS = [0, 5, 15, 30, 60, 120, 1440] as const;
 
-export function ScheduleReminderControls({ scheduleRef }: Readonly<{ scheduleRef: string }>) {
+export function ScheduleReminderControls({ scheduleRef, hideWhenAbsent = false }: Readonly<{ scheduleRef: string; hideWhenAbsent?: boolean }>) {
   const { t } = useTranslation('common');
   const [source] = useState(() => createRemoteScheduleReminderDataSource());
   const [current, setCurrent] = useState<ScheduleReminderView | null>(null);
@@ -68,6 +68,8 @@ export function ScheduleReminderControls({ scheduleRef }: Readonly<{ scheduleRef
       setPending(false);
     }
   };
+
+  if (hideWhenAbsent && (loading || (!readFailed && current === null))) return null;
 
   return (
     <div className="timeline-reminder-controls" data-schedule-reminder={scheduleRef}>

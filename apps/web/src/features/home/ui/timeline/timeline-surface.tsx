@@ -1446,9 +1446,7 @@ export function TimelineSurface({
         opener={detailState?.opener ?? null}
         canUnschedule={
           detailState?.allowUnschedule === true &&
-          detailState.event.canonicalBasis !== undefined &&
-          !(detailState.event.canonicalBasis.kind === 'scheduled-activity' &&
-            detailState.event.canonicalBasis.placementLocked)
+          detailState.event.canonicalBasis !== undefined
         }
         pending={
           detailState?.allowUnschedule === true &&
@@ -1487,7 +1485,7 @@ export function TimelineSurface({
         })()}
         placementLockScheduleRef={(() => {
           const basis = detailState?.event.canonicalBasis;
-          return basis?.kind === 'scheduled-activity' ? basis.scheduleRef : null;
+          return basis?.scheduleRef ?? null;
         })()}
         onUnschedule={() => {
           const basis = detailState?.event.canonicalBasis;

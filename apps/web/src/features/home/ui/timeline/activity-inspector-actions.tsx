@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import {
   createRemoteActivityInspector,
@@ -10,6 +11,7 @@ import {
   buildActivityDuplicateSeed,
   type ActivityDuplicateSeed,
 } from '../../../temporal-create/application/activity-duplicate-seed';
+import { TimelineInspectorIcon } from './timeline-inspector-icon';
 
 export function ActivityInspectorActions({
   activityRef,
@@ -17,12 +19,14 @@ export function ActivityInspectorActions({
   onEdit,
   onDeleted,
   onDuplicate,
+  toolbarTarget = null,
 }: Readonly<{
   activityRef: string;
   subitemsCount?: number;
   onEdit: (profile: ActivityProfile) => void;
   onDeleted: () => void;
   onDuplicate: (seed: ActivityDuplicateSeed) => void;
+  toolbarTarget?: HTMLElement | null;
 }>) {
   const [source] = useState(createRemoteActivityInspector);
   const [settingsSource] = useState(createRemoteActivityEditSettings);
@@ -66,11 +70,12 @@ export function ActivityInspectorActions({
     }
   }
 
-  return (
-    <>
+  const toolbar = (
       <div className="timeline-activity-inspector__toolbar">
         <button
           type="button"
+          aria-label="Modifica"
+          title="Modifica"
           disabled={pending}
           onClick={() =>
             void action(async () => {
@@ -78,17 +83,12 @@ export function ActivityInspectorActions({
             })
           }
         >
-          Modifica
+          {toolbarTarget ? <TimelineInspectorIcon name="edit" /> : 'Modifica'}
         </button>
         <button
           type="button"
-          disabled={pending}
-          onClick={() => setConfirming(true)}
-        >
-          Elimina
-        </button>
-        <button
-          type="button"
+          aria-label="Duplica"
+          title="Duplica"
           disabled={pending}
           onClick={() =>
             void action(async () => {
@@ -117,9 +117,23 @@ export function ActivityInspectorActions({
             })
           }
         >
-          Duplica
+          {toolbarTarget ? <TimelineInspectorIcon name="copy" /> : 'Duplica'}
+        </button>
+        <button
+          type="button"
+          aria-label="Elimina"
+          title="Elimina"
+          disabled={pending}
+          onClick={() => setConfirming(true)}
+        >
+          {toolbarTarget ? <TimelineInspectorIcon name="trash" /> : 'Elimina'}
         </button>
       </div>
+  );
+
+  return (
+    <>
+      {toolbarTarget ? createPortal(toolbar, toolbarTarget) : toolbar}
       {profile?.description || profile?.location ? (
         <div className="timeline-activity-inspector__details">
           {profile.description ? <p>{profile.description}</p> : null}

@@ -69,6 +69,7 @@ export function SessionSubjectControls({
   allowLive = true,
   allowManual = false,
   plannedScheduleRef = null,
+  compactRuntime = false,
 }: Readonly<{
   kind: SessionSubjectKind;
   subjectRef: string;
@@ -78,6 +79,7 @@ export function SessionSubjectControls({
   allowLive?: boolean;
   allowManual?: boolean;
   plannedScheduleRef?: string | null;
+  compactRuntime?: boolean;
 }>) {
   const [sessions, setSessions] = useState<readonly TemporalSessionView[]>([]);
   const [pending, setPending] = useState(false);
@@ -261,15 +263,13 @@ export function SessionSubjectControls({
         {allowLive ? (
           <>
             <RuntimeButton
-              label={openSession?.paused ? 'Riprendi' : 'Avvia'}
-              symbol="▶"
+              label={openSession === null ? 'Avvia' : openSession.paused ? 'Riprendi' : compactRuntime ? 'Pausa' : 'Avvia'}
+              symbol={compactRuntime && openSession !== null && !openSession.paused ? '⏸' : '▶'}
               pending={pending}
-              interactive={
-                interactive && (openSession === null || openSession.paused)
-              }
-              onClick={openSession?.paused ? resume : start}
+              interactive={interactive && (compactRuntime || openSession === null || openSession.paused)}
+              onClick={openSession === null ? start : openSession.paused ? resume : compactRuntime ? pause : start}
             />
-            <RuntimeButton
+            {compactRuntime ? null : <RuntimeButton
               label="Pausa"
               symbol="⏸"
               pending={pending}
@@ -277,7 +277,7 @@ export function SessionSubjectControls({
                 interactive && openSession !== null && !openSession.paused
               }
               onClick={pause}
-            />
+            />}
             <RuntimeButton
               label="Termina"
               symbol="■"

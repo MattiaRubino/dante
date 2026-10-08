@@ -16,6 +16,11 @@ vi.mock('../../../temporal/actual-realization-controls', () => ({
   }) => <div data-testid="reality-controls">{`${kind}:${subjectRef}`}</div>,
 }));
 
+vi.mock('./timeline-inspector-reality', () => ({
+  TimelineInspectorReality: ({ kind, subjectRef }: { kind: string; subjectRef: string }) =>
+    <div data-testid="reality-controls">{`${kind}:${subjectRef}`}</div>,
+}));
+
 vi.mock('../../../temporal/session-subject-controls', () => ({
   SessionSubjectControls: ({
     kind,
@@ -100,11 +105,13 @@ describe('Timeline post-create runtime destinations', () => {
       />,
     );
     const dialog = screen.getByRole('dialog');
-    expect(dialog.getAttribute('aria-modal')).toBe('false');
+    expect(dialog.getAttribute('aria-modal')).toBe('true');
     expect(dialog.style.left).toBe('312px');
     expect(dialog.style.top).toBe('120px');
     expect(dialog.closest('.timeline-modal-backdrop--inspector')).toBeTruthy();
-    fireEvent.pointerDown(document.body);
+    expect(document.body.style.overflow).toBe('hidden');
+    expect(document.body.firstElementChild?.hasAttribute('inert')).toBe(true);
+    fireEvent.pointerDown(dialog.closest('.timeline-modal-backdrop--inspector')!);
     expect(close).toHaveBeenCalledOnce();
     card.remove();
   });

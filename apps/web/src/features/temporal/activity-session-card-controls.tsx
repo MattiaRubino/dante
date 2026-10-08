@@ -41,12 +41,14 @@ export function ActivitySessionCardControls({
   label,
   interactive = true,
   showPlanned = true,
+  variant = 'card',
   source = defaultSource,
 }: Readonly<{
   activityRef: string;
   label: string;
   interactive?: boolean;
   showPlanned?: boolean;
+  variant?: 'card' | 'inspector';
   source?: TemporalSessionCapabilityDataSource;
 }>) {
   const [mode, setMode] = useState<SessionCaptureMode | null>(null);
@@ -80,20 +82,26 @@ export function ActivitySessionCardControls({
 
   const live = mode === 'live' || mode === 'record_and_live';
 
+  if (variant === 'inspector' && !live) return null;
+
   return (
     <div
       className="timeline-activity-session-card-controls"
       data-timeline-activity-session-controls={activityRef}
     >
       {live ? (
+        <>
+        {variant === 'inspector' ? <strong>Sessione attività</strong> : null}
         <SessionSubjectControls
           kind="activity"
           subjectRef={activityRef}
           label={label}
-          variant="card"
+          variant={variant === 'card' ? 'card' : 'detail'}
+          compactRuntime={variant === 'inspector'}
           interactive={interactive}
           allowLive
         />
+        </>
       ) : null}
       {showPlanned ? (
         <ActivityPlannedSessionsCardDetail

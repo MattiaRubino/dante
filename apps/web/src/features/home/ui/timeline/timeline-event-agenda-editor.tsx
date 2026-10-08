@@ -22,12 +22,14 @@ type TimelineEventAgendaEditorProps = Readonly<{
   eventRef: string;
   dataSource?: TemporalEventAgendaDataSource;
   ids?: TemporalIdFactory;
+  hideWhenEmpty?: boolean;
 }>;
 
 export function TimelineEventAgendaEditor({
   eventRef,
   dataSource,
   ids = systemTemporalIdFactory,
+  hideWhenEmpty = false,
 }: TimelineEventAgendaEditorProps) {
   const { t } = useTranslation('common');
   const source = useMemo(
@@ -110,6 +112,7 @@ export function TimelineEventAgendaEditor({
   );
 
   if (state.status === 'loading') {
+    if (hideWhenEmpty) return null;
     return (
       <section className="timeline-event-agenda" aria-busy="true">
         <strong>{t(($) => $.common.home.timeline.create.eventDetails.agenda)}</strong>
@@ -133,6 +136,7 @@ export function TimelineEventAgendaEditor({
   }
 
   const parts = state.record.agendaParts;
+  if (hideWhenEmpty && parts.length === 0) return null;
   const cancelEditing = () => {
     setEditingIndex(null);
     setEditingValue('');

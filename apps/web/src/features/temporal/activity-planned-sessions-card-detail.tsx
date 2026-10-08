@@ -178,6 +178,7 @@ export function ActivityPlannedSessionsCardDetail({
               plannedScheduleRef={row.scheduleRef}
               label={row.name}
               variant="detail"
+              compactRuntime
             />
           ) : null}
         </div>

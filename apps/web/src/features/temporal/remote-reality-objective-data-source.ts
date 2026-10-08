@@ -167,6 +167,17 @@ export function createRemoteRealityObjectiveDataSource(
         : 'occurrences';
 
   return Object.freeze({
+    async getRealityMode(kind: RealitySubjectKind, subjectRef: string): Promise<RealityMode> {
+      const row = record(await send(
+        `/api/v1/temporal/${collection(kind)}/${encodeURIComponent(subjectRef)}/reality-policy`,
+        'GET',
+      ));
+      if (row.subject_native_ref !== subjectRef ||
+          !['manual', 'review_on_end', 'auto_confirm_outcome'].includes(String(row.mode_code))) {
+        throw new Error('Invalid Reality policy response.');
+      }
+      return row.mode_code as RealityMode;
+    },
     async configureReality(
       kind: RealitySubjectKind,
       subjectRef: string,

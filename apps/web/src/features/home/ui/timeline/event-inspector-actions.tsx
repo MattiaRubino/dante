@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import type { TemporalEventDetailRecord } from '../../../temporal/event-data-source';
 import {
@@ -16,15 +17,18 @@ import { systemTemporalIdFactory } from '../../../temporal/model';
 import type { ActivityDuplicateSeed } from '../../../temporal-create/application/activity-duplicate-seed';
 import { buildEventDuplicateSeed } from '../../../temporal-create/application/event-duplicate-seed';
 import type { TimelineCanonicalSchedulePlacement } from './model/timeline-types';
+import { TimelineInspectorIcon } from './timeline-inspector-icon';
 
 export function EventInspectorActions({
   eventRef,
   placement,
   onDuplicate,
+  toolbarTarget = null,
 }: Readonly<{
   eventRef: string;
   placement: TimelineCanonicalSchedulePlacement;
   onDuplicate: (seed: ActivityDuplicateSeed) => void;
+  toolbarTarget?: HTMLElement | null;
 }>) {
   const [eventSource] = useState(createRemoteTemporalEventAgendaDataSource);
   const [participationSource] = useState(createRemoteTemporalResponsibilityDataSource);
@@ -180,19 +184,29 @@ export function EventInspectorActions({
     }
   };
 
+  const toolbar = (
+    <div className="timeline-activity-inspector__toolbar">
+      <button type="button" disabled={busy}
+        aria-label="Modifica" title="Modifica"
+        onClick={() => editingProfile ? cancelProfile() : void openProfileEditor()}>
+        {toolbarTarget ? <TimelineInspectorIcon name="edit" /> : editingProfile ? 'Chiudi modifica Event' : 'Modifica'}
+      </button>
+      <button type="button" disabled={busy} aria-label="Duplica" title="Duplica"
+        onClick={() => void duplicate()}>
+        {toolbarTarget ? <TimelineInspectorIcon name="copy" /> : busy ? 'Preparazione…' : 'Duplica'}
+      </button>
+    </div>
+  );
+
   return (
     <div className="timeline-activity-inspector__actions">
-      <button type="button" disabled={busy} onClick={() => void duplicate()}>
-        {busy ? 'Preparazione…' : 'Duplica'}
-      </button>
-      <button type="button" disabled={busy}
-        onClick={() => editingProfile ? cancelProfile() : void openProfileEditor()}>
-        {editingProfile ? 'Chiudi modifica Event' : 'Modifica'}
-      </button>
+      {toolbarTarget ? createPortal(toolbar, toolbarTarget) : toolbar}
+      {(!toolbarTarget || editingProfile || editingArea) ? (
       <button type="button" disabled={busy}
         onClick={() => editingArea ? setEditingArea(false) : void openAreaEditor()}>
         {editingArea ? 'Chiudi Life Area' : 'Modifica Life Area'}
       </button>
+      ) : null}
 
       {editingProfile && profileDraft && profile ? (
         <div className="timeline-activity-editor__fields" aria-label="Modifica profilo Event">

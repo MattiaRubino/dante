@@ -27,12 +27,14 @@ export function ActualRealizationControls({
   subjectRef,
   onRecorded,
   showObjectives = true,
+  compactReview = false,
   sessionBasis,
 }: Readonly<{
   kind: ActualSubjectKind;
   subjectRef: string;
   onRecorded?: () => void;
   showObjectives?: boolean;
+  compactReview?: boolean;
   sessionBasis?: TemporalActualSessionBasis;
 }>) {
   const source = useMemo(
@@ -152,7 +154,7 @@ export function ActualRealizationControls({
       className="timeline-actual-controls"
       data-timeline-actual-subject={subjectRef}
     >
-      <strong>Realtà</strong>
+      <strong>{compactReview ? 'Verifica svolgimento' : 'Realtà'}</strong>
       <p data-timeline-actual-state>{state}</p>
       <div className="timeline-actual-controls__actions">
         <button
@@ -161,7 +163,7 @@ export function ActualRealizationControls({
           data-timeline-actual-set="occurred"
           onClick={() => setRealization(true)}
         >
-          Segna avvenuto
+          {compactReview ? '✓ Sì' : 'Segna avvenuto'}
         </button>
         <button
           type="button"
@@ -169,7 +171,7 @@ export function ActualRealizationControls({
           data-timeline-actual-set="not-occurred"
           onClick={() => setRealization(false)}
         >
-          Segna non avvenuto
+          {compactReview ? '× No' : 'Segna non avvenuto'}
         </button>
       </div>
       {needsParentAcknowledgement && kind === 'activity' ? (
@@ -197,10 +199,10 @@ export function ActualRealizationControls({
           </button>
         </div>
       ) : null}
-      <small>
+      {compactReview ? null : <small>
         “Sconosciuto” significa che non è ancora stato registrato un Actual; non
         equivale a “non avvenuto”.
-      </small>
+      </small>}
       {messageNode}
       {showObjectives ? <ObjectiveControls kind={kind} subjectRef={subjectRef} /> : null}
     </div>
