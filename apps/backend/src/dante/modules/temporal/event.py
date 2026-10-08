@@ -71,6 +71,7 @@ class EventView:
     description: str | None = None
     location: str | None = None
     color_code: str | None = None
+    profile_revision: int = 0
 
 
 @dataclass(frozen=True, slots=True)
@@ -238,6 +239,11 @@ async def _read_event_in_session(
         return None
     agenda_parts = tuple((await database_session.scalars(agenda_statement)).all())
     agenda_revision = await database_session.scalar(revision_statement)
+    profile_revision = await database_session.scalar(text("""
+        SELECT COALESCE(MAX(r.revision),0)
+        FROM dante.event_profile_revision r
+        WHERE r.event_ref=:event_ref AND r.self_person_ref=:self_person_ref
+    """).bindparams(event_ref=event_ref, self_person_ref=self_person_ref))
     assignment = (
         (
             await database_session.execute(
@@ -265,6 +271,7 @@ async def _read_event_in_session(
         description=row.description,
         location=row.location,
         color_code=row.color_code,
+        profile_revision=int(profile_revision or 0),
     )
 
 
