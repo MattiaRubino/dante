@@ -13,6 +13,7 @@ import {
   type ActivityNewPlanned,
   type ActivityReplanTime,
   type ActivityEditSettings,
+  type ActivityLifeAreaChoice,
 } from '../../../temporal/remote-activity-edit-settings';
 import type { RealityMode } from '../../../temporal/remote-reality-objective-data-source';
 import type { SessionCaptureMode } from '../../../temporal/remote-session-capability-data-source';
@@ -40,6 +41,11 @@ export function ActivityEditPanel({
   const [placementProtected, setPlacementProtected] = useState<boolean | null>(null);
   const [lockPending, setLockPending] = useState(false);
   const [lockError, setLockError] = useState('');
+  const [areaChoice, setAreaChoice] = useState<ActivityLifeAreaChoice | null>(null);
+  const [selectedArea, setSelectedArea] = useState('');
+  const [areaPending, setAreaPending] = useState(false);
+  const [areaError, setAreaError] = useState('');
+  const areaOperation = useRef<string | null>(null);
   const [planDraft, setPlanDraft] = useState<Record<string, ActivityReplanTime>>({});
   const [newPlanned, setNewPlanned] = useState<ActivityNewPlanned[]>([]);
   const [removedPlanned, setRemovedPlanned] = useState<string[]>([]);
@@ -81,7 +87,9 @@ export function ActivityEditPanel({
   const replanDraft = { times: planDraft, removedPlanned, newPlanned };
   const lockDirty = settings !== null && settings.placementLockScheduleRef !== null &&
     placementProtected !== null && placementProtected !== settings.placementProtected;
-  const dirty = coreDirty || planDirty || lockDirty;
+  const areaDirty = areaChoice !== null && !!selectedArea &&
+    selectedArea !== areaChoice.currentRef;
+  const dirty = coreDirty || planDirty || lockDirty || areaDirty;
 
   const loadSettings = useCallback(() => {
     return settingsSource
@@ -113,8 +121,22 @@ export function ActivityEditPanel({
     void loadSettings();
   }, [loadSettings]);
 
+  useEffect(() => {
+    let active = true;
+    void settingsSource.loadLifeAreaChoice(profile.activityRef).then((loaded) => {
+      if (!active) return;
+      setAreaChoice(loaded);
+      setSelectedArea(loaded.currentRef ?? '');
+      setAreaError('');
+    }).catch((reason: unknown) => {
+      if (active) setAreaError(reason instanceof Error
+        ? reason.message : 'Life Area non disponibile.');
+    });
+    return () => { active = false; };
+  }, [profile.activityRef, settingsSource]);
+
   const requestClose = useCallback(() => {
-    if (pending || planPending || lockPending) return;
+    if (pending || planPending || lockPending || areaPending) return;
     if (confirmingDiscard) {
       setConfirmingDiscard(false);
     } else if (dirty) {
@@ -122,7 +144,28 @@ export function ActivityEditPanel({
     } else {
       onCancel();
     }
-  }, [confirmingDiscard, dirty, lockPending, onCancel, pending, planPending]);
+  }, [areaPending, confirmingDiscard, dirty, lockPending, onCancel, pending, planPending]);
+
+  const applyLifeArea = () => {
+    if (!areaChoice || !areaDirty || !settings || pending || planPending ||
+        lockPending || areaPending) return;
+    if (areaChoice.currentRef !== settings.lifeAreaRef) {
+      setAreaError('Assegnazione cambiata. Chiudi Modifica e riapri.');
+      return;
+    }
+    setAreaPending(true);
+    setAreaError('');
+    const operationId = areaOperation.current ??= crypto.randomUUID();
+    void settingsSource.assignLifeArea(
+      profile.activityRef, areaChoice, selectedArea, operationId,
+    ).then((saved) => {
+      areaOperation.current = null;
+      setAreaChoice(saved);
+      setSettings((current) => current && ({ ...current, lifeAreaRef: saved.currentRef }));
+    }).catch((reason: unknown) => {
+      setAreaError(reason instanceof Error ? reason.message : 'Cambio Life Area non riuscito.');
+    }).finally(() => setAreaPending(false));
+  };
 
   const applyPlacementLock = () => {
     if (!settings || placementProtected === null || !lockDirty ||
@@ -208,7 +251,7 @@ export function ActivityEditPanel({
       onSubmit={(event) => {
         event.preventDefault();
         if (
-          pending || planPending || lockPending || lockDirty || planDirty ||
+          pending || planPending || lockPending || areaPending || areaDirty || lockDirty || planDirty ||
           !settings ||
           loadingSettings ||
           settingsError ||
@@ -346,6 +389,46 @@ export function ActivityEditPanel({
         </div>
         {settings ? (
           <>
+            <fieldset aria-label="Life Area">
+              <legend>Life Area</legend>
+              {areaError ? <p role="alert">{areaError}</p> : null}
+              {!areaChoice && !areaError ? <p role="status">Caricamento Life Area…</p> : null}
+              {areaChoice ? (
+                <>
+                  <label>
+                    Area assegnata
+                    <select
+                      value={selectedArea}
+                      disabled={pending || planPending || lockPending || areaPending}
+                      onChange={(event) => {
+                        setSelectedArea(event.target.value);
+                        areaOperation.current = null;
+                        setAreaError('');
+                      }}
+                    >
+                      <option value="" disabled={areaChoice.currentRef !== null}>
+                        Nessuna Life Area
+                      </option>
+                      {areaChoice.currentRef &&
+                        !areaChoice.options.some((area) => area.ref === areaChoice.currentRef) ? (
+                          <option value={areaChoice.currentRef} disabled>
+                            Area precedente non più disponibile
+                          </option>
+                        ) : null}
+                      {areaChoice.options.map((area) => (
+                        <option key={area.ref} value={area.ref}>{area.name}</option>
+                      ))}
+                    </select>
+                  </label>
+                  {areaDirty ? (
+                    <button type="button" disabled={pending || planPending || lockPending || areaPending}
+                      onClick={applyLifeArea}>
+                      {areaPending ? 'Salvataggio…' : 'Applica Life Area'}
+                    </button>
+                  ) : null}
+                </>
+              ) : null}
+            </fieldset>
             <div className="timeline-activity-editor__fields">
               <label>
                 Registrazione sessioni
@@ -590,13 +673,13 @@ export function ActivityEditPanel({
         className="timeline-activity-editor__actions"
         inert={confirmingDiscard || undefined}
       >
-        <button type="button" disabled={pending || planPending || lockPending} onClick={requestClose}>
+        <button type="button" disabled={pending || planPending || lockPending || areaPending} onClick={requestClose}>
           Annulla
         </button>
         <button
           type="submit"
           disabled={
-            pending || planPending || lockPending || lockDirty || planDirty ||
+            pending || planPending || lockPending || areaPending || areaDirty || lockDirty || planDirty ||
             !settings ||
             loadingSettings ||
             !!settingsError ||
