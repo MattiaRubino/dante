@@ -810,6 +810,7 @@ export type TimelineDetail = Readonly<{
   meta: string;
   ownerKind?: 'activity' | 'event';
   eventRef?: string;
+  eventPlacement?: TimelineCanonicalSchedulePlacement;
   realitySubject?: Readonly<{
     kind: 'activity' | 'event' | 'occurrence';
     ref: string;
@@ -1142,6 +1143,8 @@ export function detailFromEvent(
     meta: event.meta ?? '',
     ...(ownerKind === undefined ? {} : { ownerKind }),
     ...(eventRef === undefined ? {} : { eventRef }),
+    ...(event.canonicalBasis?.kind === 'scheduled-event'
+      ? { eventPlacement: event.canonicalBasis.placement } : {}),
     ...(realitySubject === undefined ? {} : { realitySubject }),
   };
   return event.subitems?.length
