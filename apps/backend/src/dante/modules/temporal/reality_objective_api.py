@@ -710,6 +710,8 @@ async def correct_objective_result(
         "observed_numeric": payload.observed_numeric,
         "qualitative_code": payload.qualitative_code,
         "assessment_code": payload.assessment_code,
+        "expected_evaluation_state_ref": str(payload.expected_evaluation_state_ref)
+        if payload.expected_evaluation_state_ref is not None else None,
     }
     try:
         async with request.app.state.database_runtime.session_factory() as session, session.begin():
