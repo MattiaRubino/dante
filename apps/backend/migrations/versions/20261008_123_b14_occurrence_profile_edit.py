@@ -57,7 +57,7 @@ def upgrade() -> None:
     db.exec_driver_sql("ALTER TABLE dante.occurrence_profile_edit OWNER TO dante_owner")
     db.exec_driver_sql("REVOKE ALL ON dante.occurrence_profile_edit "
                        "FROM PUBLIC,dante_runtime,dante_migrator")
-    for ddl in (_COORDINATE_INSTANT,_PROFILE_PATCH,_ACTIVITY_ORIGIN,_EDIT_STATE,_ACCEPT_EDIT):
+    for ddl in (_COORDINATE_INSTANT,_PROFILE_PATCH,_ACTIVITY_ORIGIN,_EDIT_STATE,_ACTIVITY_PROFILE,_ACCEPT_EDIT):
         db.execute(sa.text(ddl))
     for signature in (
         "occurrence_edit_coordinate_instant(uuid,uuid,text)",
@@ -400,5 +400,41 @@ BEGIN
           WHERE e.source_native_ref=bound_source),
         bound_source,current_ref;
 END;
+$$;
+"""
+
+_ACTIVITY_PROFILE = r"""
+CREATE OR REPLACE FUNCTION dante.get_self_activity_profile(
+    actor uuid, requested_activity uuid
+) RETURNS TABLE(
+    activity_ref uuid, title text, description text, location text,
+    color_code text, revision bigint
+)
+LANGUAGE sql SECURITY DEFINER STABLE PARALLEL RESTRICTED
+SET search_path=pg_catalog,dante,pg_temp AS $$
+    SELECT activity.activity_ref,
+           COALESCE(override.patch->>'title',activity.title),
+           CASE WHEN override.patch ? 'description'
+                THEN override.patch->>'description' ELSE activity.description END,
+           CASE WHEN override.patch ? 'location'
+                THEN override.patch->>'location' ELSE activity.location END,
+           CASE WHEN override.patch ? 'color_code'
+                THEN override.patch->>'color_code' ELSE activity.color_code END,
+           activity.profile_revision
+      FROM dante.activity_intention activity
+      LEFT JOIN LATERAL (
+          SELECT dante.get_self_materialized_activity_occurrence(
+                     actor,activity.activity_ref
+                 ) AS occurrence_ref
+      ) AS materialized ON TRUE
+      LEFT JOIN LATERAL (
+          SELECT dante.get_self_occurrence_profile_patch(
+                     actor,materialized.occurrence_ref
+                 ) AS patch
+           WHERE materialized.occurrence_ref IS NOT NULL
+      ) AS override ON TRUE
+     WHERE activity.activity_ref=requested_activity
+       AND activity.self_person_ref=actor
+       AND activity.retired_at IS NULL
 $$;
 """
