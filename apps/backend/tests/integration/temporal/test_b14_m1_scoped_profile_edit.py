@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, time, timedelta
+from datetime import date, datetime, time, timedelta
 from types import SimpleNamespace
 from typing import Any
 from uuid import UUID
@@ -16,6 +16,11 @@ from sqlalchemy.exc import DBAPIError
 from tests.integration.temporal.test_b02_schedule_place import _context
 from tests.integration.temporal.test_b05_primary_life_area_assignment import _seed_self
 
+from dante.modules.temporal.application import (
+    TemporalTimelineApplication,
+    TimelineScheduledOccurrenceItem,
+)
+from dante.modules.temporal.contracts import TimelineWindowQuery
 from dante.modules.temporal.event import TemporalEventApplication
 from dante.modules.temporal.life_area import LifeAreaApplication
 from dante.modules.temporal.occurrence import OccurrenceApplication
@@ -26,13 +31,15 @@ from dante.modules.temporal.occurrence_api import (
 )
 from dante.modules.temporal.recurrence import CalendarRecurrence, RecurrenceApplication
 from dante.modules.temporal.routine import RoutineApplication
+from dante.modules.temporal.schedule import DateSpanPlacement, TemporalScheduleApplication
+from dante.platform.database.references import NativeRef
 from dante.platform.database.runtime import create_database_runtime
 
 pytestmark = pytest.mark.postgres
 ZONE = "Europe/Rome"
 
 
-def _daily(start: Any) -> CalendarRecurrence:
+def _daily(start: date) -> CalendarRecurrence:
     return CalendarRecurrence(
         family_code="calendar_wall_clock",
         range_kind="open",
@@ -249,6 +256,34 @@ async def test_event_parity_and_protected_future_override(
         assert list(one.target_occurrence_refs) == [future]
         assert await _patch(runtime, alice, future) == {"title": "Evento personale"}
         assert await _patch(runtime, alice, selected) == {}
+
+        schedules = TemporalScheduleApplication(runtime.session_factory)
+        tomorrow_ref = NativeRef(future)
+        occurrence_date = today + timedelta(days=3)
+        await schedules.establish_schedule(
+            self_person_ref=alice,
+            operation_id="m1c:event:scheduled-readback",
+            subject_native_ref=tomorrow_ref,
+            placement=DateSpanPlacement(
+                start_date=occurrence_date,
+                end_date_exclusive=occurrence_date + timedelta(days=1),
+            ),
+        )
+        timeline = TemporalTimelineApplication(runtime.session_factory)
+        projection = await timeline.read_window(
+            query=TimelineWindowQuery(
+                start_date=occurrence_date,
+                end_date_exclusive=occurrence_date + timedelta(days=1),
+            ),
+            context=ctx,
+        )
+        scheduled = [
+            item for item in projection.items
+            if isinstance(item, TimelineScheduledOccurrenceItem)
+            and item.occurrence_ref == tomorrow_ref
+        ]
+        assert len(scheduled) == 1
+        assert scheduled[0].title == "Evento personale"
         with pytest.raises(DBAPIError):
             await _edit(
                 runtime, alice, selected, state.recurrence.material_state_ref,
