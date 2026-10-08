@@ -376,6 +376,25 @@ BEGIN
             MESSAGE='Temporal Objective unavailable';
     END IF;
 
+    SELECT * INTO prior
+      FROM dante.temporal_objective_result_operation AS operation
+     WHERE operation.self_person_ref=requested_self_person_ref
+       AND operation.operation_id=requested_operation_id;
+    IF FOUND THEN
+        IF prior.intent_fingerprint IS DISTINCT FROM requested_intent_fingerprint
+           OR prior.objective_ref IS DISTINCT FROM requested_objective_ref THEN
+            RAISE EXCEPTION USING ERRCODE='23505',
+                CONSTRAINT='temporal_objective_result_operation_reused',
+                MESSAGE='Temporal Objective result operation was reused';
+        END IF;
+        RETURN QUERY
+        SELECT prior.objective_ref,prior.observation_ref,prior.state_ref,
+               state.assessment_code,true
+          FROM dante.temporal_objective_evaluation_state AS state
+         WHERE state.state_ref=prior.state_ref;
+        RETURN;
+    END IF;
+
     IF objective.result_kind='boolean' THEN
         IF requested_observed_boolean IS NULL
            OR requested_observed_numeric IS NOT NULL
@@ -433,24 +452,7 @@ BEGIN
         derived_assessment:=requested_assessment_code;
     END IF;
 
-    SELECT * INTO prior
-      FROM dante.temporal_objective_result_operation AS operation
-     WHERE operation.self_person_ref=requested_self_person_ref
-       AND operation.operation_id=requested_operation_id;
-    IF FOUND THEN
-        IF prior.intent_fingerprint IS DISTINCT FROM requested_intent_fingerprint
-           OR prior.objective_ref IS DISTINCT FROM requested_objective_ref THEN
-            RAISE EXCEPTION USING ERRCODE='23505',
-                CONSTRAINT='temporal_objective_result_operation_reused',
-                MESSAGE='Temporal Objective result operation was reused';
-        END IF;
-        RETURN QUERY
-        SELECT prior.objective_ref,prior.observation_ref,prior.state_ref,
-               state.assessment_code,true
-          FROM dante.temporal_objective_evaluation_state AS state
-         WHERE state.state_ref=prior.state_ref;
-        RETURN;
-    END IF;
+
 
     SELECT history.state_ref,history.current_from_at
       INTO current_state,previous_from
