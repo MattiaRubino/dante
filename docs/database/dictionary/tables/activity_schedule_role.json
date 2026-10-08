@@ -191,8 +191,8 @@
       },
       {
         "name": "ck_activity_schedule_role_ck_activity_schedule_role_order",
-        "expression_contract": "(role_code='envelope' AND presentation_order=0) OR (role_code IN ('planned','interval') AND presentation_order BETWEEN 1 AND 100)",
-        "reason": "Bounded independent intervals and planned Sessions plus single envelope position.",
+        "expression_contract": "(role_code='envelope' AND presentation_order=0) OR (role_code IN ('planned','interval') AND presentation_order BETWEEN 1 AND 2147483647)",
+        "reason": "Historical immutable roles retain unique slots after removal; active rows remain bounded to 100 by authoring commands.",
         "enforced": true,
         "validated": true,
         "no_inherit": false

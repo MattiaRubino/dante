@@ -39,13 +39,20 @@ export type ActivityEditSettings = Readonly<{
 }>;
 
 export type ActivityReplanTime = Readonly<{ start: string; end: string }>;
+export type ActivityNewPlanned = Readonly<ActivityReplanTime & { clientRef: string; name: string }>;
+export type ActivityReplanDraft = Readonly<{
+  times: Record<string, ActivityReplanTime>;
+  removedPlanned: readonly string[];
+  newPlanned: readonly ActivityNewPlanned[];
+}>;
 export type ActivityReplanChange = Readonly<{
-  scheduleRef: string;
+  scheduleRef: string | null;
+  clientRef: string | null;
   role: string;
-  previousStart: string;
-  previousEnd: string;
-  proposedStart: string;
-  proposedEnd: string;
+  previousStart: string | null;
+  previousEnd: string | null;
+  proposedStart: string | null;
+  proposedEnd: string | null;
 }>;
 
 function object(value: unknown): Record<string, unknown> {
@@ -220,19 +227,26 @@ export function createRemoteActivityEditSettings(
 
   function replanBody(
     settings: ActivityEditSettings,
-    draft: Readonly<Record<string, ActivityReplanTime>>,
+    draft: ActivityReplanDraft,
     operationId: string,
   ) {
     const row = (item: ActivityEditSchedule) => ({
       schedule_ref: item.scheduleRef,
       expected_material_state_ref: item.placementStateRef,
-      starts_local_at: draft[item.scheduleRef]?.start,
-      ends_local_at: draft[item.scheduleRef]?.end,
+      starts_local_at: draft.times[item.scheduleRef]?.start,
+      ends_local_at: draft.times[item.scheduleRef]?.end,
     });
     return {
       operation_id: operationId,
       intervals: settings.schedules.filter((item) => item.role === 'interval').map(row),
-      planned_sessions: settings.schedules.filter((item) => item.role === 'planned').map(row),
+      planned_sessions: settings.schedules.filter((item) =>
+        item.role === 'planned' && !draft.removedPlanned.includes(item.scheduleRef)).map(row),
+      remove_planned_sessions: settings.schedules.filter((item) =>
+        item.role === 'planned' && draft.removedPlanned.includes(item.scheduleRef)).map(row),
+      new_planned_sessions: draft.newPlanned.map((item) => ({
+        client_ref: item.clientRef, name: item.name.trim() || null,
+        starts_local_at: item.start, ends_local_at: item.end,
+      })),
     };
   }
 
@@ -242,7 +256,7 @@ export function createRemoteActivityEditSettings(
     },
     async previewReplan(
       ref: string, settings: ActivityEditSettings,
-      draft: Readonly<Record<string, ActivityReplanTime>>,
+      draft: ActivityReplanDraft,
       operationId: string,
     ): Promise<readonly ActivityReplanChange[]> {
       const response = await request(endpoint(ref, 'replan-preview'), {
@@ -259,24 +273,25 @@ export function createRemoteActivityEditSettings(
       }
       return result.changes.map((value: unknown) => {
         const row = object(value);
-        if (typeof row.schedule_ref !== 'string' ||
+        if ((row.schedule_ref != null && typeof row.schedule_ref !== 'string') ||
+            (row.client_ref != null && typeof row.client_ref !== 'string') ||
             typeof row.role !== 'string' ||
-            typeof row.previous_start !== 'string' ||
-            typeof row.previous_end !== 'string' ||
-            typeof row.proposed_start !== 'string' ||
-            typeof row.proposed_end !== 'string') {
+            (row.previous_start != null && typeof row.previous_start !== 'string') ||
+            (row.previous_end != null && typeof row.previous_end !== 'string') ||
+            (row.proposed_start != null && typeof row.proposed_start !== 'string') ||
+            (row.proposed_end != null && typeof row.proposed_end !== 'string')) {
           throw new Error('Riga dell’anteprima non valida.');
         }
         return {
-          scheduleRef: row.schedule_ref, role: row.role,
-          previousStart: row.previous_start, previousEnd: row.previous_end,
-          proposedStart: row.proposed_start, proposedEnd: row.proposed_end,
+          scheduleRef: optionalText(row.schedule_ref), clientRef: optionalText(row.client_ref), role: row.role,
+          previousStart: optionalText(row.previous_start), previousEnd: optionalText(row.previous_end),
+          proposedStart: optionalText(row.proposed_start), proposedEnd: optionalText(row.proposed_end),
         };
       });
     },
     async applyReplan(
       ref: string, settings: ActivityEditSettings,
-      draft: Readonly<Record<string, ActivityReplanTime>>,
+      draft: ActivityReplanDraft,
       operationId: string,
     ): Promise<ActivityEditSettings> {
       const response = await request(endpoint(ref, 'replan'), {

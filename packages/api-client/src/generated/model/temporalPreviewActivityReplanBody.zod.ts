@@ -8,9 +8,15 @@ import * as zod from 'zod/mini';
 
 export const temporalPreviewActivityReplanBodyIntervalsMax = 100;
 
+export const temporalPreviewActivityReplanBodyNewPlannedSessionsItemNameOneMax = 300;
+
+export const temporalPreviewActivityReplanBodyNewPlannedSessionsMax = 100;
+
 export const temporalPreviewActivityReplanBodyOperationIdMax = 200;
 
 export const temporalPreviewActivityReplanBodyPlannedSessionsMax = 100;
+
+export const temporalPreviewActivityReplanBodyRemovePlannedSessionsMax = 100;
 
 export const TemporalPreviewActivityReplanBody = /*#__PURE__*/ zod.object({
   intervals: /*#__PURE__*/ zod
@@ -28,6 +34,34 @@ export const TemporalPreviewActivityReplanBody = /*#__PURE__*/ zod.object({
         temporalPreviewActivityReplanBodyIntervalsMax,
       ),
     ),
+  new_planned_sessions: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod
+      .array(
+        /*#__PURE__*/ zod.object({
+          client_ref: /*#__PURE__*/ zod.uuid(),
+          ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+          name: /*#__PURE__*/ zod.optional(
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod
+                .string()
+                .check(/*#__PURE__*/ zod.minLength(1))
+                .check(
+                  /*#__PURE__*/ zod.maxLength(
+                    temporalPreviewActivityReplanBodyNewPlannedSessionsItemNameOneMax,
+                  ),
+                ),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
+          starts_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+        }),
+      )
+      .check(
+        /*#__PURE__*/ zod.maxLength(
+          temporalPreviewActivityReplanBodyNewPlannedSessionsMax,
+        ),
+      ),
+  ),
   operation_id: /*#__PURE__*/ zod
     .string()
     .check(/*#__PURE__*/ zod.minLength(1))
@@ -49,6 +83,22 @@ export const TemporalPreviewActivityReplanBody = /*#__PURE__*/ zod.object({
       .check(
         /*#__PURE__*/ zod.maxLength(
           temporalPreviewActivityReplanBodyPlannedSessionsMax,
+        ),
+      ),
+  ),
+  remove_planned_sessions: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod
+      .array(
+        /*#__PURE__*/ zod.object({
+          ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+          expected_material_state_ref: /*#__PURE__*/ zod.uuid(),
+          schedule_ref: /*#__PURE__*/ zod.uuid(),
+          starts_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+        }),
+      )
+      .check(
+        /*#__PURE__*/ zod.maxLength(
+          temporalPreviewActivityReplanBodyRemovePlannedSessionsMax,
         ),
       ),
   ),

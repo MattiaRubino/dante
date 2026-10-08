@@ -181,6 +181,7 @@ export * from './lifeAreaResponse.zod';
 export * from './movementPolicyMutationResponse.zod';
 export * from './mutationRequest.zod';
 export * from './namedZoneLocalIntervalPlacementRequest.zod';
+export * from './newPlannedRow.zod';
 export * from './objectiveCreateCommand.zod';
 export * from './objectiveResponse.zod';
 export * from './objectiveResultCommand.zod';

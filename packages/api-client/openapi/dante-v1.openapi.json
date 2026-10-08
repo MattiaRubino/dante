@@ -1283,6 +1283,14 @@
             "title": "Intervals",
             "type": "array"
           },
+          "new_planned_sessions": {
+            "items": {
+              "$ref": "#/components/schemas/NewPlannedRow"
+            },
+            "maxItems": 100,
+            "title": "New Planned Sessions",
+            "type": "array"
+          },
           "operation_id": {
             "maxLength": 200,
             "minLength": 1,
@@ -1295,6 +1303,14 @@
             },
             "maxItems": 100,
             "title": "Planned Sessions",
+            "type": "array"
+          },
+          "remove_planned_sessions": {
+            "items": {
+              "$ref": "#/components/schemas/ReplanRow"
+            },
+            "maxItems": 100,
+            "title": "Remove Planned Sessions",
             "type": "array"
           }
         },
@@ -7000,6 +7016,42 @@
         "title": "NamedZoneLocalIntervalPlacementRequest",
         "type": "object"
       },
+      "NewPlannedRow": {
+        "additionalProperties": false,
+        "properties": {
+          "client_ref": {
+            "format": "uuid",
+            "title": "Client Ref",
+            "type": "string"
+          },
+          "ends_local_at": {
+            "format": "date-time",
+            "title": "Ends Local At",
+            "type": "string"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "starts_local_at": {
+            "format": "date-time",
+            "title": "Starts Local At",
+            "type": "string"
+          }
+        },
+        "required": ["client_ref", "starts_local_at", "ends_local_at"],
+        "title": "NewPlannedRow",
+        "type": "object"
+      },
       "ObjectiveCreateCommand": {
         "additionalProperties": false,
         "properties": {
@@ -11102,44 +11154,84 @@
       },
       "ReplanChange": {
         "properties": {
+          "client_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Ref"
+          },
           "previous_end": {
-            "format": "date-time",
-            "title": "Previous End",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous End"
           },
           "previous_start": {
-            "format": "date-time",
-            "title": "Previous Start",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Start"
           },
           "proposed_end": {
-            "format": "date-time",
-            "title": "Proposed End",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proposed End"
           },
           "proposed_start": {
-            "format": "date-time",
-            "title": "Proposed Start",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proposed Start"
           },
           "role": {
             "title": "Role",
             "type": "string"
           },
           "schedule_ref": {
-            "format": "uuid",
-            "title": "Schedule Ref",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Schedule Ref"
           }
         },
-        "required": [
-          "schedule_ref",
-          "role",
-          "previous_start",
-          "previous_end",
-          "proposed_start",
-          "proposed_end"
-        ],
+        "required": ["role"],
         "title": "ReplanChange",
         "type": "object"
       },

@@ -60,7 +60,7 @@ class ActivityScheduleRoleRow(Base):
         CheckConstraint("role_code IN ('envelope','planned','interval')", name="role"),
         CheckConstraint(
             "(role_code='envelope' AND presentation_order=0) OR "
-            "(role_code IN ('planned','interval') AND presentation_order BETWEEN 1 AND 100)",
+            "(role_code IN ('planned','interval') AND presentation_order BETWEEN 1 AND 2147483647)",
             name="order",
         ),
         CheckConstraint(

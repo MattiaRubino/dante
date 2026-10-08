@@ -7,12 +7,43 @@
 import * as zod from 'zod/mini';
 
 export const ReplanChange = /*#__PURE__*/ zod.object({
-  previous_end: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-  previous_start: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-  proposed_end: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-  proposed_start: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+  client_ref: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.uuid(),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
+  previous_end: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
+  previous_start: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
+  proposed_end: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
+  proposed_start: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
   role: /*#__PURE__*/ zod.string(),
-  schedule_ref: /*#__PURE__*/ zod.uuid(),
+  schedule_ref: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.uuid(),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
 });
 
 export type ReplanChange = zod.input<typeof ReplanChange>;

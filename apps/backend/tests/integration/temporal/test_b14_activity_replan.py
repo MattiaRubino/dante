@@ -3,6 +3,7 @@
 from datetime import datetime
 from types import SimpleNamespace
 from typing import Any
+from uuid import uuid7
 
 import pytest
 from fastapi import Response
@@ -11,6 +12,7 @@ from tests.integration.temporal.test_b14_u2_authoring import _seed_self
 from dante.modules.temporal.activity_edit_snapshot_api import _SNAPSHOT, ActivityEditSnapshot
 from dante.modules.temporal.activity_replan_api import (
     ActivityReplanCommand,
+    NewPlannedRow,
     ReplanRow,
     apply_activity_replan,
     preview_activity_replan,
@@ -90,5 +92,49 @@ async def test_activity_replan_previews_and_commits_dependent_rows_atomically(
                 context, request, Response(),
             )
         assert stale.value.status == 409
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_activity_replan_adds_and_removes_planned_sessions_without_reusing_history(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    try:
+        created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
+            self_person_ref=actor, operation_id="replan:replace:create", title="Studio",
+            placement=_window(9, 12), activity_intervals=(_window(9, 12),),
+            planned_slices=(_window(9, 10),), planned_slice_names=("Prima",),
+        )
+        activity = created.item.subject_native_ref
+        async with runtime.session_factory() as session, session.begin():
+            before = ActivityEditSnapshot.model_validate(await session.scalar(
+                _SNAPSHOT, {"actor": actor, "activity": activity},
+            ))
+        interval = next(row for row in before.schedules if row.role_code == "interval")
+        old = next(row for row in before.schedules if row.role_code == "planned")
+        command = ActivityReplanCommand(
+            operation_id="replan:replace:apply", intervals=[_move(interval, 9, 12)],
+            remove_planned_sessions=[_move(old, 9, 10)],
+            new_planned_sessions=[NewPlannedRow(
+                client_ref=uuid7(), name="Seconda",
+                starts_local_at=datetime(2026, 10, 9, 10),  # noqa: DTZ001
+                ends_local_at=datetime(2026, 10, 9, 11),  # noqa: DTZ001
+            )],
+        )
+        context = SimpleNamespace(self_person_ref=actor)
+        request = SimpleNamespace(app=SimpleNamespace(
+            state=SimpleNamespace(database_runtime=runtime)))
+        preview = await preview_activity_replan(activity, command, context, request, Response())
+        assert {change.role for change in preview.changes} == {"planned_added", "planned_removed"}
+        after = await apply_activity_replan(activity, command, context, request, Response())
+        accepted = [row for row in after.schedules if row.role_code == "planned"]
+        assert len(accepted) == 1
+        assert accepted[0].display_name == "Seconda"
+        assert accepted[0].schedule_ref != old.schedule_ref
+        assert accepted[0].presentation_order > old.presentation_order
+        assert len([row for row in after.schedules if row.role_code == "interval"]) == 1
     finally:
         await runtime.dispose()

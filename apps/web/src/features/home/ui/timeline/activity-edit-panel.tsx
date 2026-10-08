@@ -10,6 +10,7 @@ import type { ActivityProfile } from '../../../temporal/remote-activity-inspecto
 import {
   createRemoteActivityEditSettings,
   type ActivityReplanChange,
+  type ActivityNewPlanned,
   type ActivityReplanTime,
   type ActivityEditSettings,
 } from '../../../temporal/remote-activity-edit-settings';
@@ -37,6 +38,8 @@ export function ActivityEditPanel({
   const [realityMode, setRealityMode] = useState<RealityMode | null>(null);
   const [reminderLeadMinutes, setReminderLeadMinutes] = useState<number | null>(null);
   const [planDraft, setPlanDraft] = useState<Record<string, ActivityReplanTime>>({});
+  const [newPlanned, setNewPlanned] = useState<ActivityNewPlanned[]>([]);
+  const [removedPlanned, setRemovedPlanned] = useState<string[]>([]);
   const [planPreview, setPlanPreview] = useState<readonly ActivityReplanChange[] | null>(null);
   const [planOperation, setPlanOperation] = useState<string | null>(null);
   const [planPending, setPlanPending] = useState(false);
@@ -68,9 +71,11 @@ export function ActivityEditPanel({
     editablePlan.every((schedule) =>
       ['floating_local', 'named_zone_local'].includes(schedule.temporalForm) &&
       !!schedule.start && !!schedule.end);
-  const planDirty = canReplan && editablePlan.some((schedule) =>
-    planDraft[schedule.scheduleRef]?.start !== schedule.start ||
-    planDraft[schedule.scheduleRef]?.end !== schedule.end);
+  const planDirty = canReplan && (removedPlanned.length > 0 || newPlanned.length > 0 ||
+    editablePlan.some((schedule) => !removedPlanned.includes(schedule.scheduleRef) && (
+      planDraft[schedule.scheduleRef]?.start !== schedule.start ||
+      planDraft[schedule.scheduleRef]?.end !== schedule.end)));
+  const replanDraft = { times: planDraft, removedPlanned, newPlanned };
   const dirty = coreDirty || planDirty;
 
   const loadSettings = useCallback(() => {
@@ -84,6 +89,8 @@ export function ActivityEditPanel({
         setPlanDraft(Object.fromEntries(loaded.schedules.map((schedule) => [
           schedule.scheduleRef, { start: schedule.start ?? '', end: schedule.end ?? '' },
         ])));
+        setNewPlanned([]);
+        setRemovedPlanned([]);
       })
       .catch((reason: unknown) => {
         setSettingsError(
@@ -119,12 +126,19 @@ export function ActivityEditPanel({
     setPlanError('');
   };
 
+  const changeNewPlanned = (ref: string, field: 'start' | 'end' | 'name', value: string) => {
+    setNewPlanned((current) => current.map((item) => item.clientRef === ref
+      ? { ...item, [field]: value } : item));
+    setPlanPreview(null);
+    setPlanOperation(null);
+  };
+
   const previewPlan = () => {
     if (!settings || !canReplan || !planDirty || coreDirty || planPending) return;
     const operationId = crypto.randomUUID();
     setPlanPending(true);
     setPlanError('');
-    void settingsSource.previewReplan(profile.activityRef, settings, planDraft, operationId)
+    void settingsSource.previewReplan(profile.activityRef, settings, replanDraft, operationId)
       .then((changes) => {
         setPlanOperation(operationId);
         setPlanPreview(changes);
@@ -135,12 +149,17 @@ export function ActivityEditPanel({
   };
 
   const applyPlan = () => {
-    if (!settings || !planPreview || !planOperation || planPending) return;
+    if (!settings || !planPreview || !planOperation || planPending || coreDirty) return;
     setPlanPending(true);
     setPlanError('');
-    void settingsSource.applyReplan(profile.activityRef, settings, planDraft, planOperation)
+    void settingsSource.applyReplan(profile.activityRef, settings, replanDraft, planOperation)
       .then((saved) => {
         setSettings(saved);
+        setPlanDraft(Object.fromEntries(saved.schedules.map((schedule) => [
+          schedule.scheduleRef, { start: schedule.start ?? '', end: schedule.end ?? '' },
+        ])));
+        setNewPlanned([]);
+        setRemovedPlanned([]);
         setPlanPreview(null);
         setPlanOperation(null);
         onSaved(profile);
@@ -390,21 +409,33 @@ export function ActivityEditPanel({
                             : 'Intervallo')}
                       {schedule.start ? ` · ${schedule.start}` : ''}
                       {schedule.end ? ` – ${schedule.end}` : ''}
-                      {canReplan && (schedule.role === 'interval' || schedule.role === 'planned') ? (
+                      {canReplan && (schedule.role === 'interval' || schedule.role === 'planned') &&
+                        !removedPlanned.includes(schedule.scheduleRef) ? (
                         <div className="timeline-activity-editor__fields">
                           <label>
                             Inizio
-                            <input type="datetime-local" required
+                            <input type="datetime-local" required disabled={planPending}
                               value={planDraft[schedule.scheduleRef]?.start.slice(0, 16) ?? ''}
                               onChange={(event) => changePlan(schedule.scheduleRef, 'start', event.target.value)} />
                           </label>
                           <label>
                             Fine
-                            <input type="datetime-local" required
+                            <input type="datetime-local" required disabled={planPending}
                               value={planDraft[schedule.scheduleRef]?.end.slice(0, 16) ?? ''}
                               onChange={(event) => changePlan(schedule.scheduleRef, 'end', event.target.value)} />
                           </label>
                         </div>
+                      ) : null}
+                      {canReplan && schedule.role === 'planned' ? (
+                        <button type="button" disabled={planPending} onClick={() => {
+                          setRemovedPlanned((current) => current.includes(schedule.scheduleRef)
+                            ? current.filter((ref) => ref !== schedule.scheduleRef)
+                            : [...current, schedule.scheduleRef]);
+                          setPlanPreview(null);
+                          setPlanOperation(null);
+                        }}>
+                          {removedPlanned.includes(schedule.scheduleRef) ? 'Mantieni sessione' : 'Rimuovi sessione'}
+                        </button>
                       ) : null}
                     </li>
                   ))}
@@ -412,6 +443,40 @@ export function ActivityEditPanel({
               ) : (
                 <p>Nessun intervallo programmato.</p>
               )}
+              {canReplan ? (
+                <div>
+                  {newPlanned.map((item) => (
+                    <div key={item.clientRef} className="timeline-activity-editor__fields">
+                      <label>Nome sessione
+                        <input maxLength={300} disabled={planPending} value={item.name}
+                          onChange={(event) => changeNewPlanned(item.clientRef, 'name', event.target.value)} />
+                      </label>
+                      <label>Inizio
+                        <input type="datetime-local" required disabled={planPending} value={item.start.slice(0, 16)}
+                          onChange={(event) => changeNewPlanned(item.clientRef, 'start', event.target.value)} />
+                      </label>
+                      <label>Fine
+                        <input type="datetime-local" required disabled={planPending} value={item.end.slice(0, 16)}
+                          onChange={(event) => changeNewPlanned(item.clientRef, 'end', event.target.value)} />
+                      </label>
+                      <button type="button" disabled={planPending} onClick={() => {
+                        setNewPlanned((current) => current.filter((row) => row.clientRef !== item.clientRef));
+                        setPlanPreview(null);
+                        setPlanOperation(null);
+                      }}>Rimuovi nuova sessione</button>
+                    </div>
+                  ))}
+                  <button type="button" disabled={planPending ||
+                    editablePlan.filter((row) => row.role === 'planned').length - removedPlanned.length +
+                      newPlanned.length >= 100} onClick={() => {
+                    setNewPlanned((current) => [...current, {
+                      clientRef: crypto.randomUUID(), name: '', start: '', end: '',
+                    }]);
+                    setPlanPreview(null);
+                    setPlanOperation(null);
+                  }}>Aggiungi sessione pianificata</button>
+                </div>
+              ) : null}
               {planDirty ? (
                 <div>
                   {coreDirty ? <p>Salva le altre impostazioni separatamente prima di spostare l’attività.</p> : null}
@@ -424,6 +489,8 @@ export function ActivityEditPanel({
                       schedule.scheduleRef,
                       { start: schedule.start ?? '', end: schedule.end ?? '' },
                     ])));
+                    setNewPlanned([]);
+                    setRemovedPlanned([]);
                     setPlanPreview(null);
                     setPlanOperation(null);
                   }}>Ripristina orari</button>
@@ -433,14 +500,18 @@ export function ActivityEditPanel({
                 <div role="group" aria-label="Anteprima spostamento">
                   <h4>Modifiche proposte</h4>
                   <ul>{planPreview.map((change) => (
-                    <li key={change.scheduleRef}>
-                      {change.role === 'planned' ? 'Sessione pianificata' :
+                    <li key={change.scheduleRef ?? change.clientRef}>
+                      {change.role === 'planned_added' ? 'Nuova sessione' :
+                        change.role === 'planned_removed' ? 'Sessione rimossa' :
+                        change.role === 'planned' ? 'Sessione pianificata' :
                         change.role === 'envelope' ? 'Intervallo complessivo' : 'Intervallo'}:
-                      {' '}{change.previousStart} – {change.previousEnd}
-                      {' → '}{change.proposedStart} – {change.proposedEnd}
+                      {' '}{change.previousStart && change.previousEnd ?
+                        `${change.previousStart} – ${change.previousEnd}` : ''}
+                      {' → '}{change.proposedStart && change.proposedEnd ?
+                        `${change.proposedStart} – ${change.proposedEnd}` : 'rimossa'}
                     </li>
                   ))}</ul>
-                  <button type="button" disabled={planPending || pending} onClick={applyPlan}>
+                  <button type="button" disabled={planPending || pending || coreDirty} onClick={applyPlan}>
                     Applica programmazione
                   </button>
                   <button type="button" disabled={planPending} onClick={() => {

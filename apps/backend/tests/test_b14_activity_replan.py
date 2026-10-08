@@ -8,6 +8,7 @@ import pytest
 
 from dante.modules.temporal.activity_replan_api import (
     ActivityReplanCommand,
+    NewPlannedRow,
     ReplanRow,
     _validated_plan,
 )
@@ -81,3 +82,29 @@ def test_replan_rejects_omitted_or_overlapping_dependents_and_stale_basis() -> N
             planned_sessions=[_intent(planned, 10, 11)],
         ))
     assert conflict.value.status == 409
+
+
+def test_replan_previews_replacement_and_rejects_ambiguous_planned_rows() -> None:
+    envelope, interval, planned = (
+        _row("envelope", 9, 12), _row("interval", 9, 12), _row("planned", 9, 10),
+    )
+    addition = NewPlannedRow(
+        client_ref=uuid7(), name="Nuova sessione",
+        starts_local_at=_time(10), ends_local_at=_time(11),
+    )
+    snapshot = SimpleNamespace(schedules=[envelope, interval, planned])
+    changes, placements = _validated_plan(snapshot, ActivityReplanCommand(
+        operation_id="replace", intervals=[_intent(interval, 9, 12)],
+        remove_planned_sessions=[_intent(planned, 9, 10)],
+        new_planned_sessions=[addition],
+    ))
+    assert placements == []
+    assert {change.role for change in changes} == {"planned_removed", "planned_added"}
+    assert next(change.client_ref for change in changes if change.role == "planned_added") == addition.client_ref
+    with pytest.raises(ProblemError) as duplicate:
+        _validated_plan(snapshot, ActivityReplanCommand(
+            operation_id="duplicate", intervals=[_intent(interval, 9, 12)],
+            planned_sessions=[_intent(planned, 9, 10)],
+            remove_planned_sessions=[_intent(planned, 9, 10)],
+        ))
+    assert duplicate.value.status == 422

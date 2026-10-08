@@ -8,7 +8,7 @@
     "name": "set_self_activity_schedule_role",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Guard an immutable Schedule purpose on a self-owned Activity during atomic authoring.",
+  "purpose": "Guard an immutable Schedule purpose on a self-owned Activity during atomic authoring and later planned Session additions. Historical roles keep their unique order; post-create commands limit active rows to 100.",
   "classification": {
     "persistence_role": "activity_schedule_capability",
     "canonicality": "capability_surface",
