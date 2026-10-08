@@ -37,6 +37,9 @@ export function ActivityEditPanel({
   );
   const [realityMode, setRealityMode] = useState<RealityMode | null>(null);
   const [reminderLeadMinutes, setReminderLeadMinutes] = useState<number | null>(null);
+  const [placementProtected, setPlacementProtected] = useState<boolean | null>(null);
+  const [lockPending, setLockPending] = useState(false);
+  const [lockError, setLockError] = useState('');
   const [planDraft, setPlanDraft] = useState<Record<string, ActivityReplanTime>>({});
   const [newPlanned, setNewPlanned] = useState<ActivityNewPlanned[]>([]);
   const [removedPlanned, setRemovedPlanned] = useState<string[]>([]);
@@ -76,7 +79,9 @@ export function ActivityEditPanel({
       planDraft[schedule.scheduleRef]?.start !== schedule.start ||
       planDraft[schedule.scheduleRef]?.end !== schedule.end)));
   const replanDraft = { times: planDraft, removedPlanned, newPlanned };
-  const dirty = coreDirty || planDirty;
+  const lockDirty = settings !== null && settings.placementLockScheduleRef !== null &&
+    placementProtected !== null && placementProtected !== settings.placementProtected;
+  const dirty = coreDirty || planDirty || lockDirty;
 
   const loadSettings = useCallback(() => {
     return settingsSource
@@ -86,6 +91,8 @@ export function ActivityEditPanel({
         setCaptureMode(loaded.capture.mode);
         setRealityMode(loaded.reality.mode);
         setReminderLeadMinutes(loaded.reminderLeadMinutes);
+        setPlacementProtected(loaded.placementProtected);
+        setLockError('');
         setPlanDraft(Object.fromEntries(loaded.schedules.map((schedule) => [
           schedule.scheduleRef, { start: schedule.start ?? '', end: schedule.end ?? '' },
         ])));
@@ -107,7 +114,7 @@ export function ActivityEditPanel({
   }, [loadSettings]);
 
   const requestClose = useCallback(() => {
-    if (pending || planPending) return;
+    if (pending || planPending || lockPending) return;
     if (confirmingDiscard) {
       setConfirmingDiscard(false);
     } else if (dirty) {
@@ -115,7 +122,22 @@ export function ActivityEditPanel({
     } else {
       onCancel();
     }
-  }, [confirmingDiscard, dirty, onCancel, pending, planPending]);
+  }, [confirmingDiscard, dirty, lockPending, onCancel, pending, planPending]);
+
+  const applyPlacementLock = () => {
+    if (!settings || placementProtected === null || !lockDirty ||
+        pending || planPending || lockPending) return;
+    setLockPending(true);
+    setLockError('');
+    void settingsSource.setPlacementProtected(
+      profile.activityRef, settings, placementProtected,
+    ).then((saved) => {
+      setSettings(saved);
+    }).catch((reason: unknown) => {
+      setLockError(reason instanceof Error
+        ? reason.message : 'Impossibile aggiornare la protezione.');
+    }).finally(() => setLockPending(false));
+  };
 
   const changePlan = (ref: string, field: keyof ActivityReplanTime, value: string) => {
     setPlanDraft((current) => ({ ...current,
@@ -186,7 +208,7 @@ export function ActivityEditPanel({
       onSubmit={(event) => {
         event.preventDefault();
         if (
-          pending || planPending ||
+          pending || planPending || lockPending ||
           !settings ||
           loadingSettings ||
           settingsError ||
@@ -359,7 +381,34 @@ export function ActivityEditPanel({
                 </select>
               </label>
             </div>
-            {settings.reminderScheduleRef ? (
+            {settings.placementLockScheduleRef ? (
+               <fieldset aria-label="Protezione collocazione">
+                 <legend>Protezione collocazione</legend>
+                 {lockError ? <p role="alert">{lockError}</p> : null}
+                 <label className="timeline-activity-editor__checkbox">
+                   <input
+                     type="checkbox"
+                     checked={placementProtected ?? settings.placementProtected}
+                     disabled={pending || planPending || lockPending}
+                     onChange={(event) => {
+                       setPlacementProtected(event.target.checked);
+                       setLockError('');
+                     }}
+                   />
+                   Non spostare automaticamente questa attività
+                 </label>
+                 {lockDirty ? (
+                   <button
+                     type="button"
+                     disabled={pending || planPending || lockPending}
+                     onClick={applyPlacementLock}
+                   >
+                     {lockPending ? 'Salvataggio…' : 'Applica protezione'}
+                   </button>
+                 ) : null}
+               </fieldset>
+             ) : null}
+             {settings.reminderScheduleRef ? (
               <fieldset>
                 <legend>Promemoria</legend>
                 <label className="timeline-activity-editor__checkbox">
@@ -541,13 +590,13 @@ export function ActivityEditPanel({
         className="timeline-activity-editor__actions"
         inert={confirmingDiscard || undefined}
       >
-        <button type="button" disabled={pending || planPending} onClick={requestClose}>
+        <button type="button" disabled={pending || planPending || lockPending} onClick={requestClose}>
           Annulla
         </button>
         <button
           type="submit"
           disabled={
-            pending || planPending || planDirty ||
+            pending || planPending || lockPending || planDirty ||
             !settings ||
             loadingSettings ||
             !!settingsError ||
