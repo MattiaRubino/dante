@@ -228,14 +228,17 @@ def test_selected_item_can_be_corrected_despite_its_existing_history() -> None:
 
 def test_reject_more_than_10000_candidates() -> None:
     selected = _occurrence(1)
-    many = (selected,) + tuple(
-        RecurrenceEditCandidate(
-            occurrence_ref=UUID(int=n + 1),
-            source_native_ref=SOURCE,
-            expected_at=NOW + timedelta(days=1),
-            origin_code="recurrence_generated",
-        )
-        for n in range(10_000)
+    many = (
+        selected,
+        *(
+            RecurrenceEditCandidate(
+                occurrence_ref=UUID(int=n + 1),
+                source_native_ref=SOURCE,
+                expected_at=NOW + timedelta(days=1),
+                origin_code="recurrence_generated",
+            )
+            for n in range(10_000)
+        ),
     )
     with pytest.raises(EditScopeInputError, match="1-10000"):
         select_recurrence_edit_scope(
