@@ -677,3 +677,43 @@ tests only in local WSL `~/projects/dante`. No remote CI.
 
 **Status: CHECKPOINT DOCUMENTED / M1–M5 OPEN.** No code, migrations,
 client artifacts or frontend were changed by this checkpoint.
+
+## 2026-10-08 — M1-A canonical recurrence edit target selector (candidate)
+
+After verifying existing B06/B11 authority, **reuse** the already deployed
+Routine/Event Recurrence GET/replace endpoints, historical Recurrence state
+and idempotent CAS, B06 Occurrence identity/checkpoint, typed coordinate,
+skip/exclusion, and B14 materialization to Activity/Occurrence. Do not
+reimplement these capabilities. Existing APIs allow editing a recurrence
+rule or one Occurrence, but **do not yet expose a shared command that
+applies arbitrary Activity/Event edits to the selected instance and all
+eligible next future instances atomically**.
+
+M1-A implementation adds the **pure, fail-closed target selection**
+`occurrence_edit_scope.py` with focused unit tests. It encodes exactly
+two scopes: `only_this` and `this_and_following`, both including the
+clicked Occurrence. The latter additionally picks only later future
+recurrence-generated Occurrences under an acceptance-time, aware instant;
+already-past neighbors remain untouched. Upcoming explicit extras are not
+mistaken for generated following Occurrences; overridden, skipped or
+already-realized *other future* candidates are surfaced as blocking
+conflicts instead of silently overwritten. The plan distinguishes
+accepted per-instance target refs from a required future source-template
+revision, so not-yet-materialized future instances must inherit the new
+accepted policy. Equal-time anchor ties, naive clocks, duplicate refs,
+mixed owner sources, absent clicked target, incomplete inventory and
+unbounded candidate sets fail closed.
+
+This is **pure selection only**. No API route, DB read or mutation has
+been added. It does NOT claim owner verification on its own, because
+that must be supplied by self-scoped guarded database capabilities; nor
+does it claim transactional CAS, exhaustive future enumeration or
+Event/Activity apply wiring. These are next, and require an authoritative
+bounded current inventory plus recurrence source revision with a
+save-time re-read/compare-and-swap transaction. The callback must never
+accept a client-submitted list as proof of self scope/completeness.
+
+Tests to run **locally by the user**: backend Ruff for the new core and
+test file, plus focused unit `tests/test_b14_occurrence_edit_scope.py`.
+Status **IMPLEMENTED CANDIDATE / USER UNIT GATE PENDING**. M1 overall
+remains OPEN; B14/B07 remains ACTIVE.
