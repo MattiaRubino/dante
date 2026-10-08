@@ -605,6 +605,53 @@ describe('Activity Inspector', () => {
     expect(loadSettings).toHaveBeenCalledWith(ref);
   });
 
+  it('preserves an unsaved planned name instead of submitting unrelated core settings', async () => {
+    loadSettings.mockResolvedValueOnce({ ...currentSettings, schedules: [{
+      scheduleRef: 'planned-m3b', role: 'planned', name: 'Preparazione', order: 0,
+      placementStateRef: 'placement-1', temporalForm: 'named_zone_local',
+      start: '2026-10-09T09:00:00', end: '2026-10-09T10:00:00',
+      zoneId: 'Europe/Rome',
+    }] });
+    const onSaved = vi.fn();
+    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
+      onSaved={onSaved} onCancel={() => undefined} />);
+    const name = await screen.findByRole('textbox', { name: 'Nome sessione pianificata' });
+    fireEvent.change(name, { target: { value: 'Preparazione approfondita' } });
+    expect(screen.getByRole('button', { name: 'Salva modifiche' }))
+      .toHaveProperty('disabled', true);
+    expect(saveCore).not.toHaveBeenCalled();
+    expect(onSaved).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Salva nome sessione' }))
+      .toHaveProperty('disabled', false);
+  });
+
+  it('discloses selected-only owner-domain editing even with no metadata change', async () => {
+    loadRecurringContext.mockResolvedValueOnce({
+      occurrenceRef: '0199a222-2222-7222-8222-222222222222',
+      sourceRef: '0199a444-4444-7444-8444-444444444444',
+      editRevision: 3, recurrenceStateRef: null,
+    });
+    loadSettings.mockResolvedValueOnce({ ...currentSettings, schedules: [{
+      scheduleRef: 'planned-recurring', role: 'planned', name: 'Preparazione', order: 0,
+      placementStateRef: 'placement-2', temporalForm: 'named_zone_local',
+      start: '2026-10-09T09:00:00', end: '2026-10-09T10:00:00',
+      zoneId: 'Europe/Rome',
+    }] });
+    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
+      onSaved={() => undefined} onCancel={() => undefined} />);
+    fireEvent.change(await screen.findByRole('textbox', { name: 'Nome sessione pianificata' }), {
+      target: { value: 'Ripasso' },
+    });
+    const thisScope = await screen.findByLabelText('Solo questa');
+    const following = screen.getByLabelText('Questa e le prossime');
+    expect(thisScope).toHaveProperty('checked', true);
+    expect(following).toHaveProperty('disabled', true);
+    expect(screen.getByText(/Life Area e nomi delle Session pianificate/)).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Salva modifiche' }))
+      .toHaveProperty('disabled', true);
+    expect(saveRecurringProfile).not.toHaveBeenCalled();
+  });
+
   it('unassigns an existing Life Area using an explicit null target', async () => {
     const catalog = { currentRef: 'area-1', currentRevision: 4,
       options: [{ ref: 'area-1', name: 'Personale' }] };
