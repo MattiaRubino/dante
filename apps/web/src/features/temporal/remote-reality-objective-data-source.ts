@@ -316,7 +316,7 @@ export function createRemoteRealityObjectiveDataSource(
       objectiveRef: string,
       command: Readonly<{
         operationId: string;
-        expectedEvaluationStateRef: string | null;
+        expectedEvaluationStateRef: string;
         observedBoolean: boolean | null;
         observedNumeric: number | null;
         qualitativeCode: string | null;
