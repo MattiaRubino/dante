@@ -801,6 +801,7 @@ export function ActivityEditPanel({
             >
               <h3>Programmazione attuale</h3>
               {planError ? <p role="alert">{planError}</p> : null}
+              {nameError ? <p role="alert">{nameError}</p> : null}
               {settings.schedules.length ? (
                 <ul>
                   {settings.schedules.map((schedule) => (
@@ -813,6 +814,48 @@ export function ActivityEditPanel({
                             : 'Intervallo')}
                       {schedule.start ? ` · ${schedule.start}` : ''}
                       {schedule.end ? ` – ${schedule.end}` : ''}
+                      {schedule.role === 'planned' ? (
+                        <div className="timeline-activity-editor__fields">
+                          <label>
+                            Nome sessione pianificata
+                            <input maxLength={300} disabled={!!namePending || pending || planPending}
+                              value={plannedNames[schedule.scheduleRef] ?? ''}
+                              onChange={(event) => {
+                                setPlannedNames((current) => ({
+                                  ...current, [schedule.scheduleRef]: event.target.value,
+                                }));
+                                setNameError('');
+                              }} />
+                          </label>
+                          {(plannedNames[schedule.scheduleRef] ?? '') !== (schedule.name ?? '') ? (
+                            <button type="button" disabled={!!namePending || pending || planPending ||
+                              planDirty || areaDirty || coreDirty || lockDirty}
+                              onClick={() => {
+                                const next = plannedNames[schedule.scheduleRef]?.trim() || null;
+                                setNamePending(schedule.scheduleRef);
+                                setNameError('');
+                                void settingsSource.revisePlannedName(
+                                  profile.activityRef, schedule.scheduleRef, schedule.name, next,
+                                ).then((saved) => {
+                                  setSettings((current) => current && ({
+                                    ...current,
+                                    schedules: current.schedules.map((row) =>
+                                      row.scheduleRef === schedule.scheduleRef
+                                        ? { ...row, name: saved } : row),
+                                  }));
+                                  setPlannedNames((current) => ({
+                                    ...current, [schedule.scheduleRef]: saved ?? '',
+                                  }));
+                                }).catch((reason: unknown) => {
+                                  setNameError(reason instanceof Error
+                                    ? reason.message : 'Rinomina della sessione non riuscita.');
+                                }).finally(() => setNamePending(null));
+                              }}>
+                              {namePending === schedule.scheduleRef ? 'Salvataggio…' : 'Salva nome sessione'}
+                            </button>
+                          ) : null}
+                        </div>
+                      ) : null}
                       {canReplan && (schedule.role === 'interval' || schedule.role === 'planned') &&
                         !removedPlanned.includes(schedule.scheduleRef) &&
                          !removedIntervals.includes(schedule.scheduleRef) ? (
