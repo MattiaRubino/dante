@@ -69,21 +69,22 @@
       "B14-M1-ACTIVITY-PROFILE-READ-GUARD",
       "B14-M2-OBJECTIVE-CORRECTION",
       "B14-M2-OBJECTIVE-SERIES",
-      "B14-M3-RESIDUAL-EDITOR"
+      "B14-M3-RESIDUAL-EDITOR",
+      "B14-M4-EVENT-PROFILE"
     ],
     "standalone_entries": {
-      "tables": 234,
+      "tables": 235,
       "views": 5,
-      "routines": 208,
-      "total": 447
+      "routines": 209,
+      "total": 449
     },
     "embedded_objects": {
       "triggers": 103,
-      "physical_indexes": 477
+      "physical_indexes": 479
     },
     "constraints": {
-      "foreign_keys": 414,
-      "check_constraints": 586
+      "foreign_keys": 416,
+      "check_constraints": 587
     }
   },
   "technical_foundation": {
