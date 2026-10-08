@@ -468,43 +468,105 @@ definitions, cross-Occurrence updates, or the full Inspector real-app UX.
 Next semantic gate: change Objective definition without retroactively
 reinterpreting recorded observations and accepted evaluations.
 
-## 2026-10-08 — Objective post-create definition lifecycle contract (design gate)
+## 2026-10-08 — Canonical selected-instance edit scope and past-fact corrections (user-corrected product rule)
 
-Current database reality, verified against `20261006_113` and API:
-`temporal_objective` stores the accepted bounded definition, keyed by
-`objective_ref`; `temporal_objective_observation` and
-`temporal_objective_evaluation_state` attach facts to that exact
-`objective_ref`. The Create API presently creates but never mutates or
-retires accepted definitions. The current listing exposes all definitions.
+**AUTHORITY: this section replaces the earlier Objective lifecycle design gate and
+any earlier prose proposing an unanchored "future-only" edit from a selected past
+instance.** This is the active B14/B07 product decision for **all edits**
+(Activity, Event, recurrence-derived instances, Objectives and other editable
+capabilities), not an Objectives-only rule. It governs modification targeting;
+separate domain safety and write-authority checks still apply.
 
-**Semantic decisions for the next forward-only migration**:
-1. Editing an already accepted Objective must not `UPDATE` its definition:
-   create a *successor Objective identity* and persist an immutable
-   predecessor/successor lineage with the previous definition retired.
-   The old definition and every past Observation/Evaluation remain unchanged
-   and queryable by an explicitly historical read.
-2. Explicit retirement (without replacement) is a tombstone/state
-   transition, not `DELETE`, and excludes that Objective from *current*
-   Objective review surfaces and automatic pending Review counts.
-3. Reorder must preserve definition identities and assessment facts. Prefer a
-   versioned order projection; do not rewrite accepted initial
-   `presentation_order` values as if they had always been current.
-4. Apply/retry must be one self-scoped, idempotent, CAS-guarded command.
-   Conflicting concurrent changes or operation-ID reuse must produce a
-   truthful conflict, not duplicated successors or partial retirement.
-5. Same governed definition semantics are shared by Activity and Event.
-   Existing Occurrence materializations are independent accepted instances;
-   a series update must not silently rewrite their past/accepted truth.
-6. Runtime can reach private persistence only through SECURITY DEFINER
-   functions with explicit grants; migration, ORM mapping, Database
-   Dictionary, ACL, catalog counts, API/OpenAPI/Orval and real-stack proof
-   must reconcile in the same functional block.
+### Scope in the save UI (recurring instances only)
 
-**Required proof**: create→record evaluated result→edit→old result still
-associated with previous definition; edit replay and concurrency conflict;
-retire with/without observed history; no phantom Objective review for retired
-definitions; owner isolation; reorder semantics; zero mutation to immutable
-facts; Activity and Event parity. UI exposes current definitions separately
-from read-only historical versions. This section freezes design **only**,
-not implementation; do not count lifecycle as closed until a user-run
-PostgreSQL, generated-client, web and product gate.
+Only TWO scope labels:
+
+1. **Solo questa** — the **selected/clicked instance only**, regardless of
+   whether it is past, current or future.
+2. **Questa e le prossime** — the **selected/clicked instance ALWAYS**, plus
+   the future instances of the same recurrence which occur after the selected
+   instance. Never silently reprocess any *other* already-past instance.
+
+This is **not** "Le prossime" without the selected one, and not a retroactive
+"tutta la serie". The clicked item is always the temporal anchor. For a
+non-recurring Activity/Event the only target is that individual item.
+
+For a concrete chronological timeline
+
+```text
+past      1   2   3  | NOW |  4   5   6      future
+select 1; Solo questa            -> 1
+select 1; Questa e le prossime   -> 1 + 4 + 5 + 6  (NEVER 2,3)
+select 4; Solo questa            -> 4
+select 4; Questa e le prossime   -> 4 + 5 + 6
+select 5; Questa e le prossime   -> 5 + 6         (NEVER 4)
+```
+
+General predicate for "Questa e le prossime": include the selected instance
+as its own branch; for **additional** instances include only those (a) of the
+same recurrence, (b) strictly later in recurrence ordering than the selected,
+and (c) future at the time the command is accepted. Past instances between a
+selected past anchor and the present remain untouched. The meaning of current,
+past and future must use canonical temporal/occurrence state and a controlled
+time boundary, not an arbitrary browser-local comparison. Scope and the exact
+affected instance set must be confirmed by preview/CAS at persistence, with
+no silent skipping of separately customized future items.
+
+### Historical records and Objective facts
+
+The user-authored **current accepted value is authoritative**. DANTE must
+not infer or ask *why* the user is correcting an earlier value. An earlier
+Activity/Event can be **fixed/corrected**, including previously defined
+Objectives, recorded observations and assessments. Do not allow **deletion
+of already-realized/recorded historical facts** in the past; support correction
+to a new authoritative value instead. Historical correction of an Objective
+must be in-place from the product user's point of view: **same logical
+Objective**, corrected current definition/assessment, *not* a new unrelated
+visible Objective. Old persisted versions remain available privately for
+audit/undo/history, never more authoritative than the corrected current value.
+
+When an Objective target or a recorded result is corrected, reconcile the
+current dependent assessment with the corrected data where computable. Never
+fabricate a manual/qualitative assessment; obtain the needed user decision.
+Do not silently mutate the older accepted evaluation records. The user's
+correction to selected past item does **not** propagate to other past items,
+even if the same recurrence generated them.
+
+For **current/future** instances, ordinary modifications, removal of not-yet-
+realized Objectives/planned content, and scoped updates are allowed where
+the owning domain's rules permit. "Questa e le prossime" always includes the
+selected item; historical-fact non-deletion continues to hold even when a
+scope command begins on a past item. The UI must disable/deny an action that
+would delete the selected past fact, rather than secretly applying that
+deletion only to later items.
+
+### Persistence boundaries and still-open work
+
+The existing `temporal_objective` is keyed by `objective_ref`, with
+Observation/Evaluation bound to this identity. The API currently supports
+create/record/list but **no change of existing definition, correction,
+retirement, scoped recurrence edit or reorder**. The 17/17 focused frontend
+gate proves **ADD only**.
+
+Next implementation must provide current logical Objective identity and
+append-only definition/correction history, explicit current-state readback,
+CAS/idempotency and self-owner security; retain historical Observation/
+Evaluation identities. Past corrections become canonical without
+destructively updating old records. Future Objective retirement/removal
+must not appear as an accepted historical-fact delete. For recurring
+Activity/Event, distinguish materialized instances from recurrence policy;
+never equate Routine, Recurrence, Occurrence and Schedule.
+
+Mandatory proof scenarios include exact target sets 1 versus 1+4+5+6,
+4 versus 4+5+6 and 5+6, no touch to 2/3 when editing 1, no future-only
+scope from a selected 1 or 4, correction of evaluated past Objectives/
+observations preserving old audit versions, no deletion of past recorded
+facts, current/future removal, owner isolation, replay/CAS/conflicts,
+individual overrides, and Event/Activity parity. Only mark implemented
+after forward migration + ORM/Database Dictionary exact catalog +
+API/OpenAPI/generated client + web tests + user-run real-app proof.
+
+**Status: USER-APPROVED DESIGN DECISION / IMPLEMENTATION OPEN.** The prior
+design requiring a newly visible successor Objective for every edit, and
+past-anchor "Le prossime" excluding the clicked instance, are explicitly
+**superseded**.
