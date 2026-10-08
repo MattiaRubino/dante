@@ -2,7 +2,7 @@ import { createWebFetch } from '../../platform/api/web-fetch';
 import {
   invalidateTemporalPlanningRead,
   invalidateTemporalTimelineRead,
-} from './temporal-read-invalidation';
+} from './timeline-invalidation';
 
 export type EventLifeAreaChoice = Readonly<{
   options: readonly Readonly<{ ref: string; name: string }>[];
