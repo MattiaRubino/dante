@@ -267,9 +267,14 @@ async def apply_activity_replan(
                 raise _conflict("Unlock the Activity placement before replanning.")
             for row in body.remove_planned_sessions:
                 if await session.scalar(text("""
-                    SELECT EXISTS(SELECT 1 FROM dante.session_planned_schedule_link
-                                   WHERE schedule_ref=:schedule)
-                """), {"schedule": row.schedule_ref}):
+                    SELECT EXISTS(
+                        SELECT 1
+                          FROM dante.list_self_subject_sessions(:actor,:activity) AS execution
+                         WHERE dante.get_self_session_planned_schedule(
+                             :actor,execution.session_ref)=:schedule
+                    )
+                """), {"actor": actor, "activity": activity_ref,
+                       "schedule": row.schedule_ref}):
                     raise _conflict("A planned Session with recorded execution cannot be removed.")
                 if await session.scalar(text("""
                     SELECT locked FROM dante.get_self_schedule_placement_lock(:actor,:schedule)
