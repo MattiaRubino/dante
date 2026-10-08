@@ -586,6 +586,22 @@ describe('Activity Inspector', () => {
     expect(onDeleted).toHaveBeenCalledOnce();
   });
 
+  it('refuses a recurring Activity duplicate instead of silently creating a one-off', async () => {
+    loadRecurringContext.mockResolvedValueOnce({
+      occurrenceRef: '0199a222-2222-7222-8222-222222222222',
+      sourceRef: '0199a444-4444-7444-8444-444444444444',
+      editRevision: 3, recurrenceStateRef: null,
+    });
+    const onDuplicate = vi.fn();
+    render(<ActivityInspectorActions activityRef={ref}
+      onEdit={() => undefined} onDeleted={() => undefined}
+      onDuplicate={onDuplicate} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Duplica' }));
+    expect((await screen.findByRole('alert')).textContent)
+      .toContain('duplicazione fedele della ricorrenza');
+    expect(onDuplicate).not.toHaveBeenCalled();
+  });
+
   it('refuses hidden Activity children even when the Timeline has no subitems', async () => {
     loadChildCount.mockResolvedValueOnce(1);
     const onDuplicate = vi.fn();
