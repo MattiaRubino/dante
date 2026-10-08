@@ -239,11 +239,10 @@ async def _read_event_in_session(
         return None
     agenda_parts = tuple((await database_session.scalars(agenda_statement)).all())
     agenda_revision = await database_session.scalar(revision_statement)
-    profile_revision = await database_session.scalar(text("""
-        SELECT COALESCE(MAX(r.revision),0)
-        FROM dante.event_profile_revision r
-        WHERE r.event_ref=:event_ref AND r.self_person_ref=:self_person_ref
-    """).bindparams(event_ref=event_ref, self_person_ref=self_person_ref))
+    profile_revision = await database_session.scalar(
+        text("SELECT dante.get_self_event_profile_revision(:actor,:event)"),
+        {"actor": self_person_ref, "event": event_ref},
+    )
     assignment = (
         (
             await database_session.execute(
