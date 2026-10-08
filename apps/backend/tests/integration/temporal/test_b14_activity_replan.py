@@ -7,6 +7,7 @@ from uuid import uuid7
 
 import pytest
 from fastapi import Response
+from sqlalchemy import text
 from tests.integration.temporal.test_b14_u2_authoring import _seed_self
 
 from dante.modules.temporal.activity_edit_snapshot_api import _SNAPSHOT, ActivityEditSnapshot
@@ -188,10 +189,11 @@ async def test_activity_replan_replaces_current_interval_without_erasing_role_hi
                      if row.schedule_ref != intervals[1].schedule_ref)
         assert added.presentation_order > max(row.presentation_order for row in intervals)
         assert (added.starts_local_at.hour, added.ends_local_at.hour) == (10, 11)
-        assert next(row for row in after.schedules if row.role_code == "envelope").starts_local_at.hour == 10
-        assert next(row for row in after.schedules if row.role_code == "planned").schedule_ref == planned.schedule_ref
+        envelope = next(row for row in after.schedules if row.role_code == "envelope")
+        assert envelope.starts_local_at.hour == 10
+        retained_planned = next(row for row in after.schedules if row.role_code == "planned")
+        assert retained_planned.schedule_ref == planned.schedule_ref
         # The original role is historically accepted and never reassigned.
-        from sqlalchemy import text
         async with runtime.session_factory() as session, session.begin():
             accepted = (await session.execute(text("""
                 SELECT schedule_ref FROM dante.get_self_activity_schedule_roles(
