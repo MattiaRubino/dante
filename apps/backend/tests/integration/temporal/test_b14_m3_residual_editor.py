@@ -12,11 +12,6 @@ import pytest
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 
-from tests.integration.temporal.test_b05_primary_life_area_assignment import (
-    _legacy_activity,
-    _legacy_event,
-    _seed_self,
-)
 from dante.modules.temporal.authoring import TemporalAuthoringApplication
 from dante.modules.temporal.life_area import LifeAreaApplication
 from dante.modules.temporal.life_area_assignment import (
@@ -28,6 +23,11 @@ from dante.modules.temporal.life_area_assignment import (
 from dante.modules.temporal.schedule import NamedZoneLocalIntervalPlacement
 from dante.modules.temporal.session_runtime import SessionApplication
 from dante.platform.database.runtime import create_database_runtime
+from tests.integration.temporal.test_b05_primary_life_area_assignment import (
+    _legacy_activity,
+    _legacy_event,
+    _seed_self,
+)
 
 pytestmark = pytest.mark.postgres
 
@@ -67,7 +67,8 @@ async def test_primary_life_area_null_is_versioned_and_replayable(
             subject_native_ref=activity, life_area_ref=None,
             expected_assignment_revision=1, operation_id="m3:unassign",
         )
-        assert replay.replayed and replay.assignment_revision == 2
+        assert replay.replayed
+        assert replay.assignment_revision == 2
         assert any(row.subject_native_ref == activity for row in
                    await app.list_unassigned(self_person_ref=actor))
         values = await app.list_assignments(self_person_ref=actor)
