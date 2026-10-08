@@ -65,7 +65,8 @@
       "B14-PLANNED-SESSION-EXECUTION",
       "B14-ACTIVITY-INSPECTOR",
       "B14-M1-EDIT-INVENTORY",
-      "B14-M1-SCOPED-PROFILE-EDIT"
+      "B14-M1-SCOPED-PROFILE-EDIT",
+      "B14-M1-ACTIVITY-PROFILE-READ-GUARD"
     ],
     "standalone_entries": {
       "tables": 232,
