@@ -18,6 +18,7 @@ const get = vi.fn();
 const revise = vi.fn();
 const retire = vi.fn();
 const loadSettings = vi.fn();
+const loadChildCount = vi.fn().mockResolvedValue(0);
 const saveCore = vi.fn();
 const previewReplan = vi.fn();
 const applyReplan = vi.fn();
@@ -54,6 +55,7 @@ vi.mock('../../../temporal/remote-activity-inspector', () => ({
 vi.mock('../../../temporal/remote-activity-edit-settings', () => ({
   createRemoteActivityEditSettings: () => ({
     load: loadSettings,
+    loadChildCount,
     saveCore,
     previewReplan,
     applyReplan,
@@ -582,6 +584,22 @@ describe('Activity Inspector', () => {
     );
     await waitFor(() => expect(retire).toHaveBeenCalledWith(ref));
     expect(onDeleted).toHaveBeenCalledOnce();
+  });
+
+  it('refuses hidden Activity children even when the Timeline has no subitems', async () => {
+    loadChildCount.mockResolvedValueOnce(1);
+    const onDuplicate = vi.fn();
+    render(<ActivityInspectorActions
+      activityRef={ref}
+      onEdit={() => undefined}
+      onDeleted={() => undefined}
+      onDuplicate={onDuplicate}
+    />);
+    fireEvent.click(screen.getByRole('button', { name: 'Duplica' }));
+    expect((await screen.findByRole('alert')).textContent)
+      .toContain('contiene sotto-attività');
+    expect(loadChildCount).toHaveBeenCalledWith(ref);
+    expect(onDuplicate).not.toHaveBeenCalled();
   });
 
   it('refuses a deceptively incomplete duplicate when an Activity contains children', async () => {
