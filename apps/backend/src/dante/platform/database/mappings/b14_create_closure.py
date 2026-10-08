@@ -156,7 +156,7 @@ class TemporalObjectiveDefinitionRevisionRow(Base):
             ["self_person_ref"], ["dante.person.person_ref"],
             name="fk_temporal_objective_definition_person",
         ),
-        CheckConstraint("revision>=1", name="revision_positive"),
+        CheckConstraint("revision>=1", name="positive"),
         CheckConstraint(
             "operation_id=btrim(operation_id) AND "
             "char_length(operation_id) BETWEEN 1 AND 200",
