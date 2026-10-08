@@ -429,3 +429,9 @@ No new database objects: physical topology remains
 existing profile function language change SQL -> PL/pgSQL.
 User-run _124 gate pending. No previous materialized
 Occurrence/Actual history changes.
+
+## B14 M2 canonical Objective revision/correction and generated series scope (_125/_126)
+
+_125 adds append-only `temporal_objective_definition_revision` and grants owner-validated SECURITY DEFINER functions for current same-`objective_ref` definition, optimistic-CAS/idempotent revision and corrected-result Observation/Evaluation. New definition re-evaluates existing factual numeric/boolean Observation with the accepted target, appends a new Evaluation only when changed, and preserves the historic observation and previous Evaluation states. Qualitative manual judgments are never invented. Replacing the existing Objective result function ensures subsequent results use the current corrected definition, not an obsolete target.
+
+_126 adds append-only `temporal_objective_series_edit` keyed by immutable materializer template slot and recurrence source revision. Owner/source-lock CAS, acceptance instant and selected-anchor coordinate target the selected generated Objective plus later future; other already-past instances remain unchanged. Overrides, skipped Occurrences, Actual and future Observations are conflict guarded before apply. New instances inherit the accepted definition by effective read. Unlike template definition inheritance, recorded Observation is never propagated to an unobserved future Objective. One-off/individual Objective edit is selected-only, avoiding unsupported implicit lineage. Runtime gets only function EXECUTE, never direct ledger DML. Exact _126 catalog candidate: **234/5/207/103/477/414/586**. Both migrations are forward-only; user-run focused PostgreSQL, canonical Dictionary and Web/API gate PENDING.
