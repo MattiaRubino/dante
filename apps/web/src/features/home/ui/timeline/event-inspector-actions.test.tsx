@@ -138,7 +138,7 @@ describe('Event Inspector duplication', () => {
     const onDuplicate = vi.fn();
     render(<EventInspectorActions eventRef={eventRef} placement={placement}
       onDuplicate={onDuplicate} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Modifica', exact: true }));
+    fireEvent.click(screen.getByRole('button', { name: /^Modifica$/ }));
     fireEvent.change(await screen.findByRole('textbox', { name: 'Titolo Event' }), {
       target: { value: 'Incontro' },
     });
@@ -163,7 +163,7 @@ describe('Event Inspector duplication', () => {
     reviseProfile.mockRejectedValue(new Error('Il profilo Event è cambiato: ricarica e riprova.'));
     render(<EventInspectorActions eventRef={eventRef} placement={placement}
       onDuplicate={vi.fn()} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Modifica', exact: true }));
+    fireEvent.click(screen.getByRole('button', { name: /^Modifica$/ }));
     const title = await screen.findByRole('textbox', { name: 'Titolo Event' });
     fireEvent.change(title, { target: { value: 'Nuovo titolo' } });
     fireEvent.click(screen.getByRole('button', { name: 'Salva metadati Event' }));

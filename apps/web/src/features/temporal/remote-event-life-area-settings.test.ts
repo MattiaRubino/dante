@@ -28,7 +28,7 @@ describe('Event Life Area owner-scoped edits', () => {
       if (url === '/api/v1/temporal/life-area-assignments/events/' + EVENT) {
         expect(init?.method).toBe('PUT');
         expect(new Headers(init?.headers).get('X-Dante-CSRF')).toBe('csrf');
-        calls.push(JSON.parse(String(init.body)) as unknown);
+        calls.push(JSON.parse(String(init?.body)) as unknown);
         return Promise.resolve(json({
           subject_kind: 'event', subject_native_ref: EVENT,
           life_area_ref: null, assignment_revision: 3, replayed: false,

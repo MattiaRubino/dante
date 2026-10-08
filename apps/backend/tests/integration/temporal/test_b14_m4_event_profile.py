@@ -8,7 +8,6 @@ import psycopg
 import pytest
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
-
 from tests.integration.temporal.test_b05_primary_life_area_assignment import (
     _legacy_event,
     _seed_self,
