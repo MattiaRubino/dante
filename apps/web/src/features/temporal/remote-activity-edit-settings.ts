@@ -38,6 +38,16 @@ export type ActivityEditSettings = Readonly<{
   childGuardMode: 'none' | 'confirm' | 'block';
 }>;
 
+export type ActivityReplanTime = Readonly<{ start: string; end: string }>;
+export type ActivityReplanChange = Readonly<{
+  scheduleRef: string;
+  role: string;
+  previousStart: string;
+  previousEnd: string;
+  proposedStart: string;
+  proposedEnd: string;
+}>;
+
 function object(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     throw new Error('Le impostazioni dell’attività non sono leggibili.');
@@ -164,9 +174,8 @@ export function createRemoteActivityEditSettings(
     return row.csrf_token;
   }
 
-  return Object.freeze({
-    async load(ref: string): Promise<ActivityEditSettings> {
-      const snapshot = object(await read(endpoint(ref, 'edit-snapshot')));
+  function parseSnapshot(ref: string, value: unknown): ActivityEditSettings {
+      const snapshot = object(value);
       if (snapshot.activity_ref !== ref || !Array.isArray(snapshot.objectives)) {
         throw new Error('Identità dell’attività non valida.');
       }
@@ -207,6 +216,81 @@ export function createRemoteActivityEditSettings(
         childGuardMode:
           snapshot.child_guard_mode as ActivityEditSettings['childGuardMode'],
       });
+  }
+
+  function replanBody(
+    settings: ActivityEditSettings,
+    draft: Readonly<Record<string, ActivityReplanTime>>,
+    operationId: string,
+  ) {
+    const row = (item: ActivityEditSchedule) => ({
+      schedule_ref: item.scheduleRef,
+      expected_material_state_ref: item.placementStateRef,
+      starts_local_at: draft[item.scheduleRef]?.start,
+      ends_local_at: draft[item.scheduleRef]?.end,
+    });
+    return {
+      operation_id: operationId,
+      intervals: settings.schedules.filter((item) => item.role === 'interval').map(row),
+      planned_sessions: settings.schedules.filter((item) => item.role === 'planned').map(row),
+    };
+  }
+
+  return Object.freeze({
+    async load(ref: string): Promise<ActivityEditSettings> {
+      return parseSnapshot(ref, await read(endpoint(ref, 'edit-snapshot')));
+    },
+    async previewReplan(
+      ref: string, settings: ActivityEditSettings,
+      draft: Readonly<Record<string, ActivityReplanTime>>,
+      operationId: string,
+    ): Promise<readonly ActivityReplanChange[]> {
+      const response = await request(endpoint(ref, 'replan-preview'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Dante-CSRF': await csrf() },
+        body: JSON.stringify(replanBody(settings, draft, operationId)),
+      });
+      if (!response.ok) throw new Error(response.status === 409
+        ? 'La programmazione è cambiata. Riapri Modifica e riprova.'
+        : 'La proposta non è valida. Controlla gli intervalli e le sessioni.');
+      const result = object(await response.json());
+      if (result.activity_ref !== ref || !Array.isArray(result.changes)) {
+        throw new Error('Anteprima della programmazione non valida.');
+      }
+      return result.changes.map((value: unknown) => {
+        const row = object(value);
+        if (typeof row.schedule_ref !== 'string' ||
+            typeof row.role !== 'string' ||
+            typeof row.previous_start !== 'string' ||
+            typeof row.previous_end !== 'string' ||
+            typeof row.proposed_start !== 'string' ||
+            typeof row.proposed_end !== 'string') {
+          throw new Error('Riga dell’anteprima non valida.');
+        }
+        return {
+          scheduleRef: row.schedule_ref, role: row.role,
+          previousStart: row.previous_start, previousEnd: row.previous_end,
+          proposedStart: row.proposed_start, proposedEnd: row.proposed_end,
+        };
+      });
+    },
+    async applyReplan(
+      ref: string, settings: ActivityEditSettings,
+      draft: Readonly<Record<string, ActivityReplanTime>>,
+      operationId: string,
+    ): Promise<ActivityEditSettings> {
+      const response = await request(endpoint(ref, 'replan'), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'X-Dante-CSRF': await csrf() },
+        body: JSON.stringify(replanBody(settings, draft, operationId)),
+      });
+      if (!response.ok) throw new Error(response.status === 409
+        ? 'La programmazione è cambiata o è protetta. Riapri Modifica e riprova.'
+        : 'Impossibile salvare la programmazione.');
+      const saved = parseSnapshot(ref, await response.json());
+      invalidateTemporalTimelineRead();
+      invalidateTemporalPlanningRead();
+      return saved;
     },
     async saveCore(
       profile: ActivityProfile,

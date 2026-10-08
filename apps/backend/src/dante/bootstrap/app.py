@@ -11,9 +11,14 @@ from dante.auth.m5_api import router as auth_m5_router
 from dante.auth.m5_passkey_api import router as auth_m5_passkey_router
 from dante.auth.m5_provider_api import router as auth_m5_provider_router
 from dante.bootstrap.lifespan import lifespan
+from dante.modules.temporal.activity_edit_snapshot_api import (
+    router as temporal_activity_edit_snapshot_router,
+)
+from dante.modules.temporal.activity_inspector_api import (
+    router as temporal_activity_inspector_router,
+)
+from dante.modules.temporal.activity_replan_api import router as temporal_activity_replan_router
 from dante.modules.temporal.actual_api import router as temporal_actual_router
-from dante.modules.temporal.activity_inspector_api import router as temporal_activity_inspector_router
-from dante.modules.temporal.activity_edit_snapshot_api import router as temporal_activity_edit_snapshot_router
 from dante.modules.temporal.advanced_recurrence_api import (
     router as temporal_advanced_recurrence_router,
 )
@@ -27,7 +32,9 @@ from dante.modules.temporal.constrained_activity_api import (
     router as temporal_constrained_activity_router,
 )
 from dante.modules.temporal.decomposition_api import router as temporal_decomposition_router
-from dante.modules.temporal.decomposition_policy_api import router as temporal_decomposition_policy_router
+from dante.modules.temporal.decomposition_policy_api import (
+    router as temporal_decomposition_policy_router,
+)
 from dante.modules.temporal.event_api import router as temporal_event_router
 from dante.modules.temporal.execution_policy_api import router as temporal_execution_policy_router
 from dante.modules.temporal.life_area_api import router as temporal_life_area_router
@@ -35,12 +42,12 @@ from dante.modules.temporal.life_area_assignment_api import (
     router as temporal_life_area_assignment_router,
 )
 from dante.modules.temporal.movement_policy_api import router as temporal_movement_policy_router
-from dante.modules.temporal.placement_lock_api import router as temporal_placement_lock_router
 from dante.modules.temporal.occurrence_api import router as temporal_occurrence_router
 from dante.modules.temporal.outcome_api import router as temporal_outcome_router
 from dante.modules.temporal.outcome_review_policy_api import (
     router as temporal_outcome_review_policy_router,
 )
+from dante.modules.temporal.placement_lock_api import router as temporal_placement_lock_router
 from dante.modules.temporal.plan_admission_api import router as temporal_plan_admission_router
 from dante.modules.temporal.plan_candidate_api import router as temporal_plan_candidate_router
 from dante.modules.temporal.plan_conflict_api import router as temporal_plan_conflict_router
@@ -48,8 +55,8 @@ from dante.modules.temporal.plan_dependency_api import router as temporal_plan_d
 from dante.modules.temporal.plan_work_api import router as temporal_plan_work_router
 from dante.modules.temporal.planning_tray_api import router as temporal_planning_tray_router
 from dante.modules.temporal.product_tag_api import router as temporal_product_tag_router
-from dante.modules.temporal.reconciliation_api import router as temporal_reconciliation_router
 from dante.modules.temporal.reality_objective_api import router as temporal_reality_objective_router
+from dante.modules.temporal.reconciliation_api import router as temporal_reconciliation_router
 from dante.modules.temporal.recurrence_api import router as temporal_recurrence_router
 from dante.modules.temporal.recurring_authoring_api import (
     router as temporal_recurring_authoring_router,
@@ -110,6 +117,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(temporal_router)
     app.include_router(temporal_activity_inspector_router)
     app.include_router(temporal_activity_edit_snapshot_router)
+    app.include_router(temporal_activity_replan_router)
     app.include_router(temporal_authoring_router)
     app.include_router(temporal_event_router)
     app.include_router(temporal_execution_policy_router)

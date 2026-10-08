@@ -9,6 +9,8 @@ import {
 import type { ActivityProfile } from '../../../temporal/remote-activity-inspector';
 import {
   createRemoteActivityEditSettings,
+  type ActivityReplanChange,
+  type ActivityReplanTime,
   type ActivityEditSettings,
 } from '../../../temporal/remote-activity-edit-settings';
 import type { RealityMode } from '../../../temporal/remote-reality-objective-data-source';
@@ -34,6 +36,11 @@ export function ActivityEditPanel({
   );
   const [realityMode, setRealityMode] = useState<RealityMode | null>(null);
   const [reminderLeadMinutes, setReminderLeadMinutes] = useState<number | null>(null);
+  const [planDraft, setPlanDraft] = useState<Record<string, ActivityReplanTime>>({});
+  const [planPreview, setPlanPreview] = useState<readonly ActivityReplanChange[] | null>(null);
+  const [planOperation, setPlanOperation] = useState<string | null>(null);
+  const [planPending, setPlanPending] = useState(false);
+  const [planError, setPlanError] = useState('');
   const operation = useRef<string | undefined>(undefined);
   const [draft, setDraft] = useState(() => ({
     title: profile.title,
@@ -45,7 +52,9 @@ export function ActivityEditPanel({
   const [error, setError] = useState('');
   const [confirmingDiscard, setConfirmingDiscard] = useState(false);
   const discardButtonRef = useRef<HTMLButtonElement | null>(null);
-  const dirty =
+  const editablePlan = settings?.schedules.filter((schedule) =>
+    schedule.role === 'interval' || schedule.role === 'planned') ?? [];
+  const coreDirty =
     draft.title !== profile.title ||
     draft.description !== (profile.description ?? '') ||
     draft.location !== (profile.location ?? '') ||
@@ -54,6 +63,15 @@ export function ActivityEditPanel({
       (captureMode !== settings.capture.mode ||
         realityMode !== settings.reality.mode ||
         reminderLeadMinutes !== settings.reminderLeadMinutes));
+  const canReplan = !!settings &&
+    settings.schedules.some((schedule) => schedule.role === 'interval') &&
+    editablePlan.every((schedule) =>
+      ['floating_local', 'named_zone_local'].includes(schedule.temporalForm) &&
+      !!schedule.start && !!schedule.end);
+  const planDirty = canReplan && editablePlan.some((schedule) =>
+    planDraft[schedule.scheduleRef]?.start !== schedule.start ||
+    planDraft[schedule.scheduleRef]?.end !== schedule.end);
+  const dirty = coreDirty || planDirty;
 
   const loadSettings = useCallback(() => {
     return settingsSource
@@ -63,6 +81,9 @@ export function ActivityEditPanel({
         setCaptureMode(loaded.capture.mode);
         setRealityMode(loaded.reality.mode);
         setReminderLeadMinutes(loaded.reminderLeadMinutes);
+        setPlanDraft(Object.fromEntries(loaded.schedules.map((schedule) => [
+          schedule.scheduleRef, { start: schedule.start ?? '', end: schedule.end ?? '' },
+        ])));
       })
       .catch((reason: unknown) => {
         setSettingsError(
@@ -79,7 +100,7 @@ export function ActivityEditPanel({
   }, [loadSettings]);
 
   const requestClose = useCallback(() => {
-    if (pending) return;
+    if (pending || planPending) return;
     if (confirmingDiscard) {
       setConfirmingDiscard(false);
     } else if (dirty) {
@@ -87,7 +108,47 @@ export function ActivityEditPanel({
     } else {
       onCancel();
     }
-  }, [confirmingDiscard, dirty, onCancel, pending]);
+  }, [confirmingDiscard, dirty, onCancel, pending, planPending]);
+
+  const changePlan = (ref: string, field: keyof ActivityReplanTime, value: string) => {
+    setPlanDraft((current) => ({ ...current,
+      [ref]: { start: current[ref]?.start ?? '', end: current[ref]?.end ?? '', [field]: value },
+    }));
+    setPlanPreview(null);
+    setPlanOperation(null);
+    setPlanError('');
+  };
+
+  const previewPlan = () => {
+    if (!settings || !canReplan || !planDirty || coreDirty || planPending) return;
+    const operationId = crypto.randomUUID();
+    setPlanPending(true);
+    setPlanError('');
+    void settingsSource.previewReplan(profile.activityRef, settings, planDraft, operationId)
+      .then((changes) => {
+        setPlanOperation(operationId);
+        setPlanPreview(changes);
+      })
+      .catch((reason: unknown) => setPlanError(reason instanceof Error
+        ? reason.message : 'Anteprima non disponibile.'))
+      .finally(() => setPlanPending(false));
+  };
+
+  const applyPlan = () => {
+    if (!settings || !planPreview || !planOperation || planPending) return;
+    setPlanPending(true);
+    setPlanError('');
+    void settingsSource.applyReplan(profile.activityRef, settings, planDraft, planOperation)
+      .then((saved) => {
+        setSettings(saved);
+        setPlanPreview(null);
+        setPlanOperation(null);
+        onSaved(profile);
+      })
+      .catch((reason: unknown) => setPlanError(reason instanceof Error
+        ? reason.message : 'Riprogrammazione non riuscita.'))
+      .finally(() => setPlanPending(false));
+  };
 
   useEffect(() => {
     closeRequestRef.current = requestClose;
@@ -106,7 +167,7 @@ export function ActivityEditPanel({
       onSubmit={(event) => {
         event.preventDefault();
         if (
-          pending ||
+          pending || planPending ||
           !settings ||
           loadingSettings ||
           settingsError ||
@@ -316,6 +377,7 @@ export function ActivityEditPanel({
               aria-label="Programmazione attuale"
             >
               <h3>Programmazione attuale</h3>
+              {planError ? <p role="alert">{planError}</p> : null}
               {settings.schedules.length ? (
                 <ul>
                   {settings.schedules.map((schedule) => (
@@ -328,12 +390,65 @@ export function ActivityEditPanel({
                             : 'Intervallo')}
                       {schedule.start ? ` · ${schedule.start}` : ''}
                       {schedule.end ? ` – ${schedule.end}` : ''}
+                      {canReplan && (schedule.role === 'interval' || schedule.role === 'planned') ? (
+                        <div className="timeline-activity-editor__fields">
+                          <label>
+                            Inizio
+                            <input type="datetime-local" required
+                              value={planDraft[schedule.scheduleRef]?.start.slice(0, 16) ?? ''}
+                              onChange={(event) => changePlan(schedule.scheduleRef, 'start', event.target.value)} />
+                          </label>
+                          <label>
+                            Fine
+                            <input type="datetime-local" required
+                              value={planDraft[schedule.scheduleRef]?.end.slice(0, 16) ?? ''}
+                              onChange={(event) => changePlan(schedule.scheduleRef, 'end', event.target.value)} />
+                          </label>
+                        </div>
+                      ) : null}
                     </li>
                   ))}
                 </ul>
               ) : (
                 <p>Nessun intervallo programmato.</p>
               )}
+              {planDirty ? (
+                <div>
+                  {coreDirty ? <p>Salva le altre impostazioni separatamente prima di spostare l’attività.</p> : null}
+                  <button type="button" disabled={planPending || pending || coreDirty}
+                    onClick={previewPlan}>
+                    {planPending ? 'Verifica…' : 'Verifica spostamento'}
+                  </button>
+                  <button type="button" disabled={planPending} onClick={() => {
+                    setPlanDraft(Object.fromEntries(settings.schedules.map((schedule) => [
+                      schedule.scheduleRef,
+                      { start: schedule.start ?? '', end: schedule.end ?? '' },
+                    ])));
+                    setPlanPreview(null);
+                    setPlanOperation(null);
+                  }}>Ripristina orari</button>
+                </div>
+              ) : null}
+              {planPreview ? (
+                <div role="group" aria-label="Anteprima spostamento">
+                  <h4>Modifiche proposte</h4>
+                  <ul>{planPreview.map((change) => (
+                    <li key={change.scheduleRef}>
+                      {change.role === 'planned' ? 'Sessione pianificata' :
+                        change.role === 'envelope' ? 'Intervallo complessivo' : 'Intervallo'}:
+                      {' '}{change.previousStart} – {change.previousEnd}
+                      {' → '}{change.proposedStart} – {change.proposedEnd}
+                    </li>
+                  ))}</ul>
+                  <button type="button" disabled={planPending || pending} onClick={applyPlan}>
+                    Applica programmazione
+                  </button>
+                  <button type="button" disabled={planPending} onClick={() => {
+                    setPlanPreview(null);
+                    setPlanOperation(null);
+                  }}>Annulla proposta</button>
+                </div>
+              ) : null}
             </section>
             {settings.objectives.length ? (
               <section
@@ -355,13 +470,13 @@ export function ActivityEditPanel({
         className="timeline-activity-editor__actions"
         inert={confirmingDiscard || undefined}
       >
-        <button type="button" disabled={pending} onClick={requestClose}>
+        <button type="button" disabled={pending || planPending} onClick={requestClose}>
           Annulla
         </button>
         <button
           type="submit"
           disabled={
-            pending ||
+            pending || planPending || planDirty ||
             !settings ||
             loadingSettings ||
             !!settingsError ||

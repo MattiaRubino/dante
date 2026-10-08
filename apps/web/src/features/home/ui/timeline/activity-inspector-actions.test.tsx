@@ -19,6 +19,8 @@ const revise = vi.fn();
 const retire = vi.fn();
 const loadSettings = vi.fn();
 const saveCore = vi.fn();
+const previewReplan = vi.fn();
+const applyReplan = vi.fn();
 vi.mock('../../../temporal/remote-activity-inspector', () => ({
   createRemoteActivityInspector: () => ({ get, revise, retire }),
 }));
@@ -26,6 +28,8 @@ vi.mock('../../../temporal/remote-activity-edit-settings', () => ({
   createRemoteActivityEditSettings: () => ({
     load: loadSettings,
     saveCore,
+    previewReplan,
+    applyReplan,
   }),
 }));
 
@@ -145,6 +149,38 @@ describe('Activity Inspector', () => {
     expect(saveCore).toHaveBeenCalledTimes(2);
     expect(saveCore.mock.calls[1]?.[3]).toBe(saveCore.mock.calls[0]?.[3]);
     expect(revise).not.toHaveBeenCalled();
+  });
+
+  it('requires an explicit preview before applying a planning change', async () => {
+    const settings = { ...currentSettings, schedules: [
+      { scheduleRef: 'envelope', role: 'envelope', name: null, order: 0,
+        placementStateRef: 'state-0', temporalForm: 'named_zone_local',
+        start: '2026-10-09T09:00:00', end: '2026-10-09T12:00:00', zoneId: 'Europe/Rome' },
+      { scheduleRef: 'interval', role: 'interval', name: null, order: 1,
+        placementStateRef: 'state-1', temporalForm: 'named_zone_local',
+        start: '2026-10-09T09:00:00', end: '2026-10-09T10:00:00', zoneId: 'Europe/Rome' },
+    ] };
+    loadSettings.mockResolvedValueOnce(settings);
+    previewReplan.mockResolvedValueOnce([{ scheduleRef: 'interval', role: 'interval',
+      previousStart: '2026-10-09T09:00:00', previousEnd: '2026-10-09T10:00:00',
+      proposedStart: '2026-10-09T10:00:00', proposedEnd: '2026-10-09T11:00:00' }]);
+    applyReplan.mockResolvedValueOnce(settings);
+    const onSaved = vi.fn();
+    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
+      onSaved={onSaved} onCancel={() => undefined} />);
+    fireEvent.change((await screen.findAllByLabelText('Inizio'))[0]!,
+      { target: { value: '2026-10-09T10:00' } });
+    fireEvent.change(screen.getAllByLabelText('Fine')[0]!,
+      { target: { value: '2026-10-09T11:00' } });
+    expect(screen.getByRole('button', { name: 'Salva modifiche' })).toHaveProperty('disabled', true);
+    fireEvent.click(screen.getByRole('button', { name: 'Verifica spostamento' }));
+    await waitFor(() => expect(previewReplan).toHaveBeenCalledOnce());
+    expect(screen.getByText('Modifiche proposte')).toBeTruthy();
+    expect(applyReplan).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Applica programmazione' }));
+    await waitFor(() => expect(applyReplan).toHaveBeenCalledOnce());
+    expect(applyReplan.mock.calls[0]?.[3]).toBe(previewReplan.mock.calls[0]?.[3]);
+    expect(onSaved).toHaveBeenCalledWith(profile);
   });
 
   it('guards unsaved changes for external close requests', () => {
