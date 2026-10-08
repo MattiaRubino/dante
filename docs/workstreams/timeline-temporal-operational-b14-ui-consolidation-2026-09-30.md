@@ -717,3 +717,20 @@ Tests to run **locally by the user**: backend Ruff for the new core and
 test file, plus focused unit `tests/test_b14_occurrence_edit_scope.py`.
 Status **IMPLEMENTED CANDIDATE / USER UNIT GATE PENDING**. M1 overall
 remains OPEN; B14/B07 remains ACTIVE.
+
+## 2026-10-08 — M1-A first user local gate: 18 unit pass; Ruff repair
+
+User-run focused local gate after `4f50c0d3`:
+`pytest -q --no-cov --tb=short tests/test_b14_occurrence_edit_scope.py`
+**18 passed / UNIT=0**; Ruff reported exactly one non-semantic
+`RUF005` in `test_b14_occurrence_edit_scope.py:231` (tuple
+concatenation; `RUFF=1`). Follow-up commit `7ef6a32f` replaces
+tuple concatenation with iterable unpacking while keeping exactly the
+same test data and target-selection semantics.
+
+**Status**: 18 unit tests user-green on prior commit;
+Ruff fix pushed but rerun **pending**, no PostgreSQL/API/web/apply gate.
+Do not reopen the successful unit coverage solely to check formatting.
+M1 remains OPEN. Next is the authoritative self-scoped Recurrence/
+Occurrence inventory and transactional CAS preview/apply boundary;
+B06/B11 existing functions must be reused.
