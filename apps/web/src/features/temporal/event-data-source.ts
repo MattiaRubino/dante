@@ -23,6 +23,7 @@ export type TemporalEventDetailRecord = Readonly<{
   description?: string | null;
   location?: string | null;
   colorCode?: string | null;
+  profileRevision?: number;
 }>;
 
 export type TemporalEventScheduleRecord = Readonly<{
