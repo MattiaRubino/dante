@@ -21,6 +21,9 @@ const loadSettings = vi.fn();
 const saveCore = vi.fn();
 const previewReplan = vi.fn();
 const applyReplan = vi.fn();
+const loadLifeAreaChoice = vi.fn();
+const assignLifeArea = vi.fn();
+const setPlacementProtected = vi.fn();
 vi.mock('../../../temporal/remote-activity-inspector', () => ({
   createRemoteActivityInspector: () => ({ get, revise, retire }),
 }));
@@ -30,6 +33,9 @@ vi.mock('../../../temporal/remote-activity-edit-settings', () => ({
     saveCore,
     previewReplan,
     applyReplan,
+    loadLifeAreaChoice,
+    assignLifeArea,
+    setPlacementProtected,
   }),
 }));
 
@@ -55,11 +61,16 @@ const currentSettings = {
   objectives: [],
   lifeAreaRef: null,
   placementProtected: false,
+  placementLockScheduleRef: null,
+  placementLockRevision: null,
   reminderLeadMinutes: null,
   childGuardMode: 'none',
 };
 
 loadSettings.mockResolvedValue(currentSettings);
+loadLifeAreaChoice.mockResolvedValue({
+  options: [], currentRef: null, currentRevision: 0,
+});
 
 describe('Activity Inspector', () => {
   it('opens the separate editor with the persisted profile', async () => {
@@ -216,6 +227,49 @@ describe('Activity Inspector', () => {
           end: '2026-10-09T11:00' }),
       ] }), expect.any(String)));
     expect(applyReplan).not.toHaveBeenCalled();
+  });
+
+  it('persists protection only through the guarded separate action', async () => {
+    const settings = { ...currentSettings, placementLockScheduleRef: 'envelope',
+      placementLockRevision: 2 };
+    loadSettings.mockResolvedValueOnce(settings);
+    setPlacementProtected.mockResolvedValueOnce({
+      ...settings, placementProtected: true, placementLockRevision: 3,
+    });
+    const onSaved = vi.fn();
+    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
+      onSaved={onSaved} onCancel={() => undefined} />);
+    const toggle = await screen.findByRole('checkbox', {
+      name: 'Non spostare automaticamente questa attività',
+    });
+    fireEvent.click(toggle);
+    expect(screen.getByRole('button', { name: 'Salva modifiche' }))
+      .toHaveProperty('disabled', true);
+    fireEvent.click(screen.getByRole('button', { name: 'Applica protezione' }));
+    await waitFor(() => expect(setPlacementProtected).toHaveBeenCalledWith(
+      ref, settings, true,
+    ));
+    await waitFor(() => expect(toggle).toHaveProperty('checked', true));
+    expect(onSaved).not.toHaveBeenCalled();
+  });
+
+  it('changes Life Area with the accepted assignment revision', async () => {
+    const catalog = { currentRef: null, currentRevision: 0,
+      options: [{ ref: 'new-area', name: 'Lavoro' }] };
+    loadLifeAreaChoice.mockResolvedValueOnce(catalog);
+    assignLifeArea.mockResolvedValueOnce({
+      ...catalog, currentRef: 'new-area', currentRevision: 1,
+    });
+    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
+      onSaved={() => undefined} onCancel={() => undefined} />);
+    const select = await screen.findByRole('combobox', { name: 'Area assegnata' });
+    fireEvent.change(select, { target: { value: 'new-area' } });
+    expect(screen.getByRole('button', { name: 'Salva modifiche' }))
+      .toHaveProperty('disabled', true);
+    fireEvent.click(screen.getByRole('button', { name: 'Applica Life Area' }));
+    await waitFor(() => expect(assignLifeArea).toHaveBeenCalledWith(
+      ref, catalog, 'new-area', expect.any(String),
+    ));
   });
 
   it('guards unsaved changes for external close requests', () => {
