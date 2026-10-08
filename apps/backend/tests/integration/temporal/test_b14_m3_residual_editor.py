@@ -138,9 +138,10 @@ async def test_planned_session_rename_keeps_schedule_identity_and_owner(
             assert not changed["replayed"]
             replay = (await session.execute(sql, args)).mappings().one()
             assert replay["replayed"]
-            with pytest.raises(Exception):
+        with pytest.raises(Exception):
+            async with runtime.session_factory() as session, session.begin():
                 await session.execute(sql, {**args, "expected": "Lettura", "next": "Errato"})
-        # The conflicting statement aborts that transaction without changing the accepted label.
+        # The rejected command runs in a separate transaction and cannot undo the accepted label.
         async with runtime.session_factory() as session, session.begin():
             current = (await session.execute(text("""
                 SELECT * FROM dante.get_self_activity_schedule_roles(
