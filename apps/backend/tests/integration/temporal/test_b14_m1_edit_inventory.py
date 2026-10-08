@@ -18,10 +18,7 @@ from dante.modules.temporal.life_area import LifeAreaApplication
 from dante.modules.temporal.occurrence import OccurrenceApplication, OccurrenceSourceNotFoundError
 from dante.modules.temporal.occurrence_api import get_occurrence_edit_inventory
 from dante.modules.temporal.occurrence_edit_inventory import OccurrenceEditInventoryApplication
-from dante.modules.temporal.recurrence import (
-    CalendarRecurrence,
-    RecurrenceApplication,
-)
+from dante.modules.temporal.recurrence import CalendarRecurrence, RecurrenceApplication
 from dante.modules.temporal.routine import RoutineApplication
 from dante.modules.temporal.schedule import DateSpanPlacement, TemporalScheduleApplication
 from dante.platform.database.references import NativeRef
@@ -132,7 +129,9 @@ async def test_inventory_reuses_self_scope_and_returns_skipped_and_extra_occurre
             row for row in snapshot.occurrences if row.occurrence_ref == skipped.occurrence_ref
         ).skipped
         assert next(
-            row for row in snapshot.occurrences if row.occurrence_ref == extra.occurrence.occurrence_ref
+            row
+            for row in snapshot.occurrences
+            if row.occurrence_ref == extra.occurrence.occurrence_ref
         ).origin_code == "explicit_extra"
 
         with pytest.raises(OccurrenceSourceNotFoundError):
