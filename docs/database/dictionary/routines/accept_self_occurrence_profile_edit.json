@@ -1,0 +1,125 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "routine:dante.accept_self_occurrence_profile_edit",
+    "type": "routine",
+    "schema": "dante",
+    "name": "accept_self_occurrence_profile_edit",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Accept one self-scoped idempotent metadata edit for the clicked Occurrence or the clicked Occurrence plus future successors; serialize the source, validate recurrence-state and revision CAS, fail on protected future facts, and retain immutable exact affected materialized references.",
+  "classification": {
+    "persistence_role": "occurrence_scoped_edit_capability",
+    "canonicality": "capability_surface",
+    "family": "Temporal scoped edit capability"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/workstreams/timeline-temporal-operational-b14-ui-consolidation-2026-09-30.md",
+      "docs/workstreams/timeline-temporal-operational-b06-execution-plan.md"
+    ],
+    "domain_concepts": [
+      "Occurrence",
+      "Recurrence",
+      "Activity",
+      "Event"
+    ],
+    "logical_families": [
+      "Occurrence",
+      "Recurrence",
+      "Activity",
+      "Event"
+    ],
+    "reference_families": [
+      "NativeRef",
+      "MaterialStateRef"
+    ],
+    "material_facets": []
+  },
+  "implementation": {
+    "introducing_stage": "B14-M1-SCOPED-PROFILE-EDIT",
+    "alembic_revision": "20261008_123",
+    "sqlalchemy": {
+      "mode": "none",
+      "module": null,
+      "symbol": null
+    },
+    "runtime_acl_stage": "B14-M1-SCOPED-PROFILE-EDIT"
+  },
+  "structure": {
+    "columns": [],
+    "primary_key": null,
+    "foreign_keys": [],
+    "unique_constraints": [],
+    "check_constraints": [],
+    "indexes": [],
+    "triggers": [],
+    "table": null,
+    "view": null,
+    "routine": {
+      "routine_kind": "function",
+      "language": "plpgsql",
+      "argument_types": [
+        "uuid",
+        "uuid",
+        "text",
+        "bigint",
+        "uuid",
+        "text",
+        "text",
+        "jsonb"
+      ],
+      "return_type": "TABLE(revision bigint, source_native_ref uuid, selected_occurrence_ref uuid, target_occurrence_refs uuid[], accepted_at timestamptz, replayed boolean)",
+      "security": "DEFINER",
+      "volatility": "VOLATILE",
+      "parallel_safety": "UNSAFE",
+      "leakproof": false,
+      "function_search_path": [
+        "pg_catalog",
+        "dante",
+        "pg_temp"
+      ],
+      "direct_runtime_execute": true
+    }
+  },
+  "state_history": {
+    "material_state_behavior": null,
+    "current_binding": "Reads or writes immutable accepted operation revisions; never replaces historical Actual, Observation or Evaluation.",
+    "chronology": "The clicked instance is always in scope, other already-past instances are never changed; future inheritance begins only after command acceptance.",
+    "immutability_policy": "Self-scoped and bounded; source revision CAS and operation replay for mutation; no direct runtime table DML."
+  },
+  "lifecycle": {
+    "retention": "Function persists while B14 Recurring Scope editing exists",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No runtime deletion"
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": [
+      {
+        "grantee": "dante_runtime",
+        "privilege": "EXECUTE",
+        "columns": [],
+        "grant_option": false
+      }
+    ]
+  },
+  "proof": {
+    "obligations": [
+      "Selected self ownership through existing B06 get_self_occurrence",
+      "Actual history is never overwritten",
+      "Correct effective zone/DST handling and bounded candidate scan",
+      "Stable replay, stale CAS and protected future conflicts",
+      "Routine/Event source parity"
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b14_m1_scoped_profile_edit.py",
+      "apps/backend/tests/integration/database/test_current_catalog.py",
+      "apps/backend/tests/integration/database/test_database_current_catalog.py"
+    ],
+    "staged_evidence": []
+  }
+}
