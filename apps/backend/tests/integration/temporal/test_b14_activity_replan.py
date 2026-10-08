@@ -12,6 +12,7 @@ from tests.integration.temporal.test_b14_u2_authoring import _seed_self
 from dante.modules.temporal.activity_edit_snapshot_api import _SNAPSHOT, ActivityEditSnapshot
 from dante.modules.temporal.activity_replan_api import (
     ActivityReplanCommand,
+    NewIntervalRow,
     NewPlannedRow,
     ReplanRow,
     apply_activity_replan,
@@ -136,5 +137,68 @@ async def test_activity_replan_adds_and_removes_planned_sessions_without_reusing
         assert accepted[0].schedule_ref != old.schedule_ref
         assert accepted[0].presentation_order > old.presentation_order
         assert len([row for row in after.schedules if row.role_code == "interval"]) == 1
+    finally:
+        await runtime.dispose()
+
+@pytest.mark.asyncio
+async def test_activity_replan_replaces_current_interval_without_erasing_role_history(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    try:
+        created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
+            self_person_ref=actor, operation_id="replan:intervals:create", title="Lavoro",
+            placement=_window(9, 12),
+            activity_intervals=(_window(9, 10), _window(11, 12)),
+            planned_slices=(_window(11, 12),), planned_slice_names=("Pianificata",),
+        )
+        activity = created.item.subject_native_ref
+        async with runtime.session_factory() as session, session.begin():
+            before = ActivityEditSnapshot.model_validate(await session.scalar(
+                _SNAPSHOT, {"actor": actor, "activity": activity},
+            ))
+        intervals = [row for row in before.schedules if row.role_code == "interval"]
+        planned = next(row for row in before.schedules if row.role_code == "planned")
+        new_ref = uuid7()
+        command = ActivityReplanCommand(
+            operation_id="replan:intervals:replace",
+            intervals=[_move(intervals[1], 11, 12)],
+            remove_intervals=[_move(intervals[0], 9, 10)],
+            new_intervals=[NewIntervalRow(
+                client_ref=new_ref,
+                starts_local_at=datetime(2026, 10, 9, 10),  # noqa: DTZ001
+                ends_local_at=datetime(2026, 10, 9, 11),  # noqa: DTZ001
+            )],
+            planned_sessions=[_move(planned, 11, 12)],
+        )
+        context = SimpleNamespace(self_person_ref=actor)
+        request = SimpleNamespace(app=SimpleNamespace(
+            state=SimpleNamespace(database_runtime=runtime)))
+        preview = await preview_activity_replan(activity, command, context, request, Response())
+        assert {change.role for change in preview.changes} == {
+            "envelope", "interval_removed", "interval_added",
+        }
+        after = await apply_activity_replan(activity, command, context, request, Response())
+        current_intervals = [row for row in after.schedules if row.role_code == "interval"]
+        assert len(current_intervals) == 2
+        assert intervals[0].schedule_ref not in {row.schedule_ref for row in current_intervals}
+        assert intervals[1].schedule_ref in {row.schedule_ref for row in current_intervals}
+        added = next(row for row in current_intervals
+                     if row.schedule_ref != intervals[1].schedule_ref)
+        assert added.presentation_order > max(row.presentation_order for row in intervals)
+        assert (added.starts_local_at.hour, added.ends_local_at.hour) == (10, 11)
+        assert next(row for row in after.schedules if row.role_code == "envelope").starts_local_at.hour == 10
+        assert next(row for row in after.schedules if row.role_code == "planned").schedule_ref == planned.schedule_ref
+        # The original role is historically accepted and never reassigned.
+        from sqlalchemy import text
+        async with runtime.session_factory() as session, session.begin():
+            accepted = (await session.execute(text("""
+                SELECT schedule_ref FROM dante.get_self_activity_schedule_roles(
+                    :actor, CAST(ARRAY[:activity] AS uuid[]))
+                WHERE role_code='interval'
+            """), {"actor": actor, "activity": activity})).scalars().all()
+        assert intervals[0].schedule_ref in accepted
+        assert added.schedule_ref in accepted
     finally:
         await runtime.dispose()
