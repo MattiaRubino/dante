@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
-import asyncio
+from decimal import Decimal
 from typing import Any
+from uuid import UUID
+
+import psycopg
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import text
 from tests.integration.temporal.test_b01_activity_core import (
     _CANONICAL_ORIGIN,
     _auth_settings,
@@ -20,7 +22,6 @@ from tests.integration.temporal.test_b03_shared_schedule_event import _post_sche
 
 from dante.auth.sessions import CSRF_HEADER_NAME
 from dante.bootstrap.app import create_app
-from dante.platform.database.runtime import create_database_runtime
 
 pytestmark = pytest.mark.postgres
 pytest_plugins = ("tests.integration.temporal.test_b01_activity_core",)
@@ -203,32 +204,32 @@ def test_objective_definition_and_result_corrections_are_canonical_without_delet
             headers=_base_headers(),
         ).json()
         assert latest[0]["assessment_code"] == "not_satisfied"
-        assert latest[0]["observed_numeric"] == 6
+        assert Decimal(str(latest[0]["observed_numeric"])) == Decimal("6")
 
         # Internal audit is append-only; neither the original observation,
         # original evaluation nor the objective identity was replaced.
-        async def count_audit() -> tuple[int, int, int]:
-            runtime = create_database_runtime(migrated_database.runtime_settings())
-            try:
-                async with runtime.session_factory() as session, session.begin():
-                    result = await session.execute(
-                        text("""
-                            SELECT
-                                (SELECT count(*) FROM dante.temporal_objective_definition_revision
-                                  WHERE objective_ref=:objective),
-                                (SELECT count(*) FROM dante.temporal_objective_observation
-                                  WHERE objective_ref=:objective),
-                                (SELECT count(*) FROM dante.temporal_objective_evaluation_state
-                                  WHERE objective_ref=:objective)
-                        """),
-                        {"objective": objective_ref},
-                    )
-                    values = result.one()
-                    return (int(values[0]), int(values[1]), int(values[2]))
-            finally:
-                await runtime.dispose()
-
-        assert asyncio.run(count_audit()) == (1, 2, 3)
+        with psycopg.connect(
+            **migrated_database.connection_kwargs(
+                migrated_database.cluster.admin_user,
+                migrated_database.cluster.admin_password,
+            )
+        ) as conn, conn.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT
+                    (SELECT count(*) FROM dante.temporal_objective_definition_revision
+                     WHERE objective_ref=%s),
+                    (SELECT count(*) FROM dante.temporal_objective_observation
+                     WHERE objective_ref=%s),
+                    (SELECT count(*) FROM dante.temporal_objective_evaluation_state
+                     WHERE objective_ref=%s)
+                """,
+                (UUID(objective_ref),) * 3,
+            )
+            counts = cursor.fetchone()
+        assert counts == (1, 2, 3)
+        # Test-admin audit is deliberately separate from application runtime:
+        # dante_runtime must NOT receive table SELECT permissions.
 
         bob_csrf = _signin(client, bob)
         bob_headers = {**_base_headers(), CSRF_HEADER_NAME: bob_csrf}
