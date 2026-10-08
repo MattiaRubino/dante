@@ -19,7 +19,10 @@ from tests.integration.temporal.test_b14_m1_scoped_profile_edit import _daily
 from tests.integration.temporal.test_b14_recurring_event_create import _daily_named_zone
 
 from dante.modules.temporal.event_occurrence_policy import EventOccurrencePolicyApplication
-from dante.modules.temporal.occurrence import OccurrenceApplication, _window_source_operation_id
+from dante.modules.temporal.occurrence import (
+    OccurrenceApplication,
+    _window_source_operation_id,
+)
 from dante.modules.temporal.reality_objective_api import (
     ObjectiveDefinitionReviseCommand,
     get_objective_series_state,
