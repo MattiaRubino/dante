@@ -16,10 +16,13 @@ import {
   type ActivityEditSettings,
   type ActivityLifeAreaChoice,
 } from '../../../temporal/remote-activity-edit-settings';
-import type {
-  ObjectiveComparator,
-  ObjectiveKind,
-  RealityMode,
+import {
+  createRemoteRealityObjectiveDataSource,
+  type ObjectiveAssessment,
+  type ObjectiveComparator,
+  type ObjectiveKind,
+  type ObjectiveView,
+  type RealityMode,
 } from '../../../temporal/remote-reality-objective-data-source';
 import type { SessionCaptureMode } from '../../../temporal/remote-session-capability-data-source';
 import {
@@ -40,6 +43,7 @@ export function ActivityEditPanel({
   closeRequestRef: RefObject<(() => void) | null>;
 }>) {
   const [settingsSource] = useState(createRemoteActivityEditSettings);
+  const [objectiveSource] = useState(createRemoteRealityObjectiveDataSource);
   const [recurringSource] = useState(createRemoteRecurringProfileEdit);
   const [recurringContext, setRecurringContext] = useState<RecurringProfileContext | null>(null);
   const [recurringLoading, setRecurringLoading] = useState(true);
@@ -74,6 +78,16 @@ export function ActivityEditPanel({
   const [objectivePending, setObjectivePending] = useState(false);
   const [objectiveError, setObjectiveError] = useState('');
   const objectiveOperation = useRef<string | null>(null);
+  const [editingObjective, setEditingObjective] = useState<{
+    objectiveRef: string;
+    definitionRevision: number;
+    presentationOrder: number;
+  } | null>(null);
+  const [correctingObjective, setCorrectingObjective] = useState<ObjectiveView | null>(null);
+  const [correctedValue, setCorrectedValue] = useState('');
+  const [correctedBoolean, setCorrectedBoolean] = useState('true');
+  const [correctedAssessment, setCorrectedAssessment] = useState<ObjectiveAssessment>('unknown');
+  const correctionOperation = useRef<string | null>(null);
   const [planPreview, setPlanPreview] = useState<readonly ActivityReplanChange[] | null>(null);
   const [planOperation, setPlanOperation] = useState<string | null>(null);
   const [planPending, setPlanPending] = useState(false);
@@ -234,6 +248,77 @@ export function ActivityEditPanel({
     setObjectiveError('');
   };
 
+  const startObjectiveEdit = (objective: ObjectiveView) => {
+    if (objectivePending || !settings) return;
+    setObjectivePending(true);
+    setObjectiveError('');
+    void objectiveSource.getDefinition(objective.objectiveRef).then((definition) => {
+      setEditingObjective({
+        objectiveRef: definition.objectiveRef,
+        definitionRevision: definition.definitionRevision,
+        presentationOrder: definition.presentationOrder,
+      });
+      setObjectiveDraft({
+        label: definition.label,
+        resultKind: definition.resultKind,
+        comparatorCode: definition.comparatorCode,
+        targetValue: definition.targetValue?.toString() ?? '',
+        targetMin: definition.targetMin?.toString() ?? '',
+        targetMax: definition.targetMax?.toString() ?? '',
+        unitCode: definition.unitCode ?? '',
+      });
+      objectiveOperation.current = null;
+    }).catch((reason: unknown) => {
+      setObjectiveError(reason instanceof Error
+        ? reason.message : 'Definizione dell’obiettivo non disponibile.');
+    }).finally(() => setObjectivePending(false));
+  };
+
+  const startResultCorrection = (objective: ObjectiveView) => {
+    if (objectivePending || !objective.observationRef) return;
+    setCorrectingObjective(objective);
+    setCorrectedValue(objective.resultKind === 'qualitative'
+      ? objective.qualitativeCode ?? ''
+      : objective.observedNumeric?.toString() ?? '');
+    setCorrectedBoolean(objective.observedBoolean === false ? 'false' : 'true');
+    setCorrectedAssessment(objective.assessmentCode ?? 'unknown');
+    correctionOperation.current = null;
+    setObjectiveError('');
+  };
+
+  const applyResultCorrection = () => {
+    if (!correctingObjective || !settings || objectivePending) return;
+    const objective = correctingObjective;
+    const numeric = objective.resultKind === 'quantity' || objective.resultKind === 'range'
+      ? Number(correctedValue) : null;
+    if ((numeric !== null && (!correctedValue.trim() || !Number.isFinite(numeric))) ||
+        (objective.resultKind === 'qualitative' && !correctedValue.trim())) {
+      setObjectiveError('Inserisci il risultato corretto.');
+      return;
+    }
+    setObjectivePending(true);
+    setObjectiveError('');
+    void objectiveSource.correctResult(objective.objectiveRef, {
+      operationId: correctionOperation.current ??= crypto.randomUUID(),
+      expectedEvaluationStateRef: objective.evaluationStateRef,
+      observedBoolean: objective.resultKind === 'boolean'
+        ? correctedBoolean === 'true' : null,
+      observedNumeric: numeric,
+      qualitativeCode: objective.resultKind === 'qualitative'
+        ? correctedValue.trim() : null,
+      assessmentCode: objective.resultKind === 'qualitative'
+        ? correctedAssessment : null,
+    }).then(() => settingsSource.refreshObjectives(profile.activityRef, settings))
+      .then((saved) => {
+        setSettings(saved);
+        setCorrectingObjective(null);
+        correctionOperation.current = null;
+      }).catch((reason: unknown) => {
+        setObjectiveError(reason instanceof Error
+          ? reason.message : 'Rettifica del risultato non riuscita.');
+      }).finally(() => setObjectivePending(false));
+  };
+
   const addObjective = () => {
     if (!settings || objectivePending || pending || planPending || lockPending || areaPending ||
         !objectiveDraft.label.trim()) return;
@@ -251,7 +336,7 @@ export function ActivityEditPanel({
     const operationId = objectiveOperation.current ??= crypto.randomUUID();
     setObjectivePending(true);
     setObjectiveError('');
-    void settingsSource.addObjective(profile.activityRef, settings, {
+    const definition = {
       label: objectiveDraft.label.trim(),
       resultKind: kind,
       comparatorCode: kind === 'quantity'
@@ -261,8 +346,20 @@ export function ActivityEditPanel({
       targetMax: kind === 'range' ? max : null,
       unitCode: kind === 'quantity' || kind === 'range'
         ? objectiveDraft.unitCode.trim() || null : null,
-    }, operationId).then((saved) => {
+    };
+    const save = editingObjective
+      ? objectiveSource.reviseDefinition(editingObjective.objectiveRef, {
+          ...definition,
+          presentationOrder: editingObjective.presentationOrder,
+          expectedRevision: editingObjective.definitionRevision,
+          operationId,
+        }).then(() => settingsSource.refreshObjectives(profile.activityRef, settings))
+      : settingsSource.addObjective(
+          profile.activityRef, settings, definition, operationId,
+        );
+    void save.then((saved) => {
       setSettings(saved);
+      setEditingObjective(null);
       setObjectiveDraft({
         label: '', resultKind: 'boolean', comparatorCode: null,
         targetValue: '', targetMin: '', targetMax: '', unitCode: '',
@@ -873,12 +970,22 @@ export function ActivityEditPanel({
                     <li key={objective.objectiveRef}>
                       {objective.label}
                       {objective.assessmentCode ? ` · ${objective.assessmentCode}` : ''}
+                      <button type="button" disabled={objectivePending}
+                        onClick={() => startObjectiveEdit(objective)}>
+                        Modifica obiettivo
+                      </button>
+                      {objective.observationRef ? (
+                        <button type="button" disabled={objectivePending}
+                          onClick={() => startResultCorrection(objective)}>
+                          Correggi risultato
+                        </button>
+                      ) : null}
                     </li>
                   ))}
                 </ul>
               ) : <p>Nessun obiettivo configurato.</p>}
               <fieldset disabled={objectivePending}>
-                <legend>Nuovo obiettivo</legend>
+                <legend>{editingObjective ? 'Modifica obiettivo' : 'Nuovo obiettivo'}</legend>
                 <label>Nome obiettivo
                   <input maxLength={300} value={objectiveDraft.label}
                     onChange={(event) => updateObjectiveDraft({ label: event.target.value })} />
@@ -948,10 +1055,71 @@ export function ActivityEditPanel({
                 <button type="button" onClick={addObjective}
                   disabled={objectivePending || pending || planPending ||
                     lockPending || areaPending || !objectiveDraft.label.trim()}>
-                  {objectivePending ? 'Aggiunta…' : 'Aggiungi obiettivo'}
+                  {objectivePending ? 'Salvataggio…' :
+                    editingObjective ? 'Salva obiettivo' : 'Aggiungi obiettivo'}
                 </button>
+                {editingObjective ? (
+                  <button type="button" onClick={() => {
+                    setEditingObjective(null);
+                    setObjectiveDraft({
+                      label: '', resultKind: 'boolean', comparatorCode: null,
+                      targetValue: '', targetMin: '', targetMax: '', unitCode: '',
+                    });
+                    objectiveOperation.current = null;
+                  }}>Annulla modifica obiettivo</button>
+                ) : null}
               </fieldset>
-              <p>Le definizioni esistenti e le valutazioni storiche restano in sola lettura.</p>
+              {correctingObjective ? (
+                <fieldset disabled={objectivePending}>
+                  <legend>Rettifica risultato — {correctingObjective.label}</legend>
+                  {correctingObjective.resultKind === 'boolean' ? (
+                    <label>Risultato corretto
+                      <select value={correctedBoolean}
+                        onChange={(event) => {
+                          setCorrectedBoolean(event.target.value);
+                          correctionOperation.current = null;
+                        }}>
+                        <option value="true">Sì</option>
+                        <option value="false">No</option>
+                      </select>
+                    </label>
+                  ) : (
+                    <label>Risultato corretto
+                      <input
+                        type={correctingObjective.resultKind === 'qualitative' ? 'text' : 'number'}
+                        step="any" value={correctedValue}
+                        onChange={(event) => {
+                          setCorrectedValue(event.target.value);
+                          correctionOperation.current = null;
+                        }} />
+                    </label>
+                  )}
+                  {correctingObjective.resultKind === 'qualitative' ? (
+                    <label>Valutazione corretta
+                      <select value={correctedAssessment}
+                        onChange={(event) => {
+                          setCorrectedAssessment(event.target.value as ObjectiveAssessment);
+                          correctionOperation.current = null;
+                        }}>
+                        <option value="satisfied">Raggiunto</option>
+                        <option value="partial">Parziale</option>
+                        <option value="not_satisfied">Non raggiunto</option>
+                        <option value="unknown">Sconosciuto</option>
+                        <option value="indeterminate">Indeterminato</option>
+                      </select>
+                    </label>
+                  ) : null}
+                  <button type="button" onClick={applyResultCorrection}>
+                    Salva rettifica
+                  </button>
+                  <button type="button" onClick={() => {
+                    setCorrectingObjective(null);
+                    correctionOperation.current = null;
+                  }}>Annulla rettifica</button>
+                  <p>La rettifica aggiorna il valore corrente senza cancellare
+                    l’osservazione e la valutazione precedenti.</p>
+                </fieldset>
+              ) : null}
             </section>
           </>
         ) : null}
