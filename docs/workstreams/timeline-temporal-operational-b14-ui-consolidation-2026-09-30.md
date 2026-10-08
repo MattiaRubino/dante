@@ -377,3 +377,26 @@ Inspector/Modifica/Duplica closure still requires post-create Objective
 definition lifecycle, optional Life Area unassignment, faithful advanced
 duplication, existing planned Session display-name evolution, recurring scope,
 and real-stack product acceptance.
+
+## 2026-10-08 — User local interval-editor gate and fix
+
+The first user-run interval-editor gate at `7a2a3a1a` reported:
+`pnpm api:generate` PASS; `generated:check` PASS, **483 sources
+deterministic**; web/api-client TypeScript PASS; focused Vitest **15/15 PASS**.
+Backend Ruff had 2 style findings (RUF021 operator precedence and RUF001
+ambiguous EN DASH), focused unit **3/4 PASS** and PostgreSQL **14/15 PASS**.
+Both functional failures share a concrete bug: the pure preflight loop
+dereferenced `by_ref[row.schedule_ref]` for an Activity interval explicitly
+listed under `remove_intervals`, causing `KeyError` *before* preview/apply.
+
+The follow-up source fix `1156186d` filters both prior Activity intervals
+and planned Session rows to retained IDs before the placement revision loop.
+The separate, explicit removal-preview and unschedule phases remain intact.
+The two Ruff findings are also corrected. **Post-fix unit/Ruff/PostgreSQL
+gate remains pending; do not assert closure**.
+
+User-local API generation created six legitimate uncommitted generated
+artifacts (OpenAPI JSON, model index, ActivityReplanCommand model, apply/preview
+models and NewIntervalRow model). They passed deterministic verification but
+still must enter the Git branch via generated-source tooling output; they must
+not be discarded or hand-edited. No CI or GitHub Actions were used.
