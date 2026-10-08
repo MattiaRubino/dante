@@ -230,6 +230,126 @@ class TemporalObjectiveResultOperationRow(Base):
     )
 
 
+class TemporalObjectiveSeriesEditRow(Base):
+    __tablename__ = "temporal_objective_series_edit"
+
+    self_person_ref: Mapped[UUID] = mapped_column(primary_key=True)
+    operation_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    intent_fingerprint: Mapped[str] = mapped_column(Text, nullable=False)
+    source_native_ref: Mapped[UUID] = mapped_column(nullable=False)
+    selected_objective_ref: Mapped[UUID] = mapped_column(nullable=False)
+    selected_occurrence_ref: Mapped[UUID] = mapped_column(nullable=False)
+    template_slot: Mapped[int] = mapped_column(Integer, nullable=False)
+    revision: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    expected_revision: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    expected_recurrence_state_ref: Mapped[UUID | None] = mapped_column()
+    selected_definition_revision: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    effective_zone_id: Mapped[str] = mapped_column(Text, nullable=False)
+    anchor_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    accepted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    label: Mapped[str] = mapped_column(Text, nullable=False)
+    result_kind: Mapped[str] = mapped_column(Text, nullable=False)
+    comparator_code: Mapped[str | None] = mapped_column(Text)
+    target_value: Mapped[Decimal | None] = mapped_column(Numeric)
+    target_min: Mapped[Decimal | None] = mapped_column(Numeric)
+    target_max: Mapped[Decimal | None] = mapped_column(Numeric)
+    unit_code: Mapped[str | None] = mapped_column(Text)
+    presentation_order: Mapped[int] = mapped_column(Integer, nullable=False)
+    applied_evaluation_state_ref: Mapped[UUID | None] = mapped_column()
+    applied_assessment_code: Mapped[str | None] = mapped_column(Text)
+
+    __table_args__ = (
+        UniqueConstraint(
+            "source_native_ref", "template_slot", "revision",
+            name="uq_temporal_objective_series_edit_revision",
+        ),
+        ForeignKeyConstraint(
+            ["self_person_ref"], ["dante.person.person_ref"],
+            name="fk_temporal_objective_series_edit_person",
+        ),
+        ForeignKeyConstraint(
+            ["source_native_ref"], ["dante.native_address.native_ref"],
+            name="fk_temporal_objective_series_edit_source",
+        ),
+        ForeignKeyConstraint(
+            ["selected_objective_ref"], ["dante.temporal_objective.objective_ref"],
+            name="fk_temporal_objective_series_edit_objective",
+        ),
+        ForeignKeyConstraint(
+            ["selected_occurrence_ref"], ["dante.occurrence.occurrence_ref"],
+            name="fk_temporal_objective_series_edit_occurrence",
+        ),
+        CheckConstraint(
+            "template_slot BETWEEN 0 AND 99 AND revision>=1 "
+            "AND expected_revision>=0 AND selected_definition_revision>=1",
+            name="revision",
+        ),
+        CheckConstraint(
+            "operation_id=btrim(operation_id) AND "
+            "char_length(operation_id) BETWEEN 1 AND 200",
+            name="operation",
+        ),
+        CheckConstraint(
+            "intent_fingerprint ~ '^[0-9a-f]{64}
+    __tablename__ = "temporal_objective_create_operation"
+
+    self_person_ref: Mapped[UUID] = mapped_column(primary_key=True)
+    operation_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    intent_fingerprint: Mapped[str] = mapped_column(Text, nullable=False)
+    objective_ref: Mapped[UUID] = mapped_column(nullable=False)
+
+
+class TemporalObjectiveObservationRow(Base):
+    __tablename__ = "temporal_objective_observation"
+
+    observation_ref: Mapped[UUID] = mapped_column(primary_key=True)
+    objective_ref: Mapped[UUID] = mapped_column(nullable=False)
+    observed_boolean: Mapped[bool | None] = mapped_column(Boolean)
+    observed_numeric: Mapped[Decimal | None] = mapped_column(Numeric)
+    qualitative_code: Mapped[str | None] = mapped_column(Text)
+    recorded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class TemporalObjectiveEvaluationStateRow(Base):
+    __tablename__ = "temporal_objective_evaluation_state"
+
+    state_ref: Mapped[UUID] = mapped_column(primary_key=True)
+    objective_ref: Mapped[UUID] = mapped_column(nullable=False)
+    observation_ref: Mapped[UUID] = mapped_column(nullable=False)
+    assessment_code: Mapped[str] = mapped_column(Text, nullable=False)
+    recorded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class TemporalObjectiveEvaluationCurrentHistoryRow(Base):
+    __tablename__ = "temporal_objective_evaluation_current_history"
+
+    objective_ref: Mapped[UUID] = mapped_column(primary_key=True)
+    state_ref: Mapped[UUID] = mapped_column(nullable=False)
+    current_from_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), primary_key=True
+    )
+    current_until_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class TemporalObjectiveResultOperationRow(Base):
+    __tablename__ = "temporal_objective_result_operation"
+
+    self_person_ref: Mapped[UUID] = mapped_column(primary_key=True)
+    operation_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    intent_fingerprint: Mapped[str] = mapped_column(Text, nullable=False)
+    objective_ref: Mapped[UUID] = mapped_column(nullable=False)
+    observation_ref: Mapped[UUID] = mapped_column(nullable=False)
+    state_ref: Mapped[UUID] = mapped_column(nullable=False)
+", name="fingerprint",
+        ),
+        CheckConstraint(
+            "label=btrim(label) AND label<>'' "
+            "AND char_length(label)<=300 AND presentation_order BETWEEN 0 AND 999",
+            name="label",
+        ),
+    )
+
+
 class TemporalObjectiveCreateOperationRow(Base):
     __tablename__ = "temporal_objective_create_operation"
 
