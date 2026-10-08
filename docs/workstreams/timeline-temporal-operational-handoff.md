@@ -614,3 +614,23 @@ The user supplied the **full `FAILURES` section** from `/tmp/dante-m2-final.2m48
 4. `test_current_database_cross_representation_is_exact`: the final ORM registry count assertion still expected 232 tables even though mapping, dictionary and live catalog all enumerate **234**. Changed only stale test literal to 234.
 
 All fixes committed/pushed on `feature/timeline-temporal-operational` (not CI): `fae4dcbf`, `b72d7f2b`, `470fde9d`, `61dd6913`, `b5c55489`. Post-edit branch readback verified single Objective mapping classes, correct fingerprints, no test table-policy bypass, and all four corrections. **These edits have not yet been subjected to the next user-run local gate; M2 is NOT closed.** DB expected revision `20261008_126` and topology `234/5/207/103/477/414/586` remain unchanged; no speculative migrations and no role grants. Rerun the whole focused Ruff + PostgreSQL/catalog + generated API/check + API/Web TS typechecks + Vitest gate once. If green, stage and publish only deterministic generated client files, then record M2 closure. M3/M4/M5/B15 remain open.
+
+## 2026-10-08 — AUTHORITATIVE LATEST HANDOFF: M2 GATE GREEN, generated client published
+
+This entry **supersedes earlier M2 pending/failing status lines**; preserve them solely as historical investigation. On the user's final WSL `~/projects/dante` gate after pulling `b1599c19`:
+```text
+SYNTAX=0
+RUFF=0
+POSTGRES=0
+GENERATE=0
+GENERATED_CHECK=0
+API_TYPECHECK=0
+WEB_TYPECHECK=0
+VITEST=0
+LOG_DIR=/tmp/dante-m2-gate.ZTDo2Z
+TUTTI I GATE VERDI
+CLIENT_API_PUBLISH_EXIT=0
+```
+The user then committed/pushed canonical generated OpenAPI/Orval client in `09dc26f9` (ten changed files); verified remote `feature/timeline-temporal-operational` HEAD `09dc26f9e7140698856461d8e1b7652eadc93404` and generated Objective model file availability. `20261008_126` Dictionary/catalog expected topology 234/5/207/103/477/414/586 is included in the successful focused tests. **M2 CLOSED for automated technical scope only**, not an assertion of visual or full-stack usage acceptance. M1 already closed for scoped general metadata. No fresh independent assistant-side PostgreSQL run was performed.
+
+**Next action, M3:** inspect already working Activity Inspector/Edit/Replan and domain-owned B08 Session, B05 Life Area, B02/B04 Schedule/Reminder, and B14 retirement to avoid redundant implementations. Finish remaining existing planned Session display-name mutation; null/unassign primary Life Area; outstanding temporal forms/settings and Schedule/Reminder/policy edits; history-aware Activity retirement. Design authoritative scoped edits for recurrence-derived instances without changing unrelated past facts. One complete bounded M3 backend/DB/Dictionary/API/Web integration and one user-local combined gate; no micro-gates, no CI. Thereafter M4 faithful Activity/Event Duplicate + Event Inspector, M5 product dogfood, B15 whole vertical. User runs tests from local worktree `~/projects/dante`; do not use GitHub Actions.
