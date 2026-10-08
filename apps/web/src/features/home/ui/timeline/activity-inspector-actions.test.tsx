@@ -27,12 +27,14 @@ const setPlacementProtected = vi.fn();
 const addObjective = vi.fn();
 const refreshObjectives = vi.fn();
 const getDefinition = vi.fn();
+const getSeriesState = vi.fn().mockResolvedValue(null);
 const reviseDefinition = vi.fn();
 const correctResult = vi.fn();
 
 vi.mock('../../../temporal/remote-reality-objective-data-source', () => ({
   createRemoteRealityObjectiveDataSource: () => ({
     getDefinition,
+    getSeriesState,
     reviseDefinition,
     correctResult,
   }),
@@ -179,11 +181,49 @@ describe('Objective correction in Activity Editor', () => {
     await waitFor(() => expect(reviseDefinition).toHaveBeenCalledWith(
       objective.objectiveRef, expect.objectContaining({
         operationId: expect.any(String), expectedRevision: 0,
+        scopeCode: 'only_this', seriesState: null,
         label: 'Corsa 7 km', targetValue: 10, presentationOrder: 0,
       }),
     ));
     expect(addObjective).not.toHaveBeenCalled();
     await waitFor(() => expect(screen.getByText(/Corsa 7 km/)).toBeTruthy());
+  });
+
+  it('applies selected-and-following only with authoritative generated lineage', async () => {
+    loadSettings.mockResolvedValueOnce({
+      ...currentSettings, objectives: [objective],
+    });
+    getDefinition.mockResolvedValueOnce({ ...objective, definitionRevision: 1 });
+    const seriesState = {
+      sourceNativeRef: '0199a566-6666-7666-8666-666666666666',
+      occurrenceRef: '0199a577-7777-7777-8777-777777777777',
+      templateSlot: 0,
+      sourceRevision: 2,
+      recurrenceStateRef: '0199a588-8888-7888-8888-888888888888',
+    };
+    getSeriesState.mockResolvedValueOnce(seriesState);
+    reviseDefinition.mockResolvedValueOnce(undefined);
+    refreshObjectives.mockResolvedValueOnce({
+      ...currentSettings, objectives: [{ ...objective, label: 'Corsa 7 km' }],
+    });
+    render(
+      <ActivityEditPanel profile={profile} closeRequestRef={createRef()}
+        onSaved={() => undefined} onCancel={() => undefined} />,
+    );
+    fireEvent.click(await screen.findByRole('button', { name: 'Modifica obiettivo' }));
+    fireEvent.click(await screen.findByLabelText('Questa e le prossime'));
+    fireEvent.change(screen.getByRole('textbox', { name: 'Nome obiettivo' }), {
+      target: { value: 'Corsa 7 km' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Salva obiettivo' }));
+    await waitFor(() => expect(reviseDefinition).toHaveBeenCalledWith(
+      objective.objectiveRef, expect.objectContaining({
+        scopeCode: 'this_and_following',
+        seriesState,
+        label: 'Corsa 7 km',
+      }),
+    ));
+    expect(addObjective).not.toHaveBeenCalled();
   });
 
   it('corrects a measured result while keeping the same Objective identity', async () => {
