@@ -308,10 +308,17 @@ BEGIN
             actor,candidate.occurrence_ref,effective_zone
         );
         IF target_instant<=GREATEST(anchor,accepted) THEN CONTINUE; END IF;
-        IF candidate.skipped THEN
+        IF candidate.skipped OR EXISTS (
+            SELECT 1 FROM dante.actual a
+             WHERE a.subject_native_ref=candidate.occurrence_ref
+        ) OR EXISTS (
+            SELECT 1 FROM dante.routine_occurrence_activity_instance link
+             JOIN dante.actual a ON a.subject_native_ref=link.activity_ref
+            WHERE link.occurrence_ref=candidate.occurrence_ref
+        ) THEN
             RAISE EXCEPTION USING ERRCODE='23505',
               CONSTRAINT='temporal_objective_series_future_conflict',
-              MESSAGE='Protected skipped future Occurrence';
+              MESSAGE='Future Occurrence contains a skip or recorded reality';
         END IF;
         target_obj:=NULL;
         SELECT o.objective_ref INTO target_obj
