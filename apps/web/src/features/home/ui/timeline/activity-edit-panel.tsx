@@ -285,7 +285,7 @@ export function ActivityEditPanel({
   };
 
   const startResultCorrection = (objective: ObjectiveView) => {
-    if (objectivePending || !objective.observationRef) return;
+    if (objectivePending || !objective.observationRef || !objective.evaluationStateRef) return;
     setCorrectingObjective(objective);
     setCorrectedValue(objective.resultKind === 'qualitative'
       ? objective.qualitativeCode ?? ''
