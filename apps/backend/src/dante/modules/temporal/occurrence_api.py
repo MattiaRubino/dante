@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 from dataclasses import asdict
+import json
 from datetime import date, datetime, time
 from typing import Annotated, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request, Response
+from sqlalchemy import text
+from sqlalchemy.exc import DBAPIError, SQLAlchemyError
 from pydantic import BaseModel, ConfigDict, Field
 
 from dante.context.contracts import DanteContext
@@ -222,6 +225,42 @@ class OccurrenceEditInventoryResponse(BaseModel):
     occurrences: list[OccurrenceResponse]
     materialized_only: Literal[True] = True
     apply_authorized: Literal[False] = False
+
+
+class ScopedProfileEditCommand(BaseModel):
+    """One authoritative metadata edit with selected-anchor semantics."""
+
+    model_config = ConfigDict(extra="forbid")
+    operation_id: str = Field(min_length=1, max_length=200)
+    expected_revision: int = Field(ge=0)
+    expected_recurrence_state_ref: UUID | None
+    scope_code: Literal["only_this", "this_and_following"]
+    profile_patch: dict[str, str | None] = Field(min_length=1, max_length=4)
+
+
+class ScopedProfileEditResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    revision: int
+    source_native_ref: UUID
+    selected_occurrence_ref: UUID
+    target_occurrence_refs: list[UUID]
+    accepted_at: datetime
+    replayed: bool
+
+
+class ScopedProfileEditStateResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    selected_occurrence_ref: UUID
+    source_native_ref: UUID
+    edit_revision: int
+    recurrence_state_ref: UUID | None
+    current_profile_patch: dict[str, str | None]
+
+
+class MaterializedActivityOriginResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    activity_ref: UUID
+    occurrence_ref: UUID | None
 
 
 class OccurrenceCheckpointResponse(BaseModel):
@@ -680,6 +719,162 @@ async def get_occurrence_edit_inventory(
         captured_at=view.captured_at,
         occurrences=[_response(item) for item in view.occurrences],
     )
+
+
+def _scoped_edit_problem(exc: DBAPIError) -> ProblemError:
+    constraint = getattr(getattr(exc.orig, "diag", None), "constraint_name", None)
+    if constraint == "occurrence_edit_unavailable":
+        return ProblemError(
+            status=404, code="temporal.recurrence_edit.unavailable",
+            category="not_found", title="Occurrence unavailable",
+            detail="The selected Occurrence is unavailable in this account.",
+        )
+    if constraint in {
+        "pk_occurrence_profile_edit", "occurrence_edit_stale",
+        "occurrence_edit_recurrence_stale", "occurrence_edit_future_conflict",
+    }:
+        return ProblemError(
+            status=409, code="temporal.recurrence_edit.conflict",
+            category="conflict", title="Recurring edit conflict",
+            detail="The recurring source or a protected future instance changed. Reload and review.",
+        )
+    if constraint in {
+        "occurrence_edit_invalid", "occurrence_edit_invalid_patch",
+        "occurrence_edit_invalid_zone", "occurrence_edit_unresolved_zone",
+        "occurrence_edit_unordered_coordinate", "occurrence_edit_dst_gap",
+        "occurrence_edit_not_generated", "recurrence_edit_inventory_limit",
+    }:
+        return ProblemError(
+            status=422, code="temporal.recurrence_edit.invalid",
+            category="validation", title="Recurring edit cannot be applied",
+            detail="The requested scope or coordinate cannot be safely accepted.",
+        )
+    return ProblemError(
+        status=503, code="temporal.recurrence_edit.persistence_unavailable",
+        category="service", title="Recurring edit unavailable",
+        detail="The scoped edit could not be completed safely.", retryable=True,
+    )
+
+
+@router.get(
+    "/occurrences/{occurrence_ref}/profile-edit-state",
+    response_model=ScopedProfileEditStateResponse,
+    operation_id="temporal_get_occurrence_profile_edit_state",
+)
+async def get_occurrence_profile_edit_state(
+    occurrence_ref: UUID, context: Context, request: Request, response: Response,
+) -> ScopedProfileEditStateResponse:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        async with request.app.state.database_runtime.session_factory() as session, session.begin():
+            row = (await session.execute(
+                text("SELECT * FROM dante.get_self_occurrence_edit_revision(:actor,:occ)"),
+                {"actor": context.self_person_ref, "occ": occurrence_ref},
+            )).mappings().one()
+            patch = await session.scalar(
+                text("SELECT dante.get_self_occurrence_profile_patch(:actor,:occ)"),
+                {"actor": context.self_person_ref, "occ": occurrence_ref},
+            )
+    except DBAPIError as exc:
+        raise _scoped_edit_problem(exc) from exc
+    except SQLAlchemyError as exc:
+        raise ProblemError(
+            status=503, code="temporal.recurrence_edit.read_failed",
+            category="service", title="Recurring edit read unavailable",
+            detail="Could not read recurring edit state.", retryable=True,
+        ) from exc
+    return ScopedProfileEditStateResponse(
+        selected_occurrence_ref=occurrence_ref,
+        source_native_ref=row["source_native_ref"],
+        edit_revision=int(row["edit_revision"]),
+        recurrence_state_ref=row["recurrence_state_ref"],
+        current_profile_patch=patch or {},
+    )
+
+
+@router.get(
+    "/activities/{activity_ref}/recurrence-origin",
+    response_model=MaterializedActivityOriginResponse,
+    operation_id="temporal_get_materialized_activity_occurrence",
+)
+async def get_materialized_activity_occurrence(
+    activity_ref: UUID, context: Context, request: Request, response: Response,
+) -> MaterializedActivityOriginResponse:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        async with request.app.state.database_runtime.session_factory() as session, session.begin():
+            owned = await session.scalar(
+                text("SELECT activity_ref FROM dante.get_self_activity_profile(:actor,:activity)"),
+                {"actor": context.self_person_ref, "activity": activity_ref},
+            )
+            if owned is None:
+                raise OccurrenceSourceNotFoundError()
+            origin = await session.scalar(
+                text("SELECT dante.get_self_materialized_activity_occurrence(:actor,:activity)"),
+                {"actor": context.self_person_ref, "activity": activity_ref},
+            )
+    except OccurrenceSourceNotFoundError as exc:
+        raise _problem(exc) from exc
+    except DBAPIError as exc:
+        raise _scoped_edit_problem(exc) from exc
+    except SQLAlchemyError as exc:
+        raise _problem(OccurrencePersistenceError()) from exc
+    return MaterializedActivityOriginResponse(
+        activity_ref=activity_ref, occurrence_ref=origin,
+    )
+
+
+@router.post(
+    "/occurrences/{occurrence_ref}/profile-edit",
+    response_model=ScopedProfileEditResponse,
+    operation_id="temporal_accept_occurrence_profile_edit",
+)
+async def accept_occurrence_profile_edit(
+    occurrence_ref: UUID, body: ScopedProfileEditCommand,
+    context: MutatingContext, request: Request, response: Response,
+) -> ScopedProfileEditResponse:
+    """One atomic source-lock/CAS operation, never a client supplied target list."""
+    response.headers["Cache-Control"] = "no-store"
+    patch = body.profile_patch
+    if not set(patch).issubset({"title", "description", "location", "color_code"}):
+        raise _problem(OccurrenceInputError("Only profile metadata can be edited here."))
+    if (
+        ("title" in patch and (patch["title"] is None or
+         not patch["title"] or patch["title"] != patch["title"].strip()))
+        or any(
+            value is not None and (not value or value != value.strip())
+            for key, value in patch.items() if key in {"description", "location"}
+        )
+        or ("color_code" in patch and patch["color_code"] is not None and (
+            len(patch["color_code"]) != 7 or
+            not patch["color_code"].startswith("#") or
+            any(ch not in "0123456789ABCDEF" for ch in patch["color_code"][1:])
+        ))
+    ):
+        raise _problem(OccurrenceInputError("Invalid metadata patch."))
+    try:
+        async with request.app.state.database_runtime.session_factory() as session, session.begin():
+            row = (await session.execute(
+                text(
+                    "SELECT * FROM dante.accept_self_occurrence_profile_edit("
+                    ":actor,:selected,:operation,:expected,:recurrence,:scope,"
+                    ":zone,CAST(:patch AS jsonb))"
+                ),
+                {
+                    "actor": context.self_person_ref, "selected": occurrence_ref,
+                    "operation": body.operation_id,
+                    "expected": body.expected_revision,
+                    "recurrence": body.expected_recurrence_state_ref,
+                    "scope": body.scope_code,
+                    "zone": context.effective_zone_id,
+                    "patch": json.dumps(patch, sort_keys=True),
+                },
+            )).mappings().one()
+    except DBAPIError as exc:
+        raise _scoped_edit_problem(exc) from exc
+    except SQLAlchemyError as exc:
+        raise _problem(OccurrencePersistenceError()) from exc
+    return ScopedProfileEditResponse(**dict(row))
 
 
 @router.post(
