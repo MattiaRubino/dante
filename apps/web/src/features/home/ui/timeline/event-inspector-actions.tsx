@@ -8,6 +8,7 @@ import type { TemporalEventDetailRecord } from '../../../temporal/event-data-sou
 import { createRemoteEventLifeAreaSettings, type EventLifeAreaChoice } from '../../../temporal/remote-event-life-area-settings';
 import { createRemoteEventProfileDataSource, type EventProfileDraft } from '../../../temporal/remote-event-profile-data-source';
 import type { TemporalEventDetailRecord } from '../../../temporal/event-data-source';
+import { createRemoteEventRecurrenceGuard } from '../../../temporal/remote-event-recurrence-guard';
 import { createRemoteTemporalEventAgendaDataSource } from '../../../temporal/remote-event-agenda-data-source';
 import { createRemoteTemporalResponsibilityDataSource } from '../../../temporal/remote-responsibility-data-source';
 import { buildEventDuplicateSeed } from '../../../temporal-create/application/event-duplicate-seed';
@@ -25,6 +26,7 @@ export function EventInspectorActions({
 }>) {
   const [eventSource] = useState(createRemoteTemporalEventAgendaDataSource);
   const [participationSource] = useState(createRemoteTemporalResponsibilityDataSource);
+  const [recurrenceGuard] = useState(createRemoteEventRecurrenceGuard);
   const [areaSource] = useState(createRemoteEventLifeAreaSettings);
   const [profileSource] = useState(createRemoteEventProfileDataSource);
   const [profile, setProfile] = useState<TemporalEventDetailRecord | null>(null);
@@ -185,11 +187,17 @@ export function EventInspectorActions({
     setBusy(true);
     setError('');
     try {
-      const [event, participants, referents] = await Promise.all([
+      const [event, participants, referents, recurring] = await Promise.all([
         eventSource.loadEvent(eventRef),
         participationSource.listExpectedParticipation(eventRef),
         participationSource.listPersonReferents(),
+        recurrenceGuard.isRecurring(eventRef),
       ]);
+      if (recurring) {
+        throw new Error(
+          'Questo evento è una sorgente ricorrente: Duplica non può trasformarla in un singolo evento.',
+        );
+      }
       const labels = new Map(referents.map((ref) => [ref.personRef, ref.displayLabel]));
       const expectedParticipants = participants
         .filter((entry) => entry.requirementCode !== null)
