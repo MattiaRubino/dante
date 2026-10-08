@@ -141,6 +141,10 @@ class ObjectiveCreateCommand(BaseModel):
 
     @model_validator(mode="after")
     def validate_shape(self) -> ObjectiveCreateCommand:
+        # The materializer reserves this namespace for canonical Objective
+        # template lineage. Public authoring must never forge its authority.
+        if self.operation_id.startswith("b14:objective:"):
+            raise ValueError("Objective materialization operation ids are reserved")
         if self.label != self.label.strip():
             raise ValueError("label must be trimmed")
         if self.unit_code is not None and (
