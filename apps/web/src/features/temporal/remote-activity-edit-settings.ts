@@ -2,7 +2,10 @@ import { createWebFetch } from '../../platform/api/web-fetch';
 import { parseProfile, type ActivityProfile } from './remote-activity-inspector';
 import { invalidateTemporalPlanningRead, invalidateTemporalTimelineRead } from './timeline-invalidation';
 import {
+  createRemoteRealityObjectiveDataSource,
   parseObjectiveView,
+  type ObjectiveComparator,
+  type ObjectiveKind,
   type ObjectiveView,
   type RealityMode,
 } from './remote-reality-objective-data-source';
@@ -169,6 +172,7 @@ export function createRemoteActivityEditSettings(
   fetchFn: typeof globalThis.fetch = globalThis.fetch,
 ) {
   const request = createWebFetch(fetchFn);
+  const objectiveSource = createRemoteRealityObjectiveDataSource(fetchFn);
   const endpoint = (ref: string, suffix: string) =>
     `/api/v1/temporal/activities/${encodeURIComponent(ref)}/${suffix}`;
 
@@ -271,6 +275,39 @@ export function createRemoteActivityEditSettings(
   }
 
   return Object.freeze({
+    async addObjective(
+      ref: string,
+      settings: ActivityEditSettings,
+      definition: Readonly<{
+        label: string;
+        resultKind: ObjectiveKind;
+        comparatorCode: ObjectiveComparator | null;
+        targetValue: number | null;
+        targetMin: number | null;
+        targetMax: number | null;
+        unitCode: string | null;
+      }>,
+      operationId: string,
+    ): Promise<ActivityEditSettings> {
+      if (!definition.label.trim() || definition.label !== definition.label.trim()) {
+        throw new Error('Inserisci un nome valido per l’obiettivo.');
+      }
+      const objective = await objectiveSource.createObjective('activity', ref, {
+        ...definition,
+        operationId,
+        presentationOrder: Math.max(-1, ...settings.objectives.map(
+          (row) => row.presentationOrder)) + 1,
+      });
+      if (settings.objectives.some((row) => row.objectiveRef === objective.objectiveRef)) {
+        return settings;
+      }
+      invalidateTemporalTimelineRead();
+      invalidateTemporalPlanningRead();
+      return Object.freeze({
+        ...settings,
+        objectives: Object.freeze([...settings.objectives, objective]),
+      });
+    },
     async load(ref: string): Promise<ActivityEditSettings> {
       return parseSnapshot(ref, await read(endpoint(ref, 'edit-snapshot')));
     },
