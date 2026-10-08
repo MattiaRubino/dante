@@ -8,6 +8,7 @@ import pytest
 
 from dante.modules.temporal.activity_replan_api import (
     ActivityReplanCommand,
+    NewIntervalRow,
     NewPlannedRow,
     ReplanRow,
     _validated_plan,
@@ -108,3 +109,56 @@ def test_replan_previews_replacement_and_rejects_ambiguous_planned_rows() -> Non
             remove_planned_sessions=[_intent(planned, 9, 10)],
         ))
     assert duplicate.value.status == 422
+
+
+def test_replan_replaces_activity_interval_and_keeps_one_current_interval() -> None:
+    envelope, first, second, planned = (
+        _row("envelope", 9, 12), _row("interval", 9, 10),
+        _row("interval", 11, 12), _row("planned", 11, 12),
+    )
+    new = NewIntervalRow(
+        client_ref=uuid7(), starts_local_at=_time(10), ends_local_at=_time(11),
+    )
+    changes, placements = _validated_plan(
+        SimpleNamespace(schedules=[envelope, first, second, planned]),
+        ActivityReplanCommand(
+            operation_id="replace-interval",
+            intervals=[_intent(second, 11, 12)],
+            remove_intervals=[_intent(first, 9, 10)],
+            new_intervals=[new],
+            planned_sessions=[_intent(planned, 11, 12)],
+        ),
+    )
+    assert {row.role for row in changes} == {
+        "envelope", "interval_removed", "interval_added",
+    }
+    assert len(placements) == 1
+    assert placements[0][0].schedule_ref == envelope.schedule_ref
+    assert changes[0].proposed_start == _time(10)
+
+    with pytest.raises(ProblemError) as none_left:
+        _validated_plan(
+            SimpleNamespace(schedules=[envelope, first, second, planned]),
+            ActivityReplanCommand(
+                operation_id="remove-last",
+                remove_intervals=[_intent(first, 9, 10), _intent(second, 11, 12)],
+                planned_sessions=[_intent(planned, 11, 12)],
+            ),
+        )
+    assert none_left.value.status == 422
+
+    with pytest.raises(ProblemError) as overlapping:
+        _validated_plan(
+            SimpleNamespace(schedules=[envelope, first, second, planned]),
+            ActivityReplanCommand(
+                operation_id="overlapping-new-interval",
+                intervals=[_intent(first, 9, 10), _intent(second, 11, 12)],
+                new_intervals=[NewIntervalRow(
+                    client_ref=uuid7(),
+                    starts_local_at=_time(9), ends_local_at=_time(11),
+                )],
+                planned_sessions=[_intent(planned, 11, 12)],
+            ),
+        )
+    assert overlapping.value.status == 422
+
