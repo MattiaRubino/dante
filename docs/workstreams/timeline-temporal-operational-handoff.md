@@ -660,3 +660,24 @@ The user pulled `c7206a10` and executed the M3 combined recheck; `RUFF=1` (test 
 Code review established that `20261008_127`'s `assign_self_{activity,event}_life_area` functions used unqualified `WHERE life_area_ref=requested_life_area_ref` although `life_area_ref` is also a PL/pgSQL output variable under `#variable_conflict error`. The new SQL now explicitly uses `target.life_area_ref`, `target.self_person_ref`, `target.archived` (commit `39e11193`). The B05 legacy and M2 scheduled Event tests both call these replacement Life Area functions, explaining their shared likely failure path. Ruff import placement corrected in `test_b14_m3_residual_editor.py` (commit `7ad57b87`). Exact-catalog test stale values were updated to **208 routines**, **447 standalone entries**, and to expect `B14-M3-RESIDUAL-EDITOR` in completed stages (commit `56a6e4de`). The physical topology expected remains **234 tables / 5 views / 208 routines / 103 triggers / 477 indexes / 414 FKs / 586 CHECK**.
 
 **Latest state: _127 M3 implementation candidate, NOT verified green.** Recheck focused Ruff and PostgreSQL, then the full local gate before generated-client publication. User's uncommitted OpenAPI/Orval outputs must be preserved (do not reset/overwrite manually); no Actions or CI. If additional failure remains, collect complete pytest failure traceback rather than another `tail -n 100` summary. M1/M2 remain closed and published; M4/M5/B15 still open.
+
+## 2026-10-08 — AUTHORITATIVE M3 LOCAL GATE RESULT: GREEN, client in 6fdda05f
+
+The previous first and second failing M3 logs below/above are **superseded**. User's WSL local worktree `~/projects/dante` pulled `d09af8a0` and ran the complete 8-part gate:
+```text
+SYNTAX=0
+RUFF=0
+POSTGRES=0
+GENERATE=0
+GENERATED_CHECK=0
+API_TYPECHECK=0
+WEB_TYPECHECK=0
+VITEST=0
+PUBLISH_EXIT=0
+LOG_DIR=/tmp/dante-m3-final.rAAiah
+```
+GitHub received `6fdda05f`: 10 generated OpenAPI/Orval artifacts (343 insertions, 10 deletions), including planned Session name models and Life Area nullable response/request changes. GitHub branch `feature/timeline-temporal-operational` was independently read back at `6fdda05feb0035a66274dfbbf1723aad495b6637`. The focused PG suite includes M3 tests, B05 existing Life Area tests, Activity inspector/replan/snapshot, M2 Objective regression, current schema/catalog assertions; green. Exact _127 Dictionary target 234 tables/5 views/208 routines/103 triggers/477 indexes/414 FK/586 CHECK, standalone 447; green within the user's tested suite.
+
+**Status:** M1, M2 and **M3-A owner-domain residual edit implementation** technically proven and generated code published. M3 as entire roadmap block **remains open**, because generated Routine/Event recurrence source template propagation for newly edited Life Area/planned Session label and all Create/Edit temporal policy settings parity have not been demonstrated. Current UI safely restricts these new domain edits to selected-only, and explicitly refuses `Questa e le prossime`; no hidden propagation. Do not turn off the guard as a workaround or call M3/M4/B14/B15 completely closed.
+
+**Next action:** inspect actual source/template Life Area and planned Session naming ownership, established M1/M2 guarded scope machinery, Schedule/Reminder policy editor read/write surfaces, existing tests and Domain/Logical/Physical/Dictionary before choosing a bounded implementation. Preserve invariant `Solo questa` includes clicked, `Questa e le prossime` includes clicked plus later future only and never other past; no implicit copying of recorded truth. Implement a full coherent chunk, then request one user-local gate, no GitHub Actions/CI. Then M4 Activity/Event faithful Duplica + Event Inspector, M5 real-stack visual acceptance, B15 closure.
