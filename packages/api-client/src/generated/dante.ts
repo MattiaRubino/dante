@@ -83,6 +83,7 @@ import type {
   LifeAreaMutationResponse,
   LifeAreaReorderResponse,
   LifeAreaResponse,
+  MaterializedActivityOriginResponse,
   MovementPolicyMutationResponse,
   MutationRequest,
   ObjectiveCreateCommand,
@@ -91,6 +92,7 @@ import type {
   ObjectiveResultResponse,
   OccurrenceCheckpointRequest,
   OccurrenceCheckpointResponse,
+  OccurrenceEditInventoryResponse,
   OccurrenceMutationResponse,
   OccurrenceResponse,
   OccurrenceScheduleResponse,
@@ -195,6 +197,9 @@ import type {
   ScheduledEventDateSpanResponse,
   ScheduledEventFloatingResponse,
   ScheduledEventNamedZoneResponse,
+  ScopedProfileEditCommand,
+  ScopedProfileEditResponse,
+  ScopedProfileEditStateResponse,
   SessionCommand,
   SessionEndCommand,
   SessionManualCommand,
@@ -4863,6 +4868,63 @@ export const temporalReviseSelfActivityProfile = async (
     status: res.status,
     headers: res.headers,
   } as temporalReviseSelfActivityProfileResponse;
+};
+
+export type temporalGetMaterializedActivityOccurrenceResponse200 = {
+  data: MaterializedActivityOriginResponse;
+  status: 200;
+};
+
+export type temporalGetMaterializedActivityOccurrenceResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetMaterializedActivityOccurrenceResponseSuccess =
+  temporalGetMaterializedActivityOccurrenceResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetMaterializedActivityOccurrenceResponseError =
+  temporalGetMaterializedActivityOccurrenceResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalGetMaterializedActivityOccurrenceResponse =
+  | temporalGetMaterializedActivityOccurrenceResponseSuccess
+  | temporalGetMaterializedActivityOccurrenceResponseError;
+
+export const getTemporalGetMaterializedActivityOccurrenceUrl = (
+  activityRef: string,
+) => {
+  return `/api/v1/temporal/activities/${activityRef}/recurrence-origin`;
+};
+
+/**
+ * @summary Get Materialized Activity Occurrence
+ */
+export const temporalGetMaterializedActivityOccurrence = async (
+  activityRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetMaterializedActivityOccurrenceResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetMaterializedActivityOccurrenceUrl(activityRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetMaterializedActivityOccurrenceResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetMaterializedActivityOccurrenceResponse;
 };
 
 export type temporalApplyActivityReplanResponse200 = {
@@ -9890,6 +9952,193 @@ export const temporalRecordOccurrenceActual = async (
     status: res.status,
     headers: res.headers,
   } as temporalRecordOccurrenceActualResponse;
+};
+
+export type temporalGetOccurrenceEditInventoryResponse200 = {
+  data: OccurrenceEditInventoryResponse;
+  status: 200;
+};
+
+export type temporalGetOccurrenceEditInventoryResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetOccurrenceEditInventoryResponseSuccess =
+  temporalGetOccurrenceEditInventoryResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetOccurrenceEditInventoryResponseError =
+  temporalGetOccurrenceEditInventoryResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalGetOccurrenceEditInventoryResponse =
+  | temporalGetOccurrenceEditInventoryResponseSuccess
+  | temporalGetOccurrenceEditInventoryResponseError;
+
+export const getTemporalGetOccurrenceEditInventoryUrl = (
+  occurrenceRef: string,
+) => {
+  return `/api/v1/temporal/occurrences/${occurrenceRef}/edit-inventory`;
+};
+
+/**
+ * Do not infer that as-yet-unmaterialized future occurrences are covered.
+ * @summary Get Occurrence Edit Inventory
+ */
+export const temporalGetOccurrenceEditInventory = async (
+  occurrenceRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetOccurrenceEditInventoryResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetOccurrenceEditInventoryUrl(occurrenceRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetOccurrenceEditInventoryResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetOccurrenceEditInventoryResponse;
+};
+
+export type temporalAcceptOccurrenceProfileEditResponse200 = {
+  data: ScopedProfileEditResponse;
+  status: 200;
+};
+
+export type temporalAcceptOccurrenceProfileEditResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalAcceptOccurrenceProfileEditResponseSuccess =
+  temporalAcceptOccurrenceProfileEditResponse200 & {
+    headers: Headers;
+  };
+export type temporalAcceptOccurrenceProfileEditResponseError =
+  temporalAcceptOccurrenceProfileEditResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalAcceptOccurrenceProfileEditResponse =
+  | temporalAcceptOccurrenceProfileEditResponseSuccess
+  | temporalAcceptOccurrenceProfileEditResponseError;
+
+export const getTemporalAcceptOccurrenceProfileEditUrl = (
+  occurrenceRef: string,
+) => {
+  return `/api/v1/temporal/occurrences/${occurrenceRef}/profile-edit`;
+};
+
+/**
+ * One atomic source-lock/CAS operation, never a client supplied target list.
+ * @summary Accept Occurrence Profile Edit
+ */
+export const temporalAcceptOccurrenceProfileEdit = async (
+  occurrenceRef: string,
+  scopedProfileEditCommand: ScopedProfileEditCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalAcceptOccurrenceProfileEditResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalAcceptOccurrenceProfileEditUrl(occurrenceRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(scopedProfileEditCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalAcceptOccurrenceProfileEditResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalAcceptOccurrenceProfileEditResponse;
+};
+
+export type temporalGetOccurrenceProfileEditStateResponse200 = {
+  data: ScopedProfileEditStateResponse;
+  status: 200;
+};
+
+export type temporalGetOccurrenceProfileEditStateResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetOccurrenceProfileEditStateResponseSuccess =
+  temporalGetOccurrenceProfileEditStateResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetOccurrenceProfileEditStateResponseError =
+  temporalGetOccurrenceProfileEditStateResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalGetOccurrenceProfileEditStateResponse =
+  | temporalGetOccurrenceProfileEditStateResponseSuccess
+  | temporalGetOccurrenceProfileEditStateResponseError;
+
+export const getTemporalGetOccurrenceProfileEditStateUrl = (
+  occurrenceRef: string,
+) => {
+  return `/api/v1/temporal/occurrences/${occurrenceRef}/profile-edit-state`;
+};
+
+/**
+ * @summary Get Occurrence Profile Edit State
+ */
+export const temporalGetOccurrenceProfileEditState = async (
+  occurrenceRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetOccurrenceProfileEditStateResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetOccurrenceProfileEditStateUrl(occurrenceRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetOccurrenceProfileEditStateResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetOccurrenceProfileEditStateResponse;
 };
 
 export type temporalEstablishOccurrenceScheduleResponse201 = {

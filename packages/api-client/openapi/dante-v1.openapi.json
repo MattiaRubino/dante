@@ -6944,6 +6944,31 @@
         "title": "LifeAreaResponse",
         "type": "object"
       },
+      "MaterializedActivityOriginResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "activity_ref": {
+            "format": "uuid",
+            "title": "Activity Ref",
+            "type": "string"
+          },
+          "occurrence_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Occurrence Ref"
+          }
+        },
+        "required": ["activity_ref", "occurrence_ref"],
+        "title": "MaterializedActivityOriginResponse",
+        "type": "object"
+      },
       "MovementPolicyMutationResponse": {
         "additionalProperties": false,
         "properties": {
@@ -7641,6 +7666,54 @@
         },
         "required": ["start_date", "end_date_exclusive"],
         "title": "OccurrenceDateSpanSchedulePlacementResponse",
+        "type": "object"
+      },
+      "OccurrenceEditInventoryResponse": {
+        "additionalProperties": false,
+        "description": "Self-owned, fully enumerated *materialized* instances, not write permission.",
+        "properties": {
+          "apply_authorized": {
+            "const": false,
+            "default": false,
+            "title": "Apply Authorized",
+            "type": "boolean"
+          },
+          "captured_at": {
+            "format": "date-time",
+            "title": "Captured At",
+            "type": "string"
+          },
+          "materialized_only": {
+            "const": true,
+            "default": true,
+            "title": "Materialized Only",
+            "type": "boolean"
+          },
+          "occurrences": {
+            "items": {
+              "$ref": "#/components/schemas/OccurrenceResponse"
+            },
+            "title": "Occurrences",
+            "type": "array"
+          },
+          "selected_occurrence_ref": {
+            "format": "uuid",
+            "title": "Selected Occurrence Ref",
+            "type": "string"
+          },
+          "source_native_ref": {
+            "format": "uuid",
+            "title": "Source Native Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "selected_occurrence_ref",
+          "source_native_ref",
+          "captured_at",
+          "occurrences"
+        ],
+        "title": "OccurrenceEditInventoryResponse",
         "type": "object"
       },
       "OccurrenceFloatingSchedulePlacementResponse": {
@@ -13722,6 +13795,165 @@
           "resolved_end_at"
         ],
         "title": "ScheduledEventNamedZoneResponse",
+        "type": "object"
+      },
+      "ScopedProfileEditCommand": {
+        "additionalProperties": false,
+        "description": "One authoritative metadata edit with selected-anchor semantics.",
+        "properties": {
+          "expected_recurrence_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Recurrence State Ref"
+          },
+          "expected_revision": {
+            "minimum": 0.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "profile_patch": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "maxProperties": 4,
+            "minProperties": 1,
+            "title": "Profile Patch",
+            "type": "object"
+          },
+          "scope_code": {
+            "enum": ["only_this", "this_and_following"],
+            "title": "Scope Code",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "expected_revision",
+          "expected_recurrence_state_ref",
+          "scope_code",
+          "profile_patch"
+        ],
+        "title": "ScopedProfileEditCommand",
+        "type": "object"
+      },
+      "ScopedProfileEditResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "accepted_at": {
+            "format": "date-time",
+            "title": "Accepted At",
+            "type": "string"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "revision": {
+            "title": "Revision",
+            "type": "integer"
+          },
+          "selected_occurrence_ref": {
+            "format": "uuid",
+            "title": "Selected Occurrence Ref",
+            "type": "string"
+          },
+          "source_native_ref": {
+            "format": "uuid",
+            "title": "Source Native Ref",
+            "type": "string"
+          },
+          "target_occurrence_refs": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Target Occurrence Refs",
+            "type": "array"
+          }
+        },
+        "required": [
+          "revision",
+          "source_native_ref",
+          "selected_occurrence_ref",
+          "target_occurrence_refs",
+          "accepted_at",
+          "replayed"
+        ],
+        "title": "ScopedProfileEditResponse",
+        "type": "object"
+      },
+      "ScopedProfileEditStateResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "current_profile_patch": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "title": "Current Profile Patch",
+            "type": "object"
+          },
+          "edit_revision": {
+            "title": "Edit Revision",
+            "type": "integer"
+          },
+          "recurrence_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recurrence State Ref"
+          },
+          "selected_occurrence_ref": {
+            "format": "uuid",
+            "title": "Selected Occurrence Ref",
+            "type": "string"
+          },
+          "source_native_ref": {
+            "format": "uuid",
+            "title": "Source Native Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "selected_occurrence_ref",
+          "source_native_ref",
+          "edit_revision",
+          "recurrence_state_ref",
+          "current_profile_patch"
+        ],
+        "title": "ScopedProfileEditStateResponse",
         "type": "object"
       },
       "SessionCommand": {
@@ -26355,6 +26587,47 @@
         "tags": ["temporal"]
       }
     },
+    "/api/v1/temporal/activities/{activity_ref}/recurrence-origin": {
+      "get": {
+        "operationId": "temporal_get_materialized_activity_occurrence",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaterializedActivityOriginResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Materialized Activity Occurrence",
+        "tags": ["temporal"]
+      }
+    },
     "/api/v1/temporal/activities/{activity_ref}/replan": {
       "put": {
         "operationId": "temporal_apply_activity_replan",
@@ -30207,6 +30480,141 @@
           }
         },
         "summary": "Record Occurrence Actual",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/occurrences/{occurrence_ref}/edit-inventory": {
+      "get": {
+        "description": "Do not infer that as-yet-unmaterialized future occurrences are covered.",
+        "operationId": "temporal_get_occurrence_edit_inventory",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "occurrence_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Occurrence Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OccurrenceEditInventoryResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Occurrence Edit Inventory",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/occurrences/{occurrence_ref}/profile-edit": {
+      "post": {
+        "description": "One atomic source-lock/CAS operation, never a client supplied target list.",
+        "operationId": "temporal_accept_occurrence_profile_edit",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "occurrence_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Occurrence Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScopedProfileEditCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScopedProfileEditResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Accept Occurrence Profile Edit",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/occurrences/{occurrence_ref}/profile-edit-state": {
+      "get": {
+        "operationId": "temporal_get_occurrence_profile_edit_state",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "occurrence_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Occurrence Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScopedProfileEditStateResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Occurrence Profile Edit State",
         "tags": ["temporal"]
       }
     },
