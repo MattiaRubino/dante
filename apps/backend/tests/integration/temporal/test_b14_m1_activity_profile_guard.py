@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-from datetime import date, timedelta
+from datetime import datetime, timedelta
 from typing import Any
+from zoneinfo import ZoneInfo
 
 import pytest
 from sqlalchemy import text
@@ -76,7 +77,7 @@ async def test_one_off_profile_snapshot_and_timeline_skip_occurrence_patch(
                 {"actor": other, "activity": activity},
             )).first() is None
 
-        today = date.today()
+        today = datetime.now(ZoneInfo("Europe/Rome")).date()
         await TemporalScheduleApplication(
             runtime.session_factory
         ).establish_schedule(
