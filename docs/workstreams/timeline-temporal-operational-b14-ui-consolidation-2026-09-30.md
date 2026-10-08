@@ -298,3 +298,23 @@ Activity interval add/remove, existing planned Session title edits, recurring
 edit scope, robust duplication of unsupported temporal/recurring forms,
 and integrated real-stack acceptance. Do not represent these as implemented.
 No CI/GitHub Actions were run.
+
+## 2026-10-08 — Local gate blocker: B14 role capacity migration `_121`
+
+User-run gate on the Inspector continuation: web typecheck succeeded, focused
+Vitest 14/14 succeeded. All seven focused PostgreSQL tests stopped during
+Alembic fixture setup, before functional assertions: `_121` attempted to
+drop a non-existent, doubly convention-expanded CHECK identifier
+(`ck_activity_schedule_role_ck_activity_schedule_role_ck__b98d`).
+
+The physical CHECK installed by `_106` and listed in the Dictionary is
+`ck_activity_schedule_role_ck_activity_schedule_role_order`. Because the
+canonical naming convention itself prefixes `ck_<table>_`, the already
+expanded name must be wrapped in Alembic `op.f(...)` on both drop/create.
+This is an exceptional in-place correction to a candidate migration that
+failed before application; a later migration could not repair an earlier
+migration that never completes. It does **not** change the accepted rule,
+drop user data or rewrite any applied placement history.
+
+Post-fix PostgreSQL test results remain pending. Do not claim functional
+backend proof from the seven setup errors; rerun the focused gate first.
