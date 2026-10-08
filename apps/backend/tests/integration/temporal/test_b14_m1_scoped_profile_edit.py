@@ -4,18 +4,26 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, time, timedelta
+from types import SimpleNamespace
 from typing import Any
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
 import pytest
+from fastapi import Response
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 from tests.integration.temporal.test_b05_primary_life_area_assignment import _seed_self
+from tests.integration.temporal.test_b02_schedule_place import _context
 
 from dante.modules.temporal.event import TemporalEventApplication
 from dante.modules.temporal.life_area import LifeAreaApplication
 from dante.modules.temporal.occurrence import OccurrenceApplication
+from dante.modules.temporal.occurrence_api import (
+    ScopedProfileEditCommand,
+    accept_occurrence_profile_edit,
+    get_occurrence_profile_edit_state,
+)
 from dante.modules.temporal.recurrence import CalendarRecurrence, RecurrenceApplication
 from dante.modules.temporal.routine import RoutineApplication
 from dante.platform.database.runtime import create_database_runtime
@@ -217,11 +225,28 @@ async def test_event_parity_and_protected_future_override(
         )
         selected = rows.occurrences[0].occurrence_ref
         future = rows.occurrences[-1].occurrence_ref
-        one = await _edit(
-            runtime, alice, future, state.recurrence.material_state_ref,
-            "only_this", {"title": "Evento personale"}, "m1c:event-one",
+        req = SimpleNamespace(
+            app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))
         )
-        assert list(one["target_occurrence_refs"]) == [future]
+        ctx = _context(alice)
+        initial = await get_occurrence_profile_edit_state(
+            future, ctx, req, Response()
+        )
+        assert initial.edit_revision == 0
+        assert initial.source_native_ref == event.event_ref
+        assert initial.recurrence_state_ref == state.recurrence.material_state_ref
+        one = await accept_occurrence_profile_edit(
+            future,
+            ScopedProfileEditCommand(
+                operation_id="m1c:event-one",
+                expected_revision=initial.edit_revision,
+                expected_recurrence_state_ref=initial.recurrence_state_ref,
+                scope_code="only_this",
+                profile_patch={"title": "Evento personale"},
+            ),
+            ctx, req, Response(),
+        )
+        assert list(one.target_occurrence_refs) == [future]
         assert await _patch(runtime, alice, future) == {"title": "Evento personale"}
         assert await _patch(runtime, alice, selected) == {}
         with pytest.raises(DBAPIError):
