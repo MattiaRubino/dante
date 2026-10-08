@@ -16,7 +16,11 @@ import {
   type ActivityEditSettings,
   type ActivityLifeAreaChoice,
 } from '../../../temporal/remote-activity-edit-settings';
-import type { RealityMode } from '../../../temporal/remote-reality-objective-data-source';
+import type {
+  ObjectiveComparator,
+  ObjectiveKind,
+  RealityMode,
+} from '../../../temporal/remote-reality-objective-data-source';
 import type { SessionCaptureMode } from '../../../temporal/remote-session-capability-data-source';
 
 export function ActivityEditPanel({
@@ -52,6 +56,14 @@ export function ActivityEditPanel({
   const [removedPlanned, setRemovedPlanned] = useState<string[]>([]);
   const [newIntervals, setNewIntervals] = useState<ActivityNewInterval[]>([]);
   const [removedIntervals, setRemovedIntervals] = useState<string[]>([]);
+  const [objectiveDraft, setObjectiveDraft] = useState({
+    label: '', resultKind: 'boolean' as ObjectiveKind,
+    comparatorCode: null as ObjectiveComparator | null,
+    targetValue: '', targetMin: '', targetMax: '', unitCode: '',
+  });
+  const [objectivePending, setObjectivePending] = useState(false);
+  const [objectiveError, setObjectiveError] = useState('');
+  const objectiveOperation = useRef<string | null>(null);
   const [planPreview, setPlanPreview] = useState<readonly ActivityReplanChange[] | null>(null);
   const [planOperation, setPlanOperation] = useState<string | null>(null);
   const [planPending, setPlanPending] = useState(false);
@@ -100,7 +112,10 @@ export function ActivityEditPanel({
     placementProtected !== null && placementProtected !== settings.placementProtected;
   const areaDirty = areaChoice !== null && !!selectedArea &&
     selectedArea !== areaChoice.currentRef;
-  const dirty = coreDirty || planDirty || lockDirty || areaDirty;
+  const objectiveDirty = !!objectiveDraft.label || objectiveDraft.resultKind !== 'boolean' ||
+    !!objectiveDraft.targetValue || !!objectiveDraft.targetMin ||
+    !!objectiveDraft.targetMax || !!objectiveDraft.unitCode;
+  const dirty = coreDirty || planDirty || lockDirty || areaDirty || objectiveDirty;
 
   const loadSettings = useCallback(() => {
     return settingsSource
@@ -149,7 +164,7 @@ export function ActivityEditPanel({
   }, [profile.activityRef, settingsSource]);
 
   const requestClose = useCallback(() => {
-    if (pending || planPending || lockPending || areaPending) return;
+    if (pending || planPending || lockPending || areaPending || objectivePending) return;
     if (confirmingDiscard) {
       setConfirmingDiscard(false);
     } else if (dirty) {
@@ -157,7 +172,8 @@ export function ActivityEditPanel({
     } else {
       onCancel();
     }
-  }, [areaPending, confirmingDiscard, dirty, lockPending, onCancel, pending, planPending]);
+  }, [areaPending, confirmingDiscard, dirty, lockPending, onCancel,
+    objectivePending, pending, planPending]);
 
   const applyLifeArea = () => {
     if (!areaChoice || !areaDirty || !settings || pending || planPending ||
@@ -178,6 +194,52 @@ export function ActivityEditPanel({
     }).catch((reason: unknown) => {
       setAreaError(reason instanceof Error ? reason.message : 'Cambio Life Area non riuscito.');
     }).finally(() => setAreaPending(false));
+  };
+
+  const updateObjectiveDraft = (patch: Partial<typeof objectiveDraft>) => {
+    setObjectiveDraft((current) => ({ ...current, ...patch }));
+    objectiveOperation.current = null;
+    setObjectiveError('');
+  };
+
+  const addObjective = () => {
+    if (!settings || objectivePending || pending || planPending || lockPending || areaPending ||
+        !objectiveDraft.label.trim()) return;
+    const kind = objectiveDraft.resultKind;
+    const numeric = (value: string) => value.trim() && Number.isFinite(Number(value))
+      ? Number(value) : null;
+    const target = numeric(objectiveDraft.targetValue);
+    const min = numeric(objectiveDraft.targetMin);
+    const max = numeric(objectiveDraft.targetMax);
+    if ((kind === 'quantity' && (target === null || !objectiveDraft.comparatorCode)) ||
+        (kind === 'range' && (min === null || max === null || min > max))) {
+      setObjectiveError('Controlla i valori numerici dell’obiettivo.');
+      return;
+    }
+    const operationId = objectiveOperation.current ??= crypto.randomUUID();
+    setObjectivePending(true);
+    setObjectiveError('');
+    void settingsSource.addObjective(profile.activityRef, settings, {
+      label: objectiveDraft.label.trim(),
+      resultKind: kind,
+      comparatorCode: kind === 'quantity'
+        ? objectiveDraft.comparatorCode : kind === 'range' ? 'between' : null,
+      targetValue: kind === 'quantity' ? target : null,
+      targetMin: kind === 'range' ? min : null,
+      targetMax: kind === 'range' ? max : null,
+      unitCode: kind === 'quantity' || kind === 'range'
+        ? objectiveDraft.unitCode.trim() || null : null,
+    }, operationId).then((saved) => {
+      setSettings(saved);
+      setObjectiveDraft({
+        label: '', resultKind: 'boolean', comparatorCode: null,
+        targetValue: '', targetMin: '', targetMax: '', unitCode: '',
+      });
+      objectiveOperation.current = null;
+    }).catch((reason: unknown) => {
+      setObjectiveError(reason instanceof Error
+        ? reason.message : 'Impossibile aggiungere l’obiettivo.');
+    }).finally(() => setObjectivePending(false));
   };
 
   const applyPlacementLock = () => {
@@ -737,19 +799,97 @@ export function ActivityEditPanel({
                 </div>
               ) : null}
             </section>
-            {settings.objectives.length ? (
-              <section
-                className="timeline-activity-editor__readback"
-                aria-label="Obiettivi attuali"
-              >
-                <h3>Obiettivi attuali</h3>
+            <section
+              className="timeline-activity-editor__readback"
+              aria-label="Obiettivi attuali"
+            >
+              <h3>Obiettivi attuali</h3>
+              {settings.objectives.length ? (
                 <ul>
                   {settings.objectives.map((objective) => (
-                    <li key={objective.objectiveRef}>{objective.label}</li>
+                    <li key={objective.objectiveRef}>
+                      {objective.label}
+                      {objective.assessmentCode ? ` · ${objective.assessmentCode}` : ''}
+                    </li>
                   ))}
                 </ul>
-              </section>
-            ) : null}
+              ) : <p>Nessun obiettivo configurato.</p>}
+              <fieldset disabled={objectivePending}>
+                <legend>Nuovo obiettivo</legend>
+                <label>Nome obiettivo
+                  <input maxLength={300} value={objectiveDraft.label}
+                    onChange={(event) => updateObjectiveDraft({ label: event.target.value })} />
+                </label>
+                <label>Tipo obiettivo
+                  <select value={objectiveDraft.resultKind} onChange={(event) => {
+                    const kind = event.target.value as ObjectiveKind;
+                    updateObjectiveDraft({
+                      resultKind: kind,
+                      comparatorCode: kind === 'quantity' ? 'gte' :
+                        kind === 'range' ? 'between' : null,
+                      targetValue: '', targetMin: '', targetMax: '', unitCode: '',
+                    });
+                  }}>
+                    <option value="boolean">Sì / No</option>
+                    <option value="quantity">Quantità</option>
+                    <option value="qualitative">Qualitativo</option>
+                    <option value="range">Intervallo numerico</option>
+                  </select>
+                </label>
+                {objectiveDraft.resultKind === 'quantity' ? (
+                  <div className="timeline-activity-editor__fields">
+                    <label>Confronto obiettivo
+                      <select value={objectiveDraft.comparatorCode ?? 'gte'}
+                        onChange={(event) => updateObjectiveDraft({
+                          comparatorCode: event.target.value as ObjectiveComparator,
+                        })}>
+                        <option value="eq">Uguale a</option>
+                        <option value="gte">Almeno</option>
+                        <option value="lte">Al massimo</option>
+                      </select>
+                    </label>
+                    <label>Valore obiettivo
+                      <input type="number" required step="any"
+                        value={objectiveDraft.targetValue}
+                        onChange={(event) => updateObjectiveDraft({
+                          targetValue: event.target.value,
+                        })} />
+                    </label>
+                  </div>
+                ) : null}
+                {objectiveDraft.resultKind === 'range' ? (
+                  <div className="timeline-activity-editor__fields">
+                    <label>Minimo obiettivo
+                      <input type="number" required step="any" value={objectiveDraft.targetMin}
+                        onChange={(event) => updateObjectiveDraft({
+                          targetMin: event.target.value,
+                        })} />
+                    </label>
+                    <label>Massimo obiettivo
+                      <input type="number" required step="any" value={objectiveDraft.targetMax}
+                        onChange={(event) => updateObjectiveDraft({
+                          targetMax: event.target.value,
+                        })} />
+                    </label>
+                  </div>
+                ) : null}
+                {['quantity', 'range'].includes(objectiveDraft.resultKind) ? (
+                  <label>Unità di misura
+                    <input maxLength={40} value={objectiveDraft.unitCode}
+                      onChange={(event) => updateObjectiveDraft({
+                        unitCode: event.target.value,
+                      })} />
+                  </label>
+                ) : null}
+                {objectiveError ? <p role="alert">{objectiveError}</p> : null}
+                <button type="button" onClick={addObjective}
+                  disabled={objectivePending || pending || planPending ||
+                    lockPending || areaPending || !objectiveDraft.label.trim()}>
+                  {objectivePending ? 'Aggiunta…' : 'Aggiungi obiettivo'}
+                </button>
+              </fieldset>
+              <p>Le definizioni esistenti e le valutazioni storiche restano in sola lettura.</p>
+            </section>
           </>
         ) : null}
       </div>
@@ -757,13 +897,15 @@ export function ActivityEditPanel({
         className="timeline-activity-editor__actions"
         inert={confirmingDiscard || undefined}
       >
-        <button type="button" disabled={pending || planPending || lockPending || areaPending} onClick={requestClose}>
+        <button type="button" disabled={pending || planPending || lockPending ||
+          areaPending || objectivePending} onClick={requestClose}>
           Annulla
         </button>
         <button
           type="submit"
           disabled={
-            pending || planPending || lockPending || areaPending || areaDirty || lockDirty || planDirty ||
+            pending || planPending || lockPending || areaPending || objectivePending ||
+            areaDirty || lockDirty || planDirty || objectiveDirty ||
             !settings ||
             loadingSettings ||
             !!settingsError ||
