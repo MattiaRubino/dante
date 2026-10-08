@@ -25,6 +25,18 @@ const loadLifeAreaChoice = vi.fn();
 const assignLifeArea = vi.fn();
 const setPlacementProtected = vi.fn();
 const addObjective = vi.fn();
+const refreshObjectives = vi.fn();
+const getDefinition = vi.fn();
+const reviseDefinition = vi.fn();
+const correctResult = vi.fn();
+
+vi.mock('../../../temporal/remote-reality-objective-data-source', () => ({
+  createRemoteRealityObjectiveDataSource: () => ({
+    getDefinition,
+    reviseDefinition,
+    correctResult,
+  }),
+}));
 const loadRecurringContext = vi.fn().mockResolvedValue(null);
 const saveRecurringProfile = vi.fn();
 vi.mock('../../../temporal/remote-recurring-profile-edit', () => ({
@@ -46,6 +58,7 @@ vi.mock('../../../temporal/remote-activity-edit-settings', () => ({
     assignLifeArea,
     setPlacementProtected,
     addObjective,
+    refreshObjectives,
   }),
 }));
 
@@ -121,6 +134,88 @@ describe('Recurring Activity profile scope', () => {
     await waitFor(() => expect(onSaved).toHaveBeenCalledWith(
       expect.objectContaining({ title: 'Dopo' }),
     ));
+  });
+});
+
+describe('Objective correction in Activity Editor', () => {
+  const objective = {
+    objectiveRef: '0199a567-8888-7888-8888-012345678901',
+    label: 'Corsa 10 km',
+    resultKind: 'quantity',
+    comparatorCode: 'gte',
+    targetValue: 10,
+    targetMin: null,
+    targetMax: null,
+    unitCode: 'km',
+    presentationOrder: 0,
+    observationRef: '0199a567-8888-7888-8888-012345678902',
+    observedBoolean: null,
+    observedNumeric: 8,
+    qualitativeCode: null,
+    evaluationStateRef: '0199a567-8888-7888-8888-012345678903',
+    assessmentCode: 'not_satisfied',
+  } as const;
+
+  it('modifies the existing logical Objective instead of adding a duplicate', async () => {
+    loadSettings.mockResolvedValueOnce({
+      ...currentSettings, objectives: [objective],
+    });
+    getDefinition.mockResolvedValueOnce({
+      ...objective, definitionRevision: 0,
+    });
+    reviseDefinition.mockResolvedValueOnce(undefined);
+    refreshObjectives.mockResolvedValueOnce({
+      ...currentSettings, objectives: [{ ...objective, label: 'Corsa 7 km', targetValue: 7 }],
+    });
+    render(
+      <ActivityEditPanel profile={profile} closeRequestRef={createRef()}
+        onSaved={() => undefined} onCancel={() => undefined} />,
+    );
+    fireEvent.click(await screen.findByRole('button', { name: 'Modifica obiettivo' }));
+    fireEvent.change(await screen.findByRole('textbox', { name: 'Nome obiettivo' }), {
+      target: { value: 'Corsa 7 km' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Salva obiettivo' }));
+    await waitFor(() => expect(reviseDefinition).toHaveBeenCalledWith(
+      objective.objectiveRef, expect.objectContaining({
+        operationId: expect.any(String), expectedRevision: 0,
+        label: 'Corsa 7 km', targetValue: 10, presentationOrder: 0,
+      }),
+    ));
+    expect(addObjective).not.toHaveBeenCalled();
+    await waitFor(() => expect(screen.getByText(/Corsa 7 km/)).toBeTruthy());
+  });
+
+  it('corrects a measured result while keeping the same Objective identity', async () => {
+    loadSettings.mockResolvedValueOnce({
+      ...currentSettings, objectives: [objective],
+    });
+    correctResult.mockResolvedValueOnce(undefined);
+    refreshObjectives.mockResolvedValueOnce({
+      ...currentSettings, objectives: [{
+        ...objective, observedNumeric: 6, assessmentCode: 'not_satisfied',
+      }],
+    });
+    render(
+      <ActivityEditPanel profile={profile} closeRequestRef={createRef()}
+        onSaved={() => undefined} onCancel={() => undefined} />,
+    );
+    fireEvent.click(await screen.findByRole('button', { name: 'Correggi risultato' }));
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Risultato corretto' }), {
+      target: { value: '6' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Salva rettifica' }));
+    await waitFor(() => expect(correctResult).toHaveBeenCalledWith(
+      objective.objectiveRef, {
+        operationId: expect.any(String),
+        expectedEvaluationStateRef: objective.evaluationStateRef,
+        observedBoolean: null,
+        observedNumeric: 6,
+        qualitativeCode: null,
+        assessmentCode: null,
+      },
+    ));
+    expect(reviseDefinition).not.toHaveBeenCalled();
   });
 });
 
