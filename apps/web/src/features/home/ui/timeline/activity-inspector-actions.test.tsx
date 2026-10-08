@@ -108,9 +108,7 @@ describe('Recurring Activity profile scope', () => {
     fireEvent.click(screen.getByLabelText('Questa e le prossime'));
     fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
     await waitFor(() => expect(saveRecurringProfile).toHaveBeenCalledWith(
-      ref, context, 'this_and_following', {
-        title: 'Dopo', description: 'Nota', location: 'Casa', colorCode: '#EA5C12',
-      }, expect.any(String),
+      ref, context, 'this_and_following', { title: 'Dopo' }, expect.any(String),
     ));
     expect(saveCore).not.toHaveBeenCalled();
     await waitFor(() => expect(onSaved).toHaveBeenCalledWith(
