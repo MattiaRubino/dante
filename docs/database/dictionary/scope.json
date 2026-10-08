@@ -68,13 +68,14 @@
       "B14-M1-SCOPED-PROFILE-EDIT",
       "B14-M1-ACTIVITY-PROFILE-READ-GUARD",
       "B14-M2-OBJECTIVE-CORRECTION",
-      "B14-M2-OBJECTIVE-SERIES"
+      "B14-M2-OBJECTIVE-SERIES",
+      "B14-M3-RESIDUAL-EDITOR"
     ],
     "standalone_entries": {
       "tables": 234,
       "views": 5,
-      "routines": 207,
-      "total": 446
+      "routines": 208,
+      "total": 447
     },
     "embedded_objects": {
       "triggers": 103,
