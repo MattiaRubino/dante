@@ -9,20 +9,20 @@ from typing import Any
 import pytest
 from fastapi import Response
 from sqlalchemy import text
+from tests.integration.temporal.test_b14_u2_authoring import _seed_self
 
 from dante.modules.temporal.activity_edit_snapshot_api import (
+    _SNAPSHOT,
     ActivityCoreEditCommand,
     ActivityEditSnapshot,
     EditPolicyChange,
     EditProfileChange,
-    _SNAPSHOT,
     revise_activity_core,
 )
 from dante.modules.temporal.authoring import TemporalAuthoringApplication
 from dante.modules.temporal.schedule import FloatingLocalIntervalPlacement
 from dante.platform.database.runtime import create_database_runtime
 from dante.platform.http.problem import ProblemError
-from tests.integration.temporal.test_b14_u2_authoring import _seed_self
 
 pytestmark = pytest.mark.postgres
 
@@ -35,13 +35,14 @@ async def test_activity_edit_snapshot_is_scoped_and_contains_current_settings(
     other = _seed_self(migrated_database)
     runtime = create_database_runtime(migrated_database.runtime_settings())
     try:
+        # Floating-local Schedule values intentionally have no timezone offset.
         window = FloatingLocalIntervalPlacement(
-            starts_local_at=datetime(2026, 10, 9, 9),
-            ends_local_at=datetime(2026, 10, 9, 12),
+            starts_local_at=datetime(2026, 10, 9, 9),  # noqa: DTZ001
+            ends_local_at=datetime(2026, 10, 9, 12),  # noqa: DTZ001
         )
         planned = FloatingLocalIntervalPlacement(
-            starts_local_at=datetime(2026, 10, 9, 10),
-            ends_local_at=datetime(2026, 10, 9, 11),
+            starts_local_at=datetime(2026, 10, 9, 10),  # noqa: DTZ001
+            ends_local_at=datetime(2026, 10, 9, 11),  # noqa: DTZ001
         )
         created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
             self_person_ref=actor,

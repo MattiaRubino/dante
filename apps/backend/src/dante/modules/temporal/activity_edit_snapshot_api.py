@@ -288,8 +288,9 @@ async def revise_activity_core(
                 status=404, code="temporal.activity_edit.not_found", category="not_found",
                 title="Activity unavailable", detail="Activity unavailable in self scope.",
             ) from exc
-        if constraint and (constraint.endswith("_stale") or constraint.endswith("_current_conflict")
-                           or constraint.endswith("_operation_reused")):
+        if constraint and constraint.endswith((
+            "_stale", "_current_conflict", "_operation_reused",
+        )):
             raise ProblemError(
                 status=409, code="temporal.activity_edit.conflict", category="conflict",
                 title="Activity changed", detail="Reload the Activity and retry.",
