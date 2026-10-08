@@ -12,11 +12,13 @@ import {
 
 export function ActivityInspectorActions({
   activityRef,
+  subitemsCount = 0,
   onEdit,
   onDeleted,
   onDuplicate,
 }: Readonly<{
   activityRef: string;
+  subitemsCount?: number;
   onEdit: (profile: ActivityProfile) => void;
   onDeleted: () => void;
   onDuplicate: (seed: ActivityDuplicateSeed) => void;
@@ -88,6 +90,11 @@ export function ActivityInspectorActions({
           disabled={pending}
           onClick={() =>
             void action(async () => {
+              if (subitemsCount > 0) {
+                throw new Error(
+                  'Questa attività contiene sotto-attività: la duplicazione fedele della struttura non è ancora disponibile.',
+                );
+              }
               const [savedProfile, settings] = await Promise.all([
                 source.get(activityRef),
                 settingsSource.load(activityRef),
