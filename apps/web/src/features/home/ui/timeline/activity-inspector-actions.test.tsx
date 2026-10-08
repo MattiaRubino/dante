@@ -625,6 +625,21 @@ describe('Activity Inspector', () => {
       .toHaveProperty('disabled', false);
   });
 
+  it('does not turn a nonlocal temporal form into a local Schedule during edit', async () => {
+    loadSettings.mockResolvedValueOnce({ ...currentSettings, schedules: [{
+      scheduleRef: 'absolute-schedule', role: 'interval', name: null, order: 0,
+      placementStateRef: 'state-absolute', temporalForm: 'absolute_instant',
+      start: '2026-10-09T09:00:00Z', end: '2026-10-09T10:00:00Z',
+      zoneId: null,
+    }] });
+    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
+      onSaved={() => undefined} onCancel={() => undefined} />);
+    expect(await screen.findByText(/DANTE non le converte automaticamente/)).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Verifica spostamento' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Aggiungi sessione pianificata' })).toBeNull();
+    expect(applyReplan).not.toHaveBeenCalled();
+  });
+
   it('blocks rescheduling until a planned-name draft is saved or discarded', async () => {
     loadSettings.mockResolvedValueOnce({ ...currentSettings, schedules: [{
       scheduleRef: 'planned-replan', role: 'planned', name: 'Allenamento', order: 0,
