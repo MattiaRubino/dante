@@ -235,4 +235,58 @@ describe('Activity editor settings remote contract', () => {
     }]);
   });
 
+
+  it('authors an Objective through the canonical self-scoped endpoint', async () => {
+    const received: Record<string, unknown>[] = [];
+    const fetchFn = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const path = typeof input === 'string' ? input :
+        input instanceof URL ? input.href : input.url;
+      if (path.endsWith('/auth/session')) {
+        return Promise.resolve(response({ authenticated: true, csrf_token: 'token' }));
+      }
+      if (path.endsWith(`/activities/${ref}/objectives`) && init?.method === 'POST') {
+        expect(new Headers(init.headers).get('X-Dante-CSRF')).toBe('token');
+        received.push(JSON.parse(String(init.body)) as Record<string, unknown>);
+        return Promise.resolve(response({
+          objective_ref: 'created-objective', label: '10 km',
+          result_kind: 'quantity', comparator_code: 'gte',
+          target_value: 10, target_min: null, target_max: null,
+          unit_code: 'km', presentation_order: 3,
+          observation_ref: null, observed_boolean: null, observed_numeric: null,
+          qualitative_code: null, evaluation_state_ref: null,
+          assessment_code: null,
+        }));
+      }
+      throw new Error(`Unexpected path: ${path}`);
+    });
+    const source = createRemoteActivityEditSettings(fetchFn);
+    const settings = {
+      capture: { mode: 'disabled' as const, stateRef: null },
+      reality: { mode: 'manual' as const, stateRef: null },
+      schedules: [], objectives: [{
+        objectiveRef: 'previous', label: 'Prima', resultKind: 'boolean' as const,
+        comparatorCode: null, targetValue: null, targetMin: null, targetMax: null,
+        unitCode: null, presentationOrder: 2, observationRef: null,
+        observedBoolean: null, observedNumeric: null, qualitativeCode: null,
+        evaluationStateRef: null, assessmentCode: null,
+      }],
+      lifeAreaRef: null, placementProtected: false, placementLockRevision: null,
+      placementLockScheduleRef: null, reminderLeadMinutes: null,
+      reminderScheduleRef: null, reminderStateRef: null, childGuardMode: 'none' as const,
+    };
+    const saved = await source.addObjective(ref, settings, {
+      label: '10 km', resultKind: 'quantity', comparatorCode: 'gte',
+      targetValue: 10, targetMin: null, targetMax: null, unitCode: 'km',
+    }, 'add-objective-op');
+    expect(received).toEqual([{
+      operation_id: 'add-objective-op', label: '10 km',
+      result_kind: 'quantity', comparator_code: 'gte',
+      target_value: 10, target_min: null, target_max: null,
+      unit_code: 'km', presentation_order: 3,
+    }]);
+    expect(saved.objectives.map((row) => row.objectiveRef))
+      .toEqual(['previous', 'created-objective']);
+    expect(settings.objectives).toHaveLength(1);
+  });
+
 });
