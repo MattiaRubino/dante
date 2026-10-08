@@ -8,7 +8,12 @@ import { EventInspectorActions } from './event-inspector-actions';
 const loadEvent = vi.fn();
 const listExpectedParticipation = vi.fn();
 const listPersonReferents = vi.fn();
+const loadArea = vi.fn();
+const assignArea = vi.fn();
 
+vi.mock('../../../temporal/remote-event-life-area-settings', () => ({
+  createRemoteEventLifeAreaSettings: () => ({ load: loadArea, assign: assignArea }),
+}));
 vi.mock('../../../temporal/remote-event-agenda-data-source', () => ({
   createRemoteTemporalEventAgendaDataSource: () => ({ loadEvent }),
 }));
