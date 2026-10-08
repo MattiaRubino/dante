@@ -40,6 +40,12 @@ export type ActivityEditSettings = Readonly<{
   childGuardMode: 'none' | 'confirm' | 'block';
 }>;
 
+export type ActivityLifeAreaChoice = Readonly<{
+  options: readonly Readonly<{ ref: string; name: string }>[];
+  currentRef: string | null;
+  currentRevision: number;
+}>;
+
 export type ActivityReplanTime = Readonly<{ start: string; end: string }>;
 export type ActivityNewPlanned = Readonly<ActivityReplanTime & { clientRef: string; name: string }>;
 export type ActivityReplanDraft = Readonly<{
@@ -310,6 +316,84 @@ export function createRemoteActivityEditSettings(
       invalidateTemporalTimelineRead();
       invalidateTemporalPlanningRead();
       return saved;
+    },
+    async loadLifeAreaChoice(ref: string): Promise<ActivityLifeAreaChoice> {
+      const [rawAreas, rawAssignments] = await Promise.all([
+        read('/api/v1/temporal/life-areas'),
+        read('/api/v1/temporal/life-area-assignments'),
+      ]);
+      if (!Array.isArray(rawAreas) || !Array.isArray(rawAssignments)) {
+        throw new Error('Catalogo Life Area non valido.');
+      }
+      const options = rawAreas.map(object)
+        .filter((item) => item.archived === false)
+        .map((item) => {
+          if (typeof item.life_area_ref !== 'string' ||
+              typeof item.name !== 'string' || !item.name.trim()) {
+            throw new Error('Life Area non valida.');
+          }
+          return Object.freeze({ ref: item.life_area_ref, name: item.name });
+        });
+      const rows = rawAssignments.map(object).filter((item) =>
+        item.subject_kind === 'activity' && item.subject_native_ref === ref);
+      if (rows.length > 1) {
+        throw new Error('Assegnazioni Life Area incoerenti.');
+      }
+      const current = rows[0];
+      if (current && (typeof current.life_area_ref !== 'string' ||
+          typeof current.assignment_revision !== 'number' ||
+          !Number.isSafeInteger(current.assignment_revision) ||
+          current.assignment_revision < 1)) {
+        throw new Error('Revisione Life Area non valida.');
+      }
+      return Object.freeze({
+        options: Object.freeze(options),
+        currentRef: current ? String(current.life_area_ref) : null,
+        currentRevision: current ? Number(current.assignment_revision) : 0,
+      });
+    },
+    async assignLifeArea(
+      ref: string,
+      current: ActivityLifeAreaChoice,
+      nextRef: string,
+      operationId: string,
+    ): Promise<ActivityLifeAreaChoice> {
+      if (!current.options.some((area) => area.ref === nextRef)) {
+        throw new Error('Seleziona una Life Area valida.');
+      }
+      const response = await request(
+        `/api/v1/temporal/life-area-assignments/activities/${encodeURIComponent(ref)}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Dante-CSRF': await csrf(),
+          },
+          body: JSON.stringify({
+            operation_id: operationId,
+            life_area_ref: nextRef,
+            expected_assignment_revision: current.currentRevision,
+          }),
+        },
+      );
+      if (!response.ok) {
+        throw new Error(response.status === 409
+          ? 'La Life Area è cambiata. Ricarica l’attività e riprova.'
+          : 'Impossibile aggiornare la Life Area.');
+      }
+      const saved = object(await response.json());
+      if (saved.subject_kind !== 'activity' || saved.subject_native_ref !== ref ||
+          saved.life_area_ref !== nextRef ||
+          !Number.isSafeInteger(saved.assignment_revision) ||
+          Number(saved.assignment_revision) <= current.currentRevision) {
+        throw new Error('Assegnazione Life Area non valida.');
+      }
+      invalidateTemporalTimelineRead();
+      invalidateTemporalPlanningRead();
+      return Object.freeze({
+        ...current,
+        currentRef: nextRef,
+        currentRevision: Number(saved.assignment_revision),
+      });
     },
     async setPlacementProtected(
       ref: string,
