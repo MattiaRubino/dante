@@ -150,15 +150,14 @@ BEGIN
       CROSS JOIN LATERAL jsonb_each(edits.profile_patch) field
      WHERE edits.self_person_ref=actor
        AND edits.source_native_ref=bound_source
-       AND (
-           edits.selected_occurrence_ref=requested_occurrence
-           OR (
-               edits.scope_code='this_and_following'
-               AND dante.occurrence_edit_coordinate_instant(
+       AND CASE
+           WHEN edits.selected_occurrence_ref=requested_occurrence THEN TRUE
+           WHEN edits.scope_code='this_and_following' THEN
+               dante.occurrence_edit_coordinate_instant(
                    actor,requested_occurrence,edits.effective_zone_id
                ) > GREATEST(edits.anchor_at,edits.accepted_at)
-           )
-       );
+           ELSE FALSE
+       END;
     RETURN COALESCE(combined,'{}'::jsonb);
 END;
 $$;
