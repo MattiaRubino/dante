@@ -65,6 +65,10 @@ def _problem(exc: DBAPIError, *, noun: str) -> ProblemError:
         "reality_review_policy_current_conflict",
         "temporal_objective_operation_reused",
         "temporal_objective_result_operation_reused",
+        "temporal_objective_definition_operation_reused",
+        "temporal_objective_definition_stale",
+        "temporal_objective_definition_observation_incompatible",
+        "temporal_objective_result_stale",
     }:
         return ProblemError(
             status=409,
@@ -80,6 +84,7 @@ def _problem(exc: DBAPIError, *, noun: str) -> ProblemError:
         "temporal_objective_shape_invalid",
         "temporal_objective_result_invalid",
         "temporal_objective_result_shape_invalid",
+        "temporal_objective_definition_invalid",
     }:
         return ProblemError(
             status=422,
@@ -200,6 +205,40 @@ class ObjectiveResultCommand(BaseModel):
     observed_numeric: Decimal | None = None
     qualitative_code: str | None = Field(default=None, max_length=120)
     assessment_code: AssessmentCode | None = None
+
+
+class ObjectiveDefinitionStateResponse(BaseModel):
+    """Current user-visible definition of the SAME logical Objective."""
+
+    model_config = ConfigDict(extra="forbid")
+    objective_ref: UUID
+    definition_revision: int
+    label: str
+    result_kind: ObjectiveKind
+    comparator_code: ComparatorCode | None
+    target_value: Decimal | None
+    target_min: Decimal | None
+    target_max: Decimal | None
+    unit_code: str | None
+    presentation_order: int
+    evaluation_state_ref: UUID | None
+
+
+class ObjectiveDefinitionReviseCommand(ObjectiveCreateCommand):
+    expected_revision: int = Field(ge=0)
+
+
+class ObjectiveDefinitionReviseResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    objective_ref: UUID
+    definition_revision: int
+    evaluation_state_ref: UUID | None
+    assessment_code: AssessmentCode | None
+    replayed: bool
+
+
+class ObjectiveResultCorrectionCommand(ObjectiveResultCommand):
+    expected_evaluation_state_ref: UUID | None
 
 
 class ObjectiveResultResponse(BaseModel):
@@ -564,6 +603,146 @@ async def list_occurrence_objectives(
     subject_ref: UUID, context: Context, request: Request
 ) -> list[ObjectiveResponse]:
     return await _list_objectives("occurrence", subject_ref, context, request)
+
+
+@router.get(
+    "/objectives/{objective_ref}/definition",
+    response_model=ObjectiveDefinitionStateResponse,
+    operation_id="temporal_get_objective_definition",
+)
+async def get_objective_definition(
+    objective_ref: UUID, context: Context, request: Request, response: Response,
+) -> ObjectiveDefinitionStateResponse:
+    try:
+        async with request.app.state.database_runtime.session_factory() as session, session.begin():
+            row = (await session.execute(
+                text(
+                    "SELECT * FROM dante.get_self_temporal_objective_definition("
+                    ":actor,:objective)"
+                ),
+                {"actor": context.self_person_ref, "objective": objective_ref},
+            )).mappings().one_or_none()
+    except SQLAlchemyError as exc:
+        raise ProblemError(
+            status=503, code="temporal.objective.definition_read_unavailable",
+            category="service", title="Objective definition unavailable",
+            detail="Could not read the current Objective definition.", retryable=True,
+        ) from exc
+    if row is None:
+        raise ProblemError(
+            status=404, code="temporal.objective.unavailable", category="not_found",
+            title="Objective unavailable", detail="Objective not found in self scope.",
+        )
+    response.headers["Cache-Control"] = "no-store"
+    return ObjectiveDefinitionStateResponse(**dict(row))
+
+
+@router.put(
+    "/objectives/{objective_ref}/definition",
+    response_model=ObjectiveDefinitionReviseResponse,
+    operation_id="temporal_revise_objective_definition",
+)
+async def revise_objective_definition(
+    objective_ref: UUID,
+    payload: ObjectiveDefinitionReviseCommand,
+    context: MutatingContext,
+    request: Request,
+    response: Response,
+) -> ObjectiveDefinitionReviseResponse:
+    intent = {
+        "version": 1, "objective_ref": str(objective_ref),
+        **payload.model_dump(mode="json"),
+    }
+    try:
+        async with request.app.state.database_runtime.session_factory() as session, session.begin():
+            row = (await session.execute(
+                text(
+                    "SELECT * FROM dante.revise_self_temporal_objective_definition("
+                    ":actor,:operation,:fingerprint,:objective,:expected,"
+                    ":label,:kind,:comparator,:target,:minimum,:maximum,"
+                    ":unit,:ordering,:evaluation)"
+                ),
+                {
+                    "actor": context.self_person_ref,
+                    "operation": payload.operation_id,
+                    "fingerprint": _fingerprint(intent),
+                    "objective": objective_ref,
+                    "expected": payload.expected_revision,
+                    "label": payload.label,
+                    "kind": payload.result_kind,
+                    "comparator": payload.comparator_code,
+                    "target": payload.target_value,
+                    "minimum": payload.target_min,
+                    "maximum": payload.target_max,
+                    "unit": payload.unit_code,
+                    "ordering": payload.presentation_order,
+                    "evaluation": uuid7(),
+                },
+            )).mappings().one()
+    except DBAPIError as exc:
+        raise _problem(exc, noun="objective_definition") from exc
+    except SQLAlchemyError as exc:
+        raise ProblemError(
+            status=503, code="temporal.objective.definition_write_unavailable",
+            category="service", title="Objective definition unavailable",
+            detail="Definition could not be persisted.", retryable=True,
+        ) from exc
+    response.headers["Cache-Control"] = "no-store"
+    return ObjectiveDefinitionReviseResponse(**dict(row))
+
+
+@router.post(
+    "/objectives/{objective_ref}/correction",
+    response_model=ObjectiveResultResponse,
+    operation_id="temporal_correct_objective_result",
+)
+async def correct_objective_result(
+    objective_ref: UUID,
+    payload: ObjectiveResultCorrectionCommand,
+    context: MutatingContext,
+    request: Request,
+    response: Response,
+) -> ObjectiveResultResponse:
+    intent = {
+        "version": 1, "objective_ref": str(objective_ref),
+        "operation_id": payload.operation_id,
+        "observed_boolean": payload.observed_boolean,
+        "observed_numeric": payload.observed_numeric,
+        "qualitative_code": payload.qualitative_code,
+        "assessment_code": payload.assessment_code,
+    }
+    try:
+        async with request.app.state.database_runtime.session_factory() as session, session.begin():
+            row = (await session.execute(
+                text(
+                    "SELECT * FROM dante.correct_self_temporal_objective_result("
+                    ":actor,:operation,:fingerprint,:objective,:observation,:state,"
+                    ":boolean,:numeric,:qualitative,:assessment,:expected)"
+                ),
+                {
+                    "actor": context.self_person_ref,
+                    "operation": payload.operation_id,
+                    "fingerprint": _fingerprint(intent),
+                    "objective": objective_ref,
+                    "observation": uuid7(),
+                    "state": uuid7(),
+                    "boolean": payload.observed_boolean,
+                    "numeric": payload.observed_numeric,
+                    "qualitative": payload.qualitative_code,
+                    "assessment": payload.assessment_code,
+                    "expected": payload.expected_evaluation_state_ref,
+                },
+            )).mappings().one()
+    except DBAPIError as exc:
+        raise _problem(exc, noun="objective_result") from exc
+    except SQLAlchemyError as exc:
+        raise ProblemError(
+            status=503, code="temporal.objective.correction_unavailable",
+            category="service", title="Objective correction unavailable",
+            detail="Corrected result could not be persisted.", retryable=True,
+        ) from exc
+    response.headers["Cache-Control"] = "no-store"
+    return ObjectiveResultResponse(**dict(row))
 
 
 @router.post(
