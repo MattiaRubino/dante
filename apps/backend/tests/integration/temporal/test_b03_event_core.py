@@ -277,6 +277,9 @@ def test_create_event_is_canonical_idempotent_and_self_scoped(
         assert detail.headers["cache-control"] == "no-store"
         assert detail.json()["event_ref"] == str(event_ref)
         assert detail.json()["title"] == "Visita medica"
+        assert detail.json()["description"] is None
+        assert detail.json()["location"] is None
+        assert detail.json()["color_code"] is None
 
     rows = _event_rows(migrated_database)
     assert len(rows) == 1
