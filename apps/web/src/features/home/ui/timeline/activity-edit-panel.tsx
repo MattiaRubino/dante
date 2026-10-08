@@ -10,6 +10,7 @@ import type { ActivityProfile } from '../../../temporal/remote-activity-inspecto
 import {
   createRemoteActivityEditSettings,
   type ActivityReplanChange,
+  type ActivityNewInterval,
   type ActivityNewPlanned,
   type ActivityReplanTime,
   type ActivityEditSettings,
@@ -49,6 +50,8 @@ export function ActivityEditPanel({
   const [planDraft, setPlanDraft] = useState<Record<string, ActivityReplanTime>>({});
   const [newPlanned, setNewPlanned] = useState<ActivityNewPlanned[]>([]);
   const [removedPlanned, setRemovedPlanned] = useState<string[]>([]);
+  const [newIntervals, setNewIntervals] = useState<ActivityNewInterval[]>([]);
+  const [removedIntervals, setRemovedIntervals] = useState<string[]>([]);
   const [planPreview, setPlanPreview] = useState<readonly ActivityReplanChange[] | null>(null);
   const [planOperation, setPlanOperation] = useState<string | null>(null);
   const [planPending, setPlanPending] = useState(false);
@@ -80,11 +83,19 @@ export function ActivityEditPanel({
     editablePlan.every((schedule) =>
       ['floating_local', 'named_zone_local'].includes(schedule.temporalForm) &&
       !!schedule.start && !!schedule.end);
-  const planDirty = canReplan && (removedPlanned.length > 0 || newPlanned.length > 0 ||
-    editablePlan.some((schedule) => !removedPlanned.includes(schedule.scheduleRef) && (
-      planDraft[schedule.scheduleRef]?.start !== schedule.start ||
-      planDraft[schedule.scheduleRef]?.end !== schedule.end)));
-  const replanDraft = { times: planDraft, removedPlanned, newPlanned };
+  const planDirty = canReplan && (
+    removedIntervals.length > 0 || newIntervals.length > 0 ||
+    removedPlanned.length > 0 || newPlanned.length > 0 ||
+    editablePlan.some((schedule) =>
+      !removedPlanned.includes(schedule.scheduleRef) &&
+      !removedIntervals.includes(schedule.scheduleRef) && (
+        planDraft[schedule.scheduleRef]?.start !== schedule.start ||
+        planDraft[schedule.scheduleRef]?.end !== schedule.end
+      ))
+  );
+  const replanDraft = {
+    times: planDraft, removedIntervals, newIntervals, removedPlanned, newPlanned,
+  };
   const lockDirty = settings !== null && settings.placementLockScheduleRef !== null &&
     placementProtected !== null && placementProtected !== settings.placementProtected;
   const areaDirty = areaChoice !== null && !!selectedArea &&
@@ -106,6 +117,8 @@ export function ActivityEditPanel({
         ])));
         setNewPlanned([]);
         setRemovedPlanned([]);
+        setNewIntervals([]);
+        setRemovedIntervals([]);
       })
       .catch((reason: unknown) => {
         setSettingsError(
@@ -191,6 +204,16 @@ export function ActivityEditPanel({
     setPlanError('');
   };
 
+  const changeNewInterval = (
+    ref: string, field: keyof ActivityReplanTime, value: string,
+  ) => {
+    setNewIntervals((current) => current.map((item) =>
+      item.clientRef === ref ? { ...item, [field]: value } : item));
+    setPlanPreview(null);
+    setPlanOperation(null);
+    setPlanError('');
+  };
+
   const changeNewPlanned = (ref: string, field: 'start' | 'end' | 'name', value: string) => {
     setNewPlanned((current) => current.map((item) => item.clientRef === ref
       ? { ...item, [field]: value } : item));
@@ -227,6 +250,8 @@ export function ActivityEditPanel({
         ])));
         setNewPlanned([]);
         setRemovedPlanned([]);
+        setNewIntervals([]);
+        setRemovedIntervals([]);
         setPlanPreview(null);
         setPlanOperation(null);
         onSaved(profile);
@@ -544,7 +569,8 @@ export function ActivityEditPanel({
                       {schedule.start ? ` · ${schedule.start}` : ''}
                       {schedule.end ? ` – ${schedule.end}` : ''}
                       {canReplan && (schedule.role === 'interval' || schedule.role === 'planned') &&
-                        !removedPlanned.includes(schedule.scheduleRef) ? (
+                        !removedPlanned.includes(schedule.scheduleRef) &&
+                         !removedIntervals.includes(schedule.scheduleRef) ? (
                         <div className="timeline-activity-editor__fields">
                           <label>
                             Inizio
@@ -559,6 +585,20 @@ export function ActivityEditPanel({
                               onChange={(event) => changePlan(schedule.scheduleRef, 'end', event.target.value)} />
                           </label>
                         </div>
+                      ) : null}
+                      {canReplan && schedule.role === 'interval' ? (
+                        <button type="button" disabled={planPending} onClick={() => {
+                          setRemovedIntervals((current) =>
+                            current.includes(schedule.scheduleRef)
+                              ? current.filter((ref) => ref !== schedule.scheduleRef)
+                              : [...current, schedule.scheduleRef]);
+                          setPlanPreview(null);
+                          setPlanOperation(null);
+                          setPlanError('');
+                        }}>
+                          {removedIntervals.includes(schedule.scheduleRef)
+                            ? 'Mantieni intervallo' : 'Rimuovi intervallo'}
+                        </button>
                       ) : null}
                       {canReplan && schedule.role === 'planned' ? (
                         <button type="button" disabled={planPending} onClick={() => {
@@ -579,6 +619,40 @@ export function ActivityEditPanel({
               )}
               {canReplan ? (
                 <div>
+                  {newIntervals.map((item) => (
+                    <div key={item.clientRef} className="timeline-activity-editor__fields">
+                      <label>Inizio nuovo intervallo
+                        <input type="datetime-local" required disabled={planPending}
+                          value={item.start.slice(0, 16)}
+                          onChange={(event) => changeNewInterval(
+                            item.clientRef, 'start', event.target.value)} />
+                      </label>
+                      <label>Fine nuovo intervallo
+                        <input type="datetime-local" required disabled={planPending}
+                          value={item.end.slice(0, 16)}
+                          onChange={(event) => changeNewInterval(
+                            item.clientRef, 'end', event.target.value)} />
+                      </label>
+                      <button type="button" disabled={planPending} onClick={() => {
+                        setNewIntervals((current) =>
+                          current.filter((row) => row.clientRef !== item.clientRef));
+                        setPlanPreview(null);
+                        setPlanOperation(null);
+                        setPlanError('');
+                      }}>Rimuovi nuovo intervallo</button>
+                    </div>
+                  ))}
+                  <button type="button" disabled={planPending ||
+                    editablePlan.filter((row) => row.role === 'interval').length -
+                      removedIntervals.length + newIntervals.length >= 100}
+                    onClick={() => {
+                      setNewIntervals((current) => [...current, {
+                        clientRef: crypto.randomUUID(), start: '', end: '',
+                      }]);
+                      setPlanPreview(null);
+                      setPlanOperation(null);
+                      setPlanError('');
+                    }}>Aggiungi intervallo</button>
                   {newPlanned.map((item) => (
                     <div key={item.clientRef} className="timeline-activity-editor__fields">
                       <label>Nome sessione
@@ -628,6 +702,8 @@ export function ActivityEditPanel({
                     ])));
                     setNewPlanned([]);
                     setRemovedPlanned([]);
+                    setNewIntervals([]);
+                    setRemovedIntervals([]);
                     setPlanPreview(null);
                     setPlanOperation(null);
                   }}>Ripristina orari</button>
@@ -638,7 +714,9 @@ export function ActivityEditPanel({
                   <h4>Modifiche proposte</h4>
                   <ul>{planPreview.map((change) => (
                     <li key={change.scheduleRef ?? change.clientRef}>
-                      {change.role === 'planned_added' ? 'Nuova sessione' :
+                      {change.role === 'interval_added' ? 'Nuovo intervallo' :
+                        change.role === 'interval_removed' ? 'Intervallo rimosso' :
+                        change.role === 'planned_added' ? 'Nuova sessione' :
                         change.role === 'planned_removed' ? 'Sessione rimossa' :
                         change.role === 'planned' ? 'Sessione pianificata' :
                         change.role === 'envelope' ? 'Intervallo complessivo' : 'Intervallo'}:
