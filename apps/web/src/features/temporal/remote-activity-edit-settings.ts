@@ -396,7 +396,6 @@ export function createRemoteActivityEditSettings(
       });
     },
     async setPlacementProtected(
-      ref: string,
       settings: ActivityEditSettings,
       locked: boolean,
     ): Promise<ActivityEditSettings> {
