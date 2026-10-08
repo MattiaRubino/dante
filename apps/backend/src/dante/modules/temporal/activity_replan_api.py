@@ -140,12 +140,12 @@ def _validated_plan(snapshot: ActivityEditSnapshot, command: ActivityReplanComma
     if envelope is None or not intervals:
         raise _invalid("This Activity does not have editable timed intervals.")
     if (len(command.intervals) + len(command.remove_intervals) != len(intervals)
-            or not command.intervals and not command.new_intervals
+            or (not command.intervals and not command.new_intervals)
             or len(command.intervals) + len(command.new_intervals) > 100
             or len(command.planned_sessions) + len(command.remove_planned_sessions) != len(planned)
             or len(command.planned_sessions) + len(command.new_planned_sessions) > 100):
         raise _invalid(
-            "Every current row must be accounted for: 1–100 Activity intervals "
+            "Every current row must be accounted for: 1-100 Activity intervals "
             "and at most 100 planned Sessions."
         )
     current = {row.schedule_ref: row for row in (*intervals, *planned)}
@@ -188,7 +188,10 @@ def _validated_plan(snapshot: ActivityEditSnapshot, command: ActivityReplanComma
     )
     changes: list[ReplanChange] = []
     placements = []
-    for row in (envelope, *intervals, *(row for row in planned if row.schedule_ref in by_ref)):
+    # Removed rows are handled by the unschedule path, never by placement revision.
+    # Only retained rows can be looked up in by_ref.
+    for row in (envelope, *(row for row in (*intervals, *planned)
+                             if row.schedule_ref in by_ref)):
         next_row = envelope_new if row.role_code == "envelope" else by_ref[row.schedule_ref]
         if row.starts_local_at == next_row.starts_local_at and row.ends_local_at == next_row.ends_local_at:
             continue
