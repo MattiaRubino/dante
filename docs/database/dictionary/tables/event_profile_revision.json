@@ -158,7 +158,7 @@
         ],
         "target": {
           "schema": "dante",
-          "table": "event_intention",
+          "table": "event_expectation",
           "columns": [
             "event_ref"
           ]
