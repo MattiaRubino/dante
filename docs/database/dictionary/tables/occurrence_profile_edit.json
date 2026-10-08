@@ -1,0 +1,417 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "table:dante.occurrence_profile_edit",
+    "type": "table",
+    "schema": "dante",
+    "name": "occurrence_profile_edit",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Append-only user-accepted scoped recurring metadata corrections. Every operation includes the selected Occurrence; only later, not-yet-occurred instances of that source inherit a following-scope policy.",
+  "classification": {
+    "persistence_role": "occurrence_scoped_profile_edit_history",
+    "canonicality": "canonical",
+    "family": "temporal_operational"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/workstreams/timeline-temporal-operational-b14-ui-consolidation-2026-09-30.md"
+    ],
+    "domain_concepts": [
+      "Recurrence",
+      "Occurrence",
+      "Activity",
+      "Event"
+    ],
+    "logical_families": [
+      "Recurrence",
+      "Occurrence",
+      "Activity",
+      "Event"
+    ],
+    "reference_families": [
+      "NativeRef",
+      "MaterialStateRef"
+    ],
+    "material_facets": []
+  },
+  "implementation": {
+    "introducing_stage": "B14-M1-SCOPED-PROFILE-EDIT",
+    "alembic_revision": "20261008_123",
+    "sqlalchemy": {
+      "mode": "orm_row",
+      "module": "dante.platform.database.mappings.occurrence_profile_edit",
+      "symbol": "OccurrenceProfileEditRow"
+    },
+    "runtime_acl_stage": "B14-M1-SCOPED-PROFILE-EDIT"
+  },
+  "structure": {
+    "columns": [
+      {
+        "name": "self_person_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Authenticated self owner",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "operation_id",
+        "postgres_type": "text",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Actor-local immutable idempotent operation ID",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "source_native_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Routine or Event source for this recurrence",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "selected_occurrence_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Clicked canonical Occurrence, always included",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "revision",
+        "postgres_type": "bigint",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Accepted source-specific edit revision",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "expected_revision",
+        "postgres_type": "bigint",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "CAS revision supplied by author",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "expected_recurrence_state_ref",
+        "postgres_type": "uuid",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Expected immutable governing Recurrence state",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "scope_code",
+        "postgres_type": "text",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "only_this or this_and_following",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "effective_zone_id",
+        "postgres_type": "text",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Valid owner effective IANA zone at acceptance",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "anchor_at",
+        "postgres_type": "timestamp with time zone",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Resolved selected recurrence ordering instant",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "accepted_at",
+        "postgres_type": "timestamp with time zone",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Database acceptance instant excluding other past instances",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "profile_patch",
+        "postgres_type": "jsonb",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "User-accepted partial metadata correction",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "target_occurrence_refs",
+        "postgres_type": "uuid[]",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Exact already-materialized targets captured by this operation",
+        "semantic_type": null,
+        "value_contract": null
+      }
+    ],
+    "primary_key": {
+      "name": "pk_occurrence_profile_edit",
+      "columns": [
+        "self_person_ref",
+        "operation_id"
+      ],
+      "reason": "Actor-local immutable replay key",
+      "deferrable": false,
+      "initially": "NOT DEFERRABLE",
+      "enforced": true
+    },
+    "foreign_keys": [
+      {
+        "name": "fk_occurrence_profile_edit_person",
+        "columns": [
+          "self_person_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "person",
+          "columns": [
+            "person_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "NativeRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Immutable scoped write references governed self source or selected Occurrence"
+      },
+      {
+        "name": "fk_occurrence_profile_edit_source",
+        "columns": [
+          "source_native_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "native_address",
+          "columns": [
+            "native_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "NativeRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Immutable scoped write references governed self source or selected Occurrence"
+      },
+      {
+        "name": "fk_occurrence_profile_edit_occurrence",
+        "columns": [
+          "selected_occurrence_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "occurrence",
+          "columns": [
+            "occurrence_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "NativeRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Immutable scoped write references governed self source or selected Occurrence"
+      }
+    ],
+    "unique_constraints": [
+      {
+        "name": "uq_occurrence_profile_edit_source_revision",
+        "columns": [
+          "source_native_ref",
+          "revision"
+        ],
+        "reason": "Monotone source-wide revision for optimistic concurrency",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true
+      }
+    ],
+    "check_constraints": [
+      {
+        "name": "ck_occurrence_profile_edit_revision",
+        "expression_contract": "revision>=1 AND expected_revision>=0",
+        "reason": "Accepted revision is strictly positive",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_occurrence_profile_edit_operation",
+        "expression_contract": "operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200",
+        "reason": "Bounded canonical replay id",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_occurrence_profile_edit_scope",
+        "expression_contract": "scope_code IN ('only_this','this_and_following')",
+        "reason": "No unanchored future-only scope",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_occurrence_profile_edit_patch",
+        "expression_contract": "jsonb_typeof(profile_patch)='object' AND profile_patch<>'{}'::jsonb",
+        "reason": "A change must include at least one field",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "pk_occurrence_profile_edit",
+        "method": "btree",
+        "unique": true,
+        "keys": [
+          "self_person_ref",
+          "operation_id"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "primary_key",
+        "reason": "Stable replay identity",
+        "valid": true,
+        "ready": true,
+        "live": true
+      },
+      {
+        "name": "uq_occurrence_profile_edit_source_revision",
+        "method": "btree",
+        "unique": true,
+        "keys": [
+          "source_native_ref",
+          "revision"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "unique_constraint",
+        "reason": "Source-specific CAS ordering",
+        "valid": true,
+        "ready": true,
+        "live": true
+      }
+    ],
+    "triggers": [],
+    "table": {
+      "persistence": "permanent",
+      "access_method": "heap",
+      "partitioned": false,
+      "row_security": false,
+      "force_row_security": false,
+      "replica_identity": "default",
+      "reloptions": []
+    },
+    "view": null,
+    "routine": null
+  },
+  "state_history": {
+    "material_state_behavior": null,
+    "current_binding": "Current derived profile is the ordered merge of applicable accepted patches, not a destructive update to earlier Occurrences.",
+    "chronology": "accepted_at/anchor_at separate clicked correction from later future inheritance; previous accepted operations remain immutable.",
+    "immutability_policy": "Append-only operation ledger and immutable capture of actual materialized targets; no alteration of Actual, Observation or Evaluation."
+  },
+  "lifecycle": {
+    "retention": "Retain with Recurrence and associated Activity/Event history",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No runtime DELETE of accepted history"
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": []
+  },
+  "proof": {
+    "obligations": [
+      "Actor-scoped CAS/replay and operation-fingerprint conflict",
+      "Always include selected Occurrence",
+      "Never mutate any other already-past instance",
+      "Reject skipped/protected future overrides or recorded Actual",
+      "Routine/Event parity and current immutable Recurrence state",
+      "No table access for dante_runtime"
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b14_m1_scoped_profile_edit.py",
+      "apps/backend/tests/integration/database/test_current_catalog.py",
+      "apps/backend/tests/integration/database/test_database_current_catalog.py"
+    ],
+    "staged_evidence": []
+  }
+}
