@@ -201,6 +201,42 @@
         "meaning": "Canonical created_at field for the B14 Create-closure capability.",
         "semantic_type": null,
         "value_contract": "Validated by the created_at PostgreSQL contract."
+      },
+      {
+        "name": "retired_at",
+        "postgres_type": "timestamp with time zone",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Retired Objective is excluded from current listings while retaining historical identity.",
+        "semantic_type": null,
+        "value_contract": "Nullable accepted retirement marker, updated only by the owner-scoped retirement function."
+      },
+      {
+        "name": "retirement_operation_id",
+        "postgres_type": "text",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Accepted retirement operation ID for exact replay.",
+        "semantic_type": null,
+        "value_contract": "Nullable accepted retirement marker, updated only by the owner-scoped retirement function."
+      },
+      {
+        "name": "retirement_fingerprint",
+        "postgres_type": "text",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Immutable accepted retirement intent fingerprint.",
+        "semantic_type": null,
+        "value_contract": "Nullable accepted retirement marker, updated only by the owner-scoped retirement function."
       }
     ],
     "primary_key": {
@@ -348,14 +384,14 @@
   "state_history": {
     "material_state_behavior": null,
     "current_binding": null,
-    "chronology": null,
+    "chronology": "Objective rows and historical Observation/Evaluation remain in storage after retirement; active owner reads filter retired_at.",
     "immutability_policy": "Runtime mutation is capability-mediated; no broad direct DML is granted."
   },
   "lifecycle": {
     "retention": "Retain canonical Create-closure truth and operation history.",
     "redaction": null,
-    "retirement_tombstone": null,
-    "delete_behavior": "No direct runtime delete."
+    "retirement_tombstone": "retired_at",
+    "delete_behavior": "Owner-scoped logical retirement only; recorded Observation/Evaluation and generated recurring Objectives veto retirement."
   },
   "security": {
     "owner_role": "dante_owner",
