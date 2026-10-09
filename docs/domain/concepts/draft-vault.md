@@ -62,3 +62,5 @@ Advanced Save; durable reload; resume/edit; duplicate (source retained);
 explicit Add and consumption; deletion; legacy canonical records preserved;
 historical veto; no operational creation until confirmation; real-app
 screenshots. Unproven points remain open, never relabeled CLOSED.
+
+**Legacy access:** canonical unplaced/postponed records remain accessible through a distinct ‘Elementi già creati’ placement manager launched from the Bozze panel; its controls do not operate on inert drafts.
