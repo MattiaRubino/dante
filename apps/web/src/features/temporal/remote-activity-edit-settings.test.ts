@@ -224,7 +224,10 @@ describe('Activity editor settings remote contract', () => {
     const source = createRemoteActivityEditSettings(fetchFn);
     const choice = await source.loadLifeAreaChoice(ref);
     expect(choice.currentRef).toBe('area-2');
-    expect(choice.options).toEqual([{ ref: 'area-1', name: 'Lavoro' }]);
+    expect(choice.options).toEqual([{
+      ref: 'area-1', name: 'Lavoro', revision: 1,
+      iconCode: null, colorCode: null,
+    }]);
     const saved = await source.assignLifeArea(ref, choice, 'area-1', 'edit-area-op');
     expect(requests).toEqual([{
       operation_id: 'edit-area-op',
@@ -245,15 +248,50 @@ describe('Activity editor settings remote contract', () => {
         expect(JSON.parse(String(init.body))).toEqual({
           operation_id: 'new-area-op', name: 'Studio',
         });
-        return Promise.resolve(response({ life_area_ref: 'area-new', name: 'Studio' }));
+        return Promise.resolve(response({
+          life_area_ref: 'area-new', name: 'Studio',
+          revision: 1, icon_code: null, color_code: null,
+        }));
       }
       throw new Error(`Unexpected path: ${path}`);
     });
     const created = await createRemoteActivityEditSettings(fetchFn)
       .createLifeArea(' Studio ', 'new-area-op');
-    expect(created).toEqual({ ref: 'area-new', name: 'Studio' });
+    expect(created).toEqual({
+      ref: 'area-new', name: 'Studio', revision: 1,
+      iconCode: null, colorCode: null,
+    });
   });
 
+
+  it('persists the accepted Life Area color and keeps the area revision', async () => {
+    const fetchFn = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const path = typeof input === 'string' ? input :
+        input instanceof URL ? input.href : input.url;
+      if (path.endsWith('/auth/session'))
+        return Promise.resolve(response({ authenticated: true, csrf_token: 'token' }));
+      if (path.endsWith('/life-areas/area-new/appearance') && init?.method === 'PUT') {
+        expect(new Headers(init.headers).get('X-Dante-CSRF')).toBe('token');
+        expect(JSON.parse(String(init.body))).toEqual({
+          operation_id: 'area-color-op', expected_revision: 1,
+          icon_code: null, color_code: '#33B679',
+        });
+        return Promise.resolve(response({
+          life_area_ref: 'area-new', accepted_revision: 2, replayed: false,
+        }));
+      }
+      throw new Error(`Unexpected path: ${path}`);
+    });
+    const saved = await createRemoteActivityEditSettings(fetchFn).setLifeAreaAppearance(
+      { ref: 'area-new', name: 'Studio', revision: 1,
+        iconCode: null, colorCode: null },
+      '#33b679', 'area-color-op',
+    );
+    expect(saved).toEqual({
+      ref: 'area-new', name: 'Studio', revision: 2,
+      iconCode: null, colorCode: '#33B679',
+    });
+  });
 
   it('sends complete interval retain/remove/add intent to coordinated preview', async () => {
     const requests: Record<string, unknown>[] = [];
