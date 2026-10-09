@@ -31,10 +31,13 @@ async def test_planned_row_without_time_is_persisted_without_placement_and_repla
     actor = _seed_self(migrated_database)
     runtime = create_database_runtime(migrated_database.runtime_settings())
     authoring = TemporalAuthoringApplication(runtime.session_factory)
-    kwargs = dict(
-        self_person_ref=actor, operation_id="u2:unplaced-planned:one",
-        title="Ricerca", planned_slices=(None,), planned_slice_names=("Fonti",),
-    )
+    kwargs = {
+        "self_person_ref": actor,
+        "operation_id": "u2:unplaced-planned:one",
+        "title": "Ricerca",
+        "planned_slices": (None,),
+        "planned_slice_names": ("Fonti",),
+    }
     try:
         created = await authoring.create_activity(**kwargs)
         assert not created.replayed
@@ -50,7 +53,8 @@ async def test_planned_row_without_time_is_persisted_without_placement_and_repla
                     ON placement.scoped_owner_ref=role.schedule_ref
                  WHERE role.activity_ref=%s AND role.role_code='planned'
             """, (created.item.subject_native_ref,)).fetchone()
-        assert row is not None and row[1:] == ("Fonti", None)
+        assert row is not None
+        assert row[1:] == ("Fonti", None)
         async with runtime.session_factory() as session, session.begin():
             snapshot_row = (await session.execute(
                 _SNAPSHOT, {"actor": actor, "activity": created.item.subject_native_ref},
@@ -103,8 +107,8 @@ async def test_u2_unassigned_activity_metadata_multiday_schedule_and_replay(
     runtime = create_database_runtime(migrated_database.runtime_settings())
     authoring = TemporalAuthoringApplication(runtime.session_factory)
     placement = FloatingLocalIntervalPlacement(
-        starts_local_at=datetime(2026, 9, 30, 23, 30),
-        ends_local_at=datetime(2026, 10, 2, 1, 0),
+        starts_local_at=datetime(2026, 9, 30, 23, 30),  # noqa: DTZ001 - floating local time
+        ends_local_at=datetime(2026, 10, 2, 1, 0),  # noqa: DTZ001 - floating local time
     )
     try:
         created = await authoring.create_activity(
