@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from datetime import datetime
 from typing import Annotated, Any, Literal
 from uuid import UUID
@@ -32,8 +33,6 @@ class DraftVaultSaveRequest(BaseModel):
 
     @model_validator(mode="after")
     def validate_payload(self) -> DraftVaultSaveRequest:
-        import json
-
         if len(json.dumps(self.payload, ensure_ascii=False).encode("utf-8")) > 131072:
             raise ValueError("Draft payload exceeds 128 KiB.")
         if self.payload.get("version") != 1 or (
@@ -125,7 +124,7 @@ async def save_draft(
                 "ref": draft_ref, "operation": payload.operation_id,
                 "expected": payload.expected_revision,
                 "kind": payload.subject_kind, "title": payload.title,
-                "payload": __import__("json").dumps(payload.payload, ensure_ascii=False),
+                "payload": json.dumps(payload.payload, ensure_ascii=False),
             })).mappings().one()
         return _response(row)
     except SQLAlchemyError as exc:
