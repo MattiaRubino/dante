@@ -574,6 +574,10 @@ The user pulled `0754ba1e` in WSL and reran the exact focused Ruff selection; **
 
 The current candidate includes `_132` planned Session retirement distinct from removing its time, the first placement-lock CAS fix, Session control cache invalidation, new Life Area creation in Edit, Inspector title controls, and Activity Edit layout corrections. It requires a single user-local migration/backend/Web gate and real UI acceptance. The renewed Objective crash needs the actual `Show Error` trace; do not claim it resolved. M5 and B15 remain open; no CI.
 
+### 2026-10-09 — M5 generated contract and whole-block gate
+
+Source generation now covers `_129`–`_132` OpenAPI/Orval shapes, including `delete_planned_sessions`, and is deterministic in the coding workspace. The consolidated user-local gate is `bash tooling/verify-b14-m5-local.sh`; it includes focused PostgreSQL/catalog, Objective, Activity Edit and Web checks. No PostgreSQL or real-app PASS is claimed. The Objective white-page recurrence remains unconfirmed without the boundary detail. M5/B15 remain open.
+
 ### 2026-10-09 — Activity Edit planned time and Timeline runtime candidate
 
 The Activity Edit `Orario` switch now adds or withdraws a planned Session time through coordinated preview/apply. A new guarded `_131` placement capability preserves the Schedule identity when timing an unplaced planned row, including after a previous unschedule; the edit snapshot keeps untimed planned rows visible. New planned rows may be saved without a time. Core Edit requests have bounded database and web timeouts with an Italian retry error instead of an endless spinner. Timeline Activity cards show a combined Play/Pausa button and Stop. Workspace web typecheck and 40/40 focused Vitest tests pass; Python syntax and diff checks pass. PostgreSQL/Ruff and real-app acceptance await the user's local gate. No CI/Actions.

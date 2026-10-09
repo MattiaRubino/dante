@@ -6,6 +6,8 @@
  */
 import * as zod from 'zod/mini';
 
+export const activityReplanCommandDeletePlannedSessionsMax = 100;
+
 export const activityReplanCommandIntervalsMax = 100;
 
 export const activityReplanCommandNewIntervalsMax = 100;
@@ -16,6 +18,8 @@ export const activityReplanCommandNewPlannedSessionsMax = 100;
 
 export const activityReplanCommandOperationIdMax = 200;
 
+export const activityReplanCommandPlacePlannedSessionsMax = 100;
+
 export const activityReplanCommandPlannedSessionsMax = 100;
 
 export const activityReplanCommandRemoveIntervalsMax = 100;
@@ -23,6 +27,23 @@ export const activityReplanCommandRemoveIntervalsMax = 100;
 export const activityReplanCommandRemovePlannedSessionsMax = 100;
 
 export const ActivityReplanCommand = /*#__PURE__*/ zod.object({
+  delete_planned_sessions: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod
+      .array(
+        /*#__PURE__*/ zod.object({
+          expected_material_state_ref: /*#__PURE__*/ zod.union([
+            /*#__PURE__*/ zod.uuid(),
+            /*#__PURE__*/ zod.null(),
+          ]),
+          schedule_ref: /*#__PURE__*/ zod.uuid(),
+        }),
+      )
+      .check(
+        /*#__PURE__*/ zod.maxLength(
+          activityReplanCommandDeletePlannedSessionsMax,
+        ),
+      ),
+  ),
   envelope: /*#__PURE__*/ zod.optional(
     /*#__PURE__*/ zod.union([
       /*#__PURE__*/ zod.object({
@@ -62,7 +83,12 @@ export const ActivityReplanCommand = /*#__PURE__*/ zod.object({
       .array(
         /*#__PURE__*/ zod.object({
           client_ref: /*#__PURE__*/ zod.uuid(),
-          ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+          ends_local_at: /*#__PURE__*/ zod.optional(
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
           name: /*#__PURE__*/ zod.optional(
             /*#__PURE__*/ zod.union([
               /*#__PURE__*/ zod
@@ -76,7 +102,12 @@ export const ActivityReplanCommand = /*#__PURE__*/ zod.object({
               /*#__PURE__*/ zod.null(),
             ]),
           ),
-          starts_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+          starts_local_at: /*#__PURE__*/ zod.optional(
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
         }),
       )
       .check(
@@ -87,6 +118,21 @@ export const ActivityReplanCommand = /*#__PURE__*/ zod.object({
     .string()
     .check(/*#__PURE__*/ zod.minLength(1))
     .check(/*#__PURE__*/ zod.maxLength(activityReplanCommandOperationIdMax)),
+  place_planned_sessions: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod
+      .array(
+        /*#__PURE__*/ zod.object({
+          ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+          schedule_ref: /*#__PURE__*/ zod.uuid(),
+          starts_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+        }),
+      )
+      .check(
+        /*#__PURE__*/ zod.maxLength(
+          activityReplanCommandPlacePlannedSessionsMax,
+        ),
+      ),
+  ),
   planned_sessions: /*#__PURE__*/ zod.optional(
     /*#__PURE__*/ zod
       .array(

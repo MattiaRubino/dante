@@ -66,14 +66,14 @@ export const authorActivityRequestPlacementOneFourKindDefault = `absolute_interv
 export const authorActivityRequestPlacementOneFiveKindDefault = `coarse_local_period`;
 export const authorActivityRequestPlannedSliceNamesMax = 100;
 
-export const authorActivityRequestPlannedSlicesItemOneKindDefault = `date_span`;
-export const authorActivityRequestPlannedSlicesItemTwoKindDefault = `floating_local_interval`;
-export const authorActivityRequestPlannedSlicesItemThreeDisambiguationDefault = `reject`;
-export const authorActivityRequestPlannedSlicesItemThreeKindDefault = `named_zone_local_interval`;
-export const authorActivityRequestPlannedSlicesItemThreeZoneIdMax = 200;
+export const authorActivityRequestPlannedSlicesItemOneOneKindDefault = `date_span`;
+export const authorActivityRequestPlannedSlicesItemOneTwoKindDefault = `floating_local_interval`;
+export const authorActivityRequestPlannedSlicesItemOneThreeDisambiguationDefault = `reject`;
+export const authorActivityRequestPlannedSlicesItemOneThreeKindDefault = `named_zone_local_interval`;
+export const authorActivityRequestPlannedSlicesItemOneThreeZoneIdMax = 200;
 
-export const authorActivityRequestPlannedSlicesItemFourKindDefault = `absolute_interval`;
-export const authorActivityRequestPlannedSlicesItemFiveKindDefault = `coarse_local_period`;
+export const authorActivityRequestPlannedSlicesItemOneFourKindDefault = `absolute_interval`;
+export const authorActivityRequestPlannedSlicesItemOneFiveKindDefault = `coarse_local_period`;
 export const authorActivityRequestPlannedSlicesMax = 100;
 
 export const authorActivityRequestTitleMax = 300;
@@ -558,72 +558,79 @@ export const AuthorActivityRequest = /*#__PURE__*/ zod
       /*#__PURE__*/ zod
         .array(
           /*#__PURE__*/ zod.union([
-            /*#__PURE__*/ zod.object({
-              end_date_exclusive: /*#__PURE__*/ zod.iso.date(),
-              kind: /*#__PURE__*/ zod
-                ._default(
-                  /*#__PURE__*/ zod.literal('date_span'),
-                  authorActivityRequestPlannedSlicesItemOneKindDefault,
-                )
-                .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
-              start_date: /*#__PURE__*/ zod.iso.date(),
-            }),
-            /*#__PURE__*/ zod.object({
-              ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-              kind: /*#__PURE__*/ zod
-                ._default(
-                  /*#__PURE__*/ zod.literal('floating_local_interval'),
-                  authorActivityRequestPlannedSlicesItemTwoKindDefault,
-                )
-                .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
-              starts_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-            }),
-            /*#__PURE__*/ zod.object({
-              disambiguation: /*#__PURE__*/ zod._default(
-                /*#__PURE__*/ zod.enum(['reject', 'earlier', 'later']),
-                authorActivityRequestPlannedSlicesItemThreeDisambiguationDefault,
-              ),
-              ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-              kind: /*#__PURE__*/ zod
-                ._default(
-                  /*#__PURE__*/ zod.literal('named_zone_local_interval'),
-                  authorActivityRequestPlannedSlicesItemThreeKindDefault,
-                )
-                .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
-              starts_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-              zone_id: /*#__PURE__*/ zod
-                .string()
-                .check(/*#__PURE__*/ zod.minLength(1))
-                .check(
-                  /*#__PURE__*/ zod.maxLength(
-                    authorActivityRequestPlannedSlicesItemThreeZoneIdMax,
-                  ),
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod.object({
+                end_date_exclusive: /*#__PURE__*/ zod.iso.date(),
+                kind: /*#__PURE__*/ zod
+                  ._default(
+                    /*#__PURE__*/ zod.literal('date_span'),
+                    authorActivityRequestPlannedSlicesItemOneOneKindDefault,
+                  )
+                  .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+                start_date: /*#__PURE__*/ zod.iso.date(),
+              }),
+              /*#__PURE__*/ zod.object({
+                ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+                kind: /*#__PURE__*/ zod
+                  ._default(
+                    /*#__PURE__*/ zod.literal('floating_local_interval'),
+                    authorActivityRequestPlannedSlicesItemOneTwoKindDefault,
+                  )
+                  .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+                starts_local_at: /*#__PURE__*/ zod.iso.datetime({
+                  offset: true,
+                }),
+              }),
+              /*#__PURE__*/ zod.object({
+                disambiguation: /*#__PURE__*/ zod._default(
+                  /*#__PURE__*/ zod.enum(['reject', 'earlier', 'later']),
+                  authorActivityRequestPlannedSlicesItemOneThreeDisambiguationDefault,
                 ),
-            }),
-            /*#__PURE__*/ zod.object({
-              ends_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-              kind: /*#__PURE__*/ zod
-                ._default(
-                  /*#__PURE__*/ zod.literal('absolute_interval'),
-                  authorActivityRequestPlannedSlicesItemFourKindDefault,
-                )
-                .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
-              starts_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-            }),
-            /*#__PURE__*/ zod.object({
-              kind: /*#__PURE__*/ zod
-                ._default(
-                  /*#__PURE__*/ zod.literal('coarse_local_period'),
-                  authorActivityRequestPlannedSlicesItemFiveKindDefault,
-                )
-                .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
-              local_date: /*#__PURE__*/ zod.iso.date(),
-              period: /*#__PURE__*/ zod.enum([
-                'morning',
-                'afternoon',
-                'evening',
-              ]),
-            }),
+                ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+                kind: /*#__PURE__*/ zod
+                  ._default(
+                    /*#__PURE__*/ zod.literal('named_zone_local_interval'),
+                    authorActivityRequestPlannedSlicesItemOneThreeKindDefault,
+                  )
+                  .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+                starts_local_at: /*#__PURE__*/ zod.iso.datetime({
+                  offset: true,
+                }),
+                zone_id: /*#__PURE__*/ zod
+                  .string()
+                  .check(/*#__PURE__*/ zod.minLength(1))
+                  .check(
+                    /*#__PURE__*/ zod.maxLength(
+                      authorActivityRequestPlannedSlicesItemOneThreeZoneIdMax,
+                    ),
+                  ),
+              }),
+              /*#__PURE__*/ zod.object({
+                ends_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+                kind: /*#__PURE__*/ zod
+                  ._default(
+                    /*#__PURE__*/ zod.literal('absolute_interval'),
+                    authorActivityRequestPlannedSlicesItemOneFourKindDefault,
+                  )
+                  .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+                starts_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+              }),
+              /*#__PURE__*/ zod.object({
+                kind: /*#__PURE__*/ zod
+                  ._default(
+                    /*#__PURE__*/ zod.literal('coarse_local_period'),
+                    authorActivityRequestPlannedSlicesItemOneFiveKindDefault,
+                  )
+                  .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+                local_date: /*#__PURE__*/ zod.iso.date(),
+                period: /*#__PURE__*/ zod.enum([
+                  'morning',
+                  'afternoon',
+                  'evening',
+                ]),
+              }),
+            ]),
+            /*#__PURE__*/ zod.null(),
           ]),
         )
         .check(

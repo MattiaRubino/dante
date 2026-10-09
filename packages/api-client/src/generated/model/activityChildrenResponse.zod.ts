@@ -43,7 +43,10 @@ export const ActivityChildrenResponse = /*#__PURE__*/ zod.object({
               /*#__PURE__*/ zod.string(),
               /*#__PURE__*/ zod.null(),
             ]),
-            placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
+            placement_material_state_ref: /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod.uuid(),
+              /*#__PURE__*/ zod.null(),
+            ]),
             presentation_order: /*#__PURE__*/ zod.union([
               /*#__PURE__*/ zod.int(),
               /*#__PURE__*/ zod.null(),
@@ -73,12 +76,15 @@ export const ActivityChildrenResponse = /*#__PURE__*/ zod.object({
               /*#__PURE__*/ zod.iso.datetime({ offset: true }),
               /*#__PURE__*/ zod.null(),
             ]),
-            temporal_form: /*#__PURE__*/ zod.enum([
-              'date_span',
-              'floating_local',
-              'named_zone_local',
-              'absolute',
-              'coarse_local_period',
+            temporal_form: /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod.enum([
+                'date_span',
+                'floating_local',
+                'named_zone_local',
+                'absolute',
+                'coarse_local_period',
+              ]),
+              /*#__PURE__*/ zod.null(),
             ]),
             zone_id: /*#__PURE__*/ zod.union([
               /*#__PURE__*/ zod.string(),
@@ -128,7 +134,10 @@ export const ActivityChildrenResponse = /*#__PURE__*/ zod.object({
           /*#__PURE__*/ zod.string(),
           /*#__PURE__*/ zod.null(),
         ]),
-        placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
+        placement_material_state_ref: /*#__PURE__*/ zod.union([
+          /*#__PURE__*/ zod.uuid(),
+          /*#__PURE__*/ zod.null(),
+        ]),
         presentation_order: /*#__PURE__*/ zod.union([
           /*#__PURE__*/ zod.int(),
           /*#__PURE__*/ zod.null(),
@@ -158,12 +167,15 @@ export const ActivityChildrenResponse = /*#__PURE__*/ zod.object({
           /*#__PURE__*/ zod.iso.datetime({ offset: true }),
           /*#__PURE__*/ zod.null(),
         ]),
-        temporal_form: /*#__PURE__*/ zod.enum([
-          'date_span',
-          'floating_local',
-          'named_zone_local',
-          'absolute',
-          'coarse_local_period',
+        temporal_form: /*#__PURE__*/ zod.union([
+          /*#__PURE__*/ zod.enum([
+            'date_span',
+            'floating_local',
+            'named_zone_local',
+            'absolute',
+            'coarse_local_period',
+          ]),
+          /*#__PURE__*/ zod.null(),
         ]),
         zone_id: /*#__PURE__*/ zod.union([
           /*#__PURE__*/ zod.string(),

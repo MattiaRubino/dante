@@ -1,14 +1,16 @@
 """A coordinated replan writes existing Activity rows as one accepted unit."""
 
+import hashlib
 from datetime import datetime
 from types import SimpleNamespace
 from typing import Any
 from uuid import uuid7
 
-import pytest
 import psycopg
+import pytest
 from fastapi import Response
 from sqlalchemy import text
+from sqlalchemy.exc import DBAPIError
 from tests.integration.temporal.test_b14_u2_authoring import _seed_self
 
 from dante.modules.temporal.activity_edit_snapshot_api import _SNAPSHOT, ActivityEditSnapshot
@@ -190,6 +192,21 @@ async def test_activity_replan_retires_planned_rows_but_keeps_schedule_history(
             """, (activity,)).fetchall()
         assert {row[0] for row in historical} == {row.schedule_ref for row in planned}
         assert all(row[1] is not None for row in historical)
+        retired_unplaced = next(row for row in planned
+                                if row.placement_material_state_ref is None)
+        with pytest.raises(DBAPIError) as unavailable:
+            async with runtime.session_factory() as session, session.begin():
+                await session.execute(text("""
+                    SELECT * FROM dante.place_self_unplaced_planned_schedule(
+                        :actor,:operation,:fingerprint,:activity,:schedule,:state,
+                        CAST(:placement AS jsonb))
+                """), {
+                    "actor": actor, "operation": "replan:retire:forbidden-placement",
+                    "fingerprint": hashlib.sha256(b"retired-row").hexdigest(),
+                    "activity": activity, "schedule": retired_unplaced.schedule_ref,
+                    "state": uuid7(), "placement": "{}",
+                })
+        assert unavailable.value.orig.diag.constraint_name == "planned_schedule_placement_unavailable"
         with pytest.raises(ProblemError) as stale:
             await apply_activity_replan(
                 activity, command.model_copy(update={"operation_id": "replan:retire:stale"}),

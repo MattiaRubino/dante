@@ -788,8 +788,9 @@ export function ActivityEditPanel({
                         disabled={removed || pending || planPending}
                         value={plannedNames[row.scheduleRef] ?? ''}
                         onChange={(event) => {
+                          const value = event.currentTarget.value;
                           setPlannedNames((current) => ({
-                            ...current, [row.scheduleRef]: event.target.value,
+                            ...current, [row.scheduleRef]: value,
                           }));
                           setNameError('');
                         }} />

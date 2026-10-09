@@ -668,3 +668,7 @@ The Activity Edit `Orario` switch now adds or withdraws a planned Session time t
 ### 2026-10-09 — M5 Edit follow-up candidate
 
 After `5fcbe7e`, user feedback reopened Activity Edit. Candidate `_132` retires an existing planned Session separately from clearing its time, retaining Schedule history and vetoing recorded execution. The candidate also corrects the initial placement-lock revision, refreshes card/Inspector Session capability after save, creates and assigns new Life Areas in Edit, removes creation-only type controls, and tidies Description. Coding-workspace typecheck and Python syntax are green; the user-local migration, Ruff, PostgreSQL, focused Web gate and visual acceptance are pending. Objective white-page recurrence is still open pending its `Show Error` trace. M5/B15 are not closed; no CI.
+
+### 2026-10-09 — M5 one-gate handoff
+
+The source-generated API client and M5 repair candidate are assembled. Workspace Ruff, Python syntax, backend unit, focused Web tests, typechecks and deterministic generation passed. The single outstanding technical gate is `bash tooling/verify-b14-m5-local.sh` on the user's WSL PostgreSQL environment, followed by real-app checks. Do not close M5 or the renewed Objective crash based on the generic error-boundary screenshot. B14 source-following owner-field parity and B15 remain open; no CI.

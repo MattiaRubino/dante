@@ -1274,13 +1274,23 @@
       "ActivityReplanCommand": {
         "additionalProperties": false,
         "properties": {
+          "delete_planned_sessions": {
+            "items": {
+              "$ref": "#/components/schemas/DeletePlannedRow"
+            },
+            "maxItems": 100,
+            "title": "Delete Planned Sessions",
+            "type": "array"
+          },
           "envelope": {
             "anyOf": [
-              { "$ref": "#/components/schemas/ReplanRow" },
-              { "type": "null" }
-            ],
-            "default": null,
-            "title": "Envelope"
+              {
+                "$ref": "#/components/schemas/ReplanRow"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "intervals": {
             "items": {
@@ -1311,6 +1321,14 @@
             "minLength": 1,
             "title": "Operation Id",
             "type": "string"
+          },
+          "place_planned_sessions": {
+            "items": {
+              "$ref": "#/components/schemas/PlacePlannedRow"
+            },
+            "maxItems": 100,
+            "title": "Place Planned Sessions",
+            "type": "array"
           },
           "planned_sessions": {
             "items": {
@@ -1517,9 +1535,16 @@
             "title": "Period Code"
           },
           "placement_material_state_ref": {
-            "format": "uuid",
-            "title": "Placement Material State Ref",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Placement Material State Ref"
           },
           "presentation_order": {
             "anyOf": [
@@ -1610,15 +1635,22 @@
             "title": "Starts Local At"
           },
           "temporal_form": {
-            "enum": [
-              "date_span",
-              "floating_local",
-              "named_zone_local",
-              "absolute",
-              "coarse_local_period"
+            "anyOf": [
+              {
+                "enum": [
+                  "date_span",
+                  "floating_local",
+                  "named_zone_local",
+                  "absolute",
+                  "coarse_local_period"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
             ],
-            "title": "Temporal Form",
-            "type": "string"
+            "title": "Temporal Form"
           },
           "zone_id": {
             "anyOf": [
@@ -3066,31 +3098,38 @@
           },
           "planned_slices": {
             "items": {
-              "discriminator": {
-                "mapping": {
-                  "absolute_interval": "#/components/schemas/dante__modules__temporal__api__AbsoluteIntervalPlacementRequest",
-                  "coarse_local_period": "#/components/schemas/CoarseLocalPeriodPlacementRequest",
-                  "date_span": "#/components/schemas/DateSpanPlacementRequest",
-                  "floating_local_interval": "#/components/schemas/FloatingLocalIntervalPlacementRequest",
-                  "named_zone_local_interval": "#/components/schemas/NamedZoneLocalIntervalPlacementRequest"
-                },
-                "propertyName": "kind"
-              },
-              "oneOf": [
+              "anyOf": [
                 {
-                  "$ref": "#/components/schemas/DateSpanPlacementRequest"
+                  "discriminator": {
+                    "mapping": {
+                      "absolute_interval": "#/components/schemas/dante__modules__temporal__api__AbsoluteIntervalPlacementRequest",
+                      "coarse_local_period": "#/components/schemas/CoarseLocalPeriodPlacementRequest",
+                      "date_span": "#/components/schemas/DateSpanPlacementRequest",
+                      "floating_local_interval": "#/components/schemas/FloatingLocalIntervalPlacementRequest",
+                      "named_zone_local_interval": "#/components/schemas/NamedZoneLocalIntervalPlacementRequest"
+                    },
+                    "propertyName": "kind"
+                  },
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/DateSpanPlacementRequest"
+                    },
+                    {
+                      "$ref": "#/components/schemas/FloatingLocalIntervalPlacementRequest"
+                    },
+                    {
+                      "$ref": "#/components/schemas/NamedZoneLocalIntervalPlacementRequest"
+                    },
+                    {
+                      "$ref": "#/components/schemas/dante__modules__temporal__api__AbsoluteIntervalPlacementRequest"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CoarseLocalPeriodPlacementRequest"
+                    }
+                  ]
                 },
                 {
-                  "$ref": "#/components/schemas/FloatingLocalIntervalPlacementRequest"
-                },
-                {
-                  "$ref": "#/components/schemas/NamedZoneLocalIntervalPlacementRequest"
-                },
-                {
-                  "$ref": "#/components/schemas/dante__modules__temporal__api__AbsoluteIntervalPlacementRequest"
-                },
-                {
-                  "$ref": "#/components/schemas/CoarseLocalPeriodPlacementRequest"
+                  "type": "null"
                 }
               ]
             },
@@ -5694,6 +5733,31 @@
         "title": "DecompositionResponse",
         "type": "object"
       },
+      "DeletePlannedRow": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_material_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Material State Ref"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          }
+        },
+        "required": ["schedule_ref", "expected_material_state_ref"],
+        "title": "DeletePlannedRow",
+        "type": "object"
+      },
       "DependencyFindingResponse": {
         "additionalProperties": false,
         "properties": {
@@ -7149,9 +7213,16 @@
             "type": "string"
           },
           "ends_local_at": {
-            "format": "date-time",
-            "title": "Ends Local At",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ends Local At"
           },
           "name": {
             "anyOf": [
@@ -7167,12 +7238,19 @@
             "title": "Name"
           },
           "starts_local_at": {
-            "format": "date-time",
-            "title": "Starts Local At",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Starts Local At"
           }
         },
-        "required": ["client_ref", "starts_local_at", "ends_local_at"],
+        "required": ["client_ref"],
         "title": "NewPlannedRow",
         "type": "object"
       },
@@ -9045,6 +9123,29 @@
         },
         "required": ["person_ref", "display_label", "revision", "replayed"],
         "title": "PersonReferentResponse",
+        "type": "object"
+      },
+      "PlacePlannedRow": {
+        "additionalProperties": false,
+        "properties": {
+          "ends_local_at": {
+            "format": "date-time",
+            "title": "Ends Local At",
+            "type": "string"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "starts_local_at": {
+            "format": "date-time",
+            "title": "Starts Local At",
+            "type": "string"
+          }
+        },
+        "required": ["schedule_ref", "starts_local_at", "ends_local_at"],
+        "title": "PlacePlannedRow",
         "type": "object"
       },
       "PlacePlanningTrayItemRequest": {

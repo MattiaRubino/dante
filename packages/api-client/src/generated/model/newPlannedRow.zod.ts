@@ -10,7 +10,12 @@ export const newPlannedRowNameOneMax = 300;
 
 export const NewPlannedRow = /*#__PURE__*/ zod.object({
   client_ref: /*#__PURE__*/ zod.uuid(),
-  ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+  ends_local_at: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
   name: /*#__PURE__*/ zod.optional(
     /*#__PURE__*/ zod.union([
       /*#__PURE__*/ zod
@@ -20,7 +25,12 @@ export const NewPlannedRow = /*#__PURE__*/ zod.object({
       /*#__PURE__*/ zod.null(),
     ]),
   ),
-  starts_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+  starts_local_at: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
 });
 
 export type NewPlannedRow = zod.input<typeof NewPlannedRow>;

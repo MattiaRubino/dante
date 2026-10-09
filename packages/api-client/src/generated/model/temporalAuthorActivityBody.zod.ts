@@ -65,14 +65,14 @@ export const temporalAuthorActivityBodyPlacementOneFourKindDefault = `absolute_i
 export const temporalAuthorActivityBodyPlacementOneFiveKindDefault = `coarse_local_period`;
 export const temporalAuthorActivityBodyPlannedSliceNamesMax = 100;
 
-export const temporalAuthorActivityBodyPlannedSlicesItemOneKindDefault = `date_span`;
-export const temporalAuthorActivityBodyPlannedSlicesItemTwoKindDefault = `floating_local_interval`;
-export const temporalAuthorActivityBodyPlannedSlicesItemThreeDisambiguationDefault = `reject`;
-export const temporalAuthorActivityBodyPlannedSlicesItemThreeKindDefault = `named_zone_local_interval`;
-export const temporalAuthorActivityBodyPlannedSlicesItemThreeZoneIdMax = 200;
+export const temporalAuthorActivityBodyPlannedSlicesItemOneOneKindDefault = `date_span`;
+export const temporalAuthorActivityBodyPlannedSlicesItemOneTwoKindDefault = `floating_local_interval`;
+export const temporalAuthorActivityBodyPlannedSlicesItemOneThreeDisambiguationDefault = `reject`;
+export const temporalAuthorActivityBodyPlannedSlicesItemOneThreeKindDefault = `named_zone_local_interval`;
+export const temporalAuthorActivityBodyPlannedSlicesItemOneThreeZoneIdMax = 200;
 
-export const temporalAuthorActivityBodyPlannedSlicesItemFourKindDefault = `absolute_interval`;
-export const temporalAuthorActivityBodyPlannedSlicesItemFiveKindDefault = `coarse_local_period`;
+export const temporalAuthorActivityBodyPlannedSlicesItemOneFourKindDefault = `absolute_interval`;
+export const temporalAuthorActivityBodyPlannedSlicesItemOneFiveKindDefault = `coarse_local_period`;
 export const temporalAuthorActivityBodyPlannedSlicesMax = 100;
 
 export const temporalAuthorActivityBodyTitleMax = 300;
@@ -561,72 +561,79 @@ export const TemporalAuthorActivityBody = /*#__PURE__*/ zod
       /*#__PURE__*/ zod
         .array(
           /*#__PURE__*/ zod.union([
-            /*#__PURE__*/ zod.object({
-              end_date_exclusive: /*#__PURE__*/ zod.iso.date(),
-              kind: /*#__PURE__*/ zod
-                ._default(
-                  /*#__PURE__*/ zod.literal('date_span'),
-                  temporalAuthorActivityBodyPlannedSlicesItemOneKindDefault,
-                )
-                .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
-              start_date: /*#__PURE__*/ zod.iso.date(),
-            }),
-            /*#__PURE__*/ zod.object({
-              ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-              kind: /*#__PURE__*/ zod
-                ._default(
-                  /*#__PURE__*/ zod.literal('floating_local_interval'),
-                  temporalAuthorActivityBodyPlannedSlicesItemTwoKindDefault,
-                )
-                .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
-              starts_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-            }),
-            /*#__PURE__*/ zod.object({
-              disambiguation: /*#__PURE__*/ zod._default(
-                /*#__PURE__*/ zod.enum(['reject', 'earlier', 'later']),
-                temporalAuthorActivityBodyPlannedSlicesItemThreeDisambiguationDefault,
-              ),
-              ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-              kind: /*#__PURE__*/ zod
-                ._default(
-                  /*#__PURE__*/ zod.literal('named_zone_local_interval'),
-                  temporalAuthorActivityBodyPlannedSlicesItemThreeKindDefault,
-                )
-                .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
-              starts_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-              zone_id: /*#__PURE__*/ zod
-                .string()
-                .check(/*#__PURE__*/ zod.minLength(1))
-                .check(
-                  /*#__PURE__*/ zod.maxLength(
-                    temporalAuthorActivityBodyPlannedSlicesItemThreeZoneIdMax,
-                  ),
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod.object({
+                end_date_exclusive: /*#__PURE__*/ zod.iso.date(),
+                kind: /*#__PURE__*/ zod
+                  ._default(
+                    /*#__PURE__*/ zod.literal('date_span'),
+                    temporalAuthorActivityBodyPlannedSlicesItemOneOneKindDefault,
+                  )
+                  .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+                start_date: /*#__PURE__*/ zod.iso.date(),
+              }),
+              /*#__PURE__*/ zod.object({
+                ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+                kind: /*#__PURE__*/ zod
+                  ._default(
+                    /*#__PURE__*/ zod.literal('floating_local_interval'),
+                    temporalAuthorActivityBodyPlannedSlicesItemOneTwoKindDefault,
+                  )
+                  .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+                starts_local_at: /*#__PURE__*/ zod.iso.datetime({
+                  offset: true,
+                }),
+              }),
+              /*#__PURE__*/ zod.object({
+                disambiguation: /*#__PURE__*/ zod._default(
+                  /*#__PURE__*/ zod.enum(['reject', 'earlier', 'later']),
+                  temporalAuthorActivityBodyPlannedSlicesItemOneThreeDisambiguationDefault,
                 ),
-            }),
-            /*#__PURE__*/ zod.object({
-              ends_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-              kind: /*#__PURE__*/ zod
-                ._default(
-                  /*#__PURE__*/ zod.literal('absolute_interval'),
-                  temporalAuthorActivityBodyPlannedSlicesItemFourKindDefault,
-                )
-                .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
-              starts_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-            }),
-            /*#__PURE__*/ zod.object({
-              kind: /*#__PURE__*/ zod
-                ._default(
-                  /*#__PURE__*/ zod.literal('coarse_local_period'),
-                  temporalAuthorActivityBodyPlannedSlicesItemFiveKindDefault,
-                )
-                .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
-              local_date: /*#__PURE__*/ zod.iso.date(),
-              period: /*#__PURE__*/ zod.enum([
-                'morning',
-                'afternoon',
-                'evening',
-              ]),
-            }),
+                ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+                kind: /*#__PURE__*/ zod
+                  ._default(
+                    /*#__PURE__*/ zod.literal('named_zone_local_interval'),
+                    temporalAuthorActivityBodyPlannedSlicesItemOneThreeKindDefault,
+                  )
+                  .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+                starts_local_at: /*#__PURE__*/ zod.iso.datetime({
+                  offset: true,
+                }),
+                zone_id: /*#__PURE__*/ zod
+                  .string()
+                  .check(/*#__PURE__*/ zod.minLength(1))
+                  .check(
+                    /*#__PURE__*/ zod.maxLength(
+                      temporalAuthorActivityBodyPlannedSlicesItemOneThreeZoneIdMax,
+                    ),
+                  ),
+              }),
+              /*#__PURE__*/ zod.object({
+                ends_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+                kind: /*#__PURE__*/ zod
+                  ._default(
+                    /*#__PURE__*/ zod.literal('absolute_interval'),
+                    temporalAuthorActivityBodyPlannedSlicesItemOneFourKindDefault,
+                  )
+                  .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+                starts_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+              }),
+              /*#__PURE__*/ zod.object({
+                kind: /*#__PURE__*/ zod
+                  ._default(
+                    /*#__PURE__*/ zod.literal('coarse_local_period'),
+                    temporalAuthorActivityBodyPlannedSlicesItemOneFiveKindDefault,
+                  )
+                  .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+                local_date: /*#__PURE__*/ zod.iso.date(),
+                period: /*#__PURE__*/ zod.enum([
+                  'morning',
+                  'afternoon',
+                  'evening',
+                ]),
+              }),
+            ]),
+            /*#__PURE__*/ zod.null(),
           ]),
         )
         .check(

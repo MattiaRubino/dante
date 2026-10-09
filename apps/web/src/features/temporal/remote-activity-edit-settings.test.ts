@@ -306,7 +306,8 @@ describe('Activity editor settings remote contract', () => {
         starts_local_at: '2026-10-09T11:00:00', ends_local_at: '2026-10-09T12:00:00' }],
       new_intervals: [{ client_ref: 'new-interval',
         starts_local_at: '2026-10-09T10:00', ends_local_at: '2026-10-09T11:00' }],
-      planned_sessions: [], place_planned_sessions: [], remove_planned_sessions: [], new_planned_sessions: [],
+      planned_sessions: [], place_planned_sessions: [], remove_planned_sessions: [],
+      delete_planned_sessions: [], new_planned_sessions: [],
     }]);
   });
 

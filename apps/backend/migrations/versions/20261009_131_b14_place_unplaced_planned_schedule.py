@@ -46,7 +46,7 @@ CREATE FUNCTION dante.place_self_unplaced_planned_schedule(
 LANGUAGE plpgsql SECURITY DEFINER VOLATILE PARALLEL UNSAFE
 SET search_path=pg_catalog,dante,pg_temp AS $function$
 #variable_conflict error
-DECLARE prior dante.planned_schedule_place_operation%ROWTYPE;
+DECLARE prior record;
         recorded_at timestamptz;
         last_until timestamptz;
 BEGIN

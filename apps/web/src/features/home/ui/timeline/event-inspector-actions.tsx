@@ -213,26 +213,34 @@ export function EventInspectorActions({
           <label>
             Titolo Event
             <input disabled={busy} maxLength={300} value={profileDraft.title}
-              onChange={(event) => setProfileDraft((draft) =>
-                draft && { ...draft, title: event.target.value })} />
+              onChange={(event) => {
+                const title = event.currentTarget.value;
+                setProfileDraft((draft) => draft && { ...draft, title });
+              }} />
           </label>
           <label>
             Descrizione Event
             <textarea disabled={busy} value={profileDraft.description ?? ''}
-              onChange={(event) => setProfileDraft((draft) =>
-                draft && { ...draft, description: event.target.value || null })} />
+              onChange={(event) => {
+                const description = event.currentTarget.value || null;
+                setProfileDraft((draft) => draft && { ...draft, description });
+              }} />
           </label>
           <label>
             Località Event
             <input disabled={busy} value={profileDraft.location ?? ''}
-              onChange={(event) => setProfileDraft((draft) =>
-                draft && { ...draft, location: event.target.value || null })} />
+              onChange={(event) => {
+                const location = event.currentTarget.value || null;
+                setProfileDraft((draft) => draft && { ...draft, location });
+              }} />
           </label>
           <label>
             Colore Event (#RRGGBB)
             <input disabled={busy} maxLength={7} value={profileDraft.colorCode ?? ''}
-              onChange={(event) => setProfileDraft((draft) =>
-                draft && { ...draft, colorCode: event.target.value || null })} />
+              onChange={(event) => {
+                const colorCode = event.currentTarget.value || null;
+                setProfileDraft((draft) => draft && { ...draft, colorCode });
+              }} />
           </label>
           <button type="button" disabled={busy || !profileDraft.title.trim()}
             onClick={() => void saveProfile()}>Salva metadati Event</button>
