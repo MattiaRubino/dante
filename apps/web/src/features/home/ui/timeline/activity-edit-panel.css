@@ -346,86 +346,123 @@
   }
 }
 
-/* M5 Objective editor: compact, direct editing in the same visual language as Sessions. */
+/* M5 visual acceptance: one continuous Title control, not a nested second box. */
+.timeline-event-modal--edit .timeline-activity-editor__title-row {
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid var(--dante-semantic-color-home-chrome-active, #ea5c12);
+  border-radius: 13px;
+}
+.timeline-event-modal--edit .timeline-activity-editor__title-row .timeline-activity-editor__title {
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+  min-height: 64px;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+.timeline-event-modal--edit .timeline-activity-editor__title input.temporal-create-title-input {
+  box-sizing: border-box;
+  display: block;
+  min-width: 0;
+  min-height: 64px !important;
+  height: 64px;
+  width: 100%;
+  padding: 0 23px;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none;
+}
+.timeline-event-modal--edit .timeline-activity-editor__title-row:focus-within {
+  border-color: var(--dante-semantic-color-home-chrome-active, #ea5c12);
+  box-shadow: inset 0 0 0 1px var(--dante-semantic-color-home-chrome-active, #ea5c12);
+}
+.timeline-event-modal--edit .timeline-activity-editor__title-tools {
+  min-width: max-content;
+  align-items: stretch;
+}
+.timeline-event-modal--edit .timeline-activity-editor__title-tools > :is(button, label) {
+  min-height: 64px;
+  border-radius: 0;
+}
+
+/* Every Objective is an editable row, identical for new and persisted definitions. */
 .timeline-event-modal--edit .timeline-activity-editor__objectives {
   display: flex;
   flex-direction: column;
   gap: 9px;
   min-width: 0;
 }
-
 .timeline-event-modal--edit .timeline-activity-editor__objective-row {
+  display: grid;
+  gap: 0;
   min-width: 0;
+  padding: 0;
   border: 1px solid var(--dante-semantic-color-home-border-subtle, #3c4655);
-  border-radius: 10px;
+  border-radius: 11px;
   background: color-mix(in srgb, var(--dante-semantic-color-home-surface-control, #151f2e) 65%, transparent);
   overflow: hidden;
 }
-
 .timeline-event-modal--edit .timeline-activity-editor__objective-head {
   display: flex;
   align-items: center;
   gap: 8px;
-  min-height: 40px;
-  padding: 2px 9px;
-}
-
-.timeline-event-modal--edit .timeline-activity-editor__objective-expand {
-  display: flex;
-  align-items: center;
-  flex: 1;
-  gap: 9px;
   min-width: 0;
-  padding: 7px 4px;
-  text-align: left;
-  border: 0;
-  background: transparent;
-  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
-  cursor: pointer;
+  padding: 9px 10px 7px 12px;
 }
-
-.timeline-event-modal--edit .timeline-activity-editor__objective-expand strong {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.timeline-event-modal--edit .timeline-activity-editor__objective-name {
+  box-sizing: border-box;
+  display: block;
+  flex: 1;
+  min-width: 0;
+  min-height: 39px;
+  width: 100%;
+  padding: 0 11px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle, #3c4655);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--dante-semantic-color-home-surface-control, #151f2e) 58%, transparent);
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  font: inherit;
   font-size: 12px;
   font-weight: 600;
 }
-
-.timeline-event-modal--edit .timeline-activity-editor__objective-expand small {
-  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
-  white-space: nowrap;
+.timeline-event-modal--edit .timeline-activity-editor__objective-name:focus {
+  border-color: var(--dante-semantic-color-home-chrome-active, #ea5c12);
+  outline: none;
 }
-
 .timeline-event-modal--edit .timeline-activity-editor__objective-remove {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex: 0 0 28px;
-  width: 28px;
-  height: 28px;
+  flex: 0 0 31px;
+  width: 31px;
+  height: 31px;
   padding: 0;
   border: 0;
-  border-radius: 7px;
+  border-radius: 8px;
   background: transparent;
   color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
   font-size: 19px;
   cursor: pointer;
 }
-
 .timeline-event-modal--edit .timeline-activity-editor__objective-remove:hover {
   background: color-mix(in srgb, var(--dante-semantic-color-home-chrome-active, #ea5c12) 13%, transparent);
   color: var(--dante-semantic-color-home-text-primary, #edf2f8);
 }
-
 .timeline-event-modal--edit .timeline-activity-editor__objective-fields {
   display: flex;
   flex-direction: column;
   gap: 9px;
-  padding: 12px;
-  border-top: 1px solid var(--dante-semantic-color-home-border-subtle, #3c4655);
+  min-width: 0;
+  padding: 0 12px 12px;
 }
-
 .timeline-event-modal--edit .timeline-activity-editor__objective-fields > label,
 .timeline-event-modal--edit .timeline-activity-editor__objective-fields .timeline-activity-editor__fields > label {
   display: flex;
@@ -434,24 +471,28 @@
   min-width: 0;
   color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
 }
-
 .timeline-event-modal--edit .timeline-activity-editor__objective-fields :is(input, select) {
+  box-sizing: border-box;
   min-width: 0;
   width: 100%;
 }
-
 .timeline-event-modal--edit .timeline-activity-editor__objective-fields input[type='radio'] {
   width: auto;
 }
-
 .timeline-event-modal--edit .timeline-activity-editor__objective-fields fieldset {
   border: 0;
   padding: 3px 0;
   min-width: 0;
 }
-
-.timeline-event-modal--edit .timeline-activity-editor__objective-expand:focus-visible,
 .timeline-event-modal--edit .timeline-activity-editor__objective-remove:focus-visible {
   outline: 2px solid var(--dante-semantic-color-home-chrome-active, #ea5c12);
   outline-offset: 2px;
+}
+@media (max-width: 720px) {
+  .timeline-event-modal--edit .timeline-activity-editor__title-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .timeline-event-modal--edit .timeline-activity-editor__title-tools {
+    min-width: 0;
+  }
 }
