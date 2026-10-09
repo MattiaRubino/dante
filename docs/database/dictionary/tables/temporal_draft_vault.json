@@ -214,6 +214,23 @@
         "valid": true,
         "ready": true,
         "live": true
+      },
+      {
+        "name": "ix_temporal_draft_vault_owner_updated",
+        "method": "btree",
+        "unique": false,
+        "keys": [
+          "owner_person_ref",
+          "updated_at DESC",
+          "draft_ref"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "explicit_index",
+        "reason": "Bounded owner-scoped newest-first vault reads",
+        "valid": true,
+        "ready": true,
+        "live": true
       }
     ],
     "triggers": [],
