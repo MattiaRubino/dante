@@ -1062,6 +1062,29 @@ describe('Activity Inspector', () => {
     expect(onSaved).toHaveBeenCalledWith(profile);
   });
 
+  it('changes the persisted Life Area color without rewriting its assignment', async () => {
+    const area = { ref: 'area-1', name: 'Lavoro',
+      revision: 1, iconCode: null, colorCode: null };
+    loadSettings.mockResolvedValueOnce({ ...currentSettings, lifeAreaRef: 'area-1' });
+    loadLifeAreaChoice.mockResolvedValueOnce({
+      currentRef: 'area-1', currentRevision: 1, options: [area],
+    });
+    setLifeAreaAppearance.mockResolvedValueOnce({
+      ...area, revision: 2, colorCode: '#33B679',
+    });
+    const onSaved = vi.fn();
+    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
+      onSaved={onSaved} onCancel={() => undefined} />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Colore Life Area' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Verde menta' }));
+    await submitEditor();
+    await waitFor(() => expect(setLifeAreaAppearance).toHaveBeenCalledWith(
+      area, '#33B679', expect.any(String),
+    ));
+    expect(assignLifeArea).not.toHaveBeenCalled();
+    await waitFor(() => expect(onSaved).toHaveBeenCalledWith(profile));
+  });
+
   it('renames an existing planned Session without rescheduling it', async () => {
     loadSettings.mockResolvedValueOnce({ ...currentSettings, schedules: [
       { scheduleRef: 'planned', role: 'planned', name: 'Lettura', order: 1,
