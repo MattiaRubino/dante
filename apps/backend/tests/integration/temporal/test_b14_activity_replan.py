@@ -342,3 +342,66 @@ async def test_activity_replan_replaces_current_interval_without_erasing_role_hi
         assert added.schedule_ref in accepted
     finally:
         await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_locked_activity_accepts_new_sessions_without_moving_existing_placement(
+    migrated_database: Any,
+) -> None:
+    """Placement lock blocks movement, not authoring within its accepted window."""
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    try:
+        created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
+            self_person_ref=actor, operation_id="replan:locked:add:create",
+            title="Studio", placement=_window(9, 12),
+        )
+        activity = created.item.subject_native_ref
+        context = SimpleNamespace(self_person_ref=actor)
+        request = SimpleNamespace(app=SimpleNamespace(
+            state=SimpleNamespace(database_runtime=runtime)))
+        async with runtime.session_factory() as session, session.begin():
+            before = ActivityEditSnapshot.model_validate(await session.scalar(
+                _SNAPSHOT, {"actor": actor, "activity": activity},
+            ))
+            envelope = next(row for row in before.schedules if row.role_code == "envelope")
+            locked = (await session.execute(text("""
+                SELECT * FROM dante.set_self_schedule_placement_lock(
+                    :actor,:schedule,true,NULL)
+            """), {"actor": actor, "schedule": envelope.schedule_ref})).mappings().one()
+            assert locked["locked"] is True
+        command = ActivityReplanCommand(
+            operation_id="replan:locked:add:apply",
+            envelope=_move(envelope, 9, 12),
+            new_planned_sessions=[
+                NewPlannedRow(client_ref=uuid7(), name="Senza orario"),
+                NewPlannedRow(
+                    client_ref=uuid7(), name="Con orario",
+                    starts_local_at=datetime(2026, 10, 9, 10),  # noqa: DTZ001
+                    ends_local_at=datetime(2026, 10, 9, 11),  # noqa: DTZ001
+                ),
+            ],
+        )
+        after = await apply_activity_replan(activity, command, context, request, Response())
+        assert len([row for row in after.schedules if row.role_code == "planned"]) == 2
+        assert next(row for row in after.schedules if row.role_code == "envelope").placement_material_state_ref == envelope.placement_material_state_ref
+        async with runtime.session_factory() as session, session.begin():
+            assert await session.scalar(text("""
+                SELECT locked FROM dante.get_self_schedule_placement_lock(
+                    :actor,:schedule)
+            """), {"actor": actor, "schedule": envelope.schedule_ref}) is True
+        with pytest.raises(ProblemError) as moving:
+            await apply_activity_replan(
+                activity,
+                ActivityReplanCommand(
+                    operation_id="replan:locked:move:reject",
+                    envelope=_move(envelope, 8, 12),
+                    planned_sessions=[_move(
+                        next(row for row in after.schedules if row.role_code == "planned"
+                             and row.placement_material_state_ref is not None), 10, 11)],
+                ),
+                context, request, Response(),
+            )
+        assert moving.value.status == 409
+    finally:
+        await runtime.dispose()
