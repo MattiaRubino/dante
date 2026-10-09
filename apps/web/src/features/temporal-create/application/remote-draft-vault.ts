@@ -1,4 +1,4 @@
-import { createWebFetch } from '../../platform/api/web-fetch';
+import { createWebFetch } from '../../../platform/api/web-fetch';
 import type { TemporalCreateFields, TemporalCreateSurface } from '../model/temporal-create-session';
 import type { TemporalCreateU2AuthoringDraft } from '../model/temporal-create-u2-authoring';
 
