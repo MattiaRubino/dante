@@ -44,7 +44,8 @@ async def test_inert_drafts_are_owner_scoped_replay_safe_and_do_not_create_subje
 
         before = await save("vault:create", None)
         assert before["revision"] == 1
-        assert before["payload"]["advanced"]["activityStructure"]["plannedSlices"][0]["title"] == "Corsa"
+        slices = before["payload"]["advanced"]["activityStructure"]["plannedSlices"]
+        assert slices[0]["title"] == "Corsa"
         replay = await save("vault:create", None)
         assert replay["draft_ref"] == draft
         assert replay["revision"] == 1
