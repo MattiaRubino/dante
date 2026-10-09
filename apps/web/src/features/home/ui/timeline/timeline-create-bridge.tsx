@@ -35,6 +35,7 @@ import type {
   TimelineSemanticTone,
 } from './model/timeline-types';
 import { TimelineDraftVault } from './timeline-draft-vault';
+import { TimelinePlanningTrayB01 } from './timeline-planning-tray-b01';
 import {
   TimelinePlanningTray,
   type TimelinePlanningTrayItem,
@@ -334,6 +335,7 @@ export function TimelineCreateBridge({
   const [draftRequest, setDraftRequest] = useState<{
     id: number; item: DraftVaultItem; duplicate: boolean;
   } | null>(null);
+  const [legacyOpenRequest, setLegacyOpenRequest] = useState(0);
   const [layoutRevision, setLayoutRevision] = useState(0);
   const [undoEffect, setUndoEffect] =
     useState<TemporalCreateAppliedEffect | null>(null);
@@ -964,11 +966,21 @@ export function TimelineCreateBridge({
           onDelete={deletePlanningItem}
         />
       ) : (
-        <TimelineDraftVault
-          onOpen={(item, duplicate) => setDraftRequest({
-            id: Date.now(), item, duplicate,
-          })}
-        />
+        <>
+          <TimelineDraftVault
+            onOpen={(item, duplicate) => setDraftRequest({
+              id: Date.now(), item, duplicate,
+            })}
+            onManageExisting={() => setLegacyOpenRequest((count) => count + 1)}
+          />
+          <TimelinePlanningTrayB01
+            hiddenTrigger
+            openRequest={legacyOpenRequest}
+            runtime={runtime}
+            defaultDate={defaultDate}
+            onBeforeOpen={onBeforeOpen}
+          />
+        </>
       )}
 
       {portalTargets.map(({ projection, host, style, tone }) =>
