@@ -240,7 +240,7 @@ describe('TemporalCreateComposer', () => {
     fireEvent.click(within(decision).getByRole('button', { name: 'Annulla' }));
     fireEvent.click(
       within(decision).getByRole('button', {
-        name: 'Sposta in Da collocare',
+        name: 'Salva bozza',
       }),
     );
     fireEvent.click(
