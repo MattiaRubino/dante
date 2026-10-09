@@ -110,7 +110,8 @@ def test_m5_objective_edits_one_transaction_and_retirement_replay(
                 "SELECT retired_at,retirement_operation_id FROM dante.temporal_objective "
                 "WHERE objective_ref=%s", (UUID(removed),),
             ).fetchone()
-            assert tombstone is not None and tombstone[0] is not None
+            assert tombstone is not None
+            assert tombstone[0] is not None
             assert tombstone[1] == "m5:batch:retire"
         other = _create_activity(client, headers, "other")
         unrelated = client.put(
