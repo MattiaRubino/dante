@@ -75,42 +75,6 @@
   padding-bottom: clamp(2px, calc(1.2px + 0.9cqh), 3.5px);
 }
 
-.home-m1
-  .home-timeline--production
-  .timeline-event-card--event
-  .timeline-event-card__top,
-.timeline-event-drag-overlay.timeline-event-card--event
-  .timeline-event-card__top {
-  padding-top: clamp(9px, 10cqh, 30px);
-  padding-left: clamp(22px, 16cqw, 112px);
-  padding-right: clamp(22px, 16cqw, 112px);
-}
-
-.home-m1 .home-timeline--production .timeline-event-card--event .timeline-event-card__subitems,
-.timeline-event-drag-overlay.timeline-event-card--event .timeline-event-card__subitems {
-  min-width: 0;
-  margin-inline: clamp(22px, 16cqw, 112px);
-}
-
-.home-m1 .home-timeline--production .timeline-event-card--event .timeline-event-card__expander,
-.timeline-event-drag-overlay.timeline-event-card--event .timeline-event-card__expander {
-  left: clamp(22px, 16cqw, 112px);
-  right: clamp(22px, 16cqw, 112px);
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.home-m1 .home-timeline--production .timeline-event-card--event
-  :is(.timeline-event-card__time, .timeline-event-card__meta),
-.timeline-event-drag-overlay.timeline-event-card--event
-  :is(.timeline-event-card__time, .timeline-event-card__meta) {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 /* Title, time and metadata expose intrinsic content width to the compact-card
  * measurement runtime. Keeping metadata shrink-wrapped is important: a normal
  * block would report the card's current width as scrollWidth, creating a

@@ -74,6 +74,12 @@ function renderComposer(options?: { dirty?: boolean }) {
 }
 
 describe('TemporalCreateComposer', () => {
+  it('uses the shared rounded footer action for Aggiungi', () => {
+    renderComposer();
+    const add = screen.getByRole('button', { name: 'Aggiungi' });
+    expect(add.parentElement?.classList.contains('dante-temporal-panel-actions')).toBe(true);
+    expect(add.classList.contains('is-primary')).toBe(true);
+  });
   it('presents Event Scaletta and B09 participant staging while hiding prototype-only fields', async () => {
     vi.stubGlobal(
       'fetch',

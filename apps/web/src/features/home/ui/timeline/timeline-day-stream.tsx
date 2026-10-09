@@ -32,8 +32,6 @@ import type {
   TimelineGroup,
   TimelineTimeMapper,
 } from './model/timeline-types';
-import { TimelineActivityFrame } from './timeline-activity-frame';
-import { TimelineEventFrame } from './timeline-event-frame';
 import { TimelineAllDayLane } from './timeline-all-day-layer';
 import { LEGACY_UNASSIGNED_GROUP } from './timeline-organization';
 
@@ -280,7 +278,6 @@ function TimelineEventCard({
         onOpenEventDetail(event, clickEvent.currentTarget);
       }}
     >
-      {isActivity ? <TimelineActivityFrame /> : <TimelineEventFrame />}
       <div className="timeline-event-card__top">
         <div className="timeline-event-card__heading">
           <button

@@ -630,7 +630,7 @@ export function TemporalCreateComposer({
                 )
               : null}
 
-            <div className="temporal-create-actions">
+            <div className="temporal-create-actions dante-temporal-panel-actions">
               <button
                 type="button"
                 className="temporal-create-advanced-toggle"
