@@ -1242,7 +1242,6 @@ export function ActivityEditPanel({
                     l’osservazione e la valutazione precedenti.</p>
                 </fieldset>
               ) : null}
-              </div>
             </section>
             </section>
             <div className="timeline-activity-editor__location">
