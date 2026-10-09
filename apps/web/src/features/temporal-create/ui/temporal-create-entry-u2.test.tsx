@@ -651,24 +651,11 @@ describe('Temporal Create U2 entry', () => {
     expect(screen.queryByText(/Schedule non è confermato/i)).toBeNull();
   });
 
-  it('creates an Event in Da collocare without recurrence, reminder or an invented Schedule placement', async () => {
+  it('keeps an Event without accepted Schedule inactive until Add', async () => {
     const { eventRequests } = renderEntry();
-
     fireEvent.click(screen.getByRole('radio', { name: 'Evento' }));
-    expect(screen.queryByLabelText('Ripeti')).toBeNull();
-    fireEvent.click(screen.getByRole('radio', { name: 'Da collocare' }));
-    expect(screen.queryByLabelText('Ricorda')).toBeNull();
-
-    fireEvent.click(screen.getByRole('radio', { name: 'Orario' }));
-    fireEvent.click(screen.getByRole('radio', { name: 'Da collocare' }));
-
-    fireEvent.change(screen.getByPlaceholderText('Titolo'), {
-      target: { value: 'Cena da organizzare' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi' }));
-
-    await waitFor(() => expect(eventRequests).toHaveLength(1));
-    expect(eventRequests[0]?.title).toBe('Cena da organizzare');
-    expect(eventRequests[0]?.placement).toBeUndefined();
-  });
+    expect(screen.queryByRole('radio', { name: 'Da collocare' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Salva bozza' })).toBeTruthy();
+    expect(eventRequests).toHaveLength(0);
+  });;
 });
