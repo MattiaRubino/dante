@@ -331,7 +331,7 @@ export function ActivityEditPanel({
 
   const toggleObjective = (row: ActivityObjectiveDraft) => {
     setExpandedObjective((current) => current === row.id ? null : row.id);
-    if (row.objectiveRef && recurringContext && !row.seriesState) {
+    if (row.objectiveRef && !row.seriesState) {
       void objectiveSource.getSeriesState(row.objectiveRef).then((series) => {
         setObjectiveRows((rows) => rows.map((item) => item.id === row.id
           ? { ...item, seriesState: series } : item));
