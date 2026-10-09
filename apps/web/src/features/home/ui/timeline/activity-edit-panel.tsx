@@ -230,7 +230,7 @@ export function ActivityEditPanel({
   const newAreaName = areaQuery.trim().replace(/\s+/g, ' ');
   const selectedAreaOption = areaChoice?.options.find((area) => area.ref === selectedArea);
   const selectedAreaColor = areaColorOverride ??
-    (selectedArea ? selectedAreaOption?.colorCode ?? '#EA5C12'
+    (selectedArea ? selectedAreaOption?.colorCode ?? '#616161'
       : draft.colorCode || '#EA5C12');
   const creatingArea = !!newAreaName && !selectedArea &&
     !areaChoice?.options.some((area) => area.name.toLocaleLowerCase() ===
