@@ -866,7 +866,7 @@ export function TemporalCreateEntry({
           setFailureMessage(
             i18n.language.toLowerCase().startsWith('en')
               ? 'Activity created, but its Schedule was not confirmed. Check Timeline and To place.'
-              : 'Attività creata, ma lo Schedule non è confermato. Controlla Timeline e Da collocare.',
+              : 'Attività già creata, ma lo Schedule non è confermato. Controlla Timeline e gli elementi preesistenti senza orario.',
           );
           return;
         }
