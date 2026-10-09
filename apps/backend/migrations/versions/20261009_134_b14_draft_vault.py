@@ -39,20 +39,20 @@ def downgrade() -> None:
 
 _TABLE = r"""
 CREATE TABLE dante.temporal_draft_vault (
-    draft_ref uuid PRIMARY KEY,
+    draft_ref uuid CONSTRAINT pk_temporal_draft_vault PRIMARY KEY,
     owner_person_ref uuid NOT NULL,
     subject_kind text NOT NULL
-        CONSTRAINT temporal_draft_vault_kind_check
+        CONSTRAINT ck_temporal_draft_vault_kind
         CHECK (subject_kind IN ('activity','event')),
     title text NOT NULL
-        CONSTRAINT temporal_draft_vault_title_check
+        CONSTRAINT ck_temporal_draft_vault_title
         CHECK (length(title) <= 300),
     payload jsonb NOT NULL
-        CONSTRAINT temporal_draft_vault_payload_check
+        CONSTRAINT ck_temporal_draft_vault_payload
         CHECK (jsonb_typeof(payload) = 'object'
                AND octet_length(payload::text) <= 131072),
     revision bigint NOT NULL DEFAULT 1
-        CONSTRAINT temporal_draft_vault_revision_check CHECK (revision >= 1),
+        CONSTRAINT ck_temporal_draft_vault_revision CHECK (revision >= 1),
     last_operation_id text NOT NULL,
     created_at timestamptz NOT NULL DEFAULT clock_timestamp(),
     updated_at timestamptz NOT NULL DEFAULT clock_timestamp()
