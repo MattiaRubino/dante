@@ -9,6 +9,7 @@ import type {
   ActivityCoreEditCommand,
   ActivityCoreEditResponse,
   ActivityEditSnapshot,
+  ActivityObjectiveBatchCommand,
   ActivityProfileChange,
   ActivityProfileResponse,
   ActivityReplanCommand,
@@ -5892,6 +5893,81 @@ export const temporalSetActivityChild = async (
     status: res.status,
     headers: res.headers,
   } as temporalSetActivityChildResponse;
+};
+
+export type temporalApplyActivityObjectiveEditsResponse200 = {
+  data: ObjectiveResponse[];
+  status: 200;
+};
+
+export type temporalApplyActivityObjectiveEditsResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalApplyActivityObjectiveEditsResponseSuccess =
+  temporalApplyActivityObjectiveEditsResponse200 & {
+    headers: Headers;
+  };
+export type temporalApplyActivityObjectiveEditsResponseError =
+  temporalApplyActivityObjectiveEditsResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalApplyActivityObjectiveEditsResponse =
+  | temporalApplyActivityObjectiveEditsResponseSuccess
+  | temporalApplyActivityObjectiveEditsResponseError;
+
+export const getTemporalApplyActivityObjectiveEditsUrl = (
+  subjectRef: string,
+) => {
+  return `/api/v1/temporal/activities/${subjectRef}/objective-edits`;
+};
+
+/**
+ * Commit all Objective additions, revisions and retirements atomically.
+ *
+ * This boundary deliberately owns Objectives only. Core Activity settings
+ * remain separately revision-guarded by their established domain owners.
+ * @summary Apply Activity Objective Edits
+ */
+export const temporalApplyActivityObjectiveEdits = async (
+  subjectRef: string,
+  activityObjectiveBatchCommand: ActivityObjectiveBatchCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalApplyActivityObjectiveEditsResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalApplyActivityObjectiveEditsUrl(subjectRef),
+    {
+      ...options,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(activityObjectiveBatchCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalApplyActivityObjectiveEditsResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalApplyActivityObjectiveEditsResponse;
 };
 
 export type temporalListActivityObjectivesResponse200 = {

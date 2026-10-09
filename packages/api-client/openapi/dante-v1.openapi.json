@@ -1151,6 +1151,38 @@
         "title": "ActivityEditSnapshot",
         "type": "object"
       },
+      "ActivityObjectiveBatchCommand": {
+        "additionalProperties": false,
+        "description": "One transaction for all Objective edits submitted by the Activity editor.",
+        "properties": {
+          "add": {
+            "items": {
+              "$ref": "#/components/schemas/ObjectiveCreateCommand"
+            },
+            "maxItems": 100,
+            "title": "Add",
+            "type": "array"
+          },
+          "retire": {
+            "items": {
+              "$ref": "#/components/schemas/ObjectiveBatchRetirement"
+            },
+            "maxItems": 100,
+            "title": "Retire",
+            "type": "array"
+          },
+          "revise": {
+            "items": {
+              "$ref": "#/components/schemas/ObjectiveBatchRevision"
+            },
+            "maxItems": 100,
+            "title": "Revise",
+            "type": "array"
+          }
+        },
+        "title": "ActivityObjectiveBatchCommand",
+        "type": "object"
+      },
       "ActivityProfileChange": {
         "additionalProperties": false,
         "properties": {
@@ -7252,6 +7284,46 @@
         },
         "required": ["client_ref"],
         "title": "NewPlannedRow",
+        "type": "object"
+      },
+      "ObjectiveBatchRetirement": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_revision": {
+            "minimum": 0.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "objective_ref": {
+            "format": "uuid",
+            "title": "Objective Ref",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["objective_ref", "operation_id", "expected_revision"],
+        "title": "ObjectiveBatchRetirement",
+        "type": "object"
+      },
+      "ObjectiveBatchRevision": {
+        "additionalProperties": false,
+        "properties": {
+          "change": {
+            "$ref": "#/components/schemas/ObjectiveDefinitionReviseCommand"
+          },
+          "objective_ref": {
+            "format": "uuid",
+            "title": "Objective Ref",
+            "type": "string"
+          }
+        },
+        "required": ["objective_ref", "change"],
+        "title": "ObjectiveBatchRevision",
         "type": "object"
       },
       "ObjectiveCreateCommand": {
@@ -28162,6 +28234,62 @@
           }
         },
         "summary": "Set Activity Child",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/activities/{subject_ref}/objective-edits": {
+      "put": {
+        "description": "Commit all Objective additions, revisions and retirements atomically.\n\nThis boundary deliberately owns Objectives only. Core Activity settings\nremain separately revision-guarded by their established domain owners.",
+        "operationId": "temporal_apply_activity_objective_edits",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "subject_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Subject Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivityObjectiveBatchCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ObjectiveResponse"
+                  },
+                  "title": "Response Temporal Apply Activity Objective Edits",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Apply Activity Objective Edits",
         "tags": ["temporal"]
       }
     },
