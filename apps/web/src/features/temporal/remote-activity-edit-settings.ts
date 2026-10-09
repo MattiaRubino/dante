@@ -45,7 +45,13 @@ export type ActivityEditSettings = Readonly<{
 }>;
 
 export type ActivityLifeAreaChoice = Readonly<{
-  options: readonly Readonly<{ ref: string; name: string }>[];
+  options: readonly Readonly<{
+    ref: string;
+    name: string;
+    revision?: number;
+    iconCode?: string | null;
+    colorCode?: string | null;
+  }>[];
   currentRef: string | null;
   currentRevision: number;
 }>;
@@ -441,7 +447,12 @@ export function createRemoteActivityEditSettings(
               typeof item.name !== 'string' || !item.name.trim()) {
             throw new Error('Life Area non valida.');
           }
-          return Object.freeze({ ref: item.life_area_ref, name: item.name });
+          return Object.freeze({
+            ref: item.life_area_ref, name: item.name,
+            revision: typeof item.revision === 'number' ? item.revision : 1,
+            iconCode: typeof item.icon_code === 'string' ? item.icon_code : null,
+            colorCode: typeof item.color_code === 'string' ? item.color_code : null,
+          });
         });
       const rows = rawAssignments.map(object).filter((item) =>
         item.subject_kind === 'activity' && item.subject_native_ref === ref);
@@ -461,7 +472,10 @@ export function createRemoteActivityEditSettings(
         currentRevision: current ? Number(current.assignment_revision) : 0,
       });
     },
-    async createLifeArea(name: string, operationId: string): Promise<Readonly<{ ref: string; name: string }>> {
+    async createLifeArea(name: string, operationId: string): Promise<Readonly<{
+      ref: string; name: string; revision: number;
+      iconCode: string | null; colorCode: string | null;
+    }>> {
       const canonical = name.trim().replace(/\s+/g, ' ');
       if (!canonical || canonical.length > 100) throw new Error('Inserisci un nome Life Area valido.');
       const response = await request('/api/v1/temporal/life-areas', {
@@ -476,7 +490,53 @@ export function createRemoteActivityEditSettings(
       if (typeof created.life_area_ref !== 'string' || created.name !== canonical) {
         throw new Error('Risposta Life Area non valida.');
       }
-      return Object.freeze({ ref: created.life_area_ref, name: canonical });
+      if (!Number.isSafeInteger(created.revision) || Number(created.revision) < 1) {
+        throw new Error('Revisione della nuova Life Area non valida.');
+      }
+      return Object.freeze({
+        ref: created.life_area_ref, name: canonical,
+        revision: Number(created.revision),
+        iconCode: typeof created.icon_code === 'string' ? created.icon_code : null,
+        colorCode: typeof created.color_code === 'string' ? created.color_code : null,
+      });
+    },
+    async setLifeAreaAppearance(
+      area: Readonly<{ ref: string; name: string; revision?: number;
+        colorCode?: string | null; iconCode?: string | null }>,
+      colorCode: string,
+      operationId: string,
+    ): Promise<Readonly<{ ref: string; name: string; revision: number;
+      colorCode: string; iconCode: string | null }>> {
+      if (!/^#[0-9a-f]{6}$/i.test(colorCode) ||
+          !Number.isSafeInteger(area.revision) || (area.revision ?? 0) < 1) {
+        throw new Error('Colore o revisione Life Area non validi.');
+      }
+      const canonical = colorCode.toUpperCase();
+      const response = await request(
+        `/api/v1/temporal/life-areas/${encodeURIComponent(area.ref)}/appearance`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'X-Dante-CSRF': await csrf() },
+          body: JSON.stringify({
+            operation_id: operationId, expected_revision: area.revision,
+            icon_code: area.iconCode ?? null, color_code: canonical,
+          }),
+        },
+      );
+      if (!response.ok) throw new Error(response.status === 409
+        ? 'Il colore della Life Area è cambiato. Riapri Modifica.'
+        : 'Impossibile salvare il colore della Life Area.');
+      const saved = object(await response.json());
+      if (saved.life_area_ref !== area.ref ||
+          !Number.isSafeInteger(saved.accepted_revision)) {
+        throw new Error('Risposta colore Life Area non valida.');
+      }
+      invalidateTemporalTimelineRead();
+      invalidateTemporalPlanningRead();
+      return Object.freeze({
+        ref: area.ref, name: area.name,
+        revision: Number(saved.accepted_revision),
+        colorCode: canonical, iconCode: area.iconCode ?? null,
+      });
     },
     async assignLifeArea(
       ref: string,
