@@ -91,7 +91,7 @@ async def list_drafts(
 ) -> list[DraftVaultResponse]:
     response.headers["Cache-Control"] = "no-store"
     try:
-        async with request.app.state.database_runtime.session_factory() as session:
+        async with request.app.state.database_runtime.session_factory() as session, session.begin():
             rows = (await session.execute(text("""
                 SELECT * FROM dante.list_self_temporal_drafts(:actor)
             """), {"actor": context.self_person_ref})).mappings().all()
