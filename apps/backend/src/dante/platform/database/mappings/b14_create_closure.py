@@ -123,6 +123,9 @@ class TemporalObjectiveRow(Base):
     unit_code: Mapped[str | None] = mapped_column(Text)
     presentation_order: Mapped[int] = mapped_column(Integer, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    retired_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    retirement_operation_id: Mapped[str | None] = mapped_column(Text)
+    retirement_fingerprint: Mapped[str | None] = mapped_column(Text)
 
 
 class TemporalObjectiveCreateOperationRow(Base):
