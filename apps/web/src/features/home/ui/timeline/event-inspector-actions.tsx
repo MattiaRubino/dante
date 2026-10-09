@@ -11,6 +11,13 @@ import {
   type EventProfileDraft,
 } from '../../../temporal/remote-event-profile-data-source';
 import { createRemoteEventRecurrenceGuard } from '../../../temporal/remote-event-recurrence-guard';
+import { createRemoteTemporalOrganizationDataSource } from '../../../temporal/remote-organization';
+import {
+  createRemoteDraftVault, notifyDraftVaultUpdated,
+} from '../../../temporal-create/application/remote-draft-vault';
+import {
+  draftVaultSnapshotFromDuplicate,
+} from '../../../temporal-create/application/draft-vault-from-duplicate';
 import { createRemoteTemporalEventAgendaDataSource } from '../../../temporal/remote-event-agenda-data-source';
 import { createRemoteTemporalResponsibilityDataSource } from '../../../temporal/remote-responsibility-data-source';
 import { systemTemporalIdFactory } from '../../../temporal/model';
@@ -35,6 +42,8 @@ export function EventInspectorActions({
   const [recurrenceGuard] = useState(createRemoteEventRecurrenceGuard);
   const [profileSource] = useState(createRemoteEventProfileDataSource);
   const [areaSource] = useState(createRemoteEventLifeAreaSettings);
+  const [organizationSource] = useState(createRemoteTemporalOrganizationDataSource);
+  const [draftVault] = useState(createRemoteDraftVault);
   const [profile, setProfile] = useState<TemporalEventDetailRecord | null>(null);
   const [profileDraft, setProfileDraft] = useState<EventProfileDraft | null>(null);
   const [areaChoice, setAreaChoice] = useState<EventLifeAreaChoice | null>(null);
@@ -145,7 +154,7 @@ export function EventInspectorActions({
     }
   };
 
-  const duplicate = async () => {
+  const duplicate = async (intoVault = false) => {
     if (busy) return;
     setBusy(true);
     setError('');
@@ -175,7 +184,28 @@ export function EventInspectorActions({
             requirementCode: row.requirementCode,
           };
         });
-      onDuplicate(buildEventDuplicateSeed(event, placement, expectedParticipants));
+      const seed = buildEventDuplicateSeed(event, placement, expectedParticipants);
+      if (!intoVault) {
+        onDuplicate(seed);
+      } else {
+        const organization = await organizationSource.load();
+        const area = event.lifeAreaRef === null || event.lifeAreaRef === undefined
+          ? undefined : organization.areas.find((row) => row.ref === event.lifeAreaRef);
+        if (event.lifeAreaRef && !area) {
+          throw new Error('Life Area Event non disponibile: la bozza non è stata salvata.');
+        }
+        const selected = area ? {
+          kind: 'existing' as const,
+          lifeAreaRef: area.ref, label: area.name,
+          expectedRevision: area.revision,
+          colorCode: area.colorCode, colorChanged: false,
+        } : undefined;
+        await draftVault.save(draftVaultSnapshotFromDuplicate(seed, selected), {
+          draftRef: crypto.randomUUID(), revision: null, operationId: crypto.randomUUID(),
+        });
+        notifyDraftVaultUpdated();
+        setProfileNotice('Copia salvata nelle Bozze. L’Evento originale rimane attivo.');
+      }
     } catch (reason) {
       setError(reason instanceof Error
         ? reason.message : 'Impossibile preparare una duplicazione fedele dell’evento.');
@@ -194,6 +224,10 @@ export function EventInspectorActions({
       <button type="button" disabled={busy} aria-label="Duplica" title="Duplica"
         onClick={() => void duplicate()}>
         {toolbarTarget ? <TimelineInspectorIcon name="copy" /> : busy ? 'Preparazione…' : 'Duplica'}
+      </button>
+      <button type="button" disabled={busy} aria-label="Copia in Bozze"
+        title="Copia in Bozze" onClick={() => void duplicate(true)}>
+        {toolbarTarget ? <TimelineInspectorIcon name="copy" /> : 'Copia in Bozze'}
       </button>
     </div>
   );
