@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Temporal } from '@dante/time';
 
@@ -260,6 +259,7 @@ export function TemporalCreateAdvancedActivityStructure({
                   <div
                     id={`${timeId}:editor`}
                     className="temporal-create-tree-time-editor"
+                    data-create-path={`plannedSession:${slice.id}`}
                   >
                     <TemporalCreateDatePicker
                       label={italian ? 'Data Sessione' : 'Session date'}

@@ -128,6 +128,23 @@
   display: none;
 }
 
+.temporal-create-composer .temporal-create-tree-time-editor[data-create-invalid='true'] {
+  outline: none;
+}
+
+.temporal-create-composer .temporal-create-tree-time-editor[data-create-invalid='true']
+  :is(.temporal-create-date-picker__trigger, .temporal-create-time-control__field) {
+  border-color: var(--dante-timeline-tone-urgent, #ff5b64);
+}
+
+.temporal-create-tree-time-editor > .temporal-create-field-error {
+  grid-column: 1 / -1;
+  margin: 2px 0 0;
+  color: var(--dante-timeline-tone-urgent, #ff5b64);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
 .temporal-create-tree-time-editor .temporal-create-time-picker,
 .temporal-create-tree-time-editor .temporal-create-date-picker__popover {
   z-index: 180;

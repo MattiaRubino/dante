@@ -625,7 +625,7 @@
 }
 
 /* Keep actionable validation at its field instead of the bottom of Create. */
-.temporal-create-composer [data-create-path][data-create-invalid='true']:not(input):not(select):not(textarea) {
+.temporal-create-composer [data-create-path][data-create-invalid='true']:not(input):not(select):not(textarea):not(.temporal-create-tree-time-editor) {
   outline: 1px solid var(--dante-timeline-tone-urgent, #ff5b64);
   outline-offset: 2px;
   border-radius: 8px;

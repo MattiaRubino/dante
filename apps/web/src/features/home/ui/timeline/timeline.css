@@ -1705,7 +1705,7 @@
   align-items: center;
 }
 
-.timeline-activity-editor input:not([type='checkbox']):not([type='color']):not(.temporal-create-u2-when *, .temporal-create-life-area-field *, .temporal-create-quick-reminder *, .temporal-create-description-section *, .temporal-create-u2-location),
+.timeline-activity-editor input:not([type='checkbox']):not([type='color']):not(.temporal-create-u2-when *, .temporal-create-tree-time-editor *, .temporal-create-life-area-field *, .temporal-create-quick-reminder *, .temporal-create-description-section *, .temporal-create-u2-location),
 .timeline-activity-editor textarea:not(.temporal-create-advanced-description),
 .timeline-activity-editor select:not(.temporal-create-life-area-field *) {
   width: 100%;
@@ -1717,7 +1717,7 @@
 }
 
 .timeline-activity-inspector__toolbar button,
-.timeline-activity-editor button:not(.temporal-create-u2-when *, .temporal-create-life-area-field *, .temporal-create-quick-reminder *, .temporal-create-type-grid *, .temporal-create-reality-mode *, .dante-temporal-panel-actions *, .temporal-create-placement-lock, .temporal-create-structure-add),
+.timeline-activity-editor button:not(.temporal-create-u2-when *, .temporal-create-tree-time-editor *, .temporal-create-tree-row__actions *, .temporal-create-life-area-field *, .temporal-create-quick-reminder *, .temporal-create-type-grid *, .temporal-create-reality-mode *, .dante-temporal-panel-actions *, .temporal-create-placement-lock, .temporal-create-structure-add),
 .timeline-activity-inspector__confirmation button {
   padding: 7px 10px;
   border: 1px solid var(--dante-semantic-color-home-border-subtle);
@@ -1846,7 +1846,7 @@
   font-size: 11px;
 }
 
-.timeline-activity-editor__body input:not([type='checkbox']):not([type='color']):not(.temporal-create-u2-when *, .temporal-create-life-area-field *, .temporal-create-quick-reminder *, .temporal-create-description-section *, .temporal-create-u2-location),
+.timeline-activity-editor__body input:not([type='checkbox']):not([type='color']):not(.temporal-create-u2-when *, .temporal-create-tree-time-editor *, .temporal-create-life-area-field *, .temporal-create-quick-reminder *, .temporal-create-description-section *, .temporal-create-u2-location),
 .timeline-activity-editor__body :is(select, textarea):not(.temporal-create-life-area-field *, .temporal-create-advanced-description) {
   box-sizing: border-box;
   min-width: 0;

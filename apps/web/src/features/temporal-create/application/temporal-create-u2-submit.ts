@@ -438,6 +438,80 @@ export function validateTemporalCreateU6Structure(
   return null;
 }
 
+export type TemporalCreateStructureIssue = Readonly<{
+  message: string;
+  messageEn: string;
+  messageIt: string;
+  target: string;
+}>;
+
+/** Keep the domain check unchanged while locating its error in the Create form. */
+export function validateTemporalCreateU6StructureIssue(
+  fields: TemporalCreateFields,
+  draft: TemporalCreateU2AuthoringDraft,
+): TemporalCreateStructureIssue | null {
+  const message = validateTemporalCreateU6Structure(fields, draft);
+  if (message === null) return null;
+
+  const italian: Record<string, string> = {
+    'Only an Activity can own planned Sessions and internal decomposition.':
+      'Le Sessioni pianificate richiedono un’attività.',
+    'Activity structure exceeds the supported planning limits.':
+      'Hai raggiunto il limite di elementi pianificati.',
+    'Internal Activity decomposition is invalid.': 'Controlla le attività interne.',
+    'Complete each Activity interval date, start and end time.':
+      'Completa data e orari dell’intervallo.',
+    'Activity intervals must have a valid duration and must not overlap.':
+      'Gli intervalli devono avere durata e non sovrapporsi.',
+    'Place the Activity before assigning times to planned Sessions.':
+      'Colloca prima l’attività.',
+    'Complete each Session date, start and end time.':
+      'Completa data e orari della Sessione.',
+    'Every Activity Session must stay inside the parent Activity time range.':
+      'La Sessione deve rientrare nell’orario dell’attività.',
+    'Internal Activity decomposition has an incomplete time range.':
+      'Completa l’orario dell’attività interna.',
+    'Internal Activity decomposition must stay inside the Activity time range.':
+      'L’attività interna deve rientrare nell’orario dell’attività.',
+    'An internal planned Session must stay inside its owner time range.':
+      'La Sessione deve rientrare nell’orario della sua attività.',
+    'An internal planned Session must stay inside the Activity time range.':
+      'La Sessione deve rientrare nell’orario dell’attività.',
+  };
+
+  let target = 'activityStructure';
+  let messageIt = italian[message] ?? 'Controlla la pianificazione dell’attività.';
+  let messageEn = message === 'Every Activity Session must stay inside the parent Activity time range.'
+    ? 'Session time must fit within the Activity.'
+    : message;
+  if (message.includes('Activity interval')) target = 'activityIntervals';
+  if (message === 'Place the Activity before assigning times to planned Sessions.') {
+    const first = draft.activityStructure.plannedSlices.find((slice) => slice.timeEnabled === true);
+    if (first) target = `plannedSession:${first.id}`;
+  } else if (message === 'Complete each Session date, start and end time.' ||
+    message === 'Every Activity Session must stay inside the parent Activity time range.') {
+    const bands = activityBands(fields, draft);
+    const parent = bands === null ? null : {
+      start: bands[0]!.start,
+      end: bands[bands.length - 1]!.end,
+    };
+    const invalid = draft.activityStructure.plannedSlices.find((slice) => {
+      if (slice.timeEnabled !== true) return false;
+      const window = sliceLocalWindow(slice);
+      return window === null || parent === null || !contained(window, parent);
+    });
+    if (invalid) {
+      target = `plannedSession:${invalid.id}`;
+      const window = sliceLocalWindow(invalid);
+      if (window && Temporal.PlainDateTime.compare(window.start, window.end) >= 0) {
+        messageIt = 'La Sessione deve avere una durata.';
+        messageEn = 'Set a Session duration.';
+      }
+    }
+  }
+  return { message, messageEn, messageIt, target };
+}
+
 function localIntervalPlacement(
   fields: TemporalCreateFields,
   start: Temporal.PlainDateTime,

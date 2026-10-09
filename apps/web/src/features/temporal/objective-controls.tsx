@@ -163,12 +163,13 @@ export function ObjectiveControls({
                   step="any"
                   value={currentValue}
                   aria-label={`Valore reale per ${objective.label}`}
-                  onChange={(event) =>
+                  onChange={(event) => {
+                    const value = event.currentTarget.value;
                     setValues((current) => ({
                       ...current,
-                      [objective.objectiveRef]: event.currentTarget.value,
-                    }))
-                  }
+                      [objective.objectiveRef]: value,
+                    }));
+                  }}
                 />
                 {objective.unitCode ? <span>{objective.unitCode}</span> : null}
                 <button

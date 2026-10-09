@@ -230,6 +230,42 @@ describe('Temporal Create U2 entry', () => {
     expect(activityRequests[0]?.children).toEqual([]);
   });
 
+  it('shows an out-of-range Session error in Italian on its time controls', async () => {
+    const { activityRequests } = renderEntry([], false, '2132-03-06');
+    fireEvent.change(screen.getByPlaceholderText('Titolo'), {
+      target: { value: 'Progetto' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Opzioni avanzate/ }));
+    const actions = screen.getByLabelText('Aggiungi Sessione pianificata');
+    fireEvent.click(within(actions).getByRole('button', { name: 'Sessione' }));
+    const planned = document.querySelector('[data-create-planned-session]') as HTMLElement;
+    fireEvent.change(within(planned).getByLabelText('Nome Sessione'), {
+      target: { value: 'Ricerca fonti' },
+    });
+    fireEvent.click(within(planned).getByRole('button', { name: 'Orario' }));
+    fireEvent.change(within(planned).getByLabelText('Inizio Sessione: ore'), {
+      target: { value: '00' },
+    });
+    fireEvent.change(within(planned).getByLabelText('Fine Sessione: ore'), {
+      target: { value: '23' },
+    });
+    fireEvent.change(within(planned).getByLabelText('Fine Sessione: minuti'), {
+      target: { value: '59' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi' }));
+
+    const editor = planned.querySelector<HTMLElement>('.temporal-create-tree-time-editor');
+    if (!editor) throw new Error('Expected Session time editor.');
+    await waitFor(() => {
+      expect(editor.getAttribute('data-create-invalid')).toBe('true');
+      expect(within(editor).getByRole('alert').textContent).toBe(
+        'La Sessione deve rientrare nell’orario dell’attività.',
+      );
+    });
+    expect(planned.getAttribute('data-create-invalid')).toBeNull();
+    expect(activityRequests).toHaveLength(0);
+  });
+
   it('saves a planned Session without any time when Orario remains off or is switched off', async () => {
     const { activityRequests } = renderEntry([], false, '2132-03-06');
     fireEvent.change(screen.getByPlaceholderText('Titolo'), { target: { value: 'Progetto' } });

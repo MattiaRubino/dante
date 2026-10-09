@@ -45,7 +45,7 @@ import {
   temporalCreateRecurringEventSharedIntentSupported,
   temporalCreateU2QuickIntentSupported,
   validateTemporalCreateU2QuickFields,
-  validateTemporalCreateU6Structure,
+  validateTemporalCreateU6StructureIssue,
 } from '../application/temporal-create-u2-submit';
 import {
   continueTemporalCreateEditing,
@@ -340,19 +340,14 @@ export function TemporalCreateEntry({
   const executeU2Quick = async (
     fields: TemporalCreateSession['draft']['current'],
   ): Promise<boolean> => {
-    const structureIssue = validateTemporalCreateU6Structure(
+    const structureIssue = validateTemporalCreateU6StructureIssue(
       fields,
       u2DraftRef.current,
     );
     if (structureIssue !== null) {
-      setFailureTarget(
-        /interval/i.test(structureIssue)
-          ? 'activityIntervals'
-          : /session/i.test(structureIssue)
-            ? 'plannedSessions'
-            : 'activityStructure',
-      );
-      setFailureMessage(structureIssue);
+      setFailureTarget(structureIssue.target);
+      setFailureMessage(i18n.language.toLowerCase().startsWith('it')
+        ? structureIssue.messageIt : structureIssue.messageEn);
       setLifecycle('failed');
       return false;
     }
@@ -491,19 +486,14 @@ export function TemporalCreateEntry({
   const executeRecurringActivity = async (
     fields: TemporalCreateSession['draft']['current'],
   ): Promise<boolean> => {
-    const structureIssue = validateTemporalCreateU6Structure(
+    const structureIssue = validateTemporalCreateU6StructureIssue(
       fields,
       u2DraftRef.current,
     );
     if (structureIssue !== null) {
-      setFailureTarget(
-        /interval/i.test(structureIssue)
-          ? 'activityIntervals'
-          : /session/i.test(structureIssue)
-            ? 'plannedSessions'
-            : 'activityStructure',
-      );
-      setFailureMessage(structureIssue);
+      setFailureTarget(structureIssue.target);
+      setFailureMessage(i18n.language.toLowerCase().startsWith('it')
+        ? structureIssue.messageIt : structureIssue.messageEn);
       setLifecycle('failed');
       return false;
     }
