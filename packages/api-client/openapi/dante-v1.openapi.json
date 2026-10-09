@@ -5867,6 +5867,107 @@
         "title": "DependencyFindingResponse",
         "type": "object"
       },
+      "DraftVaultResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "draft_ref": {
+            "format": "uuid",
+            "title": "Draft Ref",
+            "type": "string"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "title": "Payload",
+            "type": "object"
+          },
+          "revision": {
+            "title": "Revision",
+            "type": "integer"
+          },
+          "subject_kind": {
+            "enum": ["activity", "event"],
+            "title": "Subject Kind",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "draft_ref",
+          "subject_kind",
+          "title",
+          "payload",
+          "revision",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "DraftVaultResponse",
+        "type": "object"
+      },
+      "DraftVaultSaveRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "draft_ref": {
+            "format": "uuid",
+            "title": "Draft Ref",
+            "type": "string"
+          },
+          "expected_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Revision"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "title": "Payload",
+            "type": "object"
+          },
+          "subject_kind": {
+            "enum": ["activity", "event"],
+            "title": "Subject Kind",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 300,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "draft_ref",
+          "operation_id",
+          "subject_kind",
+          "title",
+          "payload"
+        ],
+        "title": "DraftVaultSaveRequest",
+        "type": "object"
+      },
       "EditExecutionPolicy": {
         "properties": {
           "activity_ref": {
@@ -29352,6 +29453,121 @@
           }
         },
         "summary": "Revise Temporal Constraint Rule",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/drafts": {
+      "get": {
+        "operationId": "temporal_list_drafts",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DraftVaultResponse"
+                  },
+                  "title": "Response Temporal List Drafts",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Drafts",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/drafts/{draft_ref}": {
+      "delete": {
+        "operationId": "temporal_retire_draft",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "draft_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Draft Ref",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "expected_revision",
+            "required": true,
+            "schema": {
+              "title": "Expected Revision",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Draft",
+        "tags": ["temporal"]
+      },
+      "put": {
+        "operationId": "temporal_save_draft",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "draft_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Draft Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DraftVaultSaveRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DraftVaultResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Save Draft",
         "tags": ["temporal"]
       }
     },

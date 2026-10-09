@@ -65,6 +65,8 @@ import type {
   DecompositionPolicyCommand,
   DecompositionPolicyResponse,
   DecompositionResponse,
+  DraftVaultResponse,
+  DraftVaultSaveRequest,
   EstablishActivityScheduleRequest,
   EstablishOccurrenceScheduleRequest,
   EvaluateTemporalConstraintsRequest,
@@ -233,6 +235,7 @@ import type {
   TemporalDiagnoseSelfPlanConflictsParams,
   TemporalFindActualRealizationConditionParams,
   TemporalListConstraintsBySubjectParams,
+  TemporalRetireDraftParams,
   TemporalSearchSelfPlanStepCandidatesParams,
   TimelineWindowEmptyResponse,
   TimelineWindowItemsResponse,
@@ -7350,6 +7353,174 @@ export const temporalReviseConstraintRule = async (
     status: res.status,
     headers: res.headers,
   } as temporalReviseConstraintRuleResponse;
+};
+
+export type temporalListDraftsResponse200 = {
+  data: DraftVaultResponse[];
+  status: 200;
+};
+
+export type temporalListDraftsResponseSuccess =
+  temporalListDraftsResponse200 & {
+    headers: Headers;
+  };
+export type temporalListDraftsResponse = temporalListDraftsResponseSuccess;
+
+export const getTemporalListDraftsUrl = () => {
+  return `/api/v1/temporal/drafts`;
+};
+
+/**
+ * @summary List Drafts
+ */
+export const temporalListDrafts = async (
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListDraftsResponse> => {
+  const res = await (fetchFn ?? fetch)(getTemporalListDraftsUrl(), {
+    ...options,
+    method: 'GET',
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListDraftsResponse['data'] = body ? JSON.parse(body) : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListDraftsResponse;
+};
+
+export type temporalRetireDraftResponse204 = {
+  data: void;
+  status: 204;
+};
+
+export type temporalRetireDraftResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalRetireDraftResponseSuccess =
+  temporalRetireDraftResponse204 & {
+    headers: Headers;
+  };
+export type temporalRetireDraftResponseError =
+  temporalRetireDraftResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalRetireDraftResponse =
+  temporalRetireDraftResponseSuccess | temporalRetireDraftResponseError;
+
+export const getTemporalRetireDraftUrl = (
+  draftRef: string,
+  params: TemporalRetireDraftParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value));
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/v1/temporal/drafts/${draftRef}?${stringifiedParams}`
+    : `/api/v1/temporal/drafts/${draftRef}`;
+};
+
+/**
+ * @summary Delete Draft
+ */
+export const temporalRetireDraft = async (
+  draftRef: string,
+  params: TemporalRetireDraftParams,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalRetireDraftResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalRetireDraftUrl(draftRef, params),
+    {
+      ...options,
+      method: 'DELETE',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalRetireDraftResponse['data'] = body
+    ? JSON.parse(body)
+    : undefined;
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalRetireDraftResponse;
+};
+
+export type temporalSaveDraftResponse200 = {
+  data: DraftVaultResponse;
+  status: 200;
+};
+
+export type temporalSaveDraftResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalSaveDraftResponseSuccess = temporalSaveDraftResponse200 & {
+  headers: Headers;
+};
+export type temporalSaveDraftResponseError = temporalSaveDraftResponse422 & {
+  headers: Headers;
+};
+
+export type temporalSaveDraftResponse =
+  temporalSaveDraftResponseSuccess | temporalSaveDraftResponseError;
+
+export const getTemporalSaveDraftUrl = (draftRef: string) => {
+  return `/api/v1/temporal/drafts/${draftRef}`;
+};
+
+/**
+ * @summary Save Draft
+ */
+export const temporalSaveDraft = async (
+  draftRef: string,
+  draftVaultSaveRequest: DraftVaultSaveRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalSaveDraftResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(getTemporalSaveDraftUrl(draftRef), {
+    ...options,
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(draftVaultSaveRequest),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalSaveDraftResponse['data'] = body ? JSON.parse(body) : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalSaveDraftResponse;
 };
 
 export type createEventApiV1TemporalEventsPostResponse201 = {
