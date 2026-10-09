@@ -790,6 +790,14 @@ export function TemporalCreateEntry({
     const fields = fieldsOverride
       ? { ...session.draft.current, ...fieldsOverride }
       : session.draft.current;
+    if (fields.timeSemantics === 'unscheduled') {
+      setLifecycle('failed');
+      setFailureMessage(
+        'Per conservare un elemento non ancora confermato usa «Salva bozza»; ' +
+        'Aggiungi richiede una collocazione accettata.',
+      );
+      return;
+    }
     setFailureTarget(null);
     if (
       fields.kind === 'activity' &&
