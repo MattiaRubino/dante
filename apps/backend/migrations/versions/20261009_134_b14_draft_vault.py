@@ -168,3 +168,4 @@ BEGIN
     RETURN TRUE;
 END;
 $function$;
+"""
