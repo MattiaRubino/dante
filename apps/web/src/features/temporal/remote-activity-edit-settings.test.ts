@@ -169,6 +169,33 @@ describe('Activity editor settings remote contract', () => {
     expect(after.placementLockRevision).toBe(4);
   });
 
+  it('uses the absent-lock basis when the read revision is zero', async () => {
+    const fetchFn = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const path = typeof input === 'string' ? input :
+        input instanceof URL ? input.href : input.url;
+      if (path.endsWith('/auth/session'))
+        return Promise.resolve(response({ authenticated: true, csrf_token: 'token' }));
+      if (path.endsWith('/placement-lock') && init?.method === 'PUT') {
+        expect(JSON.parse(String(init.body))).toEqual({ locked: true,
+          expected_revision: null });
+        return Promise.resolve(response({ schedule_ref: 'schedule',
+          locked: true, revision: 1 }));
+      }
+      throw new Error(`Unexpected request: ${path}`);
+    });
+    const source = createRemoteActivityEditSettings(fetchFn);
+    const saved = await source.setPlacementProtected({
+      capture: { mode: 'disabled', stateRef: null },
+      reality: { mode: 'manual', stateRef: null },
+      schedules: [], objectives: [], lifeAreaRef: null,
+      placementProtected: false, placementLockScheduleRef: 'schedule',
+      placementLockRevision: 0, reminderLeadMinutes: null,
+      reminderScheduleRef: null, reminderStateRef: null,
+      childGuardMode: 'none',
+    }, true);
+    expect(saved.placementLockRevision).toBe(1);
+  });
+
   it('reassigns the Life Area using its current canonical revision', async () => {
     const requests: Record<string, unknown>[] = [];
     const fetchFn = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
@@ -206,6 +233,25 @@ describe('Activity editor settings remote contract', () => {
     }]);
     expect(saved.currentRef).toBe('area-1');
     expect(saved.currentRevision).toBe(8);
+  });
+
+  it('creates a named Life Area before assigning it during editing', async () => {
+    const fetchFn = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const path = typeof input === 'string' ? input :
+        input instanceof URL ? input.href : input.url;
+      if (path.endsWith('/auth/session'))
+        return Promise.resolve(response({ authenticated: true, csrf_token: 'token' }));
+      if (path.endsWith('/life-areas') && init?.method === 'POST') {
+        expect(JSON.parse(String(init.body))).toEqual({
+          operation_id: 'new-area-op', name: 'Studio',
+        });
+        return Promise.resolve(response({ life_area_ref: 'area-new', name: 'Studio' }));
+      }
+      throw new Error(`Unexpected path: ${path}`);
+    });
+    const created = await createRemoteActivityEditSettings(fetchFn)
+      .createLifeArea(' Studio ', 'new-area-op');
+    expect(created).toEqual({ ref: 'area-new', name: 'Studio' });
   });
 
 

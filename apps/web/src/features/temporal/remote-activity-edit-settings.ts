@@ -1,6 +1,7 @@
 import { createWebFetch } from '../../platform/api/web-fetch';
 import { parseProfile, type ActivityProfile } from './remote-activity-inspector';
 import { invalidateTemporalPlanningRead, invalidateTemporalTimelineRead } from './timeline-invalidation';
+import { invalidateActivitySessionCardCapability } from './activity-session-capability-cache';
 import {
   createRemoteRealityObjectiveDataSource,
   parseObjectiveView,
@@ -57,6 +58,7 @@ export type ActivityReplanDraft = Readonly<{
   removedIntervals: readonly string[];
   newIntervals: readonly ActivityNewInterval[];
   removedPlanned: readonly string[];
+  deletedPlanned?: readonly string[];
   newPlanned: readonly ActivityNewPlanned[];
 }>;
 export type ActivityReplanChange = Readonly<{
@@ -270,9 +272,11 @@ export function createRemoteActivityEditSettings(
       })),
       planned_sessions: settings.schedules.filter((item) =>
         item.role === 'planned' && item.placementStateRef !== null &&
-        !draft.removedPlanned.includes(item.scheduleRef)).map(row),
+        !draft.removedPlanned.includes(item.scheduleRef) &&
+        !draft.deletedPlanned?.includes(item.scheduleRef)).map(row),
       place_planned_sessions: settings.schedules.filter((item) =>
         item.role === 'planned' && item.placementStateRef === null &&
+        !draft.deletedPlanned?.includes(item.scheduleRef) &&
         !!draft.times[item.scheduleRef]?.start).map((item) => ({
           schedule_ref: item.scheduleRef,
           starts_local_at: draft.times[item.scheduleRef]?.start,
@@ -281,6 +285,10 @@ export function createRemoteActivityEditSettings(
       remove_planned_sessions: settings.schedules.filter((item) =>
         item.role === 'planned' && item.placementStateRef !== null &&
         draft.removedPlanned.includes(item.scheduleRef)).map(row),
+      delete_planned_sessions: settings.schedules.filter((item) =>
+        item.role === 'planned' && draft.deletedPlanned?.includes(item.scheduleRef))
+        .map((item) => ({ schedule_ref: item.scheduleRef,
+          expected_material_state_ref: item.placementStateRef })),
       new_planned_sessions: draft.newPlanned.map((item) => ({
         client_ref: item.clientRef, name: item.name.trim() || null,
         starts_local_at: item.start || null, ends_local_at: item.end || null,
@@ -453,6 +461,23 @@ export function createRemoteActivityEditSettings(
         currentRevision: current ? Number(current.assignment_revision) : 0,
       });
     },
+    async createLifeArea(name: string, operationId: string): Promise<Readonly<{ ref: string; name: string }>> {
+      const canonical = name.trim().replace(/\s+/g, ' ');
+      if (!canonical || canonical.length > 100) throw new Error('Inserisci un nome Life Area valido.');
+      const response = await request('/api/v1/temporal/life-areas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Dante-CSRF': await csrf() },
+        body: JSON.stringify({ operation_id: operationId, name: canonical }),
+      });
+      if (!response.ok) throw new Error(response.status === 409
+        ? 'Esiste già una Life Area con questo nome. Selezionala dall’elenco.'
+        : 'Impossibile creare la Life Area.');
+      const created = object(await response.json());
+      if (typeof created.life_area_ref !== 'string' || created.name !== canonical) {
+        throw new Error('Risposta Life Area non valida.');
+      }
+      return Object.freeze({ ref: created.life_area_ref, name: canonical });
+    },
     async assignLifeArea(
       ref: string,
       current: ActivityLifeAreaChoice,
@@ -529,38 +554,51 @@ export function createRemoteActivityEditSettings(
         throw new Error('La protezione non è disponibile per questa attività.');
       }
       const scheduleRef = settings.placementLockScheduleRef;
-      const response = await request(
-        `/api/v1/temporal/schedules/${encodeURIComponent(scheduleRef)}/placement-lock`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Dante-CSRF': await csrf(),
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 12_000);
+      try {
+        const response = await request(
+          `/api/v1/temporal/schedules/${encodeURIComponent(scheduleRef)}/placement-lock`,
+          {
+            method: 'PUT',
+            signal: controller.signal,
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Dante-CSRF': await csrf(controller.signal),
+            },
+            body: JSON.stringify({
+              locked,
+              expected_revision: settings.placementLockRevision === 0
+                ? null : settings.placementLockRevision,
+            }),
           },
-          body: JSON.stringify({
-            locked,
-            expected_revision: settings.placementLockRevision,
-          }),
-        },
-      );
-      if (!response.ok) {
-        throw new Error(response.status === 409
-          ? 'La protezione è cambiata. Ricarica l’attività e riprova.'
-          : 'Impossibile aggiornare la protezione della collocazione.');
+        );
+        if (!response.ok) {
+          throw new Error(response.status === 409
+            ? 'La protezione è cambiata. Ricarica l’attività e riprova.'
+            : 'Impossibile aggiornare la protezione della collocazione.');
+        }
+        const saved = object(await response.json());
+        if (saved.schedule_ref !== scheduleRef ||
+            saved.locked !== locked ||
+            !Number.isInteger(saved.revision)) {
+          throw new Error('Risposta non valida per la protezione della collocazione.');
+        }
+        invalidateTemporalTimelineRead();
+        invalidateTemporalPlanningRead();
+        return Object.freeze({
+          ...settings,
+          placementProtected: locked,
+          placementLockRevision: Number(saved.revision),
+        });
+      } catch (error) {
+        if (controller.signal.aborted) {
+          throw new Error('Blocco non salvato. Riprova.');
+        }
+        throw error;
+      } finally {
+        clearTimeout(timer);
       }
-      const saved = object(await response.json());
-      if (saved.schedule_ref !== scheduleRef ||
-          saved.locked !== locked ||
-          !Number.isInteger(saved.revision)) {
-        throw new Error('Risposta non valida per la protezione della collocazione.');
-      }
-      invalidateTemporalTimelineRead();
-      invalidateTemporalPlanningRead();
-      return Object.freeze({
-        ...settings,
-        placementProtected: locked,
-        placementLockRevision: Number(saved.revision),
-      });
     },
     async saveCore(
       profile: ActivityProfile,
@@ -635,6 +673,7 @@ export function createRemoteActivityEditSettings(
         });
         invalidateTemporalTimelineRead();
         invalidateTemporalPlanningRead();
+        if (changes.capture) invalidateActivitySessionCardCapability(profile.activityRef);
         return { profile: savedProfile, settings: savedSettings };
       };
       try {

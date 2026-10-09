@@ -23,6 +23,7 @@ const saveCore = vi.fn();
 const previewReplan = vi.fn();
 const applyReplan = vi.fn().mockImplementation(async (_ref, settings) => settings);
 const loadLifeAreaChoice = vi.fn();
+const createLifeArea = vi.fn();
 const assignLifeArea = vi.fn();
 const revisePlannedName = vi.fn();
 const setPlacementProtected = vi.fn();
@@ -60,6 +61,7 @@ vi.mock('../../../temporal/remote-activity-edit-settings', () => ({
     previewReplan,
     applyReplan,
     loadLifeAreaChoice,
+    createLifeArea,
     assignLifeArea,
     revisePlannedName,
     setPlacementProtected,
@@ -118,7 +120,6 @@ describe('Recurring Activity profile scope', () => {
     const body = container.querySelector('.timeline-activity-editor__body');
     expect(body).not.toBeNull();
     const sections = [
-      '.timeline-activity-editor__kind',
       '.timeline-activity-editor__title-row',
       '[aria-label="Programmazione attuale"]',
       '.timeline-activity-editor__area-color',
@@ -468,6 +469,31 @@ describe('Activity Inspector', () => {
           end: '2026-10-09T11:00' }),
       ] }), expect.any(String)));
     expect(previewReplan).not.toHaveBeenCalled();
+  });
+
+  it('retires an existing planned Session separately from clearing its time', async () => {
+    const settings = { ...currentSettings, schedules: [
+      { scheduleRef: 'envelope', role: 'envelope', name: null, order: 0,
+        placementStateRef: 'state-0', temporalForm: 'named_zone_local',
+        start: '2026-10-09T09:00:00', end: '2026-10-09T12:00:00', zoneId: 'Europe/Rome' },
+      { scheduleRef: 'planned', role: 'planned', name: 'Prima', order: 1,
+        placementStateRef: 'state-2', temporalForm: 'named_zone_local',
+        start: '2026-10-09T09:00:00', end: '2026-10-09T10:00:00', zoneId: 'Europe/Rome' },
+    ] };
+    loadSettings.mockResolvedValueOnce(settings);
+    applyReplan.mockResolvedValueOnce({ ...settings,
+      schedules: settings.schedules.filter((row) => row.role !== 'planned') });
+    const onSaved = vi.fn();
+    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
+      onSaved={onSaved} onCancel={() => undefined} />);
+    const remove = await screen.findByRole('button', { name: 'Rimuovi Sessione' });
+    fireEvent.click(remove);
+    expect(screen.queryByRole('textbox', { name: 'Nome Sessione' })).toBeNull();
+    await submitEditor();
+    await waitFor(() => expect(applyReplan).toHaveBeenCalledWith(ref, settings,
+      expect.objectContaining({ deletedPlanned: ['planned'], removedPlanned: [] }),
+      expect.any(String)));
+    expect(onSaved).toHaveBeenCalledWith(profile);
   });
 
   it('edits the single overall interval of an Activity without role intervals', async () => {
@@ -925,6 +951,30 @@ describe('Activity Inspector', () => {
     await waitFor(() => expect(assignLifeArea).toHaveBeenCalledWith(
       ref, catalog, null, expect.any(String),
     ));
+  });
+
+  it('creates and assigns a new Life Area while saving the Activity', async () => {
+    const catalog = { currentRef: null, currentRevision: 0, options: [] };
+    loadLifeAreaChoice.mockResolvedValueOnce(catalog);
+    createLifeArea.mockResolvedValueOnce({ ref: 'area-new', name: 'Studio' });
+    assignLifeArea.mockResolvedValueOnce({
+      currentRef: 'area-new', currentRevision: 1,
+      options: [{ ref: 'area-new', name: 'Studio' }],
+    });
+    const onSaved = vi.fn();
+    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
+      onSaved={onSaved} onCancel={() => undefined} />);
+    fireEvent.change(await screen.findByRole('textbox', { name: 'Area assegnata' }),
+      { target: { value: 'Studio' } });
+    expect(screen.getByText(/La nuova Life Area verrà creata/)).toBeTruthy();
+    await submitEditor();
+    await waitFor(() => expect(createLifeArea).toHaveBeenCalledWith(
+      'Studio', expect.any(String)));
+    expect(assignLifeArea).toHaveBeenCalledWith(ref,
+      expect.objectContaining({ currentRevision: 0,
+        options: [{ ref: 'area-new', name: 'Studio' }] }),
+      'area-new', expect.any(String));
+    expect(onSaved).toHaveBeenCalledWith(profile);
   });
 
   it('renames an existing planned Session without rescheduling it', async () => {

@@ -1567,6 +1567,24 @@
   line-height: 1.3;
 }
 
+.timeline-event-modal--inspector .timeline-event-modal__title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.timeline-event-modal--inspector .timeline-event-modal__title-row .timeline-event-modal__title {
+  min-width: 0;
+}
+
+.timeline-event-modal--inspector .timeline-event-modal__title-row
+  .timeline-activity-session-card-controls {
+  flex: 0 0 auto;
+  align-self: flex-start;
+}
+
 .timeline-event-modal--inspector .timeline-event-modal__time,
 .timeline-event-modal--inspector .timeline-event-modal__group {
   margin: 0 0 6px;

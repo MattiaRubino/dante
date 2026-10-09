@@ -78,6 +78,7 @@ function planValidation(settings: ActivityEditSettings, draft: ActivityReplanDra
   }
   const planned = settings.schedules.filter((row) => row.role === 'planned' &&
     !draft.removedPlanned.includes(row.scheduleRef) &&
+    !draft.deletedPlanned?.includes(row.scheduleRef) &&
     (row.placementStateRef !== null || !!draft.times[row.scheduleRef]?.start))
     .map((row) => ({ ref: row.scheduleRef,
       start: (draft.times[row.scheduleRef]?.start ?? '').slice(0, 16),
@@ -140,9 +141,11 @@ export function ActivityEditPanel({
   const [nameError, setNameError] = useState('');
   const [areaError, setAreaError] = useState('');
   const areaOperation = useRef<string | null>(null);
+  const areaCreateOperation = useRef<string | null>(null);
   const [planDraft, setPlanDraft] = useState<Record<string, ActivityReplanTime>>({});
   const [newPlanned, setNewPlanned] = useState<ActivityNewPlanned[]>([]);
   const [removedPlanned, setRemovedPlanned] = useState<string[]>([]);
+  const [deletedPlanned, setDeletedPlanned] = useState<string[]>([]);
   const [newIntervals, setNewIntervals] = useState<ActivityNewInterval[]>([]);
   const [removedIntervals, setRemovedIntervals] = useState<string[]>([]);
   const [objectiveDraft, setObjectiveDraft] = useState({
@@ -208,26 +211,35 @@ export function ActivityEditPanel({
   const planDirty = canReplan && (
     removedIntervals.length > 0 || newIntervals.length > 0 ||
     removedPlanned.length > 0 || newPlanned.length > 0 ||
+    deletedPlanned.length > 0 ||
     (settings?.schedules.some((schedule) => schedule.role === 'planned' &&
-      schedule.placementStateRef === null && !!planDraft[schedule.scheduleRef]?.start) ?? false) ||
+      schedule.placementStateRef === null && !deletedPlanned.includes(schedule.scheduleRef) &&
+      !!planDraft[schedule.scheduleRef]?.start) ?? false) ||
     editablePlan.some((schedule) =>
       !removedPlanned.includes(schedule.scheduleRef) &&
+      !deletedPlanned.includes(schedule.scheduleRef) &&
       !removedIntervals.includes(schedule.scheduleRef) && (
         planDraft[schedule.scheduleRef]?.start !== schedule.start ||
         planDraft[schedule.scheduleRef]?.end !== schedule.end
       ))
   );
   const replanDraft = {
-    times: planDraft, removedIntervals, newIntervals, removedPlanned, newPlanned,
+    times: planDraft, removedIntervals, newIntervals, removedPlanned,
+    deletedPlanned, newPlanned,
   };
   const planErrors = settings && canReplan && planDirty
     ? planValidation(settings, replanDraft) : {};
   const lockDirty = settings !== null && settings.placementLockScheduleRef !== null &&
     placementProtected !== null && placementProtected !== settings.placementProtected;
+  const newAreaName = areaQuery.trim().replace(/\s+/g, ' ');
+  const creatingArea = !!newAreaName && !selectedArea &&
+    !areaChoice?.options.some((area) => area.name.toLocaleLowerCase() ===
+      newAreaName.toLocaleLowerCase());
   const areaDirty = areaChoice !== null &&
-    (selectedArea || null) !== areaChoice.currentRef;
+    (creatingArea || (selectedArea || null) !== areaChoice.currentRef);
   const areaQueryValid = !areaQuery || !!areaChoice?.options.some((area) =>
-    area.ref === selectedArea && area.name === areaQuery);
+    area.ref === selectedArea && area.name.toLocaleLowerCase() ===
+      newAreaName.toLocaleLowerCase()) || creatingArea;
   const scopedDomainUnsupported = !!recurringContext && editScope === 'this_and_following';
   const nameDirty = !!settings && settings.schedules.some((schedule) =>
     schedule.role === 'planned' && (plannedNames[schedule.scheduleRef] ?? '') !== (schedule.name ?? ''));
@@ -253,6 +265,7 @@ export function ActivityEditPanel({
         setPlannedNames(Object.fromEntries(loaded.schedules.filter((row) => row.role === 'planned')
           .map((row) => [row.scheduleRef, row.name ?? ''])));
         setRemovedPlanned([]);
+        setDeletedPlanned([]);
         setNewIntervals([]);
         setRemovedIntervals([]);
       })
@@ -460,6 +473,7 @@ export function ActivityEditPanel({
       [ref]: { start: current[ref]?.start ?? '', end: current[ref]?.end ?? '', [field]: value },
     }));
     setPlanOperation(null);
+                    setPlanError('');
     setPlanError('');
   };
 
@@ -549,6 +563,7 @@ export function ActivityEditPanel({
             ])));
             setNewPlanned([]);
             setRemovedPlanned([]);
+            setDeletedPlanned([]);
             setNewIntervals([]);
             setRemovedIntervals([]);
             setPlanOperation(null);
@@ -573,8 +588,25 @@ export function ActivityEditPanel({
               setAreaError('Life Area cambiata. Riapri Modifica.');
               throw new Error('Life Area cambiata. Riapri Modifica.');
             }
+            let choice = areaChoice;
+            let targetArea = selectedArea || null;
+            if (creatingArea) {
+              const created = await settingsSource.createLifeArea(
+                newAreaName, areaCreateOperation.current ??= crypto.randomUUID(),
+              ).catch((reason: unknown) => {
+                errorHandled = true;
+                setAreaError(reason instanceof Error ? reason.message : 'Life Area non creata.');
+                throw reason;
+              });
+              targetArea = created.ref;
+              choice = { ...choice, options: [...choice.options, created] };
+              setAreaChoice(choice);
+              setSelectedArea(created.ref);
+              setAreaQuery(created.name);
+              areaCreateOperation.current = null;
+            }
             const saved = await settingsSource.assignLifeArea(profile.activityRef,
-              areaChoice, selectedArea || null, areaOperation.current ??= crypto.randomUUID())
+              choice, targetArea, areaOperation.current ??= crypto.randomUUID())
               .catch((reason: unknown) => {
                 errorHandled = true;
                 setAreaError(reason instanceof Error ? reason.message : 'Life Area non salvata.');
@@ -684,13 +716,6 @@ export function ActivityEditPanel({
             </button>
           </div>
         ) : null}
-        <div className="temporal-create-type-grid is-four timeline-activity-editor__kind"
-          role="group" aria-label="Tipo: Attività">
-          <button type="button" className="is-active" aria-current="true"><strong>Attività</strong></button>
-          <button type="button" disabled title="Il tipo non può essere cambiato dopo la creazione"><strong>Evento</strong></button>
-          <button type="button" className="is-deferred" disabled><strong>Timer</strong><small>Prossimamente</small></button>
-          <button type="button" className="is-deferred" disabled><strong>Sveglia</strong><small>Prossimamente</small></button>
-        </div>
         <div className="temporal-create-title-row has-tools timeline-activity-editor__title-row">
         <label className="timeline-activity-editor__title">
           <span className="timeline-activity-editor__visually-hidden">Titolo</span>
@@ -746,7 +771,8 @@ export function ActivityEditPanel({
             <div className="temporal-create-activity-tree__spine" aria-hidden="true" />
             <div className="temporal-create-activity-tree__root-sessions">
               <div className="temporal-create-activity-tree__group-label">Sessioni attività</div>
-              {settings.schedules.filter((row) => row.role === 'planned').map((row) => {
+              {settings.schedules.filter((row) => row.role === 'planned' &&
+                !deletedPlanned.includes(row.scheduleRef)).map((row) => {
                 const removed = removedPlanned.includes(row.scheduleRef);
                 const currentStart = planDraft[row.scheduleRef]?.start ?? row.start ?? '';
                 const currentEnd = planDraft[row.scheduleRef]?.end ?? row.end ?? '';
@@ -787,6 +813,14 @@ export function ActivityEditPanel({
                               setPlanOperation(null);
                             setPlanError('');
                           }}>Orario</button>
+                        <button type="button" className="is-remove" aria-label="Rimuovi Sessione"
+                          disabled={!canReplan || pending || planPending}
+                          onClick={() => {
+                            setDeletedPlanned((current) => [...current, row.scheduleRef]);
+                            setRemovedPlanned((current) => current.filter((ref) => ref !== row.scheduleRef));
+                            setPlanOperation(null);
+                            setPlanError('');
+                          }}>×</button>
                       </div>
                     </div>
                     {hasTime ? (
@@ -864,7 +898,8 @@ export function ActivityEditPanel({
         ) : null}
         {canReplan ? (
           <button type="button" className="temporal-create-structure-add timeline-activity-editor__add-session"
-            disabled={planPending || settings.schedules.filter((row) => row.role === 'planned').length +
+            disabled={planPending || settings.schedules.filter((row) => row.role === 'planned' &&
+              !deletedPlanned.includes(row.scheduleRef)).length +
               newPlanned.length >= 100}
             onClick={() => {
               setNewPlanned((current) => [...current, {
@@ -1027,6 +1062,7 @@ export function ActivityEditPanel({
                     ])));
                     setNewPlanned([]);
                     setRemovedPlanned([]);
+                    setDeletedPlanned([]);
                     setNewIntervals([]);
                     setRemovedIntervals([]);
                           setPlanOperation(null);
@@ -1059,8 +1095,10 @@ export function ActivityEditPanel({
                     disabled={pending || planPending}
                     onQueryChange={(query) => {
                       setAreaQuery(query);
-                      setSelectedArea(areaChoice.options.find((area) => area.name === query)?.ref ?? '');
+                      setSelectedArea(areaChoice.options.find((area) =>
+                        area.name.toLocaleLowerCase() === query.trim().toLocaleLowerCase())?.ref ?? '');
                       areaOperation.current = null;
+                      areaCreateOperation.current = null;
                       setAreaError('');
                     }}
                     onChoose={(area) => {
@@ -1069,7 +1107,11 @@ export function ActivityEditPanel({
                       areaOperation.current = null;
                       setAreaError('');
                     }}
-                    onClear={() => { setSelectedArea(''); setAreaQuery(''); setAreaError(''); }} />
+                    onClear={() => {
+                      setSelectedArea(''); setAreaQuery(''); setAreaError('');
+                      areaCreateOperation.current = null;
+                    }} />
+                  {creatingArea ? <small>La nuova Life Area verrà creata quando salvi.</small> : null}
                   {!areaQueryValid ? <small>Scegli una Life Area dall’elenco.</small> : null}
                 </>
               ) : null}
@@ -1328,7 +1370,7 @@ export function ActivityEditPanel({
         <section className="timeline-activity-editor__description temporal-create-section is-wide temporal-create-description-section" aria-label="Descrizione">
           <h3>Descrizione</h3>
             <textarea className="temporal-create-u2-description temporal-create-advanced-description"
-              aria-label="Descrizione" placeholder="Descrizione" rows={5}
+              aria-label="Descrizione" rows={5}
               value={draft.description}
               onChange={(event) => {
                 operation.current = undefined;

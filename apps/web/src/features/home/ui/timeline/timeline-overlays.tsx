@@ -1043,9 +1043,15 @@ export function EventDetailDialog({
               onClick={requestCloseCurrent} />
           </div>
         </div>
-        <h3 id="timeline-event-dialog-title" className="timeline-event-modal__title" title={detail.title}>
-          {currentEditingProfile ? 'Modifica attività' : detail.title}
-        </h3>
+        <div className="timeline-event-modal__title-row">
+          <h3 id="timeline-event-dialog-title" className="timeline-event-modal__title" title={detail.title}>
+            {currentEditingProfile ? 'Modifica attività' : detail.title}
+          </h3>
+          {!currentEditingProfile && sessionSubject?.kind === 'activity' ? (
+            <ActivitySessionCardControls activityRef={sessionSubject.ref}
+              label={detail.title} variant="inspector" showPlanned={false} />
+          ) : null}
+        </div>
         {currentEditingProfile ? (
           <ActivityEditPanel
             key={`${currentEditingProfile.activityRef}:${currentEditingProfile.revision}`}
@@ -1092,8 +1098,6 @@ export function EventDetailDialog({
             ) : null}
             {sessionSubject?.kind === 'activity' ? (
               <>
-                <ActivitySessionCardControls activityRef={sessionSubject.ref}
-                  label={detail.title} variant="inspector" showPlanned={false} />
                 <ActivityPlannedSessionsCardDetail
                   activityRef={sessionSubject.ref}
                   visible

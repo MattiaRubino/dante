@@ -106,6 +106,18 @@
         "meaning": "Optional user name for a future planned execution row; no actual Session identity.",
         "semantic_type": null,
         "value_contract": "Trimmed nonempty at most 300 characters; only planned role."
+      },
+      {
+        "name": "retired_at",
+        "postgres_type": "timestamp with time zone",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Retirement tombstone for a planned row removed from current authoring.",
+        "semantic_type": null,
+        "value_contract": "Only set by the owner-scoped retirement capability."
       }
     ],
     "primary_key": {
@@ -166,20 +178,7 @@
         "semantic_reason": "Purpose is owned by a real Activity."
       }
     ],
-    "unique_constraints": [
-      {
-        "name": "uq_activity_schedule_role_owner_role_order",
-        "columns": [
-          "activity_ref",
-          "role_code",
-          "presentation_order"
-        ],
-        "reason": "One envelope and deterministic independent interval and future planned Session orders per Activity.",
-        "deferrable": false,
-        "initially": "NOT DEFERRABLE",
-        "enforced": true
-      }
-    ],
+    "unique_constraints": [],
     "check_constraints": [
       {
         "name": "ck_activity_schedule_role_ck_activity_schedule_role_role",
@@ -231,10 +230,10 @@
           "role_code",
           "presentation_order"
         ],
-        "predicate": null,
+        "predicate": "(retired_at IS NULL)",
         "include": [],
-        "source": "unique_constraint",
-        "reason": "Purpose and order by Activity.",
+        "source": "standalone",
+        "reason": "Unique current order, while retired rows retain their original position.",
         "valid": true,
         "ready": true,
         "live": true
@@ -255,14 +254,14 @@
   },
   "state_history": {
     "material_state_behavior": null,
-    "current_binding": "Immutable role follows its Schedule identity through placement revisions.",
+    "current_binding": "Active role follows Schedule identity; retired roles preserve planning history.",
     "chronology": "Presentation order is a planning order, not time or execution truth.",
     "immutability_policy": "Guarded insert-only purpose for the Activity authoring transaction."
   },
   "lifecycle": {
     "retention": "Retained with the Schedule and its planning history.",
     "redaction": null,
-    "retirement_tombstone": null,
+    "retirement_tombstone": "retired_at",
     "delete_behavior": "No runtime delete."
   },
   "security": {

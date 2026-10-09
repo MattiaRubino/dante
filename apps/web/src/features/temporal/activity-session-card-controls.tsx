@@ -4,37 +4,11 @@ import './activity-session-card-controls.css';
 
 import { ActivityPlannedSessionsCardDetail } from './activity-planned-sessions-card-detail';
 import {
-  createRemoteTemporalSessionCapabilityDataSource,
   type TemporalSessionCapabilityDataSource,
   type SessionCaptureMode,
 } from './remote-session-capability-data-source';
 import { SessionSubjectControls } from './session-subject-controls';
-
-const defaultSource = createRemoteTemporalSessionCapabilityDataSource();
-const capabilityReads = new Map<string, Promise<SessionCaptureMode>>();
-
-function cachedCapability(activityRef: string): Promise<SessionCaptureMode> {
-  const existing = capabilityReads.get(activityRef);
-  if (existing !== undefined) {
-    return existing;
-  }
-  const pending = defaultSource.activityMode!(activityRef).catch((error) => {
-    capabilityReads.delete(activityRef);
-    throw error;
-  });
-  capabilityReads.set(activityRef, pending);
-  return pending;
-}
-
-export function invalidateActivitySessionCardCapability(
-  activityRef?: string,
-): void {
-  if (activityRef === undefined) {
-    capabilityReads.clear();
-    return;
-  }
-  capabilityReads.delete(activityRef);
-}
+import { cachedActivitySessionCapability, defaultActivitySessionSource } from './activity-session-capability-cache';
 
 export function ActivitySessionCardControls({
   activityRef,
@@ -42,7 +16,7 @@ export function ActivitySessionCardControls({
   interactive = true,
   showPlanned = true,
   variant = 'card',
-  source = defaultSource,
+  source = defaultActivitySessionSource,
 }: Readonly<{
   activityRef: string;
   label: string;
@@ -57,8 +31,8 @@ export function ActivitySessionCardControls({
     let cancelled = false;
     setMode(null);
     const read =
-      source === defaultSource
-        ? cachedCapability(activityRef)
+      source === defaultActivitySessionSource
+        ? cachedActivitySessionCapability(activityRef)
         : (source.activityMode?.(activityRef) ??
           source
             .activityEnabled(activityRef)
@@ -91,7 +65,6 @@ export function ActivitySessionCardControls({
     >
       {live ? (
         <>
-        {variant === 'inspector' ? <strong>Sessione attività</strong> : null}
         <SessionSubjectControls
           kind="activity"
           subjectRef={activityRef}

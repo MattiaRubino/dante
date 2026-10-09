@@ -102,6 +102,13 @@ class PlacePlannedRow(BaseModel):
         return self
 
 
+class DeletePlannedRow(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    schedule_ref: UUID
+    expected_material_state_ref: UUID | None
+
+
 class ActivityReplanCommand(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -114,6 +121,7 @@ class ActivityReplanCommand(BaseModel):
     place_planned_sessions: list[PlacePlannedRow] = Field(default_factory=list, max_length=100)
     new_planned_sessions: list[NewPlannedRow] = Field(default_factory=list, max_length=100)
     remove_planned_sessions: list[ReplanRow] = Field(default_factory=list, max_length=100)
+    delete_planned_sessions: list[DeletePlannedRow] = Field(default_factory=list, max_length=100)
 
     @model_validator(mode="after")
     def unique_new_rows(self) -> ActivityReplanCommand:
@@ -171,8 +179,11 @@ def _validated_plan(snapshot: ActivityEditSnapshot, command: ActivityReplanComma
     if (len(command.intervals) + len(command.remove_intervals) != len(intervals)
             or (intervals and not command.intervals and not command.new_intervals)
             or len(command.intervals) + len(command.new_intervals) > 100
-            or len(command.planned_sessions) + len(command.remove_planned_sessions) != len(planned)
-            or len(planned) + len(unplaced) + len(command.new_planned_sessions) > 100):
+            or len(command.planned_sessions) + len(command.remove_planned_sessions)
+               + sum(row.expected_material_state_ref is not None
+                     for row in command.delete_planned_sessions) != len(planned)
+            or len(planned) + len(unplaced) - len(command.delete_planned_sessions)
+               + len(command.new_planned_sessions) > 100):
         raise _invalid(
             "Every current row must be accounted for: 1-100 Activity intervals "
             "and at most 100 planned Sessions."
@@ -180,13 +191,17 @@ def _validated_plan(snapshot: ActivityEditSnapshot, command: ActivityReplanComma
     current = {row.schedule_ref: row for row in (envelope, *intervals, *planned)}
     retained = (*((command.envelope,) if command.envelope else ()),
                 *command.intervals, *command.planned_sessions)
-    accounted = (*retained, *command.remove_intervals, *command.remove_planned_sessions)
+    deleted_timed = tuple(row for row in command.delete_planned_sessions
+                          if row.expected_material_state_ref is not None)
+    accounted = (*retained, *command.remove_intervals, *command.remove_planned_sessions,
+                 *deleted_timed)
     if len({row.schedule_ref for row in accounted}) != len(current) - (0 if command.envelope else 1) or (
         command.envelope is not None and command.envelope.schedule_ref != envelope.schedule_ref
     ) or (
         {row.schedule_ref for row in (*command.intervals, *command.remove_intervals)}
         != {row.schedule_ref for row in intervals}
-        or {row.schedule_ref for row in (*command.planned_sessions, *command.remove_planned_sessions)}
+        or {row.schedule_ref for row in (*command.planned_sessions, *command.remove_planned_sessions,
+                                        *deleted_timed)}
         != {row.schedule_ref for row in planned}
     ):
         raise _invalid("A planning row is missing, repeated or assigned the wrong role.")
@@ -197,6 +212,15 @@ def _validated_plan(snapshot: ActivityEditSnapshot, command: ActivityReplanComma
             or {row.schedule_ref for row in command.place_planned_sessions}
             - {row.schedule_ref for row in unplaced}):
         raise _invalid("An unplaced planned Session is missing or repeated.")
+    deleted = {row.schedule_ref for row in command.delete_planned_sessions}
+    if (len(deleted) != len(command.delete_planned_sessions)
+            or deleted & {row.schedule_ref for row in command.place_planned_sessions}
+            or any(row.schedule_ref not in {item.schedule_ref for item in (*planned, *unplaced)}
+                   or row.expected_material_state_ref != next(
+                       item.placement_material_state_ref for item in (*planned, *unplaced)
+                       if item.schedule_ref == row.schedule_ref)
+                   for row in command.delete_planned_sessions)):
+        raise _conflict()
     for row in (envelope, *intervals, *planned):
         if (row.temporal_form != envelope.temporal_form or row.zone_id != envelope.zone_id
                 or row.starts_local_at is None or row.ends_local_at is None):
@@ -272,6 +296,13 @@ def _validated_plan(snapshot: ActivityEditSnapshot, command: ActivityReplanComma
             schedule_ref=row.schedule_ref, role="planned_removed",
             previous_start=prior.starts_local_at, previous_end=prior.ends_local_at,
         ))
+    for row in command.delete_planned_sessions:
+        prior = next(item for item in (*planned, *unplaced)
+                     if item.schedule_ref == row.schedule_ref)
+        changes.append(ReplanChange(
+            schedule_ref=row.schedule_ref, role="planned_deleted",
+            previous_start=prior.starts_local_at, previous_end=prior.ends_local_at,
+        ))
     changes.extend(
         ReplanChange(
             client_ref=row.client_ref, role="planned_added",
@@ -336,7 +367,7 @@ async def apply_activity_replan(
             changes_required = bool(
                 placements or body.remove_intervals or body.new_intervals
                 or body.remove_planned_sessions or body.new_planned_sessions
-                or body.place_planned_sessions
+                or body.place_planned_sessions or body.delete_planned_sessions
             )
             # Historical execution is immutable. Current open execution and accepted
             # realization close ordinary planning edits for this bounded command.
@@ -357,7 +388,7 @@ async def apply_activity_replan(
                     SELECT locked FROM dante.get_self_schedule_placement_lock(:actor,:schedule)
                 """), {"actor": actor, "schedule": row.schedule_ref}):
                     raise _conflict("Unlock the Activity interval before removing it.")
-            for row in body.remove_planned_sessions:
+            for row in (*body.remove_planned_sessions, *body.delete_planned_sessions):
                 if await session.scalar(text("""
                     SELECT EXISTS(
                         SELECT 1
@@ -395,7 +426,9 @@ async def apply_activity_replan(
                     "state": uuid7(),
                     "placement": json.dumps(_placement_payload(placement), sort_keys=True),
                 })
-            for row in (*body.remove_intervals, *body.remove_planned_sessions):
+            for row in (*body.remove_intervals, *body.remove_planned_sessions,
+                        *(item for item in body.delete_planned_sessions
+                          if item.expected_material_state_ref is not None)):
                 await session.execute(text("""
                     SELECT * FROM dante.unschedule_self_schedule(
                         :actor,:operation,:fingerprint,:schedule,:expected)
@@ -408,6 +441,13 @@ async def apply_activity_replan(
                     ),
                     "schedule": row.schedule_ref,
                     "expected": row.expected_material_state_ref,
+                })
+            for row in body.delete_planned_sessions:
+                await session.execute(text("""
+                    SELECT dante.retire_self_planned_schedule(:actor,:activity,:schedule)
+                """), {
+                    "actor": actor, "activity": activity_ref,
+                    "schedule": row.schedule_ref,
                 })
             for row in body.place_planned_sessions:
                 if await session.scalar(text("""
@@ -477,14 +517,20 @@ async def apply_activity_replan(
                         "position": next_interval_order,
                     })
             if body.new_planned_sessions:
-                next_order = await session.scalar(text("""
-                    SELECT COALESCE(MAX(presentation_order),0)
+                used_orders = set((await session.scalars(text("""
+                    SELECT presentation_order
                       FROM dante.get_self_activity_schedule_roles(
                           :actor, CAST(ARRAY[:activity] AS uuid[]))
                      WHERE role_code='planned'
-                """), {"actor": actor, "activity": activity_ref})
-                for row in body.new_planned_sessions:
-                    next_order += 1
+                """), {"actor": actor, "activity": activity_ref})).all())
+                last_order = max(used_orders, default=0)
+                free_orders = [position for position in range(last_order + 1, 101)
+                               if position not in used_orders]
+                free_orders += [position for position in range(1, last_order + 1)
+                                if position not in used_orders]
+                if len(free_orders) < len(body.new_planned_sessions):
+                    raise _invalid("At most 100 current planned Sessions are supported.")
+                for row, next_order in zip(body.new_planned_sessions, free_orders, strict=True):
                     if row.starts_local_at is None:
                         await session.execute(text("""
                             SELECT * FROM dante.establish_self_unplaced_planned_schedule(

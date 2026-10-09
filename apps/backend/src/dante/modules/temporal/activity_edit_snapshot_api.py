@@ -157,10 +157,13 @@ WITH owner AS MATERIALIZED (
         ON coarse.material_state_ref=state.material_state_ref
  LEFT JOIN dante.get_self_activity_schedule_roles(:actor,CAST(ARRAY[:activity] AS uuid[])) AS role
         ON role.schedule_ref=s.schedule_ref
-     WHERE current.material_state_ref IS NOT NULL OR role.role_code='planned' OR NOT EXISTS (
+ LEFT JOIN dante.list_self_retired_planned_schedules(:actor,:activity) AS retired
+        ON retired.schedule_ref=s.schedule_ref
+     WHERE retired.schedule_ref IS NULL
+       AND (current.material_state_ref IS NOT NULL OR role.role_code='planned' OR NOT EXISTS (
          SELECT 1 FROM dante.schedule_placement_state AS history
           WHERE history.schedule_ref=s.schedule_ref
-     )
+     ))
 ), primary_schedule AS (
     SELECT schedule_ref FROM placements
      WHERE role_code='envelope' OR role_code IS NULL

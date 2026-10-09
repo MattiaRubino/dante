@@ -317,14 +317,17 @@
 
 .timeline-event-modal--edit .timeline-activity-editor__description {
   margin-top: 10px;
-  padding-top: 18px;
-  border-top: 1px solid var(--dante-semantic-color-home-border-subtle);
+  min-width: 0;
 }
 
 .timeline-event-modal--edit .timeline-activity-editor__description .temporal-create-advanced-description {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
   min-height: 112px;
   margin-top: 0;
   border-radius: 11px;
+  resize: vertical;
 }
 
 @media (max-width: 720px) {

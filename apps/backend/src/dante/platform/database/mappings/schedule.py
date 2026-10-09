@@ -53,9 +53,10 @@ class ActivityScheduleRoleRow(Base):
 
     __tablename__ = "activity_schedule_role"
     __table_args__ = (
-        UniqueConstraint(
-            "activity_ref", "role_code", "presentation_order",
-            name="uq_activity_schedule_role_owner_role_order",
+        Index(
+            "uq_activity_schedule_role_owner_role_order",
+            "activity_ref", "role_code", "presentation_order", unique=True,
+            postgresql_where=text("retired_at IS NULL"),
         ),
         CheckConstraint("role_code IN ('envelope','planned','interval')", name="role"),
         CheckConstraint(
@@ -83,6 +84,7 @@ class ActivityScheduleRoleRow(Base):
     role_code: Mapped[str] = mapped_column(Text, nullable=False)
     presentation_order: Mapped[int] = mapped_column(nullable=False)
     display_name: Mapped[str | None] = mapped_column(Text, nullable=True)
+    retired_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
 
 class ScheduleEstablishOperationRow(Base):
