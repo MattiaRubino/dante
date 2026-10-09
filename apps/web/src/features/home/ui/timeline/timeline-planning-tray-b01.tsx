@@ -32,6 +32,8 @@ type TimelineB01PlanningTrayProps = Readonly<{
   defaultDate: PlainDate;
   onBeforeOpen?: (() => void) | undefined;
   source?: TemporalPlanningTrayDataSource | undefined;
+  hiddenTrigger?: boolean;
+  openRequest?: number;
 }>;
 
 type ReadState = 'loading' | 'ready' | 'error';
@@ -49,10 +51,10 @@ function copyFor(language: string) {
   const english = language.toLowerCase().startsWith('en');
   return english
     ? Object.freeze({
-        title: 'To place',
-        trigger: 'Open items to place',
-        close: 'Close items to place',
-        description: 'Activities and events that currently have no accepted Timeline placement.',
+        title: 'Existing unplaced items',
+        trigger: 'Open existing unplaced items',
+        close: 'Close existing unplaced items',
+        description: 'Already-created Activities and Events without accepted Timeline placement. They are not drafts.',
         loading: 'Loading items…',
         failed: 'Items to place are unavailable.',
         retry: 'Retry',
@@ -79,14 +81,14 @@ function copyFor(language: string) {
         placementFailed: 'The Schedule was not accepted. The item is still here.',
       })
     : Object.freeze({
-        title: 'Da collocare',
-        trigger: 'Apri Da collocare',
-        close: 'Chiudi Da collocare',
-        description: 'Attività ed eventi che al momento non hanno una collocazione accettata in Timeline.',
+        title: 'Elementi già creati',
+        trigger: 'Apri elementi già creati',
+        close: 'Chiudi elementi già creati',
+        description: 'Attività ed Eventi già creati senza collocazione: non sono Bozze.',
         loading: 'Caricamento elementi…',
-        failed: 'Da collocare non è disponibile.',
+        failed: 'Gli elementi esistenti non sono disponibili.',
         retry: 'Riprova',
-        search: 'Cerca in Da collocare',
+        search: 'Cerca tra gli elementi già creati',
         searchPlaceholder: 'Cerca…',
         emptyTitle: 'Niente da collocare',
         emptyBody: 'Attività ed eventi senza collocazione compariranno qui.',
@@ -125,6 +127,8 @@ export function TimelinePlanningTrayB01({
   defaultDate,
   onBeforeOpen,
   source: injectedSource,
+  hiddenTrigger = false,
+  openRequest = 0,
 }: TimelineB01PlanningTrayProps) {
   const { i18n } = useTranslation('common');
   const language = i18n.resolvedLanguage ?? i18n.language;
@@ -153,6 +157,15 @@ export function TimelinePlanningTrayB01({
   const [placementPending, setPlacementPending] = useState(false);
   const [placementError, setPlacementError] = useState<string | null>(null);
   const [panelStyle, setPanelStyle] = useState<CSSProperties | undefined>();
+
+  const lastExternalOpenRequest = useRef(openRequest);
+  useEffect(() => {
+    if (openRequest === lastExternalOpenRequest.current) return;
+    lastExternalOpenRequest.current = openRequest;
+    setOpen(true);
+    setPlacingKey(null);
+    setPlacementError(null);
+  }, [openRequest]);
 
   const filteredItems = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase();
@@ -587,7 +600,7 @@ export function TimelinePlanningTrayB01({
 
   return (
     <>
-      {actionsHost ? createPortal(trigger, actionsHost) : null}
+      {!hiddenTrigger && actionsHost ? createPortal(trigger, actionsHost) : null}
       {typeof document !== 'undefined' && panel
         ? createPortal(panel, document.body)
         : null}
