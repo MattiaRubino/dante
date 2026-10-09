@@ -74,13 +74,14 @@
       "B14-UNTIMED-PLANNED-SESSION",
       "B14-UNTIMED-PLANNED-OWNER-CONTRACT",
       "B14-PLANNED-SESSION-TIME-EDIT",
-      "B14-M5-PLANNED-RETIREMENT"
+      "B14-M5-PLANNED-RETIREMENT",
+      "B14-M5-OBJECTIVE-EDITOR"
     ],
     "standalone_entries": {
       "tables": 236,
       "views": 5,
-      "routines": 214,
-      "total": 455
+      "routines": 215,
+      "total": 456
     },
     "embedded_objects": {
       "triggers": 103,
