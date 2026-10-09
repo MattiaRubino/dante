@@ -379,7 +379,16 @@ async def apply_activity_replan(
                 """), {"actor": actor, "activity": activity_ref}):
                 raise _conflict("This Activity has open execution or accepted realization.")
             envelope = next(row for row in snapshot.schedules if row.role_code == "envelope")
-            if changes_required and await session.scalar(text("""
+            # A placement lock freezes existing Schedule coordinates, not new
+            # Activity structure. Adding a planned Session inside the already
+            # accepted envelope (timed or untimed) does not move that envelope.
+            # Real placement revisions, removals and interval changes stay guarded.
+            existing_placement_changes = bool(
+                placements or body.remove_intervals or body.new_intervals
+                or body.remove_planned_sessions or body.place_planned_sessions
+                or body.delete_planned_sessions
+            )
+            if existing_placement_changes and await session.scalar(text("""
                     SELECT locked FROM dante.get_self_schedule_placement_lock(:actor,:schedule)
                 """), {"actor": actor, "schedule": envelope.schedule_ref}):
                 raise _conflict("Unlock the Activity placement before replanning.")
