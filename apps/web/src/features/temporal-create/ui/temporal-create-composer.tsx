@@ -50,6 +50,7 @@ type TemporalCreateComposerProps = Readonly<{
   onContinueEditing: () => void;
   onDiscard: () => void;
   onMoveToUnplaced: () => void;
+  onSaveDraft: () => void;
   onSubmit: () => void;
   onU2DraftChange?: (draft: TemporalCreateU2AuthoringDraft) => void;
 }>;
@@ -107,6 +108,7 @@ export function TemporalCreateComposer({
   onContinueEditing,
   onDiscard,
   onMoveToUnplaced,
+  onSaveDraft,
   onSubmit,
   onU2DraftChange = NOOP_U2_DRAFT,
 }: TemporalCreateComposerProps) {
@@ -640,6 +642,9 @@ export function TemporalCreateComposer({
                 <span>{advanced ? copy.hideAdvanced : copy.advanced}</span>
                 <span aria-hidden="true">{advanced ? '⌃' : '⌄'}</span>
               </button>
+              <button type="button" disabled={pending} onClick={onSaveDraft}>
+                Salva bozza
+              </button>
               <button className="is-primary" type="submit" disabled={pending}>
                 {pending
                   ? t(($) => $.common.home.timeline.create.creating)
@@ -680,7 +685,7 @@ export function TemporalCreateComposer({
                     : undefined
                 }
               >
-                Sposta in Da collocare
+                Salva bozza
               </button>
               <button
                 className="temporal-create-discard__destructive"
