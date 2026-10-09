@@ -32,6 +32,7 @@ const refreshObjectives = vi.fn();
 const getDefinition = vi.fn();
 const getSeriesState = vi.fn().mockResolvedValue(null);
 const reviseDefinition = vi.fn();
+const applyActivityEdits = vi.fn();
 const correctResult = vi.fn();
 
 vi.mock('../../../temporal/remote-reality-objective-data-source', () => ({
@@ -39,6 +40,7 @@ vi.mock('../../../temporal/remote-reality-objective-data-source', () => ({
     getDefinition,
     getSeriesState,
     reviseDefinition,
+    applyActivityEdits,
     correctResult,
   }),
 }));
@@ -187,41 +189,39 @@ describe('Objective correction in Activity Editor', () => {
     assessmentCode: 'not_satisfied',
   } as const;
 
-  it('modifies the existing logical Objective instead of adding a duplicate', async () => {
-    loadSettings.mockResolvedValueOnce({
-      ...currentSettings, objectives: [objective],
-    });
-    getDefinition.mockResolvedValueOnce({
-      ...objective, definitionRevision: 0,
-    });
-    reviseDefinition.mockResolvedValueOnce(undefined);
-    refreshObjectives.mockResolvedValueOnce({
-      ...currentSettings, objectives: [{ ...objective, label: 'Corsa 7 km', targetValue: 7 }],
-    });
-    render(
-      <ActivityEditPanel profile={profile} closeRequestRef={createRef()}
-        onSaved={() => undefined} onCancel={() => undefined} />,
-    );
-    fireEvent.click(await screen.findByRole('button', { name: 'Modifica obiettivo' }));
-    fireEvent.change(await screen.findByRole('textbox', { name: 'Nome obiettivo' }), {
+  it('modifies an expanded Objective directly with one final Save', async () => {
+    loadSettings.mockResolvedValueOnce({ ...currentSettings, objectives: [objective] });
+    getDefinition.mockResolvedValueOnce({ ...objective, definitionRevision: 0 });
+    applyActivityEdits.mockResolvedValueOnce([{ ...objective, label: 'Corsa 7 km' }]);
+    const onSaved = vi.fn();
+    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
+      onSaved={onSaved} onCancel={() => undefined} />);
+    fireEvent.click(await screen.findByRole('button', { name: /Corsa 10 km/ }));
+    fireEvent.change(screen.getByRole('textbox', { name: 'Nome obiettivo' }), {
       target: { value: 'Corsa 7 km' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Salva obiettivo' }));
-    await waitFor(() => expect(reviseDefinition).toHaveBeenCalledWith(
-      objective.objectiveRef, expect.objectContaining({
-        operationId: expect.any(String), expectedRevision: 0,
-        scopeCode: 'only_this', seriesState: null,
-        label: 'Corsa 7 km', targetValue: 10, presentationOrder: 0,
-      }),
-    ));
+    expect(applyActivityEdits).not.toHaveBeenCalled();
+    expect(screen.queryByRole('button', { name: 'Salva obiettivo' })).toBeNull();
+    await submitEditor();
+    await waitFor(() => expect(applyActivityEdits).toHaveBeenCalledWith(ref, {
+      add: [],
+      revise: [expect.objectContaining({
+        objectiveRef: objective.objectiveRef,
+        change: expect.objectContaining({
+          label: 'Corsa 7 km', resultKind: 'quantity', targetValue: 10,
+          expectedRevision: 0, scopeCode: 'only_this',
+        }),
+      })],
+      retire: [],
+    }));
+    await waitFor(() => expect(onSaved).toHaveBeenCalledWith(profile));
+    expect(reviseDefinition).not.toHaveBeenCalled();
     expect(addObjective).not.toHaveBeenCalled();
-    await waitFor(() => expect(screen.getByText(/Corsa 7 km/)).toBeTruthy());
   });
 
-  it('applies selected-and-following only with authoritative generated lineage', async () => {
-    loadSettings.mockResolvedValueOnce({
-      ...currentSettings, objectives: [objective],
-    });
+  it('keeps following-series scope only for authoritative generated lineage', async () => {
+    loadSettings.mockResolvedValueOnce({ ...currentSettings, objectives: [objective] });
+    loadRecurringContext.mockResolvedValueOnce({ active: true });
     getDefinition.mockResolvedValueOnce({ ...objective, definitionRevision: 1 });
     const seriesState = {
       sourceNativeRef: '0199a566-6666-7666-8666-666666666666',
@@ -231,25 +231,23 @@ describe('Objective correction in Activity Editor', () => {
       recurrenceStateRef: '0199a588-8888-7888-8888-888888888888',
     };
     getSeriesState.mockResolvedValueOnce(seriesState);
-    reviseDefinition.mockResolvedValueOnce(undefined);
-    refreshObjectives.mockResolvedValueOnce({
-      ...currentSettings, objectives: [{ ...objective, label: 'Corsa 7 km' }],
-    });
-    render(
-      <ActivityEditPanel profile={profile} closeRequestRef={createRef()}
-        onSaved={() => undefined} onCancel={() => undefined} />,
-    );
-    fireEvent.click(await screen.findByRole('button', { name: 'Modifica obiettivo' }));
+    applyActivityEdits.mockResolvedValueOnce([{ ...objective, label: 'Corsa 7 km' }]);
+    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
+      onSaved={() => undefined} onCancel={() => undefined} />);
+    fireEvent.click(await screen.findByRole('button', { name: /Corsa 10 km/ }));
     fireEvent.click(await screen.findByLabelText('Questa e le prossime'));
     fireEvent.change(screen.getByRole('textbox', { name: 'Nome obiettivo' }), {
       target: { value: 'Corsa 7 km' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Salva obiettivo' }));
-    await waitFor(() => expect(reviseDefinition).toHaveBeenCalledWith(
-      objective.objectiveRef, expect.objectContaining({
-        scopeCode: 'this_and_following',
-        seriesState,
-        label: 'Corsa 7 km',
+    await submitEditor();
+    await waitFor(() => expect(applyActivityEdits).toHaveBeenCalledWith(ref,
+      expect.objectContaining({
+        revise: [expect.objectContaining({
+          objectiveRef: objective.objectiveRef,
+          change: expect.objectContaining({
+            scopeCode: 'this_and_following', seriesState, label: 'Corsa 7 km',
+          }),
+        })],
       }),
     ));
     expect(addObjective).not.toHaveBeenCalled();
@@ -368,38 +366,72 @@ describe('Activity Inspector', () => {
     expect(revise).not.toHaveBeenCalled();
   });
 
-  it('adds a post-create Objective with stable retry ID and readback', async () => {
-    addObjective.mockRejectedValueOnce(new Error('Errore temporaneo'))
-      .mockImplementationOnce(async (_ref, settings) => ({
-        ...settings,
-        objectives: [{ objectiveRef: 'new-objective', label: 'Percorrere 10 km',
-          presentationOrder: 0, assessmentCode: null }],
-      }));
+  it('stages Objective additions and preserves retry identity after one Save error', async () => {
+    applyActivityEdits.mockRejectedValueOnce(new Error('Errore temporaneo'))
+      .mockResolvedValueOnce([{
+        objectiveRef: 'new-objective', label: 'Percorrere 10 km',
+        resultKind: 'quantity', comparatorCode: 'gte', targetValue: 10,
+        targetMin: null, targetMax: null, unitCode: 'km',
+        presentationOrder: 0, observationRef: null,
+        observedBoolean: null, observedNumeric: null, qualitativeCode: null,
+        evaluationStateRef: null, assessmentCode: null,
+      }]);
+    const onSaved = vi.fn();
     render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
-      onSaved={() => undefined} onCancel={() => undefined} />);
-    fireEvent.click(await screen.findByRole('button', { name: 'Apri nuovo obiettivo' }));
-    const name = await screen.findByRole('textbox', { name: 'Nome obiettivo' });
-    fireEvent.change(name, { target: { value: 'Percorrere 10 km' } });
+      onSaved={onSaved} onCancel={() => undefined} />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Aggiungi obiettivo' }));
+    fireEvent.change(screen.getByRole('textbox', { name: 'Nome obiettivo' }),
+      { target: { value: 'Percorrere 10 km' } });
     fireEvent.change(screen.getByRole('combobox', { name: 'Tipo obiettivo' }),
       { target: { value: 'quantity' } });
     fireEvent.change(screen.getByRole('spinbutton', { name: 'Valore obiettivo' }),
       { target: { value: '10' } });
     fireEvent.change(screen.getByRole('textbox', { name: 'Unità di misura' }),
       { target: { value: 'km' } });
-    expect(screen.getByRole('button', { name: 'Salva modifiche' }))
-      .toHaveProperty('disabled', true);
-    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi obiettivo' }));
+    expect(applyActivityEdits).not.toHaveBeenCalled();
+    await submitEditor();
     expect(await screen.findByRole('alert')).toHaveProperty('textContent',
       expect.stringContaining('Errore temporaneo'));
-    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi obiettivo' }));
-    await waitFor(() => expect(addObjective).toHaveBeenCalledTimes(2));
-    expect(addObjective.mock.calls[0]?.[3]).toEqual(addObjective.mock.calls[1]?.[3]);
-    expect(addObjective.mock.calls[0]?.[2]).toMatchObject({
+    expect(onSaved).not.toHaveBeenCalled();
+    await submitEditor();
+    await waitFor(() => expect(applyActivityEdits).toHaveBeenCalledTimes(2));
+    expect(applyActivityEdits.mock.calls[0]?.[1].add[0]?.operationId)
+      .toEqual(applyActivityEdits.mock.calls[1]?.[1].add[0]?.operationId);
+    expect(applyActivityEdits.mock.calls[0]?.[1].add[0]).toMatchObject({
       label: 'Percorrere 10 km', resultKind: 'quantity',
       comparatorCode: 'gte', targetValue: 10, unitCode: 'km',
     });
-    expect(await screen.findByText('Percorrere 10 km', { selector: 'li' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Apri nuovo obiettivo' })).toBeTruthy();
+    await waitFor(() => expect(onSaved).toHaveBeenCalledWith(profile));
+  });
+
+  it('removes a staged Objective via X and defers persisted retirement until Save', async () => {
+    const unobserved = { ...objective, observationRef: null, evaluationStateRef: null,
+      observedNumeric: null, assessmentCode: null };
+    loadSettings.mockResolvedValueOnce({ ...currentSettings, objectives: [unobserved] });
+    getDefinition.mockResolvedValueOnce({ ...unobserved, definitionRevision: 3 });
+    applyActivityEdits.mockResolvedValueOnce([]);
+    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
+      onSaved={() => undefined} onCancel={() => undefined} />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Rimuovi obiettivo Corsa 10 km' }));
+    expect(applyActivityEdits).not.toHaveBeenCalled();
+    expect(screen.queryByRole('button', { name: 'Rimuovi obiettivo Corsa 10 km' })).toBeNull();
+    await submitEditor();
+    await waitFor(() => expect(applyActivityEdits).toHaveBeenCalledWith(ref, {
+      add: [], revise: [],
+      retire: [expect.objectContaining({
+        objectiveRef: objective.objectiveRef, expectedRevision: 3,
+      })],
+    }));
+  });
+
+  it('allows undo of a pending removal before saving', async () => {
+    loadSettings.mockResolvedValueOnce({ ...currentSettings, objectives: [objective] });
+    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
+      onSaved={() => undefined} onCancel={() => undefined} />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Rimuovi obiettivo Corsa 10 km' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Ripristina obiettivi rimossi' }));
+    expect(screen.getByRole('button', { name: 'Rimuovi obiettivo Corsa 10 km' })).toBeTruthy();
+    expect(applyActivityEdits).not.toHaveBeenCalled();
   });
 
   it('saves a planning change directly from Salva modifiche', async () => {
