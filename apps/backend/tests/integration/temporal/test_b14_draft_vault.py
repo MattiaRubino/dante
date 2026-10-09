@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import json
 from typing import Any
+from types import SimpleNamespace
+
+from fastapi import Response
 from uuid import uuid7
 
 import pytest
@@ -74,5 +77,49 @@ async def test_inert_drafts_are_owner_scoped_replay_safe_and_do_not_create_subje
             assert (await session.execute(text("""
                 SELECT * FROM dante.list_self_temporal_drafts(:actor)
             """), {"actor": actor})).mappings().all() == []
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_draft_vault_http_capability_returns_saved_snapshot_and_cas_delete(
+    migrated_database: Any,
+) -> None:
+    from dante.modules.temporal.draft_vault_api import (
+        DraftVaultSaveRequest,
+        delete_draft,
+        list_drafts,
+        save_draft,
+    )
+
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    draft_ref = uuid7()
+    context = SimpleNamespace(self_person_ref=actor)
+    request = SimpleNamespace(app=SimpleNamespace(
+        state=SimpleNamespace(database_runtime=runtime)))
+    payload = {
+        "version": 1,
+        "fields": {"kind": "event", "title": "Visita"},
+        "advanced": {"eventParticipants": []},
+        "surface": "full",
+    }
+    try:
+        saved = await save_draft(
+            draft_ref,
+            DraftVaultSaveRequest(
+                draft_ref=draft_ref, operation_id="vault:event:save",
+                expected_revision=None, subject_kind="event", title="Visita",
+                payload=payload,
+            ),
+            context, request, Response(),
+        )
+        assert saved.payload == payload
+        assert saved.subject_kind == "event"
+        assert saved.revision == 1
+        listed = await list_drafts(context, request, Response())
+        assert [item.draft_ref for item in listed] == [draft_ref]
+        await delete_draft(draft_ref, 1, context, request, Response())
+        assert await list_drafts(context, request, Response()) == []
     finally:
         await runtime.dispose()
