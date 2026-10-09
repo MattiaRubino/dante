@@ -530,7 +530,11 @@ async def apply_activity_replan(
                                 if position not in used_orders]
                 if len(free_orders) < len(body.new_planned_sessions):
                     raise _invalid("At most 100 current planned Sessions are supported.")
-                for row, next_order in zip(body.new_planned_sessions, free_orders, strict=True):
+                for row, next_order in zip(
+                    body.new_planned_sessions,
+                    free_orders[:len(body.new_planned_sessions)],
+                    strict=True,
+                ):
                     if row.starts_local_at is None:
                         await session.execute(text("""
                             SELECT * FROM dante.establish_self_unplaced_planned_schedule(
