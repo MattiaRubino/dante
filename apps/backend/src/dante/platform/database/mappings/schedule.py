@@ -158,6 +158,38 @@ class ScheduleEstablishOperationRow(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
 
+class PlannedSchedulePlaceOperationRow(Base):
+    """Replay receipt for placing an owned planned Schedule without changing identity."""
+
+    __tablename__ = "planned_schedule_place_operation"
+    __table_args__ = (
+        CheckConstraint(
+            "operation_id=btrim(operation_id) AND operation_id<>'' "
+            "AND char_length(operation_id)<=200", name="id",
+        ),
+        CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name="fingerprint"),
+        ForeignKeyConstraint(["self_person_ref"], ["dante.person.person_ref"],
+                             name="fk_planned_schedule_place_operation_person"),
+        ForeignKeyConstraint(["activity_ref"], ["dante.activity_intention.activity_ref"],
+                             name="fk_planned_schedule_place_operation_activity"),
+        ForeignKeyConstraint(["schedule_ref"], ["dante.schedule.schedule_ref"],
+                             name="fk_planned_schedule_place_operation_schedule"),
+        ForeignKeyConstraint(["material_state_ref"],
+                             ["dante.schedule_placement_state.material_state_ref"],
+                             name="fk_planned_schedule_place_operation_state"),
+        UniqueConstraint("material_state_ref", name="uq_planned_schedule_place_operation_state"),
+        Index("ix_planned_schedule_place_operation_schedule_ref", "schedule_ref"),
+    )
+
+    self_person_ref: Mapped[NativeRef] = mapped_column(primary_key=True)
+    operation_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    intent_fingerprint: Mapped[str] = mapped_column(Text, nullable=False)
+    activity_ref: Mapped[NativeRef] = mapped_column(nullable=False)
+    schedule_ref: Mapped[ScopedRecordRef] = mapped_column(nullable=False)
+    material_state_ref: Mapped[MaterialStateRef] = mapped_column(nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
 class ScheduleRevisionOperationRow(Base):
     """Idempotency receipt for one governed self-scoped Schedule revision."""
 

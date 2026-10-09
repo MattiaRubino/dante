@@ -454,9 +454,11 @@ describe('Activity Inspector', () => {
       previousEnd: '2026-10-09T10:00:00', proposedStart: null, proposedEnd: null }]);
     render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
       onSaved={() => undefined} onCancel={() => undefined} />);
-    fireEvent.click(await screen.findByRole('button', { name: 'Rimuovi Sessione' }));
+    fireEvent.click((await screen.findByRole('textbox', { name: 'Nome Sessione' }))
+      .closest('[data-edit-planned-session]')!.querySelector('button[aria-controls]')!);
     fireEvent.click(screen.getByRole('button', { name: '＋ Sessione' }));
     const newSession = document.querySelector('[data-edit-new-session]')!;
+    fireEvent.click(newSession.querySelector('button[aria-controls]')!);
     fireEvent.change(newSession.querySelector('[aria-label="Nome Sessione"]')!,
       { target: { value: 'Seconda' } });
     fireEvent.change(newSession.querySelector('[data-create-path^="newStart-"]')!,
@@ -724,6 +726,30 @@ describe('Activity Inspector', () => {
     expect(onSaved).not.toHaveBeenCalled();
     expect(screen.getByRole('button', { name: 'Salva nome sessione' }))
       .toHaveProperty('disabled', false);
+  });
+
+  it('offers an Orario toggle for an untimed planned Session and keeps its identity', async () => {
+    const settings = { ...currentSettings, schedules: [
+      { scheduleRef: 'envelope', role: 'envelope', name: null, order: 0,
+        placementStateRef: 'envelope-state', temporalForm: 'named_zone_local',
+        start: '2026-10-09T09:00:00', end: '2026-10-09T12:00:00', zoneId: 'Europe/Rome' },
+      { scheduleRef: 'untimed', role: 'planned', name: 'Studio', order: 1,
+        placementStateRef: null, temporalForm: null, start: null, end: null, zoneId: null },
+    ] };
+    loadSettings.mockResolvedValueOnce(settings);
+    previewReplan.mockResolvedValueOnce([]);
+    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
+      onSaved={() => undefined} onCancel={() => undefined} />);
+    const name = await screen.findByRole('textbox', { name: 'Nome Sessione' });
+    const toggle = name.closest('[data-edit-planned-session]')!.querySelector('button[aria-controls]')!;
+    expect(toggle).toHaveProperty('disabled', false);
+    fireEvent.click(toggle);
+    expect(screen.getByRole('button', { name: 'Verifica spostamento' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Verifica spostamento' }));
+    await waitFor(() => expect(previewReplan).toHaveBeenCalledWith(ref, settings,
+      expect.objectContaining({ times: expect.objectContaining({
+        untimed: { start: '2026-10-09T09:00', end: '2026-10-09T12:00' },
+      }) }), expect.any(String)));
   });
 
   it('does not turn a nonlocal temporal form into a local Schedule during edit', async () => {

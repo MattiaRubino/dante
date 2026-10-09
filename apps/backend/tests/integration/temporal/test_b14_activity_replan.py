@@ -15,6 +15,7 @@ from dante.modules.temporal.activity_replan_api import (
     ActivityReplanCommand,
     NewIntervalRow,
     NewPlannedRow,
+    PlacePlannedRow,
     ReplanRow,
     apply_activity_replan,
     preview_activity_replan,
@@ -133,11 +134,75 @@ async def test_activity_replan_adds_and_removes_planned_sessions_without_reusing
         assert {change.role for change in preview.changes} == {"planned_added", "planned_removed"}
         after = await apply_activity_replan(activity, command, context, request, Response())
         accepted = [row for row in after.schedules if row.role_code == "planned"]
-        assert len(accepted) == 1
-        assert accepted[0].display_name == "Seconda"
-        assert accepted[0].schedule_ref != old.schedule_ref
-        assert accepted[0].presentation_order > old.presentation_order
+        assert len(accepted) == 2
+        assert next(row for row in accepted if row.schedule_ref == old.schedule_ref).placement_material_state_ref is None
+        added = next(row for row in accepted if row.schedule_ref != old.schedule_ref)
+        assert added.display_name == "Seconda"
+        assert added.presentation_order > old.presentation_order
         assert len([row for row in after.schedules if row.role_code == "interval"]) == 1
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_planned_time_can_be_added_removed_and_added_again_on_same_schedule(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    try:
+        created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
+            self_person_ref=actor, operation_id="replan:untimed:create", title="Studio",
+            placement=_window(9, 12), planned_slices=(None,),
+            planned_slice_names=("Ripasso",),
+        )
+        activity = created.item.subject_native_ref
+        context = SimpleNamespace(self_person_ref=actor)
+        request = SimpleNamespace(app=SimpleNamespace(
+            state=SimpleNamespace(database_runtime=runtime)))
+
+        async def snapshot() -> ActivityEditSnapshot:
+            async with runtime.session_factory() as session, session.begin():
+                return ActivityEditSnapshot.model_validate(await session.scalar(
+                    _SNAPSHOT, {"actor": actor, "activity": activity},
+                ))
+
+        before = await snapshot()
+        planned = next(row for row in before.schedules if row.role_code == "planned")
+        envelope = next(row for row in before.schedules if row.role_code == "envelope")
+        assert planned.placement_material_state_ref is None
+
+        def place(op: str) -> ActivityReplanCommand:
+            return ActivityReplanCommand(
+                operation_id=op, envelope=_move(envelope, 9, 12),
+                place_planned_sessions=[PlacePlannedRow(
+                    schedule_ref=planned.schedule_ref,
+                    starts_local_at=datetime(2026, 10, 9, 10),  # noqa: DTZ001
+                    ends_local_at=datetime(2026, 10, 9, 11),  # noqa: DTZ001
+                )],
+            )
+
+        proposed = await preview_activity_replan(activity, place("place:first"),
+                                                  context, request, Response())
+        assert [change.role for change in proposed.changes] == ["planned_placed"]
+        timed = await apply_activity_replan(activity, place("place:first"),
+                                            context, request, Response())
+        placed = next(row for row in timed.schedules if row.role_code == "planned")
+        assert placed.schedule_ref == planned.schedule_ref
+        assert placed.starts_local_at.hour == 10
+        removed = await apply_activity_replan(activity, ActivityReplanCommand(
+            operation_id="place:remove", envelope=_move(envelope, 9, 12),
+            remove_planned_sessions=[_move(placed, 10, 11)],
+        ), context, request, Response())
+        untimed = next(row for row in removed.schedules if row.role_code == "planned")
+        assert untimed.schedule_ref == planned.schedule_ref
+        assert untimed.placement_material_state_ref is None
+        retimed = await apply_activity_replan(activity, place("place:again"),
+                                              context, request, Response())
+        again = next(row for row in retimed.schedules if row.role_code == "planned")
+        assert again.schedule_ref == planned.schedule_ref
+        assert again.placement_material_state_ref != placed.placement_material_state_ref
+        assert (await snapshot()).schedules == retimed.schedules
     finally:
         await runtime.dispose()
 

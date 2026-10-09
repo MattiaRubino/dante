@@ -19,8 +19,8 @@ from dante.platform.database.metadata import Base
 
 pytestmark = pytest.mark.postgres
 
-_CURRENT_REVISION = "20261009_130"
-_CURRENT_TOPOLOGY = (235, 5, 211, 103, 479, 416, 587, 0, 0, 0)
+_CURRENT_REVISION = "20261009_131"
+_CURRENT_TOPOLOGY = (236, 5, 212, 103, 482, 420, 589, 0, 0, 0)
 _REPO_ROOT = Path(__file__).resolve().parents[5]
 _DICTIONARY_ROOT = _REPO_ROOT / "docs" / "database" / "dictionary"
 

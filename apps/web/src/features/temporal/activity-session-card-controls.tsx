@@ -97,7 +97,7 @@ export function ActivitySessionCardControls({
           subjectRef={activityRef}
           label={label}
           variant={variant === 'card' ? 'card' : 'detail'}
-          compactRuntime={variant === 'inspector'}
+          compactRuntime
           interactive={interactive}
           allowLive
         />

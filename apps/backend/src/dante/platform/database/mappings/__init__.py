@@ -157,6 +157,7 @@ MAPPED_TABLES: tuple[Table, ...] = cast(
         b14_create_closure.TemporalObjectiveEvaluationCurrentHistoryRow.__table__,
         b14_create_closure.TemporalObjectiveResultOperationRow.__table__,
         schedule.ScheduleEstablishOperationRow.__table__,
+        schedule.PlannedSchedulePlaceOperationRow.__table__,
         schedule.ScheduleRevisionOperationRow.__table__,
         schedule.ScheduleUnscheduleOperationRow.__table__,
         schedule.ScheduleUnscheduleUndoOperationRow.__table__,

@@ -157,7 +157,7 @@ WITH owner AS MATERIALIZED (
         ON coarse.material_state_ref=state.material_state_ref
  LEFT JOIN dante.get_self_activity_schedule_roles(:actor,CAST(ARRAY[:activity] AS uuid[])) AS role
         ON role.schedule_ref=s.schedule_ref
-     WHERE current.material_state_ref IS NOT NULL OR NOT EXISTS (
+     WHERE current.material_state_ref IS NOT NULL OR role.role_code='planned' OR NOT EXISTS (
          SELECT 1 FROM dante.schedule_placement_state AS history
           WHERE history.schedule_ref=s.schedule_ref
      )
@@ -243,6 +243,8 @@ async def revise_activity_core(
     params = {"actor": context.self_person_ref, "activity": activity_ref}
     try:
         async with request.app.state.database_runtime.session_factory() as session, session.begin():
+            await session.execute(text("SET LOCAL statement_timeout = '15s'"))
+            await session.execute(text("SET LOCAL lock_timeout = '5s'"))
             if body.capture is not None:
                 change = body.capture
                 intent = {

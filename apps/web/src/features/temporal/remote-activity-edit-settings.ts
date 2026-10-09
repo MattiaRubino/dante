@@ -185,8 +185,8 @@ export function createRemoteActivityEditSettings(
     return response.json();
   }
 
-  async function csrf(): Promise<string> {
-    const response = await request('/api/v1/auth/session');
+  async function csrf(signal?: AbortSignal): Promise<string> {
+    const response = await request('/api/v1/auth/session', signal ? { signal } : undefined);
     const row = object(await response.json());
     if (
       !response.ok ||
@@ -271,12 +271,19 @@ export function createRemoteActivityEditSettings(
       planned_sessions: settings.schedules.filter((item) =>
         item.role === 'planned' && item.placementStateRef !== null &&
         !draft.removedPlanned.includes(item.scheduleRef)).map(row),
+      place_planned_sessions: settings.schedules.filter((item) =>
+        item.role === 'planned' && item.placementStateRef === null &&
+        !!draft.times[item.scheduleRef]?.start).map((item) => ({
+          schedule_ref: item.scheduleRef,
+          starts_local_at: draft.times[item.scheduleRef]?.start,
+          ends_local_at: draft.times[item.scheduleRef]?.end,
+        })),
       remove_planned_sessions: settings.schedules.filter((item) =>
         item.role === 'planned' && item.placementStateRef !== null &&
         draft.removedPlanned.includes(item.scheduleRef)).map(row),
       new_planned_sessions: draft.newPlanned.map((item) => ({
         client_ref: item.clientRef, name: item.name.trim() || null,
-        starts_local_at: item.start, ends_local_at: item.end,
+        starts_local_at: item.start || null, ends_local_at: item.end || null,
       })),
     };
   }
@@ -551,59 +558,75 @@ export function createRemoteActivityEditSettings(
       }>,
       operationId: string,
     ): Promise<{ profile: ActivityProfile; settings: ActivityEditSettings }> {
-      const response = await request(endpoint(profile.activityRef, 'core-edit'), {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Dante-CSRF': await csrf(),
-        },
-        body: JSON.stringify({
-          operation_id: operationId,
-          ...(changes.profile ? { profile: {
-            expected_revision: profile.revision,
-            title: changes.profile.title,
-            description: changes.profile.description,
-            location: changes.profile.location,
-            color_code: changes.profile.colorCode,
-          } } : {}),
-          ...(changes.capture ? { capture: {
-            mode_code: changes.capture,
-            expected_state_ref: settings.capture.stateRef,
-          } } : {}),
-          ...(changes.reality ? { reality: {
-            mode_code: changes.reality,
-            expected_state_ref: settings.reality.stateRef,
-          } } : {}),
-          ...('reminderLeadMinutes' in changes && settings.reminderScheduleRef ? {
-            reminder: {
-              schedule_ref: settings.reminderScheduleRef,
-              expected_state_ref: settings.reminderStateRef,
-              enabled: changes.reminderLeadMinutes !== null,
-              lead_minutes: changes.reminderLeadMinutes ?? 0,
-            },
+      const controller = new AbortController();
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      const timeout = new Promise<never>((_, reject) => {
+        timer = setTimeout(() => {
+          controller.abort();
+          reject(new Error('Salvataggio troppo lento. Controlla la connessione e riprova.'));
+        }, 20_000);
+      });
+      const save = async () => {
+        const response = await request(endpoint(profile.activityRef, 'core-edit'), {
+          method: 'PUT',
+          signal: controller.signal,
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Dante-CSRF': await csrf(controller.signal),
+          },
+          body: JSON.stringify({
+            operation_id: operationId,
+            ...(changes.profile ? { profile: {
+              expected_revision: profile.revision,
+              title: changes.profile.title,
+              description: changes.profile.description,
+              location: changes.profile.location,
+              color_code: changes.profile.colorCode,
+            } } : {}),
+            ...(changes.capture ? { capture: {
+              mode_code: changes.capture,
+              expected_state_ref: settings.capture.stateRef,
+            } } : {}),
+            ...(changes.reality ? { reality: {
+              mode_code: changes.reality,
+              expected_state_ref: settings.reality.stateRef,
+            } } : {}),
+            ...('reminderLeadMinutes' in changes && settings.reminderScheduleRef ? {
+              reminder: {
+                schedule_ref: settings.reminderScheduleRef,
+                expected_state_ref: settings.reminderStateRef,
+                enabled: changes.reminderLeadMinutes !== null,
+                lead_minutes: changes.reminderLeadMinutes ?? 0,
+              },
+            } : {}),
+          }),
+        });
+        if (!response.ok) throw new Error(response.status === 409
+          ? 'L’attività è cambiata. Riapri Modifica e riprova.'
+          : 'Impossibile salvare le impostazioni dell’attività.');
+        const result = object(await response.json());
+        const savedProfile = parseProfile(result.profile);
+        if (savedProfile.activityRef !== profile.activityRef) {
+          throw new Error('Identità dell’attività non valida.');
+        }
+        const savedSettings = Object.freeze({
+          ...settings,
+          capture: capture(result.capture, profile.activityRef),
+          reality: reality(result.reality, profile.activityRef),
+          ...('reminderLeadMinutes' in changes ? {
+            reminderLeadMinutes: changes.reminderLeadMinutes ?? null,
+            reminderStateRef: state(object(result.reminder).material_state_ref),
           } : {}),
-        }),
-      });
-      if (!response.ok) throw new Error(response.status === 409
-        ? 'L’attività è cambiata. Riapri Modifica e riprova.'
-        : 'Impossibile salvare le impostazioni dell’attività.');
-      const result = object(await response.json());
-      const savedProfile = parseProfile(result.profile);
-      if (savedProfile.activityRef !== profile.activityRef) {
-        throw new Error('Identità dell’attività non valida.');
+        });
+        invalidateTemporalTimelineRead();
+        invalidateTemporalPlanningRead();
+        return { profile: savedProfile, settings: savedSettings };
+      };
+      try {
+        return await Promise.race([save(), timeout]);
+      } finally {
+        clearTimeout(timer);
       }
-      const savedSettings = Object.freeze({
-        ...settings,
-        capture: capture(result.capture, profile.activityRef),
-        reality: reality(result.reality, profile.activityRef),
-        ...('reminderLeadMinutes' in changes ? {
-          reminderLeadMinutes: changes.reminderLeadMinutes ?? null,
-          reminderStateRef: state(object(result.reminder).material_state_ref),
-        } : {}),
-      });
-      invalidateTemporalTimelineRead();
-      invalidateTemporalPlanningRead();
-      return { profile: savedProfile, settings: savedSettings };
     },
   });
 }

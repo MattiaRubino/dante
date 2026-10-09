@@ -153,6 +153,8 @@ export function ActivityEditPanel({
   const planDirty = canReplan && (
     removedIntervals.length > 0 || newIntervals.length > 0 ||
     removedPlanned.length > 0 || newPlanned.length > 0 ||
+    (settings?.schedules.some((schedule) => schedule.role === 'planned' &&
+      schedule.placementStateRef === null && !!planDraft[schedule.scheduleRef]?.start) ?? false) ||
     editablePlan.some((schedule) =>
       !removedPlanned.includes(schedule.scheduleRef) &&
       !removedIntervals.includes(schedule.scheduleRef) && (
@@ -688,9 +690,9 @@ export function ActivityEditPanel({
               <div className="temporal-create-activity-tree__group-label">Sessioni attività</div>
               {settings.schedules.filter((row) => row.role === 'planned').map((row) => {
                 const removed = removedPlanned.includes(row.scheduleRef);
-                const hasTime = row.placementStateRef !== null;
                 const currentStart = planDraft[row.scheduleRef]?.start ?? row.start ?? '';
                 const currentEnd = planDraft[row.scheduleRef]?.end ?? row.end ?? '';
+                const hasTime = !removed && (row.placementStateRef !== null || !!currentStart);
                 return (
                   <div className="temporal-create-tree-item is-session is-root"
                     key={row.scheduleRef} data-edit-planned-session={row.scheduleRef}>
@@ -710,20 +712,27 @@ export function ActivityEditPanel({
                       <div className="temporal-create-tree-row__actions">
                         <button type="button" className={hasTime ? 'is-active' : undefined}
                           aria-expanded={hasTime} aria-controls={`edit-session:${row.scheduleRef}:time`}
-                          title="La rimozione dell’orario di una Session già pianificata non è ancora disponibile"
-                          disabled>Orario</button>
-                        {canReplan ? <button type="button" className="is-remove" disabled={planPending}
-                          aria-label={removed ? 'Mantieni Sessione' : 'Rimuovi Sessione'}
+                          disabled={!canReplan || planPending}
                           onClick={() => {
-                            setRemovedPlanned((current) => current.includes(row.scheduleRef)
-                              ? current.filter((ref) => ref !== row.scheduleRef)
-                              : [...current, row.scheduleRef]);
+                            if (row.placementStateRef !== null) {
+                              setRemovedPlanned((current) => current.includes(row.scheduleRef)
+                                ? current.filter((ref) => ref !== row.scheduleRef)
+                                : [...current, row.scheduleRef]);
+                            } else {
+                              const root = settings.schedules.find((schedule) => schedule.role === 'envelope');
+                              setPlanDraft((current) => ({ ...current, [row.scheduleRef]: hasTime
+                                ? { start: '', end: '' }
+                                : { start: root?.start?.slice(0, 16) ?? '',
+                                    end: root?.end?.slice(0, 16) ?? '' },
+                              }));
+                            }
                             setPlanPreview(null);
                             setPlanOperation(null);
-                          }}>{removed ? '↶' : '×'}</button> : null}
+                            setPlanError('');
+                          }}>Orario</button>
                       </div>
                     </div>
-                    {!removed && hasTime ? (
+                    {hasTime ? (
                       <div id={`edit-session:${row.scheduleRef}:time`}
                         className="temporal-create-tree-time-editor" inert={planPending || undefined}>
                         {canReplan ? <>
@@ -775,9 +784,18 @@ export function ActivityEditPanel({
                       value={item.name} onChange={(event) => changeNewPlanned(item.clientRef,
                         'name', event.target.value)} />
                     <div className="temporal-create-tree-row__actions">
-                      <button type="button" className="is-active" aria-expanded="true"
+                      <button type="button" className={item.start ? 'is-active' : undefined}
+                        aria-expanded={!!item.start}
                         aria-controls={`edit-session:${item.clientRef}:time`}
-                        title="Le nuove Session pianificate richiedono ancora un orario" disabled>Orario</button>
+                        disabled={planPending}
+                        onClick={() => {
+                          const root = settings.schedules.find((row) => row.role === 'envelope');
+                          setNewPlanned((current) => current.map((row) => row.clientRef === item.clientRef
+                            ? { ...row, start: row.start ? '' : root?.start?.slice(0, 16) ?? '',
+                                end: row.start ? '' : root?.end?.slice(0, 16) ?? '' } : row));
+                          setPlanPreview(null);
+                          setPlanOperation(null);
+                        }}>Orario</button>
                       <button type="button" className="is-remove" aria-label="Rimuovi Sessione"
                         disabled={planPending} onClick={() => {
                           setNewPlanned((current) => current.filter((row) => row.clientRef !== item.clientRef));
@@ -786,7 +804,7 @@ export function ActivityEditPanel({
                         }}>×</button>
                     </div>
                   </div>
-                  <div id={`edit-session:${item.clientRef}:time`} className="temporal-create-tree-time-editor">
+                  {item.start ? <div id={`edit-session:${item.clientRef}:time`} className="temporal-create-tree-time-editor">
                     <TemporalCreateDatePicker label="Data Sessione" locale="it" value={item.start.slice(0, 10)}
                       onChange={(date) => changeNewPlanned(item.clientRef, 'start',
                         `${date}${item.start.slice(10, 16)}`)} />
@@ -796,7 +814,7 @@ export function ActivityEditPanel({
                     <TimeControl label="Fine Sessione" dataPath={`newEnd-${item.clientRef}`}
                       value={item.end.slice(11, 16)} onChange={(time) => changeNewPlanned(item.clientRef,
                         'end', `${item.end.slice(0, 10)}T${time}`)} />
-                  </div>
+                  </div> : null}
                 </div>
               ))}
             </div>
@@ -804,14 +822,12 @@ export function ActivityEditPanel({
         ) : null}
         {canReplan ? (
           <button type="button" className="temporal-create-structure-add timeline-activity-editor__add-session"
-            disabled={planPending || editablePlan.filter((row) => row.role === 'planned').length -
-              removedPlanned.length + newPlanned.length >= 100}
+            disabled={planPending || settings.schedules.filter((row) => row.role === 'planned').length +
+              newPlanned.length >= 100}
             onClick={() => {
-              const root = settings?.schedules.find((row) => row.role === 'envelope');
               setNewPlanned((current) => [...current, {
                 clientRef: crypto.randomUUID(), name: '',
-                start: root?.start?.slice(0, 16) ?? '',
-                end: root?.end?.slice(0, 16) ?? '',
+                start: '', end: '',
               }]);
               setPlanPreview(null);
               setPlanOperation(null);
@@ -996,13 +1012,15 @@ export function ActivityEditPanel({
                       {change.role === 'interval_added' ? 'Nuovo intervallo' :
                         change.role === 'interval_removed' ? 'Intervallo rimosso' :
                         change.role === 'planned_added' ? 'Nuova sessione' :
-                        change.role === 'planned_removed' ? 'Sessione rimossa' :
+                        change.role === 'planned_removed' ? 'Orario Sessione rimosso' :
+                        change.role === 'planned_placed' ? 'Orario Sessione aggiunto' :
                         change.role === 'planned' ? 'Sessione pianificata' :
                         change.role === 'envelope' ? 'Intervallo complessivo' : 'Intervallo'}:
                       {' '}{change.previousStart && change.previousEnd ?
                         `${change.previousStart} – ${change.previousEnd}` : ''}
                       {' → '}{change.proposedStart && change.proposedEnd ?
-                        `${change.proposedStart} – ${change.proposedEnd}` : 'rimossa'}
+                        `${change.proposedStart} – ${change.proposedEnd}` :
+                        change.role === 'interval_removed' ? 'rimosso' : 'senza orario'}
                     </li>
                   ))}</ul>
                   <button type="button" disabled={planPending || pending || lockPending || areaPending ||

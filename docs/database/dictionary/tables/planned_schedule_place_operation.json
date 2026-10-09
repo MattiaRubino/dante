@@ -1,0 +1,362 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "table:dante.planned_schedule_place_operation",
+    "type": "table",
+    "schema": "dante",
+    "name": "planned_schedule_place_operation",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Immutable replay receipt for explicitly placing an owned planned Activity Schedule while preserving its Schedule identity.",
+  "classification": {
+    "persistence_role": "operation_idempotency_control",
+    "canonicality": "control",
+    "family": "activity_schedule"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/workstreams/timeline-temporal-operational-b02-execution-plan.md#4-b02-operation-semantics",
+      "docs/workstreams/timeline-temporal-operational-b02-execution-plan.md#5-idempotency-and-concurrency-contract",
+      "docs/workstreams/timeline-temporal-operational-b02-execution-plan.md#6-persistence-strategy",
+      "docs/development/backend-cp6-02-postgresql-persistence-constitution.md"
+    ],
+    "domain_concepts": [
+      "Activity",
+      "Schedule"
+    ],
+    "logical_families": [
+      "application operation idempotency control"
+    ],
+    "reference_families": [
+      "NativeRef",
+      "ScopedRecordRef",
+      "MaterialStateRef"
+    ],
+    "material_facets": [
+      "schedule.placement"
+    ]
+  },
+  "implementation": {
+    "introducing_stage": "B14-PLANNED-SESSION-TIME-EDIT",
+    "alembic_revision": "20261009_131",
+    "sqlalchemy": {
+      "mode": "orm_row",
+      "module": "dante.platform.database.mappings.schedule",
+      "symbol": "PlannedSchedulePlaceOperationRow"
+    },
+    "runtime_acl_stage": "B14-PLANNED-SESSION-TIME-EDIT"
+  },
+  "structure": {
+    "columns": [
+      {
+        "name": "self_person_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Authenticated self Person scope owning the operation receipt.",
+        "semantic_type": "NativeRef",
+        "value_contract": "Must reference dante.person."
+      },
+      {
+        "name": "operation_id",
+        "postgres_type": "text",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Client/application operation identity used only for idempotent mutation replay.",
+        "semantic_type": "OperationId",
+        "value_contract": "Trimmed non-empty text, maximum 200 characters."
+      },
+      {
+        "name": "intent_fingerprint",
+        "postgres_type": "text",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Deterministic fingerprint of the materially relevant placement command intent.",
+        "semantic_type": "IntentFingerprint",
+        "value_contract": "Exactly 64 lowercase hexadecimal characters."
+      },
+      {
+        "name": "activity_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Owned Activity with the planned Schedule role.",
+        "semantic_type": "NativeRef",
+        "value_contract": "Self-owned Activity."
+      },
+      {
+        "name": "schedule_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Stable Schedule ScopedRecordRef created by the accepted operation.",
+        "semantic_type": "ScopedRecordRef",
+        "value_contract": "Application-issued UUIDv7 and unique per receipt."
+      },
+      {
+        "name": "material_state_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Exact accepted schedule.placement MaterialStateRef created by the operation.",
+        "semantic_type": "MaterialStateRef",
+        "value_contract": "Application-issued UUIDv7 and unique per receipt."
+      },
+      {
+        "name": "created_at",
+        "postgres_type": "timestamp with time zone",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Authoritative transaction timestamp recorded with the accepted operation.",
+        "semantic_type": "AbsoluteInstant",
+        "value_contract": "statement_timestamp() captured by the bounded database capability."
+      }
+    ],
+    "primary_key": {
+      "name": "pk_planned_schedule_place_operation",
+      "columns": [
+        "self_person_ref",
+        "operation_id"
+      ],
+      "reason": "One immutable receipt per self-scoped operation identity.",
+      "deferrable": false,
+      "initially": "NOT DEFERRABLE",
+      "enforced": true
+    },
+    "foreign_keys": [
+      {
+        "name": "fk_planned_schedule_place_operation_person",
+        "columns": [
+          "self_person_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "person",
+          "columns": [
+            "person_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "NativeRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Bind the planned placement receipt to its self-owned canonical identity."
+      },
+      {
+        "name": "fk_planned_schedule_place_operation_activity",
+        "columns": [
+          "activity_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "activity_intention",
+          "columns": [
+            "activity_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "NativeRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Bind the planned placement receipt to its self-owned canonical identity."
+      },
+      {
+        "name": "fk_planned_schedule_place_operation_schedule",
+        "columns": [
+          "schedule_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "schedule",
+          "columns": [
+            "schedule_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "ScopedRecordRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Bind the planned placement receipt to its self-owned canonical identity."
+      },
+      {
+        "name": "fk_planned_schedule_place_operation_state",
+        "columns": [
+          "material_state_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "schedule_placement_state",
+          "columns": [
+            "material_state_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "MaterialStateRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Bind the planned placement receipt to its self-owned canonical identity."
+      }
+    ],
+    "unique_constraints": [
+      {
+        "name": "uq_planned_schedule_place_operation_state",
+        "columns": [
+          "material_state_ref"
+        ],
+        "reason": "One receipt for an accepted placement state.",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true
+      }
+    ],
+    "check_constraints": [
+      {
+        "name": "ck_planned_schedule_place_operation_id",
+        "expression_contract": "operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200",
+        "reason": "Keep the bounded operation identity canonical and non-empty.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_planned_schedule_place_operation_fingerprint",
+        "expression_contract": "intent_fingerprint ~ '^[0-9a-f]{64}$'",
+        "reason": "Require the exact deterministic SHA-256 hex fingerprint representation.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "pk_planned_schedule_place_operation",
+        "method": "btree",
+        "unique": true,
+        "keys": [
+          "self_person_ref",
+          "operation_id"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "primary_key",
+        "reason": "Replay lookup.",
+        "valid": true,
+        "ready": true,
+        "live": true
+      },
+      {
+        "name": "uq_planned_schedule_place_operation_state",
+        "method": "btree",
+        "unique": true,
+        "keys": [
+          "material_state_ref"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "unique_constraint",
+        "reason": "Unique placement state.",
+        "valid": true,
+        "ready": true,
+        "live": true
+      },
+      {
+        "name": "ix_planned_schedule_place_operation_schedule_ref",
+        "method": "btree",
+        "unique": false,
+        "keys": [
+          "schedule_ref"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "explicit_index",
+        "reason": "Schedule history inspection.",
+        "valid": true,
+        "ready": true,
+        "live": true
+      }
+    ],
+    "triggers": [],
+    "table": {
+      "persistence": "permanent",
+      "access_method": "heap",
+      "partitioned": false,
+      "row_security": false,
+      "force_row_security": false,
+      "replica_identity": "default",
+      "reloptions": []
+    },
+    "view": null,
+    "routine": null
+  },
+  "state_history": {
+    "material_state_behavior": "The receipt references, but is not itself, the accepted schedule.placement MaterialState.",
+    "current_binding": "Receipt records an explicit first or renewed planned placement.",
+    "chronology": "Receipt creation uses the same transaction timestamp as the initial Schedule current-history episode.",
+    "immutability_policy": "Existing receipts are replay-only; operation-id reuse with materially different intent is rejected."
+  },
+  "lifecycle": {
+    "retention": null,
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No direct runtime delete or read capability; downgrade refuses removal after canonical Schedule establishment receipts exist."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": []
+  },
+  "proof": {
+    "obligations": [
+      "runtime has no direct table read/write privilege on operation receipts",
+      "each accepted receipt binds one self Person, Activity, Schedule and exact placement MaterialState",
+      "same operation id and same material intent replays while different intent conflicts",
+      "receipt existence never becomes Schedule or MaterialState identity"
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b14_activity_replan.py"
+    ],
+    "staged_evidence": []
+  }
+}

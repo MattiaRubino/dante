@@ -10,6 +10,35 @@ const response = (body: unknown, status = 200) =>
   });
 
 describe('Activity editor settings remote contract', () => {
+  it('exits a stalled core save with an Italian retry message', async () => {
+    vi.useFakeTimers();
+    try {
+      const fetchFn = vi.fn((input: RequestInfo | URL) => {
+        if (String(input).endsWith('/auth/session'))
+          return Promise.resolve(response({ authenticated: true, csrf_token: 'token' }));
+        return new Promise<Response>(() => undefined);
+      }) as unknown as typeof fetch;
+      const source = createRemoteActivityEditSettings(fetchFn);
+      const settings = {
+        capture: { mode: 'disabled' as const, stateRef: null },
+        reality: { mode: 'manual' as const, stateRef: null },
+        schedules: [], objectives: [], lifeAreaRef: null,
+        placementProtected: false, placementLockRevision: null,
+        placementLockScheduleRef: null, reminderLeadMinutes: null,
+        reminderScheduleRef: null, reminderStateRef: null, childGuardMode: 'none' as const,
+      };
+      const save = source.saveCore({ activityRef: ref, title: 'Prima',
+        description: null, location: null, colorCode: null, revision: 0 },
+      settings, { profile: { title: 'Dopo', description: null,
+        location: null, colorCode: null } }, 'op');
+      const failed = expect(save).rejects.toThrow('Salvataggio troppo lento');
+      await vi.advanceTimersByTimeAsync(20_001);
+      await failed;
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('loads one snapshot and saves core changes in one guarded request', async () => {
     const paths: string[] = [];
     const requests: Record<string, unknown>[] = [];
@@ -231,7 +260,7 @@ describe('Activity editor settings remote contract', () => {
         starts_local_at: '2026-10-09T11:00:00', ends_local_at: '2026-10-09T12:00:00' }],
       new_intervals: [{ client_ref: 'new-interval',
         starts_local_at: '2026-10-09T10:00', ends_local_at: '2026-10-09T11:00' }],
-      planned_sessions: [], remove_planned_sessions: [], new_planned_sessions: [],
+      planned_sessions: [], place_planned_sessions: [], remove_planned_sessions: [], new_planned_sessions: [],
     }]);
   });
 

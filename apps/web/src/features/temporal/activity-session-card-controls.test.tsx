@@ -12,6 +12,7 @@ vi.mock('./session-subject-controls', () => ({
       data-subject={String(props.subjectRef)}
       data-variant={String(props.variant)}
       data-interactive={String(props.interactive)}
+      data-compact={String(props.compactRuntime)}
     />
   ),
 }));
@@ -39,6 +40,7 @@ describe('Activity Session controls on Timeline cards', () => {
     expect(runtime.dataset.subject).toBe(ACTIVITY_REF);
     expect(runtime.dataset.variant).toBe('card');
     expect(runtime.dataset.interactive).toBe('true');
+    expect(runtime.dataset.compact).toBe('true');
   });
 
   it('fails closed when Session capability is absent or unreadable', async () => {

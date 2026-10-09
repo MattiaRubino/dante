@@ -55,13 +55,17 @@ class NewPlannedRow(BaseModel):
 
     client_ref: UUID
     name: str | None = Field(default=None, min_length=1, max_length=300)
-    starts_local_at: datetime
-    ends_local_at: datetime
+    starts_local_at: datetime | None = None
+    ends_local_at: datetime | None = None
 
     @model_validator(mode="after")
     def valid_interval(self) -> NewPlannedRow:
-        if (self.starts_local_at.tzinfo is not None or self.ends_local_at.tzinfo is not None
-                or self.ends_local_at <= self.starts_local_at):
+        if (self.starts_local_at is None) != (self.ends_local_at is None):
+            raise ValueError("Both planned Session times must be provided together.")
+        if self.starts_local_at is not None and self.ends_local_at is not None and (
+            self.starts_local_at.tzinfo is not None or self.ends_local_at.tzinfo is not None
+            or self.ends_local_at <= self.starts_local_at
+        ):
             raise ValueError("Planning requires ordered local timestamps without an offset.")
         if self.name is not None and self.name != self.name.strip():
             raise ValueError("A planned Session name must be trimmed.")
@@ -83,6 +87,21 @@ class NewIntervalRow(BaseModel):
         return self
 
 
+class PlacePlannedRow(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    schedule_ref: UUID
+    starts_local_at: datetime
+    ends_local_at: datetime
+
+    @model_validator(mode="after")
+    def valid_interval(self) -> PlacePlannedRow:
+        if (self.starts_local_at.tzinfo is not None or self.ends_local_at.tzinfo is not None
+                or self.ends_local_at <= self.starts_local_at):
+            raise ValueError("Planning requires ordered local timestamps without an offset.")
+        return self
+
+
 class ActivityReplanCommand(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -92,6 +111,7 @@ class ActivityReplanCommand(BaseModel):
     new_intervals: list[NewIntervalRow] = Field(default_factory=list, max_length=100)
     remove_intervals: list[ReplanRow] = Field(default_factory=list, max_length=100)
     planned_sessions: list[ReplanRow] = Field(default_factory=list, max_length=100)
+    place_planned_sessions: list[PlacePlannedRow] = Field(default_factory=list, max_length=100)
     new_planned_sessions: list[NewPlannedRow] = Field(default_factory=list, max_length=100)
     remove_planned_sessions: list[ReplanRow] = Field(default_factory=list, max_length=100)
 
@@ -139,6 +159,8 @@ def _validated_plan(snapshot: ActivityEditSnapshot, command: ActivityReplanComma
     envelope = next((row for row in rows if row.role_code == "envelope"), None)
     planned = [row for row in rows if row.role_code == "planned"
                and row.placement_material_state_ref is not None]
+    unplaced = [row for row in rows if row.role_code == "planned"
+                and row.placement_material_state_ref is None]
     if envelope is None:
         raise _invalid("This Activity does not have an editable time frame.")
     if (not intervals and (command.envelope is None or command.intervals
@@ -150,7 +172,7 @@ def _validated_plan(snapshot: ActivityEditSnapshot, command: ActivityReplanComma
             or (intervals and not command.intervals and not command.new_intervals)
             or len(command.intervals) + len(command.new_intervals) > 100
             or len(command.planned_sessions) + len(command.remove_planned_sessions) != len(planned)
-            or len(command.planned_sessions) + len(command.new_planned_sessions) > 100):
+            or len(planned) + len(unplaced) + len(command.new_planned_sessions) > 100):
         raise _invalid(
             "Every current row must be accounted for: 1-100 Activity intervals "
             "and at most 100 planned Sessions."
@@ -170,6 +192,11 @@ def _validated_plan(snapshot: ActivityEditSnapshot, command: ActivityReplanComma
         raise _invalid("A planning row is missing, repeated or assigned the wrong role.")
     if envelope.temporal_form not in {"floating_local", "named_zone_local"}:
         raise _invalid("This time frame is not supported for coordinated replanning.")
+    if (len({row.schedule_ref for row in command.place_planned_sessions})
+            != len(command.place_planned_sessions)
+            or {row.schedule_ref for row in command.place_planned_sessions}
+            - {row.schedule_ref for row in unplaced}):
+        raise _invalid("An unplaced planned Session is missing or repeated.")
     for row in (envelope, *intervals, *planned):
         if (row.temporal_form != envelope.temporal_form or row.zone_id != envelope.zone_id
                 or row.starts_local_at is None or row.ends_local_at is None):
@@ -182,7 +209,9 @@ def _validated_plan(snapshot: ActivityEditSnapshot, command: ActivityReplanComma
     if any(a.ends_local_at > b.starts_local_at for a, b in pairwise(ordered)):
         raise _invalid("Activity intervals overlap.")
     start, end = ordered[0].starts_local_at, ordered[-1].ends_local_at
-    ordered_planned = sorted((*command.planned_sessions, *command.new_planned_sessions),
+    ordered_planned = sorted((*command.planned_sessions, *command.place_planned_sessions,
+                              *(row for row in command.new_planned_sessions
+                                if row.starts_local_at is not None)),
                              key=lambda row: row.starts_local_at)
     if any(row.starts_local_at < start or row.ends_local_at > end for row in ordered_planned):
         raise _invalid("A planned Session falls outside the Activity envelope.")
@@ -249,6 +278,10 @@ def _validated_plan(snapshot: ActivityEditSnapshot, command: ActivityReplanComma
             proposed_start=row.starts_local_at, proposed_end=row.ends_local_at,
         ) for row in command.new_planned_sessions
     )
+    changes.extend(ReplanChange(
+        schedule_ref=row.schedule_ref, role="planned_placed",
+        proposed_start=row.starts_local_at, proposed_end=row.ends_local_at,
+    ) for row in command.place_planned_sessions)
     return changes, placements
 
 
@@ -303,6 +336,7 @@ async def apply_activity_replan(
             changes_required = bool(
                 placements or body.remove_intervals or body.new_intervals
                 or body.remove_planned_sessions or body.new_planned_sessions
+                or body.place_planned_sessions
             )
             # Historical execution is immutable. Current open execution and accepted
             # realization close ordinary planning edits for this bounded command.
@@ -375,6 +409,37 @@ async def apply_activity_replan(
                     "schedule": row.schedule_ref,
                     "expected": row.expected_material_state_ref,
                 })
+            for row in body.place_planned_sessions:
+                if await session.scalar(text("""
+                    SELECT locked FROM dante.get_self_schedule_placement_lock(:actor,:schedule)
+                """), {"actor": actor, "schedule": row.schedule_ref}):
+                    raise _conflict("Unlock the planned Session before placing it.")
+                try:
+                    placement = (
+                        NamedZoneLocalIntervalPlacement(
+                            starts_local_at=row.starts_local_at,
+                            ends_local_at=row.ends_local_at, zone_id=envelope.zone_id,
+                        ) if envelope.temporal_form == "named_zone_local" else
+                        FloatingLocalIntervalPlacement(
+                            starts_local_at=row.starts_local_at, ends_local_at=row.ends_local_at,
+                        )
+                    )
+                except ScheduleInputError as exc:
+                    raise _invalid(str(exc)) from exc
+                payload = _placement_payload(placement)
+                await session.execute(text("""
+                    SELECT * FROM dante.place_self_unplaced_planned_schedule(
+                        :actor,:operation,:fingerprint,:activity,:schedule,:state,
+                        CAST(:placement AS jsonb))
+                """), {
+                    "actor": actor, "operation": f"replan:place:{digest}:{row.schedule_ref}",
+                    "fingerprint": hashlib.sha256(json.dumps({
+                        "activity": str(activity_ref), "schedule": str(row.schedule_ref),
+                        "placement": payload,
+                    }, sort_keys=True).encode()).hexdigest(),
+                    "activity": activity_ref, "schedule": row.schedule_ref,
+                    "state": uuid7(), "placement": json.dumps(payload, sort_keys=True),
+                })
             if body.new_intervals:
                 next_interval_order = await session.scalar(text("""
                     SELECT COALESCE(MAX(presentation_order),0)
@@ -420,6 +485,15 @@ async def apply_activity_replan(
                 """), {"actor": actor, "activity": activity_ref})
                 for row in body.new_planned_sessions:
                     next_order += 1
+                    if row.starts_local_at is None:
+                        await session.execute(text("""
+                            SELECT * FROM dante.establish_self_unplaced_planned_schedule(
+                                :actor,:activity,:schedule,:position,:name)
+                        """), {
+                            "actor": actor, "activity": activity_ref,
+                            "schedule": uuid7(), "position": next_order, "name": row.name,
+                        })
+                        continue
                     try:
                         placement = (
                             NamedZoneLocalIntervalPlacement(
