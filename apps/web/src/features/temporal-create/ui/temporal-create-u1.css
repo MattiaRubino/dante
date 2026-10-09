@@ -582,3 +582,23 @@
     justify-self: start;
   }
 }
+
+/* Draft Vault replaces the third placement choice; keep two choices balanced. */
+@media (max-width: 560px) {
+  [data-create-path='timeSemantics'] .temporal-create-choice-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.temporal-create-actions > button:not(.is-primary):not(.temporal-create-advanced-toggle) {
+  min-height: 36px;
+  padding: 0 13px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle, rgba(255,255,255,.12));
+  border-radius: 9px;
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  background: var(--dante-semantic-color-home-surface-control, #151f2e);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 650;
+  cursor: pointer;
+}
