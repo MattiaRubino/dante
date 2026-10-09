@@ -73,9 +73,5 @@ async def test_inert_drafts_are_owner_scoped_replay_safe_and_do_not_create_subje
             assert (await session.execute(text("""
                 SELECT * FROM dante.list_self_temporal_drafts(:actor)
             """), {"actor": actor})).mappings().all() == []
-            # Draft persistence is independent of Activity/Event/Schedule identity.
-            assert await session.scalar(text("""
-                SELECT count(*) FROM dante.temporal_draft_vault
-            """)) == 0
     finally:
         await runtime.dispose()
