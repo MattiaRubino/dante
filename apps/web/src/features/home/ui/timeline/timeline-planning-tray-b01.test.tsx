@@ -49,7 +49,7 @@ const items = Object.freeze([
 ]);
 
 describe('TimelinePlanningTrayB01 unified product tray', () => {
-  it('shows Activity, never-placed Event and postponed Event in one Da collocare surface', async () => {
+  it('shows Activity, never-placed Event and postponed Event in the separate existing-items placement surface', async () => {
     const source: TemporalPlanningTrayDataSource = {
       listItems: vi.fn(async () => items),
       placeItem: vi.fn(async (request) => ({
@@ -72,11 +72,11 @@ describe('TimelinePlanningTrayB01 unified product tray', () => {
       </>,
     );
 
-    const trigger = await screen.findByRole('button', { name: 'Apri Da collocare' });
+    const trigger = await screen.findByRole('button', { name: 'Apri elementi già creati' });
     await waitFor(() => expect(source.listItems).toHaveBeenCalled());
     fireEvent.click(trigger);
 
-    expect(await screen.findByRole('heading', { name: 'Da collocare' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Elementi già creati' })).toBeTruthy();
     expect(screen.getByText('Preparare documenti')).toBeTruthy();
     expect(screen.getByText('Cena da organizzare')).toBeTruthy();
     expect(screen.getByText('Visita medica')).toBeTruthy();
