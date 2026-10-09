@@ -43,6 +43,29 @@ export type ObjectiveDefinitionState = Readonly<{
   evaluationStateRef: string | null;
 }>;
 
+export type ActivityObjectiveBatchCreate = Readonly<{
+  operationId: string;
+  label: string;
+  resultKind: ObjectiveKind;
+  comparatorCode: ObjectiveComparator | null;
+  targetValue: number | null;
+  targetMin: number | null;
+  targetMax: number | null;
+  unitCode: string | null;
+  presentationOrder: number;
+}>;
+
+export type ActivityObjectiveBatchRevision = Readonly<{
+  objectiveRef: string;
+  change: ObjectiveDefinitionChange;
+}>;
+
+export type ActivityObjectiveBatchRetirement = Readonly<{
+  objectiveRef: string;
+  operationId: string;
+  expectedRevision: number;
+}>;
+
 export type ObjectiveSeriesEditState = Readonly<{
   sourceNativeRef: string;
   occurrenceRef: string;
@@ -196,6 +219,81 @@ export function createRemoteRealityObjectiveDataSource(
           expected_state_ref: command.expectedStateRef ?? null,
         },
       );
+    },
+
+    async applyActivityEdits(
+      activityRef: string,
+      edit: Readonly<{
+        add: readonly ActivityObjectiveBatchCreate[];
+        revise: readonly ActivityObjectiveBatchRevision[];
+        retire: readonly ActivityObjectiveBatchRetirement[];
+      }>,
+    ): Promise<readonly ObjectiveView[]> {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 20_000);
+      try {
+        const response = await webFetch(
+          `/api/v1/temporal/activities/${encodeURIComponent(activityRef)}/objective-edits`,
+          {
+            method: 'PUT',
+            signal: controller.signal,
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Dante-CSRF': await csrf(),
+            },
+            body: JSON.stringify({
+              add: edit.add.map((item) => ({
+                operation_id: item.operationId,
+                label: item.label, result_kind: item.resultKind,
+                comparator_code: item.comparatorCode,
+                target_value: item.targetValue, target_min: item.targetMin,
+                target_max: item.targetMax, unit_code: item.unitCode,
+                presentation_order: item.presentationOrder,
+              })),
+              revise: edit.revise.map((item) => ({
+                objective_ref: item.objectiveRef,
+                change: {
+                  operation_id: item.change.operationId,
+                  expected_revision: item.change.expectedRevision,
+                  scope_code: item.change.scopeCode ?? 'only_this',
+                  expected_source_revision: item.change.seriesState?.sourceRevision ?? null,
+                  expected_recurrence_state_ref:
+                    item.change.seriesState?.recurrenceStateRef ?? null,
+                  label: item.change.label, result_kind: item.change.resultKind,
+                  comparator_code: item.change.comparatorCode,
+                  target_value: item.change.targetValue,
+                  target_min: item.change.targetMin,
+                  target_max: item.change.targetMax,
+                  unit_code: item.change.unitCode,
+                  presentation_order: item.change.presentationOrder,
+                },
+              })),
+              retire: edit.retire.map((item) => ({
+                objective_ref: item.objectiveRef,
+                operation_id: item.operationId,
+                expected_revision: item.expectedRevision,
+              })),
+            }),
+          },
+        );
+        const payload: unknown = await response.json();
+        if (!response.ok) {
+          const problem = record(payload);
+          throw new Error(typeof problem.detail === 'string'
+            ? problem.detail : 'Impossibile salvare gli obiettivi.');
+        }
+        if (!Array.isArray(payload)) {
+          throw new Error('Risposta Obiettivi non valida.');
+        }
+        return Object.freeze(payload.map(parseObjectiveView));
+      } catch (error) {
+        if (controller.signal.aborted) {
+          throw new Error('Salvataggio obiettivi troppo lento. Riprova senza perdere le modifiche.');
+        }
+        throw error;
+      } finally {
+        clearTimeout(timer);
+      }
     },
 
     async createObjective(
