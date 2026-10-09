@@ -230,9 +230,16 @@ export function createRemoteRealityObjectiveDataSource(
       }>,
     ): Promise<readonly ObjectiveView[]> {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 20_000);
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      const timeout = new Promise<never>((_, reject) => {
+        timer = setTimeout(() => {
+          controller.abort();
+          reject(new Error('Salvataggio obiettivi troppo lento. Riprova senza perdere le modifiche.'));
+        }, 20_000);
+      });
       try {
-        const response = await webFetch(
+        return await Promise.race([(async () => {
+          const response = await webFetch(
           `/api/v1/temporal/activities/${encodeURIComponent(activityRef)}/objective-edits`,
           {
             method: 'PUT',
@@ -285,14 +292,10 @@ export function createRemoteRealityObjectiveDataSource(
         if (!Array.isArray(payload)) {
           throw new Error('Risposta Obiettivi non valida.');
         }
-        return Object.freeze(payload.map(parseObjectiveView));
-      } catch (error) {
-        if (controller.signal.aborted) {
-          throw new Error('Salvataggio obiettivi troppo lento. Riprova senza perdere le modifiche.');
-        }
-        throw error;
+          return Object.freeze(payload.map(parseObjectiveView));
+        })(), timeout]);
       } finally {
-        clearTimeout(timer);
+        if (timer) clearTimeout(timer);
       }
     },
 
