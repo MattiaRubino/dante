@@ -201,6 +201,19 @@
   align-items: center;
 }
 
+.timeline-event-modal--edit .timeline-activity-editor [data-edit-invalid='true']
+  :is(.temporal-create-date-picker__trigger, .temporal-create-time-control__field,
+    input[type='datetime-local']) {
+  border-color: var(--dante-timeline-tone-urgent, #ff5b64);
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__when > .temporal-create-field-error {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--dante-timeline-tone-urgent, #ff5b64);
+  font-size: 11px;
+}
+
 .timeline-event-modal--edit .timeline-activity-editor__when-arrow {
   color: var(--dante-semantic-color-home-chrome-active, #ea5c12);
   text-align: center;

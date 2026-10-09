@@ -390,18 +390,33 @@ export function createRemoteActivityEditSettings(
       draft: ActivityReplanDraft,
       operationId: string,
     ): Promise<ActivityEditSettings> {
-      const response = await request(endpoint(ref, 'replan'), {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'X-Dante-CSRF': await csrf() },
-        body: JSON.stringify(replanBody(settings, draft, operationId)),
+      const controller = new AbortController();
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      const timeout = new Promise<never>((_, reject) => {
+        timer = setTimeout(() => {
+          controller.abort();
+          reject(new Error('Salvataggio troppo lento. Controlla la connessione e riprova.'));
+        }, 20_000);
       });
-      if (!response.ok) throw new Error(response.status === 409
-        ? 'La programmazione è cambiata o è protetta. Riapri Modifica e riprova.'
-        : 'Impossibile salvare la programmazione.');
-      const saved = parseSnapshot(ref, await response.json());
-      invalidateTemporalTimelineRead();
-      invalidateTemporalPlanningRead();
-      return saved;
+      try {
+        return await Promise.race([timeout, (async () => {
+          const response = await request(endpoint(ref, 'replan'), {
+            method: 'PUT',
+            signal: controller.signal,
+            headers: { 'Content-Type': 'application/json', 'X-Dante-CSRF': await csrf(controller.signal) },
+            body: JSON.stringify(replanBody(settings, draft, operationId)),
+          });
+          if (!response.ok) throw new Error(response.status === 409
+            ? 'La programmazione è cambiata o è protetta. Riapri Modifica e riprova.'
+            : 'Impossibile salvare la programmazione.');
+          const saved = parseSnapshot(ref, await response.json());
+          invalidateTemporalTimelineRead();
+          invalidateTemporalPlanningRead();
+          return saved;
+        })()]);
+      } finally {
+        if (timer) clearTimeout(timer);
+      }
     },
     async loadLifeAreaChoice(ref: string): Promise<ActivityLifeAreaChoice> {
       const [rawAreas, rawAssignments] = await Promise.all([

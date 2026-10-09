@@ -21,7 +21,7 @@ const loadSettings = vi.fn();
 const loadChildCount = vi.fn().mockResolvedValue(0);
 const saveCore = vi.fn();
 const previewReplan = vi.fn();
-const applyReplan = vi.fn();
+const applyReplan = vi.fn().mockImplementation(async (_ref, settings) => settings);
 const loadLifeAreaChoice = vi.fn();
 const assignLifeArea = vi.fn();
 const revisePlannedName = vi.fn();
@@ -401,7 +401,7 @@ describe('Activity Inspector', () => {
     expect(screen.getByRole('button', { name: 'Apri nuovo obiettivo' })).toBeTruthy();
   });
 
-  it('requires an explicit preview before applying a planning change', async () => {
+  it('saves a planning change directly from Salva modifiche', async () => {
     const settings = { ...currentSettings, schedules: [
       { scheduleRef: 'envelope', role: 'envelope', name: null, order: 0,
         placementStateRef: 'state-0', temporalForm: 'named_zone_local',
@@ -422,21 +422,17 @@ describe('Activity Inspector', () => {
     expect(screen.getAllByRole('group', { name: 'Fine' })[0]!
       .querySelector('[data-create-path="endTime-interval"]')).toHaveProperty('value', '10:00');
     fireEvent.click(screen.getAllByRole('button', { name: 'Fine: aumenta ora' })[0]!);
-    expect(screen.getByRole('button', { name: 'Salva modifiche' })).toHaveProperty('disabled', true);
-    fireEvent.click(screen.getByRole('button', { name: 'Verifica spostamento' }));
-    await waitFor(() => expect(previewReplan).toHaveBeenCalledOnce());
-    expect(previewReplan.mock.calls[0]?.[2].times.interval).toEqual({
+    expect(screen.queryByRole('button', { name: 'Verifica spostamento' })).toBeNull();
+    await submitEditor();
+    await waitFor(() => expect(applyReplan).toHaveBeenCalledOnce());
+    expect(applyReplan.mock.calls[0]?.[2].times.interval).toEqual({
       start: '2026-10-09T10:00', end: '2026-10-09T11:00',
     });
-    expect(screen.getByText('Modifiche proposte')).toBeTruthy();
-    expect(applyReplan).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: 'Applica programmazione' }));
-    await waitFor(() => expect(applyReplan).toHaveBeenCalledOnce());
-    expect(applyReplan.mock.calls[0]?.[3]).toBe(previewReplan.mock.calls[0]?.[3]);
+    expect(previewReplan).not.toHaveBeenCalled();
     expect(onSaved).toHaveBeenCalledWith(profile);
   });
 
-  it('previews additions and removals of planned Sessions before applying', async () => {
+  it('saves additions and removals of planned Sessions in one action', async () => {
     const settings = { ...currentSettings, schedules: [
       { scheduleRef: 'envelope', role: 'envelope', name: null, order: 0,
         placementStateRef: 'state-0', temporalForm: 'named_zone_local',
@@ -465,13 +461,13 @@ describe('Activity Inspector', () => {
       { target: { value: '10:00' } });
     fireEvent.change(newSession.querySelector('[data-create-path^="newEnd-"]')!,
       { target: { value: '11:00' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Verifica spostamento' }));
-    await waitFor(() => expect(previewReplan).toHaveBeenCalledWith(ref, settings,
+    await submitEditor();
+    await waitFor(() => expect(applyReplan).toHaveBeenCalledWith(ref, settings,
       expect.objectContaining({ removedPlanned: ['planned'], newPlanned: [
         expect.objectContaining({ name: 'Seconda', start: '2026-10-09T10:00',
           end: '2026-10-09T11:00' }),
       ] }), expect.any(String)));
-    expect(applyReplan).not.toHaveBeenCalled();
+    expect(previewReplan).not.toHaveBeenCalled();
   });
 
   it('edits the single overall interval of an Activity without role intervals', async () => {
@@ -489,15 +485,86 @@ describe('Activity Inspector', () => {
       onSaved={() => undefined} onCancel={() => undefined} />);
     fireEvent.click(await screen.findByRole('button', { name: 'Inizio: aumenta ora' }));
     fireEvent.click(screen.getByRole('button', { name: 'Fine: aumenta ora' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Verifica spostamento' }));
-    await waitFor(() => expect(previewReplan).toHaveBeenCalledWith(ref, settings,
+    await submitEditor();
+    await waitFor(() => expect(applyReplan).toHaveBeenCalledWith(ref, settings,
       expect.objectContaining({ times: expect.objectContaining({
         envelope: { start: '2026-10-09T10:00', end: '2026-10-09T13:00' },
       }) }), expect.any(String)));
     expect(screen.queryByRole('button', { name: 'Aggiungi intervallo' })).toBeNull();
   });
 
-  it('persists protection only through the guarded separate action', async () => {
+  it('marks the incorrect time and leaves Save usable while the interval is invalid', async () => {
+    const settings = { ...currentSettings, schedules: [
+      { scheduleRef: 'envelope', role: 'envelope', name: null, order: 0,
+        placementStateRef: 'state-0', temporalForm: 'named_zone_local',
+        start: '2026-10-09T21:30:00', end: '2026-10-09T22:30:00', zoneId: 'Europe/Rome' },
+    ] };
+    loadSettings.mockResolvedValueOnce(settings);
+    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
+      onSaved={() => undefined} onCancel={() => undefined} />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Fine: diminuisci ora' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Fine: diminuisci ora' }));
+    expect(screen.getByRole('button', { name: 'Salva modifiche' }))
+      .toHaveProperty('disabled', false);
+    const time = document.querySelector('.timeline-activity-editor__when')!;
+    expect(time.getAttribute('data-edit-invalid')).toBe('true');
+    expect(time.textContent).toContain('La fine deve seguire l’inizio.');
+    await submitEditor();
+    expect(applyReplan).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Fine: aumenta ora' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Fine: aumenta ora' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Fine: aumenta ora' }));
+    expect(time.getAttribute('data-edit-invalid')).toBe('false');
+    await submitEditor();
+    await waitFor(() => expect(applyReplan).toHaveBeenCalledOnce());
+  });
+
+  it('marks only the planned Session when it falls outside the Activity time', async () => {
+    loadSettings.mockResolvedValueOnce({ ...currentSettings, schedules: [
+      { scheduleRef: 'envelope', role: 'envelope', name: null, order: 0,
+        placementStateRef: 'state-0', temporalForm: 'named_zone_local',
+        start: '2026-10-09T09:00:00', end: '2026-10-09T12:00:00', zoneId: 'Europe/Rome' },
+      { scheduleRef: 'planned', role: 'planned', name: 'Studio', order: 1,
+        placementStateRef: 'state-1', temporalForm: 'named_zone_local',
+        start: '2026-10-09T10:00:00', end: '2026-10-09T11:00:00', zoneId: 'Europe/Rome' },
+    ] });
+    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
+      onSaved={() => undefined} onCancel={() => undefined} />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Fine Sessione: aumenta ora' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Fine Sessione: aumenta ora' }));
+    const sessionTime = document.querySelector('[data-edit-planned-session] .temporal-create-tree-time-editor')!;
+    expect(sessionTime.getAttribute('data-edit-invalid')).toBe('true');
+    expect(sessionTime.textContent).toContain('Fuori dall’orario dell’attività.');
+    expect(document.querySelector('.timeline-activity-editor__when')!
+      .getAttribute('data-edit-invalid')).toBe('false');
+    await submitEditor();
+    expect(applyReplan).not.toHaveBeenCalled();
+  });
+
+  it('retries a failed time save without losing the edited time', async () => {
+    const settings = { ...currentSettings, schedules: [
+      { scheduleRef: 'envelope', role: 'envelope', name: null, order: 0,
+        placementStateRef: 'state-0', temporalForm: 'named_zone_local',
+        start: '2026-10-09T09:00:00', end: '2026-10-09T12:00:00', zoneId: 'Europe/Rome' },
+    ] };
+    loadSettings.mockResolvedValueOnce(settings);
+    applyReplan.mockRejectedValueOnce(new Error('Connessione interrotta'))
+      .mockResolvedValueOnce(settings);
+    const onSaved = vi.fn();
+    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
+      onSaved={onSaved} onCancel={() => undefined} />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Fine: aumenta ora' }));
+    await submitEditor();
+    expect(await screen.findByRole('alert')).toHaveProperty('textContent', 'Connessione interrotta');
+    expect(onSaved).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Salva modifiche' }))
+      .toHaveProperty('disabled', false);
+    await submitEditor();
+    await waitFor(() => expect(onSaved).toHaveBeenCalledWith(profile));
+    expect(applyReplan.mock.calls[1]?.[3]).toBe(applyReplan.mock.calls[0]?.[3]);
+  });
+
+  it('persists protection from Salva modifiche', async () => {
     const settings = { ...currentSettings, placementLockScheduleRef: 'envelope',
       placementLockRevision: 2 };
     loadSettings.mockResolvedValueOnce(settings);
@@ -509,15 +576,13 @@ describe('Activity Inspector', () => {
       onSaved={onSaved} onCancel={() => undefined} />);
     const toggle = await screen.findByRole('button', { name: 'Blocca spostamenti' });
     fireEvent.click(toggle);
-    expect(screen.getByRole('button', { name: 'Salva modifiche' }))
-      .toHaveProperty('disabled', true);
-    fireEvent.click(screen.getByRole('button', { name: 'Applica blocco spostamenti' }));
+    await submitEditor();
     await waitFor(() => expect(setPlacementProtected).toHaveBeenCalledWith(
       settings, true,
     ));
     await waitFor(() => expect(screen.getByRole('button', { name: 'Sblocca spostamenti' })
       .getAttribute('aria-pressed')).toBe('true'));
-    expect(onSaved).not.toHaveBeenCalled();
+    expect(onSaved).toHaveBeenCalledWith(profile);
   });
 
   it('changes Life Area with the accepted assignment revision', async () => {
@@ -532,15 +597,13 @@ describe('Activity Inspector', () => {
     const area = await screen.findByRole('textbox', { name: 'Area assegnata' });
     fireEvent.change(area, { target: { value: 'Lavoro' } });
     fireEvent.click(screen.getByRole('option', { name: 'Lavoro' }));
-    expect(screen.getByRole('button', { name: 'Salva modifiche' }))
-      .toHaveProperty('disabled', true);
-    fireEvent.click(screen.getByRole('button', { name: 'Applica Life Area' }));
+    await submitEditor();
     await waitFor(() => expect(assignLifeArea).toHaveBeenCalledWith(
       ref, catalog, 'new-area', expect.any(String),
     ));
   });
 
-  it('previews replacing an Activity interval without deleting historical rows', async () => {
+  it('saves a replacement Activity interval without deleting historical rows', async () => {
     const settings = { ...currentSettings, schedules: [
       { scheduleRef: 'envelope', role: 'envelope', name: null, order: 0,
         placementStateRef: 'state-0', temporalForm: 'named_zone_local',
@@ -566,9 +629,8 @@ describe('Activity Inspector', () => {
       { target: { value: '2026-10-09T10:00' } });
     fireEvent.change(screen.getByLabelText('Fine nuovo intervallo'),
       { target: { value: '2026-10-09T11:00' } });
-    expect(screen.getByRole('button', { name: 'Salva modifiche' })).toHaveProperty('disabled', true);
-    fireEvent.click(screen.getByRole('button', { name: 'Verifica spostamento' }));
-    await waitFor(() => expect(previewReplan).toHaveBeenCalledWith(
+    await submitEditor();
+    await waitFor(() => expect(applyReplan).toHaveBeenCalledWith(
       ref, settings, expect.objectContaining({
         removedIntervals: ['interval'],
         newIntervals: [expect.objectContaining({
@@ -576,8 +638,6 @@ describe('Activity Inspector', () => {
         })],
       }), expect.any(String),
     ));
-    expect(await screen.findByText(/Intervallo rimosso/)).toBeTruthy();
-    expect(screen.getByText(/Nuovo intervallo/)).toBeTruthy();
   });
 
   it('guards unsaved changes for external close requests', () => {
@@ -698,7 +758,7 @@ describe('Activity Inspector', () => {
     expect(loadSettings).toHaveBeenCalledWith(ref);
   });
 
-  it('preserves an unsaved planned name instead of submitting unrelated core settings', async () => {
+  it('saves a planned Session name from the main button', async () => {
     loadSettings.mockResolvedValueOnce({ ...currentSettings, schedules: [{
       scheduleRef: 'planned-m3b', role: 'planned', name: 'Preparazione', order: 0,
       placementStateRef: 'placement-1', temporalForm: 'named_zone_local',
@@ -720,12 +780,12 @@ describe('Activity Inspector', () => {
     expect(sessions.querySelector('button[aria-controls="edit-session:planned-m3b:time"]'))
       .toHaveProperty('disabled', true);
     fireEvent.change(name, { target: { value: 'Preparazione approfondita' } });
-    expect(screen.getByRole('button', { name: 'Salva modifiche' }))
-      .toHaveProperty('disabled', true);
+    revisePlannedName.mockResolvedValueOnce('Preparazione approfondita');
+    await submitEditor();
+    await waitFor(() => expect(revisePlannedName).toHaveBeenCalledWith(
+      ref, 'planned-m3b', 'Preparazione', 'Preparazione approfondita'));
     expect(saveCore).not.toHaveBeenCalled();
-    expect(onSaved).not.toHaveBeenCalled();
-    expect(screen.getByRole('button', { name: 'Salva nome sessione' }))
-      .toHaveProperty('disabled', false);
+    expect(onSaved).toHaveBeenCalledWith(profile);
   });
 
   it('offers an Orario toggle for an untimed planned Session and keeps its identity', async () => {
@@ -744,9 +804,9 @@ describe('Activity Inspector', () => {
     const toggle = name.closest('[data-edit-planned-session]')!.querySelector('button[aria-controls]')!;
     expect(toggle).toHaveProperty('disabled', false);
     fireEvent.click(toggle);
-    expect(screen.getByRole('button', { name: 'Verifica spostamento' })).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Verifica spostamento' }));
-    await waitFor(() => expect(previewReplan).toHaveBeenCalledWith(ref, settings,
+    expect(screen.getByRole('button', { name: 'Ripristina orari' })).toBeTruthy();
+    await submitEditor();
+    await waitFor(() => expect(applyReplan).toHaveBeenCalledWith(ref, settings,
       expect.objectContaining({ times: expect.objectContaining({
         untimed: { start: '2026-10-09T09:00', end: '2026-10-09T12:00' },
       }) }), expect.any(String)));
@@ -767,7 +827,7 @@ describe('Activity Inspector', () => {
     expect(applyReplan).not.toHaveBeenCalled();
   });
 
-  it('blocks rescheduling until a planned-name draft is saved or discarded', async () => {
+  it('saves the planned name and time in the same submission', async () => {
     loadSettings.mockResolvedValueOnce({ ...currentSettings, schedules: [
       {
         scheduleRef: 'envelope-replan', role: 'envelope', name: null, order: 0,
@@ -793,11 +853,12 @@ describe('Activity Inspector', () => {
     const name = await screen.findByRole('textbox', { name: 'Nome Sessione' });
     fireEvent.change(name, { target: { value: 'Allenamento lungo' } });
     fireEvent.click(screen.getAllByRole('button', { name: 'Inizio: diminuisci ora' })[0]!);
-    expect(screen.getByText(/Salva prima i nomi delle Session/)).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Verifica spostamento' }))
-      .toHaveProperty('disabled', true);
+    revisePlannedName.mockResolvedValueOnce('Allenamento lungo');
+    await submitEditor();
+    await waitFor(() => expect(applyReplan).toHaveBeenCalledOnce());
+    await waitFor(() => expect(revisePlannedName).toHaveBeenCalledWith(
+      ref, 'planned-replan', 'Allenamento', 'Allenamento lungo'));
     expect(previewReplan).not.toHaveBeenCalled();
-    expect(applyReplan).not.toHaveBeenCalled();
   });
 
   it('discloses selected-only owner-domain editing even with no metadata change', async () => {
@@ -823,7 +884,7 @@ describe('Activity Inspector', () => {
     expect(following).toHaveProperty('disabled', true);
     expect(screen.getByText(/Life Area e nomi delle Session pianificate/)).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Salva modifiche' }))
-      .toHaveProperty('disabled', true);
+      .toHaveProperty('disabled', false);
     expect(saveRecurringProfile).not.toHaveBeenCalled();
   });
 
@@ -860,7 +921,7 @@ describe('Activity Inspector', () => {
       onSaved={() => undefined} onCancel={() => undefined} />);
     await screen.findByRole('textbox', { name: 'Area assegnata' });
     fireEvent.click(screen.getByRole('button', { name: 'Rimuovi Life Area' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Applica Life Area' }));
+    await submitEditor();
     await waitFor(() => expect(assignLifeArea).toHaveBeenCalledWith(
       ref, catalog, null, expect.any(String),
     ));
@@ -878,7 +939,7 @@ describe('Activity Inspector', () => {
       onSaved={() => undefined} onCancel={() => undefined} />);
     const field = await screen.findByRole('textbox', { name: 'Nome Sessione' });
     fireEvent.change(field, { target: { value: 'Ripasso' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Salva nome sessione' }));
+    await submitEditor();
     await waitFor(() => expect(revisePlannedName).toHaveBeenCalledWith(
       ref, 'planned', 'Lettura', 'Ripasso',
     ));

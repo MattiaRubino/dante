@@ -9,9 +9,9 @@ import {
 import type { ActivityProfile } from '../../../temporal/remote-activity-inspector';
 import {
   createRemoteActivityEditSettings,
-  type ActivityReplanChange,
   type ActivityNewInterval,
   type ActivityNewPlanned,
+  type ActivityReplanDraft,
   type ActivityReplanTime,
   type ActivityEditSettings,
   type ActivityLifeAreaChoice,
@@ -46,6 +46,65 @@ import {
   type RecurringProfileEditScope,
 } from '../../../temporal/remote-recurring-profile-edit';
 
+function planValidation(settings: ActivityEditSettings, draft: ActivityReplanDraft) {
+  const errors: Record<string, string> = {};
+  const spans: { ref: string; start: string; end: string }[] = [];
+  const check = (ref: string, start: string, end: string) => {
+    start = start.slice(0, 16);
+    end = end.slice(0, 16);
+    if (!start || !end) errors[ref] = 'Completa l’orario.';
+    else if (end <= start) errors[ref] = 'La fine deve seguire l’inizio.';
+    else spans.push({ ref, start, end });
+  };
+  const intervals = settings.schedules.filter((row) => row.role === 'interval' &&
+    !draft.removedIntervals.includes(row.scheduleRef));
+  const root = settings.schedules.find((row) => row.role === 'envelope');
+  const bounds = settings.schedules.some((row) => row.role === 'interval')
+    ? intervals.map((row) => ({ ref: row.scheduleRef,
+        start: (draft.times[row.scheduleRef]?.start ?? '').slice(0, 16),
+        end: (draft.times[row.scheduleRef]?.end ?? '').slice(0, 16) }))
+      .concat(draft.newIntervals.map((row) => ({ ref: row.clientRef,
+        start: row.start.slice(0, 16), end: row.end.slice(0, 16) })))
+    : root ? [{ ref: root.scheduleRef,
+        start: (draft.times[root.scheduleRef]?.start ?? '').slice(0, 16),
+        end: (draft.times[root.scheduleRef]?.end ?? '').slice(0, 16) }] : [];
+  bounds.forEach(({ ref, start, end }) => check(ref, start, end));
+  const orderedBounds = bounds.filter((row) => !errors[row.ref]).sort((a, b) =>
+    a.start.localeCompare(b.start));
+  for (let i = 1; i < orderedBounds.length; i++) {
+    if (orderedBounds[i - 1]!.end > orderedBounds[i]!.start) {
+      errors[orderedBounds[i]!.ref] = 'Intervalli sovrapposti.';
+    }
+  }
+  const planned = settings.schedules.filter((row) => row.role === 'planned' &&
+    !draft.removedPlanned.includes(row.scheduleRef) &&
+    (row.placementStateRef !== null || !!draft.times[row.scheduleRef]?.start))
+    .map((row) => ({ ref: row.scheduleRef,
+      start: (draft.times[row.scheduleRef]?.start ?? '').slice(0, 16),
+      end: (draft.times[row.scheduleRef]?.end ?? '').slice(0, 16) }))
+    .concat(draft.newPlanned.filter((row) => !!row.start || !!row.end)
+      .map((row) => ({ ref: row.clientRef,
+        start: row.start.slice(0, 16), end: row.end.slice(0, 16) })));
+  planned.forEach(({ ref, start, end }) => check(ref, start, end));
+  if (orderedBounds.length && bounds.length === orderedBounds.length) {
+    const min = orderedBounds[0]!.start;
+    const max = orderedBounds[orderedBounds.length - 1]!.end;
+    for (const row of planned) {
+      if (!errors[row.ref] && (row.start < min || row.end > max)) {
+        errors[row.ref] = 'Fuori dall’orario dell’attività.';
+      }
+    }
+  }
+  const orderedPlanned = spans.filter((row) => planned.some((item) => item.ref === row.ref))
+    .sort((a, b) => a.start.localeCompare(b.start));
+  for (let i = 1; i < orderedPlanned.length; i++) {
+    if (orderedPlanned[i - 1]!.end > orderedPlanned[i]!.start) {
+      errors[orderedPlanned[i]!.ref] = 'Sessioni sovrapposte.';
+    }
+  }
+  return errors;
+}
+
 export function ActivityEditPanel({
   profile,
   onSaved,
@@ -73,15 +132,12 @@ export function ActivityEditPanel({
   const [realityMode, setRealityMode] = useState<RealityMode | null>(null);
   const [reminderLeadMinutes, setReminderLeadMinutes] = useState<number | null>(null);
   const [placementProtected, setPlacementProtected] = useState<boolean | null>(null);
-  const [lockPending, setLockPending] = useState(false);
   const [lockError, setLockError] = useState('');
   const [areaChoice, setAreaChoice] = useState<ActivityLifeAreaChoice | null>(null);
   const [selectedArea, setSelectedArea] = useState('');
   const [areaQuery, setAreaQuery] = useState('');
   const [plannedNames, setPlannedNames] = useState<Record<string, string>>({});
-  const [namePending, setNamePending] = useState<string | null>(null);
   const [nameError, setNameError] = useState('');
-  const [areaPending, setAreaPending] = useState(false);
   const [areaError, setAreaError] = useState('');
   const areaOperation = useRef<string | null>(null);
   const [planDraft, setPlanDraft] = useState<Record<string, ActivityReplanTime>>({});
@@ -112,7 +168,6 @@ export function ActivityEditPanel({
   const [correctedBoolean, setCorrectedBoolean] = useState('true');
   const [correctedAssessment, setCorrectedAssessment] = useState<ObjectiveAssessment>('unknown');
   const correctionOperation = useRef<string | null>(null);
-  const [planPreview, setPlanPreview] = useState<readonly ActivityReplanChange[] | null>(null);
   const [planOperation, setPlanOperation] = useState<string | null>(null);
   const [planPending, setPlanPending] = useState(false);
   const [planError, setPlanError] = useState('');
@@ -165,6 +220,8 @@ export function ActivityEditPanel({
   const replanDraft = {
     times: planDraft, removedIntervals, newIntervals, removedPlanned, newPlanned,
   };
+  const planErrors = settings && canReplan && planDirty
+    ? planValidation(settings, replanDraft) : {};
   const lockDirty = settings !== null && settings.placementLockScheduleRef !== null &&
     placementProtected !== null && placementProtected !== settings.placementProtected;
   const areaDirty = areaChoice !== null &&
@@ -246,7 +303,7 @@ export function ActivityEditPanel({
   }, [profile.activityRef, settingsSource]);
 
   const requestClose = useCallback(() => {
-    if (pending || planPending || lockPending || areaPending || objectivePending || namePending) return;
+    if (pending || planPending || objectivePending) return;
     if (confirmingDiscard) {
       setConfirmingDiscard(false);
     } else if (dirty) {
@@ -254,33 +311,7 @@ export function ActivityEditPanel({
     } else {
       onCancel();
     }
-  }, [areaPending, confirmingDiscard, dirty, lockPending, onCancel,
-    objectivePending, pending, planPending, namePending]);
-
-  const applyLifeArea = () => {
-    if (!areaChoice || !areaDirty || !areaQueryValid || !settings || pending || planPending ||
-        lockPending || areaPending) return;
-    if (scopedDomainUnsupported) {
-      setAreaError('La Life Area si può modificare solo con «Solo questa»; la propagazione alla serie non è disponibile.');
-      return;
-    }
-    if (areaChoice.currentRef !== settings.lifeAreaRef) {
-      setAreaError('Assegnazione cambiata. Chiudi Modifica e riapri.');
-      return;
-    }
-    setAreaPending(true);
-    setAreaError('');
-    const operationId = areaOperation.current ??= crypto.randomUUID();
-    void settingsSource.assignLifeArea(
-      profile.activityRef, areaChoice, selectedArea || null, operationId,
-    ).then((saved) => {
-      areaOperation.current = null;
-      setAreaChoice(saved);
-      setSettings((current) => current && ({ ...current, lifeAreaRef: saved.currentRef }));
-    }).catch((reason: unknown) => {
-      setAreaError(reason instanceof Error ? reason.message : 'Cambio Life Area non riuscito.');
-    }).finally(() => setAreaPending(false));
-  };
+  }, [confirmingDiscard, dirty, onCancel, objectivePending, pending, planPending]);
 
   const updateObjectiveDraft = (patch: Partial<typeof objectiveDraft>) => {
     setObjectiveDraft((current) => ({ ...current, ...patch }));
@@ -370,7 +401,7 @@ export function ActivityEditPanel({
   };
 
   const addObjective = () => {
-    if (!settings || objectivePending || pending || planPending || lockPending || areaPending ||
+    if (!settings || objectivePending || pending || planPending ||
         !objectiveDraft.label.trim()) return;
     const kind = objectiveDraft.resultKind;
     const numeric = (value: string) => value.trim() && Number.isFinite(Number(value))
@@ -424,26 +455,10 @@ export function ActivityEditPanel({
     }).finally(() => setObjectivePending(false));
   };
 
-  const applyPlacementLock = () => {
-    if (!settings || placementProtected === null || !lockDirty ||
-        pending || planPending || lockPending) return;
-    setLockPending(true);
-    setLockError('');
-    void settingsSource.setPlacementProtected(
-      settings, placementProtected,
-    ).then((saved) => {
-      setSettings(saved);
-    }).catch((reason: unknown) => {
-      setLockError(reason instanceof Error
-        ? reason.message : 'Impossibile aggiornare la protezione.');
-    }).finally(() => setLockPending(false));
-  };
-
   const changePlan = (ref: string, field: keyof ActivityReplanTime, value: string) => {
     setPlanDraft((current) => ({ ...current,
       [ref]: { start: current[ref]?.start ?? '', end: current[ref]?.end ?? '', [field]: value },
     }));
-    setPlanPreview(null);
     setPlanOperation(null);
     setPlanError('');
   };
@@ -453,7 +468,6 @@ export function ActivityEditPanel({
   ) => {
     setNewIntervals((current) => current.map((item) =>
       item.clientRef === ref ? { ...item, [field]: value } : item));
-    setPlanPreview(null);
     setPlanOperation(null);
     setPlanError('');
   };
@@ -461,50 +475,8 @@ export function ActivityEditPanel({
   const changeNewPlanned = (ref: string, field: 'start' | 'end' | 'name', value: string) => {
     setNewPlanned((current) => current.map((item) => item.clientRef === ref
       ? { ...item, [field]: value } : item));
-    setPlanPreview(null);
     setPlanOperation(null);
-  };
-
-  const previewPlan = () => {
-    if (!settings || !canReplan || !planDirty || coreDirty || lockDirty || areaDirty ||
-        nameDirty || namePending || planPending || lockPending || areaPending) return;
-    const operationId = crypto.randomUUID();
-    setPlanPending(true);
     setPlanError('');
-    void settingsSource.previewReplan(profile.activityRef, settings, replanDraft, operationId)
-      .then((changes) => {
-        setPlanOperation(operationId);
-        setPlanPreview(changes);
-      })
-      .catch((reason: unknown) => setPlanError(reason instanceof Error
-        ? reason.message : 'Anteprima non disponibile.'))
-      .finally(() => setPlanPending(false));
-  };
-
-  const applyPlan = () => {
-    if (!settings || !planPreview || !planOperation || planPending || coreDirty ||
-        lockDirty || areaDirty || nameDirty || namePending || lockPending || areaPending) return;
-    setPlanPending(true);
-    setPlanError('');
-    void settingsSource.applyReplan(profile.activityRef, settings, replanDraft, planOperation)
-      .then((saved) => {
-        setSettings(saved);
-        setPlannedNames(Object.fromEntries(saved.schedules.filter((row) => row.role === 'planned')
-          .map((row) => [row.scheduleRef, row.name ?? ''])));
-        setPlanDraft(Object.fromEntries(saved.schedules.map((schedule) => [
-          schedule.scheduleRef, { start: schedule.start ?? '', end: schedule.end ?? '' },
-        ])));
-        setNewPlanned([]);
-        setRemovedPlanned([]);
-        setNewIntervals([]);
-        setRemovedIntervals([]);
-        setPlanPreview(null);
-        setPlanOperation(null);
-        onSaved(profile);
-      })
-      .catch((reason: unknown) => setPlanError(reason instanceof Error
-        ? reason.message : 'Riprogrammazione non riuscita.'))
-      .finally(() => setPlanPending(false));
   };
 
   useEffect(() => {
@@ -524,8 +496,8 @@ export function ActivityEditPanel({
       onSubmit={(event) => {
         event.preventDefault();
         if (
-          pending || planPending || lockPending || areaPending || objectivePending || namePending ||
-          areaDirty || lockDirty || planDirty || objectiveDirty || nameDirty ||
+          pending || planPending || objectivePending ||
+          objectiveDirty ||
           !settings ||
           loadingSettings ||
           recurringLoading ||
@@ -536,9 +508,92 @@ export function ActivityEditPanel({
           !draft.title.trim()
         )
           return;
+        if (planDirty && Object.keys(planErrors).length) return;
+        if (areaDirty && (!areaQueryValid || scopedDomainUnsupported)) {
+          setAreaError('Scegli una Life Area valida per questa attività.');
+          return;
+        }
+        if (nameDirty && scopedDomainUnsupported) {
+          setNameError('Per rinominare una Sessione scegli «Solo questa».');
+          return;
+        }
         setPending(true);
+        setPlanPending(true);
         setError('');
+        let errorHandled = false;
         void (async () => {
+          let currentSettings = settings;
+          if (lockDirty && placementProtected === false) {
+            currentSettings = await settingsSource.setPlacementProtected(currentSettings, false)
+              .catch((reason: unknown) => {
+                errorHandled = true;
+                setLockError(reason instanceof Error ? reason.message : 'Impossibile sbloccare.');
+                throw reason;
+              });
+            setSettings(currentSettings);
+          }
+          if (planDirty) {
+            setPlanError('');
+            const operationId = planOperation ?? crypto.randomUUID();
+            setPlanOperation(operationId);
+            currentSettings = await settingsSource.applyReplan(profile.activityRef,
+              currentSettings, replanDraft, operationId)
+              .catch((reason: unknown) => {
+                errorHandled = true;
+                setPlanError(reason instanceof Error ? reason.message : 'Orario non salvato.');
+                throw reason;
+              });
+            setSettings(currentSettings);
+            setPlanDraft(Object.fromEntries(currentSettings.schedules.map((row) => [
+              row.scheduleRef, { start: row.start ?? '', end: row.end ?? '' },
+            ])));
+            setNewPlanned([]);
+            setRemovedPlanned([]);
+            setNewIntervals([]);
+            setRemovedIntervals([]);
+            setPlanOperation(null);
+          }
+          for (const row of currentSettings.schedules.filter((item) => item.role === 'planned' &&
+            (plannedNames[item.scheduleRef] ?? item.name ?? '') !== (item.name ?? ''))) {
+            const next = plannedNames[row.scheduleRef]?.trim() || null;
+            const saved = await settingsSource.revisePlannedName(profile.activityRef,
+              row.scheduleRef, row.name, next).catch((reason: unknown) => {
+                errorHandled = true;
+                setNameError(reason instanceof Error ? reason.message : 'Nome non salvato.');
+                throw reason;
+              });
+            currentSettings = { ...currentSettings, schedules: currentSettings.schedules.map(
+              (item) => item.scheduleRef === row.scheduleRef ? { ...item, name: saved } : item) };
+            setSettings(currentSettings);
+            setPlannedNames((current) => ({ ...current, [row.scheduleRef]: saved ?? '' }));
+          }
+          if (areaDirty && areaChoice) {
+            if (areaChoice.currentRef !== currentSettings.lifeAreaRef) {
+              errorHandled = true;
+              setAreaError('Life Area cambiata. Riapri Modifica.');
+              throw new Error('Life Area cambiata. Riapri Modifica.');
+            }
+            const saved = await settingsSource.assignLifeArea(profile.activityRef,
+              areaChoice, selectedArea || null, areaOperation.current ??= crypto.randomUUID())
+              .catch((reason: unknown) => {
+                errorHandled = true;
+                setAreaError(reason instanceof Error ? reason.message : 'Life Area non salvata.');
+                throw reason;
+              });
+            areaOperation.current = null;
+            setAreaChoice(saved);
+            currentSettings = { ...currentSettings, lifeAreaRef: saved.currentRef };
+            setSettings(currentSettings);
+          }
+          if (lockDirty && placementProtected === true) {
+            currentSettings = await settingsSource.setPlacementProtected(currentSettings, true)
+              .catch((reason: unknown) => {
+                errorHandled = true;
+                setLockError(reason instanceof Error ? reason.message : 'Blocco non salvato.');
+                throw reason;
+              });
+            setSettings(currentSettings);
+          }
           const changed = {
             title: draft.title.trim(),
             description: draft.description.trim() || null,
@@ -548,9 +603,9 @@ export function ActivityEditPanel({
           const metadataChanged = Object.entries(changed).some(
             ([key, value]) => value !== profile[key as keyof typeof changed],
           );
-          const captureChanged = captureMode !== settings.capture.mode;
-          const realityChanged = realityMode !== settings.reality.mode;
-          const reminderChanged = reminderLeadMinutes !== settings.reminderLeadMinutes;
+          const captureChanged = captureMode !== currentSettings.capture.mode;
+          const realityChanged = realityMode !== currentSettings.reality.mode;
+          const reminderChanged = reminderLeadMinutes !== currentSettings.reminderLeadMinutes;
           if (!metadataChanged && !captureChanged && !realityChanged && !reminderChanged) {
             onSaved(profile);
             return;
@@ -582,7 +637,7 @@ export function ActivityEditPanel({
               'Questa e le prossime richiede una modifica ai dati generali.',
             );
           }
-          const saved = await settingsSource.saveCore(profile, settings, {
+          const saved = await settingsSource.saveCore(profile, currentSettings, {
             ...(metadataChanged ? { profile: changed } : {}),
             ...(captureChanged ? { capture: captureMode } : {}),
             ...(realityChanged ? { reality: realityMode } : {}),
@@ -597,9 +652,12 @@ export function ActivityEditPanel({
               reason instanceof Error
                 ? reason.message
                 : 'Operazione non riuscita.';
-            setError(message);
+            if (!errorHandled) setError(message);
           })
-          .finally(() => setPending(false));
+          .finally(() => {
+            setPending(false);
+            setPlanPending(false);
+          });
       }}
     >
       <div
@@ -655,7 +713,7 @@ export function ActivityEditPanel({
                 aria-label={placementProtected ? 'Sblocca spostamenti' : 'Blocca spostamenti'}
                 aria-pressed={placementProtected ?? settings.placementProtected}
                 title={placementProtected ? 'Sblocca spostamenti' : 'Blocca spostamenti'}
-                disabled={pending || planPending || lockPending}
+                disabled={pending || planPending}
                 onClick={() => {
                   setPlacementProtected(!(placementProtected ?? settings.placementProtected));
                   setLockError('');
@@ -701,7 +759,7 @@ export function ActivityEditPanel({
                       <span className="temporal-create-tree-row__divider" aria-hidden="true" />
                       <input className="temporal-create-tree-row__title" maxLength={300}
                         aria-label="Nome Sessione" placeholder="Nome Sessione"
-                        disabled={removed || !!namePending || pending || planPending}
+                        disabled={removed || pending || planPending}
                         value={plannedNames[row.scheduleRef] ?? ''}
                         onChange={(event) => {
                           setPlannedNames((current) => ({
@@ -726,15 +784,15 @@ export function ActivityEditPanel({
                                     end: root?.end?.slice(0, 16) ?? '' },
                               }));
                             }
-                            setPlanPreview(null);
-                            setPlanOperation(null);
+                              setPlanOperation(null);
                             setPlanError('');
                           }}>Orario</button>
                       </div>
                     </div>
                     {hasTime ? (
                       <div id={`edit-session:${row.scheduleRef}:time`}
-                        className="temporal-create-tree-time-editor" inert={planPending || undefined}>
+                        className="temporal-create-tree-time-editor" inert={planPending || undefined}
+                        data-edit-invalid={!!planErrors[row.scheduleRef]}>
                         {canReplan ? <>
                           <TemporalCreateDatePicker label="Data Sessione" locale="it"
                             value={currentStart.slice(0, 10)}
@@ -749,26 +807,9 @@ export function ActivityEditPanel({
                             onChange={(time) => changePlan(row.scheduleRef, 'end',
                               `${currentEnd.slice(0, 10)}T${time}`)} />
                         </> : <span>{currentStart} – {currentEnd}</span>}
+                        {planErrors[row.scheduleRef] ? <small className="temporal-create-field-error" role="alert">
+                          {planErrors[row.scheduleRef]}</small> : null}
                       </div>
-                    ) : null}
-                    {(plannedNames[row.scheduleRef] ?? '') !== (row.name ?? '') ? (
-                      <button type="button" disabled={!!namePending || pending || planPending ||
-                        planDirty || areaDirty || coreDirty || lockDirty || scopedDomainUnsupported}
-                        onClick={() => {
-                          const next = plannedNames[row.scheduleRef]?.trim() || null;
-                          setNamePending(row.scheduleRef);
-                          setNameError('');
-                          void settingsSource.revisePlannedName(profile.activityRef,
-                            row.scheduleRef, row.name, next).then((saved) => {
-                            setSettings((current) => current && ({ ...current,
-                              schedules: current.schedules.map((schedule) => schedule.scheduleRef === row.scheduleRef
-                                ? { ...schedule, name: saved } : schedule),
-                            }));
-                            setPlannedNames((current) => ({ ...current, [row.scheduleRef]: saved ?? '' }));
-                          }).catch((reason: unknown) => {
-                            setNameError(reason instanceof Error ? reason.message : 'Rinomina non riuscita.');
-                          }).finally(() => setNamePending(null));
-                        }}>Salva nome sessione</button>
                     ) : null}
                   </div>
                 );
@@ -793,18 +834,17 @@ export function ActivityEditPanel({
                           setNewPlanned((current) => current.map((row) => row.clientRef === item.clientRef
                             ? { ...row, start: row.start ? '' : root?.start?.slice(0, 16) ?? '',
                                 end: row.start ? '' : root?.end?.slice(0, 16) ?? '' } : row));
-                          setPlanPreview(null);
                           setPlanOperation(null);
                         }}>Orario</button>
                       <button type="button" className="is-remove" aria-label="Rimuovi Sessione"
                         disabled={planPending} onClick={() => {
                           setNewPlanned((current) => current.filter((row) => row.clientRef !== item.clientRef));
-                          setPlanPreview(null);
                           setPlanOperation(null);
                         }}>×</button>
                     </div>
                   </div>
-                  {item.start ? <div id={`edit-session:${item.clientRef}:time`} className="temporal-create-tree-time-editor">
+                  {item.start ? <div id={`edit-session:${item.clientRef}:time`}
+                    className="temporal-create-tree-time-editor" data-edit-invalid={!!planErrors[item.clientRef]}>
                     <TemporalCreateDatePicker label="Data Sessione" locale="it" value={item.start.slice(0, 10)}
                       onChange={(date) => changeNewPlanned(item.clientRef, 'start',
                         `${date}${item.start.slice(10, 16)}`)} />
@@ -814,6 +854,8 @@ export function ActivityEditPanel({
                     <TimeControl label="Fine Sessione" dataPath={`newEnd-${item.clientRef}`}
                       value={item.end.slice(11, 16)} onChange={(time) => changeNewPlanned(item.clientRef,
                         'end', `${item.end.slice(0, 10)}T${time}`)} />
+                    {planErrors[item.clientRef] ? <small className="temporal-create-field-error" role="alert">
+                      {planErrors[item.clientRef]}</small> : null}
                   </div> : null}
                 </div>
               ))}
@@ -829,15 +871,8 @@ export function ActivityEditPanel({
                 clientRef: crypto.randomUUID(), name: '',
                 start: '', end: '',
               }]);
-              setPlanPreview(null);
               setPlanOperation(null);
             }}>＋ Sessione</button>
-        ) : null}
-        {lockDirty ? (
-          <button type="button" className="timeline-activity-editor__apply-lock"
-            disabled={pending || planPending || lockPending} onClick={applyPlacementLock}>
-            {lockPending ? 'Salvataggio…' : 'Applica blocco spostamenti'}
-          </button>
         ) : null}
         {settings ? (
           <>
@@ -890,7 +925,8 @@ export function ActivityEditPanel({
                         !removedPlanned.includes(schedule.scheduleRef) &&
                          !removedIntervals.includes(schedule.scheduleRef) ? (
                         <div className="temporal-create-u2-when timeline-activity-editor__when"
-                          inert={planPending || undefined}>
+                          inert={planPending || undefined}
+                          data-edit-invalid={!!planErrors[schedule.scheduleRef]}>
                           <TemporalCreateDatePicker label="Data inizio" locale="it"
                             value={(planDraft[schedule.scheduleRef]?.start ?? schedule.start ?? '').slice(0, 10)}
                             onChange={(date) => changePlan(schedule.scheduleRef, 'start',
@@ -908,6 +944,8 @@ export function ActivityEditPanel({
                             value={(planDraft[schedule.scheduleRef]?.end ?? schedule.end ?? '').slice(0, 10)}
                             onChange={(date) => changePlan(schedule.scheduleRef, 'end',
                               `${date}${(planDraft[schedule.scheduleRef]?.end ?? schedule.end ?? '').slice(10, 16)}`)} />
+                          {planErrors[schedule.scheduleRef] ? <small className="temporal-create-field-error" role="alert">
+                            {planErrors[schedule.scheduleRef]}</small> : null}
                         </div>
                       ) : null}
                       {canReplan && schedule.role === 'interval' ? (
@@ -916,7 +954,6 @@ export function ActivityEditPanel({
                             current.includes(schedule.scheduleRef)
                               ? current.filter((ref) => ref !== schedule.scheduleRef)
                               : [...current, schedule.scheduleRef]);
-                          setPlanPreview(null);
                           setPlanOperation(null);
                           setPlanError('');
                         }}>
@@ -945,7 +982,8 @@ export function ActivityEditPanel({
               {canReplan ? (
                 <div>
                   {newIntervals.map((item) => (
-                    <div key={item.clientRef} className="timeline-activity-editor__fields">
+                    <div key={item.clientRef} className="timeline-activity-editor__fields"
+                      data-edit-invalid={!!planErrors[item.clientRef]}>
                       <label>Inizio nuovo intervallo
                         <input type="datetime-local" required disabled={planPending}
                           value={item.start.slice(0, 16)}
@@ -961,10 +999,11 @@ export function ActivityEditPanel({
                       <button type="button" disabled={planPending} onClick={() => {
                         setNewIntervals((current) =>
                           current.filter((row) => row.clientRef !== item.clientRef));
-                        setPlanPreview(null);
                         setPlanOperation(null);
                         setPlanError('');
                       }}>Rimuovi nuovo intervallo</button>
+                      {planErrors[item.clientRef] ? <small role="alert" className="temporal-create-field-error">
+                        {planErrors[item.clientRef]}</small> : null}
                     </div>
                   ))}
                   {hasIntervals ? <button type="button" disabled={planPending ||
@@ -974,22 +1013,13 @@ export function ActivityEditPanel({
                       setNewIntervals((current) => [...current, {
                         clientRef: crypto.randomUUID(), start: '', end: '',
                       }]);
-                      setPlanPreview(null);
-                      setPlanOperation(null);
+                              setPlanOperation(null);
                       setPlanError('');
                     }}>Aggiungi intervallo</button> : null}
                 </div>
               ) : null}
               {planDirty ? (
                 <div>
-                  {coreDirty || lockDirty || areaDirty || nameDirty ? (
-                    <p>Salva prima i nomi delle Session e le altre impostazioni; la programmazione si applica separatamente.</p>
-                  ) : null}
-                  <button type="button" disabled={planPending || pending || lockPending || areaPending ||
-                      !!namePending || coreDirty || lockDirty || areaDirty || nameDirty}
-                    onClick={previewPlan}>
-                    {planPending ? 'Verifica…' : 'Verifica spostamento'}
-                  </button>
                   <button type="button" disabled={planPending} onClick={() => {
                     setPlanDraft(Object.fromEntries(settings.schedules.map((schedule) => [
                       schedule.scheduleRef,
@@ -999,38 +1029,8 @@ export function ActivityEditPanel({
                     setRemovedPlanned([]);
                     setNewIntervals([]);
                     setRemovedIntervals([]);
-                    setPlanPreview(null);
-                    setPlanOperation(null);
+                          setPlanOperation(null);
                   }}>Ripristina orari</button>
-                </div>
-              ) : null}
-              {planPreview ? (
-                <div role="group" aria-label="Anteprima spostamento">
-                  <h4>Modifiche proposte</h4>
-                  <ul>{planPreview.map((change) => (
-                    <li key={change.scheduleRef ?? change.clientRef}>
-                      {change.role === 'interval_added' ? 'Nuovo intervallo' :
-                        change.role === 'interval_removed' ? 'Intervallo rimosso' :
-                        change.role === 'planned_added' ? 'Nuova sessione' :
-                        change.role === 'planned_removed' ? 'Orario Sessione rimosso' :
-                        change.role === 'planned_placed' ? 'Orario Sessione aggiunto' :
-                        change.role === 'planned' ? 'Sessione pianificata' :
-                        change.role === 'envelope' ? 'Intervallo complessivo' : 'Intervallo'}:
-                      {' '}{change.previousStart && change.previousEnd ?
-                        `${change.previousStart} – ${change.previousEnd}` : ''}
-                      {' → '}{change.proposedStart && change.proposedEnd ?
-                        `${change.proposedStart} – ${change.proposedEnd}` :
-                        change.role === 'interval_removed' ? 'rimosso' : 'senza orario'}
-                    </li>
-                  ))}</ul>
-                  <button type="button" disabled={planPending || pending || lockPending || areaPending ||
-                      !!namePending || coreDirty || lockDirty || areaDirty || nameDirty} onClick={applyPlan}>
-                    Applica programmazione
-                  </button>
-                  <button type="button" disabled={planPending} onClick={() => {
-                    setPlanPreview(null);
-                    setPlanOperation(null);
-                  }}>Annulla proposta</button>
                 </div>
               ) : null}
             </section>
@@ -1056,7 +1056,7 @@ export function ActivityEditPanel({
                     label="Area assegnata"
                     options={areaChoice.options.map((area) => ({ id: area.ref, label: area.name }))}
                     selectedId={selectedArea || null}
-                    disabled={pending || planPending || lockPending || areaPending}
+                    disabled={pending || planPending}
                     onQueryChange={(query) => {
                       setAreaQuery(query);
                       setSelectedArea(areaChoice.options.find((area) => area.name === query)?.ref ?? '');
@@ -1071,12 +1071,6 @@ export function ActivityEditPanel({
                     }}
                     onClear={() => { setSelectedArea(''); setAreaQuery(''); setAreaError(''); }} />
                   {!areaQueryValid ? <small>Scegli una Life Area dall’elenco.</small> : null}
-                  {areaDirty ? (
-                    <button type="button" disabled={!areaQueryValid || pending || planPending || lockPending || areaPending || scopedDomainUnsupported}
-                      onClick={applyLifeArea}>
-                      {areaPending ? 'Salvataggio…' : 'Applica Life Area'}
-                    </button>
-                  ) : null}
                 </>
               ) : null}
               </div>
@@ -1235,7 +1229,7 @@ export function ActivityEditPanel({
                 {objectiveError ? <p role="alert">{objectiveError}</p> : null}
                 <button type="button" onClick={addObjective}
                   disabled={objectivePending || pending || planPending ||
-                    lockPending || areaPending || !objectiveDraft.label.trim()}>
+                    !objectiveDraft.label.trim()}>
                   {objectivePending ? 'Salvataggio…' :
                     editingObjective ? 'Salva obiettivo' : 'Aggiungi obiettivo'}
                 </button>
@@ -1377,16 +1371,15 @@ export function ActivityEditPanel({
         className="timeline-activity-editor__actions dante-temporal-panel-actions"
         inert={confirmingDiscard || undefined}
       >
-        <button type="button" disabled={pending || planPending || lockPending ||
-          areaPending || objectivePending || !!namePending} onClick={requestClose}>
+        <button type="button" disabled={pending || planPending || objectivePending} onClick={requestClose}>
           Annulla
         </button>
         <button
           type="submit"
           className="is-primary"
           disabled={
-            pending || planPending || lockPending || areaPending || objectivePending || !!namePending ||
-            areaDirty || lockDirty || planDirty || objectiveDirty || nameDirty ||
+            pending || planPending || objectivePending ||
+            objectiveDirty ||
             !settings ||
             loadingSettings ||
             recurringLoading ||
