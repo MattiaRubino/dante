@@ -162,3 +162,37 @@ def test_replan_replaces_activity_interval_and_keeps_one_current_interval() -> N
         )
     assert overlapping.value.status == 422
 
+
+def test_replan_envelope_only_requires_cas_and_keeps_planned_sessions_in_bounds() -> None:
+    envelope, planned = _row("envelope", 9, 12), _row("planned", 10, 11)
+    snapshot = SimpleNamespace(schedules=[envelope, planned])
+    changes, placements = _validated_plan(snapshot, ActivityReplanCommand(
+        operation_id="move-envelope",
+        envelope=_intent(envelope, 10, 13),
+        planned_sessions=[_intent(planned, 11, 12)],
+    ))
+    assert {row.role for row in changes} == {"envelope", "planned"}
+    assert len(placements) == 2
+
+    with pytest.raises(ProblemError) as omitted:
+        _validated_plan(snapshot, ActivityReplanCommand(
+            operation_id="missing-envelope", planned_sessions=[_intent(planned, 10, 11)],
+        ))
+    assert omitted.value.status == 422
+
+    with pytest.raises(ProblemError) as stale:
+        _validated_plan(snapshot, ActivityReplanCommand(
+            operation_id="stale-envelope",
+            envelope=_intent(envelope, 10, 13).model_copy(
+                update={"expected_material_state_ref": uuid7()}),
+            planned_sessions=[_intent(planned, 10, 11)],
+        ))
+    assert stale.value.status == 409
+
+    with pytest.raises(ProblemError) as outside:
+        _validated_plan(snapshot, ActivityReplanCommand(
+            operation_id="outside-envelope", envelope=_intent(envelope, 11, 13),
+            planned_sessions=[_intent(planned, 10, 11)],
+        ))
+    assert outside.value.status == 422
+

@@ -235,6 +235,43 @@ describe('Activity editor settings remote contract', () => {
     }]);
   });
 
+  it('revises the envelope directly when an Activity has no role intervals', async () => {
+    const requests: Record<string, unknown>[] = [];
+    const fetchFn = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const path = typeof input === 'string' ? input :
+        input instanceof URL ? input.href : input.url;
+      if (path.endsWith('/auth/session'))
+        return Promise.resolve(response({ authenticated: true, csrf_token: 'token' }));
+      if (path.endsWith('/replan-preview')) {
+        requests.push(JSON.parse(String(init?.body)) as Record<string, unknown>);
+        return Promise.resolve(response({ activity_ref: ref, changes: [] }));
+      }
+      throw new Error(`Unexpected path: ${path}`);
+    });
+    const source = createRemoteActivityEditSettings(fetchFn);
+    const envelope = { scheduleRef: 'envelope', role: 'envelope' as const,
+      name: null, order: 0, placementStateRef: 'state',
+      temporalForm: 'named_zone_local', zoneId: 'Europe/Rome',
+      start: '2026-10-09T09:00:00', end: '2026-10-09T12:00:00' };
+    const settings = {
+      capture: { mode: 'disabled' as const, stateRef: null },
+      reality: { mode: 'manual' as const, stateRef: null },
+      schedules: [envelope], objectives: [], lifeAreaRef: null,
+      placementProtected: false, placementLockRevision: null,
+      placementLockScheduleRef: null, reminderLeadMinutes: null,
+      reminderScheduleRef: null, reminderStateRef: null, childGuardMode: 'none' as const,
+    };
+    await source.previewReplan(ref, settings, {
+      times: { envelope: { start: '2026-10-09T10:00', end: '2026-10-09T13:00' } },
+      removedIntervals: [], newIntervals: [], removedPlanned: [], newPlanned: [],
+    }, 'replan-envelope');
+    expect(requests[0]?.envelope).toEqual({
+      schedule_ref: 'envelope', expected_material_state_ref: 'state',
+      starts_local_at: '2026-10-09T10:00', ends_local_at: '2026-10-09T13:00',
+    });
+    expect(requests[0]?.intervals).toEqual([]);
+  });
+
 
   it('authors an Objective through the canonical self-scoped endpoint', async () => {
     const received: Record<string, unknown>[] = [];

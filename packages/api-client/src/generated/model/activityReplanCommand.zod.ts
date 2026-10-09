@@ -23,6 +23,17 @@ export const activityReplanCommandRemoveIntervalsMax = 100;
 export const activityReplanCommandRemovePlannedSessionsMax = 100;
 
 export const ActivityReplanCommand = /*#__PURE__*/ zod.object({
+  envelope: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.object({
+        ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+        expected_material_state_ref: /*#__PURE__*/ zod.uuid(),
+        schedule_ref: /*#__PURE__*/ zod.uuid(),
+        starts_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+      }),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
   intervals: /*#__PURE__*/ zod.optional(
     /*#__PURE__*/ zod
       .array(

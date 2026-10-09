@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 
 import { createWebFetch } from '../../platform/api/web-fetch';
 import { SessionSubjectControls } from './session-subject-controls';
-import type { SessionCaptureMode } from './remote-session-capability-data-source';
 import './activity-planned-sessions-card-detail.css';
 
 type PlannedSession = Readonly<{
@@ -27,7 +26,7 @@ function optionalString(value: unknown): string | null {
 function parsePlannedSessions(
   value: unknown,
   activityRef: string,
-): Readonly<{ rows: readonly PlannedSession[]; mode: SessionCaptureMode }> {
+): readonly PlannedSession[] {
   const payload = record(value);
   if (
     payload.parent_activity_ref !== activityRef ||
@@ -36,10 +35,7 @@ function parsePlannedSessions(
     throw new Error('Struttura Activity non valida.');
   }
 
-  const mode = payload.session_capture_mode;
-  return Object.freeze({
-    mode: mode === 'live' || mode === 'record_and_live' ? mode : 'disabled',
-    rows: Object.freeze(
+  return Object.freeze(
       payload.schedules
         .map(record)
         .filter((row) => row.role_code === 'planned')
@@ -72,8 +68,7 @@ function parsePlannedSessions(
           });
         })
         .sort((left, right) => left.order - right.order),
-    ),
-  });
+  );
 }
 
 function compactTime(value: string | null): string {
@@ -97,8 +92,6 @@ export function ActivityPlannedSessionsCardDetail({
   variant?: 'detail' | 'indicator';
 }>) {
   const [rows, setRows] = useState<readonly PlannedSession[] | null>(null);
-  const [captureMode, setCaptureMode] =
-    useState<SessionCaptureMode>('disabled');
 
   useEffect(() => {
     if (!visible) {
@@ -121,8 +114,7 @@ export function ActivityPlannedSessionsCardDetail({
       })
       .then((result) => {
         if (!cancelled) {
-          setRows(result.rows);
-          setCaptureMode(result.mode);
+          setRows(result);
         }
       })
       .catch(() => {
@@ -165,22 +157,20 @@ export function ActivityPlannedSessionsCardDetail({
           className="timeline-activity-planned-sessions__row"
           key={row.scheduleRef}
         >
-          <span className="timeline-activity-planned-sessions__name">
-            {row.name}
+          <span className="timeline-activity-planned-sessions__summary">
+            <span className="timeline-activity-planned-sessions__name">{row.name}</span>
+            <span className="timeline-activity-planned-sessions__time">
+              {compactTime(row.start)}–{compactTime(row.end)}
+            </span>
           </span>
-          <span className="timeline-activity-planned-sessions__time">
-            {compactTime(row.start)}–{compactTime(row.end)}
-          </span>
-          {captureMode === 'live' || captureMode === 'record_and_live' ? (
-            <SessionSubjectControls
-              kind="activity"
-              subjectRef={activityRef}
-              plannedScheduleRef={row.scheduleRef}
-              label={row.name}
-              variant="detail"
-              compactRuntime
-            />
-          ) : null}
+          <SessionSubjectControls
+            kind="activity"
+            subjectRef={activityRef}
+            plannedScheduleRef={row.scheduleRef}
+            label={row.name}
+            variant="detail"
+            compactRuntime
+          />
         </div>
       ))}
     </div>

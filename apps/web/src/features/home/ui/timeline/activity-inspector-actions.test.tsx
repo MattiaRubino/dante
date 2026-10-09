@@ -319,7 +319,7 @@ describe('Activity Inspector', () => {
     );
     const title = await screen.findByRole('textbox', { name: 'Titolo' });
     fireEvent.change(title, { target: { value: 'Dopo' } });
-    await screen.findByRole('combobox', { name: 'Registrazione sessioni' });
+    await screen.findByRole('checkbox', { name: 'Sessione' });
     await submitEditor();
     await waitFor(() =>
       expect(saveCore).toHaveBeenCalledWith(
@@ -349,18 +349,8 @@ describe('Activity Inspector', () => {
         onCancel={() => undefined}
       />,
     );
-    fireEvent.change(
-      await screen.findByRole('combobox', { name: 'Registrazione sessioni' }),
-      {
-        target: { value: 'live' },
-      },
-    );
-    fireEvent.change(
-      screen.getByRole('combobox', { name: 'Verifica dello svolgimento' }),
-      {
-        target: { value: 'review_on_end' },
-      },
-    );
+    fireEvent.click(await screen.findByRole('checkbox', { name: 'Sessione' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Chiedi al termine' }));
     await submitEditor();
     expect(await screen.findByRole('alert')).toHaveProperty(
       'textContent',
@@ -386,6 +376,7 @@ describe('Activity Inspector', () => {
       }));
     render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
       onSaved={() => undefined} onCancel={() => undefined} />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Apri nuovo obiettivo' }));
     const name = await screen.findByRole('textbox', { name: 'Nome obiettivo' });
     fireEvent.change(name, { target: { value: 'Percorrere 10 km' } });
     fireEvent.change(screen.getByRole('combobox', { name: 'Tipo obiettivo' }),
@@ -407,8 +398,7 @@ describe('Activity Inspector', () => {
       comparatorCode: 'gte', targetValue: 10, unitCode: 'km',
     });
     expect(await screen.findByText('Percorrere 10 km', { selector: 'li' })).toBeTruthy();
-    expect(screen.getByRole('textbox', { name: 'Nome obiettivo' }))
-      .toHaveProperty('value', '');
+    expect(screen.getByRole('button', { name: 'Apri nuovo obiettivo' })).toBeTruthy();
   });
 
   it('requires an explicit preview before applying a planning change', async () => {
@@ -462,7 +452,7 @@ describe('Activity Inspector', () => {
     render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
       onSaved={() => undefined} onCancel={() => undefined} />);
     fireEvent.click(await screen.findByRole('button', { name: 'Rimuovi sessione' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi sessione pianificata' }));
+    fireEvent.click(screen.getByRole('button', { name: '＋ Sessione' }));
     fireEvent.change(screen.getByRole('textbox', { name: 'Nome sessione' }),
       { target: { value: 'Seconda' } });
     fireEvent.change(screen.getAllByLabelText('Inizio').at(-1)!,
@@ -478,6 +468,31 @@ describe('Activity Inspector', () => {
     expect(applyReplan).not.toHaveBeenCalled();
   });
 
+  it('edits the single overall interval of an Activity without role intervals', async () => {
+    const settings = { ...currentSettings, schedules: [
+      { scheduleRef: 'envelope', role: 'envelope', name: null, order: 0,
+        placementStateRef: 'state-0', temporalForm: 'named_zone_local',
+        start: '2026-10-09T09:00:00', end: '2026-10-09T12:00:00',
+        zoneId: 'Europe/Rome' },
+    ] };
+    loadSettings.mockResolvedValueOnce(settings);
+    previewReplan.mockResolvedValueOnce([{ scheduleRef: 'envelope', role: 'envelope',
+      previousStart: '2026-10-09T09:00:00', previousEnd: '2026-10-09T12:00:00',
+      proposedStart: '2026-10-09T10:00:00', proposedEnd: '2026-10-09T13:00:00' }]);
+    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
+      onSaved={() => undefined} onCancel={() => undefined} />);
+    fireEvent.change(await screen.findByLabelText('Inizio'),
+      { target: { value: '2026-10-09T10:00' } });
+    fireEvent.change(screen.getByLabelText('Fine'),
+      { target: { value: '2026-10-09T13:00' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Verifica spostamento' }));
+    await waitFor(() => expect(previewReplan).toHaveBeenCalledWith(ref, settings,
+      expect.objectContaining({ times: expect.objectContaining({
+        envelope: { start: '2026-10-09T10:00', end: '2026-10-09T13:00' },
+      }) }), expect.any(String)));
+    expect(screen.queryByRole('button', { name: 'Aggiungi intervallo' })).toBeNull();
+  });
+
   it('persists protection only through the guarded separate action', async () => {
     const settings = { ...currentSettings, placementLockScheduleRef: 'envelope',
       placementLockRevision: 2 };
@@ -488,17 +503,16 @@ describe('Activity Inspector', () => {
     const onSaved = vi.fn();
     render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
       onSaved={onSaved} onCancel={() => undefined} />);
-    const toggle = await screen.findByRole('checkbox', {
-      name: 'Non spostare automaticamente questa attività',
-    });
+    const toggle = await screen.findByRole('button', { name: 'Blocca spostamenti' });
     fireEvent.click(toggle);
     expect(screen.getByRole('button', { name: 'Salva modifiche' }))
       .toHaveProperty('disabled', true);
-    fireEvent.click(screen.getByRole('button', { name: 'Applica protezione' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Applica blocco spostamenti' }));
     await waitFor(() => expect(setPlacementProtected).toHaveBeenCalledWith(
       settings, true,
     ));
-    await waitFor(() => expect(toggle).toHaveProperty('checked', true));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Sblocca spostamenti' })
+      .getAttribute('aria-pressed')).toBe('true'));
     expect(onSaved).not.toHaveBeenCalled();
   });
 
@@ -710,12 +724,18 @@ describe('Activity Inspector', () => {
       onSaved={() => undefined} onCancel={() => undefined} />);
     expect(await screen.findByText(/DANTE non le converte automaticamente/)).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Verifica spostamento' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Aggiungi sessione pianificata' })).toBeNull();
+    expect(screen.queryByRole('button', { name: '＋ Sessione' })).toBeNull();
     expect(applyReplan).not.toHaveBeenCalled();
   });
 
   it('blocks rescheduling until a planned-name draft is saved or discarded', async () => {
     loadSettings.mockResolvedValueOnce({ ...currentSettings, schedules: [
+      {
+        scheduleRef: 'envelope-replan', role: 'envelope', name: null, order: 0,
+        placementStateRef: 'state-envelope', temporalForm: 'named_zone_local',
+        start: '2026-10-09T08:00:00', end: '2026-10-09T11:00:00',
+        zoneId: 'Europe/Rome',
+      },
       {
         scheduleRef: 'interval-replan', role: 'interval', name: null, order: 0,
         placementStateRef: 'state-interval', temporalForm: 'named_zone_local',

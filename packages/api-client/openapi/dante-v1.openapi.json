@@ -1274,6 +1274,14 @@
       "ActivityReplanCommand": {
         "additionalProperties": false,
         "properties": {
+          "envelope": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/ReplanRow" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "title": "Envelope"
+          },
           "intervals": {
             "items": {
               "$ref": "#/components/schemas/ReplanRow"

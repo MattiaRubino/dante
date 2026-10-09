@@ -46,12 +46,22 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   min-width: 0;
+  padding: 8px 0;
+  border-top: 1px solid var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
 }
 
 .timeline-activity-planned-sessions__row .timeline-session-controls {
-  grid-column: 1 / -1;
+  grid-column: 2;
+  justify-content: flex-end;
+}
+
+.timeline-activity-planned-sessions__summary {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .timeline-activity-planned-sessions__name {
@@ -64,6 +74,13 @@
   color: color-mix(in srgb, currentColor 68%, transparent);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+
+.timeline-activity-planned-sessions__row .timeline-session-duration,
+.timeline-activity-planned-sessions__row .timeline-session-duration-policy,
+.timeline-activity-planned-sessions__row .timeline-session-controls > [role='status'] {
+  flex-basis: 100%;
+  text-align: right;
 }
 
 .timeline-activity-planned-sessions__indicator {

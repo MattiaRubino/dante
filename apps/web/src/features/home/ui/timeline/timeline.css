@@ -1528,9 +1528,9 @@
 
 .timeline-event-modal--inspector {
   position: fixed;
-  width: min(448px, calc(100vw - 24px));
-  max-height: min(80dvh, 720px);
-  padding: 0 18px 18px;
+  width: min(540px, calc(100vw - 24px));
+  max-height: min(84dvh, 790px);
+  padding: 0 22px 22px;
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -1551,8 +1551,8 @@
   position: sticky;
   z-index: 20;
   top: 0;
-  margin: 0 -18px 15px;
-  padding: 11px 18px;
+  margin: 0 -22px 18px;
+  padding: 12px 22px;
   border-bottom: 1px solid var(--dante-semantic-color-home-border-subtle);
   background: #0d1522;
 }
@@ -1563,14 +1563,14 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 17px;
+  font-size: 19px;
   line-height: 1.3;
 }
 
 .timeline-event-modal--inspector .timeline-event-modal__time,
 .timeline-event-modal--inspector .timeline-event-modal__group {
   margin: 0 0 6px;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--dante-semantic-color-home-text-secondary, #b2bdc1);
 }
 
@@ -2045,14 +2045,30 @@
 }
 
 .timeline-event-modal--inspector .timeline-activity-planned-sessions__row {
-  grid-template-columns: minmax(0, 1fr) auto auto;
-  padding: 6px 0;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 10px 0;
   border-top: 1px solid var(--dante-semantic-color-home-border-subtle);
 }
 
 .timeline-event-modal--inspector .timeline-activity-planned-sessions__row .timeline-session-controls {
-  grid-column: auto;
+  grid-column: 2;
 }
+
+.timeline-event-modal--inspector .timeline-activity-planned-sessions {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--dante-semantic-color-home-surface-control, #151f2e) 54%, transparent);
+  font-size: 12px;
+}
+
+.timeline-event-modal--inspector .timeline-activity-planned-sessions__label {
+  margin-bottom: 6px;
+  font-size: 10px;
+}
+
+.timeline-event-modal--inspector .timeline-activity-planned-sessions__name { font-size: 13px; }
+.timeline-event-modal--inspector .timeline-activity-planned-sessions__time { font-size: 11px; }
 
 .timeline-event-modal--inspector .timeline-session-controls__runtime-button:last-child {
   color: #e16661;

@@ -26,6 +26,8 @@ import {
   type RealityMode,
 } from '../../../temporal/remote-reality-objective-data-source';
 import type { SessionCaptureMode } from '../../../temporal/remote-session-capability-data-source';
+import '../../../temporal-create/ui/temporal-create-reality-objectives-section.css';
+import './activity-edit-panel.css';
 import {
   createRemoteRecurringProfileEdit,
   type RecurringProfileContext,
@@ -79,6 +81,7 @@ export function ActivityEditPanel({
     comparatorCode: null as ObjectiveComparator | null,
     targetValue: '', targetMin: '', targetMax: '', unitCode: '',
   });
+  const [objectiveComposerOpen, setObjectiveComposerOpen] = useState(false);
   const [objectivePending, setObjectivePending] = useState(false);
   const [objectiveError, setObjectiveError] = useState('');
   const objectiveOperation = useRef<string | null>(null);
@@ -111,8 +114,10 @@ export function ActivityEditPanel({
   const [error, setError] = useState('');
   const [confirmingDiscard, setConfirmingDiscard] = useState(false);
   const discardButtonRef = useRef<HTMLButtonElement | null>(null);
+  const hasIntervals = settings?.schedules.some((schedule) => schedule.role === 'interval') ?? false;
   const editablePlan = settings?.schedules.filter((schedule) =>
-    schedule.role === 'interval' || schedule.role === 'planned') ?? [];
+    schedule.role === 'interval' || schedule.role === 'planned' ||
+    (schedule.role === 'envelope' && !hasIntervals)) ?? [];
   const metadataDirty =
     draft.title !== profile.title ||
     draft.description !== (profile.description ?? '') ||
@@ -128,7 +133,7 @@ export function ActivityEditPanel({
         realityMode !== settings.reality.mode ||
         reminderLeadMinutes !== settings.reminderLeadMinutes));
   const canReplan = !!settings &&
-    settings.schedules.some((schedule) => schedule.role === 'interval') &&
+    settings.schedules.some((schedule) => schedule.role === 'envelope') &&
     editablePlan.every((schedule) =>
       ['floating_local', 'named_zone_local'].includes(schedule.temporalForm) &&
       !!schedule.start && !!schedule.end);
@@ -279,6 +284,7 @@ export function ActivityEditPanel({
         presentationOrder: definition.presentationOrder,
         seriesState,
       });
+      setObjectiveComposerOpen(true);
       setObjectiveScope('only_this');
       setObjectiveDraft({
         label: definition.label,
@@ -388,6 +394,7 @@ export function ActivityEditPanel({
     void save.then((saved) => {
       setSettings(saved);
       setEditingObjective(null);
+      setObjectiveComposerOpen(false);
       setObjectiveDraft({
         label: '', resultKind: 'boolean', comparatorCode: null,
         targetValue: '', targetMin: '', targetMax: '', unitCode: '',
@@ -601,18 +608,21 @@ export function ActivityEditPanel({
             </button>
           </div>
         ) : null}
-        <div className="timeline-activity-editor__kind" role="group" aria-label="Tipo: Attività">
-          <span className="is-selected">Attività</span>
-          <span aria-hidden="true">Evento</span>
-          <span aria-hidden="true">Timer</span>
-          <span aria-hidden="true">Sveglia</span>
+        <div className="temporal-create-type-grid timeline-activity-editor__kind"
+          role="group" aria-label="Tipo: Attività">
+          <button type="button" className="is-active" aria-current="true">Attività</button>
+          <button type="button" disabled title="Il tipo non può essere cambiato dopo la creazione">Evento</button>
+          <button type="button" disabled>Timer</button>
+          <button type="button" disabled>Sveglia</button>
         </div>
-        <div className="timeline-activity-editor__title-row">
+        <div className="temporal-create-title-row has-tools timeline-activity-editor__title-row">
         <label className="timeline-activity-editor__title">
-          Titolo
+          <span className="timeline-activity-editor__visually-hidden">Titolo</span>
           <input
+            className="temporal-create-title-input"
             required
             maxLength={300}
+            placeholder="Titolo"
             value={draft.title}
             onChange={(event) => {
               operation.current = undefined;
@@ -621,51 +631,57 @@ export function ActivityEditPanel({
           />
         </label>
         {settings ? (
-          <label className="timeline-activity-editor__capture">
-            Sessione
-            <select
-              aria-label="Registrazione sessioni"
-              value={captureMode ?? settings.capture.mode}
-              onChange={(event) => {
-                operation.current = undefined;
-                setCaptureMode(event.target.value as SessionCaptureMode);
-              }}
-            >
-              <option value="disabled">Disattivata</option>
-              <option value="record">Registrazione</option>
-              <option value="live">Sessione in diretta</option>
-              <option value="record_and_live">Registrazione e diretta</option>
-            </select>
-          </label>
+          <div className="temporal-create-title-row__tools timeline-activity-editor__title-tools">
+            {settings.placementLockScheduleRef ? (
+              <button type="button" className="temporal-create-placement-lock"
+                aria-label={placementProtected ? 'Sblocca spostamenti' : 'Blocca spostamenti'}
+                aria-pressed={placementProtected ?? settings.placementProtected}
+                title={placementProtected ? 'Sblocca spostamenti' : 'Blocca spostamenti'}
+                disabled={pending || planPending || lockPending}
+                onClick={() => {
+                  setPlacementProtected(!(placementProtected ?? settings.placementProtected));
+                  setLockError('');
+                }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <rect x="5" y="10" width="14" height="11" rx="2" />
+                  {(placementProtected ?? settings.placementProtected)
+                    ? <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                    : <path d="M8 10V7a4 4 0 0 1 7.5-1.9" />}
+                </svg>
+                <span>{placementProtected ? 'Sblocca spostamenti' : 'Blocca spostamenti'}</span>
+              </button>
+            ) : null}
+            <label className="temporal-create-structure-session-toggle timeline-activity-editor__capture">
+              <input type="checkbox" checked={(captureMode ?? settings.capture.mode) !== 'disabled'}
+                onChange={(event) => {
+                  operation.current = undefined;
+                  setCaptureMode(event.target.checked ? 'live' : 'disabled');
+                }} />
+              Sessione
+            </label>
+          </div>
         ) : null}
-            {settings?.placementLockScheduleRef ? (
-               <fieldset aria-label="Protezione collocazione">
-                 <legend>Protezione collocazione</legend>
-                 {lockError ? <p role="alert">{lockError}</p> : null}
-                 <label className="timeline-activity-editor__checkbox">
-                   <input
-                     type="checkbox"
-                     checked={placementProtected ?? settings.placementProtected}
-                     disabled={pending || planPending || lockPending}
-                     onChange={(event) => {
-                       setPlacementProtected(event.target.checked);
-                       setLockError('');
-                     }}
-                   />
-                   Non spostare automaticamente questa attività
-                 </label>
-                 {lockDirty ? (
-                   <button
-                     type="button"
-                     disabled={pending || planPending || lockPending}
-                     onClick={applyPlacementLock}
-                   >
-                     {lockPending ? 'Salvataggio…' : 'Applica protezione'}
-                   </button>
-                 ) : null}
-               </fieldset>
-             ) : null}
         </div>
+        {lockError ? <p role="alert">{lockError}</p> : null}
+        {canReplan ? (
+          <button type="button" className="temporal-create-structure-add timeline-activity-editor__add-session"
+            disabled={planPending || editablePlan.filter((row) => row.role === 'planned').length -
+              removedPlanned.length + newPlanned.length >= 100}
+            onClick={() => {
+              setNewPlanned((current) => [...current, {
+                clientRef: crypto.randomUUID(), name: '', start: '', end: '',
+              }]);
+              setPlanPreview(null);
+              setPlanOperation(null);
+            }}>＋ Sessione</button>
+        ) : null}
+        {lockDirty ? (
+          <button type="button" className="timeline-activity-editor__apply-lock"
+            disabled={pending || planPending || lockPending} onClick={applyPlacementLock}>
+            {lockPending ? 'Salvataggio…' : 'Applica blocco spostamenti'}
+          </button>
+        ) : null}
         {settings ? (
           <>
             <section
@@ -678,10 +694,10 @@ export function ActivityEditPanel({
                 <span className={settings.schedules[0]?.temporalForm === 'date_span' ? 'is-selected' : ''}>Tutto il giorno</span>
                 <span className={settings.schedules.length === 0 ? 'is-selected' : ''}>Da collocare</span>
               </div>
-              <h3>Programmazione attuale</h3>
+              <h3 className="timeline-activity-editor__visually-hidden">Programmazione attuale</h3>
               {settings.schedules.find((schedule) => schedule.zoneId)?.zoneId ? (
                 <p className="timeline-activity-editor__timezone">
-                  ◉ &nbsp; Fuso orario · {settings.schedules.find((schedule) => schedule.zoneId)?.zoneId}
+                  <span aria-hidden="true">◎</span> Fuso orario · {settings.schedules.find((schedule) => schedule.zoneId)?.zoneId}
                 </p>
               ) : null}
               {planError ? <p role="alert">{planError}</p> : null}
@@ -693,14 +709,23 @@ export function ActivityEditPanel({
                 <ul>
                   {settings.schedules.map((schedule) => (
                     <li key={schedule.scheduleRef}>
+                      <div className="timeline-activity-editor__schedule-label">
                       {schedule.name ||
                         (schedule.role === 'planned'
                           ? 'Sessione programmata'
                           : schedule.role === 'envelope'
                             ? 'Intervallo complessivo'
                             : 'Intervallo')}
-                      {schedule.start ? ` · ${schedule.start}` : ''}
-                      {schedule.end ? ` – ${schedule.end}` : ''}
+                      </div>
+                      {schedule.start && schedule.end ? (
+                        <div className="timeline-activity-editor__schedule-time" role="group" aria-label="Orario programmato">
+                          <span>{(planDraft[schedule.scheduleRef]?.start || schedule.start).slice(0, 10)}</span>
+                          <span>{(planDraft[schedule.scheduleRef]?.start || schedule.start).slice(11, 16)}</span>
+                          <span aria-hidden="true">→</span>
+                          <span>{(planDraft[schedule.scheduleRef]?.end || schedule.end).slice(11, 16)}</span>
+                          <span>{(planDraft[schedule.scheduleRef]?.end || schedule.end).slice(0, 10)}</span>
+                        </div>
+                      ) : null}
                       {schedule.role === 'planned' ? (
                         <div className="timeline-activity-editor__fields">
                           <label>
@@ -743,7 +768,8 @@ export function ActivityEditPanel({
                           ) : null}
                         </div>
                       ) : null}
-                      {canReplan && (schedule.role === 'interval' || schedule.role === 'planned') &&
+                      {canReplan && (schedule.role === 'interval' || schedule.role === 'planned' ||
+                        (schedule.role === 'envelope' && !hasIntervals)) &&
                         !removedPlanned.includes(schedule.scheduleRef) &&
                          !removedIntervals.includes(schedule.scheduleRef) ? (
                         <div className="timeline-activity-editor__fields">
@@ -793,13 +819,16 @@ export function ActivityEditPanel({
                 <p>Nessun intervallo programmato.</p>
               )}
               {!canReplan && settings.schedules.length > 0 ? (
-                <p role="status">
-                  La modifica degli orari qui richiede almeno un intervallo e
+                <details className="timeline-activity-editor__planning-help">
+                  <summary>Questo orario non è modificabile qui</summary>
+                  <p>
+                  La modifica degli orari richiede
                   pianificazioni locali con inizio e fine. Le altre forme temporali
                   restano inalterate: DANTE non le converte automaticamente.
                   Puoi comunque correggere separatamente il nome delle Session
                   pianificate, senza modificare lo Schedule.
-                </p>
+                  </p>
+                </details>
               ) : null}
               {canReplan ? (
                 <div>
@@ -826,7 +855,7 @@ export function ActivityEditPanel({
                       }}>Rimuovi nuovo intervallo</button>
                     </div>
                   ))}
-                  <button type="button" disabled={planPending ||
+                  {hasIntervals ? <button type="button" disabled={planPending ||
                     editablePlan.filter((row) => row.role === 'interval').length -
                       removedIntervals.length + newIntervals.length >= 100}
                     onClick={() => {
@@ -836,7 +865,7 @@ export function ActivityEditPanel({
                       setPlanPreview(null);
                       setPlanOperation(null);
                       setPlanError('');
-                    }}>Aggiungi intervallo</button>
+                    }}>Aggiungi intervallo</button> : null}
                   {newPlanned.map((item) => (
                     <div key={item.clientRef} className="timeline-activity-editor__fields">
                       <label>Nome sessione
@@ -858,15 +887,6 @@ export function ActivityEditPanel({
                       }}>Rimuovi nuova sessione</button>
                     </div>
                   ))}
-                  <button type="button" disabled={planPending ||
-                    editablePlan.filter((row) => row.role === 'planned').length - removedPlanned.length +
-                      newPlanned.length >= 100} onClick={() => {
-                    setNewPlanned((current) => [...current, {
-                      clientRef: crypto.randomUUID(), name: '', start: '', end: '',
-                    }]);
-                    setPlanPreview(null);
-                    setPlanOperation(null);
-                  }}>Aggiungi sessione pianificata</button>
                 </div>
               ) : null}
               {planDirty ? (
@@ -921,6 +941,9 @@ export function ActivityEditPanel({
                 </div>
               ) : null}
             </section>
+            <div className="timeline-activity-editor__repeat" role="group" aria-label="Ripeti">
+              Ripeti · {recurringContext ? 'Serie attiva' : 'Mai'}
+            </div>
             <div className="timeline-activity-editor__area-color">
           <fieldset>
             <legend>Colore</legend>
@@ -997,34 +1020,38 @@ export function ActivityEditPanel({
               ) : null}
             </fieldset>
             </div>
-            <section className="timeline-activity-editor__outcome" aria-label="Svolgimento e obiettivi">
-              <div className="timeline-activity-editor__section-heading">
+            <section className="temporal-create-reality-objectives timeline-activity-editor__outcome"
+              aria-label="Svolgimento e obiettivi">
+              <div className="temporal-create-reality-objectives__heading timeline-activity-editor__section-heading">
                 <h3>Svolgimento e obiettivi</h3>
-                <p>Decidi se verificare lo svolgimento e quali risultati misurare.</p>
               </div>
-            <div className="timeline-activity-editor__fields">
-              <label>
-                Verifica dello svolgimento
-                <select
-                  value={realityMode ?? settings.reality.mode}
-                  onChange={(event) => {
-                    operation.current = undefined;
-                    setRealityMode(event.target.value as RealityMode);
-                  }}
-                >
-                  <option value="manual">Manuale</option>
-                  <option value="review_on_end">Chiedi al termine</option>
-                  <option value="auto_confirm_outcome">
-                    Conferma automaticamente
-                  </option>
-                </select>
-              </label>
+            <div className="temporal-create-reality-objectives__block is-reality">
+              <div className="temporal-create-reality-objectives__block-copy">
+                <strong>Svolgimento dell’attività</strong>
+              </div>
+              <div className="temporal-create-reality-mode" role="radiogroup"
+                aria-label="Verifica dello svolgimento">
+                {([
+                  ['manual', 'Nessuna verifica'],
+                  ['review_on_end', 'Chiedi al termine'],
+                  ['auto_confirm_outcome', 'Conferma automatica'],
+                ] as const).map(([mode, label]) => (
+                  <button key={mode} type="button" role="radio"
+                    aria-checked={(realityMode ?? settings.reality.mode) === mode}
+                    className={(realityMode ?? settings.reality.mode) === mode ? 'is-active' : ''}
+                    onClick={() => { operation.current = undefined; setRealityMode(mode); }}>
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
+            <div className="temporal-create-reality-objectives__divider" />
             <section
-              className="timeline-activity-editor__readback"
+              className="temporal-create-reality-objectives__block is-objectives timeline-activity-editor__readback"
               aria-label="Obiettivi attuali"
             >
-              <h3>Obiettivi attuali</h3>
+              <div className="temporal-create-reality-objectives__block-copy"><strong>Obiettivi</strong></div>
+              <div className="timeline-activity-editor__objectives">
               {settings.objectives.length ? (
                 <ul>
                   {settings.objectives.map((objective) => (
@@ -1044,7 +1071,12 @@ export function ActivityEditPanel({
                     </li>
                   ))}
                 </ul>
-              ) : <p>Nessun obiettivo configurato.</p>}
+              ) : null}
+              {!objectiveComposerOpen ? (
+                <button type="button" className="timeline-activity-editor__add-objective"
+                  aria-label="Apri nuovo obiettivo"
+                  onClick={() => setObjectiveComposerOpen(true)}>＋ Aggiungi obiettivo</button>
+              ) : (
               <fieldset disabled={objectivePending}>
                 <legend>{editingObjective ? 'Modifica obiettivo' : 'Nuovo obiettivo'}</legend>
                 <label>Nome obiettivo
@@ -1148,14 +1180,22 @@ export function ActivityEditPanel({
                 {editingObjective ? (
                   <button type="button" onClick={() => {
                     setEditingObjective(null);
+                    setObjectiveComposerOpen(false);
                     setObjectiveDraft({
                       label: '', resultKind: 'boolean', comparatorCode: null,
                       targetValue: '', targetMin: '', targetMax: '', unitCode: '',
                     });
                     objectiveOperation.current = null;
                   }}>Annulla modifica obiettivo</button>
-                ) : null}
+                ) : (
+                  <button type="button" onClick={() => {
+                    setObjectiveComposerOpen(false);
+                    setObjectiveDraft({ label: '', resultKind: 'boolean', comparatorCode: null,
+                      targetValue: '', targetMin: '', targetMax: '', unitCode: '' });
+                  }}>Annulla</button>
+                )}
               </fieldset>
+              )}
               {correctingObjective ? (
                 <fieldset disabled={objectivePending}>
                   <legend>Rettifica risultato — {correctingObjective.label}</legend>
@@ -1207,6 +1247,7 @@ export function ActivityEditPanel({
                     l’osservazione e la valutazione precedenti.</p>
                 </fieldset>
               ) : null}
+              </div>
             </section>
             </section>
             <div className="timeline-activity-editor__location">

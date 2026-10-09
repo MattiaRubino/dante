@@ -87,6 +87,7 @@ class ActivityReplanCommand(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     operation_id: str = Field(min_length=1, max_length=200)
+    envelope: ReplanRow | None = None
     intervals: list[ReplanRow] = Field(default_factory=list, max_length=100)
     new_intervals: list[NewIntervalRow] = Field(default_factory=list, max_length=100)
     remove_intervals: list[ReplanRow] = Field(default_factory=list, max_length=100)
@@ -137,10 +138,15 @@ def _validated_plan(snapshot: ActivityEditSnapshot, command: ActivityReplanComma
     intervals = [row for row in rows if row.role_code == "interval"]
     envelope = next((row for row in rows if row.role_code == "envelope"), None)
     planned = [row for row in rows if row.role_code == "planned"]
-    if envelope is None or not intervals:
-        raise _invalid("This Activity does not have editable timed intervals.")
+    if envelope is None:
+        raise _invalid("This Activity does not have an editable time frame.")
+    if (not intervals and (command.envelope is None or command.intervals
+                           or command.new_intervals or command.remove_intervals)) or (
+        intervals and command.envelope is not None
+    ):
+        raise _invalid("An Activity without intervals must revise its envelope directly.")
     if (len(command.intervals) + len(command.remove_intervals) != len(intervals)
-            or (not command.intervals and not command.new_intervals)
+            or (intervals and not command.intervals and not command.new_intervals)
             or len(command.intervals) + len(command.new_intervals) > 100
             or len(command.planned_sessions) + len(command.remove_planned_sessions) != len(planned)
             or len(command.planned_sessions) + len(command.new_planned_sessions) > 100):
@@ -148,10 +154,13 @@ def _validated_plan(snapshot: ActivityEditSnapshot, command: ActivityReplanComma
             "Every current row must be accounted for: 1-100 Activity intervals "
             "and at most 100 planned Sessions."
         )
-    current = {row.schedule_ref: row for row in (*intervals, *planned)}
-    retained = (*command.intervals, *command.planned_sessions)
+    current = {row.schedule_ref: row for row in (envelope, *intervals, *planned)}
+    retained = (*((command.envelope,) if command.envelope else ()),
+                *command.intervals, *command.planned_sessions)
     accounted = (*retained, *command.remove_intervals, *command.remove_planned_sessions)
-    if len({row.schedule_ref for row in accounted}) != len(current) or (
+    if len({row.schedule_ref for row in accounted}) != len(current) - (0 if command.envelope else 1) or (
+        command.envelope is not None and command.envelope.schedule_ref != envelope.schedule_ref
+    ) or (
         {row.schedule_ref for row in (*command.intervals, *command.remove_intervals)}
         != {row.schedule_ref for row in intervals}
         or {row.schedule_ref for row in (*command.planned_sessions, *command.remove_planned_sessions)}
@@ -168,7 +177,7 @@ def _validated_plan(snapshot: ActivityEditSnapshot, command: ActivityReplanComma
         if row.expected_material_state_ref != current[row.schedule_ref].placement_material_state_ref:
             raise _conflict()
     ordered = sorted((*command.intervals, *command.new_intervals),
-                     key=lambda row: row.starts_local_at)
+                     key=lambda row: row.starts_local_at) if intervals else [command.envelope]
     if any(a.ends_local_at > b.starts_local_at for a, b in pairwise(ordered)):
         raise _invalid("Activity intervals overlap.")
     start, end = ordered[0].starts_local_at, ordered[-1].ends_local_at

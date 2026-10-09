@@ -255,6 +255,9 @@ export function createRemoteActivityEditSettings(
     });
     return {
       operation_id: operationId,
+      ...(settings.schedules.some((item) => item.role === 'interval') ? {} : {
+        envelope: settings.schedules.filter((item) => item.role === 'envelope').map(row)[0],
+      }),
       intervals: settings.schedules.filter((item) =>
         item.role === 'interval' && !draft.removedIntervals.includes(item.scheduleRef)).map(row),
       remove_intervals: settings.schedules.filter((item) =>

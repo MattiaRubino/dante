@@ -1,0 +1,337 @@
+/* Post-create editing shares the Advanced Create visual grammar. These rules
+   scope that grammar to the editor while its persistence remains owner-specific. */
+.timeline-event-modal--edit .timeline-event-modal__title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px 4px 72px 0;
+  font-size: 12px;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__kind {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__kind button {
+  min-height: 46px;
+  padding: 0 14px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--dante-semantic-color-home-surface-control, #151f2e) 54%, transparent);
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  text-align: left;
+  font-size: 11px;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__kind button.is-active {
+  border-color: var(--dante-semantic-color-home-chrome-active-border, rgba(234, 92, 18, .255));
+  color: #fff2e9;
+  background: var(--dante-semantic-color-home-chrome-active-soft, rgba(234, 92, 18, .095));
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__kind button:disabled {
+  opacity: .55;
+  cursor: default;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__title-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: stretch;
+  min-height: 60px;
+  padding: 0 12px;
+  gap: 0;
+  border-color: var(--dante-semantic-color-home-chrome-active, #ea5c12);
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__title {
+  display: block;
+  min-width: 0;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__title input.temporal-create-title-input {
+  width: 100%;
+  min-height: 58px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 0;
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  background: transparent;
+  font-size: 19px;
+  box-shadow: none;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__title-tools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+  gap: 0;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__title-tools > :is(button, label) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 58px;
+  padding: 0 14px;
+  border: 0;
+  border-left: 1px solid var(--dante-semantic-color-home-border-subtle);
+  border-radius: 0;
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  background: transparent;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__title-tools > button svg {
+  width: 16px;
+  height: 16px;
+  margin-right: 7px;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__title-tools label input {
+  margin-right: 8px;
+  accent-color: var(--dante-semantic-color-home-chrome-active, #ea5c12);
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__apply-lock { align-self: flex-end; }
+
+.timeline-event-modal--edit .timeline-activity-editor__add-session {
+  align-self: flex-start;
+  min-height: 32px;
+  padding: 5px 12px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--dante-semantic-color-home-surface-control, #151f2e) 68%, transparent);
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__readback[aria-label='Programmazione attuale'] {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__placement {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 0 0 14px;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__placement span {
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 11px;
+  font-size: 11px;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__timezone {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 50px;
+  padding: 0 16px;
+  margin: 0 0 8px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle);
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--dante-semantic-color-home-surface-control, #151f2e) 76%, black);
+  font-size: 12px;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__timezone span {
+  margin-right: 16px;
+  padding-right: 16px;
+  border-right: 1px solid var(--dante-semantic-color-home-border-subtle);
+  color: #7eb6df;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__readback[aria-label='Programmazione attuale'] ul {
+  gap: 8px;
+  margin-bottom: 0;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__readback[aria-label='Programmazione attuale'] li {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__schedule-label {
+  margin: 8px 0;
+  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
+  font-size: 11px;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__schedule-time {
+  display: grid;
+  grid-template-columns: minmax(98px, 1fr) minmax(86px, 1fr) 24px minmax(86px, 1fr) minmax(98px, 1fr);
+  align-items: center;
+  gap: 8px;
+  max-width: 820px;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__schedule-time > span:not(:nth-child(3)) {
+  display: grid;
+  min-width: 0;
+  min-height: 46px;
+  place-items: center;
+  padding: 0 7px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle);
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--dante-semantic-color-home-surface-control, #151f2e) 72%, transparent);
+  font-variant-numeric: tabular-nums;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__schedule-time > span:nth-child(3) {
+  color: var(--dante-semantic-color-home-chrome-active, #ea5c12);
+  text-align: center;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__planning-help {
+  margin: 10px 0 0;
+  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
+  font-size: 10px;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__planning-help p { margin: 8px 0 0; }
+
+.timeline-event-modal--edit .timeline-activity-editor__repeat {
+  display: flex;
+  align-items: center;
+  min-height: 50px;
+  padding: 0 14px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle);
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--dante-semantic-color-home-surface-control, #151f2e) 60%, transparent);
+  font-size: 12px;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__area-color {
+  display: grid;
+  grid-template-columns: 106px minmax(0, 1fr);
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__area-color fieldset {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__area-color legend {
+  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
+  font-size: 10px;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__area-color select,
+.timeline-event-modal--edit .timeline-activity-editor__area-color input[type='color'] {
+  min-height: 42px;
+  border-radius: 11px;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__area-color input[type='color'] { width: 54px; padding: 5px; }
+
+.timeline-event-modal--edit .timeline-activity-editor__outcome {
+  display: grid;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--dante-semantic-color-home-surface-control, #151f2e) 55%, transparent);
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__section-heading h3 { margin: 0; }
+
+.timeline-event-modal--edit .timeline-activity-editor__outcome > .timeline-activity-editor__readback {
+  display: grid;
+  grid-template-columns: minmax(180px, .42fr) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+  min-width: 0;
+  margin: 0;
+  padding: 10px 0 0;
+  border: 0;
+  background: transparent;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__outcome .timeline-activity-editor__objectives {
+  min-width: 0;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__outcome .timeline-activity-editor__objectives fieldset {
+  margin-top: 10px;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__add-objective {
+  border-style: solid;
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 11px;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__location,
+.timeline-event-modal--edit .timeline-activity-editor__description {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__location input {
+  min-height: 54px;
+  padding-left: 16px;
+  border-radius: 12px;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__body > fieldset {
+  padding: 14px 16px;
+  border-radius: 11px;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__description {
+  margin-top: 10px;
+  padding-top: 18px;
+  border-top: 1px solid var(--dante-semantic-color-home-border-subtle);
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__description textarea {
+  min-height: 84px;
+  margin-top: 8px;
+  border-radius: 11px;
+}
+
+@media (max-width: 720px) {
+  .timeline-event-modal--edit .timeline-activity-editor__title-row { grid-template-columns: minmax(0, 1fr); }
+  .timeline-event-modal--edit .timeline-activity-editor__title-tools { justify-content: flex-start; }
+  .timeline-event-modal--edit .timeline-activity-editor__schedule-time {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .timeline-event-modal--edit .timeline-activity-editor__schedule-time > span:nth-child(3) { display: none; }
+  .timeline-event-modal--edit .timeline-activity-editor__outcome > .timeline-activity-editor__readback {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
