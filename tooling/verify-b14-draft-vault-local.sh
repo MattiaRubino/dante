@@ -50,6 +50,7 @@ run_gate WEB_TYPECHECK pnpm --filter @dante/web typecheck
 run_gate WEB_VITEST pnpm --filter @dante/web exec vitest run \
   src/features/temporal-create/application/remote-draft-vault.test.ts \
   src/features/temporal-create/ui/temporal-create-composer.test.tsx \
+  src/features/temporal-create/ui/temporal-create-draft-vault.test.tsx \
   src/features/temporal-create/ui/temporal-create-entry-u2.test.tsx \
   src/features/temporal-create/ui/temporal-create-top-u1.test.tsx \
   src/features/home/ui/timeline/activity-inspector-actions.test.tsx \
