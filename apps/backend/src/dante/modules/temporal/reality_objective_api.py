@@ -753,7 +753,7 @@ async def apply_activity_objective_edits(
             raise ProblemError(
                 status=409, code="temporal.objective_edit.recorded",
                 category="conflict", title="Obiettivo con risultati",
-                detail="L’obiettivo ha risultati registrati: non può essere eliminato.",
+                detail="L'obiettivo ha risultati registrati: non può essere eliminato.",
             ) from exc
         if constraint == "temporal_objective_retirement_source_unsupported":
             raise ProblemError(
