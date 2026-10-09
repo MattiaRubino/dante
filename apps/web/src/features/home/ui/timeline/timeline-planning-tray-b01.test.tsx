@@ -85,4 +85,25 @@ describe('TimelinePlanningTrayB01 unified product tray', () => {
     expect(screen.getByText('Posticipato')).toBeTruthy();
     expect(document.querySelector('.timeline-postponed')).toBeNull();
   });
+
+  it('opens legacy placement only through the explicit vault handoff when trigger is hidden', async () => {
+    const source: TemporalPlanningTrayDataSource = {
+      listItems: vi.fn(async () => items),
+      placeItem: vi.fn(),
+    };
+    const props = {
+      hiddenTrigger: true,
+      runtime: {} as TemporalCreateRuntime,
+      defaultDate: Temporal.PlainDate.from('2026-10-02'),
+      source,
+    };
+    const view = render(<><div className="dante-timeline-actions" />
+      <TimelinePlanningTrayB01 {...props} openRequest={0} /></>);
+    expect(screen.queryByRole('button', { name: 'Apri elementi già creati' })).toBeNull();
+    view.rerender(<><div className="dante-timeline-actions" />
+      <TimelinePlanningTrayB01 {...props} openRequest={1} /></>);
+    expect(await screen.findByRole('heading', { name: 'Elementi già creati' })).toBeTruthy();
+    expect(screen.getByText(/non sono Bozze/)).toBeTruthy();
+  });
+
 });
