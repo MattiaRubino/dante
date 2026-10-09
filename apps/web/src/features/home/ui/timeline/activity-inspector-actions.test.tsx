@@ -714,7 +714,7 @@ describe('Activity Inspector', () => {
     expect(sessions.compareDocumentPosition(schedule) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(schedule.querySelector('[data-edit-planned-session]')).toBeNull();
     expect(sessions.querySelectorAll('[data-edit-planned-session]')).toHaveLength(1);
-    expect(sessions.querySelector('[aria-label="Inizio Sessione"]')).toBeTruthy();
+    expect(sessions.querySelector('.temporal-create-tree-time-editor')).toBeTruthy();
     expect(sessions.querySelector('button[aria-controls="edit-session:planned-m3b:time"]'))
       .toHaveProperty('disabled', true);
     fireEvent.change(name, { target: { value: 'Preparazione approfondita' } });
