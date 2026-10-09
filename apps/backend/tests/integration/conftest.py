@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import asyncio
 import secrets
-import socket
 import subprocess
 import time
 import uuid
@@ -112,12 +111,6 @@ def _docker(*args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
     )
 
 
-def _free_loopback_port() -> int:
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
-        listener.bind(("127.0.0.1", 0))
-        return int(listener.getsockname()[1])
-
-
 def _wait_for_postgres(cluster: PostgresCluster) -> None:
     deadline = time.monotonic() + 60
     last_error: Exception | None = None
@@ -223,39 +216,51 @@ def postgres_cluster() -> Generator[PostgresCluster]:
             "Build it with `docker compose -f infra/compose/local.yaml build postgres`."
         )
 
-    cluster = PostgresCluster(
-        host="127.0.0.1",
-        port=_free_loopback_port(),
-        admin_user="postgres",
-        admin_password=secrets.token_urlsafe(32),
-        migrator_password=secrets.token_urlsafe(32),
-        runtime_password=secrets.token_urlsafe(32),
-        observer_password=secrets.token_urlsafe(32),
-        container_name=f"dante-pytest-{uuid.uuid4().hex[:12]}",
-    )
-
-    _docker(
+    container_name = f"dante-pytest-{uuid.uuid4().hex[:12]}"
+    admin_password = secrets.token_urlsafe(32)
+    started = _docker(
         "run",
         "--detach",
         "--name",
-        cluster.container_name,
+        container_name,
         "--publish",
-        f"127.0.0.1:{cluster.port}:5432",
+        "127.0.0.1::5432",
         "--env",
         "POSTGRES_DB=dante",
         "--env",
-        f"POSTGRES_USER={cluster.admin_user}",
+        "POSTGRES_USER=postgres",
         "--env",
-        f"POSTGRES_PASSWORD={cluster.admin_password}",
+        f"POSTGRES_PASSWORD={admin_password}",
         _POSTGRES_IMAGE,
         "postgres",
         "-c",
         "shared_preload_libraries=pg_stat_statements",
         "-c",
         "compute_query_id=on",
+        check=False,
     )
+    if started.returncode != 0:
+        _docker("rm", "--force", container_name, check=False)
+        pytest.fail(f"Disposable PostgreSQL could not start: {started.stderr.strip()}")
 
     try:
+        published = _docker("port", container_name, "5432/tcp", check=False)
+        if published.returncode != 0 or not published.stdout.strip():
+            pytest.fail(f"Disposable PostgreSQL port unavailable: {published.stderr.strip()}")
+        address = published.stdout.strip().splitlines()[0]
+        host, separator, port_text = address.rpartition(":")
+        if separator != ":" or host != "127.0.0.1" or not port_text.isdecimal():
+            pytest.fail(f"Unexpected disposable PostgreSQL port: {address}")
+        cluster = PostgresCluster(
+            host=host,
+            port=int(port_text),
+            admin_user="postgres",
+            admin_password=admin_password,
+            migrator_password=secrets.token_urlsafe(32),
+            runtime_password=secrets.token_urlsafe(32),
+            observer_password=secrets.token_urlsafe(32),
+            container_name=container_name,
+        )
         _wait_for_postgres(cluster)
         yield cluster
     finally:
