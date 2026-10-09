@@ -18,8 +18,10 @@ import './timeline-planning-tray.css';
 
 export function TimelineDraftVault({
   onOpen,
+  onManageExisting,
 }: Readonly<{
   onOpen: (draft: DraftVaultItem, duplicate: boolean) => void;
+  onManageExisting?: () => void;
 }>) {
   const vault = useMemo(() => createRemoteDraftVault(), []);
   const legacySource = useMemo(() => createRemoteTemporalPlanningTrayDataSource(), []);
@@ -168,6 +170,10 @@ export function TimelineDraftVault({
           <p>Elementi creati prima delle Bozze</p>
           <p>Questi {existing.length} elementi sono già nel database e non sono bozze.
             Restano conservati; nessuna cancellazione o conversione automatica.</p>
+          {onManageExisting ? <button type="button"
+            onClick={() => { setOpen(false); onManageExisting(); }}>
+            Gestisci elementi già creati
+          </button> : null}
           {existing.map((item) => <div key={`${item.kind}:${item.subjectRef}`}>
             <strong>{item.title}</strong>
             <span> · {item.kind === 'activity' ? 'Attività' : 'Evento'} già creato</span>
