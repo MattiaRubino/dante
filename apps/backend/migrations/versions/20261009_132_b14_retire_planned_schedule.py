@@ -139,6 +139,20 @@ SET search_path=pg_catalog,dante,pg_temp AS $function$
        AND purpose.role_code='planned' AND purpose.retired_at IS NOT NULL
 $function$;
 """)
+    # The preceding placement capability must reject rows after retirement.
+    # Replace its exact owned-role predicate without editing the applied _131 revision.
+    prior_placement = bind.exec_driver_sql("""
+        SELECT pg_get_functiondef(
+            'dante.place_self_unplaced_planned_schedule(uuid,text,text,uuid,uuid,uuid,jsonb)'
+            ::regprocedure)
+    """).scalar_one()
+    current_guard = "AND role.role_code='planned' FOR UPDATE OF a;"
+    if prior_placement.count(current_guard) != 1:
+        raise RuntimeError("Unexpected planned placement contract at _132 migration")
+    bind.exec_driver_sql(prior_placement.replace(
+        current_guard,
+        "AND role.role_code='planned' AND role.retired_at IS NULL FOR UPDATE OF a;",
+    ))
     for signature in (
         "dante.get_self_activity_schedule_roles(uuid,uuid[])",
         "dante.retire_self_planned_schedule(uuid,uuid,uuid)",
