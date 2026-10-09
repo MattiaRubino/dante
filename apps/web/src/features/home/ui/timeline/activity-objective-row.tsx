@@ -9,6 +9,7 @@ export type ActivityObjectiveDraft = Readonly<{
   id: string;
   objectiveRef: string | null;
   operationId: string;
+  revisionBasis: number | null;
   label: string;
   resultKind: ObjectiveKind;
   comparatorCode: ObjectiveComparator | null;
@@ -27,6 +28,7 @@ export function existingObjectiveDraft(view: ObjectiveView): ActivityObjectiveDr
     id: view.objectiveRef,
     objectiveRef: view.objectiveRef,
     operationId: crypto.randomUUID(),
+    revisionBasis: null,
     label: view.label,
     resultKind: view.resultKind,
     comparatorCode: view.comparatorCode,
@@ -46,6 +48,7 @@ export function newObjectiveDraft(order: number): ActivityObjectiveDraft {
     id: crypto.randomUUID(),
     objectiveRef: null,
     operationId: crypto.randomUUID(),
+    revisionBasis: null,
     label: '',
     resultKind: 'boolean',
     comparatorCode: null,
