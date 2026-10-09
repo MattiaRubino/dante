@@ -11,6 +11,7 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
 import type { TemporalPlacement } from '../../../temporal';
+import type { DraftVaultItem } from '../../../temporal-create/application/remote-draft-vault';
 import { subscribeTemporalCreateDuplicate } from '../../../temporal-create/ui/temporal-create-duplicate-request';
 import {
   createB14TemporalCreateRuntime,
@@ -33,7 +34,7 @@ import type {
   TimelineGroupId,
   TimelineSemanticTone,
 } from './model/timeline-types';
-import { TimelinePlanningTrayB01 } from './timeline-planning-tray-b01';
+import { TimelineDraftVault } from './timeline-draft-vault';
 import {
   TimelinePlanningTray,
   type TimelinePlanningTrayItem,
@@ -330,6 +331,9 @@ export function TimelineCreateBridge({
   const [preview, setPreview] =
     useState<TemporalCreateTimelineProjection | null>(null);
   const [request, setRequest] = useState<TemporalCreateInvocation | null>(null);
+  const [draftRequest, setDraftRequest] = useState<{
+    id: number; item: DraftVaultItem; duplicate: boolean;
+  } | null>(null);
   const [layoutRevision, setLayoutRevision] = useState(0);
   const [undoEffect, setUndoEffect] =
     useState<TemporalCreateAppliedEffect | null>(null);
@@ -942,6 +946,7 @@ export function TimelineCreateBridge({
           defaultDate={defaultDate}
           contexts={contextOptions}
           request={request}
+          draftRequest={draftRequest}
           runtime={runtime}
           onPreview={setPreview}
           onApplied={applied}
@@ -959,10 +964,10 @@ export function TimelineCreateBridge({
           onDelete={deletePlanningItem}
         />
       ) : (
-        <TimelinePlanningTrayB01
-          runtime={runtime}
-          defaultDate={defaultDate}
-          onBeforeOpen={onBeforeOpen}
+        <TimelineDraftVault
+          onOpen={(item, duplicate) => setDraftRequest({
+            id: Date.now(), item, duplicate,
+          })}
         />
       )}
 
