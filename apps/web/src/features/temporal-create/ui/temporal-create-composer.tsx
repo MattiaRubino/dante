@@ -50,7 +50,7 @@ type TemporalCreateComposerProps = Readonly<{
   onContinueEditing: () => void;
   onDiscard: () => void;
   onMoveToUnplaced: () => void;
-  onSaveDraft: () => void;
+  onSaveDraft?: () => void;
   onSubmit: () => void;
   onU2DraftChange?: (draft: TemporalCreateU2AuthoringDraft) => void;
 }>;
@@ -108,7 +108,7 @@ export function TemporalCreateComposer({
   onContinueEditing,
   onDiscard,
   onMoveToUnplaced,
-  onSaveDraft,
+  onSaveDraft = onMoveToUnplaced,
   onSubmit,
   onU2DraftChange = NOOP_U2_DRAFT,
 }: TemporalCreateComposerProps) {
