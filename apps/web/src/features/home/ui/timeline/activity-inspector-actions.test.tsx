@@ -170,8 +170,7 @@ describe('Recurring Activity profile scope', () => {
   });
 });
 
-describe('Objective correction in Activity Editor', () => {
-  const objective = {
+const objective = {
     objectiveRef: '0199a567-8888-7888-8888-012345678901',
     label: 'Corsa 10 km',
     resultKind: 'quantity',
@@ -189,6 +188,7 @@ describe('Objective correction in Activity Editor', () => {
     assessmentCode: 'not_satisfied',
   } as const;
 
+describe('Objective correction in Activity Editor', () => {
   it('modifies an expanded Objective directly with one final Save', async () => {
     loadSettings.mockResolvedValueOnce({ ...currentSettings, objectives: [objective] });
     getDefinition.mockResolvedValueOnce({ ...objective, definitionRevision: 0 });
@@ -379,7 +379,7 @@ describe('Activity Inspector', () => {
     const onSaved = vi.fn();
     render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
       onSaved={onSaved} onCancel={() => undefined} />);
-    fireEvent.click(await screen.findByRole('button', { name: 'Aggiungi obiettivo' }));
+    fireEvent.click(await screen.findByRole('button', { name: /Aggiungi obiettivo/ }));
     fireEvent.change(screen.getByRole('textbox', { name: 'Nome obiettivo' }),
       { target: { value: 'Percorrere 10 km' } });
     fireEvent.change(screen.getByRole('combobox', { name: 'Tipo obiettivo' }),
