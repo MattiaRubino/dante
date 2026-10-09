@@ -14,6 +14,12 @@ from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 from tests.integration.temporal.test_b14_u2_authoring import _seed_self
 
+from dante.modules.temporal.draft_vault_api import (
+    DraftVaultSaveRequest,
+    delete_draft,
+    list_drafts,
+    save_draft,
+)
 from dante.platform.database.runtime import create_database_runtime
 
 pytestmark = pytest.mark.postgres
@@ -85,13 +91,6 @@ async def test_inert_drafts_are_owner_scoped_replay_safe_and_do_not_create_subje
 async def test_draft_vault_http_capability_returns_saved_snapshot_and_cas_delete(
     migrated_database: Any,
 ) -> None:
-    from dante.modules.temporal.draft_vault_api import (
-        DraftVaultSaveRequest,
-        delete_draft,
-        list_drafts,
-        save_draft,
-    )
-
     actor = _seed_self(migrated_database)
     runtime = create_database_runtime(migrated_database.runtime_settings())
     draft_ref = uuid7()
