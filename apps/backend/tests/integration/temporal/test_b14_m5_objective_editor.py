@@ -17,10 +17,11 @@ from tests.integration.temporal.test_b01_activity_core import (
     _signin,
 )
 
-from dante.app import create_app
-from dante.platform.http.csrf import CSRF_HEADER_NAME
+from dante.auth.sessions import CSRF_HEADER_NAME
+from dante.bootstrap.app import create_app
 
 pytestmark = pytest.mark.postgres
+pytest_plugins = ("tests.integration.temporal.test_b01_activity_core",)
 
 
 def _create_activity(client: TestClient, headers: dict[str, str], key: str) -> str:
