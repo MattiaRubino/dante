@@ -934,6 +934,7 @@ export function TemporalCreateEntry({
       onSaveDraft={() => void saveDraft()}
       onSubmit={() => void submit()}
       onU2DraftChange={(draft) => {
+        if (u2DraftRef.current !== draft) pendingVaultSave.current = null;
         u2DraftRef.current = draft;
         setU2Draft(draft);
         queueMicrotask(() => {
