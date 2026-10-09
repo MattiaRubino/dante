@@ -657,5 +657,5 @@ describe('Temporal Create U2 entry', () => {
     expect(screen.queryByRole('radio', { name: 'Da collocare' })).toBeNull();
     expect(screen.getByRole('button', { name: 'Salva bozza' })).toBeTruthy();
     expect(eventRequests).toHaveLength(0);
-  });;
+  });
 });
