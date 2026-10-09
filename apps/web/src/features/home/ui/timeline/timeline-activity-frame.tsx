@@ -11,8 +11,11 @@ export function activityFramePath(
   d: string;
   radius: number;
 } {
-  const w = width;
-  const h = height;
+  // Keep the entire painted rim inside the SVG viewport. A path on y=0/x=0
+  // loses its antialiased edge when the card clips overflow during resizing.
+  const inset = 1.5;
+  const w = Math.max(1, width - 2 * inset);
+  const h = Math.max(1, height - 2 * inset);
   // At compact Timeline sizes, leave a straight segment between the corners.
   const r = Math.max(1, Math.min(30, h * 0.29, w * 0.17));
   const base = Math.min(2, Math.max(1, h * 0.012));
@@ -30,8 +33,8 @@ export function activityFramePath(
     ny: number,
     thickness: number,
   ) {
-    outside.push([round(x), round(y)]);
-    inside.push([round(x - nx * thickness), round(y - ny * thickness)]);
+    outside.push([round(x + inset), round(y + inset)]);
+    inside.push([round(x - nx * thickness + inset), round(y - ny * thickness + inset)]);
   }
 
   function arc(

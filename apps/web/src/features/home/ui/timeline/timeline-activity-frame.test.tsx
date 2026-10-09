@@ -20,6 +20,8 @@ describe('Activity Timeline frame', () => {
       const { d, radius } = activityFramePath(width, height);
       expect(d.match(/M/g)).toHaveLength(2); // outside and inside of one ring
       expect(d).not.toMatch(/NaN|Infinity/);
+      expect(d).toMatch(/^M[\d.]+ 1\.5 L/);
+      expect(d).toContain(` ${height - 1.5}`);
       expect(radius).toBeLessThan(Math.min(width, height) / 2);
     }
     expect(activityFramePath(626, 198).radius).toBe(30);

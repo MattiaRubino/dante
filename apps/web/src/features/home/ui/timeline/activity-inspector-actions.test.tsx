@@ -454,14 +454,15 @@ describe('Activity Inspector', () => {
       previousEnd: '2026-10-09T10:00:00', proposedStart: null, proposedEnd: null }]);
     render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
       onSaved={() => undefined} onCancel={() => undefined} />);
-    fireEvent.click(await screen.findByRole('button', { name: 'Rimuovi sessione' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Rimuovi Sessione' }));
     fireEvent.click(screen.getByRole('button', { name: '＋ Sessione' }));
-    fireEvent.change(screen.getByRole('textbox', { name: 'Nome sessione' }),
+    const newSession = document.querySelector('[data-edit-new-session]')!;
+    fireEvent.change(newSession.querySelector('[aria-label="Nome Sessione"]')!,
       { target: { value: 'Seconda' } });
-    fireEvent.change(screen.getAllByLabelText('Inizio').find((element) => element instanceof HTMLInputElement)!,
-      { target: { value: '2026-10-09T10:00' } });
-    fireEvent.change(screen.getAllByLabelText('Fine').find((element) => element instanceof HTMLInputElement)!,
-      { target: { value: '2026-10-09T11:00' } });
+    fireEvent.change(newSession.querySelector('[data-create-path^="newStart-"]')!,
+      { target: { value: '10:00' } });
+    fireEvent.change(newSession.querySelector('[data-create-path^="newEnd-"]')!,
+      { target: { value: '11:00' } });
     fireEvent.click(screen.getByRole('button', { name: 'Verifica spostamento' }));
     await waitFor(() => expect(previewReplan).toHaveBeenCalledWith(ref, settings,
       expect.objectContaining({ removedPlanned: ['planned'], newPlanned: [
@@ -705,7 +706,17 @@ describe('Activity Inspector', () => {
     const onSaved = vi.fn();
     render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
       onSaved={onSaved} onCancel={() => undefined} />);
-    const name = await screen.findByRole('textbox', { name: 'Nome sessione pianificata' });
+    const name = await screen.findByRole('textbox', { name: 'Nome Sessione' });
+    const sessions = document.querySelector('.timeline-activity-editor__sessions')!;
+    const title = document.querySelector('.timeline-activity-editor__title-row')!;
+    const schedule = document.querySelector('[aria-label="Programmazione attuale"]')!;
+    expect(title.compareDocumentPosition(sessions) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(sessions.compareDocumentPosition(schedule) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(schedule.querySelector('[data-edit-planned-session]')).toBeNull();
+    expect(sessions.querySelectorAll('[data-edit-planned-session]')).toHaveLength(1);
+    expect(sessions.querySelector('[aria-label="Inizio Sessione"]')).toBeTruthy();
+    expect(sessions.querySelector('button[aria-controls="edit-session:planned-m3b:time"]'))
+      .toHaveProperty('disabled', true);
     fireEvent.change(name, { target: { value: 'Preparazione approfondita' } });
     expect(screen.getByRole('button', { name: 'Salva modifiche' }))
       .toHaveProperty('disabled', true);
@@ -753,7 +764,7 @@ describe('Activity Inspector', () => {
     ] });
     render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
       onSaved={() => undefined} onCancel={() => undefined} />);
-    const name = await screen.findByRole('textbox', { name: 'Nome sessione pianificata' });
+    const name = await screen.findByRole('textbox', { name: 'Nome Sessione' });
     fireEvent.change(name, { target: { value: 'Allenamento lungo' } });
     fireEvent.click(screen.getAllByRole('button', { name: 'Inizio: diminuisci ora' })[0]!);
     expect(screen.getByText(/Salva prima i nomi delle Session/)).toBeTruthy();
@@ -777,7 +788,7 @@ describe('Activity Inspector', () => {
     }] });
     render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
       onSaved={() => undefined} onCancel={() => undefined} />);
-    fireEvent.change(await screen.findByRole('textbox', { name: 'Nome sessione pianificata' }), {
+    fireEvent.change(await screen.findByRole('textbox', { name: 'Nome Sessione' }), {
       target: { value: 'Ripasso' },
     });
     const thisScope = await screen.findByLabelText('Solo questa');
@@ -839,7 +850,7 @@ describe('Activity Inspector', () => {
     revisePlannedName.mockResolvedValueOnce('Ripasso');
     render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
       onSaved={() => undefined} onCancel={() => undefined} />);
-    const field = await screen.findByRole('textbox', { name: 'Nome sessione pianificata' });
+    const field = await screen.findByRole('textbox', { name: 'Nome Sessione' });
     fireEvent.change(field, { target: { value: 'Ripasso' } });
     fireEvent.click(screen.getByRole('button', { name: 'Salva nome sessione' }));
     await waitFor(() => expect(revisePlannedName).toHaveBeenCalledWith(

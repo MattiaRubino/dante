@@ -313,7 +313,7 @@
   );
 }
 
-.temporal-create-composer .temporal-create-time-segment input {
+.temporal-create-time-segment input {
   width: 100%;
   min-width: 0;
   min-height: 20px;
@@ -332,7 +332,7 @@
   text-align: center;
 }
 
-.temporal-create-composer .temporal-create-time-segment input:focus {
+.temporal-create-time-segment input:focus {
   color: #fff;
   background: rgba(255, 255, 255, 0.035);
 }

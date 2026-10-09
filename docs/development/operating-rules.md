@@ -226,6 +226,22 @@ Do not rewrite/force-push shared history casually; any history rewrite requires 
 
 ## 9. Post-write QA
 
+### Regression checks for touched components
+
+For every fix to an existing component or behavior that already has tests, locate
+and rerun those tests after the change, including tests for the neighboring
+Create/Edit/Inspector paths that use the same component. Inspect failures
+against the intended contract: repair real regressions; update a test only
+when its expectation is obsolete, documenting the reason in the test or change
+record. Add a focused regression for a bug that the existing suite missed.
+Record the exact commands and results. A green typecheck or a new isolated test
+does not replace the previously passing suite. Visual geometry also requires
+real-size inspection; DOM-only tests cannot establish visual acceptance.
+
+This rule applies to future UI and functional changes in the Timeline workstream
+and to subsequent changes to already tested components. No CI is implied: the
+user runs the integrated local gate on their worktree.
+
 Against the intended scope prove:
 
 - expected changed paths == actual;

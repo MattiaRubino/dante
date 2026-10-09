@@ -91,6 +91,16 @@
 
 .timeline-event-modal--edit .timeline-activity-editor__apply-lock { align-self: flex-end; }
 
+.timeline-event-modal--edit .timeline-activity-editor__sessions {
+  order: 0;
+  padding: 2px 0 6px;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__sessions .temporal-create-tree-time-editor {
+  min-width: 0;
+  padding-left: 28px;
+}
+
 .timeline-event-modal--edit .timeline-activity-editor__add-session {
   align-self: flex-start;
   min-height: 32px;

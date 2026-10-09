@@ -12,8 +12,11 @@ export function eventFrameGeometry(width: number, height: number) {
   const q = (value: number) => Math.round(value * 100) / 100;
   const lx = (x: number) => q(x * sx);
   const rx = (x: number) => q((x + extraW) * sx);
-  const ty = (y: number) => q(y * sy);
-  const by = (y: number) => q((y + extraH) * sy);
+  // The reference drawing has a 27px canvas margin above its top ribbon.
+  // Map that margin to a constant 2px inset on a Timeline card, and mirror
+  // around the card height so the lower ribbon always stays inside its edge.
+  const ty = (y: number) => q((y - 27) * sy + 2);
+  const by = (y: number) => q((y + extraH - 27) * sy + 2);
 
   const ribbon = [
     `M ${lx(8)} ${by(218)}`,
@@ -33,8 +36,7 @@ export function eventFrameGeometry(width: number, height: number) {
     `L ${lx(8)} ${by(218)}`,
     'Z',
   ].join(' ');
-  const mirrorY = h <= 305 ? 281 * sy : h - 24;
-  return { ribbon, mirrorTransform: `translate(${q(w)} ${q(mirrorY)}) scale(-1 -1)` };
+  return { ribbon, mirrorTransform: `translate(${q(w)} ${q(h)}) scale(-1 -1)` };
 }
 
 export function TimelineEventFrame() {

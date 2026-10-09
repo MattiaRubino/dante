@@ -37,6 +37,8 @@ import '../../../temporal-create/ui/temporal-create-advanced-shell.css';
 import '../../../temporal-create/ui/temporal-panel-controls.css';
 import '../../../temporal-create/ui/temporal-create-reality-objectives-section.css';
 import '../../../temporal-create/ui/temporal-create-core-u2.css';
+import '../../../temporal-create/ui/temporal-create-advanced-activity-structure.css';
+import '../../../temporal-create/ui/temporal-create-session-time-polish.css';
 import './activity-edit-panel.css';
 import {
   createRemoteRecurringProfileEdit,
@@ -678,13 +680,137 @@ export function ActivityEditPanel({
         ) : null}
         </div>
         {lockError ? <p role="alert">{lockError}</p> : null}
+        {settings && (settings.schedules.some((row) => row.role === 'planned') || newPlanned.length > 0) ? (
+          <section className="temporal-create-activity-tree timeline-activity-editor__sessions"
+            aria-label="Sessioni pianificate">
+            <div className="temporal-create-activity-tree__spine" aria-hidden="true" />
+            <div className="temporal-create-activity-tree__root-sessions">
+              <div className="temporal-create-activity-tree__group-label">Sessioni attività</div>
+              {settings.schedules.filter((row) => row.role === 'planned').map((row) => {
+                const removed = removedPlanned.includes(row.scheduleRef);
+                const currentStart = planDraft[row.scheduleRef]?.start ?? row.start ?? '';
+                const currentEnd = planDraft[row.scheduleRef]?.end ?? row.end ?? '';
+                return (
+                  <div className="temporal-create-tree-item is-session is-root"
+                    key={row.scheduleRef} data-edit-planned-session={row.scheduleRef}>
+                    <div className="temporal-create-tree-row">
+                      <span className="temporal-create-tree-row__icon" aria-hidden="true">▶</span>
+                      <span className="temporal-create-tree-row__divider" aria-hidden="true" />
+                      <input className="temporal-create-tree-row__title" maxLength={300}
+                        aria-label="Nome Sessione" placeholder="Nome Sessione"
+                        disabled={removed || !!namePending || pending || planPending}
+                        value={plannedNames[row.scheduleRef] ?? ''}
+                        onChange={(event) => {
+                          setPlannedNames((current) => ({
+                            ...current, [row.scheduleRef]: event.target.value,
+                          }));
+                          setNameError('');
+                        }} />
+                      <div className="temporal-create-tree-row__actions">
+                        <button type="button" className="is-active"
+                          aria-expanded="true" aria-controls={`edit-session:${row.scheduleRef}:time`}
+                          title="La rimozione dell’orario di una Session già pianificata non è ancora disponibile"
+                          disabled>Orario</button>
+                        {canReplan ? <button type="button" className="is-remove" disabled={planPending}
+                          aria-label={removed ? 'Mantieni Sessione' : 'Rimuovi Sessione'}
+                          onClick={() => {
+                            setRemovedPlanned((current) => current.includes(row.scheduleRef)
+                              ? current.filter((ref) => ref !== row.scheduleRef)
+                              : [...current, row.scheduleRef]);
+                            setPlanPreview(null);
+                            setPlanOperation(null);
+                          }}>{removed ? '↶' : '×'}</button> : null}
+                      </div>
+                    </div>
+                    {!removed ? (
+                      <div id={`edit-session:${row.scheduleRef}:time`}
+                        className="temporal-create-tree-time-editor" inert={planPending || undefined}>
+                        {canReplan ? <>
+                          <TemporalCreateDatePicker label="Data Sessione" locale="it"
+                            value={currentStart.slice(0, 10)}
+                            onChange={(date) => changePlan(row.scheduleRef, 'start',
+                              `${date}${currentStart.slice(10, 16)}`)} />
+                          <TimeControl label="Inizio Sessione" dataPath={`startTime-${row.scheduleRef}`}
+                            value={currentStart.slice(11, 16)}
+                            onChange={(time) => changePlan(row.scheduleRef, 'start',
+                              `${currentStart.slice(0, 10)}T${time}`)} />
+                          <TimeControl label="Fine Sessione" dataPath={`endTime-${row.scheduleRef}`}
+                            value={currentEnd.slice(11, 16)}
+                            onChange={(time) => changePlan(row.scheduleRef, 'end',
+                              `${currentEnd.slice(0, 10)}T${time}`)} />
+                        </> : <span>{currentStart} – {currentEnd}</span>}
+                      </div>
+                    ) : null}
+                    {(plannedNames[row.scheduleRef] ?? '') !== (row.name ?? '') ? (
+                      <button type="button" disabled={!!namePending || pending || planPending ||
+                        planDirty || areaDirty || coreDirty || lockDirty || scopedDomainUnsupported}
+                        onClick={() => {
+                          const next = plannedNames[row.scheduleRef]?.trim() || null;
+                          setNamePending(row.scheduleRef);
+                          setNameError('');
+                          void settingsSource.revisePlannedName(profile.activityRef,
+                            row.scheduleRef, row.name, next).then((saved) => {
+                            setSettings((current) => current && ({ ...current,
+                              schedules: current.schedules.map((schedule) => schedule.scheduleRef === row.scheduleRef
+                                ? { ...schedule, name: saved } : schedule),
+                            }));
+                            setPlannedNames((current) => ({ ...current, [row.scheduleRef]: saved ?? '' }));
+                          }).catch((reason: unknown) => {
+                            setNameError(reason instanceof Error ? reason.message : 'Rinomina non riuscita.');
+                          }).finally(() => setNamePending(null));
+                        }}>Salva nome sessione</button>
+                    ) : null}
+                  </div>
+                );
+              })}
+              {newPlanned.map((item) => (
+                <div className="temporal-create-tree-item is-session is-root" key={item.clientRef}
+                  data-edit-new-session={item.clientRef}>
+                  <div className="temporal-create-tree-row">
+                    <span className="temporal-create-tree-row__icon" aria-hidden="true">▶</span>
+                    <span className="temporal-create-tree-row__divider" aria-hidden="true" />
+                    <input className="temporal-create-tree-row__title" maxLength={300}
+                      aria-label="Nome Sessione" placeholder="Nome Sessione" disabled={planPending}
+                      value={item.name} onChange={(event) => changeNewPlanned(item.clientRef,
+                        'name', event.target.value)} />
+                    <div className="temporal-create-tree-row__actions">
+                      <button type="button" className="is-active" aria-expanded="true"
+                        aria-controls={`edit-session:${item.clientRef}:time`}
+                        title="Le nuove Session pianificate richiedono ancora un orario" disabled>Orario</button>
+                      <button type="button" className="is-remove" aria-label="Rimuovi Sessione"
+                        disabled={planPending} onClick={() => {
+                          setNewPlanned((current) => current.filter((row) => row.clientRef !== item.clientRef));
+                          setPlanPreview(null);
+                          setPlanOperation(null);
+                        }}>×</button>
+                    </div>
+                  </div>
+                  <div id={`edit-session:${item.clientRef}:time`} className="temporal-create-tree-time-editor">
+                    <TemporalCreateDatePicker label="Data Sessione" locale="it" value={item.start.slice(0, 10)}
+                      onChange={(date) => changeNewPlanned(item.clientRef, 'start',
+                        `${date}${item.start.slice(10, 16)}`)} />
+                    <TimeControl label="Inizio Sessione" dataPath={`newStart-${item.clientRef}`}
+                      value={item.start.slice(11, 16)} onChange={(time) => changeNewPlanned(item.clientRef,
+                        'start', `${item.start.slice(0, 10)}T${time}`)} />
+                    <TimeControl label="Fine Sessione" dataPath={`newEnd-${item.clientRef}`}
+                      value={item.end.slice(11, 16)} onChange={(time) => changeNewPlanned(item.clientRef,
+                        'end', `${item.end.slice(0, 10)}T${time}`)} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null}
         {canReplan ? (
           <button type="button" className="temporal-create-structure-add timeline-activity-editor__add-session"
             disabled={planPending || editablePlan.filter((row) => row.role === 'planned').length -
               removedPlanned.length + newPlanned.length >= 100}
             onClick={() => {
+              const root = settings?.schedules.find((row) => row.role === 'envelope');
               setNewPlanned((current) => [...current, {
-                clientRef: crypto.randomUUID(), name: '', start: '', end: '',
+                clientRef: crypto.randomUUID(), name: '',
+                start: root?.start?.slice(0, 16) ?? '',
+                end: root?.end?.slice(0, 16) ?? '',
               }]);
               setPlanPreview(null);
               setPlanOperation(null);
@@ -721,7 +847,7 @@ export function ActivityEditPanel({
               ) : null}
               {settings.schedules.length ? (
                 <ul>
-                  {settings.schedules.map((schedule) => (
+                  {settings.schedules.filter((schedule) => schedule.role !== 'planned').map((schedule) => (
                     <li key={schedule.scheduleRef}>
                       <div className="timeline-activity-editor__schedule-label">
                       {schedule.name ||
@@ -740,49 +866,7 @@ export function ActivityEditPanel({
                           <span>{(planDraft[schedule.scheduleRef]?.end || schedule.end).slice(0, 10)}</span>
                         </div>
                       ) : null}
-                      {schedule.role === 'planned' ? (
-                        <div className="timeline-activity-editor__fields">
-                          <label>
-                            Nome sessione pianificata
-                            <input maxLength={300} disabled={!!namePending || pending || planPending}
-                              value={plannedNames[schedule.scheduleRef] ?? ''}
-                              onChange={(event) => {
-                                setPlannedNames((current) => ({
-                                  ...current, [schedule.scheduleRef]: event.target.value,
-                                }));
-                                setNameError('');
-                              }} />
-                          </label>
-                          {(plannedNames[schedule.scheduleRef] ?? '') !== (schedule.name ?? '') ? (
-                            <button type="button" disabled={!!namePending || pending || planPending ||
-                              planDirty || areaDirty || coreDirty || lockDirty || scopedDomainUnsupported}
-                              onClick={() => {
-                                const next = plannedNames[schedule.scheduleRef]?.trim() || null;
-                                setNamePending(schedule.scheduleRef);
-                                setNameError('');
-                                void settingsSource.revisePlannedName(
-                                  profile.activityRef, schedule.scheduleRef, schedule.name, next,
-                                ).then((saved) => {
-                                  setSettings((current) => current && ({
-                                    ...current,
-                                    schedules: current.schedules.map((row) =>
-                                      row.scheduleRef === schedule.scheduleRef
-                                        ? { ...row, name: saved } : row),
-                                  }));
-                                  setPlannedNames((current) => ({
-                                    ...current, [schedule.scheduleRef]: saved ?? '',
-                                  }));
-                                }).catch((reason: unknown) => {
-                                  setNameError(reason instanceof Error
-                                    ? reason.message : 'Rinomina della sessione non riuscita.');
-                                }).finally(() => setNamePending(null));
-                              }}>
-                              {namePending === schedule.scheduleRef ? 'Salvataggio…' : 'Salva nome sessione'}
-                            </button>
-                          ) : null}
-                        </div>
-                      ) : null}
-                      {canReplan && (schedule.role === 'interval' || schedule.role === 'planned' ||
+                      {canReplan && (schedule.role === 'interval' ||
                         (schedule.role === 'envelope' && !hasIntervals)) &&
                         !removedPlanned.includes(schedule.scheduleRef) &&
                          !removedIntervals.includes(schedule.scheduleRef) ? (
@@ -819,17 +903,6 @@ export function ActivityEditPanel({
                         }}>
                           {removedIntervals.includes(schedule.scheduleRef)
                             ? 'Mantieni intervallo' : 'Rimuovi intervallo'}
-                        </button>
-                      ) : null}
-                      {canReplan && schedule.role === 'planned' ? (
-                        <button type="button" disabled={planPending} onClick={() => {
-                          setRemovedPlanned((current) => current.includes(schedule.scheduleRef)
-                            ? current.filter((ref) => ref !== schedule.scheduleRef)
-                            : [...current, schedule.scheduleRef]);
-                          setPlanPreview(null);
-                          setPlanOperation(null);
-                        }}>
-                          {removedPlanned.includes(schedule.scheduleRef) ? 'Mantieni sessione' : 'Rimuovi sessione'}
                         </button>
                       ) : null}
                     </li>
@@ -886,27 +959,6 @@ export function ActivityEditPanel({
                       setPlanOperation(null);
                       setPlanError('');
                     }}>Aggiungi intervallo</button> : null}
-                  {newPlanned.map((item) => (
-                    <div key={item.clientRef} className="timeline-activity-editor__fields">
-                      <label>Nome sessione
-                        <input maxLength={300} disabled={planPending} value={item.name}
-                          onChange={(event) => changeNewPlanned(item.clientRef, 'name', event.target.value)} />
-                      </label>
-                      <label>Inizio
-                        <input type="datetime-local" required disabled={planPending} value={item.start.slice(0, 16)}
-                          onChange={(event) => changeNewPlanned(item.clientRef, 'start', event.target.value)} />
-                      </label>
-                      <label>Fine
-                        <input type="datetime-local" required disabled={planPending} value={item.end.slice(0, 16)}
-                          onChange={(event) => changeNewPlanned(item.clientRef, 'end', event.target.value)} />
-                      </label>
-                      <button type="button" disabled={planPending} onClick={() => {
-                        setNewPlanned((current) => current.filter((row) => row.clientRef !== item.clientRef));
-                        setPlanPreview(null);
-                        setPlanOperation(null);
-                      }}>Rimuovi nuova sessione</button>
-                    </div>
-                  ))}
                 </div>
               ) : null}
               {planDirty ? (

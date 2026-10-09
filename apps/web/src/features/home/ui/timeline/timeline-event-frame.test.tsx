@@ -13,20 +13,20 @@ describe('Event frame geometry', () => {
     expect(frame?.querySelectorAll('path')).toHaveLength(1);
   });
 
-  it('extends just the straight sides and mirrors the bottom within card height', () => {
-    const short = eventFrameGeometry(280, 305);
-    const tall = eventFrameGeometry(280, 900);
-    expect(short.ribbon).toContain('L 23.94 61');
-    expect(tall.ribbon).toContain('L 23.94 61');
-    expect(short.ribbon).toContain('M 2.9 218');
-    expect(tall.ribbon).toContain('M 2.9 813');
-    expect(tall.mirrorTransform).toBe('translate(280 876) scale(-1 -1)');
+  it('keeps both horizontal rims two pixels inside compact and tall cards', () => {
+    for (const [width, height] of [[280, 48], [280, 305], [280, 900]] as const) {
+      const frame = eventFrameGeometry(width, height);
+      expect(frame.ribbon).toContain(' 2 L');
+      expect(frame.mirrorTransform).toBe(`translate(${width} ${height}) scale(-1 -1)`);
+      expect(frame.ribbon).not.toMatch(/NaN|Infinity/);
+    }
+    expect(eventFrameGeometry(280, 900).ribbon).toContain('M 2.9 788');
   });
 
-  it('keeps the approved reference coordinates at its native size', () => {
+  it('keeps the approved reference shape while mapping its canvas margin into the card', () => {
     const reference = eventFrameGeometry(772, 305);
-    expect(reference.ribbon).toContain('M 8 218 L 66 61');
-    expect(reference.ribbon).toContain('L 727 27');
-    expect(reference.mirrorTransform).toBe('translate(772 281) scale(-1 -1)');
+    expect(reference.ribbon).toContain('M 8 193 L 66 36');
+    expect(reference.ribbon).toContain('L 727 2');
+    expect(reference.mirrorTransform).toBe('translate(772 305) scale(-1 -1)');
   });
 });
