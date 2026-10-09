@@ -136,7 +136,6 @@ def test_m5_recorded_result_retirement_veto_rolls_back_other_objective_edits(
             json={
                 "operation_id": "m5:observed:result",
                 "observed_numeric": 8,
-                "assessment_code": "not_satisfied",
             },
             headers=headers,
         )
