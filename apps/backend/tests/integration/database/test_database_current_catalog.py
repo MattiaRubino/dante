@@ -159,7 +159,7 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
     assert environment == ("180006", "UTF8", "63")
     assert topology == _CURRENT_TOPOLOGY
     assert current_revision == (_CURRENT_REVISION,)
-    assert (len(tables), len(views), len(routines)) == (235, 5, 211)
+    assert (len(tables), len(views), len(routines)) == (236, 5, 214)
     assert live_tables == set(tables)
     assert live_views == set(views)
     assert live_routines == set(routines)
@@ -222,22 +222,24 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
         "B14-M4-EVENT-PROFILE",
         "B14-UNTIMED-PLANNED-SESSION",
         "B14-UNTIMED-PLANNED-OWNER-CONTRACT",
+        "B14-PLANNED-SESSION-TIME-EDIT",
+        "B14-M5-PLANNED-RETIREMENT",
     ]
     assert current["standalone_entries"] == {
-        "tables": 235,
+        "tables": 236,
         "views": 5,
-        "routines": 211,
-        "total": 451,
+        "routines": 214,
+        "total": 455,
     }
     assert current["embedded_objects"] == {
         "triggers": 103,
-        "physical_indexes": 479,
+        "physical_indexes": 482,
     }
     assert current["constraints"] == {
-        "foreign_keys": 416,
-        "check_constraints": 587,
+        "foreign_keys": 420,
+        "check_constraints": 589,
     }
-    assert len(MAPPED_TABLES) == len(Base.registry.mappers) == len(Base.metadata.tables) == 235
+    assert len(MAPPED_TABLES) == len(Base.registry.mappers) == len(Base.metadata.tables) == 236
     assert all(len(mapper.relationships) == 0 for mapper in Base.registry.mappers)
     assert set(VIEW_METADATA.tables) == {f"dante.{name}" for name in views}
     assert {table.name for table in MAPPED_TABLES} == set(tables)
