@@ -157,7 +157,6 @@ export function ActivityEditPanel({
   const [removedIntervals, setRemovedIntervals] = useState<string[]>([]);
   const [objectiveRows, setObjectiveRows] = useState<ActivityObjectiveDraft[]>([]);
   const [removedObjectives, setRemovedObjectives] = useState<string[]>([]);
-  const [expandedObjective, setExpandedObjective] = useState<string | null>(null);
   const [objectivePending, setObjectivePending] = useState(false);
   const [objectiveError, setObjectiveError] = useState('');
   const [correctingObjective, setCorrectingObjective] = useState<ObjectiveView | null>(null);
@@ -165,6 +164,9 @@ export function ActivityEditPanel({
   const [correctedBoolean, setCorrectedBoolean] = useState('true');
   const [correctedAssessment, setCorrectedAssessment] = useState<ObjectiveAssessment>('unknown');
   const correctionOperation = useRef<string | null>(null);
+  const loadedObjectiveOrigins = useRef(new Set<string>());
+  const [areaColorOverride, setAreaColorOverride] = useState<string | null>(null);
+  const areaColorOperation = useRef<string | null>(null);
   const [planOperation, setPlanOperation] = useState<string | null>(null);
   const [planPending, setPlanPending] = useState(false);
   const [planError, setPlanError] = useState('');
@@ -226,11 +228,17 @@ export function ActivityEditPanel({
   const lockDirty = settings !== null && settings.placementLockScheduleRef !== null &&
     placementProtected !== null && placementProtected !== settings.placementProtected;
   const newAreaName = areaQuery.trim().replace(/\s+/g, ' ');
+  const selectedAreaOption = areaChoice?.options.find((area) => area.ref === selectedArea);
+  const selectedAreaColor = areaColorOverride ??
+    (selectedArea ? selectedAreaOption?.colorCode ?? '#EA5C12'
+      : draft.colorCode || '#EA5C12');
   const creatingArea = !!newAreaName && !selectedArea &&
     !areaChoice?.options.some((area) => area.name.toLocaleLowerCase() ===
       newAreaName.toLocaleLowerCase());
   const areaDirty = areaChoice !== null &&
-    (creatingArea || (selectedArea || null) !== areaChoice.currentRef);
+    (creatingArea || (selectedArea || null) !== areaChoice.currentRef ||
+      (selectedArea !== '' && areaColorOverride !== null &&
+        areaColorOverride !== selectedAreaOption?.colorCode));
   const areaQueryValid = !areaQuery || !!areaChoice?.options.some((area) =>
     area.ref === selectedArea && area.name.toLocaleLowerCase() ===
       newAreaName.toLocaleLowerCase()) || creatingArea;
@@ -248,7 +256,7 @@ export function ActivityEditPanel({
         setSettings(loaded);
         setObjectiveRows(loaded.objectives.map(existingObjectiveDraft));
         setRemovedObjectives([]);
-        setExpandedObjective(null);
+        loadedObjectiveOrigins.current.clear();
         setObjectiveError('');
         setCaptureMode(loaded.capture.mode);
         setRealityMode(loaded.reality.mode);
@@ -301,6 +309,7 @@ export function ActivityEditPanel({
     let active = true;
     void settingsSource.loadLifeAreaChoice(profile.activityRef).then((loaded) => {
       if (!active) return;
+      setAreaColorOverride(null);
       setAreaChoice(loaded);
       setSelectedArea(loaded.currentRef ?? '');
       setAreaQuery(loaded.options.find((area) => area.ref === loaded.currentRef)?.name ?? '');
@@ -329,17 +338,17 @@ export function ActivityEditPanel({
     setObjectiveError('');
   };
 
-  const toggleObjective = (row: ActivityObjectiveDraft) => {
-    setExpandedObjective((current) => current === row.id ? null : row.id);
-    if (row.objectiveRef && !row.seriesState) {
-      void objectiveSource.getSeriesState(row.objectiveRef).then((series) => {
-        setObjectiveRows((rows) => rows.map((item) => item.id === row.id
-          ? { ...item, seriesState: series } : item));
-      }).catch((reason: unknown) => {
-        setObjectiveError(reason instanceof Error
-          ? reason.message : 'Impossibile verificare la ricorrenza dell’obiettivo.');
-      });
-    }
+  const inspectObjective = (row: ActivityObjectiveDraft) => {
+    if (!row.objectiveRef || loadedObjectiveOrigins.current.has(row.objectiveRef)) return;
+    loadedObjectiveOrigins.current.add(row.objectiveRef);
+    void objectiveSource.getSeriesState(row.objectiveRef).then((series) => {
+      setObjectiveRows((rows) => rows.map((item) => item.id === row.id
+        ? { ...item, seriesState: series } : item));
+    }).catch((reason: unknown) => {
+      loadedObjectiveOrigins.current.delete(row.objectiveRef!);
+      setObjectiveError(reason instanceof Error
+        ? reason.message : 'Impossibile verificare la ricorrenza dell’obiettivo.');
+    });
   };
 
   const startResultCorrection = (objective: ObjectiveView) => {
@@ -449,7 +458,6 @@ export function ActivityEditPanel({
     setSettings(next);
     setObjectiveRows(saved.map(existingObjectiveDraft));
     setRemovedObjectives([]);
-    setExpandedObjective(null);
     return next;
   };
 
@@ -589,17 +597,40 @@ export function ActivityEditPanel({
               setAreaQuery(created.name);
               areaCreateOperation.current = null;
             }
-            const saved = await settingsSource.assignLifeArea(profile.activityRef,
-              choice, targetArea, areaOperation.current ??= crypto.randomUUID())
-              .catch((reason: unknown) => {
+            const area = choice.options.find((option) => option.ref === targetArea);
+            const color = areaColorOverride ?? (creatingArea ? draft.colorCode || '#EA5C12' : null);
+            if (area && color && color.toUpperCase() !== area.colorCode?.toUpperCase()) {
+              const savedArea = await settingsSource.setLifeAreaAppearance(
+                area, color, areaColorOperation.current ??= crypto.randomUUID(),
+              ).catch((reason: unknown) => {
                 errorHandled = true;
-                setAreaError(reason instanceof Error ? reason.message : 'Life Area non salvata.');
+                setAreaError(reason instanceof Error ? reason.message
+                  : 'Impossibile salvare il colore Life Area.');
                 throw reason;
               });
-            areaOperation.current = null;
-            setAreaChoice(saved);
-            currentSettings = { ...currentSettings, lifeAreaRef: saved.currentRef };
-            setSettings(currentSettings);
+              choice = {
+                ...choice,
+                options: choice.options.map((option) =>
+                  option.ref === savedArea.ref ? savedArea : option),
+              };
+              setAreaChoice(choice);
+              areaColorOperation.current = null;
+              setAreaColorOverride(null);
+            }
+            if (choice.currentRef !== targetArea) {
+              const saved = await settingsSource.assignLifeArea(profile.activityRef,
+                choice, targetArea, areaOperation.current ??= crypto.randomUUID())
+                .catch((reason: unknown) => {
+                  errorHandled = true;
+                  setAreaError(reason instanceof Error
+                    ? reason.message : 'Life Area non salvata.');
+                  throw reason;
+                });
+              areaOperation.current = null;
+              setAreaChoice(saved);
+              currentSettings = { ...currentSettings, lifeAreaRef: saved.currentRef };
+              setSettings(currentSettings);
+            }
           }
           if (lockDirty && placementProtected === true) {
             currentSettings = await settingsSource.setPlacementProtected(currentSettings, true)
@@ -1070,10 +1101,16 @@ export function ActivityEditPanel({
             </div>
             <div className="timeline-activity-editor__area-color">
               <div className="temporal-create-life-area-field">
-              <TemporalColorControl value={draft.colorCode || '#EA5C12'}
-                label="Colore attività o evento" onChange={(colorCode) => {
-                  operation.current = undefined;
-                  setDraft((current) => ({ ...current, colorCode }));
+              <TemporalColorControl value={selectedAreaColor}
+                label={selectedArea || creatingArea ? 'Colore Life Area' : 'Colore attività o evento'}
+                onChange={(colorCode) => {
+                  if (selectedArea || creatingArea) {
+                    setAreaColorOverride(colorCode);
+                    areaColorOperation.current = null;
+                  } else {
+                    operation.current = undefined;
+                    setDraft((current) => ({ ...current, colorCode }));
+                  }
                 }} />
               <div className="timeline-activity-editor__area-choice">
               {areaError ? <p role="alert">{areaError}</p> : null}
@@ -1090,6 +1127,8 @@ export function ActivityEditPanel({
                     disabled={pending || planPending}
                     onQueryChange={(query) => {
                       setAreaQuery(query);
+                      setAreaColorOverride(null);
+                      areaColorOperation.current = null;
                       setSelectedArea(areaChoice.options.find((area) =>
                         area.name.toLocaleLowerCase() === query.trim().toLocaleLowerCase())?.ref ?? '');
                       areaOperation.current = null;
@@ -1099,11 +1138,15 @@ export function ActivityEditPanel({
                     onChoose={(area) => {
                       setSelectedArea(area.id);
                       setAreaQuery(area.label);
+                      setAreaColorOverride(null);
+                      areaColorOperation.current = null;
                       areaOperation.current = null;
                       setAreaError('');
                     }}
                     onClear={() => {
                       setSelectedArea(''); setAreaQuery(''); setAreaError('');
+                      setAreaColorOverride(null);
+                      areaColorOperation.current = null;
                       areaCreateOperation.current = null;
                     }} />
                   {creatingArea ? <small>La nuova Life Area verrà creata quando salvi.</small> : null}
@@ -1148,9 +1191,8 @@ export function ActivityEditPanel({
                 {objectiveRows.filter((row) => !removedObjectives.includes(row.id))
                   .map((row) => (
                     <ActivityObjectiveRow key={row.id} row={row}
-                      expanded={expandedObjective === row.id}
                       disabled={pending || planPending || objectivePending}
-                      onToggle={() => toggleObjective(row)}
+                      onInspect={() => inspectObjective(row)}
                       onChange={(patch) => patchObjective(row.id, patch)}
                       onRemove={() => {
                         if (row.objectiveRef) {
@@ -1177,7 +1219,6 @@ export function ActivityEditPanel({
                       Math.max(-1, ...objectiveRows.map((row) => row.presentationOrder)) + 1,
                     );
                     setObjectiveRows((rows) => [...rows, next]);
-                    setExpandedObjective(next.id);
                     setObjectiveError('');
                   }}>
                   ＋ Aggiungi obiettivo
