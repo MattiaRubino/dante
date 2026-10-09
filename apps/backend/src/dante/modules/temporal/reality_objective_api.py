@@ -72,6 +72,8 @@ def _problem(exc: DBAPIError, *, noun: str) -> ProblemError:
         "temporal_objective_series_operation_reused",
         "temporal_objective_series_stale",
         "temporal_objective_series_future_conflict",
+        "temporal_objective_retirement_stale",
+        "temporal_objective_retirement_recorded",
     }:
         return ProblemError(
             status=409,
@@ -90,6 +92,8 @@ def _problem(exc: DBAPIError, *, noun: str) -> ProblemError:
         "temporal_objective_definition_invalid",
         "temporal_objective_series_unsupported",
         "temporal_objective_result_correction_requires_fact",
+        "temporal_objective_retirement_invalid",
+        "temporal_objective_retirement_source_unsupported",
     }:
         return ProblemError(
             status=422,
@@ -257,6 +261,48 @@ class ObjectiveDefinitionReviseResponse(BaseModel):
     evaluation_state_ref: UUID | None
     assessment_code: AssessmentCode | None
     replayed: bool
+
+
+
+class ObjectiveBatchRevision(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    objective_ref: UUID
+    change: ObjectiveDefinitionReviseCommand
+
+
+class ObjectiveBatchRetirement(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    objective_ref: UUID
+    operation_id: str = Field(min_length=1, max_length=200)
+    expected_revision: int = Field(ge=0)
+
+
+class ActivityObjectiveBatchCommand(BaseModel):
+    """One transaction for all Objective edits submitted by the Activity editor."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    add: list[ObjectiveCreateCommand] = Field(default_factory=list, max_length=100)
+    revise: list[ObjectiveBatchRevision] = Field(default_factory=list, max_length=100)
+    retire: list[ObjectiveBatchRetirement] = Field(default_factory=list, max_length=100)
+
+    @model_validator(mode="after")
+    def distinct_targets(self) -> ActivityObjectiveBatchCommand:
+        if len(self.add) + len(self.revise) + len(self.retire) > 100:
+            raise ValueError("At most 100 Objective edits are supported.")
+        refs = [item.objective_ref for item in (*self.revise, *self.retire)]
+        if len(refs) != len(set(refs)):
+            raise ValueError("The same Objective cannot be edited and retired together.")
+        operations = [
+            *(item.operation_id for item in self.add),
+            *(item.change.operation_id for item in self.revise),
+            *(item.operation_id for item in self.retire),
+        ]
+        if len(operations) != len(set(operations)):
+            raise ValueError("Objective operations must have unique replay identifiers.")
+        return self
 
 
 class ObjectiveResultCorrectionCommand(ObjectiveResultCommand):
@@ -588,6 +634,144 @@ async def list_activity_objectives(
     subject_ref: UUID, context: Context, request: Request
 ) -> list[ObjectiveResponse]:
     return await _list_objectives("activity", subject_ref, context, request)
+
+
+
+@router.put(
+    "/activities/{subject_ref}/objective-edits",
+    response_model=list[ObjectiveResponse],
+    operation_id="temporal_apply_activity_objective_edits",
+)
+async def apply_activity_objective_edits(
+    subject_ref: UUID,
+    payload: ActivityObjectiveBatchCommand,
+    context: MutatingContext,
+    request: Request,
+    response: Response,
+) -> list[ObjectiveResponse]:
+    """Commit all Objective additions, revisions and retirements atomically.
+
+    This boundary deliberately owns Objectives only. Core Activity settings
+    remain separately revision-guarded by their established domain owners.
+    """
+    actor = context.self_person_ref
+    try:
+        async with request.app.state.database_runtime.session_factory() as session, session.begin():
+            await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
+            existing = set((await session.scalars(text("""
+                SELECT objective_ref FROM dante.list_self_temporal_objectives(
+                    :actor,'activity',:activity)
+            """), {"actor": actor, "activity": subject_ref})).all())
+            for item in payload.revise:
+                if item.objective_ref not in existing:
+                    raise ProblemError(
+                        status=409, code="temporal.objective_edit.stale",
+                        category="conflict", title="Obiettivo cambiato",
+                        detail="Un obiettivo è stato modificato. Riapri Modifica e riprova.",
+                    )
+                change = item.change
+                intent = {
+                    "version": 1, "objective_ref": str(item.objective_ref),
+                    **change.model_dump(mode="json"),
+                }
+                if change.scope_code == "this_and_following":
+                    if change.expected_source_revision is None:
+                        raise ProblemError(
+                            status=422, code="temporal.objective_edit.series_required",
+                            category="validation", title="Origine ricorrente mancante",
+                            detail="Ricarica la provenienza dell'obiettivo ricorrente.",
+                        )
+                    statement = (
+                        "SELECT * FROM dante.accept_self_objective_series_edit("
+                        ":actor,:objective,:operation,:fingerprint,:expected,"
+                        ":source_expected,:recurrence_expected,:zone,:label,:kind,"
+                        ":comparator,:target,:minimum,:maximum,:unit,:ordering,:evaluation)"
+                    )
+                else:
+                    statement = (
+                        "SELECT * FROM dante.revise_self_temporal_objective_definition("
+                        ":actor,:operation,:fingerprint,:objective,:expected,"
+                        ":label,:kind,:comparator,:target,:minimum,:maximum,"
+                        ":unit,:ordering,:evaluation)"
+                    )
+                await session.execute(text(statement), {
+                    "actor": actor, "objective": item.objective_ref,
+                    "operation": change.operation_id,
+                    "fingerprint": _fingerprint(intent),
+                    "expected": change.expected_revision,
+                    "source_expected": change.expected_source_revision,
+                    "recurrence_expected": change.expected_recurrence_state_ref,
+                    "zone": context.effective_zone_id,
+                    "label": change.label, "kind": change.result_kind,
+                    "comparator": change.comparator_code,
+                    "target": change.target_value,
+                    "minimum": change.target_min, "maximum": change.target_max,
+                    "unit": change.unit_code, "ordering": change.presentation_order,
+                    "evaluation": uuid7(),
+                })
+            for item in payload.retire:
+                await session.execute(text("""
+                    SELECT * FROM dante.retire_self_temporal_objective(
+                        :actor,:objective,:operation,:fingerprint,:expected)
+                """), {
+                    "actor": actor, "objective": item.objective_ref,
+                    "operation": item.operation_id,
+                    "fingerprint": _fingerprint({
+                        "version": 1, "objective_ref": str(item.objective_ref),
+                        "operation_id": item.operation_id,
+                        "expected_revision": item.expected_revision,
+                    }),
+                    "expected": item.expected_revision,
+                })
+            for item in payload.add:
+                await session.execute(text("""
+                    SELECT * FROM dante.create_self_temporal_objective(
+                        :actor,:operation,:fingerprint,:objective,'activity',:activity,
+                        :label,:kind,:comparator,:target,:minimum,:maximum,:unit,:ordering)
+                """), {
+                    "actor": actor,
+                    "operation": item.operation_id,
+                    "fingerprint": _fingerprint({
+                        "version": 1, "subject_kind": "activity",
+                        "subject_native_ref": str(subject_ref),
+                        **item.model_dump(mode="json"),
+                    }),
+                    "objective": uuid7(), "activity": subject_ref,
+                    "label": item.label, "kind": item.result_kind,
+                    "comparator": item.comparator_code,
+                    "target": item.target_value, "minimum": item.target_min,
+                    "maximum": item.target_max, "unit": item.unit_code,
+                    "ordering": item.presentation_order,
+                })
+            rows = (await session.execute(text("""
+                SELECT * FROM dante.list_self_temporal_objectives(
+                    :actor,'activity',:activity)
+            """), {"actor": actor, "activity": subject_ref})).mappings().all()
+    except DBAPIError as exc:
+        constraint = getattr(getattr(exc.orig, "diag", None), "constraint_name", None)
+        if constraint == "temporal_objective_retirement_recorded":
+            raise ProblemError(
+                status=409, code="temporal.objective_edit.recorded",
+                category="conflict", title="Obiettivo con risultati",
+                detail="L’obiettivo ha risultati registrati: non può essere eliminato.",
+            ) from exc
+        if constraint == "temporal_objective_retirement_source_unsupported":
+            raise ProblemError(
+                status=422, code="temporal.objective_edit.recurring",
+                category="validation", title="Obiettivo ricorrente",
+                detail="La rimozione di un obiettivo generato da una ricorrenza "
+                       "richiede una modifica della sorgente della serie.",
+            ) from exc
+        raise _problem(exc, noun="objective") from exc
+    except SQLAlchemyError as exc:
+        raise ProblemError(
+            status=503, code="temporal.objective_edit.unavailable",
+            category="service", title="Salvataggio obiettivi non disponibile",
+            detail="Non è stato possibile salvare gli obiettivi. Riprova.",
+            retryable=True,
+        ) from exc
+    response.headers["Cache-Control"] = "no-store"
+    return [ObjectiveResponse(**dict(row)) for row in rows]
 
 
 @router.post(
