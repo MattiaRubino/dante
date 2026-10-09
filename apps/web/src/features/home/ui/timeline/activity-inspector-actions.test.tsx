@@ -196,7 +196,7 @@ describe('Objective correction in Activity Editor', () => {
     const onSaved = vi.fn();
     render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
       onSaved={onSaved} onCancel={() => undefined} />);
-    fireEvent.click(await screen.findByRole('button', { name: /Corsa 10 km/ }));
+    fireEvent.click(await screen.findByRole('button', { name: /^Corsa 10 km/ }));
     fireEvent.change(screen.getByRole('textbox', { name: 'Nome obiettivo' }), {
       target: { value: 'Corsa 7 km' },
     });
@@ -234,7 +234,7 @@ describe('Objective correction in Activity Editor', () => {
     applyActivityEdits.mockResolvedValueOnce([{ ...objective, label: 'Corsa 7 km' }]);
     render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
       onSaved={() => undefined} onCancel={() => undefined} />);
-    fireEvent.click(await screen.findByRole('button', { name: /Corsa 10 km/ }));
+    fireEvent.click(await screen.findByRole('button', { name: /^Corsa 10 km/ }));
     fireEvent.click(await screen.findByLabelText('Questa e le prossime'));
     fireEvent.change(screen.getByRole('textbox', { name: 'Nome obiettivo' }), {
       target: { value: 'Corsa 7 km' },
