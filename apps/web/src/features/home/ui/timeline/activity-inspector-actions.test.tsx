@@ -438,6 +438,42 @@ describe('Activity Inspector', () => {
     expect(applyActivityEdits).not.toHaveBeenCalled();
   });
 
+  for (const timed of [false, true]) {
+    it(`adds a ${timed ? 'timed' : 'untimed'} Session while preserving the protected Activity`, async () => {
+      const settings = { ...currentSettings,
+        placementProtected: true, placementLockScheduleRef: 'envelope',
+        placementLockRevision: 1,
+        schedules: [{
+          scheduleRef: 'envelope', role: 'envelope' as const, name: null, order: 0,
+          placementStateRef: 'state-0', temporalForm: 'named_zone_local',
+          start: '2026-10-09T09:00:00', end: '2026-10-09T12:00:00',
+          zoneId: 'Europe/Rome',
+        }],
+      };
+      loadSettings.mockResolvedValueOnce(settings);
+      applyReplan.mockResolvedValueOnce(settings);
+      render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
+        onSaved={() => undefined} onCancel={() => undefined} />);
+      fireEvent.click(await screen.findByRole('button', { name: /＋ Sessione/ }));
+      const input = await screen.findByRole('textbox', { name: 'Nome Sessione' });
+      fireEvent.change(input, { target: { value: 'Nuova Sessione' } });
+      if (timed) {
+        fireEvent.click(screen.getByRole('button', { name: 'Orario' }));
+      }
+      await submitEditor();
+      await waitFor(() => expect(applyReplan).toHaveBeenCalledWith(
+        ref, settings, expect.objectContaining({
+          newPlanned: [expect.objectContaining({
+            name: 'Nuova Sessione',
+            start: timed ? '2026-10-09T09:00' : '',
+            end: timed ? '2026-10-09T12:00' : '',
+          })],
+        }), expect.any(String),
+      ));
+      expect(setPlacementProtected).not.toHaveBeenCalled();
+    });
+  }
+
   it('saves a planning change directly from Salva modifiche', async () => {
     const settings = { ...currentSettings, schedules: [
       { scheduleRef: 'envelope', role: 'envelope', name: null, order: 0,
