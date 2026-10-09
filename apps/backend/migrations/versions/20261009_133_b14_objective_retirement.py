@@ -219,7 +219,7 @@ BEGIN
         SELECT 1 FROM dante.temporal_objective_create_operation AS origin
          WHERE origin.objective_ref=requested_objective
            AND origin.self_person_ref=actor
-           AND origin.operation_id LIKE 'b14:objective:%'
+           AND left(origin.operation_id,char_length('b14:objective:'))='b14:objective:'
     ) THEN
         RAISE EXCEPTION USING ERRCODE='23514',
           CONSTRAINT='temporal_objective_retirement_source_unsupported',
