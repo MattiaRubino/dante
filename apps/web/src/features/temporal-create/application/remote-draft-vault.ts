@@ -28,7 +28,7 @@ function parseItem(value: unknown): DraftVaultItem {
   if (typeof item.draft_ref !== 'string' ||
       (item.subject_kind !== 'activity' && item.subject_kind !== 'event') ||
       typeof item.title !== 'string' ||
-      !Number.isSafeInteger(item.revision) ||
+      typeof item.revision !== 'number' || !Number.isSafeInteger(item.revision) ||
       typeof item.created_at !== 'string' ||
       typeof item.updated_at !== 'string' ||
       !payload || payload.version !== 1 ||
@@ -41,7 +41,7 @@ function parseItem(value: unknown): DraftVaultItem {
     draftRef: item.draft_ref,
     subjectKind: item.subject_kind,
     title: item.title,
-    payload: payload as DraftVaultSnapshot,
+    payload: payload as unknown as DraftVaultSnapshot,
     revision: item.revision as number,
     createdAt: item.created_at,
     updatedAt: item.updated_at,
