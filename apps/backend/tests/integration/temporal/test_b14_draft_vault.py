@@ -3,16 +3,16 @@
 from __future__ import annotations
 
 import json
-from typing import Any
+from datetime import UTC, datetime
 from types import SimpleNamespace
-
-from fastapi import Response
+from typing import Any
 from uuid import uuid7
 
+import psycopg
 import pytest
+from fastapi import Response
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
-from tests.integration.temporal.test_b14_u2_authoring import _seed_self
 
 from dante.modules.temporal.draft_vault_api import (
     DraftVaultSaveRequest,
@@ -20,9 +20,37 @@ from dante.modules.temporal.draft_vault_api import (
     list_drafts,
     save_draft,
 )
+from dante.platform.database.references import NativeRef
 from dante.platform.database.runtime import create_database_runtime
 
 pytestmark = pytest.mark.postgres
+
+
+def _seed_self(database: Any) -> NativeRef:
+    person_ref = NativeRef(uuid7())
+    account_ref = uuid7()
+    with psycopg.connect(
+        **database.connection_kwargs("dante_migrator", database.cluster.migrator_password)
+    ) as connection:
+        connection.execute("SET ROLE dante_owner")
+        connection.execute("INSERT INTO dante.person(person_ref) VALUES (%s)", (person_ref,))
+        connection.execute(
+            "INSERT INTO dante.native_address(native_ref,owner_family) VALUES (%s,'person')",
+            (person_ref,),
+        )
+        connection.execute(
+            "INSERT INTO dante.account(account_ref,status_code,created_at,disabled_at) "
+            "VALUES (%s,'active',%s,NULL)",
+            (account_ref, datetime.now(UTC)),
+        )
+        connection.execute(
+            "INSERT INTO dante.account_application_context("
+            "account_ref,self_person_ref,timezone_mode,fixed_zone_id) "
+            "VALUES (%s,%s,'follow_device',NULL)",
+            (account_ref, person_ref),
+        )
+    return person_ref
+
 
 
 @pytest.mark.asyncio
