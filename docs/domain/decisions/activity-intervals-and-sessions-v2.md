@@ -14,6 +14,8 @@
 
 The Activity keeps one identity across its intervals. `Schedule != Session != Actual`. Neither an Activity interval nor a planned Session asserts that work happened. The existing `planned_slices` API and `planned` database roles continue to mean future planned Sessions. New `activity_intervals` and the `interval` role mean only Activity placement. Existing data must not be relabelled during migration.
 
+An Activity planned Session can be created without an orario. Its Activity-owned Schedule has the explicit `planned` role and no current or historical placement until the user assigns one. This is the only new-Schedule exception to the deferred owner-placement check; Event, envelope and interval Schedule owners still require a current placement at creation. The absence of a time must be stored as absence, never as an invented placement. This is planning intent, not evidence of a real B08 Session.
+
 ## Create and Timeline
 
 The main Activity date/time fields define interval 1. `+ Aggiungi intervallo` below them adds another independently editable date/start/end row. The number of rows replaces the `Unica / Suddivisa` control. Rows have positive duration, use the Activity time frame and do not overlap; gaps are permitted. The additional intervals are available for timed Activities only, up to 100 total.

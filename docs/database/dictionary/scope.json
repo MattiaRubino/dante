@@ -71,7 +71,8 @@
       "B14-M2-OBJECTIVE-SERIES",
       "B14-M3-RESIDUAL-EDITOR",
       "B14-M4-EVENT-PROFILE",
-      "B14-UNTIMED-PLANNED-SESSION"
+      "B14-UNTIMED-PLANNED-SESSION",
+      "B14-UNTIMED-PLANNED-OWNER-CONTRACT"
     ],
     "standalone_entries": {
       "tables": 235,
