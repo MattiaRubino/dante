@@ -325,7 +325,7 @@ export function ActivityEditPanel({
 
   const patchObjective = (id: string, patch: Partial<ActivityObjectiveDraft>) => {
     setObjectiveRows((rows) => rows.map((row) => row.id === id
-      ? { ...row, ...patch, operationId: crypto.randomUUID() } : row));
+      ? { ...row, ...patch, operationId: crypto.randomUUID(), revisionBasis: null } : row));
     setObjectiveError('');
   };
 
@@ -401,7 +401,11 @@ export function ActivityEditPanel({
     const updated = retained.filter((row) => row.objectiveRef && objectiveChanged(row));
     const retired = objectiveRows.filter((row) =>
       row.objectiveRef && removedObjectives.includes(row.id));
-    const definitions = await Promise.all([...updated, ...retired].map(async (row) => {
+    const changed = [...updated, ...retired];
+    const definitions = await Promise.all(changed.map(async (row) => {
+      if (row.revisionBasis !== null) {
+        return { definitionRevision: row.revisionBasis };
+      }
       const current = await objectiveSource.getDefinition(row.objectiveRef!);
       const original = row.original!;
       if (current.label !== original.label ||
@@ -415,6 +419,11 @@ export function ActivityEditPanel({
         throw new Error('Un obiettivo è cambiato: riapri Modifica prima di salvare.');
       }
       return current;
+    }));
+    setObjectiveRows((rows) => rows.map((row) => {
+      const index = changed.findIndex((item) => item.id === row.id);
+      return index >= 0 && row.operationId === changed[index]!.operationId
+        ? { ...row, revisionBasis: definitions[index]!.definitionRevision } : row;
     }));
     const revisions = definitions.slice(0, updated.length);
     const retireRevisions = definitions.slice(updated.length);
