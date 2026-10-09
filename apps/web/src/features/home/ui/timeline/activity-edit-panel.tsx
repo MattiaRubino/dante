@@ -19,10 +19,7 @@ import {
 import {
   createRemoteRealityObjectiveDataSource,
   type ObjectiveAssessment,
-  type ObjectiveComparator,
-  type ObjectiveKind,
   type ObjectiveView,
-  type ObjectiveSeriesEditState,
   type RealityMode,
 } from '../../../temporal/remote-reality-objective-data-source';
 import type { SessionCaptureMode } from '../../../temporal/remote-session-capability-data-source';
@@ -35,6 +32,16 @@ import '../../../temporal-create/ui/temporal-create-u1.css';
 import '../../../temporal-create/ui/temporal-create-product-flow.css';
 import '../../../temporal-create/ui/temporal-create-advanced-shell.css';
 import '../../../temporal-create/ui/temporal-panel-controls.css';
+import {
+  ActivityObjectiveRow,
+  existingObjectiveDraft,
+  newObjectiveDraft,
+  objectiveChanged,
+  objectiveData,
+  objectiveDraftError,
+  type ActivityObjectiveDraft,
+} from './activity-objective-row';
+
 import '../../../temporal-create/ui/temporal-create-reality-objectives-section.css';
 import '../../../temporal-create/ui/temporal-create-core-u2.css';
 import '../../../temporal-create/ui/temporal-create-advanced-activity-structure.css';
@@ -148,24 +155,11 @@ export function ActivityEditPanel({
   const [deletedPlanned, setDeletedPlanned] = useState<string[]>([]);
   const [newIntervals, setNewIntervals] = useState<ActivityNewInterval[]>([]);
   const [removedIntervals, setRemovedIntervals] = useState<string[]>([]);
-  const [objectiveDraft, setObjectiveDraft] = useState({
-    label: '', resultKind: 'boolean' as ObjectiveKind,
-    comparatorCode: null as ObjectiveComparator | null,
-    targetValue: '', targetMin: '', targetMax: '', unitCode: '',
-  });
-  const [objectiveComposerOpen, setObjectiveComposerOpen] = useState(false);
+  const [objectiveRows, setObjectiveRows] = useState<ActivityObjectiveDraft[]>([]);
+  const [removedObjectives, setRemovedObjectives] = useState<string[]>([]);
+  const [expandedObjective, setExpandedObjective] = useState<string | null>(null);
   const [objectivePending, setObjectivePending] = useState(false);
   const [objectiveError, setObjectiveError] = useState('');
-  const objectiveOperation = useRef<string | null>(null);
-  const [editingObjective, setEditingObjective] = useState<{
-    objectiveRef: string;
-    definitionRevision: number;
-    presentationOrder: number;
-    seriesState: ObjectiveSeriesEditState | null;
-  } | null>(null);
-  const [objectiveScope, setObjectiveScope] = useState<'only_this' | 'this_and_following'>(
-    'only_this',
-  );
   const [correctingObjective, setCorrectingObjective] = useState<ObjectiveView | null>(null);
   const [correctedValue, setCorrectedValue] = useState('');
   const [correctedBoolean, setCorrectedBoolean] = useState('true');
@@ -243,9 +237,8 @@ export function ActivityEditPanel({
   const scopedDomainUnsupported = !!recurringContext && editScope === 'this_and_following';
   const nameDirty = !!settings && settings.schedules.some((schedule) =>
     schedule.role === 'planned' && (plannedNames[schedule.scheduleRef] ?? '') !== (schedule.name ?? ''));
-  const objectiveDirty = !!objectiveDraft.label || objectiveDraft.resultKind !== 'boolean' ||
-    !!objectiveDraft.targetValue || !!objectiveDraft.targetMin ||
-    !!objectiveDraft.targetMax || !!objectiveDraft.unitCode;
+  const objectiveDirty = removedObjectives.length > 0 ||
+    objectiveRows.some((row) => !removedObjectives.includes(row.id) && objectiveChanged(row));
   const dirty = coreDirty || planDirty || lockDirty || areaDirty || objectiveDirty || nameDirty;
 
   const loadSettings = useCallback(() => {
@@ -253,6 +246,10 @@ export function ActivityEditPanel({
       .load(profile.activityRef)
       .then((loaded) => {
         setSettings(loaded);
+        setObjectiveRows(loaded.objectives.map(existingObjectiveDraft));
+        setRemovedObjectives([]);
+        setExpandedObjective(null);
+        setObjectiveError('');
         setCaptureMode(loaded.capture.mode);
         setRealityMode(loaded.reality.mode);
         setReminderLeadMinutes(loaded.reminderLeadMinutes);
@@ -326,42 +323,23 @@ export function ActivityEditPanel({
     }
   }, [confirmingDiscard, dirty, onCancel, objectivePending, pending, planPending]);
 
-  const updateObjectiveDraft = (patch: Partial<typeof objectiveDraft>) => {
-    setObjectiveDraft((current) => ({ ...current, ...patch }));
-    objectiveOperation.current = null;
+  const patchObjective = (id: string, patch: Partial<ActivityObjectiveDraft>) => {
+    setObjectiveRows((rows) => rows.map((row) => row.id === id
+      ? { ...row, ...patch, operationId: crypto.randomUUID() } : row));
     setObjectiveError('');
   };
 
-  const startObjectiveEdit = (objective: ObjectiveView) => {
-    if (objectivePending || !settings) return;
-    setObjectivePending(true);
-    setObjectiveError('');
-    void Promise.all([
-      objectiveSource.getDefinition(objective.objectiveRef),
-      objectiveSource.getSeriesState(objective.objectiveRef),
-    ]).then(([definition, seriesState]) => {
-      setEditingObjective({
-        objectiveRef: definition.objectiveRef,
-        definitionRevision: definition.definitionRevision,
-        presentationOrder: definition.presentationOrder,
-        seriesState,
+  const toggleObjective = (row: ActivityObjectiveDraft) => {
+    setExpandedObjective((current) => current === row.id ? null : row.id);
+    if (row.objectiveRef && recurringContext && !row.seriesState) {
+      void objectiveSource.getSeriesState(row.objectiveRef).then((series) => {
+        setObjectiveRows((rows) => rows.map((item) => item.id === row.id
+          ? { ...item, seriesState: series } : item));
+      }).catch((reason: unknown) => {
+        setObjectiveError(reason instanceof Error
+          ? reason.message : 'Impossibile verificare la ricorrenza dell’obiettivo.');
       });
-      setObjectiveComposerOpen(true);
-      setObjectiveScope('only_this');
-      setObjectiveDraft({
-        label: definition.label,
-        resultKind: definition.resultKind,
-        comparatorCode: definition.comparatorCode,
-        targetValue: definition.targetValue?.toString() ?? '',
-        targetMin: definition.targetMin?.toString() ?? '',
-        targetMax: definition.targetMax?.toString() ?? '',
-        unitCode: definition.unitCode ?? '',
-      });
-      objectiveOperation.current = null;
-    }).catch((reason: unknown) => {
-      setObjectiveError(reason instanceof Error
-        ? reason.message : 'Definizione dell’obiettivo non disponibile.');
-    }).finally(() => setObjectivePending(false));
+    }
   };
 
   const startResultCorrection = (objective: ObjectiveView) => {
@@ -413,59 +391,57 @@ export function ActivityEditPanel({
       }).finally(() => setObjectivePending(false));
   };
 
-  const addObjective = () => {
-    if (!settings || objectivePending || pending || planPending ||
-        !objectiveDraft.label.trim()) return;
-    const kind = objectiveDraft.resultKind;
-    const numeric = (value: string) => value.trim() && Number.isFinite(Number(value))
-      ? Number(value) : null;
-    const target = numeric(objectiveDraft.targetValue);
-    const min = numeric(objectiveDraft.targetMin);
-    const max = numeric(objectiveDraft.targetMax);
-    if ((kind === 'quantity' && (target === null || !objectiveDraft.comparatorCode)) ||
-        (kind === 'range' && (min === null || max === null || min > max))) {
-      setObjectiveError('Controlla i valori numerici dell’obiettivo.');
-      return;
+  const saveObjectiveRows = async (currentSettings: ActivityEditSettings) => {
+    if (!objectiveDirty) return currentSettings;
+    const retained = objectiveRows.filter((row) => !removedObjectives.includes(row.id));
+    for (const row of retained) {
+      const error = objectiveDraftError(row);
+      if (error) throw new Error(`${row.label.trim() || 'Nuovo obiettivo'}: ${error}`);
     }
-    const operationId = objectiveOperation.current ??= crypto.randomUUID();
-    setObjectivePending(true);
-    setObjectiveError('');
-    const definition = {
-      label: objectiveDraft.label.trim(),
-      resultKind: kind,
-      comparatorCode: kind === 'quantity'
-        ? objectiveDraft.comparatorCode : kind === 'range' ? 'between' : null,
-      targetValue: kind === 'quantity' ? target : null,
-      targetMin: kind === 'range' ? min : null,
-      targetMax: kind === 'range' ? max : null,
-      unitCode: kind === 'quantity' || kind === 'range'
-        ? objectiveDraft.unitCode.trim() || null : null,
-    };
-    const save = editingObjective
-      ? objectiveSource.reviseDefinition(editingObjective.objectiveRef, {
-          ...definition,
-          presentationOrder: editingObjective.presentationOrder,
-          expectedRevision: editingObjective.definitionRevision,
-          scopeCode: objectiveScope,
-          seriesState: editingObjective.seriesState,
-          operationId,
-        }).then(() => settingsSource.refreshObjectives(profile.activityRef, settings))
-      : settingsSource.addObjective(
-          profile.activityRef, settings, definition, operationId,
-        );
-    void save.then((saved) => {
-      setSettings(saved);
-      setEditingObjective(null);
-      setObjectiveComposerOpen(false);
-      setObjectiveDraft({
-        label: '', resultKind: 'boolean', comparatorCode: null,
-        targetValue: '', targetMin: '', targetMax: '', unitCode: '',
-      });
-      objectiveOperation.current = null;
-    }).catch((reason: unknown) => {
-      setObjectiveError(reason instanceof Error
-        ? reason.message : 'Impossibile aggiungere l’obiettivo.');
-    }).finally(() => setObjectivePending(false));
+    const updated = retained.filter((row) => row.objectiveRef && objectiveChanged(row));
+    const retired = objectiveRows.filter((row) =>
+      row.objectiveRef && removedObjectives.includes(row.id));
+    const definitions = await Promise.all([...updated, ...retired].map(async (row) => {
+      const current = await objectiveSource.getDefinition(row.objectiveRef!);
+      const original = row.original!;
+      if (current.label !== original.label ||
+          current.resultKind !== original.resultKind ||
+          current.comparatorCode !== original.comparatorCode ||
+          current.targetValue !== original.targetValue ||
+          current.targetMin !== original.targetMin ||
+          current.targetMax !== original.targetMax ||
+          current.unitCode !== original.unitCode ||
+          current.presentationOrder !== original.presentationOrder) {
+        throw new Error('Un obiettivo è cambiato: riapri Modifica prima di salvare.');
+      }
+      return current;
+    }));
+    const revisions = definitions.slice(0, updated.length);
+    const retireRevisions = definitions.slice(updated.length);
+    const saved = await objectiveSource.applyActivityEdits(profile.activityRef, {
+      add: retained.filter((row) => !row.objectiveRef).map((row) => ({
+        ...objectiveData(row), operationId: row.operationId,
+      })),
+      revise: updated.map((row, index) => ({
+        objectiveRef: row.objectiveRef!,
+        change: {
+          ...objectiveData(row), operationId: row.operationId,
+          expectedRevision: revisions[index]!.definitionRevision,
+          scopeCode: row.scope, seriesState: row.seriesState,
+        },
+      })),
+      retire: retired.map((row, index) => ({
+        objectiveRef: row.objectiveRef!,
+        operationId: row.operationId,
+        expectedRevision: retireRevisions[index]!.definitionRevision,
+      })),
+    });
+    const next = { ...currentSettings, objectives: saved };
+    setSettings(next);
+    setObjectiveRows(saved.map(existingObjectiveDraft));
+    setRemovedObjectives([]);
+    setExpandedObjective(null);
+    return next;
   };
 
   const changePlan = (ref: string, field: keyof ActivityReplanTime, value: string) => {
@@ -511,7 +487,6 @@ export function ActivityEditPanel({
         event.preventDefault();
         if (
           pending || planPending || objectivePending ||
-          objectiveDirty ||
           !settings ||
           loadingSettings ||
           recurringLoading ||
@@ -625,6 +600,16 @@ export function ActivityEditPanel({
                 throw reason;
               });
             setSettings(currentSettings);
+          }
+          if (objectiveDirty) {
+            currentSettings = await saveObjectiveRows(currentSettings).catch(
+              (reason: unknown) => {
+                errorHandled = true;
+                setObjectiveError(reason instanceof Error
+                  ? reason.message : 'Impossibile salvare gli obiettivi.');
+                throw reason;
+              },
+            );
           }
           const changed = {
             title: draft.title.trim(),
@@ -1151,150 +1136,52 @@ export function ActivityEditPanel({
             >
               <div className="temporal-create-reality-objectives__block-copy"><strong>Obiettivi</strong></div>
               <div className="timeline-activity-editor__objectives">
-              {settings.objectives.length ? (
-                <ul>
-                  {settings.objectives.map((objective) => (
-                    <li key={objective.objectiveRef}>
-                      {objective.label}
-                      {objective.assessmentCode ? ` · ${objective.assessmentCode}` : ''}
-                      <button type="button" disabled={objectivePending}
-                        onClick={() => startObjectiveEdit(objective)}>
-                        Modifica obiettivo
-                      </button>
-                      {objective.observationRef ? (
-                        <button type="button" disabled={objectivePending}
-                          onClick={() => startResultCorrection(objective)}>
-                          Correggi risultato
-                        </button>
-                      ) : null}
-                    </li>
+                {objectiveRows.filter((row) => !removedObjectives.includes(row.id))
+                  .map((row) => (
+                    <ActivityObjectiveRow key={row.id} row={row}
+                      expanded={expandedObjective === row.id}
+                      disabled={pending || planPending || objectivePending}
+                      onToggle={() => toggleObjective(row)}
+                      onChange={(patch) => patchObjective(row.id, patch)}
+                      onRemove={() => {
+                        if (row.objectiveRef) {
+                          setRemovedObjectives((current) => [...current, row.id]);
+                        } else {
+                          setObjectiveRows((current) =>
+                            current.filter((item) => item.id !== row.id));
+                        }
+                        setObjectiveError('');
+                      }} />
                   ))}
-                </ul>
-              ) : null}
-              {!objectiveComposerOpen ? (
+                {removedObjectives.length > 0 ? (
+                  <button type="button" onClick={() => {
+                    setRemovedObjectives([]);
+                    setObjectiveError('');
+                  }} disabled={pending || planPending}>
+                    Ripristina obiettivi rimossi
+                  </button>
+                ) : null}
                 <button type="button" className="timeline-activity-editor__add-objective"
-                  aria-label="Apri nuovo obiettivo"
-                  onClick={() => setObjectiveComposerOpen(true)}>＋ Aggiungi obiettivo</button>
-              ) : (
-              <fieldset disabled={objectivePending}>
-                <legend>{editingObjective ? 'Modifica obiettivo' : 'Nuovo obiettivo'}</legend>
-                <label>Nome obiettivo
-                  <input maxLength={300} value={objectiveDraft.label}
-                    onChange={(event) => updateObjectiveDraft({ label: event.target.value })} />
-                </label>
-                <label>Tipo obiettivo
-                  <select value={objectiveDraft.resultKind} onChange={(event) => {
-                    const kind = event.target.value as ObjectiveKind;
-                    updateObjectiveDraft({
-                      resultKind: kind,
-                      comparatorCode: kind === 'quantity' ? 'gte' :
-                        kind === 'range' ? 'between' : null,
-                      targetValue: '', targetMin: '', targetMax: '', unitCode: '',
-                    });
+                  disabled={pending || planPending || objectivePending}
+                  onClick={() => {
+                    const next = newObjectiveDraft(
+                      Math.max(-1, ...objectiveRows.map((row) => row.presentationOrder)) + 1,
+                    );
+                    setObjectiveRows((rows) => [...rows, next]);
+                    setExpandedObjective(next.id);
+                    setObjectiveError('');
                   }}>
-                    <option value="boolean">Sì / No</option>
-                    <option value="quantity">Quantità</option>
-                    <option value="qualitative">Qualitativo</option>
-                    <option value="range">Intervallo numerico</option>
-                  </select>
-                </label>
-                {objectiveDraft.resultKind === 'quantity' ? (
-                  <div className="timeline-activity-editor__fields">
-                    <label>Confronto obiettivo
-                      <select value={objectiveDraft.comparatorCode ?? 'gte'}
-                        onChange={(event) => updateObjectiveDraft({
-                          comparatorCode: event.target.value as ObjectiveComparator,
-                        })}>
-                        <option value="eq">Uguale a</option>
-                        <option value="gte">Almeno</option>
-                        <option value="lte">Al massimo</option>
-                      </select>
-                    </label>
-                    <label>Valore obiettivo
-                      <input type="number" required step="any"
-                        value={objectiveDraft.targetValue}
-                        onChange={(event) => updateObjectiveDraft({
-                          targetValue: event.target.value,
-                        })} />
-                    </label>
-                  </div>
-                ) : null}
-                {objectiveDraft.resultKind === 'range' ? (
-                  <div className="timeline-activity-editor__fields">
-                    <label>Minimo obiettivo
-                      <input type="number" required step="any" value={objectiveDraft.targetMin}
-                        onChange={(event) => updateObjectiveDraft({
-                          targetMin: event.target.value,
-                        })} />
-                    </label>
-                    <label>Massimo obiettivo
-                      <input type="number" required step="any" value={objectiveDraft.targetMax}
-                        onChange={(event) => updateObjectiveDraft({
-                          targetMax: event.target.value,
-                        })} />
-                    </label>
-                  </div>
-                ) : null}
-                {['quantity', 'range'].includes(objectiveDraft.resultKind) ? (
-                  <label>Unità di misura
-                    <input maxLength={40} value={objectiveDraft.unitCode}
-                      onChange={(event) => updateObjectiveDraft({
-                        unitCode: event.target.value,
-                      })} />
-                  </label>
-                ) : null}
-                {editingObjective && recurringContext &&
-                  !editingObjective.seriesState ? (
-                    <p>Questo obiettivo è stato aggiunto individualmente:
-                      non esiste ancora una provenienza comune verificabile
-                      per modificarlo anche nelle istanze future.
-                      La correzione riguarda solo questa istanza.</p>
-                  ) : null}
-                {editingObjective?.seriesState ? (
-                  <fieldset>
-                    <legend>Ambito della modifica dell’obiettivo</legend>
-                    <label>
-                      <input type="radio" name="objective-edit-scope"
-                        checked={objectiveScope === 'only_this'}
-                        onChange={() => setObjectiveScope('only_this')} />
-                      Solo questa
-                    </label>
-                    <label>
-                      <input type="radio" name="objective-edit-scope"
-                        checked={objectiveScope === 'this_and_following'}
-                        onChange={() => setObjectiveScope('this_and_following')} />
-                      Questa e le prossime
-                    </label>
-                    <p>La definizione comprende sempre l’istanza selezionata.
-                      Le altre già passate restano invariate.</p>
-                  </fieldset>
-                ) : null}
-                {objectiveError ? <p role="alert">{objectiveError}</p> : null}
-                <button type="button" onClick={addObjective}
-                  disabled={objectivePending || pending || planPending ||
-                    !objectiveDraft.label.trim()}>
-                  {objectivePending ? 'Salvataggio…' :
-                    editingObjective ? 'Salva obiettivo' : 'Aggiungi obiettivo'}
+                  ＋ Aggiungi obiettivo
                 </button>
-                {editingObjective ? (
-                  <button type="button" onClick={() => {
-                    setEditingObjective(null);
-                    setObjectiveComposerOpen(false);
-                    setObjectiveDraft({
-                      label: '', resultKind: 'boolean', comparatorCode: null,
-                      targetValue: '', targetMin: '', targetMax: '', unitCode: '',
-                    });
-                    objectiveOperation.current = null;
-                  }}>Annulla modifica obiettivo</button>
-                ) : (
-                  <button type="button" onClick={() => {
-                    setObjectiveComposerOpen(false);
-                    setObjectiveDraft({ label: '', resultKind: 'boolean', comparatorCode: null,
-                      targetValue: '', targetMin: '', targetMax: '', unitCode: '' });
-                  }}>Annulla</button>
-                )}
-              </fieldset>
-              )}
+                {objectiveError ? <p role="alert">{objectiveError}</p> : null}
+                {settings.objectives.filter((row) => row.observationRef).map((row) => (
+                  <div key={row.objectiveRef}>
+                    <span>{row.label} · risultato registrato</span>
+                    <button type="button" disabled={objectivePending || pending}
+                      onClick={() => startResultCorrection(row)}>Correggi risultato</button>
+                  </div>
+                ))}
+              </div>
               {correctingObjective ? (
                 <fieldset disabled={objectivePending}>
                   <legend>Rettifica risultato — {correctingObjective.label}</legend>
@@ -1422,7 +1309,6 @@ export function ActivityEditPanel({
           className="is-primary"
           disabled={
             pending || planPending || objectivePending ||
-            objectiveDirty ||
             !settings ||
             loadingSettings ||
             recurringLoading ||
