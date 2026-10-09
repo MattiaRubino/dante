@@ -30,6 +30,7 @@ import {
 } from './temporal-create-fields';
 import { temporalCreateProductCopy } from './temporal-create-product-copy';
 import { TemporalCreateU2DraftProvider } from './temporal-create-u2-draft-context';
+import { TemporalPanelCloseButton } from './temporal-panel-close-button';
 import type { TemporalCreateContextOption } from './temporal-create-ui-types';
 
 export type { TemporalCreateContextOption } from './temporal-create-ui-types';
@@ -477,22 +478,16 @@ export function TemporalCreateComposer({
             >
               <PinIcon />
             </button>
-            <button
-              className="temporal-create-composer__close"
-              type="button"
-              disabled={pending}
+            <TemporalPanelCloseButton disabled={pending}
               onClick={requestCloseFromCurrentFocus}
-              aria-label={t(($) => $.common.home.timeline.create.close)}
-            >
-              ×
-            </button>
+              label={t(($) => $.common.home.timeline.create.close)} />
           </div>
         </div>
 
         {postCreateRetry ? (
           <div className="temporal-create-composer__body" role="status">
             <p>{failureMessage}</p>
-            <div className="temporal-create-actions">
+            <div className="temporal-create-actions dante-temporal-panel-actions">
               <button
                 type="button"
                 disabled={pending}

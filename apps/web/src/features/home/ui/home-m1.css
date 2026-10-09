@@ -908,6 +908,15 @@
   margin-top: 10px;
 }
 
+@media (min-width: 1121px) {
+  .home-m1 .home-today-layout {
+    min-height: max(
+      var(--dante-timeline-home-min-height, 758px),
+      calc(100dvh - var(--home-topbar-height) - var(--home-hero-height) - 10px)
+    );
+  }
+}
+
 .home-m1 .home-timeline,
 .home-m1 .home-context-rail > section {
   border-color: rgba(159, 177, 184, 0.125);

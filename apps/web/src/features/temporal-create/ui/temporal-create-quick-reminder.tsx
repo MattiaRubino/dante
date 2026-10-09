@@ -27,20 +27,17 @@ function reminderLabel(value: number | null): string {
   return `Ricorda · ${temporalCreateDurationLabel(value)} prima`;
 }
 
-export function TemporalCreateQuickReminder({ fields, onPatch }: Props) {
-  const eligible =
-    fields.timeSemantics === 'timed' && fields.timeMode === 'zoned';
-  const value = eligible ? fields.confirmation.reminderLeadMinutes : null;
-
-  const unavailableReason =
-    fields.timeSemantics !== 'timed'
-      ? 'Il promemoria richiede un orario preciso.'
-      : 'Il promemoria richiede un fuso orario specifico.';
-
+export function TemporalReminderControl({ value, onChange, disabled = false,
+  unavailableReason = 'Il promemoria richiede un orario preciso.' }: Readonly<{
+  value: number | null;
+  onChange: (value: number | null) => void;
+  disabled?: boolean;
+  unavailableReason?: string;
+}>) {
   return (
     <label
-      className={`temporal-create-quick-reminder${eligible ? '' : ' is-disabled'}`}
-      title={eligible ? 'Promemoria relativo all’inizio dello Schedule.' : unavailableReason}
+      className={`temporal-create-quick-reminder${disabled ? ' is-disabled' : ''}`}
+      title={disabled ? unavailableReason : 'Promemoria relativo all’inizio dello Schedule.'}
     >
       <span className="temporal-create-quick-reminder__icon" aria-hidden="true">
         <BellIcon />
@@ -48,27 +45,36 @@ export function TemporalCreateQuickReminder({ fields, onPatch }: Props) {
       <span className="temporal-create-quick-reminder__divider" aria-hidden="true" />
       <select
         aria-label="Ricorda"
-        disabled={!eligible}
+        disabled={disabled}
         value={value === null ? '' : String(value)}
         onChange={(event) => {
           const raw = event.currentTarget.value;
-          onPatch({
-            confirmation: {
-              ...fields.confirmation,
-              reminderLeadMinutes: raw === '' ? null : Number(raw),
-            },
-          });
+          onChange(raw === '' ? null : Number(raw));
         }}
       >
-        {!eligible ? <option value="">Ricorda · Non disponibile</option> : null}
-        {eligible
-          ? TEMPORAL_CREATE_REMINDER_OPTIONS.map((option) => (
-              <option key={option ?? 'none'} value={option ?? ''}>
-                {reminderLabel(option)}
-              </option>
-            ))
-          : null}
+        {disabled ? <option value="">Ricorda · Non disponibile</option> : null}
+        {!disabled && value !== null && !TEMPORAL_CREATE_REMINDER_OPTIONS.includes(value) ?
+          <option value={value}>{reminderLabel(value)}</option> : null}
+        {!disabled ? TEMPORAL_CREATE_REMINDER_OPTIONS.map((option) => (
+          <option key={option ?? 'none'} value={option ?? ''}>
+            {reminderLabel(option)}
+          </option>
+        )) : null}
       </select>
     </label>
   );
+}
+
+export function TemporalCreateQuickReminder({ fields, onPatch }: Props) {
+  const eligible = fields.timeSemantics === 'timed' && fields.timeMode === 'zoned';
+  return <TemporalReminderControl
+    value={eligible ? fields.confirmation.reminderLeadMinutes : null}
+    disabled={!eligible}
+    unavailableReason={fields.timeSemantics !== 'timed'
+      ? 'Il promemoria richiede un orario preciso.'
+      : 'Il promemoria richiede un fuso orario specifico.'}
+    onChange={(reminderLeadMinutes) => onPatch({
+      confirmation: { ...fields.confirmation, reminderLeadMinutes },
+    })}
+  />;
 }

@@ -418,13 +418,16 @@ describe('Activity Inspector', () => {
     const onSaved = vi.fn();
     render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
       onSaved={onSaved} onCancel={() => undefined} />);
-    fireEvent.change((await screen.findAllByLabelText('Inizio'))[0]!,
-      { target: { value: '2026-10-09T10:00' } });
-    fireEvent.change(screen.getAllByLabelText('Fine')[0]!,
-      { target: { value: '2026-10-09T11:00' } });
+    fireEvent.click((await screen.findAllByRole('button', { name: 'Inizio: aumenta ora' }))[0]!);
+    expect(screen.getAllByRole('group', { name: 'Fine' })[0]!
+      .querySelector('[data-create-path="endTime-interval"]')).toHaveProperty('value', '10:00');
+    fireEvent.click(screen.getAllByRole('button', { name: 'Fine: aumenta ora' })[0]!);
     expect(screen.getByRole('button', { name: 'Salva modifiche' })).toHaveProperty('disabled', true);
     fireEvent.click(screen.getByRole('button', { name: 'Verifica spostamento' }));
     await waitFor(() => expect(previewReplan).toHaveBeenCalledOnce());
+    expect(previewReplan.mock.calls[0]?.[2].times.interval).toEqual({
+      start: '2026-10-09T10:00', end: '2026-10-09T11:00',
+    });
     expect(screen.getByText('Modifiche proposte')).toBeTruthy();
     expect(applyReplan).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Applica programmazione' }));
@@ -455,9 +458,9 @@ describe('Activity Inspector', () => {
     fireEvent.click(screen.getByRole('button', { name: '＋ Sessione' }));
     fireEvent.change(screen.getByRole('textbox', { name: 'Nome sessione' }),
       { target: { value: 'Seconda' } });
-    fireEvent.change(screen.getAllByLabelText('Inizio').at(-1)!,
+    fireEvent.change(screen.getAllByLabelText('Inizio').find((element) => element instanceof HTMLInputElement)!,
       { target: { value: '2026-10-09T10:00' } });
-    fireEvent.change(screen.getAllByLabelText('Fine').at(-1)!,
+    fireEvent.change(screen.getAllByLabelText('Fine').find((element) => element instanceof HTMLInputElement)!,
       { target: { value: '2026-10-09T11:00' } });
     fireEvent.click(screen.getByRole('button', { name: 'Verifica spostamento' }));
     await waitFor(() => expect(previewReplan).toHaveBeenCalledWith(ref, settings,
@@ -481,10 +484,8 @@ describe('Activity Inspector', () => {
       proposedStart: '2026-10-09T10:00:00', proposedEnd: '2026-10-09T13:00:00' }]);
     render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
       onSaved={() => undefined} onCancel={() => undefined} />);
-    fireEvent.change(await screen.findByLabelText('Inizio'),
-      { target: { value: '2026-10-09T10:00' } });
-    fireEvent.change(screen.getByLabelText('Fine'),
-      { target: { value: '2026-10-09T13:00' } });
+    fireEvent.click(await screen.findByRole('button', { name: 'Inizio: aumenta ora' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Fine: aumenta ora' }));
     fireEvent.click(screen.getByRole('button', { name: 'Verifica spostamento' }));
     await waitFor(() => expect(previewReplan).toHaveBeenCalledWith(ref, settings,
       expect.objectContaining({ times: expect.objectContaining({
@@ -525,8 +526,9 @@ describe('Activity Inspector', () => {
     });
     render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
       onSaved={() => undefined} onCancel={() => undefined} />);
-    const select = await screen.findByRole('combobox', { name: 'Area assegnata' });
-    fireEvent.change(select, { target: { value: 'new-area' } });
+    const area = await screen.findByRole('textbox', { name: 'Area assegnata' });
+    fireEvent.change(area, { target: { value: 'Lavoro' } });
+    fireEvent.click(screen.getByRole('option', { name: 'Lavoro' }));
     expect(screen.getByRole('button', { name: 'Salva modifiche' }))
       .toHaveProperty('disabled', true);
     fireEvent.click(screen.getByRole('button', { name: 'Applica Life Area' }));
@@ -571,7 +573,7 @@ describe('Activity Inspector', () => {
         })],
       }), expect.any(String),
     ));
-    expect(screen.getByText(/Intervallo rimosso/)).toBeTruthy();
+    expect(await screen.findByText(/Intervallo rimosso/)).toBeTruthy();
     expect(screen.getByText(/Nuovo intervallo/)).toBeTruthy();
   });
 
@@ -753,9 +755,7 @@ describe('Activity Inspector', () => {
       onSaved={() => undefined} onCancel={() => undefined} />);
     const name = await screen.findByRole('textbox', { name: 'Nome sessione pianificata' });
     fireEvent.change(name, { target: { value: 'Allenamento lungo' } });
-    fireEvent.change(screen.getAllByLabelText('Inizio')[0]!, {
-      target: { value: '2026-10-09T07:30' },
-    });
+    fireEvent.click(screen.getAllByRole('button', { name: 'Inizio: diminuisci ora' })[0]!);
     expect(screen.getByText(/Salva prima i nomi delle Session/)).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Verifica spostamento' }))
       .toHaveProperty('disabled', true);
@@ -803,9 +803,7 @@ describe('Activity Inspector', () => {
     });
     render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
       onSaved={() => undefined} onCancel={() => undefined} />);
-    fireEvent.change(await screen.findByRole('combobox', { name: 'Area assegnata' }), {
-      target: { value: '' },
-    });
+    fireEvent.click(await screen.findByRole('button', { name: 'Rimuovi Life Area' }));
     expect(await screen.findByLabelText('Solo questa')).toHaveProperty('checked', true);
     expect(screen.getByLabelText('Questa e le prossime')).toHaveProperty('disabled', true);
     expect(screen.getByText(/Life Area e nomi delle Session pianificate si salvano soltanto/)).toBeTruthy();
@@ -823,8 +821,8 @@ describe('Activity Inspector', () => {
     });
     render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
       onSaved={() => undefined} onCancel={() => undefined} />);
-    const select = await screen.findByRole('combobox', { name: 'Area assegnata' });
-    fireEvent.change(select, { target: { value: '' } });
+    await screen.findByRole('textbox', { name: 'Area assegnata' });
+    fireEvent.click(screen.getByRole('button', { name: 'Rimuovi Life Area' }));
     fireEvent.click(screen.getByRole('button', { name: 'Applica Life Area' }));
     await waitFor(() => expect(assignLifeArea).toHaveBeenCalledWith(
       ref, catalog, null, expect.any(String),

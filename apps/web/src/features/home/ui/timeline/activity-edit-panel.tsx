@@ -26,7 +26,17 @@ import {
   type RealityMode,
 } from '../../../temporal/remote-reality-objective-data-source';
 import type { SessionCaptureMode } from '../../../temporal/remote-session-capability-data-source';
+import { TemporalColorControl } from '../../../temporal-create/ui/temporal-color-control';
+import { TimeControl } from '../../../temporal-create/ui/temporal-create-core-u2';
+import { TemporalCreateDatePicker } from '../../../temporal-create/ui/temporal-create-date-picker';
+import { TemporalLifeAreaSelect } from '../../../temporal-create/ui/temporal-life-area-select';
+import { TemporalReminderControl } from '../../../temporal-create/ui/temporal-create-quick-reminder';
+import '../../../temporal-create/ui/temporal-create-u1.css';
+import '../../../temporal-create/ui/temporal-create-product-flow.css';
+import '../../../temporal-create/ui/temporal-create-advanced-shell.css';
+import '../../../temporal-create/ui/temporal-panel-controls.css';
 import '../../../temporal-create/ui/temporal-create-reality-objectives-section.css';
+import '../../../temporal-create/ui/temporal-create-core-u2.css';
 import './activity-edit-panel.css';
 import {
   createRemoteRecurringProfileEdit,
@@ -65,6 +75,7 @@ export function ActivityEditPanel({
   const [lockError, setLockError] = useState('');
   const [areaChoice, setAreaChoice] = useState<ActivityLifeAreaChoice | null>(null);
   const [selectedArea, setSelectedArea] = useState('');
+  const [areaQuery, setAreaQuery] = useState('');
   const [plannedNames, setPlannedNames] = useState<Record<string, string>>({});
   const [namePending, setNamePending] = useState<string | null>(null);
   const [nameError, setNameError] = useState('');
@@ -154,6 +165,8 @@ export function ActivityEditPanel({
     placementProtected !== null && placementProtected !== settings.placementProtected;
   const areaDirty = areaChoice !== null &&
     (selectedArea || null) !== areaChoice.currentRef;
+  const areaQueryValid = !areaQuery || !!areaChoice?.options.some((area) =>
+    area.ref === selectedArea && area.name === areaQuery);
   const scopedDomainUnsupported = !!recurringContext && editScope === 'this_and_following';
   const nameDirty = !!settings && settings.schedules.some((schedule) =>
     schedule.role === 'planned' && (plannedNames[schedule.scheduleRef] ?? '') !== (schedule.name ?? ''));
@@ -219,6 +232,7 @@ export function ActivityEditPanel({
       if (!active) return;
       setAreaChoice(loaded);
       setSelectedArea(loaded.currentRef ?? '');
+      setAreaQuery(loaded.options.find((area) => area.ref === loaded.currentRef)?.name ?? '');
       setAreaError('');
     }).catch((reason: unknown) => {
       if (active) setAreaError(reason instanceof Error
@@ -240,7 +254,7 @@ export function ActivityEditPanel({
     objectivePending, pending, planPending, namePending]);
 
   const applyLifeArea = () => {
-    if (!areaChoice || !areaDirty || !settings || pending || planPending ||
+    if (!areaChoice || !areaDirty || !areaQueryValid || !settings || pending || planPending ||
         lockPending || areaPending) return;
     if (scopedDomainUnsupported) {
       setAreaError('La Life Area si può modificare solo con «Solo questa»; la propagazione alla serie non è disponibile.');
@@ -608,12 +622,12 @@ export function ActivityEditPanel({
             </button>
           </div>
         ) : null}
-        <div className="temporal-create-type-grid timeline-activity-editor__kind"
+        <div className="temporal-create-type-grid is-four timeline-activity-editor__kind"
           role="group" aria-label="Tipo: Attività">
-          <button type="button" className="is-active" aria-current="true">Attività</button>
-          <button type="button" disabled title="Il tipo non può essere cambiato dopo la creazione">Evento</button>
-          <button type="button" disabled>Timer</button>
-          <button type="button" disabled>Sveglia</button>
+          <button type="button" className="is-active" aria-current="true"><strong>Attività</strong></button>
+          <button type="button" disabled title="Il tipo non può essere cambiato dopo la creazione"><strong>Evento</strong></button>
+          <button type="button" className="is-deferred" disabled><strong>Timer</strong><small>Prossimamente</small></button>
+          <button type="button" className="is-deferred" disabled><strong>Sveglia</strong><small>Prossimamente</small></button>
         </div>
         <div className="temporal-create-title-row has-tools timeline-activity-editor__title-row">
         <label className="timeline-activity-editor__title">
@@ -717,7 +731,7 @@ export function ActivityEditPanel({
                             ? 'Intervallo complessivo'
                             : 'Intervallo')}
                       </div>
-                      {schedule.start && schedule.end ? (
+                      {schedule.start && schedule.end && !canReplan ? (
                         <div className="timeline-activity-editor__schedule-time" role="group" aria-label="Orario programmato">
                           <span>{(planDraft[schedule.scheduleRef]?.start || schedule.start).slice(0, 10)}</span>
                           <span>{(planDraft[schedule.scheduleRef]?.start || schedule.start).slice(11, 16)}</span>
@@ -772,19 +786,25 @@ export function ActivityEditPanel({
                         (schedule.role === 'envelope' && !hasIntervals)) &&
                         !removedPlanned.includes(schedule.scheduleRef) &&
                          !removedIntervals.includes(schedule.scheduleRef) ? (
-                        <div className="timeline-activity-editor__fields">
-                          <label>
-                            Inizio
-                            <input type="datetime-local" required disabled={planPending}
-                              value={planDraft[schedule.scheduleRef]?.start.slice(0, 16) ?? ''}
-                              onChange={(event) => changePlan(schedule.scheduleRef, 'start', event.target.value)} />
-                          </label>
-                          <label>
-                            Fine
-                            <input type="datetime-local" required disabled={planPending}
-                              value={planDraft[schedule.scheduleRef]?.end.slice(0, 16) ?? ''}
-                              onChange={(event) => changePlan(schedule.scheduleRef, 'end', event.target.value)} />
-                          </label>
+                        <div className="temporal-create-u2-when timeline-activity-editor__when"
+                          inert={planPending || undefined}>
+                          <TemporalCreateDatePicker label="Data inizio" locale="it"
+                            value={(planDraft[schedule.scheduleRef]?.start ?? schedule.start ?? '').slice(0, 10)}
+                            onChange={(date) => changePlan(schedule.scheduleRef, 'start',
+                              `${date}${(planDraft[schedule.scheduleRef]?.start ?? schedule.start ?? '').slice(10, 16)}`)} />
+                          <TimeControl label="Inizio" dataPath={`startTime-${schedule.scheduleRef}`}
+                            value={(planDraft[schedule.scheduleRef]?.start ?? schedule.start ?? '').slice(11, 16)}
+                            onChange={(time) => changePlan(schedule.scheduleRef, 'start',
+                              `${(planDraft[schedule.scheduleRef]?.start ?? schedule.start ?? '').slice(0, 10)}T${time}`)} />
+                          <span className="timeline-activity-editor__when-arrow" aria-hidden="true">→</span>
+                          <TimeControl label="Fine" dataPath={`endTime-${schedule.scheduleRef}`}
+                            value={(planDraft[schedule.scheduleRef]?.end ?? schedule.end ?? '').slice(11, 16)}
+                            onChange={(time) => changePlan(schedule.scheduleRef, 'end',
+                              `${(planDraft[schedule.scheduleRef]?.end ?? schedule.end ?? '').slice(0, 10)}T${time}`)} />
+                          <TemporalCreateDatePicker label="Data fine" locale="it"
+                            value={(planDraft[schedule.scheduleRef]?.end ?? schedule.end ?? '').slice(0, 10)}
+                            onChange={(date) => changePlan(schedule.scheduleRef, 'end',
+                              `${date}${(planDraft[schedule.scheduleRef]?.end ?? schedule.end ?? '').slice(10, 16)}`)} />
                         </div>
                       ) : null}
                       {canReplan && schedule.role === 'interval' ? (
@@ -945,39 +965,13 @@ export function ActivityEditPanel({
               Ripeti · {recurringContext ? 'Serie attiva' : 'Mai'}
             </div>
             <div className="timeline-activity-editor__area-color">
-          <fieldset>
-            <legend>Colore</legend>
-            <label className="timeline-activity-editor__checkbox">
-              <input
-                type="checkbox"
-                checked={!!draft.colorCode}
-              onChange={(event) => {
-                operation.current = undefined;
-                setDraft({
-                    ...draft,
-                    colorCode: event.target.checked ? '#EA5C12' : '',
-                });
-              }}
-              />
-              Colore personalizzato
-            </label>
-            {draft.colorCode ? (
-              <input
-                aria-label="Scegli colore"
-                type="color"
-                value={draft.colorCode}
-                onChange={(event) => {
+              <div className="temporal-create-life-area-field">
+              <TemporalColorControl value={draft.colorCode || '#EA5C12'}
+                label="Colore attività o evento" onChange={(colorCode) => {
                   operation.current = undefined;
-                  setDraft({
-                    ...draft,
-                    colorCode: event.target.value.toUpperCase(),
-                  });
-                }}
-              />
-            ) : null}
-          </fieldset>
-            <fieldset aria-label="Life Area">
-              <legend>Life Area</legend>
+                  setDraft((current) => ({ ...current, colorCode }));
+                }} />
+              <div className="timeline-activity-editor__area-choice">
               {areaError ? <p role="alert">{areaError}</p> : null}
               {!areaChoice && !areaError ? <p role="status">Caricamento Life Area…</p> : null}
               {areaChoice ? (
@@ -985,40 +979,35 @@ export function ActivityEditPanel({
                   {scopedDomainUnsupported && areaDirty ? (
                     <p role="status">Per modificare la Life Area scegli «Solo questa»: non propaghiamo modifiche parziali alla serie.</p>
                   ) : null}
-                  <label>
-                    Area assegnata
-                    <select
-                      value={selectedArea}
-                      disabled={pending || planPending || lockPending || areaPending}
-                      onChange={(event) => {
-                        setSelectedArea(event.target.value);
-                        areaOperation.current = null;
-                        setAreaError('');
-                      }}
-                    >
-                      <option value="">
-                        Nessuna Life Area
-                      </option>
-                      {areaChoice.currentRef &&
-                        !areaChoice.options.some((area) => area.ref === areaChoice.currentRef) ? (
-                          <option value={areaChoice.currentRef} disabled>
-                            Area precedente non più disponibile
-                          </option>
-                        ) : null}
-                      {areaChoice.options.map((area) => (
-                        <option key={area.ref} value={area.ref}>{area.name}</option>
-                      ))}
-                    </select>
-                  </label>
+                  <TemporalLifeAreaSelect query={areaQuery}
+                    label="Area assegnata"
+                    options={areaChoice.options.map((area) => ({ id: area.ref, label: area.name }))}
+                    selectedId={selectedArea || null}
+                    disabled={pending || planPending || lockPending || areaPending}
+                    onQueryChange={(query) => {
+                      setAreaQuery(query);
+                      setSelectedArea(areaChoice.options.find((area) => area.name === query)?.ref ?? '');
+                      areaOperation.current = null;
+                      setAreaError('');
+                    }}
+                    onChoose={(area) => {
+                      setSelectedArea(area.id);
+                      setAreaQuery(area.label);
+                      areaOperation.current = null;
+                      setAreaError('');
+                    }}
+                    onClear={() => { setSelectedArea(''); setAreaQuery(''); setAreaError(''); }} />
+                  {!areaQueryValid ? <small>Scegli una Life Area dall’elenco.</small> : null}
                   {areaDirty ? (
-                    <button type="button" disabled={pending || planPending || lockPending || areaPending || scopedDomainUnsupported}
+                    <button type="button" disabled={!areaQueryValid || pending || planPending || lockPending || areaPending || scopedDomainUnsupported}
                       onClick={applyLifeArea}>
                       {areaPending ? 'Salvataggio…' : 'Applica Life Area'}
                     </button>
                   ) : null}
                 </>
               ) : null}
-            </fieldset>
+              </div>
+              </div>
             </div>
             <section className="temporal-create-reality-objectives timeline-activity-editor__outcome"
               aria-label="Svolgimento e obiettivi">
@@ -1251,63 +1240,34 @@ export function ActivityEditPanel({
             </section>
             </section>
             <div className="timeline-activity-editor__location">
-          <label>
-            Località
-            <input
+            <input className="temporal-create-u2-location" aria-label="Località"
+              placeholder="Località"
               value={draft.location}
               onChange={(event) => {
                 operation.current = undefined;
                 setDraft({ ...draft, location: event.target.value });
               }}
             />
-          </label>
             </div>
              {settings.reminderScheduleRef ? (
-              <fieldset>
-                <legend>Promemoria</legend>
-                <label className="timeline-activity-editor__checkbox">
-                  <input
-                    type="checkbox"
-                    checked={reminderLeadMinutes !== null}
-                    onChange={(event) => {
-                      operation.current = undefined;
-                      setReminderLeadMinutes(event.target.checked ? 15 : null);
-                    }}
-                  />
-                  Attiva promemoria
-                </label>
-                {reminderLeadMinutes !== null ? (
-                  <label>
-                    Minuti prima dell’inizio
-                    <input
-                      type="number"
-                      min={0}
-                      max={10080}
-                      required
-                      value={reminderLeadMinutes}
-                      onChange={(event) => {
-                        operation.current = undefined;
-                        setReminderLeadMinutes(Number(event.target.value));
-                      }}
-                    />
-                  </label>
-                ) : null}
-              </fieldset>
+              <TemporalReminderControl value={reminderLeadMinutes}
+                onChange={(value) => {
+                  operation.current = undefined;
+                  setReminderLeadMinutes(value);
+                }} />
             ) : null}
           </>
         ) : null}
-        <section className="timeline-activity-editor__description" aria-label="Descrizione">
+        <section className="timeline-activity-editor__description temporal-create-section is-wide temporal-create-description-section" aria-label="Descrizione">
           <h3>Descrizione</h3>
-          <label>
-            Descrizione
-            <textarea
+            <textarea className="temporal-create-u2-description temporal-create-advanced-description"
+              aria-label="Descrizione" placeholder="Descrizione" rows={5}
               value={draft.description}
               onChange={(event) => {
                 operation.current = undefined;
                 setDraft({ ...draft, description: event.target.value });
               }}
             />
-          </label>
         </section>
       </div>
       {recurringContext && (metadataDirty || areaDirty || nameDirty) ? (
@@ -1341,7 +1301,7 @@ export function ActivityEditPanel({
         </fieldset>
       ) : null}
       <div
-        className="timeline-activity-editor__actions"
+        className="timeline-activity-editor__actions dante-temporal-panel-actions"
         inert={confirmingDiscard || undefined}
       >
         <button type="button" disabled={pending || planPending || lockPending ||
@@ -1350,6 +1310,7 @@ export function ActivityEditPanel({
         </button>
         <button
           type="submit"
+          className="is-primary"
           disabled={
             pending || planPending || lockPending || areaPending || objectivePending || !!namePending ||
             areaDirty || lockDirty || planDirty || objectiveDirty || nameDirty ||

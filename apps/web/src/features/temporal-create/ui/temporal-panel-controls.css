@@ -1,0 +1,44 @@
+.dante-temporal-panel-close.dante-temporal-panel-close {
+  display: grid;
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08));
+  border-radius: 10px;
+  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
+  background: color-mix(in srgb, var(--dante-semantic-color-home-surface-control, #151f2e) 72%, transparent);
+  font-size: 19px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.dante-temporal-panel-close.dante-temporal-panel-close:hover:not(:disabled) {
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  background: color-mix(in srgb, var(--dante-semantic-color-home-surface-control, #151f2e) 90%, white 3%);
+}
+
+.dante-temporal-panel-actions > button {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
+  border-radius: 10px;
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  background: var(--dante-semantic-color-home-surface-control, #151f2e);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.dante-temporal-panel-actions > button.is-primary {
+  border-color: var(--dante-semantic-color-home-chrome-active-border, rgba(234, 92, 18, 0.255));
+  color: #fff2e9;
+  background: color-mix(in srgb, var(--dante-semantic-color-home-chrome-active, #ea5c12) 19%, rgba(9, 17, 29, 0.94));
+}
+
+.dante-temporal-panel-actions > button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}

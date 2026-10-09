@@ -14,7 +14,8 @@
 }
 
 .temporal-create-life-area-field__color-trigger,
-.temporal-create-life-area-field__area-cell > input[type='text'] {
+.temporal-create-life-area-field__area-cell > input[type='text'],
+.temporal-create-life-area-field__area-cell > select {
   box-sizing: border-box;
   height: 42px;
   border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
@@ -43,13 +44,15 @@
 .temporal-create-life-area-field__color-trigger:hover,
 .temporal-create-life-area-field__color-trigger[aria-expanded='true'],
 .temporal-create-life-area-field__color-trigger:focus-visible,
-.temporal-create-life-area-field__area-cell > input[type='text']:focus {
+.temporal-create-life-area-field__area-cell > input[type='text']:focus,
+.temporal-create-life-area-field__area-cell > select:focus {
   border-color: color-mix(in srgb, #ea5c12 62%, transparent);
   outline: none;
   box-shadow: inset 0 0 0 1px color-mix(in srgb, #ea5c12 18%, transparent);
 }
 
-.temporal-create-life-area-field__area-cell > input[type='text'] {
+.temporal-create-life-area-field__area-cell > input[type='text'],
+.temporal-create-life-area-field__area-cell > select {
   width: 100%;
   min-width: 0;
   padding: 0 38px 0 12px;

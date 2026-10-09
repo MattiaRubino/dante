@@ -21,6 +21,7 @@ import { PlacementLockControls } from '../../../temporal/placement-lock-controls
 import type { ActivityProfile } from '../../../temporal/remote-activity-inspector';
 import { ActivityEditPanel } from './activity-edit-panel';
 import { requestTemporalCreateDuplicate } from '../../../temporal-create/ui/temporal-create-duplicate-request';
+import { TemporalPanelCloseButton } from '../../../temporal-create/ui/temporal-panel-close-button';
 import { ActivityInspectorActions } from './activity-inspector-actions';
 import { EventInspectorActions } from './event-inspector-actions';
 import { TimelineInspectorIcon } from './timeline-inspector-icon';
@@ -1037,24 +1038,9 @@ export function EventDetailDialog({
                 <TimelineInspectorIcon name="unschedule" />
               </button>
             )}
-            <button
-              className="timeline-event-modal__close"
-              ref={closeButtonRef}
-              type="button"
-              aria-label={
-                currentEditingProfile
-                  ? 'Torna all’Inspector'
-                  : 'Chiudi Inspector'
-              }
-              title={
-                currentEditingProfile
-                  ? 'Torna all’Inspector'
-                  : 'Chiudi Inspector'
-              }
-              onClick={requestCloseCurrent}
-            >
-              <span aria-hidden="true">×</span>
-            </button>
+            <TemporalPanelCloseButton buttonRef={closeButtonRef}
+              label={currentEditingProfile ? 'Torna all’Inspector' : 'Chiudi Inspector'}
+              onClick={requestCloseCurrent} />
           </div>
         </div>
         <h3 id="timeline-event-dialog-title" className="timeline-event-modal__title" title={detail.title}>
