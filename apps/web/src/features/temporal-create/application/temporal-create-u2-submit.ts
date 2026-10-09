@@ -391,7 +391,7 @@ export function validateTemporalCreateU6Structure(
       ? null
       : { start: bands[0]!.start, end: bands[bands.length - 1]!.end };
   if (
-    (structure.plannedSlices.length > 0 ||
+    (structure.plannedSlices.some((slice) => slice.timeEnabled === true) ||
       structure.children.some(
         (child) => child.scheduleEnabled || child.plannedSlices.length > 0,
       )) &&
@@ -401,6 +401,7 @@ export function validateTemporalCreateU6Structure(
   }
 
   for (const slice of structure.plannedSlices) {
+    if (slice.timeEnabled !== true) continue;
     const window = sliceLocalWindow(slice);
     if (window === null || parent === null) {
       return 'Complete each Session date, start and end time.';
@@ -594,6 +595,9 @@ export function buildTemporalCreateRecurringActivityTemplate(
   if (fields.kind !== 'activity' || fields.timeSemantics !== 'timed' || bands === null) {
     throw new Error('Recurring Activity template requires a timed Activity.');
   }
+  if (draft.activityStructure.plannedSlices.some((slice) => slice.timeEnabled !== true)) {
+    throw new Error('Le Sessioni senza orario non sono ancora supportate nelle serie ricorrenti.');
+  }
   const recurrenceAnchor = Temporal.PlainDateTime.from(
     `${fields.date}T${fields.startTime}`,
   );
@@ -740,7 +744,7 @@ export function buildTemporalCreateU2Request(
             sessionCaptureMode: draft.activityStructure.captureMode,
             childGuardMode: draft.activityStructure.childGuardMode,
             plannedSlices: draft.activityStructure.plannedSlices.map((slice) =>
-              plannedSliceInput(fields, slice),
+              slice.timeEnabled === true ? plannedSliceInput(fields, slice) : null,
             ),
             ...(draft.activityStructure.activityIntervals.length > 0 &&
             bands !== null

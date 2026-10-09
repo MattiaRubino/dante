@@ -140,9 +140,9 @@ WITH owner AS MATERIALIZED (
            role.role_code,role.presentation_order,role.display_name
       FROM owner
       JOIN dante.schedule AS s ON s.subject_native_ref=owner.activity_ref
-      JOIN dante.schedule_current_placement AS current
+ LEFT JOIN dante.schedule_current_placement AS current
         ON current.scoped_owner_ref=s.schedule_ref
-      JOIN dante.schedule_placement_state AS state
+ LEFT JOIN dante.schedule_placement_state AS state
         ON state.schedule_ref=s.schedule_ref
        AND state.material_state_ref=current.material_state_ref
  LEFT JOIN dante.schedule_placement_date_state AS dates
@@ -157,6 +157,10 @@ WITH owner AS MATERIALIZED (
         ON coarse.material_state_ref=state.material_state_ref
  LEFT JOIN dante.get_self_activity_schedule_roles(:actor,CAST(ARRAY[:activity] AS uuid[])) AS role
         ON role.schedule_ref=s.schedule_ref
+     WHERE current.material_state_ref IS NOT NULL OR NOT EXISTS (
+         SELECT 1 FROM dante.schedule_placement_state AS history
+          WHERE history.schedule_ref=s.schedule_ref
+     )
 ), primary_schedule AS (
     SELECT schedule_ref FROM placements
      WHERE role_code='envelope' OR role_code IS NULL

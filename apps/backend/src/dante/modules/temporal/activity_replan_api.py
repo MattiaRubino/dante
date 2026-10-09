@@ -137,7 +137,8 @@ def _validated_plan(snapshot: ActivityEditSnapshot, command: ActivityReplanComma
     rows = snapshot.schedules
     intervals = [row for row in rows if row.role_code == "interval"]
     envelope = next((row for row in rows if row.role_code == "envelope"), None)
-    planned = [row for row in rows if row.role_code == "planned"]
+    planned = [row for row in rows if row.role_code == "planned"
+               and row.placement_material_state_ref is not None]
     if envelope is None:
         raise _invalid("This Activity does not have an editable time frame.")
     if (not intervals and (command.envelope is None or command.intervals

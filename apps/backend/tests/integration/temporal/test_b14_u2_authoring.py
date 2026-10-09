@@ -9,6 +9,7 @@ from uuid import uuid7
 import psycopg
 import pytest
 
+from dante.modules.temporal.activity_edit_snapshot_api import _SNAPSHOT, ActivityEditSnapshot
 from dante.modules.temporal.authoring import (
     AuthoringLifeAreaIntent,
     TemporalAuthoringApplication,
@@ -21,6 +22,51 @@ from dante.platform.database.references import NativeRef
 from dante.platform.database.runtime import create_database_runtime
 
 pytestmark = pytest.mark.postgres
+
+
+@pytest.mark.asyncio
+async def test_planned_row_without_time_is_persisted_without_placement_and_replays(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    authoring = TemporalAuthoringApplication(runtime.session_factory)
+    kwargs = dict(
+        self_person_ref=actor, operation_id="u2:unplaced-planned:one",
+        title="Ricerca", planned_slices=(None,), planned_slice_names=("Fonti",),
+    )
+    try:
+        created = await authoring.create_activity(**kwargs)
+        assert not created.replayed
+        assert created.planned_slices == ()  # No accepted time was manufactured.
+        with psycopg.connect(**migrated_database.connection_kwargs(
+            "dante_migrator", migrated_database.cluster.migrator_password,
+        )) as connection:
+            connection.execute("SET ROLE dante_owner")
+            row = connection.execute("""
+                SELECT role.schedule_ref,role.display_name,placement.material_state_ref
+                  FROM dante.activity_schedule_role AS role
+             LEFT JOIN dante.schedule_current_placement AS placement
+                    ON placement.scoped_owner_ref=role.schedule_ref
+                 WHERE role.activity_ref=%s AND role.role_code='planned'
+            """, (created.item.subject_native_ref,)).fetchone()
+        assert row is not None and row[1:] == ("Fonti", None)
+        async with runtime.session_factory() as session:
+            snapshot_row = (await session.execute(
+                _SNAPSHOT, {"actor": actor, "activity": created.item.subject_native_ref},
+            )).scalar_one()
+        snapshot = ActivityEditSnapshot.model_validate(snapshot_row)
+        assert len(snapshot.schedules) == 1
+        assert snapshot.schedules[0].schedule_ref == row[0]
+        assert snapshot.schedules[0].placement_material_state_ref is None
+        assert snapshot.schedules[0].temporal_form is None
+        replay = await authoring.create_activity(**kwargs)
+        assert replay.replayed
+        assert replay.item.subject_native_ref == created.item.subject_native_ref
+        with pytest.raises(TemporalAuthoringOperationIdReuseError):
+            await authoring.create_activity(**{**kwargs, "planned_slice_names": ("Altro",)})
+    finally:
+        await runtime.dispose()
 
 
 def _seed_self(database: Any) -> NativeRef:

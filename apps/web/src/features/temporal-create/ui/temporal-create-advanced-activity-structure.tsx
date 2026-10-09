@@ -52,6 +52,7 @@ export function plannedSlice(fields: TemporalCreateFields): TemporalCreatePlanne
   return Object.freeze({
     id: newRowId(),
     title: '',
+    timeEnabled: false,
     date: root.startDate,
     startTime: root.startTime,
     endTime: root.endTime,
@@ -154,17 +155,10 @@ export function TemporalCreateAdvancedActivityStructure({
   const locale = i18n.resolvedLanguage ?? i18n.language ?? 'it';
   const { draft, patch } = useTemporalCreateU2Draft();
   const structure = draft.activityStructure;
-  const [openTimes, setOpenTimes] = useState<readonly string[]>([]);
 
   const patchStructure = (changes: Partial<typeof structure>) =>
     patch({ activityStructure: Object.freeze({ ...structure, ...changes }) });
 
-  const toggleTime = (id: string) =>
-    setOpenTimes((current) =>
-      current.includes(id)
-        ? current.filter((entry) => entry !== id)
-        : [...current, id],
-    );
 
   const addRootSession = () => {
     patchStructure({
@@ -207,7 +201,7 @@ export function TemporalCreateAdvancedActivityStructure({
           </div>
           {structure.plannedSlices.map((slice) => {
             const timeId = `session:${slice.id}`;
-            const timeOpen = openTimes.includes(timeId);
+            const timeOpen = slice.timeEnabled === true;
             return (
               <div
                 className="temporal-create-tree-item is-session is-root"
@@ -245,7 +239,7 @@ export function TemporalCreateAdvancedActivityStructure({
                       className={timeOpen ? 'is-active' : undefined}
                       aria-expanded={timeOpen}
                       aria-controls={`${timeId}:editor`}
-                      onClick={() => toggleTime(timeId)}
+                      onClick={() => updateSlice(slice.id, { timeEnabled: !timeOpen })}
                     >
                       {italian ? 'Orario' : 'Time'}
                     </button>

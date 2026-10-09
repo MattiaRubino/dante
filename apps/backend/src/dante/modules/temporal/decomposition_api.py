@@ -59,10 +59,10 @@ class ActivityScheduleResponse(BaseModel):
     role_code: Literal["envelope", "planned", "interval"] | None
     presentation_order: int | None
     display_name: str | None
-    placement_material_state_ref: UUID
+    placement_material_state_ref: UUID | None
     temporal_form: Literal[
         "date_span", "floating_local", "named_zone_local", "absolute", "coarse_local_period"
-    ]
+    ] | None
     start_date: date | None
     end_date_exclusive: date | None
     starts_local_at: datetime | None
@@ -252,9 +252,9 @@ async def get_activity_children(
                                absolute.starts_at,absolute.ends_at,
                                coarse.local_date,coarse.period_code
                           FROM dante.schedule AS schedule
-                          JOIN dante.schedule_current_placement AS current
+                     LEFT JOIN dante.schedule_current_placement AS current
                             ON current.scoped_owner_ref=schedule.schedule_ref
-                          JOIN dante.schedule_placement_state AS state
+                     LEFT JOIN dante.schedule_placement_state AS state
                             ON state.schedule_ref=schedule.schedule_ref
                            AND state.material_state_ref=current.material_state_ref
                      LEFT JOIN dante.schedule_placement_date_state AS dates
@@ -268,6 +268,10 @@ async def get_activity_children(
                      LEFT JOIN dante.schedule_placement_coarse_local_period_state AS coarse
                             ON coarse.material_state_ref=state.material_state_ref
                          WHERE schedule.subject_native_ref=ANY(CAST(:subjects AS uuid[]))
+                           AND (current.material_state_ref IS NOT NULL OR NOT EXISTS (
+                               SELECT 1 FROM dante.schedule_placement_state AS history
+                                WHERE history.schedule_ref=schedule.schedule_ref
+                           ))
                          ORDER BY schedule.schedule_ref
                     """),
                         {

@@ -17,7 +17,7 @@ function localWindow(schedule: ActivityEditSchedule) {
   if (
     !schedule.start ||
     !schedule.end ||
-    !['floating_local', 'named_zone_local'].includes(schedule.temporalForm)
+    !['floating_local', 'named_zone_local'].includes(schedule.temporalForm ?? '')
   ) {
     throw new Error(
       'Questa programmazione non può ancora essere duplicata fedelmente.',
@@ -123,6 +123,16 @@ export function buildActivityDuplicateSeed(
     };
   });
   const plannedSlices = planned.map((schedule) => {
+    if (!schedule.start || !schedule.end) {
+      return {
+        id: crypto.randomUUID(),
+        title: schedule.name ?? `Sessione ${schedule.order ?? 1}`,
+        timeEnabled: false,
+        date: fields.date ?? Temporal.Now.plainDateISO().toString(),
+        startTime: fields.startTime ?? '09:00',
+        endTime: fields.startTime ?? '09:00',
+      };
+    }
     const { start, end } = localWindow(schedule);
     if (
       primary &&
@@ -136,6 +146,7 @@ export function buildActivityDuplicateSeed(
     return {
       id: crypto.randomUUID(),
       title: schedule.name ?? `Sessione ${schedule.order ?? 1}`,
+      timeEnabled: true,
       date: start.toPlainDate().toString(),
       startTime: start.toPlainTime().toString({ smallestUnit: 'minute' }),
       endTime: end.toPlainTime().toString({ smallestUnit: 'minute' }),
@@ -143,6 +154,7 @@ export function buildActivityDuplicateSeed(
   });
   if (
     planned.some((schedule) => {
+      if (!schedule.start || !schedule.end) return false;
       const { start, end } = localWindow(schedule);
       return start.toPlainDate().toString() !== end.toPlainDate().toString();
     })

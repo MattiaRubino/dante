@@ -21,8 +21,8 @@ export type ActivityEditSchedule = Readonly<{
   role: 'envelope' | 'interval' | 'planned' | null;
   name: string | null;
   order: number | null;
-  placementStateRef: string;
-  temporalForm: string;
+  placementStateRef: string | null;
+  temporalForm: string | null;
   start: string | null;
   end: string | null;
   zoneId: string | null;
@@ -135,8 +135,10 @@ function schedules(
       const row = object(value);
       if (
         typeof row.schedule_ref !== 'string' ||
-        typeof row.placement_material_state_ref !== 'string' ||
-        typeof row.temporal_form !== 'string' ||
+        (typeof row.placement_material_state_ref !== 'string' &&
+          !(row.role_code === 'planned' && row.placement_material_state_ref === null)) ||
+        (typeof row.temporal_form !== 'string' &&
+          !(row.role_code === 'planned' && row.temporal_form === null)) ||
         ![null, 'envelope', 'interval', 'planned'].includes(
           row.role_code as string | null,
         )
@@ -234,7 +236,7 @@ export function createRemoteActivityEditSettings(
         placementLockScheduleRef: lock === null ? null : String(lock.schedule_ref),
         reminderLeadMinutes: reminder?.enabled === true ? Number(reminder.lead_minutes) : null,
         reminderScheduleRef: primary?.role === 'envelope' &&
-          ['named_zone_local', 'absolute'].includes(primary.temporalForm)
+          ['named_zone_local', 'absolute'].includes(primary.temporalForm ?? '')
           ? primary.scheduleRef : null,
         reminderStateRef: reminder ? state(reminder.material_state_ref) : null,
         childGuardMode:
@@ -267,9 +269,11 @@ export function createRemoteActivityEditSettings(
         starts_local_at: item.start, ends_local_at: item.end,
       })),
       planned_sessions: settings.schedules.filter((item) =>
-        item.role === 'planned' && !draft.removedPlanned.includes(item.scheduleRef)).map(row),
+        item.role === 'planned' && item.placementStateRef !== null &&
+        !draft.removedPlanned.includes(item.scheduleRef)).map(row),
       remove_planned_sessions: settings.schedules.filter((item) =>
-        item.role === 'planned' && draft.removedPlanned.includes(item.scheduleRef)).map(row),
+        item.role === 'planned' && item.placementStateRef !== null &&
+        draft.removedPlanned.includes(item.scheduleRef)).map(row),
       new_planned_sessions: draft.newPlanned.map((item) => ({
         client_ref: item.clientRef, name: item.name.trim() || null,
         starts_local_at: item.start, ends_local_at: item.end,

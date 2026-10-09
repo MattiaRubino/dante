@@ -62,6 +62,7 @@ export type TemporalCreateU2AuthoringDraft = Readonly<{
 export type TemporalCreatePlannedSliceDraft = Readonly<{
   id: string;
   title: string;
+  timeEnabled?: boolean;
   date: string;
   startTime: string;
   endTime: string;

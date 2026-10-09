@@ -230,6 +230,28 @@ describe('Temporal Create U2 entry', () => {
     expect(activityRequests[0]?.children).toEqual([]);
   });
 
+  it('saves a planned Session without any time when Orario remains off or is switched off', async () => {
+    const { activityRequests } = renderEntry([], false, '2132-03-06');
+    fireEvent.change(screen.getByPlaceholderText('Titolo'), { target: { value: 'Progetto' } });
+    fireEvent.click(screen.getByRole('button', { name: /Opzioni avanzate/ }));
+    const actions = screen.getByLabelText('Aggiungi Sessione pianificata');
+    fireEvent.click(within(actions).getByRole('button', { name: 'Sessione' }));
+    const planned = document.querySelector('[data-create-planned-session]') as HTMLElement;
+    fireEvent.change(within(planned).getByLabelText('Nome Sessione'),
+      { target: { value: 'Ricerca fonti' } });
+    const toggle = within(planned).getByRole('button', { name: 'Orario' });
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    fireEvent.click(toggle);
+    expect(within(planned).getByLabelText('Inizio Sessione: ore')).toBeTruthy();
+    fireEvent.click(toggle);
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(within(planned).queryByLabelText('Inizio Sessione: ore')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi' }));
+    await waitFor(() => expect(activityRequests).toHaveLength(1));
+    expect(activityRequests[0]?.plannedSlices).toEqual([null]);
+    expect(activityRequests[0]?.plannedSliceNames).toEqual(['Ricerca fonti']);
+  });
+
   it('creates an Activity without requiring any Life Area and persists the DANTE default color', async () => {
     const { activityRequests } = renderEntry();
 

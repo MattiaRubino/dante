@@ -159,7 +159,7 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
     assert environment == ("180006", "UTF8", "63")
     assert topology == _CURRENT_TOPOLOGY
     assert current_revision == (_CURRENT_REVISION,)
-    assert (len(tables), len(views), len(routines)) == (235, 5, 210)
+    assert (len(tables), len(views), len(routines)) == (235, 5, 211)
     assert live_tables == set(tables)
     assert live_views == set(views)
     assert live_routines == set(routines)
@@ -220,12 +220,13 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
         "B14-M2-OBJECTIVE-SERIES",
         "B14-M3-RESIDUAL-EDITOR",
         "B14-M4-EVENT-PROFILE",
+        "B14-UNTIMED-PLANNED-SESSION",
     ]
     assert current["standalone_entries"] == {
         "tables": 235,
         "views": 5,
-        "routines": 210,
-        "total": 450,
+        "routines": 211,
+        "total": 451,
     }
     assert current["embedded_objects"] == {
         "triggers": 103,

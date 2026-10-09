@@ -129,7 +129,7 @@ export function ActivityEditPanel({
   const discardButtonRef = useRef<HTMLButtonElement | null>(null);
   const hasIntervals = settings?.schedules.some((schedule) => schedule.role === 'interval') ?? false;
   const editablePlan = settings?.schedules.filter((schedule) =>
-    schedule.role === 'interval' || schedule.role === 'planned' ||
+    schedule.role === 'interval' || (schedule.role === 'planned' && !!schedule.start && !!schedule.end) ||
     (schedule.role === 'envelope' && !hasIntervals)) ?? [];
   const metadataDirty =
     draft.title !== profile.title ||
@@ -148,7 +148,7 @@ export function ActivityEditPanel({
   const canReplan = !!settings &&
     settings.schedules.some((schedule) => schedule.role === 'envelope') &&
     editablePlan.every((schedule) =>
-      ['floating_local', 'named_zone_local'].includes(schedule.temporalForm) &&
+      ['floating_local', 'named_zone_local'].includes(schedule.temporalForm ?? '') &&
       !!schedule.start && !!schedule.end);
   const planDirty = canReplan && (
     removedIntervals.length > 0 || newIntervals.length > 0 ||
@@ -688,6 +688,7 @@ export function ActivityEditPanel({
               <div className="temporal-create-activity-tree__group-label">Sessioni attività</div>
               {settings.schedules.filter((row) => row.role === 'planned').map((row) => {
                 const removed = removedPlanned.includes(row.scheduleRef);
+                const hasTime = row.placementStateRef !== null;
                 const currentStart = planDraft[row.scheduleRef]?.start ?? row.start ?? '';
                 const currentEnd = planDraft[row.scheduleRef]?.end ?? row.end ?? '';
                 return (
@@ -707,8 +708,8 @@ export function ActivityEditPanel({
                           setNameError('');
                         }} />
                       <div className="temporal-create-tree-row__actions">
-                        <button type="button" className="is-active"
-                          aria-expanded="true" aria-controls={`edit-session:${row.scheduleRef}:time`}
+                        <button type="button" className={hasTime ? 'is-active' : undefined}
+                          aria-expanded={hasTime} aria-controls={`edit-session:${row.scheduleRef}:time`}
                           title="La rimozione dell’orario di una Session già pianificata non è ancora disponibile"
                           disabled>Orario</button>
                         {canReplan ? <button type="button" className="is-remove" disabled={planPending}
@@ -722,7 +723,7 @@ export function ActivityEditPanel({
                           }}>{removed ? '↶' : '×'}</button> : null}
                       </div>
                     </div>
-                    {!removed ? (
+                    {!removed && hasTime ? (
                       <div id={`edit-session:${row.scheduleRef}:time`}
                         className="temporal-create-tree-time-editor" inert={planPending || undefined}>
                         {canReplan ? <>
@@ -829,10 +830,12 @@ export function ActivityEditPanel({
               aria-label="Programmazione attuale"
             >
               <div className="timeline-activity-editor__placement" role="group" aria-label="Collocazione attuale">
-                <span className={settings.schedules.length > 0 &&
-                    settings.schedules[0]?.temporalForm !== 'date_span' ? 'is-selected' : ''}>Orario</span>
-                <span className={settings.schedules[0]?.temporalForm === 'date_span' ? 'is-selected' : ''}>Tutto il giorno</span>
-                <span className={settings.schedules.length === 0 ? 'is-selected' : ''}>Da collocare</span>
+                <span className={settings.schedules.some((row) => row.role === 'envelope' &&
+                    row.temporalForm !== null && row.temporalForm !== 'date_span') ? 'is-selected' : ''}>Orario</span>
+                <span className={settings.schedules.some((row) => row.role === 'envelope' &&
+                    row.temporalForm === 'date_span') ? 'is-selected' : ''}>Tutto il giorno</span>
+                <span className={!settings.schedules.some((row) => row.role === 'envelope' &&
+                    row.placementStateRef !== null) ? 'is-selected' : ''}>Da collocare</span>
               </div>
               <h3 className="timeline-activity-editor__visually-hidden">Programmazione attuale</h3>
               {settings.schedules.find((schedule) => schedule.zoneId)?.zoneId ? (

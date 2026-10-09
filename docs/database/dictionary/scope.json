@@ -70,13 +70,14 @@
       "B14-M2-OBJECTIVE-CORRECTION",
       "B14-M2-OBJECTIVE-SERIES",
       "B14-M3-RESIDUAL-EDITOR",
-      "B14-M4-EVENT-PROFILE"
+      "B14-M4-EVENT-PROFILE",
+      "B14-UNTIMED-PLANNED-SESSION"
     ],
     "standalone_entries": {
       "tables": 235,
       "views": 5,
-      "routines": 210,
-      "total": 450
+      "routines": 211,
+      "total": 451
     },
     "embedded_objects": {
       "triggers": 103,

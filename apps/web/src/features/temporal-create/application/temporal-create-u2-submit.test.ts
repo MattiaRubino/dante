@@ -353,6 +353,7 @@ describe('U2 Quick Create submit mapping', () => {
           {
             id: 'session',
             title: 'Overflow',
+            timeEnabled: true,
             date: '2026-10-20',
             startTime: '10:30',
             endTime: '11:30',

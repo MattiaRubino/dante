@@ -667,7 +667,8 @@ function requestBody(
       result.child_guard_mode = request.childGuardMode;
     }
     if (request.plannedSlices !== undefined) {
-      result.planned_slices = request.plannedSlices.map(serializePlacement);
+      result.planned_slices = request.plannedSlices.map((slice) =>
+        slice === null ? null : serializePlacement(slice));
     }
     if (request.activityIntervals !== undefined) {
       result.activity_intervals =

@@ -102,7 +102,7 @@ class AuthorActivityRequest(AuthorItemRequest):
         default=None, ge=1, le=9_223_372_036_854_775_807
     )
     child_guard_mode: Literal["none", "confirm", "block"] | None = None
-    planned_slices: list[SchedulePlacementRequest] = Field(default_factory=list, max_length=100)
+    planned_slices: list[SchedulePlacementRequest | None] = Field(default_factory=list, max_length=100)
     activity_intervals: list[SchedulePlacementRequest] = Field(default_factory=list, max_length=100)
     planned_slice_names: list[str] = Field(default_factory=list, max_length=100)
     children: list[AuthorActivityChildRequest] = Field(default_factory=list, max_length=100)
@@ -389,7 +389,8 @@ async def author_activity(
             minimum_session_duration_microseconds=payload.minimum_session_duration_microseconds,
             child_guard_mode=payload.child_guard_mode,
             planned_slices=tuple(
-                _placement_from_request(value) for value in payload.planned_slices
+                None if value is None else _placement_from_request(value)
+                for value in payload.planned_slices
             ),
             activity_intervals=tuple(
                 _placement_from_request(value) for value in payload.activity_intervals

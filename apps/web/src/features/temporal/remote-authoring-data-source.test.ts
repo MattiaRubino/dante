@@ -63,6 +63,8 @@ describe('remote U2 authoring data source', () => {
       description: 'Tratta notturna',
       location: 'Roma',
       itemColorCode: '#FF7A00',
+      plannedSlices: [null],
+      plannedSliceNames: ['Senza orario'],
       placement: {
         kind: 'floating-local-interval',
         startsLocalAt: Temporal.PlainDateTime.from('2026-09-30T23:30'),
@@ -88,6 +90,8 @@ describe('remote U2 authoring data source', () => {
       location: 'Roma',
       item_color_code: '#FF7A00',
       life_area: null,
+      planned_slices: [null],
+      planned_slice_names: ['Senza orario'],
       placement: {
         kind: 'floating_local_interval',
         starts_local_at: '2026-09-30T23:30:00',
