@@ -35,6 +35,7 @@ from dante.modules.temporal.decomposition_api import router as temporal_decompos
 from dante.modules.temporal.decomposition_policy_api import (
     router as temporal_decomposition_policy_router,
 )
+from dante.modules.temporal.draft_vault_api import router as temporal_draft_vault_router
 from dante.modules.temporal.event_api import router as temporal_event_router
 from dante.modules.temporal.execution_policy_api import router as temporal_execution_policy_router
 from dante.modules.temporal.life_area_api import router as temporal_life_area_router
@@ -147,6 +148,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(temporal_movement_policy_router)
     app.include_router(temporal_placement_lock_router)
     app.include_router(temporal_planning_tray_router)
+    app.include_router(temporal_draft_vault_router)
     app.include_router(temporal_plan_work_router)
     app.include_router(temporal_plan_dependency_router)
     app.include_router(temporal_plan_candidate_router)
