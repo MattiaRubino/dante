@@ -877,27 +877,7 @@ export function TemporalCreateCoreFieldsU2({
           >
             Tutto il giorno
           </button>
-          <button
-            type="button"
-            role="radio"
-            aria-checked={fields.timeSemantics === 'unscheduled'}
-            className={
-              fields.timeSemantics === 'unscheduled' ? 'is-active' : ''
-            }
-            disabled={
-              fields.kind === 'activity' &&
-              authoringDraft.activityStructure.activityIntervals.length > 0
-            }
-            title={
-              fields.kind === 'activity' &&
-              authoringDraft.activityStructure.activityIntervals.length > 0
-                ? 'Rimuovi prima gli intervalli aggiuntivi'
-                : undefined
-            }
-            onClick={() => changeTimeSemantics('unscheduled')}
-          >
-            Da collocare
-          </button>
+
         </div>
       </fieldset>
       {renderError('timeSemantics')}
