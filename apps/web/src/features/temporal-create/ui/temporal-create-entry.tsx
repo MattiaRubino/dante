@@ -14,6 +14,10 @@ import { createRemoteTemporalResponsibilityDataSource } from '../../temporal/rem
 import { invalidateTemporalTimelineRead } from '../../temporal/timeline-invalidation';
 import { createRemoteRecurringAuthoringDataSource } from '../application/remote-recurring-authoring';
 import {
+  createRemoteDraftVault, notifyDraftVaultUpdated,
+  type DraftVaultItem, type DraftVaultSnapshot,
+} from '../application/remote-draft-vault';
+import {
   buildTemporalCreateActivityRecurrence,
   buildTemporalCreateEventRecurrence,
   buildTemporalCreateRecurringEventPolicy,
@@ -98,6 +102,7 @@ export type TemporalCreateEntryProps = Readonly<{
   onApplied: (effect: TemporalCreateAppliedEffect) => boolean;
   onBeforeOpen?: (() => void) | undefined;
   creationEnabled?: boolean | undefined;
+  draftRequest?: Readonly<{ id: number; item: DraftVaultItem; duplicate: boolean }> | null;
 }>;
 
 function minuteToInput(minute: number): string {
@@ -117,6 +122,7 @@ export function TemporalCreateEntry({
   onApplied,
   onBeforeOpen,
   creationEnabled = true,
+  draftRequest,
 }: TemporalCreateEntryProps) {
   const { t, i18n } = useTranslation('common');
   const triggerRef = useRef<HTMLButtonElement | null>(null);
@@ -131,6 +137,12 @@ export function TemporalCreateEntry({
   const [reminderDataSource] = useState(() =>
     createRemoteScheduleReminderDataSource(),
   );
+  const [draftVault] = useState(createRemoteDraftVault);
+  const currentVaultDraft = useRef<DraftVaultItem | null>(null);
+  const pendingVaultSave = useRef<{
+    draftRef: string; revision: number | null; operationId: string;
+  } | null>(null);
+  const draftRequestSeen = useRef<number | null>(null);
   const [recurringAuthoringDataSource] = useState(() =>
     createRemoteRecurringAuthoringDataSource(),
   );
@@ -210,6 +222,8 @@ export function TemporalCreateEntry({
       partialPostCreateRef.current = null;
       setPostCreateRetry(false);
       commitInFlightRef.current = false;
+      pendingVaultSave.current = null;
+      currentVaultDraft.current = null;
       onPreview(null);
       if (restoreFocus) restoreComposerFocus();
     },
@@ -227,6 +241,8 @@ export function TemporalCreateEntry({
       focusReturnTarget?: HTMLElement | null,
     ) => {
       onBeforeOpen?.();
+      currentVaultDraft.current = null;
+      pendingVaultSave.current = null;
       const fields = freshFields(date, startMinute, durationMinutes, seed);
       const initialDraft = createTemporalCreateU2AuthoringDraft(fields);
       const seededArea = contexts.find(
@@ -288,6 +304,30 @@ export function TemporalCreateEntry({
   }, [open, openComposer, request]);
 
   useEffect(() => {
+    if (!draftRequest || draftRequestSeen.current === draftRequest.id || open) return;
+    draftRequestSeen.current = draftRequest.id;
+    const selected = draftRequest.item;
+    const snapshot = selected.payload;
+    const restored = createTemporalCreateSession(snapshot.fields);
+    const nextSession = setTemporalCreateSurface(restored, snapshot.surface);
+    onBeforeOpen?.();
+    currentVaultDraft.current = draftRequest.duplicate ? null : selected;
+    pendingVaultSave.current = null;
+    u2DraftRef.current = snapshot.advanced;
+    setU2Draft(snapshot.advanced);
+    setSession(nextSession);
+    setIssues([]);
+    setFailureMessage('');
+    setFailureTarget(null);
+    setLifecycle('idle');
+    preparedRef.current = null;
+    partialPostCreateRef.current = null;
+    setPostCreateRetry(false);
+    focusReturnRef.current = document.querySelector<HTMLElement>('.dante-timeline-actions');
+    setOpen(true);
+  }, [draftRequest, onBeforeOpen, open]);
+
+  useEffect(() => {
     if (!open || session.closeDecision === 'confirm-discard') {
       onPreview(null);
       return;
@@ -322,6 +362,7 @@ export function TemporalCreateEntry({
           confirmation: { ...merged.confirmation, reminderLeadMinutes: null },
         };
     preparedRef.current = null;
+    pendingVaultSave.current = null;
     setIssues([]);
     setFailureMessage('');
     setFailureTarget(null);
@@ -335,6 +376,60 @@ export function TemporalCreateEntry({
 
   const continueEditing = () => {
     setSession((current) => continueTemporalCreateEditing(current));
+  };
+
+  const saveDraft = async () => {
+    if (commitInFlightRef.current || partialPostCreateRef.current !== null) return;
+    const existing = currentVaultDraft.current;
+    const operation = pendingVaultSave.current ?? {
+      draftRef: existing?.draftRef ?? crypto.randomUUID(),
+      revision: existing?.revision ?? null,
+      operationId: crypto.randomUUID(),
+    };
+    pendingVaultSave.current = operation;
+    const payload: DraftVaultSnapshot = {
+      version: 1, fields: session.draft.current,
+      advanced: u2DraftRef.current, surface: session.surface,
+    };
+    commitInFlightRef.current = true;
+    setLifecycle('pending');
+    setFailureMessage('');
+    setFailureTarget(null);
+    try {
+      const saved = await draftVault.save(payload, operation);
+      currentVaultDraft.current = saved;
+      notifyDraftVaultUpdated();
+      closeComposer();
+    } catch (reason) {
+      setLifecycle('failed');
+      setFailureMessage(reason instanceof Error ? reason.message
+        : 'Impossibile salvare la bozza.');
+    } finally {
+      commitInFlightRef.current = false;
+    }
+  };
+
+  const consumeDraftAfterCreate = async (): Promise<boolean> => {
+    const item = currentVaultDraft.current;
+    if (!item) return true;
+    try {
+      await draftVault.remove(item);
+      notifyDraftVaultUpdated();
+      currentVaultDraft.current = null;
+      return true;
+    } catch {
+      // Creation already committed. Retry removal only; never create again.
+      partialPostCreateRef.current = async () => {
+        await draftVault.remove(item);
+        notifyDraftVaultUpdated();
+        currentVaultDraft.current = null;
+      };
+      setPostCreateRetry(true);
+      setLifecycle('failed');
+      setFailureMessage('Elemento creato, ma la bozza non è stata rimossa. ' +
+        'Riprova la pulizia senza creare un duplicato.');
+      return false;
+    }
   };
 
   const executeU2Quick = async (
@@ -467,6 +562,7 @@ export function TemporalCreateEntry({
       }
 
       invalidateTemporalTimelineRead();
+      if (!await consumeDraftAfterCreate()) return false;
       setSession(discardTemporalCreateSession(freshFields(defaultDate)));
       closeComposer();
       return true;
@@ -534,6 +630,7 @@ export function TemporalCreateEntry({
         activityTemplate: recurring.template,
       });
       invalidateTemporalTimelineRead();
+      if (!await consumeDraftAfterCreate()) return false;
       setSession(discardTemporalCreateSession(freshFields(defaultDate)));
       closeComposer();
       return true;
@@ -647,6 +744,7 @@ export function TemporalCreateEntry({
         return false;
       }
       invalidateTemporalTimelineRead();
+      if (!await consumeDraftAfterCreate()) return false;
       setSession(discardTemporalCreateSession(freshFields(defaultDate)));
       closeComposer();
       return true;
@@ -784,6 +882,7 @@ export function TemporalCreateEntry({
           );
           return;
         }
+        if (!await consumeDraftAfterCreate()) return;
         setSession(discardTemporalCreateSession(freshFields(defaultDate)));
         closeComposer(!focusHandled);
         return;
@@ -831,7 +930,8 @@ export function TemporalCreateEntry({
       onRequestClose={requestClose}
       onContinueEditing={continueEditing}
       onDiscard={() => closeComposer()}
-      onMoveToUnplaced={() => void submit({ timeSemantics: 'unscheduled' })}
+      onMoveToUnplaced={() => void saveDraft()}
+      onSaveDraft={() => void saveDraft()}
       onSubmit={() => void submit()}
       onU2DraftChange={(draft) => {
         u2DraftRef.current = draft;
@@ -876,9 +976,9 @@ export function TemporalCreateEntry({
                     lifecycle === 'pending' ||
                     session.draft.current.title.trim().length === 0
                   }
-                  onClick={() => void submit({ timeSemantics: 'unscheduled' })}
+                  onClick={() => void saveDraft()}
                 >
-                  Sposta in Da collocare
+                  Salva bozza
                 </button>
                 <button
                   className="temporal-create-discard__destructive"
