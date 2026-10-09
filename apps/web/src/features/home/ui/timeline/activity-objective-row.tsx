@@ -110,113 +110,102 @@ export function objectiveDraftError(draft: ActivityObjectiveDraft): string | nul
 }
 
 export function ActivityObjectiveRow({
-  row, expanded, disabled, onToggle, onChange, onRemove,
+  row, disabled, onInspect, onChange, onRemove,
 }: Readonly<{
   row: ActivityObjectiveDraft;
-  expanded: boolean;
   disabled: boolean;
-  onToggle: () => void;
+  onInspect: () => void;
   onChange: (patch: Partial<ActivityObjectiveDraft>) => void;
   onRemove: () => void;
 }>) {
   const title = row.label.trim() || 'Nuovo obiettivo';
   return (
-    <div className="timeline-activity-editor__objective-row">
+    <div className="timeline-activity-editor__objective-row" onFocusCapture={onInspect}>
       <div className="timeline-activity-editor__objective-head">
-        <button type="button" className="timeline-activity-editor__objective-expand"
-          aria-expanded={expanded} onClick={onToggle} disabled={disabled}>
-          <span aria-hidden="true">{expanded ? '⌄' : '›'}</span>
-          <strong>{title}</strong>
-          {!expanded && row.original?.observationRef ? (
-            <small>· risultato registrato</small>
-          ) : null}
-        </button>
+        <input type="text" className="timeline-activity-editor__objective-name"
+          aria-label="Nome obiettivo" placeholder="Nome obiettivo"
+          maxLength={300} value={row.label} disabled={disabled}
+          onChange={(event) => onChange({ label: event.target.value })} />
         <button type="button" className="timeline-activity-editor__objective-remove"
           aria-label={`Rimuovi obiettivo ${title}`} title="Rimuovi obiettivo"
           onClick={onRemove} disabled={disabled}>×</button>
       </div>
-      {expanded ? (
-        <div className="timeline-activity-editor__objective-fields">
-          <label>Nome obiettivo
-            <input maxLength={300} value={row.label} disabled={disabled}
-              onChange={(event) => onChange({ label: event.target.value })} />
-          </label>
-          <label>Tipo obiettivo
-            <select value={row.resultKind} disabled={disabled}
-              onChange={(event) => {
-                const kind = event.target.value as ObjectiveKind;
-                onChange({
-                  resultKind: kind,
-                  comparatorCode: kind === 'quantity' ? 'gte' :
-                    kind === 'range' ? 'between' : null,
-                  targetValue: '', targetMin: '', targetMax: '', unitCode: '',
-                });
-              }}>
-              <option value="boolean">Sì / No</option>
-              <option value="quantity">Quantità</option>
-              <option value="qualitative">Qualitativo</option>
-              <option value="range">Intervallo numerico</option>
-            </select>
-          </label>
-          {row.resultKind === 'quantity' ? (
-            <div className="timeline-activity-editor__fields">
-              <label>Confronto obiettivo
-                <select value={row.comparatorCode ?? 'gte'} disabled={disabled}
-                  onChange={(event) => onChange({
-                    comparatorCode: event.target.value as ObjectiveComparator,
-                  })}>
-                  <option value="eq">Uguale a</option>
-                  <option value="gte">Almeno</option>
-                  <option value="lte">Al massimo</option>
-                </select>
-              </label>
-              <label>Valore obiettivo
-                <input type="number" step="any" value={row.targetValue} disabled={disabled}
-                  onChange={(event) => onChange({ targetValue: event.target.value })} />
-              </label>
-            </div>
-          ) : null}
-          {row.resultKind === 'range' ? (
-            <div className="timeline-activity-editor__fields">
-              <label>Minimo obiettivo
-                <input type="number" step="any" value={row.targetMin} disabled={disabled}
-                  onChange={(event) => onChange({ targetMin: event.target.value })} />
-              </label>
-              <label>Massimo obiettivo
-                <input type="number" step="any" value={row.targetMax} disabled={disabled}
-                  onChange={(event) => onChange({ targetMax: event.target.value })} />
-              </label>
-            </div>
-          ) : null}
-          {['quantity', 'range'].includes(row.resultKind) ? (
-            <label>Unità di misura
-              <input maxLength={40} value={row.unitCode} disabled={disabled}
-                onChange={(event) => onChange({ unitCode: event.target.value })} />
+      <div className="timeline-activity-editor__objective-fields">
+        <label>Tipo obiettivo
+          <select value={row.resultKind} disabled={disabled}
+            onChange={(event) => {
+              const kind = event.target.value as ObjectiveKind;
+              onChange({
+                resultKind: kind,
+                comparatorCode: kind === 'quantity' ? 'gte' :
+                  kind === 'range' ? 'between' : null,
+                targetValue: '', targetMin: '', targetMax: '', unitCode: '',
+              });
+            }}>
+            <option value="boolean">Sì / No</option>
+            <option value="quantity">Quantità</option>
+            <option value="qualitative">Qualitativo</option>
+            <option value="range">Intervallo numerico</option>
+          </select>
+        </label>
+        {row.resultKind === 'quantity' ? (
+          <div className="timeline-activity-editor__fields">
+            <label>Confronto obiettivo
+              <select value={row.comparatorCode ?? 'gte'} disabled={disabled}
+                onChange={(event) => onChange({
+                  comparatorCode: event.target.value as ObjectiveComparator,
+                })}>
+                <option value="eq">Uguale a</option>
+                <option value="gte">Almeno</option>
+                <option value="lte">Al massimo</option>
+              </select>
             </label>
-          ) : null}
-          {row.seriesState ? (
-            <fieldset>
-              <legend>Ambito modifica obiettivo</legend>
-              <label>
-                <input type="radio" name={`objective-scope-${row.id}`}
-                  checked={row.scope === 'only_this'}
-                  onChange={() => onChange({ scope: 'only_this' })} />
-                Solo questa
-              </label>
-              <label>
-                <input type="radio" name={`objective-scope-${row.id}`}
-                  checked={row.scope === 'this_and_following'}
-                  onChange={() => onChange({ scope: 'this_and_following' })} />
-                Questa e le prossime
-              </label>
-            </fieldset>
-          ) : null}
-          {row.original?.observationRef ? (
-            <p role="status">Questo obiettivo ha risultati registrati: lo storico viene conservato e
-              la rimozione non è consentita.</p>
-          ) : null}
-        </div>
-      ) : null}
+            <label>Valore obiettivo
+              <input type="number" step="any" value={row.targetValue} disabled={disabled}
+                onChange={(event) => onChange({ targetValue: event.target.value })} />
+            </label>
+          </div>
+        ) : null}
+        {row.resultKind === 'range' ? (
+          <div className="timeline-activity-editor__fields">
+            <label>Minimo obiettivo
+              <input type="number" step="any" value={row.targetMin} disabled={disabled}
+                onChange={(event) => onChange({ targetMin: event.target.value })} />
+            </label>
+            <label>Massimo obiettivo
+              <input type="number" step="any" value={row.targetMax} disabled={disabled}
+                onChange={(event) => onChange({ targetMax: event.target.value })} />
+            </label>
+          </div>
+        ) : null}
+        {['quantity', 'range'].includes(row.resultKind) ? (
+          <label>Unità di misura
+            <input maxLength={40} value={row.unitCode} disabled={disabled}
+              onChange={(event) => onChange({ unitCode: event.target.value })} />
+          </label>
+        ) : null}
+        {row.seriesState ? (
+          <fieldset>
+            <legend>Ambito modifica obiettivo</legend>
+            <label>
+              <input type="radio" name={`objective-scope-${row.id}`}
+                checked={row.scope === 'only_this'}
+                onChange={() => onChange({ scope: 'only_this' })} />
+              Solo questa
+            </label>
+            <label>
+              <input type="radio" name={`objective-scope-${row.id}`}
+                checked={row.scope === 'this_and_following'}
+                onChange={() => onChange({ scope: 'this_and_following' })} />
+              Questa e le prossime
+            </label>
+          </fieldset>
+        ) : null}
+        {row.original?.observationRef ? (
+          <p role="status">Questo obiettivo ha risultati registrati: lo storico viene conservato e
+            la rimozione non è consentita.</p>
+        ) : null}
+      </div>
     </div>
   );
 }
