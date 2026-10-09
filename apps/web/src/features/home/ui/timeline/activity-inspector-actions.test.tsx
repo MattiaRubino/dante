@@ -24,6 +24,7 @@ const previewReplan = vi.fn();
 const applyReplan = vi.fn().mockImplementation(async (_ref, settings) => settings);
 const loadLifeAreaChoice = vi.fn();
 const createLifeArea = vi.fn();
+const setLifeAreaAppearance = vi.fn();
 const assignLifeArea = vi.fn();
 const revisePlannedName = vi.fn();
 const setPlacementProtected = vi.fn();
@@ -64,6 +65,7 @@ vi.mock('../../../temporal/remote-activity-edit-settings', () => ({
     applyReplan,
     loadLifeAreaChoice,
     createLifeArea,
+    setLifeAreaAppearance,
     assignLifeArea,
     revisePlannedName,
     setPlacementProtected,
@@ -196,12 +198,14 @@ describe('Objective correction in Activity Editor', () => {
     const onSaved = vi.fn();
     render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
       onSaved={onSaved} onCancel={() => undefined} />);
-    fireEvent.click(await screen.findByRole('button', { name: /^Corsa 10 km/ }));
+    fireEvent.focus(await screen.findByRole('textbox', { name: 'Nome obiettivo' }));
     fireEvent.change(screen.getByRole('textbox', { name: 'Nome obiettivo' }), {
       target: { value: 'Corsa 7 km' },
     });
     expect(applyActivityEdits).not.toHaveBeenCalled();
     expect(screen.queryByRole('button', { name: 'Salva obiettivo' })).toBeNull();
+    expect(screen.getAllByRole('textbox', { name: 'Nome obiettivo' })).toHaveLength(1);
+    expect(screen.queryByRole('button', { name: /^Corsa 10 km/ })).toBeNull();
     await submitEditor();
     await waitFor(() => expect(applyActivityEdits).toHaveBeenCalledWith(ref, {
       add: [],
@@ -234,7 +238,7 @@ describe('Objective correction in Activity Editor', () => {
     applyActivityEdits.mockResolvedValueOnce([{ ...objective, label: 'Corsa 7 km' }]);
     render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
       onSaved={() => undefined} onCancel={() => undefined} />);
-    fireEvent.click(await screen.findByRole('button', { name: /^Corsa 10 km/ }));
+    fireEvent.focus(await screen.findByRole('textbox', { name: 'Nome obiettivo' }));
     fireEvent.click(await screen.findByLabelText('Questa e le prossime'));
     fireEvent.change(screen.getByRole('textbox', { name: 'Nome obiettivo' }), {
       target: { value: 'Corsa 7 km' },
@@ -988,10 +992,17 @@ describe('Activity Inspector', () => {
   it('creates and assigns a new Life Area while saving the Activity', async () => {
     const catalog = { currentRef: null, currentRevision: 0, options: [] };
     loadLifeAreaChoice.mockResolvedValueOnce(catalog);
-    createLifeArea.mockResolvedValueOnce({ ref: 'area-new', name: 'Studio' });
+    createLifeArea.mockResolvedValueOnce({
+      ref: 'area-new', name: 'Studio', revision: 1, iconCode: null, colorCode: null,
+    });
+    setLifeAreaAppearance.mockResolvedValueOnce({
+      ref: 'area-new', name: 'Studio', revision: 2,
+      colorCode: '#EA5C12', iconCode: null,
+    });
     assignLifeArea.mockResolvedValueOnce({
       currentRef: 'area-new', currentRevision: 1,
-      options: [{ ref: 'area-new', name: 'Studio' }],
+      options: [{ ref: 'area-new', name: 'Studio', revision: 2,
+        iconCode: null, colorCode: '#EA5C12' }],
     });
     const onSaved = vi.fn();
     render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
@@ -1002,9 +1013,15 @@ describe('Activity Inspector', () => {
     await submitEditor();
     await waitFor(() => expect(createLifeArea).toHaveBeenCalledWith(
       'Studio', expect.any(String)));
+    expect(setLifeAreaAppearance).toHaveBeenCalledWith(
+      expect.objectContaining({ ref: 'area-new', revision: 1 }),
+      '#EA5C12', expect.any(String),
+    );
     expect(assignLifeArea).toHaveBeenCalledWith(ref,
       expect.objectContaining({ currentRevision: 0,
-        options: [{ ref: 'area-new', name: 'Studio' }] }),
+        options: [expect.objectContaining({
+          ref: 'area-new', revision: 2, colorCode: '#EA5C12',
+        })] }),
       'area-new', expect.any(String));
     expect(onSaved).toHaveBeenCalledWith(profile);
   });
