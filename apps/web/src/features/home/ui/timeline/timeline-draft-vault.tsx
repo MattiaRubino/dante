@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import {
   createRemoteDraftVault,
@@ -23,6 +24,34 @@ export function TimelineDraftVault({
   const vault = useMemo(() => createRemoteDraftVault(), []);
   const legacySource = useMemo(() => createRemoteTemporalPlanningTrayDataSource(), []);
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const panelRef = useRef<HTMLElement | null>(null);
+  const [actionsHost, setActionsHost] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      setActionsHost(document.querySelector<HTMLElement>('.dante-timeline-actions'));
+    });
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const closeOutside = (event: PointerEvent) => {
+      if (event.target instanceof Node &&
+          !triggerRef.current?.contains(event.target) &&
+          !panelRef.current?.contains(event.target)) setOpen(false);
+    };
+    const closeEsc = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('pointerdown', closeOutside, true);
+    document.addEventListener('keydown', closeEsc, true);
+    return () => {
+      document.removeEventListener('pointerdown', closeOutside, true);
+      document.removeEventListener('keydown', closeEsc, true);
+    };
+  }, [open]);
   const [items, setItems] = useState<readonly DraftVaultItem[]>([]);
   const [existing, setExisting] = useState<readonly TemporalPlanningTrayItem[]>([]);
   const [query, setQuery] = useState('');
@@ -72,8 +101,7 @@ export function TimelineDraftVault({
     }
   };
 
-  return <>
-    <button type="button" className="timeline-planning-trigger"
+  const trigger = <button ref={triggerRef} type="button" className="timeline-planning-trigger"
       aria-label="Apri Bozze" aria-expanded={open}
       onClick={() => setOpen((value) => !value)}>
       <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor">
@@ -82,8 +110,8 @@ export function TimelineDraftVault({
       </svg>
       {items.length > 0 ? <span className="timeline-planning-trigger__badge"
         aria-hidden="true">{items.length > 99 ? '99+' : items.length}</span> : null}
-    </button>
-    {open ? <aside className="timeline-planning-tray" data-timeline-draft-vault="true"
+    </button>;
+  const panel = open ? <aside ref={panelRef} className="timeline-planning-tray" data-timeline-draft-vault="true"
       aria-label="Bozze">
       <header className="timeline-planning-tray__header">
         <div>
@@ -146,6 +174,9 @@ export function TimelineDraftVault({
           </div>)}
         </section> : null}
       </div>
-    </aside> : null}
+    </aside> : null;
+  return <>
+    {actionsHost ? createPortal(trigger, actionsHost) : null}
+    {typeof document !== 'undefined' && panel ? createPortal(panel, document.body) : null}
   </>;
 }
