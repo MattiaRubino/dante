@@ -42,7 +42,8 @@ def _objective(
         json={
             "operation_id": f"m5:{key}:create", "label": key,
             "result_kind": "quantity", "comparator_code": "gte",
-            "target_value": 10, "unit_code": "km", "presentation_order": 0,
+            "target_value": 10, "unit_code": "km",
+            "presentation_order": 0 if key in {"First", "Unrecorded"} else 1,
         },
         headers=headers,
     )
