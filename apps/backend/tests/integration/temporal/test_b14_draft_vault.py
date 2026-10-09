@@ -86,7 +86,7 @@ async def test_inert_drafts_are_owner_scoped_replay_safe_and_do_not_create_subje
         assert replay["draft_ref"] == draft
         assert replay["revision"] == 1
 
-        async with runtime.session_factory() as session:
+        async with runtime.session_factory() as session, session.begin():
             own = (await session.execute(text("""
                 SELECT * FROM dante.list_self_temporal_drafts(:actor)
             """), {"actor": actor})).mappings().all()
@@ -106,7 +106,7 @@ async def test_inert_drafts_are_owner_scoped_replay_safe_and_do_not_create_subje
             await session.execute(text("""
                 SELECT dante.retire_self_temporal_draft(:actor,:draft,:rev)
             """), {"actor": actor, "draft": draft, "rev": 2})
-        async with runtime.session_factory() as session:
+        async with runtime.session_factory() as session, session.begin():
             assert (await session.execute(text("""
                 SELECT * FROM dante.list_self_temporal_drafts(:actor)
             """), {"actor": actor})).mappings().all() == []
