@@ -224,7 +224,8 @@ describe('Temporal Create U1 top controls', () => {
 
     expect(screen.getByRole('radio', { name: 'Orario' })).toBeTruthy();
     expect(screen.getByRole('radio', { name: 'Tutto il giorno' })).toBeTruthy();
-    expect(screen.getByRole('radio', { name: 'Da collocare' })).toBeTruthy();
+    expect(screen.queryByRole('radio', { name: 'Da collocare' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Salva bozza' })).toBeTruthy();
     expect(screen.queryByRole('radio', { name: 'Fascia' })).toBeNull();
 
     expect(
