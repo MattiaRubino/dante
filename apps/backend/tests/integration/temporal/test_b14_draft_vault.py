@@ -52,7 +52,6 @@ def _seed_self(database: Any) -> NativeRef:
     return person_ref
 
 
-
 @pytest.mark.asyncio
 async def test_inert_drafts_are_owner_scoped_replay_safe_and_do_not_create_subjects(
     migrated_database: Any,
