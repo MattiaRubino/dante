@@ -51,7 +51,7 @@ async def test_planned_row_without_time_is_persisted_without_placement_and_repla
                  WHERE role.activity_ref=%s AND role.role_code='planned'
             """, (created.item.subject_native_ref,)).fetchone()
         assert row is not None and row[1:] == ("Fonti", None)
-        async with runtime.session_factory() as session:
+        async with runtime.session_factory() as session, session.begin():
             snapshot_row = (await session.execute(
                 _SNAPSHOT, {"actor": actor, "activity": created.item.subject_native_ref},
             )).scalar_one()
