@@ -15,6 +15,10 @@ def upgrade() -> None:
     bind = op.get_bind()
     for statement in (_TABLE, _SAVE, _LIST, _RETIRE):
         bind.execute(sa.text(statement))
+    bind.exec_driver_sql(
+        "CREATE INDEX ix_temporal_draft_vault_owner_updated "
+        "ON dante.temporal_draft_vault(owner_person_ref, updated_at DESC, draft_ref)"
+    )
     bind.exec_driver_sql("ALTER TABLE dante.temporal_draft_vault OWNER TO dante_owner")
     bind.exec_driver_sql(
         "REVOKE ALL ON TABLE dante.temporal_draft_vault "
