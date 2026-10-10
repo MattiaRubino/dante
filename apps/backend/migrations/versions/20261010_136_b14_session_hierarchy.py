@@ -160,6 +160,7 @@ BEGIN
     IF NOT result.replayed AND NOT EXISTS (
         SELECT 1 FROM dante.list_self_open_activity_sessions(requested_self_person_ref) runtime
         WHERE runtime.activity_ref=requested_activity_ref
+          AND runtime.session_ref<>result.session_ref
           AND runtime.planned_schedule_ref IS NULL
           AND NOT runtime.paused
     ) THEN
