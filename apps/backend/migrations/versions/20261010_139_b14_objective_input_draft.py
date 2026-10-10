@@ -15,7 +15,9 @@ depends_on: str | Sequence[str] | None = None
 def upgrade() -> None:
     bind = op.get_bind()
     for sql in (_TABLE, _INDEX, _SAVE, _LIST, _CONFIRM):
-        bind.exec_driver_sql(sql)
+        # psycopg3 interprets raw %ROWTYPE as a placeholder in driver SQL.
+        # Escape % only for the driver's statement parser; PostgreSQL sees %ROWTYPE.
+        bind.exec_driver_sql(sql.replace('%', '%%'))
     bind.exec_driver_sql(
         "ALTER TABLE dante.temporal_objective_input_draft OWNER TO dante_owner"
     )
