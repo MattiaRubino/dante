@@ -1,10 +1,10 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
-## Current Session panel candidate
+## CURRENT: live execution / Session hierarchy / Timeline projection — 2026-10-10
 
-The new Timeline control is published on this branch; refer to `docs/frontend/home/timeline-session-panel.md` and the exact scope at `docs/workstreams/timeline-session-panel-scope.md`. Candidate migration `_135` permits an explicit untimed planned start and exposes two owner-scoped read capabilities. User-local browser scenarios passed 2/2; PostgreSQL first passed 17 tests and then the corrected panel integration tests passed 2/2. Real-app acceptance remains open; prior B14 work remains as recorded below.
+Branch candidate has been published for the approved parent-to-internal cascade, five-minute right-side desk, and one reality-remodulated card per accepted Activity interval. PostgreSQL forward migrations `20261010_136` and `20261010_137` + new owner-only Dictionary routines lead to expected `237|5|222|103|484|420|593|0|0|0`. API panel now provides bounded historical visuals and accepts visible-window query bounds. No actual QA result is claimed for this extension; **NEXT** user runs `tooling/verify-b14-session-live-local.sh` once and reports results. Preserve generated OpenAPI files for publication; do not run CI or mutate user's worktree. Domain authority: `docs/domain/decisions/activity-session-live-timeline-v1.md`; UI authority: `docs/frontend/home/timeline-session-panel.md`. Existing `_135` technical evidence is prior proof, not new candidate proof.
 
-- **Status:** CURRENT LIVE STATE — U6 continuation reconciled 2026-10-03
+- **Status:** HISTORICAL U6 ledger checkpoint, superseded by 2026-10-10 live execution frontier above
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Continuation handoff:** `docs/workstreams/timeline-temporal-operational-handoff.md`
@@ -34,11 +34,11 @@ The new Timeline control is published on this branch; refer to `docs/frontend/ho
 - **B13-D candidate gate:** `docs/workstreams/timeline-temporal-operational-b13-d-gate-2026-09-29.md`
 - **B13-D closure evidence:** `docs/workstreams/timeline-temporal-operational-b13-d-closure-2026-09-29.md`
 - **DB overlay:** `docs/database/timeline-temporal-operational.md`
-- **Current persistence source frontier:** `20260929_93` (B12-C focused local proof)
+- **Historical persistence source frontier:** `20260929_93` (B12-C focused local proof)
 - **Reported current catalog topology:** `_93` / `196|5|155|100|397|344|497|0|0|0` (focused local gate)
 - **Completed functional frontier:** B12 ✅ CLOSED / qualified user-reported acceptance 2026-09-30
-- **Current implementation cursor:** B12-D and B12 closed on qualified user-reported acceptance; B14/B07 active as one user-guided product/UI cycle; U1 Create-entry candidate is ready for user visual proof; B13-D post-repair web rerun unreported
-- **U6 cursor:** Candidate `_103` adds named future planned Schedule rows and corrects Advanced Create placement and controls after the user's real-app screenshots. The `_102` atomic/catalog gate passed 9 PostgreSQL tests at `39c846d0`; the atomic B08 minimum test passed (1) at `8b9e9158`. The `_103` PostgreSQL/catalog gate and corrected real-app acceptance are pending. Follow `timeline-temporal-operational-b14-u6-candidate-2026-10-02.md`.
+- **Historical implementation cursor:** B12-D and B12 closed on qualified user-reported acceptance; B14/B07 active as one user-guided product/UI cycle; U1 Create-entry candidate is ready for user visual proof; B13-D post-repair web rerun unreported
+- **Historical U6 cursor:** Candidate `_103` adds named future planned Schedule rows and corrects Advanced Create placement and controls after the user's real-app screenshots. The `_102` atomic/catalog gate passed 9 PostgreSQL tests at `39c846d0`; the atomic B08 minimum test passed (1) at `8b9e9158`. The `_103` PostgreSQL/catalog gate and corrected real-app acceptance are pending. Follow `timeline-temporal-operational-b14-u6-candidate-2026-10-02.md`.
 - **Activity interval cursor (2026-10-05):** Candidate `_106` adds separate Activity `interval` roles and authoring while preserving `planned` for future Sessions; Timeline projects distinct intervals and hides the technical envelope for these Activities. Product decision: `docs/domain/decisions/activity-intervals-and-sessions-v2.md`. Local migration/build and real-app acceptance pending; direct coordinated interval replanning remains open.
 - **CI:** not authorized; local tests are run by the user
 
