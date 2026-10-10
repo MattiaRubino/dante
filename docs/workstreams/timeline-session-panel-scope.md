@@ -1,4 +1,6 @@
-# Session panel — publication gate
+# Session panel — historical _135 publication gate
+
+> **HISTORICAL / _135 EVIDENCE ONLY (superseded 2026-10-10).** This remains exact publication evidence for the original panel. Current accepted product rules and new implementation are in `docs/domain/decisions/activity-session-live-timeline-v1.md` and `docs/frontend/home/timeline-session-panel.md`. Do not use this past path list as the scope for the _136/_137 extension.
 
 BRANCH: `feature/timeline-temporal-operational`
 
