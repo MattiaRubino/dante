@@ -177,6 +177,14 @@ export type TimelineEventLayout = Readonly<{
   groupIndex: number;
   groupLane: number;
   groupLaneCount: number;
+  /** Reality-derived geometry decoration; never accepted Schedule truth. */
+  sessionReality?: Readonly<{
+    state: 'running' | 'paused' | 'ended';
+    startedAt: string;
+    endedAt: string | null;
+    fill: string;
+    actualLabel: string;
+  }>;
 }>;
 
 export type TimelineGap = Readonly<{
