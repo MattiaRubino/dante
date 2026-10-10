@@ -77,13 +77,15 @@
       "B14-M5-PLANNED-RETIREMENT",
       "B14-M5-OBJECTIVE-EDITOR",
       "B14-DRAFT-VAULT",
-      "B14-SESSION-PANEL"
+      "B14-SESSION-PANEL",
+      "B14-SESSION-HIERARCHY",
+      "B14-SESSION-REALITY-PROJECTION"
     ],
     "standalone_entries": {
       "tables": 237,
       "views": 5,
-      "routines": 220,
-      "total": 462
+      "routines": 222,
+      "total": 464
     },
     "embedded_objects": {
       "triggers": 103,
