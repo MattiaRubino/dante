@@ -20,7 +20,7 @@ Accepted Schedule is the **original planned coordinate**, never overwritten by e
 
 ## Database
 
-`20261009_135` is the prior untimed-planned start + owner panel read. `20261010_136` introduces one owner-only atomic group transition capability and adds a main-running/precise-start admission check to the planned start. `20261010_137` adds one bounded owner-only Session-real-timing read. Both are forward-only with no new Session or hierarchy table. Runtime obtains EXECUTE only; SQLAlchemy and Dictionary exact catalog must reconcile at **237 tables, 5 views, 222 routines, 103 triggers, 484 indexes, 420 FKs, 593 checks**.
+`20261009_135` is the prior untimed-planned start + owner panel read. `20261010_136` introduces one owner-only atomic group transition capability and adds a main-running/precise-start admission check to the planned start. `20261010_137` adds one bounded owner-only Session-real-timing read. `20261010_138` repairs cascade UUIDv7 and Stop-while-paused, preserving a closed pause interval instead of a fake Resume. Both are forward-only with no new Session or hierarchy table. Runtime obtains EXECUTE only; SQLAlchemy and Dictionary exact catalog must reconcile at **237 tables, 5 views, 222 routines, 103 triggers, 484 indexes, 420 FKs, 593 checks**.
 
 ## Verification
 
