@@ -28,6 +28,7 @@ run_gate PY_SYNTAX uv run --locked python -m compileall -q \
   src/dante/modules/temporal/session_panel_api.py \
   migrations/versions/20261010_136_b14_session_hierarchy.py \
   migrations/versions/20261010_137_b14_session_visuals.py \
+  migrations/versions/20261010_138_b14_live_session_end.py \
   tests/test_session_panel.py \
   tests/integration/temporal/test_b14_session_hierarchy.py
 run_gate RUFF uv run --locked ruff check \
@@ -35,6 +36,7 @@ run_gate RUFF uv run --locked ruff check \
   src/dante/modules/temporal/session_panel_api.py \
   migrations/versions/20261010_136_b14_session_hierarchy.py \
   migrations/versions/20261010_137_b14_session_visuals.py \
+  migrations/versions/20261010_138_b14_live_session_end.py \
   tests/test_session_panel.py \
   tests/integration/temporal/test_b14_session_hierarchy.py \
   tests/integration/temporal/test_b14_session_panel.py \
@@ -47,6 +49,7 @@ run_gate POSTGRES uv run --locked pytest -q --no-cov --tb=short -m postgres \
   tests/integration/temporal/test_b14_session_panel.py \
   tests/integration/temporal/test_b14_planned_session_execution_link.py \
   tests/integration/temporal/test_b08_b_session_pause_resume.py \
+  tests/integration/temporal/test_b14_planned_session_execution_link.py \
   tests/integration/temporal/test_b14_activity_replan.py \
   tests/integration/database/test_current_catalog.py \
   tests/integration/database/test_database_current_catalog.py
