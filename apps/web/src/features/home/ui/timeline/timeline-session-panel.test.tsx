@@ -34,6 +34,7 @@ function Harness({ enabled = true }: { enabled?: boolean }) {
   return (
     <section>
       <nav>{view.control}</nav>
+      <div className="timeline-session-panel__edge-host">{view.panel}</div>
     </section>
   );
 }
@@ -121,7 +122,10 @@ describe('Timeline Session panel integration', () => {
       name: 'Sessioni disponibili · 2',
     });
     expect(trigger.getAttribute('data-timeline-tooltip')).toBe('Sessioni');
-    expect(screen.getByRole('complementary').parentElement).toBe(
+    expect(screen.getByRole('complementary').parentElement?.className).toBe(
+      'timeline-session-panel__edge-host',
+    );
+    expect(screen.getByRole('complementary').parentElement).not.toBe(
       trigger.parentElement,
     );
     fireEvent.keyDown(screen.getByRole('complementary'), { key: 'Escape' });
