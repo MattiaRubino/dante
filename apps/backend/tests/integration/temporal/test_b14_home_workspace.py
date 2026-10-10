@@ -6,18 +6,20 @@ from typing import Any
 
 import pytest
 from fastapi import Response
+from tests.integration.temporal.test_b14_u2_authoring import _seed_self
 
 from dante.modules.temporal.authoring import TemporalAuthoringApplication
 from dante.modules.temporal.reality_objective_api import (
-    ObjectiveCreateCommand, create_activity_objective,
+    ObjectiveCreateCommand,
+    create_activity_objective,
 )
 from dante.modules.temporal.resolution_queue_api import (
-    list_home_finished_work, list_home_objective_work,
+    list_home_finished_work,
+    list_home_objective_work,
 )
 from dante.modules.temporal.schedule import AbsoluteIntervalPlacement
 from dante.modules.temporal.session_runtime import SessionApplication
 from dante.platform.database.runtime import create_database_runtime
-from tests.integration.temporal.test_b14_u2_authoring import _seed_self
 
 pytestmark = pytest.mark.postgres
 
