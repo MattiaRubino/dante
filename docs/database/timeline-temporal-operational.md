@@ -2,13 +2,13 @@
 
 ## CURRENT: B14 Home workspace + optional main / independent child Session — 2026-10-10
 
-**Unverified forward candidate migration head:** `20261010_141`. Exact intended Dictionary/SQLAlchemy/Alembic topology: **238 tables | 5 views | 228 routines | 103 triggers | 486 physical indexes | 421 FKs | 596 CHECK**. The last user-local green Session gate was at `_138` and does not prove these new migrations.
+**Technically verified forward migration head (user-local cumulative green checks):** `20261010_141`. Exact intended Dictionary/SQLAlchemy/Alembic topology: **238 tables | 5 views | 228 routines | 103 triggers | 486 physical indexes | 421 FKs | 596 CHECK**. User-local PostgreSQL tests for `_139`–`_141` passed in the repair series, including 14 functional cases and final exact catalog verification (`1 passed`); the earlier `_138` gate remains separate historic evidence.
 
 - `_139`: `temporal_objective_input_draft` with a FK to canonical Objective, owner-only staged JSON value (not Observation), CAS/replay and explicit confirm capability atomically calling the existing canonical `record_self_temporal_objective_result` before saving the confirmation receipt. No direct runtime table DML; confirmed receipt persists for retry replay.
 - `_140`: read-only bounded `list_self_home_finished_work` (real Session ends + explicitly occurred Actuals) and `list_self_home_objective_work` (unobserved Objective identities with provisional input metadata). Neither creates completion from clock passage; each query accepts a hard 1–100 result cap.
 - `_141`: trusted `start_self_session_for_planned` clone, **not executable by PUBLIC or dante_runtime**, called only inside `start_self_planned_activity_session` after owner/provenance verification. The generic `start_self_session` still enforces Activity `live` capture policy. The planned wrapper requires a running main only when that main mode is enabled; the desk admits independently timed/untimed planned rows even when generic Activity capture is disabled. Existing canonical B08 timing/identity/operation contracts preserved. No new Session table.
 
-Product authority: `docs/domain/decisions/activity-session-live-timeline-v1.md`. Focused, consolidated user-local gate: `tooling/verify-b14-session-home-workspace-local.sh`. No CI, no reset/clean, no claim of local verification yet; generated OpenAPI/Orval must be preserved and published once tested.
+Product authority: `docs/domain/decisions/activity-session-live-timeline-v1.md`. Focused, consolidated user-local gate: `tooling/verify-b14-session-home-workspace-local.sh`. No CI or reset/clean. Database candidate is now technically verified by the user's cumulative local gate; generated OpenAPI/Orval output must be preserved and published, and actual app visual acceptance is still pending.
 
 ## Historical _138 Session technical proof checkpoint — 2026-10-10
 
