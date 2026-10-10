@@ -14,7 +14,7 @@ depends_on: str | Sequence[str] | None = None
 
 def upgrade() -> None:
     bind = op.get_bind()
-    for sql in (_TABLE, _SAVE, _LIST, _CONFIRM):
+    for sql in (_TABLE, _INDEX, _SAVE, _LIST, _CONFIRM):
         bind.exec_driver_sql(sql)
     bind.exec_driver_sql(
         "ALTER TABLE dante.temporal_objective_input_draft OWNER TO dante_owner"
@@ -64,8 +64,11 @@ CREATE TABLE dante.temporal_objective_input_draft (
      observation_ref IS NOT NULL AND evaluation_state_ref IS NOT NULL AND assessment_code IS NOT NULL)
   )
 );
+"""
+
+_INDEX = r"""
 CREATE INDEX ix_temporal_objective_input_draft_owner
- ON dante.temporal_objective_input_draft(owner_person_ref,updated_at DESC,objective_ref);
+ ON dante.temporal_objective_input_draft(owner_person_ref,updated_at DESC,objective_ref)
 """
 
 _SAVE = r"""
