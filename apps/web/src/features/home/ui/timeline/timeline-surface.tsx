@@ -1269,6 +1269,9 @@ export function TimelineSurface({
         }
         creationEnabled={creationEnabled}
       />
+      <div className="timeline-session-panel__edge-host">
+        {sessionPresentation.panel}
+      </div>
 
       {!prototypeMode && (
         <TimelineOrganizationPanel
