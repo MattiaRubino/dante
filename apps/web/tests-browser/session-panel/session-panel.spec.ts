@@ -26,6 +26,7 @@ for (const width of [1440, 390]) {
           json: {
             evaluated_at: now,
             next_change_at: null,
+            visuals: [],
             groups: [
               {
                 activity_ref: activity,
