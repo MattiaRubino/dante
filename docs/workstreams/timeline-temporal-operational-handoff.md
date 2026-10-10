@@ -1,5 +1,11 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## CURRENT REAL-APP HANDOFF — 2026-10-10 (user screenshot follow-up)
+
+The user exercised DANTE after the previously confirmed 7/7 technical gate. Source-visible defects: popup positioned relative to toolbar icon; after Stop the UI/BFF reproposed the ended planned row; parent-only capture policy hides child planned Sessions if Activity capture is disabled. The `Da verificare` rail currently intentionally shows only three B10 work reasons; Stop alone is not guaranteed to generate review. **New GitHub commits save** the inner-right panel host and Stop lifecycle correction, with unit/PG/React/Playwright regressions; these follow-up commits **have not yet passed the user-local gate**. Next: user pulls feature branch then runs `bash tooling/verify-b14-session-desk-realapp-fixes-local.sh` (no CI, no OpenAPI regeneration), report only red checks. Keep 7/7 prior green proof separate.
+
+**Product decisions open, not implemented:** make child Session work independently from optional main capture in a *correct explicit canonical policy*, decide whether inactivity becomes governed review or remains unknown, define bounded `Conclusi` history, separate `Obiettivi` view and persisted provisional vs local staging before `Conferma` in Inspector + Context Rail. See `docs/workstreams/timeline-context-rail-three-views-proposal-2026-10-10.md`. Maintain Schedule≠real Session, no automatic completed Activity or Objective from Stop. Do not hide remaining work or imply B14/B15 closure.
+
 ## CURRENT HANDOFF — 2026-10-10 / live Activity Session execution
 
 **Source branch/head proven by user:** `feature/timeline-temporal-operational` at `8097918d`, Alembic `20261010_138`. **Targeted repair gate GREEN, 7/7 checks:** PY_SYNTAX=0, RUFF=0, POSTGRES=0, WEB_TYPECHECK=0, WEB_LINT=0, VITEST=0, BROWSER=0; first full-gate nonfailed checks (PY_UNIT, GENERATE, GENERATED_CHECK, API_TYPECHECK) were already PASS. Evidence: `docs/workstreams/timeline-session-live-local-gate-2026-10-10.md`; user WSL log directory `/tmp/dante-session-live-repair.aEjb42`. The new panel previews precise starts by 5 minutes, controls main and internal Session executions, cascades main Pause/Stop atomically, resumes children only on their own Play, and preserves Schedule while one Timeline card projects actual elapsed/paused ranges.
