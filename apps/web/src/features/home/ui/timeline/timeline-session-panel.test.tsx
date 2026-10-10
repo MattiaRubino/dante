@@ -48,6 +48,7 @@ function feed(rows: unknown[] = [row()]) {
   return {
     evaluated_at: now,
     next_change_at: null,
+    visuals: [],
     groups: rows.length
       ? [{ activity_ref: activity, title: 'Studio', rows }]
       : [],
