@@ -30,18 +30,19 @@ async def test_planned_start_is_linked_replayable_and_never_actual(
     other_actor = _seed_self(migrated_database)
     runtime = create_database_runtime(migrated_database.runtime_settings())
     try:
+        now = datetime.now(UTC)
         created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
             self_person_ref=actor,
             operation_id="planned:activity",
             title="Preparazione",
             placement=AbsoluteIntervalPlacement(
-                starts_at=datetime(2026, 10, 20, 8, tzinfo=UTC),
-                ends_at=datetime(2026, 10, 20, 12, tzinfo=UTC),
+                starts_at=now - timedelta(hours=1),
+                ends_at=now + timedelta(hours=2),
             ),
             planned_slices=(
                 AbsoluteIntervalPlacement(
-                    starts_at=datetime(2026, 10, 20, 9, tzinfo=UTC),
-                    ends_at=datetime(2026, 10, 20, 10, tzinfo=UTC),
+                    starts_at=now - timedelta(minutes=30),
+                    ends_at=now + timedelta(minutes=30),
                 ),
             ),
             session_capture_mode="live",
@@ -64,6 +65,13 @@ async def test_planned_start_is_linked_replayable_and_never_actual(
                 activity_ref=activity_ref,
                 schedule_ref=created.schedule.schedule_ref,
             )
+        main = await sessions.start(
+            self_person_ref=actor,
+            operation_id="planned:main:start",
+            subject_kind="activity",
+            subject_native_ref=activity_ref,
+        )
+        assert main.open
         started = await sessions.start_planned(
             self_person_ref=actor,
             operation_id="planned:start",
@@ -104,7 +112,8 @@ async def test_planned_start_is_linked_replayable_and_never_actual(
             self_person_ref=actor,
             subject_native_ref=activity_ref,
         )
-        assert listed[0].planned_schedule_ref == schedule_ref
+        assert any(view.planned_schedule_ref == schedule_ref for view in listed)
+        assert any(view.session_ref == main.session_ref for view in listed)
         with psycopg.connect(
             **migrated_database.connection_kwargs(
                 "dante_migrator", migrated_database.cluster.migrator_password,
