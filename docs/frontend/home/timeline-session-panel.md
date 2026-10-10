@@ -24,5 +24,5 @@ Accepted Schedule is the **original planned coordinate**, never overwritten by e
 
 ## Verification
 
-Run only the unified `tooling/verify-b14-session-live-local.sh` once the candidate is published. It covers existing Session panel gates plus both new migrations, history projection, cascade rollback/replay, generated OpenAPI, frontend typecheck, focused Vitest and single-card geometry. User-local technical and real-app visual acceptance **not yet reported**. Earlier _135 tests remain historical evidence, not proof for this newer version.
+First user-local unified gate **RAN and FAILED** on 2026-10-10: PY_SYNTAX/RUFF/PY_UNIT/GENERATE/GENERATED_CHECK/API_TYPECHECK/WEB_LINT passed; PostgreSQL 3/20 failed, Web typecheck failed on optional visuals, Vitest 1/99 failed on invalid mocked UUID, browser 390px panel overflowed 13.66px. Repairs include forward `_138`, source/test fixes and mobile width. Rerun **only failed checks** through `tooling/verify-b14-session-live-repair-local.sh`. This candidate remains unverified pending repair gate and real-app acceptance. Earlier _135 tests remain historical proof.
 
