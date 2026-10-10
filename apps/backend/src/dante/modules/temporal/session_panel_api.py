@@ -127,8 +127,11 @@ def build_panel(
             # Re-entering the same planned window does not manufacture a
             # fresh "ready" execution on every polling tick or page refresh.
             return any(
-                item["activity_ref"] == owner["activity_ref"]
-                and item["planned_schedule_ref"] == planned_ref
+                str(item["activity_ref"]) == str(owner["activity_ref"])
+                and (
+                    str(item["planned_schedule_ref"])
+                    if item["planned_schedule_ref"] is not None else None
+                ) == (str(planned_ref) if planned_ref is not None else None)
                 and any(
                     item["started_at"] < end
                     and item["ended_at"] >= start - PREVIEW_LEAD
