@@ -307,4 +307,43 @@ describe('Timeline Session panel integration', () => {
     render(<Harness enabled={false} />);
     expect(fetcher).not.toHaveBeenCalled();
   });
+  it('shows a timed internal in the five-minute preview but blocks premature Play', async () => {
+    const fetcher = vi.fn(async () => Response.json(feed([
+      {
+        planned_schedule_ref: null, name: 'Sessione attività',
+        starts_at: null, execution: null,
+      },
+      { ...row(), starts_at: '2026-10-09T10:05:00Z' },
+    ])));
+    vi.stubGlobal('fetch', fetcher);
+    render(<Harness />);
+    const internal = await screen.findByRole('button', { name: 'Avvia · Ripasso' });
+    expect(internal.disabled).toBe(true);
+    expect(screen.getByText('Imminente · attende orario')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Avvia · Sessione attività' }).disabled)
+      .toBe(false);
+    expect(fetcher).toHaveBeenCalledOnce();
+  });
+
+  it('keeps Stop enabled but forbids internal Resume while the main is paused', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => Response.json(feed([
+      {
+        planned_schedule_ref: null, name: 'Sessione attività',
+        starts_at: null,
+        execution: { session_ref: 'main', timing_material_state_ref: state, paused: true },
+      },
+      {
+        ...row(),
+        execution: { session_ref: session, timing_material_state_ref: nextState, paused: true },
+      },
+    ]))));
+    render(<Harness />);
+    const resume = await screen.findByRole('button', { name: 'Riprendi · Ripasso' });
+    expect(resume.disabled).toBe(true);
+    expect(screen.getByRole('button', { name: 'Termina · Ripasso' }).disabled)
+      .toBe(false);
+    expect(screen.getByRole('button', { name: 'Riprendi · Sessione attività' }).disabled)
+      .toBe(false);
+  });
+
 });
