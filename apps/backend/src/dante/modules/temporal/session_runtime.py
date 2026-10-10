@@ -276,9 +276,9 @@ class SessionApplication:
             """
             SELECT session_ref, subject_native_ref, timing_material_state_ref,
                    started_at, ended_at, replayed
-              FROM dante.end_self_session(
+              FROM dante.transition_self_activity_session_group(
                 :actor, :operation_id, :fingerprint, :session_ref,
-                :expected_state, :resulting_state
+                :expected_state, :resulting_state, 'end'
               )
             """,
             {
@@ -346,15 +346,15 @@ class SessionApplication:
         query = {
             "pause": """SELECT session_ref, subject_native_ref, timing_material_state_ref,
                               started_at, ended_at, replayed
-                         FROM dante.pause_self_session(
+                         FROM dante.transition_self_activity_session_group(
                            :actor, :operation_id, :fingerprint, :session_ref,
-                           :expected_state, :resulting_state
+                           :expected_state, :resulting_state, 'pause'
                          )""",
             "resume": """SELECT session_ref, subject_native_ref, timing_material_state_ref,
                                started_at, ended_at, replayed
-                          FROM dante.resume_self_session(
+                          FROM dante.transition_self_activity_session_group(
                             :actor, :operation_id, :fingerprint, :session_ref,
-                            :expected_state, :resulting_state
+                            :expected_state, :resulting_state, 'resume'
                           )""",
         }[command]
         return await self._call(
@@ -545,6 +545,14 @@ class SessionApplication:
             raise SessionOperationReuseError("Session operation id was reused.") from exc
         if name in {"session_execution_policy_live_required", "session_manual_record_policy_required"}:
             raise SessionCaptureDisabledError("Session capture is disabled by Activity policy.") from exc
+        if name in {
+            "session_internal_requires_running_main",
+            "session_internal_before_planned_start",
+        }:
+            raise SessionInputError(
+                "La Sessione interna richiede una Sessione principale in corso "
+                "e non può partire prima dell'orario previsto."
+            ) from exc
         if name == "session_manual_record_invalid":
             raise SessionInputError("Manual Session requires a past, ordered absolute interval.") from exc
         if name == "session_end_conflict" or "conflicts with current timing" in message:
