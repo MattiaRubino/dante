@@ -34,12 +34,9 @@ gate RUFF uv run --locked ruff check \
   tests/integration/temporal/test_b14_session_panel.py \
   tests/integration/database/test_current_catalog.py \
   tests/integration/database/test_database_current_catalog.py
-gate POSTGRES uv run --locked pytest -q --no-cov --tb=short -m postgres \
-  tests/integration/temporal/test_b14_objective_input.py \
-  tests/integration/temporal/test_b14_home_workspace.py \
-  tests/integration/temporal/test_b14_session_panel.py \
-  tests/integration/temporal/test_b14_session_hierarchy.py \
-  tests/integration/temporal/test_b14_planned_session_execution_link.py \
+# Last user gate already passed 14 functional PG tests; only two catalog
+# assertions failed because _139 added two indexes, not one (486 total).
+gate POSTGRES_CATALOG uv run --locked pytest -q --no-cov --tb=short -m postgres \
   tests/integration/database/test_current_catalog.py \
   tests/integration/database/test_database_current_catalog.py
 cd ../.. || exit 1
@@ -58,7 +55,7 @@ gate VITEST_CHANGED pnpm --filter @dante/web exec vitest run \
 echo
 echo "===== B14 HOME WORKSPACE — ONLY REPAIR GATE ====="
 failed=0
-for name in RUFF POSTGRES WEB_TYPECHECK WEB_LINT VITEST_CHANGED; do
+for name in RUFF POSTGRES_CATALOG WEB_TYPECHECK WEB_LINT VITEST_CHANGED; do
   printf '%-20s %s\n' "$name" "${STATUS[$name]:-NON_ESEGUITO}"
   if [ "${STATUS[$name]:-1}" -ne 0 ]; then failed=1; fi
 done
