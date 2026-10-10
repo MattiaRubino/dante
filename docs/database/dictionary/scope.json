@@ -79,7 +79,8 @@
       "B14-DRAFT-VAULT",
       "B14-SESSION-PANEL",
       "B14-SESSION-HIERARCHY",
-      "B14-SESSION-REALITY-PROJECTION"
+      "B14-SESSION-REALITY-PROJECTION",
+      "B14-SESSION-PAUSED-END"
     ],
     "standalone_entries": {
       "tables": 237,
