@@ -97,7 +97,8 @@ export function useSessionPanelPresentation(
                       const requiresMain = internal && !row.execution && !mainIsRunning;
                       const pausedWithoutMain = internal && row.execution?.paused &&
                         !mainIsRunning;
-                      const disabled = pending || controller.error !== null ||
+                      const disabled = pending || controller.error !== null;
+                      const playDisabled = disabled ||
                         Boolean(futureInternal || requiresMain || pausedWithoutMain);
                       const label = !row.execution
                         ? 'Avvia'
@@ -129,7 +130,7 @@ export function useSessionPanelPresentation(
                             <div className="timeline-session-panel__controls">
                               <button
                                 type="button"
-                                disabled={disabled}
+                                disabled={playDisabled}
                                 aria-label={`${label} · ${row.name}`}
                                 title={label}
                                 onClick={() =>
