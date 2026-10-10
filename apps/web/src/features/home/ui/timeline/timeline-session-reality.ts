@@ -81,10 +81,23 @@ function project(
   clockAt: number,
 ): Projected | null {
   if (slices.length === 0) return null;
-  const mains = slices.filter((slice) => slice.planned_schedule_ref === null);
+  const dayFrom = Temporal.PlainDate.from(dateKey)
+    .toZonedDateTime({ timeZone: zone, plainTime: '00:00' }).toInstant().epochMilliseconds;
+  const dayUntil = Temporal.PlainDate.from(dateKey).add({ days: 1 })
+    .toZonedDateTime({ timeZone: zone, plainTime: '00:00' }).toInstant().epochMilliseconds;
+  // Never bridge two executions on unrelated calendar days with a fake
+  // all-day interval merely because they share the same Activity identity.
+  const relevant = slices.filter((slice) => {
+    const start = Date.parse(slice.started_at);
+    const end = slice.ended_at ? Date.parse(slice.ended_at) : clockAt;
+    return Number.isFinite(start) && Number.isFinite(end) &&
+      end > dayFrom && start < dayUntil;
+  });
+  if (relevant.length === 0) return null;
+  const mains = relevant.filter((slice) => slice.planned_schedule_ref === null);
   // When there is a main real Session it determines outer geometry, not the
   // sum of overlapping internal executions.
-  const chosen = mains.length > 0 ? mains : slices;
+  const chosen = mains.length > 0 ? mains : relevant;
   const spans: Span[] = [];
   for (const slice of chosen) {
     const first = Date.parse(slice.started_at);
@@ -108,10 +121,6 @@ function project(
   if (spans.length === 0) return null;
   const startAt = Math.min(...spans.map((r) => r.from));
   const endAt = Math.max(...spans.map((r) => r.until));
-  const dayFrom = Temporal.PlainDate.from(dateKey)
-    .toZonedDateTime({ timeZone: zone, plainTime: '00:00' }).toInstant().epochMilliseconds;
-  const dayUntil = Temporal.PlainDate.from(dateKey).add({ days: 1 })
-    .toZonedDateTime({ timeZone: zone, plainTime: '00:00' }).toInstant().epochMilliseconds;
   if (endAt <= dayFrom || startAt >= dayUntil) return null;
   const visibleStart = Math.max(dayFrom, startAt);
   const visibleEnd = Math.min(dayUntil, endAt);
