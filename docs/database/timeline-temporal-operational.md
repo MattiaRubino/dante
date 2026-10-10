@@ -2,7 +2,7 @@
 
 ## CURRENT: B14 Home workspace + optional main / independent child Session — 2026-10-10
 
-**Unverified forward candidate migration head:** `20261010_141`. Exact intended Dictionary/SQLAlchemy/Alembic topology: **238 tables | 5 views | 228 routines | 103 triggers | 485 physical indexes | 421 FKs | 596 CHECK**. The last user-local green Session gate was at `_138` and does not prove these new migrations.
+**Unverified forward candidate migration head:** `20261010_141`. Exact intended Dictionary/SQLAlchemy/Alembic topology: **238 tables | 5 views | 228 routines | 103 triggers | 486 physical indexes | 421 FKs | 596 CHECK**. The last user-local green Session gate was at `_138` and does not prove these new migrations.
 
 - `_139`: `temporal_objective_input_draft` with a FK to canonical Objective, owner-only staged JSON value (not Observation), CAS/replay and explicit confirm capability atomically calling the existing canonical `record_self_temporal_objective_result` before saving the confirmation receipt. No direct runtime table DML; confirmed receipt persists for retry replay.
 - `_140`: read-only bounded `list_self_home_finished_work` (real Session ends + explicitly occurred Actuals) and `list_self_home_objective_work` (unobserved Objective identities with provisional input metadata). Neither creates completion from clock passage; each query accepts a hard 1–100 result cap.
