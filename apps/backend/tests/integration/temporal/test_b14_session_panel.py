@@ -14,7 +14,9 @@ from dante.modules.temporal.authoring import TemporalAuthoringApplication
 from dante.modules.temporal.schedule import AbsoluteIntervalPlacement
 from dante.modules.temporal.session_panel_api import get_session_panel
 from dante.modules.temporal.session_runtime import (
-    SessionApplication, SessionNotFoundError, SessionCaptureDisabledError,
+    SessionApplication,
+    SessionCaptureDisabledError,
+    SessionNotFoundError,
 )
 from dante.platform.database.runtime import create_database_runtime
 
