@@ -173,7 +173,7 @@ def build_panel(
             else:
                 due = active
             due = (
-                due and owner["mode_code"] in {"live", "record_and_live"}
+                due and owner["mode_code"] in {"live", "record_and_live", "internal_only"}
                 and not main_stopped_in_window
             )
             windows = [timing] if timing else current_windows
