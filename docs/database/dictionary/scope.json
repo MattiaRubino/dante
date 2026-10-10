@@ -81,13 +81,15 @@
       "B14-SESSION-HIERARCHY",
       "B14-SESSION-REALITY-PROJECTION",
       "B14-SESSION-PAUSED-END",
-      "B14-OBJECTIVE-INPUT"
+      "B14-OBJECTIVE-INPUT",
+      "B14-HOME-WORKSPACE-READS",
+      "B14-INDEPENDENT-PLANNED-SESSION"
     ],
     "standalone_entries": {
       "tables": 238,
       "views": 5,
-      "routines": 225,
-      "total": 468
+      "routines": 228,
+      "total": 471
     },
     "embedded_objects": {
       "triggers": 103,
