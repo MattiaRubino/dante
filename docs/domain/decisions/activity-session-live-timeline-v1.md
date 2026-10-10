@@ -36,7 +36,7 @@ Maintain Life Area identity/color on the card border, not as the sole signal of 
 - A planned internal Session with an explicit start cannot be started before its own start from the automatic desk. Early-start of the main remains legal when capture policy allows it.
 - **Pause main:** atomically pauses the main plus every currently running internal real Session owned by that Activity. Already paused remain paused; never-started and ended sessions stay untouched.
 - **Resume main:** resumes **only the main**. Every internal paused by a cascade or earlier user choice remains paused until individually resumed.
-- **Stop main:** atomically ends the main plus **every still-open** internal real Session (both paused and running); never creates fake executions for never-started rows.
+- **Stop main:** atomically ends the main plus **every still-open** internal real Session (both paused and running); never creates fake executions for never-started rows. Stopping a paused real Session closes its pause at exactly Stop (no synthetic Resume or tiny fake active interval), and leaves earlier immutable MaterialStates untouched.
 - **Internal Pause/Resume/Stop:** changes only the targeted internal Session, never its main or siblings. A failed/stale operation fails visibly, without falsely showing partial success.
 - These transitions require actor ownership, accepted Activity relation, idempotent operation replay, current MaterialState/CAS and one database transaction under concurrency, not multiple unrelated browser mutations. If the backend cannot guarantee atomicity, do NOT expose a fake cascade.
 - Do not infer an Activity Completed/Actual/Outcome from main or internal Stop. The recorded-history veto and lock on moving an Activity with an open Session still apply.
