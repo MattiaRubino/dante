@@ -57,7 +57,7 @@ export function useSessionPanelPresentation(
             <header>
               <div>
                 <strong>Sessioni</strong>
-                <span>Pronte o in corso</span>
+                <span>Imminenti, in corso o in pausa</span>
               </div>
               <button
                 type="button"
@@ -76,14 +76,29 @@ export function useSessionPanelPresentation(
               </div>
             ) : null}
             <div className="timeline-session-panel__groups">
-              {controller.snapshot?.groups.map((group) => (
+              {controller.snapshot?.groups.map((group) => {
+                const mainIsRunning = group.rows.some((candidate) =>
+                  candidate.planned_schedule_ref === null &&
+                  candidate.execution !== null && !candidate.execution.paused
+                );
+                return (
                 <section key={group.activity_ref} aria-label={group.title}>
                   <h3 title={group.title}>{group.title}</h3>
                   <ul>
                     {group.rows.map((row, index) => {
                       const key = sessionPanelRowKey(group.activity_ref, row);
                       const pending = controller.pending.has(key);
-                      const disabled = pending || controller.error !== null;
+                      const internal = row.planned_schedule_ref !== null;
+                      const futureInternal = internal && !row.execution &&
+                        row.starts_at !== null &&
+                        Date.parse(row.starts_at) > Date.parse(
+                          controller.snapshot?.evaluated_at ?? '',
+                        );
+                      const requiresMain = internal && !row.execution && !mainIsRunning;
+                      const pausedWithoutMain = internal && row.execution?.paused &&
+                        !mainIsRunning;
+                      const disabled = pending || controller.error !== null ||
+                        Boolean(futureInternal || requiresMain || pausedWithoutMain);
                       const label = !row.execution
                         ? 'Avvia'
                         : row.execution.paused
@@ -96,12 +111,16 @@ export function useSessionPanelPresentation(
                         >
                           <div className="timeline-session-panel__row">
                             <div className="timeline-session-panel__name">
-                              <span title={row.name}>{row.name}</span>
+                              <span title={row.name}>{internal ? row.name : 'Sessione principale'}</span>
                               <small>
                                 {pending
                                   ? 'Aggiornamento…'
                                   : !row.execution
-                                    ? 'Pronta'
+                                    ? futureInternal
+                                      ? 'Imminente · attende orario'
+                                      : requiresMain
+                                        ? 'Avvia prima la principale'
+                                        : 'Pronta'
                                     : row.execution.paused
                                       ? 'In pausa'
                                       : 'In corso'}
@@ -150,7 +169,8 @@ export function useSessionPanelPresentation(
                     })}
                   </ul>
                 </section>
-              ))}
+                );
+              })}
             </div>
           </aside>
         ) : null}
