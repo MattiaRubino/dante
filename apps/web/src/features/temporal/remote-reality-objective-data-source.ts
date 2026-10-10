@@ -133,7 +133,7 @@ function parseObjectiveInputDraft(value: unknown): ObjectiveInputDraftView {
   const payload = record(row.payload);
   return Object.freeze({
     objectiveRef: row.objective_ref,
-    payload: payload as ObjectiveInputPayload,
+    payload,
     revision: row.revision,
     confirmedAt: nullableString(row.confirmed_at),
     updatedAt: String(row.updated_at),
