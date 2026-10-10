@@ -79,7 +79,9 @@ function ObjectiveInputRow({
   const [error, setError] = useState<string | null>(null);
   const lock = useRef(false);
   const confirmed = objective.observationRef !== null || draft?.confirmedAt != null;
-  const validPayload = payloadFrom(objective, entry);
+  const validPayload = useMemo(
+    () => payloadFrom(objective, entry), [objective, entry],
+  );
   const savedEntry = fromDraft(objective, draft);
   const dirty = !!validPayload && entry !== savedEntry;
 
@@ -115,6 +117,14 @@ function ObjectiveInputRow({
     }, 650);
     return () => window.clearTimeout(timer);
   }, [edited, dirty, validPayload, confirmed, busy, persist]);
+
+  const saveOnBlur = (event: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const nextFocus = event.relatedTarget as HTMLElement | null;
+    if (nextFocus?.getAttribute('data-confirm-objective') === objective.objectiveRef) return;
+    if (validPayload && dirty && !lock.current) {
+      void persist(validPayload).catch(() => undefined);
+    }
+  };
 
   const confirm = async () => {
     if (!validPayload || lock.current || confirmed) return;
@@ -158,6 +168,7 @@ function ObjectiveInputRow({
           {objective.resultKind === 'boolean' ? (
             <select aria-label={`Valore per ${objective.label}`}
               value={entry} disabled={busy !== null}
+              onBlur={saveOnBlur}
               onChange={(event) => { setEdited(true); setEntry(event.target.value); }}>
               <option value="">Scegli…</option>
               <option value="true">Sì</option>
@@ -166,6 +177,7 @@ function ObjectiveInputRow({
           ) : objective.resultKind === 'qualitative' ? (
             <select aria-label={`Valutazione per ${objective.label}`}
               value={entry} disabled={busy !== null}
+              onBlur={saveOnBlur}
               onChange={(event) => { setEdited(true); setEntry(event.target.value); }}>
               <option value="">Valuta…</option>
               <option value="satisfied">Raggiunto</option>
@@ -177,12 +189,14 @@ function ObjectiveInputRow({
             <>
               <input type="number" step="any" value={entry}
                 disabled={busy !== null}
+                onBlur={saveOnBlur}
                 aria-label={`Valore reale per ${objective.label}`}
                 onChange={(event) => { setEdited(true); setEntry(event.target.value); }} />
               {objective.unitCode ? <span>{objective.unitCode}</span> : null}
             </>
           )}
-          <button type="button" title="Conferma definitivamente questo valore"
+          <button type="button" data-confirm-objective={objective.objectiveRef}
+            title="Conferma definitivamente questo valore"
             aria-label={`Conferma obiettivo ${objective.label}`}
             disabled={!validPayload || busy !== null} onClick={() => void confirm()}>
             ✓ Conferma
