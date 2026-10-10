@@ -1665,3 +1665,48 @@
   }
 }
 /* === H1B DESKTOP COLLAPSED AUTHORITY END === */
+
+/* Home B14 three-view work rail. Tabs fit the existing fixed context column. */
+.home-resolution-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 3px;
+  margin: 10px 0;
+  padding: 3px;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 10px;
+  background: rgba(4,8,16,.2);
+  min-width: 0;
+}
+.home-resolution-tabs button {
+  min-width: 0;
+  padding: 7px 2px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--dante-semantic-color-home-text-secondary, #a7b2c1);
+  font-size: 10px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.home-resolution-tabs button.is-active {
+  background: rgba(234,92,18,.15);
+  color: #f7c9b2;
+}
+.home-resolution-tabs button:focus-visible {
+  outline: 2px solid #ea5c12;
+  outline-offset: -2px;
+}
+.home-resolution-panel .timeline-objective-controls {
+  max-width: 100%;
+  min-width: 0;
+}
+.home-resolution-panel .timeline-objective-controls__value {
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.home-resolution-panel .timeline-objective-controls__value input,
+.home-resolution-panel .timeline-objective-controls__value select {
+  min-width: 0;
+  max-width: 100%;
+}
