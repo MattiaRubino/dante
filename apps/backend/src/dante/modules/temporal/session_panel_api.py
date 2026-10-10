@@ -89,8 +89,14 @@ def _bounds(row: ActivityScheduleResponse, zone: ZoneInfo) -> tuple[datetime, da
     return None
 
 
-def build_panel(records: list[Any], now: datetime, zone_id: str) -> SessionPanelResponse:
+def build_panel(
+    records: list[Any],
+    now: datetime,
+    zone_id: str,
+    ended_executions: list[Any] | None = None,
+) -> SessionPanelResponse:
     zone = ZoneInfo(zone_id)
+    stopped = [item for item in (ended_executions or []) if item["ended_at"] is not None]
     groups: list[SessionPanelGroup] = []
     changes: list[datetime] = []
     for owner in records:
@@ -114,6 +120,27 @@ def build_panel(records: list[Any], now: datetime, zone_id: str) -> SessionPanel
             b is not None and b[0] <= now < b[1] for s in intervals
             if (b := bounds[s.schedule_ref])
         )
+        def ended_during_current_window(
+            planned_ref: UUID | None, windows: list[tuple[datetime, datetime]]
+        ) -> bool:
+            # Stop removes the finished attempt from the operational desk.
+            # Re-entering the same planned window does not manufacture a
+            # fresh "ready" execution on every polling tick or page refresh.
+            return any(
+                item["activity_ref"] == owner["activity_ref"]
+                and item["planned_schedule_ref"] == planned_ref
+                and any(
+                    item["started_at"] < end
+                    and item["ended_at"] >= start - PREVIEW_LEAD
+                    for start, end in windows
+                )
+                for item in stopped
+            )
+
+        current_windows = [
+            b for schedule in intervals if (b := bounds[schedule.schedule_ref])
+            and b[0] - PREVIEW_LEAD <= now < b[1]
+        ]
         upcoming = any(
             b is not None and b[0] - PREVIEW_LEAD <= now < b[1]
             if s.temporal_form in {"absolute", "named_zone_local", "floating_local"}
@@ -142,6 +169,11 @@ def build_panel(records: list[Any], now: datetime, zone_id: str) -> SessionPanel
             else:
                 due = active
             due = due and owner["mode_code"] in {"live", "record_and_live"}
+            windows = [timing] if timing else current_windows
+            if due and not matching and ended_during_current_window(
+                schedule.schedule_ref, windows
+            ):
+                due = False
             if not due and not matching:
                 continue
             rows.extend(
@@ -160,6 +192,7 @@ def build_panel(records: list[Any], now: datetime, zone_id: str) -> SessionPanel
         # It coexists with them; it is not an extra fake planned Session.
         if generic or (
             upcoming and owner["mode_code"] in {"live", "record_and_live"}
+            and not ended_during_current_window(None, current_windows)
         ):
             for execution in generic or [None]:
                 rows.insert(
@@ -230,7 +263,23 @@ async def get_session_panel(
                     {"actor": context.self_person_ref, "start_at": start_at, "end_at": end_at},
                 )).mappings().all()
             )
-            panel = build_panel(list(records), now, context.effective_zone_id)
+            # The desk always follows server "now", even if the user is
+            # viewing a distant Timeline date whose visual range omits today.
+            finished = visuals
+            if not (start_at <= now < end_at):
+                finished = (
+                    (await session.execute(
+                        _VISUAL_READ,
+                        {
+                            "actor": context.self_person_ref,
+                            "start_at": now - timedelta(days=1),
+                            "end_at": now + timedelta(days=1),
+                        },
+                    )).mappings().all()
+                )
+            panel = build_panel(
+                list(records), now, context.effective_zone_id, list(finished)
+            )
             return panel.model_copy(update={
                 "visuals": [SessionPanelVisual.model_validate(dict(row)) for row in visuals]
             })
