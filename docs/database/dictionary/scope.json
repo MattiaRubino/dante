@@ -80,21 +80,22 @@
       "B14-SESSION-PANEL",
       "B14-SESSION-HIERARCHY",
       "B14-SESSION-REALITY-PROJECTION",
-      "B14-SESSION-PAUSED-END"
+      "B14-SESSION-PAUSED-END",
+      "B14-OBJECTIVE-INPUT"
     ],
     "standalone_entries": {
-      "tables": 237,
+      "tables": 238,
       "views": 5,
-      "routines": 222,
-      "total": 464
+      "routines": 225,
+      "total": 468
     },
     "embedded_objects": {
       "triggers": 103,
-      "physical_indexes": 484
+      "physical_indexes": 485
     },
     "constraints": {
-      "foreign_keys": 420,
-      "check_constraints": 593
+      "foreign_keys": 421,
+      "check_constraints": 596
     }
   },
   "technical_foundation": {
