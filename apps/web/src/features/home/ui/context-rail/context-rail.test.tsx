@@ -97,11 +97,11 @@ const realizationReviewItem = {
 describe('Home resolution rail', () => {
   it('derives reconciliation cards from the canonical queue and refreshes after the owner action', async () => {
     let open = true;
-    const fetchFn = vi.fn(async (input: RequestInfo | URL) => {
-      if (!String(input).includes('/resolution-queue')) return Response.json([]);
-      return Response.json(
+    const fetchFn = vi.fn((input: RequestInfo | URL) => {
+      if (!(typeof input === 'string' ? input : input instanceof URL ? input.href : input.url).includes('/resolution-queue')) return Promise.resolve(Response.json([]));
+      return Promise.resolve(Response.json(
         open ? { items: [openItem], count: 1 } : { items: [], count: 0 },
-      );
+      ));
     });
     vi.stubGlobal('fetch', fetchFn);
 
@@ -135,13 +135,13 @@ describe('Home resolution rail', () => {
 
   it('routes a real Session review to the Actual owner and removes it after reality is recorded', async () => {
     let open = true;
-    const fetchFn = vi.fn(async (input: RequestInfo | URL) => {
-      if (!String(input).includes('/resolution-queue')) return Response.json([]);
-      return Response.json(
+    const fetchFn = vi.fn((input: RequestInfo | URL) => {
+      if (!(typeof input === 'string' ? input : input instanceof URL ? input.href : input.url).includes('/resolution-queue')) return Promise.resolve(Response.json([]));
+      return Promise.resolve(Response.json(
         open
           ? { items: [realizationReviewItem], count: 1 }
           : { items: [], count: 0 },
-      );
+      ));
     });
     vi.stubGlobal('fetch', fetchFn);
 
@@ -197,11 +197,11 @@ describe('Home resolution rail', () => {
       actions: ['open_objectives'],
     };
     let open = true;
-    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) =>
-      Response.json(String(input).includes('/resolution-queue')
+    vi.stubGlobal('fetch', vi.fn((input: RequestInfo | URL) =>
+      Promise.resolve(Response.json((typeof input === 'string' ? input : input instanceof URL ? input.href : input.url).includes('/resolution-queue')
         ? open ? { items: [objectiveReviewItem], count: 1 }
           : { items: [], count: 0 }
-        : []),
+        : [])),
     ));
 
     const { container } = render(<ContextRail />);
@@ -232,9 +232,9 @@ it('switches three views and only opens one selected Objective owner', async () 
     draft_revision: 1,
     draft_updated_at: '2026-10-10T17:00:00Z',
   };
-  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
-    const uri = String(input);
-    return Response.json(
+  vi.stubGlobal('fetch', vi.fn((input: RequestInfo | URL) => {
+    const uri = (typeof input === 'string' ? input : input instanceof URL ? input.href : input.url);
+    return Promise.resolve(Response.json(
       uri.includes('/resolution-queue') ? { items: [], count: 0 } :
       uri.includes('/finished-work') ? [{
         subject_kind: 'activity', subject_ref: objectiveItem.subject_ref,
@@ -243,7 +243,7 @@ it('switches three views and only opens one selected Objective owner', async () 
         ended_at: '2026-10-10T17:00:00Z', record_kind: 'session_ended',
       }] :
       uri.includes('/objective-work') ? [objectiveItem] : [],
-    );
+    ));
   }));
   render(<ContextRail />);
   fireEvent.click(screen.getByRole('tab', { name: 'Conclusi' }));
