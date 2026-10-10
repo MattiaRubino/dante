@@ -207,28 +207,36 @@ export function useSessionPanel(
               ? null
               : {
                   ...value,
-                  groups: value.groups.map((group) =>
-                    group.activity_ref !== activityRef
-                      ? group
-                      : {
-                          ...group,
-                          rows: group.rows.map((current) =>
-                            sessionPanelRowKey(activityRef, current) !== key
-                              ? current
-                              : {
-                                  ...current,
-                                  execution: accepted.open
-                                    ? {
-                                        session_ref: accepted.sessionRef,
-                                        timing_material_state_ref:
-                                          accepted.timingMaterialStateRef,
-                                        paused: accepted.paused,
-                                      }
-                                    : null,
-                                },
-                          ),
-                        },
-                  ),
+                  groups: value.groups.flatMap((group) => {
+                    if (group.activity_ref !== activityRef) return [group];
+                    if (action === 'stop' && !accepted.open) {
+                      // Main Stop atomically closes the entire open group;
+                      // an internal Stop removes only that finished row.
+                      if (row.planned_schedule_ref === null) return [];
+                      const remaining = group.rows.filter(
+                        (current) => sessionPanelRowKey(activityRef, current) !== key,
+                      );
+                      return remaining.length ? [{ ...group, rows: remaining }] : [];
+                    }
+                    return [{
+                      ...group,
+                      rows: group.rows.map((current) =>
+                        sessionPanelRowKey(activityRef, current) !== key
+                          ? current
+                          : {
+                              ...current,
+                              execution: accepted.open
+                                ? {
+                                    session_ref: accepted.sessionRef,
+                                    timing_material_state_ref:
+                                      accepted.timingMaterialStateRef,
+                                    paused: accepted.paused,
+                                  }
+                                : null,
+                            },
+                      ),
+                    }];
+                  }),
                 },
           );
         }
