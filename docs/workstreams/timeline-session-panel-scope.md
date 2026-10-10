@@ -51,4 +51,4 @@ UPDATE:
 
 DELETE: none.
 
-Local candidate prepared; no commit, push, ref update, CI or persistent app migration has been performed for this scope. Remote publication requires approval of this gate under the repository's operating manual, plus rechecking the exact HEAD. Technical proof status and remaining local acceptance are recorded in `docs/frontend/home/timeline-session-panel.md`.
+The approved candidate is published on the branch. Remote tree and payload readback confirmed the exact 21 CREATE and 14 UPDATE paths above with no additional changes from PRE-SCOPE. No CI or persistent application database migration was run. PostgreSQL, browser and real-app acceptance remain for the user-local gate in `docs/frontend/home/timeline-session-panel.md`.

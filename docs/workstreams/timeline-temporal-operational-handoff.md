@@ -1,8 +1,8 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-## Session panel candidate — 2026-10-10
+## Session panel branch candidate — 2026-10-10
 
-The right-side Timeline Session panel candidate is prepared against branch `da9ca360`: Activity-grouped timed and untimed planned rows, existing Play/Pause/Stop commands, a read independent of the viewed day, owner-scoped open Session recovery, and a forward `_135` repair for explicit untimed start. Current technical contract and proof limitations are in `docs/frontend/home/timeline-session-panel.md`; the exact publication scope is in `docs/workstreams/timeline-session-panel-scope.md`. Ten Python projection tests and 93 Web tests across nine suites passed in this workspace. PostgreSQL, browser geometry, real-app acceptance and the single user-local gate remain unproved. Do not mark B14/B15 closed or run CI.
+The right-side Timeline Session panel is published on the branch from PRE-SCOPE `da9ca360`: Activity-grouped timed and untimed planned rows, existing Play/Pause/Stop commands, a read independent of the viewed day, owner-scoped open Session recovery, and a forward `_135` repair for explicit untimed start. Current technical contract and proof limitations are in `docs/frontend/home/timeline-session-panel.md`; the exact publication scope is in `docs/workstreams/timeline-session-panel-scope.md`. Ten Python projection tests and 93 Web tests across nine suites passed in this workspace. PostgreSQL, browser geometry, real-app acceptance and the single user-local gate remain unproved. Do not mark B14/B15 closed or run CI.
 
 - **Status:** B12 CLOSED / QUALIFIED USER ACCEPTANCE — B14+B07 active as one user-guided product/UI cycle; U1 Create-entry candidate awaits user visual proof; affected B12-D rerun unreported
 - **U6 continuation:** `_102` structure and the B08 Session minimum combination have focused user-run PostgreSQL proof; the combined gate and real-app walkthrough remain open. Read `timeline-temporal-operational-b14-u6-candidate-2026-10-02.md` and the approved U6 gate before work.
