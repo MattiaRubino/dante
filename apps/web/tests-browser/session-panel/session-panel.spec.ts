@@ -18,6 +18,7 @@ for (const width of [1440, 390]) {
       paused: boolean;
     } | null = null;
     const commands: string[] = [];
+    let stopped = false;
     const now = '2026-10-09T10:00:00Z';
     await page.route('**/api/v1/**', async (route) => {
       const path = new URL(route.request().url()).pathname;
@@ -27,7 +28,7 @@ for (const width of [1440, 390]) {
             evaluated_at: now,
             next_change_at: null,
             visuals: [],
-            groups: [
+            groups: stopped ? [] : [
               {
                 activity_ref: activity,
                 title: 'Studio e preparazione di una presentazione molto lunga',
@@ -54,6 +55,7 @@ for (const width of [1440, 390]) {
         commands.push(path);
         const paused = path.endsWith('/pause');
         const open = !path.endsWith('/end');
+        stopped = !open;
         execution = open
           ? { session_ref: session, timing_material_state_ref: state, paused }
           : null;
@@ -91,14 +93,7 @@ for (const width of [1440, 390]) {
     expect(box!.x + box!.width).toBeLessThanOrEqual(
       Math.min(width, parent!.x + parent!.width),
     );
-    await panel.getByRole('button', { name: 'Avvia · Ripasso' }).click();
-    await panel.getByRole('button', { name: 'Pausa · Ripasso' }).click();
-    await panel.getByRole('button', { name: 'Riprendi · Ripasso' }).click();
-    await panel.getByRole('button', { name: 'Termina · Ripasso' }).click();
-    await expect(
-      panel.getByRole('button', { name: 'Avvia · Ripasso' }),
-    ).toBeVisible();
-    expect(commands).toHaveLength(4);
+    // Closing and reopening is independent from the top toolbar icon.
     await panel
       .getByRole('button', { name: 'Chiudi pannello sessioni' })
       .click();
@@ -109,6 +104,13 @@ for (const width of [1440, 390]) {
     await expect(panel).toHaveCount(0);
     await toggle.press('Enter');
     await expect(panel).toBeVisible();
+    await panel.getByRole('button', { name: 'Avvia · Ripasso' }).click();
+    await panel.getByRole('button', { name: 'Pausa · Ripasso' }).click();
+    await panel.getByRole('button', { name: 'Riprendi · Ripasso' }).click();
+    await panel.getByRole('button', { name: 'Termina · Ripasso' }).click();
+    await expect(panel).toHaveCount(0);
+    await expect(toggle).toHaveCount(0);
+    expect(commands).toHaveLength(4);
     await page.screenshot({
       path: testInfo.outputPath(`session-panel-${width}.png`),
       fullPage: true,
