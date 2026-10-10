@@ -18,6 +18,7 @@ from dante.modules.temporal.decomposition_api import ActivityScheduleResponse
 from dante.platform.http.problem import ProblemError
 
 router = APIRouter(prefix="/api/v1/temporal", tags=["temporal"])
+PREVIEW_LEAD = timedelta(minutes=5)  # v1 approved product constant, not a user setting
 
 
 class SessionPanelExecution(BaseModel):
@@ -77,14 +78,29 @@ def build_panel(records: list[Any], now: datetime, zone_id: str) -> SessionPanel
     for owner in records:
         schedules = [ActivityScheduleResponse.model_validate(s) for s in owner["schedules"]]
         bounds = {s.schedule_ref: _bounds(s, zone) for s in schedules}
-        for boundary in bounds.values():
-            if boundary:
-                changes.extend(value for value in boundary if value > now)
+        for schedule in schedules:
+            boundary = bounds[schedule.schedule_ref]
+            if not boundary:
+                continue
+            start, end = boundary
+            changes.extend(value for value in (start, end) if value > now)
+            # Only exact-timed boundaries have a meaningful five-minute preview.
+            if schedule.temporal_form in {"absolute", "named_zone_local", "floating_local"}:
+                preview = start - PREVIEW_LEAD
+                if preview > now:
+                    changes.append(preview)
         intervals = [s for s in schedules if s.role_code == "interval"]
         if not intervals:
             intervals = [s for s in schedules if s.role_code in {None, "envelope"}]
         active = any(
-            b is not None and b[0] <= now < b[1] for s in intervals if (b := bounds[s.schedule_ref])
+            b is not None and b[0] <= now < b[1] for s in intervals
+            if (b := bounds[s.schedule_ref])
+        )
+        upcoming = any(
+            b is not None and b[0] - PREVIEW_LEAD <= now < b[1]
+            if s.temporal_form in {"absolute", "named_zone_local", "floating_local"}
+            else b is not None and b[0] <= now < b[1]
+            for s in intervals if (b := bounds[s.schedule_ref])
         )
         executions: dict[str | None, list[Any]] = {}
         for execution in owner["executions"]:
@@ -100,10 +116,14 @@ def build_panel(records: list[Any], now: datetime, zone_id: str) -> SessionPanel
                 continue
             matching = executions.pop(str(schedule.schedule_ref), [])
             timing = bounds[schedule.schedule_ref]
-            due = ((timing[0] <= now < timing[1]) if timing else active) and owner["mode_code"] in {
-                "live",
-                "record_and_live",
-            }
+            if timing:
+                preview_allowed = schedule.temporal_form in {
+                    "absolute", "named_zone_local", "floating_local"
+                }
+                due = timing[0] - (PREVIEW_LEAD if preview_allowed else timedelta()) <= now < timing[1]
+            else:
+                due = active
+            due = due and owner["mode_code"] in {"live", "record_and_live"}
             if not due and not matching:
                 continue
             rows.extend(
@@ -118,9 +138,10 @@ def build_panel(records: list[Any], now: datetime, zone_id: str) -> SessionPanel
                 for execution in matching or [None]
             )
         generic = executions.pop(None, [])
-        has_planned = any(s.role_code == "planned" for s in schedules)
+        # A main execution clock is independent from the named planned slices.
+        # It coexists with them; it is not an extra fake planned Session.
         if generic or (
-            active and not has_planned and owner["mode_code"] in {"live", "record_and_live"}
+            upcoming and owner["mode_code"] in {"live", "record_and_live"}
         ):
             for execution in generic or [None]:
                 rows.insert(
