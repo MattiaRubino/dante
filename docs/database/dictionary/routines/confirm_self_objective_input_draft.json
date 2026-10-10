@@ -1,0 +1,119 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "routine:dante.confirm_self_objective_input_draft",
+    "type": "routine",
+    "schema": "dante",
+    "name": "confirm_self_objective_input_draft",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Atomic owner-only CAS confirmation of provisional Objective input into exactly one accepted Observation/Evaluation/Result with idempotent operation replay.",
+  "classification": {
+    "persistence_role": "confirm_self_objective_input_draft",
+    "canonicality": "capability_surface",
+    "family": "B14ObjectiveInput"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/domain/decisions/activity-session-live-timeline-v1.md",
+      "docs/database/timeline-temporal-operational.md"
+    ],
+    "domain_concepts": [
+      "Objective",
+      "Observation",
+      "Evaluation"
+    ],
+    "logical_families": [
+      "Objective staged input and explicit result confirmation"
+    ],
+    "reference_families": [
+      "NativeRef",
+      "ScopedRecordRef",
+      "MaterialStateRef"
+    ],
+    "material_facets": []
+  },
+  "implementation": {
+    "introducing_stage": "B14-OBJECTIVE-INPUT",
+    "alembic_revision": "20261010_139",
+    "sqlalchemy": {
+      "mode": "none",
+      "module": null,
+      "symbol": null
+    },
+    "runtime_acl_stage": "B14-OBJECTIVE-INPUT"
+  },
+  "structure": {
+    "columns": [],
+    "primary_key": null,
+    "foreign_keys": [],
+    "unique_constraints": [],
+    "check_constraints": [],
+    "indexes": [],
+    "triggers": [],
+    "table": null,
+    "view": null,
+    "routine": {
+      "routine_kind": "function",
+      "language": "sql",
+      "argument_types": [
+        "uuid",
+        "uuid",
+        "bigint",
+        "text",
+        "text",
+        "uuid",
+        "uuid"
+      ],
+      "return_type": "TABLE(objective_ref uuid, observation_ref uuid, evaluation_state_ref uuid, assessment_code text, replayed boolean)",
+      "security": "DEFINER",
+      "volatility": "VOLATILE",
+      "parallel_safety": "UNSAFE",
+      "leakproof": false,
+      "function_search_path": [
+        "pg_catalog",
+        "dante",
+        "pg_temp"
+      ],
+      "direct_runtime_execute": true
+    }
+  },
+  "state_history": {
+    "material_state_behavior": "CAS state or accepted Result transaction.",
+    "current_binding": "Actor scoped Objective identity and staging revision.",
+    "chronology": "Explicit saved and confirmed timestamps and operation identity.",
+    "immutability_policy": "Canonical Result and Observation only through accepted confirmation capability."
+  },
+  "lifecycle": {
+    "retention": "Retain canonical truth and operation history according to the owned persistence families.",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No direct runtime delete capability."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": [
+      {
+        "grantee": "dante_runtime",
+        "privilege": "EXECUTE",
+        "columns": [],
+        "grant_option": false
+      }
+    ]
+  },
+  "proof": {
+    "obligations": [
+      "Owner scoping in PostgreSQL",
+      "CAS/replay correctness",
+      "No direct runtime DML",
+      "Confirmation creates accepted Result atomically"
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b14_objective_input.py",
+      "apps/backend/tests/integration/database/test_database_current_catalog.py"
+    ],
+    "staged_evidence": []
+  }
+}
