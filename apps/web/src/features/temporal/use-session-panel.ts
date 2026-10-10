@@ -1,11 +1,23 @@
 import { SessionPanelResponse, type SessionPanelRow } from '@dante/api-client';
+import { Temporal } from '@dante/time';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { createWebFetch } from '../../platform/api/web-fetch';
 import { createRemoteTemporalSessionDataSource } from './remote-session-data-source';
 import { subscribeTemporalTimelineInvalidation } from './timeline-invalidation';
 
-export type SessionPanelSnapshot = SessionPanelResponse;
+export type SessionVisual = Readonly<{
+  activity_ref: string;
+  session_ref: string;
+  planned_schedule_ref: string | null;
+  started_at: string;
+  ended_at: string | null;
+  pause_ranges: readonly Readonly<{ started_at: string; ended_at: string | null }>[];
+}>;
+
+export type SessionPanelSnapshot = SessionPanelResponse & Readonly<{
+  visuals?: readonly SessionVisual[];
+}>;
 export type SessionPanelCommand = 'play' | 'stop';
 
 // Applies to both CSRF and mutation requests; no permanently disabled controls.
@@ -20,7 +32,29 @@ const boundedFetch: typeof fetch = (input, init) =>
 export const sessionPanelRowKey = (activityRef: string, row: SessionPanelRow) =>
   `${activityRef}:${row.planned_schedule_ref ?? 'activity'}:${row.execution?.session_ref ?? 'ready'}`;
 
-export function useSessionPanel(enabled = true) {
+export function useSessionPanel(
+  enabled = true,
+  viewedDateIso?: string | null,
+  effectiveZoneId?: string | null,
+) {
+  const readPath = useMemo(() => {
+    if (!viewedDateIso || !effectiveZoneId) return '/api/v1/temporal/session-panel';
+    try {
+      const day = Temporal.PlainDate.from(viewedDateIso);
+      const from = day.subtract({ days: 1 }).toZonedDateTime({
+        timeZone: effectiveZoneId, plainTime: '00:00',
+      }).toInstant().toString();
+      const until = day.add({ days: 2 }).toZonedDateTime({
+        timeZone: effectiveZoneId, plainTime: '00:00',
+      }).toInstant().toString();
+      const params = new URLSearchParams({
+        visible_start_at: from, visible_end_at: until,
+      });
+      return `/api/v1/temporal/session-panel?${params}`;
+    } catch {
+      return '/api/v1/temporal/session-panel';
+    }
+  }, [viewedDateIso, effectiveZoneId]);
   const [snapshot, setSnapshot] = useState<SessionPanelSnapshot | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState<ReadonlySet<string>>(new Set());
@@ -54,7 +88,7 @@ export function useSessionPanel(enabled = true) {
       const version = commandVersion.current;
       let delay = 30_000;
       try {
-        const response = await webFetch('/api/v1/temporal/session-panel', {
+        const response = await webFetch(readPath, {
           signal: controller.signal,
         });
         if (!response.ok) throw new Error('Sessioni non disponibili.');
@@ -114,7 +148,7 @@ export function useSessionPanel(enabled = true) {
       document.removeEventListener('visibilitychange', visibility);
       refreshRef.current = () => undefined;
     };
-  }, [enabled]);
+  }, [enabled, readPath]);
 
   const [commandErrors, setCommandErrors] = useState<
     Readonly<Record<string, string>>
