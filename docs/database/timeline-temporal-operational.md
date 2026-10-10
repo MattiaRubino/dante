@@ -1,8 +1,18 @@
 # Timeline / Temporal-Operational — Candidate Database Overlay
 
-## Current B14 live Session execution frontier — 2026-10-10
+## CURRENT: B14 Home workspace + optional main / independent child Session — 2026-10-10
 
-**Branch candidate head:** `20261010_138`; expected Dictionary/catalog topology **237 tables | 5 views | 222 routines | 103 triggers | 484 indexes | 420 FKs | 593 CHECK**. This candidate is **not yet user-locally tested** and is distinct from protected-main truth.
+**Unverified forward candidate migration head:** `20261010_141`. Exact intended Dictionary/SQLAlchemy/Alembic topology: **238 tables | 5 views | 228 routines | 103 triggers | 485 physical indexes | 421 FKs | 596 CHECK**. The last user-local green Session gate was at `_138` and does not prove these new migrations.
+
+- `_139`: `temporal_objective_input_draft` with a FK to canonical Objective, owner-only staged JSON value (not Observation), CAS/replay and explicit confirm capability atomically calling the existing canonical `record_self_temporal_objective_result` before saving the confirmation receipt. No direct runtime table DML; confirmed receipt persists for retry replay.
+- `_140`: read-only bounded `list_self_home_finished_work` (real Session ends + explicitly occurred Actuals) and `list_self_home_objective_work` (unobserved Objective identities with provisional input metadata). Neither creates completion from clock passage; each query accepts a hard 1–100 result cap.
+- `_141`: trusted `start_self_session_for_planned` clone, **not executable by PUBLIC or dante_runtime**, called only inside `start_self_planned_activity_session` after owner/provenance verification. The generic `start_self_session` still enforces Activity `live` capture policy. The planned wrapper requires a running main only when that main mode is enabled; the desk admits independently timed/untimed planned rows even when generic Activity capture is disabled. Existing canonical B08 timing/identity/operation contracts preserved. No new Session table.
+
+Product authority: `docs/domain/decisions/activity-session-live-timeline-v1.md`. Focused, consolidated user-local gate: `tooling/verify-b14-session-home-workspace-local.sh`. No CI, no reset/clean, no claim of local verification yet; generated OpenAPI/Orval must be preserved and published once tested.
+
+## Historical _138 Session technical proof checkpoint — 2026-10-10
+
+**Historical Session head:** `20261010_138`; expected Dictionary/catalog topology **237 tables | 5 views | 222 routines | 103 triggers | 484 indexes | 420 FKs | 593 CHECK**. This earlier Session candidate was subsequently user-locally tested and is distinct from protected-main truth.
 
 - `_135` remains the already-proven owner-scoped untimed planned Session start + open panel read.
 - `_136` introduces `transition_self_activity_session_group`: owner-only atomic main Pausa/Stop cascade across open internal real Sessions, parent-only Resume, CAS/replay, and a running-main/exact-start admission guard for new planned Session starts.
@@ -10,7 +20,7 @@
 - `_138` corrects cascade MaterialState refs to UUIDv7 and allows an explicit Stop of an already paused Session, closing its open pause at the stop instant without an artificial Resume; immutable history/CAS/replay remain enforced.
 - **No new tables, Session hierarchy rows, synthetic Schedule or Actual**, and no direct dante_runtime table privileges. Both new capabilities use SECURITY DEFINER and grant only EXECUTE.
 
-**Current product authority:** `docs/domain/decisions/activity-session-live-timeline-v1.md`. **Current frontend contract:** `docs/frontend/home/timeline-session-panel.md`. User-local proof and real-app acceptance pending. Historic stage checkpoints below remain evidence of their recorded dates, **not a competing current frontier**.
+**Current product authority:** `docs/domain/decisions/activity-session-live-timeline-v1.md`. **Current frontend contract:** `docs/frontend/home/timeline-session-panel.md`. The updated _141 candidate is unverified; real-app acceptance pending. Historic stage checkpoints below remain evidence of their recorded dates, **not a competing current frontier**.
 
 - **Status:** HISTORICAL OVERLAY CHECKPOINT (2026-10-05); current _138 candidate is above
 - **Reconciled:** 2026-10-05
