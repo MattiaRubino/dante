@@ -35,6 +35,11 @@ function minutesAt(instant: string, zone: string): number {
   return local.hour * 60 + local.minute + local.second / 60;
 }
 
+function labelAt(instant: string, zone: string): string {
+  const local = Temporal.Instant.from(instant).toZonedDateTimeISO(zone);
+  return `${String(local.hour).padStart(2, '0')}:${String(local.minute).padStart(2, '0')}`;
+}
+
 function onDay(instant: string, dateKey: string, zone: string): number {
   const local = Temporal.Instant.from(instant).toZonedDateTimeISO(zone);
   const date = local.toPlainDate().toString();
@@ -124,7 +129,7 @@ function project(
     reality: {
       state: !running ? 'ended' : paused ? 'paused' : 'running',
       startedAt, endedAt, fill,
-      actualLabel: `${minutesAt(startedAt, zone).toFixed(0)}`,
+      actualLabel: `${labelAt(startedAt, zone)}–${endedAt ? labelAt(endedAt, zone) : 'ora'}`,
     },
   };
 }
