@@ -4,6 +4,8 @@
 - **Date:** 2026-10-05
 - **Scope:** timed Activity Create and Timeline; supersedes the Timeline card rule in `activity-planned-session-reschedule-product-v1.md`
 
+**Current live execution/card overlay:** `activity-session-live-timeline-v1.md` defines the presentation-only reality geometry, main/internal execution controls, five-minute Session desk, and no-duplicate-card rules. This file continues to own the independent accepted Activity interval/technical envelope model.
+
 ## Three separate meanings
 
 | Product name | Canonical persistence | Meaning |
