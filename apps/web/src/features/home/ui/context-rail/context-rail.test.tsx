@@ -98,7 +98,7 @@ describe('Home resolution rail', () => {
   it('derives reconciliation cards from the canonical queue and refreshes after the owner action', async () => {
     let open = true;
     const fetchFn = vi.fn(async (input: RequestInfo | URL) => {
-      expect(String(input)).toContain('/api/v1/temporal/resolution-queue');
+      if (!String(input).includes('/resolution-queue')) return Response.json([]);
       return Response.json(
         open ? { items: [openItem], count: 1 } : { items: [], count: 0 },
       );
@@ -114,7 +114,7 @@ describe('Home resolution rail', () => {
     await waitFor(() =>
       expect(within(panel).getByText('Preparare le slide')).toBeTruthy(),
     );
-    expect(within(panel).getByLabelText('1 elementi aperti').textContent).toBe(
+    expect(within(panel).getByLabelText('1 elementi da verificare').textContent).toBe(
       '1',
     );
     expect(within(panel).getByText('Decisione')).toBeTruthy();
@@ -128,7 +128,7 @@ describe('Home resolution rail', () => {
     await waitFor(() =>
       expect(within(panel).queryByText('Preparare le slide')).toBeNull(),
     );
-    expect(within(panel).getByLabelText('0 elementi aperti').textContent).toBe(
+    expect(within(panel).getByLabelText('0 elementi da verificare').textContent).toBe(
       '0',
     );
   });
@@ -136,7 +136,7 @@ describe('Home resolution rail', () => {
   it('routes a real Session review to the Actual owner and removes it after reality is recorded', async () => {
     let open = true;
     const fetchFn = vi.fn(async (input: RequestInfo | URL) => {
-      expect(String(input)).toContain('/api/v1/temporal/resolution-queue');
+      if (!String(input).includes('/resolution-queue')) return Response.json([]);
       return Response.json(
         open
           ? { items: [realizationReviewItem], count: 1 }
@@ -177,7 +177,7 @@ describe('Home resolution rail', () => {
     await waitFor(() =>
       expect(within(panel).queryByText('Allenamento forza')).toBeNull(),
     );
-    expect(within(panel).getByLabelText('0 elementi aperti').textContent).toBe(
+    expect(within(panel).getByLabelText('0 elementi da verificare').textContent).toBe(
       '0',
     );
   });
@@ -197,10 +197,11 @@ describe('Home resolution rail', () => {
       actions: ['open_objectives'],
     };
     let open = true;
-    vi.stubGlobal('fetch', vi.fn(async () =>
-      Response.json(open
-        ? { items: [objectiveReviewItem], count: 1 }
-        : { items: [], count: 0 }),
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) =>
+      Response.json(String(input).includes('/resolution-queue')
+        ? open ? { items: [objectiveReviewItem], count: 1 }
+          : { items: [], count: 0 }
+        : []),
     ));
 
     const { container } = render(<ContextRail />);
@@ -216,4 +217,43 @@ describe('Home resolution rail', () => {
     await waitFor(() => expect(within(panel).queryByText('Gara')).toBeNull());
   });
 
+});
+
+
+it('switches three views and only opens one selected Objective owner', async () => {
+  const objectiveItem = {
+    objective_ref: '019a45a2-7180-7000-8000-000000000031',
+    subject_kind: 'activity',
+    subject_ref: '019a45a2-7180-7000-8000-000000000032',
+    subject_title: 'Studio inglese',
+    label: 'Vocaboli',
+    result_kind: 'quantity',
+    presentation_order: 1,
+    draft_revision: 1,
+    draft_updated_at: '2026-10-10T17:00:00Z',
+  };
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+    const uri = String(input);
+    return Response.json(
+      uri.includes('/resolution-queue') ? { items: [], count: 0 } :
+      uri.includes('/finished-work') ? [{
+        subject_kind: 'activity', subject_ref: objectiveItem.subject_ref,
+        session_ref: '019a45a2-7180-7000-8000-000000000033',
+        title: 'Studio inglese', started_at: '2026-10-10T16:00:00Z',
+        ended_at: '2026-10-10T17:00:00Z', record_kind: 'session_ended',
+      }] :
+      uri.includes('/objective-work') ? [objectiveItem] : [],
+    );
+  }));
+  render(<ContextRail />);
+  fireEvent.click(screen.getByRole('tab', { name: 'Conclusi' }));
+  await screen.findByText('Sessione conclusa');
+  expect(screen.getByText('Studio inglese')).toBeTruthy();
+  fireEvent.click(screen.getByRole('tab', { name: 'Obiettivi' }));
+  await screen.findByText('Vocaboli');
+  expect(screen.getByText('Bozza salvata')).toBeTruthy();
+  fireEvent.click(screen.getByRole('button', { name: 'Compila obiettivi' }));
+  expect(screen.getByTestId('objective-owner').textContent).toContain(
+    `activity:${objectiveItem.subject_ref}`,
+  );
 });
