@@ -1,6 +1,6 @@
 # Timeline Session desk — current B14 contract
 
-**Status:** new live-execution extension candidate; user-local gate and real-app acceptance pending.
+**Status:** live-execution extension TECHNICAL GATE GREEN at user-local branch head `8097918d` (2026-10-10); generated client publication and real-app user acceptance pending.
 **Current authority:** `docs/domain/decisions/activity-session-live-timeline-v1.md`.
 **Predecessor evidence:** `docs/workstreams/timeline-session-panel-scope.md` describes the already-published _135 panel, not the current product behavior.
 
@@ -24,5 +24,6 @@ Accepted Schedule is the **original planned coordinate**, never overwritten by e
 
 ## Verification
 
-First user-local unified gate **RAN and FAILED** on 2026-10-10: PY_SYNTAX/RUFF/PY_UNIT/GENERATE/GENERATED_CHECK/API_TYPECHECK/WEB_LINT passed; PostgreSQL 3/20 failed, Web typecheck failed on optional visuals, Vitest 1/99 failed on invalid mocked UUID, browser 390px panel overflowed 13.66px. Repairs include forward `_138`, source/test fixes and mobile width. Rerun **only failed checks** through `tooling/verify-b14-session-live-repair-local.sh`. This candidate remains unverified pending repair gate and real-app acceptance. Earlier _135 tests remain historical proof.
+User ran the focused local repair gate on `8097918d` after pulling `20261010_138`: **PY_SYNTAX, RUFF, POSTGRES, WEB_TYPECHECK, WEB_LINT, VITEST, BROWSER all exit 0**. Previous full-gate PY_UNIT, GENERATE, GENERATED_CHECK and API_TYPECHECK were already green. The prior red gate is superseded as current technical status but remains historical evidence. Exact details: `docs/workstreams/timeline-session-live-local-gate-2026-10-10.md`.
 
+This is **technical verification, not real-app visual acceptance**. The seven generated Session API files are still only in the user's WSL and must be published unchanged; do not reset/clean or regenerate. The approved five-minute preview, overlapping groups, main/child hierarchy, independent resumes, actual vs planned card behavior and responsive panel require real-app user testing. Earlier _135 tests remain historical proof.
