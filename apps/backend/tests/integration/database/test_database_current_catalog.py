@@ -242,11 +242,11 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
     }
     assert current["embedded_objects"] == {
         "triggers": 103,
-        "physical_indexes": 484,
+        "physical_indexes": 486,
     }
     assert current["constraints"] == {
-        "foreign_keys": 420,
-        "check_constraints": 593,
+        "foreign_keys": 421,
+        "check_constraints": 596,
     }
     assert len(MAPPED_TABLES) == len(Base.registry.mappers) == len(Base.metadata.tables) == 238
     assert all(len(mapper.relationships) == 0 for mapper in Base.registry.mappers)
