@@ -3,7 +3,7 @@
 **Branch:** `feature/timeline-temporal-operational`  
 **Approved product authority:** `docs/domain/decisions/activity-session-live-timeline-v1.md` (user-approved 2026-10-10).  
 **PRE-SCOPE HEAD:** `0138a8844be7661a3e075ac2c2d671bcb4a5fcb2` (the last baseline before these candidate writes).  
-**Last observed candidate HEAD:** `ae617045431130b41dbd4c0f13cd539df6429071`.  
+**Historical scope snapshot HEAD:** `ae617045431130b41dbd4c0f13cd539df6429071`; **user-local green technical gate head:** `8097918df51fd6b890d86d0cd2eeaf3d6870c43d`.  
 
 ## Purpose
 
@@ -61,6 +61,6 @@ No CI/GitHub Actions, no protected-main merge, no Event-to-Bozze Move, no generi
 
 ## Verification and known outstanding points
 
-Candidate source and docs are **published**. First user-local full gate was **RED**, with 3 PostgreSQL failures (UUIDv4 cascade, paused Stop, outdated planned-link test), Web typecheck optional visuals incompatibility, 1 of 99 Vitest tests failing due invalid mocked UUID, and 390px browser overflow. PY_SYNTAX/RUFF/PY_UNIT/GENERATE/GENERATED_CHECK/API_TYPECHECK/WEB_LINT were already green. Forward `_138` and focused code/test fixes have been pushed and are **NOT YET user-verified**. Next: standalone explicit `git pull --ff-only origin feature/timeline-temporal-operational`, then a single `bash tooling/verify-b14-session-live-repair-local.sh` to rerun only affected checks; real-app visual acceptance remains unrun. Do not infer success from commits. The seven generated local OpenAPI/Orval artifacts must be preserved and published exactly once after green verification. 
+**User-local B14 Session technical gate GREEN at `8097918d` (2026-10-10).** Initial full gate identified 3 PostgreSQL failures, optional visuals TS incompatibility, one invalid mock UUID Vitest failure, and 390px browser overflow. Its PY_SYNTAX/RUFF/PY_UNIT/GENERATE/GENERATED_CHECK/API_TYPECHECK/WEB_LINT were green. The forward `20261010_138` migration and targeted repairs are now **user-locally verified** by one `bash tooling/verify-b14-session-live-repair-local.sh` invocation: PY_SYNTAX=0, RUFF=0, POSTGRES=0, WEB_TYPECHECK=0, WEB_LINT=0, VITEST=0, BROWSER=0. See `docs/workstreams/timeline-session-live-local-gate-2026-10-10.md` for exact evidence.
 
-Specifically inspect the named/floating-zone early internal Session admission, near-midnight starts, multiple main attempts, multi-interval card clipping, and actual group Pause/Stop transaction races in the user-local gate and manual acceptance. If any is incomplete, keep candidate OPEN and repair it before marking this block accepted. The existing Draft Vault and M5 technical gates predate this change and cannot substitute for current regressions.
+The seven generated local Session Panel OpenAPI/Orval artifacts must be preserved and published from the user's WSL; no rerun, reset or clean. **Real-app user acceptance remains open**, including precise/named/floating-zone internal-start admission, near-midnight starts, multiple main attempts, multi-interval actual clipping, main Stop/Pause races, overlapping activity groups and the dynamically remodulated single Activity card. On real-app discrepancy, keep implementation open and repair only affected areas. This does not close B14/B15 or substitute for separate Bozze/M5 visual acceptance.
