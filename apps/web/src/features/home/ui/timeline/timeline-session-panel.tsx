@@ -82,7 +82,7 @@ export function useSessionPanelPresentation(
                 );
                 const mainIsRunning = group.rows.some((candidate) =>
                   candidate.planned_schedule_ref === null &&
-                  candidate.execution !== null && !candidate.execution.paused
+                  Boolean(candidate.execution && !candidate.execution.paused)
                 );
                 const parentCommandPending = group.rows.some(
                   (candidate) => candidate.planned_schedule_ref === null &&
