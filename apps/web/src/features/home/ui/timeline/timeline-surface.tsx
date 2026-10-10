@@ -157,18 +157,6 @@ export function TimelineSurface({
   const locale = i18n.resolvedLanguage ?? i18n.language;
   const prototypeMode = import.meta.env.MODE === 'test';
   const clockZone = effectiveZoneId ?? detectDeviceTimeZone();
-  const sessionPanel = useSessionPanel(sessionPanelEnabled, viewedDateIso, clockZone);
-  const sessionPresentation = useSessionPanelPresentation(sessionPanel);
-  const [realityClock, setRealityClock] = useState(() => Date.now());
-  const openRealityCount = sessionPanel.snapshot?.visuals?.filter(
-    (visual) => visual.ended_at === null,
-  ).length ?? 0;
-  useEffect(() => {
-    if (openRealityCount === 0) return;
-    // Geometry animates locally; no database polling or per-card requests.
-    const interval = window.setInterval(() => setRealityClock(Date.now()), 15_000);
-    return () => window.clearInterval(interval);
-  }, [openRealityCount]);
   const timelineToday = prototypeMode
     ? TIMELINE_PROTOTYPE_TODAY
     : Temporal.Now.plainDateISO(clockZone);
@@ -267,6 +255,18 @@ export function TimelineSurface({
   }, [state.filters, state.groups, visibleGroups]);
   const [anchor, setAnchor] = useState<PlainDate>(() => initialDate);
   const [viewDate, setViewDate] = useState<PlainDate>(() => initialDate);
+  const sessionPanel = useSessionPanel(sessionPanelEnabled, timelineDateKey(viewDate), clockZone);
+  const sessionPresentation = useSessionPanelPresentation(sessionPanel);
+  const [realityClock, setRealityClock] = useState(() => Date.now());
+  const openRealityCount = sessionPanel.snapshot?.visuals?.filter(
+    (visual) => visual.ended_at === null,
+  ).length ?? 0;
+  useEffect(() => {
+    if (openRealityCount === 0) return;
+    // Geometry animates locally; no database polling or per-card requests.
+    const interval = window.setInterval(() => setRealityClock(Date.now()), 15_000);
+    return () => window.clearInterval(interval);
+  }, [openRealityCount]);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [viewOptionsOpen, setViewOptionsOpen] = useState(false);
   const [timeEditor, setTimeEditor] = useState<TimeEditorState | null>(null);
