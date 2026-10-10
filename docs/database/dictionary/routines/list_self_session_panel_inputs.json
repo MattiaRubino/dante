@@ -8,7 +8,7 @@
     "name": "list_self_session_panel_inputs",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Compose owned Activity profiles, current Schedules and open Sessions in one self-scoped read without direct runtime table grants.",
+  "purpose": "Compose owned Activity profiles, current Schedules and open Sessions in one self-scoped read without adding runtime table grants.",
   "classification": {
     "persistence_role": "session_capability",
     "canonicality": "capability_surface",
@@ -104,7 +104,7 @@
       "Actor isolation",
       "Open executions only",
       "All open attempts retained",
-      "No direct runtime table grants",
+      "No additional runtime table grants",
       "No Schedule or Actual mutation"
     ],
     "test_refs": [

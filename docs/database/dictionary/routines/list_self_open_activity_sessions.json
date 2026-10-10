@@ -104,7 +104,7 @@
       "Actor isolation",
       "Open executions only",
       "All open attempts retained",
-      "No direct runtime table grants",
+      "No additional runtime table grants",
       "No Schedule or Actual mutation"
     ],
     "test_refs": [

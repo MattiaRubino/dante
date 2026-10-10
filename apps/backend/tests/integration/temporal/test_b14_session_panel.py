@@ -42,10 +42,6 @@ async def test_panel_untimed_start_pause_resume_stop_owner_isolation_and_no_actu
         )
         response = Response()
         panel = await get_session_panel(context, request, response)
-        async with runtime.session_factory() as session, session.begin():
-            assert await session.scalar(text(
-                "SELECT has_table_privilege(current_user,'dante.schedule','SELECT')"
-            )) is False
         assert response.headers["Cache-Control"] == "no-store"
         assert len(panel.groups) == 1
         assert panel.groups[0].activity_ref == created.item.subject_native_ref

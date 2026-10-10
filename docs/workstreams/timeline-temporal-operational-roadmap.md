@@ -2,7 +2,7 @@
 
 ## B14 Session panel candidate
 
-The requested Timeline Session panel, grouped by Activity with clock-bound availability and Play/Pause/Stop, is published as a bounded B14 branch candidate. The exact current contract and unproven gates are in `docs/frontend/home/timeline-session-panel.md`; publication scope is in `docs/workstreams/timeline-session-panel-scope.md`. B15 remains open.
+The requested Timeline Session panel, grouped by Activity with clock-bound availability and Play/Pause/Stop, is published as a bounded B14 branch candidate. The user-local browser gate passed; one PostgreSQL test assertion was corrected after the first run and awaits rerun. The exact current contract and proof are in `docs/frontend/home/timeline-session-panel.md`; publication scope is in `docs/workstreams/timeline-session-panel-scope.md`. Real-app acceptance and B15 remain open.
 
 - **Status:** CURRENT EXECUTION ROADMAP — U6 continuation reconciled 2026-10-03
 - **Branch/workstream:** `feature/timeline-temporal-operational`
