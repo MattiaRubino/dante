@@ -93,6 +93,9 @@ for (const width of [1440, 390]) {
     expect(box!.x + box!.width).toBeLessThanOrEqual(
       Math.min(width, parent!.x + parent!.width),
     );
+    expect(
+      Math.abs(box!.x + box!.width - (parent!.x + parent!.width - 12)),
+    ).toBeLessThanOrEqual(2);
     // Closing and reopening is independent from the top toolbar icon.
     await panel
       .getByRole('button', { name: 'Chiudi pannello sessioni' })
