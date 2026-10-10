@@ -74,7 +74,6 @@ function ObjectiveInputRow({
 }>) {
   const [draft, setDraft] = useState(initialDraft);
   const [entry, setEntry] = useState(() => fromDraft(objective, initialDraft));
-  const [edited, setEdited] = useState(false);
   const [busy, setBusy] = useState<'saving' | 'confirming' | null>(null);
   const [error, setError] = useState<string | null>(null);
   const lock = useRef(false);
@@ -84,11 +83,6 @@ function ObjectiveInputRow({
   );
   const savedEntry = fromDraft(objective, draft);
   const dirty = !!validPayload && entry !== savedEntry;
-
-  useEffect(() => {
-    setDraft(initialDraft);
-    if (!edited) setEntry(fromDraft(objective, initialDraft));
-  }, [initialDraft, objective, edited]);
 
   const persist = useCallback(async (payload: ObjectiveInputPayload) => {
     lock.current = true;
@@ -107,16 +101,16 @@ function ObjectiveInputRow({
       lock.current = false;
       setBusy(null);
     }
-  }, [draft?.revision, objective.objectiveRef, source]);
+  }, [draft, objective.objectiveRef, source]);
 
   useEffect(() => {
-    if (confirmed || !edited || !dirty || !validPayload || busy !== null) return;
+    if (confirmed || !dirty || !validPayload || busy !== null) return;
     const timer = window.setTimeout(() => {
       if (lock.current) return;
       void persist(validPayload).catch(() => undefined);
     }, 650);
     return () => window.clearTimeout(timer);
-  }, [edited, dirty, validPayload, confirmed, busy, persist]);
+  }, [dirty, validPayload, confirmed, busy, persist]);
 
   const saveOnBlur = (event: FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
     const nextFocus = event.relatedTarget as HTMLElement | null;
@@ -169,7 +163,7 @@ function ObjectiveInputRow({
             <select aria-label={`Valore per ${objective.label}`}
               value={entry} disabled={busy !== null}
               onBlur={saveOnBlur}
-              onChange={(event) => { setEdited(true); setEntry(event.target.value); }}>
+              onChange={(event) => { setEntry(event.target.value); }}>
               <option value="">Scegli…</option>
               <option value="true">Sì</option>
               <option value="false">No</option>
@@ -178,7 +172,7 @@ function ObjectiveInputRow({
             <select aria-label={`Valutazione per ${objective.label}`}
               value={entry} disabled={busy !== null}
               onBlur={saveOnBlur}
-              onChange={(event) => { setEdited(true); setEntry(event.target.value); }}>
+              onChange={(event) => { setEntry(event.target.value); }}>
               <option value="">Valuta…</option>
               <option value="satisfied">Raggiunto</option>
               <option value="partial">Parziale</option>
@@ -191,7 +185,7 @@ function ObjectiveInputRow({
                 disabled={busy !== null}
                 onBlur={saveOnBlur}
                 aria-label={`Valore reale per ${objective.label}`}
-                onChange={(event) => { setEdited(true); setEntry(event.target.value); }} />
+                onChange={(event) => { setEntry(event.target.value); }} />
               {objective.unitCode ? <span>{objective.unitCode}</span> : null}
             </>
           )}
