@@ -185,7 +185,7 @@ async def test_internal_resume_is_blocked_while_main_is_paused(
             self_person_ref=actor, activity_ref=activity,
             schedule_ref=planned, operation_id="paused-main:child",
         )
-        await sessions.pause(
+        paused_main = await sessions.pause(
             self_person_ref=actor, session_ref=main.session_ref,
             expected_material_state_ref=main.timing_material_state_ref,
             operation_id="paused-main:pause",
@@ -200,5 +200,20 @@ async def test_internal_resume_is_blocked_while_main_is_paused(
                 expected_material_state_ref=paused_child.timing_material_state_ref,
                 operation_id="paused-main:child-resume",
             )
+        # Stop while the main and its internal Session are paused is
+        # accepted: child pause ends at Stop, without an artificial resume.
+        ended = await sessions.end(
+            self_person_ref=actor, session_ref=main.session_ref,
+            expected_material_state_ref=paused_main.timing_material_state_ref,
+            operation_id="paused-main:stop",
+        )
+        assert not ended.open
+        child_ended = await sessions.get(
+            self_person_ref=actor, session_ref=child.session_ref,
+        )
+        assert not child_ended.open
+        assert not child_ended.paused
+        assert child_ended.paused_seconds > 0
+        assert child_ended.ended_at is not None
     finally:
         await runtime.dispose()
