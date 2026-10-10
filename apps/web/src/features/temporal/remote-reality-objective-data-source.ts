@@ -138,9 +138,9 @@ function parseObjectiveInputDraft(value: unknown): ObjectiveInputDraftView {
   if ((boolean != null && typeof boolean !== 'boolean') ||
       (numeric != null && typeof numeric !== 'number' && typeof numeric !== 'string') ||
       (qualitative != null && typeof qualitative !== 'string') ||
-      (assessment != null && ![
-        'satisfied', 'partial', 'not_satisfied', 'unknown', 'indeterminate',
-      ].includes(String(assessment)))) {
+      (assessment != null && assessment !== 'satisfied' &&
+        assessment !== 'partial' && assessment !== 'not_satisfied' &&
+        assessment !== 'unknown' && assessment !== 'indeterminate')) {
     throw new Error('Valore provvisorio dell’Obiettivo non valido.');
   }
   const number = numeric == null ? null : Number(numeric);
