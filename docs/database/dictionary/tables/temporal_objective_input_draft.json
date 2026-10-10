@@ -1,0 +1,320 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "table:dante.temporal_objective_input_draft",
+    "type": "table",
+    "schema": "dante",
+    "name": "temporal_objective_input_draft",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "One actor-owned provisional Objective input, CAS-revisioned and idempotently confirmable; never an Observation until explicit accepted confirmation.",
+  "classification": {
+    "persistence_role": "objective_input_draft",
+    "canonicality": "control",
+    "family": "B14ObjectiveInput"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/domain/decisions/activity-session-live-timeline-v1.md",
+      "docs/database/timeline-temporal-operational.md"
+    ],
+    "domain_concepts": [
+      "Objective",
+      "Observation",
+      "Evaluation"
+    ],
+    "logical_families": [
+      "Objective input staging and confirmation"
+    ],
+    "reference_families": [
+      "NativeRef",
+      "ScopedRecordRef"
+    ],
+    "material_facets": []
+  },
+  "implementation": {
+    "introducing_stage": "B14-OBJECTIVE-INPUT",
+    "alembic_revision": "20261010_139",
+    "sqlalchemy": {
+      "mode": "orm_row",
+      "module": "dante.platform.database.mappings.draft_vault",
+      "symbol": "TemporalObjectiveInputDraftRow"
+    },
+    "runtime_acl_stage": "B14-OBJECTIVE-INPUT"
+  },
+  "structure": {
+    "columns": [
+      {
+        "name": "objective_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "objective_ref",
+        "semantic_type": "ScopedRecordRef",
+        "value_contract": "Owner-only staged Objective input; confirmation is separate."
+      },
+      {
+        "name": "owner_person_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "owner_person_ref",
+        "semantic_type": "NativeRef",
+        "value_contract": "Owner-only staged Objective input; confirmation is separate."
+      },
+      {
+        "name": "payload",
+        "postgres_type": "jsonb",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "payload",
+        "semantic_type": null,
+        "value_contract": "Owner-only staged Objective input; confirmation is separate."
+      },
+      {
+        "name": "revision",
+        "postgres_type": "bigint",
+        "nullable": false,
+        "default": {
+          "kind": "server",
+          "expression": "1"
+        },
+        "meaning": "revision",
+        "semantic_type": null,
+        "value_contract": "Owner-only staged Objective input; confirmation is separate."
+      },
+      {
+        "name": "last_operation_id",
+        "postgres_type": "text",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "last_operation_id",
+        "semantic_type": null,
+        "value_contract": "Owner-only staged Objective input; confirmation is separate."
+      },
+      {
+        "name": "confirmed_operation_id",
+        "postgres_type": "text",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "confirmed_operation_id",
+        "semantic_type": null,
+        "value_contract": "Owner-only staged Objective input; confirmation is separate."
+      },
+      {
+        "name": "observation_ref",
+        "postgres_type": "uuid",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "observation_ref",
+        "semantic_type": "NativeRef",
+        "value_contract": "Owner-only staged Objective input; confirmation is separate."
+      },
+      {
+        "name": "evaluation_state_ref",
+        "postgres_type": "uuid",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "evaluation_state_ref",
+        "semantic_type": "MaterialStateRef",
+        "value_contract": "Owner-only staged Objective input; confirmation is separate."
+      },
+      {
+        "name": "assessment_code",
+        "postgres_type": "text",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "assessment_code",
+        "semantic_type": null,
+        "value_contract": "Owner-only staged Objective input; confirmation is separate."
+      },
+      {
+        "name": "confirmed_at",
+        "postgres_type": "timestamp with time zone",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "confirmed_at",
+        "semantic_type": null,
+        "value_contract": "Owner-only staged Objective input; confirmation is separate."
+      },
+      {
+        "name": "updated_at",
+        "postgres_type": "timestamp with time zone",
+        "nullable": false,
+        "default": {
+          "kind": "server",
+          "expression": "clock_timestamp()"
+        },
+        "meaning": "updated_at",
+        "semantic_type": null,
+        "value_contract": "Owner-only staged Objective input; confirmation is separate."
+      }
+    ],
+    "primary_key": {
+      "name": "pk_temporal_objective_input_draft",
+      "columns": [
+        "objective_ref"
+      ],
+      "reason": "One current staged input per canonical Objective identity.",
+      "deferrable": false,
+      "initially": "NOT DEFERRABLE",
+      "enforced": true
+    },
+    "foreign_keys": [
+      {
+        "name": "fk_temporal_objective_input_draft_objective",
+        "columns": [
+          "objective_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "temporal_objective",
+          "columns": [
+            "objective_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "ScopedRecordRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Stage is tied to a real existing Objective."
+      }
+    ],
+    "unique_constraints": [],
+    "check_constraints": [
+      {
+        "name": "ck_temporal_objective_input_draft_payload",
+        "expression_contract": "jsonb_typeof(payload)='object' AND octet_length(payload::text)<=4096",
+        "reason": "Validate provisional Objective input state and confirmation coherence.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_temporal_objective_input_draft_revision",
+        "expression_contract": "revision>=1",
+        "reason": "Validate provisional Objective input state and confirmation coherence.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_temporal_objective_input_draft_confirmed",
+        "expression_contract": "(confirmed_at IS NULL AND confirmed_operation_id IS NULL AND observation_ref IS NULL AND evaluation_state_ref IS NULL AND assessment_code IS NULL) OR (confirmed_at IS NOT NULL AND confirmed_operation_id IS NOT NULL AND observation_ref IS NOT NULL AND evaluation_state_ref IS NOT NULL AND assessment_code IS NOT NULL)",
+        "reason": "Validate provisional Objective input state and confirmation coherence.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "pk_temporal_objective_input_draft",
+        "method": "btree",
+        "unique": true,
+        "keys": [
+          "objective_ref"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "primary_key",
+        "reason": "Exact draft identity lookup",
+        "valid": true,
+        "ready": true,
+        "live": true
+      },
+      {
+        "name": "ix_temporal_objective_input_draft_owner",
+        "method": "btree",
+        "unique": false,
+        "keys": [
+          "owner_person_ref",
+          "updated_at DESC",
+          "objective_ref"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "explicit_index",
+        "reason": "Actor bounded recent staged input read",
+        "valid": true,
+        "ready": true,
+        "live": true
+      }
+    ],
+    "triggers": [],
+    "table": {
+      "persistence": "permanent",
+      "access_method": "heap",
+      "partitioned": false,
+      "row_security": false,
+      "force_row_security": false,
+      "replica_identity": "default",
+      "reloptions": []
+    },
+    "view": null,
+    "routine": null
+  },
+  "state_history": {
+    "material_state_behavior": "Provisional value never establishes Observation/Result.",
+    "current_binding": "One CAS revision and optionally confirmed accepted result per Objective.",
+    "chronology": "Confirmation is explicit with persistent operation receipt and real observation/evaluation refs.",
+    "immutability_policy": "Confirmed values remain immutable in this staging table; later correction uses the canonical Objective Result correction."
+  },
+  "lifecycle": {
+    "retention": "Retain staged input until owner explicitly confirms; then keep idempotent accepted confirmation receipt.",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No runtime delete."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": []
+  },
+  "proof": {
+    "obligations": [
+      "Owner scoping at PostgreSQL boundary",
+      "Strict CAS and last-operation replay",
+      "Atomic confirm with canonical ObjectiveResult",
+      "No Observation/Actual created by draft save"
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b14_objective_input.py",
+      "apps/backend/tests/integration/database/test_database_current_catalog.py"
+    ],
+    "staged_evidence": []
+  }
+}
