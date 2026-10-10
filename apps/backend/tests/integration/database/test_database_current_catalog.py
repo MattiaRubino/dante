@@ -19,8 +19,8 @@ from dante.platform.database.metadata import Base
 
 pytestmark = pytest.mark.postgres
 
-_CURRENT_REVISION = "20261010_138"
-_CURRENT_TOPOLOGY = (237, 5, 222, 103, 484, 420, 593, 0, 0, 0)
+_CURRENT_REVISION = "20261010_139"
+_CURRENT_TOPOLOGY = (238, 5, 225, 103, 485, 421, 596, 0, 0, 0)
 _REPO_ROOT = Path(__file__).resolve().parents[5]
 _DICTIONARY_ROOT = _REPO_ROOT / "docs" / "database" / "dictionary"
 
@@ -230,12 +230,13 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
         "B14-SESSION-HIERARCHY",
         "B14-SESSION-REALITY-PROJECTION",
         "B14-SESSION-PAUSED-END",
+        "B14-OBJECTIVE-INPUT",
     ]
     assert current["standalone_entries"] == {
-        "tables": 237,
+        "tables": 238,
         "views": 5,
-        "routines": 222,
-        "total": 464,
+        "routines": 225,
+        "total": 468,
     }
     assert current["embedded_objects"] == {
         "triggers": 103,
@@ -245,7 +246,7 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
         "foreign_keys": 420,
         "check_constraints": 593,
     }
-    assert len(MAPPED_TABLES) == len(Base.registry.mappers) == len(Base.metadata.tables) == 237
+    assert len(MAPPED_TABLES) == len(Base.registry.mappers) == len(Base.metadata.tables) == 238
     assert all(len(mapper.relationships) == 0 for mapper in Base.registry.mappers)
     assert set(VIEW_METADATA.tables) == {f"dante.{name}" for name in views}
     assert {table.name for table in MAPPED_TABLES} == set(tables)
