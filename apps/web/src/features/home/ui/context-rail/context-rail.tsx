@@ -1,9 +1,14 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { ActualRealizationControls } from '../../../temporal/actual-realization-controls';
 import { ObjectiveControls } from '../../../temporal/objective-controls';
 import { ReconciliationControls } from '../../../temporal/reconciliation-controls';
+import {
+  createContextRailWorkSource,
+  type FinishedWorkItem,
+  type PendingObjectiveWork,
+} from './context-rail-work-data-source';
 import {
   createResolutionQueueSource,
   type ResolutionItem,
@@ -19,6 +24,21 @@ function resolutionItemKey(item: ResolutionItem): string {
 export function ContextRail() {
   const { t } = useTranslation('common');
   const source = useMemo(() => createResolutionQueueSource(), []);
+  const workSource = useMemo(() => createContextRailWorkSource(), []);
+  const [tab, setTab] = useState<'finished' | 'review' | 'objectives'>('review');
+  const tabs = ['finished', 'review', 'objectives'] as const;
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
+  const [finished, setFinished] = useState<readonly FinishedWorkItem[] | null>(null);
+  const [objectives, setObjectives] = useState<readonly PendingObjectiveWork[] | null>(null);
+  const [workError, setWorkError] = useState<string | null>(null);
+  const objectiveOwners = useMemo(() => {
+    const owners = new Map<string, PendingObjectiveWork[]>();
+    for (const objective of objectives ?? []) {
+      const key = `${objective.subject_kind}:${objective.subject_ref}`;
+      owners.set(key, [...(owners.get(key) ?? []), objective]);
+    }
+    return [...owners.entries()].map(([key, items]) => ({ key, items }));
+  }, [objectives]);
   const [queue, setQueue] = useState<ResolutionQueue | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -43,20 +63,38 @@ export function ContextRail() {
     [source],
   );
 
+  const refreshWork = useCallback((signal?: AbortSignal) => {
+    void Promise.all([
+      workSource.listFinished(signal), workSource.listObjectives(signal),
+    ]).then(([history, pending]) => {
+      setFinished(history);
+      setObjectives(pending);
+      setWorkError(null);
+    }).catch((reason: unknown) => {
+      if (signal?.aborted) return;
+      setWorkError(reason instanceof Error ? reason.message : 'Riepilogo non disponibile.');
+    });
+  }, [workSource]);
+
   const ownerRecorded = useCallback(() => {
     setExpanded(null);
     refresh();
-  }, [refresh]);
+    refreshWork();
+  }, [refresh, refreshWork]);
 
   useEffect(() => {
     const controller = new AbortController();
     refresh(controller.signal);
+    refreshWork(controller.signal);
     return () => controller.abort();
-  }, [refresh]);
+  }, [refresh, refreshWork]);
 
   useEffect(() => {
     const onVisible = () => {
-      if (document.visibilityState === 'visible') refresh();
+      if (document.visibilityState === 'visible') {
+        refresh();
+        refreshWork();
+      }
     };
     window.addEventListener('focus', onVisible);
     document.addEventListener('visibilitychange', onVisible);
@@ -66,7 +104,7 @@ export function ContextRail() {
       document.removeEventListener('visibilitychange', onVisible);
       window.clearInterval(interval);
     };
-  }, [refresh]);
+  }, [refresh, refreshWork]);
   return (
     <aside
       className="home-context-rail"
@@ -133,19 +171,64 @@ export function ContextRail() {
         <header className="home-context-heading">
           <div>
             <span className="home-context-kicker">DA DANTE A TE</span>
-            <h2>Da verificare</h2>
+            <h2>Attività e risultati</h2>
           </div>
           <span
             className="home-resolution-count"
-            aria-label={`${queue?.count ?? 0} elementi aperti`}
+            aria-label={`${queue?.count ?? 0} elementi da verificare`}
           >
-            {queue?.count ?? '…'}
+            {tab === 'review' ? queue?.count ?? '…'
+              : tab === 'finished' ? finished?.length ?? '…'
+              : objectives?.length ?? '…'}
           </span>
         </header>
-        <p className="home-resolution-intro">
-          Realtà, obiettivi e decisioni che aspettano una risposta.
-        </p>
-        <div className="home-resolution-list">
+        <div role="tablist" aria-label="Pagine attività e risultati"
+          className="home-resolution-tabs">
+          {tabs.map((value) => (
+            <button key={value} type="button" role="tab"
+              id={`home-work-tab-${value}`}
+              aria-selected={tab === value}
+              aria-controls="home-work-tabpanel"
+              className={tab === value ? 'is-active' : ''}
+              onClick={() => { setTab(value); setExpanded(null); }}
+              onKeyDown={(event) => {
+                if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+                event.preventDefault();
+                const offset = event.key === 'ArrowRight' ? 1 : -1;
+                const target = tabs[(tabs.indexOf(tab) + offset + tabs.length) % tabs.length];
+                setTab(target);
+                document.getElementById(`home-work-tab-${target}`)?.focus();
+              }}
+            >
+              {value === 'finished' ? 'Conclusi'
+                : value === 'review' ? 'Da verificare' : 'Obiettivi'}
+            </button>
+          ))}
+        </div>
+        <div className="home-resolution-list" id="home-work-tabpanel"
+          role="tabpanel" aria-labelledby={`home-work-tab-${tab}`}
+          onTouchStart={(event) => {
+            const touch = event.touches[0];
+            if (touch) touchStart.current = { x: touch.clientX, y: touch.clientY };
+          }}
+          onTouchEnd={(event) => {
+            const origin = touchStart.current;
+            const touch = event.changedTouches[0];
+            touchStart.current = null;
+            if (!origin || !touch) return;
+            const dx = touch.clientX - origin.x;
+            const dy = touch.clientY - origin.y;
+            if (Math.abs(dx) <= 65 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+            const offset = dx < 0 ? 1 : -1;
+            setTab(tabs[(tabs.indexOf(tab) + offset + tabs.length) % tabs.length]);
+            setExpanded(null);
+          }}
+        >
+          {tab === 'review' ? (
+            <>
+          <p className="home-resolution-intro">
+            Realtà, verifiche e decisioni che aspettano una risposta.
+          </p>
           {error ? (
             <p role="alert">
               {error} <button type="button" onClick={() => refresh()}>Riprova</button>
@@ -238,6 +321,72 @@ export function ContextRail() {
               </article>
             );
           })}
+            </>
+          ) : tab === 'finished' ? (
+            <>
+              <p className="home-resolution-intro">Esecuzioni e realizzazioni effettivamente concluse negli ultimi 90 giorni.</p>
+              {workError && <p role="alert">{workError}</p>}
+              {finished === null && !workError && <p>Caricamento…</p>}
+              {finished?.length === 0 && <p className="home-resolution-empty">Nessuna esecuzione conclusa.</p>}
+              {finished?.map((item, index) => (
+                <article className="home-resolution-card"
+                  key={`${item.record_kind}:${item.session_ref ?? item.subject_ref}:${index}`}>
+                  <div className="home-resolution-row">
+                    <span className="home-resolution-status is-partial">
+                      {item.record_kind === 'session_ended'
+                        ? 'Sessione conclusa' : 'Realtà registrata'}
+                    </span>
+                    <time dateTime={item.ended_at}>
+                      {new Intl.DateTimeFormat('it-IT', {
+                        day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',
+                      }).format(new Date(item.ended_at))}
+                    </time>
+                  </div>
+                  <strong>{item.title}</strong>
+                  <p>{item.record_kind === 'session_ended'
+                    ? 'La Sessione è terminata; non implica automaticamente Attività completata.'
+                    : item.subject_kind === 'event'
+                      ? 'Evento confermato come avvenuto.'
+                      : 'Attività registrata come svolta.'}</p>
+                </article>
+              ))}
+            </>
+          ) : (
+            <>
+              <p className="home-resolution-intro">
+                Obiettivi senza risultato confermato. I valori in bozza restano salvati.
+              </p>
+              {workError && <p role="alert">{workError}</p>}
+              {objectives === null && !workError && <p>Caricamento…</p>}
+              {objectiveOwners.length === 0 && objectives !== null &&
+                <p className="home-resolution-empty">Nessun Obiettivo da compilare.</p>}
+              {objectiveOwners.map(({key, items}) => (
+                <article className="home-resolution-card" key={key}>
+                  <div className="home-resolution-row">
+                    <span className="home-resolution-status is-partial">
+                      {items.length} Obiettivi
+                    </span>
+                    <span>{items.some(item => item.draft_revision !== null)
+                      ? 'Bozza salvata' : 'Da compilare'}</span>
+                  </div>
+                  <strong>{items[0]?.subject_title}</strong>
+                  <p>{items.map((item) => item.label).join(' · ')}</p>
+                  <button type="button" className="home-resolution-details"
+                    aria-expanded={expanded === key}
+                    onClick={() => setExpanded((current) => current === key ? null : key)}>
+                    {expanded === key ? 'Chiudi' : 'Compila obiettivi'}
+                  </button>
+                  {expanded === key && items[0] ? (
+                    <ObjectiveControls
+                      kind={items[0].subject_kind}
+                      subjectRef={items[0].subject_ref}
+                      onRecorded={ownerRecorded}
+                    />
+                  ) : null}
+                </article>
+              ))}
+            </>
+          )}
         </div>
       </section>
       <div className="home-create-panel-host" data-home-context-create-host />
