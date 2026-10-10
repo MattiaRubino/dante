@@ -121,13 +121,15 @@ def build_panel(
             if (b := bounds[s.schedule_ref])
         )
         def ended_during_current_window(
-            planned_ref: UUID | None, windows: list[tuple[datetime, datetime]]
+            planned_ref: UUID | None,
+            windows: list[tuple[datetime, datetime]],
+            activity_ref: UUID,
         ) -> bool:
             # Stop removes the finished attempt from the operational desk.
             # Re-entering the same planned window does not manufacture a
             # fresh "ready" execution on every polling tick or page refresh.
             return any(
-                str(item["activity_ref"]) == str(owner["activity_ref"])
+                str(item["activity_ref"]) == str(activity_ref)
                 and (
                     str(item["planned_schedule_ref"])
                     if item["planned_schedule_ref"] is not None else None
@@ -150,7 +152,7 @@ def build_panel(
             else b is not None and b[0] <= now < b[1]
             for s in intervals if (b := bounds[s.schedule_ref])
         )
-        main_stopped_in_window = ended_during_current_window(None, current_windows)
+        main_stopped_in_window = ended_during_current_window(None, current_windows, owner["activity_ref"])
         executions: dict[str | None, list[Any]] = {}
         for execution in owner["executions"]:
             ref = (
@@ -178,7 +180,7 @@ def build_panel(
             )
             windows = [timing] if timing else current_windows
             if due and not matching and ended_during_current_window(
-                schedule.schedule_ref, windows
+                schedule.schedule_ref, windows, owner["activity_ref"]
             ):
                 due = False
             if not due and not matching:
