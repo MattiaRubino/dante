@@ -138,6 +138,7 @@ async def test_main_pause_resume_end_are_atomic_and_internal_actions_not_inverse
         assert len(result.visuals) == 3
         assert all(r.ended_at is not None for r in result.visuals)
         assert any(r.pause_ranges for r in result.visuals)
+        assert result.groups == []  # all the owned real executions were ended
         # Runtime role has no direct Actual-table grant; inspect under
         # dedicated test migrator/owner identity, not application credentials.
         with psycopg.connect(**migrated_database.connection_kwargs(
