@@ -146,18 +146,20 @@ describe('Timeline Session panel integration', () => {
       timing_material_state_ref: string;
       paused: boolean;
     } = null;
+    let stopped = false;
     const commands: { path: string; body: Record<string, unknown> }[] = [];
     const fetcher = vi.fn(
       async (input: RequestInfo | URL, init?: RequestInit) => {
         const path = requestPath(input);
         if (path.endsWith('/session-panel'))
-          return Response.json(feed([{ ...row(), execution }]));
+          return Response.json(stopped ? feed([]) : feed([{ ...row(), execution }]));
         if (path === '/api/v1/auth/session')
           return Response.json({ authenticated: true, csrf_token: 'csrf' });
         expect(new Headers(init?.headers).get('X-Dante-CSRF')).toBe('csrf');
         const body = requestBody(init);
         commands.push({ path, body });
         const result = runtime(path.endsWith('/pause'), !path.endsWith('/end'));
+        stopped = !result.open;
         execution = result.open
           ? {
               session_ref: result.session_ref,
@@ -181,7 +183,9 @@ describe('Timeline Session panel integration', () => {
     );
     await screen.findByRole('button', { name: 'Pausa · Ripasso' });
     fireEvent.click(screen.getByRole('button', { name: 'Termina · Ripasso' }));
-    await screen.findByRole('button', { name: 'Avvia · Ripasso' });
+    await waitFor(() =>
+      expect(screen.queryByRole('button', { name: 'Avvia · Ripasso' })).toBeNull(),
+    );
     expect(commands.map((c) => c.path)).toEqual([
       `/api/v1/temporal/activities/${activity}/planned-sessions/${planned}/sessions`,
       `/api/v1/temporal/sessions/${session}/pause`,
