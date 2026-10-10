@@ -174,7 +174,9 @@ export function TimelineSurface({
   );
   const organization = useTimelineOrganization(!prototypeMode);
   const readyRuntimeWindow =
-    temporalRuntimeState.status === 'ready' ? temporalRuntimeState.window : null;
+    temporalRuntimeState.status === 'ready'
+      ? temporalRuntimeState.window
+      : null;
   useEffect(() => {
     if (prototypeMode || readyRuntimeWindow === null) {
       return;
@@ -183,11 +185,7 @@ export function TimelineSurface({
     // their Life Area assignments. Refresh organization only after that read
     // completed so group/color projection cannot race ahead of canonical truth.
     organization.refresh();
-  }, [
-    organization.refresh,
-    prototypeMode,
-    readyRuntimeWindow,
-  ]);
+  }, [organization.refresh, prototypeMode, readyRuntimeWindow]);
   const canonicalGroups = useMemo(
     () =>
       organization.snapshot === null
@@ -229,7 +227,9 @@ export function TimelineSurface({
   const resolveAppearanceColorCode = useCallback(
     (item: import('../../../temporal/timeline-read').TemporalTimelineItem) => {
       const groupId = resolveGroupId(item);
-      const group = canonicalGroups?.find((candidate) => candidate.id === groupId);
+      const group = canonicalGroups?.find(
+        (candidate) => candidate.id === groupId,
+      );
       if (!group) return null;
       if (groupId === LEGACY_UNASSIGNED_GROUP) {
         return group.itemColorCodes?.[organizationKeyForItem(item)] ?? null;
@@ -500,19 +500,20 @@ export function TimelineSurface({
                 ? 'Sblocca gli spostamenti prima di modificare l’orario.'
                 : 'Unlock placement before changing the time.'
               : intervalConflict
-              ? i18n.language.startsWith('it')
-                ? 'Per spostare questa fascia serve modificare insieme gli intervalli dell’attività.'
-                : 'Moving this interval requires a coordinated Activity replan.'
-              : conflict
-                ? t(
-                    ($) =>
-                      $.common.home.timeline.feedback.scheduleRevisionConflict,
-                  )
-                : t(
-                    ($) =>
-                      $.common.home.timeline.feedback
-                        .scheduleRevisionUnavailable,
-                  ),
+                ? i18n.language.startsWith('it')
+                  ? 'Per spostare questa fascia serve modificare insieme gli intervalli dell’attività.'
+                  : 'Moving this interval requires a coordinated Activity replan.'
+                : conflict
+                  ? t(
+                      ($) =>
+                        $.common.home.timeline.feedback
+                          .scheduleRevisionConflict,
+                    )
+                  : t(
+                      ($) =>
+                        $.common.home.timeline.feedback
+                          .scheduleRevisionUnavailable,
+                    ),
           });
         })
         .finally(() => {
@@ -1156,7 +1157,7 @@ export function TimelineSurface({
       aria-label={t(($) => $.common.home.timeline.label)}
     >
       <TimelineHeader
-        sessionPanelToggle={sessionPresentation.toggle}
+        sessionPanelToggle={sessionPresentation.control}
         locale={locale}
         today={timelineToday}
         viewDate={viewDate}
@@ -1317,7 +1318,11 @@ export function TimelineSurface({
             })
           }
           onOpenTimeEditor={(dateKey, event, editorAnchor) => {
-            if (event.canonicalBasis?.kind === 'scheduled-activity' && event.canonicalBasis.placementLocked) return;
+            if (
+              event.canonicalBasis?.kind === 'scheduled-activity' &&
+              event.canonicalBasis.placementLocked
+            )
+              return;
             setTimeEditor({ dateKey, event, anchor: editorAnchor });
           }}
           onMoveEvent={(move) => {
@@ -1385,8 +1390,6 @@ export function TimelineSurface({
       >
         <span aria-hidden="true" />
       </button>
-
-      {sessionPresentation.panel}
 
       <CalendarPopover
         open={calendarOpen}
@@ -1506,26 +1509,38 @@ export function TimelineSurface({
           if (!detailState) return;
           const existing = findTimelineEvent(state, detailState.event.id);
           if (existing) {
-            const { appearanceColorCode: _previousColor, ...eventWithoutColor } = existing.event;
+            const {
+              appearanceColorCode: _previousColor,
+              ...eventWithoutColor
+            } = existing.event;
             dispatch({
               type: 'materialize-event',
               dateKey: existing.dateKey,
               event: {
                 ...eventWithoutColor,
                 title: profile.title,
-                ...(profile.colorCode ? { appearanceColorCode: profile.colorCode } : {}),
+                ...(profile.colorCode
+                  ? { appearanceColorCode: profile.colorCode }
+                  : {}),
               },
             });
           }
-          setDetailState((current) => current && {
-            ...current,
-            detail: { ...current.detail, title: profile.title },
-          });
+          setDetailState(
+            (current) =>
+              current && {
+                ...current,
+                detail: { ...current.detail, title: profile.title },
+              },
+          );
         }}
         onActivityDeleted={() => {
-          if (detailState) dispatch({ type: 'remove-event', eventId: detailState.event.id });
+          if (detailState)
+            dispatch({ type: 'remove-event', eventId: detailState.event.id });
           setDetailState(null);
-          showScheduleNotice({ kind: 'status', message: 'Attività eliminata.' });
+          showScheduleNotice({
+            kind: 'status',
+            message: 'Attività eliminata.',
+          });
         }}
         onClose={() => setDetailState(null)}
       />

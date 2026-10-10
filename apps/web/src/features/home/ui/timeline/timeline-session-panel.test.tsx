@@ -32,8 +32,7 @@ function Harness({ enabled = true }: { enabled?: boolean }) {
   const view = useSessionPanelPresentation(controller);
   return (
     <section>
-      <nav>{view.toggle}</nav>
-      {view.panel}
+      <nav>{view.control}</nav>
     </section>
   );
 }
@@ -105,6 +104,10 @@ describe('Timeline Session panel integration', () => {
     const trigger = screen.getByRole('button', {
       name: 'Sessioni disponibili · 2',
     });
+    expect(trigger.getAttribute('title')).toBe('Sessioni');
+    expect(screen.getByRole('complementary').parentElement).toBe(
+      trigger.parentElement,
+    );
     fireEvent.keyDown(screen.getByRole('complementary'), { key: 'Escape' });
     expect(screen.queryByRole('complementary')).toBeNull();
     expect(document.activeElement).toBe(trigger);

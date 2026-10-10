@@ -1,5 +1,6 @@
-.dante-timeline-actions > .timeline-session-panel__toggle {
+.timeline-session-panel__anchor {
   position: relative;
+  display: inline-flex;
 }
 .timeline-session-panel__badge {
   position: absolute;
@@ -18,12 +19,10 @@
 .timeline-session-panel {
   position: absolute;
   z-index: 24;
-  right: 12px;
-  top: calc(var(--dante-timeline-header-stack-height, 124px) + 8px);
-  width: min(320px, calc(100% - 24px));
-  max-height: calc(
-    100% - var(--dante-timeline-header-stack-height, 124px) - 24px
-  );
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(320px, calc(100vw - 24px));
+  max-height: min(520px, calc(100vh - 104px));
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -131,8 +130,7 @@
 }
 @media (max-width: 600px) {
   .timeline-session-panel {
-    right: 8px;
-    width: min(320px, calc(100% - 16px));
+    width: min(320px, calc(100vw - 16px));
   }
   .timeline-session-panel button {
     min-width: 44px;
