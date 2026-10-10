@@ -1,0 +1,141 @@
+.dante-timeline-actions > .timeline-session-panel__toggle {
+  position: relative;
+}
+.timeline-session-panel__badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 3px;
+  border-radius: 8px;
+  background: var(--dante-timeline-accent, #ea5c12);
+  color: #fff;
+  font-size: 10px;
+  line-height: 15px;
+  text-align: center;
+}
+.timeline-session-panel {
+  position: absolute;
+  z-index: 24;
+  right: 12px;
+  top: calc(var(--dante-timeline-header-stack-height, 124px) + 8px);
+  width: min(320px, calc(100% - 24px));
+  max-height: calc(
+    100% - var(--dante-timeline-header-stack-height, 124px) - 24px
+  );
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--dante-semantic-color-home-surface-control, #151f2e);
+  color: var(--dante-timeline-text-primary, #eef3fa);
+  border: 1px solid #ffffff1f;
+  border-radius: 14px;
+  box-shadow: 0 10px 32px #0006;
+}
+.timeline-session-panel > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 14px 12px;
+  border-bottom: 1px solid #ffffff14;
+}
+.timeline-session-panel > header > div {
+  display: grid;
+  gap: 2px;
+}
+.timeline-session-panel > header strong {
+  font-size: 14px;
+}
+.timeline-session-panel > header span,
+.timeline-session-panel small {
+  font-size: 11px;
+  color: var(--dante-timeline-text-secondary, #98a6ba);
+}
+.timeline-session-panel button {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+  min-width: 34px;
+  min-height: 34px;
+  border: 1px solid #ffffff24;
+  border-radius: 9px;
+  color: inherit;
+  background: transparent;
+}
+.timeline-session-panel button:hover:not(:disabled) {
+  background: #ffffff0e;
+}
+.timeline-session-panel button:focus-visible {
+  outline: 2px solid var(--dante-timeline-accent, #ea5c12);
+  outline-offset: 2px;
+}
+.timeline-session-panel button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.timeline-session-panel__groups {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px 14px 12px;
+}
+.timeline-session-panel h3 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin: 14px 0 8px;
+  font-size: 12px;
+}
+.timeline-session-panel ul {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.timeline-session-panel li + li {
+  border-top: 1px solid #ffffff0c;
+}
+.timeline-session-panel__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+}
+.timeline-session-panel__name {
+  display: grid;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+}
+.timeline-session-panel__name > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.timeline-session-panel__controls {
+  display: flex;
+  gap: 5px;
+}
+.timeline-session-panel__error,
+.timeline-session-panel li > p {
+  color: #ffb79b;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+  padding: 10px;
+}
+.timeline-session-panel__error button {
+  margin-top: 8px;
+  padding: 0 10px;
+}
+@media (max-width: 600px) {
+  .timeline-session-panel {
+    right: 8px;
+    width: min(320px, calc(100% - 16px));
+  }
+  .timeline-session-panel button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}

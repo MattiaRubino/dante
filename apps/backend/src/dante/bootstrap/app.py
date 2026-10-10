@@ -69,6 +69,7 @@ from dante.modules.temporal.responsibility_participation_api import (
 from dante.modules.temporal.routine_api import router as temporal_routine_router
 from dante.modules.temporal.schedule_reminder_api import router as temporal_schedule_reminder_router
 from dante.modules.temporal.session_api import router as temporal_session_router
+from dante.modules.temporal.session_panel_api import router as temporal_session_panel_router
 from dante.modules.temporal.temporal_constraint_api import (
     router as temporal_constraint_router,
 )
@@ -130,6 +131,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(temporal_routine_router)
     app.include_router(temporal_responsibility_router)
     app.include_router(temporal_session_router)
+    app.include_router(temporal_session_panel_router)
     app.include_router(temporal_actual_router)
     app.include_router(temporal_outcome_router)
     app.include_router(temporal_confirmation_router)

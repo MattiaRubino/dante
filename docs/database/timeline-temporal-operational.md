@@ -1,5 +1,9 @@
 # Timeline / Temporal-Operational — Candidate Database Overlay
 
+## B14 Session panel forward candidate — `20261009_135`
+
+`_135` replaces the owner-scoped planned Session start admission check to allow an active untimed `planned` Schedule. It retains capture-policy enforcement, idempotent replay, linked provenance and Activity/role retirement protection. `list_self_open_activity_sessions(uuid)` reads only the actor's open Activity Sessions and their current timing, optional planned link and pause status. `list_self_session_panel_inputs(uuid)` composes owned Activity profiles, Schedules and open executions in one read. Both functions are DEFINER capabilities; the runtime receives EXECUTE only. Candidate Dictionary topology: `237|5|220|103|484|420|593|0|0|0`. No PostgreSQL catalog proof is claimed. See `docs/frontend/home/timeline-session-panel.md` for UI semantics and gate.
+
 - **Status:** CURRENT CANDIDATE DATABASE OVERLAY — `_106` Activity intervals pending local proof
 - **Reconciled:** 2026-10-05
 - **Branch:** `feature/timeline-temporal-operational`

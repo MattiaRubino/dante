@@ -215,6 +215,7 @@ import type {
   SessionCommand,
   SessionEndCommand,
   SessionManualCommand,
+  SessionPanelResponse,
   SessionResponse,
   SetExpectedParticipationRequest,
   SetMovementPolicyBody,
@@ -15322,6 +15323,46 @@ export const undoScheduleUnscheduleApiV1TemporalSchedulesScheduleRefUnscheduleUn
       headers: res.headers,
     } as undoScheduleUnscheduleApiV1TemporalSchedulesScheduleRefUnscheduleUndoPostResponse;
   };
+
+export type temporalGetSessionPanelResponse200 = {
+  data: SessionPanelResponse;
+  status: 200;
+};
+
+export type temporalGetSessionPanelResponseSuccess =
+  temporalGetSessionPanelResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetSessionPanelResponse =
+  temporalGetSessionPanelResponseSuccess;
+
+export const getTemporalGetSessionPanelUrl = () => {
+  return `/api/v1/temporal/session-panel`;
+};
+
+/**
+ * @summary Get Session Panel
+ */
+export const temporalGetSessionPanel = async (
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetSessionPanelResponse> => {
+  const res = await (fetchFn ?? fetch)(getTemporalGetSessionPanelUrl(), {
+    ...options,
+    method: 'GET',
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetSessionPanelResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetSessionPanelResponse;
+};
 
 export type temporalGetSessionResponse200 = {
   data: SessionResponse;

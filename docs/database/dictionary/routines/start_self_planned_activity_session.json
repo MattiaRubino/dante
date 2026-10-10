@@ -1,7 +1,7 @@
 {
   "$schema": "../schema/object-v1.schema.json", "dictionary_version": 1,
   "object": {"key":"routine:dante.start_self_planned_activity_session","type":"routine","schema":"dante","name":"start_self_planned_activity_session","ownership_class":"dante_owned"},
-  "purpose": "Start a real Activity Session and atomically bind its explicitly selected planned Schedule, without asserting Actual.",
+  "purpose": "Start a real Activity Session and atomically bind its explicitly selected active planned Schedule, timed or untimed, without asserting Actual. Revision 20261009_135 removes the placement prerequisite and locks the active Activity/role against concurrent retirement; capture policy and replay remain enforced.",
   "classification": {"persistence_role":"session_capability","canonicality":"capability_surface","family":"session"},
   "semantic_traceability": {"authority_sources":["docs/domain/concepts/session.md","docs/domain/decisions/activity-intervals-and-sessions-v2.md"],"domain_concepts":["Session","Schedule"],"logical_families":["Session"],"reference_families":["NativeRef","ScopedRecordRef","MaterialStateRef"],"material_facets":["session.timing"]},
   "implementation": {"introducing_stage":"B14-PLANNED-SESSION-EXECUTION","alembic_revision":"20261007_118","sqlalchemy":{"mode":"none","module":null,"symbol":null},"runtime_acl_stage":"B14-PLANNED-SESSION-EXECUTION"},

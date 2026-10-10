@@ -76,13 +76,14 @@
       "B14-PLANNED-SESSION-TIME-EDIT",
       "B14-M5-PLANNED-RETIREMENT",
       "B14-M5-OBJECTIVE-EDITOR",
-      "B14-DRAFT-VAULT"
+      "B14-DRAFT-VAULT",
+      "B14-SESSION-PANEL"
     ],
     "standalone_entries": {
       "tables": 237,
       "views": 5,
-      "routines": 218,
-      "total": 460
+      "routines": 220,
+      "total": 462
     },
     "embedded_objects": {
       "triggers": 103,

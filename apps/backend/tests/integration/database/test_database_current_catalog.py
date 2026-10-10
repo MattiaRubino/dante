@@ -19,8 +19,8 @@ from dante.platform.database.metadata import Base
 
 pytestmark = pytest.mark.postgres
 
-_CURRENT_REVISION = "20261009_134"
-_CURRENT_TOPOLOGY = (237, 5, 218, 103, 484, 420, 593, 0, 0, 0)
+_CURRENT_REVISION = "20261009_135"
+_CURRENT_TOPOLOGY = (237, 5, 220, 103, 484, 420, 593, 0, 0, 0)
 _REPO_ROOT = Path(__file__).resolve().parents[5]
 _DICTIONARY_ROOT = _REPO_ROOT / "docs" / "database" / "dictionary"
 
@@ -159,7 +159,7 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
     assert environment == ("180006", "UTF8", "63")
     assert topology == _CURRENT_TOPOLOGY
     assert current_revision == (_CURRENT_REVISION,)
-    assert (len(tables), len(views), len(routines)) == (237, 5, 218)
+    assert (len(tables), len(views), len(routines)) == _CURRENT_TOPOLOGY[:3]
     assert live_tables == set(tables)
     assert live_views == set(views)
     assert live_routines == set(routines)
@@ -226,12 +226,13 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
         "B14-M5-PLANNED-RETIREMENT",
         "B14-M5-OBJECTIVE-EDITOR",
         "B14-DRAFT-VAULT",
+        "B14-SESSION-PANEL",
     ]
     assert current["standalone_entries"] == {
         "tables": 237,
         "views": 5,
-        "routines": 218,
-        "total": 460,
+        "routines": 220,
+        "total": 462,
     }
     assert current["embedded_objects"] == {
         "triggers": 103,

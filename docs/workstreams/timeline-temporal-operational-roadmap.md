@@ -1,5 +1,9 @@
 # Timeline / Temporal-Operational Vertical — Implementation Roadmap
 
+## B14 Session panel candidate
+
+The requested Timeline Session panel, grouped by Activity with clock-bound availability and Play/Pause/Stop, is prepared as a bounded B14 candidate. The exact current contract and unproven gates are in `docs/frontend/home/timeline-session-panel.md`; publication scope is in `docs/workstreams/timeline-session-panel-scope.md`. B15 remains open.
+
 - **Status:** CURRENT EXECUTION ROADMAP — U6 continuation reconciled 2026-10-03
 - **Branch/workstream:** `feature/timeline-temporal-operational`
 - **Vertical boundary:** Home `+` creation/configuration → canonical temporal truth → Timeline projection/actions → bounded lifecycle completion

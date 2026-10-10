@@ -4,6 +4,7 @@ import {
   type DragEvent,
   type KeyboardEvent,
   type RefObject,
+  type ReactNode,
   useRef,
   useState,
 } from 'react';
@@ -125,6 +126,7 @@ type TimelineHeaderProps = Readonly<{
   onRemoveCreatedEvent: (eventId: TimelineEvent['id']) => void;
   onRemoveCreatedAllDay: (itemId: string) => void;
   creationEnabled?: boolean;
+  sessionPanelToggle?: ReactNode;
 }>;
 
 export function TimelineHeader({
@@ -155,6 +157,7 @@ export function TimelineHeader({
   onRemoveCreatedEvent,
   onRemoveCreatedAllDay,
   creationEnabled = true,
+  sessionPanelToggle,
 }: TimelineHeaderProps) {
   const { t } = useTranslation('common');
   const week = buildIsoWeek(viewDate);
@@ -334,6 +337,7 @@ export function TimelineHeader({
         </div>
 
         <div className="dante-timeline-actions">
+          {sessionPanelToggle}
           <button
             ref={viewOptionsTriggerRef}
             className={viewOptionsOpen ? 'is-active' : ''}

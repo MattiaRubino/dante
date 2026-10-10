@@ -15048,6 +15048,126 @@
         "title": "SessionMinimumDurationRuleRequest",
         "type": "object"
       },
+      "SessionPanelExecution": {
+        "properties": {
+          "paused": {
+            "title": "Paused",
+            "type": "boolean"
+          },
+          "session_ref": {
+            "format": "uuid",
+            "title": "Session Ref",
+            "type": "string"
+          },
+          "timing_material_state_ref": {
+            "format": "uuid",
+            "title": "Timing Material State Ref",
+            "type": "string"
+          }
+        },
+        "required": ["session_ref", "timing_material_state_ref", "paused"],
+        "title": "SessionPanelExecution",
+        "type": "object"
+      },
+      "SessionPanelGroup": {
+        "properties": {
+          "activity_ref": {
+            "format": "uuid",
+            "title": "Activity Ref",
+            "type": "string"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/SessionPanelRow"
+            },
+            "title": "Rows",
+            "type": "array"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": ["activity_ref", "title", "rows"],
+        "title": "SessionPanelGroup",
+        "type": "object"
+      },
+      "SessionPanelResponse": {
+        "properties": {
+          "evaluated_at": {
+            "format": "date-time",
+            "title": "Evaluated At",
+            "type": "string"
+          },
+          "groups": {
+            "items": {
+              "$ref": "#/components/schemas/SessionPanelGroup"
+            },
+            "title": "Groups",
+            "type": "array"
+          },
+          "next_change_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Change At"
+          }
+        },
+        "required": ["evaluated_at", "next_change_at", "groups"],
+        "title": "SessionPanelResponse",
+        "type": "object"
+      },
+      "SessionPanelRow": {
+        "properties": {
+          "execution": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SessionPanelExecution"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "planned_schedule_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned Schedule Ref"
+          },
+          "starts_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Starts At"
+          }
+        },
+        "required": ["planned_schedule_ref", "name", "starts_at"],
+        "title": "SessionPanelRow",
+        "type": "object"
+      },
       "SessionResponse": {
         "additionalProperties": false,
         "properties": {
@@ -35995,6 +36115,25 @@
           }
         },
         "summary": "Undo Schedule Unschedule",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/session-panel": {
+      "get": {
+        "operationId": "temporal_get_session_panel",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionPanelResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Session Panel",
         "tags": ["temporal"]
       }
     },

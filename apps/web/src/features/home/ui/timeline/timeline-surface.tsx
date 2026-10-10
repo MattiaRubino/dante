@@ -17,6 +17,8 @@ import './timeline.css';
 import { TemporalScheduleRemoteError } from '../../../temporal/remote-schedule-data-source';
 import type { TemporalSchedulePlacementInput } from '../../../temporal/schedule-data-source';
 import { useTemporalTimelineRuntime } from '../../../temporal/timeline-runtime-boundary';
+import { useSessionPanel } from '../../../temporal/use-session-panel';
+import { useSessionPanelPresentation } from './timeline-session-panel';
 import { useAuthoritativeTimelineHydration } from './timeline-authoritative-hydration';
 import { TimelineCanonicalActionsProvider } from './timeline-canonical-actions';
 import { createTimelineLocalContext } from './model/timeline-context-catalog';
@@ -84,6 +86,7 @@ import {
 } from './timeline-viewport-runtime';
 
 type TimelineSurfaceProps = Readonly<{
+  sessionPanelEnabled?: boolean;
   expanded: boolean;
   onExpandedChange: (expanded: boolean) => void;
   onExpansionProgress: (progress: number) => void;
@@ -131,6 +134,7 @@ type CanonicalScheduleUndo =
     }>;
 
 export function TimelineSurface({
+  sessionPanelEnabled = import.meta.env.MODE !== 'test',
   expanded,
   onExpandedChange,
   onExpansionProgress,
@@ -151,6 +155,8 @@ export function TimelineSurface({
       : null;
   const locale = i18n.resolvedLanguage ?? i18n.language;
   const prototypeMode = import.meta.env.MODE === 'test';
+  const sessionPanel = useSessionPanel(sessionPanelEnabled);
+  const sessionPresentation = useSessionPanelPresentation(sessionPanel);
   const clockZone = effectiveZoneId ?? detectDeviceTimeZone();
   const timelineToday = prototypeMode
     ? TIMELINE_PROTOTYPE_TODAY
@@ -1150,6 +1156,7 @@ export function TimelineSurface({
       aria-label={t(($) => $.common.home.timeline.label)}
     >
       <TimelineHeader
+        sessionPanelToggle={sessionPresentation.toggle}
         locale={locale}
         today={timelineToday}
         viewDate={viewDate}
@@ -1378,6 +1385,8 @@ export function TimelineSurface({
       >
         <span aria-hidden="true" />
       </button>
+
+      {sessionPresentation.panel}
 
       <CalendarPopover
         open={calendarOpen}

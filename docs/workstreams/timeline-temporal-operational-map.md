@@ -1,5 +1,9 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## Current Session panel candidate
+
+For the new Timeline control, refer to `docs/frontend/home/timeline-session-panel.md` and the exact branch scope at `docs/workstreams/timeline-session-panel-scope.md`. Candidate migration `_135` permits an explicit untimed planned start and exposes one owner-scoped open-Session read. PostgreSQL, browser and real-app gates await execution; prior B14 work remains as recorded below.
+
 - **Status:** CURRENT LIVE STATE — U6 continuation reconciled 2026-10-03
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap authority:** `docs/workstreams/timeline-temporal-operational-roadmap.md`

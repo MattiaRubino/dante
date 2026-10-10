@@ -1,0 +1,116 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "routine:dante.list_self_open_activity_sessions",
+    "type": "routine",
+    "schema": "dante",
+    "name": "list_self_open_activity_sessions",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Read all open Activity executions in the authenticated self scope with one set-based scan, including their planned Schedule provenance and pause state.",
+  "classification": {
+    "persistence_role": "session_capability",
+    "canonicality": "capability_surface",
+    "family": "session"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/domain/concepts/session.md",
+      "docs/domain/decisions/activity-intervals-and-sessions-v2.md"
+    ],
+    "domain_concepts": [
+      "Activity",
+      "Session",
+      "Schedule"
+    ],
+    "logical_families": [
+      "Session"
+    ],
+    "reference_families": [
+      "NativeRef",
+      "ScopedRecordRef",
+      "MaterialStateRef"
+    ],
+    "material_facets": [
+      "session.timing"
+    ]
+  },
+  "implementation": {
+    "introducing_stage": "B14-SESSION-PANEL",
+    "alembic_revision": "20261009_135",
+    "sqlalchemy": {
+      "mode": "none",
+      "module": null,
+      "symbol": null
+    },
+    "runtime_acl_stage": "B14-SESSION-PANEL"
+  },
+  "structure": {
+    "columns": [],
+    "primary_key": null,
+    "foreign_keys": [],
+    "unique_constraints": [],
+    "check_constraints": [],
+    "indexes": [],
+    "triggers": [],
+    "table": null,
+    "view": null,
+    "routine": {
+      "routine_kind": "function",
+      "language": "sql",
+      "argument_types": [
+        "uuid"
+      ],
+      "return_type": "TABLE(activity_ref uuid, session_ref uuid, timing_material_state_ref uuid, planned_schedule_ref uuid, paused boolean)",
+      "security": "DEFINER",
+      "volatility": "STABLE",
+      "parallel_safety": "RESTRICTED",
+      "leakproof": false,
+      "function_search_path": [
+        "pg_catalog",
+        "dante",
+        "pg_temp"
+      ],
+      "direct_runtime_execute": true
+    }
+  },
+  "state_history": {
+    "material_state_behavior": "Read only; no implicit execution.",
+    "current_binding": "Current open absolute Session timing, pause metrics and optional planned Schedule link.",
+    "chronology": "Completed attempts are excluded; concurrent open attempts remain distinct.",
+    "immutability_policy": "No writes."
+  },
+  "lifecycle": {
+    "retention": "Session execution read capability.",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No deletion."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": [
+      {
+        "grantee": "dante_runtime",
+        "privilege": "EXECUTE",
+        "columns": [],
+        "grant_option": false
+      }
+    ]
+  },
+  "proof": {
+    "obligations": [
+      "Actor isolation",
+      "Open executions only",
+      "All open attempts retained",
+      "No direct runtime table grants",
+      "No Schedule or Actual mutation"
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b14_session_panel.py",
+      "apps/backend/tests/integration/database/test_database_current_catalog.py"
+    ],
+    "staged_evidence": []
+  }
+}
