@@ -196,7 +196,7 @@ export function ContextRail() {
                 event.preventDefault();
                 const offset = event.key === 'ArrowRight' ? 1 : -1;
                 const target = tabs[(tabs.indexOf(tab) + offset + tabs.length) % tabs.length];
-                setTab(target);
+                setTab(target ?? tab);
                 document.getElementById(`home-work-tab-${target}`)?.focus();
               }}
             >
@@ -220,7 +220,7 @@ export function ContextRail() {
             const dy = touch.clientY - origin.y;
             if (Math.abs(dx) <= 65 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
             const offset = dx < 0 ? 1 : -1;
-            setTab(tabs[(tabs.indexOf(tab) + offset + tabs.length) % tabs.length]);
+            setTab(tabs[(tabs.indexOf(tab) + offset + tabs.length) % tabs.length] ?? tab);
             setExpanded(null);
           }}
         >
