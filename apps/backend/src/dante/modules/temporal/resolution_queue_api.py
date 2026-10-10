@@ -10,7 +10,7 @@ from datetime import datetime
 from typing import Annotated, Literal
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Response
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
@@ -126,3 +126,84 @@ async def list_resolution_queue(
         ) from exc
 
     return ResolutionQueueResponse(items=items, count=len(items))
+
+
+# B14 Home rail: independent history and pending Objective work, not B10 inbox.
+class FinishedWorkItem(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    subject_kind: Literal["activity", "event"]
+    subject_ref: UUID
+    title: str
+    session_ref: UUID | None
+    started_at: datetime | None
+    ended_at: datetime
+    record_kind: Literal["session_ended", "realization_occurred"]
+
+
+class ObjectiveWorkItem(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    objective_ref: UUID
+    subject_kind: Literal["activity", "event", "occurrence"]
+    subject_ref: UUID
+    subject_title: str
+    label: str
+    result_kind: Literal["boolean", "quantity", "qualitative", "range"]
+    presentation_order: int
+    draft_revision: int | None
+    draft_updated_at: datetime | None
+
+
+@router.get(
+    "/home/finished-work", response_model=list[FinishedWorkItem],
+    operation_id="temporal_list_home_finished_work",
+)
+async def list_home_finished_work(
+    request: Request, context: Context, response: Response, limit: int = 40,
+) -> list[FinishedWorkItem]:
+    response.headers["Cache-Control"] = "no-store"
+    if not 1 <= limit <= 100:
+        raise ProblemError(
+            status=422, code="temporal.home.invalid_limit", category="validation",
+            title="Invalid limit", detail="Richiedi da 1 a 100 elementi.",
+        )
+    try:
+        async with request.app.state.database_runtime.session_factory() as session, session.begin():
+            rows = (await session.execute(text(
+                "SELECT * FROM dante.list_self_home_finished_work(:actor,:limit)"
+            ), {"actor": context.self_person_ref, "limit": limit})).mappings().all()
+            return [FinishedWorkItem.model_validate(dict(row)) for row in rows]
+    except SQLAlchemyError as exc:
+        raise ProblemError(
+            status=503, code="temporal.home.finished_unavailable", category="service",
+            title="Finished work unavailable", detail="Storico conclusi non disponibile.",
+            retryable=True,
+        ) from exc
+
+
+@router.get(
+    "/home/objective-work", response_model=list[ObjectiveWorkItem],
+    operation_id="temporal_list_home_objective_work",
+)
+async def list_home_objective_work(
+    request: Request, context: Context, response: Response, limit: int = 40,
+) -> list[ObjectiveWorkItem]:
+    response.headers["Cache-Control"] = "no-store"
+    if not 1 <= limit <= 100:
+        raise ProblemError(
+            status=422, code="temporal.home.invalid_limit", category="validation",
+            title="Invalid limit", detail="Richiedi da 1 a 100 Obiettivi.",
+        )
+    try:
+        async with request.app.state.database_runtime.session_factory() as session, session.begin():
+            rows = (await session.execute(text(
+                "SELECT * FROM dante.list_self_home_objective_work(:actor,:limit)"
+            ), {"actor": context.self_person_ref, "limit": limit})).mappings().all()
+            return [ObjectiveWorkItem.model_validate(dict(row)) for row in rows]
+    except SQLAlchemyError as exc:
+        raise ProblemError(
+            status=503, code="temporal.home.objectives_unavailable", category="service",
+            title="Objective work unavailable", detail="Obiettivi da valutare non disponibili.",
+            retryable=True,
+        ) from exc
