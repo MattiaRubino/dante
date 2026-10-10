@@ -17,6 +17,7 @@ export type SessionVisual = Readonly<{
 
 export type SessionPanelSnapshot = SessionPanelResponse & Readonly<{
   visuals?: readonly SessionVisual[];
+  clientReceivedAt?: number;
 }>;
 export type SessionPanelCommand = 'play' | 'stop';
 
@@ -92,7 +93,10 @@ export function useSessionPanel(
           signal: controller.signal,
         });
         if (!response.ok) throw new Error('Sessioni non disponibili.');
-        const next = SessionPanelResponse.parse(await response.json());
+        const next: SessionPanelSnapshot = {
+          ...SessionPanelResponse.parse(await response.json()),
+          clientReceivedAt: Date.now(),
+        };
         if (disposed) return;
         if (version !== commandVersion.current) {
           queued = true;
