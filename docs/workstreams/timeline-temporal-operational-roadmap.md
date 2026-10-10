@@ -1,5 +1,9 @@
 # Timeline / Temporal-Operational Vertical — Implementation Roadmap
 
+## CURRENT — B14 integrated Session + three-view Home workspace (2026-10-10)
+
+**User approved complete feature; implementation CANDIDATE SAVED; user-local gate NOT YET RUN.** Accepted Domain contract: docs/domain/decisions/activity-session-live-timeline-v1.md §8 (optional main clock, independently planned internal Sessions, three-view Context Rail, persist Objective input before explicit confirmation). Candidate migration head: **20261010_141**; expected topology: **238 tables | 5 views | 228 routines | 103 triggers | 485 indexes | 421 FKs | 596 CHECK**. _139 adds owner-scoped persistent Objective input and atomic canonical confirmation; _140 adds bounded owner-only finished-work/objective queries; _141 provides trusted planned Session admission with disabled generic main capture. UI: right-edge Session desk, Stop row retirement, Conclusi / Da verificare / Obiettivi, shared Inspector/rail Objective ✓ Conferma. **New code has NOT passed local gate.** One consolidated local gate is tooling/verify-b14-session-home-workspace-local.sh; no CI. Earlier 7/7 PASS applies only to _138, not _139–_141. API client regeneration/publication and real-app user acceptance remain OPEN.
+
 ## CURRENT REAL-APP FOLLOW-UP — 2026-10-10, Session desk + Home rail
 
 **User visual acceptance uncovered new defects after the 7/7 green technical gate:** the floating desk was anchored to the toolbar icon instead of the inner-right Timeline boundary; after Stop its row returned to `Pronta`; and Activity planned child Sessions were absent when the parent Activity did not have `live` capture enabled. The narrow `Da verificare` rail did not list every ended Session because the canonical B10 `resolution-queue` only returns governed `reconciliation_open`, `realization_review` and `objective_review` work.
