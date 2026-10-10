@@ -15,8 +15,9 @@ export type SessionVisual = Readonly<{
   pause_ranges: readonly Readonly<{ started_at: string; ended_at: string | null }>[];
 }>;
 
+// Preserve the generated API schema's optional visuals (including undefined)
+// without re-declaring it incompatibly under exactOptionalPropertyTypes.
 export type SessionPanelSnapshot = SessionPanelResponse & Readonly<{
-  visuals?: readonly SessionVisual[];
   clientReceivedAt?: number;
 }>;
 export type SessionPanelCommand = 'play' | 'stop';
