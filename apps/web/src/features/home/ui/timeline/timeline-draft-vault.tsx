@@ -134,7 +134,7 @@ export function TimelineDraftVault({
       className="timeline-planning-trigger"
       aria-label="Apri Bozze"
       aria-expanded={open}
-      title="Bozze"
+      data-timeline-tooltip="Bozze"
       onClick={() => setOpen((value) => !value)}
     >
       <svg
@@ -303,12 +303,13 @@ export function TimelineDraftVault({
       </div>
     </aside>
   ) : null;
-  return (
-    <>
-      {actionsHost ? createPortal(trigger, actionsHost) : null}
-      {typeof document !== 'undefined' && panel
-        ? createPortal(panel, document.body)
-        : null}
-    </>
-  );
+  return actionsHost
+    ? createPortal(
+        <div className={`timeline-draft-vault__anchor${open ? ' is-open' : ''}`}>
+          {trigger}
+          {panel}
+        </div>,
+        actionsHost,
+      )
+    : null;
 }

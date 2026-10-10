@@ -11,6 +11,7 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useSessionPanel } from '../../../temporal/use-session-panel';
+import { invalidateTemporalTimelineRead } from '../../../temporal/timeline-invalidation';
 import { useSessionPanelPresentation } from './timeline-session-panel';
 
 const activity = '0199a111-1111-7111-8111-111111111111';
@@ -86,6 +87,20 @@ afterEach(() => {
 });
 
 describe('Timeline Session panel integration', () => {
+  it('shows a Session immediately after an accepted placement invalidation', async () => {
+    let current = feed([]);
+    const fetcher = vi.fn(async () => Response.json(current));
+    vi.stubGlobal('fetch', fetcher);
+    render(<Harness />);
+    await waitFor(() => expect(fetcher).toHaveBeenCalledOnce());
+    current = feed();
+    act(() => invalidateTemporalTimelineRead());
+    expect(
+      await screen.findByRole('button', { name: 'Avvia · Ripasso' }),
+    ).toBeTruthy();
+    expect(fetcher).toHaveBeenCalledTimes(2);
+  });
+
   it('groups sessions, opens on arrival, preserves dismissal and restores keyboard focus', async () => {
     let current = feed([]);
     const fetcher = vi.fn(async () => Response.json(current));
@@ -104,7 +119,7 @@ describe('Timeline Session panel integration', () => {
     const trigger = screen.getByRole('button', {
       name: 'Sessioni disponibili · 2',
     });
-    expect(trigger.getAttribute('title')).toBe('Sessioni');
+    expect(trigger.getAttribute('data-timeline-tooltip')).toBe('Sessioni');
     expect(screen.getByRole('complementary').parentElement).toBe(
       trigger.parentElement,
     );

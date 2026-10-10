@@ -344,6 +344,7 @@ export function TimelineHeader({
             type="button"
             onClick={onViewOptionsToggle}
             aria-label={t(($) => $.common.home.timeline.viewOptions.label)}
+            data-timeline-tooltip={t(($) => $.common.home.timeline.viewOptions.label)}
             aria-haspopup="dialog"
             aria-expanded={viewOptionsOpen}
           >
@@ -354,6 +355,11 @@ export function TimelineHeader({
             type="button"
             onClick={onSplitToggle}
             aria-label={t(($) =>
+              split
+                ? $.common.home.timeline.groups.merge
+                : $.common.home.timeline.groups.split,
+            )}
+            data-timeline-tooltip={t(($) =>
               split
                 ? $.common.home.timeline.groups.merge
                 : $.common.home.timeline.groups.split,

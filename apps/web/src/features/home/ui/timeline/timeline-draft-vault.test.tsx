@@ -33,6 +33,10 @@ describe('Timeline Draft Vault', () => {
     render(<><div className="dante-timeline-actions" />
       <TimelineDraftVault onOpen={onOpen} /></>);
     fireEvent.click(await screen.findByRole('button', { name: 'Apri Bozze' }));
+    const trigger = screen.getByRole('button', { name: 'Apri Bozze' });
+    const panel = screen.getByRole('complementary', { name: 'Bozze' });
+    expect(panel.parentElement).toBe(trigger.parentElement);
+    expect(trigger.getAttribute('data-timeline-tooltip')).toBe('Bozze');
     expect(await screen.findByText('Allenamento')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Play' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Duplica' }));
@@ -55,3 +59,4 @@ describe('Timeline Draft Vault', () => {
     await waitFor(() => expect(sources.remove).toHaveBeenCalledWith(draft));
   });
 });
+

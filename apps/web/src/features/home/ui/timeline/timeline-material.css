@@ -296,6 +296,36 @@
   background: rgba(234, 92, 18, 0.11);
 }
 
+.dante-timeline-actions [data-timeline-tooltip] {
+  position: relative;
+}
+
+.dante-timeline-actions [data-timeline-tooltip]::after {
+  content: attr(data-timeline-tooltip);
+  position: absolute;
+  z-index: 1405;
+  top: calc(100% + 7px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 9px;
+  border: 1px solid #ffffff2b;
+  border-radius: 7px;
+  background: #f4f6fa;
+  color: #152033;
+  box-shadow: 0 4px 14px #0005;
+  font-size: 11px;
+  line-height: 1.2;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.dante-timeline-actions [data-timeline-tooltip]:is(:hover, :focus-visible):not([aria-expanded='true'])::after {
+  opacity: 1;
+  visibility: visible;
+}
+
 .dante-timeline-actions svg,
 .dante-timeline-group-reset svg {
   width: 14px;

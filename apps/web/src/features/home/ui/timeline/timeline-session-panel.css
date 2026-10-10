@@ -2,6 +2,31 @@
   position: relative;
   display: inline-flex;
 }
+.dante-timeline-actions .timeline-session-panel__toggle {
+  display: grid;
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--dante-timeline-control-radius);
+  color: var(--dante-timeline-text-muted);
+  background: transparent;
+  cursor: pointer;
+}
+.dante-timeline-actions .timeline-session-panel__toggle:hover {
+  color: #e6ecf5;
+  background: rgba(255, 255, 255, 0.035);
+}
+.dante-timeline-actions .timeline-session-panel__toggle.is-active {
+  color: var(--dante-timeline-accent-text);
+  background: rgba(234, 92, 18, 0.11);
+}
+.dante-timeline-actions .timeline-session-panel__toggle:focus-visible {
+  outline: 2px solid var(--dante-timeline-accent, #ea5c12);
+  outline-offset: 2px;
+}
 .timeline-session-panel__badge {
   position: absolute;
   top: -4px;

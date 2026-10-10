@@ -31,7 +31,7 @@ export function useSessionPanelPresentation(
           aria-label={`Sessioni disponibili${count ? ` · ${count}` : ''}`}
           aria-expanded={controller.open}
           aria-controls={controller.open ? id : undefined}
-          title="Sessioni"
+          data-timeline-tooltip="Sessioni"
           onClick={() => controller.setOpen((value) => !value)}
         >
           <svg viewBox="0 0 24 24" aria-hidden="true">

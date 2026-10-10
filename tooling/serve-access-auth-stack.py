@@ -494,21 +494,22 @@ def main() -> None:
             except subprocess.CalledProcessError as exc:
                 stderr = (exc.stderr or "").strip()
                 _docker("rm", "--force", container_name, check=False)
-                bind_collision = any(
+                retryable_port_failure = any(
                     marker in stderr.lower()
                     for marker in (
                         "port is already allocated",
                         "address already in use",
                         "failed to bind host port",
+                        "/forwards/expose returned unexpected status: 500",
                     )
                 )
-                if bind_collision:
+                if retryable_port_failure:
                     last_bind_error = exc
                     continue
                 raise RuntimeError(
                     "Disposable PostgreSQL container failed to start. "
                     f"Docker stderr: {stderr or '<empty>'}"
-                ) from exc
+                ) from None
 
         if not container_started or postgres_port is None:
             stderr = (
@@ -517,9 +518,11 @@ def main() -> None:
                 else ""
             )
             raise RuntimeError(
-                "Disposable PostgreSQL could not reserve a loopback port after 3 attempts. "
+                "Disposable PostgreSQL could not publish a loopback port after 3 attempts. "
+                "If Docker reports /forwards/expose status 500, restart Docker Desktop "
+                "and try again. "
                 f"Docker stderr: {stderr or '<empty>'}"
-            )
+            ) from None
 
         _wait_for_postgres(port=postgres_port, password=admin_password)
         _create_extensions(port=postgres_port, password=admin_password)

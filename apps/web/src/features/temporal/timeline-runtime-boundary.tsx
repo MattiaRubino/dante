@@ -255,10 +255,12 @@ export function TemporalTimelineRuntimeBoundary({
         ...revision,
         operationId: ids.operationId(),
       });
-      refresh();
+      // The Session panel also depends on this placement. Notify every
+      // timeline read consumer after the accepted revision, not only this view.
+      invalidateTemporalTimelineRead();
       return result;
     },
-    [ids, mutationSource, refresh],
+    [ids, mutationSource],
   );
 
   const unscheduleSchedule = useCallback(

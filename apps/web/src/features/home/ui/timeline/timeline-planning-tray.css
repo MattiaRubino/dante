@@ -2,6 +2,42 @@
   position: relative;
 }
 
+.timeline-draft-vault__anchor {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+}
+
+.dante-timeline-actions .timeline-draft-vault__anchor > .timeline-planning-trigger {
+  display: grid;
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--dante-timeline-control-radius);
+  color: var(--dante-timeline-text-muted);
+  background: transparent;
+  cursor: pointer;
+}
+
+.dante-timeline-actions .timeline-draft-vault__anchor > .timeline-planning-trigger:hover,
+.dante-timeline-actions .timeline-draft-vault__anchor.is-open > .timeline-planning-trigger {
+  color: #e6ecf5;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.timeline-draft-vault__anchor .timeline-planning-tray {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  bottom: auto;
+  left: auto;
+  width: min(390px, calc(100vw - 24px));
+  max-height: min(620px, calc(100dvh - 100px));
+}
+
 .timeline-planning-trigger svg,
 .timeline-planning-tray svg {
   width: 15px;
@@ -572,6 +608,17 @@ html[data-timeline-planning-mode='true'] .home-timeline--production {
     border-bottom: 0;
     border-left: 0;
     border-radius: 20px 20px 0 0;
+  }
+
+  .timeline-draft-vault__anchor .timeline-planning-tray {
+    top: calc(100% + 8px);
+    right: 0;
+    bottom: auto;
+    left: auto;
+    width: min(390px, calc(100vw - 24px));
+    max-height: min(620px, calc(100dvh - 100px));
+    border: 1px solid rgba(255, 255, 255, 0.095);
+    border-radius: 20px;
   }
 
   .timeline-planning-tray__header {

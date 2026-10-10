@@ -260,6 +260,8 @@ describe('TemporalTimelineRuntimeBoundary', () => {
   });
 
   it('generates one operation id and reloads authoritative truth once after revision', async () => {
+    const invalidated = vi.fn();
+    const unsubscribe = subscribeTemporalTimelineInvalidation(invalidated);
     const loadWindow = vi.fn<TemporalTimelineDataSource['loadWindow']>(() =>
       Promise.resolve(emptyWindow()),
     );
@@ -318,7 +320,9 @@ describe('TemporalTimelineRuntimeBoundary', () => {
         },
       });
       expect(loadWindow).toHaveBeenCalledTimes(2);
+      expect(invalidated).toHaveBeenCalledTimes(1);
     });
+    unsubscribe();
   });
 
   it('keeps frozen UI regression tests explicitly outside the real transport path', () => {
