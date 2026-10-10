@@ -97,7 +97,11 @@ async def test_panel_untimed_start_pause_resume_stop_owner_isolation_and_no_actu
             operation_id="panel:end",
         )
         panel = await get_session_panel(context, request, Response())
-        assert next(r for r in panel.groups[0].rows if r.planned_schedule_ref).execution is None
+        assert len(panel.groups) == 1  # main Session remains open
+        assert not any(
+            row.planned_schedule_ref is not None
+            for group in panel.groups for row in group.rows
+        )  # finished child no longer masquerades as an unstarted row
         with psycopg.connect(**migrated_database.connection_kwargs(
             "dante_migrator", migrated_database.cluster.migrator_password,
         )) as connection:
