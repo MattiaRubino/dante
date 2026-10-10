@@ -53,6 +53,12 @@ async def test_panel_untimed_start_pause_resume_stop_owner_isolation_and_no_actu
         )
         assert other_panel.groups == []
         sessions = SessionApplication(runtime.session_factory)
+        main = await sessions.start(
+            self_person_ref=actor, subject_kind="activity",
+            subject_native_ref=created.item.subject_native_ref,
+            operation_id="panel:main:start",
+        )
+        assert main.open
         kwargs = {
             "self_person_ref": actor,
             "operation_id": "panel:start",
