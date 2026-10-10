@@ -189,3 +189,52 @@ def test_main_preview_does_not_fill_interval_gaps():
     assert names(build_panel([record], at(11), "UTC")) == [
         "Sessione attività", "Ripasso"
     ]
+
+
+def test_completed_main_exits_desk_and_hides_untouched_internal_rows():
+    envelope = schedule("envelope", at(18), at(19))
+    internal = schedule(start=at(18), end=at(19))
+    activity = owner(envelope, internal)
+    stopped = [{
+        "activity_ref": activity["activity_ref"],
+        "planned_schedule_ref": None,
+        "started_at": at(18, 10),
+        "ended_at": at(18, 12),
+    }]
+    assert names(build_panel([activity], at(18, 10), "UTC")) == [
+        "Sessione attività", "Ripasso",
+    ]
+    assert build_panel([activity], at(18, 12), "UTC", stopped).groups == []
+    assert build_panel([activity], at(18, 30), "UTC", stopped).groups == []
+    assert build_panel([activity], at(19), "UTC", stopped).groups == []
+
+
+def test_completed_internal_exits_desk_while_main_stays_available():
+    envelope = schedule("envelope", at(18), at(19))
+    internal = schedule(start=at(18), end=at(19))
+    activity = owner(envelope, internal)
+    stopped = [{
+        "activity_ref": activity["activity_ref"],
+        "planned_schedule_ref": internal["schedule_ref"],
+        "started_at": at(18, 10),
+        "ended_at": at(18, 12),
+    }]
+    assert names(build_panel([activity], at(18, 12), "UTC", stopped)) == [
+        "Sessione attività",
+    ]
+
+
+def test_old_stopped_execution_does_not_hide_new_unrelated_interval():
+    first = schedule("interval", at(9), at(10))
+    second = schedule("interval", at(18), at(19))
+    activity = owner(first, second)
+    stopped = [{
+        "activity_ref": activity["activity_ref"],
+        "planned_schedule_ref": None,
+        "started_at": at(9, 10),
+        "ended_at": at(9, 30),
+    }]
+    assert names(build_panel([activity], at(9, 30), "UTC", stopped)) == []
+    assert names(build_panel([activity], at(18), "UTC", stopped)) == [
+        "Sessione attività",
+    ]
