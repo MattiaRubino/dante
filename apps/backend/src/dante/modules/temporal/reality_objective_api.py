@@ -1058,3 +1058,187 @@ async def record_objective_result(
     response.status_code = 200 if row["replayed"] else 201
     response.headers["Cache-Control"] = "no-store"
     return ObjectiveResultResponse(**dict(row))
+
+# B14 result workspace. A saved input is NOT a canonical Observation.
+class ObjectiveInputDraftPayload(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    observed_boolean: bool | None = None
+    observed_numeric: Decimal | None = None
+    qualitative_code: str | None = Field(default=None, max_length=120)
+    assessment_code: AssessmentCode | None = None
+
+    @model_validator(mode="after")
+    def exactly_one_value(self) -> ObjectiveInputDraftPayload:
+        values = (
+            self.observed_boolean is not None,
+            self.observed_numeric is not None,
+            self.qualitative_code is not None,
+        )
+        if sum(values) != 1:
+            raise ValueError("Inserisci un solo valore da confermare.")
+        if self.observed_numeric is not None and not self.observed_numeric.is_finite():
+            raise ValueError("Il valore deve essere finito.")
+        if self.qualitative_code is not None and (
+            not self.qualitative_code.strip() or len(self.qualitative_code.strip()) > 120
+        ):
+            raise ValueError("Valutazione non valida.")
+        return self
+
+
+class ObjectiveInputDraftSave(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    operation_id: str = Field(min_length=1, max_length=200)
+    expected_revision: int | None = Field(default=None, ge=1)
+    input: ObjectiveInputDraftPayload
+
+
+class ObjectiveInputDraftView(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    objective_ref: UUID
+    payload: ObjectiveInputDraftPayload
+    revision: int
+    confirmed_at: datetime | None
+    updated_at: datetime
+
+
+class ObjectiveInputConfirm(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    operation_id: str = Field(min_length=1, max_length=200)
+    expected_revision: int = Field(ge=1)
+
+
+def _objective_input_problem(exc: DBAPIError) -> ProblemError:
+    constraint = getattr(getattr(exc.orig, "diag", None), "constraint_name", None)
+    if constraint == "objective_input_unavailable":
+        return ProblemError(
+            status=404, code="temporal.objective_input.unavailable",
+            category="not_found", title="Objective input unavailable",
+            detail="Obiettivo o valore non disponibile.")
+    if constraint == "objective_input_stale":
+        return ProblemError(
+            status=409, code="temporal.objective_input.stale",
+            category="conflict", title="Objective input changed",
+            detail="Valore modificato o già confermato. Aggiorna e riprova.")
+    if constraint == "objective_input_invalid":
+        return ProblemError(
+            status=422, code="temporal.objective_input.invalid",
+            category="validation", title="Invalid Objective input",
+            detail="Il valore inserito non è valido.")
+    return _problem(exc, noun="objective_input")
+
+
+@router.get(
+    "/objective-inputs",
+    response_model=list[ObjectiveInputDraftView],
+    operation_id="temporal_list_objective_input_drafts",
+)
+async def list_objective_input_drafts(
+    context: Context, request: Request, response: Response,
+) -> list[ObjectiveInputDraftView]:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        async with request.app.state.database_runtime.session_factory() as session, session.begin():
+            rows = (await session.execute(text(
+                "SELECT * FROM dante.list_self_objective_input_drafts(:actor)"
+            ), {"actor": context.self_person_ref})).mappings().all()
+            return [ObjectiveInputDraftView.model_validate(dict(row)) for row in rows]
+    except SQLAlchemyError as exc:
+        raise ProblemError(
+            status=503, code="temporal.objective_input.read_unavailable",
+            category="service", title="Objective inputs unavailable",
+            detail="Impossibile leggere i valori non confermati.", retryable=True,
+        ) from exc
+
+
+@router.put(
+    "/objectives/{objective_ref}/input-draft",
+    response_model=ObjectiveInputDraftView,
+    operation_id="temporal_save_objective_input_draft",
+)
+async def save_objective_input_draft(
+    objective_ref: UUID, payload: ObjectiveInputDraftSave,
+    context: MutatingContext, request: Request, response: Response,
+) -> ObjectiveInputDraftView:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        async with request.app.state.database_runtime.session_factory() as session, session.begin():
+            row = (await session.execute(text("""
+                SELECT * FROM dante.save_self_objective_input_draft(
+                    :actor,:objective,:operation,:revision,CAST(:payload AS jsonb))
+            """), {
+                "actor": context.self_person_ref, "objective": objective_ref,
+                "operation": payload.operation_id, "revision": payload.expected_revision,
+                "payload": json.dumps(payload.input.model_dump(mode="json", exclude_none=True)),
+            })).mappings().one()
+            return ObjectiveInputDraftView.model_validate(dict(row))
+    except DBAPIError as exc:
+        raise _objective_input_problem(exc) from exc
+    except SQLAlchemyError as exc:
+        raise ProblemError(
+            status=503, code="temporal.objective_input.save_unavailable",
+            category="service", title="Objective input unavailable",
+            detail="Impossibile salvare il valore senza confermarlo.", retryable=True,
+        ) from exc
+
+
+@router.post(
+    "/objectives/{objective_ref}/confirm-input",
+    response_model=ObjectiveResultResponse,
+    operation_id="temporal_confirm_objective_input_draft",
+)
+async def confirm_objective_input_draft(
+    objective_ref: UUID, payload: ObjectiveInputConfirm,
+    context: MutatingContext, request: Request, response: Response,
+) -> ObjectiveResultResponse:
+    """One SQL transaction: CAS draft→accepted Result; no phantom confirmation."""
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        async with request.app.state.database_runtime.session_factory() as session, session.begin():
+            # PostgreSQL has exclusive ownership/row lock in the confirming
+            # DEFINER capability. The fingerprint is derived from the SAME
+            # staged fields used by the canonical Objective Result function.
+            drafts = (await session.execute(
+                text("SELECT * FROM dante.list_self_objective_input_drafts(:actor)"),
+                {"actor": context.self_person_ref},
+            )).mappings().all()
+            draft = next(
+                (row for row in drafts if row["objective_ref"] == objective_ref),
+                None,
+            )
+            if draft is None:
+                raise ProblemError(
+                    status=404, code="temporal.objective_input.unavailable",
+                    category="not_found", title="Objective input unavailable",
+                    detail="Prima inserisci un valore.")
+            values = ObjectiveInputDraftPayload.model_validate(draft["payload"])
+            fingerprint = _fingerprint({
+                "version": 1, "objective_ref": str(objective_ref),
+                "operation_id": payload.operation_id,
+                **values.model_dump(mode="json"),
+            })
+            row = (await session.execute(text("""
+                SELECT * FROM dante.confirm_self_objective_input_draft(
+                    :actor,:objective,:revision,:operation,:fingerprint,
+                    :observation,:evaluation)
+            """), {
+                "actor": context.self_person_ref,
+                "objective": objective_ref,
+                "revision": payload.expected_revision,
+                "operation": payload.operation_id,
+                "fingerprint": fingerprint,
+                "observation": uuid7(), "evaluation": uuid7(),
+            })).mappings().one()
+        return ObjectiveResultResponse.model_validate(dict(row))
+    except DBAPIError as exc:
+        raise _objective_input_problem(exc) from exc
+    except SQLAlchemyError as exc:
+        raise ProblemError(
+            status=503, code="temporal.objective_input.confirm_unavailable",
+            category="service", title="Objective confirmation unavailable",
+            detail="Conferma non riuscita. Il valore provvisorio rimane salvato.",
+            retryable=True,
+        ) from exc
