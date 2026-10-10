@@ -2,16 +2,17 @@
 
 ## Current B14 live Session execution frontier — 2026-10-10
 
-**Branch candidate head:** `20261010_137`; expected Dictionary/catalog topology **237 tables | 5 views | 222 routines | 103 triggers | 484 indexes | 420 FKs | 593 CHECK**. This candidate is **not yet user-locally tested** and is distinct from protected-main truth.
+**Branch candidate head:** `20261010_138`; expected Dictionary/catalog topology **237 tables | 5 views | 222 routines | 103 triggers | 484 indexes | 420 FKs | 593 CHECK**. This candidate is **not yet user-locally tested** and is distinct from protected-main truth.
 
 - `_135` remains the already-proven owner-scoped untimed planned Session start + open panel read.
 - `_136` introduces `transition_self_activity_session_group`: owner-only atomic main Pausa/Stop cascade across open internal real Sessions, parent-only Resume, CAS/replay, and a running-main/exact-start admission guard for new planned Session starts.
 - `_137` introduces `list_self_activity_session_visuals`: bounded owned historical timing and pause ranges for a single-card Timeline projection that survives Stop/refresh.
+- `_138` corrects cascade MaterialState refs to UUIDv7 and allows an explicit Stop of an already paused Session, closing its open pause at the stop instant without an artificial Resume; immutable history/CAS/replay remain enforced.
 - **No new tables, Session hierarchy rows, synthetic Schedule or Actual**, and no direct dante_runtime table privileges. Both new capabilities use SECURITY DEFINER and grant only EXECUTE.
 
 **Current product authority:** `docs/domain/decisions/activity-session-live-timeline-v1.md`. **Current frontend contract:** `docs/frontend/home/timeline-session-panel.md`. User-local proof and real-app acceptance pending. Historic stage checkpoints below remain evidence of their recorded dates, **not a competing current frontier**.
 
-- **Status:** HISTORICAL OVERLAY CHECKPOINT (2026-10-05); current _137 candidate is above
+- **Status:** HISTORICAL OVERLAY CHECKPOINT (2026-10-05); current _138 candidate is above
 - **Reconciled:** 2026-10-05
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
