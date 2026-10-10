@@ -147,9 +147,7 @@ export function applyTimelineSessionReality(
   groups: readonly TimelineGroup[],
 ): readonly TimelineRenderedDay[] {
   if (visuals.length === 0) return days;
-  const now = Number.isFinite(Date.parse(evaluatedAt))
-    ? Date.parse(evaluatedAt) + Math.max(0, clockAt - Date.parse(evaluatedAt))
-    : clockAt;
+  const now = Number.isFinite(Date.parse(evaluatedAt)) ? clockAt : Date.now();
   const byActivity = new Map<string, SessionVisual[]>();
   for (const visual of visuals) {
     const list = byActivity.get(visual.activity_ref) ?? [];
