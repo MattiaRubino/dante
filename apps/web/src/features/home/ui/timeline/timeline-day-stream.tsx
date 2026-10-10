@@ -252,6 +252,7 @@ function TimelineEventCard({
       data-group-index={layout.groupIndex}
       data-group-lane={layout.groupLane}
       data-group-lanes={layout.groupLaneCount}
+      data-session-reality={layout.sessionReality?.state}
       style={style}
       draggable={false}
       tabIndex={0}
@@ -278,6 +279,10 @@ function TimelineEventCard({
         onOpenEventDetail(event, clickEvent.currentTarget);
       }}
     >
+      {layout.sessionReality ? (
+        <div className="timeline-event-card__reality-fill" aria-hidden="true"
+          style={{ backgroundImage: layout.sessionReality.fill }} />
+      ) : null}
       <div className="timeline-event-card__top">
         <div className="timeline-event-card__heading">
           <button
@@ -320,6 +325,15 @@ function TimelineEventCard({
         </button>
         {cardMeta ? (
           <div className="timeline-event-card__meta">{cardMeta}</div>
+        ) : null}
+        {layout.sessionReality ? (
+          <div className="timeline-event-card__reality-status" role="status">
+            {layout.sessionReality.state === 'running' ? 'In corso'
+              : layout.sessionReality.state === 'paused' ? 'In pausa'
+              : 'Sessione conclusa'} · orario previsto
+            {' '}{formatTimelineMinute(event.startMinute)}–
+            {formatTimelineMinute(event.endMinute)}
+          </div>
         ) : null}
         {sessionActivityRef === null ? null : (
           <ActivityPlannedSessionsCardDetail
