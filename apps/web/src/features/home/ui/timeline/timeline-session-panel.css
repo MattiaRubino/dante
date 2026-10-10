@@ -155,7 +155,10 @@
 }
 @media (max-width: 600px) {
   .timeline-session-panel {
-    width: min(320px, calc(100vw - 16px));
+    /* The 390px toolbar trigger sits left of the screen's right edge.
+       A 320px right-anchored panel crosses x=0; shrink instead of
+       shifting the Home rail or clipping the panel. */
+    width: min(280px, calc(100vw - 24px));
   }
   .timeline-session-panel button {
     min-width: 44px;
