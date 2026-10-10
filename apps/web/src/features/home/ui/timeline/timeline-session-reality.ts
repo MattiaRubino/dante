@@ -4,7 +4,7 @@ import type { SessionVisual } from '../../../temporal/use-session-panel';
 import { timelineEventReadableHeight } from './model/timeline-density';
 import { computeTimelineEventLayouts } from './model/timeline-layout';
 import type {
-  TimelineEvent, TimelineEventLayout, TimelineGroup, TimelineTimeMapper,
+  TimelineEvent, TimelineEventLayout, TimelineGroup,
 } from './model/timeline-types';
 import type { TimelineRenderedDay } from './timeline-day-stream';
 
