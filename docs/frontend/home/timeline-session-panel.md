@@ -1,6 +1,6 @@
 # Timeline Session panel
 
-Status: branch implementation candidate; corrected PostgreSQL test rerun and real-app acceptance pending.
+Status: branch implementation candidate; focused technical gate passed, real-app acceptance pending.
 
 ## Product contract
 
@@ -27,4 +27,4 @@ Run `bash tooling/verify-b14-session-panel-local.sh` after the approved branch u
 
 Browser scenarios mount the real Timeline with controlled API responses. They are not a live-backend end-to-end proof. After the technical gate, migrate the persistent local app database to the approved head and verify with real Activities: untimed/timed rows, overlapping Activities, interval gaps, closing/reopening, refresh while paused, expiry while running, a second tab changing state, and a network failure followed by retry.
 
-Workspace evidence: 10 Python rule tests and 93 tests across 9 Web suites passed; API/Web TypeScript checks, new-code ESLint, selected Ruff and Vite test-mode build passed. OpenAPI and Orval were generated from backend source. In the user-local gate, generated-source verification passed (516 files), browser scenarios passed (2/2), and the PostgreSQL suite reported 17 passed and one failure in a test assertion that incorrectly assumed no pre-existing runtime SELECT privilege. This assertion was removed; the corrected integration test has not yet been rerun. The existing `timeline-surface.tsx` has an unrelated `_previousColor` ESLint error and `organization` dependency warning; these pre-existing lines were preserved. PostgreSQL is not installed in the assistant workspace. The browser fixture uses controlled API responses, so real-app visual acceptance and performance remain unproved.
+Workspace evidence: 10 Python rule tests and 93 tests across 9 Web suites passed; API/Web TypeScript checks, new-code ESLint, selected Ruff and Vite test-mode build passed. OpenAPI and Orval were generated from backend source. In the user-local gate, generated-source verification passed (516 files), browser scenarios passed (2/2), and PostgreSQL initially reported 17 passed with one failure in an incorrect ACL assertion. After removing that assertion, the user pulled `93011bb1` and reran `test_b14_session_panel.py`: both PostgreSQL integration tests passed (2/2). Thus every scenario in the original focused PostgreSQL selection has passing evidence across the two runs; the full selection was not repeated after the test-only correction. The existing `timeline-surface.tsx` has an unrelated `_previousColor` ESLint error and `organization` dependency warning; these pre-existing lines were preserved. The browser fixture uses controlled API responses, so real-app visual acceptance and performance remain unproved.

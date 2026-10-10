@@ -2,7 +2,7 @@
 
 ## Current Session panel candidate
 
-The new Timeline control is published on this branch; refer to `docs/frontend/home/timeline-session-panel.md` and the exact scope at `docs/workstreams/timeline-session-panel-scope.md`. Candidate migration `_135` permits an explicit untimed planned start and exposes two owner-scoped read capabilities. User-local browser scenarios passed 2/2; PostgreSQL passed 17/18 before an incorrect ACL test assertion, removed pending rerun. Real-app acceptance remains open; prior B14 work remains as recorded below.
+The new Timeline control is published on this branch; refer to `docs/frontend/home/timeline-session-panel.md` and the exact scope at `docs/workstreams/timeline-session-panel-scope.md`. Candidate migration `_135` permits an explicit untimed planned start and exposes two owner-scoped read capabilities. User-local browser scenarios passed 2/2; PostgreSQL first passed 17 tests and then the corrected panel integration tests passed 2/2. Real-app acceptance remains open; prior B14 work remains as recorded below.
 
 - **Status:** CURRENT LIVE STATE — U6 continuation reconciled 2026-10-03
 - **Branch:** `feature/timeline-temporal-operational`
