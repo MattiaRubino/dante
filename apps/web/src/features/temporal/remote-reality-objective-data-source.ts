@@ -11,6 +11,21 @@ export type ObjectiveAssessment =
   | 'unknown'
   | 'indeterminate';
 
+export type ObjectiveInputPayload = Readonly<{
+  observed_boolean?: boolean | null;
+  observed_numeric?: number | null;
+  qualitative_code?: string | null;
+  assessment_code?: ObjectiveAssessment | null;
+}>;
+
+export type ObjectiveInputDraftView = Readonly<{
+  objectiveRef: string;
+  payload: ObjectiveInputPayload;
+  revision: number;
+  confirmedAt: string | null;
+  updatedAt: string;
+}>;
+
 export type ObjectiveView = Readonly<{
   objectiveRef: string;
   label: string;
@@ -106,6 +121,23 @@ function nullableString(value: unknown): string | null {
   if (value === null) return null;
   if (typeof value !== 'string') throw new Error('Invalid Objective response.');
   return value;
+}
+
+function parseObjectiveInputDraft(value: unknown): ObjectiveInputDraftView {
+  const row = record(value);
+  if (typeof row.objective_ref !== 'string' ||
+      typeof row.revision !== 'number' ||
+      !Number.isSafeInteger(row.revision) || row.revision < 1) {
+    throw new Error('Bozza risultato Obiettivo non valida.');
+  }
+  const payload = record(row.payload);
+  return Object.freeze({
+    objectiveRef: row.objective_ref,
+    payload: payload as ObjectiveInputPayload,
+    revision: row.revision,
+    confirmedAt: nullableString(row.confirmed_at),
+    updatedAt: String(row.updated_at),
+  });
 }
 
 export function parseObjectiveView(value: unknown): ObjectiveView {
@@ -330,6 +362,39 @@ export function createRemoteRealityObjectiveDataSource(
             presentation_order: command.presentationOrder,
           },
         ),
+      );
+    },
+
+    async listObjectiveInputDrafts(): Promise<readonly ObjectiveInputDraftView[]> {
+      const payload = await send('/api/v1/temporal/objective-inputs', 'GET');
+      if (!Array.isArray(payload)) throw new Error('Bozze risultati Obiettivi non valide.');
+      return Object.freeze(payload.map(parseObjectiveInputDraft));
+    },
+
+    async stageObjectiveInput(
+      objectiveRef: string,
+      payload: ObjectiveInputPayload,
+      expectedRevision: number | null,
+      operationId: string,
+    ): Promise<ObjectiveInputDraftView> {
+      return parseObjectiveInputDraft(await send(
+        `/api/v1/temporal/objectives/${encodeURIComponent(objectiveRef)}/input-draft`,
+        'PUT',
+        {
+          operation_id: operationId,
+          expected_revision: expectedRevision,
+          input: payload,
+        },
+      ));
+    },
+
+    async confirmObjectiveInput(
+      objectiveRef: string, expectedRevision: number, operationId: string,
+    ): Promise<void> {
+      await send(
+        `/api/v1/temporal/objectives/${encodeURIComponent(objectiveRef)}/confirm-input`,
+        'POST',
+        { operation_id: operationId, expected_revision: expectedRevision },
       );
     },
 
