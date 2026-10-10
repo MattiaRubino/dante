@@ -13,7 +13,9 @@ from tests.integration.temporal.test_b14_u2_authoring import _seed_self
 from dante.modules.temporal.authoring import TemporalAuthoringApplication
 from dante.modules.temporal.schedule import AbsoluteIntervalPlacement
 from dante.modules.temporal.session_panel_api import get_session_panel
-from dante.modules.temporal.session_runtime import SessionApplication, SessionNotFoundError
+from dante.modules.temporal.session_runtime import (
+    SessionApplication, SessionNotFoundError, SessionCaptureDisabledError,
+)
 from dante.platform.database.runtime import create_database_runtime
 
 pytestmark = pytest.mark.postgres
@@ -160,5 +162,63 @@ async def test_retired_untimed_row_cannot_start_and_is_not_projected(migrated_da
             Response(),
         )
         assert [r.name for g in panel.groups for r in g.rows] == ["Sessione attività"]
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_independent_untimed_planned_session_without_main_capture(
+    migrated_database: Any,
+) -> None:
+    """The optional generic Activity clock stays disabled; named slice can run."""
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    request = SimpleNamespace(
+        app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))
+    )
+    ctx = SimpleNamespace(self_person_ref=actor, effective_zone_id="UTC")
+    now = datetime.now(UTC)
+    try:
+        created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
+            self_person_ref=actor, operation_id="panel:independent:create",
+            title="Studio senza cronometro principale",
+            placement=AbsoluteIntervalPlacement(
+                starts_at=now-timedelta(minutes=15),
+                ends_at=now+timedelta(minutes=45),
+            ),
+            planned_slices=(None,),
+            planned_slice_names=("Ripasso indipendente",),
+            session_capture_mode="disabled",
+        )
+        activity = created.item.subject_native_ref
+        panel = await get_session_panel(ctx, request, Response())
+        assert len(panel.groups) == 1
+        assert [row.name for row in panel.groups[0].rows] == ["Ripasso indipendente"]
+        row = panel.groups[0].rows[0]
+        assert row.planned_schedule_ref is not None
+        assert row.execution is None
+        sessions = SessionApplication(runtime.session_factory)
+        with pytest.raises(SessionCaptureDisabledError):
+            await sessions.start(
+                self_person_ref=actor, subject_kind="activity",
+                subject_native_ref=activity, operation_id="panel:independent:generic",
+            )
+        started = await sessions.start_planned(
+            self_person_ref=actor, activity_ref=activity,
+            schedule_ref=row.planned_schedule_ref,
+            operation_id="panel:independent:planned",
+        )
+        assert started.open
+        live = await get_session_panel(ctx, request, Response())
+        assert live.groups[0].rows[0].execution.session_ref == started.session_ref
+        ended = await sessions.end(
+            self_person_ref=actor, session_ref=started.session_ref,
+            expected_material_state_ref=started.timing_material_state_ref,
+            operation_id="panel:independent:end",
+        )
+        assert not ended.open
+        after = await get_session_panel(ctx, request, Response())
+        assert after.groups == []
+        assert len(after.visuals) == 1
     finally:
         await runtime.dispose()
