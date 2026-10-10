@@ -21,28 +21,7 @@ export function useSessionPanelPresentation(
     controller.setOpen(false);
     triggerRef.current?.focus();
   };
-  return {
-    control: visible ? (
-      <div className="timeline-session-panel__anchor">
-        <button
-          ref={triggerRef}
-          type="button"
-          className={`timeline-session-panel__toggle${controller.open ? ' is-active' : ''}`}
-          aria-label={`Sessioni disponibili${count ? ` · ${count}` : ''}`}
-          aria-expanded={controller.open}
-          aria-controls={controller.open ? id : undefined}
-          data-timeline-tooltip="Sessioni"
-          onClick={() => controller.setOpen((value) => !value)}
-        >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <rect x="3" y="4" width="18" height="16" rx="3" />
-            <path d="M15 4v16M7 9l4 3-4 3z" />
-          </svg>
-          <span className="timeline-session-panel__badge" aria-hidden="true">
-            {count || '!'}
-          </span>
-        </button>
-        {controller.open ? (
+  const panel = visible && controller.open ? (
           <aside
             id={id}
             className="timeline-session-panel"
@@ -183,7 +162,30 @@ export function useSessionPanelPresentation(
               })}
             </div>
           </aside>
-        ) : null}
+
+  ) : null;
+  return {
+    panel,
+    control: visible ? (
+      <div className="timeline-session-panel__anchor">
+        <button
+          ref={triggerRef}
+          type="button"
+          className={`timeline-session-panel__toggle${controller.open ? ' is-active' : ''}`}
+          aria-label={`Sessioni disponibili${count ? ` · ${count}` : ''}`}
+          aria-expanded={controller.open}
+          aria-controls={controller.open ? id : undefined}
+          data-timeline-tooltip="Sessioni"
+          onClick={() => controller.setOpen((value) => !value)}
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="16" rx="3" />
+            <path d="M15 4v16M7 9l4 3-4 3z" />
+          </svg>
+          <span className="timeline-session-panel__badge" aria-hidden="true">
+            {count || '!'}
+          </span>
+        </button>
       </div>
     ) : null,
   };
