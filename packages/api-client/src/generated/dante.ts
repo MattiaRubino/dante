@@ -78,6 +78,7 @@ import type {
   ExistingAccountSignupResponse,
   ExpectedParticipationResponse,
   ExplicitExtraOccurrenceRequest,
+  FinishedWorkItem,
   GetTimelineWindowApiV1TemporalTimelineWindowGetParams,
   GoogleAuthenticationBegunResponse,
   GoogleAuthenticationCompleteRequest,
@@ -93,11 +94,15 @@ import type {
   ObjectiveDefinitionReviseCommand,
   ObjectiveDefinitionReviseResponse,
   ObjectiveDefinitionStateResponse,
+  ObjectiveInputConfirm,
+  ObjectiveInputDraftSave,
+  ObjectiveInputDraftView,
   ObjectiveResponse,
   ObjectiveResultCommand,
   ObjectiveResultCorrectionCommand,
   ObjectiveResultResponse,
   ObjectiveSeriesStateResponse,
+  ObjectiveWorkItem,
   OccurrenceCheckpointRequest,
   OccurrenceCheckpointResponse,
   OccurrenceEditInventoryResponse,
@@ -237,6 +242,8 @@ import type {
   TemporalFindActualRealizationConditionParams,
   TemporalGetSessionPanelParams,
   TemporalListConstraintsBySubjectParams,
+  TemporalListHomeFinishedWorkParams,
+  TemporalListHomeObjectiveWorkParams,
   TemporalRetireDraftParams,
   TemporalSearchSelfPlanStepCandidatesParams,
   TimelineWindowEmptyResponse,
@@ -9372,6 +9379,144 @@ export const temporalSetEventRealityPolicy = async (
   } as temporalSetEventRealityPolicyResponse;
 };
 
+export type temporalListHomeFinishedWorkResponse200 = {
+  data: FinishedWorkItem[];
+  status: 200;
+};
+
+export type temporalListHomeFinishedWorkResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalListHomeFinishedWorkResponseSuccess =
+  temporalListHomeFinishedWorkResponse200 & {
+    headers: Headers;
+  };
+export type temporalListHomeFinishedWorkResponseError =
+  temporalListHomeFinishedWorkResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalListHomeFinishedWorkResponse =
+  | temporalListHomeFinishedWorkResponseSuccess
+  | temporalListHomeFinishedWorkResponseError;
+
+export const getTemporalListHomeFinishedWorkUrl = (
+  params?: TemporalListHomeFinishedWorkParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value));
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/v1/temporal/home/finished-work?${stringifiedParams}`
+    : `/api/v1/temporal/home/finished-work`;
+};
+
+/**
+ * @summary List Home Finished Work
+ */
+export const temporalListHomeFinishedWork = async (
+  params?: TemporalListHomeFinishedWorkParams,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListHomeFinishedWorkResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalListHomeFinishedWorkUrl(params),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListHomeFinishedWorkResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListHomeFinishedWorkResponse;
+};
+
+export type temporalListHomeObjectiveWorkResponse200 = {
+  data: ObjectiveWorkItem[];
+  status: 200;
+};
+
+export type temporalListHomeObjectiveWorkResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalListHomeObjectiveWorkResponseSuccess =
+  temporalListHomeObjectiveWorkResponse200 & {
+    headers: Headers;
+  };
+export type temporalListHomeObjectiveWorkResponseError =
+  temporalListHomeObjectiveWorkResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalListHomeObjectiveWorkResponse =
+  | temporalListHomeObjectiveWorkResponseSuccess
+  | temporalListHomeObjectiveWorkResponseError;
+
+export const getTemporalListHomeObjectiveWorkUrl = (
+  params?: TemporalListHomeObjectiveWorkParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value));
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/v1/temporal/home/objective-work?${stringifiedParams}`
+    : `/api/v1/temporal/home/objective-work`;
+};
+
+/**
+ * @summary List Home Objective Work
+ */
+export const temporalListHomeObjectiveWork = async (
+  params?: TemporalListHomeObjectiveWorkParams,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListHomeObjectiveWorkResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalListHomeObjectiveWorkUrl(params),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListHomeObjectiveWorkResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListHomeObjectiveWorkResponse;
+};
+
 export type temporalListLifeAreaAssignmentsResponse200 = {
   data: LifeAreaAssignmentResponse[];
   status: 200;
@@ -10039,6 +10184,121 @@ export const temporalSetLifeAreaVisibility = async (
   } as temporalSetLifeAreaVisibilityResponse;
 };
 
+export type temporalListObjectiveInputDraftsResponse200 = {
+  data: ObjectiveInputDraftView[];
+  status: 200;
+};
+
+export type temporalListObjectiveInputDraftsResponseSuccess =
+  temporalListObjectiveInputDraftsResponse200 & {
+    headers: Headers;
+  };
+export type temporalListObjectiveInputDraftsResponse =
+  temporalListObjectiveInputDraftsResponseSuccess;
+
+export const getTemporalListObjectiveInputDraftsUrl = () => {
+  return `/api/v1/temporal/objective-inputs`;
+};
+
+/**
+ * @summary List Objective Input Drafts
+ */
+export const temporalListObjectiveInputDrafts = async (
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListObjectiveInputDraftsResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalListObjectiveInputDraftsUrl(),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListObjectiveInputDraftsResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListObjectiveInputDraftsResponse;
+};
+
+export type temporalConfirmObjectiveInputDraftResponse200 = {
+  data: ObjectiveResultResponse;
+  status: 200;
+};
+
+export type temporalConfirmObjectiveInputDraftResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalConfirmObjectiveInputDraftResponseSuccess =
+  temporalConfirmObjectiveInputDraftResponse200 & {
+    headers: Headers;
+  };
+export type temporalConfirmObjectiveInputDraftResponseError =
+  temporalConfirmObjectiveInputDraftResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalConfirmObjectiveInputDraftResponse =
+  | temporalConfirmObjectiveInputDraftResponseSuccess
+  | temporalConfirmObjectiveInputDraftResponseError;
+
+export const getTemporalConfirmObjectiveInputDraftUrl = (
+  objectiveRef: string,
+) => {
+  return `/api/v1/temporal/objectives/${objectiveRef}/confirm-input`;
+};
+
+/**
+ * One SQL transaction: CAS draft→accepted Result; no phantom confirmation.
+ * @summary Confirm Objective Input Draft
+ */
+export const temporalConfirmObjectiveInputDraft = async (
+  objectiveRef: string,
+  objectiveInputConfirm: ObjectiveInputConfirm,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalConfirmObjectiveInputDraftResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalConfirmObjectiveInputDraftUrl(objectiveRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(objectiveInputConfirm),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalConfirmObjectiveInputDraftResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalConfirmObjectiveInputDraftResponse;
+};
+
 export type temporalCorrectObjectiveResultResponse200 = {
   data: ObjectiveResultResponse;
   status: 200;
@@ -10232,6 +10492,75 @@ export const temporalReviseObjectiveDefinition = async (
     status: res.status,
     headers: res.headers,
   } as temporalReviseObjectiveDefinitionResponse;
+};
+
+export type temporalSaveObjectiveInputDraftResponse200 = {
+  data: ObjectiveInputDraftView;
+  status: 200;
+};
+
+export type temporalSaveObjectiveInputDraftResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalSaveObjectiveInputDraftResponseSuccess =
+  temporalSaveObjectiveInputDraftResponse200 & {
+    headers: Headers;
+  };
+export type temporalSaveObjectiveInputDraftResponseError =
+  temporalSaveObjectiveInputDraftResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalSaveObjectiveInputDraftResponse =
+  | temporalSaveObjectiveInputDraftResponseSuccess
+  | temporalSaveObjectiveInputDraftResponseError;
+
+export const getTemporalSaveObjectiveInputDraftUrl = (objectiveRef: string) => {
+  return `/api/v1/temporal/objectives/${objectiveRef}/input-draft`;
+};
+
+/**
+ * @summary Save Objective Input Draft
+ */
+export const temporalSaveObjectiveInputDraft = async (
+  objectiveRef: string,
+  objectiveInputDraftSave: ObjectiveInputDraftSave,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalSaveObjectiveInputDraftResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalSaveObjectiveInputDraftUrl(objectiveRef),
+    {
+      ...options,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(objectiveInputDraftSave),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalSaveObjectiveInputDraftResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalSaveObjectiveInputDraftResponse;
 };
 
 export type temporalRecordObjectiveResultResponse200 = {

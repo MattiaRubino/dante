@@ -6939,6 +6939,70 @@
         "title": "ExplicitExtraOccurrenceRequest",
         "type": "object"
       },
+      "FinishedWorkItem": {
+        "additionalProperties": false,
+        "properties": {
+          "ended_at": {
+            "format": "date-time",
+            "title": "Ended At",
+            "type": "string"
+          },
+          "record_kind": {
+            "enum": ["session_ended", "realization_occurred"],
+            "title": "Record Kind",
+            "type": "string"
+          },
+          "session_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Ref"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "subject_kind": {
+            "enum": ["activity", "event"],
+            "title": "Subject Kind",
+            "type": "string"
+          },
+          "subject_ref": {
+            "format": "uuid",
+            "title": "Subject Ref",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "subject_kind",
+          "subject_ref",
+          "title",
+          "session_ref",
+          "started_at",
+          "ended_at",
+          "record_kind"
+        ],
+        "title": "FinishedWorkItem",
+        "type": "object"
+      },
       "FloatingLocalIntervalPlacementRequest": {
         "additionalProperties": false,
         "properties": {
@@ -7855,6 +7919,220 @@
         "title": "ObjectiveDefinitionStateResponse",
         "type": "object"
       },
+      "ObjectiveInputConfirm": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_revision": {
+            "minimum": 1.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "expected_revision"],
+        "title": "ObjectiveInputConfirm",
+        "type": "object"
+      },
+      "ObjectiveInputDraftPayload-Input": {
+        "additionalProperties": false,
+        "properties": {
+          "assessment_code": {
+            "anyOf": [
+              {
+                "enum": [
+                  "satisfied",
+                  "partial",
+                  "not_satisfied",
+                  "unknown",
+                  "indeterminate"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assessment Code"
+          },
+          "observed_boolean": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed Boolean"
+          },
+          "observed_numeric": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed Numeric"
+          },
+          "qualitative_code": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Qualitative Code"
+          }
+        },
+        "title": "ObjectiveInputDraftPayload",
+        "type": "object"
+      },
+      "ObjectiveInputDraftPayload-Output": {
+        "additionalProperties": false,
+        "properties": {
+          "assessment_code": {
+            "anyOf": [
+              {
+                "enum": [
+                  "satisfied",
+                  "partial",
+                  "not_satisfied",
+                  "unknown",
+                  "indeterminate"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assessment Code"
+          },
+          "observed_boolean": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed Boolean"
+          },
+          "observed_numeric": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed Numeric"
+          },
+          "qualitative_code": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Qualitative Code"
+          }
+        },
+        "title": "ObjectiveInputDraftPayload",
+        "type": "object"
+      },
+      "ObjectiveInputDraftSave": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Revision"
+          },
+          "input": {
+            "$ref": "#/components/schemas/ObjectiveInputDraftPayload-Input"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "input"],
+        "title": "ObjectiveInputDraftSave",
+        "type": "object"
+      },
+      "ObjectiveInputDraftView": {
+        "additionalProperties": false,
+        "properties": {
+          "confirmed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirmed At"
+          },
+          "objective_ref": {
+            "format": "uuid",
+            "title": "Objective Ref",
+            "type": "string"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/ObjectiveInputDraftPayload-Output"
+          },
+          "revision": {
+            "title": "Revision",
+            "type": "integer"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "objective_ref",
+          "payload",
+          "revision",
+          "confirmed_at",
+          "updated_at"
+        ],
+        "title": "ObjectiveInputDraftView",
+        "type": "object"
+      },
       "ObjectiveResponse": {
         "additionalProperties": false,
         "properties": {
@@ -8262,6 +8540,79 @@
           "recurrence_state_ref"
         ],
         "title": "ObjectiveSeriesStateResponse",
+        "type": "object"
+      },
+      "ObjectiveWorkItem": {
+        "additionalProperties": false,
+        "properties": {
+          "draft_revision": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Draft Revision"
+          },
+          "draft_updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Draft Updated At"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "objective_ref": {
+            "format": "uuid",
+            "title": "Objective Ref",
+            "type": "string"
+          },
+          "presentation_order": {
+            "title": "Presentation Order",
+            "type": "integer"
+          },
+          "result_kind": {
+            "enum": ["boolean", "quantity", "qualitative", "range"],
+            "title": "Result Kind",
+            "type": "string"
+          },
+          "subject_kind": {
+            "enum": ["activity", "event", "occurrence"],
+            "title": "Subject Kind",
+            "type": "string"
+          },
+          "subject_ref": {
+            "format": "uuid",
+            "title": "Subject Ref",
+            "type": "string"
+          },
+          "subject_title": {
+            "title": "Subject Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "objective_ref",
+          "subject_kind",
+          "subject_ref",
+          "subject_title",
+          "label",
+          "result_kind",
+          "presentation_order",
+          "draft_revision",
+          "draft_updated_at"
+        ],
+        "title": "ObjectiveWorkItem",
         "type": "object"
       },
       "OccurrenceAbsoluteSchedulePlacementResponse": {
@@ -31264,6 +31615,96 @@
         "tags": ["temporal"]
       }
     },
+    "/api/v1/temporal/home/finished-work": {
+      "get": {
+        "operationId": "temporal_list_home_finished_work",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 40,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/FinishedWorkItem"
+                  },
+                  "title": "Response Temporal List Home Finished Work",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Home Finished Work",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/home/objective-work": {
+      "get": {
+        "operationId": "temporal_list_home_objective_work",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 40,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ObjectiveWorkItem"
+                  },
+                  "title": "Response Temporal List Home Objective Work",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Home Objective Work",
+        "tags": ["temporal"]
+      }
+    },
     "/api/v1/temporal/life-area-assignments": {
       "get": {
         "operationId": "temporal_list_life_area_assignments",
@@ -31715,6 +32156,81 @@
         "tags": ["temporal"]
       }
     },
+    "/api/v1/temporal/objective-inputs": {
+      "get": {
+        "operationId": "temporal_list_objective_input_drafts",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ObjectiveInputDraftView"
+                  },
+                  "title": "Response Temporal List Objective Input Drafts",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Objective Input Drafts",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/objectives/{objective_ref}/confirm-input": {
+      "post": {
+        "description": "One SQL transaction: CAS draft→accepted Result; no phantom confirmation.",
+        "operationId": "temporal_confirm_objective_input_draft",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "objective_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Objective Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ObjectiveInputConfirm"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectiveResultResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Confirm Objective Input Draft",
+        "tags": ["temporal"]
+      }
+    },
     "/api/v1/temporal/objectives/{objective_ref}/correction": {
       "post": {
         "operationId": "temporal_correct_objective_result",
@@ -31853,6 +32369,57 @@
           }
         },
         "summary": "Revise Objective Definition",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/objectives/{objective_ref}/input-draft": {
+      "put": {
+        "operationId": "temporal_save_objective_input_draft",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "objective_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Objective Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ObjectiveInputDraftSave"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectiveInputDraftView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Save Objective Input Draft",
         "tags": ["temporal"]
       }
     },
