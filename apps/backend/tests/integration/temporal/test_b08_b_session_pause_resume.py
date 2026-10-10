@@ -110,12 +110,13 @@ async def test_b08_b_pause_resume_is_idempotent_and_preserves_timing_history(
                 expected_material_state_ref=paused.timing_material_state_ref,
             )
 
+        # Stop while paused is legal since B14 _138; stale CAS must still fail.
         with pytest.raises(SessionEndConflictError):
             await sessions.end(
                 self_person_ref=alice,
-                operation_id="b08-b:end-while-paused",
+                operation_id="b08-b:end-with-stale-state",
                 session_ref=started.session_ref,
-                expected_material_state_ref=paused.timing_material_state_ref,
+                expected_material_state_ref=started.timing_material_state_ref,
             )
 
         rehydrated_pause = await sessions.get(
