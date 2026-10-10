@@ -41,6 +41,32 @@ export const SessionPanelResponse = /*#__PURE__*/ zod.object({
     /*#__PURE__*/ zod.iso.datetime({ offset: true }),
     /*#__PURE__*/ zod.null(),
   ]),
+  visuals: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.array(
+      /*#__PURE__*/ zod.object({
+        activity_ref: /*#__PURE__*/ zod.uuid(),
+        ended_at: /*#__PURE__*/ zod.union([
+          /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+          /*#__PURE__*/ zod.null(),
+        ]),
+        pause_ranges: /*#__PURE__*/ zod.array(
+          /*#__PURE__*/ zod.object({
+            ended_at: /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+              /*#__PURE__*/ zod.null(),
+            ]),
+            started_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+          }),
+        ),
+        planned_schedule_ref: /*#__PURE__*/ zod.union([
+          /*#__PURE__*/ zod.uuid(),
+          /*#__PURE__*/ zod.null(),
+        ]),
+        session_ref: /*#__PURE__*/ zod.uuid(),
+        started_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+      }),
+    ),
+  ),
 });
 
 export type SessionPanelResponse = zod.input<typeof SessionPanelResponse>;

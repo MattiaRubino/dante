@@ -235,6 +235,7 @@ import type {
   TemporalConstraintResponse,
   TemporalDiagnoseSelfPlanConflictsParams,
   TemporalFindActualRealizationConditionParams,
+  TemporalGetSessionPanelParams,
   TemporalListConstraintsBySubjectParams,
   TemporalRetireDraftParams,
   TemporalSearchSelfPlanStepCandidatesParams,
@@ -15329,25 +15330,50 @@ export type temporalGetSessionPanelResponse200 = {
   status: 200;
 };
 
+export type temporalGetSessionPanelResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
 export type temporalGetSessionPanelResponseSuccess =
   temporalGetSessionPanelResponse200 & {
     headers: Headers;
   };
-export type temporalGetSessionPanelResponse =
-  temporalGetSessionPanelResponseSuccess;
+export type temporalGetSessionPanelResponseError =
+  temporalGetSessionPanelResponse422 & {
+    headers: Headers;
+  };
 
-export const getTemporalGetSessionPanelUrl = () => {
-  return `/api/v1/temporal/session-panel`;
+export type temporalGetSessionPanelResponse =
+  temporalGetSessionPanelResponseSuccess | temporalGetSessionPanelResponseError;
+
+export const getTemporalGetSessionPanelUrl = (
+  params?: TemporalGetSessionPanelParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value));
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/v1/temporal/session-panel?${stringifiedParams}`
+    : `/api/v1/temporal/session-panel`;
 };
 
 /**
  * @summary Get Session Panel
  */
 export const temporalGetSessionPanel = async (
+  params?: TemporalGetSessionPanelParams,
   options?: RequestInit,
   fetchFn?: typeof globalThis.fetch,
 ): Promise<temporalGetSessionPanelResponse> => {
-  const res = await (fetchFn ?? fetch)(getTemporalGetSessionPanelUrl(), {
+  const res = await (fetchFn ?? fetch)(getTemporalGetSessionPanelUrl(params), {
     ...options,
     method: 'GET',
   });

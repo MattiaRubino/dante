@@ -15092,6 +15092,30 @@
         "title": "SessionPanelGroup",
         "type": "object"
       },
+      "SessionPanelPauseRange": {
+        "properties": {
+          "ended_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended At"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          }
+        },
+        "required": ["started_at", "ended_at"],
+        "title": "SessionPanelPauseRange",
+        "type": "object"
+      },
       "SessionPanelResponse": {
         "properties": {
           "evaluated_at": {
@@ -15117,6 +15141,13 @@
               }
             ],
             "title": "Next Change At"
+          },
+          "visuals": {
+            "items": {
+              "$ref": "#/components/schemas/SessionPanelVisual"
+            },
+            "title": "Visuals",
+            "type": "array"
           }
         },
         "required": ["evaluated_at", "next_change_at", "groups"],
@@ -15166,6 +15197,66 @@
         },
         "required": ["planned_schedule_ref", "name", "starts_at"],
         "title": "SessionPanelRow",
+        "type": "object"
+      },
+      "SessionPanelVisual": {
+        "properties": {
+          "activity_ref": {
+            "format": "uuid",
+            "title": "Activity Ref",
+            "type": "string"
+          },
+          "ended_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended At"
+          },
+          "pause_ranges": {
+            "items": {
+              "$ref": "#/components/schemas/SessionPanelPauseRange"
+            },
+            "title": "Pause Ranges",
+            "type": "array"
+          },
+          "planned_schedule_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned Schedule Ref"
+          },
+          "session_ref": {
+            "format": "uuid",
+            "title": "Session Ref",
+            "type": "string"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "activity_ref",
+          "session_ref",
+          "planned_schedule_ref",
+          "started_at",
+          "ended_at",
+          "pause_ranges"
+        ],
+        "title": "SessionPanelVisual",
         "type": "object"
       },
       "SessionResponse": {
@@ -36121,6 +36212,42 @@
     "/api/v1/temporal/session-panel": {
       "get": {
         "operationId": "temporal_get_session_panel",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "visible_start_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Visible Start At"
+            }
+          },
+          {
+            "in": "query",
+            "name": "visible_end_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Visible End At"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -36131,6 +36258,16 @@
               }
             },
             "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
           }
         },
         "summary": "Get Session Panel",
