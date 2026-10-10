@@ -77,6 +77,9 @@ export function useSessionPanelPresentation(
             ) : null}
             <div className="timeline-session-panel__groups">
               {controller.snapshot?.groups.map((group) => {
+                const hasMainControl = group.rows.some(
+                  (candidate) => candidate.planned_schedule_ref === null,
+                );
                 const mainIsRunning = group.rows.some((candidate) =>
                   candidate.planned_schedule_ref === null &&
                   candidate.execution !== null && !candidate.execution.paused
@@ -94,9 +97,10 @@ export function useSessionPanelPresentation(
                         Date.parse(row.starts_at) > Date.parse(
                           controller.snapshot?.evaluated_at ?? '',
                         );
-                      const requiresMain = internal && !row.execution && !mainIsRunning;
-                      const pausedWithoutMain = internal && row.execution?.paused &&
-                        !mainIsRunning;
+                      const requiresMain = hasMainControl && internal &&
+                        !row.execution && !mainIsRunning;
+                      const pausedWithoutMain = hasMainControl && internal &&
+                        row.execution?.paused && !mainIsRunning;
                       const disabled = pending || controller.error !== null;
                       const playDisabled = disabled ||
                         Boolean(futureInternal || requiresMain || pausedWithoutMain);
