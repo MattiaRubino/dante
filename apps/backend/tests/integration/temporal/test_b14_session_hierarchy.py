@@ -4,6 +4,7 @@ from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 from typing import Any
 
+import psycopg
 import pytest
 from fastapi import Response
 from sqlalchemy import text
@@ -137,12 +138,16 @@ async def test_main_pause_resume_end_are_atomic_and_internal_actions_not_inverse
         assert len(result.visuals) == 3
         assert all(r.ended_at is not None for r in result.visuals)
         assert any(r.pause_ranges for r in result.visuals)
-        # Stop is execution history, not automatic Activity completion.
-        async with runtime.session_factory() as session, session.begin():
-            assert await session.scalar(text("""
-                SELECT count(*) FROM dante.actual
-                 WHERE subject_native_ref=:activity
-            """), {"activity": activity}) == 0
+        # Runtime role has no direct Actual-table grant; inspect under
+        # dedicated test migrator/owner identity, not application credentials.
+        with psycopg.connect(**migrated_database.connection_kwargs(
+            "dante_migrator", migrated_database.cluster.migrator_password,
+        )) as connection:
+            connection.execute("SET ROLE dante_owner")
+            assert connection.execute(
+                "SELECT count(*) FROM dante.actual WHERE subject_native_ref=%s",
+                (activity,),
+            ).fetchone() == (0,)
     finally:
         await runtime.dispose()
 
