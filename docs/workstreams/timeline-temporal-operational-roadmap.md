@@ -1,15 +1,15 @@
 # Timeline / Temporal-Operational Vertical — Implementation Roadmap
 
-## B14 Session panel candidate
+## CURRENT: B14 live Session desk and reality-driven Timeline (2026-10-10)
 
-The requested Timeline Session panel, grouped by Activity with clock-bound availability and Play/Pause/Stop, is published as a bounded B14 branch candidate. The user-local browser gate passed, as did the corrected panel PostgreSQL integration tests (2/2) after the initial 17 passing PostgreSQL tests. The exact contract and proof are in `docs/frontend/home/timeline-session-panel.md`; publication scope is in `docs/workstreams/timeline-session-panel-scope.md`. Real-app acceptance and B15 remain open.
+**Status: IMPLEMENTATION CANDIDATE PUBLISHED, USER-LOCAL QA + REAL APP PENDING.** The approved contract is `docs/domain/decisions/activity-session-live-timeline-v1.md`. Backend candidate `_136`/ `_137`, five-minute panel preview, main/internal atomic cascade, server-owned timing history and presentation-only single-card geometry are under the unified gate `tooling/verify-b14-session-live-local.sh`. The previous `_135` panel and earlier U6/M5/Bozze evidence remain distinct historical/proof records, not current instructions. No CI; the user runs the local gate after pulling this branch. **Never mark B14/B15 closed without local gate and visual acceptance.**
 
 - **Status:** CURRENT EXECUTION ROADMAP — U6 continuation reconciled 2026-10-03
 - **Branch/workstream:** `feature/timeline-temporal-operational`
 - **Vertical boundary:** Home `+` creation/configuration → canonical temporal truth → Timeline projection/actions → bounded lifecycle completion
 - **Completed functional frontier:** B12 ✅ CLOSED / qualified user-reported B12-D acceptance 2026-09-30
-- **Current block:** B14 + B07 user-guided product/UI consolidation
-- **U6:** ACTIVE / CANDIDATE at `_103`. The user's real-app screenshots triggered Advanced Create layout and language corrections plus a canonical name for future planned Session rows. The `_102` PostgreSQL/catalog gate passed 9 tests and the atomic B08 minimum test passed (1); `_103` PostgreSQL/catalog proof and corrected real-app acceptance remain pending. See `timeline-temporal-operational-b14-u6-candidate-2026-10-02.md`.
+- **Current block:** B14 + B07 live Session desk and single-card reality projection (user-local gate pending)
+- **Historical U6 checkpoint (2026-10-03):** CANDIDATE at `_103`. The user's real-app screenshots triggered Advanced Create layout and language corrections plus a canonical name for future planned Session rows. The `_102` PostgreSQL/catalog gate passed 9 tests and the atomic B08 minimum test passed (1); `_103` PostgreSQL/catalog proof and corrected real-app acceptance remain pending. See `timeline-temporal-operational-b14-u6-candidate-2026-10-02.md`.
 - **Activity intervals (2026-10-05):** Branch candidate `_106` separates occupied Activity intervals (`interval`) from future planned Sessions (`planned`), replaces `Unica / Suddivisa` with `+ Aggiungi intervallo`, and projects each Activity interval as a separate Timeline card. Current semantics: `docs/domain/decisions/activity-intervals-and-sessions-v2.md`. Local migration/build/visual proof remains open; no PASS claimed.
 - **Current gate:** B12-D and B12 closed on qualified user-reported acceptance; B14/B07 is a live user-directed implementation cycle
 - **B14/B07 working ledger:** `docs/workstreams/timeline-temporal-operational-b14-ui-consolidation-2026-09-30.md`
