@@ -73,7 +73,7 @@ function objective(value: unknown): PendingObjectiveWork {
     label: text(v.label),
     result_kind: v.result_kind as PendingObjectiveWork['result_kind'],
     presentation_order: v.presentation_order,
-    draft_revision: v.draft_revision as number | null,
+    draft_revision: v.draft_revision,
     draft_updated_at: optionalText(v.draft_updated_at),
   };
 }
