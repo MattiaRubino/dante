@@ -1,0 +1,118 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "routine:dante.list_self_activity_session_visuals",
+    "type": "routine",
+    "schema": "dante",
+    "name": "list_self_activity_session_visuals",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "One bounded self-owned read of real Session timing, paused intervals and explicit planned-slice provenance for Timeline visual geometry after Stop and refresh; no Schedule mutation.",
+  "classification": {
+    "persistence_role": "session_capability",
+    "canonicality": "capability_surface",
+    "family": "session"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/domain/decisions/activity-session-live-timeline-v1.md",
+      "docs/domain/concepts/session.md",
+      "docs/domain/decisions/activity-intervals-and-sessions-v2.md"
+    ],
+    "domain_concepts": [
+      "Activity",
+      "Session",
+      "Schedule"
+    ],
+    "logical_families": [
+      "Session"
+    ],
+    "reference_families": [
+      "NativeRef",
+      "ScopedRecordRef",
+      "MaterialStateRef"
+    ],
+    "material_facets": [
+      "session.timing"
+    ]
+  },
+  "implementation": {
+    "introducing_stage": "B14-SESSION-REALITY-PROJECTION",
+    "alembic_revision": "20261010_137",
+    "sqlalchemy": {
+      "mode": "none",
+      "module": null,
+      "symbol": null
+    },
+    "runtime_acl_stage": "B14-SESSION-REALITY-PROJECTION"
+  },
+  "structure": {
+    "columns": [],
+    "primary_key": null,
+    "foreign_keys": [],
+    "unique_constraints": [],
+    "check_constraints": [],
+    "indexes": [],
+    "triggers": [],
+    "table": null,
+    "view": null,
+    "routine": {
+      "routine_kind": "function",
+      "language": "plpgsql",
+      "argument_types": [
+        "uuid",
+        "timestamp with time zone",
+        "timestamp with time zone"
+      ],
+      "return_type": "TABLE(activity_ref uuid, session_ref uuid, planned_schedule_ref uuid, started_at timestamp with time zone, ended_at timestamp with time zone, pause_ranges jsonb)",
+      "security": "DEFINER",
+      "volatility": "STABLE",
+      "parallel_safety": "RESTRICTED",
+      "leakproof": false,
+      "function_search_path": [
+        "pg_catalog",
+        "dante",
+        "pg_temp"
+      ],
+      "direct_runtime_execute": true
+    }
+  },
+  "state_history": {
+    "material_state_behavior": "Read-only actual history, no plan mutation.",
+    "current_binding": "Owner scoped current timing MaterialState for the requested time range.",
+    "chronology": "Cumulative real pause intervals from the current timing state.",
+    "immutability_policy": "Append-only accepted Session timing; never overwrite prior plan/Actual."
+  },
+  "lifecycle": {
+    "retention": "Long-lived owner capability.",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No deletion."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": [
+      {
+        "grantee": "dante_runtime",
+        "privilege": "EXECUTE",
+        "columns": [],
+        "grant_option": false
+      }
+    ]
+  },
+  "proof": {
+    "obligations": [
+      "Owner isolation",
+      "Window bounded",
+      "Historical stop/paused segments survive reload",
+      "No table grant"
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b14_session_hierarchy.py",
+      "apps/backend/tests/integration/database/test_database_current_catalog.py"
+    ],
+    "staged_evidence": []
+  }
+}
