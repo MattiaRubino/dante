@@ -4,6 +4,12 @@
 **Current authority:** `docs/domain/decisions/activity-session-live-timeline-v1.md`.
 **Predecessor evidence:** `docs/workstreams/timeline-session-panel-scope.md` describes the already-published _135 panel, not the current product behavior.
 
+## CURRENT B14 addendum (2026-10-10, unverified code candidate)
+
+A generic Activity Session is optional: Activity `live` or `record_and_live` capture enables the **main** clock. Independently planned Session rows may still be executed with generic capture disabled, after the trusted PostgreSQL planned-owner/admission wrapper validates their Schedule. With main enabled, children still require running main. An internal-only Activity has **no invented generic main row**. The panel still lives in the right-inner floating overlay and Stop retires the ended row, not a new `Pronta` attempt. Backed by `_141` and targeted integration tests, **not yet locally gate-proven**.
+
+The Home Context Rail (a separate rail) now contains three switchable pages: `Conclusi`, `Da verificare`, `Obiettivi`. It uses bounded, actor-scoped `_140` API reads. Inspector and the Objective rail share a `_139` provisional-input/explicit-confirmation control; a draft must not create an Observation before confirming. The previous green technical gate at `8097918d` is historical evidence, not acceptance of the new workspace. Verify using `tooling/verify-b14-session-home-workspace-local.sh`.
+
 ## Placement and availability
 
 The existing Session control lives in the Timeline toolbar, with one compact non-modal panel anchored to the **right within the Timeline bounds**, under the toolbar; never change Home reserved columns. It opens when the first eligible row enters its preview window. Close/Escape dismisses it without repeated unsolicited reopening during a mounted session; the icon/count always reopens it. Groups are Activity identities and rows are canonical main + optional planned internal Session identities. Keyboard focus, aria labels, overflows at 1440px/390px and reduced-motion preferences remain supported.
@@ -20,7 +26,7 @@ Accepted Schedule is the **original planned coordinate**, never overwritten by e
 
 ## Database
 
-`20261009_135` is the prior untimed-planned start + owner panel read. `20261010_136` introduces one owner-only atomic group transition capability and adds a main-running/precise-start admission check to the planned start. `20261010_137` adds one bounded owner-only Session-real-timing read. `20261010_138` repairs cascade UUIDv7 and Stop-while-paused, preserving a closed pause interval instead of a fake Resume. Both are forward-only with no new Session or hierarchy table. Runtime obtains EXECUTE only; SQLAlchemy and Dictionary exact catalog must reconcile at **237 tables, 5 views, 222 routines, 103 triggers, 484 indexes, 420 FKs, 593 checks**.
+`20261009_135` is the prior untimed-planned start + owner panel read. `20261010_136` introduces one owner-only atomic group transition capability and adds a main-running/precise-start admission check to the planned start. `20261010_137` adds one bounded owner-only Session-real-timing read. `20261010_138` repairs cascade UUIDv7 and Stop-while-paused, preserving a closed pause interval instead of a fake Resume. Both are forward-only with no new Session or hierarchy table. Historical _138 topology was **237/5/222/103/484/420/593**; current _141 candidate topology is **238/5/228/103/485/421/596**, not yet user-tested.
 
 ## Verification
 
