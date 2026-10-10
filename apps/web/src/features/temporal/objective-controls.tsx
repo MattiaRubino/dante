@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { type FocusEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   createRemoteRealityObjectiveDataSource,
@@ -118,7 +118,7 @@ function ObjectiveInputRow({
     return () => window.clearTimeout(timer);
   }, [edited, dirty, validPayload, confirmed, busy, persist]);
 
-  const saveOnBlur = (event: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const saveOnBlur = (event: FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
     const nextFocus = event.relatedTarget as HTMLElement | null;
     if (nextFocus?.getAttribute('data-confirm-objective') === objective.objectiveRef) return;
     if (validPayload && dirty && !lock.current) {
