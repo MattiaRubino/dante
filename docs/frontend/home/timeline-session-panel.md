@@ -1,6 +1,6 @@
 # Timeline Session desk — current B14 contract
 
-**Status:** B14 live Session + Home three-view workspace technical gate GREEN through source `b71bf532` / `_141`, based on cumulative user-local tests (2026-10-10); generated client publication and real-app acceptance remain pending.
+**Status:** B14 live Session + Home three-view workspace technical gate GREEN through source `b71bf532` / `_141`, based on cumulative user-local tests (2026-10-10); 14 generated client files were published in commit `a9a8353a`; real-app acceptance remains pending.
 **Current authority:** `docs/domain/decisions/activity-session-live-timeline-v1.md`.
 **Predecessor evidence:** `docs/workstreams/timeline-session-panel-scope.md` describes the already-published _135 panel, not the current product behavior.
 
@@ -8,7 +8,7 @@
 
 A generic Activity Session is optional: Activity `live` or `record_and_live` capture enables the **main** clock. Independently planned Session rows may still be executed with generic capture disabled, after the trusted PostgreSQL planned-owner/admission wrapper validates their Schedule. With main enabled, children still require running main. An internal-only Activity has **no invented generic main row**. The panel still lives in the right-inner floating overlay and Stop retires the ended row, not a new `Pronta` attempt. Backed by `_141` and targeted integration tests, **not yet locally gate-proven**.
 
-The Home Context Rail (a separate rail) now contains three switchable pages: `Conclusi`, `Da verificare`, `Obiettivi`. It uses bounded, actor-scoped `_140` API reads. Inspector and the Objective rail share a `_139` provisional-input/explicit-confirmation control; a draft must not create an Observation before confirming. The previous green technical gate at `8097918d` is historical evidence; the current `_141` code has since passed the cumulative user-local technical gate. The workstream remains open until generated client publication and real-app user acceptance.
+The Home Context Rail (a separate rail) now contains three switchable pages: `Conclusi`, `Da verificare`, `Obiettivi`. It uses bounded, actor-scoped `_140` API reads. Inspector and the Objective rail share a `_139` provisional-input/explicit-confirmation control; a draft must not create an Observation before confirming. The previous green technical gate at `8097918d` is historical evidence; the current `_141` code has since passed the cumulative user-local technical gate. Generated client publication is complete at `a9a8353a`; the workstream remains open for real-app user acceptance.
 
 ## Placement and availability
 
