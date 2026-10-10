@@ -3,7 +3,6 @@
 from datetime import UTC, datetime
 from uuid import uuid7
 
-import pytest
 
 from dante.modules.temporal.decomposition_api import ActivityScheduleResponse
 from dante.modules.temporal.session_panel_api import build_panel
