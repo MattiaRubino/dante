@@ -2342,3 +2342,29 @@
     animation-duration: 0.001ms !important;
   }
 }
+
+/* B14 real Session: interior execution fill on the SAME scheduled Activity card.
+   The Life Area border/color and canonical actions stay untouched. */
+.timeline-event-card__reality-fill {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: .82;
+}
+.timeline-event-card__reality-status {
+  margin-top: 3px;
+  font-size: 9px;
+  line-height: 1.2;
+  color: var(--dante-semantic-color-home-text-secondary, #a8b2c0);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.timeline-event-card[data-session-reality="running"],
+.timeline-event-card[data-session-reality="paused"] {
+  border-color: color-mix(in srgb, var(--timeline-group-color) 65%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .timeline-event-card[data-session-reality] { transition: none; }
+}
