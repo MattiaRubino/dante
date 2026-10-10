@@ -84,6 +84,10 @@ export function useSessionPanelPresentation(
                   candidate.planned_schedule_ref === null &&
                   candidate.execution !== null && !candidate.execution.paused
                 );
+                const parentCommandPending = group.rows.some(
+                  (candidate) => candidate.planned_schedule_ref === null &&
+                    controller.pending.has(sessionPanelRowKey(group.activity_ref, candidate)),
+                );
                 return (
                 <section key={group.activity_ref} aria-label={group.title}>
                   <h3 title={group.title}>{group.title}</h3>
@@ -101,7 +105,8 @@ export function useSessionPanelPresentation(
                         !row.execution && !mainIsRunning;
                       const pausedWithoutMain = hasMainControl && internal &&
                         row.execution?.paused && !mainIsRunning;
-                      const disabled = pending || controller.error !== null;
+                      const disabled = pending || parentCommandPending ||
+                        controller.error !== null;
                       const playDisabled = disabled ||
                         Boolean(futureInternal || requiresMain || pausedWithoutMain);
                       const label = !row.execution
