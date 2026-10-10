@@ -382,7 +382,10 @@ export function TimelineSurface({
       sessionPanel.snapshot?.visuals ?? [],
       clockZone,
       sessionPanel.snapshot?.evaluated_at ?? new Date(realityClock).toISOString(),
-      realityClock,
+      sessionPanel.snapshot
+        ? Date.parse(sessionPanel.snapshot.evaluated_at) +
+          Math.max(0, realityClock - (sessionPanel.snapshot.clientReceivedAt ?? realityClock))
+        : realityClock,
       visibleGroups,
     ),
     [
