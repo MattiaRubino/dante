@@ -4,6 +4,7 @@
 - **Date:** 2026-10-04
 - **Workstream:** Timeline / Temporal-Operational B14/B07 consolidation
 - **Scope:** normal placed Activity creation, planned Session slices, real Session execution, Timeline projection, reschedule/resize admission, Reality interaction
+- **Presentation override (2026-10-10):** `activity-session-live-timeline-v1.md` now owns the main/internal Session desk, five-minute preview, one-card reality geometry and atomic cascade semantics. Historical product rules in §§11–16 on Schedule≠Session, no implicit completion and protected history remain durable. Do not read old single-envelope and generic-only controls as current UI.
 
 For current Activity placement and Timeline projection, read `activity-intervals-and-sessions-v2.md`. The `planned` role in this historical decision still refers to future planned Sessions, while the new `interval` role represents the Activity's separate occupied periods. The single envelope-card rule in section 4.1 is historical.
 
