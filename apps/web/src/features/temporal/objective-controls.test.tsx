@@ -32,18 +32,19 @@ afterEach(() => {
 
 it('persists a provisional value, confirms explicitly, and never records on mere typing', async () => {
   let accepted = false;
-  source.listObjectives.mockImplementation(async () => [
+  source.listObjectives.mockImplementation(() => Promise.resolve([
     accepted ? { ...quantity, observationRef: 'observation-1', observedNumeric: 8,
       assessmentCode: 'partial' } : quantity,
-  ]);
+  ]));
   source.listObjectiveInputDrafts.mockResolvedValue([]);
-  source.stageObjectiveInput.mockImplementation(async () => ({
+  source.stageObjectiveInput.mockImplementation(() => Promise.resolve({
     objectiveRef: quantity.objectiveRef, revision: 1,
     payload: { observed_numeric: 8 }, confirmedAt: null,
     updatedAt: '2026-10-10T19:00:00Z',
-  }));
-  source.confirmObjectiveInput.mockImplementation(async () => {
+  })));
+  source.confirmObjectiveInput.mockImplementation(() => {
     accepted = true;
+    return Promise.resolve();
   });
 
   render(<ObjectiveControls kind="activity" subjectRef="activity-1" />);
