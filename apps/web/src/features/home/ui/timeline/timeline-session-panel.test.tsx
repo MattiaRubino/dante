@@ -318,9 +318,9 @@ describe('Timeline Session panel integration', () => {
     vi.stubGlobal('fetch', fetcher);
     render(<Harness />);
     const internal = await screen.findByRole('button', { name: 'Avvia · Ripasso' });
-    expect(internal.disabled).toBe(true);
+    expect(internal.hasAttribute('disabled')).toBe(true);
     expect(screen.getByText('Imminente · attende orario')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Avvia · Sessione attività' }).disabled)
+    expect(screen.getByRole('button', { name: 'Avvia · Sessione attività' }).hasAttribute('disabled'))
       .toBe(false);
     expect(fetcher).toHaveBeenCalledOnce();
   });
@@ -339,10 +339,10 @@ describe('Timeline Session panel integration', () => {
     ]))));
     render(<Harness />);
     const resume = await screen.findByRole('button', { name: 'Riprendi · Ripasso' });
-    expect(resume.disabled).toBe(true);
-    expect(screen.getByRole('button', { name: 'Termina · Ripasso' }).disabled)
+    expect(resume.hasAttribute('disabled')).toBe(true);
+    expect(screen.getByRole('button', { name: 'Termina · Ripasso' }).hasAttribute('disabled'))
       .toBe(false);
-    expect(screen.getByRole('button', { name: 'Riprendi · Sessione attività' }).disabled)
+    expect(screen.getByRole('button', { name: 'Riprendi · Sessione attività' }).hasAttribute('disabled'))
       .toBe(false);
   });
 
