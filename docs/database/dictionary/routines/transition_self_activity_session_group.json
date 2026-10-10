@@ -1,0 +1,123 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "routine:dante.transition_self_activity_session_group",
+    "type": "routine",
+    "schema": "dante",
+    "name": "transition_self_activity_session_group",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Atomic owner-scoped, CAS/idempotent pause/end cascade from generic Activity Session to all open internal real Sessions, plus independent resumed parent/internal guard. No Session hierarchy persistence or automatic Actual.",
+  "classification": {
+    "persistence_role": "session_capability",
+    "canonicality": "capability_surface",
+    "family": "session"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/domain/decisions/activity-session-live-timeline-v1.md",
+      "docs/domain/concepts/session.md",
+      "docs/domain/decisions/activity-intervals-and-sessions-v2.md"
+    ],
+    "domain_concepts": [
+      "Activity",
+      "Session",
+      "Schedule"
+    ],
+    "logical_families": [
+      "Session"
+    ],
+    "reference_families": [
+      "NativeRef",
+      "ScopedRecordRef",
+      "MaterialStateRef"
+    ],
+    "material_facets": [
+      "session.timing"
+    ]
+  },
+  "implementation": {
+    "introducing_stage": "B14-SESSION-HIERARCHY",
+    "alembic_revision": "20261010_136",
+    "sqlalchemy": {
+      "mode": "none",
+      "module": null,
+      "symbol": null
+    },
+    "runtime_acl_stage": "B14-SESSION-HIERARCHY"
+  },
+  "structure": {
+    "columns": [],
+    "primary_key": null,
+    "foreign_keys": [],
+    "unique_constraints": [],
+    "check_constraints": [],
+    "indexes": [],
+    "triggers": [],
+    "table": null,
+    "view": null,
+    "routine": {
+      "routine_kind": "function",
+      "language": "plpgsql",
+      "argument_types": [
+        "uuid",
+        "text",
+        "text",
+        "uuid",
+        "uuid",
+        "uuid",
+        "text"
+      ],
+      "return_type": "TABLE(session_ref uuid, subject_native_ref uuid, timing_material_state_ref uuid, started_at timestamp with time zone, ended_at timestamp with time zone, replayed boolean)",
+      "security": "DEFINER",
+      "volatility": "VOLATILE",
+      "parallel_safety": "UNSAFE",
+      "leakproof": false,
+      "function_search_path": [
+        "pg_catalog",
+        "dante",
+        "pg_temp"
+      ],
+      "direct_runtime_execute": true
+    }
+  },
+  "state_history": {
+    "material_state_behavior": "Single transaction over canonical Session timing transitions; no invented execution.",
+    "current_binding": "Actor-owned Activity and Session current timing CAS.",
+    "chronology": "Child and main transitions commit or roll back together.",
+    "immutability_policy": "Append-only accepted Session timing; never overwrite prior plan/Actual."
+  },
+  "lifecycle": {
+    "retention": "Long-lived owner capability.",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No deletion."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": [
+      {
+        "grantee": "dante_runtime",
+        "privilege": "EXECUTE",
+        "columns": [],
+        "grant_option": false
+      }
+    ]
+  },
+  "proof": {
+    "obligations": [
+      "Atomic rollback on child conflict",
+      "Operation replay",
+      "Pause main cascades; resume main does not",
+      "Stop main includes paused children",
+      "Internal cannot resume without running main"
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b14_session_hierarchy.py",
+      "apps/backend/tests/integration/database/test_database_current_catalog.py"
+    ],
+    "staged_evidence": []
+  }
+}
