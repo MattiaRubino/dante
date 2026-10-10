@@ -147,6 +147,7 @@ def build_panel(
             else b is not None and b[0] <= now < b[1]
             for s in intervals if (b := bounds[s.schedule_ref])
         )
+        main_stopped_in_window = ended_during_current_window(None, current_windows)
         executions: dict[str | None, list[Any]] = {}
         for execution in owner["executions"]:
             ref = (
@@ -168,7 +169,10 @@ def build_panel(
                 due = timing[0] - (PREVIEW_LEAD if preview_allowed else timedelta()) <= now < timing[1]
             else:
                 due = active
-            due = due and owner["mode_code"] in {"live", "record_and_live"}
+            due = (
+                due and owner["mode_code"] in {"live", "record_and_live"}
+                and not main_stopped_in_window
+            )
             windows = [timing] if timing else current_windows
             if due and not matching and ended_during_current_window(
                 schedule.schedule_ref, windows
@@ -192,7 +196,7 @@ def build_panel(
         # It coexists with them; it is not an extra fake planned Session.
         if generic or (
             upcoming and owner["mode_code"] in {"live", "record_and_live"}
-            and not ended_during_current_window(None, current_windows)
+            and not main_stopped_in_window
         ):
             for execution in generic or [None]:
                 rows.insert(
