@@ -130,7 +130,33 @@ function parseObjectiveInputDraft(value: unknown): ObjectiveInputDraftView {
       !Number.isSafeInteger(row.revision) || row.revision < 1) {
     throw new Error('Bozza risultato Obiettivo non valida.');
   }
-  const payload = record(row.payload);
+  const staged = record(row.payload);
+  const boolean = staged.observed_boolean;
+  const numeric = staged.observed_numeric;
+  const qualitative = staged.qualitative_code;
+  const assessment = staged.assessment_code;
+  if ((boolean != null && typeof boolean !== 'boolean') ||
+      (numeric != null && typeof numeric !== 'number' && typeof numeric !== 'string') ||
+      (qualitative != null && typeof qualitative !== 'string') ||
+      (assessment != null && ![
+        'satisfied', 'partial', 'not_satisfied', 'unknown', 'indeterminate',
+      ].includes(String(assessment)))) {
+    throw new Error('Valore provvisorio dell’Obiettivo non valido.');
+  }
+  const number = numeric == null ? null : Number(numeric);
+  if (number !== null && !Number.isFinite(number)) {
+    throw new Error('Valore numerico provvisorio non valido.');
+  }
+  const payload: ObjectiveInputPayload = {
+    observed_boolean: boolean == null ? null : Boolean(boolean),
+    observed_numeric: number,
+    qualitative_code: qualitative == null ? null : String(qualitative),
+    assessment_code: assessment == null ? null : (
+      assessment === 'satisfied' || assessment === 'partial' ||
+      assessment === 'not_satisfied' || assessment === 'unknown' ||
+      assessment === 'indeterminate' ? assessment : null
+    ),
+  };
   return Object.freeze({
     objectiveRef: row.objective_ref,
     payload,
