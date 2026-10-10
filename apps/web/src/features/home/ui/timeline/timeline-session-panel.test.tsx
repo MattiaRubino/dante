@@ -331,7 +331,7 @@ describe('Timeline Session panel integration', () => {
       {
         planned_schedule_ref: null, name: 'Sessione attività',
         starts_at: null,
-        execution: { session_ref: 'main', timing_material_state_ref: state, paused: true },
+        execution: { session_ref: '0199a666-6666-7666-8666-666666666666', timing_material_state_ref: state, paused: true },
       },
       {
         ...row(),
