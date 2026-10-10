@@ -1,6 +1,6 @@
-# Home Context Rail — three views and Objective confirmation (product discussion)
+# Home Context Rail — three views and Objective confirmation (approved product decision)
 
-**Status: PROPOSAL / DISCUSSION OPEN — NOT APPROVED OR IMPLEMENTED.**
+**Status: APPROVED by user 2026-10-10; implementation candidate published, local PostgreSQL/frontend gate and real-app acceptance PENDING.**
 **Date:** 2026-10-10
 **Source:** real-app acceptance feedback, screenshot on 2026-10-10.
 **Preserve:** Schedule≠Session≠Actual≠Outcome/Confirmation; never invent completed work from the clock.
@@ -15,14 +15,12 @@
 2. **Da verificare:** today's accepted reconciliation/reality-review queue, plus **only explicitly governed missing-execution questions**, grouped by Activity (not one item per unused child). Clock expiry, an unstarted planned Session or dragged-to-past Schedule alone must not create a fact `non eseguita`, `saltata`, failure or Actual. Whether to offer opt-in reminders for missed sessions is an open decision.
 3. **Obiettivi:** a separate overview of Objective observations/assessments awaiting input or confirmation for Activities, Events and supported Occurrences, linked to the same canonical objective records and Inspector controls. Do not silently mark objectives satisfied when a Session ends.
 
-## Confirmation interaction: to be decided before persistence implementation
+## Confirmed input semantics: durable provisional value, then explicit accepted result
 
-User asks for an editable value/assessment and an adjacent `Conferma` action (same flow in rail and Inspector), after which that Objective is removed from `da compilare`, while history remains available. Decide whether typing is:
-- **local, uncommitted editing** until pressing Conferma (simpler, no persistent draft but unconfirmed entry lost on reload); or
-- **durable provisional observation** stored as pending and separate from accepted ObjectiveResult/Assessment, preserved across refresh and devices (requires explicit new canonical persistence contract, owner ACL, replay/CAS and reconciliation).
+The user selected **durable persisted provisional input**. Entering a value saves an actor-owned versioned `temporal_objective_input_draft` without creating an Observation or Result. The separate adjacent `✓ Conferma` invokes owner/CAS/idempotent `confirm_self_objective_input_draft`, which atomically records the canonical ObjectiveResult and the confirmation receipt. Inspector and Home call the same client and API; accepted results are never rewritten by drafting. Existing Result correction remains the only accepted correction path. New PostgreSQL migration `_139` and current `ObjectiveControls` share this contract; pending user-local gate.
 
 **Do not implement an ambiguous halfway state that writes the final canonical Result and merely hides/unhides a checkmark.** A confirmed result must have exactly one accepted truth; a draft cannot masquerade as the confirmed observation. Feedback/error and keyboard confirmation must be consistent in Inspector and rail.
 
 ## Acceptance / boundaries
 
-No immediate implementation of three views or new Objective confirmation just from this draft. First accept precise meaning of finished Activity vs finished Session, expired-but-untouched work review policy, and value-before-confirm persistence. This is separate from the **current small Session desk bugfixes** (right-aligned popup + Stop-cleared rows). Do not restructure `ContextRail` until product semantics are approved. Existing B10 resolution queue and Objective results remain authoritative during interim.
+**Code candidate is published:** `_139`–`_141`, three-tab `ContextRail`, bounded history/objective reads and shared confirm UI. Acceptance is NOT yet proven: user will run `tooling/verify-b14-session-home-workspace-local.sh` and perform real-app walkthrough. Expired-but-never-started work remains unknown without an explicit B10 review policy. This file is the dated decision record; the current UX and migration authority remain the domain decision and database overlay.
