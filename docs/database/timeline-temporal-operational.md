@@ -8,7 +8,7 @@
 - `_140`: read-only bounded `list_self_home_finished_work` (real Session ends + explicitly occurred Actuals) and `list_self_home_objective_work` (unobserved Objective identities with provisional input metadata). Neither creates completion from clock passage; each query accepts a hard 1–100 result cap.
 - `_141`: trusted `start_self_session_for_planned` clone, **not executable by PUBLIC or dante_runtime**, called only inside `start_self_planned_activity_session` after owner/provenance verification. The generic `start_self_session` still enforces Activity `live` capture policy. The planned wrapper requires a running main only when that main mode is enabled; the desk admits independently timed/untimed planned rows even when generic Activity capture is disabled. Existing canonical B08 timing/identity/operation contracts preserved. No new Session table.
 
-Product authority: `docs/domain/decisions/activity-session-live-timeline-v1.md`. Focused, consolidated user-local gate: `tooling/verify-b14-session-home-workspace-local.sh`. No CI or reset/clean. Database candidate is now technically verified by the user's cumulative local gate; generated OpenAPI/Orval output must be preserved and published, and actual app visual acceptance is still pending.
+Product authority: `docs/domain/decisions/activity-session-live-timeline-v1.md`. Focused, consolidated user-local gate: `tooling/verify-b14-session-home-workspace-local.sh`. No CI or reset/clean. Database candidate is now technically verified by the user's cumulative local gate; all 14 generated OpenAPI/Orval files were committed and pushed in `a9a8353a`; actual app visual acceptance is still pending.
 
 ## Historical _138 Session technical proof checkpoint — 2026-10-10
 
