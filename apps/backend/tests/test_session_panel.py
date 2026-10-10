@@ -109,8 +109,7 @@ def test_open_executions_survive_end_and_disabled_capture_without_collapsing_att
     assert len({r.execution.session_ref for r in panel.groups[0].rows}) == 3
 
 
-@pytest.mark.parametrize("mode", ["disabled", "record"])
-def test_independent_planned_slice_is_ready_without_main_capture(mode):
+def test_independent_planned_slice_is_ready_without_main_capture():
     record = owner(schedule("envelope", at(9), at(12)), schedule(), mode="internal_only")
     assert names(build_panel([record], at(10), "UTC")) == ["Ripasso"]
     assert names(build_panel([record], at(13), "UTC")) == []
