@@ -1,15 +1,22 @@
 # Timeline / Temporal-Operational — Candidate Database Overlay
 
-## B14 Session panel forward candidate — `20261009_135`
+## Current B14 live Session execution frontier — 2026-10-10
 
-`_135` replaces the owner-scoped planned Session start admission check to allow an active untimed `planned` Schedule. It retains capture-policy enforcement, idempotent replay, linked provenance and Activity/role retirement protection. `list_self_open_activity_sessions(uuid)` reads only the actor's open Activity Sessions and their current timing, optional planned link and pause status. `list_self_session_panel_inputs(uuid)` composes owned Activity profiles, Schedules and open executions in one read. Both functions are DEFINER capabilities granting runtime EXECUTE; this migration adds no direct table grants. Candidate Dictionary topology: `237|5|220|103|484|420|593|0|0|0`. The user-local PostgreSQL gate passed 17 tests, including current catalog reconciliation; the one failed test contained an incorrect assumption about a pre-existing runtime SELECT grant. After that assertion was removed at `93011bb1`, both panel integration tests passed in the user-local rerun. The full PostgreSQL selection was not repeated after the test-only correction. See `docs/frontend/home/timeline-session-panel.md` for UI semantics and remaining real-app acceptance.
+**Branch candidate head:** `20261010_137`; expected Dictionary/catalog topology **237 tables | 5 views | 222 routines | 103 triggers | 484 indexes | 420 FKs | 593 CHECK**. This candidate is **not yet user-locally tested** and is distinct from protected-main truth.
 
-- **Status:** CURRENT CANDIDATE DATABASE OVERLAY — `_106` Activity intervals pending local proof
+- `_135` remains the already-proven owner-scoped untimed planned Session start + open panel read.
+- `_136` introduces `transition_self_activity_session_group`: owner-only atomic main Pausa/Stop cascade across open internal real Sessions, parent-only Resume, CAS/replay, and a running-main/exact-start admission guard for new planned Session starts.
+- `_137` introduces `list_self_activity_session_visuals`: bounded owned historical timing and pause ranges for a single-card Timeline projection that survives Stop/refresh.
+- **No new tables, Session hierarchy rows, synthetic Schedule or Actual**, and no direct dante_runtime table privileges. Both new capabilities use SECURITY DEFINER and grant only EXECUTE.
+
+**Current product authority:** `docs/domain/decisions/activity-session-live-timeline-v1.md`. **Current frontend contract:** `docs/frontend/home/timeline-session-panel.md`. User-local proof and real-app acceptance pending. Historic stage checkpoints below remain evidence of their recorded dates, **not a competing current frontier**.
+
+- **Status:** HISTORICAL OVERLAY CHECKPOINT (2026-10-05); current _137 candidate is above
 - **Reconciled:** 2026-10-05
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
-- **Current migration source head:** `20261005_106` (candidate; migration not locally proven)
-- **Focused local proof frontier:** `_102` atomic/catalog 9 PostgreSQL tests and B08 minimum 1 test user-reported passed; `_103`–`_106` database gate unreported.
+- **Historical migration cursor at this checkpoint:** `20261005_106` (subsequently superseded)
+- **Historical focused local proof frontier:** `_102` atomic/catalog 9 PostgreSQL tests and B08 minimum 1 test user-reported passed; `_103`–`_106` database gate unreported.
 - **Later candidate stages:** `_94`–`_105` include B14/U6 work; `_106` extends `activity_schedule_role` with `interval` without changing table or routine counts. `planned` keeps its future Session meaning. See `../domain/decisions/activity-intervals-and-sessions-v2.md`. Current materialization totals in the Dictionary are unverified for `_106` until the user runs the local database gate.
 - **Historical catalog topology:** `_93` / `196|5|155|100|397|344|497|0|0|0`. Current Dictionary counts are in `dictionary/scope.json`; `_106` has not been locally proved.
 - **Whole-DB SoR:** `README.md`
