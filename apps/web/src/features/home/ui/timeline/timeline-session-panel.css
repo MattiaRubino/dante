@@ -2,6 +2,14 @@
   position: relative;
   display: inline-flex;
 }
+/* Zero-height host after the two-row Timeline header: the desk stays inside
+   the Timeline's own right edge without stealing horizontal layout space. */
+.timeline-session-panel__edge-host {
+  position: relative;
+  z-index: 24;
+  height: 0;
+  pointer-events: none;
+}
 .dante-timeline-actions .timeline-session-panel__toggle {
   display: grid;
   width: 34px;
@@ -44,9 +52,10 @@
 .timeline-session-panel {
   position: absolute;
   z-index: 24;
-  top: calc(100% + 8px);
-  right: 0;
-  width: min(320px, calc(100vw - 24px));
+  top: 8px;
+  right: 12px;
+  width: min(320px, calc(100% - 24px), calc(100vw - 24px));
+  pointer-events: auto;
   max-height: min(520px, calc(100vh - 104px));
   display: flex;
   flex-direction: column;
