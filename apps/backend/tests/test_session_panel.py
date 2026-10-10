@@ -59,10 +59,15 @@ def execution(ref=None, **extra):
 def test_exact_start_and_end_and_next_boundary():
     record = owner(schedule("envelope", at(9), at(12)), schedule(start=at(10), end=at(11)))
     early = build_panel([record], at(9), "UTC")
-    assert names(early) == []
-    assert early.next_change_at == at(10)
-    assert names(build_panel([record], at(10), "UTC")) == ["Ripasso"]
-    assert names(build_panel([record], at(11), "UTC")) == []
+    assert names(early) == ["Sessione attività"]
+    assert early.next_change_at == at(9, 55)
+    assert names(build_panel([record], at(9, 55), "UTC")) == [
+        "Sessione attività", "Ripasso"
+    ]
+    assert names(build_panel([record], at(10), "UTC")) == [
+        "Sessione attività", "Ripasso"
+    ]
+    assert names(build_panel([record], at(11), "UTC")) == ["Sessione attività"]
     assert build_panel([record], at(12), "UTC").groups == []
 
 
@@ -85,7 +90,7 @@ def test_independent_groups_and_unique_activity_with_multiple_intervals():
     second = owner(schedule("envelope", at(9), at(12)), schedule())
     panel = build_panel([first, second], at(10), "UTC")
     assert len(panel.groups) == 2
-    assert len(panel.groups[0].rows) == 2
+    assert len(panel.groups[0].rows) == 3  # generic main plus two planned internals
 
 
 def test_open_executions_survive_end_and_disabled_capture_without_collapsing_attempts():
@@ -155,3 +160,32 @@ def test_no_placement_does_not_invent_activity_start_but_open_work_survives():
     assert build_panel([owner(schedule())], at(10), "UTC").groups == []
     record = owner(executions=[execution(str(uuid7()))])
     assert names(build_panel([record], at(10), "UTC")) == ["Sessione in corso"]
+
+
+def test_preview_is_not_an_execution_and_exact_start_is_preserved():
+    planned = schedule(start=at(10), end=at(11))
+    record = owner(schedule("envelope", at(9), at(12)), planned)
+    early = build_panel([record], at(9, 54), "UTC")
+    assert names(early) == ["Sessione attività"]
+    assert early.next_change_at == at(9, 55)
+    preview = build_panel([record], at(9, 55), "UTC")
+    assert names(preview) == ["Sessione attività", "Ripasso"]
+    child = preview.groups[0].rows[1]
+    assert child.starts_at == at(10)
+    assert child.execution is None
+    assert preview.next_change_at == at(10)
+
+
+def test_main_preview_does_not_fill_interval_gaps():
+    record = owner(
+        schedule("interval", at(9), at(10)),
+        schedule("interval", at(11), at(12)),
+        schedule(),
+    )
+    assert build_panel([record], at(10, 30), "UTC").groups == []
+    assert names(build_panel([record], at(10, 55), "UTC")) == [
+        "Sessione attività"
+    ]
+    assert names(build_panel([record], at(11), "UTC")) == [
+        "Sessione attività", "Ripasso"
+    ]
