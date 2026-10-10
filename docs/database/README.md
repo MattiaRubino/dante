@@ -7,7 +7,7 @@
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
 - **Timeline candidate Alembic head (current branch candidate):** `20261010_141` (objective staging + three-view workspace + independent child Session candidate, unverified; see `timeline-temporal-operational.md`)
-- **Historical B10-C proven topology (2026-09-26):** `20260925_79` / `167|5|123|93|329|279|446`; latest _141 candidate topology `238|5|228|103|485|421|596` (not yet locally verified)
+- **Historical B10-C proven topology (2026-09-26):** `20260925_79` / `167|5|123|93|329|279|446`; latest _141 candidate topology `238|5|228|103|486|421|596` (not yet locally verified)
 - **Timeline candidate DB overlay:** `timeline-temporal-operational.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 - **Persistence ADR:** `../decisions/ADR-010-postgresql-persistence-constitution.md`
@@ -78,7 +78,7 @@ No accepted historical migration was edited, rebased, renumbered or flattened. B
 
 ## 3. Historical B10-C proven topology (2026-09-26)
 
-Current *unverified* candidate topology is **238 tables, 5 views, 228 routines, 103 triggers, 485 indexes, 421 FKs, 596 CHECK**, at `_141`. These numbers must pass the user's PostgreSQL gate before being marked proven.
+Current *unverified* candidate topology is **238 tables, 5 views, 228 routines, 103 triggers, 486 indexes, 421 FKs, 596 CHECK**, at `_141`. These numbers must pass the user's PostgreSQL gate before being marked proven.
 
 ### Historical topology
 
