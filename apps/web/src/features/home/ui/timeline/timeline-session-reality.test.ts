@@ -1,6 +1,7 @@
 import { Temporal } from '@dante/time';
 import { describe, expect, it } from 'vitest';
 
+import { timelineEventReadableHeight } from './model/timeline-density';
 import { computeTimelineEventLayouts } from './model/timeline-layout';
 import type { TimelineEvent, TimelineGroup, TimelineTimeMapper } from './model/timeline-types';
 import { applyTimelineSessionReality } from './timeline-session-reality';
@@ -62,7 +63,7 @@ describe('one-card Activity actual Session projection', () => {
     expect(projected?.events).toBe(current.events);
     expect(layout?.event).toBe(planned);
     expect(layout?.top).toBe(1065);
-    expect(layout?.height).toBe(45);
+    expect(layout?.height).toBe(Math.max(45, timelineEventReadableHeight(planned)));
     expect(layout?.event.startMinute).toBe(1080); // Schedule not rewritten
     expect(layout?.sessionReality?.state).toBe('ended');
     expect(layout?.sessionReality?.fill).toContain('rgba(147, 163, 184');
@@ -95,6 +96,6 @@ describe('one-card Activity actual Session projection', () => {
       [day(planned)], [ended, child], 'UTC', '2026-10-10T18:30:00Z',
       Date.parse('2026-10-10T18:30:00Z'), groups,
     );
-    expect(projected?.layouts[0]?.height).toBe(45);
+    expect(projected?.layouts[0]?.height).toBe(Math.max(45, timelineEventReadableHeight(planned)));
   });
 });
