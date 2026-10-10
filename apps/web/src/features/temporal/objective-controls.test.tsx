@@ -41,7 +41,7 @@ it('persists a provisional value, confirms explicitly, and never records on mere
     objectiveRef: quantity.objectiveRef, revision: 1,
     payload: { observed_numeric: 8 }, confirmedAt: null,
     updatedAt: '2026-10-10T19:00:00Z',
-  })));
+  }));
   source.confirmObjectiveInput.mockImplementation(() => {
     accepted = true;
     return Promise.resolve();
