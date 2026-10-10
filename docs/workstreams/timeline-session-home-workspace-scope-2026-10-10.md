@@ -1,6 +1,6 @@
 # B14 — Session independence, Home three views and Objective confirmation
 
-**Status: APPROVED FEATURE / TECHNICAL GATE GREEN THROUGH `b71bf532` (USER-LOCAL CUMULATIVE EVIDENCE) / GENERATED CLIENT PUBLICATION AND REAL APP ACCEPTANCE OPEN.**
+**Status: APPROVED FEATURE / TECHNICAL GATE GREEN THROUGH `b71bf532` (USER-LOCAL CUMULATIVE EVIDENCE) / 14 GENERATED CLIENT FILES PUSHED AT `a9a8353a` / REAL APP ACCEPTANCE OPEN.**
 **Branch:** `feature/timeline-temporal-operational`
 **Date:** 2026-10-10
 **Domain authority:** `docs/domain/decisions/activity-session-live-timeline-v1.md` §8
@@ -17,7 +17,7 @@
 
 ## Technical proof completed 2026-10-10
 
-Successive user-local checks passed PY_SYNTAX, PY_UNIT, all targeted functional PostgreSQL, the exact Dictionary/catalog topology (last one: `1 passed in 6.75s`), RUFF, GENERATE/GENERATED_CHECK, API_TYPECHECK, WEB_TYPECHECK, WEB_LINT, VITEST and BROWSER. Evidence is cumulative across earlier repairs, not an all-suites single-SHA rerun. The fourteen generated OpenAPI/Orval files remain unpublished in WSL. No further test rerun is required before publishing those files, unless source code changes.
+Successive user-local checks passed PY_SYNTAX, PY_UNIT, all targeted functional PostgreSQL, the exact Dictionary/catalog topology (last one: `1 passed in 6.75s`), RUFF, GENERATE/GENERATED_CHECK, API_TYPECHECK, WEB_TYPECHECK, WEB_LINT, VITEST and BROWSER. Evidence is cumulative across earlier repairs, not an all-suites single-SHA rerun. The fourteen generated OpenAPI/Orval files were committed and pushed by the user at `a9a8353a` (1,419 insertions); no further technical gate is needed for unchanged source. Next is real-app acceptance.
 
 The following section is the **historical pre-gate checklist**, retained for traceability; current actions are publish generated files and real-app user acceptance.
 
