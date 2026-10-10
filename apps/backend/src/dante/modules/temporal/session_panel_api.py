@@ -8,7 +8,7 @@ from uuid import UUID
 from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, Request, Response
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -40,14 +40,32 @@ class SessionPanelGroup(BaseModel):
     rows: list[SessionPanelRow]
 
 
+class SessionPanelPauseRange(BaseModel):
+    started_at: datetime
+    ended_at: datetime | None
+
+
+class SessionPanelVisual(BaseModel):
+    activity_ref: UUID
+    session_ref: UUID
+    planned_schedule_ref: UUID | None
+    started_at: datetime
+    ended_at: datetime | None
+    pause_ranges: list[SessionPanelPauseRange]
+
+
 class SessionPanelResponse(BaseModel):
     evaluated_at: datetime
     next_change_at: datetime | None
     groups: list[SessionPanelGroup]
+    visuals: list[SessionPanelVisual] = Field(default_factory=list)
 
 
 # The DEFINER capability owns the table access and performs the self check.
 _READ = text("SELECT * FROM dante.list_self_session_panel_inputs(:actor)")
+_VISUAL_READ = text(
+    "SELECT * FROM dante.list_self_activity_session_visuals(:actor,:start_at,:end_at)"
+)
 
 
 def _bounds(row: ActivityScheduleResponse, zone: ZoneInfo) -> tuple[datetime, datetime] | None:
@@ -184,15 +202,38 @@ async def get_session_panel(
     context: Annotated[DanteContext, Depends(require_dante_context)],
     request: Request,
     response: Response,
+    visible_start_at: datetime | None = None,
+    visible_end_at: datetime | None = None,
 ) -> SessionPanelResponse:
     response.headers["Cache-Control"] = "no-store"
+    now = datetime.now(UTC)
+    start_at = visible_start_at or now - timedelta(days=1)
+    end_at = visible_end_at or now + timedelta(days=2)
+    if (
+        start_at.tzinfo is None or end_at.tzinfo is None
+        or start_at >= end_at or end_at - start_at > timedelta(days=31)
+    ):
+        raise ProblemError(
+            status=422, code="temporal.session_panel.invalid_window",
+            category="validation", title="Invalid Session window",
+            detail="L'intervallo di lettura delle Sessioni non è valido.",
+        )
     try:
         async with request.app.state.database_runtime.session_factory() as session, session.begin():
             await session.execute(text("SET LOCAL statement_timeout = '8s'"))
             records = (
                 (await session.execute(_READ, {"actor": context.self_person_ref})).mappings().all()
             )
-            return build_panel(list(records), datetime.now(UTC), context.effective_zone_id)
+            visuals = (
+                (await session.execute(
+                    _VISUAL_READ,
+                    {"actor": context.self_person_ref, "start_at": start_at, "end_at": end_at},
+                )).mappings().all()
+            )
+            panel = build_panel(list(records), now, context.effective_zone_id)
+            return panel.model_copy(update={
+                "visuals": [SessionPanelVisual.model_validate(dict(row)) for row in visuals]
+            })
     except SQLAlchemyError as exc:
         raise ProblemError(
             status=503,
