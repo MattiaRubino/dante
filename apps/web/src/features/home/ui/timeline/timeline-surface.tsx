@@ -19,6 +19,7 @@ import type { TemporalSchedulePlacementInput } from '../../../temporal/schedule-
 import { useTemporalTimelineRuntime } from '../../../temporal/timeline-runtime-boundary';
 import { useSessionPanel } from '../../../temporal/use-session-panel';
 import { useSessionPanelPresentation } from './timeline-session-panel';
+import { applyTimelineSessionReality } from './timeline-session-reality';
 import { useAuthoritativeTimelineHydration } from './timeline-authoritative-hydration';
 import { TimelineCanonicalActionsProvider } from './timeline-canonical-actions';
 import { createTimelineLocalContext } from './model/timeline-context-catalog';
@@ -155,9 +156,19 @@ export function TimelineSurface({
       : null;
   const locale = i18n.resolvedLanguage ?? i18n.language;
   const prototypeMode = import.meta.env.MODE === 'test';
-  const sessionPanel = useSessionPanel(sessionPanelEnabled);
-  const sessionPresentation = useSessionPanelPresentation(sessionPanel);
   const clockZone = effectiveZoneId ?? detectDeviceTimeZone();
+  const sessionPanel = useSessionPanel(sessionPanelEnabled, viewedDateIso, clockZone);
+  const sessionPresentation = useSessionPanelPresentation(sessionPanel);
+  const [realityClock, setRealityClock] = useState(() => Date.now());
+  const openRealityCount = sessionPanel.snapshot?.visuals?.filter(
+    (visual) => visual.ended_at === null,
+  ).length ?? 0;
+  useEffect(() => {
+    if (openRealityCount === 0) return;
+    // Geometry animates locally; no database polling or per-card requests.
+    const interval = window.setInterval(() => setRealityClock(Date.now()), 15_000);
+    return () => window.clearInterval(interval);
+  }, [openRealityCount]);
   const timelineToday = prototypeMode
     ? TIMELINE_PROTOTYPE_TODAY
     : Temporal.Now.plainDateISO(clockZone);
@@ -362,13 +373,22 @@ export function TimelineSurface({
     [anchor, renderedDayInputs],
   );
   const renderedDays = useMemo(
-    () =>
+    () => applyTimelineSessionReality(
       applyTimelineAllDayGeometry(
         baseRenderedDays,
         state.allDayItems,
         presentationFilters,
       ),
-    [baseRenderedDays, state.allDayItems, presentationFilters],
+      sessionPanel.snapshot?.visuals ?? [],
+      clockZone,
+      sessionPanel.snapshot?.evaluated_at ?? new Date(realityClock).toISOString(),
+      realityClock,
+      visibleGroups,
+    ),
+    [
+      baseRenderedDays, state.allDayItems, presentationFilters,
+      sessionPanel.snapshot, clockZone, realityClock, visibleGroups,
+    ],
   );
 
   useLayoutEffect(() => {
