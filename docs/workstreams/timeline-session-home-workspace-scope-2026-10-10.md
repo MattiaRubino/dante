@@ -1,6 +1,6 @@
 # B14 — Session independence, Home three views and Objective confirmation
 
-**Status: APPROVED FEATURE / CODE CANDIDATE PUBLISHED / LOCAL GATE AND REAL APP ACCEPTANCE OPEN.**
+**Status: APPROVED FEATURE / TECHNICAL GATE GREEN THROUGH `b71bf532` (USER-LOCAL CUMULATIVE EVIDENCE) / GENERATED CLIENT PUBLICATION AND REAL APP ACCEPTANCE OPEN.**
 **Branch:** `feature/timeline-temporal-operational`
 **Date:** 2026-10-10
 **Domain authority:** `docs/domain/decisions/activity-session-live-timeline-v1.md` §8
@@ -14,6 +14,12 @@
 - `ContextRail` has one fixed right column with three pages and touch/keyboard navigation: `Conclusi` shows factually ended real Sessions and accepted occurred Actuals only (a Session Stop is not an Activity completion); `Da verificare` retains B10 policy-derived reality/outcome/objective queue; `Obiettivi` groups truly unobserved Objectives by canonical Activity/Event/Occurrence owner. History is bounded to 90 days and at most 40 displayed rows (100 hard cap in API); this initial implementation does **not** yet support user-controlled pagination beyond this bounded page. No unbounded table scans permitted.
 - One actor-owned provisional Objective value is persisted by CAS and does NOT write Observation/Evaluation/Result. After an explicit ✓ Conferma, PostgreSQL atomically writes the canonical ObjectiveResult and durable receipt using operation replay/CAS. Same `ObjectiveControls` is used in Inspector and Home; correction of confirmed Results uses preexisting correction capability, not a draft overwrite.
 - Source forward migrations: `_139` provisional inputs, `_140` History/Objective reads, `_141` trusted independent planned Start and desk inclusion. Expected exact catalog 238 tables, 5 views, 228 routines, 103 triggers, 486 indexes, 421 foreign keys and 596 CHECK. Confirm through PostgreSQL exact-catalog gate, do not infer proof from this document.
+
+## Technical proof completed 2026-10-10
+
+Successive user-local checks passed PY_SYNTAX, PY_UNIT, all targeted functional PostgreSQL, the exact Dictionary/catalog topology (last one: `1 passed in 6.75s`), RUFF, GENERATE/GENERATED_CHECK, API_TYPECHECK, WEB_TYPECHECK, WEB_LINT, VITEST and BROWSER. Evidence is cumulative across earlier repairs, not an all-suites single-SHA rerun. The fourteen generated OpenAPI/Orval files remain unpublished in WSL. No further test rerun is required before publishing those files, unless source code changes.
+
+The following section is the **historical pre-gate checklist**, retained for traceability; current actions are publish generated files and real-app user acceptance.
 
 ## Proof boundary / one local gate
 
