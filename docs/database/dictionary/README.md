@@ -1,16 +1,16 @@
 # DANTE Database Dictionary
 
-- **Status:** `_86` Dictionary/PostgreSQL/SQLAlchemy catalog gate proven locally
+- **Status:** CURRENT candidate `_141` Dictionary/PostgreSQL/SQLAlchemy/Alembic catalog gate user-locally verified; historical `_86` proof preserved below
 - **Schema version:** 1
 - **Serialization:** JSON
 - **PostgreSQL:** 18.6
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Current candidate branch:** `feature/timeline-temporal-operational`
-- **Current candidate Alembic source head:** `20260927_86` (B11-C)
-- **Measured whole-catalog topology:** `20260927_86` / `184|5|144|100|370|323|480|0|0|0`
+- **Current candidate Alembic source head:** `20261010_141` (B14 Session/Objective/Home workspace; real-app acceptance open)
+- **Measured whole-catalog topology:** `20261010_141` / `238|5|228|103|486|421|596|0|0|0`
 - **Frozen CP6 head:** `20260826_08`
-- **Last exact Dictionary/catalog gate:** B11-C `_86` / 2026-09-27
+- **Last exact Dictionary/catalog gate:** B14 `_141` / 2026-10-10 (cumulative user-local gate; final current-catalog test 1 PASS)
 
 ## 1. Purpose
 
@@ -29,7 +29,9 @@ A mismatch is a defect. Protected `main` remains integration authority; candidat
 
 ## 2. Current checked-out business-schema inventory
 
-The `_86` counts measured in local PostgreSQL and represented in `scope.json` are:
+**Current `_141` candidate** recorded in `scope.json` and verified against live PostgreSQL: **238 tables, 5 views, 228 routines, 103 triggers, 486 indexes, 421 foreign keys, 596 CHECK**; **471 standalone Dictionary object entries**. The Database/Domain/Logical/Physical overlay authority lives in `../timeline-temporal-operational.md`, `../../logical-model/slices/b14-session-objective-home-workspace-2026-10-11.md`, and `../../physical-model/b14-session-objective-home-workspace-2026-10-11.md`.
+
+**Historical `_86` inventory (2026-09-27), retained as dated evidence:**
 
 ```text
 tables      184
@@ -213,7 +215,9 @@ extension-owned objects excluded correctly
 
 No real object → no ceremonial Dictionary entry. Every real current DANTE business object requires matching Dictionary/Alembic/SQLAlchemy/current-human-reference/direct-PostgreSQL proof in the same reviewed slice.
 
-## 10. Next boundary
+## 10. Historical next-boundary checkpoint (2026-09-27)
+
+**Current next gate:** B14 Home/Session/Objective real-app user acceptance; database technical tests already passed. The following B09-C and B10 wording is historical, not a current work queue.
 
 B09-C Person-referent implementation is closed on the user-run 2026-09-25 PostgreSQL catalog proof: `_69` topology `158|5|109|93|303|254|433`, reconciled with Dictionary and SQLAlchemy. B09-D has no schema/Dictionary delta; integrated tests and the user's B09 real-app walkthrough passed on 2026-09-25. B09 is closed; B10 follows.
 
