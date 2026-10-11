@@ -35,6 +35,12 @@ vi.mock('../../../temporal/reconciliation-controls', () => ({
   ),
 }));
 
+vi.mock('../../../temporal/session-subject-controls', () => ({
+  SessionSubjectControls: ({ onRecorded }: { onRecorded: () => void }) => (
+    <button type="button" onClick={onRecorded}>Registra Sessione passata</button>
+  ),
+}));
+
 vi.mock('../../../temporal/actual-realization-controls', () => ({
   ActualRealizationControls: ({
     kind,
@@ -180,6 +186,29 @@ describe('Home resolution rail', () => {
     expect(within(panel).getByLabelText('0 elementi da verificare').textContent).toBe(
       '0',
     );
+  });
+  it('offers manual Session or a Reality decision for a past interval without Play', async () => {
+    const past = {
+      ...realizationReviewItem,
+      purpose_code: 'activity.policy.past_unstarted',
+      session_ref: null,
+      session_timing_material_state_ref: null,
+    };
+    let open = true;
+    vi.stubGlobal('fetch', vi.fn((input: RequestInfo | URL) =>
+      Promise.resolve(Response.json((typeof input === 'string' ? input
+        : input instanceof URL ? input.href : input.url).includes('/resolution-queue')
+        ? open ? { items: [past], count: 1 } : { items: [], count: 0 }
+        : [])),
+    ));
+    render(<ContextRail />);
+    expect(await screen.findByText('Allenamento forza')).toBeTruthy();
+    expect(screen.getByText('Orario passato senza Sessione · verifica se è avvenuta.')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Registra Sessione passata' })).toBeTruthy();
+    expect(screen.getByTestId('actual-realization-owner').textContent).toContain('no-session');
+    open = false;
+    fireEvent.click(screen.getByRole('button', { name: 'Realtà B10 registrata' }));
+    await waitFor(() => expect(screen.queryByText('Allenamento forza')).toBeNull());
   });
   it('opens pending Event Objectives through their canonical owner and refreshes after assessment', async () => {
     const objectiveReviewItem = {

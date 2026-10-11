@@ -61,7 +61,11 @@ def _item(row: object) -> ResolutionQueueItem:
     if reason == "realization_review":
         return ResolutionQueueItem(
             **values,
-            summary="The requested Reality review is ready.",
+            summary=(
+                "A past planned interval needs an explicit Reality decision."
+                if values["purpose_code"] == "activity.policy.past_unstarted"
+                else "The requested Reality review is ready."
+            ),
             actions=["record_realization"],
         )
     if reason == "objective_review":
@@ -83,10 +87,10 @@ async def list_resolution_queue(
 ) -> ResolutionQueueResponse:
     """Derived current product work, never inferred failure from time passage.
 
-    Reality review requires an explicit review-on-end policy and a completed
-    bounded Session (Activity) or ended Event placement. Objectives can request
-    assessment independently after the same bounded completion. Absence of
-    Actual never means that the subject did not happen.
+    A past planned Activity without execution may enter Reality review only
+    under explicit review/auto policy, or Objective review when an Objective
+    awaits assessment. Bounded Session/Event reviews remain independent.
+    Absence of Actual never means that the subject did not happen.
     """
     try:
         async with (

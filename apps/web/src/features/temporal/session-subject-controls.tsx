@@ -70,6 +70,8 @@ export function SessionSubjectControls({
   allowManual = false,
   plannedScheduleRef = null,
   compactRuntime = false,
+  visibleSessionRefs,
+  onRecorded,
 }: Readonly<{
   kind: SessionSubjectKind;
   subjectRef: string;
@@ -80,6 +82,8 @@ export function SessionSubjectControls({
   allowManual?: boolean;
   plannedScheduleRef?: string | null;
   compactRuntime?: boolean;
+  visibleSessionRefs?: readonly string[];
+  onRecorded?: () => void;
 }>) {
   const [sessions, setSessions] = useState<readonly TemporalSessionView[]>([]);
   const [pending, setPending] = useState(false);
@@ -87,15 +91,22 @@ export function SessionSubjectControls({
   const [manualOpen, setManualOpen] = useState(false);
   const [manualStart, setManualStart] = useState('');
   const [manualEnd, setManualEnd] = useState('');
+  const [localSessionRef, setLocalSessionRef] = useState<string | null>(null);
+  const visibleSessionKey = visibleSessionRefs?.join('|');
+
+  const forThisCard = useCallback((item: TemporalSessionView) =>
+    (item.plannedScheduleRef ?? null) === plannedScheduleRef &&
+    (visibleSessionKey === undefined ||
+      visibleSessionKey.split('|').includes(item.sessionRef) ||
+      item.sessionRef === localSessionRef),
+  [plannedScheduleRef, visibleSessionKey, localSessionRef]);
 
   const reload = useCallback(async () => {
     const listed = await source.list(kind, subjectRef);
     setSessions(
-      listed.filter(
-        (item) => (item.plannedScheduleRef ?? null) === plannedScheduleRef,
-      ),
+      listed.filter(forThisCard),
     );
-  }, [kind, subjectRef, plannedScheduleRef]);
+  }, [kind, subjectRef, forThisCard]);
 
   useEffect(() => {
     const refresh = (event: Event) => {
@@ -111,6 +122,7 @@ export function SessionSubjectControls({
     window.dispatchEvent(
       new CustomEvent('dante:session-changed', { detail: subjectRef }),
     );
+    onRecorded?.();
     return reload();
   };
 
@@ -121,10 +133,7 @@ export function SessionSubjectControls({
       .then((listed) => {
         if (!cancelled) {
           setSessions(
-            listed.filter(
-              (item) =>
-                (item.plannedScheduleRef ?? null) === plannedScheduleRef,
-            ),
+            listed.filter(forThisCard),
           );
         }
       })
@@ -136,7 +145,7 @@ export function SessionSubjectControls({
     return () => {
       cancelled = true;
     };
-  }, [kind, subjectRef, plannedScheduleRef]);
+  }, [kind, subjectRef, forThisCard]);
 
   const openSession = sessions.find((session) => session.open) ?? null;
   const stopped = openSession === null && sessions.some((session) => !session.open);
@@ -155,7 +164,13 @@ export function SessionSubjectControls({
         ? source.start(kind, subjectRef, operationId())
         : source.startPlanned(subjectRef, plannedScheduleRef, operationId());
     void command
-      .then(changed)
+      .then((saved) => {
+        setLocalSessionRef(saved.sessionRef);
+        setSessions((current) => [...current, saved]);
+        window.dispatchEvent(
+          new CustomEvent('dante:session-changed', { detail: subjectRef }),
+        );
+      })
       .then(() => setMessage(`Sessione avviata · ${label}`))
       .catch((error: unknown) =>
         recoverAfterRejection('Avvio sessione rifiutato.', error),

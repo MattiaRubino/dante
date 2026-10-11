@@ -83,7 +83,8 @@
       "B14-SESSION-PAUSED-END",
       "B14-OBJECTIVE-INPUT",
       "B14-HOME-WORKSPACE-READS",
-      "B14-INDEPENDENT-PLANNED-SESSION"
+      "B14-INDEPENDENT-PLANNED-SESSION",
+      "B14-PAST-ACTIVITY-REVIEW"
     ],
     "standalone_entries": {
       "tables": 238,

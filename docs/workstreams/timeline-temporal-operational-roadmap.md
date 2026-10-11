@@ -1,5 +1,9 @@
 # Timeline / Temporal-Operational Vertical — Implementation Roadmap
 
+## CURRENT 2026-10-11 — Regression repair and past review candidate
+
+The previous visual-only fix regressed Play and width: card controls treated any ended main Session on an Activity as the ended Session for every interval, while card geometry changed without rebuilding the day mapper. This candidate scopes the inline history to the Session refs projected on that card, rebuilds the adaptive time scale and day offsets from actual bounds, keeps a 94px minimum for short real Sessions, and shows real time prominently with planned time alongside. Forward migration `_142` extends the owner-only derived review queue to past Activity intervals with no Session: pending Objective review always appears; Reality review appears only under explicit `review_on_end` or `auto_confirm_outcome` policy, with manual Session recording or an explicit occurred/not-occurred decision. No elapsed plan is asserted as reality. Web typecheck and focused Vitest/Ruff pass in the assistant workspace; PostgreSQL migration and real browser acceptance remain unverified. Historical protection/correction remains open.
+
 ## CURRENT 2026-10-11 — Timeline collision and stopped-control follow-up
 
 Candidate UI/desk repair: lane assignment uses final painted card bounds; an early ended planned Session is suppressed by Schedule identity in the desk; card/Inspector controls no longer show implicit Play when their subject has a concluded Session. Workspace checks passed (16 Python unit tests, 25 Web tests, Web typecheck and Ruff). Real-app visual acceptance and a PostgreSQL-level repeat-start/history-protection contract remain open. See the live map and `timeline-session-history-protection-and-past-authoring-proposal-2026-10-11.md`; no B14/B15 completion is claimed. The approved `_141` gate below remains its own evidence.

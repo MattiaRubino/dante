@@ -58,7 +58,7 @@ export function timelineEventReadableHeight(event: TimelineEvent): number {
     height += eventPolicy.longTitleExtraHeightPx;
   }
 
-  return height;
+  return Math.max(height, event.visualMinimumHeightPx ?? 0);
 }
 
 export function computeTimelineDensityMetrics(

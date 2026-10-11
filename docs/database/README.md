@@ -6,7 +6,7 @@
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
-- **Timeline candidate Alembic head (current branch candidate):** `20261010_141` (candidate technical gate green; live-app acceptance open; see `timeline-temporal-operational.md`)
+- **Timeline candidate Alembic head (current branch candidate):** `20261011_142` (derived past-review routine replacement unverified on PostgreSQL; prior `_141` technical gate green; see `timeline-temporal-operational.md`)
 - **Historical B10-C proven topology (2026-09-26):** `20260925_79` / `167|5|123|93|329|279|446`; latest _141 candidate topology `238|5|228|103|486|421|596` (user-local catalog gate green)
 - **Timeline candidate DB overlay:** `timeline-temporal-operational.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`

@@ -1,5 +1,7 @@
 # Timeline / Temporal-Operational — Candidate Database Overlay
 
+**Current candidate `_142` (2026-10-11):** forward `CREATE OR REPLACE` of `list_self_resolution_queue(uuid,text)` adds owner-scoped grouped past Activity review. A passed Activity interval without real Session qualifies for explicit Reality review only if `review_on_end` or `auto_confirm_outcome` was selected; a pending Objective qualifies independently. Neither time passage nor this read creates Session/Actual/ObjectiveResult. Existing function signature and catalog topology remain `238|5|228|103|486|421|596`; this routine-body replacement still needs PostgreSQL migration/functional proof. `_141` remains the latest user-verified head.
+
 **Cross-layer architecture reconciliation (2026-10-11):** The current Domain authority `../domain/decisions/activity-session-live-timeline-v1.md` §8 is represented by the additive Logical overlay `../logical-model/slices/b14-session-objective-home-workspace-2026-10-11.md` and the Physical overlay `../physical-model/b14-session-objective-home-workspace-2026-10-11.md`. The accepted PM-12/Whole Logical baselines and protected-main PostgreSQL reference remain frozen; this file, `dictionary/scope.json`, migrations/ORM and user-local catalog tests own the **candidate-branch** current materialization. No new migration or schema change was made during this documentation reconciliation.
 
 ## CURRENT: B14 Home workspace + optional main / independent child Session — 2026-10-10

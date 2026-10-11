@@ -29,6 +29,25 @@ beforeEach(() => {
 afterEach(() => cleanup());
 
 describe('compact Session runtime on created cards', () => {
+  it('does not hide Play on another Activity interval when a different one ended', async () => {
+    source.list.mockResolvedValue([{
+      sessionRef: 'older-attempt', plannedScheduleRef: null,
+      open: false, paused: false,
+    }]);
+    render(<>
+      <SessionSubjectControls kind="activity" subjectRef="same-activity"
+        label="Intervallo passato" variant="card"
+        visibleSessionRefs={['older-attempt']} />
+      <SessionSubjectControls kind="activity" subjectRef="same-activity"
+        label="Intervallo nuovo" variant="card"
+        visibleSessionRefs={[]} />
+    </>);
+    await waitFor(() => expect(source.list).toHaveBeenCalledTimes(2));
+    expect(screen.getByLabelText('Sessione · Intervallo passato')
+      .querySelector('button[aria-label="Avvia"]')).toBeNull();
+    expect(screen.getByLabelText('Sessione · Intervallo nuovo')
+      .querySelector('button[aria-label="Avvia"]')).toBeTruthy();
+  });
   it('starts a planned row through its own command, not the parent Activity command', async () => {
     source.list.mockResolvedValue([]);
     source.startPlanned.mockResolvedValue({});

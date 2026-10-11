@@ -1,6 +1,8 @@
 import { Temporal } from '@dante/time';
 
 import type { SessionVisual } from '../../../temporal/use-session-panel';
+import { offsetTimelineTimeMapper } from './model/timeline-all-day-layout';
+import { createTimelineTimeMapper } from './model/timeline-density';
 import { computeTimelineEventLayouts } from './model/timeline-layout';
 import type {
   TimelineEvent, TimelineEventLayout, TimelineGroup,
@@ -13,6 +15,7 @@ export type TimelineSessionReality = Readonly<{
   endedAt: string | null;
   fill: string;
   actualLabel: string;
+  sessionRefs: readonly string[];
 }>;
 
 type Span = Readonly<{ from: number; until: number; paused: boolean }>;
@@ -138,6 +141,7 @@ function project(
     reality: {
       state: !running ? 'ended' : paused ? 'paused' : 'running',
       startedAt, endedAt, fill,
+      sessionRefs: chosen.map((slice) => slice.session_ref),
       actualLabel: `${labelAt(startedAt, zone)}–${endedAt ? labelAt(endedAt, zone) : 'ora'}`,
     },
   };
@@ -154,6 +158,8 @@ export function applyTimelineSessionReality(
   evaluatedAt: string,
   clockAt: number,
   groups: readonly TimelineGroup[],
+  zoom: number,
+  expandedEventIds: ReadonlySet<string>,
 ): readonly TimelineRenderedDay[] {
   if (visuals.length === 0) return days;
   const now = Number.isFinite(Date.parse(evaluatedAt)) ? clockAt : Date.now();
@@ -163,64 +169,64 @@ export function applyTimelineSessionReality(
     list.push(visual);
     byActivity.set(visual.activity_ref, list);
   }
+  let offsetTop = 0;
   return days.map((day) => {
-    const activityCounts = new Map<string, number>();
+    const activityEvents = new Map<string, TimelineEvent[]>();
     for (const event of day.events) {
       if (event.canonicalBasis?.kind !== 'scheduled-activity') continue;
       const key = event.canonicalBasis.activityRef;
-      activityCounts.set(key, (activityCounts.get(key) ?? 0) + 1);
+      activityEvents.set(key, [...(activityEvents.get(key) ?? []), event]);
     }
     const overlays = new Map<string, Projected>();
     const displayEvents: TimelineEvent[] = day.events.map((event) => {
       const basis = event.canonicalBasis;
       if (basis?.kind !== 'scheduled-activity') return event;
-      const activity = byActivity.get(basis.activityRef);
-      if (!activity) return event;
-      const projected = project(activity, day.dateKey, zone, now);
+      const activity = byActivity.get(basis.activityRef) ?? [];
+      const intervals = activityEvents.get(basis.activityRef) ?? [];
+      // A real Session is attached to one visible interval, including when
+      // it starts early or ends before the planned interval begins.
+      const relevant = intervals.length === 1 ? activity : activity.filter((slice) => {
+        if (slice.planned_schedule_ref === basis.scheduleRef) return true;
+        const minute = onDay(slice.started_at, day.dateKey, zone);
+        const nearest = [...intervals].sort((a, b) =>
+          Math.abs(a.startMinute - minute) - Math.abs(b.startMinute - minute) ||
+          a.id.localeCompare(b.id))[0];
+        return nearest?.id === event.id;
+      });
+      const projected = project(relevant, day.dateKey, zone, now);
       if (!projected) return event;
-      // Several independent accepted Activity intervals share one Activity
-      // identity: never merge their technical-envelope gaps into one block.
-      if ((activityCounts.get(basis.activityRef) ?? 0) > 1) {
-        if (projected.endMinute <= event.startMinute ||
-            projected.startMinute >= event.endMinute) return event;
-        overlays.set(event.id, projected);
-        return event;
-      }
       overlays.set(event.id, projected);
       return {
         ...event,
         startMinute: projected.startMinute,
         endMinute: projected.endMinute,
+        visualMinimumHeightPx: 94,
       };
     });
-    if (overlays.size === 0) return day;
-    const mapped = computeTimelineEventLayouts(displayEvents, groups, day.mapper);
+    if (overlays.size === 0) {
+      const unchanged = { ...day, offsetTop };
+      offsetTop += day.height;
+      return unchanged;
+    }
+    const allDayHeight = day.mapper.map(0);
+    const mapper = offsetTimelineTimeMapper(
+      createTimelineTimeMapper(displayEvents, zoom, { expandedEventIds }),
+      allDayHeight,
+    );
+    const mapped = computeTimelineEventLayouts(displayEvents, groups, mapper);
     const layouts: TimelineEventLayout[] = day.layouts.map((old, index) => {
       const target = mapped[index];
       if (!target) return old;
       const reality = overlays.get(old.event.id);
-      if (!reality) return {
-        ...old,
-        compactLane: target.compactLane, compactLaneCount: target.compactLaneCount,
-        compactLeftPercent: target.compactLeftPercent,
-        compactWidthPercent: target.compactWidthPercent,
-        groupLane: target.groupLane, groupLaneCount: target.groupLaneCount,
-      };
-      const canMove = (activityCounts.get(
-        old.event.canonicalBasis?.kind === 'scheduled-activity'
-          ? old.event.canonicalBasis.activityRef : '',
-      ) ?? 0) === 1;
+      if (!reality) return { ...target, event: old.event };
       return {
-        ...old,
-        top: canMove ? target.top : old.top,
-        height: canMove ? target.height : old.height,
-        compactLane: target.compactLane, compactLaneCount: target.compactLaneCount,
-        compactLeftPercent: target.compactLeftPercent,
-        compactWidthPercent: target.compactWidthPercent,
-        groupLane: target.groupLane, groupLaneCount: target.groupLaneCount,
+        ...target,
+        event: old.event,
         sessionReality: reality.reality,
       };
     });
-    return { ...day, layouts };
+    const rendered = { ...day, mapper, layouts, offsetTop, height: mapper.height };
+    offsetTop += rendered.height;
+    return rendered;
   });
 }

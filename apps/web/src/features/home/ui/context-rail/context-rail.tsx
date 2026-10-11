@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ActualRealizationControls } from '../../../temporal/actual-realization-controls';
 import { ObjectiveControls } from '../../../temporal/objective-controls';
 import { ReconciliationControls } from '../../../temporal/reconciliation-controls';
+import { SessionSubjectControls } from '../../../temporal/session-subject-controls';
 import {
   createContextRailWorkSource,
   type FinishedWorkItem,
@@ -250,7 +251,9 @@ export function ContextRail() {
                 : 'Decisione';
             const description = isReality
               ? item.subjectKind === 'activity'
-                ? 'Sessione conclusa · registra cosa è successo.'
+                ? item.sessionRef
+                  ? 'Sessione conclusa · registra cosa è successo.'
+                  : 'Orario passato senza Sessione · verifica se è avvenuta.'
                 : 'Evento concluso · registra cosa è successo.'
               : isObjective
                 ? 'Registra e valuta gli obiettivi.'
@@ -271,6 +274,17 @@ export function ContextRail() {
                 <strong>{item.title}</strong>
                 <p>{description}</p>
                 {isReality ? (
+                  <>
+                  {item.subjectKind === 'activity' && item.sessionRef === null ? (
+                    <SessionSubjectControls
+                      kind="activity"
+                      subjectRef={item.subjectRef}
+                      label={item.title}
+                      allowLive={false}
+                      allowManual
+                      onRecorded={ownerRecorded}
+                    />
+                  ) : null}
                   <ActualRealizationControls
                     kind={item.subjectKind}
                     subjectRef={item.subjectRef}
@@ -285,7 +299,9 @@ export function ContextRail() {
                         }
                       : {})}
                     onRecorded={ownerRecorded}
+                    compactReview={item.sessionRef === null}
                   />
+                  </>
                 ) : (
                   <>
                     <button

@@ -146,7 +146,9 @@ function parseItem(value: unknown): ResolutionItem {
     reconciliationRef === null &&
     outcomeRef === null &&
     (item.subject_kind !== 'activity' ||
-      (sessionRef !== null && sessionTimingMaterialStateRef !== null)) &&
+      (sessionRef !== null && sessionTimingMaterialStateRef !== null) ||
+      (item.purpose_code === 'activity.policy.past_unstarted' &&
+        sessionRef === null && sessionTimingMaterialStateRef === null)) &&
     hasOnlyAction(item.actions, 'record_realization')
   ) {
     return {

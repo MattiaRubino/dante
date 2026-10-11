@@ -16,6 +16,7 @@ export function ActivitySessionCardControls({
   interactive = true,
   showPlanned = true,
   variant = 'card',
+  visibleSessionRefs,
   source = defaultActivitySessionSource,
 }: Readonly<{
   activityRef: string;
@@ -23,13 +24,17 @@ export function ActivitySessionCardControls({
   interactive?: boolean;
   showPlanned?: boolean;
   variant?: 'card' | 'inspector';
+  visibleSessionRefs?: readonly string[];
   source?: TemporalSessionCapabilityDataSource;
 }>) {
-  const [mode, setMode] = useState<SessionCaptureMode | null>(null);
+  const [capability, setCapability] = useState<{
+    activityRef: string;
+    mode: SessionCaptureMode;
+  } | null>(null);
+  const mode = capability?.activityRef === activityRef ? capability.mode : null;
 
   useEffect(() => {
     let cancelled = false;
-    setMode(null);
     const read =
       source === defaultActivitySessionSource
         ? cachedActivitySessionCapability(activityRef)
@@ -40,13 +45,13 @@ export function ActivitySessionCardControls({
     void read
       .then((value) => {
         if (!cancelled) {
-          setMode(value as SessionCaptureMode);
+          setCapability({ activityRef, mode: value });
         }
       })
       .catch(() => {
         if (!cancelled) {
           // Fail closed: an unread capability must never expose a runtime command.
-          setMode('disabled');
+          setCapability({ activityRef, mode: 'disabled' });
         }
       });
     return () => {
@@ -73,6 +78,7 @@ export function ActivitySessionCardControls({
           compactRuntime
           interactive={interactive}
           allowLive
+          {...(visibleSessionRefs === undefined ? {} : { visibleSessionRefs })}
         />
         </>
       ) : null}

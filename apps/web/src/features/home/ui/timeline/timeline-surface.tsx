@@ -387,10 +387,13 @@ export function TimelineSurface({
           Math.max(0, realityClock - (sessionPanel.snapshot.clientReceivedAt ?? realityClock))
         : realityClock,
       visibleGroups,
+      state.zoom,
+      state.expandedEventIds,
     ),
     [
       baseRenderedDays, state.allDayItems, presentationFilters,
       sessionPanel.snapshot, clockZone, realityClock, visibleGroups,
+      state.zoom, state.expandedEventIds,
     ],
   );
 
@@ -1539,6 +1542,7 @@ export function TimelineSurface({
               appearanceColorCode: _previousColor,
               ...eventWithoutColor
             } = existing.event;
+            void _previousColor;
             dispatch({
               type: 'materialize-event',
               dateKey: existing.dateKey,

@@ -7,7 +7,7 @@
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Current candidate branch:** `feature/timeline-temporal-operational`
-- **Current candidate Alembic source head:** `20261010_141` (B14 Session/Objective/Home workspace; real-app acceptance open)
+- **Current candidate Alembic source head:** `20261011_142` (derived past Activity review query; PostgreSQL proof pending, real-app acceptance open)
 - **Measured whole-catalog topology:** `20261010_141` / `238|5|228|103|486|421|596|0|0|0`
 - **Frozen CP6 head:** `20260826_08`
 - **Last exact Dictionary/catalog gate:** B14 `_141` / 2026-10-10 (cumulative user-local gate; final current-catalog test 1 PASS)

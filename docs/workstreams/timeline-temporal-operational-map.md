@@ -1,5 +1,9 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## CURRENT CORRECTIVE CANDIDATE — 2026-10-11
+
+The first collision/Stop patch was rejected by real-app testing: unrelated ended Activity Sessions hid Play; projected cards moved without remapping the timeline; short cards kept old time labels; past never-started work did not enter policy review. Current candidate changes card-local Session attribution, adaptive day mapper/offsets, real/plan labels and owner-only derived review function in forward revision `_142`. The existing `238|5|228|103|486|421|596` topology is unchanged by `CREATE OR REPLACE FUNCTION`; the new routine body is **not PostgreSQL-proven**. User local migration and real-app walkthrough are required. Historical edit locks, auditable Session correction and repeat-start authority are separate open work.
+
 ## USER REAL-APP FINDINGS 2026-10-11 — Session history protection / past editing
 
 **Follow-up candidate on 2026-10-11:** Timeline lanes now use final painted pixel rectangles, including readable minimum height and actual Session bounds. The Session desk suppresses an ended planned row by its exact Schedule link even when Stop precedes its planned start; inline controls show `Sessione conclusa` instead of offering Play after refresh. Focused workspace checks passed: 16 Session panel unit tests, 25 Web tests, Web typecheck and affected Ruff. Real-app acceptance and PostgreSQL guard proof remain open. Main Session association across several Activity intervals uses nearest planned start because an explicit main Session→interval identity is absent. Direct start API still permits a distinct attempt; historical lock/correction/past-authoring policy below remains a proposal.

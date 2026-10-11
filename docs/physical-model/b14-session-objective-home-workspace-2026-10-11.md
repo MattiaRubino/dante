@@ -1,5 +1,7 @@
 # B14 Physical Overlay — Session Execution, Objective Draft and Home Views
 
+**Forward read evolution candidate `20261011_142`:** replaces the existing owner-only SECURITY DEFINER `list_self_resolution_queue(uuid,text)` body; uses current Activity Schedule placement and role, Reality review policy, bounded Session, Actual and Objective current histories. Function signature, owner/runtime grant and exact topology stay unchanged. PostgreSQL functional proof remains pending; `_141` is the last locally verified migration.
+
 - **Status:** CURRENT BRANCH IMPLEMENTATION OVERLAY / USER-LOCAL TECHNICAL GATE GREEN / LIVE-APP ACCEPTANCE OPEN
 - **Date:** 2026-10-11
 - **Accepted selection:** `pm-12-accepted-physical-model-v1.md` (PostgreSQL 18 family; runtime 18.6)

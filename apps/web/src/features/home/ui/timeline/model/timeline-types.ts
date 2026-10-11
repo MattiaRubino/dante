@@ -113,6 +113,8 @@ export type TimelineEvent = Readonly<{
   origin?: 'create';
   meta?: string;
   subitems?: readonly string[];
+  /** Extra room for the actual/planned status rows; presentation only. */
+  visualMinimumHeightPx?: number;
 }>;
 
 export type TimelineDateLaneKind =
@@ -184,6 +186,7 @@ export type TimelineEventLayout = Readonly<{
     endedAt: string | null;
     fill: string;
     actualLabel: string;
+    sessionRefs: readonly string[];
   }>;
 }>;
 

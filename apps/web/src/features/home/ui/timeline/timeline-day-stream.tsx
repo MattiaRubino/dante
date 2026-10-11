@@ -256,7 +256,7 @@ function TimelineEventCard({
       style={style}
       draggable={false}
       tabIndex={0}
-      aria-label={`${event.title}, ${formatTimelineMinute(event.startMinute)}–${formatTimelineMinute(event.endMinute)}`}
+      aria-label={`${event.title}, ${layout.sessionReality ? `reale ${layout.sessionReality.actualLabel}, previsto ` : ''}${formatTimelineMinute(event.startMinute)}–${formatTimelineMinute(event.endMinute)}`}
       aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight"
       onDragStart={(dragEvent) => dragEvent.preventDefault()}
       onKeyDown={keyboardMove}
@@ -301,6 +301,7 @@ function TimelineEventCard({
               label={event.title}
               interactive={inlineActionsEnabled}
               showPlanned={false}
+              visibleSessionRefs={layout.sessionReality?.sessionRefs ?? []}
             />
           )}
         </div>
@@ -320,8 +321,7 @@ function TimelineEventCard({
             title: event.title,
           })}
         >
-          {formatTimelineMinute(event.startMinute)}–
-          {formatTimelineMinute(event.endMinute)}
+          {layout.sessionReality?.actualLabel ?? `${formatTimelineMinute(event.startMinute)}–${formatTimelineMinute(event.endMinute)}`}
         </button>
         {cardMeta ? (
           <div className="timeline-event-card__meta">{cardMeta}</div>
@@ -331,9 +331,8 @@ function TimelineEventCard({
             title={`Reale: ${layout.sessionReality.actualLabel}. Previsto: ${formatTimelineMinute(event.startMinute)}–${formatTimelineMinute(event.endMinute)}`}>
             {layout.sessionReality.state === 'running' ? 'In corso'
               : layout.sessionReality.state === 'paused' ? 'In pausa'
-              : 'Sessione conclusa'} · {layout.sessionReality.actualLabel}
-            {' '} (previsto {formatTimelineMinute(event.startMinute)}–
-            {formatTimelineMinute(event.endMinute)})
+              : 'Sessione conclusa'} · previsto {formatTimelineMinute(event.startMinute)}–
+            {formatTimelineMinute(event.endMinute)}
           </div>
         ) : null}
         {sessionActivityRef === null ? null : (
