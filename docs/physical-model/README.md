@@ -7,8 +7,8 @@
 - **Physical phase-time exact patch:** 18.4 / historical selection evidence
 - **Current PostgreSQL patch:** 18.6
 - **Protected-main baseline at current Timeline vertical selection:** Alembic `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
-- **Active Timeline candidate:** `feature/timeline-temporal-operational` / Alembic `20260923_57` / `145|5|88|92|285|223|408|0|0|0`
-- **Last downstream reconciliation:** 2026-09-23
+- **Active Timeline candidate:** `feature/timeline-temporal-operational` / Alembic `20261010_141` / `238|5|228|103|486|421|596|0|0|0` (technical local gate green; real-app acceptance open)
+- **Last downstream reconciliation:** 2026-10-11 (candidate overlay, not re-opening PM-12)
 
 ## 1. Purpose and boundary
 
@@ -54,8 +54,8 @@ PROTECTED-MAIN BASELINE AT TIMELINE SELECTION
 89|5|18|77|173|91|272|0|0|0
 
 ACTIVE UNMERGED TIMELINE CANDIDATE
-20260923_57
-145|5|88|92|285|223|408|0|0|0
+20261010_141
+238|5|228|103|486|421|596|0|0|0
 ```
 
 A compatible maintenance patch inside PostgreSQL 18 is lifecycle maintenance and does not reopen the accepted Physical architecture. A major-version change is a separate architecture/revalidation boundary.
@@ -255,7 +255,9 @@ The current `+`/Timeline vertical may activate existing selected mechanisms only
 
 ## 10. Timeline candidate carry-forward
 
-Current candidate semantics through B06 preserve the accepted mapping thesis:
+**Current B14 implementation:** `b14-session-objective-home-workspace-2026-10-11.md` and `../logical-model/slices/b14-session-objective-home-workspace-2026-10-11.md` extend the accepted Physical/Logical authority without altering PM-12. The current candidate at `_141` has passed cumulative local technical checks, but its real UI has not yet been accepted.
+
+**Historical B06 carry-forward snapshot (2026-09-23):**
 
 ```text
 Activity != Event != Routine
@@ -267,7 +269,7 @@ Schedule != Session != Actual
 
 B06 reused the existing Schedule authority for Occurrence instead of creating a second temporal engine. Runtime Occurrence provenance remains behind bounded least-privilege capabilities.
 
-The next active block is B08 Session Runtime. B08 must first inspect accepted Domain/Logical/Physical Session mappings and existing CP6 materialization before proposing new DDL.
+At that historical checkpoint, B08 Session Runtime was NEXT. It has since been implemented and tested; the current next gate is B14 Home/Session/Objective real-app acceptance, not B08 schema work.
 
 ## 11. Current boundary summary
 
@@ -284,10 +286,10 @@ Alembic 20260906_18
 
 ACTIVE TIMELINE CANDIDATE
 PostgreSQL 18.6
-Alembic 20260923_57
-145|5|88|92|285|223|408|0|0|0
-B00–B06 CLOSED / PROVEN
-B08 NEXT
+Alembic 20261010_141
+238|5|228|103|486|421|596|0|0|0
+B14 SESSION/OBJECTIVE/HOME TECHNICAL GATE GREEN
+REAL APP ACCEPTANCE NEXT
 
 OUTSIDE CURRENT VERTICAL
 external provider integration
