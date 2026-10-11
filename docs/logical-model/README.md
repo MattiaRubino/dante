@@ -42,6 +42,10 @@ CLOSED
 
 The Domain Model remains closed for the accepted kernel.
 
+## Current downstream B14 logical overlay (2026-10-11)
+
+The integrated Whole Logical Model remains closed and is **not** rewritten by later vertical implementation. The active Timeline branch through Alembic `20261010_141` adds an approved bounded representation at `slices/b14-session-objective-home-workspace-2026-10-11.md`, qualifying the earlier `slices/activity-subactivity-session-bounded-v1.md` policy: `disabled` prevents the **main Activity clock**, not separately owned, explicitly planned internal Sessions. The overlay also models provisional Objective value versus confirmed Observation/Result and three bounded Home read projections. These are candidate-branch facts with a cumulative technical gate green and real-app acceptance still open.
+
 ## 2. Authority and reading order
 
 For the current Logical Model, read in this order:
