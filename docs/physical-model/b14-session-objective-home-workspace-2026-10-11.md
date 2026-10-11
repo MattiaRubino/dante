@@ -6,7 +6,7 @@
 - **Domain:** `../domain/decisions/activity-session-live-timeline-v1.md` §8
 - **Logical:** `../logical-model/slices/b14-session-objective-home-workspace-2026-10-11.md`
 - **Database authority:** `../database/timeline-temporal-operational.md`, `../database/dictionary/scope.json`, exact object entries
-- **Source:** `../../apps/backend/migrations/versions/20261010_135_b14_session_panel_untimed_start.py` through `20261010_141_b14_independent_planned_sessions.py`
+- **Source:** `../../apps/backend/migrations/versions/20261009_135_b14_session_panel_untimed_start.py` through `20261010_141_b14_independent_planned_sessions.py`
 
 ## 1. Forward-only migration chain
 
