@@ -1,6 +1,6 @@
 # B14 Physical Overlay — Session Execution, Objective Draft and Home Views
 
-**Forward read evolution candidate `20261011_142`:** replaces the existing owner-only SECURITY DEFINER `list_self_resolution_queue(uuid,text)` body; uses current Activity Schedule placement and role, Reality review policy, bounded Session, Actual and Objective current histories. Function signature, owner/runtime grant and exact topology stay unchanged. PostgreSQL functional proof remains pending; `_141` is the last locally verified migration.
+**Forward read evolution candidate `20261011_142`:** replaces the existing owner-only SECURITY DEFINER `list_self_resolution_queue(uuid,text)` body; uses current Activity Schedule placement and role, Reality review policy, bounded Session, Actual and Objective current histories. Function signature, owner/runtime grant and exact topology stay unchanged. User-local PostgreSQL functional and catalog gate passed cumulatively; real-app acceptance remains open.
 
 - **Status:** CURRENT BRANCH IMPLEMENTATION OVERLAY / USER-LOCAL TECHNICAL GATE GREEN / LIVE-APP ACCEPTANCE OPEN
 - **Date:** 2026-10-11
@@ -8,7 +8,7 @@
 - **Domain:** `../domain/decisions/activity-session-live-timeline-v1.md` §8
 - **Logical:** `../logical-model/slices/b14-session-objective-home-workspace-2026-10-11.md`
 - **Database authority:** `../database/timeline-temporal-operational.md`, `../database/dictionary/scope.json`, exact object entries
-- **Source:** `../../apps/backend/migrations/versions/20261009_135_b14_session_panel_untimed_start.py` through `20261010_141_b14_independent_planned_sessions.py`
+- **Source:** `../../apps/backend/migrations/versions/20261009_135_b14_session_panel_untimed_start.py` through `../../apps/backend/migrations/versions/20261011_142_b14_past_activity_review.py`
 
 ## 1. Forward-only migration chain
 

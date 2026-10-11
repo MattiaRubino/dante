@@ -1,6 +1,6 @@
 # B14 Logical Overlay — Independent Session, Objective Draft, Home Workspace
 
-**Past review extension candidate (_142):** one derived Activity review per owner with a past accepted interval and no recorded execution/Actual when explicit review policy requests it. A pending Objective on that past Activity enters Objective review even without a Session. The queue remains a read projection; a manual Session, Actual decision, or Objective confirmation is written by its own existing capability. A missed plan stays unknown until explicit action.
+**Past review extension candidate (_142):** one derived Activity review per owner with a past accepted interval and no recorded execution/Actual when explicit review policy requests it. A pending Objective on that past Activity enters Objective review even without a Session. The queue remains a read projection; a manual Session, Actual decision, or Objective confirmation is written by its own existing capability. A missed plan stays unknown until explicit action. Cumulative user-local PostgreSQL gate passed; real-app acceptance is open.
 
 - **Status:** ACCEPTED DOWNSTREAM REPRESENTATION OF APPROVED PRODUCT CONTRACT; implementation source at Alembic `20261010_141`; technical proof cumulative user-local PASS; real-app UI acceptance open.
 - **Date:** 2026-10-11

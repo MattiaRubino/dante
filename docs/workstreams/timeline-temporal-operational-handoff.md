@@ -1,5 +1,9 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-11 — `_142` local technical gate verified; real-app acceptance open
+
+User pulled `f497cb0b` and ran `test_current_database_cross_representation_is_exact` on PostgreSQL: **1 passed in 24.59s**. This closes the one red check from the preceding complete gate (`19 passed, 1 failed` before the stale stage-literal correction); that gate's PY_SYNTAX, RUFF, PY_UNIT, OpenAPI generation/determinism, API/Web typecheck, Web lint, Vitest and browser checks were green. The evidence is cumulative across two consecutive commits, not a single full rerun or visual acceptance. `_142` and the exact catalog are now user-locally verified; the two generated API files remain uncommitted in the user's WSL worktree, while card Play/width/actual-time and past review still need real-app acceptance. Do not repeat the technical gate or use the older October 4 snapshot in place of current generated files. Historical edit locks/correction policy remain open.
+
 ## 2026-10-11 — User-local `_142` gate and catalog assertion repair
 
 User WSL gate after `1df81099` reports `19 passed, 1 failed` in PostgreSQL: only `test_current_database_cross_representation_is_exact` is red; PY_SYNTAX, RUFF, PY_UNIT, OpenAPI generation/determinism, API/Web typecheck, Web lint, Vitest and browser are green. The provided output contains the summary and migration log, not the assertion traceback. Static reconciliation found that `scope.json` includes `B14-PAST-ACTIVITY-REVIEW` but this exact-catalog test's completed-stage literal omitted it. The other current catalog test and functional PostgreSQL tests passed. Add the missing stage to that literal only; verify this specific test on the user's PostgreSQL before declaring the `_142` catalog gate green. Preserve the two user-local generated API files and do not rerun generation or the prior green gates. Real-app behavior remains unaccepted.

@@ -1,8 +1,12 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## VERIFIED TECHNICAL GATE — 2026-10-11 `_142`
+
+User WSL gate reached `_142`: 19/20 PostgreSQL tests passed and all non-PostgreSQL checks passed; the only red catalog test omitted the new completed-stage literal. After the narrow correction `f497cb0b`, the user reran that test: **1 passed in 24.59s**. This is cumulative technical evidence across two commits. The two locally generated API files have not been published. Real-app acceptance of Play, adaptive card geometry/actual time, Stop and past review remains open; Session history protection and past authoring are still separate proposals.
+
 ## CURRENT CORRECTIVE CANDIDATE — 2026-10-11
 
-The first collision/Stop patch was rejected by real-app testing: unrelated ended Activity Sessions hid Play; projected cards moved without remapping the timeline; short cards kept old time labels; past never-started work did not enter policy review. Current candidate changes card-local Session attribution, adaptive day mapper/offsets, real/plan labels and owner-only derived review function in forward revision `_142`. The existing `238|5|228|103|486|421|596` topology is unchanged by `CREATE OR REPLACE FUNCTION`; the new routine body is **not PostgreSQL-proven**. User local migration and real-app walkthrough are required. Historical edit locks, auditable Session correction and repeat-start authority are separate open work.
+The first collision/Stop patch was rejected by real-app testing: unrelated ended Activity Sessions hid Play; projected cards moved without remapping the timeline; short cards kept old time labels; past never-started work did not enter policy review. Current candidate changes card-local Session attribution, adaptive day mapper/offsets, real/plan labels and owner-only derived review function in forward revision `_142`. The existing `238|5|228|103|486|421|596` topology is unchanged by `CREATE OR REPLACE FUNCTION`; the cumulative PostgreSQL gate now passes. Real-app walkthrough remains required. Historical edit locks, auditable Session correction and repeat-start authority are separate open work.
 
 ## USER REAL-APP FINDINGS 2026-10-11 — Session history protection / past editing
 

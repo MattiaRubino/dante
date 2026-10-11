@@ -1,16 +1,16 @@
 # DANTE Database Dictionary
 
-- **Status:** CURRENT candidate `_141` Dictionary/PostgreSQL/SQLAlchemy/Alembic catalog gate user-locally verified; historical `_86` proof preserved below
+- **Status:** CURRENT candidate `_142` Dictionary/PostgreSQL/SQLAlchemy/Alembic catalog gate user-locally verified; historical `_86` proof preserved below
 - **Schema version:** 1
 - **Serialization:** JSON
 - **PostgreSQL:** 18.6
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Current candidate branch:** `feature/timeline-temporal-operational`
-- **Current candidate Alembic source head:** `20261011_142` (derived past Activity review query; PostgreSQL proof pending, real-app acceptance open)
-- **Measured whole-catalog topology:** `20261010_141` / `238|5|228|103|486|421|596|0|0|0`
+- **Current candidate Alembic source head:** `20261011_142` (derived past Activity review query; cumulative PostgreSQL gate green, real-app acceptance open)
+- **Measured whole-catalog topology:** `20261011_142` / `238|5|228|103|486|421|596|0|0|0`
 - **Frozen CP6 head:** `20260826_08`
-- **Last exact Dictionary/catalog gate:** B14 `_141` / 2026-10-10 (cumulative user-local gate; final current-catalog test 1 PASS)
+- **Last exact Dictionary/catalog gate:** B14 `_142` / 2026-10-11 (cumulative user-local gate; final current-catalog test 1 PASS)
 
 ## 1. Purpose
 
@@ -29,7 +29,7 @@ A mismatch is a defect. Protected `main` remains integration authority; candidat
 
 ## 2. Current checked-out business-schema inventory
 
-**Current `_141` candidate** recorded in `scope.json` and verified against live PostgreSQL: **238 tables, 5 views, 228 routines, 103 triggers, 486 indexes, 421 foreign keys, 596 CHECK**; **471 standalone Dictionary object entries**. The Database/Domain/Logical/Physical overlay authority lives in `../timeline-temporal-operational.md`, `../../logical-model/slices/b14-session-objective-home-workspace-2026-10-11.md`, and `../../physical-model/b14-session-objective-home-workspace-2026-10-11.md`.
+**Current `_142` candidate** recorded in `scope.json` and verified against live PostgreSQL: **238 tables, 5 views, 228 routines, 103 triggers, 486 indexes, 421 foreign keys, 596 CHECK**; **471 standalone Dictionary object entries**. The Database/Domain/Logical/Physical overlay authority lives in `../timeline-temporal-operational.md`, `../../logical-model/slices/b14-session-objective-home-workspace-2026-10-11.md`, and `../../physical-model/b14-session-objective-home-workspace-2026-10-11.md`.
 
 **Historical `_86` inventory (2026-09-27), retained as dated evidence:**
 
