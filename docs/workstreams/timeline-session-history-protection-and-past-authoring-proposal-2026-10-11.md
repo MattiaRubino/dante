@@ -1,12 +1,14 @@
 # B14 follow-up — Session history protection, corrections, past authoring, collision-safe geometry
 
-**Status: PROPOSAL FOR USER ALIGNMENT / NOT YET APPROVED / NOT IMPLEMENTED**
+**Status: HISTORY CONTRACT PROPOSAL FOR USER ALIGNMENT; COLLISION/STOP UI CANDIDATE IMPLEMENTED, NOT REAL-APP ACCEPTED**
 **Date:** 2026-10-11
 **Branch checked:** `feature/timeline-temporal-operational` at `20aed519` (source audit)
 **Real app evidence:** user screenshot (2026-10-11): main Activity `asd` in progress and `test3` planned 10:00–10:30, real ended Session 09:49–09:51; cards appear visually overlapping and Play remains available after Stop.
 **Accepted pre-existing authority:** `docs/domain/decisions/activity-session-live-timeline-v1.md`; `docs/domain/concepts/session.md`; `docs/domain/decisions/activity-intervals-and-sessions-v2.md`; B08 Session≠Schedule and B10 Actual≠Outcome.
 
-## Verified code findings (not yet repaired)
+## Original code findings and current candidate
+
+The 2026-10-11 follow-up candidate repairs painted-rectangle lane calculation and early-ended desk/card presentation. Its 16 Python unit tests, 25 focused Web tests, affected Ruff and Web typecheck pass in the assistant workspace. Direct API can still start another attempt, and main Session identity is not bound to one planned interval; the full backend lock/correction policy below is neither implemented nor approved. Do not interpret the presentation fix as historical authority.
 
 1. `apps/web/src/features/home/ui/timeline/timeline-session-reality.ts`: after recomputing overlap lanes for projected `displayEvents`, the actual card top/height is recalculated independently from the original layout. The overlap lane algorithm uses logical interval minutes, while the rendered card uses a minimum readable height. Visual rectangles can therefore collide even when time intervals or old computed layouts are noncolliding. The correct fix uses ONE layout pass on **final displayed rectangles** (including minimum readable height, expanded mode, projected actual bounds, preserved planned data, and multiple interval scope) and regression tests for early/late/short/long overlaps at multiple zooms. No canonical Schedule timestamp mutation from layout.
 2. `apps/backend/src/dante/modules/temporal/session_panel_api.py`: `ended_during_current_window` suppresses a stopped attempt only if its end overlaps the current schedule window (with just 5-minute lead). A Session started/stopped early, e.g. finished 09:51 for 10:00 planned start, can be reintroduced as Ready. `apps/web/src/features/temporal/session-subject-controls.tsx` separately exposes Play when no Session is currently open. Both must be fixed; the operational interface cannot depend on incidental proximity of historical execution times.

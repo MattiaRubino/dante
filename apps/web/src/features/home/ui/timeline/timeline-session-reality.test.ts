@@ -52,6 +52,26 @@ const ended = {
 } as const;
 
 describe('one-card Activity actual Session projection', () => {
+  it('allocates separate lanes for an early stopped card and a nearby planned card', () => {
+    const planned = activity('early-execution', 600, 630);
+    const neighbor: TimelineEvent = {
+      id: 'other', title: 'Vicino', groupId: 'area',
+      startMinute: 600, endMinute: 630,
+    };
+    const early = {
+      ...ended, started_at: '2026-10-10T09:49:00Z',
+      ended_at: '2026-10-10T09:51:00Z', pause_ranges: [],
+    };
+    const [projected] = applyTimelineSessionReality(
+      [day(planned, neighbor)], [early], 'UTC', '2026-10-10T10:00:00Z',
+      Date.parse('2026-10-10T10:00:00Z'), groups,
+    );
+    const [actual, adjacent] = projected?.layouts ?? [];
+    expect(actual?.top).toBe(589);
+    expect(actual?.event).toBe(planned);
+    expect(actual?.compactLane).not.toBe(adjacent?.compactLane);
+    expect(actual?.groupLane).not.toBe(adjacent?.groupLane);
+  });
   it('remodulates one Activity card without changing canonical schedule or identity', () => {
     const planned = activity('interval1', 1080, 1140);
     const current = day(planned);
@@ -63,7 +83,9 @@ describe('one-card Activity actual Session projection', () => {
     expect(projected?.events).toBe(current.events);
     expect(layout?.event).toBe(planned);
     expect(layout?.top).toBe(1065);
-    expect(layout?.height).toBe(Math.max(45, timelineEventReadableHeight(planned)));
+    expect(layout?.height).toBe(Math.max(45, timelineEventReadableHeight({
+      ...planned, startMinute: 1065, endMinute: 1110,
+    })));
     expect(layout?.event.startMinute).toBe(1080); // Schedule not rewritten
     expect(layout?.sessionReality?.state).toBe('ended');
     expect(layout?.sessionReality?.fill).toContain('rgba(147, 163, 184');
@@ -96,6 +118,8 @@ describe('one-card Activity actual Session projection', () => {
       [day(planned)], [ended, child], 'UTC', '2026-10-10T18:30:00Z',
       Date.parse('2026-10-10T18:30:00Z'), groups,
     );
-    expect(projected?.layouts[0]?.height).toBe(Math.max(45, timelineEventReadableHeight(planned)));
+    expect(projected?.layouts[0]?.height).toBe(Math.max(45, timelineEventReadableHeight({
+      ...planned, startMinute: 1065, endMinute: 1110,
+    })));
   });
 });

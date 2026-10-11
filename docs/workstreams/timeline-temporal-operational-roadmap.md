@@ -1,5 +1,9 @@
 # Timeline / Temporal-Operational Vertical — Implementation Roadmap
 
+## CURRENT 2026-10-11 — Timeline collision and stopped-control follow-up
+
+Candidate UI/desk repair: lane assignment uses final painted card bounds; an early ended planned Session is suppressed by Schedule identity in the desk; card/Inspector controls no longer show implicit Play when their subject has a concluded Session. Workspace checks passed (16 Python unit tests, 25 Web tests, Web typecheck and Ruff). Real-app visual acceptance and a PostgreSQL-level repeat-start/history-protection contract remain open. See the live map and `timeline-session-history-protection-and-past-authoring-proposal-2026-10-11.md`; no B14/B15 completion is claimed. The approved `_141` gate below remains its own evidence.
+
 ## CURRENT VERIFIED FRONTIER — B14 live Session + Home workspace (2026-10-10)
 
 **Technical gate GREEN for source through `b71bf532` / Alembic `20261010_141`, based on successive user-executed WSL checks; real-app visual/product acceptance remains OPEN.** The initial full gate passed PY_SYNTAX, PY_UNIT, GENERATE, GENERATED_CHECK, API_TYPECHECK, VITEST and BROWSER. The first repair completed **14 functional PostgreSQL tests**. The subsequent targeted repair passed RUFF, WEB_TYPECHECK, WEB_LINT and VITEST_CHANGED, plus **7 of 8 PostgreSQL catalog checks**. The sole remaining `test_current_database_cross_representation_is_exact` was corrected to the live exact topology and the user then ran it: **1 passed in 6.75s**. Current catalog topology is **238 tables | 5 views | 228 routines | 103 triggers | 486 indexes | 421 foreign keys | 596 CHECK**. These are cumulative local evidence, **not a fresh full-suite rerun on one commit**, and GitHub CI was not used.

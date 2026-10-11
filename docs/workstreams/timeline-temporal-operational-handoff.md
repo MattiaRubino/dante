@@ -1,5 +1,9 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-11 — Collision/Stop follow-up candidate
+
+Current branch candidate after `_141`: Web layout lanes use final visible pixel rectangles and actual Session bounds; Session desk uses concluded planned Schedule identity rather than a five-minute time overlap; inline Session controls remove implicit Play after Stop. Focused workspace: 16 Python Session panel unit tests, 25 Vitest tests across four files, Web typecheck and Ruff pass. This does not prove the browser view or PostgreSQL repeat-start authority. Main attempts across multiple intervals currently have no explicit Session→interval link and use nearest-start association for the desk. Direct API can still create a distinct subsequent attempt; no authoritative historical lock, correction/retraction ledger or past Event/Activity authoring change has been made. User product alignment on scope and metadata remains open in `timeline-session-history-protection-and-past-authoring-proposal-2026-10-11.md`. One affected user-local gate and real-app check are needed after publication; no CI.
+
 ## USER REAL-APP FINDINGS 2026-10-11 — Session history protection / past editing
 
 Following local `_141` technical gate and generated client publication, user screenshot exposed: visually overlapping/shifted Activity cards (actual geometry applied after collision layout), a concluded early Session e.g. 09:49–09:51 attached to a 10:00–10:30 planned card, and Play returning after Stop. Source review confirms both a window-overlap-only stopped-attempt check in `session_panel_api.py` and independent inline controls that re-enable Play whenever there is no open Session. Current `activity_replan_api.py` broadly rejects only **open Sessions or accepted Actual**, leaving an ended Session without an Actual insufficiently guarded.

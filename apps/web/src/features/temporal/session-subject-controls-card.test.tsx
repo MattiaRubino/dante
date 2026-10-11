@@ -155,4 +155,16 @@ describe('compact Session runtime on created cards', () => {
     expect(start.hasAttribute('disabled')).toBe(true);
     expect(start.tabIndex).toBe(-1);
   });
+
+  it('keeps a stopped planned card concluded after reloading its history', async () => {
+    source.list.mockResolvedValue([{
+      sessionRef: 'ended-ref', plannedScheduleRef: 'planned-ref',
+      open: false, endedAt: '2026-10-10T09:51:00Z',
+    }]);
+    render(<SessionSubjectControls kind="activity" subjectRef="activity-ref"
+      plannedScheduleRef="planned-ref" label="Piano" variant="card" />);
+    expect(await screen.findByText('Sessione conclusa')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Avvia' })).toBeNull();
+    expect(source.startPlanned).not.toHaveBeenCalled();
+  });
 });

@@ -241,3 +241,19 @@ def test_old_stopped_execution_does_not_hide_new_unrelated_interval():
     assert names(build_panel([activity], at(18), "UTC", stopped)) == [
         "Sessione attività",
     ]
+
+
+def test_early_stopped_attempt_does_not_reappear_at_planned_start():
+    interval = schedule("interval", at(10), at(10, 30))
+    internal = schedule(start=at(10), end=at(10, 30))
+    activity = owner(interval, internal)
+    early = [
+        {
+            "activity_ref": activity["activity_ref"],
+            "planned_schedule_ref": ref,
+            "started_at": at(9, 49),
+            "ended_at": at(9, 51),
+        }
+        for ref in (None, internal["schedule_ref"])
+    ]
+    assert build_panel([activity], at(10), "UTC", early).groups == []

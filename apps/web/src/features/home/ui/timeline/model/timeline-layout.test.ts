@@ -142,6 +142,26 @@ describe('timeline layout engine', () => {
     );
   });
 
+  it.each([0.5, 1, 2])('separates painted short cards at zoom %s', (scale) => {
+    const short: readonly TimelineEvent[] = [
+      { id: 'early', title: 'Early', groupId: 'focus', startMinute: 589, endMinute: 591 },
+      { id: 'planned', title: 'Planned', groupId: 'focus', startMinute: 600, endMinute: 630 },
+      { id: 'later', title: 'Later', groupId: 'focus', startMinute: 620, endMinute: 622 },
+    ];
+    const group: readonly TimelineGroup[] = [{ id: 'focus', label: 'Focus', tone: 'focus' }];
+    const layouts = computeTimelineEventLayouts(short, group, {
+      height: 1440 * scale, pxPerMinute: scale,
+      map: (minute) => minute * scale, inv: (pixel) => pixel / scale,
+    });
+    for (const left of layouts) {
+      for (const right of layouts) {
+        if (left === right || left.top >= right.top + right.height || right.top >= left.top + left.height) continue;
+        expect(left.compactLane).not.toBe(right.compactLane);
+        expect(left.groupLane).not.toBe(right.groupLane);
+      }
+    }
+  });
+
   it('creates deterministic compact and grouped geometry from the semantic model', () => {
     const mapper = createTimelineTimeMapper(events, 1);
     const first = computeTimelineEventLayouts(events, TIMELINE_GROUPS, mapper);

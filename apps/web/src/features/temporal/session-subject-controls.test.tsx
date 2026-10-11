@@ -117,7 +117,7 @@ describe('SessionSubjectControls B08-D whole workflow', () => {
     await waitFor(() => expect(source.recordManual).toHaveBeenCalledTimes(1));
     expect(source.start).not.toHaveBeenCalled();
   });
-  it('rehydrates an unplaced Activity through pause, resume, end and a separate start', async () => {
+  it('rehydrates an unplaced Activity through pause, resume and final Stop', async () => {
     const started = session();
     const paused = session({
       timingMaterialStateRef: 'timing-paused',
@@ -141,27 +141,23 @@ describe('SessionSubjectControls B08-D whole workflow', () => {
       activeSeconds: 95,
       durationEvaluations: [{ ...minimum, evaluation: 'violated' }],
     });
-    const second = session({
-      sessionRef: 'session-ref-2',
-      timingMaterialStateRef: 'timing-second',
-    });
     let canonical: TemporalSessionView[] = [];
-    source.list.mockImplementation(async () => canonical);
-    source.start.mockImplementation(async () => {
-      canonical = canonical.length === 0 ? [started] : [ended, second];
-      return canonical[canonical.length - 1];
+    source.list.mockImplementation(() => Promise.resolve(canonical));
+    source.start.mockImplementation(() => {
+      canonical = [started];
+      return Promise.resolve(started);
     });
-    source.pause.mockImplementation(async () => {
+    source.pause.mockImplementation(() => {
       canonical = [paused];
-      return paused;
+      return Promise.resolve(paused);
     });
-    source.resume.mockImplementation(async () => {
+    source.resume.mockImplementation(() => {
       canonical = [resumed];
-      return resumed;
+      return Promise.resolve(resumed);
     });
-    source.end.mockImplementation(async () => {
+    source.end.mockImplementation(() => {
       canonical = [ended];
-      return ended;
+      return Promise.resolve(ended);
     });
 
     const mounted = render(
@@ -227,8 +223,9 @@ describe('SessionSubjectControls B08-D whole workflow', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Termina' }));
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: 'Avvia' })).toBeTruthy(),
+      expect(screen.getByText('Sessione conclusa')).toBeTruthy(),
     );
+    expect(screen.queryByRole('button', { name: 'Avvia' })).toBeNull();
     expect(source.end).toHaveBeenCalledWith(
       sessionRef,
       'timing-resumed',
@@ -239,15 +236,7 @@ describe('SessionSubjectControls B08-D whole workflow', () => {
         ?.textContent,
     ).toContain('non raggiunto');
 
-    fireEvent.click(screen.getByRole('button', { name: 'Avvia' }));
-    await waitFor(() =>
-      expect(screen.getByRole('button', { name: 'Pausa' })).toBeTruthy(),
-    );
-    expect(source.start).toHaveBeenCalledTimes(2);
-    expect(
-      document.querySelector('[data-session-duration-evaluation="pending"]')
-        ?.textContent,
-    ).toContain('in corso');
+    expect(source.start).toHaveBeenCalledTimes(1);
   });
 
   it('reloads canonical state and exposes the conflict when this view is stale', async () => {

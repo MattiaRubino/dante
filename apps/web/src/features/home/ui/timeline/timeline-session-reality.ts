@@ -1,7 +1,6 @@
 import { Temporal } from '@dante/time';
 
 import type { SessionVisual } from '../../../temporal/use-session-panel';
-import { timelineEventReadableHeight } from './model/timeline-density';
 import { computeTimelineEventLayouts } from './model/timeline-layout';
 import type {
   TimelineEvent, TimelineEventLayout, TimelineGroup,
@@ -211,15 +210,10 @@ export function applyTimelineSessionReality(
         old.event.canonicalBasis?.kind === 'scheduled-activity'
           ? old.event.canonicalBasis.activityRef : '',
       ) ?? 0) === 1;
-      const top = canMove
-        ? old.top + day.mapper.map(reality.startMinute) - day.mapper.map(old.event.startMinute)
-        : old.top;
       return {
-        ...old, top: Math.max(0, top),
-        height: canMove ? Math.max(
-          timelineEventReadableHeight(old.event),
-          day.mapper.map(reality.endMinute) - day.mapper.map(reality.startMinute),
-        ) : old.height,
+        ...old,
+        top: canMove ? target.top : old.top,
+        height: canMove ? target.height : old.height,
         compactLane: target.compactLane, compactLaneCount: target.compactLaneCount,
         compactLeftPercent: target.compactLeftPercent,
         compactWidthPercent: target.compactWidthPercent,

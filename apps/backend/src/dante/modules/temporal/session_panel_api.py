@@ -120,39 +120,50 @@ def build_panel(
             b is not None and b[0] <= now < b[1] for s in intervals
             if (b := bounds[s.schedule_ref])
         )
-        def ended_during_current_window(
+        def ended_for_current_attempt(
             planned_ref: UUID | None,
-            windows: list[tuple[datetime, datetime]],
             activity_ref: UUID,
         ) -> bool:
-            # Stop removes the finished attempt from the operational desk.
-            # Re-entering the same planned window does not manufacture a
-            # fresh "ready" execution on every polling tick or page refresh.
+            # An early Stop still belongs to this planned Session identity.
+            # Actual timing must not be compared with the planned window to
+            # decide whether the stopped attempt can become Ready again.
             return any(
                 str(item["activity_ref"]) == str(activity_ref)
                 and (
                     str(item["planned_schedule_ref"])
                     if item["planned_schedule_ref"] is not None else None
                 ) == (str(planned_ref) if planned_ref is not None else None)
-                and any(
-                    item["started_at"] < end
-                    and item["ended_at"] >= start - PREVIEW_LEAD
-                    for start, end in windows
-                )
                 for item in stopped
             )
 
-        current_windows = [
-            b for schedule in intervals if (b := bounds[schedule.schedule_ref])
-            and b[0] - PREVIEW_LEAD <= now < b[1]
-        ]
         upcoming = any(
             b is not None and b[0] - PREVIEW_LEAD <= now < b[1]
             if s.temporal_form in {"absolute", "named_zone_local", "floating_local"}
             else b is not None and b[0] <= now < b[1]
             for s in intervals if (b := bounds[s.schedule_ref])
         )
-        main_stopped_in_window = ended_during_current_window(None, current_windows, owner["activity_ref"])
+        current_intervals = [
+            s for s in intervals if (b := bounds[s.schedule_ref])
+            and b[0] - PREVIEW_LEAD <= now < b[1]
+        ]
+        # Main Sessions have no planned-Schedule link yet. Associate a stopped
+        # main attempt with its closest accepted Activity interval, so an early
+        # stop suppresses that row without hiding a different later interval.
+        main_stopped_in_window = any(
+            str(item["activity_ref"]) == str(owner["activity_ref"])
+            and item["planned_schedule_ref"] is None
+            and (
+                nearest := min(
+                    (s for s in intervals if bounds[s.schedule_ref]),
+                    key=lambda s: abs(
+                        (item["started_at"] - bounds[s.schedule_ref][0]).total_seconds()
+                    ),
+                    default=None,
+                )
+            ) is not None
+            and nearest.schedule_ref in {s.schedule_ref for s in current_intervals}
+            for item in stopped
+        )
         executions: dict[str | None, list[Any]] = {}
         for execution in owner["executions"]:
             ref = (
@@ -178,9 +189,8 @@ def build_panel(
                 due and owner["mode_code"] in {"live", "record_and_live", "internal_only"}
                 and not main_stopped_in_window
             )
-            windows = [timing] if timing else current_windows
-            if due and not matching and ended_during_current_window(
-                schedule.schedule_ref, windows, owner["activity_ref"]
+            if due and not matching and ended_for_current_attempt(
+                schedule.schedule_ref, owner["activity_ref"]
             ):
                 due = False
             if not due and not matching:

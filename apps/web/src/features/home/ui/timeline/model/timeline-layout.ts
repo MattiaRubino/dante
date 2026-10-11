@@ -124,14 +124,27 @@ export function computeTimelineEventLayouts(
   groups: readonly TimelineGroup[],
   mapper: TimelineTimeMapper,
 ): readonly TimelineEventLayout[] {
-  const compactLayout = computeTimelineOverlapLayout(events, groups);
+  // Collision lanes are assigned to the rectangles that will actually be
+  // painted. A short event can occupy more pixels than its clock duration.
+  const painted = events.map((event) => {
+    const top = mapper.map(event.startMinute);
+    return {
+      ...event,
+      startMinute: top,
+      endMinute: top + Math.max(
+        mapper.map(event.endMinute) - top,
+        timelineEventReadableHeight(event),
+      ),
+    };
+  });
+  const compactLayout = computeTimelineOverlapLayout(painted, groups);
   const groupLayouts = new Map<
     TimelineEventId,
     Readonly<{ groupIndex: number; groupLane: number; groupLaneCount: number }>
   >();
 
   groups.forEach((group, groupIndex) => {
-    const groupEvents = events.filter((event) => event.groupId === group.id);
+    const groupEvents = painted.filter((event) => event.groupId === group.id);
     const overlap = computeTimelineOverlapLayout(groupEvents, groups);
     for (const event of groupEvents) {
       const slot = overlap.get(event.id) ?? { lane: 0, laneCount: 1 };

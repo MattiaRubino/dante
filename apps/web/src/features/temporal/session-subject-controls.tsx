@@ -139,6 +139,7 @@ export function SessionSubjectControls({
   }, [kind, subjectRef, plannedScheduleRef]);
 
   const openSession = sessions.find((session) => session.open) ?? null;
+  const stopped = openSession === null && sessions.some((session) => !session.open);
   const durationSession = openSession ?? sessions[sessions.length - 1] ?? null;
 
   const recoverAfterRejection = (fallback: string, error: unknown) =>
@@ -147,7 +148,7 @@ export function SessionSubjectControls({
       .then(() => setMessage(rejectionMessage(fallback, error)));
 
   const start = () => {
-    if (!interactive) return;
+    if (!interactive || stopped) return;
     setPending(true);
     const command =
       plannedScheduleRef === null
@@ -260,7 +261,7 @@ export function SessionSubjectControls({
         className="timeline-session-controls__runtime-actions"
         aria-label={`Sessione · ${label}`}
       >
-        {allowLive ? (
+        {allowLive && !stopped ? (
           <>
             <RuntimeButton
               label={openSession === null ? 'Avvia' : openSession.paused ? 'Riprendi' : compactRuntime ? 'Pausa' : 'Avvia'}
@@ -286,6 +287,8 @@ export function SessionSubjectControls({
               onClick={end}
             />
           </>
+        ) : stopped ? (
+          <span role="status">Sessione conclusa</span>
         ) : openSession === null ? (
           allowLive ? (
             <RuntimeButton
