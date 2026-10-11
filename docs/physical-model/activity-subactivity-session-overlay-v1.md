@@ -100,6 +100,8 @@ The policy does not contain child completion state and does not duplicate B10 Ac
 
 Its guarded evaluator reads accepted-current direct child relations and the canonical realized truth of required child Activities.
 
+> **Current implementation clarification (2026-10-11):** This overlay is a 2026-10-02 contract freeze, not a claim about the 2026-10-11 database head. The reviewed successor overlay `b14-session-objective-home-workspace-2026-10-11.md` records forward Alembic `_135`–`_141`, including the trusted owner-guarded independent planned-Session Start and the distinction between an optional **main** Activity capture policy and separately planned internal Session executions. The old inference “disabled means no Activity-owned Session” must not block a legitimately owned planned slice. No Session nesting table was added.
+
 ## 5. Activity Session-capability family
 
 The current U4 candidate infers Session capability from an active `session.active_duration` minimum constraint. That remains a useful constraint signal but is not a sufficient capability owner.
