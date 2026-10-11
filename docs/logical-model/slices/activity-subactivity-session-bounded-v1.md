@@ -182,6 +182,8 @@ No logical rule authorizes silent child rescheduling, unscheduling or deletion.
 
 A later solver may propose coordinated changes, but proposal != accepted effect.
 
+> **Current additive clarification (2026-10-11):** This 2026-10-02 semantic freeze is not deleted or rewritten. The newer approved B14 extension `b14-session-objective-home-workspace-2026-10-11.md` scopes the `disabled` capture mode to the **generic Activity main live clock**. Explicitly planned internal Session executions are independently admissible through their own owner/Schedule policy, without creating a fake main Session. This later scoped decision takes precedence for the current B14 Home/Session execution UX; no recursive Session hierarchy is introduced.
+
 ## 10. Activity Session capability policy
 
 The logical model requires an explicit Activity execution capability when the product lets a user choose whether/how an Activity exposes Session execution.
