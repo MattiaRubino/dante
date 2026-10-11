@@ -1,5 +1,9 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-11 — User-local `_142` gate and catalog assertion repair
+
+User WSL gate after `1df81099` reports `19 passed, 1 failed` in PostgreSQL: only `test_current_database_cross_representation_is_exact` is red; PY_SYNTAX, RUFF, PY_UNIT, OpenAPI generation/determinism, API/Web typecheck, Web lint, Vitest and browser are green. The provided output contains the summary and migration log, not the assertion traceback. Static reconciliation found that `scope.json` includes `B14-PAST-ACTIVITY-REVIEW` but this exact-catalog test's completed-stage literal omitted it. The other current catalog test and functional PostgreSQL tests passed. Add the missing stage to that literal only; verify this specific test on the user's PostgreSQL before declaring the `_142` catalog gate green. Preserve the two user-local generated API files and do not rerun generation or the prior green gates. Real-app behavior remains unaccepted.
+
 ## Active handoff 2026-10-11 — regression repair candidate
 
 User real-app screenshots after the prior patch show Play missing on some Activity cards, card widths jumping on Play, and stale planned time/undersized cards after Stop. The preceding “follow-up candidate” paragraph below is superseded as UX evidence. Current local edits rebuild the day time mapper from projected real Session bounds, recompute all card lanes/offsets, use card-associated Session refs for inline Play, and render actual time with planned time as context. `_142` extends the owner-only queue to unanswered past Activity plans and Objectives, with explicit Reality policy for never-started review; neither a missed Session nor a missed Objective is auto-marked complete. Web typecheck/focused Vitest and Ruff passed in assistant workspace. The new migration/integration test and visual behavior await user-local PostgreSQL/browser proof; no B14/B15 closure. Historical locking/correction scope remains a proposal.

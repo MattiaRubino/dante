@@ -233,6 +233,7 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
         "B14-OBJECTIVE-INPUT",
         "B14-HOME-WORKSPACE-READS",
         "B14-INDEPENDENT-PLANNED-SESSION",
+        "B14-PAST-ACTIVITY-REVIEW",
     ]
     assert current["standalone_entries"] == {
         "tables": 238,
