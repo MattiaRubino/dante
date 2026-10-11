@@ -1,11 +1,11 @@
 # DANTE Roadmap
 
-- **Status:** CURRENT REPOSITORY ROADMAP — reconciled 2026-09-23
+- **Status:** CURRENT REPOSITORY ROADMAP — candidate pointer reconciled 2026-10-11 (historical plan below retained)
 - **Pre-vertical integration merge:** `1ecd58145860aebfaaa3dc78933f4ee42698f33` via PR #66
 - **Protected-main baseline at temporal selection:** PostgreSQL 18.6 / Alembic `20260906_18` / topology `89|5|18|77|173|91|272|0|0|0`
 - **Active candidate workstream:** `feature/timeline-temporal-operational`
-- **Candidate temporal DB authority:** PostgreSQL 18.6 / Alembic `20260923_57`
-- **Candidate temporal topology:** `145|5|88|92|285|223|408|0|0|0`
+- **Candidate temporal DB authority:** PostgreSQL 18.6 / Alembic `20261010_141` (cumulative user-local technical gate green)
+- **Candidate temporal topology:** `238|5|228|103|486|421|596|0|0|0`
 - **Temporal roadmap:** `workstreams/timeline-temporal-operational-roadmap.md`
 - **Temporal live map/ledger:** `workstreams/timeline-temporal-operational-map.md`
 - **Post-B06 scope/sequencing decision:** `workstreams/timeline-temporal-operational-post-b06-scope-decision-2026-09-23.md`
@@ -13,7 +13,11 @@
 
 `protected-main baseline` and `candidate branch truth` remain deliberately separate. The candidate branch is not protected-main integration until the repository integration gate actually completes.
 
-## 1. Current sequence
+## CURRENT ACTIVE FRONTIER — B14 (2026-10-11)
+
+Technical schema/runtime and exact Dictionary/catalog gate through Alembic `_141`: **GREEN, cumulative user-local evidence**; 14 generated API artifacts pushed at `a9a8353a`. Real-app UI acceptance is **OPEN** for independent planned Session controls, main-cascade, three Home panels and persistent staged Objective value/confirmation. B15 remains open. Current detailed sequencing is governed by `workstreams/timeline-temporal-operational-roadmap.md`, `workstreams/timeline-temporal-operational-map.md` and `workstreams/timeline-temporal-operational-handoff.md`. Logical and Physical additive overlays are `logical-model/slices/b14-session-objective-home-workspace-2026-10-11.md` and `physical-model/b14-session-objective-home-workspace-2026-10-11.md`.
+
+## 1. Historical 2026-09-23 sequence (not current block status)
 
 ```text
 Product / Domain / Logical / Physical
