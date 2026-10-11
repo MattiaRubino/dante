@@ -35189,7 +35189,7 @@
     },
     "/api/v1/temporal/resolution-queue": {
       "get": {
-        "description": "Derived current product work, never inferred failure from time passage.\n\nReality review requires an explicit review-on-end policy and a completed\nbounded Session (Activity) or ended Event placement. Objectives can request\nassessment independently after the same bounded completion. Absence of\nActual never means that the subject did not happen.",
+        "description": "Derived current product work, never inferred failure from time passage.\n\nA past planned Activity without execution may enter Reality review only\nunder explicit review/auto policy, or Objective review when an Objective\nawaits assessment. Bounded Session/Event reviews remain independent.\nAbsence of Actual never means that the subject did not happen.",
         "operationId": "temporal_list_resolution_queue",
         "responses": {
           "200": {
