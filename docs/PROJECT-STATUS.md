@@ -1,7 +1,7 @@
 # DANTE — Project Status
 
 - **Status:** CURRENT PROTECTED-MAIN TRUTH + ACTIVE CANDIDATE POINTER
-- **Last reconciled:** 2026-09-23
+- **Last reconciled:** 2026-10-11 (candidate pointer; protected-main still `981f6cf9`)
 - **Current protected-main HEAD:** `981f6cf9ad985d0b811bc4172c12a7529fbc9b15` via PR #67 post-merge documentation reconciliation
 - **Pre-vertical implementation integration merge:** `1ecd58145860aebfaaa3dc1bd356b90f7a8eb19b` via PR #66
 - **AI protected-main merge:** `431fb34029baeacc9ef9f721e9626b39ca10dd39` via PR #63
@@ -9,9 +9,9 @@
 - **Protected-main Alembic:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Active candidate workstream:** `feature/timeline-temporal-operational`
-- **Candidate Alembic:** `20260923_57`
-- **Candidate topology:** `145|5|88|92|285|223|408|0|0|0`
-- **Candidate frontier:** B06 ✅ CLOSED / PROVEN → B08 NEXT; B07 deferred until after B12
+- **Candidate Alembic:** `20261010_141`
+- **Candidate topology:** `238|5|228|103|486|421|596|0|0|0`
+- **Candidate frontier:** B14 Session/internal execution + three-view Home + Objective confirmation TECHNICAL LOCAL GATE GREEN; generated API published `a9a8353a`; real-app acceptance NEXT, B15 not closed
 
 Protected `main` remains integration authority. Candidate truth below is explicitly branch-local and must not be relabeled as protected-main truth before integration.
 
@@ -43,6 +43,10 @@ production/cloud recovery                    NOT CLAIMED
 ```
 
 ## 2. Active branch candidate
+
+**Current candidate:** `20261010_141` / `238|5|228|103|486|421|596|0|0|0`, with cumulative local technical proof green. Current implementation and remaining UI acceptance are in `workstreams/timeline-temporal-operational-map.md` and `workstreams/timeline-temporal-operational-handoff.md`; Domain/Logical/Physical current overlays are in `domain/decisions/activity-session-live-timeline-v1.md`, `logical-model/slices/b14-session-objective-home-workspace-2026-10-11.md` and `physical-model/b14-session-objective-home-workspace-2026-10-11.md`.
+
+**Historical candidate snapshot (2026-09-23; do not treat its NEXT or catalog as current):**
 
 ```text
 Branch                                       feature/timeline-temporal-operational
@@ -154,7 +158,7 @@ Dated closure/evidence and archived records preserve phase-time truth. They must
 
 ## 8. Next development boundary
 
-The active candidate next block is **B08 Session Runtime**, starting with Product/Domain/Logical/Physical/DB pre-scope reconciliation from `_57`.
+The active candidate's next gate is **B14 real-app acceptance** for independent internal Sessions, cascading control, the three Home views and staged/confirmed Objectives. B08 and B10 technical implementation were completed along the Timeline branch; the older instruction to start B08 from `_57` was a 2026-09-23 historical checkpoint.
 
 No migration, generic runtime framework, Actual semantics, collaboration system, provider sync or broad analytics is pre-authorized by that label.
 
