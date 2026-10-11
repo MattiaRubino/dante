@@ -1,5 +1,9 @@
 # Timeline / Temporal-Operational Vertical — Implementation Roadmap
 
+## CURRENT 2026-10-11 — Generated client published; real-app acceptance next
+
+The user pushed both generated API files at `72735407` after the green cumulative `_142` technical gate. Inspect the real application for Play on the correct Activity interval, stable card width when starting, actual time/readable card size on Stop, non-overlapping cards, and past Activity/Objective items in `Da verificare`. Keep history locks/corrections and past Event/Activity authoring as separate open product work.
+
 ## CURRENT 2026-10-11 — `_142` technical gate green, visual acceptance open
 
 The user's complete local gate had 19/20 PostgreSQL tests passing plus green syntax, Ruff, Python unit, generated client check, API/Web typecheck, Web lint, Vitest and browser. The one stale completed-stage assertion was corrected at `f497cb0b`; user-local targeted PostgreSQL rerun passed **1 in 24.59s**. This cumulatively verifies `_142` migration and exact catalog, not the new visual behavior in the running app. Next: publish the two generated API files from the user's WSL worktree, then inspect Play, card size/actual time on Stop and the past review rail in the real app. Historical locks/corrections and past authoring remain open.

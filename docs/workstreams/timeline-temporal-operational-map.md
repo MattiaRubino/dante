@@ -1,5 +1,9 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## GENERATED CLIENT PUBLISHED — 2026-10-11
+
+The user committed and pushed the two generated API files at `72735407`; remote branch readback confirms the commit. `_142` technical proof is cumulative and green. Real-app visual and workflow acceptance is next, with historical execution locks/correction and past authoring still open.
+
 ## VERIFIED TECHNICAL GATE — 2026-10-11 `_142`
 
 User WSL gate reached `_142`: 19/20 PostgreSQL tests passed and all non-PostgreSQL checks passed; the only red catalog test omitted the new completed-stage literal. After the narrow correction `f497cb0b`, the user reran that test: **1 passed in 24.59s**. This is cumulative technical evidence across two commits. The two locally generated API files have not been published. Real-app acceptance of Play, adaptive card geometry/actual time, Stop and past review remains open; Session history protection and past authoring are still separate proposals.

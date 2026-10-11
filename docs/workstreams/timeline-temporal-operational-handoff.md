@@ -1,5 +1,9 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-11 — Generated API client published
+
+User pushed the two WSL-generated API files (`packages/api-client/openapi/dante-v1.openapi.json` and `packages/api-client/src/generated/dante.ts`) in `72735407` after pulling the `_142` technical gate documentation. The GitHub branch readback confirms this head. Technical gate and generated client publication are complete. Next is real-app acceptance for Activity/main and planned Session Play, card width/actual time after Start/Stop, non-overlap, and past Activity/Objective review. Historical execution lock, correction/retraction and past authoring rules remain open product work; do not declare B14/B15 closed based on technical tests alone.
+
 ## 2026-10-11 — `_142` local technical gate verified; real-app acceptance open
 
 User pulled `f497cb0b` and ran `test_current_database_cross_representation_is_exact` on PostgreSQL: **1 passed in 24.59s**. This closes the one red check from the preceding complete gate (`19 passed, 1 failed` before the stale stage-literal correction); that gate's PY_SYNTAX, RUFF, PY_UNIT, OpenAPI generation/determinism, API/Web typecheck, Web lint, Vitest and browser checks were green. The evidence is cumulative across two consecutive commits, not a single full rerun or visual acceptance. `_142` and the exact catalog are now user-locally verified; the two generated API files remain uncommitted in the user's WSL worktree, while card Play/width/actual-time and past review still need real-app acceptance. Do not repeat the technical gate or use the older October 4 snapshot in place of current generated files. Historical edit locks/correction policy remain open.
