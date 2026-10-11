@@ -29,6 +29,7 @@ gate PY_SYNTAX uv run --locked python -m compileall -q \
   migrations/versions/20261010_139_b14_objective_input_draft.py \
   migrations/versions/20261010_140_b14_home_workspace_reads.py \
   migrations/versions/20261010_141_b14_independent_planned_sessions.py \
+  migrations/versions/20261011_142_b14_past_activity_review.py \
   tests/integration/temporal/test_b14_objective_input.py \
   tests/integration/temporal/test_b14_home_workspace.py
 gate RUFF uv run --locked ruff check \
@@ -39,9 +40,12 @@ gate RUFF uv run --locked ruff check \
   migrations/versions/20261010_139_b14_objective_input_draft.py \
   migrations/versions/20261010_140_b14_home_workspace_reads.py \
   migrations/versions/20261010_141_b14_independent_planned_sessions.py \
+  migrations/versions/20261011_142_b14_past_activity_review.py \
   tests/test_session_panel.py \
   tests/integration/temporal/test_b14_objective_input.py \
   tests/integration/temporal/test_b14_home_workspace.py \
+  tests/integration/temporal/test_b14_u6_resolution_queue.py \
+  tests/integration/temporal/test_b14_u6_reality_policy.py \
   tests/integration/temporal/test_b14_session_panel.py \
   tests/integration/database/test_current_catalog.py \
   tests/integration/database/test_database_current_catalog.py
@@ -49,6 +53,8 @@ gate PY_UNIT uv run --locked pytest -q --no-cov --tb=short tests/test_session_pa
 gate POSTGRES uv run --locked pytest -q --no-cov --tb=short -m postgres \
   tests/integration/temporal/test_b14_objective_input.py \
   tests/integration/temporal/test_b14_home_workspace.py \
+  tests/integration/temporal/test_b14_u6_resolution_queue.py \
+  tests/integration/temporal/test_b14_u6_reality_policy.py \
   tests/integration/temporal/test_b14_session_panel.py \
   tests/integration/temporal/test_b14_session_hierarchy.py \
   tests/integration/temporal/test_b14_planned_session_execution_link.py \
@@ -66,11 +72,20 @@ gate WEB_LINT pnpm exec eslint \
   apps/web/src/features/home/ui/context-rail/context-rail.tsx \
   apps/web/src/features/home/ui/context-rail/context-rail-work-data-source.ts \
   apps/web/src/features/home/ui/context-rail/context-rail.test.tsx
+gate WEB_LINT_TIMELINE pnpm exec eslint \
+  apps/web/src/features/home/ui/timeline/model/timeline-density.ts \
+  apps/web/src/features/home/ui/timeline/model/timeline-types.ts \
+  apps/web/src/features/home/ui/timeline/timeline-day-stream.tsx \
+  apps/web/src/features/home/ui/timeline/timeline-session-reality.ts \
+  apps/web/src/features/temporal/activity-session-card-controls.tsx \
+  apps/web/src/features/temporal/session-subject-controls.tsx
 gate VITEST pnpm --filter @dante/web exec vitest run \
   src/features/temporal/objective-controls.test.tsx \
   src/features/home/ui/context-rail/context-rail.test.tsx \
   src/features/home/ui/timeline/timeline-session-panel.test.tsx \
   src/features/home/ui/timeline/timeline-session-reality.test.ts \
+  src/features/home/ui/timeline/model/timeline-layout.test.ts \
+  src/features/temporal/session-subject-controls-card.test.tsx \
   src/features/temporal/remote-reality-objective-corrections.test.ts
 gate BROWSER pnpm --filter @dante/web exec playwright test \
   --config playwright.session-panel.config.ts
@@ -79,7 +94,7 @@ echo
 echo "===== B14 SESSIONI + TRE VISTE + CONFERMA OBIETTIVI ====="
 failed=0
 for name in PY_SYNTAX RUFF PY_UNIT POSTGRES GENERATE GENERATED_CHECK \
-            API_TYPECHECK WEB_TYPECHECK WEB_LINT VITEST BROWSER; do
+            API_TYPECHECK WEB_TYPECHECK WEB_LINT WEB_LINT_TIMELINE VITEST BROWSER; do
   printf '%-19s %s\n' "$name" "${STATUS[$name]:-NON_ESEGUITO}"
   if [ "${STATUS[$name]:-1}" -ne 0 ]; then failed=1; fi
 done
