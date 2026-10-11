@@ -1,5 +1,7 @@
 # Timeline / Temporal-Operational — Candidate Database Overlay
 
+**Cross-layer architecture reconciliation (2026-10-11):** The current Domain authority `../domain/decisions/activity-session-live-timeline-v1.md` §8 is represented by the additive Logical overlay `../logical-model/slices/b14-session-objective-home-workspace-2026-10-11.md` and the Physical overlay `../physical-model/b14-session-objective-home-workspace-2026-10-11.md`. The accepted PM-12/Whole Logical baselines and protected-main PostgreSQL reference remain frozen; this file, `dictionary/scope.json`, migrations/ORM and user-local catalog tests own the **candidate-branch** current materialization. No new migration or schema change was made during this documentation reconciliation.
+
 ## CURRENT: B14 Home workspace + optional main / independent child Session — 2026-10-10
 
 **Technically verified forward migration head (user-local cumulative green checks):** `20261010_141`. Exact intended Dictionary/SQLAlchemy/Alembic topology: **238 tables | 5 views | 228 routines | 103 triggers | 486 physical indexes | 421 FKs | 596 CHECK**. User-local PostgreSQL tests for `_139`–`_141` passed in the repair series, including 14 functional cases and final exact catalog verification (`1 passed`); the earlier `_138` gate remains separate historic evidence.
