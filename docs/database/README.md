@@ -1,13 +1,13 @@
 # DANTE Database System of Record
 
 - **Status:** CURRENT / AUTHORITATIVE DATABASE REFERENCE
-- **Last reconciled:** 2026-09-26
+- **Last reconciled:** 2026-10-11 (Timeline candidate overlay; protected-main baseline unchanged)
 - **PostgreSQL:** 18.6
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
-- **Timeline candidate Alembic head (current branch candidate):** `20261010_141` (objective staging + three-view workspace + independent child Session candidate, unverified; see `timeline-temporal-operational.md`)
-- **Historical B10-C proven topology (2026-09-26):** `20260925_79` / `167|5|123|93|329|279|446`; latest _141 candidate topology `238|5|228|103|486|421|596` (not yet locally verified)
+- **Timeline candidate Alembic head (current branch candidate):** `20261010_141` (candidate technical gate green; live-app acceptance open; see `timeline-temporal-operational.md`)
+- **Historical B10-C proven topology (2026-09-26):** `20260925_79` / `167|5|123|93|329|279|446`; latest _141 candidate topology `238|5|228|103|486|421|596` (user-local catalog gate green)
 - **Timeline candidate DB overlay:** `timeline-temporal-operational.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 - **Persistence ADR:** `../decisions/ADR-010-postgresql-persistence-constitution.md`
@@ -245,7 +245,9 @@ B10-A closure evidence is recorded in `../workstreams/timeline-temporal-operatio
 
 ## 7. Current database cursor
 
-B10-C Confirmation is proven at `_79`. Do not start B10-D until the user approves that gate.
+**Active branch:** `feature/timeline-temporal-operational` at migration `20261010_141`; exact catalog `238|5|228|103|486|421|596`. Cumulative user-local technical proof is green; B14 real-app UI acceptance remains open. Product, Logical and Physical B14 overlays are linked from `timeline-temporal-operational.md`, `../logical-model/slices/b14-session-objective-home-workspace-2026-10-11.md` and `../physical-model/b14-session-objective-home-workspace-2026-10-11.md`. Generated API artifacts have been published at `a9a8353a`.
+
+**Historical B10-C cursor (2026-09-26):** Confirmation was proven at `_79`; the instruction to await B10-D approval was only valid at that checkpoint.
 
 Do not infer a generic Outcome status enum from UI labels alone.
 
