@@ -4,7 +4,7 @@
 - Scope: backend automated validation, CI/CD orchestration, repository security and supply-chain evidence
 - Frontend testing/CI implementation: **DEFERRED**
 
-Il candidato non integrato Timeline/Temporal usa la strategia e il gate locale descritti in `temporal-regression-testing.md`. Questo riferimento non modifica lo stato storico di chiusura del baseline backend né abilita CI sul branch.
+Il candidato non integrato adotta `dante-verification-architecture.md` per l'intero repository e `temporal-regression-testing.md` per il dettaglio Timeline/Temporal. Questi riferimenti non modificano lo stato storico di chiusura del baseline backend né abilitano CI sul branch.
 
 ## 1. Principle
 

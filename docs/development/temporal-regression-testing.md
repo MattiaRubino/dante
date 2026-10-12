@@ -1,5 +1,7 @@
 # Test di regressione Timeline e Temporal
 
+Questa è la matrice funzionale Temporal della [verifica di tutto Dante](dante-verification-architecture.md); il gate e l'obbligo per ogni modifica valgono per l'intero repository.
+
 - **Stato:** strategia corrente del candidato `feature/timeline-temporal-operational`; qualificazione integrale ancora aperta.
 - **Perimetro:** Activity, Event, Routine/Recurrence/Occurrence, Schedule, Session, Actual, Objective, creazione, modifica, cancellazione, revisione e Timeline.
 - **Evidenza iniziale:** `../workstreams/timeline-test-audit-2026-10-12.md` e relativo inventario CSV. La presenza di un file non equivale a copertura o PASS.

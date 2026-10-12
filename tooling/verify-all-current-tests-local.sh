@@ -40,14 +40,21 @@ echo "BRANCH=$(git branch --show-current)"
 echo "HEAD=$(git rev-parse HEAD)"
 echo "SOURCE_FINGERPRINT=$source_before"
 echo "LOG_DIR=$log_dir"
-echo "All tests use the current source tree; no generator, cleanup, CI or Git write is run."
+echo "All checks use the current source tree; generated:check snapshots and restores generated sources."
+echo "No Git write, CI, deployment, or provider-side acceptance is run."
 
 gate DIFF_CHECK . git diff --check
+gate BACKEND_FORMAT apps/backend uv run --locked ruff format --check .
 gate BACKEND_RUFF apps/backend uv run --locked ruff check .
 gate BACKEND_MYPY apps/backend uv run --locked mypy src
+gate REPO_FORMAT . pnpm format:check
 gate REPO_ESLINT . pnpm lint
 gate REPO_TYPECHECK . pnpm typecheck
 gate ARCHITECTURE . pnpm architecture:check
+gate GENERATED_DRIFT . pnpm generated:check
+gate REPO_BUILD . pnpm build
+gate MOBILE_BUNDLE . pnpm mobile:bundle:check
+gate OBSERVABILITY_STATIC . pnpm observability:validate
 gate BACKEND_NON_POSTGRES apps/backend uv run --locked pytest -q --no-cov --tb=short -m 'not postgres'
 gate BACKEND_POSTGRES apps/backend uv run --locked pytest -q --no-cov --tb=short -m postgres
 gate EVAL_TOOLING . uv run --project apps/backend --locked pytest -q --no-cov --tb=short tooling/ai-evals/tests
