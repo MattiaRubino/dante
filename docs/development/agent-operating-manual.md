@@ -13,6 +13,7 @@ LifeOS must not depend on one conversation remembering the project correctly. A 
 This manual complements:
 
 - `operating-rules.md`;
+- `testing-standard.md` — mandatory whole-repository test design, nomenclature, traceability, full-gate and evidence;
 - `documentation-and-handoff.md`;
 - `branching-and-environments.md`;
 - `repository-engineering-safety.md` for GitHub-level enforcement/CI/security-setting lifecycle;
@@ -33,6 +34,7 @@ root README.md
 → docs/PROJECT-STATUS.md
 → docs/development/agent-operating-manual.md
 → docs/development/operating-rules.md
+→ docs/development/testing-standard.md (required for any code/test change)
 → docs/development/documentation-and-handoff.md
 → docs/development/branching-and-environments.md
 → docs/development/repository-engineering-safety.md when repository/CI/settings controls are relevant

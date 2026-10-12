@@ -21,7 +21,7 @@ Re-read the Domain concept specs for the concepts this task touches, under `docs
 
 For database work, read `docs/database/README.md` and the Dictionary entries for the objects touched. `docs/database/dictionary/scope.json` field `current_materialization` is the live count source. `expected_baseline` is not.
 
-Read the implementation files and the tests that own the behavior before changing it.
+Before any implementation or test change, **read and follow `docs/development/testing-standard.md`**, the repository-wide mandatory test and evidence contract. Identify the owning test boundaries, regression requirement, registry obligations and applicable acceptance checks. Read the implementation files and the tests that own the behavior before changing it.
 
 ## Which truth is which
 
@@ -45,6 +45,7 @@ Follow these documents. Do not restate them here.
 - `docs/development/documentation-lifecycle-policy.md`
 - `docs/development/branching-and-environments.md`
 - `CONTRIBUTING.md`
+- `docs/development/testing-standard.md` — mandatory testing and traceability policy for all code changes, not only Temporal
 
 If a bootstrap list in those manuals stops at an old entry point, continue with the session-start reads above. Ignore frontier snapshots inside those manuals when a live handoff, map, database reference, or migration head disagrees. Use the manuals for procedure: write gates, documentation lifecycle, and evidence language.
 

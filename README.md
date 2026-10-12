@@ -4,6 +4,15 @@ DANTE is a personal operating system designed to help people understand, organiz
 
 **Compass:** *Understand life. Shape what comes next.*
 
+## Start here — development and mandatory testing
+
+- **All developers and coding agents:** [CONTRIBUTING.md](CONTRIBUTING.md) and [AGENTS.md](AGENTS.md).
+- **Mandatory, whole-repository testing standard:** [docs/development/testing-standard.md](docs/development/testing-standard.md) — test placement, naming, regression rules, fixtures, traceability, deprecation and evidence.
+- **Current technical test architecture:** [docs/development/dante-verification-architecture.md](docs/development/dante-verification-architecture.md).
+- **Structural integrity check:** `python3 tooling/testing/verify_test_integrity.py`. **Full local gate:** `bash tooling/verify-all-current-tests-local.sh` (requires the prepared WSL/test environment).
+
+A passing structural test registry is not a substitute for checking real behavior. Follow the active branch workstream and currently accepted contracts for implementation status; historical snapshots below do not override the live handoff.
+
 ## Current repository state
 
 Protected `main` remains the single integrated authority. The active unmerged candidate is `feature/timeline-temporal-operational`; its branch-local truth is explicitly separate from protected-main truth until integration.

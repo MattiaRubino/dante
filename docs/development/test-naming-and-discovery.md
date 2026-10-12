@@ -1,5 +1,7 @@
 # Nomi e raccolta dei test Dante
 
+> **Norma obbligatoria valida per tutto il repository:** [DANTE Test Engineering Standard](testing-standard.md). Il presente documento dettaglia denominazione e discovery: non è una policy isolata per la Timeline.
+
 Il nome di un file di test indica **capacità e comportamento**. Il percorso indica il confine della prova (unit, database, integrazione, browser, contratto). Un codice di fase (`B05`, `B14-M2`, `CP6-M3`, `U2`, `M5`) rimane nei documenti storici e nelle revisioni Alembic, non nel nome di un test eseguibile.
 
 Esempi:

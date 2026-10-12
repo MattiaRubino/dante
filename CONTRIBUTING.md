@@ -34,6 +34,18 @@ Avoid editing shared/global files from multiple branches unless the change is ge
 
 See `docs/development/operating-rules.md` for path ownership and source precedence.
 
+## Mandatory testing standard (all contributors)
+
+**Every change to DANTE behavior is governed by [the repository-wide testing standard](docs/development/testing-standard.md).** Read it before implementing a feature, bug fix, database migration, API change, Web/mobile interaction, refactor or test rename. AI agents and human developers follow the same rule.
+
+- Identify the accepted contract, changed behavior, risks and owning test locations; add/repair a meaningful regression with negative/boundary and adjacent-capability evidence where relevant.
+- Follow the prescribed `test_*.py`, `*.test.ts(x)` and `*.spec.ts` naming, fixture ownership and real-PostgreSQL/browser fidelity rules.
+- Update `docs/development/test-case-registry.json` in the same change: **new tests must be QUALIFIED** with concrete purpose and invariant; previously inventoried UNREVIEWED tests are not certified by their existence.
+- Run focused checks, then `bash tooling/verify-all-current-tests-local.sh` for final candidate acceptance, and preserve SHA, logs, failure/blocker status and any separate real-app/provider/device evidence.
+- Never delete/skip/weaken a failing test just to turn a gate green. Document legitimate deprecation, replacement, and remaining gaps.
+
+`python3 tooling/testing/verify_test_integrity.py` checks the structural registry, stale test references and presence of mandatory policy entry points. It cannot judge whether an assertion proves the correct product rule; semantic review remains required.
+
 ## Documentation and handoff
 
 A change is not Done if it leaves the repository documentation describing the previous state.

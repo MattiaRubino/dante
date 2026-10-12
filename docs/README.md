@@ -44,12 +44,17 @@ Candidate B07                                  DEFERRED until after B12
 
 Remote-provider integration, native/offline, account collaboration and broad analytics remain future work outside the current Timeline vertical.
 
+## Repository-wide developer testing standard
+
+The **mandatory** [DANTE Test Engineering Standard](development/testing-standard.md) applies to every feature, regression fix, database change, API, Web/mobile and platform contribution. It is required reading for humans and coding agents, is linked from root `README.md`/`CONTRIBUTING.md`/`AGENTS.md`, and is complemented by [verification architecture](development/dante-verification-architecture.md) and [test naming and discovery](development/test-naming-and-discovery.md). The [registry](development/test-case-registry.json) indexes the currently discovered test files; unreviewed files do not constitute accepted coverage.
+
 ## Mandatory continuation entry points
 
 1. `../README.md`
 2. `PROJECT-STATUS.md`
 3. `ROADMAP.md`
 4. `development/agent-operating-manual.md`
+4a. `development/testing-standard.md` (mandatory before implementation or test edits)
 5. `development/documentation-lifecycle-policy.md`
 6. active workstream authority, when one exists
 7. subsystem authority relevant to the task

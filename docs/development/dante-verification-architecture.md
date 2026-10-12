@@ -1,5 +1,7 @@
 # Architettura di verifica di tutto Dante
 
+> **Norma obbligatoria:** [DANTE — Mandatory Test Engineering Standard](testing-standard.md). Questo documento specifica architettura e copertura; il documento normativo stabilisce procedure, collocazione, nomenclatura, obblighi e prova dell'esecuzione per qualsiasi contributo al monorepo.
+
 - **Stato:** candidato del branch `feature/timeline-temporal-operational`, da qualificare sullo stesso SHA e nella vera app. Non è una dichiarazione che tutti i comportamenti siano già coperti.
 - **Ambito:** tutto il repository e tutti i flussi implementati, dal Domain e dal Blueprint PostgreSQL alle migrazioni, al runtime, alle API, ai client, al Web, al mobile e alle dipendenze esterne.
 - **Baseline backend:** [testing-and-ci-v0.md](testing-and-ci-v0.md). La matrice Temporal è un dettaglio funzionale in [temporal-regression-testing.md](temporal-regression-testing.md), non il perimetro del programma.

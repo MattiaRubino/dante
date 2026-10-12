@@ -226,6 +226,19 @@ Do not rewrite/force-push shared history casually; any history rewrite requires 
 
 ## 9. Post-write QA
 
+### Mandatory repository-wide testing contract
+
+The CURRENT / NORMATIVE [DANTE testing standard](testing-standard.md) is
+**required for every code, migration, API, Web/mobile, test, and platform
+change**. It defines test ownership, placement, naming, invariants, test
+registry and qualification, regression-first behavior, negative/boundary
+cases, deterministic fixtures, deprecation and verification evidence.
+It applies to humans and coding agents alike. The structural checker and
+full local gate are in `tooling/testing/` and
+`tooling/verify-all-current-tests-local.sh`; an executed red or blocked
+gate remains red/blocked. This testing policy complements rather than
+supersedes the accepted product/Domain/DB constraints or Git write gate.
+
 ### Regression checks for touched components
 
 For every fix to an existing component or behavior that already has tests, locate

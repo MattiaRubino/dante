@@ -47,6 +47,37 @@ def discover() -> set[str]:
 
 def main() -> int:
     errors: list[str] = []
+    # Keep the canonical policy discoverable for every contributor and coding agent.
+    # A link is a structural contract only; the checker cannot assess test semantics.
+    required_policy = ROOT / "docs/development/testing-standard.md"
+    if not required_policy.is_file():
+        errors.append("Missing mandatory docs/development/testing-standard.md")
+    else:
+        policy_text = required_policy.read_text(encoding="utf-8")
+        for title in (
+            "## 1. Obligations for every code change",
+            "## 2. Where tests belong",
+            "## 3. Naming and test readability",
+            "## 4. Traceability and documentation contract",
+            "## 5. Running tests and labeling results",
+            "## 6. Quality gate and review checklist",
+            "## 7. What is enforced today versus planned",
+        ):
+            if title not in policy_text:
+                errors.append(f"Mandatory testing policy missing section: {title}")
+    for path in (
+        "AGENTS.md",
+        "CONTRIBUTING.md",
+        "README.md",
+        "docs/README.md",
+        "docs/development/agent-operating-manual.md",
+        "docs/development/operating-rules.md",
+        "docs/development/dante-verification-architecture.md",
+        "docs/development/test-naming-and-discovery.md",
+    ):
+        entry = ROOT / path
+        if not entry.is_file() or "testing-standard.md" not in entry.read_text(encoding="utf-8"):
+            errors.append(f"Missing mandatory testing-standard.md reference: {path}")
     if not REGISTRY.is_file() or not RENAMES.is_file():
         print("FAIL: Missing test registry or rename map")
         return 1
