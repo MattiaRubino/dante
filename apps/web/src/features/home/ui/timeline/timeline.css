@@ -577,6 +577,7 @@
   scrollbar-width: thin;
   scrollbar-color: transparent transparent;
   overscroll-behavior: contain;
+  overflow-anchor: none;
 }
 
 .timeline-grid::-webkit-scrollbar {

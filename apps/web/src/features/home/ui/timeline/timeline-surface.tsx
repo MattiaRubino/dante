@@ -166,6 +166,7 @@ export function TimelineSurface({
     : now.hour * 60 + now.minute;
   const initialDate = parseTimelineViewedDate(viewedDateIso) ?? timelineToday;
   const initialDateRef = useRef(initialDate);
+  const externalViewedDateRef = useRef(viewedDateIso);
   const [state, dispatch] = useReducer(
     timelineReducer,
     timelineToday,
@@ -963,6 +964,11 @@ export function TimelineSurface({
   }, [publishViewportDate, viewDate]);
 
   useLayoutEffect(() => {
+    // Scrolling changes viewDate locally. Only a changed route prop is an
+    // external navigation request; otherwise this effect pulls the viewport
+    // back to the previous date on every upward/downward scroll.
+    if (externalViewedDateRef.current === viewedDateIso) return;
+    externalViewedDateRef.current = viewedDateIso;
     const externalDate =
       parseTimelineViewedDate(viewedDateIso) ?? timelineToday;
     if (externalDate.equals(viewDate)) {

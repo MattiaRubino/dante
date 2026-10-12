@@ -51,6 +51,17 @@ const ended = {
 } as const;
 
 describe('one-card Activity actual Session projection', () => {
+  it('aligns a Session started between minute marks with the displayed minute line', () => {
+    const planned = activity('minute-aligned', 600, 630);
+    const visual = { ...ended, started_at: '2026-10-10T09:08:50Z',
+      ended_at: null, pause_ranges: [] };
+    const [projected] = applyTimelineSessionReality(
+      [day(planned)], [visual], 'UTC', '2026-10-10T09:09:10Z',
+      Date.parse('2026-10-10T09:09:10Z'), groups, zoom, expanded,
+    );
+    expect(projected?.layouts[0]?.top).toBe(projected?.mapper.map(548));
+    expect(projected?.layouts[0]?.sessionReality?.actualLabel).toBe('09:08–ora');
+  });
   it('allocates separate lanes for an early stopped card and a nearby planned card', () => {
     const planned = activity('early-execution', 600, 630);
     const neighbor: TimelineEvent = {

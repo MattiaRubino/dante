@@ -290,10 +290,13 @@ export function ActivityEditPanel({
 
   useEffect(() => {
     let active = true;
-    setRecurringContext(null);
-    setEditScope('only_this');
-    setRecurringLoading(true);
-    setRecurringError('');
+    queueMicrotask(() => {
+      if (!active) return;
+      setRecurringContext(null);
+      setEditScope('only_this');
+      setRecurringLoading(true);
+      setRecurringError('');
+    });
     void recurringSource.loadActivityContext(profile.activityRef).then((loaded) => {
       if (active) setRecurringContext(loaded);
     }).catch((reason: unknown) => {
@@ -321,7 +324,7 @@ export function ActivityEditPanel({
     return () => { active = false; };
   }, [profile.activityRef, settingsSource]);
 
-  const requestClose = useCallback(() => {
+  const requestClose = () => {
     if (pending || planPending || objectivePending) return;
     if (confirmingDiscard) {
       setConfirmingDiscard(false);
@@ -330,7 +333,7 @@ export function ActivityEditPanel({
     } else {
       onCancel();
     }
-  }, [confirmingDiscard, dirty, onCancel, objectivePending, pending, planPending]);
+  };
 
   const patchObjective = (id: string, patch: Partial<ActivityObjectiveDraft>) => {
     setObjectiveRows((rows) => rows.map((row) => row.id === id
@@ -491,7 +494,7 @@ export function ActivityEditPanel({
     return () => {
       closeRequestRef.current = null;
     };
-  }, [closeRequestRef, requestClose]);
+  });
 
   useEffect(() => {
     if (confirmingDiscard) discardButtonRef.current?.focus();
@@ -523,6 +526,17 @@ export function ActivityEditPanel({
           setNameError('Per rinominare una Sessione scegli «Solo questa».');
           return;
         }
+        const invalidObjective = objectiveRows.find((row) =>
+          !removedObjectives.includes(row.id) && objectiveDraftError(row));
+        if (invalidObjective) {
+          setObjectiveError(`${invalidObjective.label.trim() || 'Nuovo obiettivo'}: ${objectiveDraftError(invalidObjective)}`);
+          const field = event.currentTarget.querySelector<HTMLInputElement>(
+            `.timeline-activity-editor__objective-row[data-objective-id="${invalidObjective.id}"] input[type="number"]`,
+          );
+          field?.focus();
+          return;
+        }
+        setObjectiveError('');
         setPending(true);
         setPlanPending(true);
         setError('');

@@ -468,7 +468,8 @@ export function createRemoteActivityEditSettings(
       }
       return Object.freeze({
         options: Object.freeze(options),
-        currentRef: current?.life_area_ref == null ? null : String(current.life_area_ref),
+        currentRef: current && typeof current.life_area_ref === 'string'
+          ? current.life_area_ref : null,
         currentRevision: current ? Number(current.assignment_revision) : 0,
       });
     },
@@ -653,7 +654,7 @@ export function createRemoteActivityEditSettings(
         });
       } catch (error) {
         if (controller.signal.aborted) {
-          throw new Error('Blocco non salvato. Riprova.');
+          throw new Error('Blocco non salvato. Riprova.', { cause: error });
         }
         throw error;
       } finally {
@@ -733,7 +734,12 @@ export function createRemoteActivityEditSettings(
         });
         invalidateTemporalTimelineRead();
         invalidateTemporalPlanningRead();
-        if (changes.capture) invalidateActivitySessionCardCapability(profile.activityRef);
+        if (changes.capture) {
+          invalidateActivitySessionCardCapability(profile.activityRef);
+          window.dispatchEvent(new CustomEvent('dante:activity-session-capability-changed', {
+            detail: profile.activityRef,
+          }));
+        }
         return { profile: savedProfile, settings: savedSettings };
       };
       try {

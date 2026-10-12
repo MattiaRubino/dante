@@ -24,7 +24,7 @@ afterEach(() => cleanup());
 describe('Activity Session controls on Timeline cards', () => {
   it('mounts compact B08 runtime only when canonical Session capability is enabled', async () => {
     const source: TemporalSessionCapabilityDataSource = {
-      activityEnabled: vi.fn(async () => true),
+      activityEnabled: vi.fn(() => Promise.resolve(true)),
     };
 
     render(
@@ -45,7 +45,7 @@ describe('Activity Session controls on Timeline cards', () => {
 
   it('fails closed when Session capability is absent or unreadable', async () => {
     const disabled: TemporalSessionCapabilityDataSource = {
-      activityEnabled: vi.fn(async () => false),
+      activityEnabled: vi.fn(() => Promise.resolve(false)),
     };
     const first = render(
       <ActivitySessionCardControls
@@ -59,9 +59,7 @@ describe('Activity Session controls on Timeline cards', () => {
     first.unmount();
 
     const unavailable: TemporalSessionCapabilityDataSource = {
-      activityEnabled: vi.fn(async () => {
-        throw new Error('offline');
-      }),
+      activityEnabled: vi.fn(() => Promise.reject(new Error('offline'))),
     };
     render(
       <ActivitySessionCardControls
@@ -72,5 +70,20 @@ describe('Activity Session controls on Timeline cards', () => {
     );
     await waitFor(() => expect(unavailable.activityEnabled).toHaveBeenCalled());
     expect(screen.queryByTestId('session-runtime')).toBeNull();
+  });
+
+  it('refreshes a mounted card when Modifica enables the Activity Session policy', async () => {
+    let enabled = false;
+    const source: TemporalSessionCapabilityDataSource = {
+      activityEnabled: vi.fn(() => Promise.resolve(enabled)),
+    };
+    render(<ActivitySessionCardControls activityRef={ACTIVITY_REF} label="Attività" source={source} />);
+    await waitFor(() => expect(source.activityEnabled).toHaveBeenCalledTimes(1));
+    expect(screen.queryByTestId('session-runtime')).toBeNull();
+    enabled = true;
+    window.dispatchEvent(new CustomEvent('dante:activity-session-capability-changed', {
+      detail: ACTIVITY_REF,
+    }));
+    expect(await screen.findByTestId('session-runtime')).not.toBeNull();
   });
 });

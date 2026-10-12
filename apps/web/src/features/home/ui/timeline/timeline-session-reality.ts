@@ -133,8 +133,10 @@ function project(
     r.ended_at !== null || r.pause_ranges.some((p) => p.ended_at === null));
   const startedAt = new Date(startAt).toISOString();
   const endedAt = running ? null : new Date(endAt).toISOString();
-  const first = onDay(startedAt, dateKey, zone);
-  const last = onDay(new Date(endAt).toISOString(), dateKey, zone);
+  // The card label and ruler show whole minutes. Snap its painted boundary to
+  // the same minute so a start at 09:08:50 does not appear below 09:08.
+  const first = Math.floor(onDay(startedAt, dateKey, zone));
+  const last = Math.ceil(onDay(new Date(endAt).toISOString(), dateKey, zone));
   return {
     startMinute: first,
     endMinute: Math.max(first + 1 / 60, last),

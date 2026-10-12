@@ -31,7 +31,18 @@ export function ActivitySessionCardControls({
     activityRef: string;
     mode: SessionCaptureMode;
   } | null>(null);
+  const [policyRevision, setPolicyRevision] = useState(0);
   const mode = capability?.activityRef === activityRef ? capability.mode : null;
+
+  useEffect(() => {
+    const changed = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail === activityRef) {
+        setPolicyRevision((revision) => revision + 1);
+      }
+    };
+    window.addEventListener('dante:activity-session-capability-changed', changed);
+    return () => window.removeEventListener('dante:activity-session-capability-changed', changed);
+  }, [activityRef]);
 
   useEffect(() => {
     let cancelled = false;
@@ -57,7 +68,7 @@ export function ActivitySessionCardControls({
     return () => {
       cancelled = true;
     };
-  }, [activityRef, source]);
+  }, [activityRef, source, policyRevision]);
 
   const live = mode === 'live' || mode === 'record_and_live';
 

@@ -1,5 +1,9 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## REAL-APP REGRESSIONS — 2026-10-12
+
+User screenshot acceptance is red despite the prior `_142` technical gate. A focused candidate fixes mounted Session capability refresh, numeric Objective edit feedback before writes, recurring root untimed planned Session materialization, displayed-minute card alignment and route/scroll feedback. Local Web typecheck and focused tests pass; user PostgreSQL and real-app confirmation are pending. `Ripeti` from one-off Activity Edit remains unimplemented and needs a new governed conversion contract; see handoff. No B14/B15 closure.
+
 ## GENERATED CLIENT PUBLISHED — 2026-10-11
 
 The user committed and pushed the two generated API files at `72735407`; remote branch readback confirms the commit. `_142` technical proof is cumulative and green. Real-app visual and workflow acceptance is next, with historical execution locks/correction and past authoring still open.

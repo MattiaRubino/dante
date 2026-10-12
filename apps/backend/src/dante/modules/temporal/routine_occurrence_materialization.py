@@ -332,6 +332,21 @@ class RoutineOccurrenceMaterializationApplication:
             disambiguation=disambiguation,
         )
 
+    @classmethod
+    def _planned_template_window(
+        cls,
+        occurrence_ref: UUID,
+        coordinate: CalendarCoordinate,
+        value: object,
+    ) -> NamedZoneLocalIntervalPlacement | None:
+        if isinstance(value, dict) and value.get("time_enabled") is False:
+            if set(value) != {"name", "time_enabled"} or not isinstance(
+                value["name"], str
+            ) or not value["name"].strip():
+                raise OccurrenceInputError("Untimed recurring Activity Session is invalid.")
+            return None
+        return cls._template_window(occurrence_ref, coordinate, value)
+
     async def _bind_activity(
         self,
         *,
@@ -580,8 +595,10 @@ class RoutineOccurrenceMaterializationApplication:
         planned_rows = template.get("planned_slices", [])
         if not isinstance(planned_rows, list):
             raise OccurrenceInputError("Recurring Activity planned Sessions are invalid.")
+        # A named, untimed planned Session remains an unplaced Schedule in each
+        # occurrence. It must not be replaced with an invented clock interval.
         planned_slices = tuple(
-            self._template_window(occurrence_ref, coordinate, value)
+            self._planned_template_window(occurrence_ref, coordinate, value)
             for value in planned_rows
         )
         planned_names = tuple(

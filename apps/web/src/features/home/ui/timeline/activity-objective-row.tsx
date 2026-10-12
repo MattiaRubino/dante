@@ -120,7 +120,7 @@ export function ActivityObjectiveRow({
 }>) {
   const title = row.label.trim() || 'Nuovo obiettivo';
   return (
-    <div className="timeline-activity-editor__objective-row" onFocusCapture={onInspect}>
+    <div className="timeline-activity-editor__objective-row" data-objective-id={row.id} onFocusCapture={onInspect}>
       <div className="timeline-activity-editor__objective-head">
         <input type="text" className="timeline-activity-editor__objective-name"
           aria-label="Nome obiettivo" placeholder="Nome obiettivo"

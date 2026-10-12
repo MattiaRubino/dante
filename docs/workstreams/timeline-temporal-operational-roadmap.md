@@ -1,5 +1,9 @@
 # Timeline / Temporal-Operational Vertical — Implementation Roadmap
 
+## CURRENT 2026-10-12 — Repair real-app regressions; recurring edit still open
+
+The user's screenshots supersede the previous technical-green status as product evidence. A focused source candidate repairs Session Play after edit, missing quantity-target feedback, untimed planned Sessions in recurring Activity Create, minute alignment and scroll/date feedback. It needs the single affected local gate in `tooling/verify-b14-oct12-regressions-local.sh` and a real-app walkthrough. The read-only `Ripeti · Mai` in existing Activity Edit is a separate vertical capability: establish and bind a recurring Routine to the existing Activity with preserved history and owner/CAS semantics before exposing editing controls. Do not copy the Activity as a workaround.
+
 ## CURRENT 2026-10-11 — Generated client published; real-app acceptance next
 
 The user pushed both generated API files at `72735407` after the green cumulative `_142` technical gate. Inspect the real application for Play on the correct Activity interval, stable card width when starting, actual time/readable card size on Stop, non-overlapping cards, and past Activity/Objective items in `Da verificare`. Keep history locks/corrections and past Event/Activity authoring as separate open product work.

@@ -6,6 +6,7 @@ import {
   patchTemporalCreateU2AuthoringDraft,
 } from '../model/temporal-create-u2-authoring';
 import {
+  buildTemporalCreateRecurringActivityTemplate,
   buildTemporalCreateObjectiveTemplates,
   buildTemporalCreateU2Request,
   temporalCreateU2QuickIntentSupported,
@@ -15,6 +16,22 @@ import {
 } from './temporal-create-u2-submit';
 
 describe('U2 Quick Create submit mapping', () => {
+  it('keeps an untimed named Session in every recurring Activity template', () => {
+    const fields = createTemporalCreateFields({
+      kind: 'activity', title: 'Raccolta', date: '2026-10-12',
+      startTime: '10:15', durationMinutes: 30,
+    });
+    const base = createTemporalCreateU2AuthoringDraft(fields);
+    const draft = patchTemporalCreateU2AuthoringDraft(base, {
+      activityStructure: {
+        ...base.activityStructure,
+        plannedSlices: [{ id: 'session', title: 'Cernita', timeEnabled: false,
+          date: '2026-10-12', startTime: '', endTime: '' }],
+      },
+    });
+    expect(buildTemporalCreateRecurringActivityTemplate(fields, draft).template.planned_slices)
+      .toEqual([{ name: 'Cernita', time_enabled: false }]);
+  });
   it('authors an unassigned Activity with canonical description, location and item colour', () => {
     const fields = createTemporalCreateFields({
       kind: 'activity',

@@ -102,8 +102,8 @@ export type RecurringObjectiveTemplate = Readonly<{
 }>;
 
 export type RecurringActivityPlannedSliceTemplate =
-  RecurringActivityWindowTemplate &
-    Readonly<{ name: string }>;
+  | (RecurringActivityWindowTemplate & Readonly<{ name: string }>)
+  | Readonly<{ name: string; time_enabled: false }>;
 
 export type RecurringActivityChildTemplate = Readonly<{
   title: string;

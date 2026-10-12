@@ -81,6 +81,27 @@ describe('TimelineSurface production parity', () => {
     expect(onViewedDateChange).toHaveBeenCalledWith(undefined);
   });
 
+  it('does not scroll back to an unchanged route date after the user scrolls', async () => {
+    const onViewedDateChange = vi.fn();
+    const { container } = renderTimeline({
+      viewedDateIso: TIMELINE_PROTOTYPE_TODAY.toString(), onViewedDateChange,
+    });
+    const grid = container.querySelector<HTMLElement>('.timeline-grid');
+    const days = [...container.querySelectorAll<HTMLElement>('[data-timeline-date]')];
+    expect(grid).toBeTruthy();
+    expect(days.length).toBeGreaterThan(4);
+    Object.defineProperties(grid!, {
+      clientHeight: { configurable: true, value: 500 },
+      scrollHeight: { configurable: true, value: 100_000 },
+    });
+    const nextDayTop = days.slice(0, 4).reduce((sum, day) =>
+      sum + Number.parseFloat(day.style.height), 0);
+    grid!.scrollTop = nextDayTop + 100;
+    fireEvent.scroll(grid!);
+    await new Promise((resolve) => window.setTimeout(resolve, 40));
+    expect(grid!.scrollTop).toBe(nextDayTop + 100);
+  });
+
   it('opens the three-level calendar and keeps today distinct from the viewed date', () => {
     renderTimeline({ viewedDateIso: '2026-08-04' });
 

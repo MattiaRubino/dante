@@ -669,9 +669,6 @@ export function buildTemporalCreateRecurringActivityTemplate(
   if (fields.kind !== 'activity' || fields.timeSemantics !== 'timed' || bands === null) {
     throw new Error('Recurring Activity template requires a timed Activity.');
   }
-  if (draft.activityStructure.plannedSlices.some((slice) => slice.timeEnabled !== true)) {
-    throw new Error('Le Sessioni senza orario non sono ancora supportate nelle serie ricorrenti.');
-  }
   const recurrenceAnchor = Temporal.PlainDateTime.from(
     `${fields.date}T${fields.startTime}`,
   );
@@ -711,6 +708,9 @@ export function buildTemporalCreateRecurringActivityTemplate(
           ),
     planned_slices: Object.freeze(
       structure.plannedSlices.map((slice) => {
+        if (slice.timeEnabled !== true) {
+          return Object.freeze({ name: slice.title.trim(), time_enabled: false as const });
+        }
         const value = sliceLocalWindow(slice);
         if (value === null) {
           throw new Error('Recurring Activity Session has an invalid time.');
