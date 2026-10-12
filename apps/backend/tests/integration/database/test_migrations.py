@@ -13,7 +13,10 @@ from sqlalchemy.exc import DBAPIError
 
 pytestmark = pytest.mark.postgres
 
-_EXPECTED_HEAD = "20260917_29"
+# The current head is forward-only; the earlier B01/B02 downgrade guard
+# fixtures intentionally exercise the last historically reversible snapshot.
+_CURRENT_HEAD = "20261011_142"
+_HISTORICAL_REVERSIBLE_HEAD = "20260917_29"
 _B02_REVISION_PARENT = "20260909_21"
 _B02_SCHEMA_HEAD = "20260909_20"
 _PRE_B02_HEAD = "20260908_19"
@@ -126,29 +129,44 @@ def test_fresh_database_reaches_the_single_repository_head(
         assert before == (None,)
 
     script = ScriptDirectory.from_config(alembic_config)
-    assert script.get_heads() == [_EXPECTED_HEAD]
+    assert script.get_heads() == [_CURRENT_HEAD]
 
     command.upgrade(alembic_config, "head")
-    assert _current_revisions(provisioned_database) == {_EXPECTED_HEAD}
+    assert _current_revisions(provisioned_database) == {_CURRENT_HEAD}
 
-def test_repository_head_round_trips_head_base_head(
+def test_historical_reversible_head_round_trips_to_base_and_back(
     provisioned_database: Any,
     alembic_config: Config,
 ) -> None:
-    command.upgrade(alembic_config, "head")
-    assert _current_revisions(provisioned_database) == {_EXPECTED_HEAD}
+    command.upgrade(alembic_config, _HISTORICAL_REVERSIBLE_HEAD)
+    assert _current_revisions(provisioned_database) == {_HISTORICAL_REVERSIBLE_HEAD}
 
     command.downgrade(alembic_config, "base")
     assert _current_revisions(provisioned_database) == set()
 
+    command.upgrade(alembic_config, _HISTORICAL_REVERSIBLE_HEAD)
+    assert _current_revisions(provisioned_database) == {_HISTORICAL_REVERSIBLE_HEAD}
+
+def test_current_repository_head_refuses_downgrade_by_design(
+    provisioned_database: Any,
+    alembic_config: Config,
+) -> None:
+    """Protect the current forward-only migration and its canonical schema."""
     command.upgrade(alembic_config, "head")
-    assert _current_revisions(provisioned_database) == {_EXPECTED_HEAD}
+    assert _current_revisions(provisioned_database) == {_CURRENT_HEAD}
+
+    # The latest accepted migration deliberately refuses rollback.
+    with pytest.raises(RuntimeError, match="Owner-only derived review queue is forward-only"):
+        command.downgrade(alembic_config, "-1")
+
+    assert _current_revisions(provisioned_database) == {_CURRENT_HEAD}
+
 
 def test_schedule_unschedule_downgrade_refuses_to_discard_receipts(
     provisioned_database: Any,
     alembic_config: Config,
 ) -> None:
-    command.upgrade(alembic_config, "head")
+    command.upgrade(alembic_config, _HISTORICAL_REVERSIBLE_HEAD)
     person_ref = uuid7()
     activity_ref = uuid7()
     schedule_ref = uuid7()
@@ -221,7 +239,7 @@ def test_schedule_unschedule_downgrade_refuses_to_discard_receipts(
     with pytest.raises(DBAPIError, match="B02-D downgrade refused"):
         command.downgrade(alembic_config, "20260913_22")
 
-    assert _current_revisions(provisioned_database) == {_EXPECTED_HEAD}
+    assert _current_revisions(provisioned_database) == {_HISTORICAL_REVERSIBLE_HEAD}
     with psycopg.connect(**connection_kwargs, autocommit=True) as connection:
         connection.execute("SET ROLE dante_owner")
         preserved = connection.execute(
@@ -253,7 +271,7 @@ def test_schedule_revision_downgrade_refuses_to_discard_revision_receipts(
     provisioned_database: Any,
     alembic_config: Config,
 ) -> None:
-    command.upgrade(alembic_config, "head")
+    command.upgrade(alembic_config, _HISTORICAL_REVERSIBLE_HEAD)
     person_ref = uuid7()
     activity_ref = uuid7()
     schedule_ref = uuid7()
@@ -319,7 +337,7 @@ def test_schedule_revision_downgrade_refuses_to_discard_revision_receipts(
     with pytest.raises(DBAPIError, match="B02-C downgrade refused"):
         command.downgrade(alembic_config, _B02_REVISION_PARENT)
 
-    assert _current_revisions(provisioned_database) == {_EXPECTED_HEAD}
+    assert _current_revisions(provisioned_database) == {_HISTORICAL_REVERSIBLE_HEAD}
     with psycopg.connect(**connection_kwargs, autocommit=True) as connection:
         connection.execute("SET ROLE dante_owner")
         preserved = connection.execute(
@@ -347,7 +365,7 @@ def test_schedule_downgrade_refuses_to_discard_canonical_history(
     provisioned_database: Any,
     alembic_config: Config,
 ) -> None:
-    command.upgrade(alembic_config, "head")
+    command.upgrade(alembic_config, _HISTORICAL_REVERSIBLE_HEAD)
     person_ref = uuid7()
     activity_ref = uuid7()
     schedule_ref = uuid7()
@@ -408,9 +426,9 @@ def test_schedule_downgrade_refuses_to_discard_canonical_history(
         command.downgrade(alembic_config, _PRE_B02_HEAD)
 
     # A failed multi-revision downgrade may already have reverted the ACL-only child.
-    # Re-upgrade to the repository head, then prove canonical B02 state survived intact.
-    command.upgrade(alembic_config, "head")
-    assert _current_revisions(provisioned_database) == {_EXPECTED_HEAD}
+    # Re-upgrade to the historical reversible head and prove B02 state survived.
+    command.upgrade(alembic_config, _HISTORICAL_REVERSIBLE_HEAD)
+    assert _current_revisions(provisioned_database) == {_HISTORICAL_REVERSIBLE_HEAD}
     with psycopg.connect(**connection_kwargs, autocommit=True) as connection:
         connection.execute("SET ROLE dante_owner")
         preserved = connection.execute(
@@ -440,7 +458,7 @@ def test_activity_downgrade_refuses_to_discard_canonical_intention(
     provisioned_database: Any,
     alembic_config: Config,
 ) -> None:
-    command.upgrade(alembic_config, "head")
+    command.upgrade(alembic_config, _HISTORICAL_REVERSIBLE_HEAD)
     command.downgrade(alembic_config, _PRE_B02_HEAD)
     assert _current_revisions(provisioned_database) == {_PRE_B02_HEAD}
 
@@ -509,8 +527,8 @@ def test_context_downgrade_refuses_to_orphan_live_account_person_binding(
     provisioned_database: Any,
     alembic_config: Config,
 ) -> None:
-    command.upgrade(alembic_config, "head")
-    assert _current_revisions(provisioned_database) == {_EXPECTED_HEAD}
+    command.upgrade(alembic_config, _HISTORICAL_REVERSIBLE_HEAD)
+    assert _current_revisions(provisioned_database) == {_HISTORICAL_REVERSIBLE_HEAD}
 
     command.downgrade(alembic_config, _PRE_B01_HEAD)
     assert _current_revisions(provisioned_database) == {_PRE_B01_HEAD}
@@ -581,7 +599,7 @@ def test_existing_access_head_converges_forward_to_current_head(
     assert _current_revisions(provisioned_database) == {_ACCESS_HEAD}
 
     command.upgrade(alembic_config, "head")
-    assert _current_revisions(provisioned_database) == {_EXPECTED_HEAD}
+    assert _current_revisions(provisioned_database) == {_CURRENT_HEAD}
 
 def test_existing_recovery_head_converges_forward_to_current_head(
     provisioned_database: Any,
@@ -591,7 +609,7 @@ def test_existing_recovery_head_converges_forward_to_current_head(
     assert _current_revisions(provisioned_database) == {_RECOVERY_HEAD}
 
     command.upgrade(alembic_config, "head")
-    assert _current_revisions(provisioned_database) == {_EXPECTED_HEAD}
+    assert _current_revisions(provisioned_database) == {_CURRENT_HEAD}
 
 def test_existing_pre_vertical_base_converges_forward_to_current_head(
     provisioned_database: Any,
@@ -601,7 +619,7 @@ def test_existing_pre_vertical_base_converges_forward_to_current_head(
     assert _current_revisions(provisioned_database) == {_PRE_VERTICAL_BASE_HEAD}
 
     command.upgrade(alembic_config, "head")
-    assert _current_revisions(provisioned_database) == {_EXPECTED_HEAD}
+    assert _current_revisions(provisioned_database) == {_CURRENT_HEAD}
 
 def test_existing_recovery_rows_survive_forward_convergence_to_current_head(
     provisioned_database: Any,
@@ -713,7 +731,7 @@ def test_existing_recovery_rows_survive_forward_convergence_to_current_head(
     )
 
     command.upgrade(alembic_config, "head")
-    assert _current_revisions(provisioned_database) == {_EXPECTED_HEAD}
+    assert _current_revisions(provisioned_database) == {_CURRENT_HEAD}
 
     with psycopg.connect(**connection_kwargs, autocommit=True) as connection:
         connection.execute("SET ROLE dante_owner")

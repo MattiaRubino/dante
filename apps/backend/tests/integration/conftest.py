@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import secrets
+import socket
 import subprocess
 import time
 import uuid
@@ -45,8 +46,15 @@ class PostgresCluster:
         _docker("stop", "--signal", "SIGINT", "--timeout", "5", self.container_name)
 
     def start(self) -> None:
-        """Restart PostgreSQL and wait for the exact acceptance version."""
+        """Restart PostgreSQL on the original published port, without changing app config."""
         _docker("start", self.container_name)
+        published = _docker("port", self.container_name, "5432/tcp")
+        expected_address = f"127.0.0.1:{self.port}"
+        if expected_address not in published.stdout.splitlines():
+            pytest.fail(
+                "PostgreSQL outage recovery changed its published address: "
+                f"expected {expected_address}, got {published.stdout.strip()!r}"
+            )
         _wait_for_postgres(self)
 
 
@@ -102,6 +110,13 @@ class ProvisionedDatabase:
         }
 
 
+def _available_loopback_port() -> int:
+    """Select an explicit Docker host port: automatic published ports can change on restart."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
+        probe.bind(("127.0.0.1", 0))
+        return int(probe.getsockname()[1])
+
+
 def _docker(*args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
     return subprocess.run(  # noqa: S603
         ["docker", *args],  # noqa: S607
@@ -132,9 +147,10 @@ def _wait_for_postgres(cluster: PostgresCluster) -> None:
             time.sleep(0.25)
 
     logs = _docker("logs", cluster.container_name, check=False).stdout
-    pytest.fail(
+    pytest.exit(
         "PostgreSQL acceptance cluster did not become ready as PostgreSQL 18.6. "
-        f"Last connection error: {last_error!r}\nContainer logs:\n{logs}"
+        f"Last connection error: {last_error!r}\nContainer logs:\n{logs}",
+        returncode=2,
     )
 
 
@@ -211,20 +227,24 @@ def postgres_cluster() -> Generator[PostgresCluster]:
     """Start one disposable cluster without touching the ordinary LOCAL DANTE cluster."""
     image_check = _docker("image", "inspect", _POSTGRES_IMAGE, check=False)
     if image_check.returncode != 0:
-        pytest.fail(
+        pytest.exit(
             "Required image dante-postgres-local:18.6 is not available. "
-            "Build it with `docker compose -f infra/compose/local.yaml build postgres`."
+            "Build it with `docker compose -f infra/compose/local.yaml build postgres`.",
+            returncode=2,
         )
 
     container_name = f"dante-pytest-{uuid.uuid4().hex[:12]}"
     admin_password = secrets.token_urlsafe(32)
+    # Bind an explicit, dynamically selected port: Docker's auto-published host
+    # port may differ after docker stop/start, invalidating preexisting clients.
+    host_port = _available_loopback_port()
     started = _docker(
         "run",
         "--detach",
         "--name",
         container_name,
         "--publish",
-        "127.0.0.1::5432",
+        f"127.0.0.1:{host_port}:5432",
         "--env",
         "POSTGRES_DB=dante",
         "--env",
@@ -241,16 +261,30 @@ def postgres_cluster() -> Generator[PostgresCluster]:
     )
     if started.returncode != 0:
         _docker("rm", "--force", container_name, check=False)
-        pytest.fail(f"Disposable PostgreSQL could not start: {started.stderr.strip()}")
+        pytest.exit(
+            f"Disposable PostgreSQL could not start: {started.stderr.strip()}",
+            returncode=2,
+        )
 
     try:
         published = _docker("port", container_name, "5432/tcp", check=False)
         if published.returncode != 0 or not published.stdout.strip():
-            pytest.fail(f"Disposable PostgreSQL port unavailable: {published.stderr.strip()}")
+            pytest.exit(
+                f"Disposable PostgreSQL port unavailable: {published.stderr.strip()}",
+                returncode=2,
+            )
         address = published.stdout.strip().splitlines()[0]
         host, separator, port_text = address.rpartition(":")
-        if separator != ":" or host != "127.0.0.1" or not port_text.isdecimal():
-            pytest.fail(f"Unexpected disposable PostgreSQL port: {address}")
+        if (
+            separator != ":"
+            or host != "127.0.0.1"
+            or not port_text.isdecimal()
+            or int(port_text) != host_port
+        ):
+            pytest.exit(
+                f"Unexpected disposable PostgreSQL port: {address}; expected 127.0.0.1:{host_port}",
+                returncode=2,
+            )
         cluster = PostgresCluster(
             host=host,
             port=int(port_text),
@@ -282,7 +316,34 @@ def provisioned_database(
     try:
         yield database
     finally:
-        _drop_database(postgres_cluster, database.name)
+        # An outage test must never silently poison all subsequent integration
+        # tests. Restore the disposable shared cluster before cleaning this DB;
+        # an unrecoverable fixture failure aborts pytest rather than creating
+        # hundreds of misleading connection-refused errors.
+        state = _docker(
+            "inspect",
+            "--format",
+            "{{.State.Running}}",
+            postgres_cluster.container_name,
+            check=False,
+        )
+        if state.returncode != 0 or state.stdout.strip() != "true":
+            try:
+                postgres_cluster.start()
+            except (subprocess.CalledProcessError, pytest.fail.Exception) as exc:
+                pytest.exit(
+                    "Unrecoverable disposable PostgreSQL outage during fixture teardown: "
+                    f"{exc}",
+                    returncode=2,
+                )
+        try:
+            _drop_database(postgres_cluster, database.name)
+        except psycopg.OperationalError as exc:
+            pytest.exit(
+                "Disposable PostgreSQL became unavailable during database cleanup: "
+                f"{exc}",
+                returncode=2,
+            )
 
 
 @pytest.fixture

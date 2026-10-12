@@ -70,3 +70,42 @@ individual logs are not accessible through this report.
 does not itself prove collection or the other quality/browser groups PASS.
 Require a fresh local `pytest --collect-only` preflight and the full gate on
 the new SHA. Do not disable mypy/ESLint/formatting failures to achieve green.
+
+## Gate 697bcd2f — PostgreSQL cascade diagnosed (user WSL, 12 October 2026)
+
+The WSL `pytest --collect-only` preflight succeeded (**990 tests in
+3.55 seconds**); structural integrity and test naming passed. The full
+candidate remained **RED**. Non-PostgreSQL backend: **613 passed, 8 failed,
+369 deselected**. The real PostgreSQL group finished after **360.99 seconds**
+with **138 passed, 21 failed, 211 errors, 621 deselected**.
+
+The user supplied the initial error stack and frequency count from
+`/tmp/dante-all-tests.Athu1R/BACKEND_POSTGRES.log` (WSL-local):
+**211 errors share one** `psycopg.OperationalError` for the previous
+disposable cluster endpoint `127.0.0.1:55332` (`Connection refused`).
+The first traceback is teardown of
+`test_liveness_survives_database_outage_and_readiness_recovers_without_app_restart`.
+The session-scoped PostgreSQL fixture shares a Docker container between
+tests; the outage test calls `stop()`/`start()` and the fixture previously
+published port `127.0.0.1::5432`, which may not survive restart with
+the same host mapping. Treat this as a **single infrastructure failure with
+cascading errors**, not 211 independent product defects. Root cause
+(port remapping versus another restart failure) requires the next focused
+local test to confirm; the harness now explicitly pins and checks the
+host port and fails early on an unrecoverable outage.
+
+Separate deterministic drift: historical
+`test_migrations.py` still expected Alembic `20260917_29` whereas
+the candidate's verified head is `20261011_142`. The latest migration
+deliberately refuses downgrade (`Owner-only derived review queue is
+forward-only`). The corrective tests retain legacy rollback-guard
+probes at the **historical reversible head** and independently verify the
+**current forward-only** contract and current head. Do not remove
+historical downgrade guards, nor weaken canonical forward-only migrations.
+
+This evidence **does not** close the remaining 21 PostgreSQL assertions,
+8 non-PostgreSQL failures, Ruff/mypy/format/ESLint debt, browser
+failures or unobserved real-stack result. Next first run the focused
+`test_runtime.py` outage/recovery tests and the Alembic head/current
+forward-only tests, then all PostgreSQL cases and ultimately the complete
+same-SHA gate; preserve distinct failures.
