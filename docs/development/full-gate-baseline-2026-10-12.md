@@ -247,3 +247,30 @@ until a new targeted test run.
 
 **Global and PostgreSQL gates are still RED**; the earlier excluded
 Alembic/SQLAlchemy schema metadata drift remains unaddressed.
+
+## Five remaining catalog regressions — 5018c36d, user WSL (12 October 2026)
+
+The user pulled `5018c36d61dfcc3b0c8b47b6ba617baa53270b5c`
+and reran the exact five previously failing PostgreSQL catalog cases
+with `uv run --locked pytest -vv --no-cov --tb=short --durations=10`.
+**5 passed in 10.93 seconds**:
+
+- B04-E duration catalog/ACL at accepted historical revision.
+- B04-D movement-policy historical topology.
+- CP6-M06 structural Dictionary/catalog snapshot.
+- B08 current Session catalog, including the manual-record receipt.
+- B04 historical temporal-constraint catalog snapshot.
+
+The previous **14** of **19** targeted regressions passed on `7af29c89`,
+and the final five passed after corrective commit `5018c36d`.
+**This is staggered, scoped regression evidence, not an entire 19-case
+single-revision run nor an entire PostgreSQL suite PASS.**
+
+Outstanding known PostgreSQL blocker:
+`test_alembic_check_reports_no_dante_schema_drift_with_extensions_present`,
+which compares fresh migrated physical DANTE schema against registered
+SQLAlchemy metadata using Alembic autogenerate with
+`compare_type=True` and `compare_server_default=True`. This check
+remains enabled and **RED** pending exact-diff diagnosis and
+Dictionary-grounded correction. Other monorepo test/quality gates
+remain open as documented above.
