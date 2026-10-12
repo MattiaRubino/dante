@@ -207,3 +207,43 @@ cases, 2 remaining Routine cases, CP6 concurrency, and Alembic autogenerate
 metadata drift. The complete monorepo gate is still **RED**. All 491
 existing registry files remain **UNREVIEWED**; a green structural check
 does not certify semantic coverage.
+
+## Re-run of prior PostgreSQL failures on 7af29c89 — user WSL (12 October 2026)
+
+The user pulled `7af29c8923d631fa0571209259c1451f15035661`
+(documentation-only update from `0ddb2583`) and selected **19** of the
+previous **20** failing PostgreSQL tests from
+`/tmp/dante-postgres-full.6Ciak9.log`, excluding only the known Alembic
+`command.check` metadata drift. Re-run evidence:
+`/tmp/dante-regressions.A475mj.log`, Python 3.14.7,
+`pytest -vv --no-cov --tb=short --durations=10`.
+**14 passed, 5 failed in 39.88 seconds**.
+
+The remaining five defects were classified from exact exceptions:
+- `test_b04_e_duration_catalog_and_acl`: *current* schema
+  `238|5|228|103|486|421|596|0|0|0` compared against *historical*
+  B04-E topology `158|5|109|93|303|254|433|0|0|0`.
+- `test_b04_d_revision_and_topology`: current schema compared against
+  historical B04-D topology `145|5|87|92|285|223|408|0|0|0`.
+- `test_m6_dictionary_reconciles_final_structural_surface`:
+  `psycopg.errors.SyntaxError` because SQL used reserved word
+  `constraint` as a table alias in the new historical-catalog query.
+- `test_b08_session_catalog_reuses_cp6_and_adds_bounded_subject_capabilities`:
+  exact Session source-edge set omitted the legitimate later B14
+  `session_manual_record_operation` retrospective record.
+- `test_b04_catalog_surface_and_live_topology`: historic B04-A/C table
+  set omitted the subsequently accepted B04-E
+  `temporal_constraint_duration_state`, while the probe used a
+  *current* `migrated_database`.
+
+Correction strategy **retains historical contracts**: migration-stage
+snapshot tests run against `provisioned_database` upgraded to their
+accepted exact historical revisions, instead of weakening baseline
+numbers or blindly using the current counts. Current catalog and
+current least-privilege ACL tests continue to exercise the current
+head separately. SQL alias and Session exact-edge corrections retain
+their other assertions. These changes are not user-locally verified
+until a new targeted test run.
+
+**Global and PostgreSQL gates are still RED**; the earlier excluded
+Alembic/SQLAlchemy schema metadata drift remains unaddressed.

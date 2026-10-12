@@ -126,6 +126,8 @@ def test_b08_session_catalog_reuses_cp6_and_adds_bounded_subject_capabilities(
         assert {row[0] for row in subject_edges} == {
             "session_execution_subject",
             "session_start_operation",
+            # B14 retrospective records are explicit, owner-scoped receipts.
+            "session_manual_record_operation",
         }
 
         absent = connection.execute(

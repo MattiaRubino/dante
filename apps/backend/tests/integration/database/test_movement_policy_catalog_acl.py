@@ -6,11 +6,13 @@ from typing import Any
 
 import psycopg
 import pytest
+from alembic import command
+from alembic.config import Config
 
 pytestmark = pytest.mark.postgres
 
-# Current candidate must still preserve every B04-D table and runtime ACL.
-_EXPECTED_REVISION = "20261012_143"
+# Historical B04-D topology and ownership are tested at their accepted migration stage.
+_EXPECTED_REVISION = "20260922_55"
 _EXPECTED_TOPOLOGY = (145, 5, 87, 92, 285, 223, 408, 0, 0, 0)
 
 _B04_D_TABLES = {
@@ -48,7 +50,13 @@ def _admin(database: Any) -> psycopg.Connection[Any]:
 
 
 @pytest.mark.postgres
-def test_b04_d_revision_and_topology(migrated_database: Any) -> None:
+def test_b04_d_revision_and_topology(
+    provisioned_database: Any, alembic_config: Config
+) -> None:
+    # Preserve the immutable B04-D topology proof at the historical revision;
+    # the separate current-head ACL test continues to use migrated_database.
+    command.upgrade(alembic_config, _EXPECTED_REVISION)
+    migrated_database = provisioned_database
     with _admin(migrated_database) as connection:
         revision = connection.execute("SELECT version_num FROM dante.alembic_version").fetchone()
         topology = connection.execute(

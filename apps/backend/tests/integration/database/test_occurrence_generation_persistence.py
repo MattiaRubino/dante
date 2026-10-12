@@ -425,28 +425,29 @@ def test_m6_dictionary_reconciles_final_structural_surface(
             },
             "indexes": {
                 str(row[0]) for row in connection.execute(
-                    "SELECT indexname FROM pg_indexes WHERE schemaname='dante'"
+                    "SELECT indexname FROM pg_indexes WHERE schemaname='dante' "
+                    "AND tablename<>'alembic_version'"
                 )
             },
             "foreign_keys": {
                 str(row[0]) for row in connection.execute(
                     """
-                    SELECT constraint.conname
-                      FROM pg_constraint AS constraint
-                      JOIN pg_class AS relation ON relation.oid=constraint.conrelid
+                    SELECT con.conname
+                      FROM pg_constraint AS con
+                      JOIN pg_class AS relation ON relation.oid=con.conrelid
                       JOIN pg_namespace AS namespace ON namespace.oid=relation.relnamespace
-                     WHERE namespace.nspname='dante' AND constraint.contype='f'
+                     WHERE namespace.nspname='dante' AND con.contype='f'
                     """
                 )
             },
             "check_constraints": {
                 str(row[0]) for row in connection.execute(
                     """
-                    SELECT constraint.conname
-                      FROM pg_constraint AS constraint
-                      JOIN pg_class AS relation ON relation.oid=constraint.conrelid
+                    SELECT con.conname
+                      FROM pg_constraint AS con
+                      JOIN pg_class AS relation ON relation.oid=con.conrelid
                       JOIN pg_namespace AS namespace ON namespace.oid=relation.relnamespace
-                     WHERE namespace.nspname='dante' AND constraint.contype='c'
+                     WHERE namespace.nspname='dante' AND con.contype='c'
                     """
                 )
             },

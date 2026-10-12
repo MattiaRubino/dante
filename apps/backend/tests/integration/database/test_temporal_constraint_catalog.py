@@ -7,6 +7,7 @@ from typing import Any
 
 import psycopg
 import pytest
+from alembic import command
 from alembic.config import Config
 from alembic.script import ScriptDirectory
 
@@ -15,6 +16,7 @@ from dante.platform.database.mappings import MAPPED_TABLES
 pytestmark = pytest.mark.postgres
 
 _CURRENT_REVISION = "20261012_143"
+_B04_STAGE_REVISION = "20260919_36"
 _REPO_ROOT = Path(__file__).resolve().parents[5]
 _B04_TABLES = {
     "temporal_constraint",
@@ -119,7 +121,14 @@ def _routine_security(
     ).fetchone()
 
 
-def test_b04_catalog_surface_and_live_topology(migrated_database: Any) -> None:
+def test_b04_catalog_surface_and_live_topology(
+    provisioned_database: Any, alembic_config: Config
+) -> None:
+    # This exact B04-A/C topology predates the B04-E duration table.
+    # Keep the original stage-specific catalog proof while asserting
+    # below that the repository still has a single current Alembic head.
+    command.upgrade(alembic_config, _B04_STAGE_REVISION)
+    migrated_database = provisioned_database
     with _admin(migrated_database) as connection:
         revision = connection.execute(
             "SELECT version_num FROM dante.alembic_version"
@@ -166,7 +175,7 @@ def test_b04_catalog_surface_and_live_topology(migrated_database: Any) -> None:
             """
         ).fetchone()
 
-    assert revision == (_CURRENT_REVISION,)
+    assert revision == (_B04_STAGE_REVISION,)
     assert b04_tables == _B04_TABLES
     assert owners == {(table, "dante_owner") for table in _B04_TABLES}
     assert topology is not None

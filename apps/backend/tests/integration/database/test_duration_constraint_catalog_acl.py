@@ -6,11 +6,13 @@ from typing import Any
 
 import psycopg
 import pytest
+from alembic import command
+from alembic.config import Config
 
 pytestmark = pytest.mark.postgres
 
-# Current candidate must still preserve the B04-E payload and ACL invariants.
-_EXPECTED_REVISION = "20261012_143"
+# Historical B04-E topology and ACLs are tested against their accepted migration stage.
+_EXPECTED_REVISION = "20260925_69"
 _EXPECTED_TOPOLOGY = (158, 5, 109, 93, 303, 254, 433, 0, 0, 0)
 
 
@@ -26,7 +28,13 @@ def _admin(database: Any) -> psycopg.Connection[Any]:
 
 
 @pytest.mark.postgres
-def test_b04_e_duration_catalog_and_acl(migrated_database: Any) -> None:
+def test_b04_e_duration_catalog_and_acl(
+    provisioned_database: Any, alembic_config: Config
+) -> None:
+    # Verify the frozen B04-E catalog rather than comparing September's exact
+    # topology with all later B14 additions on the current head.
+    command.upgrade(alembic_config, _EXPECTED_REVISION)
+    migrated_database = provisioned_database
     with _admin(migrated_database) as connection:
         revision = connection.execute("SELECT version_num FROM dante.alembic_version").fetchone()
         topology = connection.execute(
