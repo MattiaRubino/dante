@@ -135,6 +135,13 @@ For a short copy/paste use <repo>/temp/LATEST_GATE_SUMMARY.md; for
 the complete evidence upload the archive. Each run gets its own folder.
 Share that archive for batch diagnosis instead of five-test microcycles.
 Group failures and an incomplete run keep the full gate RED.
+For each Playwright gate, the full runner also preserves every available
+`error-context.md` and up to three original `trace.zip` artifacts under
+`<repo>/temp/dante-all-tests.XXXXXX/<WEB_BROWSER_GROUP>_BROWSER_ARTIFACTS/`
+**before** the next browser group overwrites `apps/web/test-results`.
+These are diagnostic evidence, not fixture substitutes; larger artifacts
+remain in the WSL test-results directory and may need separate review.
+
 
 Concurrent writes to generated sources and shared Playwright build outputs
 have not been proven isolated. This wrapper deliberately does not change

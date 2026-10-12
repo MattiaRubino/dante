@@ -34,6 +34,28 @@ gate() {
   names+=("$name")
   results+=("$result")
   printf '%-23s %s\n' "$name" "$result"
+  # Preserve browser failure context before the next Playwright group clears
+  # test-results. Copy all textual DOM/error context and only the first three
+  # complete traces per group to keep the diagnostic archive uploadable.
+  if [[ "$name" == WEB_BROWSER_* ]] && [ -d apps/web/test-results ]; then
+    local root="apps/web/test-results" target="$log_dir/${name}_BROWSER_ARTIFACTS"
+    mkdir -p "$target"
+    while IFS= read -r -d '' item; do
+      local relative="${item#"$root"/}"
+      mkdir -p "$target/$(dirname "$relative")"
+      cp -- "$item" "$target/$relative"
+    done < <(find "$root" -type f -name 'error-context.md' -print0)
+    local traces=0
+    while IFS= read -r -d '' item; do
+      if [ "$traces" -ge 3 ]; then break; fi
+      local relative="${item#"$root"/}"
+      mkdir -p "$target/$(dirname "$relative")"
+      cp -- "$item" "$target/$relative"
+      traces=$((traces + 1))
+    done < <(find "$root" -type f -name 'trace.zip' -print0 | sort -z)
+    printf 'BROWSER_ARTIFACTS %s: %s context files; %s traces\n' "$name" \
+      "$(find "$target" -name 'error-context.md' | wc -l)" "$traces"
+  fi
   if [ "$result" -ne 0 ]; then
     tail -n 24 "$log_dir/$name.log"
   fi
