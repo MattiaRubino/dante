@@ -17,7 +17,8 @@ test('page-local contexts carry their tone into native Timeline cards and dedupl
 
   let dialog = await openCreate(page);
   await dialog.getByRole('textbox', { name: 'Titolo' }).fill('Sessione studio');
-  await dialog.getByLabel('Ora').fill('15:00');
+  await dialog.getByRole('textbox', { name: 'Inizio: ore' }).fill('15');
+  await dialog.getByRole('textbox', { name: 'Inizio: minuti' }).fill('00');
   await dialog.getByLabel('Durata prevista').selectOption('45');
 
   const contextTrigger = dialog.locator('.temporal-create-context-trigger');

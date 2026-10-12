@@ -138,7 +138,7 @@ test('Create base is title-first, exposes actionable types, protects drafts, and
   await expect(discard).toHaveCount(0);
   await expect(title).toBeFocused();
 
-  await dialog.locator('.temporal-create-composer__close').click();
+  await dialog.locator('.dante-temporal-panel-close').click();
   await expect(discard).toBeVisible();
   await expect(title).toHaveValue('Studiare inglese');
   await dialog.getByRole('button', { name: 'Scarta' }).click();
@@ -156,7 +156,8 @@ test('Activity Orario plus Divisibile remains placed and Undo removes the same c
   await dialog
     .getByRole('textbox', { name: 'Titolo' })
     .fill('Montare il video');
-  await dialog.getByLabel('Ora').fill('14:30');
+  await dialog.getByRole('textbox', { name: 'Inizio: ore' }).fill('14');
+  await dialog.getByRole('textbox', { name: 'Inizio: minuti' }).fill('30');
   await dialog.getByLabel('Durata prevista').selectOption('180');
   await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
   await expect(dialog).toHaveAttribute(
@@ -179,7 +180,8 @@ test('Activity Orario plus Divisibile remains placed and Undo removes the same c
     .getByRole('button', { name: 'Nascondi opzioni avanzate' })
     .click();
   await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'base');
-  await expect(dialog.getByLabel('Ora')).toHaveValue('14:30');
+  await expect(dialog.getByRole('textbox', { name: 'Inizio: ore' })).toHaveValue('14');
+  await expect(dialog.getByRole('textbox', { name: 'Inizio: minuti' })).toHaveValue('30');
   await expect(dialog.getByLabel('Durata prevista')).toHaveValue('180');
 
   await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
@@ -221,7 +223,8 @@ test('Event Advanced preserves structured agenda, deep intent and provider reque
   const dialog = await openCreate(page);
   await dialog.getByRole('textbox', { name: 'Titolo' }).fill('Call cliente');
   await dialog.getByRole('radio', { name: 'Evento' }).click();
-  await dialog.getByLabel('Ora').fill('16:00');
+  await dialog.getByRole('textbox', { name: 'Inizio: ore' }).fill('16');
+  await dialog.getByRole('textbox', { name: 'Inizio: minuti' }).fill('00');
   await dialog.getByLabel('Ripeti').selectOption('weekly');
   await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
 
@@ -421,7 +424,7 @@ test('all-day date spans live inside each day before minute zero for Event and A
   dialog = await openCreate(page);
   await dialog.getByRole('textbox', { name: 'Titolo' }).fill('Giornata studio');
   await dialog.getByRole('radio', { name: 'Tutto il giorno' }).click();
-  const activityDate = await dialog.getByLabel('Data').inputValue();
+  const activityDate = await dialog.getByLabel('Data', { exact: true }).inputValue();
   await dialog.getByRole('button', { name: 'Aggiungi' }).click();
   const activity = page
     .locator(
@@ -480,8 +483,8 @@ test('double-click and Shift-drag only use the timed canvas for contextual Creat
 
   let dialog = page.locator('[data-temporal-create="composer"]');
   await expect(dialog).toBeVisible();
-  await expect(dialog.getByLabel('Data')).not.toHaveValue('');
-  await expect(dialog.getByLabel('Ora')).not.toHaveValue('');
+  await expect(dialog.getByLabel('Data', { exact: true })).not.toHaveValue('');
+  await expect(dialog.getByRole('textbox', { name: 'Inizio: ore' })).not.toHaveValue('');
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveCount(0);
   await expect(page.locator('.timeline-grid')).toBeFocused();

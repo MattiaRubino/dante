@@ -28,7 +28,8 @@ test('item appearance inherits Context by default and an override remains presen
   await dialog
     .getByRole('textbox', { name: 'Titolo' })
     .fill('Deep work override');
-  await dialog.getByLabel('Ora').fill('16:30');
+  await dialog.getByRole('textbox', { name: 'Inizio: ore' }).fill('16');
+  await dialog.getByRole('textbox', { name: 'Inizio: minuti' }).fill('30');
   await dialog.getByLabel('Durata prevista').selectOption('60');
   await selectCreateContext(dialog, 'Focus / lavoro profondo');
 

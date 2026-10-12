@@ -17,9 +17,9 @@ test('Quick is draggable and Advanced stays floating while the Timeline remains 
 
   const dialog = await openCreate(page);
   await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'base');
-  await expect(dialog.locator('.temporal-create-composer__close')).toHaveText(
-    '×',
-  );
+  const close = dialog.locator('.dante-temporal-panel-close');
+  await expect(close).toHaveAttribute('aria-label', /.+/);
+  await expect(close).toBeVisible();
   await expect(
     dialog.locator('.temporal-create-composer__header button'),
   ).toHaveCount(1);

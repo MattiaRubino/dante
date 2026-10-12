@@ -333,3 +333,29 @@ contracts, admitted runtime dependencies, and TS config. Those edits
 remain **UNVERIFIED** until the whole same-SHA gate completes; the
 entire metadata drift, the 44-API inventory, browser failures and
 large quality backlog remain OPEN.
+
+## Browser fixture: obsolete Create selectors, diagnosis from ee2ed0fa gate
+
+The attached `WEB_BROWSER_NONAUTH.log` shows 16 failed / 111 passed.
+Several failures are directly attributable to a changed Create UI
+implementation, distinct from the repeated Vite proxy connection failures
+to `127.0.0.1:8000`:
+
+- `getByLabel('Ora')` resolves to eight elements because the real
+  time editor has separate `Inizio: ore` / `Inizio: minuti` editable
+  textboxes, hour increment/decrement buttons and clock-picker controls.
+  The old singular `Ora` input does not exist. Keep the same time
+  assertions while targeting the actual segmented editor.
+- The close control is now `.dante-temporal-panel-close`, rendered by
+  `TemporalPanelCloseButton` with an accessible label. The earlier
+  `.temporal-create-composer__close` test locator is obsolete.
+- Some tests still require `Da collocare` and the earlier Planning
+  Tray, whereas the accepted newer product exposes a Draft vault
+  workflow. These scenarios require contract-level rewriting rather
+  than bulk selector substitution.
+- At least one `timeline-interactions` assertion still fails to
+  clear card focus, which may be a genuine UI bug.
+
+The related browser test selector changes are **unverified** until a
+new WSL Playwright run. The full gate is **RED** and browser failures
+must not be claimed resolved by the unit/regression patches alone.
