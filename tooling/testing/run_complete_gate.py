@@ -30,8 +30,11 @@ def main() -> int:
         return 2
 
     sha = _git("rev-parse", "HEAD")
+    output_root = ROOT / "temp"
+    output_root.mkdir(exist_ok=True)
     with tempfile.NamedTemporaryFile(
-        prefix="dante-full-console-", suffix=".log", delete=False
+        prefix="dante-full-console-", suffix=".log",
+        dir=output_root, delete=False,
     ) as output:
         console = Path(output.name)
     print(f"CANDIDATE={sha}\nCONSOLE_LOG={console}", flush=True)
@@ -47,7 +50,7 @@ def main() -> int:
         status = child.wait()
 
     output = console.read_text(encoding="utf-8", errors="replace")
-    match = re.search(r"(?m)^LOG_DIR=(/tmp/\S+)$", output)
+    match = re.search(r"(?m)^LOG_DIR=(\S+)$", output)
     if match is None or not (directory := Path(match.group(1))).is_dir():
         print(f"ERROR: gate log directory unavailable; inspect {console}", file=sys.stderr)
         return 2
@@ -90,12 +93,23 @@ def main() -> int:
     if stability != 0:
         report.append("Source stability FAILED or unknown; inspect CONSOLE.log.")
 
-    (directory / "FULL_GATE_SUMMARY.md").write_text("\n".join(report) + "\n", encoding="utf-8")
-    (directory / "CONSOLE.log").write_text(output, encoding="utf-8")
-    archive = Path(str(directory) + ".tar.gz")
+    summary_text = "\n".join(report) + "\n"
+    (directory / "FULL_GATE_SUMMARY.md").write_text(
+        summary_text, encoding="utf-8"
+    )
+    console.replace(directory / "CONSOLE.log")
+    # Stable path for copy/paste; each run keeps its own immutable snapshot.
+    (output_root / "LATEST_GATE_SUMMARY.md").write_text(
+        summary_text, encoding="utf-8"
+    )
+    (output_root / "LATEST_GATE_DIR.txt").write_text(
+        str(directory) + "\n", encoding="utf-8"
+    )
+    archive = directory / "FULL_GATE_LOGS.tar.gz"
     with tarfile.open(archive, "w:gz") as bundle:
         for file in sorted(directory.iterdir()):
-            bundle.add(file, arcname=file.name)
+            if file != archive:
+                bundle.add(file, arcname=file.name)
 
     print("===== COMPLETE GATE BATCH =====")
     print(f"CHECKS={len(expected)} REPORTED={sum(name in rows for name in expected)}")
@@ -103,6 +117,8 @@ def main() -> int:
     print(f"SOURCE_STABILITY={stability}")
     print(f"FULL_GATE_EXIT={status}")
     print(f"SUMMARY={directory / 'FULL_GATE_SUMMARY.md'}")
+    print(f"LATEST_SUMMARY={output_root / 'LATEST_GATE_SUMMARY.md'}")
+    print(f"CONSOLE_LOG={directory / 'CONSOLE.log'}")
     print(f"ARCHIVE={archive}")
     print("The archive contains all group logs; review sensitive data before sharing.")
     return status or (1 if failures or stability != 0 else 0)

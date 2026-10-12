@@ -60,3 +60,6 @@ logs/
 # Playwright local artifacts
 playwright-report/
 test-results/
+
+# Private local gate evidence (logs, summaries, archives)
+/temp/

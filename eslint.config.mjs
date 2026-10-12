@@ -15,6 +15,7 @@ export default defineConfig(
       '**/routeTree.gen.ts',
       'packages/api-client/src/generated/**',
       'docs/**',
+      'temp/**',
       'prototypes/**',
       'apps/backend/**',
       'infra/**',

@@ -129,7 +129,11 @@ nor hides failed tests; the authoritative gate remains unchanged.
 It refuses dirty worktrees, records the pinned candidate SHA and complete
 console output, aggregates each group result, and packages original unedited
 group logs plus FULL_GATE_SUMMARY.md into one private .tar.gz archive under
-/tmp. Share that archive for batch diagnosis instead of five-test microcycles.
+<repo>/temp/dante-all-tests.XXXXXX/FULL_GATE_LOGS.tar.gz. The root temp/
+directory is explicitly ignored by Git, Prettier, and ESLint.
+For a short copy/paste use <repo>/temp/LATEST_GATE_SUMMARY.md; for
+the complete evidence upload the archive. Each run gets its own folder.
+Share that archive for batch diagnosis instead of five-test microcycles.
 Group failures and an incomplete run keep the full gate RED.
 
 Concurrent writes to generated sources and shared Playwright build outputs

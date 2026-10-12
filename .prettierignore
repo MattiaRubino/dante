@@ -17,3 +17,6 @@ CHANGELOG.md
 CONTRIBUTING.md
 
 packages/design-tokens/generated/**
+
+# Complete gate evidence is not source content
+temp/

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Full branch test inventory gate. Run in the user's prepared WSL environment.
-# Every group runs even if another group fails; logs stay outside the repository.
+# Every group runs even if another group fails; artifacts stay in ignored temp/.
 set -u
 
 cd "$(dirname "$0")/.." || exit 1
@@ -9,7 +9,10 @@ if [ "$(git branch --show-current)" != "feature/timeline-temporal-operational" ]
   exit 1
 fi
 
-log_dir="$(mktemp -d /tmp/dante-all-tests.XXXXXX)" || exit 1
+# Keep complete evidence in the repository work area without modifying Git sources.
+output_root="${DANTE_GATE_OUTPUT_ROOT:-$PWD/temp}"
+mkdir -p "$output_root" || exit 1
+log_dir="$(mktemp -d "$output_root/dante-all-tests.XXXXXX")" || exit 1
 declare -a names=()
 declare -a results=()
 
