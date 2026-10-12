@@ -177,3 +177,33 @@ Corrections after this SHA are **UNVERIFIED** until the corresponding
 scoped user-local PostgreSQL runs complete. The global gate also retains
 prior failures in non-PostgreSQL pytest, Ruff, mypy, formatting, ESLint,
 Web Playwright and real-stack acceptance. No all-green certification.
+
+## Scoped PostgreSQL regression verification — 0ddb2583, user WSL (12 October 2026)
+
+The user pulled `0ddb2583fa0af303f0cd9c2a8bb37f0cbed164b3`.
+`python3 tooling/testing/verify_test_integrity.py` reported
+`REGISTERED=491 DISCOVERED=491 UNREVIEWED=491` and **PASS**
+(structural inventory and executable-reference integrity; *not* test
+semantic qualification).
+
+The real WSL command `uv run --locked pytest -v -x --no-cov --tb=short`
+ran seven selected PostgreSQL tests. **7 passed in 20.79s**:
+
+- `test_migrations.py`: fresh database reaches current head; current
+  `20261012_143` is forward-only; prior `20261011_142` review-queue
+  forward-only guard independently remains enforced (3 cases).
+- `test_routine_core.py`: Routine lifecycle / primary Life Area / replay.
+- `test_plan_conflict.py`: B12-A current conflict read / prerequisite.
+- `test_session_workflow.py`: unplaced Activity Session pause/resume,
+  TC009 independence.
+- `test_shared_schedule_event.py`: invalid schedule atomicity and valid
+  coarse-local-period Event acceptance.
+
+**Interpretation:** the new Routine migration, Plan projection, historical
+migration guard separation and changed Session/Event behaviors are validated
+for these *scoped* cases. Prior baseline remains **20 failed / 350 passed**
+until *all 20* are rerun, particularly catalog stage tests, 3 remaining Plan
+cases, 2 remaining Routine cases, CP6 concurrency, and Alembic autogenerate
+metadata drift. The complete monorepo gate is still **RED**. All 491
+existing registry files remain **UNREVIEWED**; a green structural check
+does not certify semantic coverage.
