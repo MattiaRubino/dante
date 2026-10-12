@@ -29,9 +29,9 @@ gate RUFF uv run --locked ruff check \
   migrations/versions/20261010_140_b14_home_workspace_reads.py \
   migrations/versions/20261010_141_b14_independent_planned_sessions.py \
   tests/test_session_panel.py \
-  tests/integration/temporal/test_b14_objective_input.py \
-  tests/integration/temporal/test_b14_home_workspace.py \
-  tests/integration/temporal/test_b14_session_panel.py \
+  tests/integration/temporal/test_objective_input.py \
+  tests/integration/temporal/test_home_workspace.py \
+  tests/integration/temporal/test_session_panel.py \
   tests/integration/database/test_current_catalog.py \
   tests/integration/database/test_database_current_catalog.py
 # Last user gate already passed 14 functional PG tests; only two catalog

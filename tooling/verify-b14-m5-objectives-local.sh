@@ -35,17 +35,17 @@ run_gate SYNTAX uv run --locked python -m compileall -q \
   migrations/versions/20261009_133_b14_objective_retirement.py \
   src/dante/modules/temporal/reality_objective_api.py \
   src/dante/platform/database/mappings/b14_create_closure.py \
-  tests/integration/temporal/test_b14_m5_objective_editor.py
+  tests/integration/temporal/test_objective_atomic_edit.py
 run_gate RUFF uv run --locked ruff check \
   migrations/versions/20261009_133_b14_objective_retirement.py \
   src/dante/modules/temporal/reality_objective_api.py \
   src/dante/platform/database/mappings/b14_create_closure.py \
-  tests/integration/temporal/test_b14_m5_objective_editor.py
+  tests/integration/temporal/test_objective_atomic_edit.py
 run_gate POSTGRES uv run --locked pytest -q --no-cov --tb=short -m postgres \
-  tests/integration/temporal/test_b14_m5_objective_editor.py \
-  tests/integration/temporal/test_b14_m2_objective_corrections.py \
-  tests/integration/temporal/test_b14_m2_objective_scope.py \
-  tests/integration/temporal/test_b14_activity_edit_snapshot.py \
+  tests/integration/temporal/test_objective_atomic_edit.py \
+  tests/integration/temporal/test_objective_definition_result_correction.py \
+  tests/integration/temporal/test_objective_recurring_instance_scope.py \
+  tests/integration/temporal/test_activity_edit_snapshot.py \
   tests/integration/database/test_current_catalog.py \
   tests/integration/database/test_database_current_catalog.py
 

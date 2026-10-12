@@ -30,8 +30,8 @@ gate PY_SYNTAX uv run --locked python -m compileall -q \
   migrations/versions/20261010_140_b14_home_workspace_reads.py \
   migrations/versions/20261010_141_b14_independent_planned_sessions.py \
   migrations/versions/20261011_142_b14_past_activity_review.py \
-  tests/integration/temporal/test_b14_objective_input.py \
-  tests/integration/temporal/test_b14_home_workspace.py
+  tests/integration/temporal/test_objective_input.py \
+  tests/integration/temporal/test_home_workspace.py
 gate RUFF uv run --locked ruff check \
   src/dante/modules/temporal/session_panel_api.py \
   src/dante/modules/temporal/reality_objective_api.py \
@@ -42,22 +42,22 @@ gate RUFF uv run --locked ruff check \
   migrations/versions/20261010_141_b14_independent_planned_sessions.py \
   migrations/versions/20261011_142_b14_past_activity_review.py \
   tests/test_session_panel.py \
-  tests/integration/temporal/test_b14_objective_input.py \
-  tests/integration/temporal/test_b14_home_workspace.py \
-  tests/integration/temporal/test_b14_u6_resolution_queue.py \
-  tests/integration/temporal/test_b14_u6_reality_policy.py \
-  tests/integration/temporal/test_b14_session_panel.py \
+  tests/integration/temporal/test_objective_input.py \
+  tests/integration/temporal/test_home_workspace.py \
+  tests/integration/temporal/test_home_resolution_queue.py \
+  tests/integration/temporal/test_activity_reality_review_policy.py \
+  tests/integration/temporal/test_session_panel.py \
   tests/integration/database/test_current_catalog.py \
   tests/integration/database/test_database_current_catalog.py
 gate PY_UNIT uv run --locked pytest -q --no-cov --tb=short tests/test_session_panel.py
 gate POSTGRES uv run --locked pytest -q --no-cov --tb=short -m postgres \
-  tests/integration/temporal/test_b14_objective_input.py \
-  tests/integration/temporal/test_b14_home_workspace.py \
-  tests/integration/temporal/test_b14_u6_resolution_queue.py \
-  tests/integration/temporal/test_b14_u6_reality_policy.py \
-  tests/integration/temporal/test_b14_session_panel.py \
-  tests/integration/temporal/test_b14_session_hierarchy.py \
-  tests/integration/temporal/test_b14_planned_session_execution_link.py \
+  tests/integration/temporal/test_objective_input.py \
+  tests/integration/temporal/test_home_workspace.py \
+  tests/integration/temporal/test_home_resolution_queue.py \
+  tests/integration/temporal/test_activity_reality_review_policy.py \
+  tests/integration/temporal/test_session_panel.py \
+  tests/integration/temporal/test_session_hierarchy.py \
+  tests/integration/temporal/test_planned_session_execution_link.py \
   tests/integration/database/test_current_catalog.py \
   tests/integration/database/test_database_current_catalog.py
 cd ../.. || exit 1

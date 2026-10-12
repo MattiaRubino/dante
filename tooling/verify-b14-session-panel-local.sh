@@ -16,16 +16,16 @@ cd apps/backend || exit 1
 run_gate RUFF uv run --locked ruff check \
   src/dante/bootstrap/app.py src/dante/modules/temporal/session_panel_api.py \
   migrations/versions/20261009_135_b14_session_panel_untimed_start.py \
-  tests/test_session_panel.py tests/integration/temporal/test_b14_session_panel.py \
+  tests/test_session_panel.py tests/integration/temporal/test_session_panel.py \
   tests/integration/database/test_current_catalog.py tests/integration/database/test_database_current_catalog.py
 run_gate SYNTAX uv run --locked python -m compileall -q \
   src/dante/modules/temporal/session_panel_api.py migrations/versions/20261009_135_b14_session_panel_untimed_start.py
 run_gate UNIT uv run --locked pytest -q --no-cov --tb=short tests/test_session_panel.py
 run_gate POSTGRES uv run --locked pytest -q --no-cov --tb=short -m postgres \
-  tests/integration/temporal/test_b14_session_panel.py \
-  tests/integration/temporal/test_b14_planned_session_execution_link.py \
-  tests/integration/temporal/test_b08_b_session_pause_resume.py \
-  tests/integration/temporal/test_b14_activity_replan.py \
+  tests/integration/temporal/test_session_panel.py \
+  tests/integration/temporal/test_planned_session_execution_link.py \
+  tests/integration/temporal/test_session_pause_resume.py \
+  tests/integration/temporal/test_activity_replan.py \
   tests/integration/database/test_current_catalog.py \
   tests/integration/database/test_database_current_catalog.py
 cd ../.. || exit 1
@@ -46,7 +46,7 @@ run_gate VITEST pnpm --filter @dante/web exec vitest run \
   src/features/temporal/activity-planned-sessions-card-detail.test.tsx \
   src/features/temporal/remote-session-data-source.test.ts \
   src/features/home/ui/timeline/activity-inspector-actions.test.tsx \
-  src/features/temporal-create/ui/temporal-create-entry-u2.test.tsx
+  src/features/temporal-create/ui/temporal-create-entry-authoring.test.tsx
 run_gate BROWSER pnpm --filter @dante/web exec playwright test --config playwright.session-panel.config.ts
 FAILED=0
 for name in RUFF SYNTAX UNIT POSTGRES GENERATE GENERATED_CHECK API_TYPECHECK WEB_TYPECHECK PANEL_LINT VITEST BROWSER; do

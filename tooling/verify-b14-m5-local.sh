@@ -44,19 +44,19 @@ run_gate RUFF uv run --locked ruff check \
   src/dante/modules/temporal/activity_edit_snapshot_api.py \
   src/dante/modules/temporal/activity_replan_api.py \
   src/dante/platform/database/mappings/schedule.py \
-  tests/integration/temporal/test_b14_activity_replan.py \
-  tests/integration/temporal/test_b14_u2_authoring.py \
+  tests/integration/temporal/test_activity_replan.py \
+  tests/integration/temporal/test_activity_quick_authoring_metadata.py \
   tests/integration/database/test_current_catalog.py \
   tests/integration/database/test_database_current_catalog.py
 run_gate UNIT uv run --locked pytest -q --no-cov --tb=short \
-  tests/test_b14_activity_replan.py \
-  tests/test_b14_occurrence_edit_scope.py
+  tests/test_activity_replan.py \
+  tests/test_occurrence_edit_scope.py
 run_gate POSTGRES uv run --locked pytest -q --no-cov --tb=short -m postgres \
-  tests/integration/temporal/test_b14_activity_replan.py \
-  tests/integration/temporal/test_b14_u2_authoring.py \
-  tests/integration/temporal/test_b14_activity_edit_snapshot.py \
-  tests/integration/temporal/test_b14_m2_objective_corrections.py \
-  tests/integration/temporal/test_b14_m2_objective_scope.py \
+  tests/integration/temporal/test_activity_replan.py \
+  tests/integration/temporal/test_activity_quick_authoring_metadata.py \
+  tests/integration/temporal/test_activity_edit_snapshot.py \
+  tests/integration/temporal/test_objective_definition_result_correction.py \
+  tests/integration/temporal/test_objective_recurring_instance_scope.py \
   tests/integration/database/test_current_catalog.py \
   tests/integration/database/test_database_current_catalog.py
 
@@ -72,8 +72,8 @@ run_gate VITEST pnpm --filter @dante/web exec vitest run \
   src/features/home/ui/timeline/activity-inspector-actions.test.tsx \
   src/features/home/ui/timeline/event-inspector-actions.test.tsx \
   src/features/home/ui/timeline/timeline-inspector-reality.test.tsx \
-  src/features/temporal-create/application/temporal-create-u2-submit.test.ts \
-  src/features/temporal-create/ui/temporal-create-entry-u2.test.tsx
+  src/features/temporal-create/application/temporal-create-quick-submit.test.ts \
+  src/features/temporal-create/ui/temporal-create-entry-authoring.test.tsx
 
 echo
 echo "===== RIEPILOGO UNICO B14 M5 ====="

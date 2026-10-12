@@ -23,17 +23,17 @@ cd apps/backend || exit 1
 gate PY_SYNTAX uv run --locked python -m compileall -q \
   src/dante/modules/temporal/session_panel_api.py \
   tests/test_session_panel.py \
-  tests/integration/temporal/test_b14_session_panel.py \
-  tests/integration/temporal/test_b14_session_hierarchy.py
+  tests/integration/temporal/test_session_panel.py \
+  tests/integration/temporal/test_session_hierarchy.py
 gate RUFF uv run --locked ruff check \
   src/dante/modules/temporal/session_panel_api.py \
   tests/test_session_panel.py \
-  tests/integration/temporal/test_b14_session_panel.py \
-  tests/integration/temporal/test_b14_session_hierarchy.py
+  tests/integration/temporal/test_session_panel.py \
+  tests/integration/temporal/test_session_hierarchy.py
 gate PY_UNIT uv run --locked pytest -q --no-cov --tb=short tests/test_session_panel.py
 gate POSTGRES uv run --locked pytest -q --no-cov --tb=short -m postgres \
-  tests/integration/temporal/test_b14_session_panel.py \
-  tests/integration/temporal/test_b14_session_hierarchy.py
+  tests/integration/temporal/test_session_panel.py \
+  tests/integration/temporal/test_session_hierarchy.py
 cd ../.. || exit 1
 
 gate WEB_TYPECHECK pnpm --filter @dante/web typecheck

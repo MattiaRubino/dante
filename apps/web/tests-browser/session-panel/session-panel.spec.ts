@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 // Real browser + Timeline integration; API is deterministic here. PostgreSQL
-// command/ownership proof belongs to test_b14_session_panel.py, not this fixture.
+// command/ownership proof belongs to test_session_panel.py, not this fixture.
 const activity = '0199a111-1111-7111-8111-111111111111';
 const schedule = '0199a222-2222-7222-8222-222222222222';
 const session = '0199a333-3333-7333-8333-333333333333';

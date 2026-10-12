@@ -44,6 +44,7 @@ echo "All checks use the current source tree; generated:check snapshots and rest
 echo "No Git write, CI, deployment, or provider-side acceptance is run."
 
 gate DIFF_CHECK . git diff --check
+gate TEST_FILE_NAMES . python3 tooling/check-test-file-names.py
 gate BACKEND_FORMAT apps/backend uv run --locked ruff format --check .
 gate BACKEND_RUFF apps/backend uv run --locked ruff check .
 gate BACKEND_MYPY apps/backend uv run --locked mypy src
@@ -58,7 +59,7 @@ gate OBSERVABILITY_STATIC . pnpm observability:validate
 gate BACKEND_NON_POSTGRES apps/backend uv run --locked pytest -q --no-cov --tb=short -m 'not postgres'
 gate BACKEND_POSTGRES apps/backend uv run --locked pytest -q --no-cov --tb=short -m postgres
 gate EVAL_TOOLING . uv run --project apps/backend --locked pytest -q --no-cov --tb=short tooling/ai-evals/tests
-gate OBSERVABILITY_TOOLING . uv run --project apps/backend --locked pytest -q --no-cov --tb=short tooling/observability/tests
+gate OBSERVABILITY_TOOLING . env PYTHONPATH=. uv run --project apps/backend --locked pytest -q --no-cov --tb=short tooling/observability/tests
 gate FRONTEND_PROTOTYPE_CONTRACT . python3 tests/prototypes/frontend-preprod-contracts.py
 gate WORLD_PROTOTYPE_CONTRACT . python3 tests/prototypes/world-focus-preprod-contracts.py
 gate API_CLIENT_TESTS packages/api-client pnpm test

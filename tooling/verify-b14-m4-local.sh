@@ -37,36 +37,36 @@ run_gate SYNTAX uv run --locked python -m compileall -q \
   migrations/versions/20261008_128_b14_m4_event_profile.py \
   src/dante/modules/temporal/event.py \
   src/dante/modules/temporal/event_api.py \
-  tests/integration/temporal/test_b14_m4_event_profile.py
+  tests/integration/temporal/test_event_profile_edit.py
 
 run_gate RUFF uv run --locked ruff check \
   migrations/versions/20261008_128_b14_m4_event_profile.py \
   src/dante/modules/temporal/event.py \
   src/dante/modules/temporal/event_api.py \
   src/dante/platform/database/mappings/event.py \
-  tests/integration/temporal/test_b14_m4_event_profile.py \
-  tests/integration/temporal/test_b03_event_core.py \
-  tests/integration/temporal/test_b14_m3_residual_editor.py \
+  tests/integration/temporal/test_event_profile_edit.py \
+  tests/integration/temporal/test_event_core.py \
+  tests/integration/temporal/test_life_area_and_planned_session_edit.py \
   tests/integration/database/test_current_catalog.py \
   tests/integration/database/test_database_current_catalog.py
 
 run_gate UNIT uv run --locked pytest -q --no-cov --tb=short \
-  tests/test_b14_occurrence_edit_scope.py \
-  tests/test_b14_activity_replan.py
+  tests/test_occurrence_edit_scope.py \
+  tests/test_activity_replan.py
 
 run_gate POSTGRES uv run --locked pytest -q --no-cov --tb=short -m postgres \
-  tests/integration/temporal/test_b14_m4_event_profile.py \
-  tests/integration/temporal/test_b03_event_core.py \
-  tests/integration/temporal/test_b05_primary_life_area_assignment.py \
-  tests/integration/temporal/test_b14_activity_inspector.py \
-  tests/integration/temporal/test_b14_activity_edit_snapshot.py \
-  tests/integration/temporal/test_b14_activity_replan.py \
-  tests/integration/temporal/test_b14_m1_edit_inventory.py \
-  tests/integration/temporal/test_b14_m1_scoped_profile_edit.py \
-  tests/integration/temporal/test_b14_m2_objective_corrections.py \
-  tests/integration/temporal/test_b14_m2_objective_scope.py \
-  tests/integration/temporal/test_b14_m3_residual_editor.py \
-  tests/integration/temporal/test_b14_m3_b_instance_scope_boundary.py \
+  tests/integration/temporal/test_event_profile_edit.py \
+  tests/integration/temporal/test_event_core.py \
+  tests/integration/temporal/test_primary_life_area_assignment.py \
+  tests/integration/temporal/test_activity_inspector.py \
+  tests/integration/temporal/test_activity_edit_snapshot.py \
+  tests/integration/temporal/test_activity_replan.py \
+  tests/integration/temporal/test_recurring_profile_edit_inventory.py \
+  tests/integration/temporal/test_recurring_profile_scoped_edit.py \
+  tests/integration/temporal/test_objective_definition_result_correction.py \
+  tests/integration/temporal/test_objective_recurring_instance_scope.py \
+  tests/integration/temporal/test_life_area_and_planned_session_edit.py \
+  tests/integration/temporal/test_recurring_instance_edit_scope_boundary.py \
   tests/integration/database/test_current_catalog.py \
   tests/integration/database/test_database_current_catalog.py
 

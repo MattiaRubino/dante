@@ -27,18 +27,18 @@ run_gate SYNTAX uv run --locked python -m compileall -q \
   src/dante/modules/temporal/draft_vault_api.py \
   src/dante/platform/database/mappings/draft_vault.py \
   migrations/versions/20261009_134_b14_draft_vault.py \
-  tests/integration/temporal/test_b14_draft_vault.py
+  tests/integration/temporal/test_draft_vault.py
 run_gate RUFF uv run --locked ruff check \
   src/dante/modules/temporal/draft_vault_api.py \
   src/dante/platform/database/mappings/draft_vault.py \
   src/dante/platform/database/mappings/__init__.py \
   src/dante/bootstrap/app.py \
   migrations/versions/20261009_134_b14_draft_vault.py \
-  tests/integration/temporal/test_b14_draft_vault.py \
+  tests/integration/temporal/test_draft_vault.py \
   tests/integration/database/test_current_catalog.py \
   tests/integration/database/test_database_current_catalog.py
 run_gate POSTGRES uv run --locked pytest -q --no-cov --tb=short -m postgres \
-  tests/integration/temporal/test_b14_draft_vault.py \
+  tests/integration/temporal/test_draft_vault.py \
   tests/integration/database/test_current_catalog.py \
   tests/integration/database/test_database_current_catalog.py
 cd ../.. || exit 1
@@ -51,10 +51,10 @@ run_gate WEB_VITEST pnpm --filter @dante/web exec vitest run \
   src/features/temporal-create/application/remote-draft-vault.test.ts \
   src/features/temporal-create/ui/temporal-create-composer.test.tsx \
   src/features/temporal-create/ui/temporal-create-draft-vault.test.tsx \
-  src/features/temporal-create/ui/temporal-create-entry-u2.test.tsx \
-  src/features/temporal-create/ui/temporal-create-top-u1.test.tsx \
+  src/features/temporal-create/ui/temporal-create-entry-authoring.test.tsx \
+  src/features/temporal-create/ui/temporal-create-top-controls.test.tsx \
   src/features/home/ui/timeline/timeline-draft-vault.test.tsx \
-  src/features/home/ui/timeline/timeline-planning-tray-b01.test.tsx \
+  src/features/home/ui/timeline/timeline-planning-tray-items.test.tsx \
   src/features/home/ui/timeline/activity-inspector-actions.test.tsx \
   src/features/home/ui/timeline/event-inspector-actions.test.tsx
 

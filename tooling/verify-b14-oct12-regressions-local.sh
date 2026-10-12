@@ -20,11 +20,11 @@ cd apps/backend || exit 1
 gate RUFF uv run --locked ruff check \
   src/dante/modules/temporal/routine_occurrence_materialization.py \
   tests/test_routine_occurrence_untimed_template.py \
-  tests/integration/temporal/test_b14_recurring_untimed_planned_session.py
+  tests/integration/temporal/test_recurring_untimed_planned_session.py
 gate PY_UNIT uv run --locked pytest -q --no-cov --tb=short \
   tests/test_routine_occurrence_untimed_template.py
 gate POSTGRES uv run --locked pytest -q --no-cov --tb=short -m postgres \
-  tests/integration/temporal/test_b14_recurring_untimed_planned_session.py
+  tests/integration/temporal/test_recurring_untimed_planned_session.py
 cd ../.. || exit 1
 
 gate WEB_TYPECHECK pnpm --filter @dante/web typecheck
@@ -39,10 +39,10 @@ gate WEB_LINT pnpm exec eslint \
   apps/web/src/features/temporal/activity-session-card-controls.tsx \
   apps/web/src/features/temporal/activity-session-card-controls.test.tsx \
   apps/web/src/features/temporal-create/application/temporal-create-u2-submit.ts \
-  apps/web/src/features/temporal-create/application/temporal-create-u2-submit.test.ts \
+  apps/web/src/features/temporal-create/application/temporal-create-quick-submit.test.ts \
   apps/web/src/features/temporal-create/application/remote-recurring-authoring.ts
 gate VITEST pnpm --filter @dante/web exec vitest run \
-  src/features/temporal-create/application/temporal-create-u2-submit.test.ts \
+  src/features/temporal-create/application/temporal-create-quick-submit.test.ts \
   src/features/temporal/activity-session-card-controls.test.tsx \
   src/features/home/ui/timeline/timeline-session-reality.test.ts \
   src/features/home/ui/timeline/timeline-surface.test.tsx

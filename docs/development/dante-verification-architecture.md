@@ -4,6 +4,9 @@
 - **Ambito:** tutto il repository e tutti i flussi implementati, dal Domain e dal Blueprint PostgreSQL alle migrazioni, al runtime, alle API, ai client, al Web, al mobile e alle dipendenze esterne.
 - **Baseline backend:** [testing-and-ci-v0.md](testing-and-ci-v0.md). La matrice Temporal è un dettaglio funzionale in [temporal-regression-testing.md](temporal-regression-testing.md), non il perimetro del programma.
 
+La convenzione dei nomi e la mappa dai vecchi file di fase ai test attuali sono in [test-naming-and-discovery.md](test-naming-and-discovery.md).
+La prima esecuzione WSL del gate completo è registrata in [full-gate-baseline-2026-10-12.md](full-gate-baseline-2026-10-12.md): il suo risultato complessivo è rosso.
+
 ## Regola per ogni cambiamento
 
 1. Identificare il contratto di prodotto e le autorità coinvolte: Domain/decisioni → Logical → Physical → Blueprint database → Dictionary → Alembic/SQLAlchemy → runtime/HTTP → OpenAPI/client → Web/mobile → effetto osservabile. Una freccia non implica che ogni funzione attraversi tutti gli strati; dichiarare quelli effettivi.

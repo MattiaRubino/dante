@@ -131,7 +131,7 @@ describe('Temporal Create enterprise authoring semantics', () => {
     const event = (await runtime.listRecords())[0]?.metadata.specification
       .event;
     // The local authoring record retains the editable draft; the canonical
-    // request normalizes it in temporal-create-u2-submit.test.ts.
+    // request normalizes it in temporal-create-quick-submit.test.ts.
     expect(event?.agendaParts).toEqual([
       '  Rischi ',
       '',

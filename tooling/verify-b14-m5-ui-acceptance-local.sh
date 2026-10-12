@@ -33,19 +33,19 @@ fi
 cd apps/backend || exit 1
 run_gate SYNTAX uv run --locked python -m compileall -q \
   src/dante/modules/temporal/activity_replan_api.py \
-  tests/integration/temporal/test_b14_activity_replan.py
+  tests/integration/temporal/test_activity_replan.py
 run_gate RUFF uv run --locked ruff check \
   src/dante/modules/temporal/activity_replan_api.py \
-  tests/integration/temporal/test_b14_activity_replan.py
+  tests/integration/temporal/test_activity_replan.py
 run_gate POSTGRES uv run --locked pytest -q --no-cov --tb=short -m postgres \
-  tests/integration/temporal/test_b14_activity_replan.py
+  tests/integration/temporal/test_activity_replan.py
 
 cd ../.. || exit 1
 run_gate WEB_TYPECHECK pnpm --filter @dante/web typecheck
 run_gate VITEST pnpm --filter @dante/web exec vitest run \
   src/features/home/ui/timeline/activity-inspector-actions.test.tsx \
   src/features/temporal/remote-activity-edit-settings.test.ts \
-  src/features/temporal-create/application/temporal-create-u2-submit.test.ts
+  src/features/temporal-create/application/temporal-create-quick-submit.test.ts
 
 echo
 echo "===== GATE M5 UI — UNICO RIEPILOGO ====="
