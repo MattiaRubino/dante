@@ -10,7 +10,7 @@ import pytest
 from psycopg import errors
 
 pytestmark = pytest.mark.postgres
-pytest_plugins = ("tests.integration.temporal.test_b01_activity_core",)
+pytest_plugins = ("tests.integration.temporal.test_activity_core",)
 
 _TABLES = (
     "event_expected_participation",

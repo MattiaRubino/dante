@@ -2,7 +2,11 @@ import { randomUUID } from 'node:crypto';
 
 import { defineConfig } from '@playwright/test';
 
-const baseURL = 'https://127.0.0.1:4173';
+const authPort = Number(process.env.DANTE_E2E_WEB_PORT ?? 4173);
+if (!Number.isInteger(authPort) || authPort < 1 || authPort > 65535) {
+  throw new Error('DANTE_E2E_WEB_PORT must be a valid TCP port');
+}
+const baseURL = `https://127.0.0.1:${authPort}`;
 
 process.env.DANTE_E2E_CONTROL_ID ??= randomUUID();
 process.env.DANTE_E2E_SIGNIN_RATE_CAPACITY = '2';

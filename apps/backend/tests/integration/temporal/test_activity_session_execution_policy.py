@@ -7,7 +7,7 @@ from typing import Any
 import psycopg
 import pytest
 from fastapi.testclient import TestClient
-from tests.integration.temporal.test_b01_activity_core import (
+from tests.integration.temporal.test_activity_core import (
     _CANONICAL_ORIGIN,
     _auth_settings,
     _base_headers,
@@ -20,7 +20,7 @@ from dante.auth.sessions import CSRF_HEADER_NAME
 from dante.bootstrap.app import create_app
 
 pytestmark = pytest.mark.postgres
-pytest_plugins = ("tests.integration.temporal.test_b01_activity_core",)
+pytest_plugins = ("tests.integration.temporal.test_activity_core",)
 
 
 def test_activity_execution_policy_is_explicit_current_and_self_scoped(

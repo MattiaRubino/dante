@@ -8,7 +8,7 @@ from typing import Any
 
 import psycopg
 import pytest
-from tests.integration.temporal.test_b14_u2_authoring import _seed_self
+from tests.integration.temporal.test_activity_quick_authoring_metadata import _seed_self
 
 from dante.modules.temporal.authoring import (
     ActivityChildIntent,

@@ -45,9 +45,10 @@ echo "No Git write, CI, deployment, or provider-side acceptance is run."
 
 gate DIFF_CHECK . git diff --check
 gate TEST_FILE_NAMES . python3 tooling/check-test-file-names.py
+gate TEST_INTEGRITY . python3 tooling/testing/verify_test_integrity.py
 gate BACKEND_FORMAT apps/backend uv run --locked ruff format --check .
 gate BACKEND_RUFF apps/backend uv run --locked ruff check .
-gate BACKEND_MYPY apps/backend uv run --locked mypy src
+gate BACKEND_MYPY apps/backend uv run --locked mypy src tests tooling
 gate REPO_FORMAT . pnpm format:check
 gate REPO_ESLINT . pnpm lint
 gate REPO_TYPECHECK . pnpm typecheck
@@ -68,7 +69,7 @@ gate TIME_TESTS packages/time pnpm test
 gate WEB_VITEST apps/web pnpm test
 gate WEB_BROWSER_FIXTURE apps/web pnpm exec playwright test --config playwright.session-panel.config.ts
 gate WEB_BROWSER_NONAUTH apps/web pnpm exec playwright test --config playwright.config.ts
-gate WEB_BROWSER_REAL_STACK apps/web pnpm exec playwright test --config playwright.auth.config.ts
+gate WEB_BROWSER_REAL_STACK . python3 tooling/testing/run_real_stack_playwright.py
 
 echo "===== ALL TEST GROUPS ====="
 failed=0

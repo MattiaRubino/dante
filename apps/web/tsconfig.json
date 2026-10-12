@@ -12,6 +12,7 @@
     "playwright.config.ts",
     "playwright.auth.config.ts",
     "e2e",
+    "tests-browser",
     "vitest.config.ts"
   ]
 }

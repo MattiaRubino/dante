@@ -8,8 +8,8 @@ from typing import Any
 
 import pytest
 from fastapi import Request, Response
-from tests.integration.temporal.b05_legacy_test_support import ensure_test_life_area
-from tests.integration.temporal.test_b02_schedule_create import _seed_self_person
+from tests.integration.temporal.support.life_area import ensure_test_life_area
+from tests.integration.temporal.test_schedule_create import _seed_self_person
 
 from dante.modules.temporal.activity import TemporalActivityApplication
 from dante.modules.temporal.actual_runtime import ActualApplication

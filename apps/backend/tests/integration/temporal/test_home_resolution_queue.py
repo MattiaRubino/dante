@@ -6,7 +6,7 @@ from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
-from tests.integration.temporal.test_b01_activity_core import (
+from tests.integration.temporal.test_activity_core import (
     _CANONICAL_ORIGIN,
     _auth_settings,
     _base_headers,
@@ -14,12 +14,12 @@ from tests.integration.temporal.test_b01_activity_core import (
     _settings,
     _signin,
 )
-from tests.integration.temporal.test_b10_c_confirmation_api import (
+from tests.integration.temporal.test_confirmation_api import (
     _actual_command,
     _confirmation_command,
     _outcome_command,
 )
-from tests.integration.temporal.test_b10_d_reconciliation_api import (
+from tests.integration.temporal.test_reconciliation_api import (
     _evidence,
     _reconciliation_command,
 )
@@ -28,7 +28,7 @@ from dante.auth.sessions import CSRF_HEADER_NAME
 from dante.bootstrap.app import create_app
 
 pytestmark = pytest.mark.postgres
-pytest_plugins = ("tests.integration.temporal.test_b01_activity_core",)
+pytest_plugins = ("tests.integration.temporal.test_activity_core",)
 
 
 def test_resolution_queue_follows_canonical_reconciliation_and_self_scope(

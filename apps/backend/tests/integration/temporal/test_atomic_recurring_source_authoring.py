@@ -6,7 +6,7 @@ from datetime import date, time
 from typing import Any
 
 import pytest
-from tests.integration.temporal.test_b05_primary_life_area_assignment import _seed_self
+from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
 
 from dante.modules.temporal.authoring import AuthoringLifeAreaIntent
 from dante.modules.temporal.event import TemporalEventApplication

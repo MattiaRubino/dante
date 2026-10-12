@@ -19,3 +19,25 @@
 | SOURCE_STABILITY | 0 | Nessuna modifica residua al worktree per quel giro. |
 
 Il gate resta **ROSSO**. La priorità di diagnosi è il primo errore causale PostgreSQL, poi i singoli otto test non PostgreSQL, i trace browser e il port conflict; formattazione/lint/typecheck vanno bonificati senza silenziare i controlli. Ogni modifica deve attraversare il gate integrale sullo stesso nuovo candidato. Gli esiti PASS precedenti restano evidenza storica sul proprio SHA.
+
+## Gate 181c5804 — user WSL evidence (12 October 2026)
+
+Candidate: 181c58049c95d4914987a9c22f1d2cd6bc3c2f17. The attached
+user terminal output reports a clean worktree and logs at
+/tmp/dante-all-tests.xrLSaV (on the user's WSL machine). This is reported
+evidence, not a new execution or an examination of individual trace files.
+
+The naming checker reports 489 passing test filenames. Both
+BACKEND_NON_POSTGRES and BACKEND_POSTGRES stop at collection with 63 errors.
+Current sources include imports and pytest_plugins still referencing test
+modules renamed in the earlier 180-file migration. The structural repair
+requires new local collection and full gate proof, not automatic PASS.
+
+Quality gates: BACKEND_FORMAT 237 files; BACKEND_RUFF 122 errors;
+BACKEND_MYPY 196 errors in 24 files; REPO_FORMAT 214 files;
+REPO_ESLINT 340 errors and 3 warnings. Web non-auth Playwright:
+111 passed, 16 failed. Web real-stack: blocked by occupied HTTPS port 4173.
+Pass on this candidate: diff/stability, repository typecheck, architecture,
+generated drift, build, Android bundle, observability static and tooling,
+AI eval tooling, prototype contracts, package tests, Web Vitest and browser
+Session Panel. Full outcome: RED. Keep all functional failures open.

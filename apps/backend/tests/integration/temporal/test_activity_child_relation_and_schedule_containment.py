@@ -9,8 +9,8 @@ from uuid import UUID, uuid7
 
 import psycopg
 import pytest
-from tests.integration.temporal.test_b04_absolute_window_core import _mutate as _mutate_window
-from tests.integration.temporal.test_b04_f_constrained_activity_application import (
+from tests.integration.temporal.test_absolute_window_core import _mutate as _mutate_window
+from tests.integration.temporal.test_activity_constraint_atomic_authoring import (
     _seed_activity,
     _seed_person,
 )

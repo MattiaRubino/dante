@@ -15,7 +15,7 @@ import psycopg
 import pytest
 from fastapi.testclient import TestClient
 from pydantic import SecretStr
-from tests.integration.temporal.b05_legacy_test_support import api_test_life_area
+from tests.integration.temporal.support.life_area import api_test_life_area
 
 from dante.auth.email import normalize_email
 from dante.auth.passwords import PasswordKdf

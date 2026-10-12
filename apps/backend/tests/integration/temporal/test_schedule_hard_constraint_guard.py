@@ -8,7 +8,7 @@ from uuid import uuid7
 
 import psycopg
 import pytest
-from tests.integration.temporal.b05_legacy_test_support import ensure_test_life_area
+from tests.integration.temporal.support.life_area import ensure_test_life_area
 
 from dante.modules.temporal.activity import (
     ActivityPersistenceError,

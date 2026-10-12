@@ -9,7 +9,7 @@ from uuid import uuid7
 
 import psycopg
 import pytest
-from tests.integration.temporal.test_b04_f_constrained_activity_application import (
+from tests.integration.temporal.test_activity_constraint_atomic_authoring import (
     _seed_activity,
     _seed_person,
 )

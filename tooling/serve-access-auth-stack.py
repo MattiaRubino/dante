@@ -40,8 +40,10 @@ from sqlalchemy import URL
 _POSTGRES_IMAGE = "dante-postgres-local:18.6"
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 _BACKEND_ROOT = _REPO_ROOT / "apps" / "backend"
-_WEB_ORIGIN = "https://127.0.0.1:4173"
-_WEB_PORT = 4173
+_WEB_PORT = int(os.environ.get("DANTE_E2E_WEB_PORT", "4173"))
+if not 1 <= _WEB_PORT <= 65535:
+    raise ValueError("DANTE_E2E_WEB_PORT must be a valid TCP port")
+_WEB_ORIGIN = f"https://127.0.0.1:{_WEB_PORT}"
 _DATABASE_NAME = "dante_e2e"
 _EMAIL = "synthetic.user@example.com"
 _PASSWORD = "correct horse battery staple"

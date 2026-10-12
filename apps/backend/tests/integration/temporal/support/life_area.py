@@ -1,4 +1,4 @@
-"""Preserve pre-B05 behavioral tests while supplying B05's required real organization."""
+"""Create canonical actor-owned Life Area fixtures for temporal integration tests."""
 
 from __future__ import annotations
 

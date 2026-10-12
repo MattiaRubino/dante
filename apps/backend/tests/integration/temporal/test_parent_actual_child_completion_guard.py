@@ -8,11 +8,11 @@ from uuid import UUID, uuid7
 
 import psycopg
 import pytest
-from tests.integration.temporal.test_b04_f_constrained_activity_application import (
+from tests.integration.temporal.test_activity_constraint_atomic_authoring import (
     _seed_activity,
     _seed_person,
 )
-from tests.integration.temporal.test_b14_u6_activity_decomposition import _mutate
+from tests.integration.temporal.test_activity_child_relation_and_schedule_containment import _mutate
 
 from dante.modules.temporal.actual_runtime import ActualApplication, ActualParentGuardError
 from dante.platform.database.runtime import create_database_runtime

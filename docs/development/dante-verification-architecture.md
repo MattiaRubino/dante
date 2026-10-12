@@ -57,3 +57,21 @@ Restano prove **esplicitamente fuori dal gate automatico corrente** finché non 
 2. Bonificare i rossi esistenti del gate, inclusi gli errori ESLint già osservati; eseguire in WSL il gate esteso e registrare anche gruppi bloccati. Le nuove righe introdotte qui non sono ancora state eseguite sul sistema dell'utente.
 3. Per ogni fix/funzionalità, ampliare la matrice della famiglia proprietaria e un caso di integrazione adiacente, poi fare il giro completo sul medesimo candidato.
 4. Aggiungere harness specialistici solo quando il relativo contratto/ambiente è definito, mantenendo separati prova tecnica, accettazione visiva e integrazione su `main`.
+
+## Structural integrity and browser isolation
+
+The repository-wide registry (docs/development/test-case-registry.json)
+tracks test location, owning suite, provisional contract and review
+status. Existing files have UNREVIEWED status and no inferred qualified
+semantics. TEST_INTEGRITY checks discovery, obsolete imports/plugins,
+mypy override names and executable shell script references. A rename
+updates all consumers, the registry and current documentation together.
+
+Real-stack Playwright now starts through
+tooling/testing/run_real_stack_playwright.py, selecting a free loopback
+HTTPS port and propagating DANTE_E2E_WEB_PORT into the browser and the
+Auth/Vite stack, without terminating or adopting the developer's 4173
+service. Port binding still has a possible race; such a failure remains
+environmental until separately diagnosed. The full gate and any user
+real-app acceptance must be rerun on the new commit; existing REDs are
+not certified by this structural refactor.

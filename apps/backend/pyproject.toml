@@ -151,8 +151,8 @@ disable_error_code = ["no-untyped-call"]
 
 [[tool.mypy.overrides]]
 module = [
-    "test_m5_passkeys",
-    "*.test_m5_passkeys",
+    "test_passkey_lifecycle",
+    "*.test_passkey_lifecycle",
 ]
 disable_error_code = ["no-untyped-call", "misc"]
 
@@ -161,12 +161,12 @@ disable_error_code = ["no-untyped-call", "misc"]
 # argument compatibility is suppressed in these focused test modules.
 [[tool.mypy.overrides]]
 module = [
-    "test_auth_m5_provider_api",
-    "*.test_auth_m5_provider_api",
-    "test_auth_m5_passkey_api",
-    "*.test_auth_m5_passkey_api",
-    "test_auth_m5_api",
-    "*.test_auth_m5_api",
+    "test_provider_auth_http_contract",
+    "*.test_provider_auth_http_contract",
+    "test_passkey_http_contract",
+    "*.test_passkey_http_contract",
+    "test_auth_methods_http_contract",
+    "*.test_auth_methods_http_contract",
 ]
 disable_error_code = ["arg-type"]
 

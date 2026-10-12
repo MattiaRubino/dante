@@ -21,3 +21,23 @@ Regole per i prossimi file:
 - aggiornare i riferimenti eseguibili quando un file cambia nome. `tooling/check-test-file-names.py` blocca i nuovi identificativi di fase nel gate generale.
 
 Il [registro delle rinomine](test-file-rename-map-2026-10-12.csv) mappa tutti i 180 file spostati senza cambiare i loro assert. I documenti di evidenza storica possono citare i percorsi di allora; il registro consente di trovare quello attuale. Gli script locali che invocano nomi espliciti sono stati aggiornati. Una rinomina non chiude alcun test rosso né certifica copertura semantica: la qualificazione dell'inventario e la correzione dei fallimenti rimangono attività distinte.
+
+## Test-case registry and future edits
+
+docs/development/test-case-registry.json is the repository-wide inventory
+of executable test files. Each record has a suite boundary, provisional
+contract family, candidate behavior inferred from its name, review status,
+purpose and invariant. Every pre-existing test starts UNREVIEWED and must
+not be presented as semantically qualified or passing. Review the accepted
+Domain/Logical/Physical contract, test assertions, negative cases and
+cross-feature interactions before setting QUALIFIED, with explicit
+purpose and invariant. New tests must be registered and QUALIFIED in the
+same change. All assertions and cases remain owned by their test files;
+the registry is a durable index, not duplicated executable truth.
+
+The TEST_INTEGRITY gate calls
+python3 tooling/testing/verify_test_integrity.py and blocks unregistered
+test files, stale cross-test imports, pytest_plugins references and old
+script paths after renames. Cross-test fixtures should ultimately live
+under support/ or conftest.py instead of depending on arbitrary test_*
+modules. Test inventory PASS is structural only, never proof of behavior.

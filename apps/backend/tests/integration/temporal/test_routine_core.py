@@ -16,7 +16,7 @@ from dante.modules.temporal.routine import (
     RoutineStateConflictError,
 )
 from dante.platform.database.runtime import create_database_runtime
-from tests.integration.temporal.test_b05_primary_life_area_assignment import _seed_self
+from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
 
 pytestmark = pytest.mark.postgres
 

@@ -8,7 +8,7 @@ from typing import Any
 
 import psycopg
 import pytest
-from tests.integration.temporal.test_b05_primary_life_area_assignment import _seed_self
+from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
 
 from dante.modules.temporal.actual_runtime import ActualApplication
 from dante.modules.temporal.advanced_recurrence import (

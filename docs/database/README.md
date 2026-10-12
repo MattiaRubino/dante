@@ -78,7 +78,7 @@ No accepted historical migration was edited, rebased, renumbered or flattened. B
 
 ## 3. Historical B10-C proven topology (2026-09-26)
 
-Current *unverified* candidate topology is **238 tables, 5 views, 228 routines, 103 triggers, 486 indexes, 421 FKs, 596 CHECK**, at `_141`. These numbers must pass the user's PostgreSQL gate before being marked proven.
+The latest branch-candidate topology is **238 tables, 5 views, 228 routines, 103 triggers, 486 indexes, 421 FKs, 596 CHECK**, at `_142`; the targeted catalog gate passed on 2026-10-11. The full 2026-10-12 repository gate remains RED.
 
 ### Historical topology
 

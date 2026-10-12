@@ -20,8 +20,8 @@ from dante.modules.temporal.schedule_reminder import (
     ScheduleReminderNotFoundError,
 )
 from dante.platform.database.runtime import create_database_runtime
-from tests.integration.temporal.b05_legacy_test_support import ensure_test_life_area
-from tests.integration.temporal.test_b02_schedule_create import _seed_self_person
+from tests.integration.temporal.support.life_area import ensure_test_life_area
+from tests.integration.temporal.test_schedule_create import _seed_self_person
 
 pytestmark = pytest.mark.postgres
 
