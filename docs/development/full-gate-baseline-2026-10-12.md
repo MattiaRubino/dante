@@ -109,3 +109,28 @@ failures or unobserved real-stack result. Next first run the focused
 `test_runtime.py` outage/recovery tests and the Alembic head/current
 forward-only tests, then all PostgreSQL cases and ultimately the complete
 same-SHA gate; preserve distinct failures.
+
+## Focused outage/Alembic repair validation on 88ecdac7 — user WSL (12 October 2026)
+
+User-provided terminal output on active branch at
+`88ecdac73bd0e3f212ea3dc13d99678229f36272`, Python 3.14.7 /
+pytest 9.1.1 / WSL, with `uv run --locked pytest -vv -x --no-cov --tb=short`:
+
+- PostgreSQL outage/readiness recovery and current catalog:
+  `test_liveness_survives_database_outage_and_readiness_recovers_without_app_restart`,
+  `test_readiness_response_never_exposes_database_details`,
+  `test_current_catalog_matches_dictionary_sqlalchemy_and_alembic`.
+  **3 passed in 21.55 s**.
+- Alembic fresh-to-head, current forward-only guard and historical
+  reversible-head round trip:
+  `test_fresh_database_reaches_the_single_repository_head`,
+  `test_current_repository_head_refuses_downgrade_by_design`,
+  `test_historical_reversible_head_round_trips_to_base_and_back`.
+  **3 passed in 9.80 s**.
+
+These **six scoped checks PASS**, supporting the outage recovery fix and
+the current-versus-historical migration test split. They do **not** prove
+that all PostgreSQL tests pass in sequence or that the remaining
+non-PostgreSQL, static quality and browser gates are resolved.
+Next: run the entire PostgreSQL-marked suite on an identical candidate,
+record first-cause failures and then re-run the full monorepo gate.
