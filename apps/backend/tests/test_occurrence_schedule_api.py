@@ -12,15 +12,15 @@ from fastapi import Response
 from dante.auth.contracts import Principal
 from dante.context.contracts import DanteContext
 from dante.modules.temporal.api import DateSpanPlacementRequest
-from dante.modules.temporal.occurrence import (
-    OccurrenceApplication,
-    OccurrenceWindowCheckpoint,
-)
+from dante.modules.temporal.occurrence import OccurrenceWindowCheckpoint
 from dante.modules.temporal.occurrence_api import (
     EstablishOccurrenceScheduleRequest,
     OccurrenceWindowCheckpointRequest,
     checkpoint_occurrence_window,
     establish_occurrence_schedule,
+)
+from dante.modules.temporal.routine_occurrence_materialization import (
+    RoutineOccurrenceMaterializationApplication,
 )
 from dante.modules.temporal.schedule import (
     DateSpanPlacement,

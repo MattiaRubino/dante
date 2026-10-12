@@ -41,6 +41,7 @@ _RUNTIME_DEPENDENCY_ALLOWLIST = frozenset(
         "httpx2",
         "joserfc",
         "openai",
+        "ortools",  # Admitted deterministic CP-SAT planning runtime.
         "opentelemetry-api",
         "opentelemetry-exporter-otlp-proto-http",
         "opentelemetry-sdk",

@@ -161,6 +161,10 @@ async def test_existing_activity_schedule_api_preserves_identity_and_replay_stat
         "starts_local_at": "2026-09-09T14:15:00",
         "ends_local_at": "2026-09-09T15:00:00",
         "replayed": replayed,
+        # An existing Activity without a Life Area keeps an explicit optional
+        # assignment, even when an existing Schedule is established.
+        "life_area_ref": None,
+        "life_area_assignment_revision": None,
     }
     assert application.calls[0]["activity_ref"] == _ACTIVITY_REF
 

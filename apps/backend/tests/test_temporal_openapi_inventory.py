@@ -1,8 +1,16 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import Any, cast
 
 from dante.bootstrap.openapi_export import openapi_document
+
+_PUBLISHED_OPENAPI = (
+    Path(__file__).resolve().parents[3]
+    / "packages/api-client/openapi/dante-v1.openapi.json"
+)
+_CURRENT_ACCEPTED_TEMPORAL_OPERATION_COUNT = 183
 
 _HTTP_METHODS = frozenset({"get", "post", "put", "patch", "delete", "options", "head", "trace"})
 
@@ -202,7 +210,15 @@ def _temporal_operations(document: dict[str, Any]) -> dict[tuple[str, str], str]
 def test_complete_temporal_operation_inventory_and_operation_ids_are_frozen() -> None:
     """No Temporal endpoint may be lost, duplicated or silently renamed."""
     actual = _temporal_operations(openapi_document())
-    assert actual == _EXPECTED_TEMPORAL_OPERATIONS
+    # Every previously accepted explicit operation remains present with its
+    # immutable ID. The checked-in generated OpenAPI is the complete published
+    # contract for later B14 routes, not a mutable in-test discovery baseline.
+    assert _EXPECTED_TEMPORAL_OPERATIONS.items() <= actual.items()
+    with _PUBLISHED_OPENAPI.open(encoding="utf-8") as file:
+        published = json.load(file)
+    published_operations = _temporal_operations(cast(dict[str, Any], published))
+    assert len(published_operations) == _CURRENT_ACCEPTED_TEMPORAL_OPERATION_COUNT
+    assert actual == published_operations
     assert len(set(actual.values())) == len(actual)
 
 

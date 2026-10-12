@@ -274,3 +274,62 @@ SQLAlchemy metadata using Alembic autogenerate with
 remains enabled and **RED** pending exact-diff diagnosis and
 Dictionary-grounded correction. Other monorepo test/quality gates
 remain open as documented above.
+
+## Complete one-SHA gate — ee2ed0fa, user WSL (12 October 2026)
+
+Full original evidence supplied by the user: `FULL_GATE_LOGS.tar.gz`
+(27 group logs and CONSOLE.log), `FULL_GATE_SUMMARY.md`, and terminal
+output. Authoritative candidate
+`ee2ed0fabd32f5a6b8ce1fc2b89d63b41a6cda93`; tree fingerprint
+`e3b0c442...` before and after; worktree remained clean.
+**27/27 groups executed, 18 PASS, 9 FAIL; global gate RED.**
+
+- PostgreSQL **369 passed / 2 failed / 621 deselected**, 774.40 seconds:
+  the historical-head test
+  `test_database_current_catalog.py` still asserts
+  `20261011_142` instead of head `20261012_143`; independent
+  `test_migrations.py::test_alembic_check_reports_no_dante_schema_drift_with_extensions_present`
+  reports autogenerate schema/ORM differences (CHECK constraint
+  expressions/naming, 26 foreign keys, index/unique constraints,
+  seven defaults and two nullabilities). **Do not suppress autogenerate.**
+- Backend non-PostgreSQL **613 passed / 8 failed**: Dictionary
+  `completed_stages` schema frozen at 40 while scope has 61;
+  Occurrence-window API test injects stale `application` instead
+  of `materialization`; Session HTTP inventory omits planned name
+  and Session Panel; Tag mapping inventory still hard-codes 135 instead
+  of comparing against all 238 current Dictionary tables; Temporal
+  OpenAPI manual exact inventory lacks 44 post-baseline routes;
+  two existing-Schedule response tests omit intentionally nullable
+  Life Area fields; runtime dependency allowlist omits `ortools`.
+- Backend formatting: **242** files; Ruff: **132** errors;
+  mypy: **678** errors across 77 files. Repository Prettier:
+  **214** files; ESLint: **338 errors / 3 warnings**, including
+  a missing Playwright session-panel config from the TS project service.
+  These are real failed quality gates, not PASS or authorization to
+  disable the tools.
+- Non-auth browser: **111 passed / 16 failed**. The log shows
+  multiple legacy `getByLabel('Ora').fill(...)` selectors now
+  resolving to several buttons instead of a text input, mismatched
+  Advanced Create/Planning Tray semantics and a Timeline focus
+  interaction failure. Proxy attempts to `127.0.0.1:8000` were
+  refused during non-auth fixture runs. Diagnose per intended test
+  boundary; do not simply remove failing cases.
+- Real-stack browser: **74 failed / 10 passed / 3 skipped**
+  in approximately **59.3 minutes**. Repeated initial login helper
+  waits for a no-longer-detected `Continua` control and eventually
+  times out before an auth request. Browser video/screenshot/trace
+  artifacts were not included in this log archive, so the exact
+  rendered page and root condition **cannot yet be established**.
+  Must validate real HTTPS/FastAPI/PostgreSQL spine, not replace with
+  fixture UI.
+- All other checks, including source stability, test discovery,
+  generated client drift, package unit suites, architecture/typecheck,
+  build, mobile bundle, eval/observability/prototype contracts and
+  fixture browser, passed for **ee2ed0fa only**.
+
+After this report the scoped corrective batch aligns Dictionary stage
+schema, current database head, several transport/inventory response
+contracts, admitted runtime dependencies, and TS config. Those edits
+remain **UNVERIFIED** until the whole same-SHA gate completes; the
+entire metadata drift, the 44-API inventory, browser failures and
+large quality backlog remain OPEN.

@@ -124,7 +124,7 @@
       "properties": {
         "completed_stages": {
           "type": "array",
-          "maxItems": 40,
+          "maxItems": 61,
           "uniqueItems": true,
           "items": {
             "enum": [
@@ -167,7 +167,28 @@
               "B14-ROUTINE-POLICY-CLEANUP",
               "B14-RESOLUTION-INBOX",
               "B14-PLANNED-SESSION-EXECUTION",
-              "B14-ACTIVITY-INSPECTOR"
+              "B14-ACTIVITY-INSPECTOR",
+              "B14-M1-EDIT-INVENTORY",
+              "B14-M1-SCOPED-PROFILE-EDIT",
+              "B14-M1-ACTIVITY-PROFILE-READ-GUARD",
+              "B14-M2-OBJECTIVE-CORRECTION",
+              "B14-M2-OBJECTIVE-SERIES",
+              "B14-M3-RESIDUAL-EDITOR",
+              "B14-M4-EVENT-PROFILE",
+              "B14-UNTIMED-PLANNED-SESSION",
+              "B14-UNTIMED-PLANNED-OWNER-CONTRACT",
+              "B14-PLANNED-SESSION-TIME-EDIT",
+              "B14-M5-PLANNED-RETIREMENT",
+              "B14-M5-OBJECTIVE-EDITOR",
+              "B14-DRAFT-VAULT",
+              "B14-SESSION-PANEL",
+              "B14-SESSION-HIERARCHY",
+              "B14-SESSION-REALITY-PROJECTION",
+              "B14-SESSION-PAUSED-END",
+              "B14-OBJECTIVE-INPUT",
+              "B14-HOME-WORKSPACE-READS",
+              "B14-INDEPENDENT-PLANNED-SESSION",
+              "B14-PAST-ACTIVITY-REVIEW"
             ]
           }
         },
@@ -446,7 +467,28 @@
                   "B14-ROUTINE-POLICY-CLEANUP",
                   "B14-RESOLUTION-INBOX",
                   "B14-PLANNED-SESSION-EXECUTION",
-              "B14-ACTIVITY-INSPECTOR"
+                  "B14-ACTIVITY-INSPECTOR",
+                  "B14-M1-EDIT-INVENTORY",
+                  "B14-M1-SCOPED-PROFILE-EDIT",
+                  "B14-M1-ACTIVITY-PROFILE-READ-GUARD",
+                  "B14-M2-OBJECTIVE-CORRECTION",
+                  "B14-M2-OBJECTIVE-SERIES",
+                  "B14-M3-RESIDUAL-EDITOR",
+                  "B14-M4-EVENT-PROFILE",
+                  "B14-UNTIMED-PLANNED-SESSION",
+                  "B14-UNTIMED-PLANNED-OWNER-CONTRACT",
+                  "B14-PLANNED-SESSION-TIME-EDIT",
+                  "B14-M5-PLANNED-RETIREMENT",
+                  "B14-M5-OBJECTIVE-EDITOR",
+                  "B14-DRAFT-VAULT",
+                  "B14-SESSION-PANEL",
+                  "B14-SESSION-HIERARCHY",
+                  "B14-SESSION-REALITY-PROJECTION",
+                  "B14-SESSION-PAUSED-END",
+                  "B14-OBJECTIVE-INPUT",
+                  "B14-HOME-WORKSPACE-READS",
+                  "B14-INDEPENDENT-PLANNED-SESSION",
+                  "B14-PAST-ACTIVITY-REVIEW"
                 ]
               }
             }
