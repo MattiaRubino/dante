@@ -10,8 +10,8 @@ from uuid import uuid4
 import pytest
 from fastapi import Response
 from sqlalchemy import text
-from tests.integration.temporal.test_b02_schedule_place import _context
-from tests.integration.temporal.test_b05_primary_life_area_assignment import _seed_self
+from tests.integration.temporal.test_schedule_place import _context
+from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
 
 from dante.modules.temporal.event import TemporalEventApplication
 from dante.modules.temporal.life_area import LifeAreaApplication

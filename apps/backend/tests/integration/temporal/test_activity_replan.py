@@ -11,7 +11,7 @@ import pytest
 from fastapi import Response
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
-from tests.integration.temporal.test_b14_u2_authoring import _seed_self
+from tests.integration.temporal.test_activity_quick_authoring_metadata import _seed_self
 
 from dante.modules.temporal.activity_edit_snapshot_api import _SNAPSHOT, ActivityEditSnapshot
 from dante.modules.temporal.activity_replan_api import (

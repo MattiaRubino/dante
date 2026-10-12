@@ -6,8 +6,8 @@ from datetime import date, time
 from typing import Any
 
 import pytest
-from tests.integration.temporal.test_b02_schedule_place import _context
-from tests.integration.temporal.test_b05_primary_life_area_assignment import _seed_self
+from tests.integration.temporal.test_schedule_place import _context
+from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
 
 from dante.modules.temporal.application import (
     TemporalTimelineApplication,

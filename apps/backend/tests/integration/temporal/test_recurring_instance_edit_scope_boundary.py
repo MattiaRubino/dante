@@ -10,9 +10,9 @@ from zoneinfo import ZoneInfo
 
 import pytest
 from sqlalchemy import text
-from tests.integration.temporal.test_b05_primary_life_area_assignment import _seed_self
-from tests.integration.temporal.test_b14_m1_scoped_profile_edit import _daily
-from tests.integration.temporal.test_b14_m2_objective_scope import _read_checkpoint_refs
+from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
+from tests.integration.temporal.test_recurring_profile_scoped_edit import _daily
+from tests.integration.temporal.test_objective_recurring_instance_scope import _read_checkpoint_refs
 
 from dante.modules.temporal.life_area import LifeAreaApplication
 from dante.modules.temporal.life_area_assignment import LifeAreaAssignmentApplication

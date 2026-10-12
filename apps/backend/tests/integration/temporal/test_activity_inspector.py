@@ -7,7 +7,7 @@ from typing import Any
 import psycopg
 import pytest
 from sqlalchemy import text
-from tests.integration.temporal.test_b14_u2_authoring import _seed_self
+from tests.integration.temporal.test_activity_quick_authoring_metadata import _seed_self
 
 from dante.modules.temporal.authoring import TemporalAuthoringApplication
 from dante.platform.database.runtime import create_database_runtime

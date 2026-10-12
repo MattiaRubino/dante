@@ -6,7 +6,7 @@ from typing import Any
 
 import pytest
 from fastapi import Response
-from tests.integration.temporal.test_b14_u2_authoring import _seed_self
+from tests.integration.temporal.test_activity_quick_authoring_metadata import _seed_self
 
 from dante.modules.temporal.authoring import TemporalAuthoringApplication
 from dante.modules.temporal.outcome_review_policy_api import (

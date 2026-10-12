@@ -13,10 +13,10 @@ import pytest
 from fastapi import Response
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
-from tests.integration.temporal.test_b02_schedule_place import _context
-from tests.integration.temporal.test_b05_primary_life_area_assignment import _seed_self
-from tests.integration.temporal.test_b14_m1_scoped_profile_edit import _daily
-from tests.integration.temporal.test_b14_recurring_event_create import _daily_named_zone
+from tests.integration.temporal.test_schedule_place import _context
+from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
+from tests.integration.temporal.test_recurring_profile_scoped_edit import _daily
+from tests.integration.temporal.test_recurring_event_create import _daily_named_zone
 
 from dante.modules.temporal.event_occurrence_policy import EventOccurrencePolicyApplication
 from dante.modules.temporal.occurrence import (

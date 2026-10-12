@@ -7,9 +7,9 @@ from typing import Any
 
 import pytest
 from sqlalchemy import text
-from tests.integration.temporal.test_b05_primary_life_area_assignment import _seed_self
-from tests.integration.temporal.test_b14_m2_objective_scope import _read_checkpoint_refs
-from tests.integration.temporal.test_b14_recurring_event_create import _daily_named_zone
+from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
+from tests.integration.temporal.test_objective_recurring_instance_scope import _read_checkpoint_refs
+from tests.integration.temporal.test_recurring_event_create import _daily_named_zone
 
 from dante.modules.temporal.activity_edit_snapshot_api import _SNAPSHOT, ActivityEditSnapshot
 from dante.modules.temporal.recurring_authoring import RecurringAuthoringApplication

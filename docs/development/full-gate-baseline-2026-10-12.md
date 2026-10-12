@@ -41,3 +41,32 @@ Pass on this candidate: diff/stability, repository typecheck, architecture,
 generated drift, build, Android bundle, observability static and tooling,
 AI eval tooling, prototype contracts, package tests, Web Vitest and browser
 Session Panel. Full outcome: RED. Keep all functional failures open.
+
+## Gate abfaa5b2 — second WSL run, 12 October 2026 (reported evidence)
+
+The user executed the full gate after pulling `abfaa5b2`, before the
+mandatory standard commit `18d44ea8`. Evidence is the user-provided shell
+output and `/tmp/dante-all-tests.lJYgFd` on their WSL computer; full
+individual logs are not accessible through this report.
+
+- `TEST_FILE_NAMES`: PASS; `TEST_INTEGRITY`: FAIL with remaining old
+  Python module references in **20** Temporal test files. Both PostgreSQL
+  and non-PostgreSQL pytest groups fail collection on those same 20 files;
+  the earlier import repair was incomplete.
+- `BACKEND_FORMAT`: 237 files; `BACKEND_RUFF`: 125 errors.
+  `BACKEND_MYPY`: 702 errors in 84 files after expansion of the scan to
+  `src tests tooling` (not evidence of 702 newly introduced application bugs).
+- `REPO_FORMAT`: 214 files; `REPO_ESLINT`: 338 errors and 3 warnings.
+  `REPO_TYPECHECK`, architecture, generated drift, build and Android
+  bundle: PASS.
+- Static observability, eval and observability tooling, prototypes, package
+  tests, Web Vitest and browser Session Panel: PASS.
+- Non-auth browser: 111 PASS, 16 FAIL (4.3 minutes), including Temporal
+  Create, planning-tray and timeline interaction scenarios.
+- The pasted output ends at `RUN WEB_BROWSER_REAL_STACK`; **no result for
+  that group or final SOURCE_STABILITY may be inferred** from it.
+
+**Full outcome RED.** A later commit correcting 20 old-module imports
+does not itself prove collection or the other quality/browser groups PASS.
+Require a fresh local `pytest --collect-only` preflight and the full gate on
+the new SHA. Do not disable mypy/ESLint/formatting failures to achieve green.
