@@ -113,3 +113,26 @@ Reviewers and agents must verify:
 **Not yet automatically certified:** quality or adequacy of each assertion, the exact coverage of every contract/case, complete upgrade/recovery/provider/native-device acceptance and semantic qualification of existing UNREVIEWED tests. These are tracked obligations, not implicit PASS.
 
 No new GitHub Actions or protected-main required check is established by this document. It governs the active candidate branch immediately; propagation to protected `main` follows its normal review/integration rules.
+
+## Complete single-run gate and diagnostic archive
+
+From a clean checkout of feature/timeline-temporal-operational, run:
+
+    python3 tooling/testing/run_complete_gate.py
+
+The wrapper invokes the entire existing tooling/verify-all-current-tests-local.sh
+inventory: 27 checks across PostgreSQL/Alembic, backend, API/TypeScript,
+architecture, generation, build, mobile, lint, formatting, frontend, tooling
+and both fixture and real-stack browser tests. It neither selects a subset
+nor hides failed tests; the authoritative gate remains unchanged.
+
+It refuses dirty worktrees, records the pinned candidate SHA and complete
+console output, aggregates each group result, and packages original unedited
+group logs plus FULL_GATE_SUMMARY.md into one private .tar.gz archive under
+/tmp. Share that archive for batch diagnosis instead of five-test microcycles.
+Group failures and an incomplete run keep the full gate RED.
+
+Concurrent writes to generated sources and shared Playwright build outputs
+have not been proven isolated. This wrapper deliberately does not change
+worker counts or relax the source-stability gate. Review logs for locally
+sensitive information before sharing or publishing.
