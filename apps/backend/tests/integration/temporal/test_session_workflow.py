@@ -92,12 +92,14 @@ async def test_unplaced_activity_session_pause_resume_and_tc009_remain_independe
         )
         assert paused.paused and paused.open
         assert paused.duration_evaluations[0].evaluation == "pending"
+        # Stop while paused is now intentionally accepted. A stale basis
+        # must still be refused without changing the current paused state.
         with pytest.raises(SessionEndConflictError):
             await sessions.end(
                 self_person_ref=actor,
-                operation_id="b08-d:paused-end-rejected",
+                operation_id="b08-d:stale-paused-end-rejected",
                 session_ref=started.session_ref,
-                expected_material_state_ref=paused.timing_material_state_ref,
+                expected_material_state_ref=started.timing_material_state_ref,
             )
 
         reloaded_pause = await sessions.get(

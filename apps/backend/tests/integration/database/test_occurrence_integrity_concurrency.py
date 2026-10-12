@@ -268,7 +268,13 @@ async def test_cp6_final_async_lock_helper_is_transaction_scoped(
         await runtime.dispose()
 
 
-def test_cp6_final_role13_and_real_concurrency(migrated_database: Any) -> None:
+def test_cp6_final_role13_and_real_concurrency(
+    provisioned_database: Any, alembic_config: Config
+) -> None:
+    # Verify the immutable CP6-M08 ACL/concurrency contract at the historical
+    # revision, not under later least-privilege ACL migrations.
+    command.upgrade(alembic_config, _FINAL_REVISION)
+    migrated_database = provisioned_database
     with _admin(migrated_database) as connection:
         row = connection.execute(
             "SELECT pg_get_functiondef(p.oid) "

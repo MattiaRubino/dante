@@ -14,7 +14,7 @@ from dante.platform.database.mappings import MAPPED_TABLES
 
 pytestmark = pytest.mark.postgres
 
-_CURRENT_REVISION = "20260919_36"
+_CURRENT_REVISION = "20261012_143"
 _REPO_ROOT = Path(__file__).resolve().parents[5]
 _B04_TABLES = {
     "temporal_constraint",
@@ -267,5 +267,8 @@ def test_b04_triggers_and_routine_acl_are_exact(migrated_database: Any) -> None:
 def test_b04_sqlalchemy_registration_is_exact() -> None:
     mapped = {table.name: table for table in MAPPED_TABLES}
     assert _B04_TABLES <= set(mapped)
-    assert {name for name in mapped if name.startswith("temporal_constraint")} == _B04_TABLES
+    # B04-E adds a duration rule to the current ORM registry.
+    assert {name for name in mapped if name.startswith("temporal_constraint")} == (
+        _B04_TABLES | {"temporal_constraint_duration_state"}
+    )
     assert all(mapped[name].schema == "dante" for name in _B04_TABLES)

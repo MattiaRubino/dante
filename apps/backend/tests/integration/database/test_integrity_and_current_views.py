@@ -355,7 +355,27 @@ def test_m5_downgrade_returns_to_m4_surface(
     assert "end_precision_code IS NOT NULL" not in str(end_def[0])
 
 
-def test_m5_dictionary_reconciles_stage_objects_and_part17_repairs() -> None:
+def test_m5_dictionary_reconciles_stage_objects_and_part17_repairs(
+    provisioned_database: Any, alembic_config: Config
+) -> None:
+    # Dictionary entries describe the current cumulative schema; retain
+    # historical M5 counts only for triggers physically present at M5.
+    database = _upgrade_m5(provisioned_database, alembic_config)
+    with _admin_connection(database) as connection:
+        m5_trigger_names = {
+            str(row[0])
+            for row in connection.execute(
+                """
+                SELECT trigger.tgname
+                  FROM pg_trigger AS trigger
+                  JOIN pg_class AS relation ON relation.oid=trigger.tgrelid
+                  JOIN pg_namespace AS namespace ON namespace.oid=relation.relnamespace
+                 WHERE namespace.nspname='dante' AND NOT trigger.tgisinternal
+                """
+            )
+        }
+    assert len(m5_trigger_names) == 66
+
     table_entries = {
         path.stem: json.loads(path.read_text(encoding="utf-8"))
         for path in (_DICTIONARY_ROOT / "tables").glob("*.json")
@@ -398,7 +418,9 @@ def test_m5_dictionary_reconciles_stage_objects_and_part17_repairs() -> None:
         if trigger["name"] != "ctrg_occurrence_owner_complete"
         and not trigger["name"].startswith("trg_occurrence_generation_")
         and not trigger["name"].startswith("ctrg_occurrence_generation_")
+        and trigger["name"] in m5_trigger_names
     ]
+    assert {trigger["name"] for trigger in trigger_entries} == m5_trigger_names
     assert len(trigger_entries) == 66
     assert len({trigger["name"] for trigger in trigger_entries}) == 66
     assert sum(not trigger["constraint_trigger"] for trigger in trigger_entries) == 15

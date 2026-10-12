@@ -27,8 +27,8 @@ _PLACEMENTS = text(
            schedule.schedule_ref,
            current.material_state_ref,
            placement.temporal_form_code,
-           COALESCE(absolute.starts_at, named.resolved_start_at),
-           COALESCE(absolute.ends_at, named.resolved_end_at)
+           COALESCE(absolute.starts_at, named.resolved_start_at) AS starts_at,
+           COALESCE(absolute.ends_at, named.resolved_end_at) AS ends_at
       FROM dante.schedule AS schedule
       JOIN dante.activity_intention AS activity
         ON activity.activity_ref = schedule.subject_native_ref

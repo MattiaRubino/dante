@@ -134,3 +134,46 @@ that all PostgreSQL tests pass in sequence or that the remaining
 non-PostgreSQL, static quality and browser gates are resolved.
 Next: run the entire PostgreSQL-marked suite on an identical candidate,
 record first-cause failures and then re-run the full monorepo gate.
+
+## Full PostgreSQL suite on c512854a — user WSL (12 October 2026)
+
+The user ran `uv run --locked pytest -v --no-cov --tb=short
+--durations=20 -m postgres` on
+`c512854a071321ded3f2ecbe28141cc87565644c`, Python 3.14.7,
+pytest 9.1.1, real PostgreSQL 18.6 via disposable Docker fixture.
+Exact WSL log: `/tmp/dante-postgres-full.6Ciak9.log`.
+
+**Collected 991; 370 PostgreSQL selected, 621 deselected; 350 passed,
+20 failed, zero fixture errors, 777.54 seconds (12:57).**
+Both database-outage tests passed **in sequence**, proving the previously
+observed 211-error infrastructure cascade no longer occurs.
+
+Twenty independent *test cases*, but fewer shared causes:
+- Six B04/B08/B11 catalog probes expected obsolete September Alembic
+  HEADs although they use the fresh **current** `migrated_database`;
+  the candidate update targets its new head and preserves stage-specific
+  tests separately.
+- Four B12 Plan cases failed together with `NoSuchColumnError: starts_at`;
+  the SELECT lacked the two named `COALESCE` projection aliases.
+- Three B06/B14 Routine authoring/replay cases failed from the same
+  ambiguous PL/pgSQL `routine_ref` output-vs-column reference, requiring
+  a **forward-only Alembic function correction**, not just a Python change.
+- Two CP6 Dictionary probes compare evolving cumulative Dictionary
+  trigger lists against immutable M5/M6 stage counts; stage-catalog
+  snapshots must be explicitly scoped.
+- One B04 mapping probe excludes the later duration subtype; one
+  historical CP6 concurrency probe hits current narrowed runtime ACL
+  (`42501`) rather than validating the original stage ACL.
+- One B08 workflow test still assumes Stop while paused is forbidden;
+  one B03 Event test rejects a supported coarse-local-period Schedule.
+- **Unresolved schema/metadata drift**: the Alembic `command.check`
+  test reported extensive differences (CHECK names, defaults,
+  foreign keys, indexes, nullable fields, uniqueness). This is **real
+  failing evidence**, not an acceptable harmless baseline or permission
+  to disable the check. Independently reconcile against the physical
+  Dictionary and migration contract.
+
+Corrections after this SHA are **UNVERIFIED** until the corresponding
+scoped user-local PostgreSQL runs complete. The global gate also retains
+prior failures in non-PostgreSQL pytest, Ruff, mypy, formatting, ESLint,
+Web Playwright and real-stack acceptance. No all-green certification.

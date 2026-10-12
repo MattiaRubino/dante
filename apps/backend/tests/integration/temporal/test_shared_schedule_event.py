@@ -472,10 +472,14 @@ def test_b03b_event_authoring_fails_closed_without_partial_event(
         assert invalid_span.status_code == 422
         assert invalid_span.json()["code"] == "temporal.event.invalid_schedule_create"
 
+        # A malformed date span must fail atomically even though valid coarse
+        # local periods are now supported Schedule forms.
+        assert event_count() == before
+
         coarse = _post_scheduled_event(
             client,
             csrf=csrf,
-            operation_id="operation:b03-b:coarse-rejected",
+            operation_id="operation:b03-b:coarse-accepted",
             title="Coarse Event",
             placement={
                 "kind": "coarse_local_period",
@@ -483,6 +487,6 @@ def test_b03b_event_authoring_fails_closed_without_partial_event(
                 "period": "morning",
             },
         )
-        assert coarse.status_code == 422
+        assert coarse.status_code == 201
 
-    assert event_count() == before
+    assert event_count() == before + 1

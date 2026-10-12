@@ -15,7 +15,7 @@ pytestmark = pytest.mark.postgres
 
 # The current head is forward-only; the earlier B01/B02 downgrade guard
 # fixtures intentionally exercise the last historically reversible snapshot.
-_CURRENT_HEAD = "20261011_142"
+_CURRENT_HEAD = "20261012_143"
 _HISTORICAL_REVERSIBLE_HEAD = "20260917_29"
 _B02_REVISION_PARENT = "20260909_21"
 _B02_SCHEMA_HEAD = "20260909_20"
@@ -156,10 +156,22 @@ def test_current_repository_head_refuses_downgrade_by_design(
     assert _current_revisions(provisioned_database) == {_CURRENT_HEAD}
 
     # The latest accepted migration deliberately refuses rollback.
-    with pytest.raises(RuntimeError, match="Owner-only derived review queue is forward-only"):
+    with pytest.raises(RuntimeError, match="Routine replay qualification must remain canonical"):
         command.downgrade(alembic_config, "-1")
 
     assert _current_revisions(provisioned_database) == {_CURRENT_HEAD}
+
+
+def test_previous_forward_only_review_queue_guard_remains_enforced(
+    provisioned_database: Any,
+    alembic_config: Config,
+) -> None:
+    """The prior review-queue migration still refuses rollback independently."""
+    command.upgrade(alembic_config, "20261011_142")
+    assert _current_revisions(provisioned_database) == {"20261011_142"}
+    with pytest.raises(RuntimeError, match="Owner-only derived review queue is forward-only"):
+        command.downgrade(alembic_config, "-1")
+    assert _current_revisions(provisioned_database) == {"20261011_142"}
 
 
 def test_schedule_unschedule_downgrade_refuses_to_discard_receipts(

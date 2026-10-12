@@ -9,7 +9,7 @@
 - **Protected-main Alembic:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Active candidate workstream:** `feature/timeline-temporal-operational`
-- **Candidate Alembic:** `20261011_142`
+- **Candidate Alembic:** `20261012_143` (Routine replay SQL forward repair; local candidate proof pending)
 - **Candidate topology:** `238|5|228|103|486|421|596|0|0|0`
 - **Candidate frontier:** `_142` targeted PostgreSQL catalog locally proven; all-repository test gate RED on `181c5804`; real-app acceptance and B15 OPEN. Test governance repair is not functional acceptance.
 
@@ -44,7 +44,7 @@ production/cloud recovery                    NOT CLAIMED
 
 ## 2. Active branch candidate
 
-**Current candidate:** `20261011_142` / `238|5|228|103|486|421|596|0|0|0`, with cumulative local technical proof green. Current implementation and remaining UI acceptance are in `workstreams/timeline-temporal-operational-map.md` and `workstreams/timeline-temporal-operational-handoff.md`; Domain/Logical/Physical current overlays are in `domain/decisions/activity-session-live-timeline-v1.md`, `logical-model/slices/b14-session-objective-home-workspace-2026-10-11.md` and `physical-model/b14-session-objective-home-workspace-2026-10-11.md`.
+**Current candidate:** `20261012_143` / `238|5|228|103|486|421|596|0|0|0` (expected unchanged topology after function-only forward repair; **new-head proof pending**). The latest full PostgreSQL evidence on `c512854a` is **350 passed, 20 failed**; the whole-repository gate is RED. Current implementation and remaining UI acceptance are in `workstreams/timeline-temporal-operational-map.md` and `workstreams/timeline-temporal-operational-handoff.md`; Domain/Logical/Physical current overlays are in `domain/decisions/activity-session-live-timeline-v1.md`, `logical-model/slices/b14-session-objective-home-workspace-2026-10-11.md` and `physical-model/b14-session-objective-home-workspace-2026-10-11.md`.
 
 **Historical candidate snapshot (2026-09-23; do not treat its NEXT or catalog as current):**
 

@@ -404,7 +404,60 @@ def test_m6_downgrade_returns_exactly_to_m5_surface(
     assert constraints == {"c": 109, "f": 61, "u": 2}
 
 
-def test_m6_dictionary_reconciles_final_structural_surface() -> None:
+def test_m6_dictionary_reconciles_final_structural_surface(
+    provisioned_database: Any, alembic_config: Config
+) -> None:
+    # The Dictionary describes a cumulative later schema. Validate this
+    # historical CP6-M06 snapshot against its actual migrated catalog.
+    database = _upgrade_m6(provisioned_database, alembic_config)
+    with _admin_connection(database) as connection:
+        catalog_names = {
+            "triggers": {
+                str(row[0]) for row in connection.execute(
+                    """
+                    SELECT trigger.tgname
+                      FROM pg_trigger AS trigger
+                      JOIN pg_class AS relation ON relation.oid=trigger.tgrelid
+                      JOIN pg_namespace AS namespace ON namespace.oid=relation.relnamespace
+                     WHERE namespace.nspname='dante' AND NOT trigger.tgisinternal
+                    """
+                )
+            },
+            "indexes": {
+                str(row[0]) for row in connection.execute(
+                    "SELECT indexname FROM pg_indexes WHERE schemaname='dante'"
+                )
+            },
+            "foreign_keys": {
+                str(row[0]) for row in connection.execute(
+                    """
+                    SELECT constraint.conname
+                      FROM pg_constraint AS constraint
+                      JOIN pg_class AS relation ON relation.oid=constraint.conrelid
+                      JOIN pg_namespace AS namespace ON namespace.oid=relation.relnamespace
+                     WHERE namespace.nspname='dante' AND constraint.contype='f'
+                    """
+                )
+            },
+            "check_constraints": {
+                str(row[0]) for row in connection.execute(
+                    """
+                    SELECT constraint.conname
+                      FROM pg_constraint AS constraint
+                      JOIN pg_class AS relation ON relation.oid=constraint.conrelid
+                      JOIN pg_namespace AS namespace ON namespace.oid=relation.relnamespace
+                     WHERE namespace.nspname='dante' AND constraint.contype='c'
+                    """
+                )
+            },
+        }
+    assert {name: len(entries) for name, entries in catalog_names.items()} == {
+        "triggers": 75,
+        "indexes": 95,
+        "foreign_keys": 68,
+        "check_constraints": 120,
+    }
+
     table_entries = {
         path.stem: json.loads(path.read_text(encoding="utf-8"))
         for path in (_DICTIONARY_ROOT / "tables").glob("*.json")
@@ -445,20 +498,28 @@ def test_m6_dictionary_reconciles_final_structural_surface() -> None:
         "CP6-M06",
     ]
     triggers = [
-        trigger for entry in m6_table_entries.values() for trigger in entry["structure"]["triggers"]
+        trigger
+        for entry in m6_table_entries.values()
+        for trigger in entry["structure"]["triggers"]
+        if trigger["name"] in catalog_names["triggers"]
     ]
     indexes = [
-        index for entry in m6_table_entries.values() for index in entry["structure"]["indexes"]
+        index
+        for entry in m6_table_entries.values()
+        for index in entry["structure"]["indexes"]
+        if index["name"] in catalog_names["indexes"]
     ]
     foreign_keys = [
         foreign_key
         for entry in m6_table_entries.values()
         for foreign_key in entry["structure"]["foreign_keys"]
+        if foreign_key["name"] in catalog_names["foreign_keys"]
     ]
     check_constraints = [
         check
         for entry in m6_table_entries.values()
         for check in entry["structure"]["check_constraints"]
+        if check["name"] in catalog_names["check_constraints"]
     ]
     assert len(triggers) == 75
     assert len({trigger["name"] for trigger in triggers}) == 75
@@ -467,6 +528,10 @@ def test_m6_dictionary_reconciles_final_structural_surface() -> None:
     assert len(indexes) == 95
     assert len(foreign_keys) == 68
     assert len(check_constraints) == 120
+    assert {item["name"] for item in triggers} == catalog_names["triggers"]
+    assert {item["name"] for item in indexes} == catalog_names["indexes"]
+    assert {item["name"] for item in foreign_keys} == catalog_names["foreign_keys"]
+    assert {item["name"] for item in check_constraints} == catalog_names["check_constraints"]
     m6_routine = m6_routine_entries[_M6_ROUTINE]["structure"]["routine"]
     assert m6_routine == {
         "routine_kind": "function",
