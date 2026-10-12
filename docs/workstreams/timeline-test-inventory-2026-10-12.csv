@@ -295,26 +295,26 @@ apps/web/src/features/home/ui/timeline/model/timeline-temporal.test.ts,web-vites
 apps/web/src/features/home/ui/timeline/timeline-all-day-runtime.test.ts,web-vitest,,PASS,
 apps/web/src/features/home/ui/timeline/timeline-authoritative-event-hydration.test.ts,web-vitest,,PASS,
 apps/web/src/features/home/ui/timeline/timeline-authoritative-hydration.test.ts,web-vitest,,PASS,
-apps/web/src/features/home/ui/timeline/timeline-create-bridge-b01.test.tsx,web-vitest,b01,FAIL,Legacy: fonte loadUnplaced ignorata; riscrivere sul catalogo Elementi già creati.
+apps/web/src/features/home/ui/timeline/timeline-create-bridge-b01.test.tsx,web-vitest,b01,PASS,Harness migrato o asserzione ricondotta al contratto corrente; full Vitest 1049/1049 sul candidato locale. PostgreSQL/browser non provati.
 apps/web/src/features/home/ui/timeline/timeline-draft-vault.test.tsx,web-vitest,,PASS,
 apps/web/src/features/home/ui/timeline/timeline-event-agenda-editor.test.tsx,web-vitest,,PASS,
-apps/web/src/features/home/ui/timeline/timeline-event-lifecycle-b03.test.tsx,web-vitest,b03,FAIL,Verificare che posticipazione e undo persistano dopo la nuova navigazione.
+apps/web/src/features/home/ui/timeline/timeline-event-lifecycle-b03.test.tsx,web-vitest,b03,PASS,Harness migrato o asserzione ricondotta al contratto corrente; full Vitest 1049/1049 sul candidato locale. PostgreSQL/browser non provati.
 apps/web/src/features/home/ui/timeline/timeline-expected-occurrence-scheduling.test.ts,web-vitest,,PASS,
 apps/web/src/features/home/ui/timeline/timeline-inspector-reality.test.tsx,web-vitest,,PASS,
 apps/web/src/features/home/ui/timeline/timeline-organization.test.tsx,web-vitest,,PASS,
 apps/web/src/features/home/ui/timeline/timeline-planning-tray-b01.test.tsx,web-vitest,b01,PASS,
-apps/web/src/features/home/ui/timeline/timeline-planning-tray-b02.test.tsx,web-vitest,b02,FAIL,Legacy: ingresso/adapter Planning Tray sostituiti; preservare identità e CAS.
+apps/web/src/features/home/ui/timeline/timeline-planning-tray-b02.test.tsx,web-vitest,b02,PASS,Harness migrato o asserzione ricondotta al contratto corrente; full Vitest 1049/1049 sul candidato locale. PostgreSQL/browser non provati.
 apps/web/src/features/home/ui/timeline/timeline-runtime-detail-controls.test.tsx,web-vitest,,PASS,
 apps/web/src/features/home/ui/timeline/timeline-schedule-forms-b02.test.tsx,web-vitest,b02,PASS,
 apps/web/src/features/home/ui/timeline/timeline-schedule-revision-b02.test.tsx,web-vitest,b02,PASS,
-apps/web/src/features/home/ui/timeline/timeline-schedule-unschedule-undo-b02.test.tsx,web-vitest,b02,FAIL,Legacy: comando e destinazione rinominati; preservare rollback e identità.
+apps/web/src/features/home/ui/timeline/timeline-schedule-unschedule-undo-b02.test.tsx,web-vitest,b02,PASS,Harness migrato o asserzione ricondotta al contratto corrente; full Vitest 1049/1049 sul candidato locale. PostgreSQL/browser non provati.
 apps/web/src/features/home/ui/timeline/timeline-session-panel.test.tsx,web-vitest,,PASS,
 apps/web/src/features/home/ui/timeline/timeline-session-reality.test.ts,web-vitest,,PASS,
 apps/web/src/features/home/ui/timeline/timeline-surface.test.tsx,web-vitest,,PASS,
 apps/web/src/features/home/ui/timeline/timeline-viewport-runtime.test.ts,web-vitest,,PASS,
 apps/web/src/features/temporal/activity-planned-sessions-card-detail.test.tsx,web-vitest,,PASS,
 apps/web/src/features/temporal/activity-session-card-controls.test.tsx,web-vitest,,PASS,
-apps/web/src/features/temporal/activity-structure-readback.test.tsx,web-vitest,,FAIL,Verificare etichetta corrente e mantenere la prova di readback.
+apps/web/src/features/temporal/activity-structure-readback.test.tsx,web-vitest,,PASS,Harness migrato o asserzione ricondotta al contratto corrente; full Vitest 1049/1049 sul candidato locale. PostgreSQL/browser non provati.
 apps/web/src/features/temporal/actual-realization-controls.test.tsx,web-vitest,,PASS,
 apps/web/src/features/temporal/advanced-recurrence-controls.test.tsx,web-vitest,,PASS,
 apps/web/src/features/temporal/conditional-temporal-controls.test.tsx,web-vitest,,PASS,
@@ -354,7 +354,7 @@ apps/web/src/features/temporal/remote-session-capability-data-source.test.ts,web
 apps/web/src/features/temporal/remote-session-data-source.test.ts,web-vitest,,PASS,
 apps/web/src/features/temporal/remote-timeline-event-read.test.ts,web-vitest,,PASS,
 apps/web/src/features/temporal/remote-timeline-read.test.ts,web-vitest,,PASS,
-apps/web/src/features/temporal/responsibility-controls.test.tsx,web-vitest,,FAIL,Selettore alert ambiguo; verificare il contenuto del rifiuto.
+apps/web/src/features/temporal/responsibility-controls.test.tsx,web-vitest,,PASS,Harness migrato o asserzione ricondotta al contratto corrente; full Vitest 1049/1049 sul candidato locale. PostgreSQL/browser non provati.
 apps/web/src/features/temporal/schedule-reminder-controls.test.tsx,web-vitest,,PASS,
 apps/web/src/features/temporal/session-subject-controls-card.test.tsx,web-vitest,,PASS,
 apps/web/src/features/temporal/session-subject-controls.test.tsx,web-vitest,,PASS,
@@ -370,7 +370,7 @@ apps/web/src/features/temporal-create/application/temporal-create-b03-runtime.te
 apps/web/src/features/temporal-create/application/temporal-create-b04-runtime.test.ts,web-vitest,b04-runtime,PASS,
 apps/web/src/features/temporal-create/application/temporal-create-b06-runtime.test.ts,web-vitest,b06-runtime,PASS,
 apps/web/src/features/temporal-create/application/temporal-create-boundary.test.ts,web-vitest,,PASS,
-apps/web/src/features/temporal-create/application/temporal-create-enterprise.test.ts,web-vitest,,FAIL,Verificare normalizzazione dell’agenda Event.
+apps/web/src/features/temporal-create/application/temporal-create-enterprise.test.ts,web-vitest,,PASS,Harness migrato o asserzione ricondotta al contratto corrente; full Vitest 1049/1049 sul candidato locale. PostgreSQL/browser non provati.
 apps/web/src/features/temporal-create/application/temporal-create-handoff.test.ts,web-vitest,,PASS,
 apps/web/src/features/temporal-create/application/temporal-create-placement-mutation.test.ts,web-vitest,,PASS,
 apps/web/src/features/temporal-create/application/temporal-create-projection.test.ts,web-vitest,,PASS,
@@ -381,7 +381,7 @@ apps/web/src/features/temporal-create/application/temporal-create-seed.test.ts,w
 apps/web/src/features/temporal-create/application/temporal-create-u2-submit.test.ts,web-vitest,,PASS,
 apps/web/src/features/temporal-create/model/temporal-create-appearance.test.ts,web-vitest,,PASS,
 apps/web/src/features/temporal-create/model/temporal-create-session.test.ts,web-vitest,,PASS,
-apps/web/src/features/temporal-create/ui/temporal-create-activity-fields.test.tsx,web-vitest,,FAIL,Due prove su controlli Session non trovati; verificare il prodotto attuale.
+apps/web/src/features/temporal-create/ui/temporal-create-activity-fields.test.tsx,web-vitest,,PASS,Harness migrato o asserzione ricondotta al contratto corrente; full Vitest 1049/1049 sul candidato locale. PostgreSQL/browser non provati.
 apps/web/src/features/temporal-create/ui/temporal-create-advanced-activity-ia.test.tsx,web-vitest,,PASS,
 apps/web/src/features/temporal-create/ui/temporal-create-composer.test.tsx,web-vitest,,PASS,
 apps/web/src/features/temporal-create/ui/temporal-create-context-catalog.test.tsx,web-vitest,,PASS,
@@ -487,6 +487,6 @@ packages/i18n/src/index.test.ts,package-vitest,,PASS,
 packages/time/src/index.test.ts,package-vitest,,PASS,
 tests/prototypes/frontend-preprod-contracts.py,prototype-contract,,PASS,
 tests/prototypes/world-focus-preprod-contracts.py,prototype-contract,,PASS,
-tooling/ai-evals/tests/test_decision_extension_v4.py,tooling-pytest,,PASS,Con unittest stdlib o chiamata diretta dei tre test; pytest integrale resta da ripetere in WSL.
-tooling/ai-evals/tests/test_eval_tooling.py,tooling-pytest,,PASS,Con unittest stdlib o chiamata diretta dei tre test; pytest integrale resta da ripetere in WSL.
-tooling/observability/tests/test_grafana_acceptance.py,tooling-pytest,,PASS,Con unittest stdlib o chiamata diretta dei tre test; pytest integrale resta da ripetere in WSL.
+tooling/ai-evals/tests/test_decision_extension_v4.py,tooling-pytest,,PARTIAL_NON_PYTEST,Con unittest stdlib o chiamata diretta dei tre test; pytest integrale resta da ripetere in WSL.
+tooling/ai-evals/tests/test_eval_tooling.py,tooling-pytest,,PARTIAL_NON_PYTEST,Con unittest stdlib o chiamata diretta dei tre test; pytest integrale resta da ripetere in WSL.
+tooling/observability/tests/test_grafana_acceptance.py,tooling-pytest,,PARTIAL_NON_PYTEST,Con unittest stdlib o chiamata diretta dei tre test; pytest integrale resta da ripetere in WSL.

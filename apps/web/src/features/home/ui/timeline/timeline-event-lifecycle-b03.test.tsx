@@ -5,6 +5,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
@@ -17,6 +18,12 @@ import type {
 } from '../../../temporal/timeline-read';
 import { TemporalTimelineRuntimeBoundary } from '../../../temporal/timeline-runtime-boundary';
 import { TimelineSurface } from './timeline-surface';
+
+vi.mock('../../../temporal/remote-placement-lock-data-source', () => ({
+  createRemotePlacementLockDataSource: () => ({
+    get: (scheduleRef: string) => Promise.resolve({ scheduleRef, locked: false, revision: 0 }),
+  }),
+}));
 
 const EVENT_REF = '0199a8c0-7e71-7bc0-8ad0-a2f403f5617d';
 const SCHEDULE_REF = '0199a8c0-7e72-7bc0-8ad0-a2f403f5617d';
@@ -257,14 +264,8 @@ describe('B03-C Event placement lifecycle from Timeline', () => {
     fireEvent.click(
       await screen.findByRole('button', { name: 'Evento governato B03-C' }),
     );
-    const postponeButton = await waitFor(() => {
-      const match = document.querySelector<HTMLButtonElement>(
-        '.timeline-event-modal .is-unschedule',
-      );
-      expect(match).toBeTruthy();
-      return match as HTMLButtonElement;
-    });
-    fireEvent.click(postponeButton);
+    fireEvent.click(await screen.findByRole('button', { name: 'Sposta in Da collocare' }));
+    fireEvent.click(within(screen.getByRole('group', { name: 'Sposta in Da collocare' })).getByRole('button', { name: 'Conferma' }));
 
     await waitFor(() => expect(unscheduleSchedule).toHaveBeenCalledTimes(1));
     expect(unscheduleSchedule).toHaveBeenCalledWith({

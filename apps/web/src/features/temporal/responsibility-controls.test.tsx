@@ -137,7 +137,7 @@ describe('responsibility controls', () => {
 
     fireEvent.click(screen.getByText('Assegna a me'));
     await waitFor(() => {
-      expect(screen.getByRole('alert').textContent).toContain(
+      expect(screen.getByText(/Responsibility holder changed since it was read/).closest('[role="alert"]')?.textContent).toContain(
         'Responsibility holder changed since it was read.',
       );
     });

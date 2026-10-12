@@ -5,6 +5,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
@@ -17,6 +18,12 @@ import type {
 } from '../../../temporal/timeline-read';
 import { TemporalTimelineRuntimeBoundary } from '../../../temporal/timeline-runtime-boundary';
 import { TimelineSurface } from './timeline-surface';
+
+vi.mock('../../../temporal/remote-placement-lock-data-source', () => ({
+  createRemotePlacementLockDataSource: () => ({
+    get: (scheduleRef: string) => Promise.resolve({ scheduleRef, locked: false, revision: 0 }),
+  }),
+}));
 
 const ACTIVITY_REF = '0199a8c0-5e71-7bc0-8ad0-a2f403f5617d';
 const SCHEDULE_REF = '0199a8c0-5e72-7bc0-8ad0-a2f403f5617d';
@@ -146,11 +153,8 @@ describe('B02-D governed Schedule unschedule and Undo', () => {
     fireEvent.click(
       await screen.findByRole('button', { name: 'Governed B02-D' }),
     );
-    fireEvent.click(
-      await screen.findByRole('button', {
-        name: 'Riporta nel Planning Tray',
-      }),
-    );
+    fireEvent.click(await screen.findByRole('button', { name: 'Sposta in Da collocare' }));
+    fireEvent.click(within(screen.getByRole('group', { name: 'Sposta in Da collocare' })).getByRole('button', { name: 'Conferma' }));
 
     await waitFor(() => expect(unscheduleSchedule).toHaveBeenCalledTimes(1));
     expect(unscheduleSchedule).toHaveBeenCalledWith({

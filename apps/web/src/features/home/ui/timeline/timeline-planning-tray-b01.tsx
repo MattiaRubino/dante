@@ -181,7 +181,9 @@ export function TimelinePlanningTrayB01({
     try {
       const items = await source.listItems();
       if (readGenerationRef.current !== generation) return;
-      setRemoteItems(items);
+      setRemoteItems(
+        Object.freeze([...new Map(items.map((item) => [itemKey(item), item])).values()]),
+      );
       setReadState('ready');
     } catch {
       if (readGenerationRef.current === generation) setReadState('error');

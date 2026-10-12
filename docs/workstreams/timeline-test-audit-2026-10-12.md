@@ -12,7 +12,7 @@ Il checkout dell'assistente ha cronologia Git troncata; `git fetch` è impedito 
 | --- | ---: | --- |
 | Backend unità/contratti | 93 | Bloccata dal runtime Python/uv |
 | Backend PostgreSQL/integration | 135 | Bloccata da Python/uv e Docker PostgreSQL |
-| Web Vitest | 225 | 217 file verdi, 8 rossi |
+| Web Vitest | 225 | 225 file verdi, 1.049 casi verdi dopo bonifica; snapshot iniziale 217/8 |
 | Browser Web con fixture | 22 | 127 casi in 21 file più 2 casi Session panel; esecuzione bloccata |
 | Browser Web stack reale | 8 | 87 casi scoperti in 8 file/progetti; esecuzione bloccata |
 | Pacchetti api-client/i18n/time | 3 | 3 file verdi, 28 casi verdi |
@@ -21,7 +21,7 @@ Il checkout dell'assistente ha cronologia Git troncata; `git fetch` è impedito 
 
 Vitest Web, eseguito **da `apps/web` con il suo `vitest.config.ts`**, ha prodotto `1.035 passed, 14 failed` su 1.049 casi. La prova iniziale dalla radice (`812 passed, 234 failed, 18 skipped`) è metodologicamente invalida per il Web: senza il config `jsdom`, molti test React falliscono con `document is not defined`. Non usare il comando root come gate globale. I browser non hanno eseguito test: il probe Playwright non ha avviato il `webServer` dopo la trasformazione Vite e manca anche Chromium; le liste sono solo discovery. I due contratti prototype sono passati con Python 3.12. Il tooling ha passato 19 casi `unittest` AI, 7 `unittest` observability e 3 funzioni `test_*` AI lanciate direttamente; il loro gruppo pytest resta da ripetere nel gate WSL.
 
-## Quattordici test rossi: classificazione iniziale
+## Quattordici test rossi: classificazione iniziale (ora risolti in Vitest)
 
 | File | Casi | Evidenza e decisione |
 | --- | ---: | --- |
@@ -38,7 +38,13 @@ I primi otto casi nei tre file B01/B02 sono obsoleti **come harness UI**, non co
 
 ## Gate integrale locale
 
-`bash tooling/verify-all-current-tests-local.sh` esegue, con log indipendenti e senza fermarsi al primo errore, tutti i test backend non-PostgreSQL e PostgreSQL, tooling, due contratti prototype, tre pacchetti, Web Vitest, browser Session panel, browser con fixture e browser a stack reale. Il riepilogo contiene i codici di uscita e `LOG_DIR`. Usa il branch e lo stack locali preparati dall'utente; non genera API, non pulisce il worktree, non esegue CI e non pubblica. **Il gate non è ancora passato nel suo insieme**: si attendono l'esecuzione WSL e la correzione dei rossi già misurati. Per la futura regola “ogni modifica passa tutto”, il gate deve arrivare verde sullo stesso commit candidato; la documentazione precedente di PASS cumulativi su commit diversi non soddisfa questa regola nuova.
+`bash tooling/verify-all-current-tests-local.sh` esegue, con log indipendenti e senza fermarsi al primo errore, tutti i test backend non-PostgreSQL e PostgreSQL, tooling, due contratti prototype, tre pacchetti, Web Vitest, browser Session panel, browser con fixture e browser a stack reale. Comprende anche diff check, Ruff, mypy, lint, typecheck e verifica dei confini architetturali; registra SHA e impronta dell'intero candidato, e fallisce se il worktree cambia durante il giro. Il riepilogo contiene i codici di uscita e `LOG_DIR`. Usa il branch e lo stack locali preparati dall'utente; non genera API, non pulisce il worktree, non esegue CI e non pubblica. **Il gate non è ancora passato nel suo insieme**: si attendono l'esecuzione WSL e la correzione dei rossi già misurati. Per la futura regola “ogni modifica passa tutto”, il gate deve arrivare verde sullo stesso candidato; la documentazione precedente di PASS cumulativi su commit diversi non soddisfa questa regola nuova.
+
+La prima ripetizione locale del Web aveva confermato `1.035 passed, 14 failed`. Dopo la migrazione dei test alla superficie attuale, il giro completo **sul worktree risultante** ha dato **225 file e 1.049 test verdi**. B01/B02 usano `TemporalPlanningTrayDataSource` e verificano identità, refetch, fallimento di scrittura e invalidazione; la UI deduplica una lettura che ripete la stessa identità. Undo Activity/Event usa il comando «Sposta in Da collocare» con conferma e controllo di lock. I due test dell'antico campo `minSessionMinutes` sono stati sostituiti con prove dei controlli attuali per intervalli e Sessioni pianificate, compresa precisione di un minuto; il test del modello di `minSessionMinutes` rimane separato. Agenda bozza e normalizzazione della richiesta canonica sono distinte e testate su entrambi i confini. Il PASS Vitest **non** prova PostgreSQL o browser reale.
+
+`tsc --noEmit` per Web e api-client è verde; `dependency-cruise` ha trovato zero violazioni su 1.223 moduli e 3.483 dipendenze. Il lint diretto sull'intero repository (`eslint .`) ha rilevato **340 errori e 3 warning**, fra cui un errore di configurazione del project service su `apps/web/tests-browser/session-panel/session-panel.spec.ts`. Il lint diretto sugli otto test toccati mostra 27 errori preesistenti nei due file `activity-structure-readback.test.tsx` e `responsibility-controls.test.tsx`; non risultano nuovi errori negli altri test migrati. `pnpm typecheck` non è partito: questo ambiente ha pnpm 11.25.0 e il repository esige 11.22.0. I tre pacchetti hanno passato 28 test, i contratti prototype due script, AI/observability 26 casi `unittest`; i tre test Python scoperti solo come funzioni e il gruppo pytest tooling restano da ripetere in WSL. Non trasformare questo probe in un PASS o promettere che il comando integrale sia verde. La strategia/matrice corrente è `../development/temporal-regression-testing.md`.
+
+Il debito lint è distribuito in 88 file. Le categorie principali del probe sono `no-base-to-string` (121), `require-await` (81), `no-unnecessary-type-assertion` (33), `no-unsafe-assignment` (22), `no-unsafe-member-access` (17) e `no-unused-vars` (13). Occorre distinguere correzioni meccaniche sicure, conversioni dei test fake e il problema di configurazione del test browser, poi ripetere il comando integrale: non sono 340 regressioni causate da questa bonifica.
 
 ## Architettura delle suite da stabilire dopo la bonifica
 

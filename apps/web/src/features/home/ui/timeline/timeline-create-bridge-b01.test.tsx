@@ -1,24 +1,26 @@
 import { Temporal } from '@dante/time';
-import {
-  cleanup,
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-} from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { i18n } from '../../../../bootstrap/i18n';
-import {
-  createDeterministicTemporalIdFactory,
-  createFixedTemporalClock,
-  type TemporalActivityDataSource,
-  type TemporalActivityRecord,
-} from '../../../temporal';
-import { createLocalTemporalCreateRuntime } from '../../../temporal-create';
+import type {
+  TemporalPlanningTrayDataSource,
+  TemporalPlanningTrayItem,
+} from '../../../temporal/planning-tray-data-source';
+import type { TemporalCreateRuntime } from '../../../temporal-create';
 import { TimelinePlanningTrayB01 } from './timeline-planning-tray-b01';
 
 const ACTIVITY_REF = '0199a8c0-5e71-7bc0-8ad0-a2f403f5617d';
+const activity: TemporalPlanningTrayItem = Object.freeze({
+  kind: 'activity',
+  state: 'unplaced',
+  subjectRef: ACTIVITY_REF,
+  title: 'Activity persistita nel Planning Tray',
+  createdAt: Temporal.Instant.from('2026-09-08T08:00:00Z'),
+  lifeAreaRef: null,
+  lifeAreaAssignmentRevision: null,
+  scheduleRef: null,
+});
 
 beforeAll(async () => {
   await i18n.changeLanguage('it');
@@ -29,140 +31,67 @@ afterEach(() => {
   document.body.innerHTML = '';
 });
 
-function runtimeWithUnplaced(
-  records: readonly TemporalActivityRecord[],
-  rejectRead = false,
-) {
-  const loadUnplaced = vi.fn<TemporalActivityDataSource['loadUnplaced']>(() =>
-    rejectRead
-      ? Promise.reject(new Error('read unavailable'))
-      : Promise.resolve(Object.freeze([...records])),
-  );
-  const source = Object.freeze({
-    createActivity: vi.fn<TemporalActivityDataSource['createActivity']>(() =>
-      Promise.reject(new Error('create is not part of this read proof')),
-    ),
-    createScheduledActivity: vi.fn<
-      TemporalActivityDataSource['createScheduledActivity']
-    >(() =>
-      Promise.reject(new Error('scheduled create outside B01 read proof')),
-    ),
-    establishActivitySchedule: vi.fn<
-      TemporalActivityDataSource['establishActivitySchedule']
-    >(() =>
-      Promise.reject(new Error('placement outside B01 read proof')),
-    ),
-    loadUnplaced,
-  }) satisfies TemporalActivityDataSource;
-  const runtime = createLocalTemporalCreateRuntime({
-    mode: 'production',
-    ids: createDeterministicTemporalIdFactory('b01-planning-tray'),
-    clock: createFixedTemporalClock(
-      Temporal.Instant.from('2026-09-08T08:00:00Z'),
-      'Europe/Rome',
-    ),
-    activityDataSource: source,
-  });
-  return Object.freeze({ runtime, loadUnplaced });
-}
-
-function renderPlanningTray(
-  runtime: ReturnType<typeof runtimeWithUnplaced>['runtime'],
-) {
+function renderPlanningTray(source: TemporalPlanningTrayDataSource) {
   return render(
-    <TimelinePlanningTrayB01
-      items={Object.freeze([])}
-      runtime={runtime}
-      defaultDate={Temporal.PlainDate.from('2026-09-08')}
-    />,
+    <>
+      <div className="dante-timeline-actions" />
+      <TimelinePlanningTrayB01
+        source={source}
+        runtime={{} as TemporalCreateRuntime}
+        defaultDate={Temporal.PlainDate.from('2026-09-08')}
+      />
+    </>,
   );
-}
-
-function installTimelineHosts(): void {
-  document.body.innerHTML = '<div class="dante-timeline-actions"></div>';
 }
 
 describe('Timeline B01 canonical Planning Tray bridge', () => {
   it('deduplicates canonical identity and refetches after remount', async () => {
-    installTimelineHosts();
-    const canonical = Object.freeze({
-      activityRef: ACTIVITY_REF,
-      title: 'Activity persistita nel Planning Tray',
-      createdAt: Temporal.Instant.from('2026-09-08T08:00:00Z'),
-    });
-    const source = runtimeWithUnplaced(Object.freeze([canonical, canonical]));
+    const listItems = vi.fn<TemporalPlanningTrayDataSource['listItems']>(() => Promise.resolve([activity, activity]));
+    const source: TemporalPlanningTrayDataSource = {
+      listItems,
+      placeItem: vi.fn(),
+    };
 
-    const first = renderPlanningTray(source.runtime);
-    await waitFor(() => expect(source.loadUnplaced).toHaveBeenCalledTimes(1));
-    fireEvent.click(
-      await screen.findByRole('button', {
-        name: 'Apri attività da collocare',
-      }),
-    );
-    await waitFor(() => expect(source.loadUnplaced).toHaveBeenCalledTimes(2));
+    const first = renderPlanningTray(source);
+    await waitFor(() => expect(listItems).toHaveBeenCalledTimes(1));
+    fireEvent.click(await screen.findByRole('button', { name: 'Apri elementi già creati' }));
+    await waitFor(() => expect(listItems).toHaveBeenCalledTimes(2));
 
-    expect(
-      document.querySelectorAll(
-        `[data-temporal-activity-ref="${ACTIVITY_REF}"]`,
-      ),
-    ).toHaveLength(1);
-    expect(
-      screen.getByText('Activity persistita nel Planning Tray'),
-    ).toBeTruthy();
-    expect(
-      screen.getByRole('button', {
-        name: 'Colloca: Activity persistita nel Planning Tray',
-      }),
-    ).toBeTruthy();
+    expect(document.querySelectorAll(`[data-temporal-subject-ref="${ACTIVITY_REF}"]`)).toHaveLength(1);
+    expect(screen.getByText(activity.title)).toBeTruthy();
+    expect(screen.getByRole('button', { name: `Colloca: ${activity.title}` })).toBeTruthy();
     const planIntent = vi.fn();
     window.addEventListener('dante:open-plan-for-activity', planIntent);
-    fireEvent.click(screen.getByRole('button', {
-      name: 'Apri Plan per Activity persistita nel Planning Tray',
-    }));
+    fireEvent.click(screen.getByRole('button', { name: `Apri Plan per ${activity.title}` }));
     expect(planIntent).toHaveBeenCalledOnce();
     expect(planIntent.mock.calls[0]?.[0]).toMatchObject({
-      detail: { activityRef: ACTIVITY_REF, title: 'Activity persistita nel Planning Tray' },
+      detail: { activityRef: ACTIVITY_REF, title: activity.title },
     });
     window.removeEventListener('dante:open-plan-for-activity', planIntent);
 
     first.unmount();
-    const second = renderPlanningTray(source.runtime);
-    await waitFor(() => expect(source.loadUnplaced).toHaveBeenCalledTimes(3));
-    fireEvent.click(
-      await screen.findByRole('button', {
-        name: 'Apri attività da collocare',
-      }),
-    );
-    await waitFor(() => expect(source.loadUnplaced).toHaveBeenCalledTimes(4));
-
-    expect(
-      document.querySelectorAll(
-        `[data-temporal-activity-ref="${ACTIVITY_REF}"]`,
-      ),
-    ).toHaveLength(1);
-    expect(
-      screen.getByText('Activity persistita nel Planning Tray'),
-    ).toBeTruthy();
+    const second = renderPlanningTray(source);
+    await waitFor(() => expect(listItems).toHaveBeenCalledTimes(3));
+    fireEvent.click(await screen.findByRole('button', { name: 'Apri elementi già creati' }));
+    await waitFor(() => expect(listItems).toHaveBeenCalledTimes(4));
+    expect(document.querySelectorAll(`[data-temporal-subject-ref="${ACTIVITY_REF}"]`)).toHaveLength(1);
     second.unmount();
   });
 
-  it('shows read failure instead of a fake empty state', async () => {
-    installTimelineHosts();
-    const source = runtimeWithUnplaced(Object.freeze([]), true);
+  it('shows read failure instead of a fake empty state, and retries the canonical read', async () => {
+    const listItems = vi.fn<TemporalPlanningTrayDataSource['listItems']>()
+      .mockRejectedValueOnce(new Error('read unavailable'))
+      .mockRejectedValueOnce(new Error('read unavailable'))
+      .mockResolvedValueOnce([activity]);
+    const source: TemporalPlanningTrayDataSource = { listItems, placeItem: vi.fn() };
 
-    renderPlanningTray(source.runtime);
-    await waitFor(() => expect(source.loadUnplaced).toHaveBeenCalledTimes(1));
-    fireEvent.click(
-      await screen.findByRole('button', {
-        name: 'Apri attività da collocare',
-      }),
-    );
-
-    await waitFor(() => expect(source.loadUnplaced).toHaveBeenCalledTimes(2));
-    expect(
-      await screen.findByText('Le attività da collocare non sono disponibili.'),
-    ).toBeTruthy();
+    renderPlanningTray(source);
+    await waitFor(() => expect(listItems).toHaveBeenCalledTimes(1));
+    fireEvent.click(await screen.findByRole('button', { name: 'Apri elementi già creati' }));
+    expect(await screen.findByText('Gli elementi esistenti non sono disponibili.')).toBeTruthy();
     expect(screen.queryByText('Niente da collocare')).toBeNull();
-    expect(screen.getByRole('button', { name: 'Riprova' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Riprova' }));
+    expect(await screen.findByText(activity.title)).toBeTruthy();
+    expect(listItems).toHaveBeenCalledTimes(3);
   });
 });

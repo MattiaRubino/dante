@@ -13,6 +13,15 @@ log_dir="$(mktemp -d /tmp/dante-all-tests.XXXXXX)" || exit 1
 declare -a names=()
 declare -a results=()
 
+candidate_fingerprint() {
+  {
+    git diff HEAD --binary
+    git ls-files --others --exclude-standard -z | sort -z | xargs -0 -r sha256sum
+  } | sha256sum | cut -d' ' -f1
+}
+
+source_before="$(candidate_fingerprint)" || exit 1
+
 gate() {
   local name="$1" directory="$2" result
   shift 2
@@ -29,9 +38,16 @@ gate() {
 
 echo "BRANCH=$(git branch --show-current)"
 echo "HEAD=$(git rev-parse HEAD)"
+echo "SOURCE_FINGERPRINT=$source_before"
 echo "LOG_DIR=$log_dir"
 echo "All tests use the current source tree; no generator, cleanup, CI or Git write is run."
 
+gate DIFF_CHECK . git diff --check
+gate BACKEND_RUFF apps/backend uv run --locked ruff check .
+gate BACKEND_MYPY apps/backend uv run --locked mypy src
+gate REPO_ESLINT . pnpm lint
+gate REPO_TYPECHECK . pnpm typecheck
+gate ARCHITECTURE . pnpm architecture:check
 gate BACKEND_NON_POSTGRES apps/backend uv run --locked pytest -q --no-cov --tb=short -m 'not postgres'
 gate BACKEND_POSTGRES apps/backend uv run --locked pytest -q --no-cov --tb=short -m postgres
 gate EVAL_TOOLING . uv run --project apps/backend --locked pytest -q --no-cov --tb=short tooling/ai-evals/tests
@@ -52,6 +68,14 @@ for i in "${!names[@]}"; do
   printf '%-23s %s\n' "${names[$i]}" "${results[$i]}"
   if [ "${results[$i]}" -ne 0 ]; then failed=1; fi
 done
+source_after="$(candidate_fingerprint)" || exit 1
+if [ "$source_after" != "$source_before" ]; then
+  echo "SOURCE_STABILITY        1 (worktree changed while the gate ran)"
+  failed=1
+else
+  echo "SOURCE_STABILITY        0"
+fi
+echo "SOURCE_FINGERPRINT=$source_after"
 echo "LOG_DIR=$log_dir"
 echo "WORKTREE_STATUS:"
 git status --short

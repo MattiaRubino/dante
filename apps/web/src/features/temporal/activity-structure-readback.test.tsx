@@ -69,7 +69,7 @@ describe('Activity structure after reload', () => {
     await screen.findByText(/Fase uno/);
     expect(screen.queryByText(/Figli richiesti/)).toBeNull();
     expect(screen.getByText(/2026-10-02T08:00:00Z/)).toBeTruthy();
-    expect(screen.getByText(/Finestra Activity/)).toBeTruthy();
+    expect(screen.getByText(/Estensione complessiva attività/)).toBeTruthy();
     expect(screen.getByTestId('session-capture').dataset.live).toBe('true');
     const child = screen.getByText(/Fase uno/);
     child.click();
