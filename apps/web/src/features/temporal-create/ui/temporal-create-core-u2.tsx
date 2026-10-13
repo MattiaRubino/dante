@@ -702,17 +702,18 @@ export function TemporalCreateCoreFieldsU2({
       fields.timeZoneId,
     );
     if (duration === null && endDate === fields.date) {
-      endDate = Temporal.PlainDate.from(fields.date)
-        .add({ days: 1 })
-        .toString();
-      duration = temporalCreateDurationFromEndDateTime(
-        fields.date,
-        startTime,
-        endDate,
-        calculatedEnd.time,
-        fields.timeMode,
-        fields.timeZoneId,
+      // The previous end was earlier than the new start. Do not convert an
+      // ordinary same-day time edit into an accidental next-day interval
+      // (09:30 -> start 15:00 used to become ~18 hours).
+      // Retain the established duration, recompute the end from the new
+      // start, and let a subsequent explicit End edit choose another length.
+      const shiftedEnd = temporalCreateEndDateTime(
+        fields.date, startTime, fields.durationMinutes,
+        fields.timeMode, fields.timeZoneId,
       );
+      patchAuthoring({ endDate: shiftedEnd.date });
+      onPatch({ startTime });
+      return;
     }
     if (endDate !== visibleEndDate) patchAuthoring({ endDate });
     onPatch({
