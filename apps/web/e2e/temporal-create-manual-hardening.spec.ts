@@ -107,7 +107,7 @@ test('Create stays in the desktop Context Rail, keeps Timeline scroll available,
   // Recurrence has moved to Advanced; retain the custom-path assertion
   // without expecting a removed select in the quick surface.
   await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
-  await dialog.getByLabel('Ripeti').selectOption('custom');
+  await dialog.getByLabel('Ripeti', { exact: true }).selectOption('custom');
   await expect(
     dialog.locator('[data-create-recurrence-owner="routine"]'),
   ).toBeVisible();
