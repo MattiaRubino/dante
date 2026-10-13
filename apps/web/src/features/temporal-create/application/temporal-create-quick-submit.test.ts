@@ -214,7 +214,7 @@ describe('U2 Quick Create submit mapping', () => {
     // Do not mask an actual, material Scheduling policy change.
     const editedMovement = createTemporalCreateFields({
       ...edited,
-      scheduling: { ...edited.scheduling, movementPolicy: 'block' },
+      scheduling: { ...edited.scheduling, movementPolicy: 'locked' },
     });
     expect(temporalCreateU2QuickIntentSupported(editedMovement)).toBe(false);
   });
