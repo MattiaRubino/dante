@@ -256,12 +256,9 @@ def _validated_plan(snapshot: ActivityEditSnapshot, command: ActivityReplanComma
             {row.schedule_ref for row in (*command.intervals, *command.remove_intervals)}
             != {row.schedule_ref for row in intervals}
             or {
-                row.schedule_ref
-                for row in [
-                    *command.planned_sessions,
-                    *command.remove_planned_sessions,
-                    *deleted_timed,
-                ]
+                *{row.schedule_ref for row in command.planned_sessions},
+                *{row.schedule_ref for row in command.remove_planned_sessions},
+                *{row.schedule_ref for row in deleted_timed},
             }
             != {row.schedule_ref for row in planned}
         )
@@ -299,10 +296,10 @@ def _validated_plan(snapshot: ActivityEditSnapshot, command: ActivityReplanComma
             or row.ends_local_at is None
         ):
             raise _invalid("All planning rows must share the Activity time frame.")
-    for row in accounted:
+    for accounted_row in accounted:
         if (
-            row.expected_material_state_ref
-            != current[row.schedule_ref].placement_material_state_ref
+            accounted_row.expected_material_state_ref
+            != current[accounted_row.schedule_ref].placement_material_state_ref
         ):
             raise _conflict()
     # Normalize the typed intervals to pairs before sorting. Python's mixed
@@ -339,6 +336,8 @@ def _validated_plan(snapshot: ActivityEditSnapshot, command: ActivityReplanComma
     if envelope.temporal_form == "named_zone_local" and not envelope.zone_id:
         raise _invalid("The Activity time zone is missing.")
     by_ref = {row.schedule_ref: row for row in retained}
+    if envelope.placement_material_state_ref is None:
+        raise _invalid("The Activity envelope requires an accepted current placement.")
     envelope_new = ReplanRow(
         schedule_ref=envelope.schedule_ref,
         expected_material_state_ref=envelope.placement_material_state_ref,
@@ -349,11 +348,18 @@ def _validated_plan(snapshot: ActivityEditSnapshot, command: ActivityReplanComma
     placements = []
     # Removed rows are handled by the unschedule path, never by placement revision.
     # Only retained rows can be looked up in by_ref.
-    for row in (envelope, *(row for row in (*intervals, *planned) if row.schedule_ref in by_ref)):
-        next_row = envelope_new if row.role_code == "envelope" else by_ref[row.schedule_ref]
+    for existing_row in (
+        envelope,
+        *(schedule for schedule in (*intervals, *planned) if schedule.schedule_ref in by_ref),
+    ):
+        next_row = (
+            envelope_new
+            if existing_row.role_code == "envelope"
+            else by_ref[existing_row.schedule_ref]
+        )
         if (
-            row.starts_local_at == next_row.starts_local_at
-            and row.ends_local_at == next_row.ends_local_at
+            existing_row.starts_local_at == next_row.starts_local_at
+            and existing_row.ends_local_at == next_row.ends_local_at
         ):
             continue
         try:
@@ -371,22 +377,24 @@ def _validated_plan(snapshot: ActivityEditSnapshot, command: ActivityReplanComma
             )
         except ScheduleInputError as exc:
             raise _invalid(str(exc)) from exc
+        if existing_row.role_code is None:
+            raise _invalid("An Activity Schedule role is missing.")
         changes.append(
             ReplanChange(
-                schedule_ref=row.schedule_ref,
-                role=row.role_code,
-                previous_start=row.starts_local_at,
-                previous_end=row.ends_local_at,
+                schedule_ref=existing_row.schedule_ref,
+                role=existing_row.role_code,
+                previous_start=existing_row.starts_local_at,
+                previous_end=existing_row.ends_local_at,
                 proposed_start=next_row.starts_local_at,
                 proposed_end=next_row.ends_local_at,
             )
         )
         placements.append((next_row, placement))
-    for row in command.remove_intervals:
-        prior = current[row.schedule_ref]
+    for removed_interval in command.remove_intervals:
+        prior = current[removed_interval.schedule_ref]
         changes.append(
             ReplanChange(
-                schedule_ref=row.schedule_ref,
+                schedule_ref=removed_interval.schedule_ref,
                 role="interval_removed",
                 previous_start=prior.starts_local_at,
                 previous_end=prior.ends_local_at,
@@ -401,23 +409,23 @@ def _validated_plan(snapshot: ActivityEditSnapshot, command: ActivityReplanComma
         )
         for row in command.new_intervals
     )
-    for row in command.remove_planned_sessions:
-        prior = current[row.schedule_ref]
+    for removed_planned in command.remove_planned_sessions:
+        prior = current[removed_planned.schedule_ref]
         changes.append(
             ReplanChange(
-                schedule_ref=row.schedule_ref,
+                schedule_ref=removed_planned.schedule_ref,
                 role="planned_removed",
                 previous_start=prior.starts_local_at,
                 previous_end=prior.ends_local_at,
             )
         )
-    for row in command.delete_planned_sessions:
+    for deleted_planned in command.delete_planned_sessions:
         prior = next(
-            item for item in (*planned, *unplaced) if item.schedule_ref == row.schedule_ref
+            item for item in (*planned, *unplaced) if item.schedule_ref == deleted_planned.schedule_ref
         )
         changes.append(
             ReplanChange(
-                schedule_ref=row.schedule_ref,
+                schedule_ref=deleted_planned.schedule_ref,
                 role="planned_deleted",
                 previous_start=prior.starts_local_at,
                 previous_end=prior.ends_local_at,
