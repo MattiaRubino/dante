@@ -103,6 +103,7 @@ export function TemporalCreateDatePicker({
         className="temporal-create-date-picker__trigger"
         type="button"
         aria-label={`${label}: ${compactLabel(selected, locale)}`}
+        data-temporal-date={value}
         aria-expanded={open}
         onClick={() => {
           if (!open) setMonth(firstDayOfMonth(selected));
@@ -155,6 +156,7 @@ export function TemporalCreateDatePicker({
                     outside ? 'is-outside' : ''
                   }`.trim()}
                   aria-pressed={selectedDay}
+                  data-temporal-date={day.toString()}
                   onClick={() => {
                     onChange(day.toString());
                     setOpen(false);

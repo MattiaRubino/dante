@@ -230,8 +230,8 @@ test('Event Advanced preserves structured agenda, deep intent and provider reque
   await dialog.getByRole('textbox', { name: 'Inizio: ore' }).fill('16');
   await dialog.getByRole('textbox', { name: 'Inizio: minuti' }).fill('00');
   await dialog.getByRole('radio', { name: 'Orario' }).click();
-  await dialog.getByLabel('Ripeti').selectOption('weekly');
   await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
+  await dialog.getByLabel('Ripeti').selectOption('weekly');
 
   await dialog.getByLabel('Scopo').fill('Definire il rilascio');
   await dialog
@@ -305,8 +305,8 @@ test('Event quick recurrence enters truthful CP6 authoring and survives base Adv
   await dialog.getByRole('textbox', { name: 'Titolo' }).fill('Evento ciclico');
   await dialog.getByRole('radio', { name: 'Evento' }).click();
   await dialog.getByRole('radio', { name: 'Orario' }).click();
-  await dialog.getByLabel('Ripeti').selectOption('weekly');
   await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
+  await dialog.getByLabel('Ripeti').selectOption('weekly');
   await expect(dialog).toHaveAttribute(
     'data-temporal-create-surface',
     'advanced',
@@ -337,7 +337,7 @@ test('Event quick recurrence enters truthful CP6 authoring and survives base Adv
     .getByRole('button', { name: 'Nascondi opzioni avanzate' })
     .click();
   await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'base');
-  await expect(dialog.getByLabel('Ripeti')).toHaveValue('custom');
+  await expect(dialog.getByLabel('Ripeti')).toHaveCount(0);
 
   await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
   await expect(pattern).toHaveValue('cyclic-positional');
@@ -363,13 +363,21 @@ test('all-day date spans live inside each day before minute zero for Event and A
   await dialog.getByRole('textbox', { name: 'Titolo' }).fill('Fiera');
   await dialog.getByRole('radio', { name: 'Evento' }).click();
   await dialog.getByRole('radio', { name: 'Tutto il giorno' }).click();
-  const startDate = await dialog.getByLabel('Data inizio').inputValue();
+  const startDate = await dialog
+    .getByRole('button', { name: /^Data inizio:/ })
+    .getAttribute('data-temporal-date');
+  expect(startDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  if (!startDate) throw new Error('Selected all-day start date is missing');
   const nextDate = await page.evaluate((value) => {
     const date = new Date(`${value}T12:00:00Z`);
     date.setUTCDate(date.getUTCDate() + 1);
     return date.toISOString().slice(0, 10);
   }, startDate);
-  await dialog.getByLabel('Data fine').fill(nextDate);
+  await dialog.getByRole('button', { name: /^Data fine:/ }).click();
+  await dialog
+    .getByRole('dialog', { name: 'Data fine' })
+    .locator(`[data-temporal-date="${nextDate}"]`)
+    .click();
   await dialog.getByRole('button', { name: 'Aggiungi' }).click();
   await expect(dialog).toHaveCount(0);
 
@@ -430,7 +438,10 @@ test('all-day date spans live inside each day before minute zero for Event and A
   dialog = await openCreate(page);
   await dialog.getByRole('textbox', { name: 'Titolo' }).fill('Giornata studio');
   await dialog.getByRole('radio', { name: 'Tutto il giorno' }).click();
-  const activityDate = await dialog.getByLabel('Data', { exact: true }).inputValue();
+  const activityDate = await dialog
+    .getByRole('button', { name: /^Data inizio:/ })
+    .getAttribute('data-temporal-date');
+  expect(activityDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   await dialog.getByRole('button', { name: 'Aggiungi' }).click();
   const activity = page
     .locator(
@@ -489,7 +500,10 @@ test('double-click and Shift-drag only use the timed canvas for contextual Creat
 
   let dialog = page.locator('[data-temporal-create="composer"]');
   await expect(dialog).toBeVisible();
-  await expect(dialog.getByLabel('Data', { exact: true })).not.toHaveValue('');
+  await expect(dialog.getByRole('button', { name: /^Data inizio:/ })).toHaveAttribute(
+    'data-temporal-date',
+    /^\d{4}-\d{2}-\d{2}$/,
+  );
   await expect(dialog.getByRole('textbox', { name: 'Inizio: ore' })).not.toHaveValue('');
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveCount(0);
