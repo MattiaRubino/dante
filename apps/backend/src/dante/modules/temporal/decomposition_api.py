@@ -11,6 +11,7 @@ from uuid import UUID, uuid7
 from fastapi import APIRouter, Depends, Request, Response
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from sqlalchemy import text
+from sqlalchemy.engine import RowMapping
 from sqlalchemy.exc import DBAPIError, SQLAlchemyError
 
 from dante.context.contracts import DanteContext
@@ -161,7 +162,7 @@ def _problem(exc: DBAPIError) -> ProblemError:
 
 
 def _owner_schedules(
-    rows: list,
+    rows: list[RowMapping],
     activity_ref: UUID,
     roles: dict[UUID, tuple[Literal["envelope", "planned", "interval"], int, str | None]],
 ) -> list[ActivityScheduleResponse]:
