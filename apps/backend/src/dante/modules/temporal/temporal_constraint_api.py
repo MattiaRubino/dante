@@ -15,11 +15,11 @@ from dante.modules.temporal.temporal_constraint import (
     AbsoluteBoundaryRule,
     AbsoluteIntervalPlacement,
     AbsoluteWindowRule,
-    SessionMinimumDurationRule,
-    ScheduleDurationRule,
     CreatedTemporalConstraintView,
-    RevisedTemporalConstraintView,
     RetiredTemporalConstraintView,
+    RevisedTemporalConstraintView,
+    ScheduleDurationRule,
+    SessionMinimumDurationRule,
     TemporalConstraintApplication,
     TemporalConstraintEvaluationView,
     TemporalConstraintInputError,
@@ -348,18 +348,21 @@ def _rule_request(rule: TemporalConstraintRule) -> TemporalConstraintRuleRequest
             "Schedule duration API request is not activated on this route."
         )
     if isinstance(rule, AbsoluteWindowRule):
-        common = {
-            "strength": rule.strength,
-            "starts_at": rule.starts_at,
-            "ends_at": rule.ends_at,
-        }
         if rule.relationship == "start_within":
-            return AbsoluteStartWithinWindowRuleRequest(**common)
+            return AbsoluteStartWithinWindowRuleRequest(
+                strength=rule.strength, starts_at=rule.starts_at, ends_at=rule.ends_at
+            )
         if rule.relationship == "completion_within":
-            return AbsoluteCompletionWithinWindowRuleRequest(**common)
+            return AbsoluteCompletionWithinWindowRuleRequest(
+                strength=rule.strength, starts_at=rule.starts_at, ends_at=rule.ends_at
+            )
         if rule.relationship == "full_placement_contained":
-            return AbsoluteFullPlacementContainedWindowRuleRequest(**common)
-        return AbsolutePlacementOverlapsWindowRuleRequest(**common)
+            return AbsoluteFullPlacementContainedWindowRuleRequest(
+                strength=rule.strength, starts_at=rule.starts_at, ends_at=rule.ends_at
+            )
+        return AbsolutePlacementOverlapsWindowRuleRequest(
+            strength=rule.strength, starts_at=rule.starts_at, ends_at=rule.ends_at
+        )
     if rule.boundary_kind == "earliest_start":
         return AbsoluteEarliestStartRuleRequest(
             strength=rule.strength,
@@ -383,19 +386,33 @@ def _current_rule_response(
     if current_rule is None:
         return None
     if current_rule.family == "window":
-        common = {
-            "material_state_ref": current_rule.material_state_ref,
-            "strength": current_rule.strength,
-            "starts_at": current_rule.starts_at,
-            "ends_at": current_rule.ends_at,
-        }
         if current_rule.relationship == "start_within":
-            return AbsoluteStartWithinWindowCurrentRuleResponse(**common)
+            return AbsoluteStartWithinWindowCurrentRuleResponse(
+                material_state_ref=current_rule.material_state_ref,
+                strength=current_rule.strength,
+                starts_at=current_rule.starts_at,
+                ends_at=current_rule.ends_at,
+            )
         if current_rule.relationship == "completion_within":
-            return AbsoluteCompletionWithinWindowCurrentRuleResponse(**common)
+            return AbsoluteCompletionWithinWindowCurrentRuleResponse(
+                material_state_ref=current_rule.material_state_ref,
+                strength=current_rule.strength,
+                starts_at=current_rule.starts_at,
+                ends_at=current_rule.ends_at,
+            )
         if current_rule.relationship == "full_placement_contained":
-            return AbsoluteFullPlacementContainedWindowCurrentRuleResponse(**common)
-        return AbsolutePlacementOverlapsWindowCurrentRuleResponse(**common)
+            return AbsoluteFullPlacementContainedWindowCurrentRuleResponse(
+                material_state_ref=current_rule.material_state_ref,
+                strength=current_rule.strength,
+                starts_at=current_rule.starts_at,
+                ends_at=current_rule.ends_at,
+            )
+        return AbsolutePlacementOverlapsWindowCurrentRuleResponse(
+            material_state_ref=current_rule.material_state_ref,
+            strength=current_rule.strength,
+            starts_at=current_rule.starts_at,
+            ends_at=current_rule.ends_at,
+        )
     if current_rule.family == "duration":
         return TemporalConstraintCurrentDurationRuleResponse(
             material_state_ref=current_rule.material_state_ref,
@@ -404,16 +421,23 @@ def _current_rule_response(
             strength=current_rule.strength,
             duration_microseconds=current_rule.duration_microseconds,
         )
-    common = {
-        "material_state_ref": current_rule.material_state_ref,
-        "strength": current_rule.strength,
-        "boundary_at": current_rule.boundary_at,
-    }
     if current_rule.boundary_kind == "earliest_start":
-        return AbsoluteEarliestStartCurrentRuleResponse(**common)
+        return AbsoluteEarliestStartCurrentRuleResponse(
+            material_state_ref=current_rule.material_state_ref,
+            strength=current_rule.strength,
+            boundary_at=current_rule.boundary_at,
+        )
     if current_rule.boundary_kind == "latest_start":
-        return AbsoluteLatestStartCurrentRuleResponse(**common)
-    return AbsoluteLatestCompletionCurrentRuleResponse(**common)
+        return AbsoluteLatestStartCurrentRuleResponse(
+            material_state_ref=current_rule.material_state_ref,
+            strength=current_rule.strength,
+            boundary_at=current_rule.boundary_at,
+        )
+    return AbsoluteLatestCompletionCurrentRuleResponse(
+        material_state_ref=current_rule.material_state_ref,
+        strength=current_rule.strength,
+        boundary_at=current_rule.boundary_at,
+    )
 
 
 def _constraint_response(value: TemporalConstraintView) -> TemporalConstraintResponse:
@@ -462,7 +486,9 @@ def _retired_response(value: RetiredTemporalConstraintView) -> RetiredTemporalCo
     )
 
 
-def _evaluation_response(value: TemporalConstraintEvaluationView) -> TemporalConstraintEvaluationResponse:
+def _evaluation_response(
+    value: TemporalConstraintEvaluationView,
+) -> TemporalConstraintEvaluationResponse:
     return TemporalConstraintEvaluationResponse(
         subject_ref=value.subject_native_ref,
         placement=AbsoluteIntervalPlacementRequest(
@@ -731,7 +757,7 @@ async def list_temporal_constraints_by_subject(
     context: DanteContextDependency,
     application: TemporalConstraintApplicationDependency,
     response: Response,
-    subject_ref: UUID = Query(...),
+    subject_ref: Annotated[UUID, Query()],
 ) -> TemporalConstraintListResponse:
     response.headers["Cache-Control"] = "no-store"
     try:

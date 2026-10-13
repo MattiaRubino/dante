@@ -8,6 +8,7 @@ import pytest
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
+from opentelemetry.sdk.trace.sampling import ALWAYS_ON
 from starlette.types import Message, Receive, Scope, Send
 
 from dante.platform.config.observability import ObservabilitySettings
@@ -91,7 +92,7 @@ async def _invoke(
 @pytest.mark.asyncio
 async def test_http_span_uses_only_the_route_template_and_bounded_method() -> None:
     exporter = InMemorySpanExporter()
-    provider = TracerProvider()
+    provider = TracerProvider(sampler=ALWAYS_ON)
     provider.add_span_processor(SimpleSpanProcessor(exporter))
     telemetry = RecordingHttpTelemetry()
     runtime = _runtime(provider, telemetry)
@@ -121,7 +122,7 @@ async def test_http_span_uses_only_the_route_template_and_bounded_method() -> No
 @pytest.mark.asyncio
 async def test_health_request_keeps_metrics_but_skips_spans_by_default() -> None:
     exporter = InMemorySpanExporter()
-    provider = TracerProvider()
+    provider = TracerProvider(sampler=ALWAYS_ON)
     provider.add_span_processor(SimpleSpanProcessor(exporter))
     telemetry = RecordingHttpTelemetry()
     runtime = _runtime(provider, telemetry)
@@ -138,7 +139,7 @@ async def test_health_request_keeps_metrics_but_skips_spans_by_default() -> None
 @pytest.mark.asyncio
 async def test_duplicate_trace_context_is_ignored_without_rejecting_the_request() -> None:
     exporter = InMemorySpanExporter()
-    provider = TracerProvider()
+    provider = TracerProvider(sampler=ALWAYS_ON)
     provider.add_span_processor(SimpleSpanProcessor(exporter))
     telemetry = RecordingHttpTelemetry()
     runtime = _runtime(provider, telemetry)
@@ -160,7 +161,7 @@ async def test_duplicate_trace_context_is_ignored_without_rejecting_the_request(
 @pytest.mark.asyncio
 async def test_cancelled_request_is_not_classified_as_a_server_failure() -> None:
     exporter = InMemorySpanExporter()
-    provider = TracerProvider()
+    provider = TracerProvider(sampler=ALWAYS_ON)
     provider.add_span_processor(SimpleSpanProcessor(exporter))
     telemetry = RecordingHttpTelemetry()
     runtime = _runtime(provider, telemetry)
