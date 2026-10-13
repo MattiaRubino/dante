@@ -108,7 +108,6 @@ function draft(vault: ReturnType<Page['locator']>, title: string) {
 test('saving a Draft never creates an executable Timeline card and Resume preserves its identity', async ({
   page,
 }) => {
-  const records = await installDraftVaultFixture(page);
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/home');
 
@@ -141,9 +140,9 @@ test('saving a Draft never creates an executable Timeline card and Resume preser
 test('duplicating a Draft creates a separate inert draft without mutating the original', async ({
   page,
 }) => {
-  const records = await installDraftVaultFixture(page);
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/home');
+  const records = await installDraftVaultFixture(page);
   await saveDraft(page, 'Scrivere proposta');
   const originalId = [...records.keys()][0];
   const vault = await openDraftVault(page);
@@ -163,9 +162,9 @@ test('duplicating a Draft creates a separate inert draft without mutating the or
 test('deleting a Draft requires explicit confirmation and does not affect other drafts', async ({
   page,
 }) => {
-  const records = await installDraftVaultFixture(page);
   await page.setViewportSize({ width: 1280, height: 820 });
   await page.goto('/home');
+  const records = await installDraftVaultFixture(page);
   await saveDraft(page, 'Pulire archivio');
   await saveDraft(page, 'Rivedere note');
   const vault = await openDraftVault(page);
@@ -185,9 +184,9 @@ test('deleting a Draft requires explicit confirmation and does not affect other 
 test('Draft Vault stays inside the mobile viewport without horizontal overflow', async ({
   page,
 }) => {
-  await installDraftVaultFixture(page);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/home');
+  await installDraftVaultFixture(page);
   await saveDraft(page, 'Telefonare assicurazione');
   const vault = await openDraftVault(page);
   const bounds = await vault.boundingBox();
