@@ -17,10 +17,13 @@
   }
 
   .home-create-panel-host {
-    /* The rail can be taller than the visible viewport when its sections
-       contain long content. The quick composer must use the viewport's
-       remaining space, with scrolling inside its own form. */
-    max-height: calc(100dvh - 104px);
+    /* A stretched absolute host inherits the height of the entire rail,
+       including content below the viewport. Establish a definite bounded
+       block-size instead of max-height alone: the child composer uses
+       height: 100%, so percentage resolution otherwise fills 1400+ px. */
+    bottom: auto;
+    height: min(100%, calc(100dvh - 180px));
+    max-height: calc(100dvh - 180px);
     overflow: hidden;
   }
 
