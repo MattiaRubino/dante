@@ -13,6 +13,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Request, Response
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import text
+from sqlalchemy.engine import RowMapping
 from sqlalchemy.exc import SQLAlchemyError
 
 from dante.context.contracts import DanteContext
@@ -49,7 +50,7 @@ class ResolutionQueueResponse(BaseModel):
     count: int
 
 
-def _item(row: object) -> ResolutionQueueItem:
+def _item(row: RowMapping) -> ResolutionQueueItem:
     values = dict(row)  # SQLAlchemy RowMapping -> ordinary validated payload.
     reason = values["reason_code"]
     if reason == "reconciliation_open":
