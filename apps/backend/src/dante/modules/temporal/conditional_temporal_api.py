@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request, Response
@@ -68,7 +68,7 @@ class ConditionalEvaluationResponse(BaseModel):
     replayed: bool
 
 
-_CONDITION_WRITE_RESPONSES = {
+_CONDITION_WRITE_RESPONSES: dict[int, dict[str, Any]] = {
     200: {
         "model": ActualRealizationConditionResponse,
         "description": "Idempotent replay.",
@@ -82,7 +82,7 @@ _CONDITION_WRITE_RESPONSES = {
     500: {"model": ProblemDetails, "description": "Unexpected server error."},
 }
 
-_EVALUATION_WRITE_RESPONSES = {
+_EVALUATION_WRITE_RESPONSES: dict[int, dict[str, Any]] = {
     200: {
         "model": ConditionalEvaluationResponse,
         "description": "Idempotent replay.",
