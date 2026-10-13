@@ -7,6 +7,7 @@ from uuid import uuid7
 
 import psycopg
 import pytest
+from psycopg import sql
 from psycopg import errors
 
 pytestmark = pytest.mark.postgres
@@ -44,7 +45,12 @@ def _admin(database: Any) -> psycopg.Connection[Any]:
 
 def _native(connection: psycopg.Connection[Any], table: str, ref: object) -> None:
     ref_column = f"{table}_ref"
-    connection.execute(f"INSERT INTO dante.{table} ({ref_column}) VALUES (%s)", (ref,))
+    connection.execute(
+        sql.SQL("INSERT INTO dante.{} ({}) VALUES (%s)").format(
+            sql.Identifier(table), sql.Identifier(ref_column)
+        ),
+        (ref,),
+    )
     connection.execute(
         "INSERT INTO dante.native_address (native_ref, owner_family) VALUES (%s, %s)",
         (ref, table),
