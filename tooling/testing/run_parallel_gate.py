@@ -541,16 +541,20 @@ class _Tee:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--group-workers", type=int, default=3,
-        help="Independent concurrent groups (1-8; default 3)",
+        "--group-workers", type=int, default=5,
+        help="Independent concurrent groups (1-8; default 5)",
     )
     parser.add_argument(
-        "--postgres-workers", type=int, default=5,
-        help="Independent PostgreSQL clusters (1-10; default 5)",
+        "--postgres-workers", type=int, default=3,
+        help="Independent PostgreSQL clusters (1-10; default 3; Docker-safe)",
     )
     parser.add_argument(
-        "--postgres-jobs-per-worker", type=int, default=4,
-        help="Queue depth per worker for balancing module durations (2-8; default 4)",
+        "--postgres-jobs-per-worker", type=int, default=3,
+        help="Queue depth per worker for balancing module durations (2-8; default 3)",
+    )
+    parser.add_argument(
+        "--nonauth-workers", type=int, default=3,
+        help="Parallel non-auth Chromium browser files (1-6; default 3)",
     )
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--self-test", action="store_true")
@@ -561,6 +565,8 @@ def main() -> int:
         parser.error("--postgres-workers must be between 1 and 10")
     if not 2 <= args.postgres_jobs_per_worker <= 8:
         parser.error("--postgres-jobs-per-worker must be between 2 and 8")
+    if not 1 <= args.nonauth_workers <= 6:
+        parser.error("--nonauth-workers must be between 1 and 6")
     if args.postgres_workers >= 8:
         print(
             "WARNING: 8-10 PostgreSQL workers run 8-10 real PostGIS "
@@ -584,6 +590,8 @@ def main() -> int:
             print(f"{label}: groups={len(names)}, concurrency={count}")
             for name in names:
                 print(f"  {name}: {' '.join(tasks[name].command)}")
+        print(f"NONAUTH_BROWSER_WORKERS={args.nonauth_workers}")
+        print("REAL_STACK_BROWSER_WORKERS=1 (destructive PostgreSQL outage tests)")
         print(f"TOTAL={len(tasks)}; original sequential gate untouched")
         return 0
 
