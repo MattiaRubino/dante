@@ -38,3 +38,14 @@ bash tooling/testing/repair_full_gate_style.sh
 ```
 
 The script writes `temp/FULL_GATE_REPAIR_LOGS.tar.gz`. Use its residual diagnostic logs to fix real typing and lint errors; **do not disable checks or declare the full gate green**. Run the unchanged complete parallel gate again only when the static backlog and functional failures are addressed.
+
+## 13 October, static recovery after d8914007 (pending verified rerun)
+
+Local recovery `FULL_GATE_RECOVERY_LOGS.tar.gz` at exactly `d8914007db72334af0e86fdab821b2de0ad50dfb` confirmed Python formatting, Prettier, all-repo TypeScript, and focused midnight-clock Vitest GREEN; Ruff had 57 findings, mypy 421 across 67 files, ESLint 334 errors + 3 warnings. The formatter-only change committed 477 files on the feature branch. No 27-group full gate was rerun after that recovery.
+
+Direct source repairs have now been published on this branch but **not yet validated**:
+
+- mypy type inference: distinct typed variables for core-edit capture/reality/profile/reminder payloads and Objective create/revise/retire branches; covariant fingerprint Mapping; split heterogeneous Pydantic comprehensions and normalize replan date ranges to typed datetime spans.
+- Ruff PT018: 16 logically equivalent independent assertions; PT011: four targeted validation-error message assertions; SIM117: two genuinely nested context managers combined; T201: 5 catalog prints replaced with identical stdout output.
+- Ruff S608: five ACL/Responsibility test SQL strings now compose identifiers with `psycopg.sql.Identifier`; 11 source dynamic recurrence/responsibility SQL function names now select **explicit static SQL alternatives** for `routine/event` or `activity/event` rather than interpolating identifiers. Applied historical migration f-strings are not bulk-suppressed or rewritten; review remaining S608 individually and preserve DDL behavior.
+- The single local follow-up is `bash tooling/testing/verify_static_repair_20261013.sh`: requires clean checkout, pulls, formats new Python/JS source fixes, gates generated drift and full TS, pushes only if those checks pass, then concurrently runs Ruff/mypy/ESLint and produces `temp/STATIC_REPAIR_LOGS.tar.gz` without rerunning PostgreSQL/browser E2E. Source changes may need refinements from this log; **do not claim a green full gate**.
