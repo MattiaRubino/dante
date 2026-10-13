@@ -177,7 +177,7 @@ def _fingerprint(payload: dict[str, object]) -> str:
     ).hexdigest()
 
 
-def _error(exc: DBAPIError) -> RuntimeError:
+def _error(exc: DBAPIError) -> Exception:
     original = getattr(exc, "orig", None)
     sqlstate = getattr(original, "sqlstate", None)
     diagnostic = getattr(original, "diag", None)
