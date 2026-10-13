@@ -32,6 +32,42 @@ def main() -> int:
     sha = _git("rev-parse", "HEAD")
     output_root = ROOT / "temp"
     output_root.mkdir(exist_ok=True)
+    # Check the daemon before checking cached images. Stopped Docker is
+    # an environment prerequisite failure, not a missing-image assertion.
+    try:
+        daemon = subprocess.run(
+            ["docker", "info", "--format", "{{.ServerVersion}}"],
+            cwd=ROOT, capture_output=True, text=True, check=False, timeout=30,
+        )
+    except (FileNotFoundError, subprocess.TimeoutExpired) as exc:
+        print(f"STOP: Docker unavailable: {exc}", file=sys.stderr)
+        print("Start Docker Desktop / WSL Docker and rerun.", file=sys.stderr)
+        return 2
+    if daemon.returncode != 0:
+        print("STOP: Docker daemon is not accessible from WSL.", file=sys.stderr)
+        print("Start Docker and verify docker info, then rerun.", file=sys.stderr)
+        return 2
+
+    # Build only when the daemon is live and the exact local image is missing.
+    required_image = "dante-postgres-local:18.6"
+    inspection = subprocess.run(
+        ["docker", "image", "inspect", required_image],
+        cwd=ROOT, capture_output=True, text=True, check=False,
+    )
+    if inspection.returncode != 0:
+        print(f"POSTGRES_IMAGE_MISSING={required_image}", flush=True)
+        build_log = output_root / "POSTGRES_IMAGE_BUILD.log"
+        with build_log.open("w", encoding="utf-8") as log:
+            build = subprocess.run(
+                ["docker", "compose", "-f", "infra/compose/local.yaml",
+                 "build", "postgres"],
+                cwd=ROOT, stdout=log, stderr=subprocess.STDOUT, check=False,
+            )
+        print(f"POSTGRES_IMAGE_BUILD_LOG={build_log}", flush=True)
+        if build.returncode != 0:
+            print("STOP: test PostgreSQL image build failed.", file=sys.stderr)
+            return 2
+        print(f"POSTGRES_IMAGE_BUILT={required_image}", flush=True)
     with tempfile.NamedTemporaryFile(
         prefix="dante-full-console-", suffix=".log",
         dir=output_root, delete=False,

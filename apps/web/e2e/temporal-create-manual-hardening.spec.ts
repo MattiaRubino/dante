@@ -22,7 +22,7 @@ test('Quick is draggable and Advanced stays floating while the Timeline remains 
   await expect(close).toBeVisible();
   await expect(
     dialog.locator('.temporal-create-composer__header button'),
-  ).toHaveCount(1);
+  ).toHaveCount(2);
 
   const backdrop = page.locator('[data-temporal-create="backdrop"]');
   const backdropStyle = await backdrop.evaluate((element) => {

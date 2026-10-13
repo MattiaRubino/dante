@@ -359,3 +359,43 @@ to `127.0.0.1:8000`:
 The related browser test selector changes are **unverified** until a
 new WSL Playwright run. The full gate is **RED** and browser failures
 must not be claimed resolved by the unit/regression patches alone.
+
+## Gate 0b795bd4 — 13 October 2026 (WSL user evidence)
+
+Evidence: user-supplied `FULL_GATE_SUMMARY(3).md` and
+`FULL_GATE_LOGS.tar(3).gz`. Candidate
+`0b795bd4f0e04f0491cf854a58ad400f899b7240`.
+All **27** groups reported; **18 PASS / 9 FAIL**, source stability **0**.
+Overall acceptance **RED**, not partial green.
+
+- Non-PostgreSQL backend: **620 passed / 1 failed**. The
+  `test_occurrence_window_checkpoint_uses_context_zone_and_preserves_counts`
+  transport double referenced unimported `OccurrenceApplication` and passed
+  obsolete keyword `application` to the current
+  `checkpoint_occurrence_window(..., materialization=...)` boundary.
+  Correct the type and named injection, preserving all original assertions.
+- PostgreSQL suite: **not executed**. Docker was stopped in WSL, so the disposable PostgreSQL image
+  `dante-postgres-local:18.6` could not be inspected. Real-stack Playwright is
+  **blocked by the same prerequisite**. Do not count either as tested.
+  One-shot wrapper checks Docker availability first; it should only build
+  an actually missing image through
+  `docker compose -f infra/compose/local.yaml build postgres` when absent.
+- Non-auth fixture Playwright: **111 passed / 16 failed**. Full DOM/error
+  contexts and three trace zips captured. Most failures still rely on
+  removed fields such as `Durata prevista`, `Ripeti` in the quick flow or
+  the legacy `Da collocare` radio and Planning Tray. They require semantic
+  rewriting around explicit duration from start/end, Advanced recurrence and
+  inert Draft Vault, not merely mass selector replacement. Separate
+  Timeline focus-retargeting failure remains to diagnose.
+- Quality remains RED: Ruff format **243** files; Ruff lint **135** errors,
+  mypy **680** errors in 77 files; Prettier **217** files; ESLint **337**
+  errors and 3 warnings. Automated formatting is not evidence that typed
+  temporal/date semantics or React effects are safe.
+- Passed in same run: filename/registry/collection checks, architecture,
+  generated client drift, TypeScript typecheck, build, mobile, observability,
+  tooling, API client, i18n, time, Vitest, fixture session browser.
+
+Following this diagnosis a targeted code correction is published for the
+Occurrence transport fixture and the Create header count. These changes are
+**unverified** until a fresh WSL run. No Alembic autogenerate verdict is
+possible on the blocked PostgreSQL group; keep prior drift RED.

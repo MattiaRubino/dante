@@ -92,8 +92,10 @@ def _application(value: _StaticApplication) -> TemporalScheduleApplication:
     return cast(TemporalScheduleApplication, value)
 
 
-def _occurrence_application(value: _StaticOccurrenceApplication) -> OccurrenceApplication:
-    return cast(OccurrenceApplication, value)
+def _materialization_application(
+    value: _StaticOccurrenceApplication,
+) -> RoutineOccurrenceMaterializationApplication:
+    return cast(RoutineOccurrenceMaterializationApplication, value)
 
 
 def _result(*, replayed: bool) -> EstablishedScheduleView:
@@ -131,7 +133,7 @@ async def test_occurrence_window_checkpoint_uses_context_zone_and_preserves_coun
             end_date_exclusive=date(2026, 10, 8),
         ),
         context=_context(),
-        application=_occurrence_application(application),
+        materialization=_materialization_application(application),
         response=response,
     )
 
