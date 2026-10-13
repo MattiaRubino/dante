@@ -118,7 +118,7 @@ async function createScheduledEvent(
   const timelineRefreshPromise = waitForTimelineRead(page);
   const responsePromise = page.waitForResponse(
     (response) =>
-      response.url().endsWith('/api/v1/temporal/events/scheduled') &&
+      response.url().endsWith('/api/v1/temporal/authoring/events') &&
       response.request().method() === 'POST',
     { timeout: E2E_RESPONSE_TIMEOUT_MS },
   );
@@ -127,7 +127,48 @@ async function createScheduledEvent(
   expect(response.status()).toBe(201);
   expect((await timelineRefreshPromise).status()).toBe(200);
   await expect(dialog).toHaveCount(0);
-  return (await response.json()) as Record<string, unknown>;
+  const accepted = (await response.json()) as Record<string, unknown>;
+  const schedule = accepted.schedule as Record<string, unknown> | null;
+  if (!schedule || typeof schedule.schedule_ref !== 'string' ||
+      typeof schedule.placement_material_state_ref !== 'string') {
+    throw new Error('Event U2 authoring did not persist a canonical Schedule.');
+  }
+  const placement = schedule.placement as Record<string, unknown>;
+  if (!placement || (placement.kind !== 'floating_local_interval' &&
+      placement.kind !== 'date_span')) {
+    throw new Error('Event U2 authoring returned an unexpected placement form.');
+  }
+  // Adapt U2's nested canonical Schedule to the historical full-stack
+  // projection comparison below. No reference or placement is invented.
+  return {
+    ...accepted,
+    schedule_ref: schedule.schedule_ref,
+    placement_material_state_ref: schedule.placement_material_state_ref,
+    temporal_form: placement.kind === 'date_span' ? 'date_span' : 'floating_local',
+    ...(placement.kind === 'date_span'
+      ? {
+          start_date: placement.start_date,
+          end_date_exclusive: placement.end_date_exclusive,
+        }
+      : {}),
+  };
+}
+
+async function chooseDate(dialog: Locator, label: 'Data inizio' | 'Data fine', date: string) {
+  const trigger = dialog.getByRole('button', { name: new RegExp(`^${label}:`) });
+  await trigger.click();
+  const picker = dialog.getByRole('dialog', { name: label });
+  const day = picker.locator(`button[data-temporal-date="${date}"]`);
+  await expect(day).toBeVisible();
+  await day.click();
+  await expect(trigger).toHaveAttribute('data-temporal-date', date);
+}
+
+async function chooseFloatingLocalTime(dialog: Locator) {
+  await dialog.getByRole('button', { name: /^Fuso orario:/ }).click();
+  await dialog.getByRole('button', { name: 'Ora locale', exact: true }).click();
+  await dialog.getByRole('textbox', { name: 'Inizio: ore' }).fill('10');
+  await dialog.getByRole('textbox', { name: 'Inizio: minuti' }).fill('00');
 }
 
 function addDays(date: string, days: number): string {
@@ -148,9 +189,11 @@ test.describe('Timeline B03-E real-stack Event closure', () => {
       const page = await context.newPage();
       await useItalianLocale(page);
       await signIn(page);
+      // A future date keeps the accepted Schedule outside the historical
+      // past-authoring policies while testing the same real DB contracts.
+      const today = Temporal.Now.plainDateISO('Europe/Rome')
+        .add({ days: 1 }).toString();
       await openHome(page);
-
-      const today = Temporal.Now.plainDateISO('Europe/Rome').toString();
       const browserTag = testInfo.project.name;
 
       const timedTitle = `B03 E timed ${browserTag}`;
@@ -158,8 +201,8 @@ test.describe('Timeline B03-E real-stack Event closure', () => {
         page,
         timedTitle,
         async (dialog) => {
-          await dialog.locator('[data-create-path="date"]').fill(today);
-          await dialog.locator('[data-create-path="startTime"]').fill('10:00');
+          await chooseDate(dialog, 'Data inizio', today);
+          await chooseFloatingLocalTime(dialog);
         },
       );
       expect(timed.temporal_form).toBe('floating_local');
@@ -209,10 +252,8 @@ test.describe('Timeline B03-E real-stack Event closure', () => {
         singleDayTitle,
         async (dialog) => {
           await dialog.getByRole('radio', { name: 'Tutto il giorno' }).click();
-          await dialog.locator('[data-create-path="date"]').fill(today);
-          await dialog
-            .locator('[data-create-path="event.allDayEndDate"]')
-            .fill(today);
+          await chooseDate(dialog, 'Data inizio', today);
+          await chooseDate(dialog, 'Data fine', today);
         },
       );
       expect(singleDay.temporal_form).toBe('date_span');
@@ -229,10 +270,8 @@ test.describe('Timeline B03-E real-stack Event closure', () => {
         multiDayTitle,
         async (dialog) => {
           await dialog.getByRole('radio', { name: 'Tutto il giorno' }).click();
-          await dialog.locator('[data-create-path="date"]').fill(multiStart);
-          await dialog
-            .locator('[data-create-path="event.allDayEndDate"]')
-            .fill(multiEndInclusive);
+          await chooseDate(dialog, 'Data inizio', multiStart);
+          await chooseDate(dialog, 'Data fine', multiEndInclusive);
         },
       );
       expect(multiDay.temporal_form).toBe('date_span');
