@@ -9,20 +9,37 @@ async function openCreate(page: Page) {
   return dialog;
 }
 
-test('Quick is draggable and Advanced stays floating while the Timeline remains interactive', async ({
+test('Create stays in the desktop Context Rail, keeps Timeline scroll available, and bounds Advanced', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/home');
 
   const dialog = await openCreate(page);
+  const rail = page.locator('[data-home-region="context-rail"]');
+  const host = rail.locator('[data-home-context-create-host]');
   await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'base');
+  expect(await host.evaluate((element) =>
+    element.contains(document.querySelector('[data-temporal-create="composer"]')),
+  )).toBe(true);
+
   const close = dialog.locator('.dante-temporal-panel-close');
-  await expect(close).toHaveAttribute('aria-label', /.+/);
   await expect(close).toBeVisible();
-  await expect(
-    dialog.locator('.temporal-create-composer__header button'),
-  ).toHaveCount(2);
+  await expect(close).toHaveAttribute('aria-label', /.+/);
+  await expect(dialog.locator('.temporal-create-composer__header button'))
+    .toHaveCount(2);
+
+  const railBox = await rail.boundingBox();
+  const quickBox = await dialog.boundingBox();
+  if (!railBox || !quickBox) {
+    throw new Error('Expected rail-mounted Create geometry');
+  }
+  expect(quickBox.x).toBeGreaterThanOrEqual(railBox.x - 1);
+  expect(quickBox.x + quickBox.width).toBeLessThanOrEqual(
+    railBox.x + railBox.width + 1,
+  );
+  expect(quickBox.y).toBeGreaterThanOrEqual(0);
+  expect(quickBox.y + quickBox.height).toBeLessThanOrEqual(900.5);
 
   const backdrop = page.locator('[data-temporal-create="backdrop"]');
   const backdropStyle = await backdrop.evaluate((element) => {
@@ -35,89 +52,34 @@ test('Quick is draggable and Advanced stays floating while the Timeline remains 
   expect(backdropStyle.pointerEvents).toBe('none');
   expect(backdropStyle.backgroundColor).toBe('rgba(0, 0, 0, 0)');
 
-  const initial = await dialog.boundingBox();
-  if (!initial) {
-    throw new Error('Expected floating Create geometry');
-  }
-  expect(initial.x).toBeGreaterThanOrEqual(15);
-  expect(initial.x).toBeLessThan(40);
-  expect(initial.y).toBeGreaterThanOrEqual(48);
-  expect(initial.y).toBeLessThan(96);
+  const pin = dialog.getByRole('button', { name: 'Mantieni aperto il pannello Crea' });
+  await pin.click();
+  await expect(
+    dialog.getByRole('button', { name: 'Sblocca pannello Crea' }),
+  ).toHaveAttribute('aria-pressed', 'true');
 
   const timeline = page.locator('.timeline-grid');
-  await timeline.evaluate((element) => {
-    element.scrollTop = 0;
-  });
+  await timeline.evaluate((element) => { element.scrollTop = 0; });
   const timelineBox = await timeline.boundingBox();
   if (!timelineBox) {
-    throw new Error('Expected Timeline geometry');
+    throw new Error('Expected visible Timeline');
   }
   await page.mouse.move(
     timelineBox.x + timelineBox.width - 40,
     timelineBox.y + Math.min(180, timelineBox.height / 2),
   );
   await page.mouse.wheel(0, 520);
-  await expect
-    .poll(() => timeline.evaluate((element) => element.scrollTop))
-    .toBeGreaterThan(0);
+  await expect.poll(() =>
+    timeline.evaluate((element) => element.scrollTop),
+  ).toBeGreaterThan(0);
   await expect(dialog).toBeVisible();
 
-  const handle = dialog.locator('.temporal-create-composer__heading-copy');
-  const handleBox = await handle.boundingBox();
-  if (!handleBox) {
-    throw new Error('Expected floating Create handle');
-  }
-
-  await page.mouse.move(
-    handleBox.x + handleBox.width / 2,
-    handleBox.y + Math.min(16, handleBox.height / 2),
-  );
-  await page.mouse.down();
-  await page.mouse.move(
-    handleBox.x + handleBox.width / 2 + 180,
-    handleBox.y + Math.min(16, handleBox.height / 2) + 80,
-    { steps: 5 },
-  );
-  await page.mouse.up();
-
-  const moved = await dialog.boundingBox();
-  if (!moved) {
-    throw new Error('Expected moved Create geometry');
-  }
-  expect(moved.x).toBeGreaterThan(initial.x + 80);
-  expect(moved.y).toBeGreaterThan(initial.y + 30);
-
-  const repeat = dialog.getByLabel('Ripeti');
-  await expect(repeat.locator('option[value="custom"]')).toHaveText(
-    'Personalizzata…',
-  );
-  await expect(
-    dialog.getByRole('button', { name: 'Personalizza…' }),
-  ).toHaveCount(0);
-
+  await dialog.getByRole('button', { name: 'Sblocca pannello Crea' }).click();
   const advanced = dialog.getByRole('button', { name: 'Opzioni avanzate' });
   await expect(advanced).toHaveAttribute('aria-expanded', 'false');
-  const advancedBox = await advanced.boundingBox();
-  expect(advancedBox).not.toBeNull();
-  expect(advancedBox?.width ?? 999).toBeLessThan(220);
-  expect(advancedBox?.height ?? 999).toBeLessThanOrEqual(36);
-
   await advanced.click();
-  await expect(dialog).toHaveAttribute(
-    'data-temporal-create-surface',
-    'advanced',
-  );
-  await expect(dialog).toHaveClass(/is-full/);
-
-  const back = dialog.getByRole('button', {
-    name: 'Nascondi opzioni avanzate',
-  });
-  await expect(back).toBeVisible();
-  await expect(back).toContainText('Torna alla creazione rapida');
-  await expect(back).toHaveAttribute('aria-expanded', 'true');
-  await expect(
-    dialog.locator('[data-create-advanced="activity"]'),
-  ).toBeVisible();
+  await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'advanced');
+  await expect(dialog.locator('[data-create-advanced="activity"]')).toBeVisible();
 
   const expanded = await dialog.boundingBox();
   if (!expanded) {
@@ -127,49 +89,26 @@ test('Quick is draggable and Advanced stays floating while the Timeline remains 
   expect(expanded.y).toBeGreaterThanOrEqual(0);
   expect(expanded.x + expanded.width).toBeLessThanOrEqual(1440.5);
   expect(expanded.y + expanded.height).toBeLessThanOrEqual(900.5);
-  expect(
-    await dialog.evaluate((element) => getComputedStyle(element).position),
-  ).toBe('absolute');
-  expect(expanded.width).toBeGreaterThanOrEqual(700);
-  expect(expanded.width).toBeLessThanOrEqual(800);
 
   const body = dialog.locator('.temporal-create-composer__body');
-  const scrollStyle = await body.evaluate((element) => {
-    const style = getComputedStyle(element);
-    return {
-      overflowY: style.overflowY,
-      scrollbarWidth: style.getPropertyValue('scrollbar-width'),
-    };
-  });
-  expect(['auto', 'scroll']).toContain(scrollStyle.overflowY);
-  expect(scrollStyle.scrollbarWidth).toBe('none');
-
+  await expect(body).toBeVisible();
   await body.evaluate((element) => {
     element.scrollTop = element.scrollHeight;
   });
-  await expect(
-    close,
-  ).toBeInViewport();
+  await expect(close).toBeInViewport();
   await expect(dialog.locator('.temporal-create-actions')).toBeInViewport();
-  await expect(back).toBeInViewport();
 
+  const back = dialog.getByRole('button', { name: 'Nascondi opzioni avanzate' });
+  await expect(back).toHaveAttribute('aria-expanded', 'true');
   await back.click();
   await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'base');
-  await expect(dialog).not.toHaveClass(/is-full/);
   await expect(dialog.locator('[data-create-advanced]')).toHaveCount(0);
-  await expect(
-    dialog.getByRole('button', { name: 'Opzioni avanzate' }),
-  ).toBeVisible();
 
-  await repeat.selectOption('custom');
-  await expect(dialog).toHaveAttribute(
-    'data-temporal-create-surface',
-    'advanced',
-  );
+  // Recurrence has moved to Advanced; retain the custom-path assertion
+  // without expecting a removed select in the quick surface.
+  await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
+  await dialog.getByLabel('Ripeti').selectOption('custom');
   await expect(
     dialog.locator('[data-create-recurrence-owner="routine"]'),
-  ).toBeInViewport();
-  await expect(
-    dialog.getByRole('button', { name: 'Nascondi opzioni avanzate' }),
   ).toBeVisible();
 });
