@@ -10,6 +10,10 @@ holder. `_self_referenceable_person` is the single seam a later Person-referent
 slice widens; today only the caller's own self Person is referenceable.
 """
 
+# Historical-migration-only Ruff S608 review: Upgrade calls supply only hardcoded activity/event subjects and fixed scope descriptors, never external SQL values.
+# The SQL is frozen, already applied, and must not be rewritten solely for lint.
+# ruff: noqa: S608
+
 from collections.abc import Sequence
 
 import sqlalchemy as sa
