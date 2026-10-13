@@ -52,6 +52,10 @@ _OTP_KEY_ID = "e2e-signup-otp-v1"
 _PEPPER = urlsafe_b64encode(b"p" * 32).rstrip(b"=").decode("ascii")
 _CSRF_KEY = urlsafe_b64encode(b"c" * 32).rstrip(b"=").decode("ascii")
 _OTP_KEY = urlsafe_b64encode(b"o" * 32).rstrip(b"=").decode("ascii")
+# Dedicated test-only Email Platform encryption key. Cryptographic key
+# purposes must remain distinct from password pepper, OTP and CSRF.
+_EMAIL_PAYLOAD_KEY_ID = "e2e-email-payload-v1"
+_EMAIL_PAYLOAD_KEY = urlsafe_b64encode(b"e" * 32).rstrip(b"=").decode("ascii")
 _SMTP_CONTROL_LABEL = "dante.e2e.smtp_control_port"
 _EMAIL_RUNTIME_LABEL = "loopback SMTP capture"
 
@@ -200,6 +204,13 @@ def _auth_settings(hibp_base_url: str, smtp_port: int) -> AuthSettings:
         smtp_security=SmtpSecurity.PLAIN,
         smtp_from_address="no-reply@dante.test",
         smtp_timeout_seconds=2,
+        # Durable outbound email admission is part of the real-stack contract;
+        # without it signup/recovery fail closed with 503 despite live SMTP.
+        email_platform_enabled=True,
+        email_payload_current_key_id=_EMAIL_PAYLOAD_KEY_ID,
+        email_payload_keys={
+            _EMAIL_PAYLOAD_KEY_ID: SecretStr(_EMAIL_PAYLOAD_KEY),
+        },
         email_queue_capacity=128,
         email_worker_count=2,
         email_shutdown_drain_seconds=5,
