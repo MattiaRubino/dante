@@ -178,26 +178,69 @@ def postgres_collection(task: Task, folder: Path) -> list[str]:
     return nodes
 
 
-def shard_modules(nodes: list[str], workers: int) -> list[list[str]]:
-    """Preserve order within each test file and balance by case count."""
+def shard_modules(
+    nodes: list[str], workers: int, jobs_per_worker: int = 4,
+) -> list[list[str]]:
+    """Create more module-atomic jobs than workers for dynamic work stealing.
+
+    A worker finishing its current pytest process immediately takes the next
+    queued job. Keeping every module's cases in one job preserves module-level
+    fixture lifetimes and test order; a single running test is never interrupted
+    or executed twice. The scheduler deliberately bounds Docker concurrency.
+    """
     by_file: dict[str, list[str]] = defaultdict(list)
     for node in nodes:
         by_file[node.partition("::")[0]].append(node)
-    result: list[list[str]] = [[] for _ in range(min(workers, len(by_file)))]
+    count = min(len(by_file), workers * jobs_per_worker)
+    if count == 0:
+        raise RuntimeError("No selected PostgreSQL modules")
+    result: list[list[str]] = [[] for _ in range(count)]
+    # Longest modules enter the queue first; short modules fill spare jobs.
     for _, tests in sorted(by_file.items(), key=lambda x: (-len(x[1]), x[0])):
-        target = min(range(len(result)), key=lambda i: (len(result[i]), i))
+        target = min(range(count), key=lambda i: (len(result[i]), i))
         result[target].extend(tests)
-    if not all(result) or sum(map(len, result)) != len(nodes):
-        raise RuntimeError("PostgreSQL sharding did not preserve all tests")
+    if not all(result):
+        raise RuntimeError("Empty PostgreSQL work item")
+    flattened = [node for job in result for node in job]
+    if len(flattened) != len(nodes) or set(flattened) != set(nodes):
+        raise RuntimeError("PostgreSQL work queue lost or duplicated tests")
     return result
 
 
-def postgres_phase(task: Task, folder: Path, workers: int) -> Result:
+def self_test_scheduler() -> None:
+    """Validate coverage, no duplicates, module ordering and a deeper queue."""
+    nodes = [
+        f"tests/integration/database/test_module_{module:02d}.py::case_{case:02d}"
+        for module in range(24)
+        for case in range((module % 9) + 1)
+    ]
+    for capacity in (1, 5, 10):
+        chunks = shard_modules(nodes, capacity)
+        assert len(chunks) == min(24, capacity * 4)
+        seen = [node for chunk in chunks for node in chunk]
+        assert len(seen) == len(set(seen)) == len(nodes)
+        assert set(seen) == set(nodes)
+        owners = {}
+        for index, chunk in enumerate(chunks):
+            for node in chunk:
+                module = node.partition("::")[0]
+                if module in owners:
+                    assert owners[module] == index
+                owners[module] = index
+                case_nodes = [n for n in chunk if n.startswith(module + "::")]
+                assert case_nodes == [n for n in nodes if n.startswith(module + "::")]
+        assert len(owners) == 24
+    print("PASS: dynamic scheduler preserves all nodes and module fixtures")
+
+
+def postgres_phase(
+    task: Task, folder: Path, workers: int, jobs_per_worker: int = 4,
+) -> Result:
     start = time.monotonic()
     log = folder / "BACKEND_POSTGRES.log"
     try:
         all_nodes = postgres_collection(task, folder)
-        shards = shard_modules(all_nodes, workers)
+        shards = shard_modules(all_nodes, workers, jobs_per_worker)
     except Exception as exc:
         log.write_text(f"PostgreSQL collection failed: {exc}\n", encoding="utf-8")
         return Result(POSTGRES, 2, time.monotonic() - start)
@@ -217,13 +260,17 @@ def postgres_phase(task: Task, folder: Path, workers: int) -> Result:
         for name, tests in plans.items()
     }
     print(
-        f"POSTGRES: {len(all_nodes)} tests across {len(commands)} "
-        "independent Docker-backed pytest processes", flush=True,
+        f"POSTGRES: {len(all_nodes)} tests; {len(commands)} queued jobs, "
+        f"max {workers} simultaneous isolated PostgreSQL containers",
+        flush=True,
     )
-    results = phase(tuple(commands), commands, folder, len(commands))
+    # Executor work queue is deliberately longer than its pool. Completing
+    # one job immediately starts the next, avoiding fixed-shard long tails.
+    results = phase(tuple(commands), commands, folder, workers)
     lines = [
         f"Collected PostgreSQL tests: {len(all_nodes)}",
-        f"Independent session-scoped PostgreSQL clusters: {len(commands)}",
+        f"Dynamic PostgreSQL jobs: {len(commands)}",
+        f"Maximum simultaneous disposable clusters: {workers}",
     ]
     for r in results:
         path = folder / f"{r.name}.log"
@@ -338,12 +385,19 @@ def main() -> int:
         "--postgres-workers", type=int, default=5,
         help="Independent PostgreSQL clusters (1-10; default 5)",
     )
+    parser.add_argument(
+        "--postgres-jobs-per-worker", type=int, default=4,
+        help="Queue depth per worker for balancing module durations (2-8; default 4)",
+    )
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()
     if not 1 <= args.group_workers <= 8:
         parser.error("--group-workers must be between 1 and 8")
     if not 1 <= args.postgres_workers <= 10:
         parser.error("--postgres-workers must be between 1 and 10")
+    if not 2 <= args.postgres_jobs_per_worker <= 8:
+        parser.error("--postgres-jobs-per-worker must be between 2 and 8")
     if args.postgres_workers >= 8:
         print(
             "WARNING: 8-10 PostgreSQL workers run 8-10 real PostGIS "
@@ -352,11 +406,14 @@ def main() -> int:
         )
 
     tasks = inventory()
+    if args.self_test:
+        self_test_scheduler()
+        return 0
     stages = [
         ("Independent read-only", READ_ONLY, args.group_workers),
         ("Build and generated sources", SERIAL_BUILD, 1),
         ("Package tests", PACKAGE_TESTS, args.group_workers),
-        ("Isolated PostgreSQL", (POSTGRES,), args.postgres_workers),
+        ("Isolated PostgreSQL work queue", (POSTGRES,), args.postgres_workers),
         ("Browser shared outputs", BROWSER, 1),
     ]
     if args.dry_run:
@@ -380,13 +437,28 @@ def main() -> int:
             print(f"HEAD={sha} LOG_DIR={folder}", flush=True)
             if not docker_prerequisites(folder):
                 return 2
-            outcomes = []
-            outcomes.extend(phase(READ_ONLY, tasks, folder, args.group_workers))
-            outcomes.extend(phase(SERIAL_BUILD, tasks, folder, 1))
-            outcomes.extend(phase(PACKAGE_TESTS, tasks, folder, args.group_workers))
-            outcomes.append(
-                postgres_phase(tasks[POSTGRES], folder, args.postgres_workers)
-            )
+            outcomes: list[Result] = []
+            # PostgreSQL has its own bounded, dynamically refilled pool.
+            # Start it alongside independent groups: it continues working
+            # while shorter groups finish and while build checks run in
+            # their separate serial writer lane. No other gate writes to
+            # its disposable clusters.
+            with ThreadPoolExecutor(max_workers=1) as postgres_dispatcher:
+                pg_future = postgres_dispatcher.submit(
+                    postgres_phase, tasks[POSTGRES], folder,
+                    args.postgres_workers, args.postgres_jobs_per_worker,
+                )
+                outcomes.extend(phase(READ_ONLY, tasks, folder, args.group_workers))
+                outcomes.extend(phase(SERIAL_BUILD, tasks, folder, 1))
+                outcomes.extend(phase(PACKAGE_TESTS, tasks, folder, args.group_workers))
+                try:
+                    outcomes.append(pg_future.result())
+                except Exception as exc:
+                    (folder / "BACKEND_POSTGRES.log").write_text(
+                        f"PostgreSQL orchestrator failure: {exc!r}\n",
+                        encoding="utf-8",
+                    )
+                    outcomes.append(Result(POSTGRES, 2, 0.0))
             for name in BROWSER:
                 result = execute(tasks[name], folder)
                 outcomes.append(result)

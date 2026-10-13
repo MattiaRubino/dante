@@ -164,7 +164,18 @@ is added, renamed or removed without an isolation review, and executes all 27
 original commands. It never changes the original suite or quality thresholds.
 Independent read-only groups use concurrent subprocesses. Generated sources,
 builds, and browser gates stay serialized where their outputs or server ports
-might conflict. PostgreSQL is divided by complete test module, using
+might conflict. PostgreSQL uses a **dynamic job queue**, with four queued jobs per
+PostgreSQL worker by default (adjustable via
+`--postgres-jobs-per-worker 2..8`). Once any pytest subprocess ends, its
+worker takes the next available job immediately. Up to 5 or 10 disposable
+PostgreSQL containers remain active at once; the number of processes/jobs
+executed over the complete run may be larger than that limit. The PostgreSQL
+queue starts while the independent quality/test groups and serial
+build lane run, so there is no full-phase barrier before database work.
+No running individual test can be divided across threads: jobs are
+whole test modules and worker processes, never interrupted or duplicated.
+
+PostgreSQL is divided by complete test module, using
 `pytest --collect-only -m postgres` as its inventory: every selected case
 belongs to exactly one shard, and each separate pytest process has its own
 session-scoped disposable Docker PostgreSQL 18.6 cluster and unique database
