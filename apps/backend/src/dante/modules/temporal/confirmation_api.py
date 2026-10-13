@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request, Response
@@ -55,7 +55,7 @@ class ConfirmationHistoryResponse(ConfirmationResponse):
     current_until_at: datetime | None
 
 
-_CONFIRMATION_WRITE_RESPONSES = {
+_CONFIRMATION_WRITE_RESPONSES: dict[int, dict[str, Any]] = {
     200: {
         "model": ConfirmationResponse,
         "description": "Idempotent replay of the already accepted Confirmation command.",
