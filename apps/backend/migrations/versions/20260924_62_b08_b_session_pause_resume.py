@@ -3,7 +3,9 @@
 Revision ID: 20260924_62
 Revises: 20260924_61
 """
+
 from collections.abc import Sequence
+
 import sqlalchemy as sa
 from alembic import op
 
@@ -16,8 +18,10 @@ _OWNER = "dante_owner"
 _RUNTIME = "dante_runtime"
 _MIGRATOR = "dante_migrator"
 
+
 def _sql(statement: str) -> None:
     op.execute(sa.text(statement))
+
 
 def upgrade() -> None:
     for action in ("pause", "resume"):
@@ -30,12 +34,32 @@ def upgrade() -> None:
             sa.Column("expected_material_state_ref", sa.Uuid(), nullable=False),
             sa.Column("resulting_material_state_ref", sa.Uuid(), nullable=False),
             sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
-            sa.CheckConstraint("operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200", name=op.f(f"ck_session_{action}_operation_operation_id")),
-            sa.CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name=op.f(f"ck_session_{action}_operation_fingerprint")),
-            sa.ForeignKeyConstraint(["self_person_ref"], ["dante.person.person_ref"], name=op.f(f"fk_session_{action}_operation_self_person_ref_person")),
-            sa.ForeignKeyConstraint(["session_ref"], ["dante.session.session_ref"], name=op.f(f"fk_session_{action}_operation_session_ref_session")),
-            sa.ForeignKeyConstraint(["resulting_material_state_ref"], ["dante.material_state_address.material_state_ref"], name=op.f(f"fk_session_{action}_operation_resulting_state_address")),
-            sa.PrimaryKeyConstraint("self_person_ref", "operation_id", name=op.f(f"pk_session_{action}_operation")),
+            sa.CheckConstraint(
+                "operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200",
+                name=op.f(f"ck_session_{action}_operation_operation_id"),
+            ),
+            sa.CheckConstraint(
+                "intent_fingerprint ~ '^[0-9a-f]{64}$'",
+                name=op.f(f"ck_session_{action}_operation_fingerprint"),
+            ),
+            sa.ForeignKeyConstraint(
+                ["self_person_ref"],
+                ["dante.person.person_ref"],
+                name=op.f(f"fk_session_{action}_operation_self_person_ref_person"),
+            ),
+            sa.ForeignKeyConstraint(
+                ["session_ref"],
+                ["dante.session.session_ref"],
+                name=op.f(f"fk_session_{action}_operation_session_ref_session"),
+            ),
+            sa.ForeignKeyConstraint(
+                ["resulting_material_state_ref"],
+                ["dante.material_state_address.material_state_ref"],
+                name=op.f(f"fk_session_{action}_operation_resulting_state_address"),
+            ),
+            sa.PrimaryKeyConstraint(
+                "self_person_ref", "operation_id", name=op.f(f"pk_session_{action}_operation")
+            ),
             schema=_SCHEMA,
         )
     _sql(r"""
@@ -113,13 +137,16 @@ SET search_path=pg_catalog,dante,pg_temp AS
  WHERE subject.session_ref=$2 AND dante._session_subject_owned($1,subject.subject_native_ref))';
 """)
     for name in ("pause_self_session", "resume_self_session"):
-        signature=f"dante.{name}(uuid,text,text,uuid,uuid,uuid)"
+        signature = f"dante.{name}(uuid,text,text,uuid,uuid,uuid)"
         _sql(f"ALTER FUNCTION {signature} OWNER TO {_OWNER}")
         _sql(f"REVOKE ALL ON FUNCTION {signature} FROM PUBLIC, {_RUNTIME}, {_MIGRATOR}")
         _sql(f"GRANT EXECUTE ON FUNCTION {signature} TO {_RUNTIME}")
     _sql("ALTER FUNCTION dante.session_is_paused(uuid,uuid) OWNER TO dante_owner")
-    _sql("REVOKE ALL ON FUNCTION dante.session_is_paused(uuid,uuid) FROM PUBLIC,dante_runtime,dante_migrator")
+    _sql(
+        "REVOKE ALL ON FUNCTION dante.session_is_paused(uuid,uuid) FROM PUBLIC,dante_runtime,dante_migrator"
+    )
     _sql("GRANT EXECUTE ON FUNCTION dante.session_is_paused(uuid,uuid) TO dante_runtime")
+
 
 def downgrade() -> None:
     raise RuntimeError("B08-B is forward-only: Session timing states are immutable history")

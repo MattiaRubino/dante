@@ -1,6 +1,12 @@
 import { createWebFetch } from '../../platform/api/web-fetch';
-import { parseProfile, type ActivityProfile } from './remote-activity-inspector';
-import { invalidateTemporalPlanningRead, invalidateTemporalTimelineRead } from './timeline-invalidation';
+import {
+  parseProfile,
+  type ActivityProfile,
+} from './remote-activity-inspector';
+import {
+  invalidateTemporalPlanningRead,
+  invalidateTemporalTimelineRead,
+} from './timeline-invalidation';
 import { invalidateActivitySessionCardCapability } from './activity-session-capability-cache';
 import {
   createRemoteRealityObjectiveDataSource,
@@ -57,8 +63,12 @@ export type ActivityLifeAreaChoice = Readonly<{
 }>;
 
 export type ActivityReplanTime = Readonly<{ start: string; end: string }>;
-export type ActivityNewPlanned = Readonly<ActivityReplanTime & { clientRef: string; name: string }>;
-export type ActivityNewInterval = Readonly<ActivityReplanTime & { clientRef: string }>;
+export type ActivityNewPlanned = Readonly<
+  ActivityReplanTime & { clientRef: string; name: string }
+>;
+export type ActivityNewInterval = Readonly<
+  ActivityReplanTime & { clientRef: string }
+>;
 export type ActivityReplanDraft = Readonly<{
   times: Record<string, ActivityReplanTime>;
   removedIntervals: readonly string[];
@@ -144,7 +154,10 @@ function schedules(
       if (
         typeof row.schedule_ref !== 'string' ||
         (typeof row.placement_material_state_ref !== 'string' &&
-          !(row.role_code === 'planned' && row.placement_material_state_ref === null)) ||
+          !(
+            row.role_code === 'planned' &&
+            row.placement_material_state_ref === null
+          )) ||
         (typeof row.temporal_form !== 'string' &&
           !(row.role_code === 'planned' && row.temporal_form === null)) ||
         ![null, 'envelope', 'interval', 'planned'].includes(
@@ -194,7 +207,10 @@ export function createRemoteActivityEditSettings(
   }
 
   async function csrf(signal?: AbortSignal): Promise<string> {
-    const response = await request('/api/v1/auth/session', signal ? { signal } : undefined);
+    const response = await request(
+      '/api/v1/auth/session',
+      signal ? { signal } : undefined,
+    );
     const row = object(await response.json());
     if (
       !response.ok ||
@@ -207,49 +223,62 @@ export function createRemoteActivityEditSettings(
   }
 
   function parseSnapshot(ref: string, value: unknown): ActivityEditSettings {
-      const snapshot = object(value);
-      if (snapshot.activity_ref !== ref || !Array.isArray(snapshot.objectives)) {
-        throw new Error('Identità dell’attività non valida.');
-      }
-      const acceptedSchedules = schedules({
+    const snapshot = object(value);
+    if (snapshot.activity_ref !== ref || !Array.isArray(snapshot.objectives)) {
+      throw new Error('Identità dell’attività non valida.');
+    }
+    const acceptedSchedules = schedules(
+      {
         parent_activity_ref: ref,
         schedules: snapshot.schedules,
-      }, ref);
-      if (
-        !['none', 'confirm', 'block'].includes(
-          String(snapshot.child_guard_mode),
-        )
-      ) {
-        throw new Error('Regola dell’attività non valida.');
-      }
-      const lock = snapshot.placement_lock === null ? null : object(snapshot.placement_lock);
-      const reminder = snapshot.reminder === null ? null : object(snapshot.reminder);
-      const primary = acceptedSchedules.find((item) => item.role === 'envelope') ??
-        acceptedSchedules.find((item) => item.role === null);
-      if ((lock !== null && (lock.schedule_ref !== primary?.scheduleRef || typeof lock.locked !== 'boolean')) ||
-          (reminder !== null && (reminder.schedule_ref !== primary?.scheduleRef ||
-            typeof reminder.material_state_ref !== 'string' ||
-            typeof reminder.enabled !== 'boolean' ||
-            !Number.isInteger(reminder.lead_minutes)))) {
-        throw new Error('Blocco o promemoria dell’attività non valido.');
-      }
-      return Object.freeze({
-        capture: capture(snapshot.execution_policy, ref),
-        reality: reality(snapshot.reality_policy, ref),
-        schedules: acceptedSchedules,
-        objectives: Object.freeze(snapshot.objectives.map(parseObjectiveView)),
-        lifeAreaRef: optionalText(snapshot.life_area_ref),
-        placementProtected: lock?.locked === true,
-        placementLockRevision: lock === null ? null : Number(lock.revision),
-        placementLockScheduleRef: lock === null ? null : String(lock.schedule_ref),
-        reminderLeadMinutes: reminder?.enabled === true ? Number(reminder.lead_minutes) : null,
-        reminderScheduleRef: primary?.role === 'envelope' &&
-          ['named_zone_local', 'absolute'].includes(primary.temporalForm ?? '')
-          ? primary.scheduleRef : null,
-        reminderStateRef: reminder ? state(reminder.material_state_ref) : null,
-        childGuardMode:
-          snapshot.child_guard_mode as ActivityEditSettings['childGuardMode'],
-      });
+      },
+      ref,
+    );
+    if (
+      !['none', 'confirm', 'block'].includes(String(snapshot.child_guard_mode))
+    ) {
+      throw new Error('Regola dell’attività non valida.');
+    }
+    const lock =
+      snapshot.placement_lock === null ? null : object(snapshot.placement_lock);
+    const reminder =
+      snapshot.reminder === null ? null : object(snapshot.reminder);
+    const primary =
+      acceptedSchedules.find((item) => item.role === 'envelope') ??
+      acceptedSchedules.find((item) => item.role === null);
+    if (
+      (lock !== null &&
+        (lock.schedule_ref !== primary?.scheduleRef ||
+          typeof lock.locked !== 'boolean')) ||
+      (reminder !== null &&
+        (reminder.schedule_ref !== primary?.scheduleRef ||
+          typeof reminder.material_state_ref !== 'string' ||
+          typeof reminder.enabled !== 'boolean' ||
+          !Number.isInteger(reminder.lead_minutes)))
+    ) {
+      throw new Error('Blocco o promemoria dell’attività non valido.');
+    }
+    return Object.freeze({
+      capture: capture(snapshot.execution_policy, ref),
+      reality: reality(snapshot.reality_policy, ref),
+      schedules: acceptedSchedules,
+      objectives: Object.freeze(snapshot.objectives.map(parseObjectiveView)),
+      lifeAreaRef: optionalText(snapshot.life_area_ref),
+      placementProtected: lock?.locked === true,
+      placementLockRevision: lock === null ? null : Number(lock.revision),
+      placementLockScheduleRef:
+        lock === null ? null : String(lock.schedule_ref),
+      reminderLeadMinutes:
+        reminder?.enabled === true ? Number(reminder.lead_minutes) : null,
+      reminderScheduleRef:
+        primary?.role === 'envelope' &&
+        ['named_zone_local', 'absolute'].includes(primary.temporalForm ?? '')
+          ? primary.scheduleRef
+          : null,
+      reminderStateRef: reminder ? state(reminder.material_state_ref) : null,
+      childGuardMode:
+        snapshot.child_guard_mode as ActivityEditSettings['childGuardMode'],
+    });
   }
 
   function replanBody(
@@ -265,46 +294,85 @@ export function createRemoteActivityEditSettings(
     });
     return {
       operation_id: operationId,
-      ...(settings.schedules.some((item) => item.role === 'interval') ? {} : {
-        envelope: settings.schedules.filter((item) => item.role === 'envelope').map(row)[0],
-      }),
-      intervals: settings.schedules.filter((item) =>
-        item.role === 'interval' && !draft.removedIntervals.includes(item.scheduleRef)).map(row),
-      remove_intervals: settings.schedules.filter((item) =>
-        item.role === 'interval' && draft.removedIntervals.includes(item.scheduleRef)).map(row),
+      ...(settings.schedules.some((item) => item.role === 'interval')
+        ? {}
+        : {
+            envelope: settings.schedules
+              .filter((item) => item.role === 'envelope')
+              .map(row)[0],
+          }),
+      intervals: settings.schedules
+        .filter(
+          (item) =>
+            item.role === 'interval' &&
+            !draft.removedIntervals.includes(item.scheduleRef),
+        )
+        .map(row),
+      remove_intervals: settings.schedules
+        .filter(
+          (item) =>
+            item.role === 'interval' &&
+            draft.removedIntervals.includes(item.scheduleRef),
+        )
+        .map(row),
       new_intervals: draft.newIntervals.map((item) => ({
         client_ref: item.clientRef,
-        starts_local_at: item.start, ends_local_at: item.end,
+        starts_local_at: item.start,
+        ends_local_at: item.end,
       })),
-      planned_sessions: settings.schedules.filter((item) =>
-        item.role === 'planned' && item.placementStateRef !== null &&
-        !draft.removedPlanned.includes(item.scheduleRef) &&
-        !draft.deletedPlanned?.includes(item.scheduleRef)).map(row),
-      place_planned_sessions: settings.schedules.filter((item) =>
-        item.role === 'planned' && item.placementStateRef === null &&
-        !draft.deletedPlanned?.includes(item.scheduleRef) &&
-        !!draft.times[item.scheduleRef]?.start).map((item) => ({
+      planned_sessions: settings.schedules
+        .filter(
+          (item) =>
+            item.role === 'planned' &&
+            item.placementStateRef !== null &&
+            !draft.removedPlanned.includes(item.scheduleRef) &&
+            !draft.deletedPlanned?.includes(item.scheduleRef),
+        )
+        .map(row),
+      place_planned_sessions: settings.schedules
+        .filter(
+          (item) =>
+            item.role === 'planned' &&
+            item.placementStateRef === null &&
+            !draft.deletedPlanned?.includes(item.scheduleRef) &&
+            !!draft.times[item.scheduleRef]?.start,
+        )
+        .map((item) => ({
           schedule_ref: item.scheduleRef,
           starts_local_at: draft.times[item.scheduleRef]?.start,
           ends_local_at: draft.times[item.scheduleRef]?.end,
         })),
-      remove_planned_sessions: settings.schedules.filter((item) =>
-        item.role === 'planned' && item.placementStateRef !== null &&
-        draft.removedPlanned.includes(item.scheduleRef)).map(row),
-      delete_planned_sessions: settings.schedules.filter((item) =>
-        item.role === 'planned' && draft.deletedPlanned?.includes(item.scheduleRef))
-        .map((item) => ({ schedule_ref: item.scheduleRef,
-          expected_material_state_ref: item.placementStateRef })),
+      remove_planned_sessions: settings.schedules
+        .filter(
+          (item) =>
+            item.role === 'planned' &&
+            item.placementStateRef !== null &&
+            draft.removedPlanned.includes(item.scheduleRef),
+        )
+        .map(row),
+      delete_planned_sessions: settings.schedules
+        .filter(
+          (item) =>
+            item.role === 'planned' &&
+            draft.deletedPlanned?.includes(item.scheduleRef),
+        )
+        .map((item) => ({
+          schedule_ref: item.scheduleRef,
+          expected_material_state_ref: item.placementStateRef,
+        })),
       new_planned_sessions: draft.newPlanned.map((item) => ({
-        client_ref: item.clientRef, name: item.name.trim() || null,
-        starts_local_at: item.start || null, ends_local_at: item.end || null,
+        client_ref: item.clientRef,
+        name: item.name.trim() || null,
+        starts_local_at: item.start || null,
+        ends_local_at: item.end || null,
       })),
     };
   }
 
   return Object.freeze({
     async refreshObjectives(
-      ref: string, settings: ActivityEditSettings,
+      ref: string,
+      settings: ActivityEditSettings,
     ): Promise<ActivityEditSettings> {
       const objectives = await objectiveSource.listObjectives('activity', ref);
       invalidateTemporalPlanningRead();
@@ -329,16 +397,26 @@ export function createRemoteActivityEditSettings(
       }>,
       operationId: string,
     ): Promise<ActivityEditSettings> {
-      if (!definition.label.trim() || definition.label !== definition.label.trim()) {
+      if (
+        !definition.label.trim() ||
+        definition.label !== definition.label.trim()
+      ) {
         throw new Error('Inserisci un nome valido per l’obiettivo.');
       }
       const objective = await objectiveSource.createObjective('activity', ref, {
         ...definition,
         operationId,
-        presentationOrder: Math.max(-1, ...settings.objectives.map(
-          (row) => row.presentationOrder)) + 1,
+        presentationOrder:
+          Math.max(
+            -1,
+            ...settings.objectives.map((row) => row.presentationOrder),
+          ) + 1,
       });
-      if (settings.objectives.some((row) => row.objectiveRef === objective.objectiveRef)) {
+      if (
+        settings.objectives.some(
+          (row) => row.objectiveRef === objective.objectiveRef,
+        )
+      ) {
         return settings;
       }
       invalidateTemporalTimelineRead();
@@ -353,54 +431,82 @@ export function createRemoteActivityEditSettings(
     },
     async loadChildCount(ref: string): Promise<number> {
       const tree = object(await read(endpoint(ref, 'children')));
-      if (tree.parent_activity_ref !== ref || !Array.isArray(tree.children) ||
-          !tree.children.every((child: unknown) => {
-            if (typeof child !== 'object' || child === null || Array.isArray(child)) return false;
-            const record = child as Record<string, unknown>;
-            return typeof record.child_activity_ref === 'string' &&
-              typeof record.child_title === 'string';
-          })) {
-        throw new Error('La struttura delle sotto-attività non è verificabile.');
+      if (
+        tree.parent_activity_ref !== ref ||
+        !Array.isArray(tree.children) ||
+        !tree.children.every((child: unknown) => {
+          if (
+            typeof child !== 'object' ||
+            child === null ||
+            Array.isArray(child)
+          )
+            return false;
+          const record = child as Record<string, unknown>;
+          return (
+            typeof record.child_activity_ref === 'string' &&
+            typeof record.child_title === 'string'
+          );
+        })
+      ) {
+        throw new Error(
+          'La struttura delle sotto-attività non è verificabile.',
+        );
       }
       return tree.children.length;
     },
     async previewReplan(
-      ref: string, settings: ActivityEditSettings,
+      ref: string,
+      settings: ActivityEditSettings,
       draft: ActivityReplanDraft,
       operationId: string,
     ): Promise<readonly ActivityReplanChange[]> {
       const response = await request(endpoint(ref, 'replan-preview'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Dante-CSRF': await csrf() },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Dante-CSRF': await csrf(),
+        },
         body: JSON.stringify(replanBody(settings, draft, operationId)),
       });
-      if (!response.ok) throw new Error(response.status === 409
-        ? 'La programmazione è cambiata. Riapri Modifica e riprova.'
-        : 'La proposta non è valida. Controlla gli intervalli e le sessioni.');
+      if (!response.ok)
+        throw new Error(
+          response.status === 409
+            ? 'La programmazione è cambiata. Riapri Modifica e riprova.'
+            : 'La proposta non è valida. Controlla gli intervalli e le sessioni.',
+        );
       const result = object(await response.json());
       if (result.activity_ref !== ref || !Array.isArray(result.changes)) {
         throw new Error('Anteprima della programmazione non valida.');
       }
       return result.changes.map((value: unknown) => {
         const row = object(value);
-        if ((row.schedule_ref != null && typeof row.schedule_ref !== 'string') ||
-            (row.client_ref != null && typeof row.client_ref !== 'string') ||
-            typeof row.role !== 'string' ||
-            (row.previous_start != null && typeof row.previous_start !== 'string') ||
-            (row.previous_end != null && typeof row.previous_end !== 'string') ||
-            (row.proposed_start != null && typeof row.proposed_start !== 'string') ||
-            (row.proposed_end != null && typeof row.proposed_end !== 'string')) {
+        if (
+          (row.schedule_ref != null && typeof row.schedule_ref !== 'string') ||
+          (row.client_ref != null && typeof row.client_ref !== 'string') ||
+          typeof row.role !== 'string' ||
+          (row.previous_start != null &&
+            typeof row.previous_start !== 'string') ||
+          (row.previous_end != null && typeof row.previous_end !== 'string') ||
+          (row.proposed_start != null &&
+            typeof row.proposed_start !== 'string') ||
+          (row.proposed_end != null && typeof row.proposed_end !== 'string')
+        ) {
           throw new Error('Riga dell’anteprima non valida.');
         }
         return {
-          scheduleRef: optionalText(row.schedule_ref), clientRef: optionalText(row.client_ref), role: row.role,
-          previousStart: optionalText(row.previous_start), previousEnd: optionalText(row.previous_end),
-          proposedStart: optionalText(row.proposed_start), proposedEnd: optionalText(row.proposed_end),
+          scheduleRef: optionalText(row.schedule_ref),
+          clientRef: optionalText(row.client_ref),
+          role: row.role,
+          previousStart: optionalText(row.previous_start),
+          previousEnd: optionalText(row.previous_end),
+          proposedStart: optionalText(row.proposed_start),
+          proposedEnd: optionalText(row.proposed_end),
         };
       });
     },
     async applyReplan(
-      ref: string, settings: ActivityEditSettings,
+      ref: string,
+      settings: ActivityEditSettings,
       draft: ActivityReplanDraft,
       operationId: string,
     ): Promise<ActivityEditSettings> {
@@ -409,25 +515,38 @@ export function createRemoteActivityEditSettings(
       const timeout = new Promise<never>((_, reject) => {
         timer = setTimeout(() => {
           controller.abort();
-          reject(new Error('Salvataggio troppo lento. Controlla la connessione e riprova.'));
+          reject(
+            new Error(
+              'Salvataggio troppo lento. Controlla la connessione e riprova.',
+            ),
+          );
         }, 20_000);
       });
       try {
-        return await Promise.race([timeout, (async () => {
-          const response = await request(endpoint(ref, 'replan'), {
-            method: 'PUT',
-            signal: controller.signal,
-            headers: { 'Content-Type': 'application/json', 'X-Dante-CSRF': await csrf(controller.signal) },
-            body: JSON.stringify(replanBody(settings, draft, operationId)),
-          });
-          if (!response.ok) throw new Error(response.status === 409
-            ? 'La programmazione è cambiata o è protetta. Riapri Modifica e riprova.'
-            : 'Impossibile salvare la programmazione.');
-          const saved = parseSnapshot(ref, await response.json());
-          invalidateTemporalTimelineRead();
-          invalidateTemporalPlanningRead();
-          return saved;
-        })()]);
+        return await Promise.race([
+          timeout,
+          (async () => {
+            const response = await request(endpoint(ref, 'replan'), {
+              method: 'PUT',
+              signal: controller.signal,
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Dante-CSRF': await csrf(controller.signal),
+              },
+              body: JSON.stringify(replanBody(settings, draft, operationId)),
+            });
+            if (!response.ok)
+              throw new Error(
+                response.status === 409
+                  ? 'La programmazione è cambiata o è protetta. Riapri Modifica e riprova.'
+                  : 'Impossibile salvare la programmazione.',
+              );
+            const saved = parseSnapshot(ref, await response.json());
+            invalidateTemporalTimelineRead();
+            invalidateTemporalPlanningRead();
+            return saved;
+          })(),
+        ]);
       } finally {
         if (timer) clearTimeout(timer);
       }
@@ -440,103 +559,172 @@ export function createRemoteActivityEditSettings(
       if (!Array.isArray(rawAreas) || !Array.isArray(rawAssignments)) {
         throw new Error('Catalogo Life Area non valido.');
       }
-      const options = rawAreas.map(object)
+      const options = rawAreas
+        .map(object)
         .filter((item) => item.archived === false)
         .map((item) => {
-          if (typeof item.life_area_ref !== 'string' ||
-              typeof item.name !== 'string' || !item.name.trim()) {
+          if (
+            typeof item.life_area_ref !== 'string' ||
+            typeof item.name !== 'string' ||
+            !item.name.trim()
+          ) {
             throw new Error('Life Area non valida.');
           }
           return Object.freeze({
-            ref: item.life_area_ref, name: item.name,
+            ref: item.life_area_ref,
+            name: item.name,
             revision: typeof item.revision === 'number' ? item.revision : 1,
-            iconCode: typeof item.icon_code === 'string' ? item.icon_code : null,
-            colorCode: typeof item.color_code === 'string' ? item.color_code : null,
+            iconCode:
+              typeof item.icon_code === 'string' ? item.icon_code : null,
+            colorCode:
+              typeof item.color_code === 'string' ? item.color_code : null,
           });
         });
-      const rows = rawAssignments.map(object).filter((item) =>
-        item.subject_kind === 'activity' && item.subject_native_ref === ref);
+      const rows = rawAssignments
+        .map(object)
+        .filter(
+          (item) =>
+            item.subject_kind === 'activity' && item.subject_native_ref === ref,
+        );
       if (rows.length > 1) {
         throw new Error('Assegnazioni Life Area incoerenti.');
       }
       const current = rows[0];
-      if (current && ((current.life_area_ref !== null && typeof current.life_area_ref !== 'string') ||
+      if (
+        current &&
+        ((current.life_area_ref !== null &&
+          typeof current.life_area_ref !== 'string') ||
           typeof current.assignment_revision !== 'number' ||
           !Number.isSafeInteger(current.assignment_revision) ||
-          current.assignment_revision < 1)) {
+          current.assignment_revision < 1)
+      ) {
         throw new Error('Revisione Life Area non valida.');
       }
       return Object.freeze({
         options: Object.freeze(options),
-        currentRef: current && typeof current.life_area_ref === 'string'
-          ? current.life_area_ref : null,
+        currentRef:
+          current && typeof current.life_area_ref === 'string'
+            ? current.life_area_ref
+            : null,
         currentRevision: current ? Number(current.assignment_revision) : 0,
       });
     },
-    async createLifeArea(name: string, operationId: string): Promise<Readonly<{
-      ref: string; name: string; revision: number;
-      iconCode: string | null; colorCode: string | null;
-    }>> {
+    async createLifeArea(
+      name: string,
+      operationId: string,
+    ): Promise<
+      Readonly<{
+        ref: string;
+        name: string;
+        revision: number;
+        iconCode: string | null;
+        colorCode: string | null;
+      }>
+    > {
       const canonical = name.trim().replace(/\s+/g, ' ');
-      if (!canonical || canonical.length > 100) throw new Error('Inserisci un nome Life Area valido.');
+      if (!canonical || canonical.length > 100)
+        throw new Error('Inserisci un nome Life Area valido.');
       const response = await request('/api/v1/temporal/life-areas', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Dante-CSRF': await csrf() },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Dante-CSRF': await csrf(),
+        },
         body: JSON.stringify({ operation_id: operationId, name: canonical }),
       });
-      if (!response.ok) throw new Error(response.status === 409
-        ? 'Esiste già una Life Area con questo nome. Selezionala dall’elenco.'
-        : 'Impossibile creare la Life Area.');
+      if (!response.ok)
+        throw new Error(
+          response.status === 409
+            ? 'Esiste già una Life Area con questo nome. Selezionala dall’elenco.'
+            : 'Impossibile creare la Life Area.',
+        );
       const created = object(await response.json());
-      if (typeof created.life_area_ref !== 'string' || created.name !== canonical) {
+      if (
+        typeof created.life_area_ref !== 'string' ||
+        created.name !== canonical
+      ) {
         throw new Error('Risposta Life Area non valida.');
       }
-      if (!Number.isSafeInteger(created.revision) || Number(created.revision) < 1) {
+      if (
+        !Number.isSafeInteger(created.revision) ||
+        Number(created.revision) < 1
+      ) {
         throw new Error('Revisione della nuova Life Area non valida.');
       }
       return Object.freeze({
-        ref: created.life_area_ref, name: canonical,
+        ref: created.life_area_ref,
+        name: canonical,
         revision: Number(created.revision),
-        iconCode: typeof created.icon_code === 'string' ? created.icon_code : null,
-        colorCode: typeof created.color_code === 'string' ? created.color_code : null,
+        iconCode:
+          typeof created.icon_code === 'string' ? created.icon_code : null,
+        colorCode:
+          typeof created.color_code === 'string' ? created.color_code : null,
       });
     },
     async setLifeAreaAppearance(
-      area: Readonly<{ ref: string; name: string; revision?: number;
-        colorCode?: string | null; iconCode?: string | null }>,
+      area: Readonly<{
+        ref: string;
+        name: string;
+        revision?: number;
+        colorCode?: string | null;
+        iconCode?: string | null;
+      }>,
       colorCode: string,
       operationId: string,
-    ): Promise<Readonly<{ ref: string; name: string; revision: number;
-      colorCode: string; iconCode: string | null }>> {
-      if (!/^#[0-9a-f]{6}$/i.test(colorCode) ||
-          !Number.isSafeInteger(area.revision) || (area.revision ?? 0) < 1) {
+    ): Promise<
+      Readonly<{
+        ref: string;
+        name: string;
+        revision: number;
+        colorCode: string;
+        iconCode: string | null;
+      }>
+    > {
+      if (
+        !/^#[0-9a-f]{6}$/i.test(colorCode) ||
+        !Number.isSafeInteger(area.revision) ||
+        (area.revision ?? 0) < 1
+      ) {
         throw new Error('Colore o revisione Life Area non validi.');
       }
       const canonical = colorCode.toUpperCase();
       const response = await request(
-        `/api/v1/temporal/life-areas/${encodeURIComponent(area.ref)}/appearance`, {
+        `/api/v1/temporal/life-areas/${encodeURIComponent(area.ref)}/appearance`,
+        {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'X-Dante-CSRF': await csrf() },
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Dante-CSRF': await csrf(),
+          },
           body: JSON.stringify({
-            operation_id: operationId, expected_revision: area.revision,
-            icon_code: area.iconCode ?? null, color_code: canonical,
+            operation_id: operationId,
+            expected_revision: area.revision,
+            icon_code: area.iconCode ?? null,
+            color_code: canonical,
           }),
         },
       );
-      if (!response.ok) throw new Error(response.status === 409
-        ? 'Il colore della Life Area è cambiato. Riapri Modifica.'
-        : 'Impossibile salvare il colore della Life Area.');
+      if (!response.ok)
+        throw new Error(
+          response.status === 409
+            ? 'Il colore della Life Area è cambiato. Riapri Modifica.'
+            : 'Impossibile salvare il colore della Life Area.',
+        );
       const saved = object(await response.json());
-      if (saved.life_area_ref !== area.ref ||
-          !Number.isSafeInteger(saved.accepted_revision)) {
+      if (
+        saved.life_area_ref !== area.ref ||
+        !Number.isSafeInteger(saved.accepted_revision)
+      ) {
         throw new Error('Risposta colore Life Area non valida.');
       }
       invalidateTemporalTimelineRead();
       invalidateTemporalPlanningRead();
       return Object.freeze({
-        ref: area.ref, name: area.name,
+        ref: area.ref,
+        name: area.name,
         revision: Number(saved.accepted_revision),
-        colorCode: canonical, iconCode: area.iconCode ?? null,
+        colorCode: canonical,
+        iconCode: area.iconCode ?? null,
       });
     },
     async assignLifeArea(
@@ -545,11 +733,15 @@ export function createRemoteActivityEditSettings(
       nextRef: string | null,
       operationId: string,
     ): Promise<ActivityLifeAreaChoice> {
-      if (nextRef !== null && !current.options.some((area) => area.ref === nextRef)) {
+      if (
+        nextRef !== null &&
+        !current.options.some((area) => area.ref === nextRef)
+      ) {
         throw new Error('Seleziona una Life Area valida.');
       }
       const response = await request(
-        `/api/v1/temporal/life-area-assignments/activities/${encodeURIComponent(ref)}`, {
+        `/api/v1/temporal/life-area-assignments/activities/${encodeURIComponent(ref)}`,
+        {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -563,15 +755,20 @@ export function createRemoteActivityEditSettings(
         },
       );
       if (!response.ok) {
-        throw new Error(response.status === 409
-          ? 'La Life Area è cambiata. Ricarica l’attività e riprova.'
-          : 'Impossibile aggiornare la Life Area.');
+        throw new Error(
+          response.status === 409
+            ? 'La Life Area è cambiata. Ricarica l’attività e riprova.'
+            : 'Impossibile aggiornare la Life Area.',
+        );
       }
       const saved = object(await response.json());
-      if (saved.subject_kind !== 'activity' || saved.subject_native_ref !== ref ||
-          saved.life_area_ref !== nextRef ||
-          !Number.isSafeInteger(saved.assignment_revision) ||
-          Number(saved.assignment_revision) <= current.currentRevision) {
+      if (
+        saved.subject_kind !== 'activity' ||
+        saved.subject_native_ref !== ref ||
+        saved.life_area_ref !== nextRef ||
+        !Number.isSafeInteger(saved.assignment_revision) ||
+        Number(saved.assignment_revision) <= current.currentRevision
+      ) {
         throw new Error('Assegnazione Life Area non valida.');
       }
       invalidateTemporalTimelineRead();
@@ -583,24 +780,42 @@ export function createRemoteActivityEditSettings(
       });
     },
     async revisePlannedName(
-      activityRef: string, scheduleRef: string, expectedName: string | null,
+      activityRef: string,
+      scheduleRef: string,
+      expectedName: string | null,
       newName: string | null,
     ): Promise<string | null> {
-      if (newName !== null && (!newName.trim() || newName !== newName.trim() ||
-        newName.length > 300)) throw new Error('Nome sessione non valido.');
+      if (
+        newName !== null &&
+        (!newName.trim() || newName !== newName.trim() || newName.length > 300)
+      )
+        throw new Error('Nome sessione non valido.');
       const response = await request(
-        '/api/v1/temporal/activities/' + encodeURIComponent(activityRef) +
-        '/planned-sessions/' + encodeURIComponent(scheduleRef) + '/name', {
+        '/api/v1/temporal/activities/' +
+          encodeURIComponent(activityRef) +
+          '/planned-sessions/' +
+          encodeURIComponent(scheduleRef) +
+          '/name',
+        {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'X-Dante-CSRF': await csrf() },
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Dante-CSRF': await csrf(),
+          },
           body: JSON.stringify({ expected_name: expectedName, name: newName }),
         },
       );
-      if (!response.ok) throw new Error(response.status === 409
-        ? 'Il nome della sessione è cambiato. Ricarica l’attività.'
-        : 'Impossibile modificare il nome della sessione.');
+      if (!response.ok)
+        throw new Error(
+          response.status === 409
+            ? 'Il nome della sessione è cambiato. Ricarica l’attività.'
+            : 'Impossibile modificare il nome della sessione.',
+        );
       const saved = object(await response.json());
-      if (saved.schedule_ref !== scheduleRef || saved.display_name !== newName) {
+      if (
+        saved.schedule_ref !== scheduleRef ||
+        saved.display_name !== newName
+      ) {
         throw new Error('Risposta sessione non valida.');
       }
       invalidateTemporalTimelineRead();
@@ -611,7 +826,10 @@ export function createRemoteActivityEditSettings(
       settings: ActivityEditSettings,
       locked: boolean,
     ): Promise<ActivityEditSettings> {
-      if (!settings.placementLockScheduleRef || settings.placementLockRevision === null) {
+      if (
+        !settings.placementLockScheduleRef ||
+        settings.placementLockRevision === null
+      ) {
         throw new Error('La protezione non è disponibile per questa attività.');
       }
       const scheduleRef = settings.placementLockScheduleRef;
@@ -629,21 +847,29 @@ export function createRemoteActivityEditSettings(
             },
             body: JSON.stringify({
               locked,
-              expected_revision: settings.placementLockRevision === 0
-                ? null : settings.placementLockRevision,
+              expected_revision:
+                settings.placementLockRevision === 0
+                  ? null
+                  : settings.placementLockRevision,
             }),
           },
         );
         if (!response.ok) {
-          throw new Error(response.status === 409
-            ? 'La protezione è cambiata. Ricarica l’attività e riprova.'
-            : 'Impossibile aggiornare la protezione della collocazione.');
+          throw new Error(
+            response.status === 409
+              ? 'La protezione è cambiata. Ricarica l’attività e riprova.'
+              : 'Impossibile aggiornare la protezione della collocazione.',
+          );
         }
         const saved = object(await response.json());
-        if (saved.schedule_ref !== scheduleRef ||
-            saved.locked !== locked ||
-            !Number.isInteger(saved.revision)) {
-          throw new Error('Risposta non valida per la protezione della collocazione.');
+        if (
+          saved.schedule_ref !== scheduleRef ||
+          saved.locked !== locked ||
+          !Number.isInteger(saved.revision)
+        ) {
+          throw new Error(
+            'Risposta non valida per la protezione della collocazione.',
+          );
         }
         invalidateTemporalTimelineRead();
         invalidateTemporalPlanningRead();
@@ -665,7 +891,10 @@ export function createRemoteActivityEditSettings(
       profile: ActivityProfile,
       settings: ActivityEditSettings,
       changes: Readonly<{
-        profile?: Pick<ActivityProfile, 'title' | 'description' | 'location' | 'colorCode'>;
+        profile?: Pick<
+          ActivityProfile,
+          'title' | 'description' | 'location' | 'colorCode'
+        >;
         capture?: SessionCaptureMode;
         reality?: RealityMode;
         reminderLeadMinutes?: number | null;
@@ -677,47 +906,72 @@ export function createRemoteActivityEditSettings(
       const timeout = new Promise<never>((_, reject) => {
         timer = setTimeout(() => {
           controller.abort();
-          reject(new Error('Salvataggio troppo lento. Controlla la connessione e riprova.'));
+          reject(
+            new Error(
+              'Salvataggio troppo lento. Controlla la connessione e riprova.',
+            ),
+          );
         }, 20_000);
       });
       const save = async () => {
-        const response = await request(endpoint(profile.activityRef, 'core-edit'), {
-          method: 'PUT',
-          signal: controller.signal,
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Dante-CSRF': await csrf(controller.signal),
+        const response = await request(
+          endpoint(profile.activityRef, 'core-edit'),
+          {
+            method: 'PUT',
+            signal: controller.signal,
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Dante-CSRF': await csrf(controller.signal),
+            },
+            body: JSON.stringify({
+              operation_id: operationId,
+              ...(changes.profile
+                ? {
+                    profile: {
+                      expected_revision: profile.revision,
+                      title: changes.profile.title,
+                      description: changes.profile.description,
+                      location: changes.profile.location,
+                      color_code: changes.profile.colorCode,
+                    },
+                  }
+                : {}),
+              ...(changes.capture
+                ? {
+                    capture: {
+                      mode_code: changes.capture,
+                      expected_state_ref: settings.capture.stateRef,
+                    },
+                  }
+                : {}),
+              ...(changes.reality
+                ? {
+                    reality: {
+                      mode_code: changes.reality,
+                      expected_state_ref: settings.reality.stateRef,
+                    },
+                  }
+                : {}),
+              ...('reminderLeadMinutes' in changes &&
+              settings.reminderScheduleRef
+                ? {
+                    reminder: {
+                      schedule_ref: settings.reminderScheduleRef,
+                      expected_state_ref: settings.reminderStateRef,
+                      enabled: changes.reminderLeadMinutes !== null,
+                      lead_minutes: changes.reminderLeadMinutes ?? 0,
+                    },
+                  }
+                : {}),
+            }),
           },
-          body: JSON.stringify({
-            operation_id: operationId,
-            ...(changes.profile ? { profile: {
-              expected_revision: profile.revision,
-              title: changes.profile.title,
-              description: changes.profile.description,
-              location: changes.profile.location,
-              color_code: changes.profile.colorCode,
-            } } : {}),
-            ...(changes.capture ? { capture: {
-              mode_code: changes.capture,
-              expected_state_ref: settings.capture.stateRef,
-            } } : {}),
-            ...(changes.reality ? { reality: {
-              mode_code: changes.reality,
-              expected_state_ref: settings.reality.stateRef,
-            } } : {}),
-            ...('reminderLeadMinutes' in changes && settings.reminderScheduleRef ? {
-              reminder: {
-                schedule_ref: settings.reminderScheduleRef,
-                expected_state_ref: settings.reminderStateRef,
-                enabled: changes.reminderLeadMinutes !== null,
-                lead_minutes: changes.reminderLeadMinutes ?? 0,
-              },
-            } : {}),
-          }),
-        });
-        if (!response.ok) throw new Error(response.status === 409
-          ? 'L’attività è cambiata. Riapri Modifica e riprova.'
-          : 'Impossibile salvare le impostazioni dell’attività.');
+        );
+        if (!response.ok)
+          throw new Error(
+            response.status === 409
+              ? 'L’attività è cambiata. Riapri Modifica e riprova.'
+              : 'Impossibile salvare le impostazioni dell’attività.',
+          );
         const result = object(await response.json());
         const savedProfile = parseProfile(result.profile);
         if (savedProfile.activityRef !== profile.activityRef) {
@@ -727,18 +981,24 @@ export function createRemoteActivityEditSettings(
           ...settings,
           capture: capture(result.capture, profile.activityRef),
           reality: reality(result.reality, profile.activityRef),
-          ...('reminderLeadMinutes' in changes ? {
-            reminderLeadMinutes: changes.reminderLeadMinutes ?? null,
-            reminderStateRef: state(object(result.reminder).material_state_ref),
-          } : {}),
+          ...('reminderLeadMinutes' in changes
+            ? {
+                reminderLeadMinutes: changes.reminderLeadMinutes ?? null,
+                reminderStateRef: state(
+                  object(result.reminder).material_state_ref,
+                ),
+              }
+            : {}),
         });
         invalidateTemporalTimelineRead();
         invalidateTemporalPlanningRead();
         if (changes.capture) {
           invalidateActivitySessionCardCapability(profile.activityRef);
-          window.dispatchEvent(new CustomEvent('dante:activity-session-capability-changed', {
-            detail: profile.activityRef,
-          }));
+          window.dispatchEvent(
+            new CustomEvent('dante:activity-session-capability-changed', {
+              detail: profile.activityRef,
+            }),
+          );
         }
         return { profile: savedProfile, settings: savedSettings };
       };

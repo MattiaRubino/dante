@@ -36,7 +36,7 @@
   min-height: 46px;
   align-items: center;
   border: 1px solid
-    var(--dante-semantic-color-home-border-subtle, rgba(255,255,255,.09));
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
   border-radius: 10px;
   background: color-mix(
     in srgb,
@@ -58,7 +58,10 @@
   align-self: stretch;
   width: 1px;
   margin-block: 8px;
-  background: var(--dante-semantic-color-home-border-subtle, rgba(255,255,255,.09));
+  background: var(
+    --dante-semantic-color-home-border-subtle,
+    rgba(255, 255, 255, 0.09)
+  );
 }
 
 .temporal-create-objective__title {
@@ -86,10 +89,10 @@
 .temporal-create-objective__definition select,
 .temporal-create-objective__definition input {
   min-height: 32px;
-  border: 1px solid rgba(255,255,255,.105);
+  border: 1px solid rgba(255, 255, 255, 0.105);
   border-radius: 8px;
   color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
-  background: rgba(255,255,255,.028);
+  background: rgba(255, 255, 255, 0.028);
   font: inherit;
   font-size: 11px;
 }
@@ -103,11 +106,11 @@
 
 .temporal-create-objective__actions button:disabled {
   cursor: default;
-  opacity: .32;
+  opacity: 0.32;
 }
 
 .temporal-create-objective__actions button.is-remove {
-  color: rgba(255,174,150,.88);
+  color: rgba(255, 174, 150, 0.88);
 }
 
 .temporal-create-objective__definition {
@@ -118,9 +121,9 @@
   gap: 6px;
   margin-left: 0;
   padding: 7px 8px;
-  border: 1px solid rgba(255,255,255,.07);
+  border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 9px;
-  background: rgba(0,0,0,.11);
+  background: rgba(0, 0, 0, 0.11);
 }
 
 .temporal-create-objective__definition label {
@@ -156,10 +159,10 @@
   align-items: center;
   gap: 6px;
   padding: 0 10px;
-  border: 1px solid rgba(255,255,255,.105);
+  border: 1px solid rgba(255, 255, 255, 0.105);
   border-radius: 8px;
   color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
-  background: rgba(255,255,255,.025);
+  background: rgba(255, 255, 255, 0.025);
   font: inherit;
   font-size: 11px;
   font-weight: 680;
@@ -178,7 +181,7 @@
 
 @media (max-width: 760px) {
   .temporal-create-objective__row {
-    grid-template-columns: 28px 1px minmax(120px,1fr);
+    grid-template-columns: 28px 1px minmax(120px, 1fr);
   }
 
   .temporal-create-objective__actions {

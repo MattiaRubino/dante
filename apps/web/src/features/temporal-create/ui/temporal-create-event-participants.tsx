@@ -56,17 +56,19 @@ export function TemporalCreateEventParticipants() {
       ? italian
         ? 'Io'
         : 'Me'
-      : (people.find((person) => person.personRef === personRef)?.displayLabel ??
+      : (people.find((person) => person.personRef === personRef)
+          ?.displayLabel ??
         draft.eventParticipants.find((item) => item.personRef === personRef)
           ?.displayLabel ??
         (italian ? 'Persona' : 'Person'));
 
-  const publish = (
-    eventParticipants: typeof draft.eventParticipants,
-  ) => patch({ eventParticipants: Object.freeze([...eventParticipants]) });
+  const publish = (eventParticipants: typeof draft.eventParticipants) =>
+    patch({ eventParticipants: Object.freeze([...eventParticipants]) });
 
   const addSelected = () => {
-    if (draft.eventParticipants.some((item) => item.personRef === selectedPerson)) {
+    if (
+      draft.eventParticipants.some((item) => item.personRef === selectedPerson)
+    ) {
       return;
     }
     publish([
@@ -213,7 +215,9 @@ export function TemporalCreateEventParticipants() {
           value={requirement}
           disabled={pending}
           onChange={(event) =>
-            setRequirement(event.currentTarget.value as ParticipationRequirement)
+            setRequirement(
+              event.currentTarget.value as ParticipationRequirement,
+            )
           }
         >
           <option value="required">{italian ? 'Richiesto' : 'Required'}</option>

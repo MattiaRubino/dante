@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import json
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Literal
 from uuid import UUID
@@ -97,10 +97,7 @@ class EventOccurrencePolicyApplication:
         else:
             raise EventOccurrencePolicyInputError("Event placement kind is unsupported.")
 
-        if (
-            reminder_lead_minutes is not None
-            and not 0 <= reminder_lead_minutes <= 10_080
-        ):
+        if reminder_lead_minutes is not None and not 0 <= reminder_lead_minutes <= 10_080:
             raise EventOccurrencePolicyInputError(
                 "Event Reminder lead must contain 0 to 10080 minutes."
             )
@@ -113,28 +110,32 @@ class EventOccurrencePolicyApplication:
         try:
             async with self._session_factory() as session, session.begin():
                 row = (
-                    await session.execute(
-                        text(
-                            """SELECT * FROM dante.set_self_event_occurrence_policy_v2(
+                    (
+                        await session.execute(
+                            text(
+                                """SELECT * FROM dante.set_self_event_occurrence_policy_v2(
                                  :actor,:event,:kind,:minutes,:days,:reminder,
                                  :reality,CAST(:objectives AS jsonb))"""
-                        ),
-                        {
-                            "actor": self_person_ref,
-                            "event": event_ref,
-                            "kind": placement_kind,
-                            "minutes": duration_minutes,
-                            "days": duration_days,
-                            "reminder": reminder_lead_minutes,
-                            "reality": reality_mode,
-                            "objectives": json.dumps(
-                                list(objectives),
-                                sort_keys=True,
-                                separators=(",", ":"),
                             ),
-                        },
+                            {
+                                "actor": self_person_ref,
+                                "event": event_ref,
+                                "kind": placement_kind,
+                                "minutes": duration_minutes,
+                                "days": duration_days,
+                                "reminder": reminder_lead_minutes,
+                                "reality": reality_mode,
+                                "objectives": json.dumps(
+                                    list(objectives),
+                                    sort_keys=True,
+                                    separators=(",", ":"),
+                                ),
+                            },
+                        )
                     )
-                ).mappings().one()
+                    .mappings()
+                    .one()
+                )
         except DBAPIError as exc:
             raise _error(exc) from exc
         except SQLAlchemyError as exc:
@@ -146,9 +147,7 @@ class EventOccurrencePolicyApplication:
             ),
             duration_days=None if row["duration_days"] is None else int(row["duration_days"]),
             reminder_lead_minutes=(
-                None
-                if row["reminder_lead_minutes"] is None
-                else int(row["reminder_lead_minutes"])
+                None if row["reminder_lead_minutes"] is None else int(row["reminder_lead_minutes"])
             ),
             reality_mode=row["reality_mode"],
             objectives=tuple(dict(value) for value in (row["objectives"] or [])),
@@ -165,13 +164,17 @@ class EventOccurrencePolicyApplication:
         try:
             async with self._session_factory() as session, session.begin():
                 row = (
-                    await session.execute(
-                        text(
-                            "SELECT * FROM dante.get_self_event_occurrence_policy_v2(:actor,:event)"
-                        ),
-                        {"actor": self_person_ref, "event": event_ref},
+                    (
+                        await session.execute(
+                            text(
+                                "SELECT * FROM dante.get_self_event_occurrence_policy_v2(:actor,:event)"
+                            ),
+                            {"actor": self_person_ref, "event": event_ref},
+                        )
                     )
-                ).mappings().one_or_none()
+                    .mappings()
+                    .one_or_none()
+                )
         except DBAPIError as exc:
             raise _error(exc) from exc
         except SQLAlchemyError as exc:
@@ -185,9 +188,7 @@ class EventOccurrencePolicyApplication:
             ),
             duration_days=None if row["duration_days"] is None else int(row["duration_days"]),
             reminder_lead_minutes=(
-                None
-                if row["reminder_lead_minutes"] is None
-                else int(row["reminder_lead_minutes"])
+                None if row["reminder_lead_minutes"] is None else int(row["reminder_lead_minutes"])
             ),
             reality_mode=row["reality_mode"],
             objectives=tuple(dict(value) for value in (row["objectives"] or [])),

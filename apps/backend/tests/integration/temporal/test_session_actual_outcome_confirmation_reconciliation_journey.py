@@ -72,7 +72,9 @@ async def test_b10_e_chain_is_explicit_layered_and_history_preserving(
         ).activity
 
         await enable_live_capture(
-            runtime.session_factory, actor=alice, activity_ref=activity.activity_ref,
+            runtime.session_factory,
+            actor=alice,
+            activity_ref=activity.activity_ref,
         )
 
         # Session execution remains evidence only. Ending it must not fabricate Actual.
@@ -132,14 +134,20 @@ async def test_b10_e_chain_is_explicit_layered_and_history_preserving(
         )
 
         # Outcome does not fabricate Confirmation or Reconciliation.
-        assert await confirmations.list_for_outcome(
-            self_person_ref=alice,
-            outcome_ref=outcome.outcome_ref,
-        ) == ()
-        assert await reconciliations.list_for_outcome(
-            self_person_ref=alice,
-            outcome_ref=outcome.outcome_ref,
-        ) == ()
+        assert (
+            await confirmations.list_for_outcome(
+                self_person_ref=alice,
+                outcome_ref=outcome.outcome_ref,
+            )
+            == ()
+        )
+        assert (
+            await reconciliations.list_for_outcome(
+                self_person_ref=alice,
+                outcome_ref=outcome.outcome_ref,
+            )
+            == ()
+        )
 
         alice_confirmation = await confirmations.record(
             self_person_ref=alice,
@@ -161,10 +169,13 @@ async def test_b10_e_chain_is_explicit_layered_and_history_preserving(
         )
 
         # Confirmation participation does not grant resolver authority and does not auto-resolve.
-        assert await reconciliations.list_for_outcome(
-            self_person_ref=alice,
-            outcome_ref=outcome.outcome_ref,
-        ) == ()
+        assert (
+            await reconciliations.list_for_outcome(
+                self_person_ref=alice,
+                outcome_ref=outcome.outcome_ref,
+            )
+            == ()
+        )
         with pytest.raises(ReconciliationNotFoundError):
             await reconciliations.record(
                 self_person_ref=bob,

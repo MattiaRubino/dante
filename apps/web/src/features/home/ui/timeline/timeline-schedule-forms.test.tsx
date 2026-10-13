@@ -82,7 +82,11 @@ describe('B02-E3 Schedule form rendering', () => {
           dateKey="2026-09-16"
           items={[laneItem]}
           groups={[
-            Object.freeze({ id: 'personale', label: 'Personale', tone: 'personal' }),
+            Object.freeze({
+              id: 'personale',
+              label: 'Personale',
+              tone: 'personal',
+            }),
           ]}
           filters={new Set()}
         />

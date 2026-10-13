@@ -65,11 +65,15 @@ export function TemporalCreateRealityObjectivesSection({ fields }: Props) {
   return (
     <section
       className="temporal-create-reality-objectives"
-      aria-label={italian ? 'Svolgimento e obiettivi' : 'Occurrence and objectives'}
+      aria-label={
+        italian ? 'Svolgimento e obiettivi' : 'Occurrence and objectives'
+      }
     >
       <div className="temporal-create-reality-objectives__heading">
         <div>
-          <h3>{italian ? 'Svolgimento e obiettivi' : 'Occurrence and objectives'}</h3>
+          <h3>
+            {italian ? 'Svolgimento e obiettivi' : 'Occurrence and objectives'}
+          </h3>
           <p>
             {italian
               ? 'Decidi se verificare lo svolgimento e quali risultati vuoi misurare.'

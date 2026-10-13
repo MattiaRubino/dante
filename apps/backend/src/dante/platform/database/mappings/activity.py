@@ -15,7 +15,9 @@ class ActivityIntentionRow(Base):
     __tablename__ = "activity_intention"
     __table_args__ = (
         CheckConstraint("profile_revision >= 0", name="profile_revision"),
-        CheckConstraint("(retired_at IS NULL) = (retired_operation_id IS NULL)", name="retired_pair"),
+        CheckConstraint(
+            "(retired_at IS NULL) = (retired_operation_id IS NULL)", name="retired_pair"
+        ),
         CheckConstraint(
             "title=btrim(title) AND title<>'' AND char_length(title)<=300",
             name="title",

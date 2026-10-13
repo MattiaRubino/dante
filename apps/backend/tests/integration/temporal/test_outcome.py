@@ -6,9 +6,10 @@ from typing import Any
 
 import psycopg
 import pytest
+from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
 
-from dante.modules.temporal.actual_runtime import ActualApplication
 from dante.modules.temporal.activity import TemporalActivityApplication
+from dante.modules.temporal.actual_runtime import ActualApplication
 from dante.modules.temporal.life_area import LifeAreaApplication
 from dante.modules.temporal.outcome_runtime import (
     OutcomeApplication,
@@ -17,7 +18,6 @@ from dante.modules.temporal.outcome_runtime import (
     OutcomeOperationReuseError,
 )
 from dante.platform.database.runtime import create_database_runtime
-from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
 
 pytestmark = pytest.mark.postgres
 

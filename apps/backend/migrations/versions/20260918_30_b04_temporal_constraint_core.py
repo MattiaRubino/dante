@@ -70,8 +70,7 @@ def upgrade() -> None:
     op.create_check_constraint(
         op.f("ck_scoped_current_material_state_facet_code"),
         "scoped_current_material_state",
-        "facet_code IN ("
-        "'schedule.placement','actual.realization','temporal_constraint.rule')",
+        "facet_code IN ('schedule.placement','actual.realization','temporal_constraint.rule')",
         schema=_SCHEMA,
     )
 
@@ -699,10 +698,7 @@ def upgrade() -> None:
         $function$
         """
     )
-    _execute(
-        "ALTER FUNCTION dante.enforce_temporal_constraint_rule_totality() "
-        f"OWNER TO {_OWNER}"
-    )
+    _execute(f"ALTER FUNCTION dante.enforce_temporal_constraint_rule_totality() OWNER TO {_OWNER}")
     _execute(
         "REVOKE ALL PRIVILEGES ON FUNCTION dante.enforce_temporal_constraint_rule_totality() "
         f"FROM PUBLIC, {_RUNTIME}, {_MIGRATOR}"
@@ -1006,8 +1002,7 @@ def upgrade() -> None:
         "temporal_constraint_mutation_operation",
     ):
         _execute(
-            f"REVOKE ALL PRIVILEGES ON TABLE dante.{table} "
-            f"FROM PUBLIC, {_RUNTIME}, {_MIGRATOR}"
+            f"REVOKE ALL PRIVILEGES ON TABLE dante.{table} FROM PUBLIC, {_RUNTIME}, {_MIGRATOR}"
         )
 
     _execute(

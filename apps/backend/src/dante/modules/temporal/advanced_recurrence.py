@@ -136,14 +136,9 @@ def _validate(spec: AdvancedElapsedRecurrence) -> None:
                 "Expected-count Recurrence requires a positive count."
             )
     elif spec.expected_occurrence_count is not None:
-        raise AdvancedRecurrenceInputError(
-            "Only expected-count Recurrence may carry a count."
-        )
+        raise AdvancedRecurrenceInputError("Only expected-count Recurrence may carry a count.")
     if spec.anchor_mode_code == "previous_completion":
-        if (
-            spec.anchor_source_family is not None
-            or spec.anchor_source_native_ref is not None
-        ):
+        if spec.anchor_source_family is not None or spec.anchor_source_native_ref is not None:
             raise AdvancedRecurrenceInputError(
                 "Completion-relative Recurrence uses its own source completion stream."
             )
@@ -151,9 +146,7 @@ def _validate(spec: AdvancedElapsedRecurrence) -> None:
         spec.anchor_source_family not in {"routine", "event"}
         or spec.anchor_source_native_ref is None
     ):
-        raise AdvancedRecurrenceInputError(
-            "Anchor-stream Recurrence requires one typed source."
-        )
+        raise AdvancedRecurrenceInputError("Anchor-stream Recurrence requires one typed source.")
 
 
 def _fingerprint(payload: dict[str, object]) -> str:
@@ -212,11 +205,15 @@ class AdvancedRecurrenceApplication:
     ) -> AdvancedRecurrenceView | None:
         try:
             base = (
-                await session.execute(
-                    text(f"SELECT * FROM dante.get_self_{owner}_recurrence(:actor,:source)"),
-                    {"actor": self_person_ref, "source": source_ref},
+                (
+                    await session.execute(
+                        text(f"SELECT * FROM dante.get_self_{owner}_recurrence(:actor,:source)"),
+                        {"actor": self_person_ref, "source": source_ref},
+                    )
                 )
-            ).mappings().one_or_none()
+                .mappings()
+                .one_or_none()
+            )
             if (
                 base is None
                 or str(base["family_code"]) != "elapsed_interval"
@@ -225,13 +222,17 @@ class AdvancedRecurrenceApplication:
             ):
                 return None
             anchor = (
-                await session.execute(
-                    text(
-                        f"SELECT * FROM dante.get_self_{owner}_dynamic_elapsed_anchor(:actor,:source)"
-                    ),
-                    {"actor": self_person_ref, "source": source_ref},
+                (
+                    await session.execute(
+                        text(
+                            f"SELECT * FROM dante.get_self_{owner}_dynamic_elapsed_anchor(:actor,:source)"
+                        ),
+                        {"actor": self_person_ref, "source": source_ref},
+                    )
                 )
-            ).mappings().one_or_none()
+                .mappings()
+                .one_or_none()
+            )
         except DBAPIError as exc:
             raise _error(exc) from exc
 
@@ -316,16 +317,20 @@ class AdvancedRecurrenceApplication:
         try:
             async with self._session_factory() as session, session.begin():
                 receipt = (
-                    await session.execute(
-                        text(
-                            f"""SELECT * FROM dante.replace_self_{owner}_dynamic_elapsed_recurrence(
+                    (
+                        await session.execute(
+                            text(
+                                f"""SELECT * FROM dante.replace_self_{owner}_dynamic_elapsed_recurrence(
                               :actor,:operation,:fingerprint,:source,:expected,:range_kind,:count,
                               :effective_from,:effective_until,:elapsed_seconds,:anchor_mode,
                               :anchor_family,:anchor_source)"""
-                        ),
-                        params,
+                            ),
+                            params,
+                        )
                     )
-                ).mappings().one()
+                    .mappings()
+                    .one()
+                )
                 current = await self._read_in_session(
                     session,
                     owner=owner,
@@ -390,31 +395,33 @@ class AdvancedRecurrenceApplication:
         try:
             async with self._session_factory() as session, session.begin():
                 rows = (
-                    await session.execute(
-                        text(
-                            f"""SELECT * FROM dante.checkpoint_self_{owner}_dynamic_elapsed_occurrences(
+                    (
+                        await session.execute(
+                            text(
+                                f"""SELECT * FROM dante.checkpoint_self_{owner}_dynamic_elapsed_occurrences(
                               :actor,:operation,:fingerprint,:source,:state,:start_at,:end_at)"""
-                        ),
-                        {
-                            "actor": self_person_ref,
-                            "operation": key,
-                            "fingerprint": fingerprint,
-                            "source": source_ref,
-                            "state": governing_recurrence_state_ref,
-                            "start_at": start_at,
-                            "end_at": end_at_exclusive,
-                        },
+                            ),
+                            {
+                                "actor": self_person_ref,
+                                "operation": key,
+                                "fingerprint": fingerprint,
+                                "source": source_ref,
+                                "state": governing_recurrence_state_ref,
+                                "start_at": start_at,
+                                "end_at": end_at_exclusive,
+                            },
+                        )
                     )
-                ).mappings().all()
+                    .mappings()
+                    .all()
+                )
         except DBAPIError as exc:
             raise _error(exc) from exc
         except SQLAlchemyError as exc:
             raise AdvancedRecurrencePersistenceError() from exc
 
         if not rows:
-            raise AdvancedRecurrencePersistenceError(
-                "Checkpoint capability returned no receipt."
-            )
+            raise AdvancedRecurrencePersistenceError("Checkpoint capability returned no receipt.")
         accepted_at = rows[0]["accepted_at"]
         replayed = bool(rows[0]["replayed"])
         occurrences = tuple(
@@ -423,9 +430,7 @@ class AdvancedRecurrenceApplication:
                 expected_at=row["expected_at"],
                 anchor_occurrence_ref=UUID(str(row["anchor_occurrence_ref"])),
                 anchor_actual_ref=UUID(str(row["anchor_actual_ref"])),
-                anchor_actual_material_state_ref=UUID(
-                    str(row["anchor_actual_material_state_ref"])
-                ),
+                anchor_actual_material_state_ref=UUID(str(row["anchor_actual_material_state_ref"])),
                 anchor_completed_at=row["anchor_completed_at"],
                 created=bool(row["created"]),
             )

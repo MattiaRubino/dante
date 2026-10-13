@@ -6,9 +6,6 @@ from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
-
-from dante.auth.sessions import CSRF_HEADER_NAME
-from dante.bootstrap.app import create_app
 from tests.integration.temporal.support.life_area import api_test_life_area
 from tests.integration.temporal.test_activity_core import (
     _CANONICAL_ORIGIN,
@@ -19,6 +16,9 @@ from tests.integration.temporal.test_activity_core import (
     _signin,
 )
 from tests.integration.temporal.test_confirmation_api import _actual_command
+
+from dante.auth.sessions import CSRF_HEADER_NAME
+from dante.bootstrap.app import create_app
 
 pytestmark = pytest.mark.postgres
 pytest_plugins = ("tests.integration.temporal.test_activity_core",)
@@ -223,7 +223,9 @@ def test_b11_b_conditional_api_derives_truth_and_pins_actual_state(
             "/api/v1/temporal/conditions/actual-realization/{condition_ref}/evaluations"
         ]["post"]
         assert create_operation["operationId"] == "temporal_create_actual_realization_condition"
-        assert evaluation_operation["operationId"] == "temporal_evaluate_actual_realization_condition"
+        assert (
+            evaluation_operation["operationId"] == "temporal_evaluate_actual_realization_condition"
+        )
         assert "200" in create_operation["responses"]
         assert "201" in create_operation["responses"]
         assert "200" in evaluation_operation["responses"]

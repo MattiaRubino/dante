@@ -73,7 +73,9 @@ async def test_b08_a_activity_session_is_scoped_idempotent_and_does_not_fabricat
         ).activity
 
         await enable_live_capture(
-            runtime.session_factory, actor=alice, activity_ref=activity.activity_ref,
+            runtime.session_factory,
+            actor=alice,
+            activity_ref=activity.activity_ref,
         )
 
         started = await sessions.start(

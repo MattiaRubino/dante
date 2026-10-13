@@ -50,9 +50,13 @@ describe('authoritative Event Timeline hydration', () => {
   it('passes canonical accepted Event placement into its Inspector, never guessed minute geometry', () => {
     const [projection] = canonicalScheduledTimelineEvents(floatingEvent());
     if (!projection) throw new Error('Expected scheduled Event projection');
-    const detail = detailFromEvent(projection.event, [{
-      id: projection.event.groupId, label: 'Eventi', tone: 'meeting',
-    }]);
+    const detail = detailFromEvent(projection.event, [
+      {
+        id: projection.event.groupId,
+        label: 'Eventi',
+        tone: 'meeting',
+      },
+    ]);
     expect(detail).toMatchObject({
       eventRef: EVENT_REF,
       ownerKind: 'event',

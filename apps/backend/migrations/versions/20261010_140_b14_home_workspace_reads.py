@@ -3,6 +3,7 @@
 Only real ended Sessions and accepted occurred Actuals count as historical work.
 Objective work is based on canonical Objective current evaluation, not time passage.
 """
+
 from collections.abc import Sequence
 
 from alembic import op

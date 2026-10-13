@@ -22,14 +22,18 @@ class ActivityProfileRevisionRow(Base):
     __tablename__ = "activity_profile_revision"
     __table_args__ = (
         ForeignKeyConstraint(
-            ["activity_ref"], ["dante.activity_intention.activity_ref"],
+            ["activity_ref"],
+            ["dante.activity_intention.activity_ref"],
             name="fk_activity_profile_revision_activity",
         ),
         ForeignKeyConstraint(
-            ["self_person_ref"], ["dante.person.person_ref"],
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
             name="fk_activity_profile_revision_person",
         ),
-        UniqueConstraint("self_person_ref", "operation_id", name="uq_activity_profile_revision_operation"),
+        UniqueConstraint(
+            "self_person_ref", "operation_id", name="uq_activity_profile_revision_operation"
+        ),
         CheckConstraint("revision >= 1", name="positive"),
     )
 

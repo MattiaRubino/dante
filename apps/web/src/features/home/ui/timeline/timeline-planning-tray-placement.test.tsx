@@ -1,5 +1,11 @@
 import { Temporal } from '@dante/time';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { i18n } from '../../../../bootstrap/i18n';
@@ -38,25 +44,34 @@ afterEach(() => {
 });
 
 function createHarness(rejectPlacement = false, initiallyUnplaced = true) {
-  let currentItems: readonly TemporalPlanningTrayItem[] = initiallyUnplaced ? [activity] : [];
-  const listItems = vi.fn<TemporalPlanningTrayDataSource['listItems']>(() => Promise.resolve(currentItems));
-  const placeItem = vi.fn<TemporalPlanningTrayDataSource['placeItem']>((request) => {
-    if (rejectPlacement) return Promise.reject(new Error('schedule unavailable'));
-    currentItems = [];
-    return Promise.resolve({
-      kind: request.kind,
-      subjectRef: request.subjectRef,
-      scheduleRef: SCHEDULE_REF,
-      placementMaterialStateRef: MATERIAL_STATE_REF,
-      replayed: false,
-    });
-  });
+  let currentItems: readonly TemporalPlanningTrayItem[] = initiallyUnplaced
+    ? [activity]
+    : [];
+  const listItems = vi.fn<TemporalPlanningTrayDataSource['listItems']>(() =>
+    Promise.resolve(currentItems),
+  );
+  const placeItem = vi.fn<TemporalPlanningTrayDataSource['placeItem']>(
+    (request) => {
+      if (rejectPlacement)
+        return Promise.reject(new Error('schedule unavailable'));
+      currentItems = [];
+      return Promise.resolve({
+        kind: request.kind,
+        subjectRef: request.subjectRef,
+        scheduleRef: SCHEDULE_REF,
+        placementMaterialStateRef: MATERIAL_STATE_REF,
+        replayed: false,
+      });
+    },
+  );
   const source: TemporalPlanningTrayDataSource = { listItems, placeItem };
   return {
     source,
     listItems,
     placeItem,
-    restoreUnplaced: () => { currentItems = [activity]; },
+    restoreUnplaced: () => {
+      currentItems = [activity];
+    },
   };
 }
 
@@ -73,17 +88,23 @@ function renderTray(source: TemporalPlanningTrayDataSource) {
 
 async function openTray(source: TemporalPlanningTrayDataSource) {
   renderTray(source);
-  fireEvent.click(await screen.findByRole('button', { name: 'Apri elementi già creati' }));
+  fireEvent.click(
+    await screen.findByRole('button', { name: 'Apri elementi già creati' }),
+  );
   await screen.findByText(activity.title);
 }
 
 function openPlacement() {
-  fireEvent.click(screen.getByRole('button', { name: `Colloca: ${activity.title}` }));
+  fireEvent.click(
+    screen.getByRole('button', { name: `Colloca: ${activity.title}` }),
+  );
 }
 
 function submitPlacement() {
   fireEvent.submit(
-    screen.getByRole('button', { name: 'Colloca in Timeline' }).closest('form') as HTMLFormElement,
+    screen
+      .getByRole('button', { name: 'Colloca in Timeline' })
+      .closest('form') as HTMLFormElement,
   );
 }
 
@@ -92,19 +113,33 @@ describe('Timeline B02 canonical Planning Tray placement and invalidation', () =
     const harness = createHarness();
     await openTray(harness.source);
     openPlacement();
-    fireEvent.change(screen.getByLabelText('Data'), { target: { value: '2026-10-02' } });
-    fireEvent.change(screen.getByLabelText('Inizio'), { target: { value: '10:00' } });
-    fireEvent.change(screen.getByLabelText('Durata (minuti)'), { target: { value: '60' } });
-    fireEvent.change(screen.getByLabelText('Riferimento orario'), { target: { value: 'zoned' } });
-    fireEvent.change(screen.getByLabelText('Fuso orario'), { target: { value: 'Europe/Rome' } });
+    fireEvent.change(screen.getByLabelText('Data'), {
+      target: { value: '2026-10-02' },
+    });
+    fireEvent.change(screen.getByLabelText('Inizio'), {
+      target: { value: '10:00' },
+    });
+    fireEvent.change(screen.getByLabelText('Durata (minuti)'), {
+      target: { value: '60' },
+    });
+    fireEvent.change(screen.getByLabelText('Riferimento orario'), {
+      target: { value: 'zoned' },
+    });
+    fireEvent.change(screen.getByLabelText('Fuso orario'), {
+      target: { value: 'Europe/Rome' },
+    });
     submitPlacement();
     await waitFor(() => expect(harness.placeItem).toHaveBeenCalledTimes(1));
     const request = harness.placeItem.mock.calls[0]?.[0];
-    expect(request).toMatchObject({ kind: 'activity', subjectRef: ACTIVITY_REF });
+    expect(request).toMatchObject({
+      kind: 'activity',
+      subjectRef: ACTIVITY_REF,
+    });
     expect(request?.operationId).toMatch(/^planning-tray:activity:/);
     const placement = request?.placement;
     expect(placement?.kind).toBe('named-zone-local-interval');
-    if (placement?.kind !== 'named-zone-local-interval') throw new Error('Expected named zone');
+    if (placement?.kind !== 'named-zone-local-interval')
+      throw new Error('Expected named zone');
     expect(placement.zoneId).toBe('Europe/Rome');
     expect(placement.startsLocalAt.toString()).toBe('2026-10-02T10:00:00');
     expect(placement.endsLocalAt.toString()).toBe('2026-10-02T11:00:00');
@@ -114,14 +149,22 @@ describe('Timeline B02 canonical Planning Tray placement and invalidation', () =
     const harness = createHarness();
     await openTray(harness.source);
     openPlacement();
-    fireEvent.change(screen.getByLabelText('Inizio'), { target: { value: '14:15' } });
-    fireEvent.change(screen.getByLabelText('Durata (minuti)'), { target: { value: '45' } });
+    fireEvent.change(screen.getByLabelText('Inizio'), {
+      target: { value: '14:15' },
+    });
+    fireEvent.change(screen.getByLabelText('Durata (minuti)'), {
+      target: { value: '45' },
+    });
     submitPlacement();
     await waitFor(() => expect(harness.placeItem).toHaveBeenCalledTimes(1));
     const request = harness.placeItem.mock.calls[0]?.[0];
-    expect(request).toMatchObject({ kind: 'activity', subjectRef: ACTIVITY_REF });
+    expect(request).toMatchObject({
+      kind: 'activity',
+      subjectRef: ACTIVITY_REF,
+    });
     const placement = request?.placement;
-    if (placement?.kind !== 'floating-local-interval') throw new Error('Expected floating interval');
+    if (placement?.kind !== 'floating-local-interval')
+      throw new Error('Expected floating interval');
     expect(placement.startsLocalAt.toString()).toBe('2026-09-09T14:15:00');
     expect(placement.endsLocalAt.toString()).toBe('2026-09-09T15:00:00');
     await waitFor(() => expect(screen.queryByText(activity.title)).toBeNull());
@@ -133,7 +176,11 @@ describe('Timeline B02 canonical Planning Tray placement and invalidation', () =
     await openTray(harness.source);
     openPlacement();
     submitPlacement();
-    expect(await screen.findByText('Lo Schedule non è stato accettato. L’elemento resta qui.')).toBeTruthy();
+    expect(
+      await screen.findByText(
+        'Lo Schedule non è stato accettato. L’elemento resta qui.',
+      ),
+    ).toBeTruthy();
     expect(screen.getByText(activity.title)).toBeTruthy();
     expect(harness.placeItem).toHaveBeenCalledTimes(1);
     expect(harness.listItems).toHaveBeenCalledTimes(2);
@@ -142,15 +189,24 @@ describe('Timeline B02 canonical Planning Tray placement and invalidation', () =
   it.each([
     ['planning', invalidateTemporalPlanningRead],
     ['timeline', invalidateTemporalTimelineRead],
-  ])('reloads the same identity on %s invalidation after unschedule', async (_, invalidate) => {
-    const harness = createHarness(false, false);
-    renderTray(harness.source);
-    await waitFor(() => expect(harness.listItems).toHaveBeenCalledTimes(1));
-    harness.restoreUnplaced();
-    invalidate();
-    await waitFor(() => expect(harness.listItems).toHaveBeenCalledTimes(2));
-    fireEvent.click(await screen.findByRole('button', { name: 'Apri elementi già creati' }));
-    expect(await screen.findByText(activity.title)).toBeTruthy();
-    expect(document.querySelectorAll(`[data-temporal-subject-ref="${ACTIVITY_REF}"]`)).toHaveLength(1);
-  });
+  ])(
+    'reloads the same identity on %s invalidation after unschedule',
+    async (_, invalidate) => {
+      const harness = createHarness(false, false);
+      renderTray(harness.source);
+      await waitFor(() => expect(harness.listItems).toHaveBeenCalledTimes(1));
+      harness.restoreUnplaced();
+      invalidate();
+      await waitFor(() => expect(harness.listItems).toHaveBeenCalledTimes(2));
+      fireEvent.click(
+        await screen.findByRole('button', { name: 'Apri elementi già creati' }),
+      );
+      expect(await screen.findByText(activity.title)).toBeTruthy();
+      expect(
+        document.querySelectorAll(
+          `[data-temporal-subject-ref="${ACTIVITY_REF}"]`,
+        ),
+      ).toHaveLength(1);
+    },
+  );
 });

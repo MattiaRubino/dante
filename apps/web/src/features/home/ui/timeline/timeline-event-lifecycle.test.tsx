@@ -21,7 +21,8 @@ import { TimelineSurface } from './timeline-surface';
 
 vi.mock('../../../temporal/remote-placement-lock-data-source', () => ({
   createRemotePlacementLockDataSource: () => ({
-    get: (scheduleRef: string) => Promise.resolve({ scheduleRef, locked: false, revision: 0 }),
+    get: (scheduleRef: string) =>
+      Promise.resolve({ scheduleRef, locked: false, revision: 0 }),
   }),
 }));
 
@@ -121,17 +122,15 @@ describe('B03-C Event placement lifecycle from Timeline', () => {
     const loadWindow = vi
       .fn<TemporalTimelineDataSource['loadWindow']>()
       .mockResolvedValueOnce(
-        eventWindow(
-          '2026-09-09T10:00',
-          '2026-09-09T11:00',
-          CURRENT_STATE_REF,
-        ),
+        eventWindow('2026-09-09T10:00', '2026-09-09T11:00', CURRENT_STATE_REF),
       )
       .mockImplementationOnce(() => revisedWindow.promise);
     const reviseSchedule = vi.fn<TemporalScheduleDataSource['reviseSchedule']>(
       (request) => {
         if (request.placement.kind !== 'floating-local-interval') {
-          return Promise.reject(new Error('Expected floating-local placement.'));
+          return Promise.reject(
+            new Error('Expected floating-local placement.'),
+          );
         }
         return Promise.resolve({
           scheduleRef: request.scheduleRef,
@@ -145,7 +144,9 @@ describe('B03-C Event placement lifecycle from Timeline', () => {
     );
     const scheduleDataSource: TemporalScheduleDataSource = {
       reviseSchedule,
-      unscheduleSchedule: vi.fn(() => Promise.reject(new Error('not expected'))),
+      unscheduleSchedule: vi.fn(() =>
+        Promise.reject(new Error('not expected')),
+      ),
       undoScheduleUnschedule: vi.fn(() =>
         Promise.reject(new Error('not expected')),
       ),
@@ -186,11 +187,7 @@ describe('B03-C Event placement lifecycle from Timeline', () => {
     await waitFor(() => expect(loadWindow).toHaveBeenCalledTimes(2));
 
     revisedWindow.resolve(
-      eventWindow(
-        '2026-09-09T10:05',
-        '2026-09-09T11:05',
-        NEXT_STATE_REF,
-      ),
+      eventWindow('2026-09-09T10:05', '2026-09-09T11:05', NEXT_STATE_REF),
     );
     await waitFor(() => {
       expect(
@@ -207,11 +204,7 @@ describe('B03-C Event placement lifecycle from Timeline', () => {
     const loadWindow = vi
       .fn<TemporalTimelineDataSource['loadWindow']>()
       .mockResolvedValueOnce(
-        eventWindow(
-          '2026-09-09T10:00',
-          '2026-09-09T11:00',
-          CURRENT_STATE_REF,
-        ),
+        eventWindow('2026-09-09T10:00', '2026-09-09T11:00', CURRENT_STATE_REF),
       )
       .mockImplementationOnce(() => postponedWindow.promise)
       .mockImplementationOnce(() => restoredWindow.promise);
@@ -264,8 +257,14 @@ describe('B03-C Event placement lifecycle from Timeline', () => {
     fireEvent.click(
       await screen.findByRole('button', { name: 'Evento governato B03-C' }),
     );
-    fireEvent.click(await screen.findByRole('button', { name: 'Sposta in Da collocare' }));
-    fireEvent.click(within(screen.getByRole('group', { name: 'Sposta in Da collocare' })).getByRole('button', { name: 'Conferma' }));
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Sposta in Da collocare' }),
+    );
+    fireEvent.click(
+      within(
+        screen.getByRole('group', { name: 'Sposta in Da collocare' }),
+      ).getByRole('button', { name: 'Conferma' }),
+    );
 
     await waitFor(() => expect(unscheduleSchedule).toHaveBeenCalledTimes(1));
     expect(unscheduleSchedule).toHaveBeenCalledWith({
@@ -298,11 +297,7 @@ describe('B03-C Event placement lifecycle from Timeline', () => {
     ).toBeNull();
 
     restoredWindow.resolve(
-      eventWindow(
-        '2026-09-09T10:00',
-        '2026-09-09T11:00',
-        RESTORED_STATE_REF,
-      ),
+      eventWindow('2026-09-09T10:00', '2026-09-09T11:00', RESTORED_STATE_REF),
     );
     await waitFor(() => {
       expect(

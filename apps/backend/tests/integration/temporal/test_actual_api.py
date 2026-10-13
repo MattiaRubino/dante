@@ -6,9 +6,6 @@ from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
-
-from dante.auth.sessions import CSRF_HEADER_NAME
-from dante.bootstrap.app import create_app
 from tests.integration.temporal.support.life_area import api_test_life_area
 from tests.integration.temporal.test_activity_core import (
     _CANONICAL_ORIGIN,
@@ -19,11 +16,16 @@ from tests.integration.temporal.test_activity_core import (
     _signin,
 )
 
+from dante.auth.sessions import CSRF_HEADER_NAME
+from dante.bootstrap.app import create_app
+
 pytestmark = pytest.mark.postgres
 pytest_plugins = ("tests.integration.temporal.test_activity_core",)
 
 
-def _command(operation_id: str, *, occurred: bool, expected: str | None = None) -> dict[str, object]:
+def _command(
+    operation_id: str, *, occurred: bool, expected: str | None = None
+) -> dict[str, object]:
     return {
         "operation_id": operation_id,
         "expected_material_state_ref": expected,
@@ -54,7 +56,11 @@ def test_b10_a_event_actual_public_contract_preserves_unknown_replay_and_family(
         )
         activity = client.post(
             "/api/v1/temporal/activities",
-            json={"operation_id": "b10a:activity", "title": "Reality activity", "life_area_ref": area},
+            json={
+                "operation_id": "b10a:activity",
+                "title": "Reality activity",
+                "life_area_ref": area,
+            },
             headers=mutation_headers,
         )
         assert (event.status_code, activity.status_code) == (201, 201)

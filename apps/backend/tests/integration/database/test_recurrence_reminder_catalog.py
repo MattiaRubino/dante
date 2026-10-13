@@ -51,14 +51,9 @@ def _print_delta(label: str, values: set[str]) -> None:
 
 def test_b11_catalog_reconciliation_probe(migrated_database: Any) -> None:
     """Emit live-vs-Dictionary deltas while retaining B11-C object assertions."""
-    dictionary = {
-        kind: _dictionary_names(kind)
-        for kind in ("tables", "views", "routines")
-    }
+    dictionary = {kind: _dictionary_names(kind) for kind in ("tables", "views", "routines")}
     with _admin(migrated_database) as connection:
-        revision = connection.execute(
-            "SELECT version_num FROM dante.alembic_version"
-        ).fetchone()
+        revision = connection.execute("SELECT version_num FROM dante.alembic_version").fetchone()
         topology = connection.execute(
             """
             SELECT
@@ -115,9 +110,9 @@ def test_b11_catalog_reconciliation_probe(migrated_database: Any) -> None:
 
     assert revision == (_CURRENT_REVISION,)
     assert topology is not None
-    assert _B11_C_TABLES <= live["tables"]
-    assert _B11_C_ROUTINES <= live["routines"]
-    assert _B11_C_TABLES <= {table.name for table in MAPPED_TABLES}
+    assert live["tables"] >= _B11_C_TABLES
+    assert live["routines"] >= _B11_C_ROUTINES
+    assert {table.name for table in MAPPED_TABLES} >= _B11_C_TABLES
 
     print("B11_CATALOG_REVISION=" + revision[0])
     print("B11_CATALOG_TOPOLOGY=" + "|".join(str(value) for value in topology))

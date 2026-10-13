@@ -128,8 +128,7 @@ def upgrade() -> None:
             name=op.f("uq_outcome_result_state_outcome_material"),
         ),
         sa.CheckConstraint(
-            "result_code=btrim(result_code) "
-            "AND result_code ~ '^[a-z][a-z0-9._-]{0,99}$'",
+            "result_code=btrim(result_code) AND result_code ~ '^[a-z][a-z0-9._-]{0,99}$'",
             name=op.f("ck_outcome_result_state_result_code"),
         ),
         sa.CheckConstraint(
@@ -688,8 +687,7 @@ $function$
 
     helper_signature = "dante._outcome_actual_owned(uuid,uuid)"
     write_signature = (
-        "dante.record_self_actual_outcome("
-        "uuid,text,text,uuid,text,uuid,uuid,uuid,text,text)"
+        "dante.record_self_actual_outcome(uuid,text,text,uuid,text,uuid,uuid,uuid,text,text)"
     )
     read_signature = "dante.get_self_actual_outcome(uuid,uuid,text)"
     history_signature = "dante.list_self_outcome_history(uuid,uuid)"
@@ -701,10 +699,7 @@ $function$
         history_signature,
     ):
         _sql(f"ALTER FUNCTION {signature} OWNER TO {_OWNER}")
-        _sql(
-            f"REVOKE ALL ON FUNCTION {signature} "
-            f"FROM PUBLIC, {_RUNTIME}, {_MIGRATOR}"
-        )
+        _sql(f"REVOKE ALL ON FUNCTION {signature} FROM PUBLIC, {_RUNTIME}, {_MIGRATOR}")
 
     for signature in (write_signature, read_signature, history_signature):
         _sql(f"GRANT EXECUTE ON FUNCTION {signature} TO {_RUNTIME}")

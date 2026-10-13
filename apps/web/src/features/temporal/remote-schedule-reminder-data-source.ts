@@ -29,7 +29,10 @@ export class ScheduleReminderRemoteError extends Error {
 
 function record(value: unknown): Record<string, unknown> {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    throw new ScheduleReminderRemoteError('protocol', 'Invalid Reminder response.');
+    throw new ScheduleReminderRemoteError(
+      'protocol',
+      'Invalid Reminder response.',
+    );
   }
   return value as Record<string, unknown>;
 }
@@ -62,7 +65,10 @@ function reminder(value: unknown): ScheduleReminderView {
       payload.disposition_code !== 'due' &&
       payload.disposition_code !== 'unavailable')
   ) {
-    throw new ScheduleReminderRemoteError('protocol', 'Invalid Reminder configuration.');
+    throw new ScheduleReminderRemoteError(
+      'protocol',
+      'Invalid Reminder configuration.',
+    );
   }
   const starts = instant(payload.schedule_starts_at, 'schedule start');
   const due = instant(payload.due_at, 'due instant');
@@ -71,7 +77,10 @@ function reminder(value: unknown): ScheduleReminderView {
     ((!payload.enabled || starts === null) && due !== null) ||
     (payload.disposition_code !== 'unavailable' && due === null)
   ) {
-    throw new ScheduleReminderRemoteError('protocol', 'Inconsistent Reminder disposition.');
+    throw new ScheduleReminderRemoteError(
+      'protocol',
+      'Inconsistent Reminder disposition.',
+    );
   }
   return Object.freeze({
     reminderRef: uuid(payload.reminder_ref, 'reminder_ref'),
@@ -91,16 +100,24 @@ export function createRemoteScheduleReminderDataSource(
 ) {
   const webFetch = createWebFetch(fetchFn);
 
-  async function problem(response: Response): Promise<ScheduleReminderRemoteError> {
+  async function problem(
+    response: Response,
+  ): Promise<ScheduleReminderRemoteError> {
     let payload: Record<string, unknown> = {};
     try {
       payload = record(await response.json());
     } catch {
-      return new ScheduleReminderRemoteError('http', 'Reminder request rejected.', response.status);
+      return new ScheduleReminderRemoteError(
+        'http',
+        'Reminder request rejected.',
+        response.status,
+      );
     }
     return new ScheduleReminderRemoteError(
       'http',
-      typeof payload.detail === 'string' ? payload.detail : 'Reminder request rejected.',
+      typeof payload.detail === 'string'
+        ? payload.detail
+        : 'Reminder request rejected.',
       response.status,
       typeof payload.code === 'string' ? payload.code : null,
     );
@@ -112,16 +129,21 @@ export function createRemoteScheduleReminderDataSource(
       response = await webFetch('/api/v1/auth/session');
     } catch (error) {
       throw new ScheduleReminderRemoteError(
-        'transport', error instanceof Error ? error.message : 'Session unavailable.',
+        'transport',
+        error instanceof Error ? error.message : 'Session unavailable.',
       );
     }
     const payload = record(await response.json());
     if (
-      !response.ok || payload.authenticated !== true ||
-      typeof payload.csrf_token !== 'string' || !payload.csrf_token
+      !response.ok ||
+      payload.authenticated !== true ||
+      typeof payload.csrf_token !== 'string' ||
+      !payload.csrf_token
     ) {
       throw new ScheduleReminderRemoteError(
-        'authentication', 'Reminder requires an authenticated session.', response.status,
+        'authentication',
+        'Reminder requires an authenticated session.',
+        response.status,
       );
     }
     return payload.csrf_token;
@@ -138,12 +160,16 @@ export function createRemoteScheduleReminderDataSource(
         response = await webFetch(endpoint(scheduleRef));
       } catch (error) {
         throw new ScheduleReminderRemoteError(
-          'transport', error instanceof Error ? error.message : 'Reminder unavailable.',
+          'transport',
+          error instanceof Error ? error.message : 'Reminder unavailable.',
         );
       }
       if (!response.ok) {
         const error = await problem(response);
-        if (response.status === 404 && error.code === 'temporal.reminder.schedule_unavailable') {
+        if (
+          response.status === 404 &&
+          error.code === 'temporal.reminder.schedule_unavailable'
+        ) {
           return null;
         }
         throw error;
@@ -160,9 +186,16 @@ export function createRemoteScheduleReminderDataSource(
         leadMinutes: number;
       }>,
     ): Promise<ScheduleReminderView> {
-      if (!Number.isInteger(command.leadMinutes) || command.leadMinutes < 0 ||
-          command.leadMinutes > 10080 || !command.operationId.trim()) {
-        throw new ScheduleReminderRemoteError('protocol', 'Invalid Reminder command.');
+      if (
+        !Number.isInteger(command.leadMinutes) ||
+        command.leadMinutes < 0 ||
+        command.leadMinutes > 10080 ||
+        !command.operationId.trim()
+      ) {
+        throw new ScheduleReminderRemoteError(
+          'protocol',
+          'Invalid Reminder command.',
+        );
       }
       let response: Response;
       try {
@@ -174,8 +207,13 @@ export function createRemoteScheduleReminderDataSource(
           }),
           body: JSON.stringify({
             operation_id: command.operationId,
-            expected_material_state_ref: command.expectedMaterialStateRef === null
-              ? null : uuid(command.expectedMaterialStateRef, 'expected_material_state_ref'),
+            expected_material_state_ref:
+              command.expectedMaterialStateRef === null
+                ? null
+                : uuid(
+                    command.expectedMaterialStateRef,
+                    'expected_material_state_ref',
+                  ),
             enabled: command.enabled,
             lead_minutes: command.leadMinutes,
           }),
@@ -183,7 +221,8 @@ export function createRemoteScheduleReminderDataSource(
       } catch (error) {
         if (error instanceof ScheduleReminderRemoteError) throw error;
         throw new ScheduleReminderRemoteError(
-          'transport', error instanceof Error ? error.message : 'Reminder unavailable.',
+          'transport',
+          error instanceof Error ? error.message : 'Reminder unavailable.',
         );
       }
       if (!response.ok) throw await problem(response);

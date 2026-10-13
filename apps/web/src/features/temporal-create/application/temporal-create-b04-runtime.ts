@@ -93,10 +93,12 @@ function b04FlexibleActivityIntentSupported(
   if (
     prepared.metadata.kind !== 'activity' ||
     (prepared.command.payload.placement !== null && !placedSessionMinimum) ||
-    (import.meta.env.MODE !== 'test' && !isCanonicalLifeAreaRef(prepared.metadata.contextId)) ||
+    (import.meta.env.MODE !== 'test' &&
+      !isCanonicalLifeAreaRef(prepared.metadata.contextId)) ||
     (constraintKind === null && !hasSessionMinimum) ||
     specification.scheduling.constraintKind === 'preferred-window' ||
-    (prepared.metadata.contextId !== 'personale' && !isCanonicalLifeAreaRef(prepared.metadata.contextId)) ||
+    (prepared.metadata.contextId !== 'personale' &&
+      !isCanonicalLifeAreaRef(prepared.metadata.contextId)) ||
     prepared.metadata.notes.length !== 0 ||
     specification.appearanceTone !== null ||
     specification.eventRecurrence.patternKind !== 'none'
@@ -120,13 +122,20 @@ function b04FlexibleActivityIntentSupported(
     (sameStructuredIntent(specification.execution, baseline.execution) ||
       (specification.execution.sessionMode === 'splittable' &&
         specification.execution.minSessionMinutes >= 1 &&
-        specification.execution.maxSessions === baseline.execution.maxSessions &&
-        specification.execution.partialAllowed === baseline.execution.partialAllowed &&
-        specification.execution.finishEarlyAllowed === baseline.execution.finishEarlyAllowed &&
-        specification.execution.mergeCompatible === baseline.execution.mergeCompatible &&
-        specification.execution.preparationMinutes === baseline.execution.preparationMinutes &&
-        specification.execution.recoveryMinutes === baseline.execution.recoveryMinutes &&
-        specification.execution.spacingMinutes === baseline.execution.spacingMinutes)) &&
+        specification.execution.maxSessions ===
+          baseline.execution.maxSessions &&
+        specification.execution.partialAllowed ===
+          baseline.execution.partialAllowed &&
+        specification.execution.finishEarlyAllowed ===
+          baseline.execution.finishEarlyAllowed &&
+        specification.execution.mergeCompatible ===
+          baseline.execution.mergeCompatible &&
+        specification.execution.preparationMinutes ===
+          baseline.execution.preparationMinutes &&
+        specification.execution.recoveryMinutes ===
+          baseline.execution.recoveryMinutes &&
+        specification.execution.spacingMinutes ===
+          baseline.execution.spacingMinutes)) &&
     sameStructuredIntent(
       specification.eventRecurrence,
       baseline.eventRecurrence,
@@ -151,58 +160,59 @@ function absoluteInstant(
 function constraintRules(
   specification: TemporalCreateFields,
 ): readonly TemporalActivityConstraintRuleInput[] {
-  const schedulingRules: readonly TemporalActivityConstraintRuleInput[] = (() => {
-    switch (specification.scheduling.constraintKind) {
-      case 'open':
-        return Object.freeze([]);
-      case 'bounded-window':
-        return Object.freeze([
-          Object.freeze({
-            family: 'window' as const,
-            relationship: 'full_placement_contained' as const,
-            constrainedFacet: 'schedule.placement' as const,
-            strength: 'hard' as const,
-            startsAt: absoluteInstant(
-              specification.scheduling.windowStartDate,
-              specification.scheduling.windowStartTime,
-              specification,
-            ),
-            endsAt: absoluteInstant(
-              specification.scheduling.windowEndDate,
-              specification.scheduling.windowEndTime,
-              specification,
-            ),
-          }),
-        ]);
-      case 'deadline':
-        return Object.freeze([
-          Object.freeze({
-            family: 'boundary' as const,
-            boundaryKind: 'earliest_start' as const,
-            constrainedFacet: 'schedule.start' as const,
-            strength: 'hard' as const,
-            boundaryAt: absoluteInstant(
-              specification.scheduling.earliestStartDate,
-              specification.scheduling.earliestStartTime,
-              specification,
-            ),
-          }),
-          Object.freeze({
-            family: 'boundary' as const,
-            boundaryKind: 'latest_completion' as const,
-            constrainedFacet: 'schedule.completion' as const,
-            strength: 'hard' as const,
-            boundaryAt: absoluteInstant(
-              specification.scheduling.deadlineDate,
-              specification.scheduling.deadlineTime,
-              specification,
-            ),
-          }),
-        ]);
-      default:
-        return Object.freeze([]);
-    }
-  })();
+  const schedulingRules: readonly TemporalActivityConstraintRuleInput[] =
+    (() => {
+      switch (specification.scheduling.constraintKind) {
+        case 'open':
+          return Object.freeze([]);
+        case 'bounded-window':
+          return Object.freeze([
+            Object.freeze({
+              family: 'window' as const,
+              relationship: 'full_placement_contained' as const,
+              constrainedFacet: 'schedule.placement' as const,
+              strength: 'hard' as const,
+              startsAt: absoluteInstant(
+                specification.scheduling.windowStartDate,
+                specification.scheduling.windowStartTime,
+                specification,
+              ),
+              endsAt: absoluteInstant(
+                specification.scheduling.windowEndDate,
+                specification.scheduling.windowEndTime,
+                specification,
+              ),
+            }),
+          ]);
+        case 'deadline':
+          return Object.freeze([
+            Object.freeze({
+              family: 'boundary' as const,
+              boundaryKind: 'earliest_start' as const,
+              constrainedFacet: 'schedule.start' as const,
+              strength: 'hard' as const,
+              boundaryAt: absoluteInstant(
+                specification.scheduling.earliestStartDate,
+                specification.scheduling.earliestStartTime,
+                specification,
+              ),
+            }),
+            Object.freeze({
+              family: 'boundary' as const,
+              boundaryKind: 'latest_completion' as const,
+              constrainedFacet: 'schedule.completion' as const,
+              strength: 'hard' as const,
+              boundaryAt: absoluteInstant(
+                specification.scheduling.deadlineDate,
+                specification.scheduling.deadlineTime,
+                specification,
+              ),
+            }),
+          ]);
+        default:
+          return Object.freeze([]);
+      }
+    })();
   const rules = [...schedulingRules];
   if (specification.execution.sessionMode === 'splittable') {
     rules.push(
@@ -441,7 +451,9 @@ function activityFailureResult(
         status: 'rejected' as const,
         code: 'not-found' as const,
         issues: Object.freeze([
-          temporalValidationIssue('temporal.activity.not_found', ['activityRef']),
+          temporalValidationIssue('temporal.activity.not_found', [
+            'activityRef',
+          ]),
         ]),
       });
     }
@@ -490,7 +502,9 @@ function scheduleFailureResult(
         status: 'rejected' as const,
         code: 'not-found' as const,
         issues: Object.freeze([
-          temporalValidationIssue('temporal.schedule.not_found', ['scheduleRef']),
+          temporalValidationIssue('temporal.schedule.not_found', [
+            'scheduleRef',
+          ]),
         ]),
       });
     }
@@ -540,7 +554,10 @@ function appliedResult(
 
 class B04TemporalCreateRuntime implements TemporalCreateRuntime {
   public readonly clock: TemporalCreateRuntime['clock'];
-  private readonly flexibleActivities = new Map<string, TemporalCreateMetadata>();
+  private readonly flexibleActivities = new Map<
+    string,
+    TemporalCreateMetadata
+  >();
   private readonly records = new Map<string, TemporalCreateRecord>();
 
   public constructor(
@@ -566,10 +583,7 @@ class B04TemporalCreateRuntime implements TemporalCreateRuntime {
     projection: TemporalProjectionItem,
   ): void {
     this.flexibleActivities.set(activityRef, metadata);
-    this.records.set(
-      projection.id,
-      Object.freeze({ projection, metadata }),
-    );
+    this.records.set(projection.id, Object.freeze({ projection, metadata }));
   }
 
   private async establish(
@@ -621,7 +635,10 @@ class B04TemporalCreateRuntime implements TemporalCreateRuntime {
             scheduleRef,
             expectedPlacementMaterialStateRef: expectedMaterialStateRef,
           });
-          const restored = activityProjection(established.activity, undoOperationId);
+          const restored = activityProjection(
+            established.activity,
+            undoOperationId,
+          );
           this.records.delete(projection.id);
           this.remember(activityRef, metadata, restored);
           return appliedResult(undoOperationId, restored);
@@ -695,7 +712,10 @@ class B04TemporalCreateRuntime implements TemporalCreateRuntime {
     const hasSessionMinimum =
       prepared.metadata.specification.execution.sessionMode === 'splittable';
     if (constraintKind === null && !hasSessionMinimum) {
-      if (prepared.metadata.specification.scheduling.constraintKind === 'preferred-window') {
+      if (
+        prepared.metadata.specification.scheduling.constraintKind ===
+        'preferred-window'
+      ) {
         return Object.freeze({
           result: unavailableResult(
             prepared.operationId,
@@ -724,14 +744,20 @@ class B04TemporalCreateRuntime implements TemporalCreateRuntime {
           ? await this.activitySource.createActivity({
               operationId: prepared.operationId,
               title: prepared.command.payload.title,
-              ...(isCanonicalLifeAreaRef(prepared.metadata.contextId) ? { lifeAreaRef: prepared.metadata.contextId } : {}),
+              ...(isCanonicalLifeAreaRef(prepared.metadata.contextId)
+                ? { lifeAreaRef: prepared.metadata.contextId }
+                : {}),
             })
           : await this.constrainedSource.createConstrainedActivity({
               operationId: prepared.operationId,
               title: prepared.command.payload.title,
-              ...(isCanonicalLifeAreaRef(prepared.metadata.contextId) ? { lifeAreaRef: prepared.metadata.contextId } : {}),
+              ...(isCanonicalLifeAreaRef(prepared.metadata.contextId)
+                ? { lifeAreaRef: prepared.metadata.contextId }
+                : {}),
               rules,
-              ...(hasSessionMinimum ? { sessionCaptureMode: 'live' as const } : {}),
+              ...(hasSessionMinimum
+                ? { sessionCaptureMode: 'live' as const }
+                : {}),
             });
       const activity = created.activity;
       const projection = activityProjection(activity, prepared.operationId);
@@ -744,7 +770,11 @@ class B04TemporalCreateRuntime implements TemporalCreateRuntime {
           placement,
         );
         const accepted = scheduled.effect?.projection;
-        if (scheduled.result.status === 'applied' && accepted !== null && accepted !== undefined) {
+        if (
+          scheduled.result.status === 'applied' &&
+          accepted !== null &&
+          accepted !== undefined
+        ) {
           return Object.freeze({
             result: appliedResult(prepared.operationId, accepted),
             effect: this.createEffect(prepared, activity, accepted),

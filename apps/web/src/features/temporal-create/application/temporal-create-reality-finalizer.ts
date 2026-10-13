@@ -18,7 +18,9 @@ type RealityObjectiveDataSource = ReturnType<
 type MovementPolicyDataSource = ReturnType<
   typeof createRemoteScheduleMovementPolicyDataSource
 >;
-type PlacementLockDataSource = ReturnType<typeof createRemotePlacementLockDataSource>;
+type PlacementLockDataSource = ReturnType<
+  typeof createRemotePlacementLockDataSource
+>;
 
 type RealityPolicyTask = Readonly<{
   kind: 'activity' | 'event';

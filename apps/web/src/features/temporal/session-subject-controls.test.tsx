@@ -69,8 +69,14 @@ describe('SessionSubjectControls B08-D whole workflow', () => {
   it('offers exactly a play/pause toggle and stop for Inspector sessions', async () => {
     source.list.mockResolvedValue([session()]);
     source.pause.mockResolvedValue(session({ paused: true }));
-    render(<SessionSubjectControls kind="activity" subjectRef={activityRef}
-      label="Focus" compactRuntime />);
+    render(
+      <SessionSubjectControls
+        kind="activity"
+        subjectRef={activityRef}
+        label="Focus"
+        compactRuntime
+      />,
+    );
     const pauseButton = await screen.findByRole('button', { name: 'Pausa' });
     expect(screen.getAllByRole('button')).toHaveLength(2);
     expect(screen.getByRole('button', { name: 'Termina' })).toBeTruthy();

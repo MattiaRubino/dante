@@ -6,9 +6,7 @@ import {
   createFixedTemporalClock,
 } from '../../temporal';
 import { createTemporalCreateFields } from '../model/temporal-create-session';
-import {
-  createB06TemporalCreateRuntime,
-} from './temporal-create-b06-runtime';
+import { createB06TemporalCreateRuntime } from './temporal-create-b06-runtime';
 import type {
   RecurringAuthoringDataSource,
   RecurringAuthoringRecurrence,
@@ -70,7 +68,9 @@ function runtimeWithAuthoring() {
 }
 
 function eventFields(
-  recurrence: Partial<ReturnType<typeof createTemporalCreateFields>['eventRecurrence']>,
+  recurrence: Partial<
+    ReturnType<typeof createTemporalCreateFields>['eventRecurrence']
+  >,
 ) {
   const baseline = createTemporalCreateFields({
     title: 'Sync progetto',
@@ -93,7 +93,9 @@ function eventFields(
 }
 
 async function executeEvent(
-  recurrence: Partial<ReturnType<typeof createTemporalCreateFields>['eventRecurrence']>,
+  recurrence: Partial<
+    ReturnType<typeof createTemporalCreateFields>['eventRecurrence']
+  >,
 ) {
   const sources = runtimeWithAuthoring();
   const preparation = sources.runtime.prepare(eventFields(recurrence));
@@ -110,7 +112,8 @@ function capturedRecurrence(
   mock: ReturnType<typeof runtimeWithAuthoring>['createEvent'],
 ): RecurringAuthoringRecurrence {
   const request = mock.mock.calls[0]?.[0];
-  if (request === undefined) throw new Error('Expected recurring authoring call.');
+  if (request === undefined)
+    throw new Error('Expected recurring authoring call.');
   return request.recurrence;
 }
 

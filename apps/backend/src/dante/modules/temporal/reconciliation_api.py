@@ -82,7 +82,10 @@ _RECONCILIATION_WRITE_RESPONSES = {
     401: {"model": ProblemDetails, "description": "Authentication required."},
     403: {"model": ProblemDetails, "description": "Mutation request rejected by security policy."},
     404: {"model": ProblemDetails, "description": "Outcome target unavailable."},
-    409: {"model": ProblemDetails, "description": "Operation reuse, stale current state, or persistence conflict."},
+    409: {
+        "model": ProblemDetails,
+        "description": "Operation reuse, stale current state, or persistence conflict.",
+    },
     422: {"model": ProblemDetails, "description": "Reconciliation payload rejected."},
     500: {"model": ProblemDetails, "description": "Unexpected server error."},
 }

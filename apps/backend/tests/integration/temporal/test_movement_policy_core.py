@@ -183,7 +183,9 @@ def test_b04_d_policy_create_revise_retire_is_independent_from_schedule_placemen
     assert retired[2] is False
 
     with psycopg.connect(
-        **migrated_database.connection_kwargs("dante_migrator", migrated_database.cluster.migrator_password)
+        **migrated_database.connection_kwargs(
+            "dante_migrator", migrated_database.cluster.migrator_password
+        )
     ) as connection:
         connection.execute("SET ROLE dante_owner")
         placement_current = connection.execute(

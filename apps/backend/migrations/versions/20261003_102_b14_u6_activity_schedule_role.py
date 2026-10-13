@@ -20,11 +20,14 @@ def upgrade() -> None:
         sa.Column("presentation_order", sa.Integer(), nullable=False),
         sa.PrimaryKeyConstraint("schedule_ref", name="pk_activity_schedule_role"),
         sa.UniqueConstraint(
-            "activity_ref", "role_code", "presentation_order",
+            "activity_ref",
+            "role_code",
+            "presentation_order",
             name="uq_activity_schedule_role_owner_role_order",
         ),
         sa.CheckConstraint(
-            "role_code IN ('envelope','planned')", name="role",
+            "role_code IN ('envelope','planned')",
+            name="role",
         ),
         sa.CheckConstraint(
             "(role_code='envelope' AND presentation_order=0) OR "
@@ -32,11 +35,13 @@ def upgrade() -> None:
             name="order",
         ),
         sa.ForeignKeyConstraint(
-            ["schedule_ref"], ["dante.schedule.schedule_ref"],
+            ["schedule_ref"],
+            ["dante.schedule.schedule_ref"],
             name="fk_activity_schedule_role_schedule",
         ),
         sa.ForeignKeyConstraint(
-            ["activity_ref"], ["dante.activity_intention.activity_ref"],
+            ["activity_ref"],
+            ["dante.activity_intention.activity_ref"],
             name="fk_activity_schedule_role_activity",
         ),
         schema="dante",
@@ -117,8 +122,7 @@ $function$;
         )
         bind.exec_driver_sql(f"GRANT EXECUTE ON FUNCTION {signature} TO dante_runtime")
     bind.exec_driver_sql(
-        "REVOKE ALL ON TABLE dante.activity_schedule_role "
-        "FROM PUBLIC,dante_runtime,dante_migrator"
+        "REVOKE ALL ON TABLE dante.activity_schedule_role FROM PUBLIC,dante_runtime,dante_migrator"
     )
 
 

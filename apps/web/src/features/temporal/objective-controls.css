@@ -12,14 +12,14 @@
   display: grid;
   gap: 6px;
   padding: 8px;
-  border: 1px solid rgba(255,255,255,.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 9px;
-  background: rgba(255,255,255,.018);
+  background: rgba(255, 255, 255, 0.018);
 }
 
 .timeline-objective-controls__summary {
   display: grid;
-  grid-template-columns: minmax(0,1fr) auto auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 8px;
   font-size: 11px;
@@ -46,10 +46,10 @@
 .timeline-objective-controls select,
 .timeline-objective-controls input {
   min-height: 30px;
-  border: 1px solid rgba(255,255,255,.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 7px;
   color: inherit;
-  background: rgba(255,255,255,.025);
+  background: rgba(255, 255, 255, 0.025);
   font: inherit;
   font-size: 10px;
 }

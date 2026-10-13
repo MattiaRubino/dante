@@ -8,7 +8,10 @@ import {
   type SessionCaptureMode,
 } from './remote-session-capability-data-source';
 import { SessionSubjectControls } from './session-subject-controls';
-import { cachedActivitySessionCapability, defaultActivitySessionSource } from './activity-session-capability-cache';
+import {
+  cachedActivitySessionCapability,
+  defaultActivitySessionSource,
+} from './activity-session-capability-cache';
 
 export function ActivitySessionCardControls({
   activityRef,
@@ -40,8 +43,15 @@ export function ActivitySessionCardControls({
         setPolicyRevision((revision) => revision + 1);
       }
     };
-    window.addEventListener('dante:activity-session-capability-changed', changed);
-    return () => window.removeEventListener('dante:activity-session-capability-changed', changed);
+    window.addEventListener(
+      'dante:activity-session-capability-changed',
+      changed,
+    );
+    return () =>
+      window.removeEventListener(
+        'dante:activity-session-capability-changed',
+        changed,
+      );
   }, [activityRef]);
 
   useEffect(() => {
@@ -81,16 +91,18 @@ export function ActivitySessionCardControls({
     >
       {live ? (
         <>
-        <SessionSubjectControls
-          kind="activity"
-          subjectRef={activityRef}
-          label={label}
-          variant={variant === 'card' ? 'card' : 'detail'}
-          compactRuntime
-          interactive={interactive}
-          allowLive
-          {...(visibleSessionRefs === undefined ? {} : { visibleSessionRefs })}
-        />
+          <SessionSubjectControls
+            kind="activity"
+            subjectRef={activityRef}
+            label={label}
+            variant={variant === 'card' ? 'card' : 'detail'}
+            compactRuntime
+            interactive={interactive}
+            allowLive
+            {...(visibleSessionRefs === undefined
+              ? {}
+              : { visibleSessionRefs })}
+          />
         </>
       ) : null}
       {showPlanned ? (

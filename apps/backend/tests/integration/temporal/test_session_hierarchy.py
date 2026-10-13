@@ -41,78 +41,118 @@ async def test_main_pause_resume_end_are_atomic_and_internal_actions_not_inverse
         )
         activity = created.item.subject_native_ref
         async with runtime.session_factory() as session, session.begin():
-            refs = (await session.execute(text("""
+            refs = (
+                (
+                    await session.execute(
+                        text("""
                 SELECT schedule_ref FROM dante.get_self_activity_schedule_roles(
                     :actor,CAST(ARRAY[:activity] AS uuid[])
                 ) WHERE role_code='planned' ORDER BY presentation_order
-            """), {"actor": actor, "activity": activity})).scalars().all()
+            """),
+                        {"actor": actor, "activity": activity},
+                    )
+                )
+                .scalars()
+                .all()
+            )
         assert len(refs) == 2
         sessions = SessionApplication(runtime.session_factory)
         # No child starts independently of its generic Activity execution.
         with pytest.raises(SessionInputError):
             await sessions.start_planned(
-                self_person_ref=actor, activity_ref=activity,
-                schedule_ref=refs[0], operation_id="hierarchy:early-child",
+                self_person_ref=actor,
+                activity_ref=activity,
+                schedule_ref=refs[0],
+                operation_id="hierarchy:early-child",
             )
         main = await sessions.start(
-            self_person_ref=actor, subject_kind="activity",
-            subject_native_ref=activity, operation_id="hierarchy:main",
+            self_person_ref=actor,
+            subject_kind="activity",
+            subject_native_ref=activity,
+            operation_id="hierarchy:main",
         )
         first = await sessions.start_planned(
-            self_person_ref=actor, activity_ref=activity,
-            schedule_ref=refs[0], operation_id="hierarchy:first",
+            self_person_ref=actor,
+            activity_ref=activity,
+            schedule_ref=refs[0],
+            operation_id="hierarchy:first",
         )
         second = await sessions.start_planned(
-            self_person_ref=actor, activity_ref=activity,
-            schedule_ref=refs[1], operation_id="hierarchy:second",
+            self_person_ref=actor,
+            activity_ref=activity,
+            schedule_ref=refs[1],
+            operation_id="hierarchy:second",
         )
         # Pausing a child never pauses its main.
         child_pause = await sessions.pause(
-            self_person_ref=actor, session_ref=first.session_ref,
+            self_person_ref=actor,
+            session_ref=first.session_ref,
             expected_material_state_ref=first.timing_material_state_ref,
             operation_id="hierarchy:child-pause",
         )
-        assert not (await sessions.get(
-            self_person_ref=actor, session_ref=main.session_ref,
-        )).paused
+        assert not (
+            await sessions.get(
+                self_person_ref=actor,
+                session_ref=main.session_ref,
+            )
+        ).paused
 
         parent_pause = await sessions.pause(
-            self_person_ref=actor, session_ref=main.session_ref,
+            self_person_ref=actor,
+            session_ref=main.session_ref,
             expected_material_state_ref=main.timing_material_state_ref,
             operation_id="hierarchy:main-pause",
         )
         assert parent_pause.paused
-        assert (await sessions.get(
-            self_person_ref=actor, session_ref=first.session_ref,
-        )).paused
-        assert (await sessions.get(
-            self_person_ref=actor, session_ref=second.session_ref,
-        )).paused
+        assert (
+            await sessions.get(
+                self_person_ref=actor,
+                session_ref=first.session_ref,
+            )
+        ).paused
+        assert (
+            await sessions.get(
+                self_person_ref=actor,
+                session_ref=second.session_ref,
+            )
+        ).paused
         # A parent resume never resumes any child automatically.
         parent_resume = await sessions.resume(
-            self_person_ref=actor, session_ref=main.session_ref,
+            self_person_ref=actor,
+            session_ref=main.session_ref,
             expected_material_state_ref=parent_pause.timing_material_state_ref,
             operation_id="hierarchy:main-resume",
         )
         assert not parent_resume.paused
-        assert (await sessions.get(
-            self_person_ref=actor, session_ref=first.session_ref,
-        )).paused
-        assert (await sessions.get(
-            self_person_ref=actor, session_ref=second.session_ref,
-        )).paused
+        assert (
+            await sessions.get(
+                self_person_ref=actor,
+                session_ref=first.session_ref,
+            )
+        ).paused
+        assert (
+            await sessions.get(
+                self_person_ref=actor,
+                session_ref=second.session_ref,
+            )
+        ).paused
         child_resume = await sessions.resume(
-            self_person_ref=actor, session_ref=first.session_ref,
+            self_person_ref=actor,
+            session_ref=first.session_ref,
             expected_material_state_ref=child_pause.timing_material_state_ref,
             operation_id="hierarchy:child-resume",
         )
         assert not child_resume.paused
-        assert not (await sessions.get(
-            self_person_ref=actor, session_ref=main.session_ref,
-        )).paused
+        assert not (
+            await sessions.get(
+                self_person_ref=actor,
+                session_ref=main.session_ref,
+            )
+        ).paused
         # Main stop closes both running and paused child executions.
         ended = await sessions.end(
-            self_person_ref=actor, session_ref=main.session_ref,
+            self_person_ref=actor,
+            session_ref=main.session_ref,
             expected_material_state_ref=parent_resume.timing_material_state_ref,
             operation_id="hierarchy:main-stop",
         )
@@ -121,7 +161,8 @@ async def test_main_pause_resume_end_are_atomic_and_internal_actions_not_inverse
             assert not (await sessions.get(self_person_ref=actor, session_ref=ref)).open
         # Accepted replay never invents additional attempts or recomputes cascade.
         replay = await sessions.end(
-            self_person_ref=actor, session_ref=main.session_ref,
+            self_person_ref=actor,
+            session_ref=main.session_ref,
             expected_material_state_ref=parent_resume.timing_material_state_ref,
             operation_id="hierarchy:main-stop",
         )
@@ -129,11 +170,15 @@ async def test_main_pause_resume_end_are_atomic_and_internal_actions_not_inverse
         assert replay.session_ref == main.session_ref
 
         request = SimpleNamespace(
-            app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime)))
+            app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))
+        )
         context = SimpleNamespace(self_person_ref=actor, effective_zone_id="UTC")
         result = await get_session_panel(
-            context, request, Response(),
-            now - timedelta(days=1), now + timedelta(days=1),
+            context,
+            request,
+            Response(),
+            now - timedelta(days=1),
+            now + timedelta(days=1),
         )
         assert len(result.visuals) == 3
         assert all(r.ended_at is not None for r in result.visuals)
@@ -141,9 +186,12 @@ async def test_main_pause_resume_end_are_atomic_and_internal_actions_not_inverse
         assert result.groups == []  # all the owned real executions were ended
         # Runtime role has no direct Actual-table grant; inspect under
         # dedicated test migrator/owner identity, not application credentials.
-        with psycopg.connect(**migrated_database.connection_kwargs(
-            "dante_migrator", migrated_database.cluster.migrator_password,
-        )) as connection:
+        with psycopg.connect(
+            **migrated_database.connection_kwargs(
+                "dante_migrator",
+                migrated_database.cluster.migrator_password,
+            )
+        ) as connection:
             connection.execute("SET ROLE dante_owner")
             assert connection.execute(
                 "SELECT count(*) FROM dante.actual WHERE subject_native_ref=%s",
@@ -162,55 +210,69 @@ async def test_internal_resume_is_blocked_while_main_is_paused(
     now = datetime.now(UTC)
     try:
         created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
-            self_person_ref=actor, operation_id="paused-main:create",
+            self_person_ref=actor,
+            operation_id="paused-main:create",
             title="Studio",
             placement=AbsoluteIntervalPlacement(
-                starts_at=now - timedelta(minutes=5),
-                ends_at=now + timedelta(hours=1)),
-            planned_slices=(None,), planned_slice_names=("Ripasso",),
+                starts_at=now - timedelta(minutes=5), ends_at=now + timedelta(hours=1)
+            ),
+            planned_slices=(None,),
+            planned_slice_names=("Ripasso",),
             session_capture_mode="live",
         )
         activity = created.item.subject_native_ref
         async with runtime.session_factory() as session, session.begin():
-            planned = await session.scalar(text("""
+            planned = await session.scalar(
+                text("""
                 SELECT schedule_ref FROM dante.get_self_activity_schedule_roles(
                     :actor,CAST(ARRAY[:activity] AS uuid[])
                 ) WHERE role_code='planned'
-            """), {"actor": actor, "activity": activity})
+            """),
+                {"actor": actor, "activity": activity},
+            )
         sessions = SessionApplication(runtime.session_factory)
         main = await sessions.start(
-            self_person_ref=actor, subject_kind="activity",
-            subject_native_ref=activity, operation_id="paused-main:main",
+            self_person_ref=actor,
+            subject_kind="activity",
+            subject_native_ref=activity,
+            operation_id="paused-main:main",
         )
         child = await sessions.start_planned(
-            self_person_ref=actor, activity_ref=activity,
-            schedule_ref=planned, operation_id="paused-main:child",
+            self_person_ref=actor,
+            activity_ref=activity,
+            schedule_ref=planned,
+            operation_id="paused-main:child",
         )
         paused_main = await sessions.pause(
-            self_person_ref=actor, session_ref=main.session_ref,
+            self_person_ref=actor,
+            session_ref=main.session_ref,
             expected_material_state_ref=main.timing_material_state_ref,
             operation_id="paused-main:pause",
         )
         paused_child = await sessions.get(
-            self_person_ref=actor, session_ref=child.session_ref,
+            self_person_ref=actor,
+            session_ref=child.session_ref,
         )
         assert paused_child.paused
         with pytest.raises(SessionInputError):
             await sessions.resume(
-                self_person_ref=actor, session_ref=child.session_ref,
+                self_person_ref=actor,
+                session_ref=child.session_ref,
                 expected_material_state_ref=paused_child.timing_material_state_ref,
                 operation_id="paused-main:child-resume",
             )
         # Stop while the main and its internal Session are paused is
         # accepted: child pause ends at Stop, without an artificial resume.
         ended = await sessions.end(
-            self_person_ref=actor, session_ref=main.session_ref,
+            self_person_ref=actor,
+            session_ref=main.session_ref,
             expected_material_state_ref=paused_main.timing_material_state_ref,
             operation_id="paused-main:stop",
         )
         assert not ended.open
         child_ended = await sessions.get(
-            self_person_ref=actor, session_ref=child.session_ref,
+            self_person_ref=actor,
+            session_ref=child.session_ref,
         )
         assert not child_ended.open
         assert not child_ended.paused

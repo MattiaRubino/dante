@@ -58,7 +58,8 @@ async def test_panel_untimed_start_pause_resume_stop_owner_isolation_and_no_actu
         assert other_panel.groups == []
         sessions = SessionApplication(runtime.session_factory)
         main = await sessions.start(
-            self_person_ref=actor, subject_kind="activity",
+            self_person_ref=actor,
+            subject_kind="activity",
             subject_native_ref=created.item.subject_native_ref,
             operation_id="panel:main:start",
         )
@@ -103,12 +104,14 @@ async def test_panel_untimed_start_pause_resume_stop_owner_isolation_and_no_actu
         panel = await get_session_panel(context, request, Response())
         assert len(panel.groups) == 1  # main Session remains open
         assert not any(
-            row.planned_schedule_ref is not None
-            for group in panel.groups for row in group.rows
+            row.planned_schedule_ref is not None for group in panel.groups for row in group.rows
         )  # finished child no longer masquerades as an unstarted row
-        with psycopg.connect(**migrated_database.connection_kwargs(
-            "dante_migrator", migrated_database.cluster.migrator_password,
-        )) as connection:
+        with psycopg.connect(
+            **migrated_database.connection_kwargs(
+                "dante_migrator",
+                migrated_database.cluster.migrator_password,
+            )
+        ) as connection:
             connection.execute("SET ROLE dante_owner")
             assert connection.execute(
                 "SELECT count(*) FROM dante.schedule_current_placement WHERE scoped_owner_ref=%s",
@@ -175,18 +178,17 @@ async def test_independent_untimed_planned_session_without_main_capture(
     """The optional generic Activity clock stays disabled; named slice can run."""
     actor = _seed_self(migrated_database)
     runtime = create_database_runtime(migrated_database.runtime_settings())
-    request = SimpleNamespace(
-        app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))
-    )
+    request = SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime)))
     ctx = SimpleNamespace(self_person_ref=actor, effective_zone_id="UTC")
     now = datetime.now(UTC)
     try:
         created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
-            self_person_ref=actor, operation_id="panel:independent:create",
+            self_person_ref=actor,
+            operation_id="panel:independent:create",
             title="Studio senza cronometro principale",
             placement=AbsoluteIntervalPlacement(
-                starts_at=now-timedelta(minutes=15),
-                ends_at=now+timedelta(minutes=45),
+                starts_at=now - timedelta(minutes=15),
+                ends_at=now + timedelta(minutes=45),
             ),
             planned_slices=(None,),
             planned_slice_names=("Ripasso indipendente",),
@@ -202,11 +204,14 @@ async def test_independent_untimed_planned_session_without_main_capture(
         sessions = SessionApplication(runtime.session_factory)
         with pytest.raises(SessionCaptureDisabledError):
             await sessions.start(
-                self_person_ref=actor, subject_kind="activity",
-                subject_native_ref=activity, operation_id="panel:independent:generic",
+                self_person_ref=actor,
+                subject_kind="activity",
+                subject_native_ref=activity,
+                operation_id="panel:independent:generic",
             )
         started = await sessions.start_planned(
-            self_person_ref=actor, activity_ref=activity,
+            self_person_ref=actor,
+            activity_ref=activity,
             schedule_ref=row.planned_schedule_ref,
             operation_id="panel:independent:planned",
         )
@@ -214,7 +219,8 @@ async def test_independent_untimed_planned_session_without_main_capture(
         live = await get_session_panel(ctx, request, Response())
         assert live.groups[0].rows[0].execution.session_ref == started.session_ref
         ended = await sessions.end(
-            self_person_ref=actor, session_ref=started.session_ref,
+            self_person_ref=actor,
+            session_ref=started.session_ref,
             expected_material_state_ref=started.timing_material_state_ref,
             operation_id="panel:independent:end",
         )

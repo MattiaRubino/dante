@@ -8,7 +8,10 @@ import {
 
 const REMINDER_LEADS = [0, 5, 15, 30, 60, 120, 1440] as const;
 
-export function ScheduleReminderControls({ scheduleRef, hideWhenAbsent = false }: Readonly<{ scheduleRef: string; hideWhenAbsent?: boolean }>) {
+export function ScheduleReminderControls({
+  scheduleRef,
+  hideWhenAbsent = false,
+}: Readonly<{ scheduleRef: string; hideWhenAbsent?: boolean }>) {
   const { t } = useTranslation('common');
   const [source] = useState(() => createRemoteScheduleReminderDataSource());
   const [current, setCurrent] = useState<ScheduleReminderView | null>(null);
@@ -19,7 +22,10 @@ export function ScheduleReminderControls({ scheduleRef, hideWhenAbsent = false }
   const [error, setError] = useState(false);
   const [readFailed, setReadFailed] = useState(false);
   const [reload, setReload] = useState(0);
-  const attemptRef = useRef<{ fingerprint: string; operationId: string } | null>(null);
+  const attemptRef = useRef<{
+    fingerprint: string;
+    operationId: string;
+  } | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -28,28 +34,40 @@ export function ScheduleReminderControls({ scheduleRef, hideWhenAbsent = false }
     setError(false);
     setReadFailed(false);
     attemptRef.current = null;
-    void source.get(scheduleRef).then((value) => {
-      if (!active) return;
-      setCurrent(value);
-      setEnabled(value?.enabled ?? true);
-      setLeadMinutes(value?.leadMinutes ?? 15);
-      setLoading(false);
-    }).catch(() => {
-      if (active) {
-        setError(true);
-        setReadFailed(true);
+    void source
+      .get(scheduleRef)
+      .then((value) => {
+        if (!active) return;
+        setCurrent(value);
+        setEnabled(value?.enabled ?? true);
+        setLeadMinutes(value?.leadMinutes ?? 15);
         setLoading(false);
-      }
-    });
-    return () => { active = false; };
+      })
+      .catch(() => {
+        if (active) {
+          setError(true);
+          setReadFailed(true);
+          setLoading(false);
+        }
+      });
+    return () => {
+      active = false;
+    };
   }, [scheduleRef, source, reload]);
 
   const save = async () => {
     if (pending || loading || readFailed) return;
-    const fingerprint = JSON.stringify([scheduleRef, current?.materialStateRef ?? null, enabled, leadMinutes]);
+    const fingerprint = JSON.stringify([
+      scheduleRef,
+      current?.materialStateRef ?? null,
+      enabled,
+      leadMinutes,
+    ]);
     const prior = attemptRef.current;
-    const operationId = prior?.fingerprint === fingerprint
-      ? prior.operationId : crypto.randomUUID();
+    const operationId =
+      prior?.fingerprint === fingerprint
+        ? prior.operationId
+        : crypto.randomUUID();
     attemptRef.current = { fingerprint, operationId };
     setPending(true);
     setError(false);
@@ -69,40 +87,71 @@ export function ScheduleReminderControls({ scheduleRef, hideWhenAbsent = false }
     }
   };
 
-  if (hideWhenAbsent && (loading || (!readFailed && current === null))) return null;
+  if (hideWhenAbsent && (loading || (!readFailed && current === null)))
+    return null;
 
   return (
-    <div className="timeline-reminder-controls" data-schedule-reminder={scheduleRef}>
+    <div
+      className="timeline-reminder-controls"
+      data-schedule-reminder={scheduleRef}
+    >
       <strong>{t(($) => $.common.home.timeline.detail.reminder.title)}</strong>
-      {loading ? <span>{t(($) => $.common.home.timeline.detail.reminder.loading)}</span> : readFailed ? (
+      {loading ? (
+        <span>{t(($) => $.common.home.timeline.detail.reminder.loading)}</span>
+      ) : readFailed ? (
         <button type="button" onClick={() => setReload((value) => value + 1)}>
           {t(($) => $.common.home.timeline.detail.reminder.retryRead)}
         </button>
       ) : (
         <>
           <label>
-            <input type="checkbox" checked={enabled} disabled={pending}
-              onChange={(event) => setEnabled(event.currentTarget.checked)} />
+            <input
+              type="checkbox"
+              checked={enabled}
+              disabled={pending}
+              onChange={(event) => setEnabled(event.currentTarget.checked)}
+            />
             {t(($) => $.common.home.timeline.detail.reminder.enabled)}
           </label>
           <label>
             {t(($) => $.common.home.timeline.detail.reminder.lead)}
-            <select value={leadMinutes} disabled={pending}
-              onChange={(event) => setLeadMinutes(Number(event.currentTarget.value))}>
-              {[...new Set<number>([...REMINDER_LEADS, leadMinutes])].sort((a, b) => a - b)
-                .map((minutes) => <option key={minutes} value={minutes}>{minutes}</option>)}
+            <select
+              value={leadMinutes}
+              disabled={pending}
+              onChange={(event) =>
+                setLeadMinutes(Number(event.currentTarget.value))
+              }
+            >
+              {[...new Set<number>([...REMINDER_LEADS, leadMinutes])]
+                .sort((a, b) => a - b)
+                .map((minutes) => (
+                  <option key={minutes} value={minutes}>
+                    {minutes}
+                  </option>
+                ))}
             </select>
           </label>
           <button type="button" disabled={pending} onClick={() => void save()}>
             {t(($) => $.common.home.timeline.detail.reminder.save)}
           </button>
-          {current ? <span role="status">
-            {t(($) => $.common.home.timeline.detail.reminder[current.disposition])}
-            {current.dueAt ? ` · ${new Date(current.dueAt).toLocaleString()}` : ''}
-          </span> : null}
+          {current ? (
+            <span role="status">
+              {t(
+                ($) =>
+                  $.common.home.timeline.detail.reminder[current.disposition],
+              )}
+              {current.dueAt
+                ? ` · ${new Date(current.dueAt).toLocaleString()}`
+                : ''}
+            </span>
+          ) : null}
         </>
       )}
-      {error ? <span role="alert">{t(($) => $.common.home.timeline.detail.reminder.error)}</span> : null}
+      {error ? (
+        <span role="alert">
+          {t(($) => $.common.home.timeline.detail.reminder.error)}
+        </span>
+      ) : null}
     </div>
   );
 }

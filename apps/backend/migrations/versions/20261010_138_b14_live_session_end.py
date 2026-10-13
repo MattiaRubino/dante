@@ -29,9 +29,7 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    raise RuntimeError(
-        "20261010_138 is forward-only: preserve paused Session END history"
-    )
+    raise RuntimeError("20261010_138 is forward-only: preserve paused Session END history")
 
 
 _FIX_GROUP_MATERIAL_REFS = r"""

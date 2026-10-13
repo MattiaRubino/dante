@@ -1,7 +1,13 @@
 // @vitest-environment jsdom
 
 import { Temporal } from '@dante/time';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { i18n } from '../../../../bootstrap/i18n';
@@ -72,11 +78,15 @@ describe('TimelinePlanningTrayB01 unified product tray', () => {
       </>,
     );
 
-    const trigger = await screen.findByRole('button', { name: 'Apri elementi già creati' });
+    const trigger = await screen.findByRole('button', {
+      name: 'Apri elementi già creati',
+    });
     await waitFor(() => expect(source.listItems).toHaveBeenCalled());
     fireEvent.click(trigger);
 
-    expect(await screen.findByRole('heading', { name: 'Elementi già creati' })).toBeTruthy();
+    expect(
+      await screen.findByRole('heading', { name: 'Elementi già creati' }),
+    ).toBeTruthy();
     expect(screen.getByText('Preparare documenti')).toBeTruthy();
     expect(screen.getByText('Cena da organizzare')).toBeTruthy();
     expect(screen.getByText('Visita medica')).toBeTruthy();
@@ -97,13 +107,24 @@ describe('TimelinePlanningTrayB01 unified product tray', () => {
       defaultDate: Temporal.PlainDate.from('2026-10-02'),
       source,
     };
-    const view = render(<><div className="dante-timeline-actions" />
-      <TimelinePlanningTrayB01 {...props} openRequest={0} /></>);
-    expect(screen.queryByRole('button', { name: 'Apri elementi già creati' })).toBeNull();
-    view.rerender(<><div className="dante-timeline-actions" />
-      <TimelinePlanningTrayB01 {...props} openRequest={1} /></>);
-    expect(await screen.findByRole('heading', { name: 'Elementi già creati' })).toBeTruthy();
+    const view = render(
+      <>
+        <div className="dante-timeline-actions" />
+        <TimelinePlanningTrayB01 {...props} openRequest={0} />
+      </>,
+    );
+    expect(
+      screen.queryByRole('button', { name: 'Apri elementi già creati' }),
+    ).toBeNull();
+    view.rerender(
+      <>
+        <div className="dante-timeline-actions" />
+        <TimelinePlanningTrayB01 {...props} openRequest={1} />
+      </>,
+    );
+    expect(
+      await screen.findByRole('heading', { name: 'Elementi già creati' }),
+    ).toBeTruthy();
     expect(screen.getByText(/non sono Bozze/)).toBeTruthy();
   });
-
 });

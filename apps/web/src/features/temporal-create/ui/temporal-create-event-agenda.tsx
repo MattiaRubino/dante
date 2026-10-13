@@ -46,7 +46,10 @@ function ScalettaRow({
       data-temporal-create-agenda-part
       role="listitem"
     >
-      <span className="temporal-create-event-agenda__position" aria-hidden="true">
+      <span
+        className="temporal-create-event-agenda__position"
+        aria-hidden="true"
+      >
         {index + 1}
       </span>
       <span
@@ -181,7 +184,9 @@ export function TemporalCreateEventAgenda({
           className="temporal-create-event-agenda__add"
           type="button"
           onClick={addPart}
-          aria-label={italian ? 'Aggiungi punto alla scaletta' : 'Add run of show item'}
+          aria-label={
+            italian ? 'Aggiungi punto alla scaletta' : 'Add run of show item'
+          }
         >
           <span aria-hidden="true">＋</span>
           {italian ? 'Scaletta' : 'Run of show'}

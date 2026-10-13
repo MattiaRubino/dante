@@ -68,11 +68,17 @@ class PlacementLockApplication:
         try:
             async with self._session_factory() as session, session.begin():
                 row = (
-                    await session.execute(
-                        text("SELECT * FROM dante.get_self_schedule_placement_lock(:actor,:schedule)"),
-                        {"actor": self_person_ref, "schedule": schedule_ref},
+                    (
+                        await session.execute(
+                            text(
+                                "SELECT * FROM dante.get_self_schedule_placement_lock(:actor,:schedule)"
+                            ),
+                            {"actor": self_person_ref, "schedule": schedule_ref},
+                        )
                     )
-                ).mappings().one_or_none()
+                    .mappings()
+                    .one_or_none()
+                )
         except SQLAlchemyError as exc:
             raise PlacementLockPersistenceError() from exc
         if row is None:
@@ -80,25 +86,33 @@ class PlacementLockApplication:
         return _view(row)
 
     async def set(
-        self, *, self_person_ref: NativeRef, schedule_ref: ScopedRecordRef,
-        locked: bool, expected_revision: int | None,
+        self,
+        *,
+        self_person_ref: NativeRef,
+        schedule_ref: ScopedRecordRef,
+        locked: bool,
+        expected_revision: int | None,
     ) -> PlacementLockView:
         try:
             async with self._session_factory() as session, session.begin():
                 row = (
-                    await session.execute(
-                        text(
-                            "SELECT * FROM dante.set_self_schedule_placement_lock("
-                            ":actor,:schedule,:locked,:expected_revision)"
-                        ),
-                        {
-                            "actor": self_person_ref,
-                            "schedule": schedule_ref,
-                            "locked": locked,
-                            "expected_revision": expected_revision,
-                        },
+                    (
+                        await session.execute(
+                            text(
+                                "SELECT * FROM dante.set_self_schedule_placement_lock("
+                                ":actor,:schedule,:locked,:expected_revision)"
+                            ),
+                            {
+                                "actor": self_person_ref,
+                                "schedule": schedule_ref,
+                                "locked": locked,
+                                "expected_revision": expected_revision,
+                            },
+                        )
                     )
-                ).mappings().one()
+                    .mappings()
+                    .one()
+                )
         except DBAPIError as exc:
             raise _error(exc) from exc
         except SQLAlchemyError as exc:

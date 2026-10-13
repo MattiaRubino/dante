@@ -53,14 +53,18 @@ class OccurrenceEditInventoryApplication:
             async with self._session_factory() as session, session.begin():
                 captured_at = await session.scalar(text("SELECT transaction_timestamp()"))
                 rows = (
-                    await session.execute(
-                        text(
-                            "SELECT * FROM dante.list_self_recurrence_edit_occurrences("
-                            ":actor,:selected)"
-                        ),
-                        {"actor": self_person_ref, "selected": selected_occurrence_ref},
+                    (
+                        await session.execute(
+                            text(
+                                "SELECT * FROM dante.list_self_recurrence_edit_occurrences("
+                                ":actor,:selected)"
+                            ),
+                            {"actor": self_person_ref, "selected": selected_occurrence_ref},
+                        )
                     )
-                ).mappings().all()
+                    .mappings()
+                    .all()
+                )
             items = tuple(_occurrence(row) for row in rows)
             if not items:
                 raise OccurrenceSourceNotFoundError()

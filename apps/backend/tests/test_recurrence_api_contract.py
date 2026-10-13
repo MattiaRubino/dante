@@ -15,6 +15,8 @@ from dante.modules.temporal.recurrence_api import CalendarOrdinalWeekday, Calend
         (CalendarYearMonthDay, {"month_number": 1, "month_day": 0}),
     ],
 )
-def test_calendar_positional_values_reject_zero(model: type[BaseModel], payload: dict[str, int]) -> None:
+def test_calendar_positional_values_reject_zero(
+    model: type[BaseModel], payload: dict[str, int]
+) -> None:
     with pytest.raises(ValidationError, match="must not be zero"):
         model(**payload)

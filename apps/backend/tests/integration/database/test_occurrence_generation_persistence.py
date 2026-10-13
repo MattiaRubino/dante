@@ -413,7 +413,8 @@ def test_m6_dictionary_reconciles_final_structural_surface(
     with _admin_connection(database) as connection:
         catalog_names = {
             "triggers": {
-                str(row[0]) for row in connection.execute(
+                str(row[0])
+                for row in connection.execute(
                     """
                     SELECT trigger.tgname
                       FROM pg_trigger AS trigger
@@ -424,13 +425,15 @@ def test_m6_dictionary_reconciles_final_structural_surface(
                 )
             },
             "indexes": {
-                str(row[0]) for row in connection.execute(
+                str(row[0])
+                for row in connection.execute(
                     "SELECT indexname FROM pg_indexes WHERE schemaname='dante' "
                     "AND tablename<>'alembic_version'"
                 )
             },
             "foreign_keys": {
-                str(row[0]) for row in connection.execute(
+                str(row[0])
+                for row in connection.execute(
                     """
                     SELECT con.conname
                       FROM pg_constraint AS con
@@ -441,7 +444,8 @@ def test_m6_dictionary_reconciles_final_structural_surface(
                 )
             },
             "check_constraints": {
-                str(row[0]) for row in connection.execute(
+                str(row[0])
+                for row in connection.execute(
                     """
                     SELECT con.conname
                       FROM pg_constraint AS con

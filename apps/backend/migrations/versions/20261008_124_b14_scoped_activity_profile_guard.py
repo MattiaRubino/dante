@@ -23,23 +23,19 @@ def upgrade() -> None:
     bind = op.get_bind()
     bind.execute(sa.text(_READ_ACTIVITY_PROFILE))
     bind.exec_driver_sql(
-        "ALTER FUNCTION dante.get_self_activity_profile(uuid,uuid) "
-        "OWNER TO dante_owner"
+        "ALTER FUNCTION dante.get_self_activity_profile(uuid,uuid) OWNER TO dante_owner"
     )
     bind.exec_driver_sql(
         "REVOKE ALL ON FUNCTION dante.get_self_activity_profile(uuid,uuid) "
         "FROM PUBLIC,dante_runtime,dante_migrator"
     )
     bind.exec_driver_sql(
-        "GRANT EXECUTE ON FUNCTION dante.get_self_activity_profile(uuid,uuid) "
-        "TO dante_runtime"
+        "GRANT EXECUTE ON FUNCTION dante.get_self_activity_profile(uuid,uuid) TO dante_runtime"
     )
 
 
 def downgrade() -> None:
-    raise RuntimeError(
-        "20261008_124 is forward-only: one-off Activity access must remain safe"
-    )
+    raise RuntimeError("20261008_124 is forward-only: one-off Activity access must remain safe")
 
 
 _READ_ACTIVITY_PROFILE = r"""

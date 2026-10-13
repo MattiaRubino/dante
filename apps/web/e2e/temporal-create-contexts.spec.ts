@@ -28,8 +28,10 @@ test('Create stages Life Area color and keeps the 45-minute interval without fab
   await expect(area).toHaveValue('Studio');
   const color = dialog.getByRole('button', { name: 'Colore Life Area' });
   await color.click();
-  await page.getByRole('dialog', { name: 'Scegli colore' })
-    .getByRole('button', { name: 'Verde mela' }).click();
+  await page
+    .getByRole('dialog', { name: 'Scegli colore' })
+    .getByRole('button', { name: 'Verde mela' })
+    .click();
   await expect(color.locator('span')).toHaveCSS(
     'background-color',
     'rgb(124, 179, 66)',
@@ -44,8 +46,9 @@ test('Create stages Life Area color and keeps the 45-minute interval without fab
     .filter({ hasText: 'Sessione studio' });
   await expect(card).toBeVisible();
   // Editing start time must not silently roll the end to tomorrow.
-  await expect(card.locator('.timeline-event-card__time'))
-    .toContainText('15:00–15:45');
+  await expect(card.locator('.timeline-event-card__time')).toContainText(
+    '15:00–15:45',
+  );
   // The fixture runtime has no PostgreSQL Life Area catalog. Canonical
   // Life Area persistence is asserted by authenticated U2 E2E; a preview-only
   // typed label must not masquerade as an accepted persisted group here.

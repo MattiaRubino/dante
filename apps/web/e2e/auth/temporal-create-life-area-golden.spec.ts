@@ -78,7 +78,9 @@ async function openHome(page: Page): Promise<void> {
   const timeline = waitForTimelineRead(page);
   await page.goto('/home');
   expect((await timeline).status()).toBe(200);
-  await expect(page.locator('[data-temporal-read-state="ready"]')).toBeVisible();
+  await expect(
+    page.locator('[data-temporal-read-state="ready"]'),
+  ).toBeVisible();
 }
 
 async function openCreate(page: Page, kind: 'activity' | 'event' = 'activity') {
@@ -177,7 +179,9 @@ async function expectTimedCardColor(
   lifeAreaName: string | null,
   colorCode: string,
 ): Promise<void> {
-  const matches = page.locator('.timeline-event-card').filter({ hasText: title });
+  const matches = page
+    .locator('.timeline-event-card')
+    .filter({ hasText: title });
   await expect(matches.first()).toBeVisible();
   const card = matches.first();
   if (lifeAreaName === null) {
@@ -257,10 +261,15 @@ test.describe('Temporal Create Life Area golden gate', () => {
           response.request().method() === 'POST',
         { timeout: E2E_RESPONSE_TIMEOUT_MS },
       );
-      await dialog.getByRole('button', { name: 'Aggiungi', exact: true }).click();
+      await dialog
+        .getByRole('button', { name: 'Aggiungi', exact: true })
+        .click();
       const activityResponse = await activityResponsePromise;
       expect(activityResponse.status()).toBe(201);
-      const activity = (await activityResponse.json()) as Record<string, unknown>;
+      const activity = (await activityResponse.json()) as Record<
+        string,
+        unknown
+      >;
       const activityRef = uuidField(activity, 'activity_ref');
       const lifeAreaRef = uuidField(activity, 'life_area_ref');
 
@@ -268,7 +277,9 @@ test.describe('Temporal Create Life Area golden gate', () => {
         page,
         '/api/v1/temporal/life-areas',
       );
-      const area = areas.find((candidate) => candidate.life_area_ref === lifeAreaRef);
+      const area = areas.find(
+        (candidate) => candidate.life_area_ref === lifeAreaRef,
+      );
       expect(area).toMatchObject({
         name: areaName,
         color_code: BLUE,
@@ -303,7 +314,9 @@ test.describe('Temporal Create Life Area golden gate', () => {
           response.request().method() === 'POST',
         { timeout: E2E_RESPONSE_TIMEOUT_MS },
       );
-      await dialog.getByRole('button', { name: 'Aggiungi', exact: true }).click();
+      await dialog
+        .getByRole('button', { name: 'Aggiungi', exact: true })
+        .click();
       const eventResponse = await eventResponsePromise;
       expect(eventResponse.status()).toBe(201);
       const event = (await eventResponse.json()) as Record<string, unknown>;
@@ -336,11 +349,15 @@ test.describe('Temporal Create Life Area golden gate', () => {
           response.request().method() === 'POST',
         { timeout: E2E_RESPONSE_TIMEOUT_MS },
       );
-      await dialog.getByRole('button', { name: 'Aggiungi', exact: true }).click();
+      await dialog
+        .getByRole('button', { name: 'Aggiungi', exact: true })
+        .click();
       const noAreaActivityResponse = await noAreaActivityResponsePromise;
       expect(noAreaActivityResponse.status()).toBe(201);
-      const noAreaActivity =
-        (await noAreaActivityResponse.json()) as Record<string, unknown>;
+      const noAreaActivity = (await noAreaActivityResponse.json()) as Record<
+        string,
+        unknown
+      >;
       const noAreaActivityRef = uuidField(noAreaActivity, 'activity_ref');
       expect(noAreaActivity.life_area_ref ?? null).toBeNull();
 
@@ -356,11 +373,15 @@ test.describe('Temporal Create Life Area golden gate', () => {
           response.request().method() === 'POST',
         { timeout: E2E_RESPONSE_TIMEOUT_MS },
       );
-      await dialog.getByRole('button', { name: 'Aggiungi', exact: true }).click();
+      await dialog
+        .getByRole('button', { name: 'Aggiungi', exact: true })
+        .click();
       const noAreaEventResponse = await noAreaEventResponsePromise;
       expect(noAreaEventResponse.status()).toBe(201);
-      const noAreaEvent =
-        (await noAreaEventResponse.json()) as Record<string, unknown>;
+      const noAreaEvent = (await noAreaEventResponse.json()) as Record<
+        string,
+        unknown
+      >;
       const noAreaEventRef = uuidField(noAreaEvent, 'event_ref');
       expect(noAreaEvent.life_area_ref ?? null).toBeNull();
 
@@ -450,7 +471,9 @@ test.describe('Temporal Create Life Area golden gate', () => {
           response.request().method() === 'POST',
         { timeout: E2E_RESPONSE_TIMEOUT_MS },
       );
-      await dialog.getByRole('button', { name: 'Aggiungi', exact: true }).click();
+      await dialog
+        .getByRole('button', { name: 'Aggiungi', exact: true })
+        .click();
       const routineResponse = await routineResponsePromise;
       expect(routineResponse.ok()).toBe(true);
       const routine = (await routineResponse.json()) as Record<string, unknown>;
@@ -497,11 +520,15 @@ test.describe('Temporal Create Life Area golden gate', () => {
           response.request().method() === 'POST',
         { timeout: E2E_RESPONSE_TIMEOUT_MS },
       );
-      await dialog.getByRole('button', { name: 'Aggiungi', exact: true }).click();
+      await dialog
+        .getByRole('button', { name: 'Aggiungi', exact: true })
+        .click();
       const recurringEventResponse = await recurringEventResponsePromise;
       expect(recurringEventResponse.ok()).toBe(true);
-      const recurringEvent =
-        (await recurringEventResponse.json()) as Record<string, unknown>;
+      const recurringEvent = (await recurringEventResponse.json()) as Record<
+        string,
+        unknown
+      >;
       const recurringEventRef = uuidField(recurringEvent, 'source_ref');
 
       const assignments = await readJson<AssignmentRow[]>(
@@ -531,11 +558,15 @@ test.describe('Temporal Create Life Area golden gate', () => {
           response.request().method() === 'POST',
         { timeout: E2E_RESPONSE_TIMEOUT_MS },
       );
-      await dialog.getByRole('button', { name: 'Aggiungi', exact: true }).click();
+      await dialog
+        .getByRole('button', { name: 'Aggiungi', exact: true })
+        .click();
       const noAreaRoutineResponse = await noAreaRoutineResponsePromise;
       expect(noAreaRoutineResponse.ok()).toBe(true);
-      const noAreaRoutine =
-        (await noAreaRoutineResponse.json()) as Record<string, unknown>;
+      const noAreaRoutine = (await noAreaRoutineResponse.json()) as Record<
+        string,
+        unknown
+      >;
       const noAreaRoutineRef = uuidField(noAreaRoutine, 'source_ref');
 
       const routinesAfterNoArea = await readJson<RoutineRow[]>(
@@ -570,11 +601,15 @@ test.describe('Temporal Create Life Area golden gate', () => {
           response.request().method() === 'POST',
         { timeout: E2E_RESPONSE_TIMEOUT_MS },
       );
-      await dialog.getByRole('button', { name: 'Aggiungi', exact: true }).click();
+      await dialog
+        .getByRole('button', { name: 'Aggiungi', exact: true })
+        .click();
       const noAreaEventResponse = await noAreaEventResponsePromise;
       expect(noAreaEventResponse.ok()).toBe(true);
-      const noAreaEvent =
-        (await noAreaEventResponse.json()) as Record<string, unknown>;
+      const noAreaEvent = (await noAreaEventResponse.json()) as Record<
+        string,
+        unknown
+      >;
       const noAreaEventRef = uuidField(noAreaEvent, 'source_ref');
 
       const finalAssignments = await readJson<AssignmentRow[]>(

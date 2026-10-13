@@ -102,7 +102,8 @@ function requestedOccurrencePlacement(
     return null;
   }
 
-  const startsLocalAt = Temporal.PlainDate.from(dateKey).toPlainDateTime(startTime);
+  const startsLocalAt =
+    Temporal.PlainDate.from(dateKey).toPlainDateTime(startTime);
   return Object.freeze({
     kind: 'floating-local-interval' as const,
     startsLocalAt,
@@ -122,9 +123,9 @@ export function TimelineAllDayLane({
     () => createRemoteTemporalOccurrenceScheduleDataSource(),
     [],
   );
-  const [pendingOccurrenceRef, setPendingOccurrenceRef] = useState<string | null>(
-    null,
-  );
+  const [pendingOccurrenceRef, setPendingOccurrenceRef] = useState<
+    string | null
+  >(null);
   const visibleItems = useMemo(
     () => timelineAllDayItemsForVisibleDate(items, filters, dateKey),
     [dateKey, filters, items],
@@ -210,9 +211,7 @@ export function TimelineAllDayLane({
               : group?.itemColorCodes?.[organizationKey]);
           const itemStyle: CSSProperties & {
             '--timeline-group-color'?: string;
-          } = itemColorCode
-            ? { '--timeline-group-color': itemColorCode }
-            : {};
+          } = itemColorCode ? { '--timeline-group-color': itemColorCode } : {};
           const position = timelineAllDayRangePosition(item, dateKey);
           const startsHere = position === 'single' || position === 'start';
           const endsHere = position === 'single' || position === 'end';

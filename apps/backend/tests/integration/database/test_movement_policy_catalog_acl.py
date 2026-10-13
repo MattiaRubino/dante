@@ -50,9 +50,7 @@ def _admin(database: Any) -> psycopg.Connection[Any]:
 
 
 @pytest.mark.postgres
-def test_b04_d_revision_and_topology(
-    provisioned_database: Any, alembic_config: Config
-) -> None:
+def test_b04_d_revision_and_topology(provisioned_database: Any, alembic_config: Config) -> None:
     # Preserve the immutable B04-D topology proof at the historical revision;
     # the separate current-head ACL test continues to use migrated_database.
     command.upgrade(alembic_config, _EXPECTED_REVISION)

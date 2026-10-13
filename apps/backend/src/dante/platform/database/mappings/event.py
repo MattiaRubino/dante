@@ -83,19 +83,23 @@ class EventProfileRevisionRow(Base):
     __tablename__ = "event_profile_revision"
     __table_args__ = (
         ForeignKeyConstraint(
-            ["event_ref"], ["dante.event_expectation.event_ref"],
+            ["event_ref"],
+            ["dante.event_expectation.event_ref"],
             name="fk_event_profile_revision_event",
         ),
         ForeignKeyConstraint(
-            ["self_person_ref"], ["dante.person.person_ref"],
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
             name="fk_event_profile_revision_person",
         ),
         UniqueConstraint(
-            "self_person_ref", "operation_id",
+            "self_person_ref",
+            "operation_id",
             name="uq_event_profile_revision_operation",
         ),
         CheckConstraint(
-            "revision>=1 AND expected_revision>=0", name="revision",
+            "revision>=1 AND expected_revision>=0",
+            name="revision",
         ),
     )
 

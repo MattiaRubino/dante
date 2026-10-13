@@ -21,8 +21,7 @@ depends_on: str | Sequence[str] | None = None
 
 def upgrade() -> None:
     op.get_bind().exec_driver_sql(
-        "DROP FUNCTION dante.set_self_routine_occurrence_policy("
-        "uuid,uuid,integer,integer)"
+        "DROP FUNCTION dante.set_self_routine_occurrence_policy(uuid,uuid,integer,integer)"
     )
 
 

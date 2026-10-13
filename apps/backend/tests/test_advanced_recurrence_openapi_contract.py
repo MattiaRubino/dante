@@ -16,18 +16,30 @@ def test_b11_a_advanced_recurrence_operations_are_public_and_semantic() -> None:
     document = openapi_document()
     paths = cast(dict[str, Any], document["paths"])
     expected = {
-        ("/api/v1/temporal/routines/{source_ref}/advanced-recurrence", "get"):
-            "temporal_get_routine_advanced_recurrence",
-        ("/api/v1/temporal/routines/{source_ref}/advanced-recurrence", "put"):
-            "temporal_replace_routine_advanced_recurrence",
-        ("/api/v1/temporal/routines/{source_ref}/advanced-recurrence/checkpoint", "post"):
-            "temporal_checkpoint_routine_advanced_recurrence",
-        ("/api/v1/temporal/events/{source_ref}/advanced-recurrence", "get"):
-            "temporal_get_event_advanced_recurrence",
-        ("/api/v1/temporal/events/{source_ref}/advanced-recurrence", "put"):
-            "temporal_replace_event_advanced_recurrence",
-        ("/api/v1/temporal/events/{source_ref}/advanced-recurrence/checkpoint", "post"):
-            "temporal_checkpoint_event_advanced_recurrence",
+        (
+            "/api/v1/temporal/routines/{source_ref}/advanced-recurrence",
+            "get",
+        ): "temporal_get_routine_advanced_recurrence",
+        (
+            "/api/v1/temporal/routines/{source_ref}/advanced-recurrence",
+            "put",
+        ): "temporal_replace_routine_advanced_recurrence",
+        (
+            "/api/v1/temporal/routines/{source_ref}/advanced-recurrence/checkpoint",
+            "post",
+        ): "temporal_checkpoint_routine_advanced_recurrence",
+        (
+            "/api/v1/temporal/events/{source_ref}/advanced-recurrence",
+            "get",
+        ): "temporal_get_event_advanced_recurrence",
+        (
+            "/api/v1/temporal/events/{source_ref}/advanced-recurrence",
+            "put",
+        ): "temporal_replace_event_advanced_recurrence",
+        (
+            "/api/v1/temporal/events/{source_ref}/advanced-recurrence/checkpoint",
+            "post",
+        ): "temporal_checkpoint_event_advanced_recurrence",
     }
     for (path, method), operation_id in expected.items():
         operation = cast(dict[str, Any], cast(dict[str, Any], paths[path])[method])
@@ -62,15 +74,20 @@ def test_b11_a_write_contract_freezes_creation_replay_and_problem_details() -> N
     for path, method, success_schema in cases:
         operation = cast(dict[str, Any], cast(dict[str, Any], paths[path])[method])
         responses = cast(dict[str, Any], operation["responses"])
-        assert set(responses) == {
-            "200", "201", "400", "401", "403", "404", "409", "422", "500"
-        }
-        assert _schema_ref(cast(dict[str, Any], responses["200"]), "application/json") == success_schema
-        assert _schema_ref(cast(dict[str, Any], responses["201"]), "application/json") == success_schema
+        assert set(responses) == {"200", "201", "400", "401", "403", "404", "409", "422", "500"}
+        assert (
+            _schema_ref(cast(dict[str, Any], responses["200"]), "application/json")
+            == success_schema
+        )
+        assert (
+            _schema_ref(cast(dict[str, Any], responses["201"]), "application/json")
+            == success_schema
+        )
         for status in ("400", "401", "403", "404", "409", "422", "500"):
-            assert _schema_ref(
-                cast(dict[str, Any], responses[status]), "application/problem+json"
-            ) == "#/components/schemas/ProblemDetails"
+            assert (
+                _schema_ref(cast(dict[str, Any], responses[status]), "application/problem+json")
+                == "#/components/schemas/ProblemDetails"
+            )
 
 
 def test_b11_a_public_schema_keeps_anchor_semantics_typed() -> None:

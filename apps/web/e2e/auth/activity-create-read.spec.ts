@@ -107,8 +107,11 @@ test.describe('Timeline B01 canonical Activity vertical', () => {
           authenticated?: boolean;
           csrf_token?: string;
         };
-        if (!sessionResponse.ok || session.authenticated !== true ||
-            !session.csrf_token) {
+        if (
+          !sessionResponse.ok ||
+          session.authenticated !== true ||
+          !session.csrf_token
+        ) {
           throw new Error('An authenticated CSRF session is required.');
         }
         const response = await fetch('/api/v1/temporal/authoring/activities', {
@@ -169,7 +172,9 @@ test.describe('Timeline B01 canonical Activity vertical', () => {
       await expect(page.locator('[data-timeline-event]')).toHaveCount(0);
       // Canonical unplaced Activity is visible only through explicit legacy
       // management. It must never masquerade as an inert Draft Vault item.
-      await page.getByRole('button', { name: 'Chiudi elementi già creati' }).click();
+      await page
+        .getByRole('button', { name: 'Chiudi elementi già creati' })
+        .click();
       await page.getByRole('button', { name: 'Apri Bozze' }).click();
       await expect(
         page.locator('[data-timeline-draft-vault="true"] article').filter({
@@ -205,13 +210,16 @@ test.describe('Timeline B01 canonical Activity vertical', () => {
       await expect(reloadedCard).toContainText(title);
       await expect(page.locator('[data-timeline-event]')).toHaveCount(0);
 
-      await page.getByRole('button', { name: 'Chiudi elementi già creati' }).click();
+      await page
+        .getByRole('button', { name: 'Chiudi elementi già creati' })
+        .click();
       const discardedDraftTitle = `B01 bozza scartata ${testInfo.project.name}`;
       await page
         .getByRole('button', { name: 'Aggiungi alla timeline' })
         .click();
       const editor = page.locator('[data-temporal-create="composer"]');
-      await editor.getByRole('textbox', { name: 'Titolo' })
+      await editor
+        .getByRole('textbox', { name: 'Titolo' })
         .fill(discardedDraftTitle);
       await editor.locator('.dante-temporal-panel-close').click();
       await expect(

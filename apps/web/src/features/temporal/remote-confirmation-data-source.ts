@@ -38,21 +38,30 @@ export class TemporalConfirmationRemoteError extends Error {
 
 function record(value: unknown): Record<string, unknown> {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    throw new TemporalConfirmationRemoteError('protocol', 'Invalid Confirmation response.');
+    throw new TemporalConfirmationRemoteError(
+      'protocol',
+      'Invalid Confirmation response.',
+    );
   }
   return value as Record<string, unknown>;
 }
 
 function uuid(value: unknown, field: string): string {
   if (typeof value !== 'string' || !UUID_V7.test(value)) {
-    throw new TemporalConfirmationRemoteError('protocol', `${field} must be a UUIDv7.`);
+    throw new TemporalConfirmationRemoteError(
+      'protocol',
+      `${field} must be a UUIDv7.`,
+    );
   }
   return value.toLowerCase();
 }
 
 function contextCode(value: unknown, field: string): string {
   if (typeof value !== 'string' || !CONTEXT_CODE.test(value)) {
-    throw new TemporalConfirmationRemoteError('protocol', `Invalid Confirmation ${field}.`);
+    throw new TemporalConfirmationRemoteError(
+      'protocol',
+      `Invalid Confirmation ${field}.`,
+    );
   }
   return value;
 }
@@ -60,10 +69,16 @@ function contextCode(value: unknown, field: string): string {
 function view(value: unknown): TemporalConfirmationView {
   const payload = record(value);
   if (typeof payload.replayed !== 'boolean') {
-    throw new TemporalConfirmationRemoteError('protocol', 'Invalid Confirmation replay state.');
+    throw new TemporalConfirmationRemoteError(
+      'protocol',
+      'Invalid Confirmation replay state.',
+    );
   }
   if (typeof payload.confirmer_is_self !== 'boolean') {
-    throw new TemporalConfirmationRemoteError('protocol', 'Invalid Confirmation actor flag.');
+    throw new TemporalConfirmationRemoteError(
+      'protocol',
+      'Invalid Confirmation actor flag.',
+    );
   }
   return Object.freeze({
     confirmationRef: uuid(payload.confirmation_ref, 'confirmation_ref'),
@@ -72,7 +87,10 @@ function view(value: unknown): TemporalConfirmationView {
       payload.outcome_disposition_material_state_ref,
       'outcome_disposition_material_state_ref',
     ),
-    confirmerPersonRef: uuid(payload.confirmer_person_ref, 'confirmer_person_ref'),
+    confirmerPersonRef: uuid(
+      payload.confirmer_person_ref,
+      'confirmer_person_ref',
+    ),
     purposeCode: contextCode(payload.purpose_code, 'purpose_code'),
     materialStateRef: uuid(payload.material_state_ref, 'material_state_ref'),
     stanceCode: contextCode(payload.stance_code, 'stance_code'),
@@ -104,7 +122,9 @@ export function createRemoteTemporalConfirmationDataSource(
     return payload.csrf_token;
   }
 
-  async function problem(response: Response): Promise<TemporalConfirmationRemoteError> {
+  async function problem(
+    response: Response,
+  ): Promise<TemporalConfirmationRemoteError> {
     let payload: Record<string, unknown> = {};
     try {
       payload = record(await response.json());
@@ -117,36 +137,51 @@ export function createRemoteTemporalConfirmationDataSource(
     }
     return new TemporalConfirmationRemoteError(
       'http',
-      typeof payload.detail === 'string' ? payload.detail : 'Confirmation command rejected.',
+      typeof payload.detail === 'string'
+        ? payload.detail
+        : 'Confirmation command rejected.',
       response.status,
       typeof payload.code === 'string' ? payload.code : null,
     );
   }
 
   return Object.freeze({
-    async list(outcomeRef: string): Promise<readonly TemporalConfirmationView[]> {
+    async list(
+      outcomeRef: string,
+    ): Promise<readonly TemporalConfirmationView[]> {
       const response = await webFetch(
         `/api/v1/temporal/outcomes/${encodeURIComponent(outcomeRef)}/confirmations`,
       );
       if (!response.ok) {
         const error = await problem(response);
-        if (response.status === 404 && error.code === 'temporal.confirmation.not_found') {
+        if (
+          response.status === 404 &&
+          error.code === 'temporal.confirmation.not_found'
+        ) {
           return [];
         }
         throw error;
       }
       const payload: unknown = await response.json();
       if (!Array.isArray(payload)) {
-        throw new TemporalConfirmationRemoteError('protocol', 'Invalid Confirmation list.');
+        throw new TemporalConfirmationRemoteError(
+          'protocol',
+          'Invalid Confirmation list.',
+        );
       }
-      return Object.freeze(payload.map((item) => view({ ...record(item), replayed: false })));
+      return Object.freeze(
+        payload.map((item) => view({ ...record(item), replayed: false })),
+      );
     },
 
     async record(
       outcomeRef: string,
       command: RecordConfirmationCommand,
     ): Promise<TemporalConfirmationView> {
-      if (!CONTEXT_CODE.test(command.purposeCode) || !CONTEXT_CODE.test(command.stanceCode)) {
+      if (
+        !CONTEXT_CODE.test(command.purposeCode) ||
+        !CONTEXT_CODE.test(command.stanceCode)
+      ) {
         throw new TemporalConfirmationRemoteError(
           'protocol',
           'Confirmation purpose_code and stance_code must be contextual codes.',
@@ -163,7 +198,8 @@ export function createRemoteTemporalConfirmationDataSource(
           headers,
           body: JSON.stringify({
             operation_id: command.operationId,
-            outcome_disposition_material_state_ref: command.outcomeDispositionMaterialStateRef,
+            outcome_disposition_material_state_ref:
+              command.outcomeDispositionMaterialStateRef,
             expected_material_state_ref: command.expectedMaterialStateRef,
             purpose_code: command.purposeCode,
             stance_code: command.stanceCode,

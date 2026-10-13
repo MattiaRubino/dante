@@ -17,7 +17,8 @@ def _replace_function(name: str, args: str, transform: object) -> None:
         "SELECT pg_get_functiondef(p.oid) FROM pg_proc AS p "
         "JOIN pg_namespace AS n ON n.oid=p.pronamespace "
         "WHERE n.nspname='dante' AND p.proname=%s "
-        "AND oidvectortypes(p.proargtypes)=%s", (name, args)
+        "AND oidvectortypes(p.proargtypes)=%s",
+        (name, args),
     ).scalar_one()
     updated = transform(definition)
     if updated == definition:
@@ -33,7 +34,8 @@ def _one(source: str, old: str, new: str) -> str:
 
 def _json(source: str) -> str:
     return _one(
-        source, "'title',item.title,'activity_ref',item.activity_ref",
+        source,
+        "'title',item.title,'activity_ref',item.activity_ref",
         "'title',item.title,'activity_ref',item.activity_ref,"
         "'divisible',item.divisible,'max_planned_slices',item.max_planned_slices,"
         "'merge_compatible',item.merge_compatible,"
@@ -43,16 +45,21 @@ def _json(source: str) -> str:
 
 def _replace_work(source: str) -> str:
     source = _one(
-        source, "'title',snapshot.title,'activity_ref',snapshot.activity_ref",
+        source,
+        "'title',snapshot.title,'activity_ref',snapshot.activity_ref",
         "'title',snapshot.title,'activity_ref',snapshot.activity_ref,"
         "'divisible',snapshot.divisible,"
         "'max_planned_slices',snapshot.max_planned_slices,"
         "'merge_compatible',snapshot.merge_compatible,"
         "'execution_strength_code',snapshot.execution_strength_code",
     )
-    source = _one(source, "  item_title text;", "  item_title text;\n"
-                  "  item_divisible boolean;\n  item_max integer;\n"
-                  "  item_merge boolean;\n  item_strength text;")
+    source = _one(
+        source,
+        "  item_title text;",
+        "  item_title text;\n"
+        "  item_divisible boolean;\n  item_max integer;\n"
+        "  item_merge boolean;\n  item_strength text;",
+    )
     source = _one(
         source,
         "OR (item - 'step_ref' - 'title' - 'activity_ref')<>'{}'::jsonb",
@@ -68,7 +75,8 @@ def _replace_work(source: str) -> str:
         "- 'execution_strength_code')<>'{}'::jsonb",
     )
     source = _one(
-        source, "    item_title:=btrim(item->>'title');",
+        source,
+        "    item_title:=btrim(item->>'title');",
         "    item_title:=btrim(item->>'title');\n"
         "    item_divisible:=(item->>'divisible')::boolean;\n"
         "    item_merge:=(item->>'merge_compatible')::boolean;\n"
@@ -109,7 +117,8 @@ def upgrade() -> None:
     ):
         op.add_column("plan_step_in_state", column, schema="dante")
     op.create_check_constraint(
-        "ck_plan_step_in_state_execution_policy", "plan_step_in_state",
+        "ck_plan_step_in_state_execution_policy",
+        "plan_step_in_state",
         "COALESCE(((divisible IS NULL AND max_planned_slices IS NULL AND merge_compatible IS NULL "
         "AND execution_strength_code IS NULL) OR "
         "(activity_ref IS NOT NULL AND divisible IS NOT NULL AND merge_compatible IS NOT NULL "
@@ -120,7 +129,9 @@ def upgrade() -> None:
         schema="dante",
     )
     _replace_function("get_self_plan_work", "uuid, uuid", _json)
-    _replace_function("replace_self_plan_work", "uuid, text, text, uuid, uuid, uuid, text, jsonb", _replace_work)
+    _replace_function(
+        "replace_self_plan_work", "uuid, text, text, uuid, uuid, uuid, text, jsonb", _replace_work
+    )
 
 
 def downgrade() -> None:

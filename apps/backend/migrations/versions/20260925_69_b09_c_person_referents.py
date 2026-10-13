@@ -211,14 +211,24 @@ def upgrade() -> None:
         sa.Column("revision", sa.BigInteger(), nullable=False),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
-        sa.PrimaryKeyConstraint("self_person_ref","person_ref",name=op.f("pk_person_referent_catalog")),
-        sa.ForeignKeyConstraint(["self_person_ref"],["dante.person.person_ref"],
-                                name=op.f("fk_person_referent_catalog_self_person")),
-        sa.ForeignKeyConstraint(["person_ref"],["dante.person.person_ref"],
-                                name=op.f("fk_person_referent_catalog_person")),
-        sa.CheckConstraint("btrim(display_label)<>'' AND char_length(display_label)<=100",
-                           name=op.f("ck_person_referent_catalog_label")),
-        sa.CheckConstraint("revision>=1",name=op.f("ck_person_referent_catalog_revision")),
+        sa.PrimaryKeyConstraint(
+            "self_person_ref", "person_ref", name=op.f("pk_person_referent_catalog")
+        ),
+        sa.ForeignKeyConstraint(
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
+            name=op.f("fk_person_referent_catalog_self_person"),
+        ),
+        sa.ForeignKeyConstraint(
+            ["person_ref"],
+            ["dante.person.person_ref"],
+            name=op.f("fk_person_referent_catalog_person"),
+        ),
+        sa.CheckConstraint(
+            "btrim(display_label)<>'' AND char_length(display_label)<=100",
+            name=op.f("ck_person_referent_catalog_label"),
+        ),
+        sa.CheckConstraint("revision>=1", name=op.f("ck_person_referent_catalog_revision")),
         schema="dante",
     )
     op.create_table(
@@ -231,22 +241,36 @@ def upgrade() -> None:
         sa.Column("display_label", sa.Text(), nullable=False),
         sa.Column("resulting_revision", sa.BigInteger(), nullable=False),
         sa.Column("accepted_at", sa.DateTime(timezone=True), nullable=False),
-        sa.PrimaryKeyConstraint("self_person_ref","operation_id",name=op.f("pk_person_referent_operation")),
-        sa.ForeignKeyConstraint(["self_person_ref","person_ref"],
-                                ["dante.person_referent_catalog.self_person_ref",
-                                 "dante.person_referent_catalog.person_ref"],
-                                name=op.f("fk_person_referent_operation_catalog")),
-        sa.CheckConstraint("operation_id=btrim(operation_id) AND operation_id<>'' "
-                           "AND char_length(operation_id)<=200",
-                           name=op.f("ck_person_referent_operation_id")),
-        sa.CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'",
-                           name=op.f("ck_person_referent_operation_fingerprint")),
-        sa.CheckConstraint("operation_kind IN ('create','rename')",
-                           name=op.f("ck_person_referent_operation_kind")),
-        sa.CheckConstraint("btrim(display_label)<>'' AND char_length(display_label)<=100",
-                           name=op.f("ck_person_referent_operation_label")),
-        sa.CheckConstraint("resulting_revision>=1",
-                           name=op.f("ck_person_referent_operation_revision")),
+        sa.PrimaryKeyConstraint(
+            "self_person_ref", "operation_id", name=op.f("pk_person_referent_operation")
+        ),
+        sa.ForeignKeyConstraint(
+            ["self_person_ref", "person_ref"],
+            [
+                "dante.person_referent_catalog.self_person_ref",
+                "dante.person_referent_catalog.person_ref",
+            ],
+            name=op.f("fk_person_referent_operation_catalog"),
+        ),
+        sa.CheckConstraint(
+            "operation_id=btrim(operation_id) AND operation_id<>'' "
+            "AND char_length(operation_id)<=200",
+            name=op.f("ck_person_referent_operation_id"),
+        ),
+        sa.CheckConstraint(
+            "intent_fingerprint ~ '^[0-9a-f]{64}$'",
+            name=op.f("ck_person_referent_operation_fingerprint"),
+        ),
+        sa.CheckConstraint(
+            "operation_kind IN ('create','rename')", name=op.f("ck_person_referent_operation_kind")
+        ),
+        sa.CheckConstraint(
+            "btrim(display_label)<>'' AND char_length(display_label)<=100",
+            name=op.f("ck_person_referent_operation_label"),
+        ),
+        sa.CheckConstraint(
+            "resulting_revision>=1", name=op.f("ck_person_referent_operation_revision")
+        ),
         schema="dante",
     )
     _sql(_CREATE)
@@ -262,9 +286,11 @@ def upgrade() -> None:
         _sql(f"REVOKE ALL ON FUNCTION dante.{signature} FROM PUBLIC,dante_runtime,dante_migrator")
         _sql(f"GRANT EXECUTE ON FUNCTION dante.{signature} TO dante_runtime")
     _sql("ALTER FUNCTION dante._self_referenceable_person(uuid,uuid) OWNER TO dante_owner")
-    _sql("REVOKE ALL ON FUNCTION dante._self_referenceable_person(uuid,uuid) "
-         "FROM PUBLIC,dante_runtime,dante_migrator")
-    for table in ("person_referent_catalog","person_referent_operation"):
+    _sql(
+        "REVOKE ALL ON FUNCTION dante._self_referenceable_person(uuid,uuid) "
+        "FROM PUBLIC,dante_runtime,dante_migrator"
+    )
+    for table in ("person_referent_catalog", "person_referent_operation"):
         _sql(f"REVOKE ALL ON TABLE dante.{table} FROM PUBLIC,dante_runtime,dante_migrator")
 
 
@@ -287,5 +313,5 @@ def downgrade() -> None:
     _sql("DROP FUNCTION dante.rename_self_person_referent(uuid,text,text,uuid,bigint,text)")
     _sql("DROP FUNCTION dante.list_self_person_referents(uuid)")
     _sql("DROP FUNCTION dante.create_self_person_referent(uuid,text,text,uuid,text)")
-    op.drop_table("person_referent_operation",schema="dante")
-    op.drop_table("person_referent_catalog",schema="dante")
+    op.drop_table("person_referent_operation", schema="dante")
+    op.drop_table("person_referent_catalog", schema="dante")

@@ -491,8 +491,7 @@ def upgrade() -> None:
     ):
         op.execute(
             sa.text(
-                f"REVOKE ALL PRIVILEGES ON TABLE dante.{table} "
-                f"FROM PUBLIC, {_RUNTIME}, {_MIGRATOR}"
+                f"REVOKE ALL PRIVILEGES ON TABLE dante.{table} FROM PUBLIC, {_RUNTIME}, {_MIGRATOR}"
             )
         )
     op.execute(sa.text("GRANT SELECT ON TABLE dante.event_agenda_part TO dante_runtime"))

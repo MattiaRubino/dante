@@ -72,7 +72,10 @@ function optionalText(value: unknown, field: string): string | null {
     return null;
   }
   if (typeof value !== 'string') {
-    throw new TemporalResponsibilityRemoteError('protocol', `${field} must be text.`);
+    throw new TemporalResponsibilityRemoteError(
+      'protocol',
+      `${field} must be text.`,
+    );
   }
   return value;
 }
@@ -233,7 +236,10 @@ export function createRemoteTemporalResponsibilityDataSource(
     async listPersonReferents(): Promise<TemporalPersonReferent[]> {
       const value = await send('/api/v1/temporal/person-referents', 'GET');
       if (!Array.isArray(value)) {
-        throw new TemporalResponsibilityRemoteError('protocol', 'Person referents must be a list.');
+        throw new TemporalResponsibilityRemoteError(
+          'protocol',
+          'Person referents must be a list.',
+        );
       }
       return value.map(personReferent);
     },
@@ -241,10 +247,12 @@ export function createRemoteTemporalResponsibilityDataSource(
       operationId: string,
       displayLabel: string,
     ): Promise<TemporalPersonReferent> {
-      return personReferent(await send('/api/v1/temporal/person-referents', 'POST', {
-        operation_id: operationId,
-        display_label: displayLabel,
-      }));
+      return personReferent(
+        await send('/api/v1/temporal/person-referents', 'POST', {
+          operation_id: operationId,
+          display_label: displayLabel,
+        }),
+      );
     },
     async renamePersonReferent(
       personRef: string,
@@ -252,15 +260,17 @@ export function createRemoteTemporalResponsibilityDataSource(
       expectedRevision: number,
       displayLabel: string,
     ): Promise<TemporalPersonReferent> {
-      return personReferent(await send(
-        `/api/v1/temporal/person-referents/${encodeURIComponent(personRef)}`,
-        'PATCH',
-        {
-          operation_id: operationId,
-          expected_revision: expectedRevision,
-          display_label: displayLabel,
-        },
-      ));
+      return personReferent(
+        await send(
+          `/api/v1/temporal/person-referents/${encodeURIComponent(personRef)}`,
+          'PATCH',
+          {
+            operation_id: operationId,
+            expected_revision: expectedRevision,
+            display_label: displayLabel,
+          },
+        ),
+      );
     },
     async getResponsibility(
       kind: ResponsibilitySubjectKind,

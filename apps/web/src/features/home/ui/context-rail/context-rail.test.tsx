@@ -22,7 +22,9 @@ vi.mock('../../../temporal/objective-controls', () => ({
   }) => (
     <div data-testid="objective-owner">
       <span>{`${kind}:${subjectRef}`}</span>
-      <button type="button" onClick={onRecorded}>Obiettivo valutato</button>
+      <button type="button" onClick={onRecorded}>
+        Obiettivo valutato
+      </button>
     </div>
   ),
 }));
@@ -37,7 +39,9 @@ vi.mock('../../../temporal/reconciliation-controls', () => ({
 
 vi.mock('../../../temporal/session-subject-controls', () => ({
   SessionSubjectControls: ({ onRecorded }: { onRecorded: () => void }) => (
-    <button type="button" onClick={onRecorded}>Registra Sessione passata</button>
+    <button type="button" onClick={onRecorded}>
+      Registra Sessione passata
+    </button>
   ),
 }));
 
@@ -51,7 +55,10 @@ vi.mock('../../../temporal/actual-realization-controls', () => ({
     kind: string;
     subjectRef: string;
     onRecorded: () => void;
-    sessionBasis?: { sessionRef: string; sessionTimingMaterialStateRef: string };
+    sessionBasis?: {
+      sessionRef: string;
+      sessionTimingMaterialStateRef: string;
+    };
   }) => (
     <div data-testid="actual-realization-owner">
       <span>{`${kind}:${subjectRef}`}</span>
@@ -95,8 +102,7 @@ const realizationReviewItem = {
   outcome_ref: null,
   purpose_code: 'activity.policy.review',
   session_ref: '019a45a2-7180-7000-8000-000000000012',
-  session_timing_material_state_ref:
-    '019a45a2-7180-7000-8000-000000000013',
+  session_timing_material_state_ref: '019a45a2-7180-7000-8000-000000000013',
   actions: ['record_realization'],
 };
 
@@ -104,10 +110,21 @@ describe('Home resolution rail', () => {
   it('derives reconciliation cards from the canonical queue and refreshes after the owner action', async () => {
     let open = true;
     const fetchFn = vi.fn((input: RequestInfo | URL) => {
-      if (!(typeof input === 'string' ? input : input instanceof URL ? input.href : input.url).includes('/resolution-queue')) return Promise.resolve(Response.json([]));
-      return Promise.resolve(Response.json(
-        open ? { items: [openItem], count: 1 } : { items: [], count: 0 },
-      ));
+      if (
+        !(
+          typeof input === 'string'
+            ? input
+            : input instanceof URL
+              ? input.href
+              : input.url
+        ).includes('/resolution-queue')
+      )
+        return Promise.resolve(Response.json([]));
+      return Promise.resolve(
+        Response.json(
+          open ? { items: [openItem], count: 1 } : { items: [], count: 0 },
+        ),
+      );
     });
     vi.stubGlobal('fetch', fetchFn);
 
@@ -120,13 +137,17 @@ describe('Home resolution rail', () => {
     await waitFor(() =>
       expect(within(panel).getByText('Preparare le slide')).toBeTruthy(),
     );
-    expect(within(panel).getByLabelText('1 elementi da verificare').textContent).toBe(
-      '1',
-    );
+    expect(
+      within(panel).getByLabelText('1 elementi da verificare').textContent,
+    ).toBe('1');
     expect(within(panel).getByText('Decisione')).toBeTruthy();
     expect(within(panel).queryByText('Revisione concept')).toBeNull();
 
-    fireEvent.click(within(panel).getByRole('button', { name: 'Apri decisione: Preparare le slide' }));
+    fireEvent.click(
+      within(panel).getByRole('button', {
+        name: 'Apri decisione: Preparare le slide',
+      }),
+    );
     open = false;
     fireEvent.click(
       screen.getByRole('button', { name: 'Decisione B10 registrata' }),
@@ -134,20 +155,31 @@ describe('Home resolution rail', () => {
     await waitFor(() =>
       expect(within(panel).queryByText('Preparare le slide')).toBeNull(),
     );
-    expect(within(panel).getByLabelText('0 elementi da verificare').textContent).toBe(
-      '0',
-    );
+    expect(
+      within(panel).getByLabelText('0 elementi da verificare').textContent,
+    ).toBe('0');
   });
 
   it('routes a real Session review to the Actual owner and removes it after reality is recorded', async () => {
     let open = true;
     const fetchFn = vi.fn((input: RequestInfo | URL) => {
-      if (!(typeof input === 'string' ? input : input instanceof URL ? input.href : input.url).includes('/resolution-queue')) return Promise.resolve(Response.json([]));
-      return Promise.resolve(Response.json(
-        open
-          ? { items: [realizationReviewItem], count: 1 }
-          : { items: [], count: 0 },
-      ));
+      if (
+        !(
+          typeof input === 'string'
+            ? input
+            : input instanceof URL
+              ? input.href
+              : input.url
+        ).includes('/resolution-queue')
+      )
+        return Promise.resolve(Response.json([]));
+      return Promise.resolve(
+        Response.json(
+          open
+            ? { items: [realizationReviewItem], count: 1 }
+            : { items: [], count: 0 },
+        ),
+      );
     });
     vi.stubGlobal('fetch', fetchFn);
 
@@ -166,12 +198,12 @@ describe('Home resolution rail', () => {
       within(panel).getByText('Sessione conclusa · registra cosa è successo.'),
     ).toBeTruthy();
 
-    expect(screen.getByTestId('actual-realization-owner').textContent).toContain(
-      `activity:${realizationReviewItem.subject_ref}`,
-    );
-    expect(screen.getByTestId('actual-realization-owner').textContent).toContain(
-      realizationReviewItem.session_ref,
-    );
+    expect(
+      screen.getByTestId('actual-realization-owner').textContent,
+    ).toContain(`activity:${realizationReviewItem.subject_ref}`);
+    expect(
+      screen.getByTestId('actual-realization-owner').textContent,
+    ).toContain(realizationReviewItem.session_ref);
     expect(
       screen.queryByRole('button', { name: 'Decisione B10 registrata' }),
     ).toBeNull();
@@ -183,9 +215,9 @@ describe('Home resolution rail', () => {
     await waitFor(() =>
       expect(within(panel).queryByText('Allenamento forza')).toBeNull(),
     );
-    expect(within(panel).getByLabelText('0 elementi da verificare').textContent).toBe(
-      '0',
-    );
+    expect(
+      within(panel).getByLabelText('0 elementi da verificare').textContent,
+    ).toBe('0');
   });
   it('offers manual Session or a Reality decision for a past interval without Play', async () => {
     const past = {
@@ -195,20 +227,45 @@ describe('Home resolution rail', () => {
       session_timing_material_state_ref: null,
     };
     let open = true;
-    vi.stubGlobal('fetch', vi.fn((input: RequestInfo | URL) =>
-      Promise.resolve(Response.json((typeof input === 'string' ? input
-        : input instanceof URL ? input.href : input.url).includes('/resolution-queue')
-        ? open ? { items: [past], count: 1 } : { items: [], count: 0 }
-        : [])),
-    ));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL) =>
+        Promise.resolve(
+          Response.json(
+            (typeof input === 'string'
+              ? input
+              : input instanceof URL
+                ? input.href
+                : input.url
+            ).includes('/resolution-queue')
+              ? open
+                ? { items: [past], count: 1 }
+                : { items: [], count: 0 }
+              : [],
+          ),
+        ),
+      ),
+    );
     render(<ContextRail />);
     expect(await screen.findByText('Allenamento forza')).toBeTruthy();
-    expect(screen.getByText('Orario passato senza Sessione · verifica se è avvenuta.')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Registra Sessione passata' })).toBeTruthy();
-    expect(screen.getByTestId('actual-realization-owner').textContent).toContain('no-session');
+    expect(
+      screen.getByText(
+        'Orario passato senza Sessione · verifica se è avvenuta.',
+      ),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: 'Registra Sessione passata' }),
+    ).toBeTruthy();
+    expect(
+      screen.getByTestId('actual-realization-owner').textContent,
+    ).toContain('no-session');
     open = false;
-    fireEvent.click(screen.getByRole('button', { name: 'Realtà B10 registrata' }));
-    await waitFor(() => expect(screen.queryByText('Allenamento forza')).toBeNull());
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Realtà B10 registrata' }),
+    );
+    await waitFor(() =>
+      expect(screen.queryByText('Allenamento forza')).toBeNull(),
+    );
   });
   it('opens pending Event Objectives through their canonical owner and refreshes after assessment', async () => {
     const objectiveReviewItem = {
@@ -226,18 +283,35 @@ describe('Home resolution rail', () => {
       actions: ['open_objectives'],
     };
     let open = true;
-    vi.stubGlobal('fetch', vi.fn((input: RequestInfo | URL) =>
-      Promise.resolve(Response.json((typeof input === 'string' ? input : input instanceof URL ? input.href : input.url).includes('/resolution-queue')
-        ? open ? { items: [objectiveReviewItem], count: 1 }
-          : { items: [], count: 0 }
-        : [])),
-    ));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL) =>
+        Promise.resolve(
+          Response.json(
+            (typeof input === 'string'
+              ? input
+              : input instanceof URL
+                ? input.href
+                : input.url
+            ).includes('/resolution-queue')
+              ? open
+                ? { items: [objectiveReviewItem], count: 1 }
+                : { items: [], count: 0 }
+              : [],
+          ),
+        ),
+      ),
+    );
 
     const { container } = render(<ContextRail />);
-    const panel = container.querySelector<HTMLElement>('[data-home-context="resolution"]');
+    const panel = container.querySelector<HTMLElement>(
+      '[data-home-context="resolution"]',
+    );
     if (!panel) throw new Error('Resolution panel absent.');
     await waitFor(() => expect(within(panel).getByText('Gara')).toBeTruthy());
-    fireEvent.click(within(panel).getByRole('button', { name: 'Valuta obiettivi: Gara' }));
+    fireEvent.click(
+      within(panel).getByRole('button', { name: 'Valuta obiettivi: Gara' }),
+    );
     expect(screen.getByTestId('objective-owner').textContent).toContain(
       `event:${objectiveReviewItem.subject_ref}`,
     );
@@ -245,9 +319,7 @@ describe('Home resolution rail', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Obiettivo valutato' }));
     await waitFor(() => expect(within(panel).queryByText('Gara')).toBeNull());
   });
-
 });
-
 
 it('switches three views and only opens one selected Objective owner', async () => {
   const objectiveItem = {
@@ -261,19 +333,38 @@ it('switches three views and only opens one selected Objective owner', async () 
     draft_revision: 1,
     draft_updated_at: '2026-10-10T17:00:00Z',
   };
-  vi.stubGlobal('fetch', vi.fn((input: RequestInfo | URL) => {
-    const uri = (typeof input === 'string' ? input : input instanceof URL ? input.href : input.url);
-    return Promise.resolve(Response.json(
-      uri.includes('/resolution-queue') ? { items: [], count: 0 } :
-      uri.includes('/finished-work') ? [{
-        subject_kind: 'activity', subject_ref: objectiveItem.subject_ref,
-        session_ref: '019a45a2-7180-7000-8000-000000000033',
-        title: 'Studio inglese', started_at: '2026-10-10T16:00:00Z',
-        ended_at: '2026-10-10T17:00:00Z', record_kind: 'session_ended',
-      }] :
-      uri.includes('/objective-work') ? [objectiveItem] : [],
-    ));
-  }));
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: RequestInfo | URL) => {
+      const uri =
+        typeof input === 'string'
+          ? input
+          : input instanceof URL
+            ? input.href
+            : input.url;
+      return Promise.resolve(
+        Response.json(
+          uri.includes('/resolution-queue')
+            ? { items: [], count: 0 }
+            : uri.includes('/finished-work')
+              ? [
+                  {
+                    subject_kind: 'activity',
+                    subject_ref: objectiveItem.subject_ref,
+                    session_ref: '019a45a2-7180-7000-8000-000000000033',
+                    title: 'Studio inglese',
+                    started_at: '2026-10-10T16:00:00Z',
+                    ended_at: '2026-10-10T17:00:00Z',
+                    record_kind: 'session_ended',
+                  },
+                ]
+              : uri.includes('/objective-work')
+                ? [objectiveItem]
+                : [],
+        ),
+      );
+    }),
+  );
   render(<ContextRail />);
   fireEvent.click(screen.getByRole('tab', { name: 'Conclusi' }));
   await screen.findByText('Sessione conclusa');

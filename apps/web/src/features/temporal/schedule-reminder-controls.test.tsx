@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { i18n } from '../../bootstrap/i18n';
@@ -36,7 +42,10 @@ describe('Schedule Reminder controls', () => {
           writes.push(JSON.parse(String(init.body)) as Record<string, unknown>);
           attempts += 1;
           if (attempts === 1) {
-            return json({ code: 'temporal.reminder.unavailable', detail: 'Retry' }, 503);
+            return json(
+              { code: 'temporal.reminder.unavailable', detail: 'Retry' },
+              503,
+            );
           }
           return json({
             reminder_ref: REMINDER,
@@ -75,8 +84,11 @@ describe('Schedule Reminder controls', () => {
     await screen.findByRole('alert');
     await waitFor(() => {
       expect(
-        (screen.getByRole('button', { name: 'Salva promemoria' }) as HTMLButtonElement)
-          .disabled,
+        (
+          screen.getByRole('button', {
+            name: 'Salva promemoria',
+          }) as HTMLButtonElement
+        ).disabled,
       ).toBe(false);
     });
     fireEvent.click(screen.getByText('Salva promemoria'));

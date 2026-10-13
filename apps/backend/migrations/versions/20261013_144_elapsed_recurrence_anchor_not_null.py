@@ -37,13 +37,10 @@ def upgrade() -> None:
                 f"Cannot enforce dante.{table}.anchor_at NOT NULL: "
                 f"{null_count} existing unanchored rows require explicit review"
             )
-        connection.exec_driver_sql(
-            f"ALTER TABLE dante.{table} ALTER COLUMN anchor_at SET NOT NULL"
-        )
+        connection.exec_driver_sql(f"ALTER TABLE dante.{table} ALTER COLUMN anchor_at SET NOT NULL")
 
 
 def downgrade() -> None:
     raise RuntimeError(
-        "20261013_144 is forward-only: "
-        "Elapsed Recurrence anchors must remain non-null"
+        "20261013_144 is forward-only: Elapsed Recurrence anchors must remain non-null"
     )

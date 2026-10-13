@@ -1264,10 +1264,7 @@ $function$
         _HISTORY_SIGNATURE,
     ):
         _sql(f"ALTER FUNCTION {signature} OWNER TO {_OWNER}")
-        _sql(
-            f"REVOKE ALL ON FUNCTION {signature} "
-            f"FROM PUBLIC, {_RUNTIME}, {_MIGRATOR}"
-        )
+        _sql(f"REVOKE ALL ON FUNCTION {signature} FROM PUBLIC, {_RUNTIME}, {_MIGRATOR}")
 
     for signature in (
         _HELPER_SIGNATURE,

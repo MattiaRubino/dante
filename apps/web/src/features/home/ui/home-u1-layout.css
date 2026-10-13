@@ -188,7 +188,8 @@
   /* Full Advanced leaves the narrow Quick rail and occupies the viewport.
      Without this override, the fixed Quick host (475px, overflow:hidden)
      clips the 1040px Advanced modal when the user expands it. */
-  .home-context-rail .home-create-panel-host:has(.temporal-create-backdrop.is-advanced) {
+  .home-context-rail
+    .home-create-panel-host:has(.temporal-create-backdrop.is-advanced) {
     position: fixed;
     inset: 0;
     width: 100vw;
@@ -198,7 +199,9 @@
     z-index: 1900;
   }
 
-  .home-context-rail .home-create-panel-host .temporal-create-backdrop.is-advanced {
+  .home-context-rail
+    .home-create-panel-host
+    .temporal-create-backdrop.is-advanced {
     position: fixed;
     inset: 0;
     background: rgba(3, 7, 13, 0.62) !important;

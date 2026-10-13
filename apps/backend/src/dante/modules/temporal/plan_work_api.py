@@ -334,8 +334,11 @@ async def replace_self_plan_work(
 @router.post(
     "/{plan_ref}/steps/{step_ref}/execution/assess",
     response_model=ExecutionAssessmentResponse,
-    responses={404: {"model": ProblemDetails}, 409: {"model": ProblemDetails},
-               422: {"model": ProblemDetails}},
+    responses={
+        404: {"model": ProblemDetails},
+        409: {"model": ProblemDetails},
+        422: {"model": ProblemDetails},
+    },
     operation_id="temporal_assess_plan_step_execution",
 )
 async def assess_plan_step_execution(
@@ -366,21 +369,25 @@ async def assess_plan_step_execution(
         intervals = {
             item.slice_ref: AbsoluteIntervalPlacement(
                 starts_at=item.starts_at, ends_at=item.ends_at
-            ) for item in payload.slices
+            )
+            for item in payload.slices
         }
     except TemporalConstraintInputError as exc:
         raise _problem(PlanWorkInputError(str(exc))) from exc
 
     if step.divisible is None or not payload.slices:
-        count_status, count_reason = "unknown", (
-            "policy_unconfigured" if step.divisible is None else "missing_proposed_slices"
+        count_status, count_reason = (
+            "unknown",
+            ("policy_unconfigured" if step.divisible is None else "missing_proposed_slices"),
         )
     elif step.max_planned_slices is None:
         count_status, count_reason = "satisfied", "unbounded_proposed_count"
     elif len(payload.slices) <= step.max_planned_slices:
         count_status, count_reason = "satisfied", "within_proposed_count_limit"
     else:
-        count_status = "violated_hard" if step.execution_strength_code == "hard" else "violated_soft"
+        count_status = (
+            "violated_hard" if step.execution_strength_code == "hard" else "violated_soft"
+        )
         count_reason = "proposed_count_exceeds_limit"
 
     temporal = TemporalConstraintApplication(request.app.state.database_runtime.session_factory)
@@ -392,16 +399,23 @@ async def assess_plan_step_execution(
                 subject_native_ref=NativeRef(step.activity_ref),
                 placement=intervals[item.slice_ref],
             )
-            assessments.append(SliceAssessment(
-                slice_ref=item.slice_ref,
-                temporal_status=result.status,
-                hard_set_status=result.hard_set_status,
-                temporal_rules=[TemporalRuleAssessment(
-                    constraint_ref=value.constraint_ref, strength=value.strength,
-                    evaluation=value.evaluation, reason_code=value.reason_code,
-                    constrained_facet=value.constrained_facet,
-                ) for value in result.items],
-            ))
+            assessments.append(
+                SliceAssessment(
+                    slice_ref=item.slice_ref,
+                    temporal_status=result.status,
+                    hard_set_status=result.hard_set_status,
+                    temporal_rules=[
+                        TemporalRuleAssessment(
+                            constraint_ref=value.constraint_ref,
+                            strength=value.strength,
+                            evaluation=value.evaluation,
+                            reason_code=value.reason_code,
+                            constrained_facet=value.constrained_facet,
+                        )
+                        for value in result.items
+                    ],
+                )
+            )
         merge_status, merge_reason, merged_temporal_status = "not_requested", "no_pair", None
         merged_temporal_rules: list[TemporalRuleAssessment] = []
         if payload.merge_pair is not None:
@@ -426,27 +440,41 @@ async def assess_plan_step_execution(
                     placement=merged,
                 )
                 merged_temporal_status = result.status
-                merged_temporal_rules = [TemporalRuleAssessment(
-                    constraint_ref=value.constraint_ref, strength=value.strength,
-                    evaluation=value.evaluation, reason_code=value.reason_code,
-                    constrained_facet=value.constrained_facet,
-                ) for value in result.items]
+                merged_temporal_rules = [
+                    TemporalRuleAssessment(
+                        constraint_ref=value.constraint_ref,
+                        strength=value.strength,
+                        evaluation=value.evaluation,
+                        reason_code=value.reason_code,
+                        constrained_facet=value.constrained_facet,
+                    )
+                    for value in result.items
+                ]
                 if result.status == "not_evaluable":
                     merge_status, merge_reason = "unknown", "temporal_rule_not_evaluable"
                 elif result.status == "inadmissible":
                     merge_status, merge_reason = "incompatible", "hard_temporal_rule_violated"
                 else:
-                    merge_status, merge_reason = "compatible", "contiguous_and_temporally_admissible"
+                    merge_status, merge_reason = (
+                        "compatible",
+                        "contiguous_and_temporally_admissible",
+                    )
     except (TemporalConstraintInputError, PlanWorkInputError) as exc:
         raise _problem(PlanWorkInputError(str(exc))) from exc
     except TemporalConstraintPersistenceError as exc:
         raise _problem(PlanWorkPersistenceError(str(exc))) from exc
     return ExecutionAssessmentResponse(
-        plan_ref=plan_ref, state_ref=plan.state_ref, step_ref=step_ref,
-        activity_ref=step.activity_ref, basis="explicit_proposed_slices",
-        proposed_count=len(payload.slices), count_status=count_status,
-        count_reason=count_reason, slice_assessments=assessments,
-        merge_status=merge_status, merge_reason=merge_reason,
+        plan_ref=plan_ref,
+        state_ref=plan.state_ref,
+        step_ref=step_ref,
+        activity_ref=step.activity_ref,
+        basis="explicit_proposed_slices",
+        proposed_count=len(payload.slices),
+        count_status=count_status,
+        count_reason=count_reason,
+        slice_assessments=assessments,
+        merge_status=merge_status,
+        merge_reason=merge_reason,
         merged_temporal_status=merged_temporal_status,
         merged_temporal_rules=merged_temporal_rules,
     )

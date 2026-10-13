@@ -42,12 +42,15 @@ def _review(view: PlanCandidateView, operation_id: str) -> ReviewedMove:
     assert view.candidates
     candidate = view.candidates[0]
     return ReviewedMove(
-        plan_ref=view.plan_ref, step_ref=view.step_ref,
-        plan_state_ref=view.plan_state_ref, schedule_ref=view.placement.schedule_ref,
+        plan_ref=view.plan_ref,
+        step_ref=view.step_ref,
+        plan_state_ref=view.plan_state_ref,
+        schedule_ref=view.placement.schedule_ref,
         schedule_state_ref=view.placement.material_state_ref,
         policy_state_ref=view.movement_policy_material_state_ref,
         basis_fingerprint=view.basis_fingerprint,
-        starts_at=candidate.starts_at, ends_at=candidate.ends_at,
+        starts_at=candidate.starts_at,
+        ends_at=candidate.ends_at,
         operation_id=operation_id,
     )
 
@@ -70,26 +73,36 @@ async def test_b12_c_direct_pending_confirmation_and_stale_review(
         created = await activities.create_activity_with_schedule(
             self_person_ref=alice,
             life_area_ref=ensure_test_life_area(migrated_database, alice),
-            operation_id="b12c:activity", title="Mix",
+            operation_id="b12c:activity",
+            title="Mix",
             placement=AbsoluteIntervalPlacement(start, start + timedelta(hours=1)),
         )
         initial = await plans.create(
-            self_person_ref=alice, operation_id="b12c:plan", title="Album",
+            self_person_ref=alice,
+            operation_id="b12c:plan",
+            title="Album",
         )
         step_ref = new_native_ref()
         plan = await plans.replace(
-            self_person_ref=alice, plan_ref=initial.plan_ref,
-            expected_state_ref=initial.state_ref, operation_id="b12c:steps",
+            self_person_ref=alice,
+            plan_ref=initial.plan_ref,
+            expected_state_ref=initial.state_ref,
+            operation_id="b12c:steps",
             title="Album",
             steps=(PlanStepInput(step_ref, "Mix", created.activity.activity_ref),),
         )
         policy = await policies.create_policy(
-            self_person_ref=alice, operation_id="b12c:direct-policy",
+            self_person_ref=alice,
+            operation_id="b12c:direct-policy",
             schedule_ref=created.schedule.schedule_ref,
             rule=MovementPolicyRule("automatic", "direct"),
         )
-        args = {"self_person_ref": alice, "plan_ref": plan.plan_ref,
-                "step_ref": step_ref, "expected_state_ref": plan.state_ref}
+        args = {
+            "self_person_ref": alice,
+            "plan_ref": plan.plan_ref,
+            "step_ref": step_ref,
+            "expected_state_ref": plan.state_ref,
+        }
         first = await search.search(**args)
         direct_review = _review(first, str(uuid7()))
         with pytest.raises(LookupError):
@@ -108,7 +121,8 @@ async def test_b12_c_direct_pending_confirmation_and_stale_review(
             await admission.request(
                 self_ref=alice,
                 review=ReviewedMove(
-                    plan_ref=direct_review.plan_ref, step_ref=direct_review.step_ref,
+                    plan_ref=direct_review.plan_ref,
+                    step_ref=direct_review.step_ref,
                     plan_state_ref=direct_review.plan_state_ref,
                     schedule_ref=direct_review.schedule_ref,
                     schedule_state_ref=direct_review.schedule_state_ref,
@@ -128,18 +142,22 @@ async def test_b12_c_direct_pending_confirmation_and_stale_review(
 
         stale_constraint_review = _review(await search.search(**args), str(uuid7()))
         await constraints.create_constraint(
-            self_person_ref=alice, operation_id="b12c:soft-rule",
+            self_person_ref=alice,
+            operation_id="b12c:soft-rule",
             subject_native_ref=created.activity.activity_ref,
             rule=AbsoluteBoundaryRule(
-                boundary_kind="earliest_start", constrained_facet="schedule.start",
-                strength="soft", boundary_at=start,
+                boundary_kind="earliest_start",
+                constrained_facet="schedule.start",
+                strength="soft",
+                boundary_at=start,
             ),
         )
         with pytest.raises(PlanAdmissionStaleError):
             await admission.request(self_ref=alice, review=stale_constraint_review)
 
         await policies.revise_policy(
-            self_person_ref=alice, operation_id="b12c:confirm-policy",
+            self_person_ref=alice,
+            operation_id="b12c:confirm-policy",
             schedule_ref=created.schedule.schedule_ref,
             expected_material_state_ref=policy.material_state_ref,
             rule=MovementPolicyRule("automatic", "confirmation_required"),
@@ -152,36 +170,53 @@ async def test_b12_c_direct_pending_confirmation_and_stale_review(
         assert (await search.search(**args)).placement == moved.placement
         assert (await admission.request(self_ref=alice, review=pending_review)).replayed is True
         accepted = await admission.accept(
-            self_ref=alice, review=pending_review, proposal_ref=pending.proposal_ref,
+            self_ref=alice,
+            review=pending_review,
+            proposal_ref=pending.proposal_ref,
         )
         assert accepted.kind == "committed"
         assert accepted.placement_state_ref != moved.placement.material_state_ref
-        assert (await admission.accept(
-            self_ref=alice, review=pending_review, proposal_ref=pending.proposal_ref,
-        )).replayed is True
-        assert (await search.search(**args)).placement.material_state_ref == accepted.placement_state_ref
+        assert (
+            await admission.accept(
+                self_ref=alice,
+                review=pending_review,
+                proposal_ref=pending.proposal_ref,
+            )
+        ).replayed is True
+        assert (
+            await search.search(**args)
+        ).placement.material_state_ref == accepted.placement_state_ref
 
         stale_policy_review = _review(await search.search(**args), str(uuid7()))
         stale_policy_proposal = await admission.request(self_ref=alice, review=stale_policy_review)
         assert stale_policy_proposal.proposal_ref is not None
         await policies.revise_policy(
-            self_person_ref=alice, operation_id="b12c:blocked-policy",
+            self_person_ref=alice,
+            operation_id="b12c:blocked-policy",
             schedule_ref=created.schedule.schedule_ref,
-            expected_material_state_ref=(await policies.get_policy(
-                self_person_ref=alice, schedule_ref=created.schedule.schedule_ref,
-            )).material_state_ref,
+            expected_material_state_ref=(
+                await policies.get_policy(
+                    self_person_ref=alice,
+                    schedule_ref=created.schedule.schedule_ref,
+                )
+            ).material_state_ref,
             rule=MovementPolicyRule("blocked", "direct"),
         )
         with pytest.raises(PlanAdmissionStaleError):
             await admission.accept(
-                self_ref=alice, review=stale_policy_review,
+                self_ref=alice,
+                review=stale_policy_review,
                 proposal_ref=stale_policy_proposal.proposal_ref,
             )
-        assert (await search.search(**args)).placement.material_state_ref == accepted.placement_state_ref
+        assert (
+            await search.search(**args)
+        ).placement.material_state_ref == accepted.placement_state_ref
 
         await plans.replace(
-            self_person_ref=alice, plan_ref=plan.plan_ref,
-            expected_state_ref=plan.state_ref, operation_id="b12c:revised-plan",
+            self_person_ref=alice,
+            plan_ref=plan.plan_ref,
+            expected_state_ref=plan.state_ref,
+            operation_id="b12c:revised-plan",
             title="Album revisited",
             steps=(PlanStepInput(step_ref, "Mix", created.activity.activity_ref),),
         )

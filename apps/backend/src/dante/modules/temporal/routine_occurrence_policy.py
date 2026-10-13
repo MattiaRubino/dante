@@ -7,8 +7,8 @@ truth on the resulting Schedule.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import json
+from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
 
@@ -90,24 +90,28 @@ class RoutineOccurrencePolicyApplication:
         try:
             async with self._session_factory() as session, session.begin():
                 row = (
-                    await session.execute(
-                        text(
-                            """SELECT * FROM dante.set_self_routine_occurrence_policy(
+                    (
+                        await session.execute(
+                            text(
+                                """SELECT * FROM dante.set_self_routine_occurrence_policy(
                                  :actor,:routine,:duration,:reminder,CAST(:template AS jsonb))"""
-                        ),
-                        {
-                            "actor": self_person_ref,
-                            "routine": routine_ref,
-                            "duration": duration_minutes,
-                            "reminder": reminder_lead_minutes,
-                            "template": json.dumps(
-                                normalized_template,
-                                separators=(",", ":"),
-                                sort_keys=True,
                             ),
-                        },
+                            {
+                                "actor": self_person_ref,
+                                "routine": routine_ref,
+                                "duration": duration_minutes,
+                                "reminder": reminder_lead_minutes,
+                                "template": json.dumps(
+                                    normalized_template,
+                                    separators=(",", ":"),
+                                    sort_keys=True,
+                                ),
+                            },
+                        )
                     )
-                ).mappings().one()
+                    .mappings()
+                    .one()
+                )
         except DBAPIError as exc:
             raise _error(exc) from exc
         except SQLAlchemyError as exc:
@@ -133,13 +137,17 @@ class RoutineOccurrencePolicyApplication:
         try:
             async with self._session_factory() as session, session.begin():
                 row = (
-                    await session.execute(
-                        text(
-                            "SELECT * FROM dante.get_self_routine_occurrence_policy(:actor,:routine)"
-                        ),
-                        {"actor": self_person_ref, "routine": routine_ref},
+                    (
+                        await session.execute(
+                            text(
+                                "SELECT * FROM dante.get_self_routine_occurrence_policy(:actor,:routine)"
+                            ),
+                            {"actor": self_person_ref, "routine": routine_ref},
+                        )
                     )
-                ).mappings().one_or_none()
+                    .mappings()
+                    .one_or_none()
+                )
         except DBAPIError as exc:
             raise _error(exc) from exc
         except SQLAlchemyError as exc:

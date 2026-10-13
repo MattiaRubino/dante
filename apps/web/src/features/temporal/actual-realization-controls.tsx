@@ -159,7 +159,11 @@ export function ActualRealizationControls({
       <div className="timeline-actual-controls__actions">
         <button
           type="button"
-          disabled={pending || !loaded || (actual?.realizationOccurred === true && hasRequestedSessionBasis)}
+          disabled={
+            pending ||
+            !loaded ||
+            (actual?.realizationOccurred === true && hasRequestedSessionBasis)
+          }
           data-timeline-actual-set="occurred"
           onClick={() => setRealization(true)}
         >
@@ -167,7 +171,11 @@ export function ActualRealizationControls({
         </button>
         <button
           type="button"
-          disabled={pending || !loaded || (actual?.realizationOccurred === false && hasRequestedSessionBasis)}
+          disabled={
+            pending ||
+            !loaded ||
+            (actual?.realizationOccurred === false && hasRequestedSessionBasis)
+          }
           data-timeline-actual-set="not-occurred"
           onClick={() => setRealization(false)}
         >
@@ -199,12 +207,16 @@ export function ActualRealizationControls({
           </button>
         </div>
       ) : null}
-      {compactReview ? null : <small>
-        “Sconosciuto” significa che non è ancora stato registrato un Actual; non
-        equivale a “non avvenuto”.
-      </small>}
+      {compactReview ? null : (
+        <small>
+          “Sconosciuto” significa che non è ancora stato registrato un Actual;
+          non equivale a “non avvenuto”.
+        </small>
+      )}
       {messageNode}
-      {showObjectives ? <ObjectiveControls kind={kind} subjectRef={subjectRef} /> : null}
+      {showObjectives ? (
+        <ObjectiveControls kind={kind} subjectRef={subjectRef} />
+      ) : null}
     </div>
   );
 }

@@ -47,7 +47,7 @@ def test_b08_session_catalog_reuses_cp6_and_adds_bounded_subject_capabilities(
                 "SELECT tablename FROM pg_tables WHERE schemaname = 'dante'"
             )
         }
-        assert _SESSION_TABLES <= tables
+        assert tables >= _SESSION_TABLES
 
         session_columns = [
             row[0]

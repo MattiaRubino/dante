@@ -256,14 +256,18 @@ class SessionPlannedScheduleLinkRow(Base):
     __tablename__ = "session_planned_schedule_link"
     __table_args__ = (
         ForeignKeyConstraint(
-            ["session_ref"], ["dante.session_execution_subject.session_ref"],
+            ["session_ref"],
+            ["dante.session_execution_subject.session_ref"],
             name="fk_session_planned_schedule_link_session",
-            onupdate="NO ACTION", ondelete="NO ACTION",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
         ),
         ForeignKeyConstraint(
-            ["schedule_ref"], ["dante.activity_schedule_role.schedule_ref"],
+            ["schedule_ref"],
+            ["dante.activity_schedule_role.schedule_ref"],
             name="fk_session_planned_schedule_link_role",
-            onupdate="NO ACTION", ondelete="NO ACTION",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
         ),
         Index("ix_session_planned_schedule_link_schedule_ref", "schedule_ref"),
     )
@@ -410,20 +414,50 @@ class _SessionTransitionOperationRow(Base):
 class SessionPauseOperationRow(_SessionTransitionOperationRow):
     __tablename__ = "session_pause_operation"
     __table_args__ = (
-        CheckConstraint("operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200", name="operation_id"),
+        CheckConstraint(
+            "operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200",
+            name="operation_id",
+        ),
         CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name="fingerprint"),
-        ForeignKeyConstraint(["self_person_ref"], ["dante.person.person_ref"], name="fk_session_pause_operation_self_person_ref_person"),
-        ForeignKeyConstraint(["session_ref"], ["dante.session.session_ref"], name="fk_session_pause_operation_session_ref_session"),
-        ForeignKeyConstraint(["resulting_material_state_ref"], ["dante.material_state_address.material_state_ref"], name="fk_session_pause_operation_resulting_state_address"),
+        ForeignKeyConstraint(
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
+            name="fk_session_pause_operation_self_person_ref_person",
+        ),
+        ForeignKeyConstraint(
+            ["session_ref"],
+            ["dante.session.session_ref"],
+            name="fk_session_pause_operation_session_ref_session",
+        ),
+        ForeignKeyConstraint(
+            ["resulting_material_state_ref"],
+            ["dante.material_state_address.material_state_ref"],
+            name="fk_session_pause_operation_resulting_state_address",
+        ),
     )
 
 
 class SessionResumeOperationRow(_SessionTransitionOperationRow):
     __tablename__ = "session_resume_operation"
     __table_args__ = (
-        CheckConstraint("operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200", name="operation_id"),
+        CheckConstraint(
+            "operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200",
+            name="operation_id",
+        ),
         CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name="fingerprint"),
-        ForeignKeyConstraint(["self_person_ref"], ["dante.person.person_ref"], name="fk_session_resume_operation_self_person_ref_person"),
-        ForeignKeyConstraint(["session_ref"], ["dante.session.session_ref"], name="fk_session_resume_operation_session_ref_session"),
-        ForeignKeyConstraint(["resulting_material_state_ref"], ["dante.material_state_address.material_state_ref"], name="fk_session_resume_operation_resulting_state_address"),
+        ForeignKeyConstraint(
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
+            name="fk_session_resume_operation_self_person_ref_person",
+        ),
+        ForeignKeyConstraint(
+            ["session_ref"],
+            ["dante.session.session_ref"],
+            name="fk_session_resume_operation_session_ref_session",
+        ),
+        ForeignKeyConstraint(
+            ["resulting_material_state_ref"],
+            ["dante.material_state_address.material_state_ref"],
+            name="fk_session_resume_operation_resulting_state_address",
+        ),
     )

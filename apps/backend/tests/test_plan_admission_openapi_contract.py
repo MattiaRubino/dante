@@ -18,14 +18,19 @@ def test_b12_c_reviewed_move_contract() -> None:
         assert set(paths[path]) == {"post"}
         operation = cast(dict[str, Any], paths[path]["post"])
         assert operation["operationId"] == operation_id
-        assert {"200", "401", "403", "404", "409", "422", "500"} == set(
-            operation["responses"]
-        )
+        assert {"200", "401", "403", "404", "409", "422", "500"} == set(operation["responses"])
         body = operation["requestBody"]["content"]["application/json"]["schema"]
         assert body["$ref"] == "#/components/schemas/ReviewedMoveBody"
         result = operation["responses"]["200"]["content"]["application/json"]["schema"]
         assert result["$ref"] == "#/components/schemas/PlanAdmissionResponse"
     schemas = document["components"]["schemas"]
     required = set(schemas["ReviewedMoveBody"]["required"])
-    assert {"operation_id", "expected_plan_state_ref", "expected_schedule_state_ref",
-            "expected_policy_state_ref", "basis_fingerprint", "starts_at", "ends_at"} <= required
+    assert {
+        "operation_id",
+        "expected_plan_state_ref",
+        "expected_schedule_state_ref",
+        "expected_policy_state_ref",
+        "basis_fingerprint",
+        "starts_at",
+        "ends_at",
+    } <= required

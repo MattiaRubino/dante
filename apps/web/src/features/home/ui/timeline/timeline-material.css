@@ -321,7 +321,10 @@
   visibility: hidden;
 }
 
-.dante-timeline-actions [data-timeline-tooltip]:is(:hover, :focus-visible):not([aria-expanded='true'])::after {
+.dante-timeline-actions
+  [data-timeline-tooltip]:is(:hover, :focus-visible):not(
+    [aria-expanded='true']
+  )::after {
   opacity: 1;
   visibility: visible;
 }

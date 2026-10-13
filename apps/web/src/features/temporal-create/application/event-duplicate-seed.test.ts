@@ -15,11 +15,13 @@ const event = {
   colorCode: '#ABCDEF',
 } as const;
 
-const participants = [{
-  personRef: '0199a333-3333-7333-8333-333333333333',
-  displayLabel: 'Collaboratore',
-  requirementCode: 'required' as const,
-}];
+const participants = [
+  {
+    personRef: '0199a333-3333-7333-8333-333333333333',
+    displayLabel: 'Collaboratore',
+    requirementCode: 'required' as const,
+  },
+];
 
 describe('canonical Event duplicate seed', () => {
   it('copies an exact named-zone Schedule, agenda, Life Area and expected participants', () => {
@@ -33,11 +35,20 @@ describe('canonical Event duplicate seed', () => {
     };
     const result = buildEventDuplicateSeed(event, placement, participants);
     expect(result.fields).toMatchObject({
-      kind: 'event', title: 'Conferenza', contextId: event.lifeAreaRef,
-      date: '2026-10-09', timeSemantics: 'timed', timeMode: 'zoned',
-      timeZoneId: 'Europe/Rome', startTime: '09:00', durationMinutes: 90,
+      kind: 'event',
+      title: 'Conferenza',
+      contextId: event.lifeAreaRef,
+      date: '2026-10-09',
+      timeSemantics: 'timed',
+      timeMode: 'zoned',
+      timeZoneId: 'Europe/Rome',
+      startTime: '09:00',
+      durationMinutes: 90,
       notes: 'Relazione tecnica',
-      event: { agendaParts: ['Introduzione', 'Domande'], location: 'Sala conferenze' },
+      event: {
+        agendaParts: ['Introduzione', 'Domande'],
+        location: 'Sala conferenze',
+      },
     });
     expect(result.advanced.eventParticipants).toEqual(participants);
     expect(result.advanced.itemColorCode).toBe('#ABCDEF');
@@ -53,27 +64,34 @@ describe('canonical Event duplicate seed', () => {
       endDateExclusive: Temporal.PlainDate.from('2026-10-12'),
     });
     expect(result.fields).toMatchObject({
-      date: '2026-10-09', timeSemantics: 'all-day',
+      date: '2026-10-09',
+      timeSemantics: 'all-day',
       event: { allDayEndDate: '2026-10-11' },
     });
     expect(result.advanced.endDate).toBe('2026-10-11');
   });
 
   it('rejects unsupported absolute time rather than silently moving it', () => {
-    expect(() => buildEventDuplicateSeed(event, {
-      kind: 'absolute',
-      startsAt: Temporal.Instant.from('2026-10-09T07:00:00Z'),
-      endsAt: Temporal.Instant.from('2026-10-09T08:00:00Z'),
-    })).toThrow('non è duplicabile fedelmente');
+    expect(() =>
+      buildEventDuplicateSeed(event, {
+        kind: 'absolute',
+        startsAt: Temporal.Instant.from('2026-10-09T07:00:00Z'),
+        endsAt: Temporal.Instant.from('2026-10-09T08:00:00Z'),
+      }),
+    ).toThrow('non è duplicabile fedelmente');
   });
 
   it('preserves coarse local period without inventing a clock time', () => {
-    expect(buildEventDuplicateSeed(event, {
-      kind: 'coarse-local-period',
-      localDate: Temporal.PlainDate.from('2026-10-09'),
-      period: 'morning',
-    }).fields).toMatchObject({
-      timeSemantics: 'coarse', date: '2026-10-09', coarsePeriod: 'morning',
+    expect(
+      buildEventDuplicateSeed(event, {
+        kind: 'coarse-local-period',
+        localDate: Temporal.PlainDate.from('2026-10-09'),
+        period: 'morning',
+      }).fields,
+    ).toMatchObject({
+      timeSemantics: 'coarse',
+      date: '2026-10-09',
+      coarsePeriod: 'morning',
     });
   });
 
@@ -93,25 +111,28 @@ describe('canonical Event duplicate seed', () => {
   });
 
   it('rejects a DST-cross-fold interval that one shared Create disambiguation cannot recreate', () => {
-    expect(() => buildEventDuplicateSeed(event, {
-      kind: 'named-zone-local',
-      startsLocalAt: Temporal.PlainDateTime.from('2026-10-25T02:15'),
-      endsLocalAt: Temporal.PlainDateTime.from('2026-10-25T02:45'),
-      zoneId: 'Europe/Rome',
-      resolvedStartAt: Temporal.Instant.from('2026-10-25T00:15:00Z'),
-      resolvedEndAt: Temporal.Instant.from('2026-10-25T01:45:00Z'),
-    })).toThrow('DST incompatibili');
+    expect(() =>
+      buildEventDuplicateSeed(event, {
+        kind: 'named-zone-local',
+        startsLocalAt: Temporal.PlainDateTime.from('2026-10-25T02:15'),
+        endsLocalAt: Temporal.PlainDateTime.from('2026-10-25T02:45'),
+        zoneId: 'Europe/Rome',
+        resolvedStartAt: Temporal.Instant.from('2026-10-25T00:15:00Z'),
+        resolvedEndAt: Temporal.Instant.from('2026-10-25T01:45:00Z'),
+      }),
+    ).toThrow('DST incompatibili');
   });
 
   it('rejects an inconsistent persisted named-zone instant rather than silently moving the duplicate', () => {
-    expect(() => buildEventDuplicateSeed(event, {
-      kind: 'named-zone-local',
-      startsLocalAt: Temporal.PlainDateTime.from('2026-10-09T09:00'),
-      endsLocalAt: Temporal.PlainDateTime.from('2026-10-09T10:00'),
-      zoneId: 'Europe/Rome',
-      resolvedStartAt: Temporal.Instant.from('2026-10-09T08:00:00Z'),
-      resolvedEndAt: Temporal.Instant.from('2026-10-09T08:00:00Z'),
-    })).toThrow('non sono ricostruibili');
+    expect(() =>
+      buildEventDuplicateSeed(event, {
+        kind: 'named-zone-local',
+        startsLocalAt: Temporal.PlainDateTime.from('2026-10-09T09:00'),
+        endsLocalAt: Temporal.PlainDateTime.from('2026-10-09T10:00'),
+        zoneId: 'Europe/Rome',
+        resolvedStartAt: Temporal.Instant.from('2026-10-09T08:00:00Z'),
+        resolvedEndAt: Temporal.Instant.from('2026-10-09T08:00:00Z'),
+      }),
+    ).toThrow('non sono ricostruibili');
   });
-
 });

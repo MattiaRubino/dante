@@ -2,7 +2,15 @@
 
 from datetime import datetime
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKeyConstraint, Index, Text, UniqueConstraint, text
+from sqlalchemy import (
+    CheckConstraint,
+    DateTime,
+    ForeignKeyConstraint,
+    Index,
+    Text,
+    UniqueConstraint,
+    text,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from dante.platform.database.metadata import Base
@@ -67,9 +75,7 @@ class OutcomeReconciliationRow(Base):
 
     reconciliation_ref: Mapped[ScopedRecordRef] = mapped_column(primary_key=True)
     outcome_ref: Mapped[ScopedRecordRef] = mapped_column(nullable=False)
-    outcome_disposition_material_state_ref: Mapped[MaterialStateRef] = mapped_column(
-        nullable=False
-    )
+    outcome_disposition_material_state_ref: Mapped[MaterialStateRef] = mapped_column(nullable=False)
     purpose_code: Mapped[str] = mapped_column(Text, nullable=False)
 
 
@@ -282,9 +288,7 @@ class OutcomeReconciliationOperationRow(Base):
     intent_fingerprint: Mapped[str] = mapped_column(Text, nullable=False)
     reconciliation_ref: Mapped[ScopedRecordRef] = mapped_column(nullable=False)
     outcome_ref: Mapped[ScopedRecordRef] = mapped_column(nullable=False)
-    outcome_disposition_material_state_ref: Mapped[MaterialStateRef] = mapped_column(
-        nullable=False
-    )
+    outcome_disposition_material_state_ref: Mapped[MaterialStateRef] = mapped_column(nullable=False)
     purpose_code: Mapped[str] = mapped_column(Text, nullable=False)
     expected_material_state_ref: Mapped[MaterialStateRef | None] = mapped_column(nullable=True)
     resulting_material_state_ref: Mapped[MaterialStateRef] = mapped_column(nullable=False)

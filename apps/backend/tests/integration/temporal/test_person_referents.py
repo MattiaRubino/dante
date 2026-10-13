@@ -6,6 +6,7 @@ from typing import Any
 
 import psycopg
 import pytest
+from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
 
 from dante.modules.temporal.activity import TemporalActivityApplication
 from dante.modules.temporal.event import TemporalEventApplication
@@ -17,7 +18,6 @@ from dante.modules.temporal.responsibility_participation import (
     ResponsibilityParticipationApplication,
 )
 from dante.platform.database.runtime import create_database_runtime
-from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
 
 pytestmark = pytest.mark.postgres
 pytest_plugins = ("tests.integration.temporal.test_activity_core",)
@@ -25,9 +25,12 @@ pytest_plugins = ("tests.integration.temporal.test_activity_core",)
 
 def _admin(database: Any) -> psycopg.Connection[Any]:
     return psycopg.connect(
-        host=database.cluster.host, port=database.cluster.port,
-        dbname=database.name, user=database.cluster.admin_user,
-        password=database.cluster.admin_password, autocommit=True,
+        host=database.cluster.host,
+        port=database.cluster.port,
+        dbname=database.name,
+        user=database.cluster.admin_user,
+        password=database.cluster.admin_password,
+        autocommit=True,
     )
 
 
@@ -41,48 +44,73 @@ async def test_person_catalog_creates_native_identity_without_account_and_guards
     app = ResponsibilityParticipationApplication(runtime.session_factory)
     try:
         created = await app.create_person_referent(
-            self_person_ref=alice, operation_id="person:create", display_label=" Anna ",
+            self_person_ref=alice,
+            operation_id="person:create",
+            display_label=" Anna ",
         )
         assert created.display_label == "Anna"
         assert created.revision == 1
         assert not created.replayed
-        assert (await app.create_person_referent(
-            self_person_ref=alice, operation_id="person:create", display_label="Anna",
-        )).person_ref == created.person_ref
-        assert (await app.create_person_referent(
-            self_person_ref=alice, operation_id="person:create", display_label="Anna",
-        )).replayed
+        assert (
+            await app.create_person_referent(
+                self_person_ref=alice,
+                operation_id="person:create",
+                display_label="Anna",
+            )
+        ).person_ref == created.person_ref
+        assert (
+            await app.create_person_referent(
+                self_person_ref=alice,
+                operation_id="person:create",
+                display_label="Anna",
+            )
+        ).replayed
         with pytest.raises(ResponsibilityOperationReuseError):
             await app.create_person_referent(
-                self_person_ref=alice, operation_id="person:create", display_label="Other",
+                self_person_ref=alice,
+                operation_id="person:create",
+                display_label="Other",
             )
 
-        assert [p.person_ref for p in await app.list_person_referents(
-            self_person_ref=alice,
-        )] == [created.person_ref]
+        assert [
+            p.person_ref
+            for p in await app.list_person_referents(
+                self_person_ref=alice,
+            )
+        ] == [created.person_ref]
         assert await app.list_person_referents(self_person_ref=bob) == ()
 
         renamed = await app.rename_person_referent(
-            self_person_ref=alice, operation_id="person:rename",
-            person_ref=created.person_ref, expected_revision=1,
+            self_person_ref=alice,
+            operation_id="person:rename",
+            person_ref=created.person_ref,
+            expected_revision=1,
             display_label="Anna Rossi",
         )
         assert (renamed.display_label, renamed.revision) == ("Anna Rossi", 2)
-        assert (await app.rename_person_referent(
-            self_person_ref=alice, operation_id="person:rename",
-            person_ref=created.person_ref, expected_revision=1,
-            display_label="Anna Rossi",
-        )).replayed
+        assert (
+            await app.rename_person_referent(
+                self_person_ref=alice,
+                operation_id="person:rename",
+                person_ref=created.person_ref,
+                expected_revision=1,
+                display_label="Anna Rossi",
+            )
+        ).replayed
         with pytest.raises(ResponsibilityConflictError):
             await app.rename_person_referent(
-                self_person_ref=alice, operation_id="person:stale",
-                person_ref=created.person_ref, expected_revision=1,
+                self_person_ref=alice,
+                operation_id="person:stale",
+                person_ref=created.person_ref,
+                expected_revision=1,
                 display_label="Anna Bianchi",
             )
         with pytest.raises(ResponsibilityNotFoundError):
             await app.rename_person_referent(
-                self_person_ref=bob, operation_id="person:foreign",
-                person_ref=created.person_ref, expected_revision=1,
+                self_person_ref=bob,
+                operation_id="person:foreign",
+                person_ref=created.person_ref,
+                expected_revision=1,
                 display_label="Reveal",
             )
 
@@ -92,8 +120,8 @@ async def test_person_catalog_creates_native_identity_without_account_and_guards
                 (created.person_ref,),
             ).fetchone() == ("person",)
             assert connection.execute(
-                "SELECT count(*) FROM dante.account_application_context "
-                "WHERE self_person_ref=%s", (created.person_ref,),
+                "SELECT count(*) FROM dante.account_application_context WHERE self_person_ref=%s",
+                (created.person_ref,),
             ).fetchone() == (0,)
             for table in ("person_referent_catalog", "person_referent_operation"):
                 assert connection.execute(
@@ -119,37 +147,58 @@ async def test_local_person_can_hold_responsibility_and_expected_event_participa
     app = ResponsibilityParticipationApplication(runtime.session_factory)
     try:
         person = await app.create_person_referent(
-            self_person_ref=alice, operation_id="c:person", display_label="Luca",
+            self_person_ref=alice,
+            operation_id="c:person",
+            display_label="Luca",
         )
-        area = (await areas.create(
-            self_person_ref=alice, operation_id="c:area", name="Lavoro",
-        )).area
-        activity = (await activities.create_activity(
-            self_person_ref=alice, operation_id="c:activity",
-            title="Prepare review", life_area_ref=area.life_area_ref,
-        )).activity
-        event = (await events.create_event(
-            self_person_ref=alice, operation_id="c:event",
-            title="Review", life_area_ref=area.life_area_ref,
-        )).event
+        area = (
+            await areas.create(
+                self_person_ref=alice,
+                operation_id="c:area",
+                name="Lavoro",
+            )
+        ).area
+        activity = (
+            await activities.create_activity(
+                self_person_ref=alice,
+                operation_id="c:activity",
+                title="Prepare review",
+                life_area_ref=area.life_area_ref,
+            )
+        ).activity
+        event = (
+            await events.create_event(
+                self_person_ref=alice,
+                operation_id="c:event",
+                title="Review",
+                life_area_ref=area.life_area_ref,
+            )
+        ).event
 
         result = await app.set_responsibility(
-            self_person_ref=alice, operation_id="c:assign",
-            subject_kind="activity", subject_native_ref=activity.activity_ref,
+            self_person_ref=alice,
+            operation_id="c:assign",
+            subject_kind="activity",
+            subject_native_ref=activity.activity_ref,
             responsible_person_ref=person.person_ref,
             expected_responsible_person_ref=None,
         )
         assert result.responsible_person_ref == person.person_ref
         event_holder = await app.set_responsibility(
-            self_person_ref=alice, operation_id="c:event-assign",
-            subject_kind="event", subject_native_ref=event.event_ref,
+            self_person_ref=alice,
+            operation_id="c:event-assign",
+            subject_kind="event",
+            subject_native_ref=event.event_ref,
             responsible_person_ref=person.person_ref,
             expected_responsible_person_ref=None,
         )
         assert event_holder.responsible_person_ref == person.person_ref
         expectation = await app.set_expected_participation(
-            self_person_ref=alice, operation_id="c:expect", event_ref=event.event_ref,
-            participant_person_ref=person.person_ref, requirement_code="required",
+            self_person_ref=alice,
+            operation_id="c:expect",
+            event_ref=event.event_ref,
+            participant_person_ref=person.person_ref,
+            requirement_code="required",
             expected_requirement_code=None,
         )
         assert expectation.participant_person_ref == person.person_ref
@@ -157,14 +206,19 @@ async def test_local_person_can_hold_responsibility_and_expected_event_participa
 
         with pytest.raises(ResponsibilityNotFoundError):
             await app.set_expected_participation(
-                self_person_ref=alice, operation_id="c:foreign-person",
-                event_ref=event.event_ref, participant_person_ref=bob,
-                requirement_code="optional", expected_requirement_code=None,
+                self_person_ref=alice,
+                operation_id="c:foreign-person",
+                event_ref=event.event_ref,
+                participant_person_ref=bob,
+                requirement_code="optional",
+                expected_requirement_code=None,
             )
         with pytest.raises(ResponsibilityNotFoundError):
             await app.set_responsibility(
-                self_person_ref=bob, operation_id="c:foreign-subject",
-                subject_kind="activity", subject_native_ref=activity.activity_ref,
+                self_person_ref=bob,
+                operation_id="c:foreign-subject",
+                subject_kind="activity",
+                subject_native_ref=activity.activity_ref,
                 responsible_person_ref=person.person_ref,
                 expected_responsible_person_ref=None,
             )

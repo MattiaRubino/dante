@@ -37,32 +37,54 @@ _B04_RUNTIME_READ_TABLES = {
     "temporal_constraint_window_absolute_state",
 }
 _B04_TRIGGERS = {
-    "trg_temporal_constraint_native_ref": (
-        False, False, False, "enforce_native_ref_eligibility"
-    ),
+    "trg_temporal_constraint_native_ref": (False, False, False, "enforce_native_ref_eligibility"),
     "ctrg_temporal_constraint_owner_complete": (
-        True, True, True, "enforce_owner_creation_completeness"
+        True,
+        True,
+        True,
+        "enforce_owner_creation_completeness",
     ),
     "ctrg_temporal_constraint_state_state_totality": (
-        True, True, True, "enforce_material_state_totality"
+        True,
+        True,
+        True,
+        "enforce_material_state_totality",
     ),
     "ctrg_temporal_constraint_state_rule_totality": (
-        True, True, True, "enforce_temporal_constraint_rule_totality"
+        True,
+        True,
+        True,
+        "enforce_temporal_constraint_rule_totality",
     ),
     "ctrg_temporal_constraint_boundary_state_rule_totality": (
-        True, True, True, "enforce_temporal_constraint_rule_totality"
+        True,
+        True,
+        True,
+        "enforce_temporal_constraint_rule_totality",
     ),
     "ctrg_temporal_constraint_boundary_absolute_state_rule_totality": (
-        True, True, True, "enforce_temporal_constraint_rule_totality"
+        True,
+        True,
+        True,
+        "enforce_temporal_constraint_rule_totality",
     ),
     "ctrg_temporal_constraint_window_state_rule_totality": (
-        True, True, True, "enforce_temporal_constraint_rule_totality"
+        True,
+        True,
+        True,
+        "enforce_temporal_constraint_rule_totality",
     ),
     "ctrg_temporal_constraint_window_absolute_state_rule_totality": (
-        True, True, True, "enforce_temporal_constraint_rule_totality"
+        True,
+        True,
+        True,
+        "enforce_temporal_constraint_rule_totality",
     ),
     "ctrg_temporal_constraint_current_history_equivalence": (
-        True, True, True, "enforce_current_history_equivalence"
+        True,
+        True,
+        True,
+        "enforce_current_history_equivalence",
     ),
 }
 _MUTATE_SIGNATURES = (
@@ -130,9 +152,7 @@ def test_b04_catalog_surface_and_live_topology(
     command.upgrade(alembic_config, _B04_STAGE_REVISION)
     migrated_database = provisioned_database
     with _admin(migrated_database) as connection:
-        revision = connection.execute(
-            "SELECT version_num FROM dante.alembic_version"
-        ).fetchone()
+        revision = connection.execute("SELECT version_num FROM dante.alembic_version").fetchone()
         b04_tables = {
             str(row[0])
             for row in connection.execute(
@@ -229,18 +249,14 @@ def test_b04_triggers_and_routine_acl_are_exact(migrated_database: Any) -> None:
             )
         }
         mutation_security = {
-            signature: _routine_security(connection, signature)
-            for signature in _MUTATE_SIGNATURES
+            signature: _routine_security(connection, signature) for signature in _MUTATE_SIGNATURES
         }
         shared_security = {
-            signature: _routine_security(connection, signature)
-            for signature in _SHARED_ROUTINES
+            signature: _routine_security(connection, signature) for signature in _SHARED_ROUTINES
         }
 
     assert trigger_rows == _B04_TRIGGERS
-    assert direct_acl == {
-        (table, "dante_runtime", "SELECT") for table in _B04_RUNTIME_READ_TABLES
-    }
+    assert direct_acl == {(table, "dante_runtime", "SELECT") for table in _B04_RUNTIME_READ_TABLES}
     assert all(
         security
         == (
@@ -275,7 +291,7 @@ def test_b04_triggers_and_routine_acl_are_exact(migrated_database: Any) -> None:
 
 def test_b04_sqlalchemy_registration_is_exact() -> None:
     mapped = {table.name: table for table in MAPPED_TABLES}
-    assert _B04_TABLES <= set(mapped)
+    assert set(mapped) >= _B04_TABLES
     # B04-E adds a duration rule to the current ORM registry.
     assert {name for name in mapped if name.startswith("temporal_constraint")} == (
         _B04_TABLES | {"temporal_constraint_duration_state"}

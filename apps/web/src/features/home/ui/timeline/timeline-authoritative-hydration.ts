@@ -133,7 +133,9 @@ function canonicalBasis(
 function appearanceColor(
   colorCode: string | null | undefined,
 ): Readonly<{ appearanceColorCode?: string }> {
-  return colorCode ? Object.freeze({ appearanceColorCode: colorCode }) : Object.freeze({});
+  return colorCode
+    ? Object.freeze({ appearanceColorCode: colorCode })
+    : Object.freeze({});
 }
 
 function expectedCalendarProjection(
@@ -408,8 +410,7 @@ export function useAuthoritativeTimelineHydration(
   onReconcileDateLane: (items: readonly TimelineAllDayItem[]) => void,
   resolveGroupId?: ((item: TemporalTimelineItem) => string) | null,
   resolveAppearanceColorCode?:
-    | ((item: TemporalTimelineItem) => string | null)
-    | null,
+    ((item: TemporalTimelineItem) => string | null) | null,
 ): void {
   const { state } = useTemporalTimelineRuntime();
   const reconcileEventsRef = useRef(onReconcileEvents);

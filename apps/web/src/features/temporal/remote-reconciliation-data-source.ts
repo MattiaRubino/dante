@@ -5,11 +5,7 @@ const UUID_V7 =
 const CONTEXT_CODE = /^[a-z0-9][a-z0-9._:-]{0,119}$/;
 
 export type TemporalReconciliationAction =
-  | 'unresolved'
-  | 'select'
-  | 'accept_multiple'
-  | 'defer'
-  | 'escalate';
+  'unresolved' | 'select' | 'accept_multiple' | 'defer' | 'escalate';
 export type TemporalReconciliationEvidenceRole = 'considered' | 'selected';
 
 export type TemporalReconciliationEvidenceView = Readonly<{
@@ -53,21 +49,30 @@ export class TemporalReconciliationRemoteError extends Error {
 
 function record(value: unknown): Record<string, unknown> {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    throw new TemporalReconciliationRemoteError('protocol', 'Invalid Reconciliation response.');
+    throw new TemporalReconciliationRemoteError(
+      'protocol',
+      'Invalid Reconciliation response.',
+    );
   }
   return value as Record<string, unknown>;
 }
 
 function uuid(value: unknown, field: string): string {
   if (typeof value !== 'string' || !UUID_V7.test(value)) {
-    throw new TemporalReconciliationRemoteError('protocol', `${field} must be a UUIDv7.`);
+    throw new TemporalReconciliationRemoteError(
+      'protocol',
+      `${field} must be a UUIDv7.`,
+    );
   }
   return value.toLowerCase();
 }
 
 function contextCode(value: unknown, field: string): string {
   if (typeof value !== 'string' || !CONTEXT_CODE.test(value)) {
-    throw new TemporalReconciliationRemoteError('protocol', `Invalid Reconciliation ${field}.`);
+    throw new TemporalReconciliationRemoteError(
+      'protocol',
+      `Invalid Reconciliation ${field}.`,
+    );
   }
   return value;
 }
@@ -80,14 +85,20 @@ function action(value: unknown): TemporalReconciliationAction {
     value !== 'defer' &&
     value !== 'escalate'
   ) {
-    throw new TemporalReconciliationRemoteError('protocol', 'Invalid Reconciliation action_code.');
+    throw new TemporalReconciliationRemoteError(
+      'protocol',
+      'Invalid Reconciliation action_code.',
+    );
   }
   return value;
 }
 
 function evidenceRole(value: unknown): TemporalReconciliationEvidenceRole {
   if (value !== 'considered' && value !== 'selected') {
-    throw new TemporalReconciliationRemoteError('protocol', 'Invalid Reconciliation evidence role_code.');
+    throw new TemporalReconciliationRemoteError(
+      'protocol',
+      'Invalid Reconciliation evidence role_code.',
+    );
   }
   return value;
 }
@@ -107,10 +118,16 @@ function evidenceView(value: unknown): TemporalReconciliationEvidenceView {
 function view(value: unknown): TemporalReconciliationView {
   const payload = record(value);
   if (typeof payload.replayed !== 'boolean') {
-    throw new TemporalReconciliationRemoteError('protocol', 'Invalid Reconciliation replay state.');
+    throw new TemporalReconciliationRemoteError(
+      'protocol',
+      'Invalid Reconciliation replay state.',
+    );
   }
   if (!Array.isArray(payload.evidence)) {
-    throw new TemporalReconciliationRemoteError('protocol', 'Invalid Reconciliation evidence list.');
+    throw new TemporalReconciliationRemoteError(
+      'protocol',
+      'Invalid Reconciliation evidence list.',
+    );
   }
   return Object.freeze({
     reconciliationRef: uuid(payload.reconciliation_ref, 'reconciliation_ref'),
@@ -122,7 +139,10 @@ function view(value: unknown): TemporalReconciliationView {
     purposeCode: contextCode(payload.purpose_code, 'purpose_code'),
     materialStateRef: uuid(payload.material_state_ref, 'material_state_ref'),
     actionCode: action(payload.action_code),
-    resolvedByPersonRef: uuid(payload.resolved_by_person_ref, 'resolved_by_person_ref'),
+    resolvedByPersonRef: uuid(
+      payload.resolved_by_person_ref,
+      'resolved_by_person_ref',
+    ),
     evidence: Object.freeze(payload.evidence.map(evidenceView)),
     replayed: payload.replayed,
   });
@@ -151,7 +171,9 @@ export function createRemoteTemporalReconciliationDataSource(
     return payload.csrf_token;
   }
 
-  async function problem(response: Response): Promise<TemporalReconciliationRemoteError> {
+  async function problem(
+    response: Response,
+  ): Promise<TemporalReconciliationRemoteError> {
     let payload: Record<string, unknown> = {};
     try {
       payload = record(await response.json());
@@ -164,29 +186,41 @@ export function createRemoteTemporalReconciliationDataSource(
     }
     return new TemporalReconciliationRemoteError(
       'http',
-      typeof payload.detail === 'string' ? payload.detail : 'Reconciliation command rejected.',
+      typeof payload.detail === 'string'
+        ? payload.detail
+        : 'Reconciliation command rejected.',
       response.status,
       typeof payload.code === 'string' ? payload.code : null,
     );
   }
 
   return Object.freeze({
-    async list(outcomeRef: string): Promise<readonly TemporalReconciliationView[]> {
+    async list(
+      outcomeRef: string,
+    ): Promise<readonly TemporalReconciliationView[]> {
       const response = await webFetch(
         `/api/v1/temporal/outcomes/${encodeURIComponent(outcomeRef)}/reconciliations`,
       );
       if (!response.ok) {
         const error = await problem(response);
-        if (response.status === 404 && error.code === 'temporal.reconciliation.not_found') {
+        if (
+          response.status === 404 &&
+          error.code === 'temporal.reconciliation.not_found'
+        ) {
           return [];
         }
         throw error;
       }
       const payload: unknown = await response.json();
       if (!Array.isArray(payload)) {
-        throw new TemporalReconciliationRemoteError('protocol', 'Invalid Reconciliation list.');
+        throw new TemporalReconciliationRemoteError(
+          'protocol',
+          'Invalid Reconciliation list.',
+        );
       }
-      return Object.freeze(payload.map((item) => view({ ...record(item), replayed: false })));
+      return Object.freeze(
+        payload.map((item) => view({ ...record(item), replayed: false })),
+      );
     },
 
     async record(
@@ -210,7 +244,8 @@ export function createRemoteTemporalReconciliationDataSource(
           headers,
           body: JSON.stringify({
             operation_id: command.operationId,
-            outcome_disposition_material_state_ref: command.outcomeDispositionMaterialStateRef,
+            outcome_disposition_material_state_ref:
+              command.outcomeDispositionMaterialStateRef,
             expected_material_state_ref: command.expectedMaterialStateRef,
             purpose_code: command.purposeCode,
             action_code: command.actionCode,

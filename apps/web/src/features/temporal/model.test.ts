@@ -61,12 +61,8 @@ describe('temporal F0 model contract', () => {
         end: Temporal.ZonedDateTime.from(
           '2026-03-29T03:30:00+02:00[Europe/Rome]',
         ),
-        sourceStartsLocalAt: Temporal.PlainDateTime.from(
-          '2026-03-29T01:30:00',
-        ),
-        sourceEndsLocalAt: Temporal.PlainDateTime.from(
-          '2026-03-29T02:30:00',
-        ),
+        sourceStartsLocalAt: Temporal.PlainDateTime.from('2026-03-29T01:30:00'),
+        sourceEndsLocalAt: Temporal.PlainDateTime.from('2026-03-29T02:30:00'),
         disambiguation: 'later',
       },
       {
@@ -100,9 +96,7 @@ describe('temporal F0 model contract', () => {
       end: Temporal.ZonedDateTime.from(
         '2026-03-29T03:30:00+02:00[Europe/Rome]',
       ),
-      sourceStartsLocalAt: Temporal.PlainDateTime.from(
-        '2026-03-29T01:30:00',
-      ),
+      sourceStartsLocalAt: Temporal.PlainDateTime.from('2026-03-29T01:30:00'),
       sourceEndsLocalAt: Temporal.PlainDateTime.from('2026-03-29T02:30:00'),
       disambiguation: 'later',
     };
@@ -122,9 +116,7 @@ describe('temporal F0 model contract', () => {
     expect(restored.end.toPlainDateTime().toString()).toBe(
       '2026-03-29T03:30:00',
     );
-    expect(restored.sourceEndsLocalAt?.toString()).toBe(
-      '2026-03-29T02:30:00',
-    );
+    expect(restored.sourceEndsLocalAt?.toString()).toBe('2026-03-29T02:30:00');
   });
 
   it('keeps DST-aware exact ordering for zoned placements', () => {
@@ -171,9 +163,7 @@ describe('temporal F0 model contract', () => {
         end: Temporal.ZonedDateTime.from(
           '2026-03-29T03:30:00+02:00[Europe/Rome]',
         ),
-        sourceStartsLocalAt: Temporal.PlainDateTime.from(
-          '2026-03-29T01:30:00',
-        ),
+        sourceStartsLocalAt: Temporal.PlainDateTime.from('2026-03-29T01:30:00'),
       },
     ];
 

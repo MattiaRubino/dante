@@ -192,8 +192,10 @@ def _problem(exc: Exception) -> ProblemError:
         )
     if isinstance(exc, ActualParentAcknowledgementRequiredError):
         return ProblemError(
-            status=409, code="temporal.actual.parent_ack_required",
-            category="conflict", title="Parent acknowledgement required",
+            status=409,
+            code="temporal.actual.parent_ack_required",
+            category="conflict",
+            title="Parent acknowledgement required",
             detail=str(exc),
         )
     if isinstance(exc, ActualParentBlockedError):

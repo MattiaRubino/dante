@@ -170,7 +170,9 @@ export function TemporalCreateComposer({
     const root = dialogRef.current;
     if (!root) return;
     const invalidPaths = [
-      ...issues.map((issue) => issue.path[0]).filter((path): path is string => Boolean(path)),
+      ...issues
+        .map((issue) => issue.path[0])
+        .filter((path): path is string => Boolean(path)),
       ...(failureTarget ? [failureTarget] : []),
     ];
     const marked = new Map<HTMLElement, string | null>();
@@ -186,7 +188,8 @@ export function TemporalCreateComposer({
     return () => {
       for (const [region, previousAriaInvalid] of marked) {
         delete region.dataset.createInvalid;
-        if (previousAriaInvalid === null) region.removeAttribute('aria-invalid');
+        if (previousAriaInvalid === null)
+          region.removeAttribute('aria-invalid');
         else region.setAttribute('aria-invalid', previousAriaInvalid);
       }
     };
@@ -480,9 +483,11 @@ export function TemporalCreateComposer({
             >
               <PinIcon />
             </button>
-            <TemporalPanelCloseButton disabled={pending}
+            <TemporalPanelCloseButton
+              disabled={pending}
               onClick={requestCloseFromCurrentFocus}
-              label={t(($) => $.common.home.timeline.create.close)} />
+              label={t(($) => $.common.home.timeline.create.close)}
+            />
           </div>
         </div>
 
@@ -522,7 +527,9 @@ export function TemporalCreateComposer({
             {unlocatedIssues.length > 0 ? (
               <div className="temporal-create-operation-error" role="alert">
                 {unlocatedIssues.map((issue, index) => (
-                  <div key={`${issue.code}:${index}`}>{validationText(issue)}</div>
+                  <div key={`${issue.code}:${index}`}>
+                    {validationText(issue)}
+                  </div>
                 ))}
               </div>
             ) : null}
@@ -596,7 +603,8 @@ export function TemporalCreateComposer({
                 showRecurrence={advanced}
                 repeatDetails={
                   advanced &&
-                  fields.eventRecurrence.patternKind === 'calendar-wall-clock' ? (
+                  fields.eventRecurrence.patternKind ===
+                    'calendar-wall-clock' ? (
                     <TemporalCreateCalendarRecurrenceFields
                       fields={fields}
                       onPatch={onPatch}

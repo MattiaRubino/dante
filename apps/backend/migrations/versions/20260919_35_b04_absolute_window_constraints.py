@@ -206,10 +206,7 @@ def upgrade() -> None:
         $function$
         """
     )
-    _sql(
-        "ALTER FUNCTION dante.enforce_temporal_constraint_rule_totality() "
-        f"OWNER TO {_OWNER}"
-    )
+    _sql(f"ALTER FUNCTION dante.enforce_temporal_constraint_rule_totality() OWNER TO {_OWNER}")
     _sql(
         "REVOKE ALL PRIVILEGES ON FUNCTION dante.enforce_temporal_constraint_rule_totality() "
         f"FROM PUBLIC, {_RUNTIME}, {_MIGRATOR}"
@@ -225,10 +222,7 @@ def upgrade() -> None:
             "DEFERRABLE INITIALLY DEFERRED FOR EACH ROW "
             "EXECUTE FUNCTION dante.enforce_temporal_constraint_rule_totality()"
         )
-        _sql(
-            f"REVOKE ALL PRIVILEGES ON TABLE dante.{table} "
-            f"FROM PUBLIC, {_RUNTIME}, {_MIGRATOR}"
-        )
+        _sql(f"REVOKE ALL PRIVILEGES ON TABLE dante.{table} FROM PUBLIC, {_RUNTIME}, {_MIGRATOR}")
 
     _sql(
         r"""

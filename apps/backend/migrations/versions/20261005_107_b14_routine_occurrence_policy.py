@@ -81,7 +81,7 @@ def downgrade() -> None:
     )
 
 
-_SET_POLICY = r'''
+_SET_POLICY = r"""
 CREATE FUNCTION dante.set_self_routine_occurrence_policy(
     requested_self_person_ref uuid,
     requested_routine_ref uuid,
@@ -140,9 +140,9 @@ BEGIN
     RETURN QUERY SELECT requested_duration_minutes,requested_reminder_lead_minutes,recorded_at,false;
 END;
 $function$;
-'''
+"""
 
-_GET_POLICY = r'''
+_GET_POLICY = r"""
 CREATE FUNCTION dante.get_self_routine_occurrence_policy(
     requested_self_person_ref uuid,
     requested_routine_ref uuid
@@ -156,4 +156,4 @@ SELECT policy.duration_minutes,policy.reminder_lead_minutes,policy.created_at
    AND policy.routine_ref=requested_routine_ref
    AND routine.self_person_ref=requested_self_person_ref
 $function$;
-'''
+"""

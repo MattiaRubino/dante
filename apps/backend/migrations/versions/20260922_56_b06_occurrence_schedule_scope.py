@@ -19,8 +19,10 @@ _MIGRATOR = "dante_migrator"
 
 
 def _definition(name: str, argument_count: int) -> str:
-    value = op.get_bind().exec_driver_sql(
-        """
+    value = (
+        op.get_bind()
+        .exec_driver_sql(
+            """
         SELECT pg_get_functiondef(routine.oid)
           FROM pg_proc AS routine
           JOIN pg_namespace AS namespace ON namespace.oid=routine.pronamespace
@@ -28,8 +30,10 @@ def _definition(name: str, argument_count: int) -> str:
            AND routine.proname=%s
            AND routine.pronargs=%s
         """,
-        (name, argument_count),
-    ).scalar_one()
+            (name, argument_count),
+        )
+        .scalar_one()
+    )
     if not isinstance(value, str):
         raise RuntimeError(f"B06-D Schedule capability {name} is unavailable")
     return value
@@ -49,9 +53,7 @@ def _install(definition: str, *, name: str, signature: str) -> None:
         f"REVOKE ALL PRIVILEGES ON FUNCTION dante.{name}({signature}) "
         f"FROM PUBLIC,{_RUNTIME},{_MIGRATOR}"
     )
-    connection.exec_driver_sql(
-        f"GRANT EXECUTE ON FUNCTION dante.{name}({signature}) TO {_RUNTIME}"
-    )
+    connection.exec_driver_sql(f"GRANT EXECUTE ON FUNCTION dante.{name}({signature}) TO {_RUNTIME}")
 
 
 _SUBJECT_EVENT_BRANCH = """                       OR
@@ -189,9 +191,7 @@ def upgrade() -> None:
         definition = _replace_once(
             definition,
             _SCHEDULE_EVENT_BRANCH_EXPANDED,
-            _SCHEDULE_EVENT_BRANCH_EXPANDED
-            + "\n"
-            + _SCHEDULE_OCCURRENCE_BRANCH_EXPANDED,
+            _SCHEDULE_EVENT_BRANCH_EXPANDED + "\n" + _SCHEDULE_OCCURRENCE_BRANCH_EXPANDED,
             label=f"{name} ownership",
         )
         _install(definition, name=name, signature=signature)

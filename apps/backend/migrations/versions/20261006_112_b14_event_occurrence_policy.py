@@ -29,9 +29,7 @@ def upgrade() -> None:
         sa.Column("duration_days", sa.Integer(), nullable=True),
         sa.Column("reminder_lead_minutes", sa.Integer(), nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
-        sa.PrimaryKeyConstraint(
-            "self_person_ref", "event_ref", name="pk_event_occurrence_policy"
-        ),
+        sa.PrimaryKeyConstraint("self_person_ref", "event_ref", name="pk_event_occurrence_policy"),
         sa.ForeignKeyConstraint(
             ["self_person_ref"],
             ["dante.person.person_ref"],
@@ -83,9 +81,7 @@ def upgrade() -> None:
         bind.exec_driver_sql(
             f"REVOKE ALL ON FUNCTION dante.{signature} FROM PUBLIC,dante_runtime,dante_migrator"
         )
-        bind.exec_driver_sql(
-            f"GRANT EXECUTE ON FUNCTION dante.{signature} TO dante_runtime"
-        )
+        bind.exec_driver_sql(f"GRANT EXECUTE ON FUNCTION dante.{signature} TO dante_runtime")
 
 
 def downgrade() -> None:

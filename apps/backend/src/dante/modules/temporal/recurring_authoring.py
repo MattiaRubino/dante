@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import dataclass
-from datetime import date, datetime, time, timezone
+from datetime import UTC, date, datetime, time
 from typing import Literal
 from uuid import UUID, uuid7
 
@@ -26,19 +26,29 @@ from dante.modules.temporal.authoring import (
     TemporalAuthoringLifeAreaUnavailableError,
     TemporalAuthoringOperationIdReuseError,
     TemporalAuthoringPersistenceError,
-    _agenda as _authoring_agenda,
-    _color as _authoring_color,
-    _constraint_name as _authoring_constraint_name,
-    _operation as _authoring_operation,
-    _optional_text as _authoring_optional_text,
-    _title as _authoring_title,
     resolve_authoring_life_area,
+)
+from dante.modules.temporal.authoring import (
+    _agenda as _authoring_agenda,
+)
+from dante.modules.temporal.authoring import (
+    _color as _authoring_color,
+)
+from dante.modules.temporal.authoring import (
+    _constraint_name as _authoring_constraint_name,
+)
+from dante.modules.temporal.authoring import (
+    _operation as _authoring_operation,
+)
+from dante.modules.temporal.authoring import (
+    _optional_text as _authoring_optional_text,
+)
+from dante.modules.temporal.authoring import (
+    _title as _authoring_title,
 )
 from dante.modules.temporal.recurrence import (
     CalendarRecurrence,
-    CyclicRecurrence,
     ElapsedRecurrence,
-    QuotaRecurrence,
     RecurrenceInputError,
     RecurrenceMutation,
     RecurrenceNotFoundError,
@@ -47,23 +57,40 @@ from dante.modules.temporal.recurrence import (
     RecurrenceSpec,
     RecurrenceStateConflictError,
     RecurrenceView,
+)
+from dante.modules.temporal.recurrence import (
     _arrays as _recurrence_arrays,
+)
+from dante.modules.temporal.recurrence import (
     _bounded_operation_id as _bounded_recurrence_operation_id,
+)
+from dante.modules.temporal.recurrence import (
     _error as _recurrence_error,
+)
+from dante.modules.temporal.recurrence import (
     _fingerprint as _recurrence_fingerprint,
+)
+from dante.modules.temporal.recurrence import (
     _validate as _validate_recurrence,
+)
+from dante.modules.temporal.recurrence import (
     _view as _recurrence_view,
 )
 from dante.modules.temporal.routine import (
     RoutineApplication,
     RoutineInputError,
     RoutineNotFoundError,
-    RoutineOperationReuseError,
     RoutinePersistenceError,
     RoutineStateConflictError,
     RoutineView,
+)
+from dante.modules.temporal.routine import (
     _bounded as _bounded_routine_value,
+)
+from dante.modules.temporal.routine import (
     _error as _routine_error,
+)
+from dante.modules.temporal.routine import (
     _fingerprint as _routine_fingerprint,
 )
 from dante.platform.database.references import NativeRef
@@ -103,7 +130,7 @@ def _routine_bootstrap(recurrence: RecurrenceSpec) -> tuple[date, time | None]:
     truth.  No extra DDL or bypass of the governed Recurrence capability is used.
     """
     if isinstance(recurrence, ElapsedRecurrence):
-        starts_on = recurrence.effective_from.astimezone(timezone.utc).date()
+        starts_on = recurrence.effective_from.astimezone(UTC).date()
         return starts_on, None
 
     starts_on = recurrence.effective_from
@@ -148,11 +175,15 @@ async def _read_recurrence_in_session(
 ) -> RecurrenceView | None:
     try:
         row = (
-            await session.execute(
-                text(f"SELECT * FROM dante.get_self_{owner}_recurrence(:actor,:owner)"),
-                {"actor": self_person_ref, "owner": owner_ref},
+            (
+                await session.execute(
+                    text(f"SELECT * FROM dante.get_self_{owner}_recurrence(:actor,:owner)"),
+                    {"actor": self_person_ref, "owner": owner_ref},
+                )
             )
-        ).mappings().one_or_none()
+            .mappings()
+            .one_or_none()
+        )
     except DBAPIError as exc:
         raise _recurrence_error(exc) from exc
     return None if row is None else _recurrence_view(row)
@@ -213,10 +244,7 @@ async def _replace_recurrence_in_session(
         self_person_ref=self_person_ref,
         owner_ref=owner_ref,
     )
-    if (
-        current is None
-        or current.material_state_ref != UUID(str(receipt["material_state_ref"]))
-    ):
+    if current is None or current.material_state_ref != UUID(str(receipt["material_state_ref"])):
         raise RecurrencePersistenceError(
             "Accepted Recurrence state was not readable as current truth."
         )
@@ -261,26 +289,30 @@ async def _create_routine_source_in_session(
     )
     try:
         receipt = (
-            await session.execute(
-                text(
-                    """SELECT routine_ref,source_revision,life_area_assignment_revision,
+            (
+                await session.execute(
+                    text(
+                        """SELECT routine_ref,source_revision,life_area_assignment_revision,
                               accepted_at,replayed
                          FROM dante.create_self_routine(
                            :actor,:operation,:fingerprint,:routine,:title,:area,:tags,:starts_on,:wall_time)"""
-                ),
-                {
-                    "actor": self_person_ref,
-                    "operation": key,
-                    "fingerprint": fingerprint,
-                    "routine": uuid7(),
-                    "title": label,
-                    "area": life_area_ref,
-                    "tags": list(tag_refs),
-                    "starts_on": starts_on,
-                    "wall_time": wall_time,
-                },
+                    ),
+                    {
+                        "actor": self_person_ref,
+                        "operation": key,
+                        "fingerprint": fingerprint,
+                        "routine": uuid7(),
+                        "title": label,
+                        "area": life_area_ref,
+                        "tags": list(tag_refs),
+                        "starts_on": starts_on,
+                        "wall_time": wall_time,
+                    },
+                )
             )
-        ).mappings().one()
+            .mappings()
+            .one()
+        )
     except DBAPIError as exc:
         raise _routine_error(exc) from exc
 
@@ -343,9 +375,7 @@ class RecurringAuthoringApplication:
                     operation_id=normalized_operation_id,
                     title=title,
                     life_area_ref=(
-                        None
-                        if resolved_life_area is None
-                        else resolved_life_area.life_area_ref
+                        None if resolved_life_area is None else resolved_life_area.life_area_ref
                     ),
                     tag_refs=tag_refs,
                     starts_on=starts_on,
@@ -406,7 +436,7 @@ class RecurringAuthoringApplication:
             raise
         except RecurrenceOperationReuseError as exc:
             raise RecurringAuthoringOperationReuseError() from exc
-        except (RoutineInputError, RecurrenceInputError):
+        except RoutineInputError, RecurrenceInputError:
             raise
         except (
             RoutineNotFoundError,
@@ -511,9 +541,7 @@ class RecurringAuthoringApplication:
                     owner="event",
                     self_person_ref=self_person_ref,
                     owner_ref=event_ref,
-                    operation_id=_child_operation_id(
-                        normalized_operation_id, "event-recurrence"
-                    ),
+                    operation_id=_child_operation_id(normalized_operation_id, "event-recurrence"),
                     expected_material_state_ref=None,
                     recurrence=recurrence,
                 )

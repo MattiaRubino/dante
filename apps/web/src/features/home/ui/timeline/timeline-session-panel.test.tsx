@@ -152,7 +152,9 @@ describe('Timeline Session panel integration', () => {
       async (input: RequestInfo | URL, init?: RequestInit) => {
         const path = requestPath(input);
         if (path.endsWith('/session-panel'))
-          return Response.json(stopped ? feed([]) : feed([{ ...row(), execution }]));
+          return Response.json(
+            stopped ? feed([]) : feed([{ ...row(), execution }]),
+          );
         if (path === '/api/v1/auth/session')
           return Response.json({ authenticated: true, csrf_token: 'csrf' });
         expect(new Headers(init?.headers).get('X-Dante-CSRF')).toBe('csrf');
@@ -184,7 +186,9 @@ describe('Timeline Session panel integration', () => {
     await screen.findByRole('button', { name: 'Pausa · Ripasso' });
     fireEvent.click(screen.getByRole('button', { name: 'Termina · Ripasso' }));
     await waitFor(() =>
-      expect(screen.queryByRole('button', { name: 'Avvia · Ripasso' })).toBeNull(),
+      expect(
+        screen.queryByRole('button', { name: 'Avvia · Ripasso' }),
+      ).toBeNull(),
     );
     expect(commands.map((c) => c.path)).toEqual([
       `/api/v1/temporal/activities/${activity}/planned-sessions/${planned}/sessions`,
@@ -317,42 +321,76 @@ describe('Timeline Session panel integration', () => {
     expect(fetcher).not.toHaveBeenCalled();
   });
   it('shows a timed internal in the five-minute preview but blocks premature Play', async () => {
-    const fetcher = vi.fn(async () => Response.json(feed([
-      {
-        planned_schedule_ref: null, name: 'Sessione attività',
-        starts_at: null, execution: null,
-      },
-      { ...row(), starts_at: '2026-10-09T10:05:00Z' },
-    ])));
+    const fetcher = vi.fn(async () =>
+      Response.json(
+        feed([
+          {
+            planned_schedule_ref: null,
+            name: 'Sessione attività',
+            starts_at: null,
+            execution: null,
+          },
+          { ...row(), starts_at: '2026-10-09T10:05:00Z' },
+        ]),
+      ),
+    );
     vi.stubGlobal('fetch', fetcher);
     render(<Harness />);
-    const internal = await screen.findByRole('button', { name: 'Avvia · Ripasso' });
+    const internal = await screen.findByRole('button', {
+      name: 'Avvia · Ripasso',
+    });
     expect(internal.hasAttribute('disabled')).toBe(true);
     expect(screen.getByText('Imminente · attende orario')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Avvia · Sessione attività' }).hasAttribute('disabled'))
-      .toBe(false);
+    expect(
+      screen
+        .getByRole('button', { name: 'Avvia · Sessione attività' })
+        .hasAttribute('disabled'),
+    ).toBe(false);
     expect(fetcher).toHaveBeenCalledOnce();
   });
 
   it('keeps Stop enabled but forbids internal Resume while the main is paused', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => Response.json(feed([
-      {
-        planned_schedule_ref: null, name: 'Sessione attività',
-        starts_at: null,
-        execution: { session_ref: '0199a666-6666-7666-8666-666666666666', timing_material_state_ref: state, paused: true },
-      },
-      {
-        ...row(),
-        execution: { session_ref: session, timing_material_state_ref: nextState, paused: true },
-      },
-    ]))));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        Response.json(
+          feed([
+            {
+              planned_schedule_ref: null,
+              name: 'Sessione attività',
+              starts_at: null,
+              execution: {
+                session_ref: '0199a666-6666-7666-8666-666666666666',
+                timing_material_state_ref: state,
+                paused: true,
+              },
+            },
+            {
+              ...row(),
+              execution: {
+                session_ref: session,
+                timing_material_state_ref: nextState,
+                paused: true,
+              },
+            },
+          ]),
+        ),
+      ),
+    );
     render(<Harness />);
-    const resume = await screen.findByRole('button', { name: 'Riprendi · Ripasso' });
+    const resume = await screen.findByRole('button', {
+      name: 'Riprendi · Ripasso',
+    });
     expect(resume.hasAttribute('disabled')).toBe(true);
-    expect(screen.getByRole('button', { name: 'Termina · Ripasso' }).hasAttribute('disabled'))
-      .toBe(false);
-    expect(screen.getByRole('button', { name: 'Riprendi · Sessione attività' }).hasAttribute('disabled'))
-      .toBe(false);
+    expect(
+      screen
+        .getByRole('button', { name: 'Termina · Ripasso' })
+        .hasAttribute('disabled'),
+    ).toBe(false);
+    expect(
+      screen
+        .getByRole('button', { name: 'Riprendi · Sessione attività' })
+        .hasAttribute('disabled'),
+    ).toBe(false);
   });
-
 });

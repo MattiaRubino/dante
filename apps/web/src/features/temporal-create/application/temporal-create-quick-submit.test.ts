@@ -19,19 +19,32 @@ import {
 describe('U2 Quick Create submit mapping', () => {
   it('keeps an untimed named Session in every recurring Activity template', () => {
     const fields = createTemporalCreateFields({
-      kind: 'activity', title: 'Raccolta', date: '2026-10-12',
-      startTime: '10:15', durationMinutes: 30,
+      kind: 'activity',
+      title: 'Raccolta',
+      date: '2026-10-12',
+      startTime: '10:15',
+      durationMinutes: 30,
     });
     const base = createTemporalCreateU2AuthoringDraft(fields);
     const draft = patchTemporalCreateU2AuthoringDraft(base, {
       activityStructure: {
         ...base.activityStructure,
-        plannedSlices: [{ id: 'session', title: 'Cernita', timeEnabled: false,
-          date: '2026-10-12', startTime: '', endTime: '' }],
+        plannedSlices: [
+          {
+            id: 'session',
+            title: 'Cernita',
+            timeEnabled: false,
+            date: '2026-10-12',
+            startTime: '',
+            endTime: '',
+          },
+        ],
       },
     });
-    expect(buildTemporalCreateRecurringActivityTemplate(fields, draft).template.planned_slices)
-      .toEqual([{ name: 'Cernita', time_enabled: false }]);
+    expect(
+      buildTemporalCreateRecurringActivityTemplate(fields, draft).template
+        .planned_slices,
+    ).toEqual([{ name: 'Cernita', time_enabled: false }]);
   });
   it('authors an unassigned Activity with canonical description, location and item colour', () => {
     const fields = createTemporalCreateFields({
@@ -159,12 +172,7 @@ describe('U2 Quick Create submit mapping', () => {
       event: {
         ...baseline.event,
         location: 'Sala A',
-        agendaParts: Object.freeze([
-          ' Revisione ',
-          '',
-          'Decisioni',
-          '   ',
-        ]),
+        agendaParts: Object.freeze([' Revisione ', '', 'Decisioni', '   ']),
       },
     });
     const draft = createTemporalCreateU2AuthoringDraft(fields);
@@ -197,7 +205,9 @@ describe('U2 Quick Create submit mapping', () => {
     // the historical runtime before the canonical HTTP request.
     expect(edited.scheduling.windowStartDate).toBe('2026-10-14');
     expect(temporalCreateU2QuickIntentSupported(edited)).toBe(true);
-    expect(temporalCreateRecurringEventSharedIntentSupported(edited)).toBe(true);
+    expect(temporalCreateRecurringEventSharedIntentSupported(edited)).toBe(
+      true,
+    );
     const mapped = buildTemporalCreateU2Request(
       edited,
       createTemporalCreateU2AuthoringDraft(edited),
@@ -209,7 +219,9 @@ describe('U2 Quick Create submit mapping', () => {
       throw new Error('Expected a canonical date-span');
     }
     expect(mapped.request.placement.startDate.toString()).toBe('2026-10-15');
-    expect(mapped.request.placement.endDateExclusive.toString()).toBe('2026-10-18');
+    expect(mapped.request.placement.endDateExclusive.toString()).toBe(
+      '2026-10-18',
+    );
 
     // Do not mask an actual, material Scheduling policy change.
     const editedMovement = createTemporalCreateFields({
@@ -425,8 +437,11 @@ describe('U2 Quick Create submit mapping', () => {
     expect(validateTemporalCreateU6Structure(fields, outsideSession)).toBe(
       'Every Activity Session must stay inside the parent Activity time range.',
     );
-    expect(validateTemporalCreateU6StructureIssue(fields, outsideSession)).toEqual({
-      message: 'Every Activity Session must stay inside the parent Activity time range.',
+    expect(
+      validateTemporalCreateU6StructureIssue(fields, outsideSession),
+    ).toEqual({
+      message:
+        'Every Activity Session must stay inside the parent Activity time range.',
       messageEn: 'Session time must fit within the Activity.',
       messageIt: 'La Sessione deve rientrare nell’orario dell’attività.',
       target: 'plannedSession:session',
@@ -435,15 +450,20 @@ describe('U2 Quick Create submit mapping', () => {
     const reversedSession = patchTemporalCreateU2AuthoringDraft(initial, {
       activityStructure: {
         ...initial.activityStructure,
-        plannedSlices: [{
-          ...outsideSession.activityStructure.plannedSlices[0]!,
-          startTime: '10:30',
-          endTime: '10:00',
-        }],
+        plannedSlices: [
+          {
+            ...outsideSession.activityStructure.plannedSlices[0]!,
+            startTime: '10:30',
+            endTime: '10:00',
+          },
+        ],
       },
     });
-    expect(validateTemporalCreateU6StructureIssue(fields, reversedSession)).toEqual({
-      message: 'Every Activity Session must stay inside the parent Activity time range.',
+    expect(
+      validateTemporalCreateU6StructureIssue(fields, reversedSession),
+    ).toEqual({
+      message:
+        'Every Activity Session must stay inside the parent Activity time range.',
       messageEn: 'Set a Session duration.',
       messageIt: 'La Sessione deve avere una durata.',
       target: 'plannedSession:session',

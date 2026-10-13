@@ -71,11 +71,19 @@ export function buildTemporalCreateObjectiveTemplates(
         const targetText = objective.targetValue.trim();
         const target = Number(targetText);
         if (!targetText || !Number.isFinite(target)) {
-          throw new Error(`Obiettivo ${index + 1}: inserisci un target numerico valido.`);
+          throw new Error(
+            `Obiettivo ${index + 1}: inserisci un target numerico valido.`,
+          );
         }
         const comparator = objective.comparatorCode;
-        if (comparator !== 'eq' && comparator !== 'gte' && comparator !== 'lte') {
-          throw new Error(`Obiettivo ${index + 1}: seleziona una regola valida.`);
+        if (
+          comparator !== 'eq' &&
+          comparator !== 'gte' &&
+          comparator !== 'lte'
+        ) {
+          throw new Error(
+            `Obiettivo ${index + 1}: seleziona una regola valida.`,
+          );
         }
         return Object.freeze({
           label,
@@ -149,13 +157,16 @@ function equivalentSchedulingForU2(fields: TemporalCreateFields): boolean {
   const defaults = defaultFieldsFor(fields).scheduling;
   const actual = fields.scheduling;
   if (actual.constraintKind !== 'none') return false;
-  return sameJson({
-    ...actual,
-    windowStartDate: defaults.windowStartDate,
-    windowEndDate: defaults.windowEndDate,
-    earliestStartDate: defaults.earliestStartDate,
-    deadlineDate: defaults.deadlineDate,
-  }, defaults);
+  return sameJson(
+    {
+      ...actual,
+      windowStartDate: defaults.windowStartDate,
+      windowEndDate: defaults.windowEndDate,
+      earliestStartDate: defaults.earliestStartDate,
+      deadlineDate: defaults.deadlineDate,
+    },
+    defaults,
+  );
 }
 
 /**
@@ -238,7 +249,8 @@ export function temporalCreateRecurringEventSharedIntentSupported(
     ...fields.confirmation,
     reminderLeadMinutes: defaults.confirmation.reminderLeadMinutes,
   };
-  if (!sameJson(confirmationWithoutReminder, defaults.confirmation)) return false;
+  if (!sameJson(confirmationWithoutReminder, defaults.confirmation))
+    return false;
 
   const event = fields.event;
   const baseline = defaults.event;
@@ -481,7 +493,8 @@ export function validateTemporalCreateU6StructureIssue(
       'Le Sessioni pianificate richiedono un’attività.',
     'Activity structure exceeds the supported planning limits.':
       'Hai raggiunto il limite di elementi pianificati.',
-    'Internal Activity decomposition is invalid.': 'Controlla le attività interne.',
+    'Internal Activity decomposition is invalid.':
+      'Controlla le attività interne.',
     'Complete each Activity interval date, start and end time.':
       'Completa data e orari dell’intervallo.',
     'Activity intervals must have a valid duration and must not overlap.':
@@ -503,21 +516,34 @@ export function validateTemporalCreateU6StructureIssue(
   };
 
   let target = 'activityStructure';
-  let messageIt = italian[message] ?? 'Controlla la pianificazione dell’attività.';
-  let messageEn = message === 'Every Activity Session must stay inside the parent Activity time range.'
-    ? 'Session time must fit within the Activity.'
-    : message;
+  let messageIt =
+    italian[message] ?? 'Controlla la pianificazione dell’attività.';
+  let messageEn =
+    message ===
+    'Every Activity Session must stay inside the parent Activity time range.'
+      ? 'Session time must fit within the Activity.'
+      : message;
   if (message.includes('Activity interval')) target = 'activityIntervals';
-  if (message === 'Place the Activity before assigning times to planned Sessions.') {
-    const first = draft.activityStructure.plannedSlices.find((slice) => slice.timeEnabled === true);
+  if (
+    message === 'Place the Activity before assigning times to planned Sessions.'
+  ) {
+    const first = draft.activityStructure.plannedSlices.find(
+      (slice) => slice.timeEnabled === true,
+    );
     if (first) target = `plannedSession:${first.id}`;
-  } else if (message === 'Complete each Session date, start and end time.' ||
-    message === 'Every Activity Session must stay inside the parent Activity time range.') {
+  } else if (
+    message === 'Complete each Session date, start and end time.' ||
+    message ===
+      'Every Activity Session must stay inside the parent Activity time range.'
+  ) {
     const bands = activityBands(fields, draft);
-    const parent = bands === null ? null : {
-      start: bands[0]!.start,
-      end: bands[bands.length - 1]!.end,
-    };
+    const parent =
+      bands === null
+        ? null
+        : {
+            start: bands[0]!.start,
+            end: bands[bands.length - 1]!.end,
+          };
     const invalid = draft.activityStructure.plannedSlices.find((slice) => {
       if (slice.timeEnabled !== true) return false;
       const window = sliceLocalWindow(slice);
@@ -526,7 +552,10 @@ export function validateTemporalCreateU6StructureIssue(
     if (invalid) {
       target = `plannedSession:${invalid.id}`;
       const window = sliceLocalWindow(invalid);
-      if (window && Temporal.PlainDateTime.compare(window.start, window.end) >= 0) {
+      if (
+        window &&
+        Temporal.PlainDateTime.compare(window.start, window.end) >= 0
+      ) {
         messageIt = 'La Sessione deve avere una durata.';
         messageEn = 'Set a Session duration.';
       }
@@ -689,7 +718,11 @@ export function buildTemporalCreateRecurringActivityTemplate(
   draft: TemporalCreateU2AuthoringDraft,
 ): Readonly<{ durationMinutes: number; template: RecurringActivityTemplate }> {
   const bands = activityBands(fields, draft);
-  if (fields.kind !== 'activity' || fields.timeSemantics !== 'timed' || bands === null) {
+  if (
+    fields.kind !== 'activity' ||
+    fields.timeSemantics !== 'timed' ||
+    bands === null
+  ) {
     throw new Error('Recurring Activity template requires a timed Activity.');
   }
   const recurrenceAnchor = Temporal.PlainDateTime.from(
@@ -697,10 +730,7 @@ export function buildTemporalCreateRecurringActivityTemplate(
   );
   const envelopeStart = bands[0]!.start;
   const envelopeEnd = bands[bands.length - 1]!.end;
-  const window = (
-    start: Temporal.PlainDateTime,
-    end: Temporal.PlainDateTime,
-  ) =>
+  const window = (start: Temporal.PlainDateTime, end: Temporal.PlainDateTime) =>
     Object.freeze({
       start_offset_minutes: localMinutesBetween(recurrenceAnchor, start),
       duration_minutes: localMinutesBetween(start, end),
@@ -726,13 +756,14 @@ export function buildTemporalCreateRecurringActivityTemplate(
     activity_intervals:
       structure.activityIntervals.length === 0
         ? Object.freeze([])
-        : Object.freeze(
-            bands.map((band) => window(band.start, band.end)),
-          ),
+        : Object.freeze(bands.map((band) => window(band.start, band.end))),
     planned_slices: Object.freeze(
       structure.plannedSlices.map((slice) => {
         if (slice.timeEnabled !== true) {
-          return Object.freeze({ name: slice.title.trim(), time_enabled: false as const });
+          return Object.freeze({
+            name: slice.title.trim(),
+            time_enabled: false as const,
+          });
         }
         const value = sliceLocalWindow(slice);
         if (value === null) {
@@ -753,9 +784,7 @@ export function buildTemporalCreateRecurringActivityTemplate(
           session_capture_mode: child.captureMode,
           reality_mode: child.realityMode ?? 'manual',
           placement:
-            placement === null
-              ? null
-              : window(placement.start, placement.end),
+            placement === null ? null : window(placement.start, placement.end),
           planned_slices: Object.freeze(
             child.plannedSlices.map((slice) => {
               const value = sliceLocalWindow(slice);
@@ -841,7 +870,9 @@ export function buildTemporalCreateU2Request(
             sessionCaptureMode: draft.activityStructure.captureMode,
             childGuardMode: draft.activityStructure.childGuardMode,
             plannedSlices: draft.activityStructure.plannedSlices.map((slice) =>
-              slice.timeEnabled === true ? plannedSliceInput(fields, slice) : null,
+              slice.timeEnabled === true
+                ? plannedSliceInput(fields, slice)
+                : null,
             ),
             ...(draft.activityStructure.activityIntervals.length > 0 &&
             bands !== null

@@ -30,23 +30,43 @@ afterEach(() => cleanup());
 
 describe('compact Session runtime on created cards', () => {
   it('does not hide Play on another Activity interval when a different one ended', async () => {
-    source.list.mockResolvedValue([{
-      sessionRef: 'older-attempt', plannedScheduleRef: null,
-      open: false, paused: false,
-    }]);
-    render(<>
-      <SessionSubjectControls kind="activity" subjectRef="same-activity"
-        label="Intervallo passato" variant="card"
-        visibleSessionRefs={['older-attempt']} />
-      <SessionSubjectControls kind="activity" subjectRef="same-activity"
-        label="Intervallo nuovo" variant="card"
-        visibleSessionRefs={[]} />
-    </>);
+    source.list.mockResolvedValue([
+      {
+        sessionRef: 'older-attempt',
+        plannedScheduleRef: null,
+        open: false,
+        paused: false,
+      },
+    ]);
+    render(
+      <>
+        <SessionSubjectControls
+          kind="activity"
+          subjectRef="same-activity"
+          label="Intervallo passato"
+          variant="card"
+          visibleSessionRefs={['older-attempt']}
+        />
+        <SessionSubjectControls
+          kind="activity"
+          subjectRef="same-activity"
+          label="Intervallo nuovo"
+          variant="card"
+          visibleSessionRefs={[]}
+        />
+      </>,
+    );
     await waitFor(() => expect(source.list).toHaveBeenCalledTimes(2));
-    expect(screen.getByLabelText('Sessione · Intervallo passato')
-      .querySelector('button[aria-label="Avvia"]')).toBeNull();
-    expect(screen.getByLabelText('Sessione · Intervallo nuovo')
-      .querySelector('button[aria-label="Avvia"]')).toBeTruthy();
+    expect(
+      screen
+        .getByLabelText('Sessione · Intervallo passato')
+        .querySelector('button[aria-label="Avvia"]'),
+    ).toBeNull();
+    expect(
+      screen
+        .getByLabelText('Sessione · Intervallo nuovo')
+        .querySelector('button[aria-label="Avvia"]'),
+    ).toBeTruthy();
   });
   it('starts a planned row through its own command, not the parent Activity command', async () => {
     source.list.mockResolvedValue([]);
@@ -176,12 +196,23 @@ describe('compact Session runtime on created cards', () => {
   });
 
   it('keeps a stopped planned card concluded after reloading its history', async () => {
-    source.list.mockResolvedValue([{
-      sessionRef: 'ended-ref', plannedScheduleRef: 'planned-ref',
-      open: false, endedAt: '2026-10-10T09:51:00Z',
-    }]);
-    render(<SessionSubjectControls kind="activity" subjectRef="activity-ref"
-      plannedScheduleRef="planned-ref" label="Piano" variant="card" />);
+    source.list.mockResolvedValue([
+      {
+        sessionRef: 'ended-ref',
+        plannedScheduleRef: 'planned-ref',
+        open: false,
+        endedAt: '2026-10-10T09:51:00Z',
+      },
+    ]);
+    render(
+      <SessionSubjectControls
+        kind="activity"
+        subjectRef="activity-ref"
+        plannedScheduleRef="planned-ref"
+        label="Piano"
+        variant="card"
+      />,
+    );
     expect(await screen.findByText('Sessione conclusa')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Avvia' })).toBeNull();
     expect(source.startPlanned).not.toHaveBeenCalled();

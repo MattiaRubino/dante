@@ -20,8 +20,7 @@ _OWNER = "dante_owner"
 _MIGRATOR = "dante_migrator"
 _RUNTIME = "dante_runtime"
 _MUTATE_SIGNATURE = (
-    "dante.mutate_self_schedule_movement_policy("
-    "uuid,text,text,text,uuid,uuid,uuid,text,text)"
+    "dante.mutate_self_schedule_movement_policy(uuid,text,text,text,uuid,uuid,uuid,text,text)"
 )
 _RESOLVE_SIGNATURE = "dante.resolve_self_schedule_movement_policy(uuid,uuid)"
 
@@ -400,10 +399,7 @@ def upgrade() -> None:
         $function$
         """
     )
-    _execute(
-        "ALTER FUNCTION dante.enforce_schedule_movement_policy_history() "
-        f"OWNER TO {_OWNER}"
-    )
+    _execute(f"ALTER FUNCTION dante.enforce_schedule_movement_policy_history() OWNER TO {_OWNER}")
     _execute(
         "REVOKE ALL PRIVILEGES ON FUNCTION dante.enforce_schedule_movement_policy_history() "
         f"FROM PUBLIC, {_RUNTIME}, {_MIGRATOR}"
@@ -671,14 +667,12 @@ def upgrade() -> None:
         "schedule_movement_policy_mutation_operation",
     ):
         _execute(
-            f"REVOKE ALL PRIVILEGES ON TABLE dante.{table} "
-            f"FROM PUBLIC, {_RUNTIME}, {_MIGRATOR}"
+            f"REVOKE ALL PRIVILEGES ON TABLE dante.{table} FROM PUBLIC, {_RUNTIME}, {_MIGRATOR}"
         )
 
     for signature in (_MUTATE_SIGNATURE, _RESOLVE_SIGNATURE):
         _execute(
-            f"REVOKE ALL PRIVILEGES ON FUNCTION {signature} "
-            f"FROM PUBLIC, {_RUNTIME}, {_MIGRATOR}"
+            f"REVOKE ALL PRIVILEGES ON FUNCTION {signature} FROM PUBLIC, {_RUNTIME}, {_MIGRATOR}"
         )
         _execute(f"GRANT EXECUTE ON FUNCTION {signature} TO {_RUNTIME}")
 

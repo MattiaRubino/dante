@@ -64,7 +64,10 @@ _CONFIRMATION_WRITE_RESPONSES = {
     401: {"model": ProblemDetails, "description": "Authentication required."},
     403: {"model": ProblemDetails, "description": "Mutation request rejected by security policy."},
     404: {"model": ProblemDetails, "description": "Outcome target unavailable."},
-    409: {"model": ProblemDetails, "description": "Operation reuse, stale current state, or persistence conflict."},
+    409: {
+        "model": ProblemDetails,
+        "description": "Operation reuse, stale current state, or persistence conflict.",
+    },
     422: {"model": ProblemDetails, "description": "Confirmation payload rejected."},
     500: {"model": ProblemDetails, "description": "Unexpected server error."},
 }
@@ -95,7 +98,9 @@ def _response(view: ConfirmationView) -> ConfirmationResponse:
 
 def _history_response(view: ConfirmationView) -> ConfirmationHistoryResponse:
     if view.current_from_at is None:
-        raise ConfirmationPersistenceError("Confirmation current-history chronology is unavailable.")
+        raise ConfirmationPersistenceError(
+            "Confirmation current-history chronology is unavailable."
+        )
     response = _response(view)
     return ConfirmationHistoryResponse(
         **response.model_dump(),
@@ -206,7 +211,11 @@ async def list_outcome_confirmations(
     except (ConfirmationInputError, ConfirmationNotFoundError, ConfirmationPersistenceError) as exc:
         raise _problem(exc) from exc
     if views is None:
-        raise _problem(ConfirmationNotFoundError("Confirmation Outcome is not in the authenticated self scope."))
+        raise _problem(
+            ConfirmationNotFoundError(
+                "Confirmation Outcome is not in the authenticated self scope."
+            )
+        )
     return [_response(view) for view in views]
 
 

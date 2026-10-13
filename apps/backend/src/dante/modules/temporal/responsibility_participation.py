@@ -91,7 +91,11 @@ def _optional_ref(value: object) -> NativeRef | None:
 def _map_error(exc: DBAPIError) -> Exception:
     diagnostic = getattr(exc.orig, "diag", None)
     constraint = getattr(diagnostic, "constraint_name", None)
-    if constraint in {"responsibility_operation_reused", "participation_operation_reused", "person_referent_operation_reused"}:
+    if constraint in {
+        "responsibility_operation_reused",
+        "participation_operation_reused",
+        "person_referent_operation_reused",
+    }:
         return ResponsibilityOperationReuseError("Operation id was reused.")
     if constraint in {
         "responsibility_subject_unavailable",
@@ -288,8 +292,13 @@ class ResponsibilityParticipationApplication:
         return tuple(self._person_referent(row) for row in rows)
 
     async def rename_person_referent(
-        self, *, self_person_ref: NativeRef, operation_id: str,
-        person_ref: NativeRef, expected_revision: int, display_label: str
+        self,
+        *,
+        self_person_ref: NativeRef,
+        operation_id: str,
+        person_ref: NativeRef,
+        expected_revision: int,
+        display_label: str,
     ) -> PersonReferentView:
         label = display_label.strip()
         if not label or len(label) > 100 or expected_revision < 1:
@@ -304,11 +313,15 @@ class ResponsibilityParticipationApplication:
             {
                 "actor": self_person_ref,
                 "key": _operation_id(operation_id),
-                "fingerprint": _fingerprint({
-                    "version": "1", "command": "rename_person_referent",
-                    "person_ref": str(person_ref),
-                    "expected_revision": str(expected_revision), "label": label,
-                }),
+                "fingerprint": _fingerprint(
+                    {
+                        "version": "1",
+                        "command": "rename_person_referent",
+                        "person_ref": str(person_ref),
+                        "expected_revision": str(expected_revision),
+                        "label": label,
+                    }
+                ),
                 "person": person_ref,
                 "expected": expected_revision,
                 "label": label,
@@ -358,9 +371,7 @@ class ResponsibilityParticipationApplication:
             raise ResponsibilityPersistenceError("Authoring command returned no canonical result.")
         return rows[0]
 
-    async def _rows(
-        self, statement: str, parameters: dict[str, object]
-    ) -> list[RowMapping]:
+    async def _rows(self, statement: str, parameters: dict[str, object]) -> list[RowMapping]:
         try:
             async with self._session_factory() as session, session.begin():
                 result = await session.execute(text(statement), parameters)

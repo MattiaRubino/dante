@@ -223,7 +223,4 @@ $function$;
 
 def downgrade() -> None:
     """Remove only the derived read capability; no canonical history is rewritten."""
-    _sql(
-        "DROP FUNCTION IF EXISTS "
-        f"dante.list_self_expected_occurrences_in_window({_SIGNATURE})"
-    )
+    _sql(f"DROP FUNCTION IF EXISTS dante.list_self_expected_occurrences_in_window({_SIGNATURE})")

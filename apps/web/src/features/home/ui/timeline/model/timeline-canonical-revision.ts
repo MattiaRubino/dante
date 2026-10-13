@@ -256,10 +256,7 @@ export function timelineCanonicalRevisionForDisplayEdit(
       edit.toDateKey,
       edit.startMinute,
     );
-    requestedSegmentEnd = localDateTimeAtMinute(
-      edit.toDateKey,
-      edit.endMinute,
-    );
+    requestedSegmentEnd = localDateTimeAtMinute(edit.toDateKey, edit.endMinute);
   } catch {
     return null;
   }

@@ -158,7 +158,9 @@ function rangeForDateFamily(fields: TemporalCreateFields) {
 }
 
 function localAnchorInstant(fields: TemporalCreateFields) {
-  const local = Temporal.PlainDateTime.from(`${fields.date}T${fields.startTime}`);
+  const local = Temporal.PlainDateTime.from(
+    `${fields.date}T${fields.startTime}`,
+  );
   return local
     .toZonedDateTime(fields.timeZoneId, {
       disambiguation: fields.timeDisambiguation,
@@ -282,8 +284,7 @@ function calendarRecurrence(
     interval_count: recurrence.calendarInterval,
     clock_basis_code: namedZone ? 'named_zone' : 'floating_local',
     zone_id: namedZone ? fields.timeZoneId : null,
-    pattern_anchor_date:
-      recurrence.calendarInterval > 1 ? fields.date : null,
+    pattern_anchor_date: recurrence.calendarInterval > 1 ? fields.date : null,
     wall_times: wallTimes(fields),
     weekdays,
     month_days: monthDays,
@@ -335,10 +336,7 @@ function quotaRecurrence(
     'floating-local': 'floating_local',
     'named-zone': 'named_zone',
     'absolute-utc': 'absolute_utc',
-  }[recurrence.quotaFrame] as
-    | 'floating_local'
-    | 'named_zone'
-    | 'absolute_utc';
+  }[recurrence.quotaFrame] as 'floating_local' | 'named_zone' | 'absolute_utc';
   return Object.freeze({
     family_code: 'quota_per_period' as const,
     range_kind: range.rangeKind as 'open' | 'until_boundary',
@@ -651,9 +649,9 @@ class B06TemporalCreateRuntime implements TemporalCreateRuntime {
                   : fields.durationMinutes,
               durationDays:
                 fields.timeSemantics === 'all-day'
-                  ? Temporal.PlainDate.from(fields.event.allDayEndDate)
-                      .since(Temporal.PlainDate.from(fields.date))
-                      .days + 1
+                  ? Temporal.PlainDate.from(fields.event.allDayEndDate).since(
+                      Temporal.PlainDate.from(fields.date),
+                    ).days + 1
                   : null,
             })
           : await this.authoring.createRoutine({

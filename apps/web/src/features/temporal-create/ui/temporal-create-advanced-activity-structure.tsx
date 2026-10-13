@@ -46,7 +46,9 @@ function rootInterval(fields: TemporalCreateFields): Readonly<{
   }
 }
 
-export function plannedSlice(fields: TemporalCreateFields): TemporalCreatePlannedSliceDraft {
+export function plannedSlice(
+  fields: TemporalCreateFields,
+): TemporalCreatePlannedSliceDraft {
   const root = rootInterval(fields);
   return Object.freeze({
     id: newRowId(),
@@ -158,7 +160,6 @@ export function TemporalCreateAdvancedActivityStructure({
   const patchStructure = (changes: Partial<typeof structure>) =>
     patch({ activityStructure: Object.freeze({ ...structure, ...changes }) });
 
-
   const addRootSession = () => {
     patchStructure({
       plannedSlices: [...structure.plannedSlices, plannedSlice(fields)],
@@ -188,7 +189,10 @@ export function TemporalCreateAdvancedActivityStructure({
       data-create-path="activityStructure"
       aria-label={italian ? 'Sessioni pianificate' : 'Planned Sessions'}
     >
-      <div className="temporal-create-activity-tree__spine" aria-hidden="true" />
+      <div
+        className="temporal-create-activity-tree__spine"
+        aria-hidden="true"
+      />
 
       {structure.plannedSlices.length > 0 ? (
         <div
@@ -238,7 +242,9 @@ export function TemporalCreateAdvancedActivityStructure({
                       className={timeOpen ? 'is-active' : undefined}
                       aria-expanded={timeOpen}
                       aria-controls={`${timeId}:editor`}
-                      onClick={() => updateSlice(slice.id, { timeEnabled: !timeOpen })}
+                      onClick={() =>
+                        updateSlice(slice.id, { timeEnabled: !timeOpen })
+                      }
                     >
                       {italian ? 'Orario' : 'Time'}
                     </button>
@@ -271,7 +277,9 @@ export function TemporalCreateAdvancedActivityStructure({
                       label={italian ? 'Inizio Sessione' : 'Session start'}
                       value={slice.startTime}
                       dataPath={`plannedSlices.${slice.id}.startTime`}
-                      onChange={(startTime) => updateSlice(slice.id, { startTime })}
+                      onChange={(startTime) =>
+                        updateSlice(slice.id, { startTime })
+                      }
                     />
                     <TimeControl
                       label={italian ? 'Fine Sessione' : 'Session end'}

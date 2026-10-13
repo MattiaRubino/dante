@@ -82,8 +82,10 @@ function b03dScheduledEventIntentSupported(
   if (
     prepared.metadata.kind !== 'event' ||
     prepared.command.payload.placement === null ||
-    (import.meta.env.MODE !== 'test' && !isCanonicalLifeAreaRef(prepared.metadata.contextId)) ||
-    (prepared.metadata.contextId !== 'personale' && !isCanonicalLifeAreaRef(prepared.metadata.contextId)) ||
+    (import.meta.env.MODE !== 'test' &&
+      !isCanonicalLifeAreaRef(prepared.metadata.contextId)) ||
+    (prepared.metadata.contextId !== 'personale' &&
+      !isCanonicalLifeAreaRef(prepared.metadata.contextId)) ||
     prepared.metadata.notes.length !== 0 ||
     specification.appearanceTone !== null ||
     specification.eventRecurrence.patternKind !== 'none' ||
@@ -464,11 +466,16 @@ class B03TemporalCreateRuntime implements TemporalCreateRuntime {
       const created = await this.eventSource.createScheduledEvent({
         operationId: prepared.operationId,
         title: prepared.command.payload.title,
-        ...(isCanonicalLifeAreaRef(prepared.metadata.contextId) ? { lifeAreaRef: prepared.metadata.contextId } : {}),
+        ...(isCanonicalLifeAreaRef(prepared.metadata.contextId)
+          ? { lifeAreaRef: prepared.metadata.contextId }
+          : {}),
         agendaParts: prepared.metadata.specification.event.agendaParts,
         placement: schedulePlacement,
       });
-      const projection = scheduledEventProjection(created, prepared.operationId);
+      const projection = scheduledEventProjection(
+        created,
+        prepared.operationId,
+      );
       const result = Object.freeze({
         operationId: prepared.operationId,
         status: 'applied' as const,
@@ -561,15 +568,15 @@ class B03TemporalCreateRuntime implements TemporalCreateRuntime {
             acceptedPlacementProjection(revised.placement),
             operationId,
           );
-          const undoExpectedMaterialStateRef = revised.placementMaterialStateRef;
+          const undoExpectedMaterialStateRef =
+            revised.placementMaterialStateRef;
           const undo = async (): Promise<TemporalOperationResult> => {
             const undoOperationId = this.ids.operationId();
             try {
               const restored = await this.scheduleSource.reviseSchedule({
                 operationId: undoOperationId,
                 scheduleRef: created.schedule.scheduleRef,
-                expectedPlacementMaterialStateRef:
-                  undoExpectedMaterialStateRef,
+                expectedPlacementMaterialStateRef: undoExpectedMaterialStateRef,
                 placement: previousPlacementInput,
               });
               currentMaterialStateRef = restored.placementMaterialStateRef;
@@ -597,62 +604,63 @@ class B03TemporalCreateRuntime implements TemporalCreateRuntime {
         }
       };
 
-      const postponeCurrent = async (): Promise<TemporalCreateMutationExecution> => {
-        const operationId = this.ids.operationId();
-        if (
-          currentMaterialStateRef === null ||
-          currentProjection.placement === null ||
-          currentPlacementInput === null
-        ) {
-          return Object.freeze({
-            result: unsupportedMutationResult(operationId),
-            effect: null,
-          });
-        }
-        const expectedMaterialStateRef = currentMaterialStateRef;
-        const postponedPlacementInput = currentPlacementInput;
-        try {
-          const postponed = await this.scheduleSource.unscheduleSchedule({
-            operationId,
-            scheduleRef: created.schedule.scheduleRef,
-            expectedPlacementMaterialStateRef: expectedMaterialStateRef,
-          });
-          currentMaterialStateRef = null;
-          currentPlacementInput = null;
-          const item = replaceProjection(null, operationId);
-          const undo = async (): Promise<TemporalOperationResult> => {
-            const undoOperationId = this.ids.operationId();
-            try {
-              const restored =
-                await this.scheduleSource.undoScheduleUnschedule({
-                  operationId: undoOperationId,
-                  scheduleRef: created.schedule.scheduleRef,
-                  unscheduleOperationId: postponed.unscheduleOperationId,
-                });
-              currentMaterialStateRef = restored.placementMaterialStateRef;
-              currentPlacementInput = postponedPlacementInput;
-              return appliedMutationResult(
-                undoOperationId,
-                replaceProjection(
-                  acceptedPlacementProjection(restored.placement),
+      const postponeCurrent =
+        async (): Promise<TemporalCreateMutationExecution> => {
+          const operationId = this.ids.operationId();
+          if (
+            currentMaterialStateRef === null ||
+            currentProjection.placement === null ||
+            currentPlacementInput === null
+          ) {
+            return Object.freeze({
+              result: unsupportedMutationResult(operationId),
+              effect: null,
+            });
+          }
+          const expectedMaterialStateRef = currentMaterialStateRef;
+          const postponedPlacementInput = currentPlacementInput;
+          try {
+            const postponed = await this.scheduleSource.unscheduleSchedule({
+              operationId,
+              scheduleRef: created.schedule.scheduleRef,
+              expectedPlacementMaterialStateRef: expectedMaterialStateRef,
+            });
+            currentMaterialStateRef = null;
+            currentPlacementInput = null;
+            const item = replaceProjection(null, operationId);
+            const undo = async (): Promise<TemporalOperationResult> => {
+              const undoOperationId = this.ids.operationId();
+              try {
+                const restored =
+                  await this.scheduleSource.undoScheduleUnschedule({
+                    operationId: undoOperationId,
+                    scheduleRef: created.schedule.scheduleRef,
+                    unscheduleOperationId: postponed.unscheduleOperationId,
+                  });
+                currentMaterialStateRef = restored.placementMaterialStateRef;
+                currentPlacementInput = postponedPlacementInput;
+                return appliedMutationResult(
                   undoOperationId,
-                ),
-              );
-            } catch (error) {
-              return scheduleMutationFailureResult(undoOperationId, error);
-            }
-          };
-          return Object.freeze({
-            result: appliedMutationResult(operationId, item),
-            effect: mutationEffect(item, undo),
-          });
-        } catch (error) {
-          return Object.freeze({
-            result: scheduleMutationFailureResult(operationId, error),
-            effect: null,
-          });
-        }
-      };
+                  replaceProjection(
+                    acceptedPlacementProjection(restored.placement),
+                    undoOperationId,
+                  ),
+                );
+              } catch (error) {
+                return scheduleMutationFailureResult(undoOperationId, error);
+              }
+            };
+            return Object.freeze({
+              result: appliedMutationResult(operationId, item),
+              effect: mutationEffect(item, undo),
+            });
+          } catch (error) {
+            return Object.freeze({
+              result: scheduleMutationFailureResult(operationId, error),
+              effect: null,
+            });
+          }
+        };
 
       const effect = Object.freeze({
         projection,

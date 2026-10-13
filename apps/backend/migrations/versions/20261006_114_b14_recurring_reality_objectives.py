@@ -353,10 +353,7 @@ $function$;
         "dante.get_self_event_occurrence_policy_v2(uuid,uuid)",
     ):
         _sql(f"ALTER FUNCTION {signature} OWNER TO {_OWNER}")
-        _sql(
-            f"REVOKE ALL ON FUNCTION {signature} "
-            f"FROM PUBLIC,{_RUNTIME},{_MIGRATOR}"
-        )
+        _sql(f"REVOKE ALL ON FUNCTION {signature} FROM PUBLIC,{_RUNTIME},{_MIGRATOR}")
         _sql(f"GRANT EXECUTE ON FUNCTION {signature} TO {_RUNTIME}")
 
 

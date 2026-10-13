@@ -162,9 +162,7 @@ async def _mutate_in_session(
     expected_material_state_ref: MaterialStateRef | None,
     rule: MovementPolicyRule | None,
 ) -> MovementPolicyMutationView:
-    resulting_material_state_ref = (
-        None if mutation_kind == "retire" else new_material_state_ref()
-    )
+    resulting_material_state_ref = None if mutation_kind == "retire" else new_material_state_ref()
     row = (
         (
             await database_session.execute(
@@ -182,9 +180,7 @@ async def _mutate_in_session(
                     "schedule_ref": schedule_ref,
                     "expected_material_state_ref": expected_material_state_ref,
                     "resulting_material_state_ref": resulting_material_state_ref,
-                    "automatic_movement_code": (
-                        None if rule is None else rule.automatic_movement
-                    ),
+                    "automatic_movement_code": (None if rule is None else rule.automatic_movement),
                     "acceptance_path_code": None if rule is None else rule.acceptance_path,
                 },
             )

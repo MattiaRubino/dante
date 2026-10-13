@@ -604,7 +604,9 @@ $block$
         "dante._session_subject_owned(uuid,uuid)",
     ):
         _sql(f"DROP FUNCTION IF EXISTS {signature}")
-    _sql("DROP TRIGGER IF EXISTS ctrg_session_execution_subject_family ON dante.session_execution_subject")
+    _sql(
+        "DROP TRIGGER IF EXISTS ctrg_session_execution_subject_family ON dante.session_execution_subject"
+    )
     _sql("DROP FUNCTION IF EXISTS dante.enforce_session_execution_subject()")
     op.drop_table("session_end_operation", schema=_SCHEMA)
     op.drop_table("session_start_operation", schema=_SCHEMA)

@@ -1,4 +1,3 @@
-# ruff: noqa: S608
 """B06-A repair: qualify Routine SQL against PL/pgSQL output variables.
 
 The B06-A functions deliberately use ``#variable_conflict error``.  Their
@@ -31,7 +30,7 @@ def downgrade() -> None:
     raise RuntimeError("B06-A SQL qualification repair requires a reviewed forward migration")
 
 
-_MUTATE_ROUTINE = r'''
+_MUTATE_ROUTINE = r"""
 CREATE OR REPLACE FUNCTION dante.mutate_self_routine(
     requested_self_person_ref uuid, requested_operation_id text, requested_intent_fingerprint text,
     requested_routine_ref uuid, requested_expected_source_revision bigint, requested_kind text,
@@ -129,10 +128,10 @@ BEGIN
                         current_source.lifecycle_state, recorded_at, false;
 END;
 $function$;
-'''
+"""
 
 
-_ASSIGN_LIFE_AREA = r'''
+_ASSIGN_LIFE_AREA = r"""
 CREATE OR REPLACE FUNCTION dante.assign_self_routine_life_area(
     requested_self_person_ref uuid, requested_operation_id text, requested_intent_fingerprint text,
     requested_routine_ref uuid, requested_life_area_ref uuid, requested_expected_revision bigint
@@ -220,4 +219,4 @@ BEGIN
     RETURN QUERY SELECT requested_life_area_ref, requested_expected_revision+1, recorded_at, false;
 END;
 $function$;
-'''
+"""

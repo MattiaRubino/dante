@@ -78,7 +78,8 @@ def _error(exc: DBAPIError) -> Exception:
     constraint = getattr(diagnostic, "constraint_name", None) if diagnostic else None
     message = str(original or exc)
     if sqlstate in {"40001", "23505"} or constraint in {
-        "schedule_reminder_current_conflict", "schedule_reminder_operation_reused"
+        "schedule_reminder_current_conflict",
+        "schedule_reminder_operation_reused",
     }:
         return ScheduleReminderConflictError(message)
     if sqlstate in {"23503", "P0002"}:
@@ -100,11 +101,17 @@ class ScheduleReminderApplication:
         try:
             async with self._session_factory() as session, session.begin():
                 row = (
-                    await session.execute(
-                        text("SELECT * FROM dante.get_self_schedule_reminder(:actor,:schedule_ref)"),
-                        {"actor": self_person_ref, "schedule_ref": schedule_ref},
+                    (
+                        await session.execute(
+                            text(
+                                "SELECT * FROM dante.get_self_schedule_reminder(:actor,:schedule_ref)"
+                            ),
+                            {"actor": self_person_ref, "schedule_ref": schedule_ref},
+                        )
                     )
-                ).mappings().one_or_none()
+                    .mappings()
+                    .one_or_none()
+                )
         except DBAPIError as exc:
             raise _error(exc) from exc
         except SQLAlchemyError as exc:
@@ -131,7 +138,8 @@ class ScheduleReminderApplication:
                     "schedule_ref": str(schedule_ref),
                     "expected_material_state_ref": (
                         str(expected_material_state_ref)
-                        if expected_material_state_ref is not None else None
+                        if expected_material_state_ref is not None
+                        else None
                     ),
                     "enabled": enabled,
                     "lead_minutes": lead_minutes,
@@ -143,26 +151,30 @@ class ScheduleReminderApplication:
         try:
             async with self._session_factory() as session, session.begin():
                 row = (
-                    await session.execute(
-                        text(
-                            """SELECT * FROM dante.configure_self_schedule_reminder(
+                    (
+                        await session.execute(
+                            text(
+                                """SELECT * FROM dante.configure_self_schedule_reminder(
                                  :actor,:operation_id,:fingerprint,:schedule_ref,
                                  :expected_state,:reminder_ref,:material_state_ref,
                                  :enabled,:lead_minutes)"""
-                        ),
-                        {
-                            "actor": self_person_ref,
-                            "operation_id": key,
-                            "fingerprint": fingerprint,
-                            "schedule_ref": schedule_ref,
-                            "expected_state": expected_material_state_ref,
-                            "reminder_ref": new_scoped_record_ref(),
-                            "material_state_ref": new_material_state_ref(),
-                            "enabled": enabled,
-                            "lead_minutes": lead_minutes,
-                        },
+                            ),
+                            {
+                                "actor": self_person_ref,
+                                "operation_id": key,
+                                "fingerprint": fingerprint,
+                                "schedule_ref": schedule_ref,
+                                "expected_state": expected_material_state_ref,
+                                "reminder_ref": new_scoped_record_ref(),
+                                "material_state_ref": new_material_state_ref(),
+                                "enabled": enabled,
+                                "lead_minutes": lead_minutes,
+                            },
+                        )
                     )
-                ).mappings().one_or_none()
+                    .mappings()
+                    .one_or_none()
+                )
         except DBAPIError as exc:
             raise _error(exc) from exc
         except SQLAlchemyError as exc:

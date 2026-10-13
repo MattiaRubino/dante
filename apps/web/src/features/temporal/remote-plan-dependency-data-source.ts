@@ -1,6 +1,7 @@
 import { createWebFetch } from '../../platform/api/web-fetch';
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const EVALUATION = new Set(['satisfied', 'unsatisfied', 'unknown']);
 
 export type PlanDependency = Readonly<{
@@ -47,15 +48,19 @@ function dependency(value: unknown): PlanDependency {
   const qualifier = row.qualifier_code;
   const code = row.disposition_code;
   const evaluation = row.evaluation_code;
-  if ((qualifier !== 'actual_occurred' && qualifier !== 'outcome_code') ||
-      (qualifier === 'actual_occurred' && code !== null) ||
-      (qualifier === 'outcome_code' && (typeof code !== 'string' || !code)) ||
-      row.purpose_code !== 'dependent_activity_admissibility' ||
-      (evaluation !== null &&
-        (typeof evaluation !== 'string' || !EVALUATION.has(evaluation))) ||
-      typeof row.active !== 'boolean' || typeof row.cycle !== 'boolean' ||
-      typeof row.replayed !== 'boolean' || typeof row.recorded_at !== 'string' ||
-      !Number.isFinite(Date.parse(row.recorded_at))) {
+  if (
+    (qualifier !== 'actual_occurred' && qualifier !== 'outcome_code') ||
+    (qualifier === 'actual_occurred' && code !== null) ||
+    (qualifier === 'outcome_code' && (typeof code !== 'string' || !code)) ||
+    row.purpose_code !== 'dependent_activity_admissibility' ||
+    (evaluation !== null &&
+      (typeof evaluation !== 'string' || !EVALUATION.has(evaluation))) ||
+    typeof row.active !== 'boolean' ||
+    typeof row.cycle !== 'boolean' ||
+    typeof row.replayed !== 'boolean' ||
+    typeof row.recorded_at !== 'string' ||
+    !Number.isFinite(Date.parse(row.recorded_at))
+  ) {
     throw new Error('Stato Dependency non valido.');
   }
   return Object.freeze({
@@ -100,19 +105,27 @@ export function createRemotePlanDependencyDataSource(
     const response = await webFetch('/api/v1/auth/session');
     if (!response.ok) throw new Error('Sessione non disponibile.');
     const payload = record(await response.json());
-    if (payload.authenticated !== true || typeof payload.csrf_token !== 'string' ||
-        !payload.csrf_token) {
+    if (
+      payload.authenticated !== true ||
+      typeof payload.csrf_token !== 'string' ||
+      !payload.csrf_token
+    ) {
       throw new Error('Accedi prima di modificare una Dependency.');
     }
     return payload.csrf_token;
   }
 
   async function mutate(
-    endpoint: string, method: 'POST' | 'PUT', body: Record<string, unknown>,
+    endpoint: string,
+    method: 'POST' | 'PUT',
+    body: Record<string, unknown>,
   ): Promise<PlanDependency> {
     const response = await webFetch(endpoint, {
       method,
-      headers: { 'Content-Type': 'application/json', 'X-Dante-CSRF': await csrf() },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Dante-CSRF': await csrf(),
+      },
       body: JSON.stringify(body),
     });
     if (!response.ok) throw await failure(response);
@@ -145,12 +158,19 @@ export function createRemotePlanDependencyDataSource(
       return mutate(path(planRef), 'POST', body(intent, operationId));
     },
     revise(
-      item: PlanDependency, intent: PlanDependencyIntent,
-      active: boolean, operationId: string,
+      item: PlanDependency,
+      intent: PlanDependencyIntent,
+      active: boolean,
+      operationId: string,
     ) {
       return mutate(
-        `${path(item.planRef)}/${encodeURIComponent(item.dependencyRef)}`, 'PUT',
-        { ...body(intent, operationId), expected_state_ref: item.stateRef, active },
+        `${path(item.planRef)}/${encodeURIComponent(item.dependencyRef)}`,
+        'PUT',
+        {
+          ...body(intent, operationId),
+          expected_state_ref: item.stateRef,
+          active,
+        },
       );
     },
   });

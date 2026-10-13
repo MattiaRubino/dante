@@ -84,14 +84,17 @@ async def test_planned_start_is_linked_replayable_and_never_actual(
         # The Activity editor must detect linked execution through existing
         # self-scoped functions; dante_runtime has no direct table SELECT grant.
         async with runtime.session_factory() as session, session.begin():
-            linked = await session.scalar(text("""
+            linked = await session.scalar(
+                text("""
                 SELECT EXISTS(
                     SELECT 1
                       FROM dante.list_self_subject_sessions(:actor,:activity) AS execution
                      WHERE dante.get_self_session_planned_schedule(
                          :actor,execution.session_ref)=:schedule
                 )
-            """), {"actor": actor, "activity": activity_ref, "schedule": schedule_ref})
+            """),
+                {"actor": actor, "activity": activity_ref, "schedule": schedule_ref},
+            )
         assert linked is True
         replayed = await sessions.start_planned(
             self_person_ref=actor,
@@ -116,7 +119,8 @@ async def test_planned_start_is_linked_replayable_and_never_actual(
         assert any(view.session_ref == main.session_ref for view in listed)
         with psycopg.connect(
             **migrated_database.connection_kwargs(
-                "dante_migrator", migrated_database.cluster.migrator_password,
+                "dante_migrator",
+                migrated_database.cluster.migrator_password,
             )
         ) as connection:
             connection.execute("SET ROLE dante_owner")

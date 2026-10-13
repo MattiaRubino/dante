@@ -60,22 +60,34 @@ MutatingContext = Annotated[DanteContext, Depends(require_mutating_dante_context
 def _problem(exc: Exception) -> ProblemError:
     if isinstance(exc, ScheduleReminderInputError):
         return ProblemError(
-            status=422, code="temporal.reminder.invalid_input", category="validation",
-            title="Reminder configuration rejected", detail=str(exc),
+            status=422,
+            code="temporal.reminder.invalid_input",
+            category="validation",
+            title="Reminder configuration rejected",
+            detail=str(exc),
         )
     if isinstance(exc, ScheduleReminderNotFoundError):
         return ProblemError(
-            status=404, code="temporal.reminder.schedule_unavailable", category="not_found",
-            title="Schedule unavailable for Reminder", detail=str(exc),
+            status=404,
+            code="temporal.reminder.schedule_unavailable",
+            category="not_found",
+            title="Schedule unavailable for Reminder",
+            detail=str(exc),
         )
     if isinstance(exc, ScheduleReminderConflictError):
         return ProblemError(
-            status=409, code="temporal.reminder.conflict", category="conflict",
-            title="Reminder current state conflict", detail=str(exc),
+            status=409,
+            code="temporal.reminder.conflict",
+            category="conflict",
+            title="Reminder current state conflict",
+            detail=str(exc),
         )
     return ProblemError(
-        status=409, code="temporal.reminder.persistence", category="conflict",
-        title="Reminder command rejected", detail="Reminder command was rejected.",
+        status=409,
+        code="temporal.reminder.persistence",
+        category="conflict",
+        title="Reminder command rejected",
+        detail="Reminder command was rejected.",
     )
 
 
@@ -105,7 +117,9 @@ def _response(view: ScheduleReminderView) -> ScheduleReminderResponse:
     operation_id="temporal_get_schedule_reminder",
 )
 async def get_schedule_reminder(
-    schedule_ref: UUID, context: Context, application: Application,
+    schedule_ref: UUID,
+    context: Context,
+    application: Application,
 ) -> ScheduleReminderResponse:
     try:
         view = await application.get(
@@ -149,14 +163,17 @@ async def configure_schedule_reminder(
             operation_id=payload.operation_id,
             expected_material_state_ref=(
                 MaterialStateRef(payload.expected_material_state_ref)
-                if payload.expected_material_state_ref is not None else None
+                if payload.expected_material_state_ref is not None
+                else None
             ),
             enabled=payload.enabled,
             lead_minutes=payload.lead_minutes,
         )
     except (
-        ScheduleReminderInputError, ScheduleReminderNotFoundError,
-        ScheduleReminderConflictError, ScheduleReminderPersistenceError,
+        ScheduleReminderInputError,
+        ScheduleReminderNotFoundError,
+        ScheduleReminderConflictError,
+        ScheduleReminderPersistenceError,
     ) as exc:
         raise _problem(exc) from exc
     response.status_code = (

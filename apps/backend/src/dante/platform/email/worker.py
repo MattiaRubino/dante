@@ -118,8 +118,7 @@ class EmailDeliveryWorkerPool:
                 # The stop event still interrupts promptly during shutdown.
                 delay = min(
                     8.0,
-                    max(0.5, self._settings.email_poll_interval_seconds)
-                    * (2 ** (failures - 1)),
+                    max(0.5, self._settings.email_poll_interval_seconds) * (2 ** (failures - 1)),
                 )
                 with suppress(TimeoutError):
                     await asyncio.wait_for(self._stop.wait(), timeout=delay)

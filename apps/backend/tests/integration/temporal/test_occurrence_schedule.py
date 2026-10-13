@@ -7,8 +7,8 @@ from typing import Any
 
 import psycopg
 import pytest
-from tests.integration.temporal.test_schedule_place import _context
 from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
+from tests.integration.temporal.test_schedule_place import _context
 
 from dante.modules.temporal.application import (
     TemporalTimelineApplication,

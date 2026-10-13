@@ -132,9 +132,7 @@ class OutcomeApplication:
                 "version": "2",
                 "command": "record_actual_outcome_disposition",
                 "actual_ref": str(actual_ref),
-                "actual_realization_material_state_ref": str(
-                    actual_realization_material_state_ref
-                ),
+                "actual_realization_material_state_ref": str(actual_realization_material_state_ref),
                 "expected_material_state_ref": (
                     str(expected_material_state_ref)
                     if expected_material_state_ref is not None

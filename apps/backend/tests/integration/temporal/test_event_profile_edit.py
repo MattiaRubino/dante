@@ -54,7 +54,8 @@ async def test_event_profile_is_guarded_and_current_read_tracks_append_only_edit
         assert replay["replayed"] is True
 
         canonical = await TemporalEventApplication(runtime.session_factory).get_event(
-            self_person_ref=owner, event_ref=event,
+            self_person_ref=owner,
+            event_ref=event,
         )
         assert canonical is not None
         assert canonical.title == "Modificato"
@@ -63,9 +64,12 @@ async def test_event_profile_is_guarded_and_current_read_tracks_append_only_edit
         assert canonical.color_code == "#ABCDEF"
         assert canonical.profile_revision == 1
 
-        with psycopg.connect(**migrated_database.connection_kwargs(
-            "dante_migrator", migrated_database.cluster.migrator_password,
-        )) as db:
+        with psycopg.connect(
+            **migrated_database.connection_kwargs(
+                "dante_migrator",
+                migrated_database.cluster.migrator_password,
+            )
+        ) as db:
             db.execute("SET ROLE dante_owner")
             before, after = db.execute(
                 "SELECT previous_profile,current_profile FROM dante.event_profile_revision "
@@ -80,17 +84,27 @@ async def test_event_profile_is_guarded_and_current_read_tracks_append_only_edit
                 await session.execute(_EDIT, {**command, "operation": "m4:stale"})
         with pytest.raises(DBAPIError):
             async with runtime.session_factory() as session, session.begin():
-                await session.execute(_EDIT, {
-                    **command, "actor": stranger, "operation": "m4:foreign",
-                })
+                await session.execute(
+                    _EDIT,
+                    {
+                        **command,
+                        "actor": stranger,
+                        "operation": "m4:foreign",
+                    },
+                )
         with pytest.raises(DBAPIError):
             async with runtime.session_factory() as session, session.begin():
-                await session.execute(_EDIT, {
-                    **command, "title": "Reused with different intent",
-                })
+                await session.execute(
+                    _EDIT,
+                    {
+                        **command,
+                        "title": "Reused with different intent",
+                    },
+                )
 
         canonical_after = await TemporalEventApplication(runtime.session_factory).get_event(
-            self_person_ref=owner, event_ref=event,
+            self_person_ref=owner,
+            event_ref=event,
         )
         assert canonical_after is not None
         assert canonical_after.title == "Modificato"

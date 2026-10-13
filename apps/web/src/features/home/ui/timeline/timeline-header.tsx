@@ -54,7 +54,10 @@ function weekdayLabel(date: PlainDate, locale: string): string {
 
 function timelineGroupColor(group: TimelineGroup): string {
   if (group.colorCode) return group.colorCode;
-  if (group.organizationRevision !== undefined || group.id === 'legacy-unassigned') {
+  if (
+    group.organizationRevision !== undefined ||
+    group.id === 'legacy-unassigned'
+  ) {
     return CANONICAL_UNCOLORED_GROUP;
   }
   return `var(--dante-timeline-tone-${group.tone})`;
@@ -344,7 +347,9 @@ export function TimelineHeader({
             type="button"
             onClick={onViewOptionsToggle}
             aria-label={t(($) => $.common.home.timeline.viewOptions.label)}
-            data-timeline-tooltip={t(($) => $.common.home.timeline.viewOptions.label)}
+            data-timeline-tooltip={t(
+              ($) => $.common.home.timeline.viewOptions.label,
+            )}
             aria-haspopup="dialog"
             aria-expanded={viewOptionsOpen}
           >

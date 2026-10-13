@@ -5,13 +5,18 @@ import { subscribeTemporalTimelineInvalidation } from './timeline-invalidation';
 
 const ref = '0199a111-1111-7111-8111-111111111111';
 const profile = {
-  activity_ref: ref, title: 'Prima', description: null,
-  location: null, color_code: '#EA5C12', revision: 0,
+  activity_ref: ref,
+  title: 'Prima',
+  description: null,
+  location: null,
+  color_code: '#EA5C12',
+  revision: 0,
 };
 
 function json(value: unknown, status = 200) {
   return new Response(JSON.stringify(value), {
-    status, headers: { 'Content-Type': 'application/json' },
+    status,
+    headers: { 'Content-Type': 'application/json' },
   });
 }
 
@@ -24,7 +29,9 @@ describe('remote Activity Inspector', () => {
       const headers = new Headers(init?.headers);
       expect(headers.get('X-Dante-Client')).toBe('web');
       if (input === '/api/v1/auth/session') {
-        return Promise.resolve(json({ authenticated: true, csrf_token: 'token' }));
+        return Promise.resolve(
+          json({ authenticated: true, csrf_token: 'token' }),
+        );
       }
       expect(input).toBe(`/api/v1/temporal/activities/${ref}/profile`);
       if (init?.method === 'PUT') {
@@ -32,7 +39,9 @@ describe('remote Activity Inspector', () => {
         const body = JSON.parse(String(init.body)) as Record<string, unknown>;
         expect(body).toMatchObject({ expected_revision: 0, title: 'Dopo' });
         expect(typeof body.operation_id).toBe('string');
-        return Promise.resolve(json({ ...profile, title: 'Dopo', revision: 1 }));
+        return Promise.resolve(
+          json({ ...profile, title: 'Dopo', revision: 1 }),
+        );
       }
       return Promise.resolve(json(profile));
     });
@@ -40,7 +49,10 @@ describe('remote Activity Inspector', () => {
       const source = createRemoteActivityInspector(fetchFn);
       const current = await source.get(ref);
       const saved = await source.revise(current, {
-        title: 'Dopo', description: null, location: null, colorCode: current.colorCode,
+        title: 'Dopo',
+        description: null,
+        location: null,
+        colorCode: current.colorCode,
       });
       expect(saved.revision).toBe(1);
       expect(invalidated).toHaveBeenCalledOnce();
@@ -52,14 +64,17 @@ describe('remote Activity Inspector', () => {
   it('keeps recorded history intact and explains the retirement veto', async () => {
     const invalidated = vi.fn();
     const unsubscribe = subscribeTemporalTimelineInvalidation(invalidated);
-    const fetchFn = vi.fn<typeof globalThis.fetch>((input) => Promise.resolve(
-      input === '/api/v1/auth/session'
-        ? json({ authenticated: true, csrf_token: 'token' })
-        : json({ code: 'temporal.activity_profile.recorded_truth' }, 409),
-    ));
+    const fetchFn = vi.fn<typeof globalThis.fetch>((input) =>
+      Promise.resolve(
+        input === '/api/v1/auth/session'
+          ? json({ authenticated: true, csrf_token: 'token' })
+          : json({ code: 'temporal.activity_profile.recorded_truth' }, 409),
+      ),
+    );
     try {
-      await expect(createRemoteActivityInspector(fetchFn).retire(ref))
-        .rejects.toThrow('sessioni o risultati registrati');
+      await expect(
+        createRemoteActivityInspector(fetchFn).retire(ref),
+      ).rejects.toThrow('sessioni o risultati registrati');
       expect(invalidated).not.toHaveBeenCalled();
     } finally {
       unsubscribe();
@@ -69,14 +84,17 @@ describe('remote Activity Inspector', () => {
   it('does not invalidate the Timeline when deletion is rejected', async () => {
     const invalidated = vi.fn();
     const unsubscribe = subscribeTemporalTimelineInvalidation(invalidated);
-    const fetchFn = vi.fn<typeof globalThis.fetch>((input) => Promise.resolve(
-      input === '/api/v1/auth/session'
-        ? json({ authenticated: true, csrf_token: 'token' })
-        : json({ code: 'temporal.activity_profile.active_session' }, 409),
-    ));
+    const fetchFn = vi.fn<typeof globalThis.fetch>((input) =>
+      Promise.resolve(
+        input === '/api/v1/auth/session'
+          ? json({ authenticated: true, csrf_token: 'token' })
+          : json({ code: 'temporal.activity_profile.active_session' }, 409),
+      ),
+    );
     try {
-      await expect(createRemoteActivityInspector(fetchFn).retire(ref))
-        .rejects.toThrow('Termina prima la sessione attiva');
+      await expect(
+        createRemoteActivityInspector(fetchFn).retire(ref),
+      ).rejects.toThrow('Termina prima la sessione attiva');
       expect(invalidated).not.toHaveBeenCalled();
     } finally {
       unsubscribe();

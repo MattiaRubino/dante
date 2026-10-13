@@ -13,10 +13,10 @@ import pytest
 from fastapi import Response
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
-from tests.integration.temporal.test_schedule_place import _context
 from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
-from tests.integration.temporal.test_recurring_profile_scoped_edit import _daily
 from tests.integration.temporal.test_recurring_event_create import _daily_named_zone
+from tests.integration.temporal.test_recurring_profile_scoped_edit import _daily
+from tests.integration.temporal.test_schedule_place import _context
 
 from dante.modules.temporal.event_occurrence_policy import EventOccurrencePolicyApplication
 from dante.modules.temporal.occurrence import (
@@ -41,43 +41,79 @@ ZONE = "Europe/Rome"
 
 async def _definition(runtime: Any, actor: UUID, objective: UUID) -> Any:
     async with runtime.session_factory() as session, session.begin():
-        return (await session.execute(
-            text("SELECT * FROM dante.get_self_temporal_objective_definition(:actor,:objective)"),
-            {"actor": actor, "objective": objective},
-        )).mappings().one()
+        return (
+            (
+                await session.execute(
+                    text(
+                        "SELECT * FROM dante.get_self_temporal_objective_definition(:actor,:objective)"
+                    ),
+                    {"actor": actor, "objective": objective},
+                )
+            )
+            .mappings()
+            .one()
+        )
 
 
 async def _series_state(runtime: Any, actor: UUID, objective: UUID) -> Any:
     async with runtime.session_factory() as session, session.begin():
-        return (await session.execute(
-            text("SELECT * FROM dante.get_self_objective_series_state(:actor,:objective)"),
-            {"actor": actor, "objective": objective},
-        )).mappings().one_or_none()
+        return (
+            (
+                await session.execute(
+                    text("SELECT * FROM dante.get_self_objective_series_state(:actor,:objective)"),
+                    {"actor": actor, "objective": objective},
+                )
+            )
+            .mappings()
+            .one_or_none()
+        )
 
 
 async def _apply(
-    runtime: Any, actor: UUID, objective: UUID, *,
-    operation: str, expected_source: int = 0, expected_definition: int = 0,
-    recurrence_state: UUID | None = None, fingerprint: str = "a" * 64,
+    runtime: Any,
+    actor: UUID,
+    objective: UUID,
+    *,
+    operation: str,
+    expected_source: int = 0,
+    expected_definition: int = 0,
+    recurrence_state: UUID | None = None,
+    fingerprint: str = "a" * 64,
 ) -> Any:
     async with runtime.session_factory() as session, session.begin():
-        return (await session.execute(
-            text(
-                "SELECT * FROM dante.accept_self_objective_series_edit("
-                ":actor,:objective,:operation,:fingerprint,:expected_definition,"
-                ":expected_source,:recurrence,:zone,:label,:kind,:comparator,"
-                ":target,:minimum,:maximum,:unit,:ordering,:evaluation)"
-            ),
-            {
-                "actor": actor, "objective": objective, "operation": operation,
-                "fingerprint": fingerprint, "expected_definition": expected_definition,
-                "expected_source": expected_source, "recurrence": recurrence_state,
-                "zone": ZONE, "label": "Corsa sette km",
-                "kind": "quantity", "comparator": "gte",
-                "target": 7, "minimum": None, "maximum": None,
-                "unit": "km", "ordering": 0, "evaluation": uuid7(),
-            },
-        )).mappings().one()
+        return (
+            (
+                await session.execute(
+                    text(
+                        "SELECT * FROM dante.accept_self_objective_series_edit("
+                        ":actor,:objective,:operation,:fingerprint,:expected_definition,"
+                        ":expected_source,:recurrence,:zone,:label,:kind,:comparator,"
+                        ":target,:minimum,:maximum,:unit,:ordering,:evaluation)"
+                    ),
+                    {
+                        "actor": actor,
+                        "objective": objective,
+                        "operation": operation,
+                        "fingerprint": fingerprint,
+                        "expected_definition": expected_definition,
+                        "expected_source": expected_source,
+                        "recurrence": recurrence_state,
+                        "zone": ZONE,
+                        "label": "Corsa sette km",
+                        "kind": "quantity",
+                        "comparator": "gte",
+                        "target": 7,
+                        "minimum": None,
+                        "maximum": None,
+                        "unit": "km",
+                        "ordering": 0,
+                        "evaluation": uuid7(),
+                    },
+                )
+            )
+            .mappings()
+            .one()
+        )
 
 
 async def _read_checkpoint_refs(
@@ -112,7 +148,11 @@ async def _read_checkpoint_refs(
 
 
 async def _objective_for_occurrence(
-    runtime: Any, actor: UUID, occurrence: UUID, *, kind: str = "activity",
+    runtime: Any,
+    actor: UUID,
+    occurrence: UUID,
+    *,
+    kind: str = "activity",
 ) -> UUID:
     """Use owner-scoped capabilities, never SELECT protected tables as runtime."""
     async with runtime.session_factory() as session, session.begin():
@@ -169,44 +209,55 @@ async def test_generated_routine_objective_scope_selected_past_and_later_future(
             reminder_lead_minutes=None,
             activity_template={
                 "version": 1,
-                "objectives": [{
-                    "label": "Corsa dieci km",
-                    "result_kind": "quantity",
-                    "comparator_code": "gte",
-                    "target_value": 10,
-                    "unit_code": "km",
-                    "presentation_order": 0,
-                }],
+                "objectives": [
+                    {
+                        "label": "Corsa dieci km",
+                        "result_kind": "quantity",
+                        "comparator_code": "gte",
+                        "target_value": 10,
+                        "unit_code": "km",
+                        "presentation_order": 0,
+                    }
+                ],
             },
         )
         # Materialize three past and three future Occurrences.
         await materializer.checkpoint_window(
-            self_person_ref=alice, operation_id="m2scope:past",
+            self_person_ref=alice,
+            operation_id="m2scope:past",
             start_date=now - timedelta(days=3),
             end_date_exclusive=now,
             effective_zone_id=ZONE,
         )
         await materializer.checkpoint_window(
-            self_person_ref=alice, operation_id="m2scope:future",
+            self_person_ref=alice,
+            operation_id="m2scope:future",
             start_date=now + timedelta(days=2),
             end_date_exclusive=now + timedelta(days=5),
             effective_zone_id=ZONE,
         )
         earlier = await _read_checkpoint_refs(
-            runtime, alice, created.source_ref, owner="routine",
+            runtime,
+            alice,
+            created.source_ref,
+            owner="routine",
             operation="m2scope:past",
-            start=now - timedelta(days=3), end=now,
+            start=now - timedelta(days=3),
+            end=now,
         )
         following = await _read_checkpoint_refs(
-            runtime, alice, created.source_ref, owner="routine",
+            runtime,
+            alice,
+            created.source_ref,
+            owner="routine",
             operation="m2scope:future",
-            start=now + timedelta(days=2), end=now + timedelta(days=5),
+            start=now + timedelta(days=2),
+            end=now + timedelta(days=5),
         )
         assert len(earlier) == len(following) == 3
         ids = [*earlier, *following]
         objectives = [
-            await _objective_for_occurrence(runtime, alice, occurrence)
-            for occurrence in ids
+            await _objective_for_occurrence(runtime, alice, occurrence) for occurrence in ids
         ]
         state = await _series_state(runtime, alice, objectives[0])
         assert state is not None
@@ -216,7 +267,10 @@ async def test_generated_routine_objective_scope_selected_past_and_later_future(
         assert await _series_state(runtime, bob, objectives[0]) is None
 
         accepted = await _apply(
-            runtime, alice, objectives[0], operation="m2scope:past-following",
+            runtime,
+            alice,
+            objectives[0],
+            operation="m2scope:past-following",
             recurrence_state=state.recurrence_state_ref,
         )
         assert accepted.replayed is False
@@ -230,34 +284,48 @@ async def test_generated_routine_objective_scope_selected_past_and_later_future(
 
         # A future Occurrence generated after acceptance inherits the policy.
         await materializer.checkpoint_window(
-            self_person_ref=alice, operation_id="m2scope:later",
+            self_person_ref=alice,
+            operation_id="m2scope:later",
             start_date=now + timedelta(days=5),
             end_date_exclusive=now + timedelta(days=6),
             effective_zone_id=ZONE,
         )
         (later_ref,) = await _read_checkpoint_refs(
-            runtime, alice, created.source_ref, owner="routine",
+            runtime,
+            alice,
+            created.source_ref,
+            owner="routine",
             operation="m2scope:later",
-            start=now + timedelta(days=5), end=now + timedelta(days=6),
+            start=now + timedelta(days=5),
+            end=now + timedelta(days=6),
         )
         later_objective = await _objective_for_occurrence(runtime, alice, later_ref)
         assert (await _definition(runtime, alice, later_objective)).label == "Corsa sette km"
 
         replay = await _apply(
-            runtime, alice, objectives[0], operation="m2scope:past-following",
+            runtime,
+            alice,
+            objectives[0],
+            operation="m2scope:past-following",
             recurrence_state=state.recurrence_state_ref,
         )
         assert replay.replayed is True
         assert replay.source_revision == 1
         with pytest.raises(DBAPIError):
             await _apply(
-                runtime, alice, objectives[0], operation="m2scope:stale",
+                runtime,
+                alice,
+                objectives[0],
+                operation="m2scope:stale",
                 recurrence_state=state.recurrence_state_ref,
                 expected_source=0,
             )
         with pytest.raises(DBAPIError):
             await _apply(
-                runtime, bob, objectives[0], operation="m2scope:cross-owner",
+                runtime,
+                bob,
+                objectives[0],
+                operation="m2scope:cross-owner",
                 recurrence_state=state.recurrence_state_ref,
             )
 
@@ -272,26 +340,28 @@ async def test_generated_routine_objective_scope_selected_past_and_later_future(
                     "'gte',9,NULL,NULL,'km',0,:evaluation)"
                 ),
                 {
-                    "actor": alice, "operation": "m2scope:local",
-                    "fingerprint": "b" * 64, "objective": future_objective,
-                    "label": "Correzione personale", "evaluation": uuid7(),
+                    "actor": alice,
+                    "operation": "m2scope:local",
+                    "fingerprint": "b" * 64,
+                    "objective": future_objective,
+                    "label": "Correzione personale",
+                    "evaluation": uuid7(),
                 },
             )
         with pytest.raises(DBAPIError):
             await _apply(
-                runtime, alice, objectives[0], operation="m2scope:blocked",
+                runtime,
+                alice,
+                objectives[0],
+                operation="m2scope:blocked",
                 recurrence_state=state.recurrence_state_ref,
-                expected_source=1, expected_definition=1,
+                expected_source=1,
+                expected_definition=1,
             )
-        assert (await _definition(runtime, alice, objectives[4])).label == (
-            "Correzione personale"
-        )
-        assert (await _definition(runtime, alice, objectives[1])).label == (
-            "Corsa dieci km"
-        )
+        assert (await _definition(runtime, alice, objectives[4])).label == ("Correzione personale")
+        assert (await _definition(runtime, alice, objectives[1])).label == ("Corsa dieci km")
     finally:
         await runtime.dispose()
-
 
 
 @pytest.mark.asyncio
@@ -310,19 +380,26 @@ async def test_generated_event_objectives_share_future_scope_without_copying_res
     future_day = datetime.now(ZoneInfo(ZONE)).date() + timedelta(days=7)
     try:
         source = await authoring.create_event(
-            self_person_ref=actor, operation_id="m2scope:event",
-            title="Riunione", life_area_intent=None,
+            self_person_ref=actor,
+            operation_id="m2scope:event",
+            title="Riunione",
+            life_area_intent=None,
             recurrence=_daily_named_zone(),
         )
         await policy.set(
-            self_person_ref=actor, event_ref=source.source_ref,
-            placement_kind="timed", duration_minutes=60,
-            duration_days=None, reminder_lead_minutes=None,
-            objectives=({
-                "label": "Arrivare puntuale",
-                "result_kind": "boolean",
-                "presentation_order": 0,
-            },),
+            self_person_ref=actor,
+            event_ref=source.source_ref,
+            placement_kind="timed",
+            duration_minutes=60,
+            duration_days=None,
+            reminder_lead_minutes=None,
+            objectives=(
+                {
+                    "label": "Arrivare puntuale",
+                    "result_kind": "boolean",
+                    "presentation_order": 0,
+                },
+            ),
         )
         for token, day in (("past", past_day), ("future", future_day)):
             await materializer.checkpoint_window(
@@ -333,20 +410,34 @@ async def test_generated_event_objectives_share_future_scope_without_copying_res
                 effective_zone_id=ZONE,
             )
         (past_occurrence,) = await _read_checkpoint_refs(
-            runtime, actor, source.source_ref, owner="event",
+            runtime,
+            actor,
+            source.source_ref,
+            owner="event",
             operation="m2scope:event:past",
-            start=past_day, end=past_day + timedelta(days=1),
+            start=past_day,
+            end=past_day + timedelta(days=1),
         )
         (future_occurrence,) = await _read_checkpoint_refs(
-            runtime, actor, source.source_ref, owner="event",
+            runtime,
+            actor,
+            source.source_ref,
+            owner="event",
             operation="m2scope:event:future",
-            start=future_day, end=future_day + timedelta(days=1),
+            start=future_day,
+            end=future_day + timedelta(days=1),
         )
         past = await _objective_for_occurrence(
-            runtime, actor, past_occurrence, kind="occurrence",
+            runtime,
+            actor,
+            past_occurrence,
+            kind="occurrence",
         )
         future = await _objective_for_occurrence(
-            runtime, actor, future_occurrence, kind="occurrence",
+            runtime,
+            actor,
+            future_occurrence,
+            kind="occurrence",
         )
         state = await _series_state(runtime, actor, past)
         assert state is not None
@@ -358,9 +449,7 @@ async def test_generated_event_objectives_share_future_scope_without_copying_res
             app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))
         )
         ctx = _context(actor)
-        api_state = await get_objective_series_state(
-            past, ctx, request, Response()
-        )
+        api_state = await get_objective_series_state(past, ctx, request, Response())
         assert api_state is not None
         assert api_state.template_slot == 0
         assert api_state.source_revision == 0
@@ -376,7 +465,9 @@ async def test_generated_event_objectives_share_future_scope_without_copying_res
                 result_kind="boolean",
                 presentation_order=0,
             ),
-            ctx, request, Response(),
+            ctx,
+            request,
+            Response(),
         )
         assert row.source_revision == 1
         assert (await _definition(runtime, actor, past)).label == "Partenza puntuale"

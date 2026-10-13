@@ -1,4 +1,3 @@
-# ruff: noqa: S608
 """B06-A correction: create the mandatory CP6 Routine recurrence companion.
 
 CP6 deliberately rejects a bare ``routine`` owner.  A Routine source and its
@@ -47,7 +46,7 @@ def downgrade() -> None:
     raise RuntimeError("B06-A Routine companion correction requires a reviewed forward migration")
 
 
-_CREATE = r'''
+_CREATE = r"""
 CREATE FUNCTION dante.create_self_routine(
     requested_self_person_ref uuid, requested_operation_id text,
     requested_intent_fingerprint text, requested_routine_ref uuid,
@@ -122,4 +121,4 @@ BEGIN
     RETURN QUERY SELECT requested_routine_ref,1::bigint,1::bigint,recorded_at,false;
 END;
 $function$;
-'''
+"""

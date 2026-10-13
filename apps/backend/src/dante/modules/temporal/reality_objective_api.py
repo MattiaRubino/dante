@@ -27,9 +27,7 @@ ObjectiveSubjectKind = Literal["activity", "event", "occurrence"]
 RealityMode = Literal["manual", "review_on_end", "auto_confirm_outcome"]
 ObjectiveKind = Literal["boolean", "quantity", "qualitative", "range"]
 ComparatorCode = Literal["eq", "gte", "lte", "between"]
-AssessmentCode = Literal[
-    "satisfied", "partial", "not_satisfied", "unknown", "indeterminate"
-]
+AssessmentCode = Literal["satisfied", "partial", "not_satisfied", "unknown", "indeterminate"]
 
 
 def _fingerprint(value: dict[str, object]) -> str:
@@ -264,7 +262,6 @@ class ObjectiveDefinitionReviseResponse(BaseModel):
     replayed: bool
 
 
-
 class ObjectiveBatchRevision(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -332,18 +329,22 @@ async def _reality_get(
             session.begin(),
         ):
             row = (
-                await session.execute(
-                    text(
-                        "SELECT * FROM dante.get_self_reality_review_policy("
-                        ":actor,:kind,:subject)"
-                    ),
-                    {
-                        "actor": context.self_person_ref,
-                        "kind": kind,
-                        "subject": subject_ref,
-                    },
+                (
+                    await session.execute(
+                        text(
+                            "SELECT * FROM dante.get_self_reality_review_policy("
+                            ":actor,:kind,:subject)"
+                        ),
+                        {
+                            "actor": context.self_person_ref,
+                            "kind": kind,
+                            "subject": subject_ref,
+                        },
+                    )
                 )
-            ).mappings().one_or_none()
+                .mappings()
+                .one_or_none()
+            )
     except SQLAlchemyError as exc:
         raise ProblemError(
             status=503,
@@ -393,25 +394,29 @@ async def _reality_set(
             session.begin(),
         ):
             row = (
-                await session.execute(
-                    text("""
+                (
+                    await session.execute(
+                        text("""
                         SELECT * FROM dante.set_self_reality_review_policy(
                             :actor,:operation,:fingerprint,:kind,:subject,
                             :state,:mode,:expected
                         )
                     """),
-                    {
-                        "actor": context.self_person_ref,
-                        "operation": payload.operation_id,
-                        "fingerprint": _fingerprint(intent),
-                        "kind": kind,
-                        "subject": subject_ref,
-                        "state": uuid7(),
-                        "mode": payload.mode_code,
-                        "expected": payload.expected_state_ref,
-                    },
+                        {
+                            "actor": context.self_person_ref,
+                            "operation": payload.operation_id,
+                            "fingerprint": _fingerprint(intent),
+                            "kind": kind,
+                            "subject": subject_ref,
+                            "state": uuid7(),
+                            "mode": payload.mode_code,
+                            "expected": payload.expected_state_ref,
+                        },
+                    )
                 )
-            ).mappings().one()
+                .mappings()
+                .one()
+            )
     except DBAPIError as exc:
         raise _problem(exc, noun="reality_policy") from exc
     except SQLAlchemyError as exc:
@@ -533,32 +538,36 @@ async def _create_objective(
             session.begin(),
         ):
             row = (
-                await session.execute(
-                    text("""
+                (
+                    await session.execute(
+                        text("""
                         SELECT * FROM dante.create_self_temporal_objective(
                             :actor,:operation,:fingerprint,:objective,:kind,:subject,
                             :label,:result_kind,:comparator,:target_value,:target_min,
                             :target_max,:unit,:presentation_order
                         )
                     """),
-                    {
-                        "actor": context.self_person_ref,
-                        "operation": payload.operation_id,
-                        "fingerprint": _fingerprint(intent),
-                        "objective": objective_ref,
-                        "kind": kind,
-                        "subject": subject_ref,
-                        "label": payload.label,
-                        "result_kind": payload.result_kind,
-                        "comparator": payload.comparator_code,
-                        "target_value": payload.target_value,
-                        "target_min": payload.target_min,
-                        "target_max": payload.target_max,
-                        "unit": payload.unit_code,
-                        "presentation_order": payload.presentation_order,
-                    },
+                        {
+                            "actor": context.self_person_ref,
+                            "operation": payload.operation_id,
+                            "fingerprint": _fingerprint(intent),
+                            "objective": objective_ref,
+                            "kind": kind,
+                            "subject": subject_ref,
+                            "label": payload.label,
+                            "result_kind": payload.result_kind,
+                            "comparator": payload.comparator_code,
+                            "target_value": payload.target_value,
+                            "target_min": payload.target_min,
+                            "target_max": payload.target_max,
+                            "unit": payload.unit_code,
+                            "presentation_order": payload.presentation_order,
+                        },
+                    )
                 )
-            ).mappings().one()
+                .mappings()
+                .one()
+            )
     except DBAPIError as exc:
         raise _problem(exc, noun="objective") from exc
     except SQLAlchemyError as exc:
@@ -587,18 +596,22 @@ async def _list_objectives(
             session.begin(),
         ):
             rows = (
-                await session.execute(
-                    text(
-                        "SELECT * FROM dante.list_self_temporal_objectives("
-                        ":actor,:kind,:subject)"
-                    ),
-                    {
-                        "actor": context.self_person_ref,
-                        "kind": kind,
-                        "subject": subject_ref,
-                    },
+                (
+                    await session.execute(
+                        text(
+                            "SELECT * FROM dante.list_self_temporal_objectives("
+                            ":actor,:kind,:subject)"
+                        ),
+                        {
+                            "actor": context.self_person_ref,
+                            "kind": kind,
+                            "subject": subject_ref,
+                        },
+                    )
                 )
-            ).mappings().all()
+                .mappings()
+                .all()
+            )
     except SQLAlchemyError as exc:
         raise ProblemError(
             status=503,
@@ -637,7 +650,6 @@ async def list_activity_objectives(
     return await _list_objectives("activity", subject_ref, context, request)
 
 
-
 @router.put(
     "/activities/{subject_ref}/objective-edits",
     response_model=list[ObjectiveResponse],
@@ -659,27 +671,39 @@ async def apply_activity_objective_edits(
     try:
         async with request.app.state.database_runtime.session_factory() as session, session.begin():
             await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
-            existing = set((await session.scalars(text("""
+            existing = set(
+                (
+                    await session.scalars(
+                        text("""
                 SELECT objective_ref FROM dante.list_self_temporal_objectives(
                     :actor,'activity',:activity)
-            """), {"actor": actor, "activity": subject_ref})).all())
+            """),
+                        {"actor": actor, "activity": subject_ref},
+                    )
+                ).all()
+            )
             for item in payload.revise:
                 if item.objective_ref not in existing:
                     raise ProblemError(
-                        status=409, code="temporal.objective_edit.stale",
-                        category="conflict", title="Obiettivo cambiato",
+                        status=409,
+                        code="temporal.objective_edit.stale",
+                        category="conflict",
+                        title="Obiettivo cambiato",
                         detail="Un obiettivo è stato modificato. Riapri Modifica e riprova.",
                     )
                 change = item.change
                 intent = {
-                    "version": 1, "objective_ref": str(item.objective_ref),
+                    "version": 1,
+                    "objective_ref": str(item.objective_ref),
                     **change.model_dump(mode="json"),
                 }
                 if change.scope_code == "this_and_following":
                     if change.expected_source_revision is None:
                         raise ProblemError(
-                            status=422, code="temporal.objective_edit.series_required",
-                            category="validation", title="Origine ricorrente mancante",
+                            status=422,
+                            code="temporal.objective_edit.series_required",
+                            category="validation",
+                            title="Origine ricorrente mancante",
                             detail="Ricarica la provenienza dell'obiettivo ricorrente.",
                         )
                     statement = (
@@ -695,79 +719,118 @@ async def apply_activity_objective_edits(
                         ":label,:kind,:comparator,:target,:minimum,:maximum,"
                         ":unit,:ordering,:evaluation)"
                     )
-                await session.execute(text(statement), {
-                    "actor": actor, "objective": item.objective_ref,
-                    "operation": change.operation_id,
-                    "fingerprint": _fingerprint(intent),
-                    "expected": change.expected_revision,
-                    "source_expected": change.expected_source_revision,
-                    "recurrence_expected": change.expected_recurrence_state_ref,
-                    "zone": context.effective_zone_id,
-                    "label": change.label, "kind": change.result_kind,
-                    "comparator": change.comparator_code,
-                    "target": change.target_value,
-                    "minimum": change.target_min, "maximum": change.target_max,
-                    "unit": change.unit_code, "ordering": change.presentation_order,
-                    "evaluation": uuid7(),
-                })
+                await session.execute(
+                    text(statement),
+                    {
+                        "actor": actor,
+                        "objective": item.objective_ref,
+                        "operation": change.operation_id,
+                        "fingerprint": _fingerprint(intent),
+                        "expected": change.expected_revision,
+                        "source_expected": change.expected_source_revision,
+                        "recurrence_expected": change.expected_recurrence_state_ref,
+                        "zone": context.effective_zone_id,
+                        "label": change.label,
+                        "kind": change.result_kind,
+                        "comparator": change.comparator_code,
+                        "target": change.target_value,
+                        "minimum": change.target_min,
+                        "maximum": change.target_max,
+                        "unit": change.unit_code,
+                        "ordering": change.presentation_order,
+                        "evaluation": uuid7(),
+                    },
+                )
             for item in payload.retire:
-                await session.execute(text("""
+                await session.execute(
+                    text("""
                     SELECT * FROM dante.retire_self_temporal_objective(
                         :actor,:objective,:operation,:fingerprint,:expected)
-                """), {
-                    "actor": actor, "objective": item.objective_ref,
-                    "operation": item.operation_id,
-                    "fingerprint": _fingerprint({
-                        "version": 1, "objective_ref": str(item.objective_ref),
-                        "operation_id": item.operation_id,
-                        "expected_revision": item.expected_revision,
-                    }),
-                    "expected": item.expected_revision,
-                })
+                """),
+                    {
+                        "actor": actor,
+                        "objective": item.objective_ref,
+                        "operation": item.operation_id,
+                        "fingerprint": _fingerprint(
+                            {
+                                "version": 1,
+                                "objective_ref": str(item.objective_ref),
+                                "operation_id": item.operation_id,
+                                "expected_revision": item.expected_revision,
+                            }
+                        ),
+                        "expected": item.expected_revision,
+                    },
+                )
             for item in payload.add:
-                await session.execute(text("""
+                await session.execute(
+                    text("""
                     SELECT * FROM dante.create_self_temporal_objective(
                         :actor,:operation,:fingerprint,:objective,'activity',:activity,
                         :label,:kind,:comparator,:target,:minimum,:maximum,:unit,:ordering)
-                """), {
-                    "actor": actor,
-                    "operation": item.operation_id,
-                    "fingerprint": _fingerprint({
-                        "version": 1, "subject_kind": "activity",
-                        "subject_native_ref": str(subject_ref),
-                        **item.model_dump(mode="json"),
-                    }),
-                    "objective": uuid7(), "activity": subject_ref,
-                    "label": item.label, "kind": item.result_kind,
-                    "comparator": item.comparator_code,
-                    "target": item.target_value, "minimum": item.target_min,
-                    "maximum": item.target_max, "unit": item.unit_code,
-                    "ordering": item.presentation_order,
-                })
-            rows = (await session.execute(text("""
+                """),
+                    {
+                        "actor": actor,
+                        "operation": item.operation_id,
+                        "fingerprint": _fingerprint(
+                            {
+                                "version": 1,
+                                "subject_kind": "activity",
+                                "subject_native_ref": str(subject_ref),
+                                **item.model_dump(mode="json"),
+                            }
+                        ),
+                        "objective": uuid7(),
+                        "activity": subject_ref,
+                        "label": item.label,
+                        "kind": item.result_kind,
+                        "comparator": item.comparator_code,
+                        "target": item.target_value,
+                        "minimum": item.target_min,
+                        "maximum": item.target_max,
+                        "unit": item.unit_code,
+                        "ordering": item.presentation_order,
+                    },
+                )
+            rows = (
+                (
+                    await session.execute(
+                        text("""
                 SELECT * FROM dante.list_self_temporal_objectives(
                     :actor,'activity',:activity)
-            """), {"actor": actor, "activity": subject_ref})).mappings().all()
+            """),
+                        {"actor": actor, "activity": subject_ref},
+                    )
+                )
+                .mappings()
+                .all()
+            )
     except DBAPIError as exc:
         constraint = getattr(getattr(exc.orig, "diag", None), "constraint_name", None)
         if constraint == "temporal_objective_retirement_recorded":
             raise ProblemError(
-                status=409, code="temporal.objective_edit.recorded",
-                category="conflict", title="Obiettivo con risultati",
+                status=409,
+                code="temporal.objective_edit.recorded",
+                category="conflict",
+                title="Obiettivo con risultati",
                 detail="L'obiettivo ha risultati registrati: non può essere eliminato.",
             ) from exc
         if constraint == "temporal_objective_retirement_source_unsupported":
             raise ProblemError(
-                status=422, code="temporal.objective_edit.recurring",
-                category="validation", title="Obiettivo ricorrente",
+                status=422,
+                code="temporal.objective_edit.recurring",
+                category="validation",
+                title="Obiettivo ricorrente",
                 detail="La rimozione di un obiettivo generato da una ricorrenza "
-                       "richiede una modifica della sorgente della serie.",
+                "richiede una modifica della sorgente della serie.",
             ) from exc
         raise _problem(exc, noun="objective") from exc
     except SQLAlchemyError as exc:
         raise ProblemError(
-            status=503, code="temporal.objective_edit.unavailable",
-            category="service", title="Salvataggio obiettivi non disponibile",
+            status=503,
+            code="temporal.objective_edit.unavailable",
+            category="service",
+            title="Salvataggio obiettivi non disponibile",
             detail="Non è stato possibile salvare gli obiettivi. Riprova.",
             retryable=True,
         ) from exc
@@ -818,27 +881,42 @@ async def list_occurrence_objectives(
     operation_id="temporal_get_objective_definition",
 )
 async def get_objective_definition(
-    objective_ref: UUID, context: Context, request: Request, response: Response,
+    objective_ref: UUID,
+    context: Context,
+    request: Request,
+    response: Response,
 ) -> ObjectiveDefinitionStateResponse:
     try:
         async with request.app.state.database_runtime.session_factory() as session, session.begin():
-            row = (await session.execute(
-                text(
-                    "SELECT * FROM dante.get_self_temporal_objective_definition("
-                    ":actor,:objective)"
-                ),
-                {"actor": context.self_person_ref, "objective": objective_ref},
-            )).mappings().one_or_none()
+            row = (
+                (
+                    await session.execute(
+                        text(
+                            "SELECT * FROM dante.get_self_temporal_objective_definition("
+                            ":actor,:objective)"
+                        ),
+                        {"actor": context.self_person_ref, "objective": objective_ref},
+                    )
+                )
+                .mappings()
+                .one_or_none()
+            )
     except SQLAlchemyError as exc:
         raise ProblemError(
-            status=503, code="temporal.objective.definition_read_unavailable",
-            category="service", title="Objective definition unavailable",
-            detail="Could not read the current Objective definition.", retryable=True,
+            status=503,
+            code="temporal.objective.definition_read_unavailable",
+            category="service",
+            title="Objective definition unavailable",
+            detail="Could not read the current Objective definition.",
+            retryable=True,
         ) from exc
     if row is None:
         raise ProblemError(
-            status=404, code="temporal.objective.unavailable", category="not_found",
-            title="Objective unavailable", detail="Objective not found in self scope.",
+            status=404,
+            code="temporal.objective.unavailable",
+            category="not_found",
+            title="Objective unavailable",
+            detail="Objective not found in self scope.",
         )
     response.headers["Cache-Control"] = "no-store"
     return ObjectiveDefinitionStateResponse(**dict(row))
@@ -850,22 +928,32 @@ async def get_objective_definition(
     operation_id="temporal_get_objective_series_state",
 )
 async def get_objective_series_state(
-    objective_ref: UUID, context: Context, request: Request, response: Response,
+    objective_ref: UUID,
+    context: Context,
+    request: Request,
+    response: Response,
 ) -> ObjectiveSeriesStateResponse | None:
     """Only template-generated Objectives have a canonical following scope."""
     try:
         async with request.app.state.database_runtime.session_factory() as session, session.begin():
-            row = (await session.execute(
-                text(
-                    "SELECT * FROM dante.get_self_objective_series_state("
-                    ":actor,:objective)"
-                ),
-                {"actor": context.self_person_ref, "objective": objective_ref},
-            )).mappings().one_or_none()
+            row = (
+                (
+                    await session.execute(
+                        text(
+                            "SELECT * FROM dante.get_self_objective_series_state(:actor,:objective)"
+                        ),
+                        {"actor": context.self_person_ref, "objective": objective_ref},
+                    )
+                )
+                .mappings()
+                .one_or_none()
+            )
     except SQLAlchemyError as exc:
         raise ProblemError(
-            status=503, code="temporal.objective.series_read_unavailable",
-            category="service", title="Objective series unavailable",
+            status=503,
+            code="temporal.objective.series_read_unavailable",
+            category="service",
+            title="Objective series unavailable",
             detail="Could not verify the Objective's recurrence origin.",
             retryable=True,
         ) from exc
@@ -886,7 +974,8 @@ async def revise_objective_definition(
     response: Response,
 ) -> ObjectiveDefinitionReviseResponse:
     intent = {
-        "version": 1, "objective_ref": str(objective_ref),
+        "version": 1,
+        "objective_ref": str(objective_ref),
         **payload.model_dump(mode="json"),
     }
     try:
@@ -894,8 +983,10 @@ async def revise_objective_definition(
             if payload.scope_code == "this_and_following":
                 if payload.expected_source_revision is None:
                     raise ProblemError(
-                        status=422, code="temporal.objective.series_revision_required",
-                        category="validation", title="Objective series state required",
+                        status=422,
+                        code="temporal.objective.series_revision_required",
+                        category="validation",
+                        title="Objective series state required",
                         detail="Reload the canonical recurring Objective state before saving.",
                     )
                 statement = (
@@ -911,35 +1002,44 @@ async def revise_objective_definition(
                     ":label,:kind,:comparator,:target,:minimum,:maximum,"
                     ":unit,:ordering,:evaluation)"
                 )
-            row = (await session.execute(
-                text(statement),
-                {
-                    "actor": context.self_person_ref,
-                    "operation": payload.operation_id,
-                    "fingerprint": _fingerprint(intent),
-                    "objective": objective_ref,
-                    "expected": payload.expected_revision,
-                    "source_expected": payload.expected_source_revision,
-                    "recurrence_expected": payload.expected_recurrence_state_ref,
-                    "zone": context.effective_zone_id,
-                    "label": payload.label,
-                    "kind": payload.result_kind,
-                    "comparator": payload.comparator_code,
-                    "target": payload.target_value,
-                    "minimum": payload.target_min,
-                    "maximum": payload.target_max,
-                    "unit": payload.unit_code,
-                    "ordering": payload.presentation_order,
-                    "evaluation": uuid7(),
-                },
-            )).mappings().one()
+            row = (
+                (
+                    await session.execute(
+                        text(statement),
+                        {
+                            "actor": context.self_person_ref,
+                            "operation": payload.operation_id,
+                            "fingerprint": _fingerprint(intent),
+                            "objective": objective_ref,
+                            "expected": payload.expected_revision,
+                            "source_expected": payload.expected_source_revision,
+                            "recurrence_expected": payload.expected_recurrence_state_ref,
+                            "zone": context.effective_zone_id,
+                            "label": payload.label,
+                            "kind": payload.result_kind,
+                            "comparator": payload.comparator_code,
+                            "target": payload.target_value,
+                            "minimum": payload.target_min,
+                            "maximum": payload.target_max,
+                            "unit": payload.unit_code,
+                            "ordering": payload.presentation_order,
+                            "evaluation": uuid7(),
+                        },
+                    )
+                )
+                .mappings()
+                .one()
+            )
     except DBAPIError as exc:
         raise _problem(exc, noun="objective_definition") from exc
     except SQLAlchemyError as exc:
         raise ProblemError(
-            status=503, code="temporal.objective.definition_write_unavailable",
-            category="service", title="Objective definition unavailable",
-            detail="Definition could not be persisted.", retryable=True,
+            status=503,
+            code="temporal.objective.definition_write_unavailable",
+            category="service",
+            title="Objective definition unavailable",
+            detail="Definition could not be persisted.",
+            retryable=True,
         ) from exc
     response.headers["Cache-Control"] = "no-store"
     return ObjectiveDefinitionReviseResponse(**dict(row))
@@ -958,44 +1058,55 @@ async def correct_objective_result(
     response: Response,
 ) -> ObjectiveResultResponse:
     intent = {
-        "version": 1, "objective_ref": str(objective_ref),
+        "version": 1,
+        "objective_ref": str(objective_ref),
         "operation_id": payload.operation_id,
         "observed_boolean": payload.observed_boolean,
         "observed_numeric": payload.observed_numeric,
         "qualitative_code": payload.qualitative_code,
         "assessment_code": payload.assessment_code,
         "expected_evaluation_state_ref": str(payload.expected_evaluation_state_ref)
-        if payload.expected_evaluation_state_ref is not None else None,
+        if payload.expected_evaluation_state_ref is not None
+        else None,
     }
     try:
         async with request.app.state.database_runtime.session_factory() as session, session.begin():
-            row = (await session.execute(
-                text(
-                    "SELECT * FROM dante.correct_self_temporal_objective_result("
-                    ":actor,:operation,:fingerprint,:objective,:observation,:state,"
-                    ":boolean,:numeric,:qualitative,:assessment,:expected)"
-                ),
-                {
-                    "actor": context.self_person_ref,
-                    "operation": payload.operation_id,
-                    "fingerprint": _fingerprint(intent),
-                    "objective": objective_ref,
-                    "observation": uuid7(),
-                    "state": uuid7(),
-                    "boolean": payload.observed_boolean,
-                    "numeric": payload.observed_numeric,
-                    "qualitative": payload.qualitative_code,
-                    "assessment": payload.assessment_code,
-                    "expected": payload.expected_evaluation_state_ref,
-                },
-            )).mappings().one()
+            row = (
+                (
+                    await session.execute(
+                        text(
+                            "SELECT * FROM dante.correct_self_temporal_objective_result("
+                            ":actor,:operation,:fingerprint,:objective,:observation,:state,"
+                            ":boolean,:numeric,:qualitative,:assessment,:expected)"
+                        ),
+                        {
+                            "actor": context.self_person_ref,
+                            "operation": payload.operation_id,
+                            "fingerprint": _fingerprint(intent),
+                            "objective": objective_ref,
+                            "observation": uuid7(),
+                            "state": uuid7(),
+                            "boolean": payload.observed_boolean,
+                            "numeric": payload.observed_numeric,
+                            "qualitative": payload.qualitative_code,
+                            "assessment": payload.assessment_code,
+                            "expected": payload.expected_evaluation_state_ref,
+                        },
+                    )
+                )
+                .mappings()
+                .one()
+            )
     except DBAPIError as exc:
         raise _problem(exc, noun="objective_result") from exc
     except SQLAlchemyError as exc:
         raise ProblemError(
-            status=503, code="temporal.objective.correction_unavailable",
-            category="service", title="Objective correction unavailable",
-            detail="Corrected result could not be persisted.", retryable=True,
+            status=503,
+            code="temporal.objective.correction_unavailable",
+            category="service",
+            title="Objective correction unavailable",
+            detail="Corrected result could not be persisted.",
+            retryable=True,
         ) from exc
     response.headers["Cache-Control"] = "no-store"
     return ObjectiveResultResponse(**dict(row))
@@ -1024,27 +1135,31 @@ async def record_objective_result(
             session.begin(),
         ):
             row = (
-                await session.execute(
-                    text("""
+                (
+                    await session.execute(
+                        text("""
                         SELECT * FROM dante.record_self_temporal_objective_result(
                             :actor,:operation,:fingerprint,:objective,:observation,:state,
                             :observed_boolean,:observed_numeric,:qualitative,:assessment
                         )
                     """),
-                    {
-                        "actor": context.self_person_ref,
-                        "operation": payload.operation_id,
-                        "fingerprint": _fingerprint(intent),
-                        "objective": objective_ref,
-                        "observation": uuid7(),
-                        "state": uuid7(),
-                        "observed_boolean": payload.observed_boolean,
-                        "observed_numeric": payload.observed_numeric,
-                        "qualitative": payload.qualitative_code,
-                        "assessment": payload.assessment_code,
-                    },
+                        {
+                            "actor": context.self_person_ref,
+                            "operation": payload.operation_id,
+                            "fingerprint": _fingerprint(intent),
+                            "objective": objective_ref,
+                            "observation": uuid7(),
+                            "state": uuid7(),
+                            "observed_boolean": payload.observed_boolean,
+                            "observed_numeric": payload.observed_numeric,
+                            "qualitative": payload.qualitative_code,
+                            "assessment": payload.assessment_code,
+                        },
+                    )
                 )
-            ).mappings().one()
+                .mappings()
+                .one()
+            )
     except DBAPIError as exc:
         raise _problem(exc, noun="objective_result") from exc
     except SQLAlchemyError as exc:
@@ -1059,6 +1174,7 @@ async def record_objective_result(
     response.status_code = 200 if row["replayed"] else 201
     response.headers["Cache-Control"] = "no-store"
     return ObjectiveResultResponse(**dict(row))
+
 
 # B14 result workspace. A saved input is NOT a canonical Observation.
 class ObjectiveInputDraftPayload(BaseModel):
@@ -1116,19 +1232,28 @@ def _objective_input_problem(exc: DBAPIError) -> ProblemError:
     constraint = getattr(getattr(exc.orig, "diag", None), "constraint_name", None)
     if constraint == "objective_input_unavailable":
         return ProblemError(
-            status=404, code="temporal.objective_input.unavailable",
-            category="not_found", title="Objective input unavailable",
-            detail="Obiettivo o valore non disponibile.")
+            status=404,
+            code="temporal.objective_input.unavailable",
+            category="not_found",
+            title="Objective input unavailable",
+            detail="Obiettivo o valore non disponibile.",
+        )
     if constraint == "objective_input_stale":
         return ProblemError(
-            status=409, code="temporal.objective_input.stale",
-            category="conflict", title="Objective input changed",
-            detail="Valore modificato o già confermato. Aggiorna e riprova.")
+            status=409,
+            code="temporal.objective_input.stale",
+            category="conflict",
+            title="Objective input changed",
+            detail="Valore modificato o già confermato. Aggiorna e riprova.",
+        )
     if constraint == "objective_input_invalid":
         return ProblemError(
-            status=422, code="temporal.objective_input.invalid",
-            category="validation", title="Invalid Objective input",
-            detail="Il valore inserito non è valido.")
+            status=422,
+            code="temporal.objective_input.invalid",
+            category="validation",
+            title="Invalid Objective input",
+            detail="Il valore inserito non è valido.",
+        )
     return _problem(exc, noun="objective_input")
 
 
@@ -1138,20 +1263,32 @@ def _objective_input_problem(exc: DBAPIError) -> ProblemError:
     operation_id="temporal_list_objective_input_drafts",
 )
 async def list_objective_input_drafts(
-    context: Context, request: Request, response: Response,
+    context: Context,
+    request: Request,
+    response: Response,
 ) -> list[ObjectiveInputDraftView]:
     response.headers["Cache-Control"] = "no-store"
     try:
         async with request.app.state.database_runtime.session_factory() as session, session.begin():
-            rows = (await session.execute(text(
-                "SELECT * FROM dante.list_self_objective_input_drafts(:actor)"
-            ), {"actor": context.self_person_ref})).mappings().all()
+            rows = (
+                (
+                    await session.execute(
+                        text("SELECT * FROM dante.list_self_objective_input_drafts(:actor)"),
+                        {"actor": context.self_person_ref},
+                    )
+                )
+                .mappings()
+                .all()
+            )
             return [ObjectiveInputDraftView.model_validate(dict(row)) for row in rows]
     except SQLAlchemyError as exc:
         raise ProblemError(
-            status=503, code="temporal.objective_input.read_unavailable",
-            category="service", title="Objective inputs unavailable",
-            detail="Impossibile leggere i valori non confermati.", retryable=True,
+            status=503,
+            code="temporal.objective_input.read_unavailable",
+            category="service",
+            title="Objective inputs unavailable",
+            detail="Impossibile leggere i valori non confermati.",
+            retryable=True,
         ) from exc
 
 
@@ -1161,28 +1298,47 @@ async def list_objective_input_drafts(
     operation_id="temporal_save_objective_input_draft",
 )
 async def save_objective_input_draft(
-    objective_ref: UUID, payload: ObjectiveInputDraftSave,
-    context: MutatingContext, request: Request, response: Response,
+    objective_ref: UUID,
+    payload: ObjectiveInputDraftSave,
+    context: MutatingContext,
+    request: Request,
+    response: Response,
 ) -> ObjectiveInputDraftView:
     response.headers["Cache-Control"] = "no-store"
     try:
         async with request.app.state.database_runtime.session_factory() as session, session.begin():
-            row = (await session.execute(text("""
+            row = (
+                (
+                    await session.execute(
+                        text("""
                 SELECT * FROM dante.save_self_objective_input_draft(
                     :actor,:objective,:operation,:revision,CAST(:payload AS jsonb))
-            """), {
-                "actor": context.self_person_ref, "objective": objective_ref,
-                "operation": payload.operation_id, "revision": payload.expected_revision,
-                "payload": json.dumps(payload.input.model_dump(mode="json", exclude_none=True)),
-            })).mappings().one()
+            """),
+                        {
+                            "actor": context.self_person_ref,
+                            "objective": objective_ref,
+                            "operation": payload.operation_id,
+                            "revision": payload.expected_revision,
+                            "payload": json.dumps(
+                                payload.input.model_dump(mode="json", exclude_none=True)
+                            ),
+                        },
+                    )
+                )
+                .mappings()
+                .one()
+            )
             return ObjectiveInputDraftView.model_validate(dict(row))
     except DBAPIError as exc:
         raise _objective_input_problem(exc) from exc
     except SQLAlchemyError as exc:
         raise ProblemError(
-            status=503, code="temporal.objective_input.save_unavailable",
-            category="service", title="Objective input unavailable",
-            detail="Impossibile salvare il valore senza confermarlo.", retryable=True,
+            status=503,
+            code="temporal.objective_input.save_unavailable",
+            category="service",
+            title="Objective input unavailable",
+            detail="Impossibile salvare il valore senza confermarlo.",
+            retryable=True,
         ) from exc
 
 
@@ -1192,8 +1348,11 @@ async def save_objective_input_draft(
     operation_id="temporal_confirm_objective_input_draft",
 )
 async def confirm_objective_input_draft(
-    objective_ref: UUID, payload: ObjectiveInputConfirm,
-    context: MutatingContext, request: Request, response: Response,
+    objective_ref: UUID,
+    payload: ObjectiveInputConfirm,
+    context: MutatingContext,
+    request: Request,
+    response: Response,
 ) -> ObjectiveResultResponse:
     """One SQL transaction: CAS draft→accepted Result; no phantom confirmation."""
     response.headers["Cache-Control"] = "no-store"
@@ -1202,44 +1361,68 @@ async def confirm_objective_input_draft(
             # PostgreSQL has exclusive ownership/row lock in the confirming
             # DEFINER capability. The fingerprint is derived from the SAME
             # staged fields used by the canonical Objective Result function.
-            drafts = (await session.execute(
-                text("SELECT * FROM dante.list_self_objective_input_drafts(:actor)"),
-                {"actor": context.self_person_ref},
-            )).mappings().all()
+            drafts = (
+                (
+                    await session.execute(
+                        text("SELECT * FROM dante.list_self_objective_input_drafts(:actor)"),
+                        {"actor": context.self_person_ref},
+                    )
+                )
+                .mappings()
+                .all()
+            )
             draft = next(
                 (row for row in drafts if row["objective_ref"] == objective_ref),
                 None,
             )
             if draft is None:
                 raise ProblemError(
-                    status=404, code="temporal.objective_input.unavailable",
-                    category="not_found", title="Objective input unavailable",
-                    detail="Prima inserisci un valore.")
+                    status=404,
+                    code="temporal.objective_input.unavailable",
+                    category="not_found",
+                    title="Objective input unavailable",
+                    detail="Prima inserisci un valore.",
+                )
             values = ObjectiveInputDraftPayload.model_validate(draft["payload"])
-            fingerprint = _fingerprint({
-                "version": 1, "objective_ref": str(objective_ref),
-                "operation_id": payload.operation_id,
-                **values.model_dump(mode="json"),
-            })
-            row = (await session.execute(text("""
+            fingerprint = _fingerprint(
+                {
+                    "version": 1,
+                    "objective_ref": str(objective_ref),
+                    "operation_id": payload.operation_id,
+                    **values.model_dump(mode="json"),
+                }
+            )
+            row = (
+                (
+                    await session.execute(
+                        text("""
                 SELECT * FROM dante.confirm_self_objective_input_draft(
                     :actor,:objective,:revision,:operation,:fingerprint,
                     :observation,:evaluation)
-            """), {
-                "actor": context.self_person_ref,
-                "objective": objective_ref,
-                "revision": payload.expected_revision,
-                "operation": payload.operation_id,
-                "fingerprint": fingerprint,
-                "observation": uuid7(), "evaluation": uuid7(),
-            })).mappings().one()
+            """),
+                        {
+                            "actor": context.self_person_ref,
+                            "objective": objective_ref,
+                            "revision": payload.expected_revision,
+                            "operation": payload.operation_id,
+                            "fingerprint": fingerprint,
+                            "observation": uuid7(),
+                            "evaluation": uuid7(),
+                        },
+                    )
+                )
+                .mappings()
+                .one()
+            )
         return ObjectiveResultResponse.model_validate(dict(row))
     except DBAPIError as exc:
         raise _objective_input_problem(exc) from exc
     except SQLAlchemyError as exc:
         raise ProblemError(
-            status=503, code="temporal.objective_input.confirm_unavailable",
-            category="service", title="Objective confirmation unavailable",
+            status=503,
+            code="temporal.objective_input.confirm_unavailable",
+            category="service",
+            title="Objective confirmation unavailable",
             detail="Conferma non riuscita. Il valore provvisorio rimane salvato.",
             retryable=True,
         ) from exc

@@ -26,7 +26,7 @@ def _sql(statement: str) -> None:
 
 def _replace_function(prefix: str, owner: str, owner_scope: str) -> str:
     """Build one strongly-typed owner-specific mutation capability."""
-    return rf'''
+    return rf"""
 CREATE OR REPLACE FUNCTION dante.replace_self_{prefix}_recurrence(
   requested_self_person_ref uuid, requested_operation_id text, requested_intent_fingerprint text,
   requested_{owner} uuid, requested_expected_material_state_ref uuid,
@@ -211,8 +211,7 @@ BEGIN
   RETURN QUERY SELECT new_state,recorded_at,false;
 END;
 $function$;
-'''
-
+"""
 
 
 def upgrade() -> None:
@@ -227,9 +226,15 @@ def upgrade() -> None:
         ("event", "event_ref", "event_expectation"),
     ):
         _sql(_replace_function(prefix, owner, scope))
-        _sql(f"ALTER FUNCTION dante.replace_self_{prefix}_recurrence({signature}) OWNER TO {_OWNER}")
-        _sql(f"REVOKE ALL PRIVILEGES ON FUNCTION dante.replace_self_{prefix}_recurrence({signature}) FROM PUBLIC,{_RUNTIME},{_MIGRATOR}")
-        _sql(f"GRANT EXECUTE ON FUNCTION dante.replace_self_{prefix}_recurrence({signature}) TO {_RUNTIME}")
+        _sql(
+            f"ALTER FUNCTION dante.replace_self_{prefix}_recurrence({signature}) OWNER TO {_OWNER}"
+        )
+        _sql(
+            f"REVOKE ALL PRIVILEGES ON FUNCTION dante.replace_self_{prefix}_recurrence({signature}) FROM PUBLIC,{_RUNTIME},{_MIGRATOR}"
+        )
+        _sql(
+            f"GRANT EXECUTE ON FUNCTION dante.replace_self_{prefix}_recurrence({signature}) TO {_RUNTIME}"
+        )
 
 
 def downgrade() -> None:

@@ -138,9 +138,7 @@ def _duration(
     return row
 
 
-def _set_direct_policy(
-    database: Any, *, self_ref: UUID, schedule_ref: UUID, suffix: str
-) -> UUID:
+def _set_direct_policy(database: Any, *, self_ref: UUID, schedule_ref: UUID, suffix: str) -> UUID:
     state_ref = uuid7()
     with _runtime(database) as connection:
         row = connection.execute(

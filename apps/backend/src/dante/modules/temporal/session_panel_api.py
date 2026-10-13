@@ -117,9 +117,9 @@ def build_panel(
         if not intervals:
             intervals = [s for s in schedules if s.role_code in {None, "envelope"}]
         active = any(
-            b is not None and b[0] <= now < b[1] for s in intervals
-            if (b := bounds[s.schedule_ref])
+            b is not None and b[0] <= now < b[1] for s in intervals if (b := bounds[s.schedule_ref])
         )
+
         def ended_for_current_attempt(
             planned_ref: UUID | None,
             activity_ref: UUID,
@@ -131,8 +131,10 @@ def build_panel(
                 str(item["activity_ref"]) == str(activity_ref)
                 and (
                     str(item["planned_schedule_ref"])
-                    if item["planned_schedule_ref"] is not None else None
-                ) == (str(planned_ref) if planned_ref is not None else None)
+                    if item["planned_schedule_ref"] is not None
+                    else None
+                )
+                == (str(planned_ref) if planned_ref is not None else None)
                 for item in stopped
             )
 
@@ -140,11 +142,13 @@ def build_panel(
             b is not None and b[0] - PREVIEW_LEAD <= now < b[1]
             if s.temporal_form in {"absolute", "named_zone_local", "floating_local"}
             else b is not None and b[0] <= now < b[1]
-            for s in intervals if (b := bounds[s.schedule_ref])
+            for s in intervals
+            if (b := bounds[s.schedule_ref])
         )
         current_intervals = [
-            s for s in intervals if (b := bounds[s.schedule_ref])
-            and b[0] - PREVIEW_LEAD <= now < b[1]
+            s
+            for s in intervals
+            if (b := bounds[s.schedule_ref]) and b[0] - PREVIEW_LEAD <= now < b[1]
         ]
         # Main Sessions have no planned-Schedule link yet. Associate a stopped
         # main attempt with its closest accepted Activity interval, so an early
@@ -160,7 +164,8 @@ def build_panel(
                     ),
                     default=None,
                 )
-            ) is not None
+            )
+            is not None
             and nearest.schedule_ref in {s.schedule_ref for s in current_intervals}
             for item in stopped
         )
@@ -180,17 +185,26 @@ def build_panel(
             timing = bounds[schedule.schedule_ref]
             if timing:
                 preview_allowed = schedule.temporal_form in {
-                    "absolute", "named_zone_local", "floating_local"
+                    "absolute",
+                    "named_zone_local",
+                    "floating_local",
                 }
-                due = timing[0] - (PREVIEW_LEAD if preview_allowed else timedelta()) <= now < timing[1]
+                due = (
+                    timing[0] - (PREVIEW_LEAD if preview_allowed else timedelta())
+                    <= now
+                    < timing[1]
+                )
             else:
                 due = active
             due = (
-                due and owner["mode_code"] in {"live", "record_and_live", "internal_only"}
+                due
+                and owner["mode_code"] in {"live", "record_and_live", "internal_only"}
                 and not main_stopped_in_window
             )
-            if due and not matching and ended_for_current_attempt(
-                schedule.schedule_ref, owner["activity_ref"]
+            if (
+                due
+                and not matching
+                and ended_for_current_attempt(schedule.schedule_ref, owner["activity_ref"])
             ):
                 due = False
             if not due and not matching:
@@ -210,7 +224,8 @@ def build_panel(
         # A main execution clock is independent from the named planned slices.
         # It coexists with them; it is not an extra fake planned Session.
         if generic or (
-            upcoming and owner["mode_code"] in {"live", "record_and_live"}
+            upcoming
+            and owner["mode_code"] in {"live", "record_and_live"}
             and not main_stopped_in_window
         ):
             for execution in generic or [None]:
@@ -262,12 +277,16 @@ async def get_session_panel(
     start_at = visible_start_at or now - timedelta(days=1)
     end_at = visible_end_at or now + timedelta(days=2)
     if (
-        start_at.tzinfo is None or end_at.tzinfo is None
-        or start_at >= end_at or end_at - start_at > timedelta(days=31)
+        start_at.tzinfo is None
+        or end_at.tzinfo is None
+        or start_at >= end_at
+        or end_at - start_at > timedelta(days=31)
     ):
         raise ProblemError(
-            status=422, code="temporal.session_panel.invalid_window",
-            category="validation", title="Invalid Session window",
+            status=422,
+            code="temporal.session_panel.invalid_window",
+            category="validation",
+            title="Invalid Session window",
             detail="L'intervallo di lettura delle Sessioni non è valido.",
         )
     try:
@@ -277,31 +296,39 @@ async def get_session_panel(
                 (await session.execute(_READ, {"actor": context.self_person_ref})).mappings().all()
             )
             visuals = (
-                (await session.execute(
-                    _VISUAL_READ,
-                    {"actor": context.self_person_ref, "start_at": start_at, "end_at": end_at},
-                )).mappings().all()
+                (
+                    await session.execute(
+                        _VISUAL_READ,
+                        {"actor": context.self_person_ref, "start_at": start_at, "end_at": end_at},
+                    )
+                )
+                .mappings()
+                .all()
             )
             # The desk always follows server "now", even if the user is
             # viewing a distant Timeline date whose visual range omits today.
             finished = visuals
             if not (start_at <= now < end_at):
                 finished = (
-                    (await session.execute(
-                        _VISUAL_READ,
-                        {
-                            "actor": context.self_person_ref,
-                            "start_at": now - timedelta(days=1),
-                            "end_at": now + timedelta(days=1),
-                        },
-                    )).mappings().all()
+                    (
+                        await session.execute(
+                            _VISUAL_READ,
+                            {
+                                "actor": context.self_person_ref,
+                                "start_at": now - timedelta(days=1),
+                                "end_at": now + timedelta(days=1),
+                            },
+                        )
+                    )
+                    .mappings()
+                    .all()
                 )
-            panel = build_panel(
-                list(records), now, context.effective_zone_id, list(finished)
+            panel = build_panel(list(records), now, context.effective_zone_id, list(finished))
+            return panel.model_copy(
+                update={
+                    "visuals": [SessionPanelVisual.model_validate(dict(row)) for row in visuals]
+                }
             )
-            return panel.model_copy(update={
-                "visuals": [SessionPanelVisual.model_validate(dict(row)) for row in visuals]
-            })
     except SQLAlchemyError as exc:
         raise ProblemError(
             status=503,

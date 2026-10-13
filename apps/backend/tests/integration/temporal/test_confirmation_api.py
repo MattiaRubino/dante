@@ -6,9 +6,6 @@ from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
-
-from dante.auth.sessions import CSRF_HEADER_NAME
-from dante.bootstrap.app import create_app
 from tests.integration.temporal.support.life_area import api_test_life_area
 from tests.integration.temporal.test_activity_core import (
     _CANONICAL_ORIGIN,
@@ -19,11 +16,16 @@ from tests.integration.temporal.test_activity_core import (
     _signin,
 )
 
+from dante.auth.sessions import CSRF_HEADER_NAME
+from dante.bootstrap.app import create_app
+
 pytestmark = pytest.mark.postgres
 pytest_plugins = ("tests.integration.temporal.test_activity_core",)
 
 
-def _actual_command(operation_id: str, *, expected: str | None = None, occurred: bool = True) -> dict[str, object]:
+def _actual_command(
+    operation_id: str, *, expected: str | None = None, occurred: bool = True
+) -> dict[str, object]:
     return {
         "operation_id": operation_id,
         "expected_material_state_ref": expected,

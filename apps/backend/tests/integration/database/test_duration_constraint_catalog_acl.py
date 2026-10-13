@@ -28,9 +28,7 @@ def _admin(database: Any) -> psycopg.Connection[Any]:
 
 
 @pytest.mark.postgres
-def test_b04_e_duration_catalog_and_acl(
-    provisioned_database: Any, alembic_config: Config
-) -> None:
+def test_b04_e_duration_catalog_and_acl(provisioned_database: Any, alembic_config: Config) -> None:
     # Verify the frozen B04-E catalog rather than comparing September's exact
     # topology with all later B14 additions on the current head.
     command.upgrade(alembic_config, _EXPECTED_REVISION)

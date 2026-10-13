@@ -585,7 +585,9 @@ $function$
         "actual_realization_operation",
     ):
         _sql(f"REVOKE INSERT, UPDATE, DELETE ON TABLE dante.{table} FROM {_RUNTIME}")
-    _sql("REVOKE INSERT, UPDATE, DELETE ON TABLE dante.actual_current_realization FROM dante_runtime")
+    _sql(
+        "REVOKE INSERT, UPDATE, DELETE ON TABLE dante.actual_current_realization FROM dante_runtime"
+    )
 
     signatures = (
         "dante._actual_subject_owned(uuid,uuid)",
@@ -601,7 +603,9 @@ $function$
         _sql(f"GRANT EXECUTE ON FUNCTION {signature} TO {_RUNTIME}")
 
     _sql("ALTER TABLE dante.actual_realization_operation OWNER TO dante_owner")
-    _sql("REVOKE ALL ON TABLE dante.actual_realization_operation FROM PUBLIC, dante_runtime, dante_migrator")
+    _sql(
+        "REVOKE ALL ON TABLE dante.actual_realization_operation FROM PUBLIC, dante_runtime, dante_migrator"
+    )
     _sql("GRANT SELECT ON TABLE dante.actual_realization_operation TO dante_migrator")
 
 

@@ -350,9 +350,7 @@ def _close_current_episode(database: Any, case: _HistoryCase, closed_at: datetim
             f"WHERE {case.owner_column}=%s AND current_from_at=%s",
             (closed_at, case.owner_ref, case.current_from_at),
         )
-        connection.execute(
-            f"SET CONSTRAINTS {case.constraint_name} IMMEDIATE"  # noqa: S608 - fixed constant.
-        )
+        connection.execute(f"SET CONSTRAINTS {case.constraint_name} IMMEDIATE")
         connection.commit()
 
     with _owner_connection(database) as connection:

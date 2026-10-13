@@ -383,9 +383,7 @@ class SessionApplication:
         hydrated = [await self._hydrate(self_person_ref, view) for view in views]
         return tuple(hydrated)
 
-    async def get(
-        self, *, self_person_ref: NativeRef, session_ref: NativeRef
-    ) -> SessionView:
+    async def get(self, *, self_person_ref: NativeRef, session_ref: NativeRef) -> SessionView:
         view = await self._call(
             """
             SELECT session_ref, subject_native_ref, timing_material_state_ref,
@@ -396,9 +394,7 @@ class SessionApplication:
         )
         return await self._hydrate(self_person_ref, view)
 
-    async def _hydrate(
-        self, self_person_ref: NativeRef, view: SessionView
-    ) -> SessionView:
+    async def _hydrate(self, self_person_ref: NativeRef, view: SessionView) -> SessionView:
         rows = await self._rows(
             """
             SELECT metrics.paused,
@@ -493,11 +489,7 @@ class SessionApplication:
                 raise SessionPersistenceError("Stored Session duration constraint is invalid.")
             met = active_seconds * 1_000_000 >= threshold
             evaluation: Literal["pending", "satisfied", "violated"] = (
-                "satisfied"
-                if met
-                else "pending"
-                if session.open
-                else "violated"
+                "satisfied" if met else "pending" if session.open else "violated"
             )
             result.append(
                 SessionDurationEvaluation(
@@ -541,10 +533,23 @@ class SessionApplication:
     def _raise_known(self, exc: BaseException) -> None:
         name = _constraint_name(exc)
         message = str(getattr(exc, "orig", exc))
-        if name in {"session_operation_reused", "session_manual_record_operation_reused", "session_planned_schedule_operation_conflict"} or "reused" in message:
+        if (
+            name
+            in {
+                "session_operation_reused",
+                "session_manual_record_operation_reused",
+                "session_planned_schedule_operation_conflict",
+            }
+            or "reused" in message
+        ):
             raise SessionOperationReuseError("Session operation id was reused.") from exc
-        if name in {"session_execution_policy_live_required", "session_manual_record_policy_required"}:
-            raise SessionCaptureDisabledError("Session capture is disabled by Activity policy.") from exc
+        if name in {
+            "session_execution_policy_live_required",
+            "session_manual_record_policy_required",
+        }:
+            raise SessionCaptureDisabledError(
+                "Session capture is disabled by Activity policy."
+            ) from exc
         if name in {
             "session_internal_requires_running_main",
             "session_internal_before_planned_start",
@@ -554,12 +559,19 @@ class SessionApplication:
                 "e non può partire prima dell'orario previsto."
             ) from exc
         if name == "session_manual_record_invalid":
-            raise SessionInputError("Manual Session requires a past, ordered absolute interval.") from exc
+            raise SessionInputError(
+                "Manual Session requires a past, ordered absolute interval."
+            ) from exc
         if name == "session_end_conflict" or "conflicts with current timing" in message:
             raise SessionEndConflictError("Session end conflicts with current timing.") from exc
         if name == "session_pause_conflict":
             raise SessionPauseConflictError("Session pause conflicts with current timing.") from exc
         if name == "session_resume_conflict":
-            raise SessionResumeConflictError("Session resume conflicts with current timing.") from exc
-        if name in {"session_subject_unavailable", "session_manual_record_owner_unavailable"} or "unavailable" in message:
+            raise SessionResumeConflictError(
+                "Session resume conflicts with current timing."
+            ) from exc
+        if (
+            name in {"session_subject_unavailable", "session_manual_record_owner_unavailable"}
+            or "unavailable" in message
+        ):
             raise SessionNotFoundError("Session subject unavailable.") from exc

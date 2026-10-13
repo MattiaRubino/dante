@@ -12,9 +12,13 @@ depends_on: str | Sequence[str] | None = None
 
 def upgrade() -> None:
     bind = op.get_bind()
-    bind.exec_driver_sql("ALTER TABLE dante.activity_schedule_role ADD COLUMN retired_at timestamptz")
-    bind.exec_driver_sql("ALTER TABLE dante.activity_schedule_role "
-                         "DROP CONSTRAINT uq_activity_schedule_role_owner_role_order")
+    bind.exec_driver_sql(
+        "ALTER TABLE dante.activity_schedule_role ADD COLUMN retired_at timestamptz"
+    )
+    bind.exec_driver_sql(
+        "ALTER TABLE dante.activity_schedule_role "
+        "DROP CONSTRAINT uq_activity_schedule_role_owner_role_order"
+    )
     bind.exec_driver_sql("""
 CREATE UNIQUE INDEX uq_activity_schedule_role_owner_role_order
     ON dante.activity_schedule_role(activity_ref,role_code,presentation_order)
@@ -149,10 +153,12 @@ $function$;
     current_guard = "AND role.role_code='planned' FOR UPDATE OF a;"
     if prior_placement.count(current_guard) != 1:
         raise RuntimeError("Unexpected planned placement contract at _132 migration")
-    bind.exec_driver_sql(prior_placement.replace(
-        current_guard,
-        "AND role.role_code='planned' AND role.retired_at IS NULL FOR UPDATE OF a;",
-    ))
+    bind.exec_driver_sql(
+        prior_placement.replace(
+            current_guard,
+            "AND role.role_code='planned' AND role.retired_at IS NULL FOR UPDATE OF a;",
+        )
+    )
     for signature in (
         "dante.get_self_activity_schedule_roles(uuid,uuid[])",
         "dante.retire_self_planned_schedule(uuid,uuid,uuid)",

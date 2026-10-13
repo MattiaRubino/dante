@@ -69,8 +69,10 @@ class EditProfileChange(BaseModel):
     def validate_text(self) -> EditProfileChange:
         if self.title != self.title.strip() or not self.title:
             raise ValueError("The Activity title must be trimmed and nonempty.")
-        if any(value is not None and (not value or value != value.strip())
-               for value in (self.description, self.location)):
+        if any(
+            value is not None and (not value or value != value.strip())
+            for value in (self.description, self.location)
+        ):
             raise ValueError("Optional Activity text must be trimmed and nonempty.")
         return self
 
@@ -99,16 +101,27 @@ class ActivityCoreEditCommand(BaseModel):
 
     @model_validator(mode="after")
     def validate_changes(self) -> ActivityCoreEditCommand:
-        if all(value is None for value in (
-            self.profile, self.capture, self.reality, self.reminder,
-        )):
+        if all(
+            value is None
+            for value in (
+                self.profile,
+                self.capture,
+                self.reality,
+                self.reminder,
+            )
+        ):
             raise ValueError("At least one change is required.")
         if self.capture is not None and self.capture.mode_code not in {
-            "disabled", "record", "live", "record_and_live"
+            "disabled",
+            "record",
+            "live",
+            "record_and_live",
         }:
             raise ValueError("Unsupported Session capture mode.")
         if self.reality is not None and self.reality.mode_code not in {
-            "manual", "review_on_end", "auto_confirm_outcome"
+            "manual",
+            "review_on_end",
+            "auto_confirm_outcome",
         }:
             raise ValueError("Unsupported Reality mode.")
         return self
@@ -203,24 +216,34 @@ SELECT jsonb_build_object(
     operation_id="temporal_get_activity_edit_snapshot",
 )
 async def get_activity_edit_snapshot(
-    activity_ref: UUID, context: ReadContext, request: Request, response: Response,
+    activity_ref: UUID,
+    context: ReadContext,
+    request: Request,
+    response: Response,
 ) -> ActivityEditSnapshot:
     response.headers["Cache-Control"] = "no-store"
     try:
         async with request.app.state.database_runtime.session_factory() as session, session.begin():
             payload: dict[str, Any] | None = await session.scalar(
-                _SNAPSHOT, {"actor": context.self_person_ref, "activity": activity_ref},
+                _SNAPSHOT,
+                {"actor": context.self_person_ref, "activity": activity_ref},
             )
     except SQLAlchemyError as exc:
         raise ProblemError(
-            status=503, code="temporal.activity_edit.unavailable", category="service",
-            title="Activity edit unavailable", detail="The Activity could not be read safely.",
+            status=503,
+            code="temporal.activity_edit.unavailable",
+            category="service",
+            title="Activity edit unavailable",
+            detail="The Activity could not be read safely.",
             retryable=True,
         ) from exc
     if payload is None:
         raise ProblemError(
-            status=404, code="temporal.activity_edit.not_found", category="not_found",
-            title="Activity unavailable", detail="Activity unavailable in self scope.",
+            status=404,
+            code="temporal.activity_edit.not_found",
+            category="not_found",
+            title="Activity unavailable",
+            detail="Activity unavailable in self scope.",
         )
     return ActivityEditSnapshot.model_validate(payload)
 
@@ -237,8 +260,11 @@ def _fingerprint(intent: dict[str, object]) -> str:
     operation_id="temporal_revise_activity_core",
 )
 async def revise_activity_core(
-    activity_ref: UUID, body: ActivityCoreEditCommand,
-    context: WriteContext, request: Request, response: Response,
+    activity_ref: UUID,
+    body: ActivityCoreEditCommand,
+    context: WriteContext,
+    request: Request,
+    response: Response,
 ) -> ActivityCoreEditResponse:
     """Apply guarded changes in one all-or-nothing transaction."""
     response.headers["Cache-Control"] = "no-store"
@@ -251,133 +277,235 @@ async def revise_activity_core(
             if body.capture is not None:
                 change = body.capture
                 intent = {
-                    "version": 1, "activity_ref": str(activity_ref),
+                    "version": 1,
+                    "activity_ref": str(activity_ref),
                     "mode_code": change.mode_code,
                     "expected_state_ref": str(change.expected_state_ref)
-                    if change.expected_state_ref is not None else None,
+                    if change.expected_state_ref is not None
+                    else None,
                 }
-                await session.execute(text("""
+                await session.execute(
+                    text("""
                     SELECT * FROM dante.set_self_activity_execution_policy(
                         :actor,:operation,:fingerprint,:activity,:state,:mode,:expected)
-                """), {
-                    **params, "operation": f"edit:capture:{digest}",
-                    "fingerprint": _fingerprint(intent), "state": uuid7(),
-                    "mode": change.mode_code, "expected": change.expected_state_ref,
-                })
+                """),
+                    {
+                        **params,
+                        "operation": f"edit:capture:{digest}",
+                        "fingerprint": _fingerprint(intent),
+                        "state": uuid7(),
+                        "mode": change.mode_code,
+                        "expected": change.expected_state_ref,
+                    },
+                )
             if body.reality is not None:
                 change = body.reality
                 intent = {
-                    "version": 1, "subject_kind": "activity",
-                    "subject_native_ref": str(activity_ref), "mode_code": change.mode_code,
+                    "version": 1,
+                    "subject_kind": "activity",
+                    "subject_native_ref": str(activity_ref),
+                    "mode_code": change.mode_code,
                     "expected_state_ref": str(change.expected_state_ref)
-                    if change.expected_state_ref is not None else None,
+                    if change.expected_state_ref is not None
+                    else None,
                 }
-                await session.execute(text("""
+                await session.execute(
+                    text("""
                     SELECT * FROM dante.set_self_reality_review_policy(
                         :actor,:operation,:fingerprint,'activity',:activity,:state,:mode,:expected)
-                """), {
-                    **params, "operation": f"edit:reality:{digest}",
-                    "fingerprint": _fingerprint(intent), "state": uuid7(),
-                    "mode": change.mode_code, "expected": change.expected_state_ref,
-                })
+                """),
+                    {
+                        **params,
+                        "operation": f"edit:reality:{digest}",
+                        "fingerprint": _fingerprint(intent),
+                        "state": uuid7(),
+                        "mode": change.mode_code,
+                        "expected": change.expected_state_ref,
+                    },
+                )
             if body.profile is not None:
                 change = body.profile
-                await session.execute(text("""
+                await session.execute(
+                    text("""
                     SELECT * FROM dante.revise_self_activity_profile(
                         :actor,:activity,:operation,:revision,:title,
                         :description,:location,:color)
-                """), {
-                    **params, "operation": f"edit:profile:{digest}",
-                    "revision": change.expected_revision,
-                    "title": change.title.strip(),
-                    "description": change.description.strip() or None if change.description else None,
-                    "location": change.location.strip() or None if change.location else None,
-                    "color": change.color_code.upper() if change.color_code else None,
-                })
+                """),
+                    {
+                        **params,
+                        "operation": f"edit:profile:{digest}",
+                        "revision": change.expected_revision,
+                        "title": change.title.strip(),
+                        "description": change.description.strip() or None
+                        if change.description
+                        else None,
+                        "location": change.location.strip() or None if change.location else None,
+                        "color": change.color_code.upper() if change.color_code else None,
+                    },
+                )
             if body.reminder is not None:
                 change = body.reminder
-                primary = await session.scalar(text("""
+                primary = await session.scalar(
+                    text("""
                     SELECT r.schedule_ref
                       FROM dante.get_self_activity_schedule_roles(
                         :actor, CAST(ARRAY[:activity] AS uuid[])) AS r
                      WHERE r.schedule_ref=:schedule
                        AND r.role_code='envelope'
-                """), {**params, "schedule": change.schedule_ref})
+                """),
+                    {**params, "schedule": change.schedule_ref},
+                )
                 if primary is None:
                     raise ProblemError(
-                        status=422, code="temporal.activity_edit.invalid_reminder_target",
-                        category="validation", title="Invalid reminder target",
+                        status=422,
+                        code="temporal.activity_edit.invalid_reminder_target",
+                        category="validation",
+                        title="Invalid reminder target",
                         detail="The reminder must belong to this Activity's envelope.",
                     )
                 intent = {
-                    "version": 1, "schedule_ref": str(change.schedule_ref),
+                    "version": 1,
+                    "schedule_ref": str(change.schedule_ref),
                     "expected_material_state_ref": str(change.expected_state_ref)
-                    if change.expected_state_ref is not None else None,
-                    "enabled": change.enabled, "lead_minutes": change.lead_minutes,
+                    if change.expected_state_ref is not None
+                    else None,
+                    "enabled": change.enabled,
+                    "lead_minutes": change.lead_minutes,
                 }
-                await session.execute(text("""
+                await session.execute(
+                    text("""
                     SELECT * FROM dante.configure_self_schedule_reminder(
                         :actor,:operation,:fingerprint,:schedule,:expected,
                         :reminder_ref,:material_state_ref,:enabled,:lead)
-                """), {
-                    **params, "operation": f"edit:reminder:{digest}",
-                    "fingerprint": _fingerprint(intent),
-                    "schedule": change.schedule_ref, "expected": change.expected_state_ref,
-                    "reminder_ref": uuid7(), "material_state_ref": uuid7(),
-                    "enabled": change.enabled, "lead": change.lead_minutes,
-                })
-            profile = (await session.execute(
-                text("SELECT * FROM dante.get_self_activity_profile(:actor,:activity)"), params,
-            )).mappings().one()
-            capture = (await session.execute(
-                text("SELECT * FROM dante.get_self_activity_execution_policy(:actor,:activity)"),
-                params,
-            )).mappings().one()
-            reality = (await session.execute(text("""
+                """),
+                    {
+                        **params,
+                        "operation": f"edit:reminder:{digest}",
+                        "fingerprint": _fingerprint(intent),
+                        "schedule": change.schedule_ref,
+                        "expected": change.expected_state_ref,
+                        "reminder_ref": uuid7(),
+                        "material_state_ref": uuid7(),
+                        "enabled": change.enabled,
+                        "lead": change.lead_minutes,
+                    },
+                )
+            profile = (
+                (
+                    await session.execute(
+                        text("SELECT * FROM dante.get_self_activity_profile(:actor,:activity)"),
+                        params,
+                    )
+                )
+                .mappings()
+                .one()
+            )
+            capture = (
+                (
+                    await session.execute(
+                        text(
+                            "SELECT * FROM dante.get_self_activity_execution_policy(:actor,:activity)"
+                        ),
+                        params,
+                    )
+                )
+                .mappings()
+                .one()
+            )
+            reality = (
+                (
+                    await session.execute(
+                        text("""
                 SELECT * FROM dante.get_self_reality_review_policy(:actor,'activity',:activity)
-            """), params)).mappings().one()
+            """),
+                        params,
+                    )
+                )
+                .mappings()
+                .one()
+            )
             reminder = None
             if body.reminder is not None:
-                reminder = (await session.execute(text("""
+                reminder = (
+                    (
+                        await session.execute(
+                            text("""
                     SELECT * FROM dante.get_self_schedule_reminder(:actor,:schedule)
-                """), {**params, "schedule": body.reminder.schedule_ref})).mappings().one()
+                """),
+                            {**params, "schedule": body.reminder.schedule_ref},
+                        )
+                    )
+                    .mappings()
+                    .one()
+                )
     except DBAPIError as exc:
         constraint = getattr(getattr(exc.orig, "diag", None), "constraint_name", None)
         if constraint and constraint.endswith("_unavailable"):
             raise ProblemError(
-                status=404, code="temporal.activity_edit.not_found", category="not_found",
-                title="Activity unavailable", detail="Activity unavailable in self scope.",
+                status=404,
+                code="temporal.activity_edit.not_found",
+                category="not_found",
+                title="Activity unavailable",
+                detail="Activity unavailable in self scope.",
             ) from exc
-        if constraint and constraint.endswith((
-            "_stale", "_current_conflict", "_operation_reused",
-        )):
+        if constraint and constraint.endswith(
+            (
+                "_stale",
+                "_current_conflict",
+                "_operation_reused",
+            )
+        ):
             raise ProblemError(
-                status=409, code="temporal.activity_edit.conflict", category="conflict",
-                title="Activity changed", detail="Reload the Activity and retry.",
+                status=409,
+                code="temporal.activity_edit.conflict",
+                category="conflict",
+                title="Activity changed",
+                detail="Reload the Activity and retry.",
             ) from exc
-        if constraint and (constraint.endswith("_invalid") or constraint in {
-            "schedule_reminder_input", "schedule_reminder_schedule_unavailable",
-        }):
+        if constraint and (
+            constraint.endswith("_invalid")
+            or constraint
+            in {
+                "schedule_reminder_input",
+                "schedule_reminder_schedule_unavailable",
+            }
+        ):
             raise ProblemError(
-                status=422, code="temporal.activity_edit.invalid", category="validation",
-                title="Invalid Activity change", detail="Check the submitted Activity fields.",
+                status=422,
+                code="temporal.activity_edit.invalid",
+                category="validation",
+                title="Invalid Activity change",
+                detail="Check the submitted Activity fields.",
             ) from exc
         raise ProblemError(
-            status=503, code="temporal.activity_edit.unavailable", category="service",
-            title="Activity edit unavailable", detail="The change could not be saved safely.",
+            status=503,
+            code="temporal.activity_edit.unavailable",
+            category="service",
+            title="Activity edit unavailable",
+            detail="The change could not be saved safely.",
             retryable=True,
         ) from exc
     except SQLAlchemyError as exc:
         raise ProblemError(
-            status=503, code="temporal.activity_edit.unavailable", category="service",
-            title="Activity edit unavailable", detail="The change could not be saved safely.",
+            status=503,
+            code="temporal.activity_edit.unavailable",
+            category="service",
+            title="Activity edit unavailable",
+            detail="The change could not be saved safely.",
             retryable=True,
         ) from exc
     return ActivityCoreEditResponse(
         profile=ActivityProfileResponse(**dict(profile)),
-        capture=EditExecutionPolicy(activity_ref=activity_ref, mode_code=capture["mode_code"],
-                                    state_ref=capture["state_ref"]),
-        reality=RealityPolicyResponse(subject_kind="activity", subject_native_ref=activity_ref,
-                                      mode_code=reality["mode_code"], state_ref=reality["state_ref"]),
+        capture=EditExecutionPolicy(
+            activity_ref=activity_ref,
+            mode_code=capture["mode_code"],
+            state_ref=capture["state_ref"],
+        ),
+        reality=RealityPolicyResponse(
+            subject_kind="activity",
+            subject_native_ref=activity_ref,
+            mode_code=reality["mode_code"],
+            state_ref=reality["state_ref"],
+        ),
         reminder=EditReminder(**dict(reminder)) if reminder is not None else None,
     )

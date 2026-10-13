@@ -27,18 +27,22 @@ def upgrade() -> None:
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
         sa.PrimaryKeyConstraint("activity_ref", name="pk_activity_execution_policy"),
         sa.ForeignKeyConstraint(
-            ["activity_ref"], ["dante.activity_intention.activity_ref"],
+            ["activity_ref"],
+            ["dante.activity_intention.activity_ref"],
             name="fk_activity_execution_policy_activity",
         ),
         sa.ForeignKeyConstraint(
-            ["self_person_ref"], ["dante.person.person_ref"],
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
             name="fk_activity_execution_policy_person",
         ),
         schema="dante",
     )
     op.create_index(
-        "ix_activity_execution_policy_self", "activity_execution_policy",
-        ["self_person_ref"], schema="dante",
+        "ix_activity_execution_policy_self",
+        "activity_execution_policy",
+        ["self_person_ref"],
+        schema="dante",
     )
     op.create_table(
         "activity_execution_policy_state",
@@ -48,7 +52,9 @@ def upgrade() -> None:
         sa.Column("recorded_at", sa.DateTime(timezone=True), nullable=False),
         sa.PrimaryKeyConstraint("state_ref", name="pk_activity_execution_policy_state"),
         sa.UniqueConstraint(
-            "activity_ref", "state_ref", name="uq_activity_execution_policy_state_owner",
+            "activity_ref",
+            "state_ref",
+            name="uq_activity_execution_policy_state_owner",
         ),
         sa.CheckConstraint(
             "uuid_extract_version(state_ref) IS NOT DISTINCT FROM 7",
@@ -59,17 +65,21 @@ def upgrade() -> None:
             name="ck_activity_execution_policy_state_mode",
         ),
         sa.CheckConstraint(
-            "isfinite(recorded_at)", name="ck_activity_execution_policy_state_recorded_at",
+            "isfinite(recorded_at)",
+            name="ck_activity_execution_policy_state_recorded_at",
         ),
         sa.ForeignKeyConstraint(
-            ["activity_ref"], ["dante.activity_execution_policy.activity_ref"],
+            ["activity_ref"],
+            ["dante.activity_execution_policy.activity_ref"],
             name="fk_activity_execution_policy_state_owner",
         ),
         schema="dante",
     )
     op.create_index(
-        "ix_activity_execution_policy_state_owner", "activity_execution_policy_state",
-        ["activity_ref"], schema="dante",
+        "ix_activity_execution_policy_state_owner",
+        "activity_execution_policy_state",
+        ["activity_ref"],
+        schema="dante",
     )
     op.create_table(
         "activity_execution_policy_current_history",
@@ -78,7 +88,8 @@ def upgrade() -> None:
         sa.Column("current_from_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("current_until_at", sa.DateTime(timezone=True), nullable=True),
         sa.PrimaryKeyConstraint(
-            "activity_ref", "current_from_at",
+            "activity_ref",
+            "current_from_at",
             name="pk_activity_execution_policy_current_history",
         ),
         sa.CheckConstraint(
@@ -88,21 +99,27 @@ def upgrade() -> None:
         ),
         sa.ForeignKeyConstraint(
             ["activity_ref", "state_ref"],
-            ["dante.activity_execution_policy_state.activity_ref",
-             "dante.activity_execution_policy_state.state_ref"],
+            [
+                "dante.activity_execution_policy_state.activity_ref",
+                "dante.activity_execution_policy_state.state_ref",
+            ],
             name="fk_activity_execution_policy_current_history_state",
         ),
         schema="dante",
     )
     op.create_index(
         "ux_activity_execution_policy_current_history_open",
-        "activity_execution_policy_current_history", ["activity_ref"],
-        unique=True, schema="dante",
+        "activity_execution_policy_current_history",
+        ["activity_ref"],
+        unique=True,
+        schema="dante",
         postgresql_where=sa.text("current_until_at IS NULL"),
     )
     op.create_index(
         "ix_activity_execution_policy_current_history_state",
-        "activity_execution_policy_current_history", ["state_ref"], schema="dante",
+        "activity_execution_policy_current_history",
+        ["state_ref"],
+        schema="dante",
     )
     op.create_table(
         "activity_execution_policy_operation",
@@ -112,10 +129,13 @@ def upgrade() -> None:
         sa.Column("activity_ref", sa.Uuid(), nullable=False),
         sa.Column("state_ref", sa.Uuid(), nullable=False),
         sa.PrimaryKeyConstraint(
-            "self_person_ref", "operation_id", name="pk_activity_execution_policy_operation",
+            "self_person_ref",
+            "operation_id",
+            name="pk_activity_execution_policy_operation",
         ),
         sa.UniqueConstraint(
-            "state_ref", name="uq_activity_execution_policy_operation_state",
+            "state_ref",
+            name="uq_activity_execution_policy_operation_state",
         ),
         sa.CheckConstraint(
             "operation_id=btrim(operation_id) AND char_length(operation_id) BETWEEN 1 AND 200",
@@ -126,13 +146,16 @@ def upgrade() -> None:
             name="ck_activity_execution_policy_operation_fingerprint",
         ),
         sa.ForeignKeyConstraint(
-            ["self_person_ref"], ["dante.person.person_ref"],
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
             name="fk_activity_execution_policy_operation_person",
         ),
         sa.ForeignKeyConstraint(
             ["activity_ref", "state_ref"],
-            ["dante.activity_execution_policy_state.activity_ref",
-             "dante.activity_execution_policy_state.state_ref"],
+            [
+                "dante.activity_execution_policy_state.activity_ref",
+                "dante.activity_execution_policy_state.state_ref",
+            ],
             name="fk_activity_execution_policy_operation_state",
         ),
         schema="dante",
@@ -295,8 +318,10 @@ $function$;
         _sql(f"REVOKE ALL ON FUNCTION {signature} FROM PUBLIC,dante_runtime,dante_migrator")
         _sql(f"GRANT EXECUTE ON FUNCTION {signature} TO dante_runtime")
     for table in (
-        "activity_execution_policy", "activity_execution_policy_state",
-        "activity_execution_policy_current_history", "activity_execution_policy_operation",
+        "activity_execution_policy",
+        "activity_execution_policy_state",
+        "activity_execution_policy_current_history",
+        "activity_execution_policy_operation",
     ):
         _sql(f"REVOKE ALL ON TABLE dante.{table} FROM PUBLIC,dante_runtime,dante_migrator")
 

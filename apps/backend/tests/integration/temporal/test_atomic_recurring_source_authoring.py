@@ -108,9 +108,7 @@ async def test_recurring_routine_authoring_is_atomic_replayable_and_self_scoped(
                 self_person_ref=alice,
                 operation_id="b06-d:authoring:routine",
                 title="Allenamento",
-                life_area_intent=AuthoringLifeAreaIntent(
-                    life_area_ref=area.life_area_ref
-                ),
+                life_area_intent=AuthoringLifeAreaIntent(life_area_ref=area.life_area_ref),
                 recurrence=_weekly(2, 4),
             )
 
@@ -171,9 +169,10 @@ async def test_recurring_routine_authoring_creates_new_life_area_with_appearance
         )
         assert replay.replayed
         assert replay.source_ref == created.source_ref
-        assert len(
-            [item for item in await areas.list(self_person_ref=alice) if item.name == "Corpo"]
-        ) == 1
+        assert (
+            len([item for item in await areas.list(self_person_ref=alice) if item.name == "Corpo"])
+            == 1
+        )
     finally:
         await runtime.dispose()
 

@@ -71,7 +71,9 @@ async def test_unplaced_activity_session_pause_resume_and_tc009_remain_independe
         )
 
         await enable_live_capture(
-            runtime.session_factory, actor=actor, activity_ref=activity.activity_ref,
+            runtime.session_factory,
+            actor=actor,
+            activity_ref=activity.activity_ref,
         )
 
         started = await sessions.start(
@@ -102,9 +104,7 @@ async def test_unplaced_activity_session_pause_resume_and_tc009_remain_independe
                 expected_material_state_ref=started.timing_material_state_ref,
             )
 
-        reloaded_pause = await sessions.get(
-            self_person_ref=actor, session_ref=started.session_ref
-        )
+        reloaded_pause = await sessions.get(self_person_ref=actor, session_ref=started.session_ref)
         assert reloaded_pause.paused
         assert reloaded_pause.timing_material_state_ref == paused.timing_material_state_ref
         resumed = await sessions.resume(

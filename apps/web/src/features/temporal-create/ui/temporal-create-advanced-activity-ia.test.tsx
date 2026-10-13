@@ -1,7 +1,13 @@
 // @vitest-environment jsdom
 
 import { Temporal } from '@dante/time';
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import { i18n } from '../../../bootstrap/i18n';
@@ -115,16 +121,16 @@ describe('Temporal Create Advanced Activity IA', () => {
     expect(
       within(rootActions).getByRole('button', { name: 'Sessione' }),
     ).toBeTruthy();
-    expect(
-      screen.queryByRole('button', { name: 'Sotto-attività' }),
-    ).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Sotto-attività' })).toBeNull();
     expect(document.querySelector('[data-create-subactivity]')).toBeNull();
 
     fireEvent.click(
       within(rootActions).getByRole('button', { name: 'Sessione' }),
     );
     expect(screen.getByLabelText('Nome Sessione')).toBeTruthy();
-    expect(document.querySelector('[data-create-planned-session]')).toBeTruthy();
+    expect(
+      document.querySelector('[data-create-planned-session]'),
+    ).toBeTruthy();
     expect(rootCapabilityCheckbox.checked).toBe(false);
 
     fireEvent.click(rootCapabilityCheckbox);

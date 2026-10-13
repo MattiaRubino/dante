@@ -19,16 +19,15 @@ _SCHEMA = "dante"
 _OWNER = "dante_owner"
 _MIGRATOR = "dante_migrator"
 _RUNTIME = "dante_runtime"
-_ASSERT_SIGNATURE = "dante.assert_absolute_schedule_move_hard_admissible(uuid,timestamptz,timestamptz)"
+_ASSERT_SIGNATURE = (
+    "dante.assert_absolute_schedule_move_hard_admissible(uuid,timestamptz,timestamptz)"
+)
 _APPLY_SIGNATURE = "dante.apply_governed_absolute_schedule_move(uuid,uuid,uuid,timestamptz,timestamptz,timestamptz)"
 _REQUEST_SIGNATURE = (
     "dante.request_self_absolute_schedule_move("
     "uuid,text,text,uuid,uuid,timestamptz,timestamptz,uuid,uuid)"
 )
-_ACCEPT_SIGNATURE = (
-    "dante.accept_self_absolute_schedule_move_proposal("
-    "uuid,text,text,uuid,uuid)"
-)
+_ACCEPT_SIGNATURE = "dante.accept_self_absolute_schedule_move_proposal(uuid,text,text,uuid,uuid)"
 
 
 def _execute(sql: str) -> None:
@@ -42,8 +41,12 @@ def upgrade() -> None:
         sa.Column("proposal_ref", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("self_person_ref", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("schedule_ref", postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column("expected_placement_material_state_ref", postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column("movement_policy_material_state_ref", postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column(
+            "expected_placement_material_state_ref", postgresql.UUID(as_uuid=True), nullable=False
+        ),
+        sa.Column(
+            "movement_policy_material_state_ref", postgresql.UUID(as_uuid=True), nullable=False
+        ),
         sa.Column("starts_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("ends_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
@@ -91,7 +94,9 @@ def upgrade() -> None:
             "isfinite(starts_at) AND isfinite(ends_at) AND ends_at > starts_at",
             name=op.f("ck_schedule_move_proposal_interval"),
         ),
-        sa.CheckConstraint("isfinite(created_at)", name=op.f("ck_schedule_move_proposal_created_at")),
+        sa.CheckConstraint(
+            "isfinite(created_at)", name=op.f("ck_schedule_move_proposal_created_at")
+        ),
         schema=_SCHEMA,
     )
     op.create_index(
@@ -108,13 +113,19 @@ def upgrade() -> None:
         sa.Column("operation_id", sa.Text(), nullable=False),
         sa.Column("intent_fingerprint", sa.Text(), nullable=False),
         sa.Column("schedule_ref", postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column("expected_placement_material_state_ref", postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column("movement_policy_material_state_ref", postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column(
+            "expected_placement_material_state_ref", postgresql.UUID(as_uuid=True), nullable=False
+        ),
+        sa.Column(
+            "movement_policy_material_state_ref", postgresql.UUID(as_uuid=True), nullable=False
+        ),
         sa.Column("starts_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("ends_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("result_kind", sa.Text(), nullable=False),
         sa.Column("proposal_ref", postgresql.UUID(as_uuid=True), nullable=True),
-        sa.Column("resulting_placement_material_state_ref", postgresql.UUID(as_uuid=True), nullable=True),
+        sa.Column(
+            "resulting_placement_material_state_ref", postgresql.UUID(as_uuid=True), nullable=True
+        ),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
         sa.PrimaryKeyConstraint(
             "self_person_ref",
@@ -172,7 +183,9 @@ def upgrade() -> None:
             ondelete="NO ACTION",
             deferrable=False,
         ),
-        sa.UniqueConstraint("proposal_ref", name=op.f("uq_schedule_move_request_operation_proposal_ref")),
+        sa.UniqueConstraint(
+            "proposal_ref", name=op.f("uq_schedule_move_request_operation_proposal_ref")
+        ),
         sa.UniqueConstraint(
             "resulting_placement_material_state_ref",
             name=op.f("uq_schedule_move_request_operation_resulting_placement"),
@@ -211,7 +224,9 @@ def upgrade() -> None:
         sa.Column("intent_fingerprint", sa.Text(), nullable=False),
         sa.Column("proposal_ref", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("schedule_ref", postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column("resulting_placement_material_state_ref", postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column(
+            "resulting_placement_material_state_ref", postgresql.UUID(as_uuid=True), nullable=False
+        ),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
         sa.PrimaryKeyConstraint(
             "self_person_ref",
@@ -250,7 +265,9 @@ def upgrade() -> None:
             ondelete="NO ACTION",
             deferrable=False,
         ),
-        sa.UniqueConstraint("proposal_ref", name=op.f("uq_schedule_move_accept_operation_proposal_ref")),
+        sa.UniqueConstraint(
+            "proposal_ref", name=op.f("uq_schedule_move_accept_operation_proposal_ref")
+        ),
         sa.UniqueConstraint(
             "resulting_placement_material_state_ref",
             name=op.f("uq_schedule_move_accept_operation_resulting_placement"),

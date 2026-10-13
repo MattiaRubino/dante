@@ -1,11 +1,10 @@
 import { createWebFetch } from '../../platform/api/web-fetch';
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export type ActivityRealityMode =
-  | 'manual'
-  | 'review_on_end'
-  | 'auto_confirm_outcome';
+  'manual' | 'review_on_end' | 'auto_confirm_outcome';
 
 export type ActivityRealityPolicy = Readonly<{
   activityRef: string;
@@ -28,7 +27,10 @@ export class ActivityRealityPolicyRemoteError extends Error {
 
 function object(value: unknown): Record<string, unknown> {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    throw new ActivityRealityPolicyRemoteError('protocol', 'Invalid Reality policy response.');
+    throw new ActivityRealityPolicyRemoteError(
+      'protocol',
+      'Invalid Reality policy response.',
+    );
   }
   return value as Record<string, unknown>;
 }
@@ -47,7 +49,10 @@ function policy(value: unknown): ActivityRealityPolicy {
     row.mode_code !== 'review_on_end' &&
     row.mode_code !== 'auto_confirm_outcome'
   ) {
-    throw new ActivityRealityPolicyRemoteError('protocol', 'Invalid Reality policy mode.');
+    throw new ActivityRealityPolicyRemoteError(
+      'protocol',
+      'Invalid Reality policy mode.',
+    );
   }
   return Object.freeze({
     activityRef: uuid(row.activity_ref, 'activity_ref'),
@@ -80,12 +85,16 @@ export function createRemoteActivityRealityPolicyDataSource(
     return row.csrf_token;
   }
 
-  async function problem(response: Response): Promise<ActivityRealityPolicyRemoteError> {
+  async function problem(
+    response: Response,
+  ): Promise<ActivityRealityPolicyRemoteError> {
     try {
       const row = object(await response.json());
       return new ActivityRealityPolicyRemoteError(
         'http',
-        typeof row.detail === 'string' ? row.detail : 'Reality policy request rejected.',
+        typeof row.detail === 'string'
+          ? row.detail
+          : 'Reality policy request rejected.',
         response.status,
         typeof row.code === 'string' ? row.code : null,
       );
@@ -109,7 +118,9 @@ export function createRemoteActivityRealityPolicyDataSource(
       } catch (error) {
         throw new ActivityRealityPolicyRemoteError(
           'transport',
-          error instanceof Error ? error.message : 'Reality policy unavailable.',
+          error instanceof Error
+            ? error.message
+            : 'Reality policy unavailable.',
         );
       }
       if (!response.ok) throw await problem(response);
@@ -125,7 +136,10 @@ export function createRemoteActivityRealityPolicyDataSource(
       }>,
     ): Promise<ActivityRealityPolicy> {
       if (!command.operationId.trim()) {
-        throw new ActivityRealityPolicyRemoteError('protocol', 'Invalid Reality policy command.');
+        throw new ActivityRealityPolicyRemoteError(
+          'protocol',
+          'Invalid Reality policy command.',
+        );
       }
       let response: Response;
       try {
@@ -148,7 +162,9 @@ export function createRemoteActivityRealityPolicyDataSource(
         if (error instanceof ActivityRealityPolicyRemoteError) throw error;
         throw new ActivityRealityPolicyRemoteError(
           'transport',
-          error instanceof Error ? error.message : 'Reality policy unavailable.',
+          error instanceof Error
+            ? error.message
+            : 'Reality policy unavailable.',
         );
       }
       if (!response.ok) throw await problem(response);

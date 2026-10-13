@@ -235,7 +235,8 @@ export function createRemoteTemporalActualDataSource(
           timing: null,
           session_bases: (command.sessionBases ?? []).map((basis) => ({
             session_ref: basis.sessionRef,
-            session_timing_material_state_ref: basis.sessionTimingMaterialStateRef,
+            session_timing_material_state_ref:
+              basis.sessionTimingMaterialStateRef,
           })),
         }),
       });

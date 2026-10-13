@@ -82,9 +82,7 @@ def _item(row: object) -> ResolutionQueueItem:
     response_model=ResolutionQueueResponse,
     operation_id="temporal_list_resolution_queue",
 )
-async def list_resolution_queue(
-    request: Request, context: Context
-) -> ResolutionQueueResponse:
+async def list_resolution_queue(request: Request, context: Context) -> ResolutionQueueResponse:
     """Derived current product work, never inferred failure from time passage.
 
     A past planned Activity without execution may enter Reality review only
@@ -160,54 +158,88 @@ class ObjectiveWorkItem(BaseModel):
 
 
 @router.get(
-    "/home/finished-work", response_model=list[FinishedWorkItem],
+    "/home/finished-work",
+    response_model=list[FinishedWorkItem],
     operation_id="temporal_list_home_finished_work",
 )
 async def list_home_finished_work(
-    request: Request, context: Context, response: Response, limit: int = 40,
+    request: Request,
+    context: Context,
+    response: Response,
+    limit: int = 40,
 ) -> list[FinishedWorkItem]:
     response.headers["Cache-Control"] = "no-store"
     if not 1 <= limit <= 100:
         raise ProblemError(
-            status=422, code="temporal.home.invalid_limit", category="validation",
-            title="Invalid limit", detail="Richiedi da 1 a 100 elementi.",
+            status=422,
+            code="temporal.home.invalid_limit",
+            category="validation",
+            title="Invalid limit",
+            detail="Richiedi da 1 a 100 elementi.",
         )
     try:
         async with request.app.state.database_runtime.session_factory() as session, session.begin():
-            rows = (await session.execute(text(
-                "SELECT * FROM dante.list_self_home_finished_work(:actor,:limit)"
-            ), {"actor": context.self_person_ref, "limit": limit})).mappings().all()
+            rows = (
+                (
+                    await session.execute(
+                        text("SELECT * FROM dante.list_self_home_finished_work(:actor,:limit)"),
+                        {"actor": context.self_person_ref, "limit": limit},
+                    )
+                )
+                .mappings()
+                .all()
+            )
             return [FinishedWorkItem.model_validate(dict(row)) for row in rows]
     except SQLAlchemyError as exc:
         raise ProblemError(
-            status=503, code="temporal.home.finished_unavailable", category="service",
-            title="Finished work unavailable", detail="Storico conclusi non disponibile.",
+            status=503,
+            code="temporal.home.finished_unavailable",
+            category="service",
+            title="Finished work unavailable",
+            detail="Storico conclusi non disponibile.",
             retryable=True,
         ) from exc
 
 
 @router.get(
-    "/home/objective-work", response_model=list[ObjectiveWorkItem],
+    "/home/objective-work",
+    response_model=list[ObjectiveWorkItem],
     operation_id="temporal_list_home_objective_work",
 )
 async def list_home_objective_work(
-    request: Request, context: Context, response: Response, limit: int = 40,
+    request: Request,
+    context: Context,
+    response: Response,
+    limit: int = 40,
 ) -> list[ObjectiveWorkItem]:
     response.headers["Cache-Control"] = "no-store"
     if not 1 <= limit <= 100:
         raise ProblemError(
-            status=422, code="temporal.home.invalid_limit", category="validation",
-            title="Invalid limit", detail="Richiedi da 1 a 100 Obiettivi.",
+            status=422,
+            code="temporal.home.invalid_limit",
+            category="validation",
+            title="Invalid limit",
+            detail="Richiedi da 1 a 100 Obiettivi.",
         )
     try:
         async with request.app.state.database_runtime.session_factory() as session, session.begin():
-            rows = (await session.execute(text(
-                "SELECT * FROM dante.list_self_home_objective_work(:actor,:limit)"
-            ), {"actor": context.self_person_ref, "limit": limit})).mappings().all()
+            rows = (
+                (
+                    await session.execute(
+                        text("SELECT * FROM dante.list_self_home_objective_work(:actor,:limit)"),
+                        {"actor": context.self_person_ref, "limit": limit},
+                    )
+                )
+                .mappings()
+                .all()
+            )
             return [ObjectiveWorkItem.model_validate(dict(row)) for row in rows]
     except SQLAlchemyError as exc:
         raise ProblemError(
-            status=503, code="temporal.home.objectives_unavailable", category="service",
-            title="Objective work unavailable", detail="Obiettivi da valutare non disponibili.",
+            status=503,
+            code="temporal.home.objectives_unavailable",
+            category="service",
+            title="Objective work unavailable",
+            detail="Obiettivi da valutare non disponibili.",
             retryable=True,
         ) from exc

@@ -84,7 +84,9 @@ describe('Temporal Create policy finalizer', () => {
     await finalize();
     await finalize();
 
-    expect(realityCalls.map(({ activityRef, mode }) => ({ activityRef, mode }))).toEqual([
+    expect(
+      realityCalls.map(({ activityRef, mode }) => ({ activityRef, mode })),
+    ).toEqual([
       {
         activityRef: '0199aaaa-aaaa-7aaa-8aaa-aaaaaaaaaaaa',
         mode: 'review_on_end',

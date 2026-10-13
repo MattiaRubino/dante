@@ -31,12 +31,10 @@ export type TemporalCreateEventParticipantDraft = Readonly<{
 }>;
 
 export type TemporalCreateObjectiveKind =
-  | 'boolean'
-  | 'quantity'
-  | 'qualitative'
-  | 'range';
+  'boolean' | 'quantity' | 'qualitative' | 'range';
 
-export type TemporalCreateObjectiveComparator = 'eq' | 'gte' | 'lte' | 'between';
+export type TemporalCreateObjectiveComparator =
+  'eq' | 'gte' | 'lte' | 'between';
 
 export type TemporalCreateObjectiveDraft = Readonly<{
   id: string;

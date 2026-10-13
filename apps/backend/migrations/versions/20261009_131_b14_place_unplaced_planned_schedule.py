@@ -32,11 +32,17 @@ CREATE TABLE dante.planned_schedule_place_operation (
         intent_fingerprint ~ '^[0-9a-f]{64}$')
 );
 """)
-    op.get_bind().exec_driver_sql("CREATE INDEX ix_planned_schedule_place_operation_schedule_ref "
-                                  "ON dante.planned_schedule_place_operation(schedule_ref)")
-    op.get_bind().exec_driver_sql("ALTER TABLE dante.planned_schedule_place_operation OWNER TO dante_owner")
-    op.get_bind().exec_driver_sql("REVOKE ALL ON TABLE dante.planned_schedule_place_operation "
-                                  "FROM PUBLIC,dante_runtime,dante_migrator")
+    op.get_bind().exec_driver_sql(
+        "CREATE INDEX ix_planned_schedule_place_operation_schedule_ref "
+        "ON dante.planned_schedule_place_operation(schedule_ref)"
+    )
+    op.get_bind().exec_driver_sql(
+        "ALTER TABLE dante.planned_schedule_place_operation OWNER TO dante_owner"
+    )
+    op.get_bind().exec_driver_sql(
+        "REVOKE ALL ON TABLE dante.planned_schedule_place_operation "
+        "FROM PUBLIC,dante_runtime,dante_migrator"
+    )
     op.get_bind().exec_driver_sql("""
 CREATE FUNCTION dante.place_self_unplaced_planned_schedule(
     requested_actor uuid, requested_operation text, requested_fingerprint text,

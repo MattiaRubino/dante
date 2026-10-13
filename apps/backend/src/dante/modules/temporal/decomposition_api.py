@@ -60,9 +60,12 @@ class ActivityScheduleResponse(BaseModel):
     presentation_order: int | None
     display_name: str | None
     placement_material_state_ref: UUID | None
-    temporal_form: Literal[
-        "date_span", "floating_local", "named_zone_local", "absolute", "coarse_local_period"
-    ] | None
+    temporal_form: (
+        Literal[
+            "date_span", "floating_local", "named_zone_local", "absolute", "coarse_local_period"
+        ]
+        | None
+    )
     start_date: date | None
     end_date_exclusive: date | None
     starts_local_at: datetime | None

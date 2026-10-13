@@ -28,20 +28,23 @@ for (const width of [1440, 390]) {
             evaluated_at: now,
             next_change_at: null,
             visuals: [],
-            groups: stopped ? [] : [
-              {
-                activity_ref: activity,
-                title: 'Studio e preparazione di una presentazione molto lunga',
-                rows: [
+            groups: stopped
+              ? []
+              : [
                   {
-                    planned_schedule_ref: schedule,
-                    name: 'Ripasso',
-                    starts_at: null,
-                    execution,
+                    activity_ref: activity,
+                    title:
+                      'Studio e preparazione di una presentazione molto lunga',
+                    rows: [
+                      {
+                        planned_schedule_ref: schedule,
+                        name: 'Ripasso',
+                        starts_at: null,
+                        execution,
+                      },
+                    ],
                   },
                 ],
-              },
-            ],
           },
         });
       } else if (path.endsWith('/auth/session')) {

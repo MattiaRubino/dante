@@ -78,7 +78,9 @@ function serializeRule(rule: TemporalActivityConstraintRuleInput) {
   } as const;
 }
 
-function validateRequest(request: TemporalConstrainedActivityCreateRequest): void {
+function validateRequest(
+  request: TemporalConstrainedActivityCreateRequest,
+): void {
   if (!request.operationId.trim() || request.operationId.trim().length > 200) {
     throw new RangeError(
       'Activity operation id must contain 1 to 200 characters.',
@@ -154,7 +156,9 @@ async function csrfToken(
   return payload.csrf_token;
 }
 
-function parseResponse(payload: unknown): TemporalConstrainedActivityCreateResult {
+function parseResponse(
+  payload: unknown,
+): TemporalConstrainedActivityCreateResult {
   if (
     !isRecord(payload) ||
     !isRecord(payload.activity) ||
@@ -184,7 +188,10 @@ function parseResponse(payload: unknown): TemporalConstrainedActivityCreateResul
       );
     }
     return Object.freeze({
-      constraintRef: parseUuidV7(item.constraint_ref, `constraints[${index}].constraint_ref`),
+      constraintRef: parseUuidV7(
+        item.constraint_ref,
+        `constraints[${index}].constraint_ref`,
+      ),
       materialStateRef: parseUuidV7(
         item.material_state_ref,
         `constraints[${index}].material_state_ref`,
@@ -230,7 +237,9 @@ export function createRemoteTemporalConstrainedActivityDataSource(
           body: JSON.stringify({
             operation_id: request.operationId.trim(),
             title: request.title.trim(),
-            ...(request.lifeAreaRef === undefined ? {} : { life_area_ref: request.lifeAreaRef }),
+            ...(request.lifeAreaRef === undefined
+              ? {}
+              : { life_area_ref: request.lifeAreaRef }),
             rules: request.rules.map(serializeRule),
             ...(request.sessionCaptureMode === undefined
               ? {}
@@ -247,7 +256,10 @@ export function createRemoteTemporalConstrainedActivityDataSource(
           'Constrained Activity request could not reach DANTE.',
         );
       }
-      const payload = await json(response, 'Create Constrained Activity response');
+      const payload = await json(
+        response,
+        'Create Constrained Activity response',
+      );
       if (!response.ok) {
         throw new TemporalActivityRemoteError(
           'http',

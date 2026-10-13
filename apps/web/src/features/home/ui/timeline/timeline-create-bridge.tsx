@@ -333,7 +333,9 @@ export function TimelineCreateBridge({
     useState<TemporalCreateTimelineProjection | null>(null);
   const [request, setRequest] = useState<TemporalCreateInvocation | null>(null);
   const [draftRequest, setDraftRequest] = useState<{
-    id: number; item: DraftVaultItem; duplicate: boolean;
+    id: number;
+    item: DraftVaultItem;
+    duplicate: boolean;
   } | null>(null);
   const [legacyOpenRequest, setLegacyOpenRequest] = useState(0);
   const [layoutRevision, setLayoutRevision] = useState(0);
@@ -968,9 +970,13 @@ export function TimelineCreateBridge({
           build: its HTTP boundary is explicitly mocked by Draft Vault E2E
           tests. Only the legacy planning projection is test-only. */}
       <TimelineDraftVault
-        onOpen={(item, duplicate) => setDraftRequest({
-          id: Date.now(), item, duplicate,
-        })}
+        onOpen={(item, duplicate) =>
+          setDraftRequest({
+            id: Date.now(),
+            item,
+            duplicate,
+          })
+        }
         onManageExisting={() => setLegacyOpenRequest((count) => count + 1)}
       />
       {import.meta.env.MODE === 'test' ? (

@@ -1,5 +1,13 @@
 import { cleanup, fireEvent, render } from '@testing-library/react';
-import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
 
 import { i18n } from '../../../bootstrap/i18n';
 import { HomePage } from './home-page';
@@ -47,7 +55,9 @@ describe('Home U1 Create rail contract', () => {
     const today = container.querySelector('[data-home-layout="today"]');
     const timeline = container.querySelector('[data-home-region="timeline"]');
     const rail = container.querySelector('[data-home-region="context-rail"]');
-    const createHost = container.querySelector('[data-home-context-create-host]');
+    const createHost = container.querySelector(
+      '[data-home-context-create-host]',
+    );
 
     expect(TIMELINE_POLICY.expansion.defaultContextRailWidthPx).toBe(475);
     expect(today).not.toBeNull();

@@ -1,6 +1,12 @@
 // @vitest-environment jsdom
 
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { i18n } from '../../../bootstrap/i18n';
@@ -77,7 +83,9 @@ describe('TemporalCreateComposer', () => {
   it('uses the shared rounded footer action for Aggiungi', () => {
     renderComposer();
     const add = screen.getByRole('button', { name: 'Aggiungi' });
-    expect(add.parentElement?.classList.contains('dante-temporal-panel-actions')).toBe(true);
+    expect(
+      add.parentElement?.classList.contains('dante-temporal-panel-actions'),
+    ).toBe(true);
     expect(add.classList.contains('is-primary')).toBe(true);
   });
   it('presents Event Scaletta and B09 participant staging while hiding prototype-only fields', async () => {
@@ -124,7 +132,9 @@ describe('TemporalCreateComposer', () => {
       />,
     );
 
-    expect(screen.getByRole('button', { name: 'Aggiungi punto alla scaletta' })).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: 'Aggiungi punto alla scaletta' }),
+    ).toBeTruthy();
     expect(
       screen.getByRole('region', { name: 'Svolgimento e obiettivi' }),
     ).toBeTruthy();
@@ -142,15 +152,18 @@ describe('TemporalCreateComposer', () => {
     expect(screen.queryByText('Risorse')).toBeNull();
     expect(screen.queryByText('Videocall')).toBeNull();
 
-    expect(await screen.findByRole('button', { name: '＋ Aggiungi' })).toBeTruthy();
+    expect(
+      await screen.findByRole('button', { name: '＋ Aggiungi' }),
+    ).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: '＋ Aggiungi' }));
     const selfParticipation = screen.getByRole('combobox', {
       name: 'Partecipazione di Io',
     }) as HTMLSelectElement;
     expect(selfParticipation.value).toBe('required');
-    expect(selfParticipation.closest('.temporal-create-event-participants__row')?.textContent).toContain(
-      'Io',
-    );
+    expect(
+      selfParticipation.closest('.temporal-create-event-participants__row')
+        ?.textContent,
+    ).toContain('Io');
 
     fireEvent.click(
       screen.getByRole('button', { name: 'Aggiungi punto alla scaletta' }),
@@ -214,7 +227,9 @@ describe('TemporalCreateComposer', () => {
 
     expect(document.documentElement.style.overflow).toBe('');
     expect(document.body.style.overflow).toBe('');
-    expect(document.documentElement.dataset.temporalCreateScrollLock).toBeUndefined();
+    expect(
+      document.documentElement.dataset.temporalCreateScrollLock,
+    ).toBeUndefined();
   });
 
   it('asks the entry to close when an untouched draft is clicked outside', () => {
@@ -243,9 +258,7 @@ describe('TemporalCreateComposer', () => {
         name: 'Salva bozza',
       }),
     );
-    fireEvent.click(
-      within(decision).getByRole('button', { name: 'Scarta' }),
-    );
+    fireEvent.click(within(decision).getByRole('button', { name: 'Scarta' }));
 
     expect(onContinueEditing).toHaveBeenCalledOnce();
     expect(onMoveToUnplaced).toHaveBeenCalledOnce();

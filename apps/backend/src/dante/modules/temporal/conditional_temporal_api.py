@@ -225,9 +225,7 @@ async def find_actual_realization_condition(
     ) as exc:
         raise _problem(exc) from exc
     if view is None:
-        raise _problem(
-            ConditionalTemporalNotFoundError("Conditional temporal intent unavailable.")
-        )
+        raise _problem(ConditionalTemporalNotFoundError("Conditional temporal intent unavailable."))
     return _condition_response(view)
 
 
@@ -256,9 +254,7 @@ async def get_actual_realization_condition(
     ) as exc:
         raise _problem(exc) from exc
     if view is None:
-        raise _problem(
-            ConditionalTemporalNotFoundError("Conditional temporal intent unavailable.")
-        )
+        raise _problem(ConditionalTemporalNotFoundError("Conditional temporal intent unavailable."))
     return _condition_response(view)
 
 

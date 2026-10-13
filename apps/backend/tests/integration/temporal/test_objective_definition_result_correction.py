@@ -53,8 +53,11 @@ def test_objective_definition_and_result_corrections_are_canonical_without_delet
         headers = {**_base_headers(), CSRF_HEADER_NAME: csrf}
         created = client.post(
             "/api/v1/temporal/authoring/activities",
-            json={"operation_id": "m2:activity", "title": "Corsa",
-                  "session_capture_mode": "record"},
+            json={
+                "operation_id": "m2:activity",
+                "title": "Corsa",
+                "session_capture_mode": "record",
+            },
             headers=headers,
         )
         assert created.status_code == 201, created.text
@@ -207,12 +210,15 @@ def test_objective_definition_and_result_corrections_are_canonical_without_delet
 
         # Internal audit is append-only; neither the original observation,
         # original evaluation nor the objective identity was replaced.
-        with psycopg.connect(
-            **migrated_database.connection_kwargs(
-                migrated_database.cluster.admin_user,
-                migrated_database.cluster.admin_password,
-            )
-        ) as conn, conn.cursor() as cursor:
+        with (
+            psycopg.connect(
+                **migrated_database.connection_kwargs(
+                    migrated_database.cluster.admin_user,
+                    migrated_database.cluster.admin_password,
+                )
+            ) as conn,
+            conn.cursor() as cursor,
+        ):
             cursor.execute(
                 """
                 SELECT
@@ -241,9 +247,11 @@ def test_objective_definition_and_result_corrections_are_canonical_without_delet
         assert denied.status_code == 404
         refused = client.post(
             correction_url,
-            json={"operation_id": "m2:cross-owner-correction",
-                  "expected_evaluation_state_ref": last["evaluation_state_ref"],
-                  "observed_numeric": 3},
+            json={
+                "operation_id": "m2:cross-owner-correction",
+                "expected_evaluation_state_ref": last["evaluation_state_ref"],
+                "observed_numeric": 3,
+            },
             headers=bob_headers,
         )
         assert refused.status_code == 404
@@ -260,8 +268,11 @@ def test_event_objective_same_identity_definition_revision(
         csrf = _signin(client, email)
         headers = {**_base_headers(), CSRF_HEADER_NAME: csrf}
         event = _post_scheduled_event(
-            client, csrf=csrf, operation_id="m2:event",
-            title="Gara", placement={
+            client,
+            csrf=csrf,
+            operation_id="m2:event",
+            title="Gara",
+            placement={
                 "kind": "date_span",
                 "start_date": "2026-10-08",
                 "end_date_exclusive": "2026-10-09",
@@ -271,18 +282,25 @@ def test_event_objective_same_identity_definition_revision(
         subject_ref = event.json()["event_ref"]
         response = client.post(
             f"/api/v1/temporal/events/{subject_ref}/objectives",
-            json={"operation_id": "m2:event:objective",
-                  "label": "Arrivare puntuali", "result_kind": "boolean",
-                  "presentation_order": 0},
+            json={
+                "operation_id": "m2:event:objective",
+                "label": "Arrivare puntuali",
+                "result_kind": "boolean",
+                "presentation_order": 0,
+            },
             headers=headers,
         )
         assert response.status_code == 201, response.text
         objective = response.json()["objective_ref"]
         revision = client.put(
             f"/api/v1/temporal/objectives/{objective}/definition",
-            json={"operation_id": "m2:event:revision", "expected_revision": 0,
-                  "label": "Partenza puntuale", "result_kind": "boolean",
-                  "presentation_order": 0},
+            json={
+                "operation_id": "m2:event:revision",
+                "expected_revision": 0,
+                "label": "Partenza puntuale",
+                "result_kind": "boolean",
+                "presentation_order": 0,
+            },
             headers=headers,
         )
         assert revision.status_code == 200, revision.text
@@ -293,7 +311,6 @@ def test_event_objective_same_identity_definition_revision(
         assert result.status_code == 200
         assert result.json()[0]["objective_ref"] == objective
         assert result.json()[0]["label"] == "Partenza puntuale"
-
 
 
 def test_qualitative_objective_never_synthesizes_manual_assessment(
@@ -308,35 +325,47 @@ def test_qualitative_objective_never_synthesizes_manual_assessment(
         headers = {**_base_headers(), CSRF_HEADER_NAME: csrf}
         created = client.post(
             "/api/v1/temporal/authoring/activities",
-            json={"operation_id": "m2:qual:activity", "title": "Esercizio",
-                  "session_capture_mode": "record"},
+            json={
+                "operation_id": "m2:qual:activity",
+                "title": "Esercizio",
+                "session_capture_mode": "record",
+            },
             headers=headers,
         )
         assert created.status_code == 201, created.text
         subject = created.json()["activity_ref"]
         created_objective = client.post(
             f"/api/v1/temporal/activities/{subject}/objectives",
-            json={"operation_id": "m2:qual:objective", "label": "Qualità",
-                  "result_kind": "qualitative", "presentation_order": 0},
+            json={
+                "operation_id": "m2:qual:objective",
+                "label": "Qualità",
+                "result_kind": "qualitative",
+                "presentation_order": 0,
+            },
             headers=headers,
         )
         assert created_objective.status_code == 201, created_objective.text
         objective = created_objective.json()["objective_ref"]
         result = client.post(
             f"/api/v1/temporal/objectives/{objective}/result",
-            json={"operation_id": "m2:qual:result",
-                  "qualitative_code": "buono", "assessment_code": "partial"},
+            json={
+                "operation_id": "m2:qual:result",
+                "qualitative_code": "buono",
+                "assessment_code": "partial",
+            },
             headers=headers,
         )
         assert result.status_code == 201, result.text
         state_ref = result.json()["evaluation_state_ref"]
         renamed = client.put(
             f"/api/v1/temporal/objectives/{objective}/definition",
-            json={"operation_id": "m2:qual:rename",
-                  "expected_revision": 0,
-                  "label": "Qualità corretta",
-                  "result_kind": "qualitative",
-                  "presentation_order": 0},
+            json={
+                "operation_id": "m2:qual:rename",
+                "expected_revision": 0,
+                "label": "Qualità corretta",
+                "result_kind": "qualitative",
+                "presentation_order": 0,
+            },
             headers=headers,
         )
         assert renamed.status_code == 200, renamed.text
@@ -344,11 +373,15 @@ def test_qualitative_objective_never_synthesizes_manual_assessment(
         assert renamed.json()["evaluation_state_ref"] == state_ref
         impossible = client.put(
             f"/api/v1/temporal/objectives/{objective}/definition",
-            json={"operation_id": "m2:qual:kind-switch",
-                  "expected_revision": 1,
-                  "label": "Quantità", "result_kind": "quantity",
-                  "comparator_code": "gte", "target_value": 2,
-                  "presentation_order": 0},
+            json={
+                "operation_id": "m2:qual:kind-switch",
+                "expected_revision": 1,
+                "label": "Quantità",
+                "result_kind": "quantity",
+                "comparator_code": "gte",
+                "target_value": 2,
+                "presentation_order": 0,
+            },
             headers=headers,
         )
         assert impossible.status_code == 409, impossible.text

@@ -141,10 +141,7 @@ def test_inbox_reviews_shared_reality_and_objectives_without_inventing_actual(
         queued = client.get(queue_path, headers=_base_headers())
         assert queued.status_code == 200
         assert queued.json()["count"] == 5
-        assert {
-            (item["subject_ref"], item["reason_code"])
-            for item in queued.json()["items"]
-        } == {
+        assert {(item["subject_ref"], item["reason_code"]) for item in queued.json()["items"]} == {
             (activity_ref, "realization_review"),
             (activity_ref, "objective_review"),
             (event_ref, "realization_review"),
@@ -158,10 +155,14 @@ def test_inbox_reviews_shared_reality_and_objectives_without_inventing_actual(
                 "operation_id": "inbox:activity:actual",
                 "expected_material_state_ref": None,
                 "realization_occurred": True,
-                "session_bases": [{
-                    "session_ref": session_data["session_ref"],
-                    "session_timing_material_state_ref": session_data["timing_material_state_ref"],
-                }],
+                "session_bases": [
+                    {
+                        "session_ref": session_data["session_ref"],
+                        "session_timing_material_state_ref": session_data[
+                            "timing_material_state_ref"
+                        ],
+                    }
+                ],
             },
             headers=headers,
         )

@@ -71,7 +71,9 @@ class LifeAreaRow(Base):
     hidden: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
     icon_code: Mapped[str | None] = mapped_column(Text)
     color_code: Mapped[str | None] = mapped_column(Text)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=text("statement_timestamp()"))
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=text("statement_timestamp()")
+    )
 
 
 class LifeAreaCreateOperationRow(Base):

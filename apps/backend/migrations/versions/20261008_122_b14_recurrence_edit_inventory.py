@@ -92,19 +92,12 @@ BEGIN
 END;
 $function$;
 """)
+    db.exec_driver_sql(f"ALTER FUNCTION dante.{_SIGNATURE} OWNER TO dante_owner")
     db.exec_driver_sql(
-        f"ALTER FUNCTION dante.{_SIGNATURE} OWNER TO dante_owner"
+        f"REVOKE ALL ON FUNCTION dante.{_SIGNATURE} FROM PUBLIC,dante_runtime,dante_migrator"
     )
-    db.exec_driver_sql(
-        f"REVOKE ALL ON FUNCTION dante.{_SIGNATURE} "
-        "FROM PUBLIC,dante_runtime,dante_migrator"
-    )
-    db.exec_driver_sql(
-        f"GRANT EXECUTE ON FUNCTION dante.{_SIGNATURE} TO dante_runtime"
-    )
+    db.exec_driver_sql(f"GRANT EXECUTE ON FUNCTION dante.{_SIGNATURE} TO dante_runtime")
 
 
 def downgrade() -> None:
-    raise RuntimeError(
-        "20261008_122 is forward-only; edit-inventory authority requires review"
-    )
+    raise RuntimeError("20261008_122 is forward-only; edit-inventory authority requires review")

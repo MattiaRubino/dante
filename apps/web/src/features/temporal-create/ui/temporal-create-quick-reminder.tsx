@@ -27,8 +27,12 @@ function reminderLabel(value: number | null): string {
   return `Ricorda · ${temporalCreateDurationLabel(value)} prima`;
 }
 
-export function TemporalReminderControl({ value, onChange, disabled = false,
-  unavailableReason = 'Il promemoria richiede un orario preciso.' }: Readonly<{
+export function TemporalReminderControl({
+  value,
+  onChange,
+  disabled = false,
+  unavailableReason = 'Il promemoria richiede un orario preciso.',
+}: Readonly<{
   value: number | null;
   onChange: (value: number | null) => void;
   disabled?: boolean;
@@ -37,12 +41,19 @@ export function TemporalReminderControl({ value, onChange, disabled = false,
   return (
     <label
       className={`temporal-create-quick-reminder${disabled ? ' is-disabled' : ''}`}
-      title={disabled ? unavailableReason : 'Promemoria relativo all’inizio dello Schedule.'}
+      title={
+        disabled
+          ? unavailableReason
+          : 'Promemoria relativo all’inizio dello Schedule.'
+      }
     >
       <span className="temporal-create-quick-reminder__icon" aria-hidden="true">
         <BellIcon />
       </span>
-      <span className="temporal-create-quick-reminder__divider" aria-hidden="true" />
+      <span
+        className="temporal-create-quick-reminder__divider"
+        aria-hidden="true"
+      />
       <select
         aria-label="Ricorda"
         disabled={disabled}
@@ -53,28 +64,40 @@ export function TemporalReminderControl({ value, onChange, disabled = false,
         }}
       >
         {disabled ? <option value="">Ricorda · Non disponibile</option> : null}
-        {!disabled && value !== null && !TEMPORAL_CREATE_REMINDER_OPTIONS.includes(value) ?
-          <option value={value}>{reminderLabel(value)}</option> : null}
-        {!disabled ? TEMPORAL_CREATE_REMINDER_OPTIONS.map((option) => (
-          <option key={option ?? 'none'} value={option ?? ''}>
-            {reminderLabel(option)}
-          </option>
-        )) : null}
+        {!disabled &&
+        value !== null &&
+        !TEMPORAL_CREATE_REMINDER_OPTIONS.includes(value) ? (
+          <option value={value}>{reminderLabel(value)}</option>
+        ) : null}
+        {!disabled
+          ? TEMPORAL_CREATE_REMINDER_OPTIONS.map((option) => (
+              <option key={option ?? 'none'} value={option ?? ''}>
+                {reminderLabel(option)}
+              </option>
+            ))
+          : null}
       </select>
     </label>
   );
 }
 
 export function TemporalCreateQuickReminder({ fields, onPatch }: Props) {
-  const eligible = fields.timeSemantics === 'timed' && fields.timeMode === 'zoned';
-  return <TemporalReminderControl
-    value={eligible ? fields.confirmation.reminderLeadMinutes : null}
-    disabled={!eligible}
-    unavailableReason={fields.timeSemantics !== 'timed'
-      ? 'Il promemoria richiede un orario preciso.'
-      : 'Il promemoria richiede un fuso orario specifico.'}
-    onChange={(reminderLeadMinutes) => onPatch({
-      confirmation: { ...fields.confirmation, reminderLeadMinutes },
-    })}
-  />;
+  const eligible =
+    fields.timeSemantics === 'timed' && fields.timeMode === 'zoned';
+  return (
+    <TemporalReminderControl
+      value={eligible ? fields.confirmation.reminderLeadMinutes : null}
+      disabled={!eligible}
+      unavailableReason={
+        fields.timeSemantics !== 'timed'
+          ? 'Il promemoria richiede un orario preciso.'
+          : 'Il promemoria richiede un fuso orario specifico.'
+      }
+      onChange={(reminderLeadMinutes) =>
+        onPatch({
+          confirmation: { ...fields.confirmation, reminderLeadMinutes },
+        })
+      }
+    />
+  );
 }

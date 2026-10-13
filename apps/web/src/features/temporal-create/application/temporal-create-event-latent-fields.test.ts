@@ -69,7 +69,9 @@ describe('B03 Event create latent-field semantics', () => {
     });
     const scheduleDataSource: TemporalScheduleDataSource = Object.freeze({
       reviseSchedule: vi.fn(() => Promise.reject(new Error('not expected'))),
-      unscheduleSchedule: vi.fn(() => Promise.reject(new Error('not expected'))),
+      unscheduleSchedule: vi.fn(() =>
+        Promise.reject(new Error('not expected')),
+      ),
       undoScheduleUnschedule: vi.fn(() =>
         Promise.reject(new Error('not expected')),
       ),

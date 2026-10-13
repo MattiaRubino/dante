@@ -432,7 +432,9 @@ async def resolve_authoring_life_area(
     )
 
 
-def _activity_from_row(row: RowMapping, *, area: ResolvedAuthoringLifeArea | None) -> AuthoredItemView:
+def _activity_from_row(
+    row: RowMapping, *, area: ResolvedAuthoringLifeArea | None
+) -> AuthoredItemView:
     return AuthoredItemView(
         subject_kind="activity",
         subject_native_ref=NativeRef(UUID(str(row["activity_ref"]))),
@@ -725,8 +727,10 @@ class TemporalAuthoringApplication:
                     "child_guard_mode": child_guard_mode,
                     "minimum_session_duration_microseconds": minimum_session_duration_microseconds,
                     "root_placement": None if placement is None else _placement_payload(placement),
-                    "planned_slices": [None if value is None else _placement_payload(value)
-                                       for value in planned_slices],
+                    "planned_slices": [
+                        None if value is None else _placement_payload(value)
+                        for value in planned_slices
+                    ],
                     **(
                         {
                             "activity_intervals": [
@@ -960,17 +964,27 @@ class TemporalAuthoringApplication:
                     interval_results.append(accepted)
                 for index, planned in enumerate(planned_slices):
                     if planned is None:
-                        row = (await session.execute(text("""
+                        row = (
+                            (
+                                await session.execute(
+                                    text("""
                             SELECT * FROM dante.establish_self_unplaced_planned_schedule(
                                 :actor,:activity,:schedule,:position,:display_name)
-                        """), {
-                            "actor": self_person_ref,
-                            "activity": item.subject_native_ref,
-                            "schedule": new_scoped_record_ref(),
-                            "position": index + 1,
-                            "display_name": planned_slice_names[index].strip() or None
-                            if planned_slice_names else None,
-                        })).mappings().one()
+                        """),
+                                    {
+                                        "actor": self_person_ref,
+                                        "activity": item.subject_native_ref,
+                                        "schedule": new_scoped_record_ref(),
+                                        "position": index + 1,
+                                        "display_name": planned_slice_names[index].strip() or None
+                                        if planned_slice_names
+                                        else None,
+                                    },
+                                )
+                            )
+                            .mappings()
+                            .one()
+                        )
                         if bool(row["replayed"]) is not replayed:
                             raise TemporalAuthoringOperationIdReuseError(
                                 "Create and unplaced planned Schedule replay state diverged."

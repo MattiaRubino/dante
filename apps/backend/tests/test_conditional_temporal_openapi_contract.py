@@ -16,14 +16,22 @@ def test_b11_b_conditional_operations_are_public_and_bounded() -> None:
     document = openapi_document()
     paths = cast(dict[str, Any], document["paths"])
     expected = {
-        ("/api/v1/temporal/conditions/actual-realization", "post"):
-            "temporal_create_actual_realization_condition",
-        ("/api/v1/temporal/conditions/actual-realization", "get"):
-            "temporal_find_actual_realization_condition",
-        ("/api/v1/temporal/conditions/actual-realization/{condition_ref}", "get"):
-            "temporal_get_actual_realization_condition",
-        ("/api/v1/temporal/conditions/actual-realization/{condition_ref}/evaluations", "post"):
-            "temporal_evaluate_actual_realization_condition",
+        (
+            "/api/v1/temporal/conditions/actual-realization",
+            "post",
+        ): "temporal_create_actual_realization_condition",
+        (
+            "/api/v1/temporal/conditions/actual-realization",
+            "get",
+        ): "temporal_find_actual_realization_condition",
+        (
+            "/api/v1/temporal/conditions/actual-realization/{condition_ref}",
+            "get",
+        ): "temporal_get_actual_realization_condition",
+        (
+            "/api/v1/temporal/conditions/actual-realization/{condition_ref}/evaluations",
+            "post",
+        ): "temporal_evaluate_actual_realization_condition",
     }
     for (path, method), operation_id in expected.items():
         operation = cast(dict[str, Any], cast(dict[str, Any], paths[path])[method])
@@ -48,26 +56,25 @@ def test_b11_b_write_contract_freezes_creation_replay_and_problem_details() -> N
     for path, method, success_schema in cases:
         operation = cast(dict[str, Any], cast(dict[str, Any], paths[path])[method])
         responses = cast(dict[str, Any], operation["responses"])
-        assert set(responses) == {
-            "200", "201", "400", "401", "403", "404", "409", "422", "500"
-        }
-        assert _schema_ref(
-            cast(dict[str, Any], responses["200"]), "application/json"
-        ) == success_schema
-        assert _schema_ref(
-            cast(dict[str, Any], responses["201"]), "application/json"
-        ) == success_schema
+        assert set(responses) == {"200", "201", "400", "401", "403", "404", "409", "422", "500"}
+        assert (
+            _schema_ref(cast(dict[str, Any], responses["200"]), "application/json")
+            == success_schema
+        )
+        assert (
+            _schema_ref(cast(dict[str, Any], responses["201"]), "application/json")
+            == success_schema
+        )
         for status in ("400", "401", "403", "404", "409", "422", "500"):
-            assert _schema_ref(
-                cast(dict[str, Any], responses[status]), "application/problem+json"
-            ) == "#/components/schemas/ProblemDetails"
+            assert (
+                _schema_ref(cast(dict[str, Any], responses[status]), "application/problem+json")
+                == "#/components/schemas/ProblemDetails"
+            )
 
 
 def test_b11_b_public_schema_never_accepts_caller_supplied_condition_truth() -> None:
     document = openapi_document()
-    schemas = cast(
-        dict[str, Any], cast(dict[str, Any], document["components"])["schemas"]
-    )
+    schemas = cast(dict[str, Any], cast(dict[str, Any], document["components"])["schemas"])
 
     condition_request = cast(dict[str, Any], schemas["ActualRealizationConditionRequest"])
     condition_properties = cast(dict[str, Any], condition_request["properties"])

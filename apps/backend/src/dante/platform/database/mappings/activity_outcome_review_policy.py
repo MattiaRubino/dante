@@ -22,11 +22,13 @@ class ActivityOutcomeReviewPolicyRow(Base):
     __tablename__ = "activity_outcome_review_policy"
     __table_args__ = (
         ForeignKeyConstraint(
-            ["activity_ref"], ["dante.activity_intention.activity_ref"],
+            ["activity_ref"],
+            ["dante.activity_intention.activity_ref"],
             name="fk_activity_outcome_review_policy_activity",
         ),
         ForeignKeyConstraint(
-            ["self_person_ref"], ["dante.person.person_ref"],
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
             name="fk_activity_outcome_review_policy_person",
         ),
         Index("ix_activity_outcome_review_policy_self", "self_person_ref"),
@@ -40,16 +42,24 @@ class ActivityOutcomeReviewPolicyRow(Base):
 class ActivityOutcomeReviewPolicyStateRow(Base):
     __tablename__ = "activity_outcome_review_policy_state"
     __table_args__ = (
-        CheckConstraint("uuid_extract_version(state_ref) IS NOT DISTINCT FROM 7", name=conv("ck_activity_outcome_review_policy_state_ck_activity_out_3e17")),
         CheckConstraint(
-            "mode_code IN ('manual','review_on_end','auto_confirm_outcome')", name=conv("ck_activity_outcome_review_policy_state_ck_activity_out_0ebd")
+            "uuid_extract_version(state_ref) IS NOT DISTINCT FROM 7",
+            name=conv("ck_activity_outcome_review_policy_state_ck_activity_out_3e17"),
         ),
-        CheckConstraint("isfinite(recorded_at)", name=conv("ck_activity_outcome_review_policy_state_ck_activity_out_44ef")),
+        CheckConstraint(
+            "mode_code IN ('manual','review_on_end','auto_confirm_outcome')",
+            name=conv("ck_activity_outcome_review_policy_state_ck_activity_out_0ebd"),
+        ),
+        CheckConstraint(
+            "isfinite(recorded_at)",
+            name=conv("ck_activity_outcome_review_policy_state_ck_activity_out_44ef"),
+        ),
         UniqueConstraint(
             "activity_ref", "state_ref", name="uq_activity_outcome_review_policy_state_owner"
         ),
         ForeignKeyConstraint(
-            ["activity_ref"], ["dante.activity_outcome_review_policy.activity_ref"],
+            ["activity_ref"],
+            ["dante.activity_outcome_review_policy.activity_ref"],
             name="fk_activity_outcome_review_policy_state_owner",
         ),
         Index("ix_activity_outcome_review_policy_state_owner", "activity_ref"),
@@ -88,9 +98,7 @@ class ActivityOutcomeReviewPolicyCurrentHistoryRow(Base):
 
     activity_ref: Mapped[NativeRef] = mapped_column(primary_key=True)
     state_ref: Mapped[NativeRef] = mapped_column(nullable=False)
-    current_from_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), primary_key=True
-    )
+    current_from_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), primary_key=True)
     current_until_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
@@ -101,12 +109,14 @@ class ActivityOutcomeReviewPolicyOperationRow(Base):
             "operation_id=btrim(operation_id) AND char_length(operation_id) BETWEEN 1 AND 200",
             name=conv("ck_activity_outcome_review_policy_operation_ck_activity_cf22"),
         ),
-        CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name=conv("ck_activity_outcome_review_policy_operation_ck_activity_4474")),
-        UniqueConstraint(
-            "state_ref", name="uq_activity_outcome_review_policy_operation_state"
+        CheckConstraint(
+            "intent_fingerprint ~ '^[0-9a-f]{64}$'",
+            name=conv("ck_activity_outcome_review_policy_operation_ck_activity_4474"),
         ),
+        UniqueConstraint("state_ref", name="uq_activity_outcome_review_policy_operation_state"),
         ForeignKeyConstraint(
-            ["self_person_ref"], ["dante.person.person_ref"],
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
             name="fk_activity_outcome_review_policy_operation_person",
         ),
         ForeignKeyConstraint(

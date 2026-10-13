@@ -20,10 +20,7 @@ export type TemporalOccurrenceScheduleEstablishResult = Readonly<{
 }>;
 
 export type TemporalOccurrenceScheduleRemoteFailureKind =
-  | 'transport'
-  | 'http'
-  | 'protocol'
-  | 'authentication';
+  'transport' | 'http' | 'protocol' | 'authentication';
 
 export class TemporalOccurrenceScheduleRemoteError extends Error {
   constructor(
@@ -190,7 +187,9 @@ export function createRemoteTemporalOccurrenceScheduleDataSource(
       } catch (error) {
         throw new TemporalOccurrenceScheduleRemoteError(
           'transport',
-          error instanceof Error ? error.message : 'Occurrence Schedule unavailable.',
+          error instanceof Error
+            ? error.message
+            : 'Occurrence Schedule unavailable.',
         );
       }
 

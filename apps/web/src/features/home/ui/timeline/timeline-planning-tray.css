@@ -8,7 +8,9 @@
   flex: none;
 }
 
-.dante-timeline-actions .timeline-draft-vault__anchor > .timeline-planning-trigger {
+.dante-timeline-actions
+  .timeline-draft-vault__anchor
+  > .timeline-planning-trigger {
   display: grid;
   width: 34px;
   min-width: 34px;
@@ -22,8 +24,12 @@
   cursor: pointer;
 }
 
-.dante-timeline-actions .timeline-draft-vault__anchor > .timeline-planning-trigger:hover,
-.dante-timeline-actions .timeline-draft-vault__anchor.is-open > .timeline-planning-trigger {
+.dante-timeline-actions
+  .timeline-draft-vault__anchor
+  > .timeline-planning-trigger:hover,
+.dante-timeline-actions
+  .timeline-draft-vault__anchor.is-open
+  > .timeline-planning-trigger {
   color: #e6ecf5;
   background: rgba(255, 255, 255, 0.035);
 }

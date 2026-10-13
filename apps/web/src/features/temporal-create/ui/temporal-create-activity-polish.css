@@ -6,16 +6,14 @@
    filled. Keep dates and times at deliberate product widths and let the final
    grid track absorb unused modal space on the right. */
 .temporal-create-composer.is-advanced .temporal-create-u2-when {
-  grid-template-columns:
-    158px 150px 20px 150px 158px minmax(0, 1fr);
+  grid-template-columns: 158px 150px 20px 150px 158px minmax(0, 1fr);
   column-gap: 8px;
   row-gap: 6px;
 }
 
 .temporal-create-composer.is-advanced
   .temporal-create-activity-interval__fields {
-  grid-template-columns:
-    158px 150px 20px 150px 158px 28px minmax(0, 1fr);
+  grid-template-columns: 158px 150px 20px 150px 158px 28px minmax(0, 1fr);
   gap: 8px;
 }
 

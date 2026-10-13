@@ -144,10 +144,14 @@ _SCHEDULE_RETIREMENT = r"""    IF EXISTS (SELECT 1 FROM dante.material_state_ret
 
 
 def _function_definition(signature: str) -> str:
-    definition = op.get_bind().execute(
-        sa.text("SELECT pg_get_functiondef(to_regprocedure(:signature))"),
-        {"signature": signature},
-    ).scalar_one_or_none()
+    definition = (
+        op.get_bind()
+        .execute(
+            sa.text("SELECT pg_get_functiondef(to_regprocedure(:signature))"),
+            {"signature": signature},
+        )
+        .scalar_one_or_none()
+    )
     if definition is None:
         raise RuntimeError(f"B02 function is missing: {signature}")
     return str(definition)
@@ -166,21 +170,13 @@ def _with_strict_disambiguation(signature: str, definition: str) -> str:
         raise RuntimeError(f"B02 function body marker not found: {signature}")
 
     rewrites = 0
-    definition, count = _UPDATE_UNQUALIFIED_RE.subn(
-        _UPDATE_QUALIFIED_SQL, definition
-    )
+    definition, count = _UPDATE_UNQUALIFIED_RE.subn(_UPDATE_QUALIFIED_SQL, definition)
     rewrites += count
-    definition, count = _UNDO_OPEN_UNQUALIFIED_RE.subn(
-        _UNDO_OPEN_QUALIFIED_SQL, definition
-    )
+    definition, count = _UNDO_OPEN_UNQUALIFIED_RE.subn(_UNDO_OPEN_QUALIFIED_SQL, definition)
     rewrites += count
-    definition, count = _UNDO_BASIS_UNQUALIFIED_RE.subn(
-        _UNDO_BASIS_QUALIFIED_SQL, definition
-    )
+    definition, count = _UNDO_BASIS_UNQUALIFIED_RE.subn(_UNDO_BASIS_QUALIFIED_SQL, definition)
     rewrites += count
-    definition, count = _UNDO_LATER_UNQUALIFIED_RE.subn(
-        _UNDO_LATER_QUALIFIED_SQL, definition
-    )
+    definition, count = _UNDO_LATER_UNQUALIFIED_RE.subn(_UNDO_LATER_QUALIFIED_SQL, definition)
     rewrites += count
 
     expected = _EXPECTED_REWRITES[signature]
@@ -201,21 +197,13 @@ def _without_strict_disambiguation(signature: str, definition: str) -> str:
         )
 
     rewrites = 0
-    definition, count = _UPDATE_QUALIFIED_RE.subn(
-        _UPDATE_UNQUALIFIED_SQL, definition
-    )
+    definition, count = _UPDATE_QUALIFIED_RE.subn(_UPDATE_UNQUALIFIED_SQL, definition)
     rewrites += count
-    definition, count = _UNDO_OPEN_QUALIFIED_RE.subn(
-        _UNDO_OPEN_UNQUALIFIED_SQL, definition
-    )
+    definition, count = _UNDO_OPEN_QUALIFIED_RE.subn(_UNDO_OPEN_UNQUALIFIED_SQL, definition)
     rewrites += count
-    definition, count = _UNDO_BASIS_QUALIFIED_RE.subn(
-        _UNDO_BASIS_UNQUALIFIED_SQL, definition
-    )
+    definition, count = _UNDO_BASIS_QUALIFIED_RE.subn(_UNDO_BASIS_UNQUALIFIED_SQL, definition)
     rewrites += count
-    definition, count = _UNDO_LATER_QUALIFIED_RE.subn(
-        _UNDO_LATER_UNQUALIFIED_SQL, definition
-    )
+    definition, count = _UNDO_LATER_QUALIFIED_RE.subn(_UNDO_LATER_UNQUALIFIED_SQL, definition)
     rewrites += count
 
     expected = _EXPECTED_REWRITES[signature]
@@ -252,7 +240,5 @@ def upgrade() -> None:
 def downgrade() -> None:
     """Restore the immediately preceding function definitions and Schedule invariants."""
     for signature in _EXPECTED_REWRITES:
-        _install(
-            _without_strict_disambiguation(signature, _function_definition(signature))
-        )
+        _install(_without_strict_disambiguation(signature, _function_definition(signature)))
     _restore_schedule_retirement_guard()

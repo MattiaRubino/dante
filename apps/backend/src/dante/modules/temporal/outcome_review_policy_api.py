@@ -92,7 +92,9 @@ def _problem(exc: DBAPIError) -> ProblemError:
     operation_id="temporal_get_activity_outcome_review_policy",
 )
 async def get_outcome_review_policy(
-    activity_ref: UUID, context: Context, request: Request,
+    activity_ref: UUID,
+    context: Context,
+    request: Request,
 ) -> OutcomeReviewPolicyResponse:
     try:
         async with (
@@ -100,14 +102,18 @@ async def get_outcome_review_policy(
             session.begin(),
         ):
             row = (
-                await session.execute(
-                    text(
-                        "SELECT * FROM dante.get_self_activity_outcome_review_policy("
-                        ":actor,:activity)"
-                    ),
-                    {"actor": context.self_person_ref, "activity": activity_ref},
+                (
+                    await session.execute(
+                        text(
+                            "SELECT * FROM dante.get_self_activity_outcome_review_policy("
+                            ":actor,:activity)"
+                        ),
+                        {"actor": context.self_person_ref, "activity": activity_ref},
+                    )
                 )
-            ).mappings().one_or_none()
+                .mappings()
+                .one_or_none()
+            )
     except SQLAlchemyError as exc:
         raise _unavailable() from exc
     if row is None:
@@ -155,23 +161,27 @@ async def set_outcome_review_policy(
             session.begin(),
         ):
             row = (
-                await session.execute(
-                    text("""
+                (
+                    await session.execute(
+                        text("""
                         SELECT * FROM dante.set_self_activity_outcome_review_policy(
                             :actor,:operation,:fingerprint,:activity,:state,:mode,:expected
                         )
                     """),
-                    {
-                        "actor": context.self_person_ref,
-                        "operation": payload.operation_id,
-                        "fingerprint": fingerprint,
-                        "activity": activity_ref,
-                        "state": uuid7(),
-                        "mode": payload.mode_code,
-                        "expected": payload.expected_state_ref,
-                    },
+                        {
+                            "actor": context.self_person_ref,
+                            "operation": payload.operation_id,
+                            "fingerprint": fingerprint,
+                            "activity": activity_ref,
+                            "state": uuid7(),
+                            "mode": payload.mode_code,
+                            "expected": payload.expected_state_ref,
+                        },
+                    )
                 )
-            ).mappings().one()
+                .mappings()
+                .one()
+            )
     except DBAPIError as exc:
         raise _problem(exc) from exc
     except SQLAlchemyError as exc:

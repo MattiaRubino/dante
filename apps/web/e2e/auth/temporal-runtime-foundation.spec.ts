@@ -3,7 +3,13 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { Temporal } from '@dante/time';
-import { expect, test, type Page, type Response, type TestInfo } from '@playwright/test';
+import {
+  expect,
+  test,
+  type Page,
+  type Response,
+  type TestInfo,
+} from '@playwright/test';
 
 const password = 'correct horse battery staple';
 const repoRoot = resolve(
@@ -16,8 +22,8 @@ const repoRoot = resolve(
 // suites; otherwise the "empty Home" read sees another suite's real events.
 const projectEmailBase: Readonly<Record<string, number>> = {
   chromium: 35, // 36..38
-  firefox: 45,  // 46..48
-  webkit: 48,   // 49..51
+  firefox: 45, // 46..48
+  webkit: 48, // 49..51
 };
 
 function emailFor(testInfo: TestInfo, slot: 1 | 2 | 3): string {
@@ -158,7 +164,9 @@ test.describe('Timeline B00 real full-stack spine', () => {
         .add({ days: 1 })
         .toString();
       expect(
-        (await openHomeAndWaitForTemporalRead(page, `/home?date=${eventDate}`)).status(),
+        (
+          await openHomeAndWaitForTemporalRead(page, `/home?date=${eventDate}`)
+        ).status(),
       ).toBe(200);
       await expect(
         page.locator('[data-temporal-read-state="ready"]'),
@@ -194,7 +202,9 @@ test.describe('Timeline B00 real full-stack spine', () => {
           response.request().method() === 'GET',
         { timeout: 20_000 },
       );
-      await dialog.getByRole('button', { name: 'Aggiungi', exact: true }).click();
+      await dialog
+        .getByRole('button', { name: 'Aggiungi', exact: true })
+        .click();
       const created = await createResponsePromise;
       expect(created.status()).toBe(201);
       const data = (await created.json()) as {
@@ -204,7 +214,9 @@ test.describe('Timeline B00 real full-stack spine', () => {
       expect(data.event_ref).toMatch(/^[a-f0-9-]{36}$/i);
       expect(data.schedule).not.toBeNull();
       if (!data.schedule) {
-        throw new Error('Timed Event authoring returned no canonical Schedule.');
+        throw new Error(
+          'Timed Event authoring returned no canonical Schedule.',
+        );
       }
       expect(data.schedule.schedule_ref).toMatch(/^[a-f0-9-]{36}$/i);
       expect((await timelineRefresh).status()).toBe(200);
@@ -223,9 +235,11 @@ test.describe('Timeline B00 real full-stack spine', () => {
       const payload = (await canonicalReadback.json()) as {
         items?: Array<{ schedule_ref?: string }>;
       };
-      expect(payload.items?.some(
-        (item) => item.schedule_ref === data.schedule?.schedule_ref,
-      )).toBe(true);
+      expect(
+        payload.items?.some(
+          (item) => item.schedule_ref === data.schedule?.schedule_ref,
+        ),
+      ).toBe(true);
       await expect(
         page.locator(`[data-timeline-event="${data.schedule.schedule_ref}"]`),
       ).toHaveCount(1);
@@ -295,10 +309,9 @@ test.describe('Timeline B00 real full-stack spine', () => {
         // Navigate inside the mounted, signed-in SPA so Timeline must
         // checkpoint a different window without repeating sign-in.
         await page.locator('.dante-timeline-week-step').last().click();
-        await expect(errorStatus).toContainText(
-          'Timeline non disponibile',
-          { timeout: 15_000 },
-        );
+        await expect(errorStatus).toContainText('Timeline non disponibile', {
+          timeout: 15_000,
+        });
       } catch (cause) {
         throw new Error(
           'PostgreSQL outage did not surface the Timeline error after in-app navigation. Browser API responses: ' +

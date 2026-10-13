@@ -19,15 +19,20 @@ test('Create stays in the desktop Context Rail, keeps Timeline scroll available,
   const rail = page.locator('[data-home-region="context-rail"]');
   const host = rail.locator('[data-home-context-create-host]');
   await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'base');
-  expect(await host.evaluate((element) =>
-    element.contains(document.querySelector('[data-temporal-create="composer"]')),
-  )).toBe(true);
+  expect(
+    await host.evaluate((element) =>
+      element.contains(
+        document.querySelector('[data-temporal-create="composer"]'),
+      ),
+    ),
+  ).toBe(true);
 
   const close = dialog.locator('.dante-temporal-panel-close');
   await expect(close).toBeVisible();
   await expect(close).toHaveAttribute('aria-label', /.+/);
-  await expect(dialog.locator('.temporal-create-composer__header button'))
-    .toHaveCount(2);
+  await expect(
+    dialog.locator('.temporal-create-composer__header button'),
+  ).toHaveCount(2);
 
   const railBox = await rail.boundingBox();
   const quickBox = await dialog.boundingBox();
@@ -54,14 +59,18 @@ test('Create stays in the desktop Context Rail, keeps Timeline scroll available,
   expect(backdropStyle.pointerEvents).toBe('none');
   expect(backdropStyle.backgroundColor).toBe('rgba(0, 0, 0, 0)');
 
-  const pin = dialog.getByRole('button', { name: 'Mantieni aperto il pannello Crea' });
+  const pin = dialog.getByRole('button', {
+    name: 'Mantieni aperto il pannello Crea',
+  });
   await pin.click();
   await expect(
     dialog.getByRole('button', { name: 'Sblocca pannello Crea' }),
   ).toHaveAttribute('aria-pressed', 'true');
 
   const timeline = page.locator('.timeline-grid');
-  await timeline.evaluate((element) => { element.scrollTop = 0; });
+  await timeline.evaluate((element) => {
+    element.scrollTop = 0;
+  });
   const timelineBox = await timeline.boundingBox();
   if (!timelineBox) {
     throw new Error('Expected visible Timeline');
@@ -71,17 +80,22 @@ test('Create stays in the desktop Context Rail, keeps Timeline scroll available,
     timelineBox.y + Math.min(180, timelineBox.height / 2),
   );
   await page.mouse.wheel(0, 520);
-  await expect.poll(() =>
-    timeline.evaluate((element) => element.scrollTop),
-  ).toBeGreaterThan(0);
+  await expect
+    .poll(() => timeline.evaluate((element) => element.scrollTop))
+    .toBeGreaterThan(0);
   await expect(dialog).toBeVisible();
 
   await dialog.getByRole('button', { name: 'Sblocca pannello Crea' }).click();
   const advanced = dialog.getByRole('button', { name: 'Opzioni avanzate' });
   await expect(advanced).toHaveAttribute('aria-expanded', 'false');
   await advanced.click();
-  await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'advanced');
-  await expect(dialog.locator('[data-create-advanced="activity"]')).toBeVisible();
+  await expect(dialog).toHaveAttribute(
+    'data-temporal-create-surface',
+    'advanced',
+  );
+  await expect(
+    dialog.locator('[data-create-advanced="activity"]'),
+  ).toBeVisible();
 
   const expanded = await dialog.boundingBox();
   if (!expanded) {
@@ -100,7 +114,9 @@ test('Create stays in the desktop Context Rail, keeps Timeline scroll available,
   await expect(close).toBeInViewport();
   await expect(dialog.locator('.temporal-create-actions')).toBeInViewport();
 
-  const back = dialog.getByRole('button', { name: 'Nascondi opzioni avanzate' });
+  const back = dialog.getByRole('button', {
+    name: 'Nascondi opzioni avanzate',
+  });
   await expect(back).toHaveAttribute('aria-expanded', 'true');
   await back.click();
   await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'base');

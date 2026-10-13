@@ -80,9 +80,7 @@ def _activate_retry_safe_replay() -> None:
         raise RuntimeError(
             "B04-A mutation replay hardening expected the pre-A5 replay fragment exactly once"
         )
-    connection.exec_driver_sql(
-        definition.replace(_PRE_A5_REPLAY, _A5_REPLAY).replace("%", "%%")
-    )
+    connection.exec_driver_sql(definition.replace(_PRE_A5_REPLAY, _A5_REPLAY).replace("%", "%%"))
     _sql(f"ALTER FUNCTION {_MUTATE_SIGNATURE} OWNER TO {_OWNER}")
     _sql(
         f"REVOKE ALL PRIVILEGES ON FUNCTION {_MUTATE_SIGNATURE} "

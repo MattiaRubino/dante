@@ -22,10 +22,13 @@ def upgrade() -> None:
     physical_order_check = op.f("ck_activity_schedule_role_ck_activity_schedule_role_order")
     op.drop_constraint(
         physical_order_check,
-        "activity_schedule_role", schema="dante", type_="check",
+        "activity_schedule_role",
+        schema="dante",
+        type_="check",
     )
     op.create_check_constraint(
-        physical_order_check, "activity_schedule_role",
+        physical_order_check,
+        "activity_schedule_role",
         "(role_code='envelope' AND presentation_order=0) OR "
         "(role_code IN ('planned','interval') AND presentation_order BETWEEN 1 AND 2147483647)",
         schema="dante",
@@ -39,7 +42,9 @@ def upgrade() -> None:
     old = "requested_presentation_order BETWEEN 1 AND 100"
     if definition.count(old) != 1:
         raise RuntimeError("Activity role capacity source differs from the accepted revision")
-    bind.exec_driver_sql(definition.replace(old, "requested_presentation_order BETWEEN 1 AND 2147483647"))
+    bind.exec_driver_sql(
+        definition.replace(old, "requested_presentation_order BETWEEN 1 AND 2147483647")
+    )
 
 
 def downgrade() -> None:

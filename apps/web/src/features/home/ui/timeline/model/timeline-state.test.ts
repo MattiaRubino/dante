@@ -353,7 +353,9 @@ describe('timeline state', () => {
         },
       },
     });
-    expect(eventById(withCanonical, '2026-09-09', 'schedule-absence')).toBeTruthy();
+    expect(
+      eventById(withCanonical, '2026-09-09', 'schedule-absence'),
+    ).toBeTruthy();
     expect(eventById(withCanonical, '2026-08-04', '1')).toBeTruthy();
 
     const withoutCanonical = timelineReducer(withCanonical, {

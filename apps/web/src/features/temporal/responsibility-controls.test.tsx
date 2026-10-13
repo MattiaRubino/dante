@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ResponsibilityControls } from './responsibility-controls';
@@ -137,9 +143,11 @@ describe('responsibility controls', () => {
 
     fireEvent.click(screen.getByText('Assegna a me'));
     await waitFor(() => {
-      expect(screen.getByText(/Responsibility holder changed since it was read/).closest('[role="alert"]')?.textContent).toContain(
-        'Responsibility holder changed since it was read.',
-      );
+      expect(
+        screen
+          .getByText(/Responsibility holder changed since it was read/)
+          .closest('[role="alert"]')?.textContent,
+      ).toContain('Responsibility holder changed since it was read.');
     });
     expect(screen.getByText('Nessun responsabile')).toBeTruthy();
     vi.unstubAllGlobals();
@@ -165,7 +173,9 @@ describe('responsibility controls', () => {
 
     render(<ResponsibilityControls kind="activity" subjectRef={EVENT} />);
     await screen.findByText('Nessun responsabile');
-    expect(screen.queryByText('Partecipazione attesa: non indicata')).toBeNull();
+    expect(
+      screen.queryByText('Partecipazione attesa: non indicata'),
+    ).toBeNull();
     expect(screen.queryByText('Obbligatoria')).toBeNull();
     vi.unstubAllGlobals();
   });
@@ -180,10 +190,14 @@ describe('responsibility controls', () => {
         return Response.json({ authenticated: true, csrf_token: 'csrf' });
       }
       if (url.endsWith('/person-referents')) {
-        return Response.json([{
-          person_ref: OTHER, display_label: 'Anna',
-          revision: 1, replayed: false,
-        }]);
+        return Response.json([
+          {
+            person_ref: OTHER,
+            display_label: 'Anna',
+            revision: 1,
+            replayed: false,
+          },
+        ]);
       }
       if (url.endsWith('/expected-participation')) {
         if (init?.method === 'PUT') {
@@ -196,11 +210,13 @@ describe('responsibility controls', () => {
             ? participation(requirement)
             : requirement === null
               ? []
-              : [{
-                  ...participation(requirement),
-                  participant_person_ref: OTHER,
-                  participant_is_self: false,
-                }],
+              : [
+                  {
+                    ...participation(requirement),
+                    participant_person_ref: OTHER,
+                    participant_is_self: false,
+                  },
+                ],
         );
       }
       if (init?.method === 'PUT') {
@@ -216,20 +232,23 @@ describe('responsibility controls', () => {
     vi.stubGlobal('fetch', fetchFn);
     render(<ResponsibilityControls kind="event" subjectRef={EVENT} />);
     await screen.findByRole('option', { name: 'Anna' });
-    fireEvent.change(screen.getByRole('combobox', {
-      name: 'Persona per responsabilità o partecipazione',
-    }), { target: { value: OTHER } });
+    fireEvent.change(
+      screen.getByRole('combobox', {
+        name: 'Persona per responsabilità o partecipazione',
+      }),
+      { target: { value: OTHER } },
+    );
     fireEvent.click(screen.getByText('Assegna a Anna'));
     await screen.findByText('Responsabile: Anna');
     fireEvent.click(screen.getByText('Obbligatoria'));
     await waitFor(() => expect(commands).toHaveLength(2));
     expect(commands[0]).toMatchObject({ holder: OTHER, expected_holder: null });
     expect(commands[1]).toMatchObject({
-      participant: OTHER, requirement_code: 'required',
+      participant: OTHER,
+      requirement_code: 'required',
       expected_requirement_code: null,
     });
   });
-
 
   it('persists a created Person through rename, role removal and participation removal', async () => {
     let created = false;
@@ -260,7 +279,10 @@ describe('responsibility controls', () => {
         }
         return Response.json(created ? [person()] : []);
       }
-      if (url.endsWith('/person-referents/' + PERSON) && init?.method === 'PATCH') {
+      if (
+        url.endsWith('/person-referents/' + PERSON) &&
+        init?.method === 'PATCH'
+      ) {
         const body = JSON.parse(String(init.body)) as Record<string, unknown>;
         commands.push(body);
         displayLabel = String(body.display_label);
@@ -277,10 +299,16 @@ describe('responsibility controls', () => {
             participant_is_self: false,
           });
         }
-        return Response.json(requirement === null ? [] : [{
-          ...participation(requirement),
-          participant_is_self: false,
-        }]);
+        return Response.json(
+          requirement === null
+            ? []
+            : [
+                {
+                  ...participation(requirement),
+                  participant_is_self: false,
+                },
+              ],
+        );
       }
       if (url.endsWith('/responsibility')) {
         if (init?.method === 'PUT') {
@@ -288,7 +316,10 @@ describe('responsibility controls', () => {
           commands.push(body);
           holder = body.holder as string | null;
         }
-        return Response.json({ ...responsibility(holder), responsible_is_self: false });
+        return Response.json({
+          ...responsibility(holder),
+          responsible_is_self: false,
+        });
       }
       throw new Error('Unexpected request: ' + url);
     });
@@ -296,9 +327,12 @@ describe('responsibility controls', () => {
 
     render(<ResponsibilityControls kind="event" subjectRef={EVENT} />);
     await screen.findByText('Nessun responsabile');
-    fireEvent.change(screen.getByRole('textbox', { name: 'Nome locale della persona' }), {
-      target: { value: 'Anna' },
-    });
+    fireEvent.change(
+      screen.getByRole('textbox', { name: 'Nome locale della persona' }),
+      {
+        target: { value: 'Anna' },
+      },
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Aggiungi persona' }));
     await screen.findByRole('option', { name: 'Anna' });
     expect(screen.getByRole('status').textContent).toContain(
@@ -308,32 +342,49 @@ describe('responsibility controls', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Assegna a Anna' }));
     await screen.findByText('Responsabile: Anna');
 
-    fireEvent.change(screen.getByRole('textbox', { name: 'Nome locale della persona' }), {
-      target: { value: 'Anna Rossi' },
-    });
+    fireEvent.change(
+      screen.getByRole('textbox', { name: 'Nome locale della persona' }),
+      {
+        target: { value: 'Anna Rossi' },
+      },
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Correggi nome' }));
     await screen.findByText('Responsabile: Anna Rossi');
-    fireEvent.click(screen.getByRole('button', { name: 'Rimuovi responsabilità' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Rimuovi responsabilità' }),
+    );
     await screen.findByText('Nessun responsabile');
 
     fireEvent.click(screen.getByRole('button', { name: 'Obbligatoria' }));
     await screen.findByText('Partecipazione attesa: obbligatoria');
-    fireEvent.click(screen.getByRole('button', { name: 'Rimuovi partecipazione' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Rimuovi partecipazione' }),
+    );
     await screen.findByText('Partecipazione attesa: non indicata');
 
     expect(commands).toHaveLength(6);
     expect(commands[0]).toMatchObject({ display_label: 'Anna' });
-    expect(commands[1]).toMatchObject({ holder: PERSON, expected_holder: null });
-    expect(commands[2]).toMatchObject({
-      display_label: 'Anna Rossi', expected_revision: 1,
+    expect(commands[1]).toMatchObject({
+      holder: PERSON,
+      expected_holder: null,
     });
-    expect(commands[3]).toMatchObject({ holder: null, expected_holder: PERSON });
+    expect(commands[2]).toMatchObject({
+      display_label: 'Anna Rossi',
+      expected_revision: 1,
+    });
+    expect(commands[3]).toMatchObject({
+      holder: null,
+      expected_holder: PERSON,
+    });
     expect(commands[4]).toMatchObject({
-      participant: PERSON, requirement_code: 'required', expected_requirement_code: null,
+      participant: PERSON,
+      requirement_code: 'required',
+      expected_requirement_code: null,
     });
     expect(commands[5]).toMatchObject({
-      participant: PERSON, requirement_code: null, expected_requirement_code: 'required',
+      participant: PERSON,
+      requirement_code: null,
+      expected_requirement_code: 'required',
     });
   });
-
 });

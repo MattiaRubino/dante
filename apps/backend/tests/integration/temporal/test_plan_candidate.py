@@ -51,36 +51,52 @@ async def test_b12_b_fixed_duration_hard_rule_dependency_and_no_effect(
         area = ensure_test_life_area(migrated_database, alice)
         start = datetime(2026, 10, 1, 10, tzinfo=UTC)
         before = await activities.create_activity(
-            self_person_ref=alice, life_area_ref=area,
-            operation_id="b12b:before", title="Record",
+            self_person_ref=alice,
+            life_area_ref=area,
+            operation_id="b12b:before",
+            title="Record",
         )
         mix = await activities.create_activity_with_schedule(
-            self_person_ref=alice, life_area_ref=area,
-            operation_id="b12b:mix", title="Mix",
+            self_person_ref=alice,
+            life_area_ref=area,
+            operation_id="b12b:mix",
+            title="Mix",
             placement=AbsoluteIntervalPlacement(start, start + timedelta(hours=1)),
         )
         first, second = new_native_ref(), new_native_ref()
         initial = await plans.create(
-            self_person_ref=alice, operation_id="b12b:plan", title="Album",
+            self_person_ref=alice,
+            operation_id="b12b:plan",
+            title="Album",
         )
         plan = await plans.replace(
-            self_person_ref=alice, plan_ref=initial.plan_ref,
-            expected_state_ref=initial.state_ref, operation_id="b12b:steps", title="Album",
+            self_person_ref=alice,
+            plan_ref=initial.plan_ref,
+            expected_state_ref=initial.state_ref,
+            operation_id="b12b:steps",
+            title="Album",
             steps=(
                 PlanStepInput(first, "Record", before.activity.activity_ref),
                 PlanStepInput(second, "Mix", mix.activity.activity_ref),
             ),
         )
         rule = await constraints.create_constraint(
-            self_person_ref=alice, operation_id="b12b:earliest",
+            self_person_ref=alice,
+            operation_id="b12b:earliest",
             subject_native_ref=mix.activity.activity_ref,
             rule=AbsoluteBoundaryRule(
-                boundary_kind="earliest_start", constrained_facet="schedule.start",
-                strength="hard", boundary_at=start + timedelta(hours=1),
+                boundary_kind="earliest_start",
+                constrained_facet="schedule.start",
+                strength="hard",
+                boundary_at=start + timedelta(hours=1),
             ),
         )
-        args = {"self_person_ref": alice, "plan_ref": plan.plan_ref,
-                "step_ref": second, "expected_state_ref": plan.state_ref}
+        args = {
+            "self_person_ref": alice,
+            "plan_ref": plan.plan_ref,
+            "step_ref": second,
+            "expected_state_ref": plan.state_ref,
+        }
         result = await search.search(**args)
         assert result.basis_status == "supported"
         assert result.solver_status == "OPTIMAL"
@@ -91,7 +107,8 @@ async def test_b12_b_fixed_duration_hard_rule_dependency_and_no_effect(
         assert result.placement is not None
         assert result.placement.material_state_ref == mix.schedule.material_state_ref
         assert [item.starts_at for item in result.candidates] == [
-            start + timedelta(hours=1), start + timedelta(hours=1, minutes=15),
+            start + timedelta(hours=1),
+            start + timedelta(hours=1, minutes=15),
             start + timedelta(hours=1, minutes=30),
         ]
         for candidate in result.candidates:
@@ -100,7 +117,8 @@ async def test_b12_b_fixed_duration_hard_rule_dependency_and_no_effect(
                 subject_native_ref=mix.activity.activity_ref,
                 placement=ConstraintIntervalPlacement(candidate.starts_at, candidate.ends_at),
                 constraints=await constraints.list_constraints_by_subject(
-                    self_person_ref=alice, subject_native_ref=mix.activity.activity_ref,
+                    self_person_ref=alice,
+                    subject_native_ref=mix.activity.activity_ref,
                 ),
             )
             assert assessment.hard_set_status == "feasible"
@@ -108,55 +126,84 @@ async def test_b12_b_fixed_duration_hard_rule_dependency_and_no_effect(
         assert await search.search(**args) == result
         assert await plans.get(self_person_ref=alice, plan_ref=plan.plan_ref) == plan
         unsupported = await search.search(
-            self_person_ref=alice, plan_ref=plan.plan_ref,
-            step_ref=first, expected_state_ref=plan.state_ref,
+            self_person_ref=alice,
+            plan_ref=plan.plan_ref,
+            step_ref=first,
+            expected_state_ref=plan.state_ref,
         )
         assert (unsupported.basis_status, unsupported.candidates) == ("unsupported", ())
 
         await dependencies.write(
-            self_person_ref=alice, plan_ref=plan.plan_ref,
-            operation_id="b12b:dependency", prerequisite_step_ref=first,
-            dependent_step_ref=second, qualifier_code="actual_occurred",
+            self_person_ref=alice,
+            plan_ref=plan.plan_ref,
+            operation_id="b12b:dependency",
+            prerequisite_step_ref=first,
+            dependent_step_ref=second,
+            qualifier_code="actual_occurred",
             disposition_code=None,
         )
         unknown = await search.search(**args)
         assert (unknown.basis_status, unknown.solver_status, unknown.candidates) == (
-            "unknown", None, (),
+            "unknown",
+            None,
+            (),
         )
         previous = await actuals.record(
-            self_person_ref=alice, operation_id="b12b:false",
-            subject_kind="activity", subject_native_ref=before.activity.activity_ref,
-            realization_occurred=False, expected_material_state_ref=None,
+            self_person_ref=alice,
+            operation_id="b12b:false",
+            subject_kind="activity",
+            subject_native_ref=before.activity.activity_ref,
+            realization_occurred=False,
+            expected_material_state_ref=None,
         )
         assert (await search.search(**args)).basis_status == "blocked"
         await actuals.record(
-            self_person_ref=alice, operation_id="b12b:true",
-            subject_kind="activity", subject_native_ref=before.activity.activity_ref,
+            self_person_ref=alice,
+            operation_id="b12b:true",
+            subject_kind="activity",
+            subject_native_ref=before.activity.activity_ref,
             realization_occurred=True,
             expected_material_state_ref=previous.material_state_ref,
         )
         assert (await search.search(**args)).candidates == result.candidates
         await constraints.create_constraint(
-            self_person_ref=alice, operation_id="b12b:minimum-duration",
+            self_person_ref=alice,
+            operation_id="b12b:minimum-duration",
             subject_native_ref=mix.activity.activity_ref,
             rule=ScheduleDurationRule(
-                duration_kind="minimum", strength="hard",
+                duration_kind="minimum",
+                strength="hard",
                 duration_microseconds=2 * 3_600_000_000,
             ),
         )
         infeasible = await search.search(**args)
-        assert (infeasible.basis_status, infeasible.solver_status,
-                infeasible.candidates) == ("supported", "INFEASIBLE", ())
+        assert (infeasible.basis_status, infeasible.solver_status, infeasible.candidates) == (
+            "supported",
+            "INFEASIBLE",
+            (),
+        )
         assert len(infeasible.constraint_states) == 2
         assert await plans.get(self_person_ref=alice, plan_ref=plan.plan_ref) == plan
         with pytest.raises(PlanCandidateNotFoundError):
-            await search.search(self_person_ref=alice, plan_ref=plan.plan_ref,
-                                step_ref=new_native_ref(), expected_state_ref=plan.state_ref)
+            await search.search(
+                self_person_ref=alice,
+                plan_ref=plan.plan_ref,
+                step_ref=new_native_ref(),
+                expected_state_ref=plan.state_ref,
+            )
         with pytest.raises(PlanConflictStateError):
-            await search.search(self_person_ref=alice, plan_ref=plan.plan_ref,
-                                step_ref=second, expected_state_ref=initial.state_ref)
+            await search.search(
+                self_person_ref=alice,
+                plan_ref=plan.plan_ref,
+                step_ref=second,
+                expected_state_ref=initial.state_ref,
+            )
         with pytest.raises(LookupError):
-            await search.search(self_person_ref=bob, plan_ref=plan.plan_ref,
-                                step_ref=second, expected_state_ref=plan.state_ref)
+            await search.search(
+                self_person_ref=bob,
+                plan_ref=plan.plan_ref,
+                step_ref=second,
+                expected_state_ref=plan.state_ref,
+            )
     finally:
         await runtime.engine.dispose()

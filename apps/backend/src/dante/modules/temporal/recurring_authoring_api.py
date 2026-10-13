@@ -20,13 +20,6 @@ from dante.modules.temporal.authoring import (
     TemporalAuthoringPersistenceError,
 )
 from dante.modules.temporal.authoring_api import AuthoringLifeAreaRequest
-from dante.modules.temporal.event_occurrence_policy import (
-    EventOccurrencePolicyApplication,
-    EventOccurrencePolicyConflictError,
-    EventOccurrencePolicyInputError,
-    EventOccurrencePolicyNotFoundError,
-    EventOccurrencePolicyPersistenceError,
-)
 from dante.modules.temporal.event import (
     EventAgendaRevisionConflictError,
     EventInputError,
@@ -34,6 +27,13 @@ from dante.modules.temporal.event import (
     EventNotFoundError,
     EventOperationIdReuseError,
     EventPersistenceError,
+)
+from dante.modules.temporal.event_occurrence_policy import (
+    EventOccurrencePolicyApplication,
+    EventOccurrencePolicyConflictError,
+    EventOccurrencePolicyInputError,
+    EventOccurrencePolicyNotFoundError,
+    EventOccurrencePolicyPersistenceError,
 )
 from dante.modules.temporal.recurrence import (
     RecurrenceInputError,

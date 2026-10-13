@@ -597,10 +597,7 @@ def test_m4_dictionary_matches_live_stage_and_current_scope(
         "event_recurrence_elapsed_state",
         "routine_recurrence_elapsed_state",
     }
-    assert all(
-        entries[name]["structure"]["columns"]
-        for name in relative_anchor_tables
-    )
+    assert all(entries[name]["structure"]["columns"] for name in relative_anchor_tables)
     dictionary_columns = {
         (
             name,

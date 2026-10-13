@@ -7,9 +7,6 @@ from typing import Any
 import psycopg
 import pytest
 from fastapi.testclient import TestClient
-
-from dante.auth.sessions import CSRF_HEADER_NAME
-from dante.bootstrap.app import create_app
 from tests.integration.temporal.support.life_area import api_test_life_area
 from tests.integration.temporal.test_activity_core import (
     _CANONICAL_ORIGIN,
@@ -19,6 +16,9 @@ from tests.integration.temporal.test_activity_core import (
     _settings,
     _signin,
 )
+
+from dante.auth.sessions import CSRF_HEADER_NAME
+from dante.bootstrap.app import create_app
 
 pytestmark = pytest.mark.postgres
 pytest_plugins = ("tests.integration.temporal.test_activity_core",)
@@ -41,7 +41,11 @@ def test_b09_d_person_roles_remain_actor_local_and_expected_not_actual(
         area = api_test_life_area(client, mutation_headers)
         activity = client.post(
             "/api/v1/temporal/activities",
-            json={"operation_id": "b09d:activity", "title": "Prepare meeting", "life_area_ref": area},
+            json={
+                "operation_id": "b09d:activity",
+                "title": "Prepare meeting",
+                "life_area_ref": area,
+            },
             headers=mutation_headers,
         )
         event = client.post(
@@ -79,25 +83,37 @@ def test_b09_d_person_roles_remain_actor_local_and_expected_not_actual(
 
         renamed = client.patch(
             f"{people_path}/{anna}",
-            json={"operation_id": "b09d:person:rename", "display_label": "Anna Rossi", "expected_revision": 1},
+            json={
+                "operation_id": "b09d:person:rename",
+                "display_label": "Anna Rossi",
+                "expected_revision": 1,
+            },
             headers=mutation_headers,
         )
         assert renamed.status_code == 200
         assert (renamed.json()["person_ref"], renamed.json()["revision"]) == (anna, 2)
         stale = client.patch(
             f"{people_path}/{anna}",
-            json={"operation_id": "b09d:person:stale", "display_label": "Anna Bianchi", "expected_revision": 1},
+            json={
+                "operation_id": "b09d:person:stale",
+                "display_label": "Anna Bianchi",
+                "expected_revision": 1,
+            },
             headers=mutation_headers,
         )
         assert stale.status_code == 409
-        assert [(p["person_ref"], p["display_label"]) for p in
-                client.get(people_path, headers=_base_headers()).json()] == [(anna, "Anna Rossi")]
+        assert [
+            (p["person_ref"], p["display_label"])
+            for p in client.get(people_path, headers=_base_headers()).json()
+        ] == [(anna, "Anna Rossi")]
 
         activity_path = f"/api/v1/temporal/activities/{activity_ref}/responsibility"
         event_path = f"/api/v1/temporal/events/{event_ref}/responsibility"
         participation_path = f"/api/v1/temporal/events/{event_ref}/expected-participation"
-        for path, op in ((activity_path, "b09d:activity:assign"),
-                         (event_path, "b09d:event:assign")):
+        for path, op in (
+            (activity_path, "b09d:activity:assign"),
+            (event_path, "b09d:event:assign"),
+        ):
             assigned = client.put(
                 path,
                 json={"operation_id": op, "holder": anna, "expected_holder": None},
@@ -106,26 +122,40 @@ def test_b09_d_person_roles_remain_actor_local_and_expected_not_actual(
             assert assigned.status_code == 200
             assert assigned.json()["responsible_person_ref"] == anna
             assert assigned.json()["responsible_is_self"] is False
-            assert client.get(path, headers=_base_headers()).json()["responsible_person_ref"] == anna
+            assert (
+                client.get(path, headers=_base_headers()).json()["responsible_person_ref"] == anna
+            )
 
         required = client.put(
             participation_path,
-            json={"operation_id": "b09d:required", "participant": anna,
-                  "requirement_code": "required", "expected_requirement_code": None},
+            json={
+                "operation_id": "b09d:required",
+                "participant": anna,
+                "requirement_code": "required",
+                "expected_requirement_code": None,
+            },
             headers=mutation_headers,
         )
         assert required.status_code == 200
-        assert (required.json()["requirement_code"], required.json()["participant_is_self"]) == ("required", False)
+        assert (required.json()["requirement_code"], required.json()["participant_is_self"]) == (
+            "required",
+            False,
+        )
         changed = client.put(
             participation_path,
-            json={"operation_id": "b09d:optional", "participant": anna,
-                  "requirement_code": "optional", "expected_requirement_code": "required"},
+            json={
+                "operation_id": "b09d:optional",
+                "participant": anna,
+                "requirement_code": "optional",
+                "expected_requirement_code": "required",
+            },
             headers=mutation_headers,
         )
         assert changed.status_code == 200
-        assert [p["requirement_code"] for p in client.get(
-            participation_path, headers=_base_headers()
-        ).json()] == ["optional"]
+        assert [
+            p["requirement_code"]
+            for p in client.get(participation_path, headers=_base_headers()).json()
+        ] == ["optional"]
 
         cleared = client.put(
             event_path,
@@ -135,18 +165,26 @@ def test_b09_d_person_roles_remain_actor_local_and_expected_not_actual(
         assert cleared.status_code == 200
         assert cleared.json()["responsible_person_ref"] is None
         # Clearing Event Responsibility does not change the independent participation relation.
-        assert [p["requirement_code"] for p in client.get(
-            participation_path, headers=_base_headers()
-        ).json()] == ["optional"]
+        assert [
+            p["requirement_code"]
+            for p in client.get(participation_path, headers=_base_headers()).json()
+        ] == ["optional"]
         removed = client.put(
             participation_path,
-            json={"operation_id": "b09d:participation:remove", "participant": anna,
-                  "requirement_code": None, "expected_requirement_code": "optional"},
+            json={
+                "operation_id": "b09d:participation:remove",
+                "participant": anna,
+                "requirement_code": None,
+                "expected_requirement_code": "optional",
+            },
             headers=mutation_headers,
         )
         assert removed.status_code == 200
         assert client.get(participation_path, headers=_base_headers()).json() == []
-        assert client.get(activity_path, headers=_base_headers()).json()["responsible_person_ref"] == anna
+        assert (
+            client.get(activity_path, headers=_base_headers()).json()["responsible_person_ref"]
+            == anna
+        )
 
     with TestClient(app, base_url=_CANONICAL_ORIGIN) as other:
         other_csrf = _signin(other, bob_email)
@@ -155,16 +193,26 @@ def test_b09_d_person_roles_remain_actor_local_and_expected_not_actual(
         assert other.get(activity_path, headers=_base_headers()).status_code == 404
         assert other.get(event_path, headers=_base_headers()).status_code == 404
         assert other.get(participation_path, headers=_base_headers()).status_code == 404
-        assert other.patch(
-            f"{people_path}/{anna}",
-            json={"operation_id": "b09d:bob:rename", "display_label": "Stolen", "expected_revision": 2},
-            headers=other_headers,
-        ).status_code == 404
-        assert other.put(
-            activity_path,
-            json={"operation_id": "b09d:bob:assign", "holder": anna, "expected_holder": None},
-            headers=other_headers,
-        ).status_code == 404
+        assert (
+            other.patch(
+                f"{people_path}/{anna}",
+                json={
+                    "operation_id": "b09d:bob:rename",
+                    "display_label": "Stolen",
+                    "expected_revision": 2,
+                },
+                headers=other_headers,
+            ).status_code
+            == 404
+        )
+        assert (
+            other.put(
+                activity_path,
+                json={"operation_id": "b09d:bob:assign", "holder": anna, "expected_holder": None},
+                headers=other_headers,
+            ).status_code
+            == 404
+        )
 
     with psycopg.connect(
         host=migrated_database.cluster.host,
@@ -178,7 +226,8 @@ def test_b09_d_person_roles_remain_actor_local_and_expected_not_actual(
             "SELECT owner_family FROM dante.native_address WHERE native_ref=%s", (anna,)
         ).fetchone() == ("person",)
         assert connection.execute(
-            "SELECT count(*) FROM dante.account_application_context WHERE self_person_ref=%s", (anna,)
+            "SELECT count(*) FROM dante.account_application_context WHERE self_person_ref=%s",
+            (anna,),
         ).fetchone() == (0,)
         assert connection.execute(
             "SELECT count(*) FROM dante.actual WHERE subject_native_ref IN (%s,%s)",

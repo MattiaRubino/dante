@@ -14,7 +14,10 @@ function jsonResponse(body: unknown, status = 200): Response {
 
 const EVENT_REF = '0199a8c0-6e71-7bc0-8ad0-a2f403f5617d';
 
-function eventResponse(revision = 2, agendaParts: readonly string[] = ['A', 'B']) {
+function eventResponse(
+  revision = 2,
+  agendaParts: readonly string[] = ['A', 'B'],
+) {
   return {
     event_ref: EVENT_REF,
     title: 'Evento B03-D',
@@ -114,10 +117,7 @@ describe('remote Event Agenda data source', () => {
         );
       }
       return Promise.resolve(
-        jsonResponse(
-          { code: 'temporal.event.agenda_revision_conflict' },
-          409,
-        ),
+        jsonResponse({ code: 'temporal.event.agenda_revision_conflict' }, 409),
       );
     });
     const source = createRemoteTemporalEventAgendaDataSource(fetchFn);

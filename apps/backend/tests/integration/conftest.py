@@ -332,16 +332,14 @@ def provisioned_database(
                 postgres_cluster.start()
             except (subprocess.CalledProcessError, pytest.fail.Exception) as exc:
                 pytest.exit(
-                    "Unrecoverable disposable PostgreSQL outage during fixture teardown: "
-                    f"{exc}",
+                    f"Unrecoverable disposable PostgreSQL outage during fixture teardown: {exc}",
                     returncode=2,
                 )
         try:
             _drop_database(postgres_cluster, database.name)
         except psycopg.OperationalError as exc:
             pytest.exit(
-                "Disposable PostgreSQL became unavailable during database cleanup: "
-                f"{exc}",
+                f"Disposable PostgreSQL became unavailable during database cleanup: {exc}",
                 returncode=2,
             )
 

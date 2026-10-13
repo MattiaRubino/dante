@@ -131,10 +131,12 @@ export function computeTimelineEventLayouts(
     return {
       ...event,
       startMinute: top,
-      endMinute: top + Math.max(
-        mapper.map(event.endMinute) - top,
-        timelineEventReadableHeight(event),
-      ),
+      endMinute:
+        top +
+        Math.max(
+          mapper.map(event.endMinute) - top,
+          timelineEventReadableHeight(event),
+        ),
     };
   });
   const compactLayout = computeTimelineOverlapLayout(painted, groups);

@@ -8,8 +8,8 @@ from zoneinfo import ZoneInfo
 
 import pytest
 from sqlalchemy import text
-from tests.integration.temporal.test_schedule_place import _context
 from tests.integration.temporal.test_activity_quick_authoring_metadata import _seed_self
+from tests.integration.temporal.test_schedule_place import _context
 
 from dante.modules.temporal.application import (
     TemporalTimelineApplication,
@@ -34,9 +34,7 @@ async def test_one_off_profile_snapshot_and_timeline_skip_occurrence_patch(
     other = _seed_self(migrated_database)
     runtime = create_database_runtime(migrated_database.runtime_settings())
     try:
-        created = await TemporalAuthoringApplication(
-            runtime.session_factory
-        ).create_activity(
+        created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
             self_person_ref=actor,
             operation_id="m1-guard:create-one-off",
             title="Leggere",
@@ -47,20 +45,20 @@ async def test_one_off_profile_snapshot_and_timeline_skip_occurrence_patch(
         activity = created.item.subject_native_ref
         async with runtime.session_factory() as session, session.begin():
             origin = await session.scalar(
-                text(
-                    "SELECT dante.get_self_materialized_activity_occurrence("
-                    ":actor,:activity)"
-                ),
+                text("SELECT dante.get_self_materialized_activity_occurrence(:actor,:activity)"),
                 {"actor": actor, "activity": activity},
             )
             assert origin is None
-            profile = (await session.execute(
-                text(
-                    "SELECT * FROM dante.get_self_activity_profile("
-                    ":actor,:activity)"
-                ),
-                {"actor": actor, "activity": activity},
-            )).mappings().one()
+            profile = (
+                (
+                    await session.execute(
+                        text("SELECT * FROM dante.get_self_activity_profile(:actor,:activity)"),
+                        {"actor": actor, "activity": activity},
+                    )
+                )
+                .mappings()
+                .one()
+            )
             assert dict(profile) == {
                 "activity_ref": activity,
                 "title": "Leggere",
@@ -69,18 +67,15 @@ async def test_one_off_profile_snapshot_and_timeline_skip_occurrence_patch(
                 "color_code": "#123ABC",
                 "revision": 0,
             }
-            assert (await session.execute(
-                text(
-                    "SELECT * FROM dante.get_self_activity_profile("
-                    ":actor,:activity)"
-                ),
-                {"actor": other, "activity": activity},
-            )).first() is None
+            assert (
+                await session.execute(
+                    text("SELECT * FROM dante.get_self_activity_profile(:actor,:activity)"),
+                    {"actor": other, "activity": activity},
+                )
+            ).first() is None
 
         today = datetime.now(ZoneInfo("Europe/Rome")).date()
-        await TemporalScheduleApplication(
-            runtime.session_factory
-        ).establish_schedule(
+        await TemporalScheduleApplication(runtime.session_factory).establish_schedule(
             self_person_ref=actor,
             operation_id="m1-guard:schedule-one-off",
             subject_native_ref=activity,
@@ -89,9 +84,7 @@ async def test_one_off_profile_snapshot_and_timeline_skip_occurrence_patch(
                 end_date_exclusive=today + timedelta(days=1),
             ),
         )
-        projection = await TemporalTimelineApplication(
-            runtime.session_factory
-        ).read_window(
+        projection = await TemporalTimelineApplication(runtime.session_factory).read_window(
             query=TimelineWindowQuery(
                 start_date=today,
                 end_date_exclusive=today + timedelta(days=1),

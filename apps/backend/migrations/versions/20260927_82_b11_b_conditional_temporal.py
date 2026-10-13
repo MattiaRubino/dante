@@ -67,9 +67,7 @@ def upgrade() -> None:
             onupdate="NO ACTION",
             ondelete="NO ACTION",
         ),
-        sa.PrimaryKeyConstraint(
-            "condition_ref", name=op.f("pk_conditional_temporal_intent")
-        ),
+        sa.PrimaryKeyConstraint("condition_ref", name=op.f("pk_conditional_temporal_intent")),
         sa.UniqueConstraint(
             "self_person_ref",
             "subject_native_ref",
@@ -139,9 +137,7 @@ def upgrade() -> None:
             onupdate="NO ACTION",
             ondelete="NO ACTION",
         ),
-        sa.PrimaryKeyConstraint(
-            "evaluation_ref", name=op.f("pk_conditional_temporal_evaluation")
-        ),
+        sa.PrimaryKeyConstraint("evaluation_ref", name=op.f("pk_conditional_temporal_evaluation")),
         schema=_SCHEMA,
     )
     op.create_index(
@@ -583,10 +579,7 @@ $function$
         "conditional_temporal_operation",
     ):
         _sql(f"ALTER TABLE dante.{table} OWNER TO {_OWNER}")
-        _sql(
-            f"REVOKE ALL PRIVILEGES ON TABLE dante.{table} "
-            f"FROM PUBLIC,{_RUNTIME},{_MIGRATOR}"
-        )
+        _sql(f"REVOKE ALL PRIVILEGES ON TABLE dante.{table} FROM PUBLIC,{_RUNTIME},{_MIGRATOR}")
 
     trigger_signature = "dante.enforce_b11b_conditional_evaluation_evidence()"
     create_signature = (

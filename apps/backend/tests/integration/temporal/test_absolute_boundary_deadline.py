@@ -333,7 +333,5 @@ def test_b04_b_deferred_totality_rejects_invalid_boundary_kind_facet_pair(
         assert rejected.value.diag.constraint_name == (
             "ctrg_temporal_constraint_state_rule_totality"
         )
-        assert rejected.value.diag.message_primary == (
-            "Temporal Constraint typed payload rejected"
-        )
+        assert rejected.value.diag.message_primary == ("Temporal Constraint typed payload rejected")
         connection.rollback()

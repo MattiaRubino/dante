@@ -17,7 +17,9 @@ function localWindow(schedule: ActivityEditSchedule) {
   if (
     !schedule.start ||
     !schedule.end ||
-    !['floating_local', 'named_zone_local'].includes(schedule.temporalForm ?? '')
+    !['floating_local', 'named_zone_local'].includes(
+      schedule.temporalForm ?? '',
+    )
   ) {
     throw new Error(
       'Questa programmazione non può ancora essere duplicata fedelmente.',

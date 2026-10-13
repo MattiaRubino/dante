@@ -45,7 +45,8 @@ function compactLabel(value: Temporal.PlainDate, locale: string): string {
     parts.find((part) => part.type === 'weekday')?.value ?? '',
     locale,
   );
-  const day = parts.find((part) => part.type === 'day')?.value ?? String(value.day);
+  const day =
+    parts.find((part) => part.type === 'day')?.value ?? String(value.day);
   const month = capitalizeToken(
     parts.find((part) => part.type === 'month')?.value ?? '',
     locale,
@@ -123,7 +124,9 @@ export function TemporalCreateDatePicker({
             <button
               type="button"
               aria-label={italian ? 'Mese precedente' : 'Previous month'}
-              onClick={() => setMonth((current) => current.subtract({ months: 1 }))}
+              onClick={() =>
+                setMonth((current) => current.subtract({ months: 1 }))
+              }
             >
               ‹
             </button>
@@ -136,7 +139,10 @@ export function TemporalCreateDatePicker({
               ›
             </button>
           </header>
-          <div className="temporal-create-date-picker__weekdays" aria-hidden="true">
+          <div
+            className="temporal-create-date-picker__weekdays"
+            aria-hidden="true"
+          >
             {(italian ? WEEKDAYS_IT : WEEKDAYS_EN).map((weekday, index) => (
               <span key={`${weekday}-${index}`}>{weekday}</span>
             ))}
@@ -144,9 +150,12 @@ export function TemporalCreateDatePicker({
           <div className="temporal-create-date-picker__grid">
             {days.map((day) => {
               const disabled =
-                minimum !== null && Temporal.PlainDate.compare(day, minimum) < 0;
-              const selectedDay = Temporal.PlainDate.compare(day, selected) === 0;
-              const outside = day.month !== month.month || day.year !== month.year;
+                minimum !== null &&
+                Temporal.PlainDate.compare(day, minimum) < 0;
+              const selectedDay =
+                Temporal.PlainDate.compare(day, selected) === 0;
+              const outside =
+                day.month !== month.month || day.year !== month.year;
               return (
                 <button
                   key={day.toString()}

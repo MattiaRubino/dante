@@ -47,7 +47,10 @@ export type TimelineState = Readonly<{
 export type TimelineAction =
   | Readonly<{ type: 'toggle-filter'; groupId: TimelineGroupId }>
   | Readonly<{ type: 'reset-groups-focus' }>
-  | Readonly<{ type: 'reconcile-canonical-groups'; groups: readonly TimelineGroup[] }>
+  | Readonly<{
+      type: 'reconcile-canonical-groups';
+      groups: readonly TimelineGroup[];
+    }>
   | Readonly<{ type: 'create-group'; group: TimelineGroup }>
   | Readonly<{
       type: 'reorder-group';
@@ -137,7 +140,9 @@ export function createInitialTimelineState(
   prototypeEnabled = true,
 ): TimelineState {
   return {
-    eventsByDate: prototypeEnabled ? createTimelinePrototypeStore(fixtureAnchor) : {},
+    eventsByDate: prototypeEnabled
+      ? createTimelinePrototypeStore(fixtureAnchor)
+      : {},
     allDayItems: [],
     groups: prototypeEnabled ? [...TIMELINE_GROUPS] : [],
     prototypeEnabled,
@@ -156,7 +161,9 @@ export function timelineEventsForDate(
 ): readonly TimelineEvent[] {
   return (
     state.eventsByDate[dateKey] ??
-    (state.prototypeEnabled ? createTimelinePrototypeEventsForDate(dateKey) : [])
+    (state.prototypeEnabled
+      ? createTimelinePrototypeEventsForDate(dateKey)
+      : [])
   );
 }
 
@@ -218,8 +225,12 @@ function sameEvent(left: TimelineEvent, right: TimelineEvent): boolean {
     left.canonicalBasis?.scheduleRef === right.canonicalBasis?.scheduleRef &&
     left.canonicalBasis?.placementMaterialStateRef ===
       right.canonicalBasis?.placementMaterialStateRef &&
-    (left.canonicalBasis?.kind === 'scheduled-activity' ? left.canonicalBasis.placementLocked : false) ===
-      (right.canonicalBasis?.kind === 'scheduled-activity' ? right.canonicalBasis.placementLocked : false) &&
+    (left.canonicalBasis?.kind === 'scheduled-activity'
+      ? left.canonicalBasis.placementLocked
+      : false) ===
+      (right.canonicalBasis?.kind === 'scheduled-activity'
+        ? right.canonicalBasis.placementLocked
+        : false) &&
     (left.subitems ?? []).length === (right.subitems ?? []).length &&
     (left.subitems ?? []).every(
       (subitem, index) => subitem === right.subitems?.[index],
@@ -248,7 +259,9 @@ function materializeEvent(
     );
   const targetEvents =
     eventsByDate[action.dateKey] ??
-    (state.prototypeEnabled ? createTimelinePrototypeEventsForDate(action.dateKey) : []);
+    (state.prototypeEnabled
+      ? createTimelinePrototypeEventsForDate(action.dateKey)
+      : []);
   eventsByDate[action.dateKey] = sortEvents([
     ...targetEvents.filter((event) => event.id !== action.event.id),
     action.event,
@@ -288,7 +301,9 @@ function reconcileAuthoritativeEvents(
   for (const projection of projections) {
     const currentEvents =
       eventsByDate[projection.dateKey] ??
-      (state.prototypeEnabled ? createTimelinePrototypeEventsForDate(projection.dateKey) : []);
+      (state.prototypeEnabled
+        ? createTimelinePrototypeEventsForDate(projection.dateKey)
+        : []);
     eventsByDate[projection.dateKey] = sortEvents([
       ...currentEvents.filter((event) => event.id !== projection.event.id),
       projection.event,

@@ -36,38 +36,38 @@ function parsePlannedSessions(
   }
 
   return Object.freeze(
-      payload.schedules
-        .map(record)
-        .filter((row) => row.role_code === 'planned')
-        .map((row, index) => {
-          if (typeof row.schedule_ref !== 'string') {
-            throw new Error('Sessione pianificata non valida.');
-          }
-          const order =
-            typeof row.presentation_order === 'number' &&
-            Number.isInteger(row.presentation_order)
-              ? row.presentation_order
-              : index + 1;
-          return Object.freeze({
-            scheduleRef: row.schedule_ref,
-            name:
-              typeof row.display_name === 'string' &&
-              row.display_name.trim().length > 0
-                ? row.display_name
-                : `Sessione ${order}`,
-            start: optionalString(
-              row.starts_local_at ??
-                row.starts_at ??
-                row.start_date ??
-                row.local_date,
-            ),
-            end: optionalString(
-              row.ends_local_at ?? row.ends_at ?? row.end_date_exclusive,
-            ),
-            order,
-          });
-        })
-        .sort((left, right) => left.order - right.order),
+    payload.schedules
+      .map(record)
+      .filter((row) => row.role_code === 'planned')
+      .map((row, index) => {
+        if (typeof row.schedule_ref !== 'string') {
+          throw new Error('Sessione pianificata non valida.');
+        }
+        const order =
+          typeof row.presentation_order === 'number' &&
+          Number.isInteger(row.presentation_order)
+            ? row.presentation_order
+            : index + 1;
+        return Object.freeze({
+          scheduleRef: row.schedule_ref,
+          name:
+            typeof row.display_name === 'string' &&
+            row.display_name.trim().length > 0
+              ? row.display_name
+              : `Sessione ${order}`,
+          start: optionalString(
+            row.starts_local_at ??
+              row.starts_at ??
+              row.start_date ??
+              row.local_date,
+          ),
+          end: optionalString(
+            row.ends_local_at ?? row.ends_at ?? row.end_date_exclusive,
+          ),
+          order,
+        });
+      })
+      .sort((left, right) => left.order - right.order),
   );
 }
 
@@ -158,7 +158,9 @@ export function ActivityPlannedSessionsCardDetail({
           key={row.scheduleRef}
         >
           <span className="timeline-activity-planned-sessions__summary">
-            <span className="timeline-activity-planned-sessions__name">{row.name}</span>
+            <span className="timeline-activity-planned-sessions__name">
+              {row.name}
+            </span>
             <span className="timeline-activity-planned-sessions__time">
               {compactTime(row.start)}–{compactTime(row.end)}
             </span>

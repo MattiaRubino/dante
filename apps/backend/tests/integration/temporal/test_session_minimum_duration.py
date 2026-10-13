@@ -56,7 +56,9 @@ async def test_b08_c_minimum_uses_one_session_active_time_and_never_blocks_end(
         assert created.rule == rule
 
         await enable_live_capture(
-            runtime.session_factory, actor=actor, activity_ref=activity.activity_ref,
+            runtime.session_factory,
+            actor=actor,
+            activity_ref=activity.activity_ref,
         )
 
         started = await sessions.start(

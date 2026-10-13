@@ -1,7 +1,8 @@
 import { createWebFetch } from '../../../../platform/api/web-fetch';
 
 type ResolutionSubjectKind = 'activity' | 'event' | 'occurrence';
-type ResolutionAction = 'open_reconciliation' | 'record_realization' | 'open_objectives';
+type ResolutionAction =
+  'open_reconciliation' | 'record_realization' | 'open_objectives';
 
 type ResolutionItemBase = Readonly<{
   subjectRef: string;
@@ -142,13 +143,16 @@ function parseItem(value: unknown): ResolutionItem {
 
   if (
     item.reason_code === 'realization_review' &&
-    (item.subject_kind === 'activity' || item.subject_kind === 'event' || item.subject_kind === 'occurrence') &&
+    (item.subject_kind === 'activity' ||
+      item.subject_kind === 'event' ||
+      item.subject_kind === 'occurrence') &&
     reconciliationRef === null &&
     outcomeRef === null &&
     (item.subject_kind !== 'activity' ||
       (sessionRef !== null && sessionTimingMaterialStateRef !== null) ||
       (item.purpose_code === 'activity.policy.past_unstarted' &&
-        sessionRef === null && sessionTimingMaterialStateRef === null)) &&
+        sessionRef === null &&
+        sessionTimingMaterialStateRef === null)) &&
     hasOnlyAction(item.actions, 'record_realization')
   ) {
     return {
@@ -169,7 +173,9 @@ function parseItem(value: unknown): ResolutionItem {
 
   if (
     item.reason_code === 'objective_review' &&
-    (item.subject_kind === 'activity' || item.subject_kind === 'event' || item.subject_kind === 'occurrence') &&
+    (item.subject_kind === 'activity' ||
+      item.subject_kind === 'event' ||
+      item.subject_kind === 'occurrence') &&
     reconciliationRef === null &&
     outcomeRef === null &&
     hasOnlyAction(item.actions, 'open_objectives')

@@ -40,8 +40,12 @@ def _create_tables() -> None:
             sa.Column("ambiguous_local_time_policy", sa.Text(), nullable=False),
             sa.PrimaryKeyConstraint("material_state_ref", name=op.f(f"pk_{policy}")),
             sa.ForeignKeyConstraint(
-                ["material_state_ref"], [f"{_SCHEMA}.{state}.material_state_ref"],
-                name=f"fk_{policy}_state", onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False,
+                ["material_state_ref"],
+                [f"{_SCHEMA}.{state}.material_state_ref"],
+                name=f"fk_{policy}_state",
+                onupdate="NO ACTION",
+                ondelete="NO ACTION",
+                deferrable=False,
             ),
             sa.CheckConstraint(
                 "nonexistent_local_time_policy='skip_civil_candidate'",
@@ -63,19 +67,51 @@ def _create_tables() -> None:
             sa.Column("accepted_material_state_ref", sa.Uuid(), nullable=False),
             sa.Column("accepted_at", sa.DateTime(timezone=True), nullable=False),
             sa.PrimaryKeyConstraint("self_person_ref", "operation_id", name=op.f(f"pk_{receipt}")),
-            sa.ForeignKeyConstraint(["self_person_ref"], [f"{_SCHEMA}.person.person_ref"], name=f"fk_{receipt}_person", onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False),
-            sa.ForeignKeyConstraint([owner], [f"{_SCHEMA}.{owner_table}.{owner}"], name=f"fk_{receipt}_{owner}", onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False),
-            sa.ForeignKeyConstraint(["accepted_material_state_ref"], [f"{_SCHEMA}.{state}.material_state_ref"], name=f"fk_{receipt}_accepted", onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False),
-            sa.CheckConstraint("operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200", name=op.f(f"ck_{receipt}_operation_id")),
-            sa.CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name=op.f(f"ck_{receipt}_fingerprint")),
+            sa.ForeignKeyConstraint(
+                ["self_person_ref"],
+                [f"{_SCHEMA}.person.person_ref"],
+                name=f"fk_{receipt}_person",
+                onupdate="NO ACTION",
+                ondelete="NO ACTION",
+                deferrable=False,
+            ),
+            sa.ForeignKeyConstraint(
+                [owner],
+                [f"{_SCHEMA}.{owner_table}.{owner}"],
+                name=f"fk_{receipt}_{owner}",
+                onupdate="NO ACTION",
+                ondelete="NO ACTION",
+                deferrable=False,
+            ),
+            sa.ForeignKeyConstraint(
+                ["accepted_material_state_ref"],
+                [f"{_SCHEMA}.{state}.material_state_ref"],
+                name=f"fk_{receipt}_accepted",
+                onupdate="NO ACTION",
+                ondelete="NO ACTION",
+                deferrable=False,
+            ),
+            sa.CheckConstraint(
+                "operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200",
+                name=op.f(f"ck_{receipt}_operation_id"),
+            ),
+            sa.CheckConstraint(
+                "intent_fingerprint ~ '^[0-9a-f]{64}$'", name=op.f(f"ck_{receipt}_fingerprint")
+            ),
             schema=_SCHEMA,
         )
-        op.create_index(f"ix_{receipt}_{owner}_accepted", receipt, [owner, "accepted_at"], schema=_SCHEMA)
-        _sql(f"REVOKE ALL PRIVILEGES ON TABLE {_SCHEMA}.{policy} FROM PUBLIC,{_RUNTIME},{_MIGRATOR}")
-        _sql(f"REVOKE ALL PRIVILEGES ON TABLE {_SCHEMA}.{receipt} FROM PUBLIC,{_RUNTIME},{_MIGRATOR}")
+        op.create_index(
+            f"ix_{receipt}_{owner}_accepted", receipt, [owner, "accepted_at"], schema=_SCHEMA
+        )
+        _sql(
+            f"REVOKE ALL PRIVILEGES ON TABLE {_SCHEMA}.{policy} FROM PUBLIC,{_RUNTIME},{_MIGRATOR}"
+        )
+        _sql(
+            f"REVOKE ALL PRIVILEGES ON TABLE {_SCHEMA}.{receipt} FROM PUBLIC,{_RUNTIME},{_MIGRATOR}"
+        )
 
 
-_DST_INTEGRITY = r'''
+_DST_INTEGRITY = r"""
 CREATE FUNCTION dante.enforce_recurrence_dst_policy_integrity() RETURNS trigger
 LANGUAGE plpgsql SECURITY DEFINER VOLATILE PARALLEL UNSAFE
 SET search_path = pg_catalog, dante, pg_temp AS $function$
@@ -108,7 +144,7 @@ BEGIN
   RETURN NEW;
 END;
 $function$;
-'''
+"""
 
 
 def _create_dst_integrity() -> None:
@@ -124,7 +160,7 @@ def _create_dst_integrity() -> None:
 
 def _replace_function(prefix: str, owner: str, owner_scope: str) -> str:
     """Build one strongly-typed owner-specific mutation capability."""
-    return rf'''
+    return rf"""
 CREATE FUNCTION dante.replace_self_{prefix}_recurrence(
   requested_self_person_ref uuid, requested_operation_id text, requested_intent_fingerprint text,
   requested_{owner} uuid, requested_expected_material_state_ref uuid,
@@ -309,11 +345,11 @@ BEGIN
   RETURN QUERY SELECT new_state,recorded_at,false;
 END;
 $function$;
-'''
+"""
 
 
 def _read_function(prefix: str, owner: str, owner_scope: str) -> str:
-    return rf'''
+    return rf"""
 CREATE FUNCTION dante.get_self_{prefix}_recurrence(requested_self_person_ref uuid, requested_{owner} uuid)
 RETURNS TABLE(
   material_state_ref uuid, family_code text, range_kind text, expected_occurrence_count integer,
@@ -361,20 +397,33 @@ BEGIN
   WHERE s.{owner}=requested_{owner};
 END;
 $function$;
-'''
+"""
 
 
 def _functions() -> None:
-    for prefix, owner, scope in (("routine", "routine_ref", "routine_intention"), ("event", "event_ref", "event_expectation")):
+    for prefix, owner, scope in (
+        ("routine", "routine_ref", "routine_intention"),
+        ("event", "event_ref", "event_expectation"),
+    ):
         _sql(_replace_function(prefix, owner, scope))
         _sql(_read_function(prefix, owner, scope))
         replace_signature = "uuid,text,text,uuid,uuid,text,text,integer,date,date,timestamptz,timestamptz,text,integer,text,text,text,date,time[],smallint[],smallint[],smallint[],smallint[],smallint[],smallint[],text,text,numeric,text,timestamptz,integer,text,integer,text,text,smallint,integer,text,date,boolean[]"
-        _sql(f"ALTER FUNCTION dante.replace_self_{prefix}_recurrence({replace_signature}) OWNER TO {_OWNER}")
-        _sql(f"REVOKE ALL PRIVILEGES ON FUNCTION dante.replace_self_{prefix}_recurrence({replace_signature}) FROM PUBLIC,{_RUNTIME},{_MIGRATOR}")
-        _sql(f"GRANT EXECUTE ON FUNCTION dante.replace_self_{prefix}_recurrence({replace_signature}) TO {_RUNTIME}")
+        _sql(
+            f"ALTER FUNCTION dante.replace_self_{prefix}_recurrence({replace_signature}) OWNER TO {_OWNER}"
+        )
+        _sql(
+            f"REVOKE ALL PRIVILEGES ON FUNCTION dante.replace_self_{prefix}_recurrence({replace_signature}) FROM PUBLIC,{_RUNTIME},{_MIGRATOR}"
+        )
+        _sql(
+            f"GRANT EXECUTE ON FUNCTION dante.replace_self_{prefix}_recurrence({replace_signature}) TO {_RUNTIME}"
+        )
         _sql(f"ALTER FUNCTION dante.get_self_{prefix}_recurrence(uuid,uuid) OWNER TO {_OWNER}")
-        _sql(f"REVOKE ALL PRIVILEGES ON FUNCTION dante.get_self_{prefix}_recurrence(uuid,uuid) FROM PUBLIC,{_RUNTIME},{_MIGRATOR}")
-        _sql(f"GRANT EXECUTE ON FUNCTION dante.get_self_{prefix}_recurrence(uuid,uuid) TO {_RUNTIME}")
+        _sql(
+            f"REVOKE ALL PRIVILEGES ON FUNCTION dante.get_self_{prefix}_recurrence(uuid,uuid) FROM PUBLIC,{_RUNTIME},{_MIGRATOR}"
+        )
+        _sql(
+            f"GRANT EXECUTE ON FUNCTION dante.get_self_{prefix}_recurrence(uuid,uuid) TO {_RUNTIME}"
+        )
 
 
 def upgrade() -> None:

@@ -91,9 +91,7 @@ def test_b08_session_http_operations_and_duration_contract_are_explicit() -> Non
     paths = document["paths"]
     assert isinstance(paths, dict)
     session_paths = {
-        path
-        for path in paths
-        if path.startswith("/api/v1/temporal/") and "session" in path
+        path for path in paths if path.startswith("/api/v1/temporal/") and "session" in path
     }
     assert session_paths == {
         "/api/v1/temporal/activities/{activity_ref}/sessions",
@@ -138,8 +136,6 @@ def test_session_transitions_accept_json_uuid_string_and_reject_invalid_refs() -
         validated = command.model_validate(payload)
         assert validated.expected_material_state_ref == UUID(material_state_ref)
         with pytest.raises(ValidationError):
-            command.model_validate(
-                {**payload, "expected_material_state_ref": "not-a-uuid"}
-            )
+            command.model_validate({**payload, "expected_material_state_ref": "not-a-uuid"})
         with pytest.raises(ValidationError):
             command.model_validate({**payload, "unexpected_field": True})

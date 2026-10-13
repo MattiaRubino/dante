@@ -3,6 +3,7 @@
 Revision ID: 20261011_142
 Revises: 20261010_141
 """
+
 from collections.abc import Sequence
 
 from alembic import op

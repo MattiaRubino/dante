@@ -43,19 +43,15 @@ class OccurrenceProfileEditRow(Base):
             ["dante.occurrence.occurrence_ref"],
             name="fk_occurrence_profile_edit_occurrence",
         ),
-        CheckConstraint(
-            "revision>=1 AND expected_revision>=0", name="revision"
-        ),
+        CheckConstraint("revision>=1 AND expected_revision>=0", name="revision"),
         CheckConstraint(
             "operation_id=btrim(operation_id) AND operation_id<>'' "
-            "AND char_length(operation_id)<=200", name="operation"
+            "AND char_length(operation_id)<=200",
+            name="operation",
         ),
+        CheckConstraint("scope_code IN ('only_this','this_and_following')", name="scope"),
         CheckConstraint(
-            "scope_code IN ('only_this','this_and_following')", name="scope"
-        ),
-        CheckConstraint(
-            "jsonb_typeof(profile_patch)='object' AND "
-            "profile_patch<>'{}'::jsonb", name="patch"
+            "jsonb_typeof(profile_patch)='object' AND profile_patch<>'{}'::jsonb", name="patch"
         ),
     )
     self_person_ref: Mapped[NativeRef] = mapped_column(primary_key=True)
@@ -68,9 +64,7 @@ class OccurrenceProfileEditRow(Base):
     scope_code: Mapped[str] = mapped_column(Text, nullable=False)
     effective_zone_id: Mapped[str] = mapped_column(Text, nullable=False)
     anchor_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    accepted_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False
-    )
+    accepted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     profile_patch: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
     target_occurrence_refs: Mapped[list[NativeRef]] = mapped_column(
         ARRAY(Uuid()),

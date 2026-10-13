@@ -78,9 +78,12 @@ async def test_b11_d_canonical_chain_preserves_independent_history(
             owner="routine", self_person_ref=alice, owner_ref=routine.routine_ref
         )
         assert current_rule is not None
-        assert await advanced.get(
-            owner="routine", self_person_ref=alice, source_ref=routine.routine_ref
-        ) is None
+        assert (
+            await advanced.get(
+                owner="routine", self_person_ref=alice, source_ref=routine.routine_ref
+            )
+            is None
+        )
         rule = await advanced.replace(
             owner="routine",
             self_person_ref=alice,
@@ -148,9 +151,7 @@ async def test_b11_d_canonical_chain_preserves_independent_history(
             operation_id="b11-d:unknown",
             condition_ref=condition.condition_ref,
         )
-        assert (unknown.result_code, unknown.disposition_code) == (
-            "indeterminate", "withhold"
-        )
+        assert (unknown.result_code, unknown.disposition_code) == ("indeterminate", "withhold")
         assert unknown.actual_ref is None
 
         starts_at = dependent.expected_at + timedelta(days=1)
@@ -177,7 +178,8 @@ async def test_b11_d_canonical_chain_preserves_independent_history(
             condition_ref=condition.condition_ref,
         )
         assert (still_unknown.result_code, still_unknown.disposition_code) == (
-            "indeterminate", "withhold"
+            "indeterminate",
+            "withhold",
         )
 
         dependent_actual = await actuals.record(
@@ -196,9 +198,7 @@ async def test_b11_d_canonical_chain_preserves_independent_history(
             operation_id="b11-d:satisfied",
             condition_ref=condition.condition_ref,
         )
-        assert (satisfied.result_code, satisfied.disposition_code) == (
-            "satisfied", "allow"
-        )
+        assert (satisfied.result_code, satisfied.disposition_code) == ("satisfied", "allow")
         assert satisfied.actual_ref == dependent_actual.actual_ref
         assert satisfied.actual_realization_material_state_ref == (
             dependent_actual.material_state_ref
@@ -224,7 +224,8 @@ async def test_b11_d_canonical_chain_preserves_independent_history(
             condition_ref=condition.condition_ref,
         )
         assert (corrected_evaluation.result_code, corrected_evaluation.disposition_code) == (
-            "not_satisfied", "withhold"
+            "not_satisfied",
+            "withhold",
         )
         assert corrected_evaluation.actual_realization_material_state_ref == (
             corrected_actual.material_state_ref
@@ -241,9 +242,7 @@ async def test_b11_d_canonical_chain_preserves_independent_history(
                 ends_at=revised_start + timedelta(hours=1),
             ),
         )
-        reloaded = await reminders.get(
-            self_person_ref=alice, schedule_ref=schedule.schedule_ref
-        )
+        reloaded = await reminders.get(self_person_ref=alice, schedule_ref=schedule.schedule_ref)
         assert reloaded is not None
         assert reloaded.reminder_ref == reminder.reminder_ref
         assert reloaded.material_state_ref == reminder.material_state_ref

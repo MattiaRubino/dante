@@ -1,5 +1,11 @@
 import type { PlainDate } from '@dante/time';
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
@@ -14,8 +20,10 @@ import { createRemoteTemporalResponsibilityDataSource } from '../../temporal/rem
 import { invalidateTemporalTimelineRead } from '../../temporal/timeline-invalidation';
 import { createRemoteRecurringAuthoringDataSource } from '../application/remote-recurring-authoring';
 import {
-  createRemoteDraftVault, notifyDraftVaultUpdated,
-  type DraftVaultItem, type DraftVaultSnapshot,
+  createRemoteDraftVault,
+  notifyDraftVaultUpdated,
+  type DraftVaultItem,
+  type DraftVaultSnapshot,
 } from '../application/remote-draft-vault';
 import {
   buildTemporalCreateActivityRecurrence,
@@ -85,7 +93,10 @@ type InvocationAnchor = Readonly<{
 const COMPACT_HOME_QUERY = '(max-width: 1120px)';
 
 function subscribeCompactHome(onChange: () => void): () => void {
-  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+  if (
+    typeof window === 'undefined' ||
+    typeof window.matchMedia !== 'function'
+  ) {
     return () => undefined;
   }
   const media = window.matchMedia(COMPACT_HOME_QUERY);
@@ -94,9 +105,11 @@ function subscribeCompactHome(onChange: () => void): () => void {
 }
 
 function isCompactHome(): boolean {
-  return typeof window !== 'undefined' &&
+  return (
+    typeof window !== 'undefined' &&
     typeof window.matchMedia === 'function' &&
-    window.matchMedia(COMPACT_HOME_QUERY).matches;
+    window.matchMedia(COMPACT_HOME_QUERY).matches
+  );
 }
 
 export type TemporalCreateInvocation = Readonly<{
@@ -119,7 +132,11 @@ export type TemporalCreateEntryProps = Readonly<{
   onApplied: (effect: TemporalCreateAppliedEffect) => boolean;
   onBeforeOpen?: (() => void) | undefined;
   creationEnabled?: boolean | undefined;
-  draftRequest?: Readonly<{ id: number; item: DraftVaultItem; duplicate: boolean }> | null;
+  draftRequest?: Readonly<{
+    id: number;
+    item: DraftVaultItem;
+    duplicate: boolean;
+  }> | null;
 }>;
 
 function minuteToInput(minute: number): string {
@@ -157,7 +174,9 @@ export function TemporalCreateEntry({
   const [draftVault] = useState(createRemoteDraftVault);
   const currentVaultDraft = useRef<DraftVaultItem | null>(null);
   const pendingVaultSave = useRef<{
-    draftRef: string; revision: number | null; operationId: string;
+    draftRef: string;
+    revision: number | null;
+    operationId: string;
   } | null>(null);
   const draftRequestSeen = useRef<number | null>(null);
   const [recurringAuthoringDataSource] = useState(() =>
@@ -321,7 +340,8 @@ export function TemporalCreateEntry({
   }, [open, openComposer, request]);
 
   useEffect(() => {
-    if (!draftRequest || draftRequestSeen.current === draftRequest.id || open) return;
+    if (!draftRequest || draftRequestSeen.current === draftRequest.id || open)
+      return;
     draftRequestSeen.current = draftRequest.id;
     const selected = draftRequest.item;
     const snapshot = selected.payload;
@@ -340,7 +360,9 @@ export function TemporalCreateEntry({
     preparedRef.current = null;
     partialPostCreateRef.current = null;
     setPostCreateRetry(false);
-    focusReturnRef.current = document.querySelector<HTMLElement>('.dante-timeline-actions');
+    focusReturnRef.current = document.querySelector<HTMLElement>(
+      '.dante-timeline-actions',
+    );
     setOpen(true);
   }, [draftRequest, onBeforeOpen, open]);
 
@@ -431,14 +453,17 @@ export function TemporalCreateEntry({
     // The discard confirmation is portaled to document.body, outside the
     // composer keydown boundary. Restore focus when that portal unmounts.
     requestAnimationFrame(() => {
-      document.querySelector<HTMLInputElement>(
-        '[data-temporal-create="composer"] [data-create-path="title"]',
-      )?.focus({ preventScroll: true });
+      document
+        .querySelector<HTMLInputElement>(
+          '[data-temporal-create="composer"] [data-create-path="title"]',
+        )
+        ?.focus({ preventScroll: true });
     });
   };
 
   const saveDraft = async () => {
-    if (commitInFlightRef.current || partialPostCreateRef.current !== null) return;
+    if (commitInFlightRef.current || partialPostCreateRef.current !== null)
+      return;
     const existing = currentVaultDraft.current;
     const operation = pendingVaultSave.current ?? {
       draftRef: existing?.draftRef ?? crypto.randomUUID(),
@@ -447,8 +472,10 @@ export function TemporalCreateEntry({
     };
     pendingVaultSave.current = operation;
     const payload: DraftVaultSnapshot = {
-      version: 1, fields: session.draft.current,
-      advanced: u2DraftRef.current, surface: session.surface,
+      version: 1,
+      fields: session.draft.current,
+      advanced: u2DraftRef.current,
+      surface: session.surface,
     };
     commitInFlightRef.current = true;
     setLifecycle('pending');
@@ -461,8 +488,11 @@ export function TemporalCreateEntry({
       closeComposer();
     } catch (reason) {
       setLifecycle('failed');
-      setFailureMessage(reason instanceof Error ? reason.message
-        : 'Impossibile salvare la bozza.');
+      setFailureMessage(
+        reason instanceof Error
+          ? reason.message
+          : 'Impossibile salvare la bozza.',
+      );
     } finally {
       commitInFlightRef.current = false;
     }
@@ -485,8 +515,10 @@ export function TemporalCreateEntry({
       };
       setPostCreateRetry(true);
       setLifecycle('failed');
-      setFailureMessage('Elemento creato, ma la bozza non è stata rimossa. ' +
-        'Riprova la pulizia senza creare un duplicato.');
+      setFailureMessage(
+        'Elemento creato, ma la bozza non è stata rimossa. ' +
+          'Riprova la pulizia senza creare un duplicato.',
+      );
       return false;
     }
   };
@@ -500,8 +532,11 @@ export function TemporalCreateEntry({
     );
     if (structureIssue !== null) {
       setFailureTarget(structureIssue.target);
-      setFailureMessage(i18n.language.toLowerCase().startsWith('it')
-        ? structureIssue.messageIt : structureIssue.messageEn);
+      setFailureMessage(
+        i18n.language.toLowerCase().startsWith('it')
+          ? structureIssue.messageIt
+          : structureIssue.messageEn,
+      );
       setLifecycle('failed');
       return false;
     }
@@ -621,7 +656,7 @@ export function TemporalCreateEntry({
       }
 
       invalidateTemporalTimelineRead();
-      if (!await consumeDraftAfterCreate()) return false;
+      if (!(await consumeDraftAfterCreate())) return false;
       setSession(discardTemporalCreateSession(freshFields(defaultDate)));
       closeComposer();
       return true;
@@ -647,8 +682,11 @@ export function TemporalCreateEntry({
     );
     if (structureIssue !== null) {
       setFailureTarget(structureIssue.target);
-      setFailureMessage(i18n.language.toLowerCase().startsWith('it')
-        ? structureIssue.messageIt : structureIssue.messageEn);
+      setFailureMessage(
+        i18n.language.toLowerCase().startsWith('it')
+          ? structureIssue.messageIt
+          : structureIssue.messageEn,
+      );
       setLifecycle('failed');
       return false;
     }
@@ -689,7 +727,7 @@ export function TemporalCreateEntry({
         activityTemplate: recurring.template,
       });
       invalidateTemporalTimelineRead();
-      if (!await consumeDraftAfterCreate()) return false;
+      if (!(await consumeDraftAfterCreate())) return false;
       setSession(discardTemporalCreateSession(freshFields(defaultDate)));
       closeComposer();
       return true;
@@ -803,7 +841,7 @@ export function TemporalCreateEntry({
         return false;
       }
       invalidateTemporalTimelineRead();
-      if (!await consumeDraftAfterCreate()) return false;
+      if (!(await consumeDraftAfterCreate())) return false;
       setSession(discardTemporalCreateSession(freshFields(defaultDate)));
       closeComposer();
       return true;
@@ -853,7 +891,7 @@ export function TemporalCreateEntry({
       setLifecycle('failed');
       setFailureMessage(
         'Per conservare un elemento non ancora confermato usa «Salva bozza»; ' +
-        'Aggiungi richiede una collocazione accettata.',
+          'Aggiungi richiede una collocazione accettata.',
       );
       return;
     }
@@ -949,7 +987,7 @@ export function TemporalCreateEntry({
           );
           return;
         }
-        if (!await consumeDraftAfterCreate()) return;
+        if (!(await consumeDraftAfterCreate())) return;
         setSession(discardTemporalCreateSession(freshFields(defaultDate)));
         closeComposer(!focusHandled);
         return;
@@ -1017,7 +1055,11 @@ export function TemporalCreateEntry({
       : document.querySelector<HTMLElement>('[data-home-context-create-host]');
   // The Context Rail is display:none below this breakpoint. A portal into it
   // would exist in the DOM but make the entire quick composer invisible.
-  const compactHome = useSyncExternalStore(subscribeCompactHome, isCompactHome, () => false);
+  const compactHome = useSyncExternalStore(
+    subscribeCompactHome,
+    isCompactHome,
+    () => false,
+  );
   const discardModal =
     discardPending && typeof document !== 'undefined'
       ? createPortal(

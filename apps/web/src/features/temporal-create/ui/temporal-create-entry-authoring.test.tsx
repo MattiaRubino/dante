@@ -238,7 +238,9 @@ describe('Temporal Create U2 entry', () => {
     fireEvent.click(screen.getByRole('button', { name: /Opzioni avanzate/ }));
     const actions = screen.getByLabelText('Aggiungi Sessione pianificata');
     fireEvent.click(within(actions).getByRole('button', { name: 'Sessione' }));
-    const planned = document.querySelector('[data-create-planned-session]') as HTMLElement;
+    const planned = document.querySelector(
+      '[data-create-planned-session]',
+    ) as HTMLElement;
     fireEvent.change(within(planned).getByLabelText('Nome Sessione'), {
       target: { value: 'Ricerca fonti' },
     });
@@ -254,7 +256,9 @@ describe('Temporal Create U2 entry', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: 'Aggiungi' }));
 
-    const editor = planned.querySelector<HTMLElement>('.temporal-create-tree-time-editor');
+    const editor = planned.querySelector<HTMLElement>(
+      '.temporal-create-tree-time-editor',
+    );
     if (!editor) throw new Error('Expected Session time editor.');
     await waitFor(() => {
       expect(editor.getAttribute('data-create-invalid')).toBe('true');
@@ -268,13 +272,18 @@ describe('Temporal Create U2 entry', () => {
 
   it('saves a planned Session without any time when Orario remains off or is switched off', async () => {
     const { activityRequests } = renderEntry([], false, '2132-03-06');
-    fireEvent.change(screen.getByPlaceholderText('Titolo'), { target: { value: 'Progetto' } });
+    fireEvent.change(screen.getByPlaceholderText('Titolo'), {
+      target: { value: 'Progetto' },
+    });
     fireEvent.click(screen.getByRole('button', { name: /Opzioni avanzate/ }));
     const actions = screen.getByLabelText('Aggiungi Sessione pianificata');
     fireEvent.click(within(actions).getByRole('button', { name: 'Sessione' }));
-    const planned = document.querySelector('[data-create-planned-session]') as HTMLElement;
-    fireEvent.change(within(planned).getByLabelText('Nome Sessione'),
-      { target: { value: 'Ricerca fonti' } });
+    const planned = document.querySelector(
+      '[data-create-planned-session]',
+    ) as HTMLElement;
+    fireEvent.change(within(planned).getByLabelText('Nome Sessione'), {
+      target: { value: 'Ricerca fonti' },
+    });
     const toggle = within(planned).getByRole('button', { name: 'Orario' });
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
     fireEvent.click(toggle);

@@ -42,7 +42,8 @@ import { createRemoteScheduleReminderDataSource } from '../../temporal/remote-sc
 
 export type TemporalCreateRecurrenceOwner = 'event' | 'routine' | null;
 
-const LIFE_AREA_REF = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const LIFE_AREA_REF =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export function isCanonicalLifeAreaRef(value: string): boolean {
   return LIFE_AREA_REF.test(value);
@@ -261,7 +262,8 @@ function b01ActivityIntentSupported(
     prepared.metadata.kind === 'activity' &&
     prepared.command.payload.placement === null &&
     prepared.metadata.timeSemantics === 'unscheduled' &&
-    (prepared.metadata.contextId === 'personale' || isCanonicalLifeAreaRef(prepared.metadata.contextId)) &&
+    (prepared.metadata.contextId === 'personale' ||
+      isCanonicalLifeAreaRef(prepared.metadata.contextId)) &&
     prepared.metadata.notes.length === 0 &&
     specification.durationMinutes === baseline.durationMinutes &&
     specification.appearanceTone === null &&
@@ -282,7 +284,8 @@ function b02eScheduledActivityIntentSupported(
   if (
     prepared.metadata.kind !== 'activity' ||
     placement === null ||
-    (prepared.metadata.contextId !== 'personale' && !isCanonicalLifeAreaRef(prepared.metadata.contextId)) ||
+    (prepared.metadata.contextId !== 'personale' &&
+      !isCanonicalLifeAreaRef(prepared.metadata.contextId)) ||
     prepared.metadata.notes.length !== 0 ||
     specification.appearanceTone !== null ||
     specification.eventRecurrence.patternKind !== 'none' ||
@@ -292,7 +295,11 @@ function b02eScheduledActivityIntentSupported(
   }
 
   const reminderLead = specification.confirmation.reminderLeadMinutes;
-  if (reminderLead !== null && placement.kind !== 'absolute' && placement.kind !== 'zoned') {
+  if (
+    reminderLead !== null &&
+    placement.kind !== 'absolute' &&
+    placement.kind !== 'zoned'
+  ) {
     return false;
   }
 
@@ -365,7 +372,8 @@ function zonedDisambiguation(
   }
   const localStart =
     placement.sourceStartsLocalAt ?? placement.start.toPlainDateTime();
-  const localEnd = placement.sourceEndsLocalAt ?? placement.end.toPlainDateTime();
+  const localEnd =
+    placement.sourceEndsLocalAt ?? placement.end.toPlainDateTime();
   const candidates =
     placement.disambiguation === undefined
       ? (['reject', 'earlier', 'later'] as const)
@@ -570,10 +578,10 @@ class RemoteActivityTemporalWorkspace implements TemporalWorkspacePort {
             status: 'rejected' as const,
             code: 'validation' as const,
             issues: Object.freeze([
-              temporalValidationIssue(
-                'temporal.schedule.invalid_establish',
-                ['payload', 'placement'],
-              ),
+              temporalValidationIssue('temporal.schedule.invalid_establish', [
+                'payload',
+                'placement',
+              ]),
             ]),
           });
         }
@@ -759,7 +767,10 @@ class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
     private readonly ids: TemporalIdFactory,
     clock: TemporalClock,
     private readonly canonicalActivityOnly = false,
-    private readonly reminderSource?: Pick<ReturnType<typeof createRemoteScheduleReminderDataSource>, 'configure'>,
+    private readonly reminderSource?: Pick<
+      ReturnType<typeof createRemoteScheduleReminderDataSource>,
+      'configure'
+    >,
   ) {
     this.clock = clock;
   }
@@ -977,14 +988,15 @@ class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
       this.richOperationFingerprints.set(prepared.operationId, richFingerprint);
     }
 
-    const result = this.workspace instanceof RemoteActivityTemporalWorkspace
-      ? await this.workspace.execute(
-          prepared.command,
-          isCanonicalLifeAreaRef(prepared.metadata.contextId)
-            ? prepared.metadata.contextId
-            : undefined,
-        )
-      : await this.workspace.execute(prepared.command);
+    const result =
+      this.workspace instanceof RemoteActivityTemporalWorkspace
+        ? await this.workspace.execute(
+            prepared.command,
+            isCanonicalLifeAreaRef(prepared.metadata.contextId)
+              ? prepared.metadata.contextId
+              : undefined,
+          )
+        : await this.workspace.execute(prepared.command);
     if (result.status !== 'applied' || !result.item) {
       return Object.freeze({ result, effect: null });
     }
@@ -1024,14 +1036,21 @@ class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
         this.replacePlacement(projection.id, prepared.metadata, placement),
       remove: () => this.removeProjection(projection.id, prepared.metadata),
     }) satisfies TemporalCreateAppliedEffect;
-    const reminderLead = prepared.metadata.specification.confirmation.reminderLeadMinutes;
-    if (reminderLead !== null && this.workspace instanceof RemoteActivityTemporalWorkspace) {
+    const reminderLead =
+      prepared.metadata.specification.confirmation.reminderLeadMinutes;
+    if (
+      reminderLead !== null &&
+      this.workspace instanceof RemoteActivityTemporalWorkspace
+    ) {
       const scheduleRef = this.workspace.scheduleRefFor(prepared.operationId);
       if (scheduleRef === null || this.reminderSource === undefined) {
         return Object.freeze({
-          result, effect,
+          result,
+          effect,
           reminderRetry: async () => {
-            throw new Error('Committed Schedule Reminder reference unavailable.');
+            throw new Error(
+              'Committed Schedule Reminder reference unavailable.',
+            );
           },
         });
       }
@@ -1094,7 +1113,10 @@ export type TemporalCreateRuntimeOptions = Readonly<{
   ids?: TemporalIdFactory;
   workspace?: TemporalWorkspacePort;
   activityDataSource?: TemporalActivityDataSource;
-  reminderDataSource?: Pick<ReturnType<typeof createRemoteScheduleReminderDataSource>, 'configure'>;
+  reminderDataSource?: Pick<
+    ReturnType<typeof createRemoteScheduleReminderDataSource>,
+    'configure'
+  >;
   mode?: string;
 }>;
 

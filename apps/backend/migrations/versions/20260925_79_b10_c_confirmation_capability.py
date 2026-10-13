@@ -33,8 +33,7 @@ _MIGRATOR = "dante_migrator"
 
 _HELPER_SIGNATURE = "dante._confirmation_outcome_owned(uuid,uuid)"
 _WRITE_SIGNATURE = (
-    "dante.record_self_outcome_confirmation("
-    "uuid,text,text,uuid,uuid,uuid,uuid,uuid,text,text)"
+    "dante.record_self_outcome_confirmation(uuid,text,text,uuid,uuid,uuid,uuid,uuid,text,text)"
 )
 _READ_SIGNATURE = "dante.list_self_outcome_confirmations(uuid,uuid)"
 _HISTORY_SIGNATURE = "dante.list_self_confirmation_history(uuid,uuid)"
@@ -60,8 +59,7 @@ def upgrade() -> None:
     op.create_check_constraint(
         op.f("ck_scoped_address_scoped_family"),
         "scoped_address",
-        "scoped_family IN ("
-        "'schedule','actual','temporal_constraint','outcome','confirmation')",
+        "scoped_family IN ('schedule','actual','temporal_constraint','outcome','confirmation')",
         schema=_SCHEMA,
     )
 
@@ -1065,10 +1063,7 @@ $function$
         _HISTORY_SIGNATURE,
     ):
         _sql(f"ALTER FUNCTION {signature} OWNER TO {_OWNER}")
-        _sql(
-            f"REVOKE ALL ON FUNCTION {signature} "
-            f"FROM PUBLIC, {_RUNTIME}, {_MIGRATOR}"
-        )
+        _sql(f"REVOKE ALL ON FUNCTION {signature} FROM PUBLIC, {_RUNTIME}, {_MIGRATOR}")
 
     for signature in (
         _HELPER_SIGNATURE,

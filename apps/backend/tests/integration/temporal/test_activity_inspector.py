@@ -33,16 +33,24 @@ async def test_profile_revision_and_retirement_are_guarded_and_replayable(
         )
         activity = created.item.subject_native_ref
         async with runtime.session_factory() as session, session.begin():
-            initial = (await session.execute(
-                text("SELECT * FROM dante.get_self_activity_profile(:actor,:activity)"),
-                {"actor": actor, "activity": activity},
-            )).mappings().one()
+            initial = (
+                (
+                    await session.execute(
+                        text("SELECT * FROM dante.get_self_activity_profile(:actor,:activity)"),
+                        {"actor": actor, "activity": activity},
+                    )
+                )
+                .mappings()
+                .one()
+            )
             assert initial["revision"] == 0
             assert initial["title"] == "Prima"
-            assert (await session.execute(
-                text("SELECT * FROM dante.get_self_activity_profile(:actor,:activity)"),
-                {"actor": other, "activity": activity},
-            )).first() is None
+            assert (
+                await session.execute(
+                    text("SELECT * FROM dante.get_self_activity_profile(:actor,:activity)"),
+                    {"actor": other, "activity": activity},
+                )
+            ).first() is None
 
         async with runtime.session_factory() as session, session.begin():
             params = {
@@ -55,8 +63,10 @@ async def test_profile_revision_and_retirement_are_guarded_and_replayable(
                 "location": None,
                 "color": "#AABBCC",
             }
-            sql = text("SELECT * FROM dante.revise_self_activity_profile("
-                       ":actor,:activity,:operation,:revision,:title,:description,:location,:color)")
+            sql = text(
+                "SELECT * FROM dante.revise_self_activity_profile("
+                ":actor,:activity,:operation,:revision,:title,:description,:location,:color)"
+            )
             first = (await session.execute(sql, params)).mappings().one()
             second = (await session.execute(sql, params)).mappings().one()
             assert first["revision"] == 1
@@ -66,7 +76,8 @@ async def test_profile_revision_and_retirement_are_guarded_and_replayable(
 
         with psycopg.connect(
             **migrated_database.connection_kwargs(
-                "dante_migrator", migrated_database.cluster.migrator_password,
+                "dante_migrator",
+                migrated_database.cluster.migrator_password,
             )
         ) as connection:
             connection.execute("SET ROLE dante_owner")
@@ -79,17 +90,25 @@ async def test_profile_revision_and_retirement_are_guarded_and_replayable(
             assert current["title"] == "Dopo"
 
         async with runtime.session_factory() as session, session.begin():
-            assert await session.scalar(
-                text("SELECT dante.retire_self_activity(:actor,:activity,:operation)"),
-                {"actor": actor, "activity": activity, "operation": "inspector:retire"},
-            ) is False
-            assert await session.scalar(
-                text("SELECT dante.retire_self_activity(:actor,:activity,:operation)"),
-                {"actor": actor, "activity": activity, "operation": "inspector:retire"},
-            ) is True
-            assert (await session.execute(
-                text("SELECT * FROM dante.get_self_activity_profile(:actor,:activity)"),
-                {"actor": actor, "activity": activity},
-            )).first() is None
+            assert (
+                await session.scalar(
+                    text("SELECT dante.retire_self_activity(:actor,:activity,:operation)"),
+                    {"actor": actor, "activity": activity, "operation": "inspector:retire"},
+                )
+                is False
+            )
+            assert (
+                await session.scalar(
+                    text("SELECT dante.retire_self_activity(:actor,:activity,:operation)"),
+                    {"actor": actor, "activity": activity, "operation": "inspector:retire"},
+                )
+                is True
+            )
+            assert (
+                await session.execute(
+                    text("SELECT * FROM dante.get_self_activity_profile(:actor,:activity)"),
+                    {"actor": actor, "activity": activity},
+                )
+            ).first() is None
     finally:
         await runtime.dispose()

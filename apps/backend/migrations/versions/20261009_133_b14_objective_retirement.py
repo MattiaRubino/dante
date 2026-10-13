@@ -28,8 +28,7 @@ def upgrade() -> None:
     ):
         bind.exec_driver_sql(f"ALTER FUNCTION dante.{signature} OWNER TO dante_owner")
         bind.exec_driver_sql(
-            f"REVOKE ALL ON FUNCTION dante.{signature} "
-            "FROM PUBLIC,dante_runtime,dante_migrator"
+            f"REVOKE ALL ON FUNCTION dante.{signature} FROM PUBLIC,dante_runtime,dante_migrator"
         )
         bind.exec_driver_sql(f"GRANT EXECUTE ON FUNCTION dante.{signature} TO dante_runtime")
 

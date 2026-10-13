@@ -26,25 +26,31 @@ def upgrade() -> None:
         sa.Column("linked_at", sa.DateTime(timezone=True), nullable=False),
         sa.PrimaryKeyConstraint("session_ref", name="pk_session_planned_schedule_link"),
         sa.ForeignKeyConstraint(
-            ["session_ref"], ["dante.session_execution_subject.session_ref"],
-            name="fk_session_planned_schedule_link_session", ondelete="NO ACTION", onupdate="NO ACTION",
+            ["session_ref"],
+            ["dante.session_execution_subject.session_ref"],
+            name="fk_session_planned_schedule_link_session",
+            ondelete="NO ACTION",
+            onupdate="NO ACTION",
         ),
         sa.ForeignKeyConstraint(
-            ["schedule_ref"], ["dante.activity_schedule_role.schedule_ref"],
-            name="fk_session_planned_schedule_link_role", ondelete="NO ACTION", onupdate="NO ACTION",
+            ["schedule_ref"],
+            ["dante.activity_schedule_role.schedule_ref"],
+            name="fk_session_planned_schedule_link_role",
+            ondelete="NO ACTION",
+            onupdate="NO ACTION",
         ),
         schema="dante",
     )
     op.create_index(
         "ix_session_planned_schedule_link_schedule_ref",
-        "session_planned_schedule_link", ["schedule_ref"], schema="dante",
+        "session_planned_schedule_link",
+        ["schedule_ref"],
+        schema="dante",
     )
     bind = op.get_bind()
     bind.exec_driver_sql(_START)
     bind.exec_driver_sql(_READ)
-    bind.exec_driver_sql(
-        "ALTER TABLE dante.session_planned_schedule_link OWNER TO dante_owner"
-    )
+    bind.exec_driver_sql("ALTER TABLE dante.session_planned_schedule_link OWNER TO dante_owner")
     bind.exec_driver_sql(
         "REVOKE ALL ON dante.session_planned_schedule_link FROM PUBLIC,dante_runtime,dante_migrator"
     )

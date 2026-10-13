@@ -36,10 +36,14 @@ class TemporalDraftVaultRow(Base):
     revision: Mapped[int] = mapped_column(BigInteger, nullable=False, server_default=text("1"))
     last_operation_id: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=text("clock_timestamp()"),
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=text("clock_timestamp()"),
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=text("clock_timestamp()"),
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=text("clock_timestamp()"),
     )
 
 
@@ -64,7 +68,9 @@ class TemporalObjectiveInputDraftRow(Base):
         ),
         Index(
             "ix_temporal_objective_input_draft_owner",
-            "owner_person_ref", text("updated_at DESC"), "objective_ref",
+            "owner_person_ref",
+            text("updated_at DESC"),
+            "objective_ref",
         ),
     )
 
@@ -72,12 +78,15 @@ class TemporalObjectiveInputDraftRow(Base):
         ForeignKey(
             "dante.temporal_objective.objective_ref",
             name="fk_temporal_objective_input_draft_objective",
-        ), primary_key=True,
+        ),
+        primary_key=True,
     )
     owner_person_ref: Mapped[UUID] = mapped_column(nullable=False)
     payload: Mapped[dict[str, object]] = mapped_column(JSONB, nullable=False)
     revision: Mapped[int] = mapped_column(
-        BigInteger, nullable=False, server_default=text("1"),
+        BigInteger,
+        nullable=False,
+        server_default=text("1"),
     )
     last_operation_id: Mapped[str] = mapped_column(Text, nullable=False)
     confirmed_operation_id: Mapped[str | None] = mapped_column(Text)
@@ -86,5 +95,7 @@ class TemporalObjectiveInputDraftRow(Base):
     assessment_code: Mapped[str | None] = mapped_column(Text)
     confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=text("clock_timestamp()"),
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=text("clock_timestamp()"),
     )

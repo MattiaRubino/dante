@@ -12,7 +12,11 @@ export function PlacementLockControls({
   scheduleRef,
   variant = 'text',
   onLockChanged,
-}: Readonly<{ scheduleRef: string; variant?: 'text' | 'icon'; onLockChanged?: (locked: boolean) => void }>) {
+}: Readonly<{
+  scheduleRef: string;
+  variant?: 'text' | 'icon';
+  onLockChanged?: (locked: boolean) => void;
+}>) {
   const [state, setState] = useState<PlacementLockState | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -72,10 +76,23 @@ export function PlacementLockControls({
         title={state?.locked ? 'Sblocca spostamenti' : 'Blocca spostamenti'}
       >
         {variant === 'icon' ? (
-          <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor"
-            strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <rect x="5" y="10" width="14" height="11" rx="2" />
-            <path d={state?.locked ? 'M8 10V7a4 4 0 0 1 8 0v3' : 'M8 10V7a4 4 0 0 1 7.5-1.9'} />
+            <path
+              d={
+                state?.locked
+                  ? 'M8 10V7a4 4 0 0 1 8 0v3'
+                  : 'M8 10V7a4 4 0 0 1 7.5-1.9'
+              }
+            />
           </svg>
         ) : state?.locked ? (
           'Sblocca spostamenti'

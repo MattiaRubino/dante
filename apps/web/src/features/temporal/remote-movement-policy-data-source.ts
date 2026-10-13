@@ -1,6 +1,7 @@
 import { createWebFetch } from '../../platform/api/web-fetch';
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export type ScheduleMovementPolicyResult = Readonly<{
   scheduleRef: string;
@@ -128,7 +129,9 @@ export function createRemoteScheduleMovementPolicyDataSource(
         if (error instanceof ScheduleMovementPolicyRemoteError) throw error;
         throw new ScheduleMovementPolicyRemoteError(
           'transport',
-          error instanceof Error ? error.message : 'Movement Policy unavailable.',
+          error instanceof Error
+            ? error.message
+            : 'Movement Policy unavailable.',
         );
       }
       if (!response.ok) throw await problem(response);

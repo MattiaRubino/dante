@@ -49,7 +49,8 @@
   gap: 12px;
   min-width: 0;
   padding: 8px 0;
-  border-top: 1px solid var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
+  border-top: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
 }
 
 .timeline-activity-planned-sessions__row .timeline-session-controls {
@@ -78,7 +79,9 @@
 
 .timeline-activity-planned-sessions__row .timeline-session-duration,
 .timeline-activity-planned-sessions__row .timeline-session-duration-policy,
-.timeline-activity-planned-sessions__row .timeline-session-controls > [role='status'] {
+.timeline-activity-planned-sessions__row
+  .timeline-session-controls
+  > [role='status'] {
   flex-basis: 100%;
   text-align: right;
 }

@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { Temporal } from '@dante/time';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -152,9 +158,15 @@ describe('Timeline truth inspector', () => {
     expect(screen.getByText('Realtà', { selector: 'strong' })).toBeTruthy();
     expect(screen.getByText('Obiettivi', { selector: 'strong' })).toBeTruthy();
     expect(screen.queryByText('Outcome', { selector: 'strong' })).toBeNull();
-    expect(screen.queryByText('Confirmation', { selector: 'strong' })).toBeNull();
-    expect(screen.queryByText('Reconciliation', { selector: 'strong' })).toBeNull();
-    expect(screen.getByText('Condizione Actual', { selector: 'strong' })).toBeTruthy();
+    expect(
+      screen.queryByText('Confirmation', { selector: 'strong' }),
+    ).toBeNull();
+    expect(
+      screen.queryByText('Reconciliation', { selector: 'strong' }),
+    ).toBeNull();
+    expect(
+      screen.getByText('Condizione Actual', { selector: 'strong' }),
+    ).toBeTruthy();
   });
 
   it('keeps Condition on the Occurrence and Recurrence on its Routine source', async () => {
@@ -194,25 +206,33 @@ describe('Timeline truth inspector', () => {
         ),
       ).toBe(true);
       expect(
-        fetchFn.mock.calls.some(([input]) =>
-          String(input).includes('subject_kind=occurrence') &&
-          String(input).includes(OCCURRENCE),
+        fetchFn.mock.calls.some(
+          ([input]) =>
+            String(input).includes('subject_kind=occurrence') &&
+            String(input).includes(OCCURRENCE),
         ),
       ).toBe(true);
     });
-    expect(screen.getByText('Condizione Actual', { selector: 'strong' })).toBeTruthy();
+    expect(
+      screen.getByText('Condizione Actual', { selector: 'strong' }),
+    ).toBeTruthy();
     fireEvent.change(picker, { target: { value: `event:${EVENT}` } });
     await waitFor(() => {
       expect(
-        document.querySelector(`[data-advanced-recurrence-owner="event:${EVENT}"]`),
+        document.querySelector(
+          `[data-advanced-recurrence-owner="event:${EVENT}"]`,
+        ),
       ).toBeTruthy();
       expect(
-        document.querySelector(`[data-advanced-recurrence-owner="routine:${ROUTINE}"]`),
+        document.querySelector(
+          `[data-advanced-recurrence-owner="routine:${ROUTINE}"]`,
+        ),
       ).toBeNull();
       expect(
-        fetchFn.mock.calls.some(([input]) =>
-          String(input).includes('subject_kind=event') &&
-          String(input).includes(EVENT),
+        fetchFn.mock.calls.some(
+          ([input]) =>
+            String(input).includes('subject_kind=event') &&
+            String(input).includes(EVENT),
         ),
       ).toBe(true);
     });

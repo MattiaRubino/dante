@@ -5,8 +5,14 @@ import type {
   TemporalCreateU2AuthoringDraft,
   TemporalCreateU2LifeAreaDraft,
 } from '../model/temporal-create-u2-authoring';
-import { TemporalColorControl, TEMPORAL_DEFAULT_COLOR } from './temporal-color-control';
-import { TemporalLifeAreaSelect, type TemporalLifeAreaOption } from './temporal-life-area-select';
+import {
+  TemporalColorControl,
+  TEMPORAL_DEFAULT_COLOR,
+} from './temporal-color-control';
+import {
+  TemporalLifeAreaSelect,
+  type TemporalLifeAreaOption,
+} from './temporal-life-area-select';
 import type { TemporalCreateContextOption } from './temporal-create-ui-types';
 
 import './temporal-create-life-area-field.css';
@@ -26,7 +32,9 @@ function authorableContexts(
   contexts: readonly TemporalCreateContextOption[],
 ): readonly TemporalCreateContextOption[] {
   return Object.freeze(
-    contexts.filter((context) => context.id !== UNASSIGNED_PRESENTATION_CONTEXT_ID),
+    contexts.filter(
+      (context) => context.id !== UNASSIGNED_PRESENTATION_CONTEXT_ID,
+    ),
   );
 }
 function normalized(value: string): string {
@@ -57,7 +65,9 @@ function selectedColor(draft: TemporalCreateU2AuthoringDraft): string {
 function canonicalOptions(
   contexts: readonly TemporalCreateContextOption[],
   areas: Awaited<
-    ReturnType<ReturnType<typeof createRemoteTemporalOrganizationDataSource>['load']>
+    ReturnType<
+      ReturnType<typeof createRemoteTemporalOrganizationDataSource>['load']
+    >
   >['areas'],
 ): readonly TemporalCreateContextOption[] {
   const byRef = new Map(
@@ -91,9 +101,9 @@ export function TemporalCreateLifeAreaField({
   const [availableContexts, setAvailableContexts] = useState(() =>
     authorableContexts(contexts),
   );
-  const sourceRef = useRef<
-    ReturnType<typeof createRemoteTemporalOrganizationDataSource> | null
-  >(null);
+  const sourceRef = useRef<ReturnType<
+    typeof createRemoteTemporalOrganizationDataSource
+  > | null>(null);
 
   useEffect(() => {
     setQuery(selectedLabel(draft));
@@ -121,7 +131,9 @@ export function TemporalCreateLifeAreaField({
   }, [contexts]);
 
   const choose = (choice: TemporalLifeAreaOption) => {
-    const context = availableContexts.find((candidate) => candidate.id === choice.id);
+    const context = availableContexts.find(
+      (candidate) => candidate.id === choice.id,
+    );
     if (!context) return;
     onLifeAreaChange(
       Object.freeze({
@@ -197,13 +209,28 @@ export function TemporalCreateLifeAreaField({
 
   return (
     <>
-      <div className="temporal-create-life-area-field" data-create-path="contextId">
-        <TemporalColorControl value={selectedColor(draft)} label={colorLabel}
-          onChange={changeColor} />
+      <div
+        className="temporal-create-life-area-field"
+        data-create-path="contextId"
+      >
+        <TemporalColorControl
+          value={selectedColor(draft)}
+          label={colorLabel}
+          onChange={changeColor}
+        />
 
-        <TemporalLifeAreaSelect query={query} options={availableContexts}
-          selectedId={draft.lifeArea.kind === 'existing' ? draft.lifeArea.lifeAreaRef : null}
-          onQueryChange={stageTypedName} onChoose={choose} onClear={clear} />
+        <TemporalLifeAreaSelect
+          query={query}
+          options={availableContexts}
+          selectedId={
+            draft.lifeArea.kind === 'existing'
+              ? draft.lifeArea.lifeAreaRef
+              : null
+          }
+          onQueryChange={stageTypedName}
+          onChoose={choose}
+          onClear={clear}
+        />
       </div>
     </>
   );

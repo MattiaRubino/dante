@@ -305,7 +305,9 @@ export function TimelineDraftVault({
   ) : null;
   return actionsHost
     ? createPortal(
-        <div className={`timeline-draft-vault__anchor${open ? ' is-open' : ''}`}>
+        <div
+          className={`timeline-draft-vault__anchor${open ? ' is-open' : ''}`}
+        >
           {trigger}
           {panel}
         </div>,

@@ -42,8 +42,10 @@ function optionalText(value: unknown): string | null {
 
 function finished(value: unknown): FinishedWorkItem {
   const v = record(value);
-  if (!['activity', 'event'].includes(String(v.subject_kind)) ||
-      !['session_ended', 'realization_occurred'].includes(String(v.record_kind))) {
+  if (
+    !['activity', 'event'].includes(String(v.subject_kind)) ||
+    !['session_ended', 'realization_occurred'].includes(String(v.record_kind))
+  ) {
     throw new Error('Tipologia di elemento concluso non valida.');
   }
   return {
@@ -59,10 +61,14 @@ function finished(value: unknown): FinishedWorkItem {
 
 function objective(value: unknown): PendingObjectiveWork {
   const v = record(value);
-  if (!['activity','event','occurrence'].includes(String(v.subject_kind)) ||
-      !['boolean','quantity','range','qualitative'].includes(String(v.result_kind)) ||
-      typeof v.presentation_order !== 'number' ||
-      (v.draft_revision !== null && typeof v.draft_revision !== 'number')) {
+  if (
+    !['activity', 'event', 'occurrence'].includes(String(v.subject_kind)) ||
+    !['boolean', 'quantity', 'range', 'qualitative'].includes(
+      String(v.result_kind),
+    ) ||
+    typeof v.presentation_order !== 'number' ||
+    (v.draft_revision !== null && typeof v.draft_revision !== 'number')
+  ) {
     throw new Error('Elemento Obiettivo del riepilogo non valido.');
   }
   return {
@@ -83,7 +89,9 @@ export function createContextRailWorkSource(
 ) {
   const webFetch = createWebFetch(fetchFn);
   async function get<T>(
-    uri: string, parse: (value: unknown) => T, signal?: AbortSignal,
+    uri: string,
+    parse: (value: unknown) => T,
+    signal?: AbortSignal,
   ): Promise<readonly T[]> {
     const response = await webFetch(uri, signal ? { signal } : undefined);
     if (!response.ok) throw new Error('Dati del riepilogo non disponibili.');

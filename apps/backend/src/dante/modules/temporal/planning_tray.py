@@ -159,9 +159,7 @@ class TemporalPlanningTrayApplication:
         except SQLAlchemyError as exc:
             raise PlanningTrayPersistenceError() from exc
 
-        postponed = {
-            UUID(str(row["event_ref"])): row for row in postponed_rows
-        }
+        postponed = {UUID(str(row["event_ref"])): row for row in postponed_rows}
         items: list[PlanningTrayItemView] = [
             PlanningTrayItemView(
                 kind="activity",
@@ -170,9 +168,7 @@ class TemporalPlanningTrayApplication:
                 title=str(row["title"]),
                 created_at=row["created_at"],
                 life_area_ref=(
-                    None
-                    if row["life_area_ref"] is None
-                    else UUID(str(row["life_area_ref"]))
+                    None if row["life_area_ref"] is None else UUID(str(row["life_area_ref"]))
                 ),
                 life_area_assignment_revision=(
                     None
@@ -194,9 +190,7 @@ class TemporalPlanningTrayApplication:
                     title=str(row["title"]),
                     created_at=row["created_at"],
                     life_area_ref=(
-                        None
-                        if row["life_area_ref"] is None
-                        else UUID(str(row["life_area_ref"]))
+                        None if row["life_area_ref"] is None else UUID(str(row["life_area_ref"]))
                     ),
                     life_area_assignment_revision=(
                         None
@@ -204,9 +198,7 @@ class TemporalPlanningTrayApplication:
                         else int(row["life_area_assignment_revision"])
                     ),
                     schedule_ref=(
-                        None
-                        if postponed_row is None
-                        else UUID(str(postponed_row["schedule_ref"]))
+                        None if postponed_row is None else UUID(str(postponed_row["schedule_ref"]))
                     ),
                     unschedule_operation_id=(
                         None
@@ -256,7 +248,9 @@ class TemporalPlanningTrayApplication:
 
         if item.state == "postponed":
             if item.schedule_ref is None or item.unschedule_operation_id is None:
-                raise PlanningTrayPersistenceError("Postponed Event is missing retained Schedule truth.")
+                raise PlanningTrayPersistenceError(
+                    "Postponed Event is missing retained Schedule truth."
+                )
             result = await self._event.replan_postponed_event(
                 self_person_ref=self_person_ref,
                 event_ref=subject_ref,

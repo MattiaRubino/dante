@@ -15,7 +15,8 @@ function operationId(): string {
 }
 
 function rejection(fallback: string, error: unknown): string {
-  if (error instanceof Error && error.message.trim()) return `${fallback} ${error.message}`;
+  if (error instanceof Error && error.message.trim())
+    return `${fallback} ${error.message}`;
   return fallback;
 }
 
@@ -44,26 +45,31 @@ export function AdvancedRecurrenceControls({
   const [pending, setPending] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-  const [mode, setMode] = useState<AdvancedRecurrenceAnchorMode>('previous_completion');
+  const [mode, setMode] = useState<AdvancedRecurrenceAnchorMode>(
+    'previous_completion',
+  );
   const [delay, setDelay] = useState('3600');
   const [effectiveFrom, setEffectiveFrom] = useState(initialDateTime);
   const [anchorFamily, setAnchorFamily] =
     useState<AdvancedRecurrenceAnchorSourceKind>('routine');
   const [anchorRef, setAnchorRef] = useState('');
 
-  const applyLoaded = useCallback((value: AdvancedRecurrenceView | null, stateRef: string | null) => {
-    setCurrentStateRef(stateRef);
-    setAdvanced(value);
-    setLoadError(null);
-    if (value !== null) {
-      setMode(value.anchorModeCode);
-      setDelay(value.elapsedSeconds);
-      setEffectiveFrom(localDateTime(value.effectiveFrom));
-      setAnchorFamily(value.anchorSourceFamily ?? 'routine');
-      setAnchorRef(value.anchorSourceNativeRef ?? '');
-    }
-    setLoaded(true);
-  }, []);
+  const applyLoaded = useCallback(
+    (value: AdvancedRecurrenceView | null, stateRef: string | null) => {
+      setCurrentStateRef(stateRef);
+      setAdvanced(value);
+      setLoadError(null);
+      if (value !== null) {
+        setMode(value.anchorModeCode);
+        setDelay(value.elapsedSeconds);
+        setEffectiveFrom(localDateTime(value.effectiveFrom));
+        setAnchorFamily(value.anchorSourceFamily ?? 'routine');
+        setAnchorRef(value.anchorSourceNativeRef ?? '');
+      }
+      setLoaded(true);
+    },
+    [],
+  );
 
   const reload = useCallback(async () => {
     const result = await source.load(ownerKind, sourceRef);
@@ -79,12 +85,15 @@ export function AdvancedRecurrenceControls({
     void source
       .load(ownerKind, sourceRef)
       .then((result) => {
-        if (!cancelled) applyLoaded(result.advanced, result.currentMaterialStateRef);
+        if (!cancelled)
+          applyLoaded(result.advanced, result.currentMaterialStateRef);
       })
       .catch((error: unknown) => {
         if (!cancelled) {
           setLoaded(true);
-          setLoadError(rejection('Recurrence avanzata non disponibile.', error));
+          setLoadError(
+            rejection('Recurrence avanzata non disponibile.', error),
+          );
         }
       });
     return () => {
@@ -94,7 +103,9 @@ export function AdvancedRecurrenceControls({
 
   const save = () => {
     if (currentStateRef === null) {
-      setMessage('Questa sorgente non ha una Recurrence canonica da convertire.');
+      setMessage(
+        'Questa sorgente non ha una Recurrence canonica da convertire.',
+      );
       return;
     }
     if (!delay.trim() || Number(delay) <= 0) {
@@ -107,7 +118,9 @@ export function AdvancedRecurrenceControls({
       return;
     }
     if (mode === 'anchor_stream' && anchorRef.trim().length === 0) {
-      setMessage('La Recurrence anchor-stream richiede il riferimento della sorgente anchor.');
+      setMessage(
+        'La Recurrence anchor-stream richiede il riferimento della sorgente anchor.',
+      );
       return;
     }
 
@@ -121,7 +134,8 @@ export function AdvancedRecurrenceControls({
         elapsedSeconds: delay.trim(),
         anchorModeCode: mode,
         anchorSourceFamily: mode === 'anchor_stream' ? anchorFamily : null,
-        anchorSourceNativeRef: mode === 'anchor_stream' ? anchorRef.trim() : null,
+        anchorSourceNativeRef:
+          mode === 'anchor_stream' ? anchorRef.trim() : null,
       })
       .then((saved) => {
         applyLoaded(saved, saved.materialStateRef);
@@ -130,7 +144,9 @@ export function AdvancedRecurrenceControls({
       .catch((error: unknown) =>
         reload()
           .catch(() => undefined)
-          .then(() => setMessage(rejection('Aggiornamento Recurrence rifiutato.', error))),
+          .then(() =>
+            setMessage(rejection('Aggiornamento Recurrence rifiutato.', error)),
+          ),
       )
       .finally(() => setPending(false));
   };
@@ -139,16 +155,19 @@ export function AdvancedRecurrenceControls({
     ? 'Recurrence avanzata: caricamento…'
     : loadError !== null
       ? 'Recurrence avanzata: lettura non disponibile'
-    : currentStateRef === null
-      ? 'Recurrence avanzata: sorgente non ricorrente'
-      : advanced === null
-        ? 'Recurrence avanzata: non configurata'
-        : advanced.anchorModeCode === 'previous_completion'
-          ? `Recurrence avanzata: dopo il completamento · ${advanced.elapsedSeconds}s`
-          : `Recurrence avanzata: anchor stream · ${advanced.elapsedSeconds}s`;
+      : currentStateRef === null
+        ? 'Recurrence avanzata: sorgente non ricorrente'
+        : advanced === null
+          ? 'Recurrence avanzata: non configurata'
+          : advanced.anchorModeCode === 'previous_completion'
+            ? `Recurrence avanzata: dopo il completamento · ${advanced.elapsedSeconds}s`
+            : `Recurrence avanzata: anchor stream · ${advanced.elapsedSeconds}s`;
 
   return (
-    <section className="timeline-advanced-recurrence" data-advanced-recurrence-owner={`${ownerKind}:${sourceRef}`}>
+    <section
+      className="timeline-advanced-recurrence"
+      data-advanced-recurrence-owner={`${ownerKind}:${sourceRef}`}
+    >
       <strong>Recurrence avanzata</strong>
       <p data-advanced-recurrence-state>{state}</p>
       <label>
@@ -157,9 +176,13 @@ export function AdvancedRecurrenceControls({
           aria-label="Regola Recurrence avanzata"
           value={mode}
           disabled={pending || !loaded || currentStateRef === null}
-          onChange={(event) => setMode(event.currentTarget.value as AdvancedRecurrenceAnchorMode)}
+          onChange={(event) =>
+            setMode(event.currentTarget.value as AdvancedRecurrenceAnchorMode)
+          }
         >
-          <option value="previous_completion">Dopo il completamento precedente</option>
+          <option value="previous_completion">
+            Dopo il completamento precedente
+          </option>
           <option value="anchor_stream">Dopo un'altra Routine / Event</option>
         </select>
       </label>
@@ -194,7 +217,10 @@ export function AdvancedRecurrenceControls({
               value={anchorFamily}
               disabled={pending || !loaded || currentStateRef === null}
               onChange={(event) =>
-                setAnchorFamily(event.currentTarget.value as AdvancedRecurrenceAnchorSourceKind)
+                setAnchorFamily(
+                  event.currentTarget
+                    .value as AdvancedRecurrenceAnchorSourceKind,
+                )
               }
             >
               <option value="routine">Routine</option>
@@ -221,8 +247,9 @@ export function AdvancedRecurrenceControls({
         Salva Recurrence avanzata
       </button>
       <small>
-        La regola usa solo completamenti Actual. Le Occurrence già materializzate mantengono
-        l'Actual MaterialState che le ha generate anche dopo una correzione successiva.
+        La regola usa solo completamenti Actual. Le Occurrence già
+        materializzate mantengono l'Actual MaterialState che le ha generate
+        anche dopo una correzione successiva.
       </small>
       {loadError === null ? null : <span role="alert">{loadError}</span>}
       {message === null ? null : message === 'Recurrence avanzata salvata.' ? (

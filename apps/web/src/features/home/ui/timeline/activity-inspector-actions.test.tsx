@@ -21,7 +21,9 @@ const loadSettings = vi.fn();
 const loadChildCount = vi.fn().mockResolvedValue(0);
 const saveCore = vi.fn();
 const previewReplan = vi.fn();
-const applyReplan = vi.fn().mockImplementation(async (_ref, settings) => settings);
+const applyReplan = vi
+  .fn()
+  .mockImplementation(async (_ref, settings) => settings);
 const loadLifeAreaChoice = vi.fn();
 const createLifeArea = vi.fn();
 const setLifeAreaAppearance = vi.fn();
@@ -90,9 +92,11 @@ afterEach(() => {
 });
 
 async function submitEditor() {
-  await waitFor(() => expect(
-    screen.getByRole('button', { name: 'Salva modifiche' }),
-  ).toHaveProperty('disabled', false));
+  await waitFor(() =>
+    expect(
+      screen.getByRole('button', { name: 'Salva modifiche' }),
+    ).toHaveProperty('disabled', false),
+  );
   fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
 }
 
@@ -111,14 +115,20 @@ const currentSettings = {
 
 loadSettings.mockResolvedValue(currentSettings);
 loadLifeAreaChoice.mockResolvedValue({
-  options: [], currentRef: null, currentRevision: 0,
+  options: [],
+  currentRef: null,
+  currentRevision: 0,
 });
 
 describe('Recurring Activity profile scope', () => {
   it('keeps the Advanced create order in the edit surface', async () => {
     const { container } = render(
-      <ActivityEditPanel profile={profile} closeRequestRef={createRef()}
-        onSaved={() => undefined} onCancel={() => undefined} />,
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
     );
     await screen.findByRole('group', { name: 'Collocazione attuale' });
     const body = container.querySelector('.timeline-activity-editor__body');
@@ -133,8 +143,9 @@ describe('Recurring Activity profile scope', () => {
     ].map((selector) => body?.querySelector(selector));
     expect(sections.every(Boolean)).toBe(true);
     for (let index = 1; index < sections.length; index += 1) {
-      expect(sections[index - 1]?.compareDocumentPosition(sections[index]!))
-        .toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+      expect(
+        sections[index - 1]?.compareDocumentPosition(sections[index]!),
+      ).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     }
   });
 
@@ -142,8 +153,10 @@ describe('Recurring Activity profile scope', () => {
     const occurrenceRef = '0199a222-2222-7222-8222-222222222222';
     const recurrenceStateRef = '0199a333-3333-7333-8333-333333333333';
     const context = {
-      occurrenceRef, sourceRef: '0199a444-4444-7444-8444-444444444444',
-      editRevision: 3, recurrenceStateRef,
+      occurrenceRef,
+      sourceRef: '0199a444-4444-7444-8444-444444444444',
+      editRevision: 3,
+      recurrenceStateRef,
     };
     loadRecurringContext.mockResolvedValueOnce(context);
     saveRecurringProfile.mockResolvedValue({ ...profile, title: 'Dopo' });
@@ -162,71 +175,112 @@ describe('Recurring Activity profile scope', () => {
     expect(await screen.findByLabelText('Solo questa')).toBeTruthy();
     fireEvent.click(screen.getByLabelText('Questa e le prossime'));
     await submitEditor();
-    await waitFor(() => expect(saveRecurringProfile).toHaveBeenCalledWith(
-      ref, context, 'this_and_following', { title: 'Dopo' }, expect.any(String),
-    ));
+    await waitFor(() =>
+      expect(saveRecurringProfile).toHaveBeenCalledWith(
+        ref,
+        context,
+        'this_and_following',
+        { title: 'Dopo' },
+        expect.any(String),
+      ),
+    );
     expect(saveCore).not.toHaveBeenCalled();
-    await waitFor(() => expect(onSaved).toHaveBeenCalledWith(
-      expect.objectContaining({ title: 'Dopo' }),
-    ));
+    await waitFor(() =>
+      expect(onSaved).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Dopo' }),
+      ),
+    );
   });
 });
 
 const objective = {
-    objectiveRef: '0199a567-8888-7888-8888-012345678901',
-    label: 'Corsa 10 km',
-    resultKind: 'quantity',
-    comparatorCode: 'gte',
-    targetValue: 10,
-    targetMin: null,
-    targetMax: null,
-    unitCode: 'km',
-    presentationOrder: 0,
-    observationRef: '0199a567-8888-7888-8888-012345678902',
-    observedBoolean: null,
-    observedNumeric: 8,
-    qualitativeCode: null,
-    evaluationStateRef: '0199a567-8888-7888-8888-012345678903',
-    assessmentCode: 'not_satisfied',
-  } as const;
+  objectiveRef: '0199a567-8888-7888-8888-012345678901',
+  label: 'Corsa 10 km',
+  resultKind: 'quantity',
+  comparatorCode: 'gte',
+  targetValue: 10,
+  targetMin: null,
+  targetMax: null,
+  unitCode: 'km',
+  presentationOrder: 0,
+  observationRef: '0199a567-8888-7888-8888-012345678902',
+  observedBoolean: null,
+  observedNumeric: 8,
+  qualitativeCode: null,
+  evaluationStateRef: '0199a567-8888-7888-8888-012345678903',
+  assessmentCode: 'not_satisfied',
+} as const;
 
 describe('Objective correction in Activity Editor', () => {
   it('modifies an expanded Objective directly with one final Save', async () => {
-    loadSettings.mockResolvedValueOnce({ ...currentSettings, objectives: [objective] });
-    getDefinition.mockResolvedValueOnce({ ...objective, definitionRevision: 0 });
-    applyActivityEdits.mockResolvedValueOnce([{ ...objective, label: 'Corsa 7 km' }]);
+    loadSettings.mockResolvedValueOnce({
+      ...currentSettings,
+      objectives: [objective],
+    });
+    getDefinition.mockResolvedValueOnce({
+      ...objective,
+      definitionRevision: 0,
+    });
+    applyActivityEdits.mockResolvedValueOnce([
+      { ...objective, label: 'Corsa 7 km' },
+    ]);
     const onSaved = vi.fn();
-    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
-      onSaved={onSaved} onCancel={() => undefined} />);
-    fireEvent.focus(await screen.findByRole('textbox', { name: 'Nome obiettivo' }));
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={onSaved}
+        onCancel={() => undefined}
+      />,
+    );
+    fireEvent.focus(
+      await screen.findByRole('textbox', { name: 'Nome obiettivo' }),
+    );
     fireEvent.change(screen.getByRole('textbox', { name: 'Nome obiettivo' }), {
       target: { value: 'Corsa 7 km' },
     });
     expect(applyActivityEdits).not.toHaveBeenCalled();
-    expect(screen.queryByRole('button', { name: 'Salva obiettivo' })).toBeNull();
-    expect(screen.getAllByRole('textbox', { name: 'Nome obiettivo' })).toHaveLength(1);
+    expect(
+      screen.queryByRole('button', { name: 'Salva obiettivo' }),
+    ).toBeNull();
+    expect(
+      screen.getAllByRole('textbox', { name: 'Nome obiettivo' }),
+    ).toHaveLength(1);
     expect(screen.queryByRole('button', { name: /^Corsa 10 km/ })).toBeNull();
     await submitEditor();
-    await waitFor(() => expect(applyActivityEdits).toHaveBeenCalledWith(ref, {
-      add: [],
-      revise: [expect.objectContaining({
-        objectiveRef: objective.objectiveRef,
-        change: expect.objectContaining({
-          label: 'Corsa 7 km', resultKind: 'quantity', targetValue: 10,
-          expectedRevision: 0, scopeCode: 'only_this',
-        }),
-      })],
-      retire: [],
-    }));
+    await waitFor(() =>
+      expect(applyActivityEdits).toHaveBeenCalledWith(ref, {
+        add: [],
+        revise: [
+          expect.objectContaining({
+            objectiveRef: objective.objectiveRef,
+            change: expect.objectContaining({
+              label: 'Corsa 7 km',
+              resultKind: 'quantity',
+              targetValue: 10,
+              expectedRevision: 0,
+              scopeCode: 'only_this',
+            }),
+          }),
+        ],
+        retire: [],
+      }),
+    );
     await waitFor(() => expect(onSaved).toHaveBeenCalledWith(profile));
     expect(reviseDefinition).not.toHaveBeenCalled();
     expect(addObjective).not.toHaveBeenCalled();
   });
 
   it('keeps following-series scope only for authoritative generated lineage', async () => {
-    loadSettings.mockResolvedValueOnce({ ...currentSettings, objectives: [objective] });
+    loadSettings.mockResolvedValueOnce({
+      ...currentSettings,
+      objectives: [objective],
+    });
     loadRecurringContext.mockResolvedValueOnce({ active: true });
-    getDefinition.mockResolvedValueOnce({ ...objective, definitionRevision: 1 });
+    getDefinition.mockResolvedValueOnce({
+      ...objective,
+      definitionRevision: 1,
+    });
     const seriesState = {
       sourceNativeRef: '0199a566-6666-7666-8666-666666666666',
       occurrenceRef: '0199a577-7777-7777-8777-777777777777',
@@ -235,57 +289,89 @@ describe('Objective correction in Activity Editor', () => {
       recurrenceStateRef: '0199a588-8888-7888-8888-888888888888',
     };
     getSeriesState.mockResolvedValueOnce(seriesState);
-    applyActivityEdits.mockResolvedValueOnce([{ ...objective, label: 'Corsa 7 km' }]);
-    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
-      onSaved={() => undefined} onCancel={() => undefined} />);
-    fireEvent.focus(await screen.findByRole('textbox', { name: 'Nome obiettivo' }));
+    applyActivityEdits.mockResolvedValueOnce([
+      { ...objective, label: 'Corsa 7 km' },
+    ]);
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
+    );
+    fireEvent.focus(
+      await screen.findByRole('textbox', { name: 'Nome obiettivo' }),
+    );
     fireEvent.click(await screen.findByLabelText('Questa e le prossime'));
     fireEvent.change(screen.getByRole('textbox', { name: 'Nome obiettivo' }), {
       target: { value: 'Corsa 7 km' },
     });
     await submitEditor();
-    await waitFor(() => expect(applyActivityEdits).toHaveBeenCalledWith(ref,
-      expect.objectContaining({
-        revise: [expect.objectContaining({
-          objectiveRef: objective.objectiveRef,
-          change: expect.objectContaining({
-            scopeCode: 'this_and_following', seriesState, label: 'Corsa 7 km',
-          }),
-        })],
-      }),
-    ));
+    await waitFor(() =>
+      expect(applyActivityEdits).toHaveBeenCalledWith(
+        ref,
+        expect.objectContaining({
+          revise: [
+            expect.objectContaining({
+              objectiveRef: objective.objectiveRef,
+              change: expect.objectContaining({
+                scopeCode: 'this_and_following',
+                seriesState,
+                label: 'Corsa 7 km',
+              }),
+            }),
+          ],
+        }),
+      ),
+    );
     expect(addObjective).not.toHaveBeenCalled();
   });
 
   it('corrects a measured result while keeping the same Objective identity', async () => {
     loadSettings.mockResolvedValueOnce({
-      ...currentSettings, objectives: [objective],
+      ...currentSettings,
+      objectives: [objective],
     });
     correctResult.mockResolvedValueOnce(undefined);
     refreshObjectives.mockResolvedValueOnce({
-      ...currentSettings, objectives: [{
-        ...objective, observedNumeric: 6, assessmentCode: 'not_satisfied',
-      }],
+      ...currentSettings,
+      objectives: [
+        {
+          ...objective,
+          observedNumeric: 6,
+          assessmentCode: 'not_satisfied',
+        },
+      ],
     });
     render(
-      <ActivityEditPanel profile={profile} closeRequestRef={createRef()}
-        onSaved={() => undefined} onCancel={() => undefined} />,
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
     );
-    fireEvent.click(await screen.findByRole('button', { name: 'Correggi risultato' }));
-    fireEvent.change(screen.getByRole('spinbutton', { name: 'Risultato corretto' }), {
-      target: { value: '6' },
-    });
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Correggi risultato' }),
+    );
+    fireEvent.change(
+      screen.getByRole('spinbutton', { name: 'Risultato corretto' }),
+      {
+        target: { value: '6' },
+      },
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Salva rettifica' }));
-    await waitFor(() => expect(correctResult).toHaveBeenCalledWith(
-      objective.objectiveRef, {
+    await waitFor(() =>
+      expect(correctResult).toHaveBeenCalledWith(objective.objectiveRef, {
         operationId: expect.any(String),
         expectedEvaluationStateRef: objective.evaluationStateRef,
         observedBoolean: null,
         observedNumeric: 6,
         qualitativeCode: null,
         assessmentCode: null,
-      },
-    ));
+      }),
+    );
     expect(reviseDefinition).not.toHaveBeenCalled();
   });
 });
@@ -309,8 +395,10 @@ describe('Activity Inspector', () => {
   });
 
   it('saves changes in the editor and returns to the Inspector', async () => {
-    saveCore.mockResolvedValue({ profile: { ...profile, title: 'Dopo', revision: 1 },
-      settings: currentSettings });
+    saveCore.mockResolvedValue({
+      profile: { ...profile, title: 'Dopo', revision: 1 },
+      settings: currentSettings,
+    });
     const onSaved = vi.fn();
     render(
       <ActivityEditPanel
@@ -328,8 +416,14 @@ describe('Activity Inspector', () => {
       expect(saveCore).toHaveBeenCalledWith(
         profile,
         currentSettings,
-        { profile: { title: 'Dopo', description: 'Nota', location: 'Casa',
-          colorCode: '#EA5C12' } },
+        {
+          profile: {
+            title: 'Dopo',
+            description: 'Nota',
+            location: 'Casa',
+            colorCode: '#EA5C12',
+          },
+        },
         expect.any(String),
       ),
     );
@@ -341,7 +435,8 @@ describe('Activity Inspector', () => {
   });
 
   it('retries one atomic policy change with the same operation ID', async () => {
-    saveCore.mockRejectedValueOnce(new Error('Connessione interrotta'))
+    saveCore
+      .mockRejectedValueOnce(new Error('Connessione interrotta'))
       .mockResolvedValueOnce({ profile, settings: currentSettings });
     const onSaved = vi.fn();
     render(
@@ -359,8 +454,12 @@ describe('Activity Inspector', () => {
       'textContent',
       expect.stringContaining('Connessione interrotta'),
     );
-    expect(saveCore).toHaveBeenCalledWith(profile, currentSettings,
-      { capture: 'live', reality: 'review_on_end' }, expect.any(String));
+    expect(saveCore).toHaveBeenCalledWith(
+      profile,
+      currentSettings,
+      { capture: 'live', reality: 'review_on_end' },
+      expect.any(String),
+    );
     expect(onSaved).not.toHaveBeenCalled();
 
     await submitEditor();
@@ -371,239 +470,542 @@ describe('Activity Inspector', () => {
   });
 
   it('stages Objective additions and preserves retry identity after one Save error', async () => {
-    applyActivityEdits.mockRejectedValueOnce(new Error('Errore temporaneo'))
-      .mockResolvedValueOnce([{
-        objectiveRef: 'new-objective', label: 'Percorrere 10 km',
-        resultKind: 'quantity', comparatorCode: 'gte', targetValue: 10,
-        targetMin: null, targetMax: null, unitCode: 'km',
-        presentationOrder: 0, observationRef: null,
-        observedBoolean: null, observedNumeric: null, qualitativeCode: null,
-        evaluationStateRef: null, assessmentCode: null,
-      }]);
+    applyActivityEdits
+      .mockRejectedValueOnce(new Error('Errore temporaneo'))
+      .mockResolvedValueOnce([
+        {
+          objectiveRef: 'new-objective',
+          label: 'Percorrere 10 km',
+          resultKind: 'quantity',
+          comparatorCode: 'gte',
+          targetValue: 10,
+          targetMin: null,
+          targetMax: null,
+          unitCode: 'km',
+          presentationOrder: 0,
+          observationRef: null,
+          observedBoolean: null,
+          observedNumeric: null,
+          qualitativeCode: null,
+          evaluationStateRef: null,
+          assessmentCode: null,
+        },
+      ]);
     const onSaved = vi.fn();
-    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
-      onSaved={onSaved} onCancel={() => undefined} />);
-    fireEvent.click(await screen.findByRole('button', { name: /Aggiungi obiettivo/ }));
-    fireEvent.change(screen.getByRole('textbox', { name: 'Nome obiettivo' }),
-      { target: { value: 'Percorrere 10 km' } });
-    fireEvent.change(screen.getByRole('combobox', { name: 'Tipo obiettivo' }),
-      { target: { value: 'quantity' } });
-    fireEvent.change(screen.getByRole('spinbutton', { name: 'Valore obiettivo' }),
-      { target: { value: '10' } });
-    fireEvent.change(screen.getByRole('textbox', { name: 'Unità di misura' }),
-      { target: { value: 'km' } });
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={onSaved}
+        onCancel={() => undefined}
+      />,
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: /Aggiungi obiettivo/ }),
+    );
+    fireEvent.change(screen.getByRole('textbox', { name: 'Nome obiettivo' }), {
+      target: { value: 'Percorrere 10 km' },
+    });
+    fireEvent.change(screen.getByRole('combobox', { name: 'Tipo obiettivo' }), {
+      target: { value: 'quantity' },
+    });
+    fireEvent.change(
+      screen.getByRole('spinbutton', { name: 'Valore obiettivo' }),
+      { target: { value: '10' } },
+    );
+    fireEvent.change(screen.getByRole('textbox', { name: 'Unità di misura' }), {
+      target: { value: 'km' },
+    });
     expect(applyActivityEdits).not.toHaveBeenCalled();
     await submitEditor();
-    expect(await screen.findByRole('alert')).toHaveProperty('textContent',
-      expect.stringContaining('Errore temporaneo'));
+    expect(await screen.findByRole('alert')).toHaveProperty(
+      'textContent',
+      expect.stringContaining('Errore temporaneo'),
+    );
     expect(onSaved).not.toHaveBeenCalled();
     await submitEditor();
     await waitFor(() => expect(applyActivityEdits).toHaveBeenCalledTimes(2));
-    expect(applyActivityEdits.mock.calls[0]?.[1].add[0]?.operationId)
-      .toEqual(applyActivityEdits.mock.calls[1]?.[1].add[0]?.operationId);
+    expect(applyActivityEdits.mock.calls[0]?.[1].add[0]?.operationId).toEqual(
+      applyActivityEdits.mock.calls[1]?.[1].add[0]?.operationId,
+    );
     expect(applyActivityEdits.mock.calls[0]?.[1].add[0]).toMatchObject({
-      label: 'Percorrere 10 km', resultKind: 'quantity',
-      comparatorCode: 'gte', targetValue: 10, unitCode: 'km',
+      label: 'Percorrere 10 km',
+      resultKind: 'quantity',
+      comparatorCode: 'gte',
+      targetValue: 10,
+      unitCode: 'km',
     });
     await waitFor(() => expect(onSaved).toHaveBeenCalledWith(profile));
   });
 
   it('removes a staged Objective via X and defers persisted retirement until Save', async () => {
-    const unobserved = { ...objective, observationRef: null, evaluationStateRef: null,
-      observedNumeric: null, assessmentCode: null };
-    loadSettings.mockResolvedValueOnce({ ...currentSettings, objectives: [unobserved] });
-    getDefinition.mockResolvedValueOnce({ ...unobserved, definitionRevision: 3 });
+    const unobserved = {
+      ...objective,
+      observationRef: null,
+      evaluationStateRef: null,
+      observedNumeric: null,
+      assessmentCode: null,
+    };
+    loadSettings.mockResolvedValueOnce({
+      ...currentSettings,
+      objectives: [unobserved],
+    });
+    getDefinition.mockResolvedValueOnce({
+      ...unobserved,
+      definitionRevision: 3,
+    });
     applyActivityEdits.mockResolvedValueOnce([]);
-    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
-      onSaved={() => undefined} onCancel={() => undefined} />);
-    fireEvent.click(await screen.findByRole('button', { name: 'Rimuovi obiettivo Corsa 10 km' }));
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
+    );
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: 'Rimuovi obiettivo Corsa 10 km',
+      }),
+    );
     expect(applyActivityEdits).not.toHaveBeenCalled();
-    expect(screen.queryByRole('button', { name: 'Rimuovi obiettivo Corsa 10 km' })).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: 'Rimuovi obiettivo Corsa 10 km' }),
+    ).toBeNull();
     await submitEditor();
-    await waitFor(() => expect(applyActivityEdits).toHaveBeenCalledWith(ref, {
-      add: [], revise: [],
-      retire: [expect.objectContaining({
-        objectiveRef: objective.objectiveRef, expectedRevision: 3,
-      })],
-    }));
+    await waitFor(() =>
+      expect(applyActivityEdits).toHaveBeenCalledWith(ref, {
+        add: [],
+        revise: [],
+        retire: [
+          expect.objectContaining({
+            objectiveRef: objective.objectiveRef,
+            expectedRevision: 3,
+          }),
+        ],
+      }),
+    );
   });
 
   it('allows undo of a pending removal before saving', async () => {
-    loadSettings.mockResolvedValueOnce({ ...currentSettings, objectives: [objective] });
-    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
-      onSaved={() => undefined} onCancel={() => undefined} />);
-    fireEvent.click(await screen.findByRole('button', { name: 'Rimuovi obiettivo Corsa 10 km' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Ripristina obiettivi rimossi' }));
-    expect(screen.getByRole('button', { name: 'Rimuovi obiettivo Corsa 10 km' })).toBeTruthy();
+    loadSettings.mockResolvedValueOnce({
+      ...currentSettings,
+      objectives: [objective],
+    });
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
+    );
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: 'Rimuovi obiettivo Corsa 10 km',
+      }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Ripristina obiettivi rimossi' }),
+    );
+    expect(
+      screen.getByRole('button', { name: 'Rimuovi obiettivo Corsa 10 km' }),
+    ).toBeTruthy();
     expect(applyActivityEdits).not.toHaveBeenCalled();
   });
 
   for (const timed of [false, true]) {
     it(`adds a ${timed ? 'timed' : 'untimed'} Session while preserving the protected Activity`, async () => {
-      const settings = { ...currentSettings,
-        placementProtected: true, placementLockScheduleRef: 'envelope',
+      const settings = {
+        ...currentSettings,
+        placementProtected: true,
+        placementLockScheduleRef: 'envelope',
         placementLockRevision: 1,
-        schedules: [{
-          scheduleRef: 'envelope', role: 'envelope' as const, name: null, order: 0,
-          placementStateRef: 'state-0', temporalForm: 'named_zone_local',
-          start: '2026-10-09T09:00:00', end: '2026-10-09T12:00:00',
-          zoneId: 'Europe/Rome',
-        }],
+        schedules: [
+          {
+            scheduleRef: 'envelope',
+            role: 'envelope' as const,
+            name: null,
+            order: 0,
+            placementStateRef: 'state-0',
+            temporalForm: 'named_zone_local',
+            start: '2026-10-09T09:00:00',
+            end: '2026-10-09T12:00:00',
+            zoneId: 'Europe/Rome',
+          },
+        ],
       };
       loadSettings.mockResolvedValueOnce(settings);
       applyReplan.mockResolvedValueOnce(settings);
-      render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
-        onSaved={() => undefined} onCancel={() => undefined} />);
-      fireEvent.click(await screen.findByRole('button', { name: /＋ Sessione/ }));
-      const input = await screen.findByRole('textbox', { name: 'Nome Sessione' });
+      render(
+        <ActivityEditPanel
+          profile={profile}
+          closeRequestRef={createRef()}
+          onSaved={() => undefined}
+          onCancel={() => undefined}
+        />,
+      );
+      fireEvent.click(
+        await screen.findByRole('button', { name: /＋ Sessione/ }),
+      );
+      const input = await screen.findByRole('textbox', {
+        name: 'Nome Sessione',
+      });
       fireEvent.change(input, { target: { value: 'Nuova Sessione' } });
       if (timed) {
         fireEvent.click(screen.getByRole('button', { name: 'Orario' }));
       }
       await submitEditor();
-      await waitFor(() => expect(applyReplan).toHaveBeenCalledWith(
-        ref, settings, expect.objectContaining({
-          newPlanned: [expect.objectContaining({
-            name: 'Nuova Sessione',
-            start: timed ? '2026-10-09T09:00' : '',
-            end: timed ? '2026-10-09T12:00' : '',
-          })],
-        }), expect.any(String),
-      ));
+      await waitFor(() =>
+        expect(applyReplan).toHaveBeenCalledWith(
+          ref,
+          settings,
+          expect.objectContaining({
+            newPlanned: [
+              expect.objectContaining({
+                name: 'Nuova Sessione',
+                start: timed ? '2026-10-09T09:00' : '',
+                end: timed ? '2026-10-09T12:00' : '',
+              }),
+            ],
+          }),
+          expect.any(String),
+        ),
+      );
       expect(setPlacementProtected).not.toHaveBeenCalled();
     });
   }
 
   it('saves a planning change directly from Salva modifiche', async () => {
-    const settings = { ...currentSettings, schedules: [
-      { scheduleRef: 'envelope', role: 'envelope', name: null, order: 0,
-        placementStateRef: 'state-0', temporalForm: 'named_zone_local',
-        start: '2026-10-09T09:00:00', end: '2026-10-09T12:00:00', zoneId: 'Europe/Rome' },
-      { scheduleRef: 'interval', role: 'interval', name: null, order: 1,
-        placementStateRef: 'state-1', temporalForm: 'named_zone_local',
-        start: '2026-10-09T09:00:00', end: '2026-10-09T10:00:00', zoneId: 'Europe/Rome' },
-    ] };
+    const settings = {
+      ...currentSettings,
+      schedules: [
+        {
+          scheduleRef: 'envelope',
+          role: 'envelope',
+          name: null,
+          order: 0,
+          placementStateRef: 'state-0',
+          temporalForm: 'named_zone_local',
+          start: '2026-10-09T09:00:00',
+          end: '2026-10-09T12:00:00',
+          zoneId: 'Europe/Rome',
+        },
+        {
+          scheduleRef: 'interval',
+          role: 'interval',
+          name: null,
+          order: 1,
+          placementStateRef: 'state-1',
+          temporalForm: 'named_zone_local',
+          start: '2026-10-09T09:00:00',
+          end: '2026-10-09T10:00:00',
+          zoneId: 'Europe/Rome',
+        },
+      ],
+    };
     loadSettings.mockResolvedValueOnce(settings);
-    previewReplan.mockResolvedValueOnce([{ scheduleRef: 'interval', role: 'interval',
-      previousStart: '2026-10-09T09:00:00', previousEnd: '2026-10-09T10:00:00',
-      proposedStart: '2026-10-09T10:00:00', proposedEnd: '2026-10-09T11:00:00' }]);
+    previewReplan.mockResolvedValueOnce([
+      {
+        scheduleRef: 'interval',
+        role: 'interval',
+        previousStart: '2026-10-09T09:00:00',
+        previousEnd: '2026-10-09T10:00:00',
+        proposedStart: '2026-10-09T10:00:00',
+        proposedEnd: '2026-10-09T11:00:00',
+      },
+    ]);
     applyReplan.mockResolvedValueOnce(settings);
     const onSaved = vi.fn();
-    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
-      onSaved={onSaved} onCancel={() => undefined} />);
-    fireEvent.click((await screen.findAllByRole('button', { name: 'Inizio: aumenta ora' }))[0]!);
-    expect(screen.getAllByRole('group', { name: 'Fine' })[0]!
-      .querySelector('[data-create-path="endTime-interval"]')).toHaveProperty('value', '10:00');
-    fireEvent.click(screen.getAllByRole('button', { name: 'Fine: aumenta ora' })[0]!);
-    expect(screen.queryByRole('button', { name: 'Verifica spostamento' })).toBeNull();
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={onSaved}
+        onCancel={() => undefined}
+      />,
+    );
+    fireEvent.click(
+      (
+        await screen.findAllByRole('button', { name: 'Inizio: aumenta ora' })
+      )[0]!,
+    );
+    expect(
+      screen
+        .getAllByRole('group', { name: 'Fine' })[0]!
+        .querySelector('[data-create-path="endTime-interval"]'),
+    ).toHaveProperty('value', '10:00');
+    fireEvent.click(
+      screen.getAllByRole('button', { name: 'Fine: aumenta ora' })[0]!,
+    );
+    expect(
+      screen.queryByRole('button', { name: 'Verifica spostamento' }),
+    ).toBeNull();
     await submitEditor();
     await waitFor(() => expect(applyReplan).toHaveBeenCalledOnce());
     expect(applyReplan.mock.calls[0]?.[2].times.interval).toEqual({
-      start: '2026-10-09T10:00', end: '2026-10-09T11:00',
+      start: '2026-10-09T10:00',
+      end: '2026-10-09T11:00',
     });
     expect(previewReplan).not.toHaveBeenCalled();
     expect(onSaved).toHaveBeenCalledWith(profile);
   });
 
   it('saves additions and removals of planned Sessions in one action', async () => {
-    const settings = { ...currentSettings, schedules: [
-      { scheduleRef: 'envelope', role: 'envelope', name: null, order: 0,
-        placementStateRef: 'state-0', temporalForm: 'named_zone_local',
-        start: '2026-10-09T09:00:00', end: '2026-10-09T12:00:00', zoneId: 'Europe/Rome' },
-      { scheduleRef: 'interval', role: 'interval', name: null, order: 1,
-        placementStateRef: 'state-1', temporalForm: 'named_zone_local',
-        start: '2026-10-09T09:00:00', end: '2026-10-09T12:00:00', zoneId: 'Europe/Rome' },
-      { scheduleRef: 'planned', role: 'planned', name: 'Prima', order: 1,
-        placementStateRef: 'state-2', temporalForm: 'named_zone_local',
-        start: '2026-10-09T09:00:00', end: '2026-10-09T10:00:00', zoneId: 'Europe/Rome' },
-    ] };
+    const settings = {
+      ...currentSettings,
+      schedules: [
+        {
+          scheduleRef: 'envelope',
+          role: 'envelope',
+          name: null,
+          order: 0,
+          placementStateRef: 'state-0',
+          temporalForm: 'named_zone_local',
+          start: '2026-10-09T09:00:00',
+          end: '2026-10-09T12:00:00',
+          zoneId: 'Europe/Rome',
+        },
+        {
+          scheduleRef: 'interval',
+          role: 'interval',
+          name: null,
+          order: 1,
+          placementStateRef: 'state-1',
+          temporalForm: 'named_zone_local',
+          start: '2026-10-09T09:00:00',
+          end: '2026-10-09T12:00:00',
+          zoneId: 'Europe/Rome',
+        },
+        {
+          scheduleRef: 'planned',
+          role: 'planned',
+          name: 'Prima',
+          order: 1,
+          placementStateRef: 'state-2',
+          temporalForm: 'named_zone_local',
+          start: '2026-10-09T09:00:00',
+          end: '2026-10-09T10:00:00',
+          zoneId: 'Europe/Rome',
+        },
+      ],
+    };
     loadSettings.mockResolvedValueOnce(settings);
-    previewReplan.mockResolvedValueOnce([{ scheduleRef: 'planned', clientRef: null,
-      role: 'planned_removed', previousStart: '2026-10-09T09:00:00',
-      previousEnd: '2026-10-09T10:00:00', proposedStart: null, proposedEnd: null }]);
-    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
-      onSaved={() => undefined} onCancel={() => undefined} />);
-    fireEvent.click((await screen.findByRole('textbox', { name: 'Nome Sessione' }))
-      .closest('[data-edit-planned-session]')!.querySelector('button[aria-controls]')!);
+    previewReplan.mockResolvedValueOnce([
+      {
+        scheduleRef: 'planned',
+        clientRef: null,
+        role: 'planned_removed',
+        previousStart: '2026-10-09T09:00:00',
+        previousEnd: '2026-10-09T10:00:00',
+        proposedStart: null,
+        proposedEnd: null,
+      },
+    ]);
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
+    );
+    fireEvent.click(
+      (await screen.findByRole('textbox', { name: 'Nome Sessione' }))
+        .closest('[data-edit-planned-session]')!
+        .querySelector('button[aria-controls]')!,
+    );
     fireEvent.click(screen.getByRole('button', { name: '＋ Sessione' }));
     const newSession = document.querySelector('[data-edit-new-session]')!;
     fireEvent.click(newSession.querySelector('button[aria-controls]')!);
-    fireEvent.change(newSession.querySelector('[aria-label="Nome Sessione"]')!,
-      { target: { value: 'Seconda' } });
-    fireEvent.change(newSession.querySelector('[data-create-path^="newStart-"]')!,
-      { target: { value: '10:00' } });
-    fireEvent.change(newSession.querySelector('[data-create-path^="newEnd-"]')!,
-      { target: { value: '11:00' } });
+    fireEvent.change(
+      newSession.querySelector('[aria-label="Nome Sessione"]')!,
+      { target: { value: 'Seconda' } },
+    );
+    fireEvent.change(
+      newSession.querySelector('[data-create-path^="newStart-"]')!,
+      { target: { value: '10:00' } },
+    );
+    fireEvent.change(
+      newSession.querySelector('[data-create-path^="newEnd-"]')!,
+      { target: { value: '11:00' } },
+    );
     await submitEditor();
-    await waitFor(() => expect(applyReplan).toHaveBeenCalledWith(ref, settings,
-      expect.objectContaining({ removedPlanned: ['planned'], newPlanned: [
-        expect.objectContaining({ name: 'Seconda', start: '2026-10-09T10:00',
-          end: '2026-10-09T11:00' }),
-      ] }), expect.any(String)));
+    await waitFor(() =>
+      expect(applyReplan).toHaveBeenCalledWith(
+        ref,
+        settings,
+        expect.objectContaining({
+          removedPlanned: ['planned'],
+          newPlanned: [
+            expect.objectContaining({
+              name: 'Seconda',
+              start: '2026-10-09T10:00',
+              end: '2026-10-09T11:00',
+            }),
+          ],
+        }),
+        expect.any(String),
+      ),
+    );
     expect(previewReplan).not.toHaveBeenCalled();
   });
 
   it('retires an existing planned Session separately from clearing its time', async () => {
-    const settings = { ...currentSettings, schedules: [
-      { scheduleRef: 'envelope', role: 'envelope', name: null, order: 0,
-        placementStateRef: 'state-0', temporalForm: 'named_zone_local',
-        start: '2026-10-09T09:00:00', end: '2026-10-09T12:00:00', zoneId: 'Europe/Rome' },
-      { scheduleRef: 'planned', role: 'planned', name: 'Prima', order: 1,
-        placementStateRef: 'state-2', temporalForm: 'named_zone_local',
-        start: '2026-10-09T09:00:00', end: '2026-10-09T10:00:00', zoneId: 'Europe/Rome' },
-    ] };
+    const settings = {
+      ...currentSettings,
+      schedules: [
+        {
+          scheduleRef: 'envelope',
+          role: 'envelope',
+          name: null,
+          order: 0,
+          placementStateRef: 'state-0',
+          temporalForm: 'named_zone_local',
+          start: '2026-10-09T09:00:00',
+          end: '2026-10-09T12:00:00',
+          zoneId: 'Europe/Rome',
+        },
+        {
+          scheduleRef: 'planned',
+          role: 'planned',
+          name: 'Prima',
+          order: 1,
+          placementStateRef: 'state-2',
+          temporalForm: 'named_zone_local',
+          start: '2026-10-09T09:00:00',
+          end: '2026-10-09T10:00:00',
+          zoneId: 'Europe/Rome',
+        },
+      ],
+    };
     loadSettings.mockResolvedValueOnce(settings);
-    applyReplan.mockResolvedValueOnce({ ...settings,
-      schedules: settings.schedules.filter((row) => row.role !== 'planned') });
+    applyReplan.mockResolvedValueOnce({
+      ...settings,
+      schedules: settings.schedules.filter((row) => row.role !== 'planned'),
+    });
     const onSaved = vi.fn();
-    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
-      onSaved={onSaved} onCancel={() => undefined} />);
-    const remove = await screen.findByRole('button', { name: 'Rimuovi Sessione' });
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={onSaved}
+        onCancel={() => undefined}
+      />,
+    );
+    const remove = await screen.findByRole('button', {
+      name: 'Rimuovi Sessione',
+    });
     fireEvent.click(remove);
     expect(screen.queryByRole('textbox', { name: 'Nome Sessione' })).toBeNull();
     await submitEditor();
-    await waitFor(() => expect(applyReplan).toHaveBeenCalledWith(ref, settings,
-      expect.objectContaining({ deletedPlanned: ['planned'], removedPlanned: [] }),
-      expect.any(String)));
+    await waitFor(() =>
+      expect(applyReplan).toHaveBeenCalledWith(
+        ref,
+        settings,
+        expect.objectContaining({
+          deletedPlanned: ['planned'],
+          removedPlanned: [],
+        }),
+        expect.any(String),
+      ),
+    );
     expect(onSaved).toHaveBeenCalledWith(profile);
   });
 
   it('edits the single overall interval of an Activity without role intervals', async () => {
-    const settings = { ...currentSettings, schedules: [
-      { scheduleRef: 'envelope', role: 'envelope', name: null, order: 0,
-        placementStateRef: 'state-0', temporalForm: 'named_zone_local',
-        start: '2026-10-09T09:00:00', end: '2026-10-09T12:00:00',
-        zoneId: 'Europe/Rome' },
-    ] };
+    const settings = {
+      ...currentSettings,
+      schedules: [
+        {
+          scheduleRef: 'envelope',
+          role: 'envelope',
+          name: null,
+          order: 0,
+          placementStateRef: 'state-0',
+          temporalForm: 'named_zone_local',
+          start: '2026-10-09T09:00:00',
+          end: '2026-10-09T12:00:00',
+          zoneId: 'Europe/Rome',
+        },
+      ],
+    };
     loadSettings.mockResolvedValueOnce(settings);
-    previewReplan.mockResolvedValueOnce([{ scheduleRef: 'envelope', role: 'envelope',
-      previousStart: '2026-10-09T09:00:00', previousEnd: '2026-10-09T12:00:00',
-      proposedStart: '2026-10-09T10:00:00', proposedEnd: '2026-10-09T13:00:00' }]);
-    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
-      onSaved={() => undefined} onCancel={() => undefined} />);
-    fireEvent.click(await screen.findByRole('button', { name: 'Inizio: aumenta ora' }));
+    previewReplan.mockResolvedValueOnce([
+      {
+        scheduleRef: 'envelope',
+        role: 'envelope',
+        previousStart: '2026-10-09T09:00:00',
+        previousEnd: '2026-10-09T12:00:00',
+        proposedStart: '2026-10-09T10:00:00',
+        proposedEnd: '2026-10-09T13:00:00',
+      },
+    ]);
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Inizio: aumenta ora' }),
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Fine: aumenta ora' }));
     await submitEditor();
-    await waitFor(() => expect(applyReplan).toHaveBeenCalledWith(ref, settings,
-      expect.objectContaining({ times: expect.objectContaining({
-        envelope: { start: '2026-10-09T10:00', end: '2026-10-09T13:00' },
-      }) }), expect.any(String)));
-    expect(screen.queryByRole('button', { name: 'Aggiungi intervallo' })).toBeNull();
+    await waitFor(() =>
+      expect(applyReplan).toHaveBeenCalledWith(
+        ref,
+        settings,
+        expect.objectContaining({
+          times: expect.objectContaining({
+            envelope: { start: '2026-10-09T10:00', end: '2026-10-09T13:00' },
+          }),
+        }),
+        expect.any(String),
+      ),
+    );
+    expect(
+      screen.queryByRole('button', { name: 'Aggiungi intervallo' }),
+    ).toBeNull();
   });
 
   it('marks the incorrect time and leaves Save usable while the interval is invalid', async () => {
-    const settings = { ...currentSettings, schedules: [
-      { scheduleRef: 'envelope', role: 'envelope', name: null, order: 0,
-        placementStateRef: 'state-0', temporalForm: 'named_zone_local',
-        start: '2026-10-09T21:30:00', end: '2026-10-09T22:30:00', zoneId: 'Europe/Rome' },
-    ] };
+    const settings = {
+      ...currentSettings,
+      schedules: [
+        {
+          scheduleRef: 'envelope',
+          role: 'envelope',
+          name: null,
+          order: 0,
+          placementStateRef: 'state-0',
+          temporalForm: 'named_zone_local',
+          start: '2026-10-09T21:30:00',
+          end: '2026-10-09T22:30:00',
+          zoneId: 'Europe/Rome',
+        },
+      ],
+    };
     loadSettings.mockResolvedValueOnce(settings);
-    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
-      onSaved={() => undefined} onCancel={() => undefined} />);
-    fireEvent.click(await screen.findByRole('button', { name: 'Fine: diminuisci ora' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Fine: diminuisci ora' }));
-    expect(screen.getByRole('button', { name: 'Salva modifiche' }))
-      .toHaveProperty('disabled', false);
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Fine: diminuisci ora' }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Fine: diminuisci ora' }),
+    );
+    expect(
+      screen.getByRole('button', { name: 'Salva modifiche' }),
+    ).toHaveProperty('disabled', false);
     const time = document.querySelector('.timeline-activity-editor__when')!;
     expect(time.getAttribute('data-edit-invalid')).toBe('true');
     expect(time.textContent).toContain('La fine deve seguire l’inizio.');
@@ -618,124 +1020,269 @@ describe('Activity Inspector', () => {
   });
 
   it('marks only the planned Session when it falls outside the Activity time', async () => {
-    loadSettings.mockResolvedValueOnce({ ...currentSettings, schedules: [
-      { scheduleRef: 'envelope', role: 'envelope', name: null, order: 0,
-        placementStateRef: 'state-0', temporalForm: 'named_zone_local',
-        start: '2026-10-09T09:00:00', end: '2026-10-09T12:00:00', zoneId: 'Europe/Rome' },
-      { scheduleRef: 'planned', role: 'planned', name: 'Studio', order: 1,
-        placementStateRef: 'state-1', temporalForm: 'named_zone_local',
-        start: '2026-10-09T10:00:00', end: '2026-10-09T11:00:00', zoneId: 'Europe/Rome' },
-    ] });
-    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
-      onSaved={() => undefined} onCancel={() => undefined} />);
-    fireEvent.click(await screen.findByRole('button', { name: 'Fine Sessione: aumenta ora' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Fine Sessione: aumenta ora' }));
-    const sessionTime = document.querySelector('[data-edit-planned-session] .temporal-create-tree-time-editor')!;
+    loadSettings.mockResolvedValueOnce({
+      ...currentSettings,
+      schedules: [
+        {
+          scheduleRef: 'envelope',
+          role: 'envelope',
+          name: null,
+          order: 0,
+          placementStateRef: 'state-0',
+          temporalForm: 'named_zone_local',
+          start: '2026-10-09T09:00:00',
+          end: '2026-10-09T12:00:00',
+          zoneId: 'Europe/Rome',
+        },
+        {
+          scheduleRef: 'planned',
+          role: 'planned',
+          name: 'Studio',
+          order: 1,
+          placementStateRef: 'state-1',
+          temporalForm: 'named_zone_local',
+          start: '2026-10-09T10:00:00',
+          end: '2026-10-09T11:00:00',
+          zoneId: 'Europe/Rome',
+        },
+      ],
+    });
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Fine Sessione: aumenta ora' }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Fine Sessione: aumenta ora' }),
+    );
+    const sessionTime = document.querySelector(
+      '[data-edit-planned-session] .temporal-create-tree-time-editor',
+    )!;
     expect(sessionTime.getAttribute('data-edit-invalid')).toBe('true');
-    expect(sessionTime.textContent).toContain('Fuori dall’orario dell’attività.');
-    expect(document.querySelector('.timeline-activity-editor__when')!
-      .getAttribute('data-edit-invalid')).toBe('false');
+    expect(sessionTime.textContent).toContain(
+      'Fuori dall’orario dell’attività.',
+    );
+    expect(
+      document
+        .querySelector('.timeline-activity-editor__when')!
+        .getAttribute('data-edit-invalid'),
+    ).toBe('false');
     await submitEditor();
     expect(applyReplan).not.toHaveBeenCalled();
   });
 
   it('retries a failed time save without losing the edited time', async () => {
-    const settings = { ...currentSettings, schedules: [
-      { scheduleRef: 'envelope', role: 'envelope', name: null, order: 0,
-        placementStateRef: 'state-0', temporalForm: 'named_zone_local',
-        start: '2026-10-09T09:00:00', end: '2026-10-09T12:00:00', zoneId: 'Europe/Rome' },
-    ] };
+    const settings = {
+      ...currentSettings,
+      schedules: [
+        {
+          scheduleRef: 'envelope',
+          role: 'envelope',
+          name: null,
+          order: 0,
+          placementStateRef: 'state-0',
+          temporalForm: 'named_zone_local',
+          start: '2026-10-09T09:00:00',
+          end: '2026-10-09T12:00:00',
+          zoneId: 'Europe/Rome',
+        },
+      ],
+    };
     loadSettings.mockResolvedValueOnce(settings);
-    applyReplan.mockRejectedValueOnce(new Error('Connessione interrotta'))
+    applyReplan
+      .mockRejectedValueOnce(new Error('Connessione interrotta'))
       .mockResolvedValueOnce(settings);
     const onSaved = vi.fn();
-    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
-      onSaved={onSaved} onCancel={() => undefined} />);
-    fireEvent.click(await screen.findByRole('button', { name: 'Fine: aumenta ora' }));
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={onSaved}
+        onCancel={() => undefined}
+      />,
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Fine: aumenta ora' }),
+    );
     await submitEditor();
-    expect(await screen.findByRole('alert')).toHaveProperty('textContent', 'Connessione interrotta');
+    expect(await screen.findByRole('alert')).toHaveProperty(
+      'textContent',
+      'Connessione interrotta',
+    );
     expect(onSaved).not.toHaveBeenCalled();
-    expect(screen.getByRole('button', { name: 'Salva modifiche' }))
-      .toHaveProperty('disabled', false);
+    expect(
+      screen.getByRole('button', { name: 'Salva modifiche' }),
+    ).toHaveProperty('disabled', false);
     await submitEditor();
     await waitFor(() => expect(onSaved).toHaveBeenCalledWith(profile));
     expect(applyReplan.mock.calls[1]?.[3]).toBe(applyReplan.mock.calls[0]?.[3]);
   });
 
   it('persists protection from Salva modifiche', async () => {
-    const settings = { ...currentSettings, placementLockScheduleRef: 'envelope',
-      placementLockRevision: 2 };
+    const settings = {
+      ...currentSettings,
+      placementLockScheduleRef: 'envelope',
+      placementLockRevision: 2,
+    };
     loadSettings.mockResolvedValueOnce(settings);
     setPlacementProtected.mockResolvedValueOnce({
-      ...settings, placementProtected: true, placementLockRevision: 3,
+      ...settings,
+      placementProtected: true,
+      placementLockRevision: 3,
     });
     const onSaved = vi.fn();
-    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
-      onSaved={onSaved} onCancel={() => undefined} />);
-    const toggle = await screen.findByRole('button', { name: 'Blocca spostamenti' });
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={onSaved}
+        onCancel={() => undefined}
+      />,
+    );
+    const toggle = await screen.findByRole('button', {
+      name: 'Blocca spostamenti',
+    });
     fireEvent.click(toggle);
     await submitEditor();
-    await waitFor(() => expect(setPlacementProtected).toHaveBeenCalledWith(
-      settings, true,
-    ));
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Sblocca spostamenti' })
-      .getAttribute('aria-pressed')).toBe('true'));
+    await waitFor(() =>
+      expect(setPlacementProtected).toHaveBeenCalledWith(settings, true),
+    );
+    await waitFor(() =>
+      expect(
+        screen
+          .getByRole('button', { name: 'Sblocca spostamenti' })
+          .getAttribute('aria-pressed'),
+      ).toBe('true'),
+    );
     expect(onSaved).toHaveBeenCalledWith(profile);
   });
 
   it('changes Life Area with the accepted assignment revision', async () => {
-    const catalog = { currentRef: null, currentRevision: 0,
-      options: [{ ref: 'new-area', name: 'Lavoro' }] };
+    const catalog = {
+      currentRef: null,
+      currentRevision: 0,
+      options: [{ ref: 'new-area', name: 'Lavoro' }],
+    };
     loadLifeAreaChoice.mockResolvedValueOnce(catalog);
     assignLifeArea.mockResolvedValueOnce({
-      ...catalog, currentRef: 'new-area', currentRevision: 1,
+      ...catalog,
+      currentRef: 'new-area',
+      currentRevision: 1,
     });
-    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
-      onSaved={() => undefined} onCancel={() => undefined} />);
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
+    );
     const area = await screen.findByRole('textbox', { name: 'Area assegnata' });
     fireEvent.change(area, { target: { value: 'Lavoro' } });
     fireEvent.click(screen.getByRole('option', { name: 'Lavoro' }));
     await submitEditor();
-    await waitFor(() => expect(assignLifeArea).toHaveBeenCalledWith(
-      ref, catalog, 'new-area', expect.any(String),
-    ));
+    await waitFor(() =>
+      expect(assignLifeArea).toHaveBeenCalledWith(
+        ref,
+        catalog,
+        'new-area',
+        expect.any(String),
+      ),
+    );
   });
 
   it('saves a replacement Activity interval without deleting historical rows', async () => {
-    const settings = { ...currentSettings, schedules: [
-      { scheduleRef: 'envelope', role: 'envelope', name: null, order: 0,
-        placementStateRef: 'state-0', temporalForm: 'named_zone_local',
-        start: '2026-10-09T09:00:00', end: '2026-10-09T12:00:00', zoneId: 'Europe/Rome' },
-      { scheduleRef: 'interval', role: 'interval', name: null, order: 1,
-        placementStateRef: 'state-1', temporalForm: 'named_zone_local',
-        start: '2026-10-09T09:00:00', end: '2026-10-09T12:00:00', zoneId: 'Europe/Rome' },
-    ] };
+    const settings = {
+      ...currentSettings,
+      schedules: [
+        {
+          scheduleRef: 'envelope',
+          role: 'envelope',
+          name: null,
+          order: 0,
+          placementStateRef: 'state-0',
+          temporalForm: 'named_zone_local',
+          start: '2026-10-09T09:00:00',
+          end: '2026-10-09T12:00:00',
+          zoneId: 'Europe/Rome',
+        },
+        {
+          scheduleRef: 'interval',
+          role: 'interval',
+          name: null,
+          order: 1,
+          placementStateRef: 'state-1',
+          temporalForm: 'named_zone_local',
+          start: '2026-10-09T09:00:00',
+          end: '2026-10-09T12:00:00',
+          zoneId: 'Europe/Rome',
+        },
+      ],
+    };
     loadSettings.mockResolvedValueOnce(settings);
     previewReplan.mockResolvedValueOnce([
-      { scheduleRef: 'interval', clientRef: null, role: 'interval_removed',
-        previousStart: '2026-10-09T09:00:00', previousEnd: '2026-10-09T12:00:00',
-        proposedStart: null, proposedEnd: null },
-      { scheduleRef: null, clientRef: 'new', role: 'interval_added',
-        previousStart: null, previousEnd: null,
-        proposedStart: '2026-10-09T10:00:00', proposedEnd: '2026-10-09T11:00:00' },
+      {
+        scheduleRef: 'interval',
+        clientRef: null,
+        role: 'interval_removed',
+        previousStart: '2026-10-09T09:00:00',
+        previousEnd: '2026-10-09T12:00:00',
+        proposedStart: null,
+        proposedEnd: null,
+      },
+      {
+        scheduleRef: null,
+        clientRef: 'new',
+        role: 'interval_added',
+        previousStart: null,
+        previousEnd: null,
+        proposedStart: '2026-10-09T10:00:00',
+        proposedEnd: '2026-10-09T11:00:00',
+      },
     ]);
-    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
-      onSaved={() => undefined} onCancel={() => undefined} />);
-    fireEvent.click(await screen.findByRole('button', { name: 'Rimuovi intervallo' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi intervallo' }));
-    fireEvent.change(screen.getByLabelText('Inizio nuovo intervallo'),
-      { target: { value: '2026-10-09T10:00' } });
-    fireEvent.change(screen.getByLabelText('Fine nuovo intervallo'),
-      { target: { value: '2026-10-09T11:00' } });
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Rimuovi intervallo' }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Aggiungi intervallo' }),
+    );
+    fireEvent.change(screen.getByLabelText('Inizio nuovo intervallo'), {
+      target: { value: '2026-10-09T10:00' },
+    });
+    fireEvent.change(screen.getByLabelText('Fine nuovo intervallo'), {
+      target: { value: '2026-10-09T11:00' },
+    });
     await submitEditor();
-    await waitFor(() => expect(applyReplan).toHaveBeenCalledWith(
-      ref, settings, expect.objectContaining({
-        removedIntervals: ['interval'],
-        newIntervals: [expect.objectContaining({
-          start: '2026-10-09T10:00', end: '2026-10-09T11:00',
-        })],
-      }), expect.any(String),
-    ));
+    await waitFor(() =>
+      expect(applyReplan).toHaveBeenCalledWith(
+        ref,
+        settings,
+        expect.objectContaining({
+          removedIntervals: ['interval'],
+          newIntervals: [
+            expect.objectContaining({
+              start: '2026-10-09T10:00',
+              end: '2026-10-09T11:00',
+            }),
+          ],
+        }),
+        expect.any(String),
+      ),
+    );
   });
 
   it('guards unsaved changes for external close requests', () => {
@@ -791,46 +1338,59 @@ describe('Activity Inspector', () => {
     loadRecurringContext.mockResolvedValueOnce({
       occurrenceRef: '0199a222-2222-7222-8222-222222222222',
       sourceRef: '0199a444-4444-7444-8444-444444444444',
-      editRevision: 3, recurrenceStateRef: null,
+      editRevision: 3,
+      recurrenceStateRef: null,
     });
     const onDuplicate = vi.fn();
-    render(<ActivityInspectorActions activityRef={ref}
-      onEdit={() => undefined} onDeleted={() => undefined}
-      onDuplicate={onDuplicate} />);
+    render(
+      <ActivityInspectorActions
+        activityRef={ref}
+        onEdit={() => undefined}
+        onDeleted={() => undefined}
+        onDuplicate={onDuplicate}
+      />,
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Duplica' }));
-    expect((await screen.findByRole('alert')).textContent)
-      .toContain('duplicazione fedele della ricorrenza');
+    expect((await screen.findByRole('alert')).textContent).toContain(
+      'duplicazione fedele della ricorrenza',
+    );
     expect(onDuplicate).not.toHaveBeenCalled();
   });
 
   it('refuses hidden Activity children even when the Timeline has no subitems', async () => {
     loadChildCount.mockResolvedValueOnce(1);
     const onDuplicate = vi.fn();
-    render(<ActivityInspectorActions
-      activityRef={ref}
-      onEdit={() => undefined}
-      onDeleted={() => undefined}
-      onDuplicate={onDuplicate}
-    />);
+    render(
+      <ActivityInspectorActions
+        activityRef={ref}
+        onEdit={() => undefined}
+        onDeleted={() => undefined}
+        onDuplicate={onDuplicate}
+      />,
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Duplica' }));
-    expect((await screen.findByRole('alert')).textContent)
-      .toContain('contiene sotto-attività');
+    expect((await screen.findByRole('alert')).textContent).toContain(
+      'contiene sotto-attività',
+    );
     expect(loadChildCount).toHaveBeenCalledWith(ref);
     expect(onDuplicate).not.toHaveBeenCalled();
   });
 
   it('refuses a deceptively incomplete duplicate when an Activity contains children', async () => {
     const onDuplicate = vi.fn();
-    render(<ActivityInspectorActions
-      activityRef={ref}
-      subitemsCount={2}
-      onEdit={() => undefined}
-      onDeleted={() => undefined}
-      onDuplicate={onDuplicate}
-    />);
+    render(
+      <ActivityInspectorActions
+        activityRef={ref}
+        subitemsCount={2}
+        onEdit={() => undefined}
+        onDeleted={() => undefined}
+        onDuplicate={onDuplicate}
+      />,
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Duplica' }));
-    expect((await screen.findByRole('alert')).textContent)
-      .toContain('duplicazione fedele della struttura');
+    expect((await screen.findByRole('alert')).textContent).toContain(
+      'duplicazione fedele della struttura',
+    );
     expect(onDuplicate).not.toHaveBeenCalled();
     expect(loadSettings).not.toHaveBeenCalled();
   });
@@ -857,105 +1417,236 @@ describe('Activity Inspector', () => {
   });
 
   it('saves a planned Session name from the main button', async () => {
-    loadSettings.mockResolvedValueOnce({ ...currentSettings, schedules: [{
-      scheduleRef: 'planned-m3b', role: 'planned', name: 'Preparazione', order: 0,
-      placementStateRef: 'placement-1', temporalForm: 'named_zone_local',
-      start: '2026-10-09T09:00:00', end: '2026-10-09T10:00:00',
-      zoneId: 'Europe/Rome',
-    }] });
+    loadSettings.mockResolvedValueOnce({
+      ...currentSettings,
+      schedules: [
+        {
+          scheduleRef: 'planned-m3b',
+          role: 'planned',
+          name: 'Preparazione',
+          order: 0,
+          placementStateRef: 'placement-1',
+          temporalForm: 'named_zone_local',
+          start: '2026-10-09T09:00:00',
+          end: '2026-10-09T10:00:00',
+          zoneId: 'Europe/Rome',
+        },
+      ],
+    });
     const onSaved = vi.fn();
-    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
-      onSaved={onSaved} onCancel={() => undefined} />);
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={onSaved}
+        onCancel={() => undefined}
+      />,
+    );
     const name = await screen.findByRole('textbox', { name: 'Nome Sessione' });
-    const sessions = document.querySelector('.timeline-activity-editor__sessions')!;
-    const title = document.querySelector('.timeline-activity-editor__title-row')!;
-    const schedule = document.querySelector('[aria-label="Programmazione attuale"]')!;
-    expect(title.compareDocumentPosition(sessions) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(sessions.compareDocumentPosition(schedule) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const sessions = document.querySelector(
+      '.timeline-activity-editor__sessions',
+    )!;
+    const title = document.querySelector(
+      '.timeline-activity-editor__title-row',
+    )!;
+    const schedule = document.querySelector(
+      '[aria-label="Programmazione attuale"]',
+    )!;
+    expect(
+      title.compareDocumentPosition(sessions) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      sessions.compareDocumentPosition(schedule) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
     expect(schedule.querySelector('[data-edit-planned-session]')).toBeNull();
-    expect(sessions.querySelectorAll('[data-edit-planned-session]')).toHaveLength(1);
-    expect(sessions.querySelector('.temporal-create-tree-time-editor')).toBeTruthy();
-    expect(sessions.querySelector('button[aria-controls="edit-session:planned-m3b:time"]'))
-      .toHaveProperty('disabled', true);
+    expect(
+      sessions.querySelectorAll('[data-edit-planned-session]'),
+    ).toHaveLength(1);
+    expect(
+      sessions.querySelector('.temporal-create-tree-time-editor'),
+    ).toBeTruthy();
+    expect(
+      sessions.querySelector(
+        'button[aria-controls="edit-session:planned-m3b:time"]',
+      ),
+    ).toHaveProperty('disabled', true);
     fireEvent.change(name, { target: { value: 'Preparazione approfondita' } });
     revisePlannedName.mockResolvedValueOnce('Preparazione approfondita');
     await submitEditor();
-    await waitFor(() => expect(revisePlannedName).toHaveBeenCalledWith(
-      ref, 'planned-m3b', 'Preparazione', 'Preparazione approfondita'));
+    await waitFor(() =>
+      expect(revisePlannedName).toHaveBeenCalledWith(
+        ref,
+        'planned-m3b',
+        'Preparazione',
+        'Preparazione approfondita',
+      ),
+    );
     expect(saveCore).not.toHaveBeenCalled();
     expect(onSaved).toHaveBeenCalledWith(profile);
   });
 
   it('offers an Orario toggle for an untimed planned Session and keeps its identity', async () => {
-    const settings = { ...currentSettings, schedules: [
-      { scheduleRef: 'envelope', role: 'envelope', name: null, order: 0,
-        placementStateRef: 'envelope-state', temporalForm: 'named_zone_local',
-        start: '2026-10-09T09:00:00', end: '2026-10-09T12:00:00', zoneId: 'Europe/Rome' },
-      { scheduleRef: 'untimed', role: 'planned', name: 'Studio', order: 1,
-        placementStateRef: null, temporalForm: null, start: null, end: null, zoneId: null },
-    ] };
+    const settings = {
+      ...currentSettings,
+      schedules: [
+        {
+          scheduleRef: 'envelope',
+          role: 'envelope',
+          name: null,
+          order: 0,
+          placementStateRef: 'envelope-state',
+          temporalForm: 'named_zone_local',
+          start: '2026-10-09T09:00:00',
+          end: '2026-10-09T12:00:00',
+          zoneId: 'Europe/Rome',
+        },
+        {
+          scheduleRef: 'untimed',
+          role: 'planned',
+          name: 'Studio',
+          order: 1,
+          placementStateRef: null,
+          temporalForm: null,
+          start: null,
+          end: null,
+          zoneId: null,
+        },
+      ],
+    };
     loadSettings.mockResolvedValueOnce(settings);
     previewReplan.mockResolvedValueOnce([]);
-    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
-      onSaved={() => undefined} onCancel={() => undefined} />);
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
+    );
     const name = await screen.findByRole('textbox', { name: 'Nome Sessione' });
-    const toggle = name.closest('[data-edit-planned-session]')!.querySelector('button[aria-controls]')!;
+    const toggle = name
+      .closest('[data-edit-planned-session]')!
+      .querySelector('button[aria-controls]')!;
     expect(toggle).toHaveProperty('disabled', false);
     fireEvent.click(toggle);
-    expect(screen.getByRole('button', { name: 'Ripristina orari' })).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: 'Ripristina orari' }),
+    ).toBeTruthy();
     await submitEditor();
-    await waitFor(() => expect(applyReplan).toHaveBeenCalledWith(ref, settings,
-      expect.objectContaining({ times: expect.objectContaining({
-        untimed: { start: '2026-10-09T09:00', end: '2026-10-09T12:00' },
-      }) }), expect.any(String)));
+    await waitFor(() =>
+      expect(applyReplan).toHaveBeenCalledWith(
+        ref,
+        settings,
+        expect.objectContaining({
+          times: expect.objectContaining({
+            untimed: { start: '2026-10-09T09:00', end: '2026-10-09T12:00' },
+          }),
+        }),
+        expect.any(String),
+      ),
+    );
   });
 
   it('does not turn a nonlocal temporal form into a local Schedule during edit', async () => {
-    loadSettings.mockResolvedValueOnce({ ...currentSettings, schedules: [{
-      scheduleRef: 'absolute-schedule', role: 'interval', name: null, order: 0,
-      placementStateRef: 'state-absolute', temporalForm: 'absolute_instant',
-      start: '2026-10-09T09:00:00Z', end: '2026-10-09T10:00:00Z',
-      zoneId: null,
-    }] });
-    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
-      onSaved={() => undefined} onCancel={() => undefined} />);
-    expect(await screen.findByText(/DANTE non le converte automaticamente/)).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Verifica spostamento' })).toBeNull();
+    loadSettings.mockResolvedValueOnce({
+      ...currentSettings,
+      schedules: [
+        {
+          scheduleRef: 'absolute-schedule',
+          role: 'interval',
+          name: null,
+          order: 0,
+          placementStateRef: 'state-absolute',
+          temporalForm: 'absolute_instant',
+          start: '2026-10-09T09:00:00Z',
+          end: '2026-10-09T10:00:00Z',
+          zoneId: null,
+        },
+      ],
+    });
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
+    );
+    expect(
+      await screen.findByText(/DANTE non le converte automaticamente/),
+    ).toBeTruthy();
+    expect(
+      screen.queryByRole('button', { name: 'Verifica spostamento' }),
+    ).toBeNull();
     expect(screen.queryByRole('button', { name: '＋ Sessione' })).toBeNull();
     expect(applyReplan).not.toHaveBeenCalled();
   });
 
   it('saves the planned name and time in the same submission', async () => {
-    loadSettings.mockResolvedValueOnce({ ...currentSettings, schedules: [
-      {
-        scheduleRef: 'envelope-replan', role: 'envelope', name: null, order: 0,
-        placementStateRef: 'state-envelope', temporalForm: 'named_zone_local',
-        start: '2026-10-09T08:00:00', end: '2026-10-09T11:00:00',
-        zoneId: 'Europe/Rome',
-      },
-      {
-        scheduleRef: 'interval-replan', role: 'interval', name: null, order: 0,
-        placementStateRef: 'state-interval', temporalForm: 'named_zone_local',
-        start: '2026-10-09T08:00:00', end: '2026-10-09T11:00:00',
-        zoneId: 'Europe/Rome',
-      },
-      {
-        scheduleRef: 'planned-replan', role: 'planned', name: 'Allenamento', order: 1,
-        placementStateRef: 'state-3', temporalForm: 'named_zone_local',
-        start: '2026-10-09T09:00:00', end: '2026-10-09T10:00:00',
-        zoneId: 'Europe/Rome',
-      },
-    ] });
-    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
-      onSaved={() => undefined} onCancel={() => undefined} />);
+    loadSettings.mockResolvedValueOnce({
+      ...currentSettings,
+      schedules: [
+        {
+          scheduleRef: 'envelope-replan',
+          role: 'envelope',
+          name: null,
+          order: 0,
+          placementStateRef: 'state-envelope',
+          temporalForm: 'named_zone_local',
+          start: '2026-10-09T08:00:00',
+          end: '2026-10-09T11:00:00',
+          zoneId: 'Europe/Rome',
+        },
+        {
+          scheduleRef: 'interval-replan',
+          role: 'interval',
+          name: null,
+          order: 0,
+          placementStateRef: 'state-interval',
+          temporalForm: 'named_zone_local',
+          start: '2026-10-09T08:00:00',
+          end: '2026-10-09T11:00:00',
+          zoneId: 'Europe/Rome',
+        },
+        {
+          scheduleRef: 'planned-replan',
+          role: 'planned',
+          name: 'Allenamento',
+          order: 1,
+          placementStateRef: 'state-3',
+          temporalForm: 'named_zone_local',
+          start: '2026-10-09T09:00:00',
+          end: '2026-10-09T10:00:00',
+          zoneId: 'Europe/Rome',
+        },
+      ],
+    });
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
+    );
     const name = await screen.findByRole('textbox', { name: 'Nome Sessione' });
     fireEvent.change(name, { target: { value: 'Allenamento lungo' } });
-    fireEvent.click(screen.getAllByRole('button', { name: 'Inizio: diminuisci ora' })[0]!);
+    fireEvent.click(
+      screen.getAllByRole('button', { name: 'Inizio: diminuisci ora' })[0]!,
+    );
     revisePlannedName.mockResolvedValueOnce('Allenamento lungo');
     await submitEditor();
     await waitFor(() => expect(applyReplan).toHaveBeenCalledOnce());
-    await waitFor(() => expect(revisePlannedName).toHaveBeenCalledWith(
-      ref, 'planned-replan', 'Allenamento', 'Allenamento lungo'));
+    await waitFor(() =>
+      expect(revisePlannedName).toHaveBeenCalledWith(
+        ref,
+        'planned-replan',
+        'Allenamento',
+        'Allenamento lungo',
+      ),
+    );
     expect(previewReplan).not.toHaveBeenCalled();
   });
 
@@ -963,26 +1654,49 @@ describe('Activity Inspector', () => {
     loadRecurringContext.mockResolvedValueOnce({
       occurrenceRef: '0199a222-2222-7222-8222-222222222222',
       sourceRef: '0199a444-4444-7444-8444-444444444444',
-      editRevision: 3, recurrenceStateRef: null,
+      editRevision: 3,
+      recurrenceStateRef: null,
     });
-    loadSettings.mockResolvedValueOnce({ ...currentSettings, schedules: [{
-      scheduleRef: 'planned-recurring', role: 'planned', name: 'Preparazione', order: 0,
-      placementStateRef: 'placement-2', temporalForm: 'named_zone_local',
-      start: '2026-10-09T09:00:00', end: '2026-10-09T10:00:00',
-      zoneId: 'Europe/Rome',
-    }] });
-    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
-      onSaved={() => undefined} onCancel={() => undefined} />);
-    fireEvent.change(await screen.findByRole('textbox', { name: 'Nome Sessione' }), {
-      target: { value: 'Ripasso' },
+    loadSettings.mockResolvedValueOnce({
+      ...currentSettings,
+      schedules: [
+        {
+          scheduleRef: 'planned-recurring',
+          role: 'planned',
+          name: 'Preparazione',
+          order: 0,
+          placementStateRef: 'placement-2',
+          temporalForm: 'named_zone_local',
+          start: '2026-10-09T09:00:00',
+          end: '2026-10-09T10:00:00',
+          zoneId: 'Europe/Rome',
+        },
+      ],
     });
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
+    );
+    fireEvent.change(
+      await screen.findByRole('textbox', { name: 'Nome Sessione' }),
+      {
+        target: { value: 'Ripasso' },
+      },
+    );
     const thisScope = await screen.findByLabelText('Solo questa');
     const following = screen.getByLabelText('Questa e le prossime');
     expect(thisScope).toHaveProperty('checked', true);
     expect(following).toHaveProperty('disabled', true);
-    expect(screen.getByText(/Life Area e nomi delle Session pianificate/)).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Salva modifiche' }))
-      .toHaveProperty('disabled', false);
+    expect(
+      screen.getByText(/Life Area e nomi delle Session pianificate/),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: 'Salva modifiche' }),
+    ).toHaveProperty('disabled', false);
     expect(saveRecurringProfile).not.toHaveBeenCalled();
   });
 
@@ -990,118 +1704,238 @@ describe('Activity Inspector', () => {
     loadRecurringContext.mockResolvedValueOnce({
       occurrenceRef: '0199a222-2222-7222-8222-222222222222',
       sourceRef: '0199a444-4444-7444-8444-444444444444',
-      editRevision: 3, recurrenceStateRef: null,
+      editRevision: 3,
+      recurrenceStateRef: null,
     });
-    loadSettings.mockResolvedValueOnce({ ...currentSettings, lifeAreaRef: 'area-1' });
+    loadSettings.mockResolvedValueOnce({
+      ...currentSettings,
+      lifeAreaRef: 'area-1',
+    });
     loadLifeAreaChoice.mockResolvedValueOnce({
-      currentRef: 'area-1', currentRevision: 2,
+      currentRef: 'area-1',
+      currentRevision: 2,
       options: [{ ref: 'area-1', name: 'Lavoro' }],
     });
-    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
-      onSaved={() => undefined} onCancel={() => undefined} />);
-    fireEvent.click(await screen.findByRole('button', { name: 'Rimuovi Life Area' }));
-    expect(await screen.findByLabelText('Solo questa')).toHaveProperty('checked', true);
-    expect(screen.getByLabelText('Questa e le prossime')).toHaveProperty('disabled', true);
-    expect(screen.getByText(/Life Area e nomi delle Session pianificate si salvano soltanto/)).toBeTruthy();
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Rimuovi Life Area' }),
+    );
+    expect(await screen.findByLabelText('Solo questa')).toHaveProperty(
+      'checked',
+      true,
+    );
+    expect(screen.getByLabelText('Questa e le prossime')).toHaveProperty(
+      'disabled',
+      true,
+    );
+    expect(
+      screen.getByText(
+        /Life Area e nomi delle Session pianificate si salvano soltanto/,
+      ),
+    ).toBeTruthy();
     expect(assignLifeArea).not.toHaveBeenCalled();
     expect(saveRecurringProfile).not.toHaveBeenCalled();
   });
 
   it('unassigns an existing Life Area using an explicit null target', async () => {
-    const catalog = { currentRef: 'area-1', currentRevision: 4,
-      options: [{ ref: 'area-1', name: 'Personale' }] };
-    loadSettings.mockResolvedValueOnce({ ...currentSettings, lifeAreaRef: 'area-1' });
+    const catalog = {
+      currentRef: 'area-1',
+      currentRevision: 4,
+      options: [{ ref: 'area-1', name: 'Personale' }],
+    };
+    loadSettings.mockResolvedValueOnce({
+      ...currentSettings,
+      lifeAreaRef: 'area-1',
+    });
     loadLifeAreaChoice.mockResolvedValueOnce(catalog);
     assignLifeArea.mockResolvedValueOnce({
-      ...catalog, currentRef: null, currentRevision: 5,
+      ...catalog,
+      currentRef: null,
+      currentRevision: 5,
     });
-    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
-      onSaved={() => undefined} onCancel={() => undefined} />);
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
+    );
     await screen.findByRole('textbox', { name: 'Area assegnata' });
     fireEvent.click(screen.getByRole('button', { name: 'Rimuovi Life Area' }));
     await submitEditor();
-    await waitFor(() => expect(assignLifeArea).toHaveBeenCalledWith(
-      ref, catalog, null, expect.any(String),
-    ));
+    await waitFor(() =>
+      expect(assignLifeArea).toHaveBeenCalledWith(
+        ref,
+        catalog,
+        null,
+        expect.any(String),
+      ),
+    );
   });
 
   it('creates and assigns a new Life Area while saving the Activity', async () => {
     const catalog = { currentRef: null, currentRevision: 0, options: [] };
     loadLifeAreaChoice.mockResolvedValueOnce(catalog);
     createLifeArea.mockResolvedValueOnce({
-      ref: 'area-new', name: 'Studio', revision: 1, iconCode: null, colorCode: null,
+      ref: 'area-new',
+      name: 'Studio',
+      revision: 1,
+      iconCode: null,
+      colorCode: null,
     });
     setLifeAreaAppearance.mockResolvedValueOnce({
-      ref: 'area-new', name: 'Studio', revision: 2,
-      colorCode: '#EA5C12', iconCode: null,
+      ref: 'area-new',
+      name: 'Studio',
+      revision: 2,
+      colorCode: '#EA5C12',
+      iconCode: null,
     });
     assignLifeArea.mockResolvedValueOnce({
-      currentRef: 'area-new', currentRevision: 1,
-      options: [{ ref: 'area-new', name: 'Studio', revision: 2,
-        iconCode: null, colorCode: '#EA5C12' }],
+      currentRef: 'area-new',
+      currentRevision: 1,
+      options: [
+        {
+          ref: 'area-new',
+          name: 'Studio',
+          revision: 2,
+          iconCode: null,
+          colorCode: '#EA5C12',
+        },
+      ],
     });
     const onSaved = vi.fn();
-    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
-      onSaved={onSaved} onCancel={() => undefined} />);
-    fireEvent.change(await screen.findByRole('textbox', { name: 'Area assegnata' }),
-      { target: { value: 'Studio' } });
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={onSaved}
+        onCancel={() => undefined}
+      />,
+    );
+    fireEvent.change(
+      await screen.findByRole('textbox', { name: 'Area assegnata' }),
+      { target: { value: 'Studio' } },
+    );
     expect(screen.getByText(/La nuova Life Area verrà creata/)).toBeTruthy();
     await submitEditor();
-    await waitFor(() => expect(createLifeArea).toHaveBeenCalledWith(
-      'Studio', expect.any(String)));
+    await waitFor(() =>
+      expect(createLifeArea).toHaveBeenCalledWith('Studio', expect.any(String)),
+    );
     expect(setLifeAreaAppearance).toHaveBeenCalledWith(
       expect.objectContaining({ ref: 'area-new', revision: 1 }),
-      '#EA5C12', expect.any(String),
+      '#EA5C12',
+      expect.any(String),
     );
-    expect(assignLifeArea).toHaveBeenCalledWith(ref,
-      expect.objectContaining({ currentRevision: 0,
-        options: [expect.objectContaining({
-          ref: 'area-new', revision: 2, colorCode: '#EA5C12',
-        })] }),
-      'area-new', expect.any(String));
+    expect(assignLifeArea).toHaveBeenCalledWith(
+      ref,
+      expect.objectContaining({
+        currentRevision: 0,
+        options: [
+          expect.objectContaining({
+            ref: 'area-new',
+            revision: 2,
+            colorCode: '#EA5C12',
+          }),
+        ],
+      }),
+      'area-new',
+      expect.any(String),
+    );
     expect(onSaved).toHaveBeenCalledWith(profile);
   });
 
   it('changes the persisted Life Area color without rewriting its assignment', async () => {
-    const area = { ref: 'area-1', name: 'Lavoro',
-      revision: 1, iconCode: null, colorCode: null };
-    loadSettings.mockResolvedValueOnce({ ...currentSettings, lifeAreaRef: 'area-1' });
+    const area = {
+      ref: 'area-1',
+      name: 'Lavoro',
+      revision: 1,
+      iconCode: null,
+      colorCode: null,
+    };
+    loadSettings.mockResolvedValueOnce({
+      ...currentSettings,
+      lifeAreaRef: 'area-1',
+    });
     loadLifeAreaChoice.mockResolvedValueOnce({
-      currentRef: 'area-1', currentRevision: 1, options: [area],
+      currentRef: 'area-1',
+      currentRevision: 1,
+      options: [area],
     });
     setLifeAreaAppearance.mockResolvedValueOnce({
-      ...area, revision: 2, colorCode: '#33B679',
+      ...area,
+      revision: 2,
+      colorCode: '#33B679',
     });
     const onSaved = vi.fn();
-    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
-      onSaved={onSaved} onCancel={() => undefined} />);
-    fireEvent.click(await screen.findByRole('button', { name: 'Colore Life Area' }));
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={onSaved}
+        onCancel={() => undefined}
+      />,
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Colore Life Area' }),
+    );
     fireEvent.click(await screen.findByRole('button', { name: 'Verde menta' }));
     await submitEditor();
-    await waitFor(() => expect(setLifeAreaAppearance).toHaveBeenCalledWith(
-      area, '#33B679', expect.any(String),
-    ));
+    await waitFor(() =>
+      expect(setLifeAreaAppearance).toHaveBeenCalledWith(
+        area,
+        '#33B679',
+        expect.any(String),
+      ),
+    );
     expect(assignLifeArea).not.toHaveBeenCalled();
     await waitFor(() => expect(onSaved).toHaveBeenCalledWith(profile));
   });
 
   it('renames an existing planned Session without rescheduling it', async () => {
-    loadSettings.mockResolvedValueOnce({ ...currentSettings, schedules: [
-      { scheduleRef: 'planned', role: 'planned', name: 'Lettura', order: 1,
-        placementStateRef: 'state-planned', temporalForm: 'named_zone_local',
-        start: '2026-10-09T09:00:00', end: '2026-10-09T10:00:00',
-        zoneId: 'Europe/Rome' },
-    ] });
+    loadSettings.mockResolvedValueOnce({
+      ...currentSettings,
+      schedules: [
+        {
+          scheduleRef: 'planned',
+          role: 'planned',
+          name: 'Lettura',
+          order: 1,
+          placementStateRef: 'state-planned',
+          temporalForm: 'named_zone_local',
+          start: '2026-10-09T09:00:00',
+          end: '2026-10-09T10:00:00',
+          zoneId: 'Europe/Rome',
+        },
+      ],
+    });
     revisePlannedName.mockResolvedValueOnce('Ripasso');
-    render(<ActivityEditPanel profile={profile} closeRequestRef={createRef()}
-      onSaved={() => undefined} onCancel={() => undefined} />);
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
+    );
     const field = await screen.findByRole('textbox', { name: 'Nome Sessione' });
     fireEvent.change(field, { target: { value: 'Ripasso' } });
     await submitEditor();
-    await waitFor(() => expect(revisePlannedName).toHaveBeenCalledWith(
-      ref, 'planned', 'Lettura', 'Ripasso',
-    ));
+    await waitFor(() =>
+      expect(revisePlannedName).toHaveBeenCalledWith(
+        ref,
+        'planned',
+        'Lettura',
+        'Ripasso',
+      ),
+    );
     expect(applyReplan).not.toHaveBeenCalled();
   });
-
 });

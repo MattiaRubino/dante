@@ -15,7 +15,10 @@ vi.mock('../../../temporal/objective-controls', () => ({
   ObjectiveControls: () => <div data-testid="objectives">Obiettivi</div>,
 }));
 
-afterEach(() => { cleanup(); policy.getRealityMode.mockReset(); });
+afterEach(() => {
+  cleanup();
+  policy.getRealityMode.mockReset();
+});
 
 describe('Inspector optional reality sections', () => {
   it('shows review actions only when the canonical policy requests review', async () => {
@@ -28,7 +31,9 @@ describe('Inspector optional reality sections', () => {
   it('does not show a fictional review for manual mode', async () => {
     policy.getRealityMode.mockResolvedValue('manual');
     render(<TimelineInspectorReality kind="event" subjectRef="ref-2" />);
-    await waitFor(() => expect(policy.getRealityMode).toHaveBeenCalledWith('event', 'ref-2'));
+    await waitFor(() =>
+      expect(policy.getRealityMode).toHaveBeenCalledWith('event', 'ref-2'),
+    );
     expect(screen.queryByTestId('review')).toBeNull();
   });
 });

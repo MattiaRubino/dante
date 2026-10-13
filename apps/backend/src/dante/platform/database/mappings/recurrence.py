@@ -917,9 +917,13 @@ class RoutineRecurrenceCalendarDstPolicyRow(Base):
         CheckConstraint("nonexistent_local_time_policy='skip_civil_candidate'", name="nonexistent"),
         CheckConstraint("ambiguous_local_time_policy IN ('earlier','later')", name="ambiguous"),
         ForeignKeyConstraint(
-            ["material_state_ref"], ["dante.routine_recurrence_state.material_state_ref"],
-            name="fk_routine_recurrence_calendar_dst_policy_state", match="SIMPLE",
-            onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False,
+            ["material_state_ref"],
+            ["dante.routine_recurrence_state.material_state_ref"],
+            name="fk_routine_recurrence_calendar_dst_policy_state",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
         ),
     )
 
@@ -936,9 +940,13 @@ class EventRecurrenceCalendarDstPolicyRow(Base):
         CheckConstraint("nonexistent_local_time_policy='skip_civil_candidate'", name="nonexistent"),
         CheckConstraint("ambiguous_local_time_policy IN ('earlier','later')", name="ambiguous"),
         ForeignKeyConstraint(
-            ["material_state_ref"], ["dante.event_recurrence_state.material_state_ref"],
-            name="fk_event_recurrence_calendar_dst_policy_state", match="SIMPLE",
-            onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False,
+            ["material_state_ref"],
+            ["dante.event_recurrence_state.material_state_ref"],
+            name="fk_event_recurrence_calendar_dst_policy_state",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
         ),
     )
 
@@ -952,11 +960,38 @@ class RoutineRecurrenceOperationRow(Base):
 
     __tablename__ = "routine_recurrence_operation"
     __table_args__ = (
-        CheckConstraint("operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200", name="operation_id"),
+        CheckConstraint(
+            "operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200",
+            name="operation_id",
+        ),
         CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name="fingerprint"),
-        ForeignKeyConstraint(["self_person_ref"], ["dante.person.person_ref"], name="fk_routine_recurrence_operation_person", match="SIMPLE", onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False),
-        ForeignKeyConstraint(["routine_ref"], ["dante.routine.routine_ref"], name="fk_routine_recurrence_operation_routine_ref", match="SIMPLE", onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False),
-        ForeignKeyConstraint(["accepted_material_state_ref"], ["dante.routine_recurrence_state.material_state_ref"], name="fk_routine_recurrence_operation_accepted", match="SIMPLE", onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False),
+        ForeignKeyConstraint(
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
+            name="fk_routine_recurrence_operation_person",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
+        ),
+        ForeignKeyConstraint(
+            ["routine_ref"],
+            ["dante.routine.routine_ref"],
+            name="fk_routine_recurrence_operation_routine_ref",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
+        ),
+        ForeignKeyConstraint(
+            ["accepted_material_state_ref"],
+            ["dante.routine_recurrence_state.material_state_ref"],
+            name="fk_routine_recurrence_operation_accepted",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
+        ),
         Index("ix_routine_recurrence_operation_routine_ref_accepted", "routine_ref", "accepted_at"),
     )
 
@@ -974,11 +1009,38 @@ class EventRecurrenceOperationRow(Base):
 
     __tablename__ = "event_recurrence_operation"
     __table_args__ = (
-        CheckConstraint("operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200", name="operation_id"),
+        CheckConstraint(
+            "operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200",
+            name="operation_id",
+        ),
         CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name="fingerprint"),
-        ForeignKeyConstraint(["self_person_ref"], ["dante.person.person_ref"], name="fk_event_recurrence_operation_person", match="SIMPLE", onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False),
-        ForeignKeyConstraint(["event_ref"], ["dante.event.event_ref"], name="fk_event_recurrence_operation_event_ref", match="SIMPLE", onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False),
-        ForeignKeyConstraint(["accepted_material_state_ref"], ["dante.event_recurrence_state.material_state_ref"], name="fk_event_recurrence_operation_accepted", match="SIMPLE", onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False),
+        ForeignKeyConstraint(
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
+            name="fk_event_recurrence_operation_person",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
+        ),
+        ForeignKeyConstraint(
+            ["event_ref"],
+            ["dante.event.event_ref"],
+            name="fk_event_recurrence_operation_event_ref",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
+        ),
+        ForeignKeyConstraint(
+            ["accepted_material_state_ref"],
+            ["dante.event_recurrence_state.material_state_ref"],
+            name="fk_event_recurrence_operation_accepted",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
+        ),
         Index("ix_event_recurrence_operation_event_ref_accepted", "event_ref", "accepted_at"),
     )
 

@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { OutcomeControls } from './outcome-controls';
@@ -72,7 +78,9 @@ describe('Outcome controls', () => {
     render(<OutcomeControls kind="event" subjectRef={SUBJECT} />);
     fireEvent.click(screen.getByText('Carica Outcome'));
 
-    await screen.findByText('Outcome non disponibile: registra prima lo stato reale.');
+    await screen.findByText(
+      'Outcome non disponibile: registra prima lo stato reale.',
+    );
     expect(fetchFn).toHaveBeenCalledTimes(1);
   });
 
@@ -87,7 +95,10 @@ describe('Outcome controls', () => {
       if (url.endsWith(`/events/${SUBJECT}/actual`)) {
         return Response.json(actual());
       }
-      if (init?.method === 'POST' && url.endsWith(`/actuals/${ACTUAL}/outcome`)) {
+      if (
+        init?.method === 'POST' &&
+        url.endsWith(`/actuals/${ACTUAL}/outcome`)
+      ) {
         const body = JSON.parse(String(init.body)) as Record<string, unknown>;
         bodies.push(body);
         current = outcome(

@@ -280,8 +280,11 @@ function TimelineEventCard({
       }}
     >
       {layout.sessionReality ? (
-        <div className="timeline-event-card__reality-fill" aria-hidden="true"
-          style={{ backgroundImage: layout.sessionReality.fill }} />
+        <div
+          className="timeline-event-card__reality-fill"
+          aria-hidden="true"
+          style={{ backgroundImage: layout.sessionReality.fill }}
+        />
       ) : null}
       <div className="timeline-event-card__top">
         <div className="timeline-event-card__heading">
@@ -321,17 +324,24 @@ function TimelineEventCard({
             title: event.title,
           })}
         >
-          {layout.sessionReality?.actualLabel ?? `${formatTimelineMinute(event.startMinute)}–${formatTimelineMinute(event.endMinute)}`}
+          {layout.sessionReality?.actualLabel ??
+            `${formatTimelineMinute(event.startMinute)}–${formatTimelineMinute(event.endMinute)}`}
         </button>
         {cardMeta ? (
           <div className="timeline-event-card__meta">{cardMeta}</div>
         ) : null}
         {layout.sessionReality ? (
-          <div className="timeline-event-card__reality-status" role="status"
-            title={`Reale: ${layout.sessionReality.actualLabel}. Previsto: ${formatTimelineMinute(event.startMinute)}–${formatTimelineMinute(event.endMinute)}`}>
-            {layout.sessionReality.state === 'running' ? 'In corso'
-              : layout.sessionReality.state === 'paused' ? 'In pausa'
-              : 'Sessione conclusa'} · previsto {formatTimelineMinute(event.startMinute)}–
+          <div
+            className="timeline-event-card__reality-status"
+            role="status"
+            title={`Reale: ${layout.sessionReality.actualLabel}. Previsto: ${formatTimelineMinute(event.startMinute)}–${formatTimelineMinute(event.endMinute)}`}
+          >
+            {layout.sessionReality.state === 'running'
+              ? 'In corso'
+              : layout.sessionReality.state === 'paused'
+                ? 'In pausa'
+                : 'Sessione conclusa'}{' '}
+            · previsto {formatTimelineMinute(event.startMinute)}–
             {formatTimelineMinute(event.endMinute)}
           </div>
         ) : null}

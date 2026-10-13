@@ -1,5 +1,8 @@
 import { createWebFetch } from '../../platform/api/web-fetch';
-import { invalidateTemporalPlanningRead, invalidateTemporalTimelineRead } from './timeline-invalidation';
+import {
+  invalidateTemporalPlanningRead,
+  invalidateTemporalTimelineRead,
+} from './timeline-invalidation';
 
 import type { PlanWork } from './remote-plan-work-data-source';
 import type { PlanCandidates } from './remote-plan-candidate-data-source';
@@ -24,10 +27,12 @@ function record(value: unknown): Record<string, unknown> {
 
 function parse(value: unknown): Admission {
   const row = record(value);
-  if ((row.kind !== 'committed' && row.kind !== 'pending_confirmation') ||
-      typeof row.replayed !== 'boolean' ||
-      (row.proposal_ref !== null && typeof row.proposal_ref !== 'string') ||
-      (row.kind === 'pending_confirmation' && row.proposal_ref === null)) {
+  if (
+    (row.kind !== 'committed' && row.kind !== 'pending_confirmation') ||
+    typeof row.replayed !== 'boolean' ||
+    (row.proposal_ref !== null && typeof row.proposal_ref !== 'string') ||
+    (row.kind === 'pending_confirmation' && row.proposal_ref === null)
+  ) {
     throw new Error('Esito dello spostamento non valido.');
   }
   if (row.kind === 'committed') {
@@ -35,7 +40,8 @@ function parse(value: unknown): Admission {
     invalidateTemporalTimelineRead();
   }
   return Object.freeze({
-    kind: row.kind, proposalRef: row.proposal_ref as string | null,
+    kind: row.kind,
+    proposalRef: row.proposal_ref as string | null,
     replayed: row.replayed,
   });
 }
@@ -55,23 +61,36 @@ export function createRemotePlanAdmissionDataSource(
   }
   async function submit(endpoint: string, body: object): Promise<Admission> {
     const response = await webFetch(endpoint, {
-      method: 'POST', cache: 'no-store',
-      headers: { 'Content-Type': 'application/json', 'X-Dante-CSRF': await csrf() },
+      method: 'POST',
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Dante-CSRF': await csrf(),
+      },
       body: JSON.stringify(body),
     });
     if (!response.ok) {
       const payload: unknown = await response.json().catch(() => null);
-      const detail = payload !== null && typeof payload === 'object' &&
-        'detail' in payload && typeof payload.detail === 'string'
-        ? payload.detail : `Spostamento non disponibile (HTTP ${response.status}).`;
+      const detail =
+        payload !== null &&
+        typeof payload === 'object' &&
+        'detail' in payload &&
+        typeof payload.detail === 'string'
+          ? payload.detail
+          : `Spostamento non disponibile (HTTP ${response.status}).`;
       throw new Error(detail);
     }
     return parse(await response.json());
   }
   return Object.freeze({
-    request(plan: PlanWork, stepRef: string, result: PlanCandidates,
-      selected: ReviewedAlternative): Promise<Admission> {
-      const endpoint = `/api/v1/temporal/plans/${encodeURIComponent(plan.planRef)}` +
+    request(
+      plan: PlanWork,
+      stepRef: string,
+      result: PlanCandidates,
+      selected: ReviewedAlternative,
+    ): Promise<Admission> {
+      const endpoint =
+        `/api/v1/temporal/plans/${encodeURIComponent(plan.planRef)}` +
         `/steps/${encodeURIComponent(stepRef)}/candidate-moves`;
       return submit(endpoint, {
         operation_id: selected.operationId,
@@ -80,12 +99,19 @@ export function createRemotePlanAdmissionDataSource(
         expected_schedule_state_ref: result.scheduleStateRef,
         expected_policy_state_ref: result.policyStateRef,
         basis_fingerprint: result.basisFingerprint,
-        starts_at: selected.startsAt, ends_at: selected.endsAt,
+        starts_at: selected.startsAt,
+        ends_at: selected.endsAt,
       });
     },
-    confirm(plan: PlanWork, stepRef: string, result: PlanCandidates,
-      selected: ReviewedAlternative, proposalRef: string): Promise<Admission> {
-      const endpoint = `/api/v1/temporal/plans/${encodeURIComponent(plan.planRef)}` +
+    confirm(
+      plan: PlanWork,
+      stepRef: string,
+      result: PlanCandidates,
+      selected: ReviewedAlternative,
+      proposalRef: string,
+    ): Promise<Admission> {
+      const endpoint =
+        `/api/v1/temporal/plans/${encodeURIComponent(plan.planRef)}` +
         `/steps/${encodeURIComponent(stepRef)}/candidate-moves/` +
         `${encodeURIComponent(proposalRef)}/confirm`;
       return submit(endpoint, {
@@ -95,7 +121,8 @@ export function createRemotePlanAdmissionDataSource(
         expected_schedule_state_ref: result.scheduleStateRef,
         expected_policy_state_ref: result.policyStateRef,
         basis_fingerprint: result.basisFingerprint,
-        starts_at: selected.startsAt, ends_at: selected.endsAt,
+        starts_at: selected.startsAt,
+        ends_at: selected.endsAt,
       });
     },
   });

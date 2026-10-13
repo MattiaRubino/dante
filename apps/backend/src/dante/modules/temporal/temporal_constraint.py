@@ -96,20 +96,14 @@ def _admitted_boundary_pair(boundary_kind: str, constrained_facet: str) -> bool:
     return (
         (boundary_kind == "earliest_start" and constrained_facet == "schedule.start")
         or (boundary_kind == "latest_start" and constrained_facet == "schedule.start")
-        or (
-            boundary_kind == "latest_completion"
-            and constrained_facet == "schedule.completion"
-        )
+        or (boundary_kind == "latest_completion" and constrained_facet == "schedule.completion")
     )
 
 
 def _admitted_window_pair(relationship: str, constrained_facet: str) -> bool:
     return (
         (relationship == "start_within" and constrained_facet == "schedule.start")
-        or (
-            relationship == "completion_within"
-            and constrained_facet == "schedule.completion"
-        )
+        or (relationship == "completion_within" and constrained_facet == "schedule.completion")
         or (
             relationship in {"full_placement_contained", "placement_overlaps"}
             and constrained_facet == "schedule.placement"
@@ -667,7 +661,8 @@ def _constraint_from_row(row: RowMapping) -> TemporalConstraintView:
         ends_value = row["ends_at"]
         if (
             form_value != "absolute"
-            or relationship_value not in {
+            or relationship_value
+            not in {
                 "start_within",
                 "completion_within",
                 "full_placement_contained",
@@ -831,22 +826,24 @@ async def _mutate_in_session(
         parameters = {
             **common,
             "relationship_code": None if window_rule is None else window_rule.relationship,
-            "constrained_facet_code": None if window_rule is None else window_rule.constrained_facet,
+            "constrained_facet_code": None
+            if window_rule is None
+            else window_rule.constrained_facet,
             "strength_code": None if window_rule is None else window_rule.strength,
             "starts_at": None if window_rule is None else window_rule.starts_at,
             "ends_at": None if window_rule is None else window_rule.ends_at,
         }
     elif family == "duration":
         duration_rule = (
-            rule
-            if isinstance(rule, (ScheduleDurationRule, SessionMinimumDurationRule))
-            else None
+            rule if isinstance(rule, (ScheduleDurationRule, SessionMinimumDurationRule)) else None
         )
         statement = _MUTATE_DURATION_SQL
         parameters = {
             **common,
             "duration_kind_code": None if duration_rule is None else duration_rule.duration_kind,
-            "constrained_facet_code": None if duration_rule is None else duration_rule.constrained_facet,
+            "constrained_facet_code": None
+            if duration_rule is None
+            else duration_rule.constrained_facet,
             "strength_code": None if duration_rule is None else duration_rule.strength,
             "duration_microseconds": (
                 None if duration_rule is None else duration_rule.duration_microseconds
@@ -854,15 +851,15 @@ async def _mutate_in_session(
         }
     else:
         boundary_rule = (
-            rule
-            if isinstance(rule, (AbsoluteBoundaryRule, AbsoluteEarliestStartRule))
-            else None
+            rule if isinstance(rule, (AbsoluteBoundaryRule, AbsoluteEarliestStartRule)) else None
         )
         statement = _MUTATE_BOUNDARY_SQL
         parameters = {
             **common,
             "boundary_kind_code": None if boundary_rule is None else boundary_rule.boundary_kind,
-            "constrained_facet_code": None if boundary_rule is None else boundary_rule.constrained_facet,
+            "constrained_facet_code": None
+            if boundary_rule is None
+            else boundary_rule.constrained_facet,
             "strength_code": None if boundary_rule is None else boundary_rule.strength,
             "boundary_at": None if boundary_rule is None else boundary_rule.boundary_at,
         }
@@ -892,13 +889,23 @@ def _evaluate_current_rule(
     if isinstance(rule, TemporalConstraintCurrentBoundaryRuleView):
         if rule.boundary_kind == "earliest_start":
             satisfied = placement.starts_at >= rule.boundary_at
-            reason = "schedule_start_at_or_after_earliest" if satisfied else "schedule_start_before_earliest"
+            reason = (
+                "schedule_start_at_or_after_earliest"
+                if satisfied
+                else "schedule_start_before_earliest"
+            )
         elif rule.boundary_kind == "latest_start":
             satisfied = placement.starts_at <= rule.boundary_at
-            reason = "schedule_start_at_or_before_latest" if satisfied else "schedule_start_after_latest"
+            reason = (
+                "schedule_start_at_or_before_latest" if satisfied else "schedule_start_after_latest"
+            )
         else:
             satisfied = placement.ends_at <= rule.boundary_at
-            reason = "schedule_completion_at_or_before_latest" if satisfied else "schedule_completion_after_latest"
+            reason = (
+                "schedule_completion_at_or_before_latest"
+                if satisfied
+                else "schedule_completion_after_latest"
+            )
         return TemporalConstraintEvaluationItem(
             constraint_ref=constraint.constraint_ref,
             material_state_ref=rule.material_state_ref,
@@ -948,13 +955,21 @@ def _evaluate_current_rule(
         reason = "schedule_start_within_window" if satisfied else "schedule_start_outside_window"
     elif rule.relationship == "completion_within":
         satisfied = rule.starts_at <= placement.ends_at <= rule.ends_at
-        reason = "schedule_completion_within_window" if satisfied else "schedule_completion_outside_window"
+        reason = (
+            "schedule_completion_within_window"
+            if satisfied
+            else "schedule_completion_outside_window"
+        )
     elif rule.relationship == "full_placement_contained":
         satisfied = placement.starts_at >= rule.starts_at and placement.ends_at <= rule.ends_at
         reason = "schedule_placement_contained" if satisfied else "schedule_placement_not_contained"
     else:
         satisfied = placement.starts_at < rule.ends_at and placement.ends_at > rule.starts_at
-        reason = "schedule_placement_positive_overlap" if satisfied else "schedule_placement_no_positive_overlap"
+        reason = (
+            "schedule_placement_positive_overlap"
+            if satisfied
+            else "schedule_placement_no_positive_overlap"
+        )
     return TemporalConstraintEvaluationItem(
         constraint_ref=constraint.constraint_ref,
         material_state_ref=rule.material_state_ref,
@@ -1077,9 +1092,7 @@ def _hard_set_status(constraints: list[TemporalConstraintView]) -> HardSetStatus
         and start_lower.value is not None
         and completion_upper.value is not None
     ):
-        available = int(
-            (completion_upper.value - start_lower.value).total_seconds() * 1_000_000
-        )
+        available = int((completion_upper.value - start_lower.value).total_seconds() * 1_000_000)
         if available < minimum_duration_microseconds:
             return "infeasible"
 
@@ -1089,9 +1102,7 @@ def _hard_set_status(constraints: list[TemporalConstraintView]) -> HardSetStatus
         and completion_lower.value is not None
         and completion_lower.value > start_upper.value
     ):
-        required = int(
-            (completion_lower.value - start_upper.value).total_seconds() * 1_000_000
-        )
+        required = int((completion_lower.value - start_upper.value).total_seconds() * 1_000_000)
         if required > maximum_duration_microseconds:
             return "infeasible"
 
@@ -1181,7 +1192,9 @@ class TemporalConstraintApplication:
     ) -> RevisedTemporalConstraintView:
         normalized_operation_id = _normalize_operation_id(operation_id)
         _require_uuid7(constraint_ref, label="Temporal Constraint reference")
-        _require_uuid7(expected_material_state_ref, label="Expected Temporal Constraint state reference")
+        _require_uuid7(
+            expected_material_state_ref, label="Expected Temporal Constraint state reference"
+        )
         family = _rule_family(rule)
         try:
             async with self._session_factory() as database_session, database_session.begin():
@@ -1247,7 +1260,9 @@ class TemporalConstraintApplication:
     ) -> RetiredTemporalConstraintView:
         normalized_operation_id = _normalize_operation_id(operation_id)
         _require_uuid7(constraint_ref, label="Temporal Constraint reference")
-        _require_uuid7(expected_material_state_ref, label="Expected Temporal Constraint state reference")
+        _require_uuid7(
+            expected_material_state_ref, label="Expected Temporal Constraint state reference"
+        )
         try:
             async with self._session_factory() as database_session, database_session.begin():
                 identity = await _constraint_identity_in_session(
@@ -1308,7 +1323,9 @@ class TemporalConstraintApplication:
         constraint_ref: ScopedRecordRef,
     ) -> TemporalConstraintView:
         _require_uuid7(constraint_ref, label="Temporal Constraint reference")
-        statement = text(_READ_CONSTRAINT_BASE + " AND constraint_row.constraint_ref=:constraint_ref")
+        statement = text(
+            _READ_CONSTRAINT_BASE + " AND constraint_row.constraint_ref=:constraint_ref"
+        )
         try:
             async with self._session_factory() as database_session, database_session.begin():
                 row = (

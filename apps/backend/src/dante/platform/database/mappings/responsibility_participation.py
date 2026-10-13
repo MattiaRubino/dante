@@ -232,14 +232,18 @@ class PersonReferentCatalogRow(Base):
     __tablename__ = "person_referent_catalog"
     __table_args__ = (
         ForeignKeyConstraint(
-            ["self_person_ref"], ["dante.person.person_ref"],
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
             name="fk_person_referent_catalog_self_person",
         ),
         ForeignKeyConstraint(
-            ["person_ref"], ["dante.person.person_ref"],
+            ["person_ref"],
+            ["dante.person.person_ref"],
             name="fk_person_referent_catalog_person",
         ),
-        CheckConstraint("btrim(display_label)<>'' AND char_length(display_label)<=100", name="label"),
+        CheckConstraint(
+            "btrim(display_label)<>'' AND char_length(display_label)<=100", name="label"
+        ),
         CheckConstraint("revision>=1", name="revision"),
     )
 
@@ -258,17 +262,22 @@ class PersonReferentOperationRow(Base):
     __table_args__ = (
         ForeignKeyConstraint(
             ["self_person_ref", "person_ref"],
-            ["dante.person_referent_catalog.self_person_ref",
-             "dante.person_referent_catalog.person_ref"],
+            [
+                "dante.person_referent_catalog.self_person_ref",
+                "dante.person_referent_catalog.person_ref",
+            ],
             name="fk_person_referent_operation_catalog",
         ),
         CheckConstraint(
             "operation_id=btrim(operation_id) AND operation_id<>'' "
-            "AND char_length(operation_id)<=200", name="id",
+            "AND char_length(operation_id)<=200",
+            name="id",
         ),
         CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name="fingerprint"),
         CheckConstraint("operation_kind IN ('create','rename')", name="kind"),
-        CheckConstraint("btrim(display_label)<>'' AND char_length(display_label)<=100", name="label"),
+        CheckConstraint(
+            "btrim(display_label)<>'' AND char_length(display_label)<=100", name="label"
+        ),
         CheckConstraint("resulting_revision>=1", name="revision"),
     )
 

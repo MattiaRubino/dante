@@ -89,31 +89,49 @@ class PlanCandidateView:
         """Stable review token for the exact current evidence and finite model result."""
         placement = self.placement
         payload = {
-            "plan": str(self.plan_ref), "state": str(self.plan_state_ref),
-            "step": str(self.step_ref), "activity": str(self.activity_ref),
-            "schedule": None if placement is None else [
-                str(placement.schedule_ref), str(placement.material_state_ref),
+            "plan": str(self.plan_ref),
+            "state": str(self.plan_state_ref),
+            "step": str(self.step_ref),
+            "activity": str(self.activity_ref),
+            "schedule": None
+            if placement is None
+            else [
+                str(placement.schedule_ref),
+                str(placement.material_state_ref),
                 placement.temporal_form_code,
                 placement.starts_at.isoformat() if placement.starts_at else None,
                 placement.ends_at.isoformat() if placement.ends_at else None,
             ],
-            "dependencies": [[
-                str(item.dependency_ref), str(item.state_ref),
-                str(item.prerequisite_step_ref), str(item.dependent_step_ref),
-                item.qualifier_code,
-                item.evaluation_code, str(item.actual_material_state_ref),
-                str(item.outcome_material_state_ref), item.cycle,
-            ] for item in self.all_dependencies],
+            "dependencies": [
+                [
+                    str(item.dependency_ref),
+                    str(item.state_ref),
+                    str(item.prerequisite_step_ref),
+                    str(item.dependent_step_ref),
+                    item.qualifier_code,
+                    item.evaluation_code,
+                    str(item.actual_material_state_ref),
+                    str(item.outcome_material_state_ref),
+                    item.cycle,
+                ]
+                for item in self.all_dependencies
+            ],
             "constraints": [[str(ref), str(state)] for ref, state in self.constraint_states],
             "policy": [str(self.movement_policy_material_state_ref), self.movement_policy_status],
             "status": [self.basis_status, self.solver_status],
             "model": [self.model_version, self.solver_version, self.grid_minutes, self.grid_size],
-            "horizon": [str(self.horizon_starts_at), str(self.horizon_ends_at),
-                        self.duration_microseconds],
-            "candidates": [[item.starts_at.isoformat(), item.ends_at.isoformat()]
-                           for item in self.candidates],
+            "horizon": [
+                str(self.horizon_starts_at),
+                str(self.horizon_ends_at),
+                self.duration_microseconds,
+            ],
+            "candidates": [
+                [item.starts_at.isoformat(), item.ends_at.isoformat()] for item in self.candidates
+            ],
         }
-        return hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+        return hashlib.sha256(
+            json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest()
 
 
 def _constraint_basis(
@@ -147,11 +165,16 @@ class PlanCandidateApplication:
             return None
 
     async def search(
-        self, *, self_person_ref: NativeRef, plan_ref: UUID,
-        step_ref: UUID, expected_state_ref: UUID,
+        self,
+        *,
+        self_person_ref: NativeRef,
+        plan_ref: UUID,
+        step_ref: UUID,
+        expected_state_ref: UUID,
     ) -> PlanCandidateView:
         diagnosis = await self._plans.inspect(
-            self_person_ref=self_person_ref, plan_ref=plan_ref,
+            self_person_ref=self_person_ref,
+            plan_ref=plan_ref,
             expected_state_ref=expected_state_ref,
         )
         step = next((item for item in diagnosis.steps if item.step_ref == step_ref), None)
@@ -171,8 +194,9 @@ class PlanCandidateApplication:
             placement.starts_at is None or placement.ends_at is None
         ):
             basis_status, reason = "unsupported", "absolute_interval_required"
-        elif any(item.cycle or item.evaluation_code in {"unknown", None}
-                 for item in step.dependencies):
+        elif any(
+            item.cycle or item.evaluation_code in {"unknown", None} for item in step.dependencies
+        ):
             basis_status, reason = "unknown", "prerequisite_unknown"
         elif any(item.evaluation_code == "unsatisfied" for item in step.dependencies):
             basis_status, reason = "blocked", "prerequisite_unsatisfied"
@@ -184,8 +208,10 @@ class PlanCandidateApplication:
         horizon_end: datetime | None = None
         duration_us: int | None = None
         if (
-            basis_status == "supported" and placement is not None
-            and placement.starts_at is not None and placement.ends_at is not None
+            basis_status == "supported"
+            and placement is not None
+            and placement.starts_at is not None
+            and placement.ends_at is not None
             and step.activity_ref is not None
         ):
             constraints = await self._constraints.list_constraints_by_subject(
@@ -193,7 +219,9 @@ class PlanCandidateApplication:
                 subject_native_ref=NativeRef(step.activity_ref),
             )
             duration = placement.ends_at - placement.starts_at
-            duration_us = (duration.days * 86_400 + duration.seconds) * 1_000_000 + duration.microseconds
+            duration_us = (
+                duration.days * 86_400 + duration.seconds
+            ) * 1_000_000 + duration.microseconds
             horizon_start = placement.starts_at - timedelta(hours=12)
             horizon_end = placement.starts_at + timedelta(hours=12)
             options: dict[int, tuple[ConstraintFinding, ...]] = {}
@@ -207,35 +235,51 @@ class PlanCandidateApplication:
                     placement=AbsoluteIntervalPlacement(start, start + duration),
                     constraints=constraints,
                 )
-                if assessment.hard_set_status == "undetermined" or assessment.status == "not_evaluable":
+                if (
+                    assessment.hard_set_status == "undetermined"
+                    or assessment.status == "not_evaluable"
+                ):
                     incomplete = True
                     continue
                 if assessment.hard_set_status != "feasible" or assessment.status == "inadmissible":
                     continue
-                options[index] = tuple(ConstraintFinding(
-                    constraint_ref=item.constraint_ref,
-                    material_state_ref=item.material_state_ref,
-                    strength=item.strength,
-                    evaluation=item.evaluation,
-                    reason_code=item.reason_code,
-                ) for item in assessment.items if item.strength == "soft")
+                options[index] = tuple(
+                    ConstraintFinding(
+                        constraint_ref=item.constraint_ref,
+                        material_state_ref=item.material_state_ref,
+                        strength=item.strength,
+                        evaluation=item.evaluation,
+                        reason_code=item.reason_code,
+                    )
+                    for item in assessment.items
+                    if item.strength == "soft"
+                )
             if incomplete:
-                basis_status, reason, solver_status = "unknown", "hard_rule_not_evaluable", "UNKNOWN"
+                basis_status, reason, solver_status = (
+                    "unknown",
+                    "hard_rule_not_evaluable",
+                    "UNKNOWN",
+                )
             else:
                 selection = await asyncio.to_thread(select_nearby_indices, tuple(options))
                 solver_status = selection.status
-                candidates = tuple(CandidateInterval(
-                    starts_at=horizon_start + timedelta(minutes=index * GRID_MINUTES),
-                    ends_at=horizon_start + timedelta(minutes=index * GRID_MINUTES) + duration,
-                    grid_index=index, soft_findings=options[index],
-                ) for index in selection.indices)
+                candidates = tuple(
+                    CandidateInterval(
+                        starts_at=horizon_start + timedelta(minutes=index * GRID_MINUTES),
+                        ends_at=horizon_start + timedelta(minutes=index * GRID_MINUTES) + duration,
+                        grid_index=index,
+                        soft_findings=options[index],
+                    )
+                    for index in selection.indices
+                )
                 if selection.status == "INFEASIBLE":
                     reason = "no_fixed_duration_grid_candidate"
                 elif selection.status in {"UNKNOWN", "MODEL_INVALID"}:
                     reason = "solver_unresolved"
 
         refreshed = await self._plans.inspect(
-            self_person_ref=self_person_ref, plan_ref=plan_ref,
+            self_person_ref=self_person_ref,
+            plan_ref=plan_ref,
             expected_state_ref=expected_state_ref,
         )
         current_step = next((item for item in refreshed.steps if item.step_ref == step_ref), None)
@@ -251,15 +295,24 @@ class PlanCandidateApplication:
         if await self._policy(self_person_ref=self_person_ref, placement=placement) != policy:
             raise PlanConflictStateError("Movement Policy changed. Retry.")
         return PlanCandidateView(
-            plan_ref=plan_ref, plan_state_ref=expected_state_ref,
-            step_ref=step_ref, step_title=step.title, activity_ref=step.activity_ref,
-            placement=placement, dependencies=step.dependencies,
-            all_dependencies=tuple(item for current in diagnosis.steps
-                                   for item in current.dependencies),
+            plan_ref=plan_ref,
+            plan_state_ref=expected_state_ref,
+            step_ref=step_ref,
+            step_title=step.title,
+            activity_ref=step.activity_ref,
+            placement=placement,
+            dependencies=step.dependencies,
+            all_dependencies=tuple(
+                item for current in diagnosis.steps for item in current.dependencies
+            ),
             constraint_states=_constraint_basis(constraints),
             movement_policy_material_state_ref=policy.material_state_ref if policy else None,
             movement_policy_status=policy_status,
-            basis_status=basis_status, reason_code=reason, solver_status=solver_status,
-            candidates=candidates, horizon_starts_at=horizon_start,
-            horizon_ends_at=horizon_end, duration_microseconds=duration_us,
+            basis_status=basis_status,
+            reason_code=reason,
+            solver_status=solver_status,
+            candidates=candidates,
+            horizon_starts_at=horizon_start,
+            horizon_ends_at=horizon_end,
+            duration_microseconds=duration_us,
         )

@@ -30,10 +30,7 @@ const UUID_V7 =
   /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export type TemporalActivityRemoteFailureKind =
-  | 'transport'
-  | 'http'
-  | 'protocol'
-  | 'authentication';
+  'transport' | 'http' | 'protocol' | 'authentication';
 
 export class TemporalActivityRemoteError extends Error {
   constructor(
@@ -424,7 +421,9 @@ function validatePlacement(placement: TemporalSchedulePlacementInput): void {
           placement.endsLocalAt,
         ) >= 0
       ) {
-        throw new RangeError('Floating-local Schedule interval must be positive.');
+        throw new RangeError(
+          'Floating-local Schedule interval must be positive.',
+        );
       }
       return;
     case 'named-zone-local-interval':
@@ -504,7 +503,9 @@ function problemCode(payload: unknown): string | null {
 }
 
 function problemDetail(payload: unknown, fallback: string): string {
-  return isRecord(payload) && typeof payload.detail === 'string' && payload.detail.trim()
+  return isRecord(payload) &&
+    typeof payload.detail === 'string' &&
+    payload.detail.trim()
     ? payload.detail
     : fallback;
 }
@@ -589,7 +590,9 @@ function validateActivityScheduleEstablishRequest(
   request: TemporalActivityScheduleEstablishRequest,
 ): void {
   if (!UUID_V7.test(request.activityRef.trim())) {
-    throw new RangeError('Activity reference must be a canonical UUIDv7 string.');
+    throw new RangeError(
+      'Activity reference must be a canonical UUIDv7 string.',
+    );
   }
   const operationId = request.operationId.trim();
   if (!operationId || operationId.length > 200) {
@@ -622,7 +625,9 @@ export function createRemoteTemporalActivityDataSource(
         body: JSON.stringify({
           operation_id: request.operationId.trim(),
           title: request.title.trim(),
-          ...(request.lifeAreaRef === undefined ? {} : { life_area_ref: request.lifeAreaRef }),
+          ...(request.lifeAreaRef === undefined
+            ? {}
+            : { life_area_ref: request.lifeAreaRef }),
         }),
         ...(signal === undefined ? {} : { signal }),
       });
@@ -650,7 +655,9 @@ export function createRemoteTemporalActivityDataSource(
           body: JSON.stringify({
             operation_id: request.operationId.trim(),
             title: request.title.trim(),
-            ...(request.lifeAreaRef === undefined ? {} : { life_area_ref: request.lifeAreaRef }),
+            ...(request.lifeAreaRef === undefined
+              ? {}
+              : { life_area_ref: request.lifeAreaRef }),
             placement: serializePlacement(request.placement),
           }),
           ...(signal === undefined ? {} : { signal }),

@@ -30,12 +30,8 @@ _WRITE_SIGNATURE = (
     "uuid,text,text,text,uuid,uuid,uuid,uuid,boolean,text,"
     "timestamptz,timestamptz,uuid[],uuid[])"
 )
-_OLD_RECEIPT_SUBJECT_FK = (
-    "fk_actual_realization_operation_subject_native_ref_nati_9ab6"
-)
-_NEW_RECEIPT_SUBJECT_FK = (
-    "fk_actual_realization_operation_subject_native_ref_native"
-)
+_OLD_RECEIPT_SUBJECT_FK = "fk_actual_realization_operation_subject_native_ref_nati_9ab6"
+_NEW_RECEIPT_SUBJECT_FK = "fk_actual_realization_operation_subject_native_ref_native"
 
 
 def _sql(statement: str) -> None:
@@ -81,10 +77,7 @@ $repair$;
     )
 
     _sql(f"ALTER FUNCTION {_WRITE_SIGNATURE} OWNER TO dante_owner")
-    _sql(
-        f"REVOKE ALL ON FUNCTION {_WRITE_SIGNATURE} "
-        "FROM PUBLIC, dante_runtime, dante_migrator"
-    )
+    _sql(f"REVOKE ALL ON FUNCTION {_WRITE_SIGNATURE} FROM PUBLIC, dante_runtime, dante_migrator")
     _sql(f"GRANT EXECUTE ON FUNCTION {_WRITE_SIGNATURE} TO dante_runtime")
 
     _sql(

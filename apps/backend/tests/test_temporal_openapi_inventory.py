@@ -7,8 +7,7 @@ from typing import Any, cast
 from dante.bootstrap.openapi_export import openapi_document
 
 _PUBLISHED_OPENAPI = (
-    Path(__file__).resolve().parents[3]
-    / "packages/api-client/openapi/dante-v1.openapi.json"
+    Path(__file__).resolve().parents[3] / "packages/api-client/openapi/dante-v1.openapi.json"
 )
 _CURRENT_ACCEPTED_TEMPORAL_OPERATION_COUNT = 183
 
@@ -64,33 +63,69 @@ _PRE_B04_TEMPORAL_OPERATIONS = {
 _EXPECTED_TEMPORAL_OPERATIONS = {
     **_PRE_B04_TEMPORAL_OPERATIONS,
     ("/api/v1/temporal/events/postponed", "get"): "temporal_list_postponed_events",
-    ("/api/v1/temporal/events/{event_ref}/schedules/{schedule_ref}/replan", "put"): "temporal_replan_postponed_event",
+    (
+        "/api/v1/temporal/events/{event_ref}/schedules/{schedule_ref}/replan",
+        "put",
+    ): "temporal_replan_postponed_event",
     ("/api/v1/temporal/life-areas", "post"): "temporal_create_life_area",
     ("/api/v1/temporal/life-areas", "get"): "temporal_list_life_areas",
     ("/api/v1/temporal/life-areas/order", "put"): "temporal_reorder_life_areas",
     ("/api/v1/temporal/life-areas/{life_area_ref}/name", "patch"): "temporal_rename_life_area",
     ("/api/v1/temporal/life-areas/{life_area_ref}/archive", "post"): "temporal_archive_life_area",
-    ("/api/v1/temporal/life-areas/{life_area_ref}/visibility", "put"): "temporal_set_life_area_visibility",
-    ("/api/v1/temporal/life-areas/{life_area_ref}/appearance", "put"): "temporal_set_life_area_appearance",
+    (
+        "/api/v1/temporal/life-areas/{life_area_ref}/visibility",
+        "put",
+    ): "temporal_set_life_area_visibility",
+    (
+        "/api/v1/temporal/life-areas/{life_area_ref}/appearance",
+        "put",
+    ): "temporal_set_life_area_appearance",
     ("/api/v1/temporal/life-area-assignments", "get"): "temporal_list_life_area_assignments",
     ("/api/v1/temporal/tags", "post"): "temporal_create_product_tag",
     ("/api/v1/temporal/tags", "get"): "temporal_list_product_tags",
     ("/api/v1/temporal/tags/{tag_ref}/name", "put"): "temporal_rename_product_tag",
     ("/api/v1/temporal/tags/{tag_ref}/archive", "post"): "temporal_archive_product_tag",
     ("/api/v1/temporal/tags/assignments", "get"): "temporal_list_item_tags",
-    ("/api/v1/temporal/activities/{activity_ref}/tags/{tag_ref}/attach", "post"): "temporal_attach_activity_tag",
-    ("/api/v1/temporal/activities/{activity_ref}/tags/{tag_ref}/detach", "post"): "temporal_detach_activity_tag",
-    ("/api/v1/temporal/events/{event_ref}/tags/{tag_ref}/attach", "post"): "temporal_attach_event_tag",
-    ("/api/v1/temporal/events/{event_ref}/tags/{tag_ref}/detach", "post"): "temporal_detach_event_tag",
-    ("/api/v1/temporal/life-area-assignments/unassigned", "get"): "temporal_list_unassigned_life_area_items",
-    ("/api/v1/temporal/life-area-assignments/activities/{activity_ref}", "put"): "temporal_assign_activity_life_area",
-    ("/api/v1/temporal/life-area-assignments/events/{event_ref}", "put"): "temporal_assign_event_life_area",
+    (
+        "/api/v1/temporal/activities/{activity_ref}/tags/{tag_ref}/attach",
+        "post",
+    ): "temporal_attach_activity_tag",
+    (
+        "/api/v1/temporal/activities/{activity_ref}/tags/{tag_ref}/detach",
+        "post",
+    ): "temporal_detach_activity_tag",
+    (
+        "/api/v1/temporal/events/{event_ref}/tags/{tag_ref}/attach",
+        "post",
+    ): "temporal_attach_event_tag",
+    (
+        "/api/v1/temporal/events/{event_ref}/tags/{tag_ref}/detach",
+        "post",
+    ): "temporal_detach_event_tag",
+    (
+        "/api/v1/temporal/life-area-assignments/unassigned",
+        "get",
+    ): "temporal_list_unassigned_life_area_items",
+    (
+        "/api/v1/temporal/life-area-assignments/activities/{activity_ref}",
+        "put",
+    ): "temporal_assign_activity_life_area",
+    (
+        "/api/v1/temporal/life-area-assignments/events/{event_ref}",
+        "put",
+    ): "temporal_assign_event_life_area",
     ("/api/v1/temporal/constraints", "post"): "temporal_create_constraint",
-    ("/api/v1/temporal/schedules/{schedule_ref}/movement-policy", "put"): "temporal_set_self_schedule_movement_policy",
+    (
+        "/api/v1/temporal/schedules/{schedule_ref}/movement-policy",
+        "put",
+    ): "temporal_set_self_schedule_movement_policy",
     ("/api/v1/temporal/constraints", "get"): "temporal_list_constraints_by_subject",
     ("/api/v1/temporal/constraints/evaluate", "post"): "temporal_evaluate_constraints",
     ("/api/v1/temporal/constraints/{constraint_ref}", "get"): "temporal_get_constraint",
-    ("/api/v1/temporal/constraints/{constraint_ref}/rule", "patch"): "temporal_revise_constraint_rule",
+    (
+        "/api/v1/temporal/constraints/{constraint_ref}/rule",
+        "patch",
+    ): "temporal_revise_constraint_rule",
     ("/api/v1/temporal/constraints/{constraint_ref}/retire", "post"): "temporal_retire_constraint",
     ("/api/v1/temporal/activities/constrained", "post"): "temporal_create_constrained_activity",
     ("/api/v1/temporal/routines", "get"): "temporal_list_routines",
@@ -101,94 +136,271 @@ _EXPECTED_TEMPORAL_OPERATIONS = {
     ("/api/v1/temporal/routines/{routine_ref}/pause", "post"): "temporal_pause_routine",
     ("/api/v1/temporal/routines/{routine_ref}/resume", "post"): "temporal_resume_routine",
     ("/api/v1/temporal/routines/{routine_ref}/end", "post"): "temporal_end_routine",
-    ("/api/v1/temporal/routines/{routine_ref}/life-area", "put"): "temporal_assign_routine_life_area",
-    ("/api/v1/temporal/routines/{routine_ref}/tags/{tag_ref}/attach", "post"): "temporal_attach_routine_tag",
-    ("/api/v1/temporal/routines/{routine_ref}/tags/{tag_ref}/detach", "post"): "temporal_detach_routine_tag",
-    ("/api/v1/temporal/routines/{routine_ref}/recurrence", "get"): "temporal_get_routine_recurrence",
-    ("/api/v1/temporal/routines/{routine_ref}/recurrence", "put"): "temporal_replace_routine_recurrence",
+    (
+        "/api/v1/temporal/routines/{routine_ref}/life-area",
+        "put",
+    ): "temporal_assign_routine_life_area",
+    (
+        "/api/v1/temporal/routines/{routine_ref}/tags/{tag_ref}/attach",
+        "post",
+    ): "temporal_attach_routine_tag",
+    (
+        "/api/v1/temporal/routines/{routine_ref}/tags/{tag_ref}/detach",
+        "post",
+    ): "temporal_detach_routine_tag",
+    (
+        "/api/v1/temporal/routines/{routine_ref}/recurrence",
+        "get",
+    ): "temporal_get_routine_recurrence",
+    (
+        "/api/v1/temporal/routines/{routine_ref}/recurrence",
+        "put",
+    ): "temporal_replace_routine_recurrence",
     ("/api/v1/temporal/events/{event_ref}/recurrence", "get"): "temporal_get_event_recurrence",
     ("/api/v1/temporal/events/{event_ref}/recurrence", "put"): "temporal_replace_event_recurrence",
-    ("/api/v1/temporal/routines/{routine_ref}/occurrences/checkpoint", "post"): "temporal_checkpoint_routine_occurrences",
-    ("/api/v1/temporal/events/{event_ref}/occurrences/checkpoint", "post"): "temporal_checkpoint_event_occurrences",
+    (
+        "/api/v1/temporal/routines/{routine_ref}/occurrences/checkpoint",
+        "post",
+    ): "temporal_checkpoint_routine_occurrences",
+    (
+        "/api/v1/temporal/events/{event_ref}/occurrences/checkpoint",
+        "post",
+    ): "temporal_checkpoint_event_occurrences",
     ("/api/v1/temporal/occurrences/checkpoint", "post"): "temporal_checkpoint_occurrence_window",
-    ("/api/v1/temporal/routines/{routine_ref}/occurrences/extra", "post"): "temporal_create_routine_extra_occurrence",
-    ("/api/v1/temporal/events/{event_ref}/occurrences/extra", "post"): "temporal_create_event_extra_occurrence",
+    (
+        "/api/v1/temporal/routines/{routine_ref}/occurrences/extra",
+        "post",
+    ): "temporal_create_routine_extra_occurrence",
+    (
+        "/api/v1/temporal/events/{event_ref}/occurrences/extra",
+        "post",
+    ): "temporal_create_event_extra_occurrence",
     ("/api/v1/temporal/occurrences/{occurrence_ref}", "get"): "temporal_get_occurrence",
-    ("/api/v1/temporal/occurrences/{occurrence_ref}/schedule", "post"): "temporal_establish_occurrence_schedule",
+    (
+        "/api/v1/temporal/occurrences/{occurrence_ref}/schedule",
+        "post",
+    ): "temporal_establish_occurrence_schedule",
     ("/api/v1/temporal/occurrences/{occurrence_ref}/skip", "post"): "temporal_skip_occurrence",
-    ("/api/v1/temporal/activities/{activity_ref}/sessions", "post"): "temporal_start_activity_session",
-    ("/api/v1/temporal/activities/{activity_ref}/sessions/manual", "post"): "temporal_record_manual_activity_session",
-    ("/api/v1/temporal/occurrences/{occurrence_ref}/sessions", "post"): "temporal_start_occurrence_session",
-    ("/api/v1/temporal/activities/{activity_ref}/sessions", "get"): "temporal_list_activity_sessions",
-    ("/api/v1/temporal/occurrences/{occurrence_ref}/sessions", "get"): "temporal_list_occurrence_sessions",
+    (
+        "/api/v1/temporal/activities/{activity_ref}/sessions",
+        "post",
+    ): "temporal_start_activity_session",
+    (
+        "/api/v1/temporal/activities/{activity_ref}/sessions/manual",
+        "post",
+    ): "temporal_record_manual_activity_session",
+    (
+        "/api/v1/temporal/occurrences/{occurrence_ref}/sessions",
+        "post",
+    ): "temporal_start_occurrence_session",
+    (
+        "/api/v1/temporal/activities/{activity_ref}/sessions",
+        "get",
+    ): "temporal_list_activity_sessions",
+    (
+        "/api/v1/temporal/occurrences/{occurrence_ref}/sessions",
+        "get",
+    ): "temporal_list_occurrence_sessions",
     ("/api/v1/temporal/sessions/{session_ref}", "get"): "temporal_get_session",
-    ("/api/v1/temporal/activities/{activity_ref}/responsibility", "put"): "temporal_set_activity_responsibility",
-    ("/api/v1/temporal/activities/{activity_ref}/responsibility", "get"): "temporal_get_activity_responsibility",
-    ("/api/v1/temporal/events/{event_ref}/responsibility", "put"): "temporal_set_event_responsibility",
-    ("/api/v1/temporal/events/{event_ref}/responsibility", "get"): "temporal_get_event_responsibility",
-    ("/api/v1/temporal/events/{event_ref}/expected-participation", "put"): "temporal_set_event_expected_participation",
-    ("/api/v1/temporal/events/{event_ref}/expected-participation", "get"): "temporal_list_event_expected_participation",
+    (
+        "/api/v1/temporal/activities/{activity_ref}/responsibility",
+        "put",
+    ): "temporal_set_activity_responsibility",
+    (
+        "/api/v1/temporal/activities/{activity_ref}/responsibility",
+        "get",
+    ): "temporal_get_activity_responsibility",
+    (
+        "/api/v1/temporal/events/{event_ref}/responsibility",
+        "put",
+    ): "temporal_set_event_responsibility",
+    (
+        "/api/v1/temporal/events/{event_ref}/responsibility",
+        "get",
+    ): "temporal_get_event_responsibility",
+    (
+        "/api/v1/temporal/events/{event_ref}/expected-participation",
+        "put",
+    ): "temporal_set_event_expected_participation",
+    (
+        "/api/v1/temporal/events/{event_ref}/expected-participation",
+        "get",
+    ): "temporal_list_event_expected_participation",
     ("/api/v1/temporal/person-referents", "get"): "temporal_list_person_referents",
     ("/api/v1/temporal/person-referents", "post"): "temporal_create_person_referent",
     ("/api/v1/temporal/person-referents/{person_ref}", "patch"): "temporal_rename_person_referent",
     ("/api/v1/temporal/sessions/{session_ref}/end", "post"): "temporal_end_session",
     ("/api/v1/temporal/sessions/{session_ref}/pause", "post"): "temporal_pause_session",
     ("/api/v1/temporal/sessions/{session_ref}/resume", "post"): "temporal_resume_session",
-    ("/api/v1/temporal/routines/{routine_ref}/occurrences/exclusions", "post"): "temporal_exclude_routine_occurrence_coordinate",
-    ("/api/v1/temporal/events/{event_ref}/occurrences/exclusions", "post"): "temporal_exclude_event_occurrence_coordinate",
-    ("/api/v1/temporal/activities/{activity_ref}/actual", "post"): "temporal_record_activity_actual",
+    (
+        "/api/v1/temporal/routines/{routine_ref}/occurrences/exclusions",
+        "post",
+    ): "temporal_exclude_routine_occurrence_coordinate",
+    (
+        "/api/v1/temporal/events/{event_ref}/occurrences/exclusions",
+        "post",
+    ): "temporal_exclude_event_occurrence_coordinate",
+    (
+        "/api/v1/temporal/activities/{activity_ref}/actual",
+        "post",
+    ): "temporal_record_activity_actual",
     ("/api/v1/temporal/activities/{activity_ref}/actual", "get"): "temporal_get_activity_actual",
     ("/api/v1/temporal/events/{event_ref}/actual", "post"): "temporal_record_event_actual",
     ("/api/v1/temporal/events/{event_ref}/actual", "get"): "temporal_get_event_actual",
-    ("/api/v1/temporal/occurrences/{occurrence_ref}/actual", "post"): "temporal_record_occurrence_actual",
-    ("/api/v1/temporal/occurrences/{occurrence_ref}/actual", "get"): "temporal_get_occurrence_actual",
+    (
+        "/api/v1/temporal/occurrences/{occurrence_ref}/actual",
+        "post",
+    ): "temporal_record_occurrence_actual",
+    (
+        "/api/v1/temporal/occurrences/{occurrence_ref}/actual",
+        "get",
+    ): "temporal_get_occurrence_actual",
     ("/api/v1/temporal/actuals/{actual_ref}/history", "get"): "temporal_list_actual_history",
     ("/api/v1/temporal/actuals/{actual_ref}/outcome", "post"): "temporal_record_actual_outcome",
     ("/api/v1/temporal/actuals/{actual_ref}/outcome", "get"): "temporal_get_actual_outcome",
     ("/api/v1/temporal/outcomes/{outcome_ref}/history", "get"): "temporal_list_outcome_history",
-    ("/api/v1/temporal/outcomes/{outcome_ref}/confirmations", "post"): "temporal_record_outcome_confirmation",
-    ("/api/v1/temporal/outcomes/{outcome_ref}/confirmations", "get"): "temporal_list_outcome_confirmations",
-    ("/api/v1/temporal/confirmations/{confirmation_ref}/history", "get"): "temporal_list_confirmation_history",
-    ("/api/v1/temporal/outcomes/{outcome_ref}/reconciliations", "post"): "temporal_record_outcome_reconciliation",
-    ("/api/v1/temporal/outcomes/{outcome_ref}/reconciliations", "get"): "temporal_list_outcome_reconciliations",
-    ("/api/v1/temporal/reconciliations/{reconciliation_ref}/history", "get"): "temporal_list_outcome_reconciliation_history",
-    ("/api/v1/temporal/routines/{source_ref}/advanced-recurrence", "get"): "temporal_get_routine_advanced_recurrence",
-    ("/api/v1/temporal/routines/{source_ref}/advanced-recurrence", "put"): "temporal_replace_routine_advanced_recurrence",
-    ("/api/v1/temporal/routines/{source_ref}/advanced-recurrence/checkpoint", "post"): "temporal_checkpoint_routine_advanced_recurrence",
-    ("/api/v1/temporal/events/{source_ref}/advanced-recurrence", "get"): "temporal_get_event_advanced_recurrence",
-    ("/api/v1/temporal/events/{source_ref}/advanced-recurrence", "put"): "temporal_replace_event_advanced_recurrence",
-    ("/api/v1/temporal/events/{source_ref}/advanced-recurrence/checkpoint", "post"): "temporal_checkpoint_event_advanced_recurrence",
-    ("/api/v1/temporal/conditions/actual-realization", "post"): "temporal_create_actual_realization_condition",
-    ("/api/v1/temporal/conditions/actual-realization", "get"): "temporal_find_actual_realization_condition",
-    ("/api/v1/temporal/conditions/actual-realization/{condition_ref}", "get"): "temporal_get_actual_realization_condition",
-    ("/api/v1/temporal/conditions/actual-realization/{condition_ref}/evaluations", "post"): "temporal_evaluate_actual_realization_condition",
+    (
+        "/api/v1/temporal/outcomes/{outcome_ref}/confirmations",
+        "post",
+    ): "temporal_record_outcome_confirmation",
+    (
+        "/api/v1/temporal/outcomes/{outcome_ref}/confirmations",
+        "get",
+    ): "temporal_list_outcome_confirmations",
+    (
+        "/api/v1/temporal/confirmations/{confirmation_ref}/history",
+        "get",
+    ): "temporal_list_confirmation_history",
+    (
+        "/api/v1/temporal/outcomes/{outcome_ref}/reconciliations",
+        "post",
+    ): "temporal_record_outcome_reconciliation",
+    (
+        "/api/v1/temporal/outcomes/{outcome_ref}/reconciliations",
+        "get",
+    ): "temporal_list_outcome_reconciliations",
+    (
+        "/api/v1/temporal/reconciliations/{reconciliation_ref}/history",
+        "get",
+    ): "temporal_list_outcome_reconciliation_history",
+    (
+        "/api/v1/temporal/routines/{source_ref}/advanced-recurrence",
+        "get",
+    ): "temporal_get_routine_advanced_recurrence",
+    (
+        "/api/v1/temporal/routines/{source_ref}/advanced-recurrence",
+        "put",
+    ): "temporal_replace_routine_advanced_recurrence",
+    (
+        "/api/v1/temporal/routines/{source_ref}/advanced-recurrence/checkpoint",
+        "post",
+    ): "temporal_checkpoint_routine_advanced_recurrence",
+    (
+        "/api/v1/temporal/events/{source_ref}/advanced-recurrence",
+        "get",
+    ): "temporal_get_event_advanced_recurrence",
+    (
+        "/api/v1/temporal/events/{source_ref}/advanced-recurrence",
+        "put",
+    ): "temporal_replace_event_advanced_recurrence",
+    (
+        "/api/v1/temporal/events/{source_ref}/advanced-recurrence/checkpoint",
+        "post",
+    ): "temporal_checkpoint_event_advanced_recurrence",
+    (
+        "/api/v1/temporal/conditions/actual-realization",
+        "post",
+    ): "temporal_create_actual_realization_condition",
+    (
+        "/api/v1/temporal/conditions/actual-realization",
+        "get",
+    ): "temporal_find_actual_realization_condition",
+    (
+        "/api/v1/temporal/conditions/actual-realization/{condition_ref}",
+        "get",
+    ): "temporal_get_actual_realization_condition",
+    (
+        "/api/v1/temporal/conditions/actual-realization/{condition_ref}/evaluations",
+        "post",
+    ): "temporal_evaluate_actual_realization_condition",
     ("/api/v1/temporal/schedules/{schedule_ref}/reminder", "get"): "temporal_get_schedule_reminder",
-    ("/api/v1/temporal/schedules/{schedule_ref}/reminder", "put"): "temporal_configure_schedule_reminder",
+    (
+        "/api/v1/temporal/schedules/{schedule_ref}/reminder",
+        "put",
+    ): "temporal_configure_schedule_reminder",
     ("/api/v1/temporal/plans", "get"): "temporal_list_self_plans",
     ("/api/v1/temporal/plans", "post"): "temporal_create_self_plan",
     ("/api/v1/temporal/plans/{plan_ref}", "get"): "temporal_get_self_plan",
     ("/api/v1/temporal/plans/{plan_ref}", "put"): "temporal_replace_self_plan_work",
-    ("/api/v1/temporal/plans/{plan_ref}/dependencies", "get"): "temporal_list_self_plan_dependencies",
-    ("/api/v1/temporal/plans/{plan_ref}/dependencies", "post"): "temporal_create_self_plan_dependency",
-    ("/api/v1/temporal/plans/{plan_ref}/dependencies/{dependency_ref}", "get"): "temporal_get_self_plan_dependency",
-    ("/api/v1/temporal/plans/{plan_ref}/dependencies/{dependency_ref}", "put"): "temporal_revise_self_plan_dependency",
-    ("/api/v1/temporal/plans/{plan_ref}/dependencies/{dependency_ref}/history", "get"): "temporal_list_self_plan_dependency_history",
-    ("/api/v1/temporal/plans/{plan_ref}/steps/{step_ref}/execution/assess", "post"): "temporal_assess_plan_step_execution",
+    (
+        "/api/v1/temporal/plans/{plan_ref}/dependencies",
+        "get",
+    ): "temporal_list_self_plan_dependencies",
+    (
+        "/api/v1/temporal/plans/{plan_ref}/dependencies",
+        "post",
+    ): "temporal_create_self_plan_dependency",
+    (
+        "/api/v1/temporal/plans/{plan_ref}/dependencies/{dependency_ref}",
+        "get",
+    ): "temporal_get_self_plan_dependency",
+    (
+        "/api/v1/temporal/plans/{plan_ref}/dependencies/{dependency_ref}",
+        "put",
+    ): "temporal_revise_self_plan_dependency",
+    (
+        "/api/v1/temporal/plans/{plan_ref}/dependencies/{dependency_ref}/history",
+        "get",
+    ): "temporal_list_self_plan_dependency_history",
+    (
+        "/api/v1/temporal/plans/{plan_ref}/steps/{step_ref}/execution/assess",
+        "post",
+    ): "temporal_assess_plan_step_execution",
     ("/api/v1/temporal/plans/{plan_ref}/conflicts", "get"): "temporal_diagnose_self_plan_conflicts",
-    ("/api/v1/temporal/plans/{plan_ref}/steps/{step_ref}/candidates", "get"): "temporal_search_self_plan_step_candidates",
-    ("/api/v1/temporal/plans/{plan_ref}/steps/{step_ref}/candidate-moves", "post"): "temporal_request_reviewed_plan_candidate_move",
-    ("/api/v1/temporal/plans/{plan_ref}/steps/{step_ref}/candidate-moves/{proposal_ref}/confirm", "post"): "temporal_confirm_reviewed_plan_candidate_move",
+    (
+        "/api/v1/temporal/plans/{plan_ref}/steps/{step_ref}/candidates",
+        "get",
+    ): "temporal_search_self_plan_step_candidates",
+    (
+        "/api/v1/temporal/plans/{plan_ref}/steps/{step_ref}/candidate-moves",
+        "post",
+    ): "temporal_request_reviewed_plan_candidate_move",
+    (
+        "/api/v1/temporal/plans/{plan_ref}/steps/{step_ref}/candidate-moves/{proposal_ref}/confirm",
+        "post",
+    ): "temporal_confirm_reviewed_plan_candidate_move",
     ("/api/v1/temporal/planning-tray", "get"): "temporal_list_planning_tray",
-    ("/api/v1/temporal/planning-tray/{kind}/{subject_ref}/place", "post"): "temporal_place_planning_tray_item",
+    (
+        "/api/v1/temporal/planning-tray/{kind}/{subject_ref}/place",
+        "post",
+    ): "temporal_place_planning_tray_item",
     ("/api/v1/temporal/authoring/activities", "post"): "temporal_author_activity",
     ("/api/v1/temporal/authoring/events", "post"): "temporal_author_event",
     ("/api/v1/temporal/resolution-queue", "get"): "temporal_list_resolution_queue",
-    ("/api/v1/temporal/activities/{activity_ref}/execution-policy", "get"): "temporal_get_activity_execution_policy",
-    ("/api/v1/temporal/activities/{activity_ref}/execution-policy", "post"): "temporal_set_activity_execution_policy",
-    ("/api/v1/temporal/activities/{activity_ref}/child-guard-policy", "get"): "temporal_get_activity_decomposition_policy",
-    ("/api/v1/temporal/activities/{activity_ref}/child-guard-policy", "post"): "temporal_set_activity_decomposition_policy",
-    ("/api/v1/temporal/activities/{parent_activity_ref}/children", "get"): "temporal_get_activity_children",
-    ("/api/v1/temporal/activities/{parent_activity_ref}/children/{child_activity_ref}", "post"): "temporal_set_activity_child",
+    (
+        "/api/v1/temporal/activities/{activity_ref}/execution-policy",
+        "get",
+    ): "temporal_get_activity_execution_policy",
+    (
+        "/api/v1/temporal/activities/{activity_ref}/execution-policy",
+        "post",
+    ): "temporal_set_activity_execution_policy",
+    (
+        "/api/v1/temporal/activities/{activity_ref}/child-guard-policy",
+        "get",
+    ): "temporal_get_activity_decomposition_policy",
+    (
+        "/api/v1/temporal/activities/{activity_ref}/child-guard-policy",
+        "post",
+    ): "temporal_set_activity_decomposition_policy",
+    (
+        "/api/v1/temporal/activities/{parent_activity_ref}/children",
+        "get",
+    ): "temporal_get_activity_children",
+    (
+        "/api/v1/temporal/activities/{parent_activity_ref}/children/{child_activity_ref}",
+        "post",
+    ): "temporal_set_activity_child",
 }
 
 

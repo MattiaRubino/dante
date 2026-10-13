@@ -108,8 +108,8 @@ class RoutineOccurrenceMaterializationApplication:
         try:
             async with self._session_factory() as session, session.begin():
                 rows = (
-                    await session.execute(statement, {"actor": self_person_ref})
-                ).mappings().all()
+                    (await session.execute(statement, {"actor": self_person_ref})).mappings().all()
+                )
         except SQLAlchemyError as exc:
             raise OccurrencePersistenceError() from exc
         sources: list[tuple[OccurrenceOwner, UUID]] = []
@@ -172,9 +172,7 @@ class RoutineOccurrenceMaterializationApplication:
     ):
         if policy.placement_kind == "all_day":
             if policy.duration_days is None:
-                raise OccurrenceInputError(
-                    "Recurring all-day Event policy has no duration."
-                )
+                raise OccurrenceInputError("Recurring all-day Event policy has no duration.")
             start_date = coordinate.generated_date
             return DateSpanPlacement(
                 start_date=start_date,
@@ -274,15 +272,19 @@ class RoutineOccurrenceMaterializationApplication:
         try:
             async with self._session_factory() as session, session.begin():
                 row = (
-                    await session.execute(
-                        text(
-                            """SELECT title,life_area_ref
+                    (
+                        await session.execute(
+                            text(
+                                """SELECT title,life_area_ref
                                  FROM dante.list_self_routines(:actor)
                                 WHERE routine_ref=:routine"""
-                        ),
-                        {"actor": self_person_ref, "routine": routine_ref},
+                            ),
+                            {"actor": self_person_ref, "routine": routine_ref},
+                        )
                     )
-                ).mappings().one_or_none()
+                    .mappings()
+                    .one_or_none()
+                )
         except SQLAlchemyError as exc:
             raise OccurrencePersistenceError() from exc
         if row is None:
@@ -340,9 +342,11 @@ class RoutineOccurrenceMaterializationApplication:
         value: object,
     ) -> NamedZoneLocalIntervalPlacement | None:
         if isinstance(value, dict) and value.get("time_enabled") is False:
-            if set(value) != {"name", "time_enabled"} or not isinstance(
-                value["name"], str
-            ) or not value["name"].strip():
+            if (
+                set(value) != {"name", "time_enabled"}
+                or not isinstance(value["name"], str)
+                or not value["name"].strip()
+            ):
                 raise OccurrenceInputError("Untimed recurring Activity Session is invalid.")
             return None
         return cls._template_window(occurrence_ref, coordinate, value)
@@ -505,14 +509,14 @@ class RoutineOccurrenceMaterializationApplication:
         result: AuthoringResult,
     ) -> None:
         schedules = [
-            *( [result.schedule] if result.schedule is not None else [] ),
+            *([result.schedule] if result.schedule is not None else []),
             *result.activity_intervals,
             *result.planned_slices,
             *[
                 schedule
                 for child in result.children
                 for schedule in (
-                    *( [child.schedule] if child.schedule is not None else [] ),
+                    *([child.schedule] if child.schedule is not None else []),
                     *child.planned_slices,
                 )
             ],
@@ -545,10 +549,7 @@ class RoutineOccurrenceMaterializationApplication:
         try:
             async with self._session_factory() as session, session.begin():
                 row = await session.scalar(
-                    text(
-                        "SELECT dante.get_self_occurrence_profile_patch("
-                        ":actor,:occurrence)"
-                    ),
+                    text("SELECT dante.get_self_occurrence_profile_patch(:actor,:occurrence)"),
                     {"actor": self_person_ref, "occurrence": occurrence_ref},
                 )
         except SQLAlchemyError as exc:
@@ -602,9 +603,7 @@ class RoutineOccurrenceMaterializationApplication:
             for value in planned_rows
         )
         planned_names = tuple(
-            str(value.get("name", "")).strip()
-            for value in planned_rows
-            if isinstance(value, dict)
+            str(value.get("name", "")).strip() for value in planned_rows if isinstance(value, dict)
         )
         if len(planned_names) != len(planned_slices):
             raise OccurrenceInputError("Recurring Activity Session names are invalid.")
@@ -632,9 +631,7 @@ class RoutineOccurrenceMaterializationApplication:
                     placement=(
                         None
                         if placement_value is None
-                        else self._template_window(
-                            occurrence_ref, coordinate, placement_value
-                        )
+                        else self._template_window(occurrence_ref, coordinate, placement_value)
                     ),
                     planned_slices=tuple(
                         self._template_window(occurrence_ref, coordinate, value)
@@ -671,16 +668,12 @@ class RoutineOccurrenceMaterializationApplication:
             description=cast(
                 str | None, correction.get("description", template.get("description"))
             ),
-            location=cast(
-                str | None, correction.get("location", template.get("location"))
-            ),
+            location=cast(str | None, correction.get("location", template.get("location"))),
             item_color_code=cast(
                 str | None, correction.get("color_code", template.get("item_color_code"))
             ),
             placement=root_placement,
-            session_capture_mode=cast(
-                str, template.get("session_capture_mode", "disabled")
-            ),
+            session_capture_mode=cast(str, template.get("session_capture_mode", "disabled")),
             minimum_session_duration_microseconds=cast(int | None, minimum),
             child_guard_mode=cast(str, template.get("child_guard_mode", "none")),
             planned_slices=planned_slices,

@@ -34,21 +34,30 @@ export class TemporalOutcomeRemoteError extends Error {
 
 function record(value: unknown): Record<string, unknown> {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    throw new TemporalOutcomeRemoteError('protocol', 'Invalid Outcome response.');
+    throw new TemporalOutcomeRemoteError(
+      'protocol',
+      'Invalid Outcome response.',
+    );
   }
   return value as Record<string, unknown>;
 }
 
 function uuid(value: unknown, field: string): string {
   if (typeof value !== 'string' || !UUID_V7.test(value)) {
-    throw new TemporalOutcomeRemoteError('protocol', `${field} must be a UUIDv7.`);
+    throw new TemporalOutcomeRemoteError(
+      'protocol',
+      `${field} must be a UUIDv7.`,
+    );
   }
   return value.toLowerCase();
 }
 
 function dispositionCode(value: unknown): string {
   if (typeof value !== 'string' || !DISPOSITION_CODE.test(value)) {
-    throw new TemporalOutcomeRemoteError('protocol', 'Invalid Outcome disposition_code.');
+    throw new TemporalOutcomeRemoteError(
+      'protocol',
+      'Invalid Outcome disposition_code.',
+    );
   }
   return value;
 }
@@ -56,7 +65,10 @@ function dispositionCode(value: unknown): string {
 function view(value: unknown): TemporalOutcomeView {
   const payload = record(value);
   if (typeof payload.replayed !== 'boolean') {
-    throw new TemporalOutcomeRemoteError('protocol', 'Invalid Outcome replay state.');
+    throw new TemporalOutcomeRemoteError(
+      'protocol',
+      'Invalid Outcome replay state.',
+    );
   }
   return Object.freeze({
     outcomeRef: uuid(payload.outcome_ref, 'outcome_ref'),
@@ -94,16 +106,24 @@ export function createRemoteTemporalOutcomeDataSource(
     return payload.csrf_token;
   }
 
-  async function problem(response: Response): Promise<TemporalOutcomeRemoteError> {
+  async function problem(
+    response: Response,
+  ): Promise<TemporalOutcomeRemoteError> {
     let payload: Record<string, unknown> = {};
     try {
       payload = record(await response.json());
     } catch {
-      return new TemporalOutcomeRemoteError('http', 'Outcome command rejected.', response.status);
+      return new TemporalOutcomeRemoteError(
+        'http',
+        'Outcome command rejected.',
+        response.status,
+      );
     }
     return new TemporalOutcomeRemoteError(
       'http',
-      typeof payload.detail === 'string' ? payload.detail : 'Outcome command rejected.',
+      typeof payload.detail === 'string'
+        ? payload.detail
+        : 'Outcome command rejected.',
       response.status,
       typeof payload.code === 'string' ? payload.code : null,
     );
@@ -116,7 +136,10 @@ export function createRemoteTemporalOutcomeDataSource(
       );
       if (!response.ok) {
         const error = await problem(response);
-        if (response.status === 404 && error.code === 'temporal.outcome.not_found') {
+        if (
+          response.status === 404 &&
+          error.code === 'temporal.outcome.not_found'
+        ) {
           return null;
         }
         throw error;
@@ -145,7 +168,8 @@ export function createRemoteTemporalOutcomeDataSource(
           headers,
           body: JSON.stringify({
             operation_id: command.operationId,
-            actual_realization_material_state_ref: command.actualRealizationMaterialStateRef,
+            actual_realization_material_state_ref:
+              command.actualRealizationMaterialStateRef,
             expected_material_state_ref: command.expectedMaterialStateRef,
             disposition_code: command.dispositionCode,
           }),

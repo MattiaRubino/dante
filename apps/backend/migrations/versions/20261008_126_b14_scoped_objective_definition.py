@@ -1,4 +1,5 @@
 """M2 recurring Objective definition: stable template lineage and selected/future policy."""
+
 from collections.abc import Sequence
 
 import sqlalchemy as sa
@@ -9,63 +10,90 @@ down_revision: str | None = "20261008_125"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
+
 def upgrade() -> None:
     op.create_table(
         "temporal_objective_series_edit",
-        sa.Column("self_person_ref",sa.Uuid(),nullable=False),
-        sa.Column("operation_id",sa.Text(),nullable=False),
-        sa.Column("intent_fingerprint",sa.Text(),nullable=False),
-        sa.Column("source_native_ref",sa.Uuid(),nullable=False),
-        sa.Column("selected_objective_ref",sa.Uuid(),nullable=False),
-        sa.Column("selected_occurrence_ref",sa.Uuid(),nullable=False),
-        sa.Column("template_slot",sa.Integer(),nullable=False),
-        sa.Column("revision",sa.BigInteger(),nullable=False),
-        sa.Column("expected_revision",sa.BigInteger(),nullable=False),
-        sa.Column("expected_recurrence_state_ref",sa.Uuid()),
-        sa.Column("selected_definition_revision",sa.BigInteger(),nullable=False),
-        sa.Column("effective_zone_id",sa.Text(),nullable=False),
-        sa.Column("anchor_at",sa.DateTime(timezone=True),nullable=False),
-        sa.Column("accepted_at",sa.DateTime(timezone=True),nullable=False),
-        sa.Column("label",sa.Text(),nullable=False),
-        sa.Column("result_kind",sa.Text(),nullable=False),
-        sa.Column("comparator_code",sa.Text()),
-        sa.Column("target_value",sa.Numeric()),
-        sa.Column("target_min",sa.Numeric()),
-        sa.Column("target_max",sa.Numeric()),
-        sa.Column("unit_code",sa.Text()),
-        sa.Column("presentation_order",sa.Integer(),nullable=False),
-        sa.Column("applied_evaluation_state_ref",sa.Uuid()),
-        sa.Column("applied_assessment_code",sa.Text()),
-        sa.PrimaryKeyConstraint("self_person_ref","operation_id",
-            name="pk_temporal_objective_series_edit"),
-        sa.UniqueConstraint("source_native_ref","template_slot","revision",
-            name="uq_temporal_objective_series_edit_revision"),
-        sa.ForeignKeyConstraint(["self_person_ref"],["dante.person.person_ref"],
-            name="fk_temporal_objective_series_edit_person"),
-        sa.ForeignKeyConstraint(["source_native_ref"],["dante.native_address.native_ref"],
-            name="fk_temporal_objective_series_edit_source"),
-        sa.ForeignKeyConstraint(["selected_objective_ref"],["dante.temporal_objective.objective_ref"],
-            name="fk_temporal_objective_series_edit_objective"),
-        sa.ForeignKeyConstraint(["selected_occurrence_ref"],["dante.occurrence.occurrence_ref"],
-            name="fk_temporal_objective_series_edit_occurrence"),
-        sa.CheckConstraint("template_slot BETWEEN 0 AND 99 AND revision>=1 "
+        sa.Column("self_person_ref", sa.Uuid(), nullable=False),
+        sa.Column("operation_id", sa.Text(), nullable=False),
+        sa.Column("intent_fingerprint", sa.Text(), nullable=False),
+        sa.Column("source_native_ref", sa.Uuid(), nullable=False),
+        sa.Column("selected_objective_ref", sa.Uuid(), nullable=False),
+        sa.Column("selected_occurrence_ref", sa.Uuid(), nullable=False),
+        sa.Column("template_slot", sa.Integer(), nullable=False),
+        sa.Column("revision", sa.BigInteger(), nullable=False),
+        sa.Column("expected_revision", sa.BigInteger(), nullable=False),
+        sa.Column("expected_recurrence_state_ref", sa.Uuid()),
+        sa.Column("selected_definition_revision", sa.BigInteger(), nullable=False),
+        sa.Column("effective_zone_id", sa.Text(), nullable=False),
+        sa.Column("anchor_at", sa.DateTime(timezone=True), nullable=False),
+        sa.Column("accepted_at", sa.DateTime(timezone=True), nullable=False),
+        sa.Column("label", sa.Text(), nullable=False),
+        sa.Column("result_kind", sa.Text(), nullable=False),
+        sa.Column("comparator_code", sa.Text()),
+        sa.Column("target_value", sa.Numeric()),
+        sa.Column("target_min", sa.Numeric()),
+        sa.Column("target_max", sa.Numeric()),
+        sa.Column("unit_code", sa.Text()),
+        sa.Column("presentation_order", sa.Integer(), nullable=False),
+        sa.Column("applied_evaluation_state_ref", sa.Uuid()),
+        sa.Column("applied_assessment_code", sa.Text()),
+        sa.PrimaryKeyConstraint(
+            "self_person_ref", "operation_id", name="pk_temporal_objective_series_edit"
+        ),
+        sa.UniqueConstraint(
+            "source_native_ref",
+            "template_slot",
+            "revision",
+            name="uq_temporal_objective_series_edit_revision",
+        ),
+        sa.ForeignKeyConstraint(
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
+            name="fk_temporal_objective_series_edit_person",
+        ),
+        sa.ForeignKeyConstraint(
+            ["source_native_ref"],
+            ["dante.native_address.native_ref"],
+            name="fk_temporal_objective_series_edit_source",
+        ),
+        sa.ForeignKeyConstraint(
+            ["selected_objective_ref"],
+            ["dante.temporal_objective.objective_ref"],
+            name="fk_temporal_objective_series_edit_objective",
+        ),
+        sa.ForeignKeyConstraint(
+            ["selected_occurrence_ref"],
+            ["dante.occurrence.occurrence_ref"],
+            name="fk_temporal_objective_series_edit_occurrence",
+        ),
+        sa.CheckConstraint(
+            "template_slot BETWEEN 0 AND 99 AND revision>=1 "
             "AND expected_revision>=0 AND selected_definition_revision>=1",
-            name=op.f("ck_temporal_objective_series_edit_revision")),
-        sa.CheckConstraint("operation_id=btrim(operation_id) AND "
-            "char_length(operation_id) BETWEEN 1 AND 200",
-            name=op.f("ck_temporal_objective_series_edit_operation")),
-        sa.CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'",
-            name=op.f("ck_temporal_objective_series_edit_fingerprint")),
-        sa.CheckConstraint("label=btrim(label) AND label<>'' "
+            name=op.f("ck_temporal_objective_series_edit_revision"),
+        ),
+        sa.CheckConstraint(
+            "operation_id=btrim(operation_id) AND char_length(operation_id) BETWEEN 1 AND 200",
+            name=op.f("ck_temporal_objective_series_edit_operation"),
+        ),
+        sa.CheckConstraint(
+            "intent_fingerprint ~ '^[0-9a-f]{64}$'",
+            name=op.f("ck_temporal_objective_series_edit_fingerprint"),
+        ),
+        sa.CheckConstraint(
+            "label=btrim(label) AND label<>'' "
             "AND char_length(label)<=300 AND presentation_order BETWEEN 0 AND 999",
-            name=op.f("ck_temporal_objective_series_edit_label")),
+            name=op.f("ck_temporal_objective_series_edit_label"),
+        ),
         schema="dante",
     )
-    conn=op.get_bind()
+    conn = op.get_bind()
     conn.exec_driver_sql("ALTER TABLE dante.temporal_objective_series_edit OWNER TO dante_owner")
-    conn.exec_driver_sql("REVOKE ALL ON dante.temporal_objective_series_edit "
-                         "FROM PUBLIC,dante_runtime,dante_migrator")
-    for sql in (_SERIES_CONTEXT,_EFFECTIVE_DEFINITION,_SERIES_ACCEPT):
+    conn.exec_driver_sql(
+        "REVOKE ALL ON dante.temporal_objective_series_edit "
+        "FROM PUBLIC,dante_runtime,dante_migrator"
+    )
+    for sql in (_SERIES_CONTEXT, _EFFECTIVE_DEFINITION, _SERIES_ACCEPT):
         conn.execute(sa.text(sql))
     for signature in (
         "get_self_objective_series_state(uuid,uuid)",
@@ -73,12 +101,15 @@ def upgrade() -> None:
         "accept_self_objective_series_edit(uuid,uuid,text,text,bigint,bigint,uuid,text,text,text,text,numeric,numeric,numeric,text,integer,uuid)",
     ):
         conn.exec_driver_sql(f"ALTER FUNCTION dante.{signature} OWNER TO dante_owner")
-        conn.exec_driver_sql(f"REVOKE ALL ON FUNCTION dante.{signature} "
-                             "FROM PUBLIC,dante_runtime,dante_migrator")
+        conn.exec_driver_sql(
+            f"REVOKE ALL ON FUNCTION dante.{signature} FROM PUBLIC,dante_runtime,dante_migrator"
+        )
         conn.exec_driver_sql(f"GRANT EXECUTE ON FUNCTION dante.{signature} TO dante_runtime")
+
 
 def downgrade() -> None:
     raise RuntimeError("M2 recurring Objective source-policy history is forward-only")
+
 
 _SERIES_CONTEXT = r"""CREATE FUNCTION dante.get_self_objective_series_state(
     actor uuid, requested_objective uuid

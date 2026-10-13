@@ -25,7 +25,8 @@ def upgrade() -> None:
         accepted = f"ck_{table}_{suffix}"
         expanded = f"ck_{table}_{accepted}"
         old = (
-            expanded if len(expanded) <= 63
+            expanded
+            if len(expanded) <= 63
             else f"{expanded[:55]}_{md5(expanded.encode(), usedforsecurity=False).hexdigest()[-4:]}"
         )
         op.execute(f"ALTER TABLE dante.{table} RENAME CONSTRAINT {old} TO {accepted}")
@@ -44,15 +45,18 @@ def upgrade() -> None:
         sa.UniqueConstraint("session_ref", name="uq_session_manual_record_operation_session_ref"),
         sa.CheckConstraint(
             "operation_id=btrim(operation_id) AND operation_id<>'' "
-            "AND char_length(operation_id)<=200", name="operation_id",
+            "AND char_length(operation_id)<=200",
+            name="operation_id",
         ),
         sa.CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name="fingerprint"),
         sa.ForeignKeyConstraint(
-            ["self_person_ref"], ["dante.person.person_ref"],
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
             name="fk_session_manual_record_operation_person",
         ),
         sa.ForeignKeyConstraint(
-            ["session_ref"], ["dante.session.session_ref"],
+            ["session_ref"],
+            ["dante.session.session_ref"],
             name="fk_session_manual_record_operation_session",
         ),
         schema="dante",
@@ -168,7 +172,9 @@ BEGIN
 END;
 $function$;
 """)
-    signature = "dante.record_self_activity_session(uuid,text,text,uuid,uuid,uuid,timestamptz,timestamptz)"
+    signature = (
+        "dante.record_self_activity_session(uuid,text,text,uuid,uuid,uuid,timestamptz,timestamptz)"
+    )
     bind.exec_driver_sql(f"ALTER FUNCTION {signature} OWNER TO dante_owner")
     bind.exec_driver_sql(
         f"REVOKE ALL ON FUNCTION {signature} FROM PUBLIC,dante_runtime,dante_migrator"

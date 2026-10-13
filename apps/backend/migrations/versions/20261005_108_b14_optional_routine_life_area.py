@@ -18,8 +18,10 @@ depends_on: str | Sequence[str] | None = None
 
 
 def _definition(name: str, argument_count: int) -> str:
-    value = op.get_bind().exec_driver_sql(
-        """
+    value = (
+        op.get_bind()
+        .exec_driver_sql(
+            """
         SELECT pg_get_functiondef(routine.oid)
           FROM pg_proc AS routine
           JOIN pg_namespace AS namespace ON namespace.oid=routine.pronamespace
@@ -27,8 +29,10 @@ def _definition(name: str, argument_count: int) -> str:
            AND routine.proname=%s
            AND routine.pronargs=%s
         """,
-        (name, argument_count),
-    ).scalar_one()
+            (name, argument_count),
+        )
+        .scalar_one()
+    )
     if not isinstance(value, str):
         raise RuntimeError(f"B14 Routine capability {name} is unavailable")
     return value

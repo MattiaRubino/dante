@@ -115,7 +115,9 @@ def _require_uuid7(value: UUID, *, label: str) -> None:
 
 def _hash(payload: Mapping[str, str]) -> str:
     return hashlib.sha256(
-        json.dumps(payload, ensure_ascii=False, separators=(",", ":"), sort_keys=True).encode("utf-8")
+        json.dumps(payload, ensure_ascii=False, separators=(",", ":"), sort_keys=True).encode(
+            "utf-8"
+        )
     ).hexdigest()
 
 
@@ -155,7 +157,11 @@ def _raise_integrity(exc: IntegrityError) -> None:
     constraint = _constraint_name(exc)
     if constraint in {"pk_schedule_move_request_operation", "pk_schedule_move_accept_operation"}:
         raise ScheduleMoveOperationIdReuseError() from exc
-    if constraint in {"schedule_move_schedule_not_found", "schedule_move_proposal_not_found", "schedule_move_policy_not_found"}:
+    if constraint in {
+        "schedule_move_schedule_not_found",
+        "schedule_move_proposal_not_found",
+        "schedule_move_policy_not_found",
+    }:
         raise ScheduleMoveNotFoundError() from exc
     if constraint == "schedule_move_automation_blocked":
         raise ScheduleMoveBlockedError() from exc
@@ -228,7 +234,9 @@ async def request_schedule_move_in_session(
     """Request one automatic move; policy decides direct effect versus proposal."""
     normalized_operation_id = _normalize_operation_id(operation_id)
     _require_uuid7(schedule_ref, label="Schedule reference")
-    _require_uuid7(expected_placement_material_state_ref, label="Expected placement state reference")
+    _require_uuid7(
+        expected_placement_material_state_ref, label="Expected placement state reference"
+    )
     proposal_ref = uuid7()
     resulting_ref = new_material_state_ref()
     row = (
@@ -327,7 +335,9 @@ async def accept_schedule_move_proposal_in_session(
         previous_placement_material_state_ref=MaterialStateRef(
             UUID(str(row["previous_placement_material_state_ref"]))
         ),
-        placement_material_state_ref=MaterialStateRef(UUID(str(row["placement_material_state_ref"]))),
+        placement_material_state_ref=MaterialStateRef(
+            UUID(str(row["placement_material_state_ref"]))
+        ),
         created_at=row["created_at"],
         replayed=bool(row["replayed"]),
     )

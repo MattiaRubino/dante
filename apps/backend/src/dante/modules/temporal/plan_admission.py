@@ -75,14 +75,19 @@ SELECT * FROM dante.accept_self_plan_candidate_move(
 
 def _fingerprint(review: ReviewedMove, proposal_ref: UUID | None = None) -> str:
     payload = {
-        "plan": str(review.plan_ref), "step": str(review.step_ref),
-        "plan_state": str(review.plan_state_ref), "schedule": str(review.schedule_ref),
-        "schedule_state": str(review.schedule_state_ref), "policy": str(review.policy_state_ref),
+        "plan": str(review.plan_ref),
+        "step": str(review.step_ref),
+        "plan_state": str(review.plan_state_ref),
+        "schedule": str(review.schedule_ref),
+        "schedule_state": str(review.schedule_state_ref),
+        "policy": str(review.policy_state_ref),
         "basis": review.basis_fingerprint,
         "interval": [review.starts_at.isoformat(), review.ends_at.isoformat()],
         "proposal": str(proposal_ref) if proposal_ref else None,
     }
-    return hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+    return hashlib.sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
 
 
 def _error(exc: DBAPIError) -> Exception:
@@ -91,11 +96,15 @@ def _error(exc: DBAPIError) -> Exception:
     name = getattr(getattr(origin, "diag", None), "constraint_name", None)
     if name == "candidate_receipt_absent":
         return PlanAdmissionNotFoundError("No prior operation receipt.")
-    if name in {"schedule_move_automation_blocked", "schedule_move_hard_constraint_violation",
-                "schedule_move_not_evaluable"}:
+    if name in {
+        "schedule_move_automation_blocked",
+        "schedule_move_hard_constraint_violation",
+        "schedule_move_not_evaluable",
+    }:
         return PlanAdmissionBlockedError("Policy or hard Temporal Constraint blocks the move.")
     if name in {
-        "schedule_move_expected_state", "schedule_move_policy_state",
+        "schedule_move_expected_state",
+        "schedule_move_policy_state",
         "uq_schedule_move_accept_operation_proposal_ref",
     } or code in {"40001", "40P01", "23514"}:
         return PlanAdmissionStaleError("Reviewed evidence changed. Refresh and choose again.")
@@ -107,18 +116,28 @@ def _error(exc: DBAPIError) -> Exception:
 
 
 def _basis(view: PlanCandidateView) -> tuple[str, str]:
-    dependencies = json.dumps([
-        [str(item.dependency_ref), str(item.state_ref), str(item.prerequisite_step_ref),
-         str(item.dependent_step_ref),
-         item.evaluation_code, str(item.actual_material_state_ref)
-         if item.actual_material_state_ref else None,
-         str(item.outcome_material_state_ref) if item.outcome_material_state_ref else None]
-        for item in sorted(view.all_dependencies, key=lambda item: item.dependency_ref)
-    ], separators=(",", ":"))
-    constraints = json.dumps([
-        [str(ref), str(state) if state else None]
-        for ref, state in sorted(view.constraint_states)
-    ], separators=(",", ":"))
+    dependencies = json.dumps(
+        [
+            [
+                str(item.dependency_ref),
+                str(item.state_ref),
+                str(item.prerequisite_step_ref),
+                str(item.dependent_step_ref),
+                item.evaluation_code,
+                str(item.actual_material_state_ref) if item.actual_material_state_ref else None,
+                str(item.outcome_material_state_ref) if item.outcome_material_state_ref else None,
+            ]
+            for item in sorted(view.all_dependencies, key=lambda item: item.dependency_ref)
+        ],
+        separators=(",", ":"),
+    )
+    constraints = json.dumps(
+        [
+            [str(ref), str(state) if state else None]
+            for ref, state in sorted(view.constraint_states)
+        ],
+        separators=(",", ":"),
+    )
     return dependencies, constraints
 
 
@@ -139,8 +158,10 @@ class PlanAdmissionApplication:
 
     async def _current(self, self_ref: NativeRef, review: ReviewedMove) -> PlanCandidateView:
         view = await self._candidates.search(
-            self_person_ref=self_ref, plan_ref=review.plan_ref,
-            step_ref=review.step_ref, expected_state_ref=review.plan_state_ref,
+            self_person_ref=self_ref,
+            plan_ref=review.plan_ref,
+            step_ref=review.step_ref,
+            expected_state_ref=review.plan_state_ref,
         )
         if (
             view.basis_fingerprint != review.basis_fingerprint
@@ -148,9 +169,12 @@ class PlanAdmissionApplication:
             or view.placement.schedule_ref != review.schedule_ref
             or view.placement.material_state_ref != review.schedule_state_ref
             or view.movement_policy_material_state_ref != review.policy_state_ref
-            or view.basis_status != "supported" or view.solver_status != "OPTIMAL"
-            or not any(item.starts_at == review.starts_at and item.ends_at == review.ends_at
-                       for item in view.candidates)
+            or view.basis_status != "supported"
+            or view.solver_status != "OPTIMAL"
+            or not any(
+                item.starts_at == review.starts_at and item.ends_at == review.ends_at
+                for item in view.candidates
+            )
         ):
             raise PlanAdmissionStaleError("Candidate or evidence changed. Search again.")
         if view.movement_policy_status != "automatic":
@@ -159,14 +183,22 @@ class PlanAdmissionApplication:
 
     async def request(self, *, self_ref: NativeRef, review: ReviewedMove) -> AdmissionResult:
         values: dict[str, object] = {
-            "self_ref": self_ref, "operation_id": review.operation_id,
-            "fingerprint": _fingerprint(review), "plan_ref": review.plan_ref,
-            "step_ref": review.step_ref, "plan_state_ref": review.plan_state_ref,
-            "schedule_ref": review.schedule_ref, "schedule_state_ref": review.schedule_state_ref,
+            "self_ref": self_ref,
+            "operation_id": review.operation_id,
+            "fingerprint": _fingerprint(review),
+            "plan_ref": review.plan_ref,
+            "step_ref": review.step_ref,
+            "plan_state_ref": review.plan_state_ref,
+            "schedule_ref": review.schedule_ref,
+            "schedule_state_ref": review.schedule_state_ref,
             "policy_state_ref": review.policy_state_ref,
-            "starts_at": review.starts_at, "ends_at": review.ends_at,
-            "dependencies": "[]", "constraints": "[]",
-            "proposal_ref": uuid7(), "resulting_ref": uuid7(), "replay_only": True,
+            "starts_at": review.starts_at,
+            "ends_at": review.ends_at,
+            "dependencies": "[]",
+            "constraints": "[]",
+            "proposal_ref": uuid7(),
+            "resulting_ref": uuid7(),
+            "replay_only": True,
         }
         try:
             row = await self._execute(_REQUEST, values)
@@ -182,22 +214,32 @@ class PlanAdmissionApplication:
             schedule_ref=UUID(str(row["schedule_ref"])),
             proposal_ref=UUID(str(row["proposal_ref"])) if row["proposal_ref"] else None,
             placement_state_ref=UUID(str(row["placement_material_state_ref"]))
-            if row["placement_material_state_ref"] else None,
+            if row["placement_material_state_ref"]
+            else None,
             replayed=bool(row["replayed"]),
         )
 
     async def accept(
-        self, *, self_ref: NativeRef, review: ReviewedMove, proposal_ref: UUID,
+        self,
+        *,
+        self_ref: NativeRef,
+        review: ReviewedMove,
+        proposal_ref: UUID,
     ) -> AdmissionResult:
         values: dict[str, object] = {
-            "self_ref": self_ref, "operation_id": review.operation_id,
+            "self_ref": self_ref,
+            "operation_id": review.operation_id,
             "fingerprint": _fingerprint(review, proposal_ref),
-            "plan_ref": review.plan_ref, "step_ref": review.step_ref,
+            "plan_ref": review.plan_ref,
+            "step_ref": review.step_ref,
             "plan_state_ref": review.plan_state_ref,
-            "schedule_ref": review.schedule_ref, "schedule_state_ref": review.schedule_state_ref,
+            "schedule_ref": review.schedule_ref,
+            "schedule_state_ref": review.schedule_state_ref,
             "policy_state_ref": review.policy_state_ref,
-            "dependencies": "[]", "constraints": "[]",
-            "proposal_ref": proposal_ref, "replay_only": True,
+            "dependencies": "[]",
+            "constraints": "[]",
+            "proposal_ref": proposal_ref,
+            "replay_only": True,
         }
         try:
             row = await self._execute(_ACCEPT, values)
@@ -209,7 +251,8 @@ class PlanAdmissionApplication:
             values["replay_only"] = False
             row = await self._execute(_ACCEPT, values)
         return AdmissionResult(
-            kind="committed", schedule_ref=UUID(str(row["schedule_ref"])),
+            kind="committed",
+            schedule_ref=UUID(str(row["schedule_ref"])),
             proposal_ref=proposal_ref,
             placement_state_ref=UUID(str(row["placement_material_state_ref"])),
             replayed=bool(row["replayed"]),

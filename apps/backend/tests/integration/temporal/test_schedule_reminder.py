@@ -7,6 +7,8 @@ from typing import Any
 
 import psycopg
 import pytest
+from tests.integration.temporal.support.life_area import ensure_test_life_area
+from tests.integration.temporal.test_schedule_create import _seed_self_person
 
 from dante.modules.temporal.activity import TemporalActivityApplication
 from dante.modules.temporal.schedule import (
@@ -20,8 +22,6 @@ from dante.modules.temporal.schedule_reminder import (
     ScheduleReminderNotFoundError,
 )
 from dante.platform.database.runtime import create_database_runtime
-from tests.integration.temporal.support.life_area import ensure_test_life_area
-from tests.integration.temporal.test_schedule_create import _seed_self_person
 
 pytestmark = pytest.mark.postgres
 
@@ -54,9 +54,12 @@ async def test_b11_c_reminder_current_replay_ownership_and_schedule_revision(
         )
         with pytest.raises(ScheduleReminderNotFoundError):
             await reminders.configure(
-                self_person_ref=alice, schedule_ref=floating.schedule_ref,
-                operation_id="b11c:reject-floating", expected_material_state_ref=None,
-                enabled=True, lead_minutes=15,
+                self_person_ref=alice,
+                schedule_ref=floating.schedule_ref,
+                operation_id="b11c:reject-floating",
+                expected_material_state_ref=None,
+                enabled=True,
+                lead_minutes=15,
             )
 
         starts_at = datetime.now(UTC) + timedelta(days=2)
@@ -66,14 +69,18 @@ async def test_b11_c_reminder_current_replay_ownership_and_schedule_revision(
             schedule_ref=floating.schedule_ref,
             expected_material_state_ref=floating.material_state_ref,
             placement=AbsoluteIntervalPlacement(
-                starts_at=starts_at, ends_at=starts_at + timedelta(hours=1),
+                starts_at=starts_at,
+                ends_at=starts_at + timedelta(hours=1),
             ),
         )
         assert await reminders.get(self_person_ref=alice, schedule_ref=exact.schedule_ref) is None
         created = await reminders.configure(
-            self_person_ref=alice, schedule_ref=exact.schedule_ref,
-            operation_id="b11c:configure", expected_material_state_ref=None,
-            enabled=True, lead_minutes=15,
+            self_person_ref=alice,
+            schedule_ref=exact.schedule_ref,
+            operation_id="b11c:configure",
+            expected_material_state_ref=None,
+            enabled=True,
+            lead_minutes=15,
         )
         assert created.reminder_ref.version == 7
         assert created.material_state_ref.version == 7
@@ -84,40 +91,54 @@ async def test_b11_c_reminder_current_replay_ownership_and_schedule_revision(
         assert await reminders.get(self_person_ref=bob, schedule_ref=exact.schedule_ref) is None
 
         replay = await reminders.configure(
-            self_person_ref=alice, schedule_ref=exact.schedule_ref,
-            operation_id="b11c:configure", expected_material_state_ref=None,
-            enabled=True, lead_minutes=15,
+            self_person_ref=alice,
+            schedule_ref=exact.schedule_ref,
+            operation_id="b11c:configure",
+            expected_material_state_ref=None,
+            enabled=True,
+            lead_minutes=15,
         )
         assert replay.replayed
         assert replay.material_state_ref == created.material_state_ref
         with pytest.raises(ScheduleReminderConflictError):
             await reminders.configure(
-                self_person_ref=alice, schedule_ref=exact.schedule_ref,
-                operation_id="b11c:configure", expected_material_state_ref=None,
-                enabled=True, lead_minutes=30,
+                self_person_ref=alice,
+                schedule_ref=exact.schedule_ref,
+                operation_id="b11c:configure",
+                expected_material_state_ref=None,
+                enabled=True,
+                lead_minutes=30,
             )
         with pytest.raises(ScheduleReminderConflictError):
             await reminders.configure(
-                self_person_ref=alice, schedule_ref=exact.schedule_ref,
-                operation_id="b11c:stale", expected_material_state_ref=None,
-                enabled=False, lead_minutes=15,
+                self_person_ref=alice,
+                schedule_ref=exact.schedule_ref,
+                operation_id="b11c:stale",
+                expected_material_state_ref=None,
+                enabled=False,
+                lead_minutes=15,
             )
 
         disabled = await reminders.configure(
-            self_person_ref=alice, schedule_ref=exact.schedule_ref,
-            operation_id="b11c:disable", expected_material_state_ref=created.material_state_ref,
-            enabled=False, lead_minutes=15,
+            self_person_ref=alice,
+            schedule_ref=exact.schedule_ref,
+            operation_id="b11c:disable",
+            expected_material_state_ref=created.material_state_ref,
+            enabled=False,
+            lead_minutes=15,
         )
         assert disabled.reminder_ref == created.reminder_ref
         assert disabled.material_state_ref != created.material_state_ref
         assert disabled.disposition_code == "unavailable"
         revised_start = starts_at + timedelta(hours=3)
         await schedules.revise_schedule(
-            self_person_ref=alice, operation_id="b11c:replan",
+            self_person_ref=alice,
+            operation_id="b11c:replan",
             schedule_ref=exact.schedule_ref,
             expected_material_state_ref=exact.material_state_ref,
             placement=AbsoluteIntervalPlacement(
-                starts_at=revised_start, ends_at=revised_start + timedelta(hours=1),
+                starts_at=revised_start,
+                ends_at=revised_start + timedelta(hours=1),
             ),
         )
         latest = await reminders.get(self_person_ref=alice, schedule_ref=exact.schedule_ref)
@@ -127,7 +148,8 @@ async def test_b11_c_reminder_current_replay_ownership_and_schedule_revision(
 
         with psycopg.connect(
             **migrated_database.connection_kwargs(
-                "dante_migrator", migrated_database.cluster.migrator_password,
+                "dante_migrator",
+                migrated_database.cluster.migrator_password,
             )
         ) as connection:
             connection.execute("SET ROLE dante_owner")
@@ -141,8 +163,6 @@ async def test_b11_c_reminder_current_replay_ownership_and_schedule_revision(
                 (created.material_state_ref, False),
                 (disabled.material_state_ref, True),
             ]
-            assert connection.execute(
-                "SELECT count(*) FROM dante.actual"
-            ).fetchone() == (0,)
+            assert connection.execute("SELECT count(*) FROM dante.actual").fetchone() == (0,)
     finally:
         await runtime.dispose()

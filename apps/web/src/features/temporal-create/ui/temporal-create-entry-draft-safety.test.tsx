@@ -1,7 +1,13 @@
 // @vitest-environment jsdom
 
 import { Temporal } from '@dante/time';
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+} from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { i18n } from '../../../bootstrap/i18n';
@@ -78,20 +84,29 @@ describe('Temporal Create U1 entry', () => {
     let onChange: (() => void) | undefined;
     const media = {
       matches: false,
-      addEventListener: vi.fn((_name: string, callback: () => void) => { onChange = callback; }),
+      addEventListener: vi.fn((_name: string, callback: () => void) => {
+        onChange = callback;
+      }),
       removeEventListener: vi.fn(),
     };
-    vi.stubGlobal('matchMedia', vi.fn(() => media));
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn(() => media),
+    );
     const { quickAdd, host } = renderEntry();
     fireEvent.click(quickAdd);
-    expect(host.querySelector('[data-temporal-create="composer"]')).not.toBeNull();
+    expect(
+      host.querySelector('[data-temporal-create="composer"]'),
+    ).not.toBeNull();
 
     act(() => {
       media.matches = true;
       onChange?.();
     });
     expect(host.querySelector('[data-temporal-create="composer"]')).toBeNull();
-    expect(document.body.querySelector('[data-temporal-create="composer"]')).not.toBeNull();
+    expect(
+      document.body.querySelector('[data-temporal-create="composer"]'),
+    ).not.toBeNull();
   });
 
   it('keeps the + entry interactive while canonical Life Area readiness is pending', () => {

@@ -2,7 +2,17 @@
 
 from datetime import datetime
 
-from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKeyConstraint, Index, Integer, Text, UniqueConstraint, text
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    DateTime,
+    ForeignKeyConstraint,
+    Index,
+    Integer,
+    Text,
+    UniqueConstraint,
+    text,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from dante.platform.database.metadata import Base
@@ -15,9 +25,15 @@ class ScheduleReminderRow(Base):
     __tablename__ = "schedule_reminder"
     __table_args__ = (
         CheckConstraint("uuid_extract_version(reminder_ref) IS NOT DISTINCT FROM 7", name="uuidv7"),
-        UniqueConstraint("self_person_ref", "schedule_ref", name="uq_schedule_reminder_self_schedule"),
-        ForeignKeyConstraint(["self_person_ref"], ["dante.person.person_ref"], name="fk_schedule_reminder_person"),
-        ForeignKeyConstraint(["schedule_ref"], ["dante.schedule.schedule_ref"], name="fk_schedule_reminder_schedule"),
+        UniqueConstraint(
+            "self_person_ref", "schedule_ref", name="uq_schedule_reminder_self_schedule"
+        ),
+        ForeignKeyConstraint(
+            ["self_person_ref"], ["dante.person.person_ref"], name="fk_schedule_reminder_person"
+        ),
+        ForeignKeyConstraint(
+            ["schedule_ref"], ["dante.schedule.schedule_ref"], name="fk_schedule_reminder_schedule"
+        ),
         Index("ix_schedule_reminder_schedule", "schedule_ref"),
     )
 
@@ -31,10 +47,22 @@ class ScheduleReminderConfigurationStateRow(Base):
 
     __tablename__ = "schedule_reminder_configuration_state"
     __table_args__ = (
-        UniqueConstraint("reminder_ref", "material_state_ref", name="uq_schedule_reminder_configuration_state_owner_state"),
+        UniqueConstraint(
+            "reminder_ref",
+            "material_state_ref",
+            name="uq_schedule_reminder_configuration_state_owner_state",
+        ),
         CheckConstraint("lead_minutes BETWEEN 0 AND 10080", name="lead"),
-        ForeignKeyConstraint(["material_state_ref"], ["dante.material_state_address.material_state_ref"], name="fk_schedule_reminder_configuration_state_address"),
-        ForeignKeyConstraint(["reminder_ref"], ["dante.schedule_reminder.reminder_ref"], name="fk_schedule_reminder_configuration_state_reminder"),
+        ForeignKeyConstraint(
+            ["material_state_ref"],
+            ["dante.material_state_address.material_state_ref"],
+            name="fk_schedule_reminder_configuration_state_address",
+        ),
+        ForeignKeyConstraint(
+            ["reminder_ref"],
+            ["dante.schedule_reminder.reminder_ref"],
+            name="fk_schedule_reminder_configuration_state_reminder",
+        ),
         Index("ix_schedule_reminder_configuration_state_reminder", "reminder_ref"),
     )
 
@@ -56,10 +84,18 @@ class ScheduleReminderCurrentHistoryRow(Base):
         ),
         ForeignKeyConstraint(
             ["reminder_ref", "material_state_ref"],
-            ["dante.schedule_reminder_configuration_state.reminder_ref", "dante.schedule_reminder_configuration_state.material_state_ref"],
+            [
+                "dante.schedule_reminder_configuration_state.reminder_ref",
+                "dante.schedule_reminder_configuration_state.material_state_ref",
+            ],
             name="fk_schedule_reminder_current_history_state",
         ),
-        Index("ux_schedule_reminder_current_history_open", "reminder_ref", unique=True, postgresql_where=text("current_until_at IS NULL")),
+        Index(
+            "ux_schedule_reminder_current_history_open",
+            "reminder_ref",
+            unique=True,
+            postgresql_where=text("current_until_at IS NULL"),
+        ),
         Index("ix_schedule_reminder_current_history_state", "material_state_ref"),
     )
 
@@ -74,15 +110,35 @@ class ScheduleReminderOperationRow(Base):
 
     __tablename__ = "schedule_reminder_operation"
     __table_args__ = (
-        CheckConstraint("operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200", name="id"),
+        CheckConstraint(
+            "operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200",
+            name="id",
+        ),
         CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name="fingerprint"),
-        UniqueConstraint("resulting_material_state_ref", name="uq_schedule_reminder_operation_state"),
-        ForeignKeyConstraint(["self_person_ref"], ["dante.person.person_ref"], name="fk_schedule_reminder_operation_person"),
-        ForeignKeyConstraint(["reminder_ref"], ["dante.schedule_reminder.reminder_ref"], name="fk_schedule_reminder_operation_reminder"),
-        ForeignKeyConstraint(["schedule_ref"], ["dante.schedule.schedule_ref"], name="fk_schedule_reminder_operation_schedule"),
+        UniqueConstraint(
+            "resulting_material_state_ref", name="uq_schedule_reminder_operation_state"
+        ),
+        ForeignKeyConstraint(
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
+            name="fk_schedule_reminder_operation_person",
+        ),
+        ForeignKeyConstraint(
+            ["reminder_ref"],
+            ["dante.schedule_reminder.reminder_ref"],
+            name="fk_schedule_reminder_operation_reminder",
+        ),
+        ForeignKeyConstraint(
+            ["schedule_ref"],
+            ["dante.schedule.schedule_ref"],
+            name="fk_schedule_reminder_operation_schedule",
+        ),
         ForeignKeyConstraint(
             ["reminder_ref", "resulting_material_state_ref"],
-            ["dante.schedule_reminder_configuration_state.reminder_ref", "dante.schedule_reminder_configuration_state.material_state_ref"],
+            [
+                "dante.schedule_reminder_configuration_state.reminder_ref",
+                "dante.schedule_reminder_configuration_state.material_state_ref",
+            ],
             name="fk_schedule_reminder_operation_result_state",
         ),
     )

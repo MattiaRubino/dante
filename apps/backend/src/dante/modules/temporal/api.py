@@ -65,8 +65,8 @@ from dante.modules.temporal.schedule import (
     ScheduleNotFoundError,
     ScheduleOperationIdReuseError,
     SchedulePersistenceError,
-    SchedulePlacementLockedError,
     SchedulePlacement,
+    SchedulePlacementLockedError,
     ScheduleRevisionConflictError,
     ScheduleUndoConflictError,
     ScheduleUnscheduleConflictError,
@@ -1548,9 +1548,12 @@ async def revise_schedule_placement(
         ) from exc
     except SchedulePlacementLockedError as exc:
         raise ProblemError(
-            status=409, code="temporal.schedule.placement_locked",
-            category="conflict", title="Schedule placement locked",
-            detail="Unlock this Schedule before changing its placement.", retryable=False,
+            status=409,
+            code="temporal.schedule.placement_locked",
+            category="conflict",
+            title="Schedule placement locked",
+            detail="Unlock this Schedule before changing its placement.",
+            retryable=False,
         ) from exc
     except ScheduleRevisionConflictError as exc:
         raise ProblemError(
@@ -1632,9 +1635,12 @@ async def unschedule_schedule(
         ) from exc
     except SchedulePlacementLockedError as exc:
         raise ProblemError(
-            status=409, code="temporal.schedule.placement_locked",
-            category="conflict", title="Schedule placement locked",
-            detail="Unlock this Schedule before removing its placement.", retryable=False,
+            status=409,
+            code="temporal.schedule.placement_locked",
+            category="conflict",
+            title="Schedule placement locked",
+            detail="Unlock this Schedule before removing its placement.",
+            retryable=False,
         ) from exc
     except ScheduleUnscheduleConflictError as exc:
         raise ProblemError(

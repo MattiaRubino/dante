@@ -74,9 +74,7 @@ $function$;
     op.get_bind().exec_driver_sql(
         f"REVOKE ALL ON FUNCTION {_SIGNATURE} FROM PUBLIC, dante_runtime, dante_migrator"
     )
-    op.get_bind().exec_driver_sql(
-        f"GRANT EXECUTE ON FUNCTION {_SIGNATURE} TO dante_runtime"
-    )
+    op.get_bind().exec_driver_sql(f"GRANT EXECUTE ON FUNCTION {_SIGNATURE} TO dante_runtime")
 
 
 def downgrade() -> None:

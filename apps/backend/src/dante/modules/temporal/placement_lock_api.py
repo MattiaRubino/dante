@@ -61,17 +61,26 @@ def _response(view: PlacementLockView) -> PlacementLockResponse:
 def _problem(exc: Exception) -> ProblemError:
     if isinstance(exc, PlacementLockNotFoundError):
         return ProblemError(
-            status=404, code="temporal.placement_lock.not_found", category="not_found",
-            title="Schedule unavailable", detail="Schedule unavailable in self scope.",
+            status=404,
+            code="temporal.placement_lock.not_found",
+            category="not_found",
+            title="Schedule unavailable",
+            detail="Schedule unavailable in self scope.",
         )
     if isinstance(exc, PlacementLockConflictError):
         return ProblemError(
-            status=409, code="temporal.placement_lock.conflict", category="conflict",
-            title="Placement lock changed", detail="Refresh the Schedule and retry.",
+            status=409,
+            code="temporal.placement_lock.conflict",
+            category="conflict",
+            title="Placement lock changed",
+            detail="Refresh the Schedule and retry.",
         )
     return ProblemError(
-        status=503, code="temporal.placement_lock.unavailable", category="service",
-        title="Placement lock unavailable", detail="Placement lock could not be saved safely.",
+        status=503,
+        code="temporal.placement_lock.unavailable",
+        category="service",
+        title="Placement lock unavailable",
+        detail="Placement lock could not be saved safely.",
         retryable=True,
     )
 
@@ -82,14 +91,19 @@ def _problem(exc: Exception) -> ProblemError:
     operation_id="temporal_get_self_schedule_placement_lock",
 )
 async def get_self_schedule_placement_lock(
-    schedule_ref: UUID, context: ReadContext, application: Application, response: Response,
+    schedule_ref: UUID,
+    context: ReadContext,
+    application: Application,
+    response: Response,
 ) -> PlacementLockResponse:
     response.headers["Cache-Control"] = "no-store"
     try:
-        return _response(await application.get(
-            self_person_ref=context.self_person_ref,
-            schedule_ref=ScopedRecordRef(schedule_ref),
-        ))
+        return _response(
+            await application.get(
+                self_person_ref=context.self_person_ref,
+                schedule_ref=ScopedRecordRef(schedule_ref),
+            )
+        )
     except (PlacementLockNotFoundError, PlacementLockPersistenceError) as exc:
         raise _problem(exc) from exc
 
@@ -100,19 +114,25 @@ async def get_self_schedule_placement_lock(
     operation_id="temporal_set_self_schedule_placement_lock",
 )
 async def set_self_schedule_placement_lock(
-    schedule_ref: UUID, body: PlacementLockRequest, context: WriteContext,
-    application: Application, response: Response,
+    schedule_ref: UUID,
+    body: PlacementLockRequest,
+    context: WriteContext,
+    application: Application,
+    response: Response,
 ) -> PlacementLockResponse:
     response.headers["Cache-Control"] = "no-store"
     try:
-        return _response(await application.set(
-            self_person_ref=context.self_person_ref,
-            schedule_ref=ScopedRecordRef(schedule_ref),
-            locked=body.locked,
-            expected_revision=body.expected_revision,
-        ))
+        return _response(
+            await application.set(
+                self_person_ref=context.self_person_ref,
+                schedule_ref=ScopedRecordRef(schedule_ref),
+                locked=body.locked,
+                expected_revision=body.expected_revision,
+            )
+        )
     except (
-        PlacementLockNotFoundError, PlacementLockConflictError,
+        PlacementLockNotFoundError,
+        PlacementLockConflictError,
         PlacementLockPersistenceError,
     ) as exc:
         raise _problem(exc) from exc

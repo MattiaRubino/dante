@@ -169,10 +169,7 @@ export type RecurringAuthoringResult = Readonly<{
 }>;
 
 export type RecurringAuthoringRemoteFailureKind =
-  | 'transport'
-  | 'http'
-  | 'protocol'
-  | 'authentication';
+  'transport' | 'http' | 'protocol' | 'authentication';
 
 export class RecurringAuthoringRemoteError extends Error {
   constructor(
@@ -312,7 +309,10 @@ export function createRemoteRecurringAuthoringDataSource(
     return payload.csrf_token;
   }
 
-  async function post(path: string, body: unknown): Promise<RecurringAuthoringResult> {
+  async function post(
+    path: string,
+    body: unknown,
+  ): Promise<RecurringAuthoringResult> {
     const csrf = await sessionCsrf();
     let response: Response;
     try {
@@ -327,7 +327,9 @@ export function createRemoteRecurringAuthoringDataSource(
     } catch (error) {
       throw new RecurringAuthoringRemoteError(
         'transport',
-        error instanceof Error ? error.message : 'Recurring authoring unavailable.',
+        error instanceof Error
+          ? error.message
+          : 'Recurring authoring unavailable.',
       );
     }
     let value: unknown;

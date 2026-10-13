@@ -21,7 +21,8 @@ import { TimelineSurface } from './timeline-surface';
 
 vi.mock('../../../temporal/remote-placement-lock-data-source', () => ({
   createRemotePlacementLockDataSource: () => ({
-    get: (scheduleRef: string) => Promise.resolve({ scheduleRef, locked: false, revision: 0 }),
+    get: (scheduleRef: string) =>
+      Promise.resolve({ scheduleRef, locked: false, revision: 0 }),
   }),
 }));
 
@@ -153,8 +154,14 @@ describe('B02-D governed Schedule unschedule and Undo', () => {
     fireEvent.click(
       await screen.findByRole('button', { name: 'Governed B02-D' }),
     );
-    fireEvent.click(await screen.findByRole('button', { name: 'Sposta in Da collocare' }));
-    fireEvent.click(within(screen.getByRole('group', { name: 'Sposta in Da collocare' })).getByRole('button', { name: 'Conferma' }));
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Sposta in Da collocare' }),
+    );
+    fireEvent.click(
+      within(
+        screen.getByRole('group', { name: 'Sposta in Da collocare' }),
+      ).getByRole('button', { name: 'Conferma' }),
+    );
 
     await waitFor(() => expect(unscheduleSchedule).toHaveBeenCalledTimes(1));
     expect(unscheduleSchedule).toHaveBeenCalledWith({

@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ConditionalTemporalControls } from './conditional-temporal-controls';
@@ -51,12 +57,18 @@ describe('Conditional temporal controls', () => {
       if (url.includes('/conditions/actual-realization?')) {
         return created ? Response.json(condition()) : unavailable();
       }
-      if (init?.method === 'POST' && url.endsWith('/conditions/actual-realization')) {
+      if (
+        init?.method === 'POST' &&
+        url.endsWith('/conditions/actual-realization')
+      ) {
         writes.push(JSON.parse(String(init.body)) as Record<string, unknown>);
         created = true;
         return Response.json(condition(), { status: 201 });
       }
-      if (init?.method === 'POST' && url.endsWith(`/conditions/actual-realization/${CONDITION}/evaluations`)) {
+      if (
+        init?.method === 'POST' &&
+        url.endsWith(`/conditions/actual-realization/${CONDITION}/evaluations`)
+      ) {
         writes.push(JSON.parse(String(init.body)) as Record<string, unknown>);
         return Response.json(
           {

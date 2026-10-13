@@ -1,4 +1,5 @@
 """B14 M3: amend organizational assignment and presentation, preserving recorded truth."""
+
 from collections.abc import Sequence
 
 import sqlalchemy as sa
@@ -241,8 +242,11 @@ def upgrade() -> None:
     for kind in ("activity", "event"):
         for suffix in ("", "_operation"):
             op.alter_column(
-                f"{kind}_life_area_assignment{suffix}", "life_area_ref",
-                existing_type=sa.Uuid(), nullable=True, schema="dante",
+                f"{kind}_life_area_assignment{suffix}",
+                "life_area_ref",
+                existing_type=sa.Uuid(),
+                nullable=True,
+                schema="dante",
             )
     bind = op.get_bind()
     for kind, descriptor in (

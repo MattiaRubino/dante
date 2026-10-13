@@ -77,13 +77,23 @@ describe('Activity Session controls on Timeline cards', () => {
     const source: TemporalSessionCapabilityDataSource = {
       activityEnabled: vi.fn(() => Promise.resolve(enabled)),
     };
-    render(<ActivitySessionCardControls activityRef={ACTIVITY_REF} label="Attività" source={source} />);
-    await waitFor(() => expect(source.activityEnabled).toHaveBeenCalledTimes(1));
+    render(
+      <ActivitySessionCardControls
+        activityRef={ACTIVITY_REF}
+        label="Attività"
+        source={source}
+      />,
+    );
+    await waitFor(() =>
+      expect(source.activityEnabled).toHaveBeenCalledTimes(1),
+    );
     expect(screen.queryByTestId('session-runtime')).toBeNull();
     enabled = true;
-    window.dispatchEvent(new CustomEvent('dante:activity-session-capability-changed', {
-      detail: ACTIVITY_REF,
-    }));
+    window.dispatchEvent(
+      new CustomEvent('dante:activity-session-capability-changed', {
+        detail: ACTIVITY_REF,
+      }),
+    );
     expect(await screen.findByTestId('session-runtime')).not.toBeNull();
   });
 });

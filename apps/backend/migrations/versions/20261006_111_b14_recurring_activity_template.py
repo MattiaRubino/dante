@@ -1,5 +1,7 @@
 """B14 complete recurring Activity template inheritance."""
+
 from collections.abc import Sequence
+
 import sqlalchemy as sa
 from alembic import op
 
@@ -8,14 +10,24 @@ down_revision: str | None = "20261006_110"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
+
 def upgrade() -> None:
-    op.add_column("routine_occurrence_policy", sa.Column(
-        "activity_template", sa.dialects.postgresql.JSONB(), nullable=False,
-        server_default=sa.text("'{}'::jsonb")), schema="dante")
+    op.add_column(
+        "routine_occurrence_policy",
+        sa.Column(
+            "activity_template",
+            sa.dialects.postgresql.JSONB(),
+            nullable=False,
+            server_default=sa.text("'{}'::jsonb"),
+        ),
+        schema="dante",
+    )
     op.create_check_constraint(
         "ck_routine_occurrence_policy_activity_template",
-        "routine_occurrence_policy", "jsonb_typeof(activity_template)='object'",
-        schema="dante")
+        "routine_occurrence_policy",
+        "jsonb_typeof(activity_template)='object'",
+        schema="dante",
+    )
     op.create_table(
         "routine_occurrence_activity_instance",
         sa.Column("occurrence_ref", sa.Uuid(), nullable=False),
@@ -23,31 +35,50 @@ def upgrade() -> None:
         sa.Column("self_person_ref", sa.Uuid(), nullable=False),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
         sa.PrimaryKeyConstraint("occurrence_ref", name="pk_routine_occurrence_activity_instance"),
-        sa.UniqueConstraint("activity_ref", name="uq_routine_occurrence_activity_instance_activity"),
-        sa.ForeignKeyConstraint(["occurrence_ref"], ["dante.occurrence.occurrence_ref"],
-                                name="fk_routine_occurrence_activity_instance_occurrence"),
-        sa.ForeignKeyConstraint(["activity_ref"], ["dante.activity_intention.activity_ref"],
-                                name="fk_routine_occurrence_activity_instance_activity"),
-        sa.ForeignKeyConstraint(["self_person_ref"], ["dante.person.person_ref"],
-                                name="fk_routine_occurrence_activity_instance_person"),
-        schema="dante")
+        sa.UniqueConstraint(
+            "activity_ref", name="uq_routine_occurrence_activity_instance_activity"
+        ),
+        sa.ForeignKeyConstraint(
+            ["occurrence_ref"],
+            ["dante.occurrence.occurrence_ref"],
+            name="fk_routine_occurrence_activity_instance_occurrence",
+        ),
+        sa.ForeignKeyConstraint(
+            ["activity_ref"],
+            ["dante.activity_intention.activity_ref"],
+            name="fk_routine_occurrence_activity_instance_activity",
+        ),
+        sa.ForeignKeyConstraint(
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
+            name="fk_routine_occurrence_activity_instance_person",
+        ),
+        schema="dante",
+    )
     bind = op.get_bind()
     bind.exec_driver_sql("DROP FUNCTION dante.get_self_routine_occurrence_policy(uuid,uuid)")
     bind.exec_driver_sql(GET_POLICY)
     bind.exec_driver_sql(SET_POLICY)
     bind.exec_driver_sql(BIND_INSTANCE)
     bind.exec_driver_sql(LIST_INSTANCES)
-    bind.exec_driver_sql("REVOKE ALL ON dante.routine_occurrence_activity_instance FROM PUBLIC,dante_runtime,dante_migrator")
+    bind.exec_driver_sql(
+        "REVOKE ALL ON dante.routine_occurrence_activity_instance FROM PUBLIC,dante_runtime,dante_migrator"
+    )
     for signature in (
         "get_self_routine_occurrence_policy(uuid,uuid)",
         "set_self_routine_occurrence_policy(uuid,uuid,integer,integer,jsonb)",
         "bind_self_routine_occurrence_activity(uuid,uuid,uuid)",
-        "list_self_routine_occurrence_activities(uuid,uuid[])"):
-        bind.exec_driver_sql(f"REVOKE ALL ON FUNCTION dante.{signature} FROM PUBLIC,dante_runtime,dante_migrator")
+        "list_self_routine_occurrence_activities(uuid,uuid[])",
+    ):
+        bind.exec_driver_sql(
+            f"REVOKE ALL ON FUNCTION dante.{signature} FROM PUBLIC,dante_runtime,dante_migrator"
+        )
         bind.exec_driver_sql(f"GRANT EXECUTE ON FUNCTION dante.{signature} TO dante_runtime")
+
 
 def downgrade() -> None:
     raise RuntimeError("20261006_111 is forward-only")
+
 
 GET_POLICY = r"""
 CREATE FUNCTION dante.get_self_routine_occurrence_policy(uuid,uuid)

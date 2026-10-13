@@ -16,13 +16,23 @@ from dante.modules.temporal.plan_work import PlanStepView, PlanWorkView
 async def test_explicit_slices_count_and_merge_reuse_temporal_evaluation(monkeypatch) -> None:
     plan_ref, state_ref, step_ref, activity_ref = (uuid7() for _ in range(4))
     plan = PlanWorkView(
-        plan_ref=plan_ref, state_ref=state_ref, title="Album",
-        created_at=datetime.now(UTC), replayed=False,
-        steps=(PlanStepView(
-            step_ref=step_ref, position=0, title="Record", activity_ref=activity_ref,
-            divisible=False, max_planned_slices=1, merge_compatible=False,
-            execution_strength_code="hard",
-        ),),
+        plan_ref=plan_ref,
+        state_ref=state_ref,
+        title="Album",
+        created_at=datetime.now(UTC),
+        replayed=False,
+        steps=(
+            PlanStepView(
+                step_ref=step_ref,
+                position=0,
+                title="Record",
+                activity_ref=activity_ref,
+                divisible=False,
+                max_planned_slices=1,
+                merge_compatible=False,
+                execution_strength_code="hard",
+            ),
+        ),
     )
 
     class FakePlans:
@@ -44,21 +54,33 @@ async def test_explicit_slices_count_and_merge_reuse_temporal_evaluation(monkeyp
     payload = plan_work_api.AssessExecutionBody(
         expected_state_ref=state_ref,
         slices=[
-            plan_work_api.ProposedSlice(slice_ref=first_ref, starts_at=now,
-                                         ends_at=now + timedelta(hours=1)),
-            plan_work_api.ProposedSlice(slice_ref=second_ref,
-                                         starts_at=now + timedelta(hours=1),
-                                         ends_at=now + timedelta(hours=2)),
+            plan_work_api.ProposedSlice(
+                slice_ref=first_ref, starts_at=now, ends_at=now + timedelta(hours=1)
+            ),
+            plan_work_api.ProposedSlice(
+                slice_ref=second_ref,
+                starts_at=now + timedelta(hours=1),
+                ends_at=now + timedelta(hours=2),
+            ),
         ],
         merge_pair=(first_ref, second_ref),
     )
-    request = Request({"type": "http", "app": SimpleNamespace(
-        state=SimpleNamespace(database_runtime=SimpleNamespace(session_factory=None))
-    )})
+    request = Request(
+        {
+            "type": "http",
+            "app": SimpleNamespace(
+                state=SimpleNamespace(database_runtime=SimpleNamespace(session_factory=None))
+            ),
+        }
+    )
     result = await plan_work_api.assess_plan_step_execution(
-        plan_ref=plan_ref, step_ref=step_ref, payload=payload,
+        plan_ref=plan_ref,
+        step_ref=step_ref,
+        payload=payload,
         context=SimpleNamespace(self_person_ref=uuid7()),
-        application=FakePlans(), request=request, response=Response(),
+        application=FakePlans(),
+        request=request,
+        response=Response(),
     )
     assert result.basis == "explicit_proposed_slices"
     assert result.proposed_count == 2
@@ -66,14 +88,26 @@ async def test_explicit_slices_count_and_merge_reuse_temporal_evaluation(monkeyp
     assert result.merge_status == "incompatible"
     assert result.merge_reason == "merge_disallowed"
 
-    plan = replace(plan, steps=(replace(
-        plan.steps[0], divisible=True, max_planned_slices=2,
-        merge_compatible=True, execution_strength_code="soft",
-    ),))
+    plan = replace(
+        plan,
+        steps=(
+            replace(
+                plan.steps[0],
+                divisible=True,
+                max_planned_slices=2,
+                merge_compatible=True,
+                execution_strength_code="soft",
+            ),
+        ),
+    )
     result = await plan_work_api.assess_plan_step_execution(
-        plan_ref=plan_ref, step_ref=step_ref, payload=payload,
+        plan_ref=plan_ref,
+        step_ref=step_ref,
+        payload=payload,
         context=SimpleNamespace(self_person_ref=uuid7()),
-        application=FakePlans(), request=request, response=Response(),
+        application=FakePlans(),
+        request=request,
+        response=Response(),
     )
     assert result.count_status == "satisfied"
     assert result.merge_status == "compatible"
@@ -81,9 +115,13 @@ async def test_explicit_slices_count_and_merge_reuse_temporal_evaluation(monkeyp
 
     FakeTemporal.status = "not_evaluable"
     result = await plan_work_api.assess_plan_step_execution(
-        plan_ref=plan_ref, step_ref=step_ref, payload=payload,
+        plan_ref=plan_ref,
+        step_ref=step_ref,
+        payload=payload,
         context=SimpleNamespace(self_person_ref=uuid7()),
-        application=FakePlans(), request=request, response=Response(),
+        application=FakePlans(),
+        request=request,
+        response=Response(),
     )
     assert result.merge_status == "unknown"
     assert result.merge_reason == "temporal_rule_not_evaluable"

@@ -64,14 +64,20 @@ describe('Activity planned Sessions card detail', () => {
     expect(screen.getByText('Esercizi')).toBeTruthy();
     expect(screen.getByText('18:00–19:00')).toBeTruthy();
     expect(screen.getByText('20:00–21:00')).toBeTruthy();
-    const rows = container.querySelectorAll('.timeline-activity-planned-sessions__row');
+    const rows = container.querySelectorAll(
+      '.timeline-activity-planned-sessions__row',
+    );
     expect(rows).toHaveLength(2);
     for (const row of rows) {
-      expect(row.querySelectorAll('.timeline-session-controls__runtime-button')).toHaveLength(2);
+      expect(
+        row.querySelectorAll('.timeline-session-controls__runtime-button'),
+      ).toHaveLength(2);
       expect(row.querySelector('[aria-label="Avvia"]')).toBeTruthy();
       expect(row.querySelector('[aria-label="Termina"]')).toBeTruthy();
     }
-    expect(container.querySelectorAll('[data-activity-planned-sessions]')).toHaveLength(1);
+    expect(
+      container.querySelectorAll('[data-activity-planned-sessions]'),
+    ).toHaveLength(1);
     expect(String(fetchFn.mock.calls[0]?.[0])).toContain(
       `/activities/${ACTIVITY}/children`,
     );
@@ -82,10 +88,15 @@ describe('Activity planned Sessions card detail', () => {
     vi.stubGlobal('fetch', fetchFn);
 
     const { container } = render(
-      <ActivityPlannedSessionsCardDetail activityRef={ACTIVITY} visible={false} />,
+      <ActivityPlannedSessionsCardDetail
+        activityRef={ACTIVITY}
+        visible={false}
+      />,
     );
 
     expect(fetchFn).not.toHaveBeenCalled();
-    expect(container.querySelector('[data-activity-planned-sessions]')).toBeNull();
+    expect(
+      container.querySelector('[data-activity-planned-sessions]'),
+    ).toBeNull();
   });
 });

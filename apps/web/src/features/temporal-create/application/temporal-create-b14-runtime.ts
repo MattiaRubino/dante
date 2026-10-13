@@ -146,8 +146,7 @@ export function buildTemporalCreateActivityRecurrence(
     interval_count: recurrence.calendarInterval,
     clock_basis_code: 'named_zone' as const,
     zone_id: fields.timeZoneId,
-    pattern_anchor_date:
-      recurrence.calendarInterval > 1 ? fields.date : null,
+    pattern_anchor_date: recurrence.calendarInterval > 1 ? fields.date : null,
     wall_times: Object.freeze([fields.startTime]),
     weekdays,
     month_days: monthDays,
@@ -157,11 +156,12 @@ export function buildTemporalCreateActivityRecurrence(
     // Activity Create does not expose a DST-overlap policy. Keep future
     // occurrences deterministic; an explicit `later` choice is still retained.
     ambiguous_local_time_policy:
-      fields.timeDisambiguation === 'later' ? ('later' as const) : ('earlier' as const),
+      fields.timeDisambiguation === 'later'
+        ? ('later' as const)
+        : ('earlier' as const),
     step_unit_code: null,
   });
 }
-
 
 export function buildTemporalCreateEventRecurrence(
   fields: TemporalCreateFields,
@@ -343,7 +343,9 @@ function failed(
               ? ('transport' as const)
               : ('unavailable' as const),
           code: error.code ?? 'temporal.recurring_authoring.remote_unavailable',
-          message: error.code ? `${error.message} (${error.code})` : error.message,
+          message: error.code
+            ? `${error.message} (${error.code})`
+            : error.message,
           retryable: error.kind === 'transport' || (error.status ?? 0) >= 500,
         }),
       }),

@@ -12,14 +12,18 @@ export type SessionVisual = Readonly<{
   planned_schedule_ref: string | null;
   started_at: string;
   ended_at: string | null;
-  pause_ranges: readonly Readonly<{ started_at: string; ended_at: string | null }>[];
+  pause_ranges: readonly Readonly<{
+    started_at: string;
+    ended_at: string | null;
+  }>[];
 }>;
 
 // Preserve the generated API schema's optional visuals (including undefined)
 // without re-declaring it incompatibly under exactOptionalPropertyTypes.
-export type SessionPanelSnapshot = SessionPanelResponse & Readonly<{
-  clientReceivedAt?: number;
-}>;
+export type SessionPanelSnapshot = SessionPanelResponse &
+  Readonly<{
+    clientReceivedAt?: number;
+  }>;
 export type SessionPanelCommand = 'play' | 'stop';
 
 // Applies to both CSRF and mutation requests; no permanently disabled controls.
@@ -40,17 +44,29 @@ export function useSessionPanel(
   effectiveZoneId?: string | null,
 ) {
   const readPath = useMemo(() => {
-    if (!viewedDateIso || !effectiveZoneId) return '/api/v1/temporal/session-panel';
+    if (!viewedDateIso || !effectiveZoneId)
+      return '/api/v1/temporal/session-panel';
     try {
       const day = Temporal.PlainDate.from(viewedDateIso);
-      const from = day.subtract({ days: 1 }).toZonedDateTime({
-        timeZone: effectiveZoneId, plainTime: '00:00',
-      }).toInstant().toString();
-      const until = day.add({ days: 2 }).toZonedDateTime({
-        timeZone: effectiveZoneId, plainTime: '00:00',
-      }).toInstant().toString();
+      const from = day
+        .subtract({ days: 1 })
+        .toZonedDateTime({
+          timeZone: effectiveZoneId,
+          plainTime: '00:00',
+        })
+        .toInstant()
+        .toString();
+      const until = day
+        .add({ days: 2 })
+        .toZonedDateTime({
+          timeZone: effectiveZoneId,
+          plainTime: '00:00',
+        })
+        .toInstant()
+        .toString();
       const params = new URLSearchParams({
-        visible_start_at: from, visible_end_at: until,
+        visible_start_at: from,
+        visible_end_at: until,
       });
       return `/api/v1/temporal/session-panel?${params}`;
     } catch {
@@ -214,28 +230,33 @@ export function useSessionPanel(
                       // an internal Stop removes only that finished row.
                       if (row.planned_schedule_ref === null) return [];
                       const remaining = group.rows.filter(
-                        (current) => sessionPanelRowKey(activityRef, current) !== key,
+                        (current) =>
+                          sessionPanelRowKey(activityRef, current) !== key,
                       );
-                      return remaining.length ? [{ ...group, rows: remaining }] : [];
+                      return remaining.length
+                        ? [{ ...group, rows: remaining }]
+                        : [];
                     }
-                    return [{
-                      ...group,
-                      rows: group.rows.map((current) =>
-                        sessionPanelRowKey(activityRef, current) !== key
-                          ? current
-                          : {
-                              ...current,
-                              execution: accepted.open
-                                ? {
-                                    session_ref: accepted.sessionRef,
-                                    timing_material_state_ref:
-                                      accepted.timingMaterialStateRef,
-                                    paused: accepted.paused,
-                                  }
-                                : null,
-                            },
-                      ),
-                    }];
+                    return [
+                      {
+                        ...group,
+                        rows: group.rows.map((current) =>
+                          sessionPanelRowKey(activityRef, current) !== key
+                            ? current
+                            : {
+                                ...current,
+                                execution: accepted.open
+                                  ? {
+                                      session_ref: accepted.sessionRef,
+                                      timing_material_state_ref:
+                                        accepted.timingMaterialStateRef,
+                                      paused: accepted.paused,
+                                    }
+                                  : null,
+                              },
+                        ),
+                      },
+                    ];
                   }),
                 },
           );

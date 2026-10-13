@@ -45,80 +45,105 @@ async def test_b12_a_read_only_current_violation_and_prerequisite(
     try:
         area = ensure_test_life_area(migrated_database, alice)
         record = await activities.create_activity(
-            self_person_ref=alice, life_area_ref=area,
-            operation_id="b12a:record", title="Record",
+            self_person_ref=alice,
+            life_area_ref=area,
+            operation_id="b12a:record",
+            title="Record",
         )
         start = datetime(2026, 10, 1, 10, tzinfo=UTC)
         mix = await activities.create_activity_with_schedule(
-            self_person_ref=alice, life_area_ref=area,
-            operation_id="b12a:mix", title="Mix",
+            self_person_ref=alice,
+            life_area_ref=area,
+            operation_id="b12a:mix",
+            title="Mix",
             placement=AbsoluteIntervalPlacement(start, start + timedelta(hours=2)),
         )
         first, second = new_native_ref(), new_native_ref()
         initial = await plans.create(
-            self_person_ref=alice, operation_id="b12a:plan", title="Album",
+            self_person_ref=alice,
+            operation_id="b12a:plan",
+            title="Album",
         )
         plan = await plans.replace(
-            self_person_ref=alice, plan_ref=initial.plan_ref,
-            expected_state_ref=initial.state_ref, operation_id="b12a:steps", title="Album",
+            self_person_ref=alice,
+            plan_ref=initial.plan_ref,
+            expected_state_ref=initial.state_ref,
+            operation_id="b12a:steps",
+            title="Album",
             steps=(
                 PlanStepInput(first, "Record", record.activity.activity_ref),
                 PlanStepInput(second, "Mix", mix.activity.activity_ref),
             ),
         )
         await dependencies.write(
-            self_person_ref=alice, plan_ref=plan.plan_ref,
-            operation_id="b12a:dependency", prerequisite_step_ref=first,
-            dependent_step_ref=second, qualifier_code="actual_occurred",
+            self_person_ref=alice,
+            plan_ref=plan.plan_ref,
+            operation_id="b12a:dependency",
+            prerequisite_step_ref=first,
+            dependent_step_ref=second,
+            qualifier_code="actual_occurred",
             disposition_code=None,
         )
         await constraints.create_constraint(
-            self_person_ref=alice, operation_id="b12a:maximum",
+            self_person_ref=alice,
+            operation_id="b12a:maximum",
             subject_native_ref=mix.activity.activity_ref,
             rule=ScheduleDurationRule(
-                duration_kind="maximum", strength="hard",
+                duration_kind="maximum",
+                strength="hard",
                 duration_microseconds=90 * 60 * 1_000_000,
             ),
         )
 
         first_view = await diagnosis.inspect(
-            self_person_ref=alice, plan_ref=plan.plan_ref,
+            self_person_ref=alice,
+            plan_ref=plan.plan_ref,
             expected_state_ref=plan.state_ref,
         )
         assert first_view.capacity_evaluated is False
         assert first_view.steps[0].diagnostics == ("unknown_basis",)
         assert first_view.steps[1].diagnostics == (
-            "known_hard_violation", "unknown_basis",
+            "known_hard_violation",
+            "unknown_basis",
         )
         assert first_view.steps[1].dependencies[0].evaluation_code == "unknown"
         assert first_view.steps[1].constraints[0].evaluation == "violated"
         placement = first_view.steps[1].placements[0]
         assert (placement.starts_at, placement.ends_at) == (
-            start, start + timedelta(hours=2),
+            start,
+            start + timedelta(hours=2),
         )
 
         current = await actuals.record(
-            self_person_ref=alice, operation_id="b12a:actual-false",
-            subject_kind="activity", subject_native_ref=record.activity.activity_ref,
-            realization_occurred=False, expected_material_state_ref=None,
+            self_person_ref=alice,
+            operation_id="b12a:actual-false",
+            subject_kind="activity",
+            subject_native_ref=record.activity.activity_ref,
+            realization_occurred=False,
+            expected_material_state_ref=None,
         )
         blocked = await diagnosis.inspect(
-            self_person_ref=alice, plan_ref=plan.plan_ref,
+            self_person_ref=alice,
+            plan_ref=plan.plan_ref,
             expected_state_ref=plan.state_ref,
         )
         assert blocked.steps[1].diagnostics == (
-            "known_hard_violation", "blocked_prerequisite",
+            "known_hard_violation",
+            "blocked_prerequisite",
         )
         assert blocked.steps[1].dependencies[0].evaluation_code == "unsatisfied"
 
         await actuals.record(
-            self_person_ref=alice, operation_id="b12a:actual-true",
-            subject_kind="activity", subject_native_ref=record.activity.activity_ref,
+            self_person_ref=alice,
+            operation_id="b12a:actual-true",
+            subject_kind="activity",
+            subject_native_ref=record.activity.activity_ref,
             realization_occurred=True,
             expected_material_state_ref=current.material_state_ref,
         )
         satisfied = await diagnosis.inspect(
-            self_person_ref=alice, plan_ref=plan.plan_ref,
+            self_person_ref=alice,
+            plan_ref=plan.plan_ref,
             expected_state_ref=plan.state_ref,
         )
         assert satisfied.steps[1].diagnostics == ("known_hard_violation",)
@@ -128,12 +153,14 @@ async def test_b12_a_read_only_current_violation_and_prerequisite(
 
         with pytest.raises(PlanConflictNotFoundError):
             await diagnosis.inspect(
-                self_person_ref=bob, plan_ref=plan.plan_ref,
+                self_person_ref=bob,
+                plan_ref=plan.plan_ref,
                 expected_state_ref=plan.state_ref,
             )
         with pytest.raises(PlanConflictStateError):
             await diagnosis.inspect(
-                self_person_ref=alice, plan_ref=plan.plan_ref,
+                self_person_ref=alice,
+                plan_ref=plan.plan_ref,
                 expected_state_ref=initial.state_ref,
             )
     finally:

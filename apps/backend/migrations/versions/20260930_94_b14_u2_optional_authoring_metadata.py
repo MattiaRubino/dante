@@ -28,12 +28,10 @@ _RUNTIME = "dante_runtime"
 _MIGRATOR = "dante_migrator"
 
 _ACTIVITY_AUTHORING = (
-    "dante.create_self_activity_authoring("
-    "uuid,text,text,uuid,text,uuid,text,text,text)"
+    "dante.create_self_activity_authoring(uuid,text,text,uuid,text,uuid,text,text,text)"
 )
 _EVENT_AUTHORING = (
-    "dante.create_self_event_authoring("
-    "uuid,text,text,uuid,text,text[],uuid,text,text,text)"
+    "dante.create_self_event_authoring(uuid,text,text,uuid,text,text[],uuid,text,text,text)"
 )
 
 
@@ -323,8 +321,7 @@ def upgrade() -> None:
     for signature in (_ACTIVITY_AUTHORING, _EVENT_AUTHORING):
         _execute(f"ALTER FUNCTION {signature} OWNER TO {_OWNER}")
         _execute(
-            f"REVOKE ALL PRIVILEGES ON FUNCTION {signature} "
-            f"FROM PUBLIC, {_RUNTIME}, {_MIGRATOR}"
+            f"REVOKE ALL PRIVILEGES ON FUNCTION {signature} FROM PUBLIC, {_RUNTIME}, {_MIGRATOR}"
         )
         _execute(f"GRANT EXECUTE ON FUNCTION {signature} TO {_RUNTIME}")
 
@@ -332,8 +329,7 @@ def upgrade() -> None:
     # happen only through the bounded SECURITY DEFINER authoring functions.
     for table in ("activity_intention", "event_expectation"):
         _execute(
-            f"REVOKE ALL PRIVILEGES ON TABLE dante.{table} "
-            f"FROM PUBLIC, {_RUNTIME}, {_MIGRATOR}"
+            f"REVOKE ALL PRIVILEGES ON TABLE dante.{table} FROM PUBLIC, {_RUNTIME}, {_MIGRATOR}"
         )
 
 

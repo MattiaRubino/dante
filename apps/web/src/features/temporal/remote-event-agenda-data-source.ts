@@ -18,10 +18,7 @@ const UUID_V7 =
   /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export type TemporalEventAgendaRemoteFailureKind =
-  | 'transport'
-  | 'http'
-  | 'protocol'
-  | 'authentication';
+  'transport' | 'http' | 'protocol' | 'authentication';
 
 export class TemporalEventAgendaRemoteError extends Error {
   public constructor(
@@ -161,7 +158,8 @@ function optionalEventColor(value: unknown): string | null {
   if (value === null) return null;
   if (typeof value !== 'string' || !/^#[0-9A-F]{6}$/.test(value)) {
     throw new TemporalEventAgendaRemoteError(
-      'protocol', 'Event color must be a canonical #RRGGBB color.',
+      'protocol',
+      'Event color must be a canonical #RRGGBB color.',
     );
   }
   return value;
@@ -192,7 +190,11 @@ function parseEvent(payload: unknown): TemporalEventDetailRecord {
     ],
     'Event response',
   );
-  if (typeof payload.title !== 'string' || payload.title.trim() !== payload.title || !payload.title) {
+  if (
+    typeof payload.title !== 'string' ||
+    payload.title.trim() !== payload.title ||
+    !payload.title
+  ) {
     throw new TemporalEventAgendaRemoteError(
       'protocol',
       'Event title must be canonical non-empty text.',
@@ -207,16 +209,25 @@ function parseEvent(payload: unknown): TemporalEventDetailRecord {
   return Object.freeze({
     eventRef: parseEventRef(payload.event_ref, 'event_ref'),
     title: payload.title,
-    agendaRevision: parseRevision(payload.agenda_revision, 0, 'agenda_revision'),
+    agendaRevision: parseRevision(
+      payload.agenda_revision,
+      0,
+      'agenda_revision',
+    ),
     agendaParts: parseAgendaParts(payload.agenda_parts),
     createdAt: parseInstant(payload.created_at),
-    lifeAreaRef: payload.life_area_ref === null
-      ? null
-      : parseEventRef(payload.life_area_ref, 'life_area_ref'),
+    lifeAreaRef:
+      payload.life_area_ref === null
+        ? null
+        : parseEventRef(payload.life_area_ref, 'life_area_ref'),
     description: optionalEventText(payload.description, 'description'),
     location: optionalEventText(payload.location, 'location'),
     colorCode: optionalEventColor(payload.color_code),
-    profileRevision: parseRevision(payload.profile_revision, 0, 'profile_revision'),
+    profileRevision: parseRevision(
+      payload.profile_revision,
+      0,
+      'profile_revision',
+    ),
   });
 }
 
@@ -240,7 +251,11 @@ function parseMutation(payload: unknown): TemporalEventAgendaReplaceResult {
   }
   return Object.freeze({
     eventRef: parseEventRef(payload.event_ref, 'event_ref'),
-    agendaRevision: parseRevision(payload.agenda_revision, 1, 'agenda_revision'),
+    agendaRevision: parseRevision(
+      payload.agenda_revision,
+      1,
+      'agenda_revision',
+    ),
     agendaParts: parseAgendaParts(payload.agenda_parts),
     replayed: payload.replayed,
   });
@@ -351,8 +366,13 @@ export function createRemoteTemporalEventAgendaDataSource(
           'Event Agenda operation id must contain 1 to 200 characters.',
         );
       }
-      if (!Number.isSafeInteger(request.expectedRevision) || request.expectedRevision < 0) {
-        throw new RangeError('Event Agenda expected revision must be non-negative.');
+      if (
+        !Number.isSafeInteger(request.expectedRevision) ||
+        request.expectedRevision < 0
+      ) {
+        throw new RangeError(
+          'Event Agenda expected revision must be non-negative.',
+        );
       }
       const agendaParts = normalizeAgendaParts(request.agendaParts);
       const csrf = await csrfToken(webFetch, signal);

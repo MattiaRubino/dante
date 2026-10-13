@@ -117,9 +117,7 @@ def test_resolution_queue_follows_canonical_reconciliation_and_self_scope(
         assert item["purpose_code"] == "review.personal"
         assert item["session_ref"] is None
         assert item["session_timing_material_state_ref"] is None
-        assert item["summary"] == (
-            "An accepted Outcome has an open reconciliation decision."
-        )
+        assert item["summary"] == ("An accepted Outcome has an open reconciliation decision.")
         assert item["effective_at"]
         assert item["actions"] == ["open_reconciliation"]
 

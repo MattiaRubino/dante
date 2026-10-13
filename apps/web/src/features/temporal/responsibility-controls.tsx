@@ -118,10 +118,16 @@ export function ResponsibilityControls({
         ? item.participantIsSelf
         : item.participantPersonRef === selectedPerson,
     ) ?? null;
-  const selectedLabel = selectedPerson === 'self' ? 'me' : labelFor(selectedPerson);
+  const selectedLabel =
+    selectedPerson === 'self' ? 'me' : labelFor(selectedPerson);
   const selectedIsHolder = holder !== null && holder === selectedPerson;
 
-  if (hideWhenEmpty && message === null && (!loaded || (holder === null && participation.length === 0))) return null;
+  if (
+    hideWhenEmpty &&
+    message === null &&
+    (!loaded || (holder === null && participation.length === 0))
+  )
+    return null;
 
   return (
     <div
@@ -195,7 +201,10 @@ export function ResponsibilityControls({
           disabled={pending || !personLabel.trim()}
           onClick={() =>
             run(async () => {
-              const created = await source.createPersonReferent(operationId(), personLabel);
+              const created = await source.createPersonReferent(
+                operationId(),
+                personLabel,
+              );
               setSelectedPerson(created.personRef);
               setPersonLabel('');
               setPersonCreated(true);
@@ -210,7 +219,9 @@ export function ResponsibilityControls({
             disabled={pending || !personLabel.trim()}
             onClick={() =>
               run(async () => {
-                const selected = people.find((person) => person.personRef === selectedPerson);
+                const selected = people.find(
+                  (person) => person.personRef === selectedPerson,
+                );
                 if (selected === undefined) return;
                 await source.renamePersonReferent(
                   selected.personRef,
@@ -250,8 +261,14 @@ export function ResponsibilityControls({
               <ul aria-label="Persone con partecipazione attesa">
                 {participation.map((item) => (
                   <li key={item.participantPersonRef}>
-                    {labelFor(item.participantPersonRef, item.participantIsSelf)}:{' '}
-                    {item.requirementCode === 'required' ? 'obbligatoria' : 'facoltativa'}
+                    {labelFor(
+                      item.participantPersonRef,
+                      item.participantIsSelf,
+                    )}
+                    :{' '}
+                    {item.requirementCode === 'required'
+                      ? 'obbligatoria'
+                      : 'facoltativa'}
                   </li>
                 ))}
               </ul>
@@ -262,7 +279,8 @@ export function ResponsibilityControls({
                   key={requirement}
                   type="button"
                   disabled={
-                    pending || selectedParticipation?.requirementCode === requirement
+                    pending ||
+                    selectedParticipation?.requirementCode === requirement
                   }
                   data-timeline-participation-set={requirement}
                   onClick={() =>
@@ -295,7 +313,8 @@ export function ResponsibilityControls({
                         operationId: operationId(),
                         participant: selectedPerson,
                         requirementCode: null,
-                        expectedRequirementCode: selectedParticipation.requirementCode,
+                        expectedRequirementCode:
+                          selectedParticipation.requirementCode,
                       }),
                     'Rimozione partecipazione rifiutata.',
                   )

@@ -42,23 +42,32 @@ async def test_planned_row_without_time_is_persisted_without_placement_and_repla
         created = await authoring.create_activity(**kwargs)
         assert not created.replayed
         assert created.planned_slices == ()  # No accepted time was manufactured.
-        with psycopg.connect(**migrated_database.connection_kwargs(
-            "dante_migrator", migrated_database.cluster.migrator_password,
-        )) as connection:
+        with psycopg.connect(
+            **migrated_database.connection_kwargs(
+                "dante_migrator",
+                migrated_database.cluster.migrator_password,
+            )
+        ) as connection:
             connection.execute("SET ROLE dante_owner")
-            row = connection.execute("""
+            row = connection.execute(
+                """
                 SELECT role.schedule_ref,role.display_name,placement.material_state_ref
                   FROM dante.activity_schedule_role AS role
              LEFT JOIN dante.schedule_current_placement AS placement
                     ON placement.scoped_owner_ref=role.schedule_ref
                  WHERE role.activity_ref=%s AND role.role_code='planned'
-            """, (created.item.subject_native_ref,)).fetchone()
+            """,
+                (created.item.subject_native_ref,),
+            ).fetchone()
         assert row is not None
         assert row[1:] == ("Fonti", None)
         async with runtime.session_factory() as session, session.begin():
-            snapshot_row = (await session.execute(
-                _SNAPSHOT, {"actor": actor, "activity": created.item.subject_native_ref},
-            )).scalar_one()
+            snapshot_row = (
+                await session.execute(
+                    _SNAPSHOT,
+                    {"actor": actor, "activity": created.item.subject_native_ref},
+                )
+            ).scalar_one()
         snapshot = ActivityEditSnapshot.model_validate(snapshot_row)
         assert len(snapshot.schedules) == 1
         assert snapshot.schedules[0].schedule_ref == row[0]
@@ -129,9 +138,9 @@ async def test_u2_unassigned_activity_metadata_multiday_schedule_and_replay(
         assert created.schedule.placement == placement
         assert not created.replayed
 
-        unassigned = await LifeAreaAssignmentApplication(
-            runtime.session_factory
-        ).list_unassigned(self_person_ref=actor)
+        unassigned = await LifeAreaAssignmentApplication(runtime.session_factory).list_unassigned(
+            self_person_ref=actor
+        )
         assert [
             (
                 item.subject_kind,
@@ -187,8 +196,7 @@ async def test_u2_unassigned_activity_metadata_multiday_schedule_and_replay(
             ).fetchone()
             assert row == ("Percorso lungo il fiume", "Lungofiume", "#12ABEF")
             assert connection.execute(
-                "SELECT count(*) FROM dante.activity_life_area_assignment "
-                "WHERE activity_ref=%s",
+                "SELECT count(*) FROM dante.activity_life_area_assignment WHERE activity_ref=%s",
                 (created.item.subject_native_ref,),
             ).fetchone() == (0,)
     finally:

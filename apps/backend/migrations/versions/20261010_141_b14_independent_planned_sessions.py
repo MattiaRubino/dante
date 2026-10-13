@@ -4,6 +4,7 @@ No new Session hierarchy table. Clone the existing B08 guarded Start capability
 for trusted owner-only planned provenance and keep the original generic Start
 capture-policy guard intact. _118 validates planned owner identity before call.
 """
+
 from collections.abc import Sequence
 
 from alembic import op

@@ -180,30 +180,47 @@ describe('Temporal Create normal-runtime boundary', () => {
       disposition: 'pending',
       replayed: true,
     };
-    const configure = vi.fn<(scheduleRef: string, command: {
-      operationId: string;
-      expectedMaterialStateRef: string | null;
-      enabled: boolean;
-      leadMinutes: number;
-    }) => Promise<ScheduleReminderView>>()
-      .mockRejectedValueOnce(new Error('Transport interrupted after Schedule commit'))
+    const configure = vi
+      .fn<
+        (
+          scheduleRef: string,
+          command: {
+            operationId: string;
+            expectedMaterialStateRef: string | null;
+            enabled: boolean;
+            leadMinutes: number;
+          },
+        ) => Promise<ScheduleReminderView>
+      >()
+      .mockRejectedValueOnce(
+        new Error('Transport interrupted after Schedule commit'),
+      )
       .mockResolvedValueOnce(reminder);
     const runtime = createLocalTemporalCreateRuntime({
       ...runtimeOptions('runtime-boundary-b11c'),
-      mode: 'production', activityDataSource: activity.source,
+      mode: 'production',
+      activityDataSource: activity.source,
       reminderDataSource: { configure },
     });
     const baseline = createTemporalCreateFields({
-      title: 'Attività con promemoria', kind: 'activity',
-      date: '2026-09-07', timeSemantics: 'timed', startTime: '15:00',
-      durationMinutes: 30, timeMode: 'zoned', timeZoneId: 'Europe/Rome',
+      title: 'Attività con promemoria',
+      kind: 'activity',
+      date: '2026-09-07',
+      timeSemantics: 'timed',
+      startTime: '15:00',
+      durationMinutes: 30,
+      timeMode: 'zoned',
+      timeZoneId: 'Europe/Rome',
       contextId: CANONICAL_LIFE_AREA_REF,
     });
-    const preparation = runtime.prepare(createTemporalCreateFields({
-      ...baseline,
-      confirmation: { ...baseline.confirmation, reminderLeadMinutes: 15 },
-    }));
-    if (preparation.status !== 'ready') throw new Error('Expected valid Create intent');
+    const preparation = runtime.prepare(
+      createTemporalCreateFields({
+        ...baseline,
+        confirmation: { ...baseline.confirmation, reminderLeadMinutes: 15 },
+      }),
+    );
+    if (preparation.status !== 'ready')
+      throw new Error('Expected valid Create intent');
     const execution = await runtime.execute(preparation.prepared);
     expect(execution.result.status).toBe('applied');
     expect(execution.effect?.projection.placement?.kind).toBe('zoned');
@@ -284,7 +301,8 @@ describe('Temporal Create normal-runtime boundary', () => {
 
     expect(activity.createActivity).not.toHaveBeenCalled();
     expect(activity.createScheduledActivity).toHaveBeenCalledTimes(1);
-    const scheduledRequest = activity.createScheduledActivity.mock.calls[0]?.[0];
+    const scheduledRequest =
+      activity.createScheduledActivity.mock.calls[0]?.[0];
     expect(scheduledRequest?.placement.kind).toBe('floating-local-interval');
     if (scheduledRequest?.placement.kind !== 'floating-local-interval') {
       throw new Error('Expected floating-local request.');
@@ -441,7 +459,8 @@ describe('Temporal Create normal-runtime boundary', () => {
     expect(activity.createActivity).not.toHaveBeenCalled();
     expect(activity.createScheduledActivity).not.toHaveBeenCalled();
     expect(activity.establishActivitySchedule).toHaveBeenCalledTimes(1);
-    const establishRequest = activity.establishActivitySchedule.mock.calls[0]?.[0];
+    const establishRequest =
+      activity.establishActivitySchedule.mock.calls[0]?.[0];
     expect(establishRequest?.activityRef).toBe(CANONICAL_ACTIVITY_REF);
     expect(typeof establishRequest?.operationId).toBe('string');
     expect(establishRequest?.placement).toEqual({

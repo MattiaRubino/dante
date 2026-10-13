@@ -6,8 +6,8 @@ from datetime import date, time
 from typing import Any
 
 import pytest
-from tests.integration.temporal.test_schedule_place import _context
 from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
+from tests.integration.temporal.test_schedule_place import _context
 
 from dante.modules.temporal.application import (
     TemporalTimelineApplication,
@@ -95,10 +95,13 @@ async def test_recurring_event_policy_materializes_schedule_and_reminder(
             reminder_lead_minutes=15,
         )
         assert replay.replayed
-        assert await policies.get(
-            self_person_ref=bob,
-            event_ref=created.source_ref,
-        ) is None
+        assert (
+            await policies.get(
+                self_person_ref=bob,
+                event_ref=created.source_ref,
+            )
+            is None
+        )
 
         checkpoint = await materializer.checkpoint_window(
             self_person_ref=alice,

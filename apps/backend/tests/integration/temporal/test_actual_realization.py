@@ -68,7 +68,9 @@ async def test_b10_a_activity_actual_is_append_only_idempotent_and_session_basis
         ).activity
 
         await enable_live_capture(
-            runtime.session_factory, actor=alice, activity_ref=activity.activity_ref,
+            runtime.session_factory,
+            actor=alice,
+            activity_ref=activity.activity_ref,
         )
 
         started_session = await sessions.start(

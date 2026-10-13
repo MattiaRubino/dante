@@ -111,9 +111,7 @@ def test_review_on_end_uses_real_session_basis_and_disappears_after_actual(
                 "session_bases": [
                     {
                         "session_ref": session["session_ref"],
-                        "session_timing_material_state_ref": session[
-                            "timing_material_state_ref"
-                        ],
+                        "session_timing_material_state_ref": session["timing_material_state_ref"],
                     }
                 ],
             },
@@ -123,14 +121,13 @@ def test_review_on_end_uses_real_session_basis_and_disappears_after_actual(
         assert actual.json()["session_bases"] == [
             {
                 "session_ref": session["session_ref"],
-                "session_timing_material_state_ref": session[
-                    "timing_material_state_ref"
-                ],
+                "session_timing_material_state_ref": session["timing_material_state_ref"],
             }
         ]
-        assert client.get(
-            "/api/v1/temporal/resolution-queue", headers=_base_headers()
-        ).json() == {"items": [], "count": 0}
+        assert client.get("/api/v1/temporal/resolution-queue", headers=_base_headers()).json() == {
+            "items": [],
+            "count": 0,
+        }
 
 
 def test_auto_confirm_only_attests_an_existing_activity_outcome(
@@ -199,9 +196,9 @@ def test_auto_confirm_only_attests_an_existing_activity_outcome(
         body = confirmations.json()
         assert len(body) == 1
         assert body[0]["outcome_ref"] == outcome_body["outcome_ref"]
-        assert body[0]["outcome_disposition_material_state_ref"] == outcome_body[
-            "material_state_ref"
-        ]
+        assert (
+            body[0]["outcome_disposition_material_state_ref"] == outcome_body["material_state_ref"]
+        )
         assert body[0]["purpose_code"] == "activity.policy.auto"
         assert body[0]["stance_code"] == "attested"
         assert body[0]["confirmer_is_self"] is True
@@ -219,9 +216,12 @@ def test_auto_confirm_only_attests_an_existing_activity_outcome(
         )
         assert replay.status_code == 200
         assert replay.json()["outcome_ref"] == outcome_body["outcome_ref"]
-        assert len(
-            client.get(
-                f"/api/v1/temporal/outcomes/{outcome_body['outcome_ref']}/confirmations",
-                headers=_base_headers(),
-            ).json()
-        ) == 1
+        assert (
+            len(
+                client.get(
+                    f"/api/v1/temporal/outcomes/{outcome_body['outcome_ref']}/confirmations",
+                    headers=_base_headers(),
+                ).json()
+            )
+            == 1
+        )

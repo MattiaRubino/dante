@@ -66,10 +66,14 @@ export function TemporalCreateActivityFields({
             {t(($) => $.common.home.timeline.create.planning.constraintWindow)}
           </option>
           <option value="deadline">
-            {t(($) => $.common.home.timeline.create.planning.constraintDeadline)}
+            {t(
+              ($) => $.common.home.timeline.create.planning.constraintDeadline,
+            )}
           </option>
           <option value="preferred-window">
-            {t(($) => $.common.home.timeline.create.planning.constraintPreferred)}
+            {t(
+              ($) => $.common.home.timeline.create.planning.constraintPreferred,
+            )}
           </option>
         </select>
       </label>

@@ -94,18 +94,18 @@ export function SessionSubjectControls({
   const [localSessionRef, setLocalSessionRef] = useState<string | null>(null);
   const visibleSessionKey = visibleSessionRefs?.join('|');
 
-  const forThisCard = useCallback((item: TemporalSessionView) =>
-    (item.plannedScheduleRef ?? null) === plannedScheduleRef &&
-    (visibleSessionKey === undefined ||
-      visibleSessionKey.split('|').includes(item.sessionRef) ||
-      item.sessionRef === localSessionRef),
-  [plannedScheduleRef, visibleSessionKey, localSessionRef]);
+  const forThisCard = useCallback(
+    (item: TemporalSessionView) =>
+      (item.plannedScheduleRef ?? null) === plannedScheduleRef &&
+      (visibleSessionKey === undefined ||
+        visibleSessionKey.split('|').includes(item.sessionRef) ||
+        item.sessionRef === localSessionRef),
+    [plannedScheduleRef, visibleSessionKey, localSessionRef],
+  );
 
   const reload = useCallback(async () => {
     const listed = await source.list(kind, subjectRef);
-    setSessions(
-      listed.filter(forThisCard),
-    );
+    setSessions(listed.filter(forThisCard));
   }, [kind, subjectRef, forThisCard]);
 
   useEffect(() => {
@@ -132,9 +132,7 @@ export function SessionSubjectControls({
       .list(kind, subjectRef)
       .then((listed) => {
         if (!cancelled) {
-          setSessions(
-            listed.filter(forThisCard),
-          );
+          setSessions(listed.filter(forThisCard));
         }
       })
       .catch(() => {
@@ -148,7 +146,8 @@ export function SessionSubjectControls({
   }, [kind, subjectRef, forThisCard]);
 
   const openSession = sessions.find((session) => session.open) ?? null;
-  const stopped = openSession === null && sessions.some((session) => !session.open);
+  const stopped =
+    openSession === null && sessions.some((session) => !session.open);
   const durationSession = openSession ?? sessions[sessions.length - 1] ?? null;
 
   const recoverAfterRejection = (fallback: string, error: unknown) =>
@@ -279,21 +278,46 @@ export function SessionSubjectControls({
         {allowLive && !stopped ? (
           <>
             <RuntimeButton
-              label={openSession === null ? 'Avvia' : openSession.paused ? 'Riprendi' : compactRuntime ? 'Pausa' : 'Avvia'}
-              symbol={compactRuntime && openSession !== null && !openSession.paused ? '⏸' : '▶'}
-              pending={pending}
-              interactive={interactive && (compactRuntime || openSession === null || openSession.paused)}
-              onClick={openSession === null ? start : openSession.paused ? resume : compactRuntime ? pause : start}
-            />
-            {compactRuntime ? null : <RuntimeButton
-              label="Pausa"
-              symbol="⏸"
+              label={
+                openSession === null
+                  ? 'Avvia'
+                  : openSession.paused
+                    ? 'Riprendi'
+                    : compactRuntime
+                      ? 'Pausa'
+                      : 'Avvia'
+              }
+              symbol={
+                compactRuntime && openSession !== null && !openSession.paused
+                  ? '⏸'
+                  : '▶'
+              }
               pending={pending}
               interactive={
-                interactive && openSession !== null && !openSession.paused
+                interactive &&
+                (compactRuntime || openSession === null || openSession.paused)
               }
-              onClick={pause}
-            />}
+              onClick={
+                openSession === null
+                  ? start
+                  : openSession.paused
+                    ? resume
+                    : compactRuntime
+                      ? pause
+                      : start
+              }
+            />
+            {compactRuntime ? null : (
+              <RuntimeButton
+                label="Pausa"
+                symbol="⏸"
+                pending={pending}
+                interactive={
+                  interactive && openSession !== null && !openSession.paused
+                }
+                onClick={pause}
+              />
+            )}
             <RuntimeButton
               label="Termina"
               symbol="■"

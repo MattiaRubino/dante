@@ -107,7 +107,8 @@ export const home = {
       submit: 'Add',
       creating: 'Adding…',
       failure: 'Create could not be applied. Your draft is still here.',
-      reminderPartial: 'Activity and Schedule were created. The Reminder was not configured. Retry only the Reminder or close and use the Schedule details later.',
+      reminderPartial:
+        'Activity and Schedule were created. The Reminder was not configured. Retry only the Reminder or close and use the Schedule details later.',
       reminderRetry: 'Retry Reminder',
       date: 'Date',
       start: 'Time',

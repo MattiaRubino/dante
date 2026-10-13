@@ -169,4 +169,3 @@ export function TemporalCreateConfirmationToggle({ fields }: Props) {
     </section>
   );
 }
-

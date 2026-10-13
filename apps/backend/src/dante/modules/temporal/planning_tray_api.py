@@ -170,7 +170,9 @@ def _placement(payload: PlanningTrayPlacementRequest) -> SchedulePlacement:
     )
 
 
-@router.get("", response_model=list[PlanningTrayItemResponse], operation_id="temporal_list_planning_tray")
+@router.get(
+    "", response_model=list[PlanningTrayItemResponse], operation_id="temporal_list_planning_tray"
+)
 async def list_planning_tray(
     context: DanteContextDependency,
     application: PlanningTrayApplicationDependency,

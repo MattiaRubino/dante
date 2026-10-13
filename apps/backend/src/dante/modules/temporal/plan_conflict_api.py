@@ -71,11 +71,18 @@ class StepDiagnosisResponse(BaseModel):
     constraint_status: str | None
     hard_set_status: str | None
     dependencies: list[DependencyFindingResponse]
-    diagnostics: list[Literal[
-        "unlinked_step", "unknown_basis", "multiple_current_placements",
-        "unsupported_placement", "known_hard_violation", "dependency_cycle",
-        "blocked_prerequisite", "no_known_conflict_in_supported_rules",
-    ]]
+    diagnostics: list[
+        Literal[
+            "unlinked_step",
+            "unknown_basis",
+            "multiple_current_placements",
+            "unsupported_placement",
+            "known_hard_violation",
+            "dependency_cycle",
+            "blocked_prerequisite",
+            "no_known_conflict_in_supported_rules",
+        ]
+    ]
 
 
 class PlanDiagnosisResponse(BaseModel):
@@ -99,9 +106,12 @@ Application = Annotated[PlanConflictApplication, Depends(_application)]
     "/{plan_ref}/conflicts",
     response_model=PlanDiagnosisResponse,
     responses={
-        401: {"model": ProblemDetails}, 403: {"model": ProblemDetails},
-        404: {"model": ProblemDetails}, 409: {"model": ProblemDetails},
-        422: {"model": ProblemDetails}, 500: {"model": ProblemDetails},
+        401: {"model": ProblemDetails},
+        403: {"model": ProblemDetails},
+        404: {"model": ProblemDetails},
+        409: {"model": ProblemDetails},
+        422: {"model": ProblemDetails},
+        500: {"model": ProblemDetails},
     },
     operation_id="temporal_diagnose_self_plan_conflicts",
 )
@@ -121,60 +131,91 @@ async def diagnose_self_plan_conflicts(
         )
     except PlanConflictNotFoundError as exc:
         raise ProblemError(
-            status=404, code="temporal.plan_conflict.unavailable", category="not_found",
-            title="Plan unavailable", detail=str(exc),
+            status=404,
+            code="temporal.plan_conflict.unavailable",
+            category="not_found",
+            title="Plan unavailable",
+            detail=str(exc),
         ) from exc
     except PlanConflictInputError as exc:
         raise ProblemError(
-            status=422, code="temporal.plan_conflict.limit", category="validation",
-            title="Diagnosis outside supported scope", detail=str(exc),
+            status=422,
+            code="temporal.plan_conflict.limit",
+            category="validation",
+            title="Diagnosis outside supported scope",
+            detail=str(exc),
         ) from exc
     except PlanConflictStateError as exc:
         raise ProblemError(
-            status=409, code="temporal.plan_conflict.stale", category="conflict",
-            title="Diagnosis basis changed", detail=str(exc),
+            status=409,
+            code="temporal.plan_conflict.stale",
+            category="conflict",
+            title="Diagnosis basis changed",
+            detail=str(exc),
         ) from exc
     except (
-        PlanWorkPersistenceError, PlanDependencyPersistenceError,
+        PlanWorkPersistenceError,
+        PlanDependencyPersistenceError,
         TemporalConstraintPersistenceError,
     ) as exc:
         raise ProblemError(
-            status=409, code="temporal.plan_conflict.unreadable", category="conflict",
-            title="Diagnosis unavailable", detail="Current Plan truth could not be read.",
+            status=409,
+            code="temporal.plan_conflict.unreadable",
+            category="conflict",
+            title="Diagnosis unavailable",
+            detail="Current Plan truth could not be read.",
         ) from exc
     return _response(view)
 
 
 def _response(view: PlanDiagnosis) -> PlanDiagnosisResponse:
     return PlanDiagnosisResponse(
-        plan_ref=view.plan_ref, plan_state_ref=view.plan_state_ref,
-        title=view.title, capacity_evaluated=view.capacity_evaluated,
-        steps=[StepDiagnosisResponse(
-            step_ref=step.step_ref, title=step.title, activity_ref=step.activity_ref,
-            placements=[PlacementBasisResponse(
-                schedule_ref=item.schedule_ref,
-                material_state_ref=item.material_state_ref,
-                temporal_form_code=item.temporal_form_code,
-                starts_at=item.starts_at, ends_at=item.ends_at,
-            ) for item in step.placements],
-            constraint_status=step.constraint_status,
-            hard_set_status=step.hard_set_status,
-            constraints=[ConstraintFindingResponse(
-                constraint_ref=item.constraint_ref,
-                material_state_ref=item.material_state_ref,
-                strength=item.strength, evaluation=item.evaluation,
-                reason_code=item.reason_code,
-            ) for item in step.constraints],
-            dependencies=[DependencyFindingResponse(
-                dependency_ref=item.dependency_ref,
-                state_ref=item.state_ref,
-                prerequisite_step_ref=item.prerequisite_step_ref,
-                qualifier_code=item.qualifier_code,
-                evaluation_code=item.evaluation_code,
-                actual_material_state_ref=item.actual_material_state_ref,
-                outcome_material_state_ref=item.outcome_material_state_ref,
-                cycle=item.cycle,
-            ) for item in step.dependencies],
-            diagnostics=list(step.diagnostics),
-        ) for step in view.steps],
+        plan_ref=view.plan_ref,
+        plan_state_ref=view.plan_state_ref,
+        title=view.title,
+        capacity_evaluated=view.capacity_evaluated,
+        steps=[
+            StepDiagnosisResponse(
+                step_ref=step.step_ref,
+                title=step.title,
+                activity_ref=step.activity_ref,
+                placements=[
+                    PlacementBasisResponse(
+                        schedule_ref=item.schedule_ref,
+                        material_state_ref=item.material_state_ref,
+                        temporal_form_code=item.temporal_form_code,
+                        starts_at=item.starts_at,
+                        ends_at=item.ends_at,
+                    )
+                    for item in step.placements
+                ],
+                constraint_status=step.constraint_status,
+                hard_set_status=step.hard_set_status,
+                constraints=[
+                    ConstraintFindingResponse(
+                        constraint_ref=item.constraint_ref,
+                        material_state_ref=item.material_state_ref,
+                        strength=item.strength,
+                        evaluation=item.evaluation,
+                        reason_code=item.reason_code,
+                    )
+                    for item in step.constraints
+                ],
+                dependencies=[
+                    DependencyFindingResponse(
+                        dependency_ref=item.dependency_ref,
+                        state_ref=item.state_ref,
+                        prerequisite_step_ref=item.prerequisite_step_ref,
+                        qualifier_code=item.qualifier_code,
+                        evaluation_code=item.evaluation_code,
+                        actual_material_state_ref=item.actual_material_state_ref,
+                        outcome_material_state_ref=item.outcome_material_state_ref,
+                        cycle=item.cycle,
+                    )
+                    for item in step.dependencies
+                ],
+                diagnostics=list(step.diagnostics),
+            )
+            for step in view.steps
+        ],
     )

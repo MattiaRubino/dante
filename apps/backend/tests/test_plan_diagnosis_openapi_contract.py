@@ -16,11 +16,18 @@ def test_b12_a_conflict_diagnosis_contract() -> None:
     assert get["operationId"] == "temporal_diagnose_self_plan_conflicts"
     assert set(get["responses"]) == {"200", "401", "403", "404", "409", "422", "500"}
     assert {item["name"] for item in get["parameters"]} == {
-        "plan_ref", "expected_state_ref",
+        "plan_ref",
+        "expected_state_ref",
     }
     schemas = cast(dict[str, Any], cast(dict[str, Any], document["components"])["schemas"])
     result = cast(dict[str, Any], schemas["PlanDiagnosisResponse"])
     assert {"plan_state_ref", "capacity_evaluated", "steps"} <= set(result["properties"])
     step = cast(dict[str, Any], schemas["StepDiagnosisResponse"])
-    assert {"placements", "constraints", "constraint_status", "hard_set_status",
-            "dependencies", "diagnostics"} <= set(step["properties"])
+    assert {
+        "placements",
+        "constraints",
+        "constraint_status",
+        "hard_set_status",
+        "dependencies",
+        "diagnostics",
+    } <= set(step["properties"])

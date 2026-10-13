@@ -5,7 +5,10 @@ import type {
   TemporalEventAgendaDataSource,
   TemporalEventDetailRecord,
 } from '../../../temporal/event-data-source';
-import { systemTemporalIdFactory, type TemporalIdFactory } from '../../../temporal/model';
+import {
+  systemTemporalIdFactory,
+  type TemporalIdFactory,
+} from '../../../temporal/model';
 import {
   createRemoteTemporalEventAgendaDataSource,
   TemporalEventAgendaRemoteError,
@@ -115,7 +118,9 @@ export function TimelineEventAgendaEditor({
     if (hideWhenEmpty) return null;
     return (
       <section className="timeline-event-agenda" aria-busy="true">
-        <strong>{t(($) => $.common.home.timeline.create.eventDetails.agenda)}</strong>
+        <strong>
+          {t(($) => $.common.home.timeline.create.eventDetails.agenda)}
+        </strong>
         <p>{t(($) => $.common.temporalRuntime.timeline.loading)}</p>
       </section>
     );
@@ -124,7 +129,9 @@ export function TimelineEventAgendaEditor({
   if (state.status === 'error') {
     return (
       <section className="timeline-event-agenda">
-        <strong>{t(($) => $.common.home.timeline.create.eventDetails.agenda)}</strong>
+        <strong>
+          {t(($) => $.common.home.timeline.create.eventDetails.agenda)}
+        </strong>
         <div role="alert">
           {t(($) => $.common.temporalRuntime.timeline.errorDescription)}
         </div>
@@ -159,9 +166,13 @@ export function TimelineEventAgendaEditor({
       data-agenda-revision={state.record.agendaRevision}
     >
       <div className="timeline-event-agenda__heading">
-        <strong>{t(($) => $.common.home.timeline.create.eventDetails.agenda)}</strong>
+        <strong>
+          {t(($) => $.common.home.timeline.create.eventDetails.agenda)}
+        </strong>
       </div>
-      <p>{t(($) => $.common.home.timeline.create.eventDetails.agendaDescription)}</p>
+      <p>
+        {t(($) => $.common.home.timeline.create.eventDetails.agendaDescription)}
+      </p>
 
       {notice !== null ? (
         <div
@@ -175,7 +186,9 @@ export function TimelineEventAgendaEditor({
       ) : null}
 
       {parts.length === 0 ? (
-        <p>{t(($) => $.common.home.timeline.create.eventDetails.agendaEmpty)}</p>
+        <p>
+          {t(($) => $.common.home.timeline.create.eventDetails.agendaEmpty)}
+        </p>
       ) : (
         <ol className="timeline-event-agenda__list">
           {parts.map((part, index) => {
@@ -204,10 +217,13 @@ export function TimelineEventAgendaEditor({
                     maxLength={1000}
                     disabled={busy}
                     aria-label={t(
-                      ($) => $.common.home.timeline.create.eventDetails.agendaEdit,
+                      ($) =>
+                        $.common.home.timeline.create.eventDetails.agendaEdit,
                       { position },
                     )}
-                    onChange={(event) => setEditingValue(event.currentTarget.value)}
+                    onChange={(event) =>
+                      setEditingValue(event.currentTarget.value)
+                    }
                     onKeyDown={(event) => {
                       if (event.key === 'Enter') {
                         event.preventDefault();
@@ -242,10 +258,22 @@ export function TimelineEventAgendaEditor({
                         }
                         onClick={saveEditedPart}
                       >
-                        {t(($) => $.common.home.timeline.create.eventDetails.agendaSave)}
+                        {t(
+                          ($) =>
+                            $.common.home.timeline.create.eventDetails
+                              .agendaSave,
+                        )}
                       </button>
-                      <button type="button" disabled={busy} onClick={cancelEditing}>
-                        {t(($) => $.common.home.timeline.create.eventDetails.agendaCancel)}
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={cancelEditing}
+                      >
+                        {t(
+                          ($) =>
+                            $.common.home.timeline.create.eventDetails
+                              .agendaCancel,
+                        )}
                       </button>
                     </>
                   ) : (
@@ -254,13 +282,18 @@ export function TimelineEventAgendaEditor({
                         type="button"
                         disabled={busy || index === 0}
                         aria-label={t(
-                          ($) => $.common.home.timeline.create.eventDetails.agendaMoveUp,
+                          ($) =>
+                            $.common.home.timeline.create.eventDetails
+                              .agendaMoveUp,
                           { position },
                         )}
                         onClick={() => {
                           if (index === 0) return;
                           const next = [...parts];
-                          [next[index - 1], next[index]] = [next[index]!, next[index - 1]!];
+                          [next[index - 1], next[index]] = [
+                            next[index]!,
+                            next[index - 1]!,
+                          ];
                           void replace(next);
                         }}
                       >
@@ -270,13 +303,18 @@ export function TimelineEventAgendaEditor({
                         type="button"
                         disabled={busy || index === parts.length - 1}
                         aria-label={t(
-                          ($) => $.common.home.timeline.create.eventDetails.agendaMoveDown,
+                          ($) =>
+                            $.common.home.timeline.create.eventDetails
+                              .agendaMoveDown,
                           { position },
                         )}
                         onClick={() => {
                           if (index >= parts.length - 1) return;
                           const next = [...parts];
-                          [next[index], next[index + 1]] = [next[index + 1]!, next[index]!];
+                          [next[index], next[index + 1]] = [
+                            next[index + 1]!,
+                            next[index]!,
+                          ];
                           void replace(next);
                         }}
                       >
@@ -286,12 +324,16 @@ export function TimelineEventAgendaEditor({
                         type="button"
                         disabled={busy}
                         aria-label={t(
-                          ($) => $.common.home.timeline.create.eventDetails.agendaRemove,
+                          ($) =>
+                            $.common.home.timeline.create.eventDetails
+                              .agendaRemove,
                           { position },
                         )}
                         onClick={() =>
                           void replace(
-                            parts.filter((_, candidateIndex) => candidateIndex !== index),
+                            parts.filter(
+                              (_, candidateIndex) => candidateIndex !== index,
+                            ),
                           )
                         }
                       >
@@ -311,9 +353,13 @@ export function TimelineEventAgendaEditor({
           value={draft}
           maxLength={1000}
           disabled={busy || parts.length >= 100}
-          aria-label={t(($) => $.common.home.timeline.create.eventDetails.agendaNewItem)}
+          aria-label={t(
+            ($) => $.common.home.timeline.create.eventDetails.agendaNewItem,
+          )}
           placeholder={t(
-            ($) => $.common.home.timeline.create.eventDetails.agendaNewItemPlaceholder,
+            ($) =>
+              $.common.home.timeline.create.eventDetails
+                .agendaNewItemPlaceholder,
           )}
           onChange={(event) => setDraft(event.currentTarget.value)}
           onKeyDown={(event) => {

@@ -6,9 +6,10 @@ from typing import Any
 
 import psycopg
 import pytest
+from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
 
-from dante.modules.temporal.actual_runtime import ActualApplication
 from dante.modules.temporal.activity import TemporalActivityApplication
+from dante.modules.temporal.actual_runtime import ActualApplication
 from dante.modules.temporal.confirmation_runtime import (
     ConfirmationApplication,
     ConfirmationCurrentConflictError,
@@ -18,7 +19,6 @@ from dante.modules.temporal.confirmation_runtime import (
 from dante.modules.temporal.life_area import LifeAreaApplication
 from dante.modules.temporal.outcome_runtime import OutcomeApplication
 from dante.platform.database.runtime import create_database_runtime
-from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
 
 pytestmark = pytest.mark.postgres
 
@@ -79,10 +79,13 @@ async def test_b10_c_confirmation_is_actor_purpose_and_outcome_state_scoped(
             disposition_code="work.completed",
         )
 
-        assert await confirmations.list_for_outcome(
-            self_person_ref=alice,
-            outcome_ref=outcome.outcome_ref,
-        ) == ()
+        assert (
+            await confirmations.list_for_outcome(
+                self_person_ref=alice,
+                outcome_ref=outcome.outcome_ref,
+            )
+            == ()
+        )
         assert (
             await confirmations.list_for_outcome(
                 self_person_ref=bob,
@@ -228,9 +231,9 @@ async def test_b10_c_confirmation_is_actor_purpose_and_outcome_state_scoped(
             first.confirmation_ref,
             bob_first.confirmation_ref,
         }
-        assert {
-            item.outcome_disposition_material_state_ref for item in still_listed
-        } == {outcome.material_state_ref}
+        assert {item.outcome_disposition_material_state_ref for item in still_listed} == {
+            outcome.material_state_ref
+        }
 
         on_new_state = await confirmations.record(
             self_person_ref=alice,

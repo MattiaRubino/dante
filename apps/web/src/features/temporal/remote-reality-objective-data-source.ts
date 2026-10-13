@@ -5,11 +5,7 @@ export type RealityMode = 'manual' | 'review_on_end' | 'auto_confirm_outcome';
 export type ObjectiveKind = 'boolean' | 'quantity' | 'qualitative' | 'range';
 export type ObjectiveComparator = 'eq' | 'gte' | 'lte' | 'between';
 export type ObjectiveAssessment =
-  | 'satisfied'
-  | 'partial'
-  | 'not_satisfied'
-  | 'unknown'
-  | 'indeterminate';
+  'satisfied' | 'partial' | 'not_satisfied' | 'unknown' | 'indeterminate';
 
 export type ObjectiveInputPayload = Readonly<{
   observed_boolean?: boolean | null;
@@ -125,9 +121,12 @@ function nullableString(value: unknown): string | null {
 
 function parseObjectiveInputDraft(value: unknown): ObjectiveInputDraftView {
   const row = record(value);
-  if (typeof row.objective_ref !== 'string' ||
-      typeof row.revision !== 'number' ||
-      !Number.isSafeInteger(row.revision) || row.revision < 1) {
+  if (
+    typeof row.objective_ref !== 'string' ||
+    typeof row.revision !== 'number' ||
+    !Number.isSafeInteger(row.revision) ||
+    row.revision < 1
+  ) {
     throw new Error('Bozza risultato Obiettivo non valida.');
   }
   const staged = record(row.payload);
@@ -135,12 +134,19 @@ function parseObjectiveInputDraft(value: unknown): ObjectiveInputDraftView {
   const numeric = staged.observed_numeric;
   const qualitative = staged.qualitative_code;
   const assessment = staged.assessment_code;
-  if ((boolean != null && typeof boolean !== 'boolean') ||
-      (numeric != null && typeof numeric !== 'number' && typeof numeric !== 'string') ||
-      (qualitative != null && typeof qualitative !== 'string') ||
-      (assessment != null && assessment !== 'satisfied' &&
-        assessment !== 'partial' && assessment !== 'not_satisfied' &&
-        assessment !== 'unknown' && assessment !== 'indeterminate')) {
+  if (
+    (boolean != null && typeof boolean !== 'boolean') ||
+    (numeric != null &&
+      typeof numeric !== 'number' &&
+      typeof numeric !== 'string') ||
+    (qualitative != null && typeof qualitative !== 'string') ||
+    (assessment != null &&
+      assessment !== 'satisfied' &&
+      assessment !== 'partial' &&
+      assessment !== 'not_satisfied' &&
+      assessment !== 'unknown' &&
+      assessment !== 'indeterminate')
+  ) {
     throw new Error('Valore provvisorio dell’Obiettivo non valido.');
   }
   const number = numeric == null ? null : Number(numeric);
@@ -151,11 +157,16 @@ function parseObjectiveInputDraft(value: unknown): ObjectiveInputDraftView {
     observed_boolean: boolean == null ? null : Boolean(boolean),
     observed_numeric: number,
     qualitative_code: qualitative == null ? null : String(qualitative),
-    assessment_code: assessment == null ? null : (
-      assessment === 'satisfied' || assessment === 'partial' ||
-      assessment === 'not_satisfied' || assessment === 'unknown' ||
-      assessment === 'indeterminate' ? assessment : null
-    ),
+    assessment_code:
+      assessment == null
+        ? null
+        : assessment === 'satisfied' ||
+            assessment === 'partial' ||
+            assessment === 'not_satisfied' ||
+            assessment === 'unknown' ||
+            assessment === 'indeterminate'
+          ? assessment
+          : null,
   };
   return Object.freeze({
     objectiveRef: row.objective_ref,
@@ -248,13 +259,22 @@ export function createRemoteRealityObjectiveDataSource(
         : 'occurrences';
 
   return Object.freeze({
-    async getRealityMode(kind: RealitySubjectKind, subjectRef: string): Promise<RealityMode> {
-      const row = record(await send(
-        `/api/v1/temporal/${collection(kind)}/${encodeURIComponent(subjectRef)}/reality-policy`,
-        'GET',
-      ));
-      if (row.subject_native_ref !== subjectRef ||
-          !['manual', 'review_on_end', 'auto_confirm_outcome'].includes(String(row.mode_code))) {
+    async getRealityMode(
+      kind: RealitySubjectKind,
+      subjectRef: string,
+    ): Promise<RealityMode> {
+      const row = record(
+        await send(
+          `/api/v1/temporal/${collection(kind)}/${encodeURIComponent(subjectRef)}/reality-policy`,
+          'GET',
+        ),
+      );
+      if (
+        row.subject_native_ref !== subjectRef ||
+        !['manual', 'review_on_end', 'auto_confirm_outcome'].includes(
+          String(row.mode_code),
+        )
+      ) {
         throw new Error('Invalid Reality policy response.');
       }
       return row.mode_code as RealityMode;
@@ -292,66 +312,81 @@ export function createRemoteRealityObjectiveDataSource(
       const timeout = new Promise<never>((_, reject) => {
         timer = setTimeout(() => {
           controller.abort();
-          reject(new Error('Salvataggio obiettivi troppo lento. Riprova senza perdere le modifiche.'));
+          reject(
+            new Error(
+              'Salvataggio obiettivi troppo lento. Riprova senza perdere le modifiche.',
+            ),
+          );
         }, 20_000);
       });
       try {
-        return await Promise.race([(async () => {
-          const response = await webFetch(
-          `/api/v1/temporal/activities/${encodeURIComponent(activityRef)}/objective-edits`,
-          {
-            method: 'PUT',
-            signal: controller.signal,
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Dante-CSRF': await csrf(),
-            },
-            body: JSON.stringify({
-              add: edit.add.map((item) => ({
-                operation_id: item.operationId,
-                label: item.label, result_kind: item.resultKind,
-                comparator_code: item.comparatorCode,
-                target_value: item.targetValue, target_min: item.targetMin,
-                target_max: item.targetMax, unit_code: item.unitCode,
-                presentation_order: item.presentationOrder,
-              })),
-              revise: edit.revise.map((item) => ({
-                objective_ref: item.objectiveRef,
-                change: {
-                  operation_id: item.change.operationId,
-                  expected_revision: item.change.expectedRevision,
-                  scope_code: item.change.scopeCode ?? 'only_this',
-                  expected_source_revision: item.change.seriesState?.sourceRevision ?? null,
-                  expected_recurrence_state_ref:
-                    item.change.seriesState?.recurrenceStateRef ?? null,
-                  label: item.change.label, result_kind: item.change.resultKind,
-                  comparator_code: item.change.comparatorCode,
-                  target_value: item.change.targetValue,
-                  target_min: item.change.targetMin,
-                  target_max: item.change.targetMax,
-                  unit_code: item.change.unitCode,
-                  presentation_order: item.change.presentationOrder,
+        return await Promise.race([
+          (async () => {
+            const response = await webFetch(
+              `/api/v1/temporal/activities/${encodeURIComponent(activityRef)}/objective-edits`,
+              {
+                method: 'PUT',
+                signal: controller.signal,
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-Dante-CSRF': await csrf(),
                 },
-              })),
-              retire: edit.retire.map((item) => ({
-                objective_ref: item.objectiveRef,
-                operation_id: item.operationId,
-                expected_revision: item.expectedRevision,
-              })),
-            }),
-          },
-        );
-        const payload: unknown = await response.json();
-        if (!response.ok) {
-          const problem = record(payload);
-          throw new Error(typeof problem.detail === 'string'
-            ? problem.detail : 'Impossibile salvare gli obiettivi.');
-        }
-        if (!Array.isArray(payload)) {
-          throw new Error('Risposta Obiettivi non valida.');
-        }
-          return Object.freeze(payload.map(parseObjectiveView));
-        })(), timeout]);
+                body: JSON.stringify({
+                  add: edit.add.map((item) => ({
+                    operation_id: item.operationId,
+                    label: item.label,
+                    result_kind: item.resultKind,
+                    comparator_code: item.comparatorCode,
+                    target_value: item.targetValue,
+                    target_min: item.targetMin,
+                    target_max: item.targetMax,
+                    unit_code: item.unitCode,
+                    presentation_order: item.presentationOrder,
+                  })),
+                  revise: edit.revise.map((item) => ({
+                    objective_ref: item.objectiveRef,
+                    change: {
+                      operation_id: item.change.operationId,
+                      expected_revision: item.change.expectedRevision,
+                      scope_code: item.change.scopeCode ?? 'only_this',
+                      expected_source_revision:
+                        item.change.seriesState?.sourceRevision ?? null,
+                      expected_recurrence_state_ref:
+                        item.change.seriesState?.recurrenceStateRef ?? null,
+                      label: item.change.label,
+                      result_kind: item.change.resultKind,
+                      comparator_code: item.change.comparatorCode,
+                      target_value: item.change.targetValue,
+                      target_min: item.change.targetMin,
+                      target_max: item.change.targetMax,
+                      unit_code: item.change.unitCode,
+                      presentation_order: item.change.presentationOrder,
+                    },
+                  })),
+                  retire: edit.retire.map((item) => ({
+                    objective_ref: item.objectiveRef,
+                    operation_id: item.operationId,
+                    expected_revision: item.expectedRevision,
+                  })),
+                }),
+              },
+            );
+            const payload: unknown = await response.json();
+            if (!response.ok) {
+              const problem = record(payload);
+              throw new Error(
+                typeof problem.detail === 'string'
+                  ? problem.detail
+                  : 'Impossibile salvare gli obiettivi.',
+              );
+            }
+            if (!Array.isArray(payload)) {
+              throw new Error('Risposta Obiettivi non valida.');
+            }
+            return Object.freeze(payload.map(parseObjectiveView));
+          })(),
+          timeout,
+        ]);
       } finally {
         if (timer) clearTimeout(timer);
       }
@@ -391,9 +426,12 @@ export function createRemoteRealityObjectiveDataSource(
       );
     },
 
-    async listObjectiveInputDrafts(): Promise<readonly ObjectiveInputDraftView[]> {
+    async listObjectiveInputDrafts(): Promise<
+      readonly ObjectiveInputDraftView[]
+    > {
       const payload = await send('/api/v1/temporal/objective-inputs', 'GET');
-      if (!Array.isArray(payload)) throw new Error('Bozze risultati Obiettivi non valide.');
+      if (!Array.isArray(payload))
+        throw new Error('Bozze risultati Obiettivi non valide.');
       return Object.freeze(payload.map(parseObjectiveInputDraft));
     },
 
@@ -403,19 +441,23 @@ export function createRemoteRealityObjectiveDataSource(
       expectedRevision: number | null,
       operationId: string,
     ): Promise<ObjectiveInputDraftView> {
-      return parseObjectiveInputDraft(await send(
-        `/api/v1/temporal/objectives/${encodeURIComponent(objectiveRef)}/input-draft`,
-        'PUT',
-        {
-          operation_id: operationId,
-          expected_revision: expectedRevision,
-          input: payload,
-        },
-      ));
+      return parseObjectiveInputDraft(
+        await send(
+          `/api/v1/temporal/objectives/${encodeURIComponent(objectiveRef)}/input-draft`,
+          'PUT',
+          {
+            operation_id: operationId,
+            expected_revision: expectedRevision,
+            input: payload,
+          },
+        ),
+      );
     },
 
     async confirmObjectiveInput(
-      objectiveRef: string, expectedRevision: number, operationId: string,
+      objectiveRef: string,
+      expectedRevision: number,
+      operationId: string,
     ): Promise<void> {
       await send(
         `/api/v1/temporal/objectives/${encodeURIComponent(objectiveRef)}/confirm-input`,
@@ -432,7 +474,8 @@ export function createRemoteRealityObjectiveDataSource(
         `/api/v1/temporal/${collection(kind)}/${encodeURIComponent(subjectRef)}/objectives`,
         'GET',
       );
-      if (!Array.isArray(payload)) throw new Error('Objectives must be a list.');
+      if (!Array.isArray(payload))
+        throw new Error('Objectives must be a list.');
       return Object.freeze(payload.map(parseObjectiveView));
     },
 
@@ -445,12 +488,14 @@ export function createRemoteRealityObjectiveDataSource(
       );
       if (payload === null) return null;
       const state = record(payload);
-      if (typeof state.source_native_ref !== 'string' ||
-          typeof state.occurrence_ref !== 'string' ||
-          !Number.isSafeInteger(state.template_slot) ||
-          !Number.isSafeInteger(state.source_revision) ||
-          typeof state.source_revision !== 'number' ||
-          state.source_revision < 0) {
+      if (
+        typeof state.source_native_ref !== 'string' ||
+        typeof state.occurrence_ref !== 'string' ||
+        !Number.isSafeInteger(state.template_slot) ||
+        !Number.isSafeInteger(state.source_revision) ||
+        typeof state.source_revision !== 'number' ||
+        state.source_revision < 0
+      ) {
         throw new Error('Provenienza ricorrente dell’obiettivo non valida.');
       }
       return Object.freeze({
@@ -462,14 +507,20 @@ export function createRemoteRealityObjectiveDataSource(
       });
     },
 
-    async getDefinition(objectiveRef: string): Promise<ObjectiveDefinitionState> {
-      const row = record(await send(
-        `/api/v1/temporal/objectives/${encodeURIComponent(objectiveRef)}/definition`,
-        'GET',
-      ));
-      if (row.objective_ref !== objectiveRef ||
-          !Number.isSafeInteger(row.definition_revision) ||
-          (row.definition_revision as number) < 0) {
+    async getDefinition(
+      objectiveRef: string,
+    ): Promise<ObjectiveDefinitionState> {
+      const row = record(
+        await send(
+          `/api/v1/temporal/objectives/${encodeURIComponent(objectiveRef)}/definition`,
+          'GET',
+        ),
+      );
+      if (
+        row.objective_ref !== objectiveRef ||
+        !Number.isSafeInteger(row.definition_revision) ||
+        (row.definition_revision as number) < 0
+      ) {
         throw new Error('Versione della definizione non valida.');
       }
       return Object.freeze({
@@ -477,7 +528,9 @@ export function createRemoteRealityObjectiveDataSource(
         definitionRevision: row.definition_revision as number,
         label: String(row.label),
         resultKind: row.result_kind as ObjectiveKind,
-        comparatorCode: nullableString(row.comparator_code) as ObjectiveComparator | null,
+        comparatorCode: nullableString(
+          row.comparator_code,
+        ) as ObjectiveComparator | null,
         targetValue: nullableNumber(row.target_value),
         targetMin: nullableNumber(row.target_min),
         targetMax: nullableNumber(row.target_max),
@@ -491,25 +544,29 @@ export function createRemoteRealityObjectiveDataSource(
       objectiveRef: string,
       change: ObjectiveDefinitionChange,
     ): Promise<void> {
-      const row = record(await send(
-        `/api/v1/temporal/objectives/${encodeURIComponent(objectiveRef)}/definition`,
-        'PUT',
-        {
-          operation_id: change.operationId,
-          expected_revision: change.expectedRevision,
-          scope_code: change.scopeCode ?? 'only_this',
-          expected_source_revision: change.seriesState?.sourceRevision ?? null,
-          expected_recurrence_state_ref: change.seriesState?.recurrenceStateRef ?? null,
-          label: change.label,
-          result_kind: change.resultKind,
-          comparator_code: change.comparatorCode,
-          target_value: change.targetValue,
-          target_min: change.targetMin,
-          target_max: change.targetMax,
-          unit_code: change.unitCode,
-          presentation_order: change.presentationOrder,
-        },
-      ));
+      const row = record(
+        await send(
+          `/api/v1/temporal/objectives/${encodeURIComponent(objectiveRef)}/definition`,
+          'PUT',
+          {
+            operation_id: change.operationId,
+            expected_revision: change.expectedRevision,
+            scope_code: change.scopeCode ?? 'only_this',
+            expected_source_revision:
+              change.seriesState?.sourceRevision ?? null,
+            expected_recurrence_state_ref:
+              change.seriesState?.recurrenceStateRef ?? null,
+            label: change.label,
+            result_kind: change.resultKind,
+            comparator_code: change.comparatorCode,
+            target_value: change.targetValue,
+            target_min: change.targetMin,
+            target_max: change.targetMax,
+            unit_code: change.unitCode,
+            presentation_order: change.presentationOrder,
+          },
+        ),
+      );
       if (row.objective_ref !== objectiveRef) {
         throw new Error('Identità dell’obiettivo modificato non coerente.');
       }
@@ -526,20 +583,24 @@ export function createRemoteRealityObjectiveDataSource(
         assessmentCode: ObjectiveAssessment | null;
       }>,
     ): Promise<void> {
-      const row = record(await send(
-        `/api/v1/temporal/objectives/${encodeURIComponent(objectiveRef)}/correction`,
-        'POST',
-        {
-          operation_id: command.operationId,
-          expected_evaluation_state_ref: command.expectedEvaluationStateRef,
-          observed_boolean: command.observedBoolean,
-          observed_numeric: command.observedNumeric,
-          qualitative_code: command.qualitativeCode,
-          assessment_code: command.assessmentCode,
-        },
-      ));
+      const row = record(
+        await send(
+          `/api/v1/temporal/objectives/${encodeURIComponent(objectiveRef)}/correction`,
+          'POST',
+          {
+            operation_id: command.operationId,
+            expected_evaluation_state_ref: command.expectedEvaluationStateRef,
+            observed_boolean: command.observedBoolean,
+            observed_numeric: command.observedNumeric,
+            qualitative_code: command.qualitativeCode,
+            assessment_code: command.assessmentCode,
+          },
+        ),
+      );
       if (row.objective_ref !== objectiveRef) {
-        throw new Error('La correzione non corrisponde all’obiettivo richiesto.');
+        throw new Error(
+          'La correzione non corrisponde all’obiettivo richiesto.',
+        );
       }
     },
 

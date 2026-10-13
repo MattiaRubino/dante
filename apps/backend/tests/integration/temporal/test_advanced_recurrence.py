@@ -9,6 +9,7 @@ from uuid import UUID
 
 import psycopg
 import pytest
+from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
 
 from dante.modules.temporal.actual_runtime import ActualApplication
 from dante.modules.temporal.advanced_recurrence import (
@@ -22,7 +23,6 @@ from dante.modules.temporal.routine import RoutineApplication
 from dante.modules.temporal.session_runtime import SessionApplication
 from dante.platform.database.references import NativeRef
 from dante.platform.database.runtime import create_database_runtime
-from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
 
 pytestmark = pytest.mark.postgres
 
@@ -335,7 +335,9 @@ async def test_b11_a_anchor_stream_maps_each_qualifying_actual_once(
         assert {item.anchor_occurrence_ref for item in mapped.occurrences} == {
             item.occurrence_ref for item in anchors.occurrences
         }
-        assert {item.anchor_actual_material_state_ref for item in mapped.occurrences} == actual_states
+        assert {
+            item.anchor_actual_material_state_ref for item in mapped.occurrences
+        } == actual_states
         assert {item.expected_at for item in mapped.occurrences} == {
             completion + timedelta(minutes=30) for completion in completion_times
         }

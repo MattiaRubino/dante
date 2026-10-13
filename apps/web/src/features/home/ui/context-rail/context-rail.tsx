@@ -26,11 +26,17 @@ export function ContextRail() {
   const { t } = useTranslation('common');
   const source = useMemo(() => createResolutionQueueSource(), []);
   const workSource = useMemo(() => createContextRailWorkSource(), []);
-  const [tab, setTab] = useState<'finished' | 'review' | 'objectives'>('review');
+  const [tab, setTab] = useState<'finished' | 'review' | 'objectives'>(
+    'review',
+  );
   const tabs = ['finished', 'review', 'objectives'] as const;
   const touchStart = useRef<{ x: number; y: number } | null>(null);
-  const [finished, setFinished] = useState<readonly FinishedWorkItem[] | null>(null);
-  const [objectives, setObjectives] = useState<readonly PendingObjectiveWork[] | null>(null);
+  const [finished, setFinished] = useState<readonly FinishedWorkItem[] | null>(
+    null,
+  );
+  const [objectives, setObjectives] = useState<
+    readonly PendingObjectiveWork[] | null
+  >(null);
   const [workError, setWorkError] = useState<string | null>(null);
   const objectiveOwners = useMemo(() => {
     const owners = new Map<string, PendingObjectiveWork[]>();
@@ -64,18 +70,28 @@ export function ContextRail() {
     [source],
   );
 
-  const refreshWork = useCallback((signal?: AbortSignal) => {
-    void Promise.all([
-      workSource.listFinished(signal), workSource.listObjectives(signal),
-    ]).then(([history, pending]) => {
-      setFinished(history);
-      setObjectives(pending);
-      setWorkError(null);
-    }).catch((reason: unknown) => {
-      if (signal?.aborted) return;
-      setWorkError(reason instanceof Error ? reason.message : 'Riepilogo non disponibile.');
-    });
-  }, [workSource]);
+  const refreshWork = useCallback(
+    (signal?: AbortSignal) => {
+      void Promise.all([
+        workSource.listFinished(signal),
+        workSource.listObjectives(signal),
+      ])
+        .then(([history, pending]) => {
+          setFinished(history);
+          setObjectives(pending);
+          setWorkError(null);
+        })
+        .catch((reason: unknown) => {
+          if (signal?.aborted) return;
+          setWorkError(
+            reason instanceof Error
+              ? reason.message
+              : 'Riepilogo non disponibile.',
+          );
+        });
+    },
+    [workSource],
+  );
 
   const ownerRecorded = useCallback(() => {
     setExpanded(null);
@@ -178,39 +194,61 @@ export function ContextRail() {
             className="home-resolution-count"
             aria-label={`${queue?.count ?? 0} elementi da verificare`}
           >
-            {tab === 'review' ? queue?.count ?? '…'
-              : tab === 'finished' ? finished?.length ?? '…'
-              : objectives?.length ?? '…'}
+            {tab === 'review'
+              ? (queue?.count ?? '…')
+              : tab === 'finished'
+                ? (finished?.length ?? '…')
+                : (objectives?.length ?? '…')}
           </span>
         </header>
-        <div role="tablist" aria-label="Pagine attività e risultati"
-          className="home-resolution-tabs">
+        <div
+          role="tablist"
+          aria-label="Pagine attività e risultati"
+          className="home-resolution-tabs"
+        >
           {tabs.map((value) => (
-            <button key={value} type="button" role="tab"
+            <button
+              key={value}
+              type="button"
+              role="tab"
               id={`home-work-tab-${value}`}
               aria-selected={tab === value}
               aria-controls="home-work-tabpanel"
               className={tab === value ? 'is-active' : ''}
-              onClick={() => { setTab(value); setExpanded(null); }}
+              onClick={() => {
+                setTab(value);
+                setExpanded(null);
+              }}
               onKeyDown={(event) => {
-                if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+                if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight')
+                  return;
                 event.preventDefault();
                 const offset = event.key === 'ArrowRight' ? 1 : -1;
-                const target = tabs[(tabs.indexOf(tab) + offset + tabs.length) % tabs.length];
+                const target =
+                  tabs[
+                    (tabs.indexOf(tab) + offset + tabs.length) % tabs.length
+                  ];
                 setTab(target ?? tab);
                 document.getElementById(`home-work-tab-${target}`)?.focus();
               }}
             >
-              {value === 'finished' ? 'Conclusi'
-                : value === 'review' ? 'Da verificare' : 'Obiettivi'}
+              {value === 'finished'
+                ? 'Conclusi'
+                : value === 'review'
+                  ? 'Da verificare'
+                  : 'Obiettivi'}
             </button>
           ))}
         </div>
-        <div className="home-resolution-list" id="home-work-tabpanel"
-          role="tabpanel" aria-labelledby={`home-work-tab-${tab}`}
+        <div
+          className="home-resolution-list"
+          id="home-work-tabpanel"
+          role="tabpanel"
+          aria-labelledby={`home-work-tab-${tab}`}
           onTouchStart={(event) => {
             const touch = event.touches[0];
-            if (touch) touchStart.current = { x: touch.clientX, y: touch.clientY };
+            if (touch)
+              touchStart.current = { x: touch.clientX, y: touch.clientY };
           }}
           onTouchEnd={(event) => {
             const origin = touchStart.current;
@@ -221,175 +259,220 @@ export function ContextRail() {
             const dy = touch.clientY - origin.y;
             if (Math.abs(dx) <= 65 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
             const offset = dx < 0 ? 1 : -1;
-            setTab(tabs[(tabs.indexOf(tab) + offset + tabs.length) % tabs.length] ?? tab);
+            setTab(
+              tabs[(tabs.indexOf(tab) + offset + tabs.length) % tabs.length] ??
+                tab,
+            );
             setExpanded(null);
           }}
         >
           {tab === 'review' ? (
             <>
-          <p className="home-resolution-intro">
-            Realtà, verifiche e decisioni che aspettano una risposta.
-          </p>
-          {error ? (
-            <p role="alert">
-              {error} <button type="button" onClick={() => refresh()}>Riprova</button>
-            </p>
-          ) : null}
-          {queue === null && error === null ? <p>Caricamento…</p> : null}
-          {queue?.count === 0 ? (
-            <p className="home-resolution-empty">Niente da verificare per ora.</p>
-          ) : null}
-          {queue?.items.map((item) => {
-            const itemKey = resolutionItemKey(item);
-            const isExpanded = expanded === itemKey;
-            const isReality = item.reasonCode === 'realization_review';
-            const isObjective = item.reasonCode === 'objective_review';
-            const label = isReality
-              ? 'Realtà'
-              : isObjective
-                ? 'Obiettivi'
-                : 'Decisione';
-            const description = isReality
-              ? item.subjectKind === 'activity'
-                ? item.sessionRef
-                  ? 'Sessione conclusa · registra cosa è successo.'
-                  : 'Orario passato senza Sessione · verifica se è avvenuta.'
-                : 'Evento concluso · registra cosa è successo.'
-              : isObjective
-                ? 'Registra e valuta gli obiettivi.'
-                : 'Decisione aperta sul risultato registrato.';
-            return (
-              <article key={itemKey} className="home-resolution-card">
-                <div className="home-resolution-row">
-                  <span className="home-resolution-status is-partial">{label}</span>
-                  <time dateTime={item.effectiveAt}>
-                    {new Intl.DateTimeFormat('it-IT', {
-                      day: 'numeric',
-                      month: 'short',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    }).format(new Date(item.effectiveAt))}
-                  </time>
-                </div>
-                <strong>{item.title}</strong>
-                <p>{description}</p>
-                {isReality ? (
-                  <>
-                  {item.subjectKind === 'activity' && item.sessionRef === null ? (
-                    <SessionSubjectControls
-                      kind="activity"
-                      subjectRef={item.subjectRef}
-                      label={item.title}
-                      allowLive={false}
-                      allowManual
-                      onRecorded={ownerRecorded}
-                    />
-                  ) : null}
-                  <ActualRealizationControls
-                    kind={item.subjectKind}
-                    subjectRef={item.subjectRef}
-                    showObjectives={false}
-                    {...(item.sessionRef && item.sessionTimingMaterialStateRef
-                      ? {
-                          sessionBasis: {
-                            sessionRef: item.sessionRef,
-                            sessionTimingMaterialStateRef:
-                              item.sessionTimingMaterialStateRef,
-                          },
-                        }
-                      : {})}
-                    onRecorded={ownerRecorded}
-                    compactReview={item.sessionRef === null}
-                  />
-                  </>
-                ) : (
-                  <>
-                    <button
-                      className="home-resolution-details"
-                      type="button"
-                      aria-expanded={isExpanded}
-                      aria-label={`${isExpanded ? 'Chiudi' : isObjective ? 'Valuta obiettivi' : 'Apri decisione'}: ${item.title}`}
-                      onClick={() =>
-                        setExpanded((current) =>
-                          current === itemKey ? null : itemKey,
-                        )
-                      }
-                    >
-                      {isExpanded ? 'Chiudi' : isObjective ? 'Valuta obiettivi' : 'Apri decisione'}
-                    </button>
-                    {isExpanded && item.reasonCode === 'reconciliation_open' ? (
-                      <ReconciliationControls
-                        kind={item.subjectKind}
-                        subjectRef={item.subjectRef}
-                        initialPurposeCode={item.purposeCode}
-                        onRecorded={ownerRecorded}
-                      />
-                    ) : null}
-                    {isExpanded && item.reasonCode === 'objective_review' ? (
-                      <ObjectiveControls
-                        kind={item.subjectKind}
-                        subjectRef={item.subjectRef}
-                        onRecorded={refresh}
-                      />
-                    ) : null}
-                  </>
-                )}
-              </article>
-            );
-          })}
+              <p className="home-resolution-intro">
+                Realtà, verifiche e decisioni che aspettano una risposta.
+              </p>
+              {error ? (
+                <p role="alert">
+                  {error}{' '}
+                  <button type="button" onClick={() => refresh()}>
+                    Riprova
+                  </button>
+                </p>
+              ) : null}
+              {queue === null && error === null ? <p>Caricamento…</p> : null}
+              {queue?.count === 0 ? (
+                <p className="home-resolution-empty">
+                  Niente da verificare per ora.
+                </p>
+              ) : null}
+              {queue?.items.map((item) => {
+                const itemKey = resolutionItemKey(item);
+                const isExpanded = expanded === itemKey;
+                const isReality = item.reasonCode === 'realization_review';
+                const isObjective = item.reasonCode === 'objective_review';
+                const label = isReality
+                  ? 'Realtà'
+                  : isObjective
+                    ? 'Obiettivi'
+                    : 'Decisione';
+                const description = isReality
+                  ? item.subjectKind === 'activity'
+                    ? item.sessionRef
+                      ? 'Sessione conclusa · registra cosa è successo.'
+                      : 'Orario passato senza Sessione · verifica se è avvenuta.'
+                    : 'Evento concluso · registra cosa è successo.'
+                  : isObjective
+                    ? 'Registra e valuta gli obiettivi.'
+                    : 'Decisione aperta sul risultato registrato.';
+                return (
+                  <article key={itemKey} className="home-resolution-card">
+                    <div className="home-resolution-row">
+                      <span className="home-resolution-status is-partial">
+                        {label}
+                      </span>
+                      <time dateTime={item.effectiveAt}>
+                        {new Intl.DateTimeFormat('it-IT', {
+                          day: 'numeric',
+                          month: 'short',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        }).format(new Date(item.effectiveAt))}
+                      </time>
+                    </div>
+                    <strong>{item.title}</strong>
+                    <p>{description}</p>
+                    {isReality ? (
+                      <>
+                        {item.subjectKind === 'activity' &&
+                        item.sessionRef === null ? (
+                          <SessionSubjectControls
+                            kind="activity"
+                            subjectRef={item.subjectRef}
+                            label={item.title}
+                            allowLive={false}
+                            allowManual
+                            onRecorded={ownerRecorded}
+                          />
+                        ) : null}
+                        <ActualRealizationControls
+                          kind={item.subjectKind}
+                          subjectRef={item.subjectRef}
+                          showObjectives={false}
+                          {...(item.sessionRef &&
+                          item.sessionTimingMaterialStateRef
+                            ? {
+                                sessionBasis: {
+                                  sessionRef: item.sessionRef,
+                                  sessionTimingMaterialStateRef:
+                                    item.sessionTimingMaterialStateRef,
+                                },
+                              }
+                            : {})}
+                          onRecorded={ownerRecorded}
+                          compactReview={item.sessionRef === null}
+                        />
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          className="home-resolution-details"
+                          type="button"
+                          aria-expanded={isExpanded}
+                          aria-label={`${isExpanded ? 'Chiudi' : isObjective ? 'Valuta obiettivi' : 'Apri decisione'}: ${item.title}`}
+                          onClick={() =>
+                            setExpanded((current) =>
+                              current === itemKey ? null : itemKey,
+                            )
+                          }
+                        >
+                          {isExpanded
+                            ? 'Chiudi'
+                            : isObjective
+                              ? 'Valuta obiettivi'
+                              : 'Apri decisione'}
+                        </button>
+                        {isExpanded &&
+                        item.reasonCode === 'reconciliation_open' ? (
+                          <ReconciliationControls
+                            kind={item.subjectKind}
+                            subjectRef={item.subjectRef}
+                            initialPurposeCode={item.purposeCode}
+                            onRecorded={ownerRecorded}
+                          />
+                        ) : null}
+                        {isExpanded &&
+                        item.reasonCode === 'objective_review' ? (
+                          <ObjectiveControls
+                            kind={item.subjectKind}
+                            subjectRef={item.subjectRef}
+                            onRecorded={refresh}
+                          />
+                        ) : null}
+                      </>
+                    )}
+                  </article>
+                );
+              })}
             </>
           ) : tab === 'finished' ? (
             <>
-              <p className="home-resolution-intro">Esecuzioni e realizzazioni effettivamente concluse negli ultimi 90 giorni.</p>
+              <p className="home-resolution-intro">
+                Esecuzioni e realizzazioni effettivamente concluse negli ultimi
+                90 giorni.
+              </p>
               {workError && <p role="alert">{workError}</p>}
               {finished === null && !workError && <p>Caricamento…</p>}
-              {finished?.length === 0 && <p className="home-resolution-empty">Nessuna esecuzione conclusa.</p>}
+              {finished?.length === 0 && (
+                <p className="home-resolution-empty">
+                  Nessuna esecuzione conclusa.
+                </p>
+              )}
               {finished?.map((item, index) => (
-                <article className="home-resolution-card"
-                  key={`${item.record_kind}:${item.session_ref ?? item.subject_ref}:${index}`}>
+                <article
+                  className="home-resolution-card"
+                  key={`${item.record_kind}:${item.session_ref ?? item.subject_ref}:${index}`}
+                >
                   <div className="home-resolution-row">
                     <span className="home-resolution-status is-partial">
                       {item.record_kind === 'session_ended'
-                        ? 'Sessione conclusa' : 'Realtà registrata'}
+                        ? 'Sessione conclusa'
+                        : 'Realtà registrata'}
                     </span>
                     <time dateTime={item.ended_at}>
                       {new Intl.DateTimeFormat('it-IT', {
-                        day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',
+                        day: 'numeric',
+                        month: 'short',
+                        hour: '2-digit',
+                        minute: '2-digit',
                       }).format(new Date(item.ended_at))}
                     </time>
                   </div>
                   <strong>{item.title}</strong>
-                  <p>{item.record_kind === 'session_ended'
-                    ? 'La Sessione è terminata; non implica automaticamente Attività completata.'
-                    : item.subject_kind === 'event'
-                      ? 'Evento confermato come avvenuto.'
-                      : 'Attività registrata come svolta.'}</p>
+                  <p>
+                    {item.record_kind === 'session_ended'
+                      ? 'La Sessione è terminata; non implica automaticamente Attività completata.'
+                      : item.subject_kind === 'event'
+                        ? 'Evento confermato come avvenuto.'
+                        : 'Attività registrata come svolta.'}
+                  </p>
                 </article>
               ))}
             </>
           ) : (
             <>
               <p className="home-resolution-intro">
-                Obiettivi senza risultato confermato. I valori in bozza restano salvati.
+                Obiettivi senza risultato confermato. I valori in bozza restano
+                salvati.
               </p>
               {workError && <p role="alert">{workError}</p>}
               {objectives === null && !workError && <p>Caricamento…</p>}
-              {objectiveOwners.length === 0 && objectives !== null &&
-                <p className="home-resolution-empty">Nessun Obiettivo da compilare.</p>}
-              {objectiveOwners.map(({key, items}) => (
+              {objectiveOwners.length === 0 && objectives !== null && (
+                <p className="home-resolution-empty">
+                  Nessun Obiettivo da compilare.
+                </p>
+              )}
+              {objectiveOwners.map(({ key, items }) => (
                 <article className="home-resolution-card" key={key}>
                   <div className="home-resolution-row">
                     <span className="home-resolution-status is-partial">
                       {items.length} Obiettivi
                     </span>
-                    <span>{items.some(item => item.draft_revision !== null)
-                      ? 'Bozza salvata' : 'Da compilare'}</span>
+                    <span>
+                      {items.some((item) => item.draft_revision !== null)
+                        ? 'Bozza salvata'
+                        : 'Da compilare'}
+                    </span>
                   </div>
                   <strong>{items[0]?.subject_title}</strong>
                   <p>{items.map((item) => item.label).join(' · ')}</p>
-                  <button type="button" className="home-resolution-details"
+                  <button
+                    type="button"
+                    className="home-resolution-details"
                     aria-expanded={expanded === key}
-                    onClick={() => setExpanded((current) => current === key ? null : key)}>
+                    onClick={() =>
+                      setExpanded((current) => (current === key ? null : key))
+                    }
+                  >
                     {expanded === key ? 'Chiudi' : 'Compila obiettivi'}
                   </button>
                   {expanded === key && items[0] ? (

@@ -85,7 +85,9 @@ export function ReconciliationControls({
   const [reconciliations, setReconciliations] = useState<
     readonly TemporalReconciliationView[]
   >([]);
-  const [purposeCode, setPurposeCode] = useState(initialPurposeCode ?? 'review.personal');
+  const [purposeCode, setPurposeCode] = useState(
+    initialPurposeCode ?? 'review.personal',
+  );
   const [actionCode, setActionCode] =
     useState<TemporalReconciliationAction>('unresolved');
   const [selectedConfirmationRefs, setSelectedConfirmationRefs] = useState<
@@ -123,9 +125,13 @@ export function ReconciliationControls({
     currentReconciliations: readonly TemporalReconciliationView[],
   ) => {
     const current = currentReconciliations.filter(
-      (item) => item.outcomeDispositionMaterialStateRef === currentOutcome.materialStateRef,
+      (item) =>
+        item.outcomeDispositionMaterialStateRef ===
+        currentOutcome.materialStateRef,
     );
-    const existing = current.find((item) => item.purposeCode === initialPurposeCode) ?? current[0];
+    const existing =
+      current.find((item) => item.purposeCode === initialPurposeCode) ??
+      current[0];
     if (existing === undefined) {
       setSelectedConfirmationRefs(new Set());
       return;

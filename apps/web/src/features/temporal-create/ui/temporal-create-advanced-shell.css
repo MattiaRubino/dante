@@ -71,7 +71,8 @@
   scrollbar-gutter: stable;
 }
 
-.temporal-create-backdrop.is-advanced .temporal-create-actions.temporal-create-actions {
+.temporal-create-backdrop.is-advanced
+  .temporal-create-actions.temporal-create-actions {
   padding-right: 24px;
   padding-left: 24px;
   background: var(--dante-semantic-color-home-surface-primary, #0d1522);

@@ -122,7 +122,9 @@ describe('Home U1 Create interaction bridge', () => {
   it('emits a typed reseed for the controlled date picker on an open draft', () => {
     const onEscape = vi.fn();
     render(<Harness onEscape={onEscape} />);
-    const composer = document.querySelector('[data-temporal-create="composer"]');
+    const composer = document.querySelector(
+      '[data-temporal-create="composer"]',
+    );
     if (!composer) {
       throw new Error('Expected mounted Create composer.');
     }

@@ -583,12 +583,8 @@ $function$;
 def upgrade() -> None:
     for prefix in ("routine", "event"):
         table = f"{prefix}_recurrence_elapsed_state"
-        op.drop_constraint(
-            op.f(f"ck_{table}_anchor_mode"), table, schema=_SCHEMA, type_="check"
-        )
-        op.drop_constraint(
-            op.f(f"ck_{table}_anchor_at"), table, schema=_SCHEMA, type_="check"
-        )
+        op.drop_constraint(op.f(f"ck_{table}_anchor_mode"), table, schema=_SCHEMA, type_="check")
+        op.drop_constraint(op.f(f"ck_{table}_anchor_at"), table, schema=_SCHEMA, type_="check")
         op.alter_column(table, "anchor_at", schema=_SCHEMA, nullable=True)
         op.create_check_constraint(
             op.f(f"ck_{table}_anchor_mode"),
@@ -628,9 +624,7 @@ def upgrade() -> None:
                 onupdate="NO ACTION",
                 ondelete="NO ACTION",
             ),
-            sa.PrimaryKeyConstraint(
-                "material_state_ref", name=op.f(f"pk_{source_table}")
-            ),
+            sa.PrimaryKeyConstraint("material_state_ref", name=op.f(f"pk_{source_table}")),
             schema=_SCHEMA,
         )
 
@@ -1041,10 +1035,7 @@ FOR EACH ROW EXECUTE FUNCTION dante.enforce_b11a_actual_anchor_provenance()
         "advanced_recurrence_checkpoint_operation",
         "advanced_recurrence_checkpoint_result",
     ):
-        _sql(
-            f"REVOKE ALL PRIVILEGES ON TABLE dante.{table} "
-            f"FROM PUBLIC,{_RUNTIME},{_MIGRATOR}"
-        )
+        _sql(f"REVOKE ALL PRIVILEGES ON TABLE dante.{table} FROM PUBLIC,{_RUNTIME},{_MIGRATOR}")
 
     _sql(
         "REVOKE ALL ON FUNCTION dante.enforce_b11a_recurrence_anchor_shape() "

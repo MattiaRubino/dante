@@ -7,8 +7,8 @@ from typing import Any
 
 import pytest
 from sqlalchemy import text
-from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
 from tests.integration.temporal.test_objective_recurring_instance_scope import _read_checkpoint_refs
+from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
 from tests.integration.temporal.test_recurring_event_create import _daily_named_zone
 
 from dante.modules.temporal.activity_edit_snapshot_api import _SNAPSHOT, ActivityEditSnapshot
@@ -56,23 +56,35 @@ async def test_recurring_activity_keeps_untimed_planned_session(
             effective_zone_id="Europe/Rome",
         )
         occurrences = await _read_checkpoint_refs(
-            runtime, actor, routine.source_ref, owner="routine",
+            runtime,
+            actor,
+            routine.source_ref,
+            owner="routine",
             operation="recurring:untimed:window",
-            start=date(2026, 10, 6), end=date(2026, 10, 7),
+            start=date(2026, 10, 6),
+            end=date(2026, 10, 7),
         )
         assert len(occurrences) == 1
         async with runtime.session_factory() as session, session.begin():
-            activity = (await session.execute(text("""
+            activity = (
+                await session.execute(
+                    text("""
                 SELECT activity_ref FROM dante.list_self_routine_occurrence_activities(
                     :actor, CAST(ARRAY[:occurrence] AS uuid[])
                 )
-            """), {
-                "actor": actor,
-                "occurrence": occurrences[0],
-            })).scalar_one()
-            snapshot = ActivityEditSnapshot.model_validate(await session.scalar(
-                _SNAPSHOT, {"actor": actor, "activity": activity},
-            ))
+            """),
+                    {
+                        "actor": actor,
+                        "occurrence": occurrences[0],
+                    },
+                )
+            ).scalar_one()
+            snapshot = ActivityEditSnapshot.model_validate(
+                await session.scalar(
+                    _SNAPSHOT,
+                    {"actor": actor, "activity": activity},
+                )
+            )
         planned = [row for row in snapshot.schedules if row.role_code == "planned"]
         assert len(planned) == 1
         assert planned[0].display_name == "Cernita"

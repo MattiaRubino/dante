@@ -35,8 +35,8 @@ export function TemporalCreateU2DraftProvider({
   onDraftChange: (draft: TemporalCreateU2AuthoringDraft) => void;
   children: ReactNode;
 }>) {
-  const [state, setState] = useState(() =>
-    initialDraft ?? createTemporalCreateU2AuthoringDraft(fields),
+  const [state, setState] = useState(
+    () => initialDraft ?? createTemporalCreateU2AuthoringDraft(fields),
   );
 
   useEffect(() => {
@@ -75,7 +75,9 @@ export function TemporalCreateU2DraftProvider({
     [onDraftChange, state],
   );
 
-  return <U2DraftContext.Provider value={value}>{children}</U2DraftContext.Provider>;
+  return (
+    <U2DraftContext.Provider value={value}>{children}</U2DraftContext.Provider>
+  );
 }
 
 export function useTemporalCreateU2Draft(): U2DraftContextValue {

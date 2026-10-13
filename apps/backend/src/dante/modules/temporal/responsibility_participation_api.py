@@ -13,8 +13,8 @@ from dante.context.contracts import DanteContext
 from dante.context.dependencies import require_dante_context, require_mutating_dante_context
 from dante.modules.temporal.responsibility_participation import (
     ExpectedParticipationView,
-    PersonReferentView,
     ParticipationRequirement,
+    PersonReferentView,
     ResponsibilityConflictError,
     ResponsibilityInputError,
     ResponsibilityNotFoundError,
@@ -223,9 +223,7 @@ async def _set_responsibility(
             operation_id=payload.operation_id,
             subject_kind=subject_kind,
             subject_native_ref=NativeRef(subject_ref),
-            responsible_person_ref=(
-                _person_ref(payload.holder, context.self_person_ref)
-            ),
+            responsible_person_ref=(_person_ref(payload.holder, context.self_person_ref)),
             expected_responsible_person_ref=(
                 _person_ref(payload.expected_holder, context.self_person_ref)
             ),
@@ -359,9 +357,7 @@ async def list_event_expected_participation(
         )
     except _ERRORS as exc:
         raise _problem(exc) from exc
-    return [
-        _participation(view, self_person_ref=context.self_person_ref) for view in views
-    ]
+    return [_participation(view, self_person_ref=context.self_person_ref) for view in views]
 
 
 @router.get(
@@ -374,7 +370,8 @@ async def list_person_referents(
 ) -> list[PersonReferentResponse]:
     try:
         return [
-            _person(view) for view in await application.list_person_referents(
+            _person(view)
+            for view in await application.list_person_referents(
                 self_person_ref=context.self_person_ref
             )
         ]
@@ -394,11 +391,13 @@ async def create_person_referent(
     application: Application,
 ) -> PersonReferentResponse:
     try:
-        return _person(await application.create_person_referent(
-            self_person_ref=context.self_person_ref,
-            operation_id=payload.operation_id,
-            display_label=payload.display_label,
-        ))
+        return _person(
+            await application.create_person_referent(
+                self_person_ref=context.self_person_ref,
+                operation_id=payload.operation_id,
+                display_label=payload.display_label,
+            )
+        )
     except _ERRORS as exc:
         raise _problem(exc) from exc
 
@@ -415,12 +414,14 @@ async def rename_person_referent(
     application: Application,
 ) -> PersonReferentResponse:
     try:
-        return _person(await application.rename_person_referent(
-            self_person_ref=context.self_person_ref,
-            operation_id=payload.operation_id,
-            person_ref=NativeRef(person_ref),
-            expected_revision=payload.expected_revision,
-            display_label=payload.display_label,
-        ))
+        return _person(
+            await application.rename_person_referent(
+                self_person_ref=context.self_person_ref,
+                operation_id=payload.operation_id,
+                person_ref=NativeRef(person_ref),
+                expected_revision=payload.expected_revision,
+                display_label=payload.display_label,
+            )
+        )
     except _ERRORS as exc:
         raise _problem(exc) from exc

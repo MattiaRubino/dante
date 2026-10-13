@@ -29,14 +29,18 @@ def _sql(statement: str) -> None:
 
 
 def _function_definition(name: str) -> str:
-    definition = op.get_bind().exec_driver_sql(
-        """SELECT pg_get_functiondef(routine.oid)
+    definition = (
+        op.get_bind()
+        .exec_driver_sql(
+            """SELECT pg_get_functiondef(routine.oid)
              FROM pg_proc AS routine
              JOIN pg_namespace AS namespace ON namespace.oid=routine.pronamespace
             WHERE namespace.nspname='dante' AND routine.proname=%s
               AND routine.pronargs=0""",
-        (name,),
-    ).scalar_one()
+            (name,),
+        )
+        .scalar_one()
+    )
     if not isinstance(definition, str):
         raise RuntimeError(f"B11-C integrity function {name} is unavailable")
     return definition
@@ -110,11 +114,13 @@ def upgrade() -> None:
             name=op.f("ck_schedule_reminder_uuidv7"),
         ),
         sa.ForeignKeyConstraint(
-            ["self_person_ref"], [f"{_SCHEMA}.person.person_ref"],
+            ["self_person_ref"],
+            [f"{_SCHEMA}.person.person_ref"],
             name=op.f("fk_schedule_reminder_person"),
         ),
         sa.ForeignKeyConstraint(
-            ["schedule_ref"], [f"{_SCHEMA}.schedule.schedule_ref"],
+            ["schedule_ref"],
+            [f"{_SCHEMA}.schedule.schedule_ref"],
             name=op.f("fk_schedule_reminder_schedule"),
         ),
         schema=_SCHEMA,
@@ -133,7 +139,8 @@ def upgrade() -> None:
             "material_state_ref", name=op.f("pk_schedule_reminder_configuration_state")
         ),
         sa.UniqueConstraint(
-            "reminder_ref", "material_state_ref",
+            "reminder_ref",
+            "material_state_ref",
             name=op.f("uq_schedule_reminder_configuration_state_owner_state"),
         ),
         sa.CheckConstraint(
@@ -141,18 +148,22 @@ def upgrade() -> None:
             name=op.f("ck_schedule_reminder_configuration_state_lead"),
         ),
         sa.ForeignKeyConstraint(
-            ["material_state_ref"], [f"{_SCHEMA}.material_state_address.material_state_ref"],
+            ["material_state_ref"],
+            [f"{_SCHEMA}.material_state_address.material_state_ref"],
             name=op.f("fk_schedule_reminder_configuration_state_address"),
         ),
         sa.ForeignKeyConstraint(
-            ["reminder_ref"], [f"{_SCHEMA}.schedule_reminder.reminder_ref"],
+            ["reminder_ref"],
+            [f"{_SCHEMA}.schedule_reminder.reminder_ref"],
             name=op.f("fk_schedule_reminder_configuration_state_reminder"),
         ),
         schema=_SCHEMA,
     )
     op.create_index(
         "ix_schedule_reminder_configuration_state_reminder",
-        "schedule_reminder_configuration_state", ["reminder_ref"], schema=_SCHEMA,
+        "schedule_reminder_configuration_state",
+        ["reminder_ref"],
+        schema=_SCHEMA,
     )
 
     op.create_table(
@@ -162,7 +173,8 @@ def upgrade() -> None:
         sa.Column("current_from_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("current_until_at", sa.DateTime(timezone=True), nullable=True),
         sa.PrimaryKeyConstraint(
-            "reminder_ref", "current_from_at",
+            "reminder_ref",
+            "current_from_at",
             name=op.f("pk_schedule_reminder_current_history"),
         ),
         sa.CheckConstraint(
@@ -172,20 +184,27 @@ def upgrade() -> None:
         ),
         sa.ForeignKeyConstraint(
             ["reminder_ref", "material_state_ref"],
-            [f"{_SCHEMA}.schedule_reminder_configuration_state.reminder_ref",
-             f"{_SCHEMA}.schedule_reminder_configuration_state.material_state_ref"],
+            [
+                f"{_SCHEMA}.schedule_reminder_configuration_state.reminder_ref",
+                f"{_SCHEMA}.schedule_reminder_configuration_state.material_state_ref",
+            ],
             name=op.f("fk_schedule_reminder_current_history_state"),
         ),
         schema=_SCHEMA,
     )
     op.create_index(
         "ux_schedule_reminder_current_history_open",
-        "schedule_reminder_current_history", ["reminder_ref"], unique=True,
-        schema=_SCHEMA, postgresql_where=sa.text("current_until_at IS NULL"),
+        "schedule_reminder_current_history",
+        ["reminder_ref"],
+        unique=True,
+        schema=_SCHEMA,
+        postgresql_where=sa.text("current_until_at IS NULL"),
     )
     op.create_index(
         "ix_schedule_reminder_current_history_state",
-        "schedule_reminder_current_history", ["material_state_ref"], schema=_SCHEMA,
+        "schedule_reminder_current_history",
+        ["material_state_ref"],
+        schema=_SCHEMA,
     )
 
     op.create_table(
@@ -214,21 +233,26 @@ def upgrade() -> None:
             name=op.f("ck_schedule_reminder_operation_fingerprint"),
         ),
         sa.ForeignKeyConstraint(
-            ["self_person_ref"], [f"{_SCHEMA}.person.person_ref"],
+            ["self_person_ref"],
+            [f"{_SCHEMA}.person.person_ref"],
             name=op.f("fk_schedule_reminder_operation_person"),
         ),
         sa.ForeignKeyConstraint(
-            ["reminder_ref"], [f"{_SCHEMA}.schedule_reminder.reminder_ref"],
+            ["reminder_ref"],
+            [f"{_SCHEMA}.schedule_reminder.reminder_ref"],
             name=op.f("fk_schedule_reminder_operation_reminder"),
         ),
         sa.ForeignKeyConstraint(
-            ["schedule_ref"], [f"{_SCHEMA}.schedule.schedule_ref"],
+            ["schedule_ref"],
+            [f"{_SCHEMA}.schedule.schedule_ref"],
             name=op.f("fk_schedule_reminder_operation_schedule"),
         ),
         sa.ForeignKeyConstraint(
             ["reminder_ref", "resulting_material_state_ref"],
-            [f"{_SCHEMA}.schedule_reminder_configuration_state.reminder_ref",
-             f"{_SCHEMA}.schedule_reminder_configuration_state.material_state_ref"],
+            [
+                f"{_SCHEMA}.schedule_reminder_configuration_state.reminder_ref",
+                f"{_SCHEMA}.schedule_reminder_configuration_state.material_state_ref",
+            ],
             name=op.f("fk_schedule_reminder_operation_result_state"),
         ),
         schema=_SCHEMA,
@@ -597,8 +621,10 @@ $function$
         _sql(f"GRANT EXECUTE ON FUNCTION {signature} TO {_RUNTIME}")
 
     for table in (
-        "schedule_reminder", "schedule_reminder_configuration_state",
-        "schedule_reminder_current_history", "schedule_reminder_operation",
+        "schedule_reminder",
+        "schedule_reminder_configuration_state",
+        "schedule_reminder_current_history",
+        "schedule_reminder_operation",
     ):
         _sql(f"ALTER TABLE dante.{table} OWNER TO {_OWNER}")
         _sql(f"REVOKE ALL PRIVILEGES ON TABLE dante.{table} FROM PUBLIC,{_MIGRATOR},{_RUNTIME}")

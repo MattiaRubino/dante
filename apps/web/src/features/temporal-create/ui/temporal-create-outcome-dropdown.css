@@ -38,7 +38,8 @@
 .temporal-create-backdrop.is-advanced
   .temporal-create-title-row:has(.temporal-create-outcome-control)
   .temporal-create-title-row__tools
-  .temporal-create-placement-lock > svg {
+  .temporal-create-placement-lock
+  > svg {
   box-sizing: border-box;
   width: 15px;
   min-width: 15px;
@@ -52,7 +53,8 @@
 .temporal-create-backdrop.is-advanced
   .temporal-create-title-row:has(.temporal-create-outcome-control)
   .temporal-create-title-row__tools
-  .temporal-create-placement-lock > span {
+  .temporal-create-placement-lock
+  > span {
   min-width: 0;
   overflow: hidden;
   text-align: left;

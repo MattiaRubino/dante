@@ -77,9 +77,12 @@ export function OutcomeControls({
           setDispositionCode('');
           setMessage('Nessun Outcome registrato per questo Actual.');
         } else if (
-          currentOutcome.actualRealizationMaterialStateRef !== currentActual.materialStateRef
+          currentOutcome.actualRealizationMaterialStateRef !==
+          currentActual.materialStateRef
         ) {
-          setMessage('Outcome corrente riferito a una versione precedente dello stato reale.');
+          setMessage(
+            'Outcome corrente riferito a una versione precedente dello stato reale.',
+          );
         } else {
           setMessage('Outcome corrente caricato.');
         }
@@ -120,17 +123,23 @@ export function OutcomeControls({
       .catch((error: unknown) =>
         reload()
           .catch(() => undefined)
-          .then(() => setMessage(rejection('Aggiornamento Outcome rifiutato.', error))),
+          .then(() =>
+            setMessage(rejection('Aggiornamento Outcome rifiutato.', error)),
+          ),
       )
       .finally(() => setPending(false));
   };
 
   return (
-    <div className="timeline-outcome-controls" data-timeline-outcome-subject={subjectRef}>
+    <div
+      className="timeline-outcome-controls"
+      data-timeline-outcome-subject={subjectRef}
+    >
       <strong>Outcome</strong>
       <small>
-        Outcome descrive la disposizione contestuale di questo Actual. Non esiste uno stato
-        Outcome universale e ogni correzione resta legata alla versione esatta dello stato reale.
+        Outcome descrive la disposizione contestuale di questo Actual. Non
+        esiste uno stato Outcome universale e ogni correzione resta legata alla
+        versione esatta dello stato reale.
       </small>
       {actual === null && loaded ? (
         <p data-timeline-outcome-state>Outcome: non disponibile senza Actual</p>
@@ -158,7 +167,9 @@ export function OutcomeControls({
               disabled={pending}
               maxLength={120}
               placeholder="es. decision.reached"
-              onChange={(event) => setDispositionCode(event.currentTarget.value)}
+              onChange={(event) =>
+                setDispositionCode(event.currentTarget.value)
+              }
             />
           </label>
           <button
@@ -172,7 +183,9 @@ export function OutcomeControls({
         </>
       ) : null}
       {message === null ? null : (
-        <span role={message.startsWith('Aggiornamento') ? 'alert' : 'status'}>{message}</span>
+        <span role={message.startsWith('Aggiornamento') ? 'alert' : 'status'}>
+          {message}
+        </span>
       )}
     </div>
   );

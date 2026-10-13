@@ -14,9 +14,16 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from dante.context.contracts import DanteContext
 from dante.context.dependencies import require_dante_context, require_mutating_dante_context
 from dante.modules.temporal.recurrence import (
-    CalendarRecurrence, CyclicRecurrence, ElapsedRecurrence, QuotaRecurrence,
-    RecurrenceApplication, RecurrenceInputError, RecurrenceNotFoundError,
-    RecurrenceOperationReuseError, RecurrencePersistenceError, RecurrenceSpec,
+    CalendarRecurrence,
+    CyclicRecurrence,
+    ElapsedRecurrence,
+    QuotaRecurrence,
+    RecurrenceApplication,
+    RecurrenceInputError,
+    RecurrenceNotFoundError,
+    RecurrenceOperationReuseError,
+    RecurrencePersistenceError,
+    RecurrenceSpec,
     RecurrenceStateConflictError,
 )
 from dante.platform.http.problem import ProblemError
@@ -59,7 +66,14 @@ class CalendarRecurrenceRequest(BaseModel):
     expected_occurrence_count: int | None = Field(default=None, ge=1)
     effective_from: date
     effective_until: date | None = None
-    pattern_code: Literal["daily", "weekly_weekdays", "monthly_month_days", "monthly_ordinal_weekdays", "yearly_month_days", "anchor_step"]
+    pattern_code: Literal[
+        "daily",
+        "weekly_weekdays",
+        "monthly_month_days",
+        "monthly_ordinal_weekdays",
+        "yearly_month_days",
+        "anchor_step",
+    ]
     interval_count: int = Field(ge=1, le=10000)
     clock_basis_code: Literal["floating_local", "named_zone", "absolute_utc"]
     zone_id: str | None = Field(default=None, min_length=1, max_length=200)
@@ -116,7 +130,10 @@ class CyclicRecurrenceRequest(BaseModel):
 
 
 RecurrenceRequest = Annotated[
-    CalendarRecurrenceRequest | ElapsedRecurrenceRequest | QuotaRecurrenceRequest | CyclicRecurrenceRequest,
+    CalendarRecurrenceRequest
+    | ElapsedRecurrenceRequest
+    | QuotaRecurrenceRequest
+    | CyclicRecurrenceRequest,
     Field(discriminator="family_code"),
 ]
 
@@ -145,7 +162,10 @@ class CyclicRecurrenceResponse(CyclicRecurrenceRequest):
 
 
 RecurrenceResponse = Annotated[
-    CalendarRecurrenceResponse | ElapsedRecurrenceResponse | QuotaRecurrenceResponse | CyclicRecurrenceResponse,
+    CalendarRecurrenceResponse
+    | ElapsedRecurrenceResponse
+    | QuotaRecurrenceResponse
+    | CyclicRecurrenceResponse,
     Field(discriminator="family_code"),
 ]
 
@@ -166,43 +186,110 @@ def _application(request: Request) -> RecurrenceApplication:
 
 
 Application = Annotated[RecurrenceApplication, Depends(_application)]
-_Errors = (RecurrenceInputError, RecurrenceOperationReuseError, RecurrenceNotFoundError, RecurrenceStateConflictError, RecurrencePersistenceError)
+_Errors = (
+    RecurrenceInputError,
+    RecurrenceOperationReuseError,
+    RecurrenceNotFoundError,
+    RecurrenceStateConflictError,
+    RecurrencePersistenceError,
+)
 
 
 def _problem(exc: Exception) -> ProblemError:
     if isinstance(exc, RecurrenceInputError):
-        return ProblemError(status=422, code="temporal.recurrence.invalid_input", category="validation", title="Recurrence command rejected", detail=str(exc))
+        return ProblemError(
+            status=422,
+            code="temporal.recurrence.invalid_input",
+            category="validation",
+            title="Recurrence command rejected",
+            detail=str(exc),
+        )
     if isinstance(exc, RecurrenceOperationReuseError):
-        return ProblemError(status=409, code="temporal.recurrence.operation_id_reused", category="conflict", title="Recurrence operation id reused", detail="Use a fresh operation id for a different Recurrence intent.")
+        return ProblemError(
+            status=409,
+            code="temporal.recurrence.operation_id_reused",
+            category="conflict",
+            title="Recurrence operation id reused",
+            detail="Use a fresh operation id for a different Recurrence intent.",
+        )
     if isinstance(exc, RecurrenceNotFoundError):
-        return ProblemError(status=404, code="temporal.recurrence.unavailable", category="not_found", title="Recurrence owner unavailable", detail="The Routine or Event is not available in this account.")
+        return ProblemError(
+            status=404,
+            code="temporal.recurrence.unavailable",
+            category="not_found",
+            title="Recurrence owner unavailable",
+            detail="The Routine or Event is not available in this account.",
+        )
     if isinstance(exc, RecurrenceStateConflictError):
-        return ProblemError(status=409, code="temporal.recurrence.state_conflict", category="conflict", title="Recurrence state changed", detail="Reload the current Recurrence and retry from its MaterialState reference.")
-    return ProblemError(status=503, code="temporal.recurrence.persistence_unavailable", category="service", title="Recurrence persistence unavailable", detail="Canonical Recurrence state could not be read or written.", retryable=True)
+        return ProblemError(
+            status=409,
+            code="temporal.recurrence.state_conflict",
+            category="conflict",
+            title="Recurrence state changed",
+            detail="Reload the current Recurrence and retry from its MaterialState reference.",
+        )
+    return ProblemError(
+        status=503,
+        code="temporal.recurrence.persistence_unavailable",
+        category="service",
+        title="Recurrence persistence unavailable",
+        detail="Canonical Recurrence state could not be read or written.",
+        retryable=True,
+    )
 
 
 def _spec(payload: RecurrenceRequest) -> RecurrenceSpec:
     if isinstance(payload, CalendarRecurrenceRequest):
-        return CalendarRecurrence(**payload.model_dump(exclude_none=False, exclude={"wall_times", "weekdays", "month_days", "ordinal_weekdays", "year_month_days"}),
-            wall_times=tuple(payload.wall_times), weekdays=tuple(payload.weekdays), month_days=tuple(payload.month_days),
-            ordinal_weekdays=tuple((item.weekday_number, item.ordinal) for item in payload.ordinal_weekdays),
-            year_month_days=tuple((item.month_number, item.month_day) for item in payload.year_month_days))
+        return CalendarRecurrence(
+            **payload.model_dump(
+                exclude_none=False,
+                exclude={
+                    "wall_times",
+                    "weekdays",
+                    "month_days",
+                    "ordinal_weekdays",
+                    "year_month_days",
+                },
+            ),
+            wall_times=tuple(payload.wall_times),
+            weekdays=tuple(payload.weekdays),
+            month_days=tuple(payload.month_days),
+            ordinal_weekdays=tuple(
+                (item.weekday_number, item.ordinal) for item in payload.ordinal_weekdays
+            ),
+            year_month_days=tuple(
+                (item.month_number, item.month_day) for item in payload.year_month_days
+            ),
+        )
     if isinstance(payload, ElapsedRecurrenceRequest):
         return ElapsedRecurrence(**payload.model_dump())
     if isinstance(payload, QuotaRecurrenceRequest):
         return QuotaRecurrence(**payload.model_dump())
-    return CyclicRecurrence(**payload.model_dump(exclude={"generates_expected"}), generates_expected=tuple(payload.generates_expected))
+    return CyclicRecurrence(
+        **payload.model_dump(exclude={"generates_expected"}),
+        generates_expected=tuple(payload.generates_expected),
+    )
 
 
 def _state(value: object) -> RecurrenceStateResponse:
-    return RecurrenceStateResponse(material_state_ref=value.material_state_ref, recurrence=asdict(value.recurrence))
+    return RecurrenceStateResponse(
+        material_state_ref=value.material_state_ref, recurrence=asdict(value.recurrence)
+    )
 
 
-@router.get("/routines/{routine_ref}/recurrence", response_model=RecurrenceStateResponse, operation_id="temporal_get_routine_recurrence")
-async def get_routine_recurrence(routine_ref: UUID, context: Context, application: Application, response: Response) -> RecurrenceStateResponse:
+@router.get(
+    "/routines/{routine_ref}/recurrence",
+    response_model=RecurrenceStateResponse,
+    operation_id="temporal_get_routine_recurrence",
+)
+async def get_routine_recurrence(
+    routine_ref: UUID, context: Context, application: Application, response: Response
+) -> RecurrenceStateResponse:
     response.headers["Cache-Control"] = "no-store"
     try:
-        value = await application.get(owner="routine", self_person_ref=context.self_person_ref, owner_ref=routine_ref)
+        value = await application.get(
+            owner="routine", self_person_ref=context.self_person_ref, owner_ref=routine_ref
+        )
         if value is None:
             raise RecurrenceNotFoundError()
         return _state(value)
@@ -210,31 +297,81 @@ async def get_routine_recurrence(routine_ref: UUID, context: Context, applicatio
         raise _problem(exc) from exc
 
 
-@router.put("/routines/{routine_ref}/recurrence", response_model=RecurrenceMutationResponse, operation_id="temporal_replace_routine_recurrence")
-async def replace_routine_recurrence(routine_ref: UUID, payload: ReplaceRecurrenceRequest, context: MutatingContext, application: Application, response: Response) -> RecurrenceMutationResponse:
+@router.put(
+    "/routines/{routine_ref}/recurrence",
+    response_model=RecurrenceMutationResponse,
+    operation_id="temporal_replace_routine_recurrence",
+)
+async def replace_routine_recurrence(
+    routine_ref: UUID,
+    payload: ReplaceRecurrenceRequest,
+    context: MutatingContext,
+    application: Application,
+    response: Response,
+) -> RecurrenceMutationResponse:
     response.headers["Cache-Control"] = "no-store"
     try:
-        value = await application.replace(owner="routine", self_person_ref=context.self_person_ref, owner_ref=routine_ref, operation_id=payload.operation_id, expected_material_state_ref=payload.expected_material_state_ref, recurrence=_spec(payload.recurrence))
-        return RecurrenceMutationResponse(**_state(value.recurrence).model_dump(), accepted_at=value.accepted_at, replayed=value.replayed)
+        value = await application.replace(
+            owner="routine",
+            self_person_ref=context.self_person_ref,
+            owner_ref=routine_ref,
+            operation_id=payload.operation_id,
+            expected_material_state_ref=payload.expected_material_state_ref,
+            recurrence=_spec(payload.recurrence),
+        )
+        return RecurrenceMutationResponse(
+            **_state(value.recurrence).model_dump(),
+            accepted_at=value.accepted_at,
+            replayed=value.replayed,
+        )
     except _Errors as exc:
         raise _problem(exc) from exc
 
 
-@router.get("/events/{event_ref}/recurrence", response_model=RecurrenceStateResponse | None, operation_id="temporal_get_event_recurrence")
-async def get_event_recurrence(event_ref: UUID, context: Context, application: Application, response: Response) -> RecurrenceStateResponse | None:
+@router.get(
+    "/events/{event_ref}/recurrence",
+    response_model=RecurrenceStateResponse | None,
+    operation_id="temporal_get_event_recurrence",
+)
+async def get_event_recurrence(
+    event_ref: UUID, context: Context, application: Application, response: Response
+) -> RecurrenceStateResponse | None:
     response.headers["Cache-Control"] = "no-store"
     try:
-        value = await application.get(owner="event", self_person_ref=context.self_person_ref, owner_ref=event_ref)
+        value = await application.get(
+            owner="event", self_person_ref=context.self_person_ref, owner_ref=event_ref
+        )
         return None if value is None else _state(value)
     except _Errors as exc:
         raise _problem(exc) from exc
 
 
-@router.put("/events/{event_ref}/recurrence", response_model=RecurrenceMutationResponse, operation_id="temporal_replace_event_recurrence")
-async def replace_event_recurrence(event_ref: UUID, payload: ReplaceRecurrenceRequest, context: MutatingContext, application: Application, response: Response) -> RecurrenceMutationResponse:
+@router.put(
+    "/events/{event_ref}/recurrence",
+    response_model=RecurrenceMutationResponse,
+    operation_id="temporal_replace_event_recurrence",
+)
+async def replace_event_recurrence(
+    event_ref: UUID,
+    payload: ReplaceRecurrenceRequest,
+    context: MutatingContext,
+    application: Application,
+    response: Response,
+) -> RecurrenceMutationResponse:
     response.headers["Cache-Control"] = "no-store"
     try:
-        value = await application.replace(owner="event", self_person_ref=context.self_person_ref, owner_ref=event_ref, operation_id=payload.operation_id, expected_material_state_ref=payload.expected_material_state_ref, recurrence=_spec(payload.recurrence))
-        return RecurrenceMutationResponse(**_state(value.recurrence).model_dump(), accepted_at=value.accepted_at, replayed=value.replayed)
+        value = await application.replace(
+            owner="event",
+            self_person_ref=context.self_person_ref,
+            owner_ref=event_ref,
+            operation_id=payload.operation_id,
+            expected_material_state_ref=payload.expected_material_state_ref,
+            recurrence=_spec(payload.recurrence),
+        )
+        return RecurrenceMutationResponse(
+            **_state(value.recurrence).model_dump(),
+            accepted_at=value.accepted_at,
+            replayed=value.replayed,
+        )
     except _Errors as exc:
         raise _problem(exc) from exc

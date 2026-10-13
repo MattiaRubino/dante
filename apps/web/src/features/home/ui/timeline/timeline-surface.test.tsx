@@ -84,18 +84,22 @@ describe('TimelineSurface production parity', () => {
   it('does not scroll back to an unchanged route date after the user scrolls', async () => {
     const onViewedDateChange = vi.fn();
     const { container } = renderTimeline({
-      viewedDateIso: TIMELINE_PROTOTYPE_TODAY.toString(), onViewedDateChange,
+      viewedDateIso: TIMELINE_PROTOTYPE_TODAY.toString(),
+      onViewedDateChange,
     });
     const grid = container.querySelector<HTMLElement>('.timeline-grid');
-    const days = [...container.querySelectorAll<HTMLElement>('[data-timeline-date]')];
+    const days = [
+      ...container.querySelectorAll<HTMLElement>('[data-timeline-date]'),
+    ];
     expect(grid).toBeTruthy();
     expect(days.length).toBeGreaterThan(4);
     Object.defineProperties(grid!, {
       clientHeight: { configurable: true, value: 500 },
       scrollHeight: { configurable: true, value: 100_000 },
     });
-    const nextDayTop = days.slice(0, 4).reduce((sum, day) =>
-      sum + Number.parseFloat(day.style.height), 0);
+    const nextDayTop = days
+      .slice(0, 4)
+      .reduce((sum, day) => sum + Number.parseFloat(day.style.height), 0);
     grid!.scrollTop = nextDayTop + 100;
     fireEvent.scroll(grid!);
     await new Promise((resolve) => window.setTimeout(resolve, 40));
@@ -210,9 +214,7 @@ describe('TimelineSurface production parity', () => {
     expect(targetTitle).toBeTruthy();
     expect(targetTitle?.tabIndex).toBe(0);
     fireEvent.click(targetTitle as HTMLButtonElement);
-    expect(
-      screen.getByRole('dialog'),
-    ).toBeTruthy();
+    expect(screen.getByRole('dialog')).toBeTruthy();
 
     fireEvent.keyDown(document, { key: 'Escape' });
     fireEvent.click(focusedCard as HTMLElement);

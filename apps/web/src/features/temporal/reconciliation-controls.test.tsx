@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ReconciliationControls } from './reconciliation-controls';
@@ -89,7 +95,10 @@ function evidence(confirmationRef: string, stateRef: string, roleCode: string) {
 }
 
 function notFound(code: string, title: string, detail: string) {
-  return Response.json({ code, category: 'not_found', title, detail }, { status: 404 });
+  return Response.json(
+    { code, category: 'not_found', title, detail },
+    { status: 404 },
+  );
 }
 
 describe('Reconciliation controls', () => {
@@ -115,7 +124,9 @@ describe('Reconciliation controls', () => {
     render(<ReconciliationControls kind="event" subjectRef={SUBJECT} />);
     fireEvent.click(screen.getByText('Carica Reconciliation'));
 
-    await screen.findByText('Reconciliation non disponibile: registra prima un Outcome.');
+    await screen.findByText(
+      'Reconciliation non disponibile: registra prima un Outcome.',
+    );
     expect(screen.queryByText('Registra Reconciliation')).toBeNull();
     expect(fetchFn).toHaveBeenCalledTimes(1);
   });
@@ -128,10 +139,16 @@ describe('Reconciliation controls', () => {
       if (url.endsWith('/api/v1/auth/session')) {
         return Response.json({ authenticated: true, csrf_token: 'csrf' });
       }
-      if (url.endsWith(`/events/${SUBJECT}/actual`)) return Response.json(actual());
-      if (url.endsWith(`/actuals/${ACTUAL}/outcome`)) return Response.json(outcome());
-      if (url.endsWith(`/outcomes/${OUTCOME}/confirmations`)) return Response.json([]);
-      if (init?.method === 'POST' && url.endsWith(`/outcomes/${OUTCOME}/reconciliations`)) {
+      if (url.endsWith(`/events/${SUBJECT}/actual`))
+        return Response.json(actual());
+      if (url.endsWith(`/actuals/${ACTUAL}/outcome`))
+        return Response.json(outcome());
+      if (url.endsWith(`/outcomes/${OUTCOME}/confirmations`))
+        return Response.json([]);
+      if (
+        init?.method === 'POST' &&
+        url.endsWith(`/outcomes/${OUTCOME}/reconciliations`)
+      ) {
         const body = JSON.parse(String(init.body)) as Record<string, unknown>;
         bodies.push(body);
         current = reconciliation(RECONCILIATION_STATE_1, 'unresolved', []);
@@ -147,7 +164,9 @@ describe('Reconciliation controls', () => {
     render(<ReconciliationControls kind="event" subjectRef={SUBJECT} />);
     fireEvent.click(screen.getByText('Carica Reconciliation'));
 
-    await screen.findByText('Reconciliation: nessuna decisione contestuale registrata');
+    await screen.findByText(
+      'Reconciliation: nessuna decisione contestuale registrata',
+    );
     await screen.findByText(
       'Nessuna Reconciliation registrata. Il conflitto può restare esplicitamente irrisolto.',
     );
@@ -178,13 +197,20 @@ describe('Reconciliation controls', () => {
       if (url.endsWith('/api/v1/auth/session')) {
         return Response.json({ authenticated: true, csrf_token: 'csrf' });
       }
-      if (url.endsWith(`/events/${SUBJECT}/actual`)) return Response.json(actual());
-      if (url.endsWith(`/actuals/${ACTUAL}/outcome`)) return Response.json(outcome());
-      if (url.endsWith(`/outcomes/${OUTCOME}/confirmations`)) return Response.json(confirmations);
-      if (init?.method === 'POST' && url.endsWith(`/outcomes/${OUTCOME}/reconciliations`)) {
+      if (url.endsWith(`/events/${SUBJECT}/actual`))
+        return Response.json(actual());
+      if (url.endsWith(`/actuals/${ACTUAL}/outcome`))
+        return Response.json(outcome());
+      if (url.endsWith(`/outcomes/${OUTCOME}/confirmations`))
+        return Response.json(confirmations);
+      if (
+        init?.method === 'POST' &&
+        url.endsWith(`/outcomes/${OUTCOME}/reconciliations`)
+      ) {
         const body = JSON.parse(String(init.body)) as Record<string, unknown>;
         bodies.push(body);
-        const state = bodies.length === 1 ? RECONCILIATION_STATE_1 : RECONCILIATION_STATE_2;
+        const state =
+          bodies.length === 1 ? RECONCILIATION_STATE_1 : RECONCILIATION_STATE_2;
         current = reconciliation(
           state,
           String(body.action_code),
@@ -201,16 +227,30 @@ describe('Reconciliation controls', () => {
 
     render(<ReconciliationControls kind="event" subjectRef={SUBJECT} />);
     fireEvent.click(screen.getByText('Carica Reconciliation'));
-    await screen.findByText('Reconciliation: nessuna decisione contestuale registrata');
+    await screen.findByText(
+      'Reconciliation: nessuna decisione contestuale registrata',
+    );
 
     fireEvent.change(screen.getByLabelText('Azione Reconciliation'), {
       target: { value: 'select' },
     });
-    expect(screen.getByText('select richiede esattamente una Confirmation selezionata.')).toBeTruthy();
-    expect((screen.getByText('Registra Reconciliation') as HTMLButtonElement).disabled).toBe(true);
+    expect(
+      screen.getByText(
+        'select richiede esattamente una Confirmation selezionata.',
+      ),
+    ).toBeTruthy();
+    expect(
+      (screen.getByText('Registra Reconciliation') as HTMLButtonElement)
+        .disabled,
+    ).toBe(true);
 
-    fireEvent.click(screen.getByLabelText(`Seleziona Confirmation ${CONFIRMATION_A}`));
-    expect((screen.getByText('Registra Reconciliation') as HTMLButtonElement).disabled).toBe(false);
+    fireEvent.click(
+      screen.getByLabelText(`Seleziona Confirmation ${CONFIRMATION_A}`),
+    );
+    expect(
+      (screen.getByText('Registra Reconciliation') as HTMLButtonElement)
+        .disabled,
+    ).toBe(false);
     fireEvent.click(screen.getByText('Registra Reconciliation'));
     await screen.findByText('Reconciliation registrata.');
 
@@ -227,8 +267,12 @@ describe('Reconciliation controls', () => {
       ]),
     );
 
-    fireEvent.click(screen.getByLabelText(`Seleziona Confirmation ${CONFIRMATION_A}`));
-    fireEvent.click(screen.getByLabelText(`Seleziona Confirmation ${CONFIRMATION_B}`));
+    fireEvent.click(
+      screen.getByLabelText(`Seleziona Confirmation ${CONFIRMATION_A}`),
+    );
+    fireEvent.click(
+      screen.getByLabelText(`Seleziona Confirmation ${CONFIRMATION_B}`),
+    );
     fireEvent.click(screen.getByText('Correggi Reconciliation'));
     await waitFor(() => expect(bodies).toHaveLength(2));
 
@@ -237,13 +281,17 @@ describe('Reconciliation controls', () => {
       expected_material_state_ref: RECONCILIATION_STATE_1,
       action_code: 'select',
     });
-    const secondEvidence = bodies[1]?.evidence as Array<Record<string, unknown>>;
+    const secondEvidence = bodies[1]?.evidence as Array<
+      Record<string, unknown>
+    >;
     expect(secondEvidence).toEqual(
       expect.arrayContaining([
         evidence(CONFIRMATION_A, CONFIRMATION_A_STATE, 'considered'),
         evidence(CONFIRMATION_B, CONFIRMATION_B_STATE, 'selected'),
       ]),
     );
-    expect(screen.getByText('Reconciliation: review.personal / select')).toBeTruthy();
+    expect(
+      screen.getByText('Reconciliation: review.personal / select'),
+    ).toBeTruthy();
   });
 });

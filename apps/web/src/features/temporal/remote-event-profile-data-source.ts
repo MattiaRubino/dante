@@ -1,7 +1,10 @@
 import { createWebFetch } from '../../platform/api/web-fetch';
 import { createRemoteTemporalEventAgendaDataSource } from './remote-event-agenda-data-source';
 import type { TemporalEventDetailRecord } from './event-data-source';
-import { invalidateTemporalPlanningRead, invalidateTemporalTimelineRead } from './timeline-invalidation';
+import {
+  invalidateTemporalPlanningRead,
+  invalidateTemporalTimelineRead,
+} from './timeline-invalidation';
 
 export type EventProfileDraft = Readonly<{
   title: string;
@@ -26,31 +29,48 @@ export function createRemoteEventProfileDataSource(
     load: (eventRef: string): Promise<TemporalEventDetailRecord> =>
       eventSource.loadEvent(eventRef),
     async revise(
-      eventRef: string, current: TemporalEventDetailRecord,
-      next: EventProfileDraft, operationId: string,
+      eventRef: string,
+      current: TemporalEventDetailRecord,
+      next: EventProfileDraft,
+      operationId: string,
     ): Promise<TemporalEventDetailRecord> {
-      if (!Number.isSafeInteger(current.profileRevision) ||
-          current.profileRevision === undefined || current.profileRevision < 0) {
-        throw new Error('Revisione Event non disponibile: ricarica il profilo.');
+      if (
+        !Number.isSafeInteger(current.profileRevision) ||
+        current.profileRevision === undefined ||
+        current.profileRevision < 0
+      ) {
+        throw new Error(
+          'Revisione Event non disponibile: ricarica il profilo.',
+        );
       }
       const title = next.title.trim();
       const description = next.description?.trim() || null;
       const location = next.location?.trim() || null;
-      if (!title || title.length > 300 ||
-          (next.colorCode !== null && !/^#[0-9A-F]{6}$/.test(next.colorCode))) {
+      if (
+        !title ||
+        title.length > 300 ||
+        (next.colorCode !== null && !/^#[0-9A-F]{6}$/.test(next.colorCode))
+      ) {
         throw new Error('Il titolo o i metadati Event non sono validi.');
       }
       const authResponse = await request('/api/v1/auth/session');
       const auth = object(await authResponse.json());
-      if (!authResponse.ok || auth.authenticated !== true ||
-          typeof auth.csrf_token !== 'string' || !auth.csrf_token) {
+      if (
+        !authResponse.ok ||
+        auth.authenticated !== true ||
+        typeof auth.csrf_token !== 'string' ||
+        !auth.csrf_token
+      ) {
         throw new Error('Sessione non autenticata.');
       }
       const response = await request(
-        `/api/v1/temporal/events/${encodeURIComponent(eventRef)}/profile`, {
+        `/api/v1/temporal/events/${encodeURIComponent(eventRef)}/profile`,
+        {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json',
-            'X-Dante-CSRF': auth.csrf_token },
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Dante-CSRF': auth.csrf_token,
+          },
           body: JSON.stringify({
             operation_id: operationId,
             expected_revision: current.profileRevision,
@@ -61,16 +81,21 @@ export function createRemoteEventProfileDataSource(
           }),
         },
       );
-      if (!response.ok) throw new Error(response.status === 409
-        ? 'Il profilo Event è cambiato: ricarica e riprova.'
-        : 'Impossibile modificare il profilo Event.');
+      if (!response.ok)
+        throw new Error(
+          response.status === 409
+            ? 'Il profilo Event è cambiato: ricarica e riprova.'
+            : 'Impossibile modificare il profilo Event.',
+        );
       const accepted = object(await response.json());
-      if (accepted.event_ref !== eventRef ||
-          accepted.revision !== current.profileRevision + 1 ||
-          accepted.title !== title ||
-          accepted.description !== description ||
-          accepted.location !== location ||
-          accepted.color_code !== next.colorCode) {
+      if (
+        accepted.event_ref !== eventRef ||
+        accepted.revision !== current.profileRevision + 1 ||
+        accepted.title !== title ||
+        accepted.description !== description ||
+        accepted.location !== location ||
+        accepted.color_code !== next.colorCode
+      ) {
         throw new Error('Conferma modifica Event non valida.');
       }
       invalidateTemporalPlanningRead();

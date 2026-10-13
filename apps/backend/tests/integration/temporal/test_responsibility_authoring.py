@@ -61,9 +61,7 @@ async def test_b09_b_activity_responsibility_is_self_scoped_guarded_and_idempote
     authoring = ResponsibilityParticipationApplication(runtime.session_factory)
     try:
         area = (
-            await areas.create(
-                self_person_ref=alice, operation_id="b09-b:area", name="Work"
-            )
+            await areas.create(self_person_ref=alice, operation_id="b09-b:area", name="Work")
         ).area
         activity = (
             await activities.create_activity(
@@ -212,9 +210,7 @@ async def test_b09_b_expected_participation_is_bounded_and_creates_no_attendance
     authoring = ResponsibilityParticipationApplication(runtime.session_factory)
     try:
         area = (
-            await areas.create(
-                self_person_ref=alice, operation_id="b09-b:event-area", name="Team"
-            )
+            await areas.create(self_person_ref=alice, operation_id="b09-b:event-area", name="Team")
         ).area
         event = (
             await events.create_event(
@@ -667,4 +663,3 @@ def test_b09_b_authenticated_api_assigns_self_without_person_or_actual(
             (activity_ref, event_ref, activity_ref, event_ref),
         ).fetchone()
     assert counts == (0, 0)
-

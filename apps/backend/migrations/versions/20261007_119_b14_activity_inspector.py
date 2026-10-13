@@ -17,11 +17,29 @@ depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
-    op.add_column("activity_intention", sa.Column("profile_revision", sa.BigInteger(), server_default="0", nullable=False), schema="dante")
-    op.add_column("activity_intention", sa.Column("retired_at", sa.DateTime(timezone=True)), schema="dante")
-    op.add_column("activity_intention", sa.Column("retired_operation_id", sa.Text()), schema="dante")
-    op.create_check_constraint("ck_activity_intention_profile_revision", "activity_intention", "profile_revision >= 0", schema="dante")
-    op.create_check_constraint("ck_activity_intention_retired_pair", "activity_intention", "(retired_at IS NULL) = (retired_operation_id IS NULL)", schema="dante")
+    op.add_column(
+        "activity_intention",
+        sa.Column("profile_revision", sa.BigInteger(), server_default="0", nullable=False),
+        schema="dante",
+    )
+    op.add_column(
+        "activity_intention", sa.Column("retired_at", sa.DateTime(timezone=True)), schema="dante"
+    )
+    op.add_column(
+        "activity_intention", sa.Column("retired_operation_id", sa.Text()), schema="dante"
+    )
+    op.create_check_constraint(
+        "ck_activity_intention_profile_revision",
+        "activity_intention",
+        "profile_revision >= 0",
+        schema="dante",
+    )
+    op.create_check_constraint(
+        "ck_activity_intention_retired_pair",
+        "activity_intention",
+        "(retired_at IS NULL) = (retired_operation_id IS NULL)",
+        schema="dante",
+    )
     op.create_table(
         "activity_profile_revision",
         sa.Column("activity_ref", sa.Uuid(), nullable=False),
@@ -32,9 +50,19 @@ def upgrade() -> None:
         sa.Column("current_profile", JSONB(), nullable=False),
         sa.Column("revised_at", sa.DateTime(timezone=True), nullable=False),
         sa.PrimaryKeyConstraint("activity_ref", "revision", name="pk_activity_profile_revision"),
-        sa.UniqueConstraint("self_person_ref", "operation_id", name="uq_activity_profile_revision_operation"),
-        sa.ForeignKeyConstraint(["activity_ref"], ["dante.activity_intention.activity_ref"], name="fk_activity_profile_revision_activity"),
-        sa.ForeignKeyConstraint(["self_person_ref"], ["dante.person.person_ref"], name="fk_activity_profile_revision_person"),
+        sa.UniqueConstraint(
+            "self_person_ref", "operation_id", name="uq_activity_profile_revision_operation"
+        ),
+        sa.ForeignKeyConstraint(
+            ["activity_ref"],
+            ["dante.activity_intention.activity_ref"],
+            name="fk_activity_profile_revision_activity",
+        ),
+        sa.ForeignKeyConstraint(
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
+            name="fk_activity_profile_revision_person",
+        ),
         sa.CheckConstraint("revision >= 1", name="ck_activity_profile_revision_positive"),
         schema="dante",
     )
@@ -42,14 +70,18 @@ def upgrade() -> None:
     for statement in (_READ, _REVISE, _RETIRE):
         bind.execute(sa.text(statement))
     bind.exec_driver_sql("ALTER TABLE dante.activity_profile_revision OWNER TO dante_owner")
-    bind.exec_driver_sql("REVOKE ALL ON dante.activity_profile_revision FROM PUBLIC,dante_runtime,dante_migrator")
+    bind.exec_driver_sql(
+        "REVOKE ALL ON dante.activity_profile_revision FROM PUBLIC,dante_runtime,dante_migrator"
+    )
     for signature in (
         "get_self_activity_profile(uuid,uuid)",
         "revise_self_activity_profile(uuid,uuid,text,bigint,text,text,text,text)",
         "retire_self_activity(uuid,uuid,text)",
     ):
         bind.exec_driver_sql(f"ALTER FUNCTION dante.{signature} OWNER TO dante_owner")
-        bind.exec_driver_sql(f"REVOKE ALL ON FUNCTION dante.{signature} FROM PUBLIC,dante_runtime,dante_migrator")
+        bind.exec_driver_sql(
+            f"REVOKE ALL ON FUNCTION dante.{signature} FROM PUBLIC,dante_runtime,dante_migrator"
+        )
         bind.exec_driver_sql(f"GRANT EXECUTE ON FUNCTION dante.{signature} TO dante_runtime")
 
 

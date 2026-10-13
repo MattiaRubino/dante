@@ -725,34 +725,49 @@ def _scoped_edit_problem(exc: DBAPIError) -> ProblemError:
     constraint = getattr(getattr(exc.orig, "diag", None), "constraint_name", None)
     if constraint == "occurrence_edit_unavailable":
         return ProblemError(
-            status=404, code="temporal.recurrence_edit.unavailable",
-            category="not_found", title="Occurrence unavailable",
+            status=404,
+            code="temporal.recurrence_edit.unavailable",
+            category="not_found",
+            title="Occurrence unavailable",
             detail="The selected Occurrence is unavailable in this account.",
         )
     if constraint in {
-        "pk_occurrence_profile_edit", "occurrence_edit_stale",
-        "occurrence_edit_recurrence_stale", "occurrence_edit_future_conflict",
+        "pk_occurrence_profile_edit",
+        "occurrence_edit_stale",
+        "occurrence_edit_recurrence_stale",
+        "occurrence_edit_future_conflict",
     }:
         return ProblemError(
-            status=409, code="temporal.recurrence_edit.conflict",
-            category="conflict", title="Recurring edit conflict",
+            status=409,
+            code="temporal.recurrence_edit.conflict",
+            category="conflict",
+            title="Recurring edit conflict",
             detail="The recurring source or a protected future instance changed. Reload and review.",
         )
     if constraint in {
-        "occurrence_edit_invalid", "occurrence_edit_invalid_patch",
-        "occurrence_edit_invalid_zone", "occurrence_edit_unresolved_zone",
-        "occurrence_edit_unordered_coordinate", "occurrence_edit_dst_gap",
-        "occurrence_edit_not_generated", "recurrence_edit_inventory_limit",
+        "occurrence_edit_invalid",
+        "occurrence_edit_invalid_patch",
+        "occurrence_edit_invalid_zone",
+        "occurrence_edit_unresolved_zone",
+        "occurrence_edit_unordered_coordinate",
+        "occurrence_edit_dst_gap",
+        "occurrence_edit_not_generated",
+        "recurrence_edit_inventory_limit",
     }:
         return ProblemError(
-            status=422, code="temporal.recurrence_edit.invalid",
-            category="validation", title="Recurring edit cannot be applied",
+            status=422,
+            code="temporal.recurrence_edit.invalid",
+            category="validation",
+            title="Recurring edit cannot be applied",
             detail="The requested scope or coordinate cannot be safely accepted.",
         )
     return ProblemError(
-        status=503, code="temporal.recurrence_edit.persistence_unavailable",
-        category="service", title="Recurring edit unavailable",
-        detail="The scoped edit could not be completed safely.", retryable=True,
+        status=503,
+        code="temporal.recurrence_edit.persistence_unavailable",
+        category="service",
+        title="Recurring edit unavailable",
+        detail="The scoped edit could not be completed safely.",
+        retryable=True,
     )
 
 
@@ -762,15 +777,24 @@ def _scoped_edit_problem(exc: DBAPIError) -> ProblemError:
     operation_id="temporal_get_occurrence_profile_edit_state",
 )
 async def get_occurrence_profile_edit_state(
-    occurrence_ref: UUID, context: Context, request: Request, response: Response,
+    occurrence_ref: UUID,
+    context: Context,
+    request: Request,
+    response: Response,
 ) -> ScopedProfileEditStateResponse:
     response.headers["Cache-Control"] = "no-store"
     try:
         async with request.app.state.database_runtime.session_factory() as session, session.begin():
-            row = (await session.execute(
-                text("SELECT * FROM dante.get_self_occurrence_edit_revision(:actor,:occ)"),
-                {"actor": context.self_person_ref, "occ": occurrence_ref},
-            )).mappings().one()
+            row = (
+                (
+                    await session.execute(
+                        text("SELECT * FROM dante.get_self_occurrence_edit_revision(:actor,:occ)"),
+                        {"actor": context.self_person_ref, "occ": occurrence_ref},
+                    )
+                )
+                .mappings()
+                .one()
+            )
             patch = await session.scalar(
                 text("SELECT dante.get_self_occurrence_profile_patch(:actor,:occ)"),
                 {"actor": context.self_person_ref, "occ": occurrence_ref},
@@ -779,9 +803,12 @@ async def get_occurrence_profile_edit_state(
         raise _scoped_edit_problem(exc) from exc
     except SQLAlchemyError as exc:
         raise ProblemError(
-            status=503, code="temporal.recurrence_edit.read_failed",
-            category="service", title="Recurring edit read unavailable",
-            detail="Could not read recurring edit state.", retryable=True,
+            status=503,
+            code="temporal.recurrence_edit.read_failed",
+            category="service",
+            title="Recurring edit read unavailable",
+            detail="Could not read recurring edit state.",
+            retryable=True,
         ) from exc
     return ScopedProfileEditStateResponse(
         selected_occurrence_ref=occurrence_ref,
@@ -798,7 +825,10 @@ async def get_occurrence_profile_edit_state(
     operation_id="temporal_get_materialized_activity_occurrence",
 )
 async def get_materialized_activity_occurrence(
-    activity_ref: UUID, context: Context, request: Request, response: Response,
+    activity_ref: UUID,
+    context: Context,
+    request: Request,
+    response: Response,
 ) -> MaterializedActivityOriginResponse:
     response.headers["Cache-Control"] = "no-store"
     try:
@@ -820,7 +850,8 @@ async def get_materialized_activity_occurrence(
     except SQLAlchemyError as exc:
         raise _problem(OccurrencePersistenceError()) from exc
     return MaterializedActivityOriginResponse(
-        activity_ref=activity_ref, occurrence_ref=origin,
+        activity_ref=activity_ref,
+        occurrence_ref=origin,
     )
 
 
@@ -830,8 +861,11 @@ async def get_materialized_activity_occurrence(
     operation_id="temporal_accept_occurrence_profile_edit",
 )
 async def accept_occurrence_profile_edit(
-    occurrence_ref: UUID, body: ScopedProfileEditCommand,
-    context: MutatingContext, request: Request, response: Response,
+    occurrence_ref: UUID,
+    body: ScopedProfileEditCommand,
+    context: MutatingContext,
+    request: Request,
+    response: Response,
 ) -> ScopedProfileEditResponse:
     """One atomic source-lock/CAS operation, never a client supplied target list."""
     response.headers["Cache-Control"] = "no-store"
@@ -839,37 +873,55 @@ async def accept_occurrence_profile_edit(
     if not set(patch).issubset({"title", "description", "location", "color_code"}):
         raise _problem(OccurrenceInputError("Only profile metadata can be edited here."))
     if (
-        ("title" in patch and (patch["title"] is None or
-         not patch["title"] or patch["title"] != patch["title"].strip()))
+        (
+            "title" in patch
+            and (
+                patch["title"] is None
+                or not patch["title"]
+                or patch["title"] != patch["title"].strip()
+            )
+        )
         or any(
             value is not None and (not value or value != value.strip())
-            for key, value in patch.items() if key in {"description", "location"}
+            for key, value in patch.items()
+            if key in {"description", "location"}
         )
-        or ("color_code" in patch and patch["color_code"] is not None and (
-            len(patch["color_code"]) != 7 or
-            not patch["color_code"].startswith("#") or
-            any(ch not in "0123456789ABCDEF" for ch in patch["color_code"][1:])
-        ))
+        or (
+            "color_code" in patch
+            and patch["color_code"] is not None
+            and (
+                len(patch["color_code"]) != 7
+                or not patch["color_code"].startswith("#")
+                or any(ch not in "0123456789ABCDEF" for ch in patch["color_code"][1:])
+            )
+        )
     ):
         raise _problem(OccurrenceInputError("Invalid metadata patch."))
     try:
         async with request.app.state.database_runtime.session_factory() as session, session.begin():
-            row = (await session.execute(
-                text(
-                    "SELECT * FROM dante.accept_self_occurrence_profile_edit("
-                    ":actor,:selected,:operation,:expected,:recurrence,:scope,"
-                    ":zone,CAST(:patch AS jsonb))"
-                ),
-                {
-                    "actor": context.self_person_ref, "selected": occurrence_ref,
-                    "operation": body.operation_id,
-                    "expected": body.expected_revision,
-                    "recurrence": body.expected_recurrence_state_ref,
-                    "scope": body.scope_code,
-                    "zone": context.effective_zone_id,
-                    "patch": json.dumps(patch, sort_keys=True),
-                },
-            )).mappings().one()
+            row = (
+                (
+                    await session.execute(
+                        text(
+                            "SELECT * FROM dante.accept_self_occurrence_profile_edit("
+                            ":actor,:selected,:operation,:expected,:recurrence,:scope,"
+                            ":zone,CAST(:patch AS jsonb))"
+                        ),
+                        {
+                            "actor": context.self_person_ref,
+                            "selected": occurrence_ref,
+                            "operation": body.operation_id,
+                            "expected": body.expected_revision,
+                            "recurrence": body.expected_recurrence_state_ref,
+                            "scope": body.scope_code,
+                            "zone": context.effective_zone_id,
+                            "patch": json.dumps(patch, sort_keys=True),
+                        },
+                    )
+                )
+                .mappings()
+                .one()
+            )
     except DBAPIError as exc:
         raise _scoped_edit_problem(exc) from exc
     except SQLAlchemyError as exc:

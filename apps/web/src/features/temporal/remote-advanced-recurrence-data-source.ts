@@ -4,7 +4,8 @@ const UUID_V7 =
   /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export type AdvancedRecurrenceOwnerKind = 'routine' | 'event';
-export type AdvancedRecurrenceAnchorMode = 'previous_completion' | 'anchor_stream';
+export type AdvancedRecurrenceAnchorMode =
+  'previous_completion' | 'anchor_stream';
 export type AdvancedRecurrenceAnchorSourceKind = 'routine' | 'event';
 
 export type AdvancedRecurrenceView = Readonly<{
@@ -78,7 +79,10 @@ function path(owner: AdvancedRecurrenceOwnerKind, sourceRef: string): string {
 function view(value: unknown): AdvancedRecurrenceView {
   const payload = record(value);
   if (payload.owner_kind !== 'routine' && payload.owner_kind !== 'event') {
-    throw new TemporalAdvancedRecurrenceRemoteError('protocol', 'Invalid Recurrence owner.');
+    throw new TemporalAdvancedRecurrenceRemoteError(
+      'protocol',
+      'Invalid Recurrence owner.',
+    );
   }
   if (
     payload.anchor_mode_code !== 'previous_completion' &&
@@ -105,7 +109,10 @@ function view(value: unknown): AdvancedRecurrenceView {
       'Invalid advanced Recurrence effective start.',
     );
   }
-  if (typeof payload.elapsed_seconds !== 'string' && typeof payload.elapsed_seconds !== 'number') {
+  if (
+    typeof payload.elapsed_seconds !== 'string' &&
+    typeof payload.elapsed_seconds !== 'number'
+  ) {
     throw new TemporalAdvancedRecurrenceRemoteError(
       'protocol',
       'Invalid advanced Recurrence delay.',
@@ -138,7 +145,9 @@ export function createRemoteTemporalAdvancedRecurrenceDataSource(
 ) {
   const webFetch = createWebFetch(fetchFn);
 
-  async function problem(response: Response): Promise<TemporalAdvancedRecurrenceRemoteError> {
+  async function problem(
+    response: Response,
+  ): Promise<TemporalAdvancedRecurrenceRemoteError> {
     let payload: Record<string, unknown> = {};
     try {
       payload = record(await response.json());
@@ -199,14 +208,19 @@ export function createRemoteTemporalAdvancedRecurrenceDataSource(
         return Object.freeze({ currentMaterialStateRef: null, advanced: null });
       }
 
-      const response = await webFetch(`${path(owner, sourceRef)}/advanced-recurrence`);
+      const response = await webFetch(
+        `${path(owner, sourceRef)}/advanced-recurrence`,
+      );
       if (!response.ok) {
         const error = await problem(response);
         if (
           response.status === 404 &&
           error.code === 'temporal.advanced_recurrence.unavailable'
         ) {
-          return Object.freeze({ currentMaterialStateRef: stateRef, advanced: null });
+          return Object.freeze({
+            currentMaterialStateRef: stateRef,
+            advanced: null,
+          });
         }
         throw error;
       }
@@ -222,25 +236,28 @@ export function createRemoteTemporalAdvancedRecurrenceDataSource(
       sourceRef: string,
       command: ReplaceAdvancedRecurrenceCommand,
     ): Promise<AdvancedRecurrenceView> {
-      const response = await webFetch(`${path(owner, sourceRef)}/advanced-recurrence`, {
-        method: 'PUT',
-        headers: new Headers({
-          'Content-Type': 'application/json',
-          'X-Dante-CSRF': await csrf(),
-        }),
-        body: JSON.stringify({
-          operation_id: command.operationId,
-          expected_material_state_ref: command.expectedMaterialStateRef,
-          range_kind: 'open',
-          expected_occurrence_count: null,
-          effective_from: command.effectiveFrom,
-          effective_until: null,
-          elapsed_seconds: command.elapsedSeconds,
-          anchor_mode_code: command.anchorModeCode,
-          anchor_source_family: command.anchorSourceFamily,
-          anchor_source_native_ref: command.anchorSourceNativeRef,
-        }),
-      });
+      const response = await webFetch(
+        `${path(owner, sourceRef)}/advanced-recurrence`,
+        {
+          method: 'PUT',
+          headers: new Headers({
+            'Content-Type': 'application/json',
+            'X-Dante-CSRF': await csrf(),
+          }),
+          body: JSON.stringify({
+            operation_id: command.operationId,
+            expected_material_state_ref: command.expectedMaterialStateRef,
+            range_kind: 'open',
+            expected_occurrence_count: null,
+            effective_from: command.effectiveFrom,
+            effective_until: null,
+            elapsed_seconds: command.elapsedSeconds,
+            anchor_mode_code: command.anchorModeCode,
+            anchor_source_family: command.anchorSourceFamily,
+            anchor_source_native_ref: command.anchorSourceNativeRef,
+          }),
+        },
+      );
       if (!response.ok) throw await problem(response);
       return view(await response.json());
     },

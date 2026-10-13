@@ -590,10 +590,12 @@
   }
 }
 
-.temporal-create-actions > button:not(.is-primary):not(.temporal-create-advanced-toggle) {
+.temporal-create-actions
+  > button:not(.is-primary):not(.temporal-create-advanced-toggle) {
   min-height: 36px;
   padding: 0 13px;
-  border: 1px solid var(--dante-semantic-color-home-border-subtle, rgba(255,255,255,.12));
+  border: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.12));
   border-radius: 9px;
   color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
   background: var(--dante-semantic-color-home-surface-control, #151f2e);

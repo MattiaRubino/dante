@@ -30,10 +30,7 @@ export function TemporalCreateObjectives() {
   const publish = (objectives: readonly TemporalCreateObjectiveDraft[]) =>
     patch({ objectives: Object.freeze([...objectives]) });
 
-  const update = (
-    id: string,
-    next: Partial<TemporalCreateObjectiveDraft>,
-  ) => {
+  const update = (id: string, next: Partial<TemporalCreateObjectiveDraft>) => {
     publish(
       draft.objectives.map((objective) =>
         objective.id === id
@@ -118,7 +115,9 @@ export function TemporalCreateObjectives() {
                   <button
                     type="button"
                     disabled={index === 0}
-                    aria-label={italian ? 'Sposta obiettivo su' : 'Move objective up'}
+                    aria-label={
+                      italian ? 'Sposta obiettivo su' : 'Move objective up'
+                    }
                     onClick={() => move(index, -1)}
                   >
                     ↑
@@ -126,7 +125,9 @@ export function TemporalCreateObjectives() {
                   <button
                     type="button"
                     disabled={index === draft.objectives.length - 1}
-                    aria-label={italian ? 'Sposta obiettivo giù' : 'Move objective down'}
+                    aria-label={
+                      italian ? 'Sposta obiettivo giù' : 'Move objective down'
+                    }
                     onClick={() => move(index, 1)}
                   >
                     ↓
@@ -134,7 +135,9 @@ export function TemporalCreateObjectives() {
                   <button
                     type="button"
                     className="is-remove"
-                    aria-label={italian ? 'Rimuovi obiettivo' : 'Remove objective'}
+                    aria-label={
+                      italian ? 'Rimuovi obiettivo' : 'Remove objective'
+                    }
                     onClick={() => remove(objective.id)}
                   >
                     ×
@@ -155,16 +158,23 @@ export function TemporalCreateObjectives() {
                     onChange={(event) =>
                       changeKind(
                         objective.id,
-                        event.currentTarget.value as TemporalCreateObjectiveKind,
+                        event.currentTarget
+                          .value as TemporalCreateObjectiveKind,
                       )
                     }
                   >
-                    <option value="boolean">{italian ? 'Sì / No' : 'Yes / No'}</option>
-                    <option value="quantity">{italian ? 'Quantità' : 'Quantity'}</option>
+                    <option value="boolean">
+                      {italian ? 'Sì / No' : 'Yes / No'}
+                    </option>
+                    <option value="quantity">
+                      {italian ? 'Quantità' : 'Quantity'}
+                    </option>
                     <option value="qualitative">
                       {italian ? 'Valutazione' : 'Assessment'}
                     </option>
-                    <option value="range">{italian ? 'Intervallo' : 'Range'}</option>
+                    <option value="range">
+                      {italian ? 'Intervallo' : 'Range'}
+                    </option>
                   </select>
                 </label>
 
@@ -174,12 +184,15 @@ export function TemporalCreateObjectives() {
                       <span>{italian ? 'Regola' : 'Rule'}</span>
                       <select
                         value={objective.comparatorCode ?? 'gte'}
-                        aria-label={italian ? 'Confronto obiettivo' : 'Objective comparator'}
+                        aria-label={
+                          italian
+                            ? 'Confronto obiettivo'
+                            : 'Objective comparator'
+                        }
                         onChange={(event) =>
                           update(objective.id, {
-                            comparatorCode:
-                              event.currentTarget
-                                .value as TemporalCreateObjectiveComparator,
+                            comparatorCode: event.currentTarget
+                              .value as TemporalCreateObjectiveComparator,
                           })
                         }
                       >
@@ -194,7 +207,9 @@ export function TemporalCreateObjectives() {
                         type="number"
                         step="any"
                         value={objective.targetValue}
-                        aria-label={italian ? 'Target obiettivo' : 'Objective target'}
+                        aria-label={
+                          italian ? 'Target obiettivo' : 'Objective target'
+                        }
                         onChange={(event) =>
                           update(objective.id, {
                             targetValue: event.currentTarget.value,
@@ -208,7 +223,9 @@ export function TemporalCreateObjectives() {
                         type="text"
                         maxLength={40}
                         value={objective.unitCode}
-                        aria-label={italian ? 'Unità obiettivo' : 'Objective unit'}
+                        aria-label={
+                          italian ? 'Unità obiettivo' : 'Objective unit'
+                        }
                         placeholder="km, kg, €, mele…"
                         onChange={(event) =>
                           update(objective.id, {
@@ -228,7 +245,9 @@ export function TemporalCreateObjectives() {
                         type="number"
                         step="any"
                         value={objective.targetMin}
-                        aria-label={italian ? 'Minimo obiettivo' : 'Objective minimum'}
+                        aria-label={
+                          italian ? 'Minimo obiettivo' : 'Objective minimum'
+                        }
                         onChange={(event) =>
                           update(objective.id, {
                             targetMin: event.currentTarget.value,
@@ -242,7 +261,9 @@ export function TemporalCreateObjectives() {
                         type="number"
                         step="any"
                         value={objective.targetMax}
-                        aria-label={italian ? 'Massimo obiettivo' : 'Objective maximum'}
+                        aria-label={
+                          italian ? 'Massimo obiettivo' : 'Objective maximum'
+                        }
                         onChange={(event) =>
                           update(objective.id, {
                             targetMax: event.currentTarget.value,
@@ -256,7 +277,9 @@ export function TemporalCreateObjectives() {
                         type="text"
                         maxLength={40}
                         value={objective.unitCode}
-                        aria-label={italian ? 'Unità obiettivo' : 'Objective unit'}
+                        aria-label={
+                          italian ? 'Unità obiettivo' : 'Objective unit'
+                        }
                         placeholder="kg, bpm, €…"
                         onChange={(event) =>
                           update(objective.id, {

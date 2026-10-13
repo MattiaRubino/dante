@@ -25,14 +25,18 @@ def upgrade() -> None:
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
         sa.PrimaryKeyConstraint("schedule_ref", name="pk_schedule_placement_lock"),
         sa.ForeignKeyConstraint(
-            ["schedule_ref"], ["dante.schedule.schedule_ref"],
+            ["schedule_ref"],
+            ["dante.schedule.schedule_ref"],
             name="fk_schedule_placement_lock_schedule",
-            ondelete="NO ACTION", onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            onupdate="NO ACTION",
         ),
         sa.ForeignKeyConstraint(
-            ["self_person_ref"], ["dante.person.person_ref"],
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
             name="fk_schedule_placement_lock_person",
-            ondelete="NO ACTION", onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            onupdate="NO ACTION",
         ),
         sa.CheckConstraint("revision >= 1", name="ck_schedule_placement_lock_revision"),
         schema="dante",
@@ -49,9 +53,13 @@ def upgrade() -> None:
     bind.exec_driver_sql(
         "REVOKE ALL ON dante.schedule_placement_lock FROM PUBLIC,dante_runtime,dante_migrator"
     )
-    for signature in ("set_self_schedule_placement_lock(uuid,uuid,boolean,bigint)",
-                      "get_self_schedule_placement_lock(uuid,uuid)"):
-        bind.exec_driver_sql(f"REVOKE ALL ON FUNCTION dante.{signature} FROM PUBLIC,dante_runtime,dante_migrator")
+    for signature in (
+        "set_self_schedule_placement_lock(uuid,uuid,boolean,bigint)",
+        "get_self_schedule_placement_lock(uuid,uuid)",
+    ):
+        bind.exec_driver_sql(
+            f"REVOKE ALL ON FUNCTION dante.{signature} FROM PUBLIC,dante_runtime,dante_migrator"
+        )
         bind.exec_driver_sql(f"GRANT EXECUTE ON FUNCTION dante.{signature} TO dante_runtime")
 
 

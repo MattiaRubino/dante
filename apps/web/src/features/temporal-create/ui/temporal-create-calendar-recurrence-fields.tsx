@@ -190,7 +190,10 @@ export function TemporalCreateCalendarRecurrenceFields({
           value={recurrence.calendarInterval}
           onChange={(event) =>
             patchRecurrence({
-              calendarInterval: Math.max(1, Number(event.currentTarget.value) || 1),
+              calendarInterval: Math.max(
+                1,
+                Number(event.currentTarget.value) || 1,
+              ),
             })
           }
         />
@@ -237,7 +240,9 @@ export function TemporalCreateCalendarRecurrenceFields({
           <div className="temporal-create-repeat__segmented">
             <button
               type="button"
-              className={recurrence.calendarFrequency === 'monthly' ? 'is-active' : ''}
+              className={
+                recurrence.calendarFrequency === 'monthly' ? 'is-active' : ''
+              }
               aria-pressed={recurrence.calendarFrequency === 'monthly'}
               onClick={() => patchRecurrence({ calendarFrequency: 'monthly' })}
             >
@@ -246,10 +251,14 @@ export function TemporalCreateCalendarRecurrenceFields({
             <button
               type="button"
               className={
-                recurrence.calendarFrequency === 'monthly-ordinal' ? 'is-active' : ''
+                recurrence.calendarFrequency === 'monthly-ordinal'
+                  ? 'is-active'
+                  : ''
               }
               aria-pressed={recurrence.calendarFrequency === 'monthly-ordinal'}
-              onClick={() => patchRecurrence({ calendarFrequency: 'monthly-ordinal' })}
+              onClick={() =>
+                patchRecurrence({ calendarFrequency: 'monthly-ordinal' })
+              }
             >
               {italian ? 'Per posizione' : 'By position'}
             </button>
@@ -258,14 +267,20 @@ export function TemporalCreateCalendarRecurrenceFields({
           {recurrence.calendarFrequency === 'monthly-ordinal' ? (
             <div className="temporal-create-repeat__ordinal">
               <select
-                aria-label={italian ? 'Posizione nel mese' : 'Position in month'}
+                aria-label={
+                  italian ? 'Posizione nel mese' : 'Position in month'
+                }
                 value={recurrence.calendarOrdinal}
                 onChange={(event) =>
-                  patchRecurrence({ calendarOrdinal: Number(event.currentTarget.value) })
+                  patchRecurrence({
+                    calendarOrdinal: Number(event.currentTarget.value),
+                  })
                 }
               >
                 {ORDINALS.map((ordinal) => (
-                  <option key={ordinal} value={ordinal}>{ordinalLabel(ordinal)}</option>
+                  <option key={ordinal} value={ordinal}>
+                    {ordinalLabel(ordinal)}
+                  </option>
                 ))}
               </select>
               <select
@@ -273,12 +288,15 @@ export function TemporalCreateCalendarRecurrenceFields({
                 value={recurrence.calendarOrdinalWeekday}
                 onChange={(event) =>
                   patchRecurrence({
-                    calendarOrdinalWeekday: event.currentTarget.value as TemporalCreateWeekday,
+                    calendarOrdinalWeekday: event.currentTarget
+                      .value as TemporalCreateWeekday,
                   })
                 }
               >
                 {temporalCreateWeekdays().map((weekday) => (
-                  <option key={weekday} value={weekday}>{weekdayLongLabel(weekday)}</option>
+                  <option key={weekday} value={weekday}>
+                    {weekdayLongLabel(weekday)}
+                  </option>
                 ))}
               </select>
               {renderError('eventRecurrence.calendarOrdinal')}
@@ -289,7 +307,9 @@ export function TemporalCreateCalendarRecurrenceFields({
 
       {frequency === 'yearly' ? (
         <p className="temporal-create-repeat__anchor-note">
-          {italian ? `Si ripete il ${anchorDayMonth}.` : `Repeats on ${anchorDayMonth}.`}
+          {italian
+            ? `Si ripete il ${anchorDayMonth}.`
+            : `Repeats on ${anchorDayMonth}.`}
         </p>
       ) : null}
 
@@ -319,7 +339,9 @@ export function TemporalCreateCalendarRecurrenceFields({
                 value={recurrence.untilDate || fields.date}
                 min={fields.date}
                 locale={locale}
-                onChange={(untilDate) => patchRecurrence({ untilDate, endMode: 'until-date' })}
+                onChange={(untilDate) =>
+                  patchRecurrence({ untilDate, endMode: 'until-date' })
+                }
               />
               {renderError('eventRecurrence.untilDate')}
             </div>
@@ -337,7 +359,9 @@ export function TemporalCreateCalendarRecurrenceFields({
                 type="number"
                 min="1"
                 max="999"
-                aria-label={italian ? 'Numero di occorrenze' : 'Number of occurrences'}
+                aria-label={
+                  italian ? 'Numero di occorrenze' : 'Number of occurrences'
+                }
                 value={recurrence.count}
                 onFocus={() => setEndMode('count')}
                 onChange={(event) =>

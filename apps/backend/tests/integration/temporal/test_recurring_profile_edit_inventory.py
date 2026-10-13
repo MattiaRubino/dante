@@ -10,8 +10,8 @@ from uuid import uuid4
 import pytest
 from fastapi import Response
 from sqlalchemy import text
-from tests.integration.temporal.test_schedule_place import _context
 from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
+from tests.integration.temporal.test_schedule_place import _context
 
 from dante.modules.temporal.event import TemporalEventApplication
 from dante.modules.temporal.life_area import LifeAreaApplication
@@ -64,11 +64,13 @@ async def test_inventory_reuses_self_scope_and_returns_skipped_and_extra_occurre
     inventory = OccurrenceEditInventoryApplication(runtime.session_factory)
     schedules = TemporalScheduleApplication(runtime.session_factory)
     try:
-        area = (await areas.create(
-            self_person_ref=alice,
-            operation_id="m1:area",
-            name="Personale",
-        )).area
+        area = (
+            await areas.create(
+                self_person_ref=alice,
+                operation_id="m1:area",
+                name="Personale",
+            )
+        ).area
         routine = await routines.create(
             self_person_ref=alice,
             operation_id="m1:routine",
@@ -128,23 +130,28 @@ async def test_inventory_reuses_self_scope_and_returns_skipped_and_extra_occurre
         assert next(
             row for row in snapshot.occurrences if row.occurrence_ref == skipped.occurrence_ref
         ).skipped
-        assert next(
-            row
-            for row in snapshot.occurrences
-            if row.occurrence_ref == extra.occurrence.occurrence_ref
-        ).origin_code == "explicit_extra"
+        assert (
+            next(
+                row
+                for row in snapshot.occurrences
+                if row.occurrence_ref == extra.occurrence.occurrence_ref
+            ).origin_code
+            == "explicit_extra"
+        )
 
         with pytest.raises(OccurrenceSourceNotFoundError):
             await inventory.read(self_person_ref=bob, selected_occurrence_ref=selected_ref)
         with pytest.raises(OccurrenceSourceNotFoundError):
             await inventory.read(self_person_ref=alice, selected_occurrence_ref=uuid4())
 
-        event = (await events.create_event(
-            self_person_ref=alice,
-            operation_id="m1:event",
-            title="Evento ricorrente",
-            life_area_ref=area.life_area_ref,
-        )).event
+        event = (
+            await events.create_event(
+                self_person_ref=alice,
+                operation_id="m1:event",
+                title="Evento ricorrente",
+                life_area_ref=area.life_area_ref,
+            )
+        ).event
         await recurrences.replace(
             owner="event",
             self_person_ref=alice,
@@ -171,9 +178,9 @@ async def test_inventory_reuses_self_scope_and_returns_skipped_and_extra_occurre
         assert {row.occurrence_ref for row in event_snapshot.occurrences} == {
             row.occurrence_ref for row in event_checkpoint.occurrences
         }
-        assert not {row.occurrence_ref for row in event_snapshot.occurrences}.intersection({
-            row.occurrence_ref for row in snapshot.occurrences
-        })
+        assert not {row.occurrence_ref for row in event_snapshot.occurrences}.intersection(
+            {row.occurrence_ref for row in snapshot.occurrences}
+        )
         with pytest.raises(OccurrenceSourceNotFoundError):
             await inventory.read(
                 self_person_ref=bob,
@@ -204,7 +211,9 @@ async def test_inventory_uses_guarded_function_without_runtime_table_grants(
     runtime = create_database_runtime(migrated_database.runtime_settings())
     try:
         async with runtime.session_factory() as session, session.begin():
-            row = (await session.execute(text("""
+            row = (
+                await session.execute(
+                    text("""
                 SELECT
                   has_function_privilege(
                     'dante_runtime',
@@ -214,7 +223,9 @@ async def test_inventory_uses_guarded_function_without_runtime_table_grants(
                   has_table_privilege(
                     'dante_runtime','dante.occurrence_generation','SELECT'
                   ) AS can_scan_table
-            """))).one()
+            """)
+                )
+            ).one()
             assert row.can_read is True
             assert row.can_scan_table is False
     finally:

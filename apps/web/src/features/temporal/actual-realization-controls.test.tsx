@@ -92,10 +92,10 @@ describe('Actual realization controls', () => {
     expect(onRecorded).toHaveBeenCalledTimes(1);
   });
 
-
   it('records the exact completed Session basis from the review card', async () => {
     const sessionRef = '01991f2a-1234-7abc-8def-1234567890af';
-    const sessionTimingMaterialStateRef = '01991f2a-1234-7abc-8def-1234567890b0';
+    const sessionTimingMaterialStateRef =
+      '01991f2a-1234-7abc-8def-1234567890b0';
     const bodies: Array<Record<string, unknown>> = [];
     const fetchFn = vi.fn<Fetch>(async (input, init) => {
       if (String(input).endsWith('/api/v1/auth/session')) {
@@ -103,13 +103,19 @@ describe('Actual realization controls', () => {
       }
       if (init?.method === 'POST') {
         bodies.push(JSON.parse(String(init.body)) as Record<string, unknown>);
-        return Response.json({
-          ...actual(STATE_1, true),
-          session_bases: [{
-            session_ref: sessionRef,
-            session_timing_material_state_ref: sessionTimingMaterialStateRef,
-          }],
-        }, { status: 201 });
+        return Response.json(
+          {
+            ...actual(STATE_1, true),
+            session_bases: [
+              {
+                session_ref: sessionRef,
+                session_timing_material_state_ref:
+                  sessionTimingMaterialStateRef,
+              },
+            ],
+          },
+          { status: 201 },
+        );
       }
       return notFound();
     });
@@ -126,10 +132,12 @@ describe('Actual realization controls', () => {
     await screen.findByText('Stato reale: sconosciuto');
     fireEvent.click(screen.getByText('Segna avvenuto'));
     await screen.findByText('Stato reale: avvenuto');
-    expect(bodies[0]?.session_bases).toEqual([{
-      session_ref: sessionRef,
-      session_timing_material_state_ref: sessionTimingMaterialStateRef,
-    }]);
+    expect(bodies[0]?.session_bases).toEqual([
+      {
+        session_ref: sessionRef,
+        session_timing_material_state_ref: sessionTimingMaterialStateRef,
+      },
+    ]);
   });
 
   it('uses the current MaterialState as compare-and-set input for a later realization', async () => {

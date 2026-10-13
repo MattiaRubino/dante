@@ -1,7 +1,8 @@
 import { createWebFetch } from '../../platform/api/web-fetch';
 
 const ENDPOINT = '/api/v1/temporal/plans';
-const UUID_V7 = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID_V7 =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export type PlanStep = Readonly<{
   stepRef: string;
@@ -39,17 +40,25 @@ function uuid(value: unknown): string {
 
 function step(value: unknown): PlanStep {
   const row = record(value);
-  if (typeof row.title !== 'string' || !row.title.trim() ||
-      typeof row.position !== 'number' || !Number.isInteger(row.position) ||
-      row.position < 0 || row.position >= 1000 ||
-      (row.divisible !== null && typeof row.divisible !== 'boolean') ||
-      (row.merge_compatible !== null && typeof row.merge_compatible !== 'boolean') ||
-      (row.max_planned_slices !== null &&
-        (typeof row.max_planned_slices !== 'number' ||
-          !Number.isInteger(row.max_planned_slices) || row.max_planned_slices < 1 ||
-          row.max_planned_slices > 100)) ||
-      (row.execution_strength_code !== null && row.execution_strength_code !== 'hard' &&
-        row.execution_strength_code !== 'soft')) {
+  if (
+    typeof row.title !== 'string' ||
+    !row.title.trim() ||
+    typeof row.position !== 'number' ||
+    !Number.isInteger(row.position) ||
+    row.position < 0 ||
+    row.position >= 1000 ||
+    (row.divisible !== null && typeof row.divisible !== 'boolean') ||
+    (row.merge_compatible !== null &&
+      typeof row.merge_compatible !== 'boolean') ||
+    (row.max_planned_slices !== null &&
+      (typeof row.max_planned_slices !== 'number' ||
+        !Number.isInteger(row.max_planned_slices) ||
+        row.max_planned_slices < 1 ||
+        row.max_planned_slices > 100)) ||
+    (row.execution_strength_code !== null &&
+      row.execution_strength_code !== 'hard' &&
+      row.execution_strength_code !== 'soft')
+  ) {
     throw new Error('Step del Plan non valido.');
   }
   return Object.freeze({
@@ -60,15 +69,21 @@ function step(value: unknown): PlanStep {
     divisible: row.divisible as boolean | null,
     maxPlannedSlices: row.max_planned_slices as number | null,
     mergeCompatible: row.merge_compatible as boolean | null,
-    executionStrengthCode: row.execution_strength_code as 'hard' | 'soft' | null,
+    executionStrengthCode: row.execution_strength_code as
+      'hard' | 'soft' | null,
   });
 }
 
 function plan(value: unknown): PlanWork {
   const row = record(value);
-  if (typeof row.title !== 'string' || !row.title.trim() ||
-      typeof row.created_at !== 'string' || !Number.isFinite(Date.parse(row.created_at)) ||
-      !Array.isArray(row.steps) || typeof row.replayed !== 'boolean') {
+  if (
+    typeof row.title !== 'string' ||
+    !row.title.trim() ||
+    typeof row.created_at !== 'string' ||
+    !Number.isFinite(Date.parse(row.created_at)) ||
+    !Array.isArray(row.steps) ||
+    typeof row.replayed !== 'boolean'
+  ) {
     throw new Error('Struttura Plan non valida.');
   }
   const steps = row.steps.map(step);
@@ -88,7 +103,8 @@ function plan(value: unknown): PlanWork {
 async function errorMessage(response: Response): Promise<string> {
   try {
     const payload = record(await response.json());
-    if (typeof payload.detail === 'string' && payload.detail.trim()) return payload.detail;
+    if (typeof payload.detail === 'string' && payload.detail.trim())
+      return payload.detail;
   } catch {
     // Preserve the HTTP status when a server returns an unreadable ProblemDetails.
   }
@@ -103,7 +119,9 @@ export function newPlanStepRef(): string {
   }
   bytes[6] = 0x70 | (bytes[6]! & 0x0f);
   bytes[8] = 0x80 | (bytes[8]! & 0x3f);
-  const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+  const hex = Array.from(bytes, (byte) =>
+    byte.toString(16).padStart(2, '0'),
+  ).join('');
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 
@@ -116,15 +134,20 @@ export function createRemotePlanWorkDataSource(
     const response = await webFetch('/api/v1/auth/session');
     if (!response.ok) throw new Error('Sessione non disponibile.');
     const payload = record(await response.json());
-    if (payload.authenticated !== true || typeof payload.csrf_token !== 'string' ||
-        !payload.csrf_token) {
+    if (
+      payload.authenticated !== true ||
+      typeof payload.csrf_token !== 'string' ||
+      !payload.csrf_token
+    ) {
       throw new Error('Accedi prima di modificare un Plan.');
     }
     return payload.csrf_token;
   }
 
   async function mutation(
-    endpoint: string, method: 'POST' | 'PUT', body: Record<string, unknown>,
+    endpoint: string,
+    method: 'POST' | 'PUT',
+    body: Record<string, unknown>,
   ): Promise<PlanWork> {
     const response = await webFetch(endpoint, {
       method,
@@ -147,26 +170,36 @@ export function createRemotePlanWorkDataSource(
       return Object.freeze(payload.map(plan));
     },
     async create(title: string, operationId: string): Promise<PlanWork> {
-      return mutation(ENDPOINT, 'POST', { title: title.trim(), operation_id: operationId });
+      return mutation(ENDPOINT, 'POST', {
+        title: title.trim(),
+        operation_id: operationId,
+      });
     },
     async replace(
-      current: PlanWork, title: string, steps: readonly Omit<PlanStep, 'position'>[],
+      current: PlanWork,
+      title: string,
+      steps: readonly Omit<PlanStep, 'position'>[],
       operationId: string,
     ): Promise<PlanWork> {
-      return mutation(`${ENDPOINT}/${encodeURIComponent(current.planRef)}`, 'PUT', {
-        operation_id: operationId,
-        expected_state_ref: current.stateRef,
-        title: title.trim(),
-        steps: steps.map((item) => ({
-          step_ref: uuid(item.stepRef),
-          title: item.title.trim(),
-          activity_ref: item.activityRef === null ? null : uuid(item.activityRef),
-          divisible: item.divisible,
-          max_planned_slices: item.maxPlannedSlices,
-          merge_compatible: item.mergeCompatible,
-          execution_strength_code: item.executionStrengthCode,
-        })),
-      });
+      return mutation(
+        `${ENDPOINT}/${encodeURIComponent(current.planRef)}`,
+        'PUT',
+        {
+          operation_id: operationId,
+          expected_state_ref: current.stateRef,
+          title: title.trim(),
+          steps: steps.map((item) => ({
+            step_ref: uuid(item.stepRef),
+            title: item.title.trim(),
+            activity_ref:
+              item.activityRef === null ? null : uuid(item.activityRef),
+            divisible: item.divisible,
+            max_planned_slices: item.maxPlannedSlices,
+            merge_compatible: item.mergeCompatible,
+            execution_strength_code: item.executionStrengthCode,
+          })),
+        },
+      );
     },
   });
 }

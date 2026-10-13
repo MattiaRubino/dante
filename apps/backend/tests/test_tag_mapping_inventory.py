@@ -24,9 +24,7 @@ def test_b05_tag_tables_have_exact_dictionary_structure_and_no_owner_relationshi
     mapped = {table.name: table for table in MAPPED_TABLES}
     # The registry evolves; assert exact coverage of the cumulative Dictionary,
     # then retain each Tag-specific column, constraint and index proof.
-    assert set(mapped) == {
-        path.stem for path in _ROOT.glob("*.json")
-    }
+    assert set(mapped) == {path.stem for path in _ROOT.glob("*.json")}
     for name in _TAG_TABLES:
         entry = json.loads((_ROOT / f"{name}.json").read_text(encoding="utf-8"))
         table = mapped[name]

@@ -16,8 +16,7 @@ depends_on: str | Sequence[str] | None = None
 
 _QUEUE_SIGNATURE = "dante.list_self_resolution_queue(uuid)"
 _AUTO_SIGNATURE = (
-    "dante.apply_self_activity_outcome_review_confirmation("
-    "uuid,text,text,uuid,uuid,uuid,uuid)"
+    "dante.apply_self_activity_outcome_review_confirmation(uuid,text,text,uuid,uuid,uuid,uuid)"
 )
 
 
@@ -171,10 +170,7 @@ AS $function$
 $function$;
 """)
     _sql(f"ALTER FUNCTION {_QUEUE_SIGNATURE} OWNER TO dante_owner")
-    _sql(
-        f"REVOKE ALL ON FUNCTION {_QUEUE_SIGNATURE} "
-        "FROM PUBLIC,dante_runtime,dante_migrator"
-    )
+    _sql(f"REVOKE ALL ON FUNCTION {_QUEUE_SIGNATURE} FROM PUBLIC,dante_runtime,dante_migrator")
     _sql(f"GRANT EXECUTE ON FUNCTION {_QUEUE_SIGNATURE} TO dante_runtime")
 
     # B10 remains the sole owner of Confirmation creation. This bounded helper
@@ -237,10 +233,7 @@ END;
 $function$;
 """)
     _sql(f"ALTER FUNCTION {_AUTO_SIGNATURE} OWNER TO dante_owner")
-    _sql(
-        f"REVOKE ALL ON FUNCTION {_AUTO_SIGNATURE} "
-        "FROM PUBLIC,dante_runtime,dante_migrator"
-    )
+    _sql(f"REVOKE ALL ON FUNCTION {_AUTO_SIGNATURE} FROM PUBLIC,dante_runtime,dante_migrator")
     _sql(f"GRANT EXECUTE ON FUNCTION {_AUTO_SIGNATURE} TO dante_runtime")
 
 

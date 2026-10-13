@@ -5,7 +5,9 @@ import { offsetTimelineTimeMapper } from './model/timeline-all-day-layout';
 import { createTimelineTimeMapper } from './model/timeline-density';
 import { computeTimelineEventLayouts } from './model/timeline-layout';
 import type {
-  TimelineEvent, TimelineEventLayout, TimelineGroup,
+  TimelineEvent,
+  TimelineEventLayout,
+  TimelineGroup,
 } from './model/timeline-types';
 import type { TimelineRenderedDay } from './timeline-day-stream';
 
@@ -52,7 +54,9 @@ function onDay(instant: string, dateKey: string, zone: string): number {
 }
 
 function colorSegments(
-  start: number, end: number, ranges: readonly Span[],
+  start: number,
+  end: number,
+  ranges: readonly Span[],
 ): string {
   const length = Math.max(1, end - start);
   const boundaries = new Set([start, end]);
@@ -67,11 +71,17 @@ function colorSegments(
     const to = edges[i + 1] ?? end;
     if (to <= from) continue;
     const midpoint = (from + to) / 2;
-    const covering = ranges.filter((r) => r.from <= midpoint && midpoint < r.until);
-    const tone = covering.length === 0 ? UNTRACKED
-      : covering.every((r) => r.paused) ? PAUSED : ACTIVE;
-    const p1 = ((from - start) / length * 100).toFixed(3);
-    const p2 = ((to - start) / length * 100).toFixed(3);
+    const covering = ranges.filter(
+      (r) => r.from <= midpoint && midpoint < r.until,
+    );
+    const tone =
+      covering.length === 0
+        ? UNTRACKED
+        : covering.every((r) => r.paused)
+          ? PAUSED
+          : ACTIVE;
+    const p1 = (((from - start) / length) * 100).toFixed(3);
+    const p2 = (((to - start) / length) * 100).toFixed(3);
     stops.push(`${tone} ${p1}%`, `${tone} ${p2}%`);
   }
   return `linear-gradient(to bottom, ${stops.join(', ') || `${UNTRACKED} 0%, ${UNTRACKED} 100%`})`;
@@ -85,16 +95,23 @@ function project(
 ): Projected | null {
   if (slices.length === 0) return null;
   const dayFrom = Temporal.PlainDate.from(dateKey)
-    .toZonedDateTime({ timeZone: zone, plainTime: '00:00' }).toInstant().epochMilliseconds;
-  const dayUntil = Temporal.PlainDate.from(dateKey).add({ days: 1 })
-    .toZonedDateTime({ timeZone: zone, plainTime: '00:00' }).toInstant().epochMilliseconds;
+    .toZonedDateTime({ timeZone: zone, plainTime: '00:00' })
+    .toInstant().epochMilliseconds;
+  const dayUntil = Temporal.PlainDate.from(dateKey)
+    .add({ days: 1 })
+    .toZonedDateTime({ timeZone: zone, plainTime: '00:00' })
+    .toInstant().epochMilliseconds;
   // Never bridge two executions on unrelated calendar days with a fake
   // all-day interval merely because they share the same Activity identity.
   const relevant = slices.filter((slice) => {
     const start = Date.parse(slice.started_at);
     const end = slice.ended_at ? Date.parse(slice.ended_at) : clockAt;
-    return Number.isFinite(start) && Number.isFinite(end) &&
-      end > dayFrom && start < dayUntil;
+    return (
+      Number.isFinite(start) &&
+      Number.isFinite(end) &&
+      end > dayFrom &&
+      start < dayUntil
+    );
   });
   if (relevant.length === 0) return null;
   const mains = relevant.filter((slice) => slice.planned_schedule_ref === null);
@@ -105,7 +122,8 @@ function project(
   for (const slice of chosen) {
     const first = Date.parse(slice.started_at);
     const last = slice.ended_at ? Date.parse(slice.ended_at) : clockAt;
-    if (!Number.isFinite(first) || !Number.isFinite(last) || last <= first) continue;
+    if (!Number.isFinite(first) || !Number.isFinite(last) || last <= first)
+      continue;
     const pauses = [...slice.pause_ranges]
       .map((p) => ({
         from: bounded(Date.parse(p.started_at), first, last),
@@ -115,7 +133,8 @@ function project(
       .sort((a, b) => a.from - b.from);
     let cursor = first;
     for (const pause of pauses) {
-      if (pause.from > cursor) spans.push({ from: cursor, until: pause.from, paused: false });
+      if (pause.from > cursor)
+        spans.push({ from: cursor, until: pause.from, paused: false });
       spans.push({ from: pause.from, until: pause.until, paused: true });
       cursor = Math.max(cursor, pause.until);
     }
@@ -129,8 +148,12 @@ function project(
   const visibleEnd = Math.min(dayUntil, endAt);
   const fill = colorSegments(visibleStart, visibleEnd, spans);
   const running = chosen.some((r) => r.ended_at === null);
-  const paused = running && chosen.every((r) =>
-    r.ended_at !== null || r.pause_ranges.some((p) => p.ended_at === null));
+  const paused =
+    running &&
+    chosen.every(
+      (r) =>
+        r.ended_at !== null || r.pause_ranges.some((p) => p.ended_at === null),
+    );
   const startedAt = new Date(startAt).toISOString();
   const endedAt = running ? null : new Date(endAt).toISOString();
   // The card label and ruler show whole minutes. Snap its painted boundary to
@@ -142,7 +165,9 @@ function project(
     endMinute: Math.max(first + 1 / 60, last),
     reality: {
       state: !running ? 'ended' : paused ? 'paused' : 'running',
-      startedAt, endedAt, fill,
+      startedAt,
+      endedAt,
+      fill,
       sessionRefs: chosen.map((slice) => slice.session_ref),
       actualLabel: `${labelAt(startedAt, zone)}–${endedAt ? labelAt(endedAt, zone) : 'ora'}`,
     },
@@ -187,14 +212,20 @@ export function applyTimelineSessionReality(
       const intervals = activityEvents.get(basis.activityRef) ?? [];
       // A real Session is attached to one visible interval, including when
       // it starts early or ends before the planned interval begins.
-      const relevant = intervals.length === 1 ? activity : activity.filter((slice) => {
-        if (slice.planned_schedule_ref === basis.scheduleRef) return true;
-        const minute = onDay(slice.started_at, day.dateKey, zone);
-        const nearest = [...intervals].sort((a, b) =>
-          Math.abs(a.startMinute - minute) - Math.abs(b.startMinute - minute) ||
-          a.id.localeCompare(b.id))[0];
-        return nearest?.id === event.id;
-      });
+      const relevant =
+        intervals.length === 1
+          ? activity
+          : activity.filter((slice) => {
+              if (slice.planned_schedule_ref === basis.scheduleRef) return true;
+              const minute = onDay(slice.started_at, day.dateKey, zone);
+              const nearest = [...intervals].sort(
+                (a, b) =>
+                  Math.abs(a.startMinute - minute) -
+                    Math.abs(b.startMinute - minute) ||
+                  a.id.localeCompare(b.id),
+              )[0];
+              return nearest?.id === event.id;
+            });
       const projected = project(relevant, day.dateKey, zone, now);
       if (!projected) return event;
       overlays.set(event.id, projected);
@@ -227,7 +258,13 @@ export function applyTimelineSessionReality(
         sessionReality: reality.reality,
       };
     });
-    const rendered = { ...day, mapper, layouts, offsetTop, height: mapper.height };
+    const rendered = {
+      ...day,
+      mapper,
+      layouts,
+      offsetTop,
+      height: mapper.height,
+    };
     offsetTop += rendered.height;
     return rendered;
   });

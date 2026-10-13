@@ -3,7 +3,14 @@
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKeyConstraint, Index, Text, UniqueConstraint
+from sqlalchemy import (
+    CheckConstraint,
+    DateTime,
+    ForeignKeyConstraint,
+    Index,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from dante.platform.database.metadata import Base
@@ -16,20 +23,31 @@ class ScheduleMoveProposalRow(Base):
     __tablename__ = "schedule_move_proposal"
     __table_args__ = (
         ForeignKeyConstraint(
-            ["self_person_ref"], ["dante.person.person_ref"],
-            name="fk_schedule_move_proposal_self_person", match="SIMPLE",
-            onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False,
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
+            name="fk_schedule_move_proposal_self_person",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
         ),
         ForeignKeyConstraint(
-            ["schedule_ref"], ["dante.schedule.schedule_ref"],
-            name="fk_schedule_move_proposal_schedule", match="SIMPLE",
-            onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False,
+            ["schedule_ref"],
+            ["dante.schedule.schedule_ref"],
+            name="fk_schedule_move_proposal_schedule",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
         ),
         ForeignKeyConstraint(
             ["expected_placement_material_state_ref"],
             ["dante.schedule_placement_state.material_state_ref"],
-            name="fk_schedule_move_proposal_expected_placement", match="SIMPLE",
-            onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False,
+            name="fk_schedule_move_proposal_expected_placement",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
         ),
         ForeignKeyConstraint(
             ["schedule_ref", "movement_policy_material_state_ref"],
@@ -37,8 +55,11 @@ class ScheduleMoveProposalRow(Base):
                 "dante.schedule_movement_policy_state.schedule_ref",
                 "dante.schedule_movement_policy_state.material_state_ref",
             ],
-            name="fk_schedule_move_proposal_policy_state", match="SIMPLE",
-            onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False,
+            name="fk_schedule_move_proposal_policy_state",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
         ),
         CheckConstraint("uuid_extract_version(proposal_ref) IS NOT DISTINCT FROM 7", name="uuidv7"),
         CheckConstraint(
@@ -65,20 +86,31 @@ class ScheduleMoveRequestOperationRow(Base):
     __tablename__ = "schedule_move_request_operation"
     __table_args__ = (
         ForeignKeyConstraint(
-            ["self_person_ref"], ["dante.person.person_ref"],
-            name="fk_schedule_move_request_operation_self_person", match="SIMPLE",
-            onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False,
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
+            name="fk_schedule_move_request_operation_self_person",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
         ),
         ForeignKeyConstraint(
-            ["schedule_ref"], ["dante.schedule.schedule_ref"],
-            name="fk_schedule_move_request_operation_schedule", match="SIMPLE",
-            onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False,
+            ["schedule_ref"],
+            ["dante.schedule.schedule_ref"],
+            name="fk_schedule_move_request_operation_schedule",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
         ),
         ForeignKeyConstraint(
             ["expected_placement_material_state_ref"],
             ["dante.schedule_placement_state.material_state_ref"],
-            name="fk_schedule_move_request_operation_expected_placement", match="SIMPLE",
-            onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False,
+            name="fk_schedule_move_request_operation_expected_placement",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
         ),
         ForeignKeyConstraint(
             ["schedule_ref", "movement_policy_material_state_ref"],
@@ -86,19 +118,29 @@ class ScheduleMoveRequestOperationRow(Base):
                 "dante.schedule_movement_policy_state.schedule_ref",
                 "dante.schedule_movement_policy_state.material_state_ref",
             ],
-            name="fk_schedule_move_request_operation_policy_state", match="SIMPLE",
-            onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False,
+            name="fk_schedule_move_request_operation_policy_state",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
         ),
         ForeignKeyConstraint(
-            ["proposal_ref"], ["dante.schedule_move_proposal.proposal_ref"],
-            name="fk_schedule_move_request_operation_proposal", match="SIMPLE",
-            onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False,
+            ["proposal_ref"],
+            ["dante.schedule_move_proposal.proposal_ref"],
+            name="fk_schedule_move_request_operation_proposal",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
         ),
         ForeignKeyConstraint(
             ["resulting_placement_material_state_ref"],
             ["dante.schedule_placement_state.material_state_ref"],
-            name="fk_schedule_move_request_operation_resulting_placement", match="SIMPLE",
-            onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False,
+            name="fk_schedule_move_request_operation_resulting_placement",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
         ),
         UniqueConstraint("proposal_ref", name="uq_schedule_move_request_operation_proposal_ref"),
         UniqueConstraint(
@@ -132,7 +174,9 @@ class ScheduleMoveRequestOperationRow(Base):
     ends_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     result_kind: Mapped[str] = mapped_column(Text, nullable=False)
     proposal_ref: Mapped[UUID | None] = mapped_column(nullable=True)
-    resulting_placement_material_state_ref: Mapped[MaterialStateRef | None] = mapped_column(nullable=True)
+    resulting_placement_material_state_ref: Mapped[MaterialStateRef | None] = mapped_column(
+        nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
 
@@ -142,25 +186,40 @@ class ScheduleMoveAcceptOperationRow(Base):
     __tablename__ = "schedule_move_accept_operation"
     __table_args__ = (
         ForeignKeyConstraint(
-            ["self_person_ref"], ["dante.person.person_ref"],
-            name="fk_schedule_move_accept_operation_self_person", match="SIMPLE",
-            onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False,
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
+            name="fk_schedule_move_accept_operation_self_person",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
         ),
         ForeignKeyConstraint(
-            ["proposal_ref"], ["dante.schedule_move_proposal.proposal_ref"],
-            name="fk_schedule_move_accept_operation_proposal", match="SIMPLE",
-            onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False,
+            ["proposal_ref"],
+            ["dante.schedule_move_proposal.proposal_ref"],
+            name="fk_schedule_move_accept_operation_proposal",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
         ),
         ForeignKeyConstraint(
-            ["schedule_ref"], ["dante.schedule.schedule_ref"],
-            name="fk_schedule_move_accept_operation_schedule", match="SIMPLE",
-            onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False,
+            ["schedule_ref"],
+            ["dante.schedule.schedule_ref"],
+            name="fk_schedule_move_accept_operation_schedule",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
         ),
         ForeignKeyConstraint(
             ["resulting_placement_material_state_ref"],
             ["dante.schedule_placement_state.material_state_ref"],
-            name="fk_schedule_move_accept_operation_resulting_placement", match="SIMPLE",
-            onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False,
+            name="fk_schedule_move_accept_operation_resulting_placement",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
         ),
         UniqueConstraint("proposal_ref", name="uq_schedule_move_accept_operation_proposal_ref"),
         UniqueConstraint(

@@ -34,19 +34,28 @@ def test_b10_d_reconciliation_write_openapi_matches_runtime_http_contract() -> N
         "422",
         "500",
     }
-    assert _response_schema_ref(
-        cast(dict[str, Any], responses["200"]),
-        "application/json",
-    ) == "#/components/schemas/ReconciliationResponse"
-    assert _response_schema_ref(
-        cast(dict[str, Any], responses["201"]),
-        "application/json",
-    ) == "#/components/schemas/ReconciliationResponse"
+    assert (
+        _response_schema_ref(
+            cast(dict[str, Any], responses["200"]),
+            "application/json",
+        )
+        == "#/components/schemas/ReconciliationResponse"
+    )
+    assert (
+        _response_schema_ref(
+            cast(dict[str, Any], responses["201"]),
+            "application/json",
+        )
+        == "#/components/schemas/ReconciliationResponse"
+    )
     for status in ("400", "401", "403", "404", "409", "422", "500"):
-        assert _response_schema_ref(
-            cast(dict[str, Any], responses[status]),
-            "application/problem+json",
-        ) == "#/components/schemas/ProblemDetails"
+        assert (
+            _response_schema_ref(
+                cast(dict[str, Any], responses[status]),
+                "application/problem+json",
+            )
+            == "#/components/schemas/ProblemDetails"
+        )
 
 
 def test_b10_d_reconciliation_read_operations_are_public_and_semantic() -> None:

@@ -256,16 +256,23 @@ export function TimelineSurface({
   }, [state.filters, state.groups, visibleGroups]);
   const [anchor, setAnchor] = useState<PlainDate>(() => initialDate);
   const [viewDate, setViewDate] = useState<PlainDate>(() => initialDate);
-  const sessionPanel = useSessionPanel(sessionPanelEnabled, timelineDateKey(viewDate), clockZone);
+  const sessionPanel = useSessionPanel(
+    sessionPanelEnabled,
+    timelineDateKey(viewDate),
+    clockZone,
+  );
   const sessionPresentation = useSessionPanelPresentation(sessionPanel);
   const [realityClock, setRealityClock] = useState(() => Date.now());
-  const openRealityCount = sessionPanel.snapshot?.visuals?.filter(
-    (visual) => visual.ended_at === null,
-  ).length ?? 0;
+  const openRealityCount =
+    sessionPanel.snapshot?.visuals?.filter((visual) => visual.ended_at === null)
+      .length ?? 0;
   useEffect(() => {
     if (openRealityCount === 0) return;
     // Geometry animates locally; no database polling or per-card requests.
-    const interval = window.setInterval(() => setRealityClock(Date.now()), 15_000);
+    const interval = window.setInterval(
+      () => setRealityClock(Date.now()),
+      15_000,
+    );
     return () => window.clearInterval(interval);
   }, [openRealityCount]);
   const [calendarOpen, setCalendarOpen] = useState(false);
@@ -374,27 +381,39 @@ export function TimelineSurface({
     [anchor, renderedDayInputs],
   );
   const renderedDays = useMemo(
-    () => applyTimelineSessionReality(
-      applyTimelineAllDayGeometry(
-        baseRenderedDays,
-        state.allDayItems,
-        presentationFilters,
+    () =>
+      applyTimelineSessionReality(
+        applyTimelineAllDayGeometry(
+          baseRenderedDays,
+          state.allDayItems,
+          presentationFilters,
+        ),
+        sessionPanel.snapshot?.visuals ?? [],
+        clockZone,
+        sessionPanel.snapshot?.evaluated_at ??
+          new Date(realityClock).toISOString(),
+        sessionPanel.snapshot
+          ? Date.parse(sessionPanel.snapshot.evaluated_at) +
+              Math.max(
+                0,
+                realityClock -
+                  (sessionPanel.snapshot.clientReceivedAt ?? realityClock),
+              )
+          : realityClock,
+        visibleGroups,
+        state.zoom,
+        state.expandedEventIds,
       ),
-      sessionPanel.snapshot?.visuals ?? [],
+    [
+      baseRenderedDays,
+      state.allDayItems,
+      presentationFilters,
+      sessionPanel.snapshot,
       clockZone,
-      sessionPanel.snapshot?.evaluated_at ?? new Date(realityClock).toISOString(),
-      sessionPanel.snapshot
-        ? Date.parse(sessionPanel.snapshot.evaluated_at) +
-          Math.max(0, realityClock - (sessionPanel.snapshot.clientReceivedAt ?? realityClock))
-        : realityClock,
+      realityClock,
       visibleGroups,
       state.zoom,
       state.expandedEventIds,
-    ),
-    [
-      baseRenderedDays, state.allDayItems, presentationFilters,
-      sessionPanel.snapshot, clockZone, realityClock, visibleGroups,
-      state.zoom, state.expandedEventIds,
     ],
   );
 

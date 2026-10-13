@@ -21,65 +21,99 @@ export function createRemotePlanReplanningSetupDataSource(
     }
     return row.csrf_token;
   }
-  async function write(endpoint: string, method: 'PUT' | 'POST' | 'PATCH', body: object) {
+  async function write(
+    endpoint: string,
+    method: 'PUT' | 'POST' | 'PATCH',
+    body: object,
+  ) {
     const response = await webFetch(endpoint, {
-      method, cache: 'no-store',
-      headers: { 'Content-Type': 'application/json', 'X-Dante-CSRF': await csrf() },
+      method,
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Dante-CSRF': await csrf(),
+      },
       body: JSON.stringify(body),
     });
     if (!response.ok) {
       const payload: unknown = await response.json().catch(() => null);
-      const detail = payload !== null && typeof payload === 'object' &&
-        'detail' in payload && typeof payload.detail === 'string'
-        ? payload.detail : `Configurazione non disponibile (HTTP ${response.status}).`;
+      const detail =
+        payload !== null &&
+        typeof payload === 'object' &&
+        'detail' in payload &&
+        typeof payload.detail === 'string'
+          ? payload.detail
+          : `Configurazione non disponibile (HTTP ${response.status}).`;
       throw new Error(detail);
     }
     invalidateTemporalPlanningRead();
     return record(await response.json());
   }
   return Object.freeze({
-    async requireConfirmation(scheduleRef: string, expectedPolicyStateRef: string | null) {
+    async requireConfirmation(
+      scheduleRef: string,
+      expectedPolicyStateRef: string | null,
+    ) {
       const row = await write(
         `/api/v1/temporal/schedules/${encodeURIComponent(scheduleRef)}/movement-policy`,
-        'PUT', {
+        'PUT',
+        {
           operation_id: crypto.randomUUID(),
           expected_material_state_ref: expectedPolicyStateRef,
           automatic_movement: 'automatic',
           acceptance_path: 'confirmation_required',
         },
       );
-      if (row.schedule_ref !== scheduleRef || typeof row.material_state_ref !== 'string') {
+      if (
+        row.schedule_ref !== scheduleRef ||
+        typeof row.material_state_ref !== 'string'
+      ) {
         throw new Error('Movement Policy salvata con una base inattesa.');
       }
     },
     async setEarliestStart(activityRef: string, startsAt: string) {
       const row = await write('/api/v1/temporal/constraints', 'POST', {
-        operation_id: crypto.randomUUID(), subject_ref: activityRef,
+        operation_id: crypto.randomUUID(),
+        subject_ref: activityRef,
         rule: {
-          family: 'boundary', boundary_kind: 'earliest_start',
-          constrained_facet: 'schedule.start', strength: 'hard',
-          temporal_form: 'absolute', boundary_at: startsAt,
+          family: 'boundary',
+          boundary_kind: 'earliest_start',
+          constrained_facet: 'schedule.start',
+          strength: 'hard',
+          temporal_form: 'absolute',
+          boundary_at: startsAt,
         },
       });
-      if (row.subject_ref !== activityRef || typeof row.constraint_ref !== 'string') {
+      if (
+        row.subject_ref !== activityRef ||
+        typeof row.constraint_ref !== 'string'
+      ) {
         throw new Error('Vincolo salvato con un’Attività inattesa.');
       }
     },
     async makeScheduleAbsolute(
-      scheduleRef: string, expectedPlacementStateRef: string,
-      startsAt: string, endsAt: string,
+      scheduleRef: string,
+      expectedPlacementStateRef: string,
+      startsAt: string,
+      endsAt: string,
     ) {
       const row = await write(
         `/api/v1/temporal/schedules/${encodeURIComponent(scheduleRef)}/placement`,
-        'PATCH', {
+        'PATCH',
+        {
           operation_id: crypto.randomUUID(),
           expected_placement_material_state_ref: expectedPlacementStateRef,
           placement: {
-            kind: 'absolute_interval', starts_at: startsAt, ends_at: endsAt,
+            kind: 'absolute_interval',
+            starts_at: startsAt,
+            ends_at: endsAt,
           },
         },
       );
-      if (row.schedule_ref !== scheduleRef || row.temporal_form !== 'absolute') {
+      if (
+        row.schedule_ref !== scheduleRef ||
+        row.temporal_form !== 'absolute'
+      ) {
         throw new Error('Schedule fissata con una base inattesa.');
       }
     },

@@ -127,10 +127,14 @@ async function createScheduledEvent(
     response = await responsePromise;
   } catch (error) {
     const alerts = await dialog.locator('[role="alert"]').allTextContents();
-    const start = await dialog.getByRole('button', { name: /^Data inizio:/ })
-      .getAttribute('data-temporal-date').catch(() => null);
-    const end = await dialog.getByRole('button', { name: /^Data fine:/ })
-      .getAttribute('data-temporal-date').catch(() => null);
+    const start = await dialog
+      .getByRole('button', { name: /^Data inizio:/ })
+      .getAttribute('data-temporal-date')
+      .catch(() => null);
+    const end = await dialog
+      .getByRole('button', { name: /^Data fine:/ })
+      .getAttribute('data-temporal-date')
+      .catch(() => null);
     throw new Error(
       `Event U2 POST never fired for "${title}". Start=${start}, end=${end}; validation/errors=${JSON.stringify(alerts)}`,
       { cause: error },
@@ -140,8 +144,11 @@ async function createScheduledEvent(
   await expect(dialog).toHaveCount(0);
   const accepted = (await response.json()) as Record<string, unknown>;
   const schedule = accepted.schedule as Record<string, unknown> | null;
-  if (!schedule || typeof schedule.schedule_ref !== 'string' ||
-      typeof schedule.placement_material_state_ref !== 'string') {
+  if (
+    !schedule ||
+    typeof schedule.schedule_ref !== 'string' ||
+    typeof schedule.placement_material_state_ref !== 'string'
+  ) {
     throw new Error('Event U2 authoring did not persist a canonical Schedule.');
   }
   // Require authoritative server readback before proceeding to placement
@@ -154,13 +161,18 @@ async function createScheduledEvent(
   const readback = (await freshResponse.json()) as {
     items?: Array<{ schedule_ref?: string }>;
   };
-  expect(readback.items?.some(
-    (item) => item.schedule_ref === schedule.schedule_ref,
-  )).toBe(true);
+  expect(
+    readback.items?.some((item) => item.schedule_ref === schedule.schedule_ref),
+  ).toBe(true);
   const placement = schedule.placement as Record<string, unknown>;
-  if (!placement || (placement.kind !== 'floating_local_interval' &&
-      placement.kind !== 'date_span')) {
-    throw new Error('Event U2 authoring returned an unexpected placement form.');
+  if (
+    !placement ||
+    (placement.kind !== 'floating_local_interval' &&
+      placement.kind !== 'date_span')
+  ) {
+    throw new Error(
+      'Event U2 authoring returned an unexpected placement form.',
+    );
   }
   // Adapt U2's nested canonical Schedule to the historical full-stack
   // projection comparison below. No reference or placement is invented.
@@ -168,7 +180,8 @@ async function createScheduledEvent(
     ...accepted,
     schedule_ref: schedule.schedule_ref,
     placement_material_state_ref: schedule.placement_material_state_ref,
-    temporal_form: placement.kind === 'date_span' ? 'date_span' : 'floating_local',
+    temporal_form:
+      placement.kind === 'date_span' ? 'date_span' : 'floating_local',
     ...(placement.kind === 'date_span'
       ? {
           start_date: placement.start_date,
@@ -178,8 +191,14 @@ async function createScheduledEvent(
   };
 }
 
-async function chooseDate(dialog: Locator, label: 'Data inizio' | 'Data fine', date: string) {
-  const trigger = dialog.getByRole('button', { name: new RegExp(`^${label}:`) });
+async function chooseDate(
+  dialog: Locator,
+  label: 'Data inizio' | 'Data fine',
+  date: string,
+) {
+  const trigger = dialog.getByRole('button', {
+    name: new RegExp(`^${label}:`),
+  });
   await trigger.click();
   const picker = dialog.getByRole('dialog', { name: label });
   const day = picker.locator(`button[data-temporal-date="${date}"]`);
@@ -216,7 +235,8 @@ test.describe('Timeline B03-E real-stack Event closure', () => {
       // A future date keeps the accepted Schedule outside the historical
       // past-authoring policies while testing the same real DB contracts.
       const today = Temporal.Now.plainDateISO('Europe/Rome')
-        .add({ days: 1 }).toString();
+        .add({ days: 1 })
+        .toString();
       await openHome(page, `/home?date=${today}`);
       const browserTag = testInfo.project.name;
 

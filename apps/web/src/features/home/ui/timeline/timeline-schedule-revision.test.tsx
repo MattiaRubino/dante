@@ -294,7 +294,9 @@ describe('B02-C governed Schedule revision from Timeline', () => {
     const reviseSchedule = vi.fn<TemporalScheduleDataSource['reviseSchedule']>(
       (request) => {
         if (request.placement.kind !== 'floating-local-interval') {
-          return Promise.reject(new Error('Expected floating-local placement.'));
+          return Promise.reject(
+            new Error('Expected floating-local placement.'),
+          );
         }
         return Promise.resolve({
           scheduleRef: request.scheduleRef,

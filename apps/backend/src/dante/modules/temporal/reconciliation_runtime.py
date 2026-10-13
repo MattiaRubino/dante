@@ -107,15 +107,22 @@ def _normalize_evidence(
     for item in evidence:
         if item.role_code not in _ROLES:
             raise ReconciliationInputError("Reconciliation evidence role_code is not supported.")
-        key = (UUID(str(item.confirmation_ref)), UUID(str(item.confirmation_attestation_material_state_ref)))
+        key = (
+            UUID(str(item.confirmation_ref)),
+            UUID(str(item.confirmation_attestation_material_state_ref)),
+        )
         if key in seen:
-            raise ReconciliationInputError("Reconciliation evidence contains duplicate Confirmation states.")
+            raise ReconciliationInputError(
+                "Reconciliation evidence contains duplicate Confirmation states."
+            )
         seen.add(key)
         selected += int(item.role_code == "selected")
         normalized.append(item)
 
     if action == "select" and selected != 1:
-        raise ReconciliationInputError("Reconciliation select requires exactly one selected evidence state.")
+        raise ReconciliationInputError(
+            "Reconciliation select requires exactly one selected evidence state."
+        )
     if action == "accept_multiple" and selected < 2:
         raise ReconciliationInputError(
             "Reconciliation accept_multiple requires at least two selected evidence states."
@@ -281,8 +288,7 @@ class ReconciliationApplication:
                 "action_code": normalized_action,
                 "confirmation_refs": [item.confirmation_ref for item in normalized_evidence],
                 "confirmation_state_refs": [
-                    item.confirmation_attestation_material_state_ref
-                    for item in normalized_evidence
+                    item.confirmation_attestation_material_state_ref for item in normalized_evidence
                 ],
                 "role_codes": [item.role_code for item in normalized_evidence],
             },
@@ -363,7 +369,11 @@ class ReconciliationApplication:
             raise ReconciliationCurrentConflictError(
                 "Reconciliation current state is stale."
             ) from exc
-        if name == "reconciliation_outcome_unavailable" or "Outcome unavailable" in message or "Outcome target unavailable" in message:
+        if (
+            name == "reconciliation_outcome_unavailable"
+            or "Outcome unavailable" in message
+            or "Outcome target unavailable" in message
+        ):
             raise ReconciliationNotFoundError("Reconciliation Outcome target unavailable.") from exc
         if name == "reconciliation_evidence_unavailable" or "evidence does not belong" in message:
             raise ReconciliationInputError(

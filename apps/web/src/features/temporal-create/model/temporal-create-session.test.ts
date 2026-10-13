@@ -90,7 +90,10 @@ describe('temporal create session', () => {
     const edited = updateTemporalCreateFields(session, {
       event: {
         ...session.draft.current.event,
-        agendaParts: Object.freeze([...session.draft.current.event.agendaParts, '']),
+        agendaParts: Object.freeze([
+          ...session.draft.current.event.agendaParts,
+          '',
+        ]),
       },
     });
 
@@ -197,7 +200,9 @@ describe('temporal create session', () => {
     expect(eventSession.draft.current.timeSemantics).toBe('unscheduled');
     expect(eventSession.draft.current.scheduling.constraintKind).toBe('none');
     expect(buildTemporalCreatePlacement(eventSession.draft.current)).toBeNull();
-    expect(validateTemporalCreateFields(eventSession.draft.current)).toEqual([]);
+    expect(validateTemporalCreateFields(eventSession.draft.current)).toEqual(
+      [],
+    );
   });
 
   it('drops Event-owned recurrence when switching to Activity without explicit Routine ownership', () => {
@@ -449,9 +454,9 @@ describe('temporal create session', () => {
         ),
       ).toEqual([]);
     }
-    expect(validateTemporalCreateFields(minimumMayExceedEstimatedEffort)).toEqual(
-      [],
-    );
+    expect(
+      validateTemporalCreateFields(minimumMayExceedEstimatedEffort),
+    ).toEqual([]);
   });
 
   it('validates all four CP6 Event recurrence families', () => {

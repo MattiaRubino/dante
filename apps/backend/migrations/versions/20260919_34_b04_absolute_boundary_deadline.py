@@ -6,7 +6,6 @@ Revises: 20260918_33
 
 from collections.abc import Sequence
 
-import sqlalchemy as sa
 from alembic import op
 
 revision: str = "20260919_34"
@@ -123,10 +122,7 @@ def upgrade() -> None:
         $function$
         """
     )
-    _sql(
-        "ALTER FUNCTION dante.enforce_temporal_constraint_rule_totality() "
-        f"OWNER TO {_OWNER}"
-    )
+    _sql(f"ALTER FUNCTION dante.enforce_temporal_constraint_rule_totality() OWNER TO {_OWNER}")
     _sql(
         "REVOKE ALL PRIVILEGES ON FUNCTION dante.enforce_temporal_constraint_rule_totality() "
         f"FROM PUBLIC, {_RUNTIME}, {_MIGRATOR}"

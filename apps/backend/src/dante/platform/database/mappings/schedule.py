@@ -56,10 +56,16 @@ class ActivityScheduleRoleRow(Base):
     __table_args__ = (
         Index(
             "uq_activity_schedule_role_owner_role_order",
-            "activity_ref", "role_code", "presentation_order", unique=True,
+            "activity_ref",
+            "role_code",
+            "presentation_order",
+            unique=True,
             postgresql_where=text("retired_at IS NULL"),
         ),
-        CheckConstraint("role_code IN ('envelope','planned','interval')", name=conv("ck_activity_schedule_role_ck_activity_schedule_role_role")),
+        CheckConstraint(
+            "role_code IN ('envelope','planned','interval')",
+            name=conv("ck_activity_schedule_role_ck_activity_schedule_role_role"),
+        ),
         CheckConstraint(
             "(role_code='envelope' AND presentation_order=0) OR "
             "(role_code IN ('planned','interval') AND presentation_order BETWEEN 1 AND 2147483647)",
@@ -71,11 +77,13 @@ class ActivityScheduleRoleRow(Base):
             name=conv("ck_activity_schedule_role_name"),
         ),
         ForeignKeyConstraint(
-            ["schedule_ref"], ["dante.schedule.schedule_ref"],
+            ["schedule_ref"],
+            ["dante.schedule.schedule_ref"],
             name="fk_activity_schedule_role_schedule",
         ),
         ForeignKeyConstraint(
-            ["activity_ref"], ["dante.activity_intention.activity_ref"],
+            ["activity_ref"],
+            ["dante.activity_intention.activity_ref"],
             name="fk_activity_schedule_role_activity",
         ),
     )
@@ -168,18 +176,30 @@ class PlannedSchedulePlaceOperationRow(Base):
     __table_args__ = (
         CheckConstraint(
             "operation_id=btrim(operation_id) AND operation_id<>'' "
-            "AND char_length(operation_id)<=200", name="id",
+            "AND char_length(operation_id)<=200",
+            name="id",
         ),
         CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name="fingerprint"),
-        ForeignKeyConstraint(["self_person_ref"], ["dante.person.person_ref"],
-                             name="fk_planned_schedule_place_operation_person"),
-        ForeignKeyConstraint(["activity_ref"], ["dante.activity_intention.activity_ref"],
-                             name="fk_planned_schedule_place_operation_activity"),
-        ForeignKeyConstraint(["schedule_ref"], ["dante.schedule.schedule_ref"],
-                             name="fk_planned_schedule_place_operation_schedule"),
-        ForeignKeyConstraint(["material_state_ref"],
-                             ["dante.schedule_placement_state.material_state_ref"],
-                             name="fk_planned_schedule_place_operation_state"),
+        ForeignKeyConstraint(
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
+            name="fk_planned_schedule_place_operation_person",
+        ),
+        ForeignKeyConstraint(
+            ["activity_ref"],
+            ["dante.activity_intention.activity_ref"],
+            name="fk_planned_schedule_place_operation_activity",
+        ),
+        ForeignKeyConstraint(
+            ["schedule_ref"],
+            ["dante.schedule.schedule_ref"],
+            name="fk_planned_schedule_place_operation_schedule",
+        ),
+        ForeignKeyConstraint(
+            ["material_state_ref"],
+            ["dante.schedule_placement_state.material_state_ref"],
+            name="fk_planned_schedule_place_operation_state",
+        ),
         UniqueConstraint("material_state_ref", name="uq_planned_schedule_place_operation_state"),
         Index("ix_planned_schedule_place_operation_schedule_ref", "schedule_ref"),
     )

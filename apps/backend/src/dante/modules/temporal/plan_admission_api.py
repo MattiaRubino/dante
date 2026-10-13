@@ -67,20 +67,23 @@ Application = Annotated[PlanAdmissionApplication, Depends(_application)]
 
 def _review(plan_ref: UUID, step_ref: UUID, body: ReviewedMoveBody) -> ReviewedMove:
     return ReviewedMove(
-        plan_ref=plan_ref, step_ref=step_ref,
+        plan_ref=plan_ref,
+        step_ref=step_ref,
         plan_state_ref=body.expected_plan_state_ref,
         schedule_ref=body.expected_schedule_ref,
         schedule_state_ref=body.expected_schedule_state_ref,
         policy_state_ref=body.expected_policy_state_ref,
         basis_fingerprint=body.basis_fingerprint,
-        starts_at=body.starts_at, ends_at=body.ends_at,
+        starts_at=body.starts_at,
+        ends_at=body.ends_at,
         operation_id=str(body.operation_id),
     )
 
 
 def _result(value: AdmissionResult) -> PlanAdmissionResponse:
     return PlanAdmissionResponse(
-        kind=value.kind, schedule_ref=value.schedule_ref,
+        kind=value.kind,
+        schedule_ref=value.schedule_ref,
         proposal_ref=value.proposal_ref,
         placement_material_state_ref=value.placement_state_ref,
         replayed=value.replayed,
@@ -88,34 +91,56 @@ def _result(value: AdmissionResult) -> PlanAdmissionResponse:
 
 
 def _raise_problem(exc: Exception) -> None:
-    if isinstance(exc, (PlanCandidateNotFoundError, PlanConflictNotFoundError,
-                        PlanAdmissionNotFoundError)):
+    if isinstance(
+        exc, (PlanCandidateNotFoundError, PlanConflictNotFoundError, PlanAdmissionNotFoundError)
+    ):
         raise ProblemError(
-            status=404, code="temporal.plan_admission.unavailable", category="not_found",
-            title="Reviewed move unavailable", detail=str(exc),
+            status=404,
+            code="temporal.plan_admission.unavailable",
+            category="not_found",
+            title="Reviewed move unavailable",
+            detail=str(exc),
         ) from exc
     if isinstance(exc, PlanAdmissionBlockedError):
         raise ProblemError(
-            status=409, code="temporal.plan_admission.blocked", category="conflict",
-            title="Move blocked", detail=str(exc),
+            status=409,
+            code="temporal.plan_admission.blocked",
+            category="conflict",
+            title="Move blocked",
+            detail=str(exc),
         ) from exc
     if isinstance(exc, PlanAdmissionReuseError):
         raise ProblemError(
-            status=409, code="temporal.plan_admission.operation_reused", category="conflict",
-            title="Operation id reused", detail=str(exc),
+            status=409,
+            code="temporal.plan_admission.operation_reused",
+            category="conflict",
+            title="Operation id reused",
+            detail=str(exc),
         ) from exc
-    if isinstance(exc, (PlanAdmissionStaleError,
-                        PlanConflictStateError,
-                        PlanWorkPersistenceError, PlanDependencyPersistenceError,
-                        TemporalConstraintPersistenceError)):
+    if isinstance(
+        exc,
+        (
+            PlanAdmissionStaleError,
+            PlanConflictStateError,
+            PlanWorkPersistenceError,
+            PlanDependencyPersistenceError,
+            TemporalConstraintPersistenceError,
+        ),
+    ):
         raise ProblemError(
-            status=409, code="temporal.plan_admission.stale", category="conflict",
-            title="Reviewed move changed", detail=str(exc),
+            status=409,
+            code="temporal.plan_admission.stale",
+            category="conflict",
+            title="Reviewed move changed",
+            detail=str(exc),
         ) from exc
     if isinstance(exc, PlanConflictInputError):
         raise ProblemError(
-            status=422, code="temporal.plan_admission.limit", category="validation",
-            title="Plan outside supported scope", detail=str(exc),
+            status=422,
+            code="temporal.plan_admission.limit",
+            category="validation",
+            title="Plan outside supported scope",
+            detail=str(exc),
         ) from exc
     raise exc
 
@@ -123,20 +148,32 @@ def _raise_problem(exc: Exception) -> None:
 @router.post(
     "/{plan_ref}/steps/{step_ref}/candidate-moves",
     response_model=PlanAdmissionResponse,
-    responses={401: {"model": ProblemDetails}, 403: {"model": ProblemDetails},
-               404: {"model": ProblemDetails}, 409: {"model": ProblemDetails},
-               422: {"model": ProblemDetails}, 500: {"model": ProblemDetails}},
+    responses={
+        401: {"model": ProblemDetails},
+        403: {"model": ProblemDetails},
+        404: {"model": ProblemDetails},
+        409: {"model": ProblemDetails},
+        422: {"model": ProblemDetails},
+        500: {"model": ProblemDetails},
+    },
     operation_id="temporal_request_reviewed_plan_candidate_move",
 )
 async def request_reviewed_plan_candidate_move(
-    plan_ref: UUID, step_ref: UUID, body: ReviewedMoveBody,
-    context: Context, application: Application, response: Response,
+    plan_ref: UUID,
+    step_ref: UUID,
+    body: ReviewedMoveBody,
+    context: Context,
+    application: Application,
+    response: Response,
 ) -> PlanAdmissionResponse:
     response.headers["Cache-Control"] = "no-store"
     try:
-        return _result(await application.request(
-            self_ref=context.self_person_ref, review=_review(plan_ref, step_ref, body),
-        ))
+        return _result(
+            await application.request(
+                self_ref=context.self_person_ref,
+                review=_review(plan_ref, step_ref, body),
+            )
+        )
     except Exception as exc:
         _raise_problem(exc)
         raise AssertionError("unreachable") from exc
@@ -145,21 +182,34 @@ async def request_reviewed_plan_candidate_move(
 @router.post(
     "/{plan_ref}/steps/{step_ref}/candidate-moves/{proposal_ref}/confirm",
     response_model=PlanAdmissionResponse,
-    responses={401: {"model": ProblemDetails}, 403: {"model": ProblemDetails},
-               404: {"model": ProblemDetails}, 409: {"model": ProblemDetails},
-               422: {"model": ProblemDetails}, 500: {"model": ProblemDetails}},
+    responses={
+        401: {"model": ProblemDetails},
+        403: {"model": ProblemDetails},
+        404: {"model": ProblemDetails},
+        409: {"model": ProblemDetails},
+        422: {"model": ProblemDetails},
+        500: {"model": ProblemDetails},
+    },
     operation_id="temporal_confirm_reviewed_plan_candidate_move",
 )
 async def confirm_reviewed_plan_candidate_move(
-    plan_ref: UUID, step_ref: UUID, proposal_ref: UUID, body: ReviewedMoveBody,
-    context: Context, application: Application, response: Response,
+    plan_ref: UUID,
+    step_ref: UUID,
+    proposal_ref: UUID,
+    body: ReviewedMoveBody,
+    context: Context,
+    application: Application,
+    response: Response,
 ) -> PlanAdmissionResponse:
     response.headers["Cache-Control"] = "no-store"
     try:
-        return _result(await application.accept(
-            self_ref=context.self_person_ref, review=_review(plan_ref, step_ref, body),
-            proposal_ref=proposal_ref,
-        ))
+        return _result(
+            await application.accept(
+                self_ref=context.self_person_ref,
+                review=_review(plan_ref, step_ref, body),
+                proposal_ref=proposal_ref,
+            )
+        )
     except Exception as exc:
         _raise_problem(exc)
         raise AssertionError("unreachable") from exc

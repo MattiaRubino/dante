@@ -123,7 +123,9 @@ $function$;
         "dante.list_self_session_panel_inputs(uuid)",
     ):
         bind.exec_driver_sql(f"ALTER FUNCTION {signature} OWNER TO dante_owner")
-        bind.exec_driver_sql(f"REVOKE ALL ON FUNCTION {signature} FROM PUBLIC,dante_runtime,dante_migrator")
+        bind.exec_driver_sql(
+            f"REVOKE ALL ON FUNCTION {signature} FROM PUBLIC,dante_runtime,dante_migrator"
+        )
         bind.exec_driver_sql(f"GRANT EXECUTE ON FUNCTION {signature} TO dante_runtime")
 
 

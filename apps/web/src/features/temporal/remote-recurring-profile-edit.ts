@@ -18,12 +18,14 @@ export type RecurringProfileContext = Readonly<{
 }>;
 
 type ProfileChanges = Readonly<
-  Partial<Pick<ActivityProfile, 'title' | 'description' | 'location' | 'colorCode'>>
+  Partial<
+    Pick<ActivityProfile, 'title' | 'description' | 'location' | 'colorCode'>
+  >
 >;
 
 function record(value: unknown): Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
-    ? value as Record<string, unknown>
+    ? (value as Record<string, unknown>)
     : {};
 }
 
@@ -42,15 +44,20 @@ export function createRemoteRecurringProfileEdit(
   async function csrf(): Promise<string> {
     const response = await request('/api/v1/auth/session');
     const value = record(await response.json());
-    if (!response.ok || value.authenticated !== true ||
-        typeof value.csrf_token !== 'string') {
+    if (
+      !response.ok ||
+      value.authenticated !== true ||
+      typeof value.csrf_token !== 'string'
+    ) {
       throw new Error('Sessione non autenticata.');
     }
     return value.csrf_token;
   }
 
   return Object.freeze({
-    async loadActivityContext(activityRef: string): Promise<RecurringProfileContext | null> {
+    async loadActivityContext(
+      activityRef: string,
+    ): Promise<RecurringProfileContext | null> {
       const origin = await read(
         `/api/v1/temporal/activities/${encodeURIComponent(activityRef)}/recurrence-origin`,
       );
@@ -65,13 +72,15 @@ export function createRemoteRecurringProfileEdit(
       const state = await read(
         `/api/v1/temporal/occurrences/${encodeURIComponent(ref)}/profile-edit-state`,
       );
-      if (state.selected_occurrence_ref !== ref ||
-          typeof state.source_native_ref !== 'string' ||
-          typeof state.edit_revision !== 'number' ||
-          !Number.isSafeInteger(state.edit_revision) ||
-          state.edit_revision < 0 ||
-          (state.recurrence_state_ref !== null &&
-            typeof state.recurrence_state_ref !== 'string')) {
+      if (
+        state.selected_occurrence_ref !== ref ||
+        typeof state.source_native_ref !== 'string' ||
+        typeof state.edit_revision !== 'number' ||
+        !Number.isSafeInteger(state.edit_revision) ||
+        state.edit_revision < 0 ||
+        (state.recurrence_state_ref !== null &&
+          typeof state.recurrence_state_ref !== 'string')
+      ) {
         throw new Error('Versione ricorrente non valida.');
       }
       return {
@@ -104,24 +113,34 @@ export function createRemoteRecurringProfileEdit(
             scope_code: scope,
             profile_patch: {
               ...('title' in changes ? { title: changes.title } : {}),
-              ...('description' in changes ? { description: changes.description } : {}),
+              ...('description' in changes
+                ? { description: changes.description }
+                : {}),
               ...('location' in changes ? { location: changes.location } : {}),
-              ...('colorCode' in changes ? { color_code: changes.colorCode } : {}),
+              ...('colorCode' in changes
+                ? { color_code: changes.colorCode }
+                : {}),
             },
           }),
         },
       );
       if (!response.ok) {
-        throw new Error(response.status === 409
-          ? 'La ricorrenza o un’istanza futura è cambiata. Ricarica e verifica le modifiche.'
-          : 'Non è stato possibile applicare le modifiche alla ricorrenza.');
+        throw new Error(
+          response.status === 409
+            ? 'La ricorrenza o un’istanza futura è cambiata. Ricarica e verifica le modifiche.'
+            : 'Non è stato possibile applicare le modifiche alla ricorrenza.',
+        );
       }
       const accepted = record(await response.json());
-      if (accepted.selected_occurrence_ref !== context.occurrenceRef ||
-          accepted.source_native_ref !== context.sourceRef ||
-          !Array.isArray(accepted.target_occurrence_refs) ||
-          !accepted.target_occurrence_refs.includes(context.occurrenceRef)) {
-        throw new Error('La risposta della modifica non corrisponde all’istanza selezionata.');
+      if (
+        accepted.selected_occurrence_ref !== context.occurrenceRef ||
+        accepted.source_native_ref !== context.sourceRef ||
+        !Array.isArray(accepted.target_occurrence_refs) ||
+        !accepted.target_occurrence_refs.includes(context.occurrenceRef)
+      ) {
+        throw new Error(
+          'La risposta della modifica non corrisponde all’istanza selezionata.',
+        );
       }
       const updated = await inspector.get(activityRef);
       invalidateTemporalTimelineRead();

@@ -48,7 +48,10 @@ async function installDraftVaultFixture(page: Page) {
         body.draft_ref !== key ||
         (existing?.revision ?? null) !== body.expected_revision
       ) {
-        await route.fulfill({ status: 409, json: { error: 'revision_conflict' } });
+        await route.fulfill({
+          status: 409,
+          json: { error: 'revision_conflict' },
+        });
         return;
       }
       const now = new Date().toISOString();
@@ -67,9 +70,14 @@ async function installDraftVaultFixture(page: Page) {
     }
     if (method === 'DELETE') {
       const existing = records.get(key);
-      const expected = new URL(request.url()).searchParams.get('expected_revision');
+      const expected = new URL(request.url()).searchParams.get(
+        'expected_revision',
+      );
       if (!existing || String(existing.revision) !== expected) {
-        await route.fulfill({ status: 409, json: { error: 'revision_conflict' } });
+        await route.fulfill({
+          status: 409,
+          json: { error: 'revision_conflict' },
+        });
         return;
       }
       records.delete(key);
@@ -93,7 +101,7 @@ async function saveDraft(page: Page, title: string) {
 async function openDraftVault(page: Page) {
   const trigger = page.getByRole('button', { name: 'Apri Bozze' });
   await expect(trigger).toBeVisible();
-  if (await trigger.getAttribute('aria-expanded') !== 'true') {
+  if ((await trigger.getAttribute('aria-expanded')) !== 'true') {
     await trigger.click();
   }
   const vault = page.locator('[data-timeline-draft-vault="true"]');
@@ -114,8 +122,11 @@ test('saving a Draft never creates an executable Timeline card and Resume preser
 
   await saveDraft(page, 'Preparare portfolio');
   expect(records.size).toBe(1);
-  await expect(page.locator('.timeline-event-card')
-    .filter({ hasText: 'Preparare portfolio' })).toHaveCount(0);
+  await expect(
+    page
+      .locator('.timeline-event-card')
+      .filter({ hasText: 'Preparare portfolio' }),
+  ).toHaveCount(0);
   const vault = await openDraftVault(page);
   const item = draft(vault, 'Preparare portfolio');
   await expect(item).toBeVisible();
@@ -130,8 +141,9 @@ test('saving a Draft never creates an executable Timeline card and Resume preser
   const originalId = [...records.keys()][0];
   await item.getByRole('button', { name: 'Riprendi' }).click();
   const dialog = page.locator('[data-temporal-create="composer"]');
-  await expect(dialog.getByRole('textbox', { name: 'Titolo' }))
-    .toHaveValue('Preparare portfolio');
+  await expect(dialog.getByRole('textbox', { name: 'Titolo' })).toHaveValue(
+    'Preparare portfolio',
+  );
   await dialog.getByRole('button', { name: 'Salva bozza' }).click();
   await expect(dialog).toHaveCount(0);
   expect([...records.keys()]).toEqual([originalId]);
@@ -148,17 +160,24 @@ test('duplicating a Draft creates a separate inert draft without mutating the or
   const originalId = [...records.keys()][0];
   const vault = await openDraftVault(page);
   await draft(vault, 'Scrivere proposta')
-    .getByRole('button', { name: 'Duplica' }).click();
+    .getByRole('button', { name: 'Duplica' })
+    .click();
   const dialog = page.locator('[data-temporal-create="composer"]');
-  await dialog.getByRole('textbox', { name: 'Titolo' }).fill('Proposta duplicata');
+  await dialog
+    .getByRole('textbox', { name: 'Titolo' })
+    .fill('Proposta duplicata');
   await dialog.getByRole('button', { name: 'Salva bozza' }).click();
   await expect(dialog).toHaveCount(0);
   expect(records.size).toBe(2);
   expect(records.get(originalId ?? '')?.title).toBe('Scrivere proposta');
-  expect([...records.values()].some((value) =>
-    value.title === 'Proposta duplicata')).toBe(true);
-  await expect(page.locator('.timeline-event-card')
-    .filter({ hasText: 'Proposta duplicata' })).toHaveCount(0);
+  expect(
+    [...records.values()].some((value) => value.title === 'Proposta duplicata'),
+  ).toBe(true);
+  await expect(
+    page
+      .locator('.timeline-event-card')
+      .filter({ hasText: 'Proposta duplicata' }),
+  ).toHaveCount(0);
 });
 
 test('deleting a Draft requires explicit confirmation and does not affect other drafts', async ({
@@ -195,9 +214,12 @@ test('Draft Vault stays inside the mobile viewport without horizontal overflow',
   if (!bounds) throw new Error('Expected mobile Draft Vault geometry');
   expect(bounds.x).toBeGreaterThanOrEqual(0);
   expect(bounds.x + bounds.width).toBeLessThanOrEqual(390.5);
-  expect(await page.evaluate(() =>
-    document.documentElement.scrollWidth <=
-    document.documentElement.clientWidth,
-  )).toBe(true);
+  expect(
+    await page.evaluate(
+      () =>
+        document.documentElement.scrollWidth <=
+        document.documentElement.clientWidth,
+    ),
+  ).toBe(true);
   await expect(draft(vault, 'Telefonare assicurazione')).toBeVisible();
 });

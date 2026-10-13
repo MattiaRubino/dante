@@ -7,19 +7,32 @@ export async function setTimedDuration(
 ): Promise<void> {
   const startHour = dialog.getByRole('textbox', { name: 'Inizio: ore' });
   const startMinute = dialog.getByRole('textbox', { name: 'Inizio: minuti' });
-  const start = Number(await startHour.inputValue()) * 60 +
+  const start =
+    Number(await startHour.inputValue()) * 60 +
     Number(await startMinute.inputValue());
-  if (!Number.isFinite(start) || start < 0 || start >= 1440 ||
-      !Number.isInteger(minutes) || minutes <= 0 || start + minutes >= 1440) {
-    throw new Error('This browser duration helper expects an intraday interval');
+  if (
+    !Number.isFinite(start) ||
+    start < 0 ||
+    start >= 1440 ||
+    !Number.isInteger(minutes) ||
+    minutes <= 0 ||
+    start + minutes >= 1440
+  ) {
+    throw new Error(
+      'This browser duration helper expects an intraday interval',
+    );
   }
   const end = start + minutes;
   const hours = String(Math.floor(end / 60)).padStart(2, '0');
   const mins = String(end % 60).padStart(2, '0');
   await dialog.getByRole('textbox', { name: 'Fine: ore' }).fill(hours);
   await dialog.getByRole('textbox', { name: 'Fine: minuti' }).fill(mins);
-  await expect(dialog.getByRole('textbox', { name: 'Fine: ore' })).toHaveValue(hours);
-  await expect(dialog.getByRole('textbox', { name: 'Fine: minuti' })).toHaveValue(mins);
+  await expect(dialog.getByRole('textbox', { name: 'Fine: ore' })).toHaveValue(
+    hours,
+  );
+  await expect(
+    dialog.getByRole('textbox', { name: 'Fine: minuti' }),
+  ).toHaveValue(mins);
 }
 
 export async function timedDurationMinutes(dialog: Locator): Promise<number> {
@@ -35,5 +48,5 @@ export async function timedDurationMinutes(dialog: Locator): Promise<number> {
   const endMinute = Number(
     await dialog.getByRole('textbox', { name: 'Fine: minuti' }).inputValue(),
   );
-  return (endHour * 60 + endMinute) - (startHour * 60 + startMinute);
+  return endHour * 60 + endMinute - (startHour * 60 + startMinute);
 }

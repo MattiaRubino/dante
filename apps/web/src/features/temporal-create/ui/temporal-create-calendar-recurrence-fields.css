@@ -205,8 +205,8 @@
 
 .temporal-create-repeat__end-option.is-active,
 .temporal-create-repeat__end-option:has(
-    .temporal-create-repeat__end-choice.is-active
-  ) {
+  .temporal-create-repeat__end-choice.is-active
+) {
   border-color: color-mix(in srgb, #ff8a3d 34%, transparent);
   background: color-mix(in srgb, #ea5c12 6%, transparent);
 }

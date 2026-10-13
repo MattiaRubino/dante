@@ -3,8 +3,10 @@ import { createWebFetch } from '../../platform/api/web-fetch';
 const UUID_V7 =
   /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-export type ConditionalTemporalSubjectKind = 'activity' | 'event' | 'occurrence';
-export type ConditionalTemporalResult = 'satisfied' | 'not_satisfied' | 'indeterminate';
+export type ConditionalTemporalSubjectKind =
+  'activity' | 'event' | 'occurrence';
+export type ConditionalTemporalResult =
+  'satisfied' | 'not_satisfied' | 'indeterminate';
 export type ConditionalTemporalDisposition = 'allow' | 'withhold';
 
 export type ActualRealizationConditionView = Readonly<{
@@ -40,14 +42,20 @@ export class ConditionalTemporalRemoteError extends Error {
 
 function record(value: unknown): Record<string, unknown> {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    throw new ConditionalTemporalRemoteError('protocol', 'Invalid Conditional response.');
+    throw new ConditionalTemporalRemoteError(
+      'protocol',
+      'Invalid Conditional response.',
+    );
   }
   return value as Record<string, unknown>;
 }
 
 function uuid(value: unknown, field: string): string {
   if (typeof value !== 'string' || !UUID_V7.test(value)) {
-    throw new ConditionalTemporalRemoteError('protocol', `${field} must be a UUIDv7.`);
+    throw new ConditionalTemporalRemoteError(
+      'protocol',
+      `${field} must be a UUIDv7.`,
+    );
   }
   return value.toLowerCase();
 }
@@ -57,17 +65,30 @@ function nullableUuid(value: unknown, field: string): string | null {
 }
 
 function subjectKind(value: unknown): ConditionalTemporalSubjectKind {
-  if (value === 'activity' || value === 'event' || value === 'occurrence') return value;
-  throw new ConditionalTemporalRemoteError('protocol', 'Invalid Conditional subject kind.');
+  if (value === 'activity' || value === 'event' || value === 'occurrence')
+    return value;
+  throw new ConditionalTemporalRemoteError(
+    'protocol',
+    'Invalid Conditional subject kind.',
+  );
 }
 
 function condition(value: unknown): ActualRealizationConditionView {
   const payload = record(value);
-  if (payload.family_code !== 'actual_realization' || typeof payload.created_at !== 'string') {
-    throw new ConditionalTemporalRemoteError('protocol', 'Invalid Conditional intent.');
+  if (
+    payload.family_code !== 'actual_realization' ||
+    typeof payload.created_at !== 'string'
+  ) {
+    throw new ConditionalTemporalRemoteError(
+      'protocol',
+      'Invalid Conditional intent.',
+    );
   }
   if (typeof payload.replayed !== 'boolean') {
-    throw new ConditionalTemporalRemoteError('protocol', 'Invalid Conditional replay state.');
+    throw new ConditionalTemporalRemoteError(
+      'protocol',
+      'Invalid Conditional replay state.',
+    );
   }
   return Object.freeze({
     conditionRef: uuid(payload.condition_ref, 'condition_ref'),
@@ -85,13 +106,28 @@ function evaluation(value: unknown): ConditionalEvaluationView {
     payload.result_code !== 'not_satisfied' &&
     payload.result_code !== 'indeterminate'
   ) {
-    throw new ConditionalTemporalRemoteError('protocol', 'Invalid Conditional result.');
+    throw new ConditionalTemporalRemoteError(
+      'protocol',
+      'Invalid Conditional result.',
+    );
   }
-  if (payload.disposition_code !== 'allow' && payload.disposition_code !== 'withhold') {
-    throw new ConditionalTemporalRemoteError('protocol', 'Invalid Conditional disposition.');
+  if (
+    payload.disposition_code !== 'allow' &&
+    payload.disposition_code !== 'withhold'
+  ) {
+    throw new ConditionalTemporalRemoteError(
+      'protocol',
+      'Invalid Conditional disposition.',
+    );
   }
-  if (typeof payload.evaluated_at !== 'string' || typeof payload.replayed !== 'boolean') {
-    throw new ConditionalTemporalRemoteError('protocol', 'Invalid Conditional evaluation.');
+  if (
+    typeof payload.evaluated_at !== 'string' ||
+    typeof payload.replayed !== 'boolean'
+  ) {
+    throw new ConditionalTemporalRemoteError(
+      'protocol',
+      'Invalid Conditional evaluation.',
+    );
   }
   return Object.freeze({
     evaluationRef: uuid(payload.evaluation_ref, 'evaluation_ref'),
@@ -114,7 +150,9 @@ export function createRemoteConditionalTemporalDataSource(
   const webFetch = createWebFetch(fetchFn);
   const root = '/api/v1/temporal/conditions/actual-realization';
 
-  async function problem(response: Response): Promise<ConditionalTemporalRemoteError> {
+  async function problem(
+    response: Response,
+  ): Promise<ConditionalTemporalRemoteError> {
     let payload: Record<string, unknown> = {};
     try {
       payload = record(await response.json());
@@ -127,7 +165,9 @@ export function createRemoteConditionalTemporalDataSource(
     }
     return new ConditionalTemporalRemoteError(
       'http',
-      typeof payload.detail === 'string' ? payload.detail : 'Conditional command rejected.',
+      typeof payload.detail === 'string'
+        ? payload.detail
+        : 'Conditional command rejected.',
       response.status,
       typeof payload.code === 'string' ? payload.code : null,
     );
@@ -163,7 +203,10 @@ export function createRemoteConditionalTemporalDataSource(
       const response = await webFetch(`${root}?${query.toString()}`);
       if (!response.ok) {
         const error = await problem(response);
-        if (response.status === 404 && error.code === 'temporal.conditional.not_found') {
+        if (
+          response.status === 404 &&
+          error.code === 'temporal.conditional.not_found'
+        ) {
           return null;
         }
         throw error;
@@ -196,14 +239,17 @@ export function createRemoteConditionalTemporalDataSource(
       conditionRef: string,
       operationId: string,
     ): Promise<ConditionalEvaluationView> {
-      const response = await webFetch(`${root}/${encodeURIComponent(conditionRef)}/evaluations`, {
-        method: 'POST',
-        headers: new Headers({
-          'Content-Type': 'application/json',
-          'X-Dante-CSRF': await csrf(),
-        }),
-        body: JSON.stringify({ operation_id: operationId }),
-      });
+      const response = await webFetch(
+        `${root}/${encodeURIComponent(conditionRef)}/evaluations`,
+        {
+          method: 'POST',
+          headers: new Headers({
+            'Content-Type': 'application/json',
+            'X-Dante-CSRF': await csrf(),
+          }),
+          body: JSON.stringify({ operation_id: operationId }),
+        },
+      );
       if (!response.ok) throw await problem(response);
       return evaluation(await response.json());
     },

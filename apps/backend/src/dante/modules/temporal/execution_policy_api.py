@@ -44,33 +44,45 @@ def _problem(exc: DBAPIError) -> ProblemError:
     constraint = getattr(diagnostic, "constraint_name", None)
     if constraint == "activity_execution_policy_owner_unavailable":
         return ProblemError(
-            status=404, code="temporal.execution_policy.activity_unavailable",
-            category="not_found", title="Activity unavailable",
-            detail="Activity is unavailable in this self scope.", retryable=False,
+            status=404,
+            code="temporal.execution_policy.activity_unavailable",
+            category="not_found",
+            title="Activity unavailable",
+            detail="Activity is unavailable in this self scope.",
+            retryable=False,
         )
     if constraint in {
         "activity_execution_policy_operation_reused",
         "activity_execution_policy_current_conflict",
     }:
         return ProblemError(
-            status=409, code="temporal.execution_policy.conflict",
-            category="conflict", title="Execution policy conflict",
-            detail="Refresh the Activity policy before changing it.", retryable=False,
+            status=409,
+            code="temporal.execution_policy.conflict",
+            category="conflict",
+            title="Execution policy conflict",
+            detail="Refresh the Activity policy before changing it.",
+            retryable=False,
         )
     if constraint == "activity_execution_policy_invalid":
         return ProblemError(
-            status=422, code="temporal.execution_policy.invalid",
-            category="validation", title="Invalid execution policy",
-            detail="The requested execution policy is invalid.", retryable=False,
+            status=422,
+            code="temporal.execution_policy.invalid",
+            category="validation",
+            title="Invalid execution policy",
+            detail="The requested execution policy is invalid.",
+            retryable=False,
         )
     return _unavailable()
 
 
 def _unavailable() -> ProblemError:
     return ProblemError(
-        status=503, code="temporal.execution_policy.unavailable",
-        category="service", title="Execution policy unavailable",
-        detail="The canonical execution policy could not be read or changed.", retryable=True,
+        status=503,
+        code="temporal.execution_policy.unavailable",
+        category="service",
+        title="Execution policy unavailable",
+        detail="The canonical execution policy could not be read or changed.",
+        retryable=True,
     )
 
 
@@ -80,7 +92,9 @@ def _unavailable() -> ProblemError:
     operation_id="temporal_get_activity_execution_policy",
 )
 async def get_execution_policy(
-    activity_ref: UUID, context: Context, request: Request,
+    activity_ref: UUID,
+    context: Context,
+    request: Request,
 ) -> ExecutionPolicyResponse:
     try:
         async with (
@@ -88,21 +102,31 @@ async def get_execution_policy(
             session.begin(),
         ):
             row = (
-                await session.execute(
-                    text("SELECT * FROM dante.get_self_activity_execution_policy(:actor,:activity)"),
-                    {"actor": context.self_person_ref, "activity": activity_ref},
+                (
+                    await session.execute(
+                        text(
+                            "SELECT * FROM dante.get_self_activity_execution_policy(:actor,:activity)"
+                        ),
+                        {"actor": context.self_person_ref, "activity": activity_ref},
+                    )
                 )
-            ).mappings().one_or_none()
+                .mappings()
+                .one_or_none()
+            )
     except SQLAlchemyError as exc:
         raise _unavailable() from exc
     if row is None:
         raise ProblemError(
-            status=404, code="temporal.execution_policy.activity_unavailable",
-            category="not_found", title="Activity unavailable",
-            detail="Activity is unavailable in this self scope.", retryable=False,
+            status=404,
+            code="temporal.execution_policy.activity_unavailable",
+            category="not_found",
+            title="Activity unavailable",
+            detail="Activity is unavailable in this self scope.",
+            retryable=False,
         )
     return ExecutionPolicyResponse(
-        activity_ref=activity_ref, state_ref=row["state_ref"],
+        activity_ref=activity_ref,
+        state_ref=row["state_ref"],
         mode_code=row["mode_code"],
     )
 
@@ -136,23 +160,27 @@ async def set_execution_policy(
             session.begin(),
         ):
             row = (
-                await session.execute(
-                    text("""
+                (
+                    await session.execute(
+                        text("""
                         SELECT * FROM dante.set_self_activity_execution_policy(
                             :actor,:operation,:fingerprint,:activity,:state,:mode,:expected
                         )
                     """),
-                    {
-                        "actor": context.self_person_ref,
-                        "operation": payload.operation_id,
-                        "fingerprint": fingerprint,
-                        "activity": activity_ref,
-                        "state": uuid7(),
-                        "mode": payload.mode_code,
-                        "expected": payload.expected_state_ref,
-                    },
+                        {
+                            "actor": context.self_person_ref,
+                            "operation": payload.operation_id,
+                            "fingerprint": fingerprint,
+                            "activity": activity_ref,
+                            "state": uuid7(),
+                            "mode": payload.mode_code,
+                            "expected": payload.expected_state_ref,
+                        },
+                    )
                 )
-            ).mappings().one()
+                .mappings()
+                .one()
+            )
     except DBAPIError as exc:
         raise _problem(exc) from exc
     except SQLAlchemyError as exc:

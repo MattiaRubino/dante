@@ -36,6 +36,4 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Never silently reintroduce the U2 descriptor-read regression."""
-    raise RuntimeError(
-        "B14-U2 descriptor runtime read ACL requires a reviewed forward migration"
-    )
+    raise RuntimeError("B14-U2 descriptor runtime read ACL requires a reviewed forward migration")

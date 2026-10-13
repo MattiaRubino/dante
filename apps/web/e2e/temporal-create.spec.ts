@@ -175,7 +175,9 @@ test('Advanced planned Session is retained and never silently dropped by the in-
   await dialog.locator('.temporal-create-tree-add').click();
   const planned = dialog.locator('[data-create-planned-session]');
   await expect(planned).toHaveCount(1);
-  await planned.getByRole('textbox', { name: 'Nome Sessione' }).fill('Montaggio');
+  await planned
+    .getByRole('textbox', { name: 'Nome Sessione' })
+    .fill('Montaggio');
   await expect(dialog.getByRole('radio', { name: 'Orario' })).toHaveAttribute(
     'aria-checked',
     'true',
@@ -186,14 +188,21 @@ test('Advanced planned Session is retained and never silently dropped by the in-
     .getByRole('button', { name: 'Nascondi opzioni avanzate' })
     .click();
   await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'base');
-  await expect(dialog.getByRole('textbox', { name: 'Inizio: ore' })).toHaveValue('14');
-  await expect(dialog.getByRole('textbox', { name: 'Inizio: minuti' })).toHaveValue('30');
+  await expect(
+    dialog.getByRole('textbox', { name: 'Inizio: ore' }),
+  ).toHaveValue('14');
+  await expect(
+    dialog.getByRole('textbox', { name: 'Inizio: minuti' }),
+  ).toHaveValue('30');
   expect(await timedDurationMinutes(dialog)).toBe(180);
 
   await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
-  await expect(dialog.getByRole('checkbox', { name: 'Sessione' })).toBeChecked();
   await expect(
-    dialog.locator('[data-create-planned-session]')
+    dialog.getByRole('checkbox', { name: 'Sessione' }),
+  ).toBeChecked();
+  await expect(
+    dialog
+      .locator('[data-create-planned-session]')
       .getByRole('textbox', { name: 'Nome Sessione' }),
   ).toHaveValue('Montaggio');
 
@@ -203,10 +212,11 @@ test('Advanced planned Session is retained and never silently dropped by the in-
   await dialog.getByRole('button', { name: 'Aggiungi', exact: true }).click();
   await expect(dialog).toBeVisible();
   await expect(dialog).toContainText('non possono ancora essere combinate');
-  await expect(dialog.locator('[data-create-planned-session]'))
-    .toHaveCount(1);
+  await expect(dialog.locator('[data-create-planned-session]')).toHaveCount(1);
   await expect(
-    page.locator('.timeline-event-card').filter({ hasText: 'Montare il video' }),
+    page
+      .locator('.timeline-event-card')
+      .filter({ hasText: 'Montare il video' }),
   ).toHaveCount(0);
 });
 
@@ -217,7 +227,9 @@ test('Event Advanced preserves Scaletta and refuses unsupported fixture persiste
   await page.goto('/home');
 
   const dialog = await openCreate(page);
-  await dialog.getByRole('textbox', { name: 'Titolo' }).fill('B14 Evento isolato con Scaletta');
+  await dialog
+    .getByRole('textbox', { name: 'Titolo' })
+    .fill('B14 Evento isolato con Scaletta');
   await dialog.getByRole('radio', { name: 'Evento' }).click();
   await dialog.getByRole('radio', { name: 'Orario' }).click();
   await dialog.getByRole('textbox', { name: 'Inizio: ore' }).fill('16');
@@ -234,59 +246,79 @@ test('Event Advanced preserves Scaletta and refuses unsupported fixture persiste
   });
   for (const part of ['Rischi', 'Decisioni', 'Prossimi passi']) {
     await addPart.click();
-    await agenda.getByRole('textbox', {
-      name: `Punto scaletta ${await agenda.locator('[data-temporal-create-agenda-part]').count()}`,
-    }).fill(part);
+    await agenda
+      .getByRole('textbox', {
+        name: `Punto scaletta ${await agenda.locator('[data-temporal-create-agenda-part]').count()}`,
+      })
+      .fill(part);
   }
-  await expect(agenda.locator('[data-temporal-create-agenda-part]'))
-    .toHaveCount(3);
-  await agenda.getByRole('textbox', { name: 'Punto scaletta 3' })
+  await expect(
+    agenda.locator('[data-temporal-create-agenda-part]'),
+  ).toHaveCount(3);
+  await agenda
+    .getByRole('textbox', { name: 'Punto scaletta 3' })
     .press('Alt+ArrowUp');
-  await expect(agenda.getByRole('textbox', { name: 'Punto scaletta 2' }))
-    .toHaveValue('Prossimi passi');
-  await agenda.locator('[data-temporal-create-agenda-part]').nth(1)
-    .getByRole('button', { name: 'Sposta giù' }).click();
-  await expect(agenda.getByRole('textbox', { name: 'Punto scaletta 3' }))
-    .toHaveValue('Prossimi passi');
+  await expect(
+    agenda.getByRole('textbox', { name: 'Punto scaletta 2' }),
+  ).toHaveValue('Prossimi passi');
+  await agenda
+    .locator('[data-temporal-create-agenda-part]')
+    .nth(1)
+    .getByRole('button', { name: 'Sposta giù' })
+    .click();
+  await expect(
+    agenda.getByRole('textbox', { name: 'Punto scaletta 3' }),
+  ).toHaveValue('Prossimi passi');
 
   const description = dialog.getByRole('textbox', {
     name: 'Descrizione avanzata',
   });
-  await description.fill('Definire il rilascio con una decisione sul piano finale.');
+  await description.fill(
+    'Definire il rilascio con una decisione sul piano finale.',
+  );
   const participants = dialog.locator('[data-create-event-participants]');
   await expect(participants).toContainText(
     'non concede accesso alla tua Timeline',
   );
-  await participants.locator('.temporal-create-event-participants__add button')
+  await participants
+    .locator('.temporal-create-event-participants__add button')
     .click();
-  await expect(participants.locator('.temporal-create-event-participants__list'))
-    .toContainText('Io');
-  await expect(participants.getByRole('combobox', { name: 'Partecipazione di Io' }))
-    .toHaveValue('required');
+  await expect(
+    participants.locator('.temporal-create-event-participants__list'),
+  ).toContainText('Io');
+  await expect(
+    participants.getByRole('combobox', { name: 'Partecipazione di Io' }),
+  ).toHaveValue('required');
 
-  await dialog.getByRole('button', { name: 'Nascondi opzioni avanzate' })
+  await dialog
+    .getByRole('button', { name: 'Nascondi opzioni avanzate' })
     .click();
   await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
   await expect(description).toHaveValue(
     'Definire il rilascio con una decisione sul piano finale.',
   );
-  await expect(agenda.locator('[data-temporal-create-agenda-part]'))
-    .toHaveCount(3);
-  await expect(participants.locator('.temporal-create-event-participants__list'))
-    .toContainText('Io');
+  await expect(
+    agenda.locator('[data-temporal-create-agenda-part]'),
+  ).toHaveCount(3);
+  await expect(
+    participants.locator('.temporal-create-event-participants__list'),
+  ).toContainText('Io');
 
   // Notes are supported by U2 authoritative Event authoring. This isolated
   // legacy fixture intentionally has no Event persistence endpoint; the
   // form must remain intact and visibly refuse the unsupported submission.
   await dialog.getByRole('button', { name: 'Aggiungi', exact: true }).click();
   await expect(dialog).toBeVisible();
-  await expect(dialog.locator('.temporal-create-operation-error'))
-    .toBeVisible();
+  await expect(
+    dialog.locator('.temporal-create-operation-error'),
+  ).toBeVisible();
   await expect(description).toHaveValue(
     'Definire il rilascio con una decisione sul piano finale.',
   );
   await expect(
-    page.locator('.timeline-event-card').filter({ hasText: 'B14 Evento isolato con Scaletta' }),
+    page
+      .locator('.timeline-event-card')
+      .filter({ hasText: 'B14 Evento isolato con Scaletta' }),
   ).toHaveCount(0);
 });
 
@@ -305,19 +337,24 @@ test('Event calendar recurrence preserves interval and end policy across Advance
 
   const recurrence = dialog.locator('[data-create-recurrence-owner="event"]');
   await expect(recurrence).toBeVisible();
-  await recurrence.getByRole('spinbutton', { name: 'Intervallo di ripetizione' })
+  await recurrence
+    .getByRole('spinbutton', { name: 'Intervallo di ripetizione' })
     .fill('2');
   await recurrence.getByRole('radio', { name: 'Dopo' }).click();
-  await recurrence.getByRole('spinbutton', { name: 'Numero di occorrenze' })
+  await recurrence
+    .getByRole('spinbutton', { name: 'Numero di occorrenze' })
     .fill('3');
 
-  await dialog.getByRole('button', { name: 'Nascondi opzioni avanzate' })
+  await dialog
+    .getByRole('button', { name: 'Nascondi opzioni avanzate' })
     .click();
   await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'base');
   await expect(dialog.getByLabel('Ripeti', { exact: true })).toHaveCount(0);
 
   await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
-  await expect(dialog.getByLabel('Ripeti', { exact: true })).toHaveValue('custom');
+  await expect(dialog.getByLabel('Ripeti', { exact: true })).toHaveValue(
+    'custom',
+  );
   await expect(recurrence).toBeVisible();
   await expect(
     recurrence.getByRole('spinbutton', { name: 'Intervallo di ripetizione' }),
@@ -325,8 +362,10 @@ test('Event calendar recurrence preserves interval and end policy across Advance
   await expect(
     recurrence.getByRole('spinbutton', { name: 'Numero di occorrenze' }),
   ).toHaveValue('3');
-  await expect(recurrence.getByRole('radio', { name: 'Dopo' }))
-    .toHaveAttribute('aria-checked', 'true');
+  await expect(recurrence.getByRole('radio', { name: 'Dopo' })).toHaveAttribute(
+    'aria-checked',
+    'true',
+  );
 
   const accessibility = await new AxeBuilder({ page })
     .include('[data-temporal-create="composer"]')
@@ -355,10 +394,13 @@ test('all-day Event editor preserves a two-day date-span and never invents an ac
     return date.toISOString().slice(0, 10);
   }, startDate);
   await dialog.getByRole('button', { name: /^Data fine:/ }).click();
-  await dialog.getByRole('dialog', { name: 'Data fine' })
-    .locator(`[data-temporal-date="${nextDate}"]`).click();
-  await expect(dialog.getByRole('button', { name: /^Data fine:/ }))
-    .toHaveAttribute('data-temporal-date', nextDate);
+  await dialog
+    .getByRole('dialog', { name: 'Data fine' })
+    .locator(`[data-temporal-date="${nextDate}"]`)
+    .click();
+  await expect(
+    dialog.getByRole('button', { name: /^Data fine:/ }),
+  ).toHaveAttribute('data-temporal-date', nextDate);
   await expect(start).toHaveAttribute('data-temporal-date', startDate);
 
   // The isolated legacy runtime has no Event authoring backend. The actual
@@ -384,8 +426,9 @@ test('Advanced validation focuses the required title without discarding time or 
   await title.fill('');
   await dialog.getByRole('button', { name: 'Aggiungi', exact: true }).click();
 
-  await expect(dialog.locator('.temporal-create-field-error').first())
-    .toBeVisible();
+  await expect(
+    dialog.locator('.temporal-create-field-error').first(),
+  ).toBeVisible();
   await expect(title).toBeFocused();
   expect(await timedDurationMinutes(dialog)).toBe(60);
   await expect(dialog).toHaveAttribute(
@@ -409,11 +452,12 @@ test('double-click and Shift-drag only use the timed canvas for contextual Creat
 
   let dialog = page.locator('[data-temporal-create="composer"]');
   await expect(dialog).toBeVisible();
-  await expect(dialog.getByRole('button', { name: /^Data inizio:/ })).toHaveAttribute(
-    'data-temporal-date',
-    /^\d{4}-\d{2}-\d{2}$/,
-  );
-  await expect(dialog.getByRole('textbox', { name: 'Inizio: ore' })).not.toHaveValue('');
+  await expect(
+    dialog.getByRole('button', { name: /^Data inizio:/ }),
+  ).toHaveAttribute('data-temporal-date', /^\d{4}-\d{2}-\d{2}$/);
+  await expect(
+    dialog.getByRole('textbox', { name: 'Inizio: ore' }),
+  ).not.toHaveValue('');
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveCount(0);
   await expect(page.locator('.timeline-grid')).toBeFocused();

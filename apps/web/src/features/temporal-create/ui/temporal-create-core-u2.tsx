@@ -892,7 +892,6 @@ export function TemporalCreateCoreFieldsU2({
           >
             Tutto il giorno
           </button>
-
         </div>
       </fieldset>
       {renderError('timeSemantics')}

@@ -163,7 +163,10 @@ class ActualApplication:
         bases = tuple(
             sorted(
                 session_bases,
-                key=lambda item: (str(item.session_ref), str(item.session_timing_material_state_ref)),
+                key=lambda item: (
+                    str(item.session_ref),
+                    str(item.session_timing_material_state_ref),
+                ),
             )
         )
         if len({basis.session_ref for basis in bases}) != len(bases):
@@ -187,8 +190,11 @@ class ActualApplication:
                     else None
                 ),
                 "realization_occurred": realization_occurred,
-                **({"acknowledge_unresolved_children": True}
-                   if acknowledge_unresolved_children else {}),
+                **(
+                    {"acknowledge_unresolved_children": True}
+                    if acknowledge_unresolved_children
+                    else {}
+                ),
                 "extent_code": extent_code,
                 "started_at": started_at.isoformat() if started_at is not None else None,
                 "ended_at": ended_at.isoformat() if ended_at is not None else None,
@@ -322,7 +328,12 @@ class ActualApplication:
         session_bases: tuple[ActualSessionBasis, ...],
     ) -> None:
         if not realization_occurred:
-            if extent_code is not None or started_at is not None or ended_at is not None or session_bases:
+            if (
+                extent_code is not None
+                or started_at is not None
+                or ended_at is not None
+                or session_bases
+            ):
                 raise ActualInputError(
                     "Known non-realization cannot carry timing or Session bases."
                 )
@@ -355,8 +366,10 @@ class ActualApplication:
                 if acknowledge_parent is not None:
                     actor, operation_id, activity, proposed_state = acknowledge_parent
                     await database_session.execute(
-                        text("SELECT dante.acknowledge_self_parent_actual("
-                             ":actor,:operation_id,:activity,:state_ref)"),
+                        text(
+                            "SELECT dante.acknowledge_self_parent_actual("
+                            ":actor,:operation_id,:activity,:state_ref)"
+                        ),
                         {
                             "actor": actor,
                             "operation_id": operation_id,

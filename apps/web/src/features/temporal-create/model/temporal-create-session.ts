@@ -12,24 +12,14 @@ import {
 
 export type TemporalCreateKind = 'activity' | 'event';
 export type TemporalCreateTimeSemantics =
-  | 'timed'
-  | 'all-day'
-  | 'coarse'
-  | 'unscheduled';
+  'timed' | 'all-day' | 'coarse' | 'unscheduled';
 export type TemporalCreateTimeMode = 'floating' | 'zoned';
 export type TemporalCreateTimeDisambiguation = 'reject' | 'earlier' | 'later';
 export type TemporalCreateSurface = 'quick' | 'expanded' | 'full';
 export type TemporalCreateConstraintKind =
-  | 'none'
-  | 'open'
-  | 'bounded-window'
-  | 'deadline'
-  | 'preferred-window';
+  'none' | 'open' | 'bounded-window' | 'deadline' | 'preferred-window';
 export type TemporalCreateMovementPolicy =
-  | 'locked'
-  | 'window'
-  | 'confirm'
-  | 'free';
+  'locked' | 'window' | 'confirm' | 'free';
 export type TemporalCreateFallbackPolicy =
   | 'inherit'
   | 'skip'
@@ -39,13 +29,7 @@ export type TemporalCreateFallbackPolicy =
   | 'replan-dependencies';
 export type TemporalCreateSessionMode = 'indivisible' | 'splittable';
 export type TemporalCreateWeekday =
-  | 'MO'
-  | 'TU'
-  | 'WE'
-  | 'TH'
-  | 'FR'
-  | 'SA'
-  | 'SU';
+  'MO' | 'TU' | 'WE' | 'TH' | 'FR' | 'SA' | 'SU';
 export type TemporalCreateOutcomePolicy =
   | 'inherit'
   | 'ask-immediately'
@@ -62,12 +46,7 @@ export type TemporalCreateConferenceMode = 'none' | 'provider-default';
 export type TemporalCreateRecurrenceOwner = 'event' | 'routine' | null;
 
 export type TemporalCreateAppearanceTone =
-  | 'focus'
-  | 'meeting'
-  | 'health'
-  | 'creative'
-  | 'personal'
-  | 'urgent';
+  'focus' | 'meeting' | 'health' | 'creative' | 'personal' | 'urgent';
 
 export type TemporalCreateEventRecurrencePatternKind =
   | 'none'
@@ -76,21 +55,12 @@ export type TemporalCreateEventRecurrencePatternKind =
   | 'quota-per-period'
   | 'cyclic-positional';
 export type TemporalCreateEventCalendarFrequency =
-  | 'daily'
-  | 'weekly'
-  | 'monthly'
-  | 'monthly-ordinal'
-  | 'yearly';
+  'daily' | 'weekly' | 'monthly' | 'monthly-ordinal' | 'yearly';
 export type TemporalCreateEventRecurrenceEnd = 'none' | 'until-date' | 'count';
 export type TemporalCreateEventQuotaPeriodKind =
-  | 'day'
-  | 'week'
-  | 'month'
-  | 'year';
+  'day' | 'week' | 'month' | 'year';
 export type TemporalCreateEventQuotaFrame =
-  | 'floating-local'
-  | 'named-zone'
-  | 'absolute-utc';
+  'floating-local' | 'named-zone' | 'absolute-utc';
 export type TemporalCreateEventCycleUnit = 'day' | 'week';
 
 export type TemporalCreateSchedulingIntent = Readonly<{
@@ -213,9 +183,7 @@ const WEEKDAYS: readonly TemporalCreateWeekday[] = Object.freeze([
   'SA',
   'SU',
 ]);
-const RECURRENCE_ORDINALS = Object.freeze([
-  -5, -4, -3, -2, -1, 1, 2, 3, 4, 5,
-]);
+const RECURRENCE_ORDINALS = Object.freeze([-5, -4, -3, -2, -1, 1, 2, 3, 4, 5]);
 
 function freezeScheduling(
   value: TemporalCreateSchedulingIntent,

@@ -47,7 +47,9 @@ describe('remote temporal Activity data source', () => {
   it('preserves the server problem detail for a rejected Schedule create', async () => {
     const fetchFn = vi.fn<typeof globalThis.fetch>((input) => {
       if (input === '/api/v1/auth/session') {
-        return Promise.resolve(jsonResponse({ authenticated: true, csrf_token: 'csrf-b02' }));
+        return Promise.resolve(
+          jsonResponse({ authenticated: true, csrf_token: 'csrf-b02' }),
+        );
       }
       return Promise.resolve(
         jsonResponse(
@@ -59,7 +61,10 @@ describe('remote temporal Activity data source', () => {
         ),
       );
     });
-    const source = createRemoteTemporalActivityDataSource(fetchFn, () => 'Europe/Rome');
+    const source = createRemoteTemporalActivityDataSource(
+      fetchFn,
+      () => 'Europe/Rome',
+    );
 
     await expect(
       source.createScheduledActivity({
@@ -416,17 +421,13 @@ describe('remote temporal Activity data source', () => {
         operationId: ' operation:b02-b:place-1 ',
         placement: {
           kind: 'floating-local-interval',
-          startsLocalAt: Temporal.PlainDateTime.from(
-            '2026-09-09T14:15:00',
-          ),
+          startsLocalAt: Temporal.PlainDateTime.from('2026-09-09T14:15:00'),
           endsLocalAt: Temporal.PlainDateTime.from('2026-09-09T15:00:00'),
         },
       });
 
       expect(result.activity.activityRef).toBe(ACTIVITY.activity_ref);
-      expect(result.schedule.scheduleRef).toBe(
-        SCHEDULED_ACTIVITY.schedule_ref,
-      );
+      expect(result.schedule.scheduleRef).toBe(SCHEDULED_ACTIVITY.schedule_ref);
       expect(invalidated).toHaveBeenCalledTimes(1);
       expect(fetchFn).toHaveBeenCalledTimes(2);
     } finally {
@@ -494,9 +495,7 @@ describe('remote temporal Activity data source', () => {
         operationId: 'operation:b02-b:identity-drift',
         placement: {
           kind: 'floating-local-interval',
-          startsLocalAt: Temporal.PlainDateTime.from(
-            '2026-09-09T14:15:00',
-          ),
+          startsLocalAt: Temporal.PlainDateTime.from('2026-09-09T14:15:00'),
           endsLocalAt: Temporal.PlainDateTime.from('2026-09-09T15:00:00'),
         },
       }),
@@ -516,9 +515,7 @@ describe('remote temporal Activity data source', () => {
         operationId: 'operation:b02-b:invalid',
         placement: {
           kind: 'floating-local-interval',
-          startsLocalAt: Temporal.PlainDateTime.from(
-            '2026-09-09T23:30:00',
-          ),
+          startsLocalAt: Temporal.PlainDateTime.from('2026-09-09T23:30:00'),
           endsLocalAt: Temporal.PlainDateTime.from('2026-09-10T00:15:00'),
         },
       }),

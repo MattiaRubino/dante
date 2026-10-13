@@ -18,9 +18,7 @@ down_revision: str | None = "20261011_142"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
-_SIGNATURE = (
-    "uuid,text,text,uuid,text,uuid,uuid[],date,time without time zone"
-)
+_SIGNATURE = "uuid,text,text,uuid,text,uuid,uuid[],date,time without time zone"
 _OLD = (
     "SELECT revision FROM dante.routine_life_area_assignment "
     "WHERE self_person_ref=requested_self_person_ref "
@@ -60,8 +58,7 @@ def upgrade() -> None:
         "FROM PUBLIC,dante_runtime,dante_migrator"
     )
     connection.exec_driver_sql(
-        f"GRANT EXECUTE ON FUNCTION dante.create_self_routine({_SIGNATURE}) "
-        "TO dante_runtime"
+        f"GRANT EXECUTE ON FUNCTION dante.create_self_routine({_SIGNATURE}) TO dante_runtime"
     )
 
 

@@ -36,10 +36,7 @@ _OWNER = "dante_owner"
 _RUNTIME = "dante_runtime"
 _MIGRATOR = "dante_migrator"
 
-_WRITE_SIGNATURE = (
-    "dante.record_self_actual_outcome("
-    "uuid,text,text,uuid,uuid,uuid,uuid,uuid,text)"
-)
+_WRITE_SIGNATURE = "dante.record_self_actual_outcome(uuid,text,text,uuid,uuid,uuid,uuid,uuid,text)"
 _READ_SIGNATURE = "dante.get_self_actual_outcome(uuid,uuid)"
 _HISTORY_SIGNATURE = "dante.list_self_outcome_history(uuid,uuid)"
 _HELPER_SIGNATURE = "dante._outcome_actual_owned(uuid,uuid)"
@@ -765,10 +762,7 @@ $function$
         _HISTORY_SIGNATURE,
     ):
         _sql(f"ALTER FUNCTION {signature} OWNER TO {_OWNER}")
-        _sql(
-            f"REVOKE ALL ON FUNCTION {signature} "
-            f"FROM PUBLIC, {_RUNTIME}, {_MIGRATOR}"
-        )
+        _sql(f"REVOKE ALL ON FUNCTION {signature} FROM PUBLIC, {_RUNTIME}, {_MIGRATOR}")
 
     for signature in (
         _WRITE_SIGNATURE,

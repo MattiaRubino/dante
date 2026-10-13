@@ -254,11 +254,7 @@ class LifeAreaAssignmentApplication:
                         subject_native_ref=NativeRef(UUID(str(row["subject_native_ref"]))),
                         title=str(row["title"]),
                         created_at=row["created_at"],
-                        color_code=(
-                            None
-                            if row["color_code"] is None
-                            else str(row["color_code"])
-                        ),
+                        color_code=(None if row["color_code"] is None else str(row["color_code"])),
                     )
                     for row in rows
                 )

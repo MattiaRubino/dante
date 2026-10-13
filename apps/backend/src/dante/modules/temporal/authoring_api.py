@@ -102,7 +102,9 @@ class AuthorActivityRequest(AuthorItemRequest):
         default=None, ge=1, le=9_223_372_036_854_775_807
     )
     child_guard_mode: Literal["none", "confirm", "block"] | None = None
-    planned_slices: list[SchedulePlacementRequest | None] = Field(default_factory=list, max_length=100)
+    planned_slices: list[SchedulePlacementRequest | None] = Field(
+        default_factory=list, max_length=100
+    )
     activity_intervals: list[SchedulePlacementRequest] = Field(default_factory=list, max_length=100)
     planned_slice_names: list[str] = Field(default_factory=list, max_length=100)
     children: list[AuthorActivityChildRequest] = Field(default_factory=list, max_length=100)

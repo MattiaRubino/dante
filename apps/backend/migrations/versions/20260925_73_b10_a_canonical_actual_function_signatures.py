@@ -407,10 +407,7 @@ $function$
     read_signature = "dante.get_self_subject_actual(uuid,text,uuid)"
     for signature in (write_signature, read_signature):
         _sql(f"ALTER FUNCTION {signature} OWNER TO dante_owner")
-        _sql(
-            f"REVOKE ALL ON FUNCTION {signature} "
-            "FROM PUBLIC, dante_runtime, dante_migrator"
-        )
+        _sql(f"REVOKE ALL ON FUNCTION {signature} FROM PUBLIC, dante_runtime, dante_migrator")
         _sql(f"GRANT EXECUTE ON FUNCTION {signature} TO dante_runtime")
 
 

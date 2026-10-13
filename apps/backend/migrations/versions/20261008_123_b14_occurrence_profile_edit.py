@@ -4,6 +4,7 @@ Read-only B06 authority remains unchanged. A selected occurrence is always in
 scope. The other past occurrences are never rewritten. A following edit also
 applies to future occurrences generated after acceptance via a dated policy.
 """
+
 from collections.abc import Sequence
 
 import sqlalchemy as sa
@@ -14,6 +15,7 @@ revision: str = "20261008_123"
 down_revision: str | None = "20261008_122"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
+
 
 def upgrade() -> None:
     op.create_table(
@@ -31,33 +33,58 @@ def upgrade() -> None:
         sa.Column("accepted_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("profile_patch", JSONB(), nullable=False),
         sa.Column("target_occurrence_refs", sa.ARRAY(sa.Uuid()), nullable=False),
-        sa.PrimaryKeyConstraint("self_person_ref","operation_id",
-                                name="pk_occurrence_profile_edit"),
-        sa.UniqueConstraint("source_native_ref","revision",
-                            name="uq_occurrence_profile_edit_source_revision"),
-        sa.ForeignKeyConstraint(["self_person_ref"],["dante.person.person_ref"],
-                                name="fk_occurrence_profile_edit_person"),
-        sa.ForeignKeyConstraint(["source_native_ref"],["dante.native_address.native_ref"],
-                                name="fk_occurrence_profile_edit_source"),
-        sa.ForeignKeyConstraint(["selected_occurrence_ref"],["dante.occurrence.occurrence_ref"],
-                                name="fk_occurrence_profile_edit_occurrence"),
-        sa.CheckConstraint("revision>=1 AND expected_revision>=0",
-                           name=op.f("ck_occurrence_profile_edit_revision")),
-        sa.CheckConstraint("operation_id=btrim(operation_id) AND operation_id<>'' "
-                           "AND char_length(operation_id)<=200",
-                           name=op.f("ck_occurrence_profile_edit_operation")),
-        sa.CheckConstraint("scope_code IN ('only_this','this_and_following')",
-                           name=op.f("ck_occurrence_profile_edit_scope")),
-        sa.CheckConstraint("jsonb_typeof(profile_patch)='object' AND "
-                           "profile_patch<>'{}'::jsonb",
-                           name=op.f("ck_occurrence_profile_edit_patch")),
-        schema="dante"
+        sa.PrimaryKeyConstraint(
+            "self_person_ref", "operation_id", name="pk_occurrence_profile_edit"
+        ),
+        sa.UniqueConstraint(
+            "source_native_ref", "revision", name="uq_occurrence_profile_edit_source_revision"
+        ),
+        sa.ForeignKeyConstraint(
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
+            name="fk_occurrence_profile_edit_person",
+        ),
+        sa.ForeignKeyConstraint(
+            ["source_native_ref"],
+            ["dante.native_address.native_ref"],
+            name="fk_occurrence_profile_edit_source",
+        ),
+        sa.ForeignKeyConstraint(
+            ["selected_occurrence_ref"],
+            ["dante.occurrence.occurrence_ref"],
+            name="fk_occurrence_profile_edit_occurrence",
+        ),
+        sa.CheckConstraint(
+            "revision>=1 AND expected_revision>=0", name=op.f("ck_occurrence_profile_edit_revision")
+        ),
+        sa.CheckConstraint(
+            "operation_id=btrim(operation_id) AND operation_id<>'' "
+            "AND char_length(operation_id)<=200",
+            name=op.f("ck_occurrence_profile_edit_operation"),
+        ),
+        sa.CheckConstraint(
+            "scope_code IN ('only_this','this_and_following')",
+            name=op.f("ck_occurrence_profile_edit_scope"),
+        ),
+        sa.CheckConstraint(
+            "jsonb_typeof(profile_patch)='object' AND profile_patch<>'{}'::jsonb",
+            name=op.f("ck_occurrence_profile_edit_patch"),
+        ),
+        schema="dante",
     )
-    db=op.get_bind()
+    db = op.get_bind()
     db.exec_driver_sql("ALTER TABLE dante.occurrence_profile_edit OWNER TO dante_owner")
-    db.exec_driver_sql("REVOKE ALL ON dante.occurrence_profile_edit "
-                       "FROM PUBLIC,dante_runtime,dante_migrator")
-    for ddl in (_COORDINATE_INSTANT,_PROFILE_PATCH,_ACTIVITY_ORIGIN,_EDIT_STATE,_ACTIVITY_PROFILE,_ACCEPT_EDIT):
+    db.exec_driver_sql(
+        "REVOKE ALL ON dante.occurrence_profile_edit FROM PUBLIC,dante_runtime,dante_migrator"
+    )
+    for ddl in (
+        _COORDINATE_INSTANT,
+        _PROFILE_PATCH,
+        _ACTIVITY_ORIGIN,
+        _EDIT_STATE,
+        _ACTIVITY_PROFILE,
+        _ACCEPT_EDIT,
+    ):
         db.execute(sa.text(ddl))
     for signature in (
         "occurrence_edit_coordinate_instant(uuid,uuid,text)",
@@ -67,9 +94,11 @@ def upgrade() -> None:
         "accept_self_occurrence_profile_edit(uuid,uuid,text,bigint,uuid,text,text,jsonb)",
     ):
         db.exec_driver_sql(f"ALTER FUNCTION dante.{signature} OWNER TO dante_owner")
-        db.exec_driver_sql(f"REVOKE ALL ON FUNCTION dante.{signature} "
-                           "FROM PUBLIC,dante_runtime,dante_migrator")
+        db.exec_driver_sql(
+            f"REVOKE ALL ON FUNCTION dante.{signature} FROM PUBLIC,dante_runtime,dante_migrator"
+        )
         db.exec_driver_sql(f"GRANT EXECUTE ON FUNCTION dante.{signature} TO dante_runtime")
+
 
 def downgrade() -> None:
     raise RuntimeError("Accepted occurrence edit history is forward-only")

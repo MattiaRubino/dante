@@ -19,8 +19,10 @@ depends_on: str | Sequence[str] | None = None
 
 
 def _definition() -> str:
-    value = op.get_bind().exec_driver_sql(
-        """
+    value = (
+        op.get_bind()
+        .exec_driver_sql(
+            """
         SELECT pg_get_functiondef(routine.oid)
           FROM pg_proc AS routine
           JOIN pg_namespace AS namespace ON namespace.oid=routine.pronamespace
@@ -28,7 +30,9 @@ def _definition() -> str:
            AND routine.proname='list_self_routines'
            AND routine.pronargs=1
         """
-    ).scalar_one()
+        )
+        .scalar_one()
+    )
     if not isinstance(value, str):
         raise RuntimeError("B14 Routine listing capability is unavailable")
     return value
@@ -42,9 +46,7 @@ def upgrade() -> None:
         raise RuntimeError("B14 optional Routine listing patch point did not match exactly once")
     connection = op.get_bind()
     connection.exec_driver_sql(definition.replace(old, new).replace("%", "%%"))
-    connection.exec_driver_sql(
-        "ALTER FUNCTION dante.list_self_routines(uuid) OWNER TO dante_owner"
-    )
+    connection.exec_driver_sql("ALTER FUNCTION dante.list_self_routines(uuid) OWNER TO dante_owner")
     connection.exec_driver_sql(
         "REVOKE ALL PRIVILEGES ON FUNCTION dante.list_self_routines(uuid) "
         "FROM PUBLIC,dante_runtime,dante_migrator"

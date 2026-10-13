@@ -40,11 +40,13 @@ def upgrade() -> None:
             name="ck_reality_review_policy_subject_kind",
         ),
         sa.ForeignKeyConstraint(
-            ["self_person_ref"], ["dante.person.person_ref"],
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
             name="fk_reality_review_policy_person",
         ),
         sa.PrimaryKeyConstraint(
-            "subject_kind", "subject_native_ref",
+            "subject_kind",
+            "subject_native_ref",
             name="pk_reality_review_policy",
         ),
         schema=_SCHEMA,
@@ -82,11 +84,11 @@ def upgrade() -> None:
             ],
             name="fk_reality_review_policy_state_owner",
         ),
-        sa.PrimaryKeyConstraint(
-            "state_ref", name="pk_reality_review_policy_state"
-        ),
+        sa.PrimaryKeyConstraint("state_ref", name="pk_reality_review_policy_state"),
         sa.UniqueConstraint(
-            "subject_kind", "subject_native_ref", "state_ref",
+            "subject_kind",
+            "subject_native_ref",
+            "state_ref",
             name="uq_reality_review_policy_state_owner",
         ),
         schema=_SCHEMA,
@@ -113,7 +115,9 @@ def upgrade() -> None:
             name="fk_reality_review_policy_current_history_state",
         ),
         sa.PrimaryKeyConstraint(
-            "subject_kind", "subject_native_ref", "current_from_at",
+            "subject_kind",
+            "subject_native_ref",
+            "current_from_at",
             name="pk_reality_review_policy_current_history",
         ),
         schema=_SCHEMA,
@@ -143,7 +147,8 @@ def upgrade() -> None:
             name="ck_reality_review_policy_operation_fingerprint",
         ),
         sa.ForeignKeyConstraint(
-            ["self_person_ref"], ["dante.person.person_ref"],
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
             name="fk_reality_review_policy_operation_person",
         ),
         sa.ForeignKeyConstraint(
@@ -156,7 +161,8 @@ def upgrade() -> None:
             name="fk_reality_review_policy_operation_state",
         ),
         sa.PrimaryKeyConstraint(
-            "self_person_ref", "operation_id",
+            "self_person_ref",
+            "operation_id",
             name="pk_reality_review_policy_operation",
         ),
         schema=_SCHEMA,
@@ -392,7 +398,8 @@ $function$;
             name="ck_temporal_objective_shape",
         ),
         sa.ForeignKeyConstraint(
-            ["self_person_ref"], ["dante.person.person_ref"],
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
             name="fk_temporal_objective_person",
         ),
         sa.PrimaryKeyConstraint("objective_ref", name="pk_temporal_objective"),
@@ -419,15 +426,18 @@ $function$;
             name="ck_temporal_objective_create_operation_fingerprint",
         ),
         sa.ForeignKeyConstraint(
-            ["self_person_ref"], ["dante.person.person_ref"],
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
             name="fk_temporal_objective_create_operation_person",
         ),
         sa.ForeignKeyConstraint(
-            ["objective_ref"], ["dante.temporal_objective.objective_ref"],
+            ["objective_ref"],
+            ["dante.temporal_objective.objective_ref"],
             name="fk_temporal_objective_create_operation_objective",
         ),
         sa.PrimaryKeyConstraint(
-            "self_person_ref", "operation_id",
+            "self_person_ref",
+            "operation_id",
             name="pk_temporal_objective_create_operation",
         ),
         schema=_SCHEMA,
@@ -451,16 +461,16 @@ $function$;
             name="ck_temporal_objective_observation_qualitative",
         ),
         sa.ForeignKeyConstraint(
-            ["observation_ref"], ["dante.observation.observation_ref"],
+            ["observation_ref"],
+            ["dante.observation.observation_ref"],
             name="fk_temporal_objective_observation_identity",
         ),
         sa.ForeignKeyConstraint(
-            ["objective_ref"], ["dante.temporal_objective.objective_ref"],
+            ["objective_ref"],
+            ["dante.temporal_objective.objective_ref"],
             name="fk_temporal_objective_observation_objective",
         ),
-        sa.PrimaryKeyConstraint(
-            "observation_ref", name="pk_temporal_objective_observation"
-        ),
+        sa.PrimaryKeyConstraint("observation_ref", name="pk_temporal_objective_observation"),
         schema=_SCHEMA,
     )
     op.create_table(
@@ -483,18 +493,19 @@ $function$;
             name="ck_temporal_objective_evaluation_state_recorded_at",
         ),
         sa.ForeignKeyConstraint(
-            ["objective_ref"], ["dante.temporal_objective.objective_ref"],
+            ["objective_ref"],
+            ["dante.temporal_objective.objective_ref"],
             name="fk_temporal_objective_evaluation_state_objective",
         ),
         sa.ForeignKeyConstraint(
-            ["observation_ref"], ["dante.temporal_objective_observation.observation_ref"],
+            ["observation_ref"],
+            ["dante.temporal_objective_observation.observation_ref"],
             name="fk_temporal_objective_evaluation_state_observation",
         ),
-        sa.PrimaryKeyConstraint(
-            "state_ref", name="pk_temporal_objective_evaluation_state"
-        ),
+        sa.PrimaryKeyConstraint("state_ref", name="pk_temporal_objective_evaluation_state"),
         sa.UniqueConstraint(
-            "objective_ref", "state_ref",
+            "objective_ref",
+            "state_ref",
             name="uq_temporal_objective_evaluation_state_owner",
         ),
         schema=_SCHEMA,
@@ -519,7 +530,8 @@ $function$;
             name="fk_temporal_objective_evaluation_history_state",
         ),
         sa.PrimaryKeyConstraint(
-            "objective_ref", "current_from_at",
+            "objective_ref",
+            "current_from_at",
             name="pk_temporal_objective_evaluation_history",
         ),
         schema=_SCHEMA,
@@ -549,23 +561,28 @@ $function$;
             name="ck_temporal_objective_result_operation_fingerprint",
         ),
         sa.ForeignKeyConstraint(
-            ["self_person_ref"], ["dante.person.person_ref"],
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
             name="fk_temporal_objective_result_operation_person",
         ),
         sa.ForeignKeyConstraint(
-            ["objective_ref"], ["dante.temporal_objective.objective_ref"],
+            ["objective_ref"],
+            ["dante.temporal_objective.objective_ref"],
             name="fk_temporal_objective_result_operation_objective",
         ),
         sa.ForeignKeyConstraint(
-            ["observation_ref"], ["dante.temporal_objective_observation.observation_ref"],
+            ["observation_ref"],
+            ["dante.temporal_objective_observation.observation_ref"],
             name="fk_temporal_objective_result_operation_observation",
         ),
         sa.ForeignKeyConstraint(
-            ["state_ref"], ["dante.temporal_objective_evaluation_state.state_ref"],
+            ["state_ref"],
+            ["dante.temporal_objective_evaluation_state.state_ref"],
             name="fk_temporal_objective_result_operation_state",
         ),
         sa.PrimaryKeyConstraint(
-            "self_person_ref", "operation_id",
+            "self_person_ref",
+            "operation_id",
             name="pk_temporal_objective_result_operation",
         ),
         schema=_SCHEMA,
@@ -942,10 +959,7 @@ $function$;
         "dante.record_self_temporal_objective_result(uuid,text,text,uuid,uuid,uuid,boolean,numeric,text,text)",
     ):
         _sql(f"ALTER FUNCTION {signature} OWNER TO {_OWNER}")
-        _sql(
-            f"REVOKE ALL ON FUNCTION {signature} "
-            f"FROM PUBLIC,{_RUNTIME},{_MIGRATOR}"
-        )
+        _sql(f"REVOKE ALL ON FUNCTION {signature} FROM PUBLIC,{_RUNTIME},{_MIGRATOR}")
         _sql(f"GRANT EXECUTE ON FUNCTION {signature} TO {_RUNTIME}")
 
     for table in (
@@ -960,10 +974,7 @@ $function$;
         "temporal_objective_evaluation_current_history",
         "temporal_objective_result_operation",
     ):
-        _sql(
-            f"REVOKE ALL ON TABLE dante.{table} "
-            f"FROM PUBLIC,{_RUNTIME},{_MIGRATOR}"
-        )
+        _sql(f"REVOKE ALL ON TABLE dante.{table} FROM PUBLIC,{_RUNTIME},{_MIGRATOR}")
 
 
 def downgrade() -> None:

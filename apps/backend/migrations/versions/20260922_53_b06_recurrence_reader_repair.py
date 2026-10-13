@@ -25,7 +25,7 @@ def _sql(statement: str) -> None:
 
 
 def _read_function(prefix: str, owner: str, owner_scope: str) -> str:
-    return rf'''
+    return rf"""
 CREATE OR REPLACE FUNCTION dante.get_self_{prefix}_recurrence(requested_self_person_ref uuid, requested_{owner} uuid)
 RETURNS TABLE(
   material_state_ref uuid, family_code text, range_kind text, expected_occurrence_count integer,
@@ -73,7 +73,7 @@ BEGIN
   WHERE s.{owner}=requested_{owner};
 END;
 $function$;
-'''
+"""
 
 
 def upgrade() -> None:
@@ -83,8 +83,12 @@ def upgrade() -> None:
     ):
         _sql(_read_function(prefix, owner, scope))
         _sql(f"ALTER FUNCTION dante.get_self_{prefix}_recurrence(uuid,uuid) OWNER TO {_OWNER}")
-        _sql(f"REVOKE ALL PRIVILEGES ON FUNCTION dante.get_self_{prefix}_recurrence(uuid,uuid) FROM PUBLIC,{_RUNTIME},{_MIGRATOR}")
-        _sql(f"GRANT EXECUTE ON FUNCTION dante.get_self_{prefix}_recurrence(uuid,uuid) TO {_RUNTIME}")
+        _sql(
+            f"REVOKE ALL PRIVILEGES ON FUNCTION dante.get_self_{prefix}_recurrence(uuid,uuid) FROM PUBLIC,{_RUNTIME},{_MIGRATOR}"
+        )
+        _sql(
+            f"GRANT EXECUTE ON FUNCTION dante.get_self_{prefix}_recurrence(uuid,uuid) TO {_RUNTIME}"
+        )
 
 
 def downgrade() -> None:

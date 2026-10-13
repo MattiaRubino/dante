@@ -872,13 +872,18 @@ export function EventDetailDialog({
     left: 12,
     top: 12,
   });
-  const [toolbarTarget, setToolbarTarget] = useState<HTMLDivElement | null>(null);
+  const [toolbarTarget, setToolbarTarget] = useState<HTMLDivElement | null>(
+    null,
+  );
   const [confirmingMove, setConfirmingMove] = useState(false);
   const [placementLockState, setPlacementLockState] = useState<{
-    scheduleRef: string; locked: boolean;
+    scheduleRef: string;
+    locked: boolean;
   } | null>(null);
-  const placementLocked = placementLockState?.scheduleRef === placementLockScheduleRef
-    ? placementLockState.locked : null;
+  const placementLocked =
+    placementLockState?.scheduleRef === placementLockScheduleRef
+      ? placementLockState.locked
+      : null;
   const currentEditingProfile =
     editingProfile?.activityRef === sessionSubject?.ref ? editingProfile : null;
 
@@ -896,7 +901,9 @@ export function EventDetailDialog({
     const siblings = Array.from(document.body.children).filter(
       (element) => !element.classList.contains('timeline-modal-backdrop'),
     );
-    const previousInert = siblings.map((element) => element.hasAttribute('inert'));
+    const previousInert = siblings.map((element) =>
+      element.hasAttribute('inert'),
+    );
     siblings.forEach((element) => element.setAttribute('inert', ''));
     return () => {
       document.body.style.overflow = previousBody;
@@ -940,8 +947,10 @@ export function EventDetailDialog({
     };
     updatePosition();
     window.addEventListener('resize', updatePosition);
-    const observer = typeof ResizeObserver === 'undefined' || !dialogRef.current
-      ? null : new ResizeObserver(updatePosition);
+    const observer =
+      typeof ResizeObserver === 'undefined' || !dialogRef.current
+        ? null
+        : new ResizeObserver(updatePosition);
     if (dialogRef.current) observer?.observe(dialogRef.current);
     return () => {
       window.removeEventListener('resize', updatePosition);
@@ -1013,43 +1022,80 @@ export function EventDetailDialog({
       >
         <div className="timeline-event-modal__header">
           <div className="timeline-event-modal__header-actions">
-            {currentEditingProfile ? null : placementLockScheduleRef === null ? null : (
+            {currentEditingProfile ? null : placementLockScheduleRef ===
+              null ? null : (
               <PlacementLockControls
                 key={placementLockScheduleRef}
                 scheduleRef={placementLockScheduleRef}
                 variant="icon"
-                onLockChanged={(locked) => setPlacementLockState({
-                  scheduleRef: placementLockScheduleRef, locked,
-                })}
+                onLockChanged={(locked) =>
+                  setPlacementLockState({
+                    scheduleRef: placementLockScheduleRef,
+                    locked,
+                  })
+                }
               />
             )}
-            {currentEditingProfile ? null : <div ref={setToolbarTarget} className="timeline-event-modal__owner-actions" />}
+            {currentEditingProfile ? null : (
+              <div
+                ref={setToolbarTarget}
+                className="timeline-event-modal__owner-actions"
+              />
+            )}
             {currentEditingProfile || detail.ownerKind !== 'event' ? null : (
-              <button type="button" disabled title="Eliminazione Event non disponibile"
-                aria-label="Elimina Event non disponibile">
+              <button
+                type="button"
+                disabled
+                title="Eliminazione Event non disponibile"
+                aria-label="Elimina Event non disponibile"
+              >
                 <TimelineInspectorIcon name="trash" />
               </button>
             )}
-            {currentEditingProfile || placementLockScheduleRef === null ? null : (
-              <button type="button" disabled={pending || !canUnschedule || placementLocked !== false}
+            {currentEditingProfile ||
+            placementLockScheduleRef === null ? null : (
+              <button
+                type="button"
+                disabled={
+                  pending || !canUnschedule || placementLocked !== false
+                }
                 aria-label="Sposta in Da collocare"
-                title={placementLocked === false ? 'Sposta in Da collocare' : 'Sblocca prima di spostare'}
-                onClick={() => setConfirmingMove(true)}>
+                title={
+                  placementLocked === false
+                    ? 'Sposta in Da collocare'
+                    : 'Sblocca prima di spostare'
+                }
+                onClick={() => setConfirmingMove(true)}
+              >
                 <TimelineInspectorIcon name="unschedule" />
               </button>
             )}
-            <TemporalPanelCloseButton buttonRef={closeButtonRef}
-              label={currentEditingProfile ? 'Torna all’Inspector' : 'Chiudi Inspector'}
-              onClick={requestCloseCurrent} />
+            <TemporalPanelCloseButton
+              buttonRef={closeButtonRef}
+              label={
+                currentEditingProfile
+                  ? 'Torna all’Inspector'
+                  : 'Chiudi Inspector'
+              }
+              onClick={requestCloseCurrent}
+            />
           </div>
         </div>
         <div className="timeline-event-modal__title-row">
-          <h3 id="timeline-event-dialog-title" className="timeline-event-modal__title" title={detail.title}>
+          <h3
+            id="timeline-event-dialog-title"
+            className="timeline-event-modal__title"
+            title={detail.title}
+          >
             {currentEditingProfile ? 'Modifica attività' : detail.title}
           </h3>
           {!currentEditingProfile && sessionSubject?.kind === 'activity' ? (
-            <ActivitySessionCardControls activityRef={sessionSubject.ref}
-              label={detail.title} variant="inspector" showPlanned={false} />
+            <ActivitySessionCardControls
+              activityRef={sessionSubject.ref}
+              label={detail.title}
+              variant="inspector"
+              showPlanned={false}
+            />
           ) : null}
         </div>
         {currentEditingProfile ? (
@@ -1085,15 +1131,33 @@ export function EventDetailDialog({
               {formatTimelineMinute(detail.endMinute)}
               {detail.meta ? ` · ${detail.meta}` : ''}
             </p>
-            {detail.groupLabel && detail.groupLabel !== LEGACY_UNASSIGNED_GROUP &&
-              detail.groupLabel !== 'Senza Life Area' ? (
+            {detail.groupLabel &&
+            detail.groupLabel !== LEGACY_UNASSIGNED_GROUP &&
+            detail.groupLabel !== 'Senza Life Area' ? (
               <p className="timeline-event-modal__group">{detail.groupLabel}</p>
             ) : null}
             {confirmingMove ? (
-              <div className="timeline-activity-inspector__confirmation" role="group" aria-label="Sposta in Da collocare">
-                <p>Rimuovere questo orario e spostare l’elemento in Da collocare?</p>
-                <button type="button" disabled={pending} onClick={() => { setConfirmingMove(false); onUnschedule(); }}>Conferma</button>
-                <button type="button" onClick={() => setConfirmingMove(false)}>Annulla</button>
+              <div
+                className="timeline-activity-inspector__confirmation"
+                role="group"
+                aria-label="Sposta in Da collocare"
+              >
+                <p>
+                  Rimuovere questo orario e spostare l’elemento in Da collocare?
+                </p>
+                <button
+                  type="button"
+                  disabled={pending}
+                  onClick={() => {
+                    setConfirmingMove(false);
+                    onUnschedule();
+                  }}
+                >
+                  Conferma
+                </button>
+                <button type="button" onClick={() => setConfirmingMove(false)}>
+                  Annulla
+                </button>
               </div>
             ) : null}
             {sessionSubject?.kind === 'activity' ? (
@@ -1105,8 +1169,10 @@ export function EventDetailDialog({
               </>
             ) : null}
             {sessionSubject?.kind === 'occurrence' ? (
-              <TimelineInspectorOccurrenceSession occurrenceRef={sessionSubject.ref}
-                label={detail.title} />
+              <TimelineInspectorOccurrenceSession
+                occurrenceRef={sessionSubject.ref}
+                label={detail.title}
+              />
             ) : null}
             {detail.ownerKind === 'event' && detail.eventRef ? (
               <>
@@ -1121,7 +1187,10 @@ export function EventDetailDialog({
                     }}
                   />
                 ) : null}
-                <TimelineEventAgendaEditor eventRef={detail.eventRef} hideWhenEmpty />
+                <TimelineEventAgendaEditor
+                  eventRef={detail.eventRef}
+                  hideWhenEmpty
+                />
               </>
             ) : null}
             {detail.ownerKind === undefined ? (
@@ -1138,8 +1207,8 @@ export function EventDetailDialog({
             )}
             {detail.realitySubject === undefined ? null : (
               <TimelineInspectorReality
-                  kind={detail.realitySubject.kind}
-                  subjectRef={detail.realitySubject.ref}
+                kind={detail.realitySubject.kind}
+                subjectRef={detail.realitySubject.ref}
               />
             )}
             {responsibilitySubject === null ? null : (

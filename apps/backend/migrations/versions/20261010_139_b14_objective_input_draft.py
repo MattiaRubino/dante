@@ -2,6 +2,7 @@
 
 An unconfirmed value is NOT an Observation, Evaluation, Actual or Outcome.
 """
+
 from collections.abc import Sequence
 
 from alembic import op
@@ -17,10 +18,8 @@ def upgrade() -> None:
     for sql in (_TABLE, _INDEX, _SAVE, _LIST, _CONFIRM):
         # psycopg3 interprets raw %ROWTYPE as a placeholder in driver SQL.
         # Escape % only for the driver's statement parser; PostgreSQL sees %ROWTYPE.
-        bind.exec_driver_sql(sql.replace('%', '%%'))
-    bind.exec_driver_sql(
-        "ALTER TABLE dante.temporal_objective_input_draft OWNER TO dante_owner"
-    )
+        bind.exec_driver_sql(sql.replace("%", "%%"))
+    bind.exec_driver_sql("ALTER TABLE dante.temporal_objective_input_draft OWNER TO dante_owner")
     bind.exec_driver_sql(
         "REVOKE ALL ON dante.temporal_objective_input_draft "
         "FROM PUBLIC,dante_runtime,dante_migrator"

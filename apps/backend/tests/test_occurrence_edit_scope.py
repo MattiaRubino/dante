@@ -152,12 +152,15 @@ def test_fail_closed_on_incomplete_or_cross_source_snapshots(
     cases = {
         "missing": timeline[1:],
         "duplicate": (*timeline, timeline[0]),
-        "mixed_source": (*timeline, RecurrenceEditCandidate(
-            occurrence_ref=UUID(int=42),
-            source_native_ref=OTHER_SOURCE,
-            expected_at=NOW + timedelta(days=4),
-            origin_code="recurrence_generated",
-        )),
+        "mixed_source": (
+            *timeline,
+            RecurrenceEditCandidate(
+                occurrence_ref=UUID(int=42),
+                source_native_ref=OTHER_SOURCE,
+                expected_at=NOW + timedelta(days=4),
+                origin_code="recurrence_generated",
+            ),
+        ),
         "incomplete": timeline,
     }
     with pytest.raises(EditScopeInputError):

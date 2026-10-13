@@ -1,10 +1,7 @@
 import type { Instant, PlainDate, PlainDateTime } from '@dante/time';
 
 export type TemporalScheduleDisambiguation = 'reject' | 'earlier' | 'later';
-export type TemporalScheduleCoarsePeriod =
-  | 'morning'
-  | 'afternoon'
-  | 'evening';
+export type TemporalScheduleCoarsePeriod = 'morning' | 'afternoon' | 'evening';
 
 export type TemporalSchedulePlacementInput =
   | Readonly<{

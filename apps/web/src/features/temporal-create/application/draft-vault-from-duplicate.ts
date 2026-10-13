@@ -20,7 +20,8 @@ export function draftVaultSnapshotFromDuplicate(
     version: 1 as const,
     fields,
     advanced: Object.freeze({
-      ...original, ...seed.advanced,
+      ...original,
+      ...seed.advanced,
       ...(selectedArea ? { lifeArea: selectedArea } : {}),
     }),
     surface: 'full' as const,

@@ -758,63 +758,84 @@ class RevisedEventProfileResponse(BaseModel):
     operation_id="temporal_revise_self_event_profile",
 )
 async def revise_event_profile(
-    event_ref: UUID, body: ReviseEventProfileRequest,
-    context: MutatingDanteContextDependency, request: Request, response: Response,
+    event_ref: UUID,
+    body: ReviseEventProfileRequest,
+    context: MutatingDanteContextDependency,
+    request: Request,
+    response: Response,
 ) -> RevisedEventProfileResponse:
     """Owner-serialized immutable revision of the current Event descriptor."""
     response.headers["Cache-Control"] = "no-store"
     try:
         runtime = cast(DatabaseRuntime, request.app.state.database_runtime)
         async with runtime.session_factory() as session, session.begin():
-            accepted = (await session.execute(text("""
+            accepted = (
+                (
+                    await session.execute(
+                        text("""
                 SELECT * FROM dante.revise_self_event_profile(
                     :actor,:event,:operation,:expected,:title,:description,:location,:color)
-            """), {
-                "actor": context.self_person_ref,
-                "event": NativeRef(event_ref),
-                "operation": body.operation_id,
-                "expected": body.expected_revision,
-                "title": body.title,
-                "description": body.description,
-                "location": body.location,
-                "color": body.color_code,
-            })).mappings().one()
+            """),
+                        {
+                            "actor": context.self_person_ref,
+                            "event": NativeRef(event_ref),
+                            "operation": body.operation_id,
+                            "expected": body.expected_revision,
+                            "title": body.title,
+                            "description": body.description,
+                            "location": body.location,
+                            "color": body.color_code,
+                        },
+                    )
+                )
+                .mappings()
+                .one()
+            )
     except DBAPIError as exc:
         constraint = getattr(getattr(exc.orig, "diag", None), "constraint_name", None)
         if constraint == "event_profile_unavailable":
             raise _not_found_problem() from exc
         if constraint == "event_profile_recurring_source":
             raise ProblemError(
-                status=409, code="temporal.event.profile_recurring_source",
-                category="conflict", title="Recurring Event scope required",
+                status=409,
+                code="temporal.event.profile_recurring_source",
+                category="conflict",
+                title="Recurring Event scope required",
                 detail="Select an Occurrence and an explicit edit scope; this source is not editable as one Event.",
                 retryable=False,
             ) from exc
-        if constraint in ("event_profile_revision_conflict",
-                          "uq_event_profile_revision_operation"):
+        if constraint in ("event_profile_revision_conflict", "uq_event_profile_revision_operation"):
             raise ProblemError(
-                status=409, code="temporal.event.profile_conflict",
-                category="conflict", title="Event profile changed",
+                status=409,
+                code="temporal.event.profile_conflict",
+                category="conflict",
+                title="Event profile changed",
                 detail="Reload the Event before revising its metadata.",
                 retryable=False,
             ) from exc
         if constraint in ("event_profile_invalid", "event_profile_no_change"):
             raise ProblemError(
-                status=422, code="temporal.event.profile_invalid",
-                category="validation", title="Invalid Event metadata",
+                status=422,
+                code="temporal.event.profile_invalid",
+                category="validation",
+                title="Invalid Event metadata",
                 detail="Use a nonempty title and canonical optional metadata.",
                 retryable=False,
             ) from exc
         raise ProblemError(
-            status=503, code="temporal.event.profile_unavailable",
-            category="service", title="Event profile unavailable",
+            status=503,
+            code="temporal.event.profile_unavailable",
+            category="service",
+            title="Event profile unavailable",
             detail="The Event profile could not be updated safely.",
             retryable=True,
         ) from exc
     except SQLAlchemyError as exc:
         raise ProblemError(
-            status=503, code="temporal.event.profile_unavailable",
-            category="service", title="Event profile unavailable",
+            status=503,
+            code="temporal.event.profile_unavailable",
+            category="service",
+            title="Event profile unavailable",
             detail="The Event profile could not be updated safely.",
             retryable=True,
         ) from exc

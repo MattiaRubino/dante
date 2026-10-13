@@ -8,8 +8,8 @@ from uuid import uuid7
 
 import pytest
 from tests.integration.temporal.support.life_area import ensure_test_life_area
-from tests.integration.temporal.test_schedule_create import _context, _seed_self_person
 from tests.integration.temporal.test_plan_admission import _review
+from tests.integration.temporal.test_schedule_create import _context, _seed_self_person
 
 from dante.modules.temporal.activity import TemporalActivityApplication
 from dante.modules.temporal.actual_runtime import ActualApplication

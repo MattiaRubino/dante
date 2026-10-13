@@ -35,9 +35,7 @@ def _admin(database: Any) -> psycopg.Connection[Any]:
 
 def test_b04_c_window_catalog_probe(migrated_database: Any) -> None:
     with _admin(migrated_database) as connection:
-        revision = connection.execute(
-            "SELECT version_num FROM dante.alembic_version"
-        ).fetchone()
+        revision = connection.execute("SELECT version_num FROM dante.alembic_version").fetchone()
         topology = connection.execute(
             """
             SELECT
@@ -128,9 +126,7 @@ def test_b04_c_window_catalog_probe(migrated_database: Any) -> None:
     assert topology is not None
     print("B04_C_LIVE_TOPOLOGY=" + "|".join(str(value) for value in topology))
     assert table_owners == {(table, "dante_owner") for table in _WINDOW_TABLES}
-    assert window_acl == {
-        table: (True, False, False, False) for table in _WINDOW_TABLES
-    }
+    assert window_acl == dict.fromkeys(_WINDOW_TABLES, (True, False, False, False))
     assert private_acl == (False, False)
     assert mutate_security == (
         "dante_owner",
@@ -149,4 +145,4 @@ def test_b04_c_window_catalog_probe(migrated_database: Any) -> None:
     }
 
     mapped = {table.name for table in MAPPED_TABLES}
-    assert _WINDOW_TABLES <= mapped
+    assert mapped >= _WINDOW_TABLES

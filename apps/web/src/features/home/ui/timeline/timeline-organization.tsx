@@ -49,7 +49,10 @@ export function useTimelineOrganization(enabled: boolean) {
   const [snapshot, setSnapshot] = useState<OrganizationSnapshot | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [revision, setRevision] = useState(0);
-  const source = useMemo(() => createRemoteTemporalOrganizationDataSource(), []);
+  const source = useMemo(
+    () => createRemoteTemporalOrganizationDataSource(),
+    [],
+  );
   const refresh = useCallback(() => setRevision((value) => value + 1), []);
 
   useEffect(() => {

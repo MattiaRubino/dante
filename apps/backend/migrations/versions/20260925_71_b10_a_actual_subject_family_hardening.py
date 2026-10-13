@@ -11,7 +11,6 @@ through the Event or Occurrence capability (and vice versa).
 
 from collections.abc import Sequence
 
-import sqlalchemy as sa
 from alembic import op
 
 revision: str = "20260925_71"
@@ -202,13 +201,9 @@ $function$
 """
     )
 
-    old_write = (
-        "dante.record_self_actual_realization(uuid,text,text,uuid,uuid,uuid,uuid,boolean,text,timestamptz,timestamptz,uuid[],uuid[])"
-    )
+    old_write = "dante.record_self_actual_realization(uuid,text,text,uuid,uuid,uuid,uuid,boolean,text,timestamptz,timestamptz,uuid[],uuid[])"
     old_read = "dante.get_self_subject_actual(uuid,uuid)"
-    new_write = (
-        "dante.record_self_actual_realization(uuid,text,text,text,uuid,uuid,uuid,uuid,boolean,text,timestamptz,timestamptz,uuid[],uuid[])"
-    )
+    new_write = "dante.record_self_actual_realization(uuid,text,text,text,uuid,uuid,uuid,uuid,boolean,text,timestamptz,timestamptz,uuid[],uuid[])"
     new_read = "dante.get_self_subject_actual(uuid,text,uuid)"
     helper = "dante._actual_subject_owned_as(uuid,text,uuid)"
 

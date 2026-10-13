@@ -21,35 +21,35 @@ function runtimeWithEventSource() {
   let acceptedStarts = Temporal.PlainDateTime.from('2026-09-17T18:30:00');
   let acceptedEnds = Temporal.PlainDateTime.from('2026-09-17T20:00:00');
 
-  const createScheduledEvent = vi.fn<TemporalEventDataSource['createScheduledEvent']>(
-    (request) => {
-      if (request.placement.kind !== 'floating-local-interval') {
-        throw new Error('Expected floating-local Event placement.');
-      }
-      acceptedStarts = request.placement.startsLocalAt;
-      acceptedEnds = request.placement.endsLocalAt;
-      return Promise.resolve(
-        Object.freeze({
-          event: Object.freeze({
-            eventRef: EVENT_REF,
-            title: request.title,
-            agendaParts: Object.freeze([...request.agendaParts]),
-            createdAt: Temporal.Instant.from('2026-09-17T12:00:00Z'),
-          }),
-          schedule: Object.freeze({
-            scheduleRef: SCHEDULE_REF,
-            placementMaterialStateRef: STATE_REF,
-            placement: Object.freeze({
-              kind: 'floating-local-interval' as const,
-              startsLocalAt: request.placement.startsLocalAt,
-              endsLocalAt: request.placement.endsLocalAt,
-            }),
-          }),
-          replayed: false,
+  const createScheduledEvent = vi.fn<
+    TemporalEventDataSource['createScheduledEvent']
+  >((request) => {
+    if (request.placement.kind !== 'floating-local-interval') {
+      throw new Error('Expected floating-local Event placement.');
+    }
+    acceptedStarts = request.placement.startsLocalAt;
+    acceptedEnds = request.placement.endsLocalAt;
+    return Promise.resolve(
+      Object.freeze({
+        event: Object.freeze({
+          eventRef: EVENT_REF,
+          title: request.title,
+          agendaParts: Object.freeze([...request.agendaParts]),
+          createdAt: Temporal.Instant.from('2026-09-17T12:00:00Z'),
         }),
-      );
-    },
-  );
+        schedule: Object.freeze({
+          scheduleRef: SCHEDULE_REF,
+          placementMaterialStateRef: STATE_REF,
+          placement: Object.freeze({
+            kind: 'floating-local-interval' as const,
+            startsLocalAt: request.placement.startsLocalAt,
+            endsLocalAt: request.placement.endsLocalAt,
+          }),
+        }),
+        replayed: false,
+      }),
+    );
+  });
   const eventDataSource: TemporalEventDataSource = Object.freeze({
     createScheduledEvent,
   });

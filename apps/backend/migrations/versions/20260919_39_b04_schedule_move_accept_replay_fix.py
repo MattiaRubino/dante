@@ -17,10 +17,7 @@ depends_on: str | Sequence[str] | None = None
 _OWNER = "dante_owner"
 _MIGRATOR = "dante_migrator"
 _RUNTIME = "dante_runtime"
-_ACCEPT_SIGNATURE = (
-    "dante.accept_self_absolute_schedule_move_proposal("
-    "uuid,text,text,uuid,uuid)"
-)
+_ACCEPT_SIGNATURE = "dante.accept_self_absolute_schedule_move_proposal(uuid,text,text,uuid,uuid)"
 
 
 def _execute(sql: str) -> None:

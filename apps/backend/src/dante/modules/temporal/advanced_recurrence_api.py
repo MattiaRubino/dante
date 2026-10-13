@@ -323,7 +323,10 @@ async def replace_routine_advanced_recurrence(
     "/routines/{source_ref}/advanced-recurrence/checkpoint",
     response_model=AdvancedCheckpointResponse,
     status_code=201,
-    responses={**_WRITE_RESPONSES, 200: {"model": AdvancedCheckpointResponse, "description": "Idempotent replay."}},
+    responses={
+        **_WRITE_RESPONSES,
+        200: {"model": AdvancedCheckpointResponse, "description": "Idempotent replay."},
+    },
     operation_id="temporal_checkpoint_routine_advanced_recurrence",
 )
 async def checkpoint_routine_advanced_recurrence(
@@ -369,7 +372,10 @@ async def replace_event_advanced_recurrence(
     "/events/{source_ref}/advanced-recurrence/checkpoint",
     response_model=AdvancedCheckpointResponse,
     status_code=201,
-    responses={**_WRITE_RESPONSES, 200: {"model": AdvancedCheckpointResponse, "description": "Idempotent replay."}},
+    responses={
+        **_WRITE_RESPONSES,
+        200: {"model": AdvancedCheckpointResponse, "description": "Idempotent replay."},
+    },
     operation_id="temporal_checkpoint_event_advanced_recurrence",
 )
 async def checkpoint_event_advanced_recurrence(

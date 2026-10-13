@@ -37,7 +37,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function parseUuid(value: unknown, field: string): string {
   if (typeof value !== 'string' || !UUID_V7.test(value)) {
-    throw new TemporalPlanningTrayRemoteError('protocol', `${field} must be UUIDv7.`);
+    throw new TemporalPlanningTrayRemoteError(
+      'protocol',
+      `${field} must be UUIDv7.`,
+    );
   }
   return value.toLowerCase();
 }
@@ -59,28 +62,49 @@ function parseRevision(value: unknown): number | null {
 
 function parseItem(value: unknown): TemporalPlanningTrayItem {
   if (!isRecord(value)) {
-    throw new TemporalPlanningTrayRemoteError('protocol', 'Planning item must be an object.');
+    throw new TemporalPlanningTrayRemoteError(
+      'protocol',
+      'Planning item must be an object.',
+    );
   }
   if (value.kind !== 'activity' && value.kind !== 'event') {
-    throw new TemporalPlanningTrayRemoteError('protocol', 'Planning item kind is invalid.');
+    throw new TemporalPlanningTrayRemoteError(
+      'protocol',
+      'Planning item kind is invalid.',
+    );
   }
   if (value.state !== 'unplaced' && value.state !== 'postponed') {
-    throw new TemporalPlanningTrayRemoteError('protocol', 'Planning item state is invalid.');
+    throw new TemporalPlanningTrayRemoteError(
+      'protocol',
+      'Planning item state is invalid.',
+    );
   }
   if (value.kind === 'activity' && value.state === 'postponed') {
-    throw new TemporalPlanningTrayRemoteError('protocol', 'Only Events can be postponed.');
+    throw new TemporalPlanningTrayRemoteError(
+      'protocol',
+      'Only Events can be postponed.',
+    );
   }
   if (typeof value.title !== 'string' || !value.title.trim()) {
-    throw new TemporalPlanningTrayRemoteError('protocol', 'Planning item title is invalid.');
+    throw new TemporalPlanningTrayRemoteError(
+      'protocol',
+      'Planning item title is invalid.',
+    );
   }
   if (typeof value.created_at !== 'string') {
-    throw new TemporalPlanningTrayRemoteError('protocol', 'Planning item created_at is invalid.');
+    throw new TemporalPlanningTrayRemoteError(
+      'protocol',
+      'Planning item created_at is invalid.',
+    );
   }
   let createdAt: Temporal.Instant;
   try {
     createdAt = Temporal.Instant.from(value.created_at);
   } catch {
-    throw new TemporalPlanningTrayRemoteError('protocol', 'Planning item created_at is invalid.');
+    throw new TemporalPlanningTrayRemoteError(
+      'protocol',
+      'Planning item created_at is invalid.',
+    );
   }
   const scheduleRef = parseNullableUuid(value.schedule_ref, 'schedule_ref');
   if (value.state === 'postponed' && scheduleRef === null) {
@@ -96,7 +120,9 @@ function parseItem(value: unknown): TemporalPlanningTrayItem {
     title: value.title,
     createdAt,
     lifeAreaRef: parseNullableUuid(value.life_area_ref, 'life_area_ref'),
-    lifeAreaAssignmentRevision: parseRevision(value.life_area_assignment_revision),
+    lifeAreaAssignmentRevision: parseRevision(
+      value.life_area_assignment_revision,
+    ),
     scheduleRef,
   });
 }
@@ -146,7 +172,8 @@ async function fetchResponse(
   try {
     return await webFetch(input, init);
   } catch (error) {
-    if (error instanceof DOMException && error.name === 'AbortError') throw error;
+    if (error instanceof DOMException && error.name === 'AbortError')
+      throw error;
     throw new TemporalPlanningTrayRemoteError(
       'transport',
       'Da collocare could not reach DANTE.',
@@ -159,20 +186,28 @@ async function json(response: Response, label: string): Promise<unknown> {
   try {
     payload = await response.json();
   } catch {
-    throw new TemporalPlanningTrayRemoteError('protocol', `${label} is not valid JSON.`);
+    throw new TemporalPlanningTrayRemoteError(
+      'protocol',
+      `${label} is not valid JSON.`,
+    );
   }
   if (!response.ok) {
     throw new TemporalPlanningTrayRemoteError(
       'http',
       `${label} failed with HTTP ${response.status}.`,
       response.status,
-      isRecord(payload) && typeof payload.code === 'string' ? payload.code : null,
+      isRecord(payload) && typeof payload.code === 'string'
+        ? payload.code
+        : null,
     );
   }
   return payload;
 }
 
-async function csrfToken(webFetch: typeof globalThis.fetch, signal?: AbortSignal) {
+async function csrfToken(
+  webFetch: typeof globalThis.fetch,
+  signal?: AbortSignal,
+) {
   const response = await fetchResponse(
     webFetch,
     SESSION_ENDPOINT,
@@ -195,13 +230,22 @@ async function csrfToken(webFetch: typeof globalThis.fetch, signal?: AbortSignal
 
 function parsePlacementResult(value: unknown): TemporalPlanningTrayPlaceResult {
   if (!isRecord(value)) {
-    throw new TemporalPlanningTrayRemoteError('protocol', 'Placement response must be an object.');
+    throw new TemporalPlanningTrayRemoteError(
+      'protocol',
+      'Placement response must be an object.',
+    );
   }
   if (value.kind !== 'activity' && value.kind !== 'event') {
-    throw new TemporalPlanningTrayRemoteError('protocol', 'Placement response kind is invalid.');
+    throw new TemporalPlanningTrayRemoteError(
+      'protocol',
+      'Placement response kind is invalid.',
+    );
   }
   if (typeof value.replayed !== 'boolean') {
-    throw new TemporalPlanningTrayRemoteError('protocol', 'Placement replayed flag is invalid.');
+    throw new TemporalPlanningTrayRemoteError(
+      'protocol',
+      'Placement replayed flag is invalid.',
+    );
   }
   return Object.freeze({
     kind: value.kind,
@@ -235,9 +279,17 @@ export function createRemoteTemporalPlanningTrayDataSource(
       }
       return Object.freeze(payload.map(parseItem));
     },
-    async placeItem(request: TemporalPlanningTrayPlaceRequest, signal?: AbortSignal) {
-      if (!request.operationId.trim() || request.operationId.trim().length > 200) {
-        throw new RangeError('Planning operation id must contain 1 to 200 characters.');
+    async placeItem(
+      request: TemporalPlanningTrayPlaceRequest,
+      signal?: AbortSignal,
+    ) {
+      if (
+        !request.operationId.trim() ||
+        request.operationId.trim().length > 200
+      ) {
+        throw new RangeError(
+          'Planning operation id must contain 1 to 200 characters.',
+        );
       }
       parseUuid(request.subjectRef, 'subjectRef');
       const csrf = await csrfToken(webFetch, signal);
@@ -257,7 +309,9 @@ export function createRemoteTemporalPlanningTrayDataSource(
           ...(signal === undefined ? {} : { signal }),
         },
       );
-      const result = parsePlacementResult(await json(response, 'Planning placement response'));
+      const result = parsePlacementResult(
+        await json(response, 'Planning placement response'),
+      );
       invalidateTemporalPlanningRead();
       invalidateTemporalTimelineRead();
       return result;

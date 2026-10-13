@@ -20,7 +20,8 @@ def _execute(sql: str) -> None:
 
 
 def _subject_scope_predicate(*, include_event: bool) -> str:
-    event_branch = """
+    event_branch = (
+        """
                     OR (
                         address.owner_family = 'event'
                         AND EXISTS (
@@ -29,7 +30,10 @@ def _subject_scope_predicate(*, include_event: bool) -> str:
                              WHERE expectation.event_ref = requested_subject_native_ref
                                AND expectation.self_person_ref = requested_self_person_ref
                         )
-                    )""" if include_event else ""
+                    )"""
+        if include_event
+        else ""
+    )
     return f"""
             EXISTS (
                 SELECT 1
@@ -51,7 +55,8 @@ def _subject_scope_predicate(*, include_event: bool) -> str:
 
 
 def _schedule_scope_predicate(*, include_event: bool) -> str:
-    event_branch = """
+    event_branch = (
+        """
                             OR (
                                 address.owner_family = 'event'
                                 AND EXISTS (
@@ -60,7 +65,10 @@ def _schedule_scope_predicate(*, include_event: bool) -> str:
                                      WHERE expectation.event_ref = schedule_row.subject_native_ref
                                        AND expectation.self_person_ref = requested_self_person_ref
                                 )
-                            )""" if include_event else ""
+                            )"""
+        if include_event
+        else ""
+    )
     return f"""
             EXISTS (
                 SELECT 1

@@ -1,12 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
 import { Temporal } from '@dante/time';
-import {
-  expect,
-  test,
-  type Page,
-  type TestInfo,
-} from '@playwright/test';
+import { expect, test, type Page, type TestInfo } from '@playwright/test';
 
 const password = 'correct horse battery staple';
 const E2E_RESPONSE_TIMEOUT_MS = 10_000;
@@ -229,8 +224,8 @@ async function createScheduledActivity(
   });
   expect(accepted.status).toBe(201);
   expect(accepted.payload.title).toBe(title);
-  const schedule = accepted.payload.schedule as
-    AcceptedAuthoringSchedule | null;
+  const schedule = accepted.payload
+    .schedule as AcceptedAuthoringSchedule | null;
   expect(schedule).not.toBeNull();
   if (!schedule) throw new Error('Authoring returned no canonical Schedule');
   const saved = schedule.placement;
@@ -240,11 +235,15 @@ async function createScheduledActivity(
     schedule_ref: schedule.schedule_ref,
     placement_material_state_ref: schedule.placement_material_state_ref,
     temporal_form:
-      saved.kind === 'date_span' ? 'date_span' :
-      saved.kind === 'coarse_local_period' ? 'coarse_local_period' :
-      saved.kind === 'named_zone_local_interval' ? 'named_zone_local' :
-      saved.kind === 'floating_local_interval' ? 'floating_local' :
-      String(saved.kind),
+      saved.kind === 'date_span'
+        ? 'date_span'
+        : saved.kind === 'coarse_local_period'
+          ? 'coarse_local_period'
+          : saved.kind === 'named_zone_local_interval'
+            ? 'named_zone_local'
+            : saved.kind === 'floating_local_interval'
+              ? 'floating_local'
+              : String(saved.kind),
     ...saved,
   };
 }
@@ -413,14 +412,16 @@ test.describe('Timeline B02-E full-stack Schedule forms', () => {
       await signIn(page, emailFor(testInfo));
       await openHome(page);
       const today = Temporal.Now.plainDateISO('Europe/Rome')
-        .add({ days: 1 }).toString();
+        .add({ days: 1 })
+        .toString();
 
       const allDayTitle = `B02 E4 all-day ${testInfo.project.name}`;
       const allDay = await createScheduledActivity(page, allDayTitle, {
         kind: 'date_span',
         start_date: today,
         end_date_exclusive: Temporal.PlainDate.from(today)
-          .add({ days: 1 }).toString(),
+          .add({ days: 1 })
+          .toString(),
       });
       expect(allDay.temporal_form).toBe('date_span');
       expect(allDay.start_date).toBe(today);

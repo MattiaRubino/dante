@@ -145,19 +145,29 @@ def upgrade() -> None:
         sa.Column("current_profile", JSONB(), nullable=False),
         sa.Column("revised_at", sa.DateTime(timezone=True), nullable=False),
         sa.PrimaryKeyConstraint("event_ref", "revision", name="pk_event_profile_revision"),
-        sa.UniqueConstraint("self_person_ref", "operation_id",
-                            name="uq_event_profile_revision_operation"),
-        sa.ForeignKeyConstraint(["event_ref"], ["dante.event_expectation.event_ref"],
-                                name="fk_event_profile_revision_event"),
-        sa.ForeignKeyConstraint(["self_person_ref"], ["dante.person.person_ref"],
-                                name="fk_event_profile_revision_person"),
-        sa.CheckConstraint("revision>=1 AND expected_revision>=0",
-                           name=op.f("ck_event_profile_revision_revision")),
+        sa.UniqueConstraint(
+            "self_person_ref", "operation_id", name="uq_event_profile_revision_operation"
+        ),
+        sa.ForeignKeyConstraint(
+            ["event_ref"],
+            ["dante.event_expectation.event_ref"],
+            name="fk_event_profile_revision_event",
+        ),
+        sa.ForeignKeyConstraint(
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
+            name="fk_event_profile_revision_person",
+        ),
+        sa.CheckConstraint(
+            "revision>=1 AND expected_revision>=0", name=op.f("ck_event_profile_revision_revision")
+        ),
         schema="dante",
     )
     db = op.get_bind()
     db.exec_driver_sql("ALTER TABLE dante.event_profile_revision OWNER TO dante_owner")
-    db.exec_driver_sql("REVOKE ALL ON dante.event_profile_revision FROM PUBLIC,dante_runtime,dante_migrator")
+    db.exec_driver_sql(
+        "REVOKE ALL ON dante.event_profile_revision FROM PUBLIC,dante_runtime,dante_migrator"
+    )
     db.exec_driver_sql(_PROFILE_EDIT)
     db.exec_driver_sql(_PROFILE_REVISION_READ)
     for sig in (
@@ -165,9 +175,7 @@ def upgrade() -> None:
         "dante.get_self_event_profile_revision(uuid,uuid)",
     ):
         db.exec_driver_sql(f"ALTER FUNCTION {sig} OWNER TO dante_owner")
-        db.exec_driver_sql(
-            f"REVOKE ALL ON FUNCTION {sig} FROM PUBLIC,dante_migrator,dante_runtime"
-        )
+        db.exec_driver_sql(f"REVOKE ALL ON FUNCTION {sig} FROM PUBLIC,dante_migrator,dante_runtime")
         db.exec_driver_sql(f"GRANT EXECUTE ON FUNCTION {sig} TO dante_runtime")
 
 

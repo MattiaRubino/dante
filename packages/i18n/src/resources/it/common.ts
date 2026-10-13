@@ -38,7 +38,8 @@ const homeWithB02D = {
         'La pianificazione è cambiata altrove. Non è stata rimossa.',
       scheduleUnscheduleUnavailable:
         'Impossibile rimuovere questa collocazione in sicurezza.',
-      scheduleUndoUpdated: 'Modifica precedente della pianificazione ripristinata.',
+      scheduleUndoUpdated:
+        'Modifica precedente della pianificazione ripristinata.',
       scheduleUndoConflict:
         'Una modifica successiva impedisce l’annullamento. Nulla è stato sovrascritto.',
       scheduleUndoUnavailable:

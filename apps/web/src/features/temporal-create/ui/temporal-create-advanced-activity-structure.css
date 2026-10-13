@@ -78,7 +78,8 @@
 .temporal-create-tree-row.is-child-row {
   border-color: color-mix(
     in srgb,
-    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09)) 82%,
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09))
+      82%,
     #ea5c12 18%
   );
   background:
@@ -312,7 +313,9 @@
 }
 
 .temporal-create-tree-time-editor.is-child-time {
-  grid-template-columns: minmax(128px, 1fr) minmax(96px, 0.7fr) minmax(128px, 1fr) minmax(96px, 0.7fr) auto;
+  grid-template-columns:
+    minmax(128px, 1fr) minmax(96px, 0.7fr) minmax(128px, 1fr)
+    minmax(96px, 0.7fr) auto;
 }
 
 .temporal-create-tree-time-editor label {
@@ -435,7 +438,9 @@
 
 .temporal-create-composer .temporal-create-tree-confirmation__toggle input,
 .temporal-create-composer .temporal-create-tree-confirmation__popover input,
-.temporal-create-composer .temporal-create-tree-confirmation__parent-link input {
+.temporal-create-composer
+  .temporal-create-tree-confirmation__parent-link
+  input {
   width: 15px;
   min-width: 15px;
   height: 15px;
@@ -462,7 +467,10 @@
 
 .temporal-create-tree-confirmation__options:hover,
 .temporal-create-tree-confirmation__options[aria-expanded='true'] {
-  color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f) !important;
+  color: var(
+    --dante-semantic-color-home-chrome-active-text,
+    #f0a06f
+  ) !important;
 }
 
 .temporal-create-tree-confirmation__popover {

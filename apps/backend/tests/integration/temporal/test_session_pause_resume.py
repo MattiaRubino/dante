@@ -71,7 +71,9 @@ async def test_b08_b_pause_resume_is_idempotent_and_preserves_timing_history(
             )
         ).activity
         await enable_live_capture(
-            runtime.session_factory, actor=alice, activity_ref=activity.activity_ref,
+            runtime.session_factory,
+            actor=alice,
+            activity_ref=activity.activity_ref,
         )
         started = await sessions.start(
             self_person_ref=alice,
@@ -154,9 +156,7 @@ async def test_b08_b_pause_resume_is_idempotent_and_preserves_timing_history(
         assert ended.timing_material_state_ref != resumed.timing_material_state_ref
         _assert_duration_algebra(ended)
 
-        rehydrated_end = await sessions.get(
-            self_person_ref=alice, session_ref=started.session_ref
-        )
+        rehydrated_end = await sessions.get(self_person_ref=alice, session_ref=started.session_ref)
         assert not rehydrated_end.open
         assert not rehydrated_end.paused
         assert rehydrated_end.elapsed_seconds == pytest.approx(ended.elapsed_seconds, abs=0.001)

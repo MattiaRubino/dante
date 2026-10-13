@@ -47,7 +47,8 @@ type RoutineOrganization = Readonly<{
   tagEdges: readonly ProductTagEdge[];
 }>;
 
-const UUID_V7 = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID_V7 =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export class TemporalOrganizationError extends Error {
   constructor(
@@ -350,11 +351,15 @@ export function createRemoteTemporalOrganizationDataSource(
       expectedRevision: number,
     ): Promise<void> {
       if (item.kind === 'routine') {
-        await mutate(`/api/v1/temporal/routines/${item.itemRef}/life-area`, 'PUT', {
-          operation_id: crypto.randomUUID(),
-          life_area_ref: uuid(areaRef),
-          expected_assignment_revision: expectedRevision,
-        });
+        await mutate(
+          `/api/v1/temporal/routines/${item.itemRef}/life-area`,
+          'PUT',
+          {
+            operation_id: crypto.randomUUID(),
+            life_area_ref: uuid(areaRef),
+            expected_assignment_revision: expectedRevision,
+          },
+        );
         return;
       }
       await mutate(

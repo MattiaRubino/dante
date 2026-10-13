@@ -31,7 +31,7 @@ def upgrade() -> None:
         "uuid,text,text,text,uuid,uuid,uuid,uuid,text,text,text,bigint) "
         "RENAME TO mutate_self_temporal_duration_constraint"
     )
-    op.execute(r'''        CREATE OR REPLACE FUNCTION dante.enforce_temporal_constraint_rule_totality()
+    op.execute(r"""        CREATE OR REPLACE FUNCTION dante.enforce_temporal_constraint_rule_totality()
         RETURNS trigger
         LANGUAGE plpgsql
         SECURITY INVOKER
@@ -144,8 +144,8 @@ def upgrade() -> None:
             IF TG_OP='DELETE' THEN RETURN OLD; END IF;
             RETURN NEW;
         END;
-        $function$''')
-    op.execute(r'''        CREATE OR REPLACE FUNCTION dante.mutate_self_temporal_duration_constraint(
+        $function$""")
+    op.execute(r"""        CREATE OR REPLACE FUNCTION dante.mutate_self_temporal_duration_constraint(
             requested_self_person_ref uuid,
             requested_operation_id text,
             requested_intent_fingerprint text,
@@ -412,7 +412,7 @@ def upgrade() -> None:
                 requested_resulting_material_state_ref IS NOT NULL,
                 recorded_at,false;
         END;
-        $function$''')
+        $function$""")
 
 
 def downgrade() -> None:

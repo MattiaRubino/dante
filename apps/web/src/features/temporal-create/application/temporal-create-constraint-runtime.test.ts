@@ -61,14 +61,16 @@ function runtimeWithSources() {
             startsLocalAt: placement.startsLocalAt,
             endsLocalAt: placement.endsLocalAt,
             zoneId: placement.zoneId,
-            resolvedStartAt: placement.startsLocalAt.toZonedDateTime(
-              placement.zoneId,
-              { disambiguation: placement.disambiguation },
-            ).toInstant(),
-            resolvedEndAt: placement.endsLocalAt.toZonedDateTime(
-              placement.zoneId,
-              { disambiguation: placement.disambiguation },
-            ).toInstant(),
+            resolvedStartAt: placement.startsLocalAt
+              .toZonedDateTime(placement.zoneId, {
+                disambiguation: placement.disambiguation,
+              })
+              .toInstant(),
+            resolvedEndAt: placement.endsLocalAt
+              .toZonedDateTime(placement.zoneId, {
+                disambiguation: placement.disambiguation,
+              })
+              .toInstant(),
           })
         : placement;
     return Promise.resolve(
@@ -291,8 +293,12 @@ describe('B04 Temporal Create runtime', () => {
           .add({ minutes })
           .toString(),
       );
-      expect(execution.effect?.projection.placement?.kind).toBe('floating-local');
-      expect(sources.createConstrainedActivity.mock.calls[0]?.[0].rules).toEqual([
+      expect(execution.effect?.projection.placement?.kind).toBe(
+        'floating-local',
+      );
+      expect(
+        sources.createConstrainedActivity.mock.calls[0]?.[0].rules,
+      ).toEqual([
         {
           family: 'duration',
           durationKind: 'minimum',
@@ -405,10 +411,7 @@ describe('B04 Temporal Create runtime', () => {
     expect(execution.result.status).toBe('applied');
     const rules = createConstrainedActivity.mock.calls[0]?.[0].rules;
     expect(rules).toHaveLength(2);
-    expect(rules?.map((rule) => rule.family)).toEqual([
-      'boundary',
-      'boundary',
-    ]);
+    expect(rules?.map((rule) => rule.family)).toEqual(['boundary', 'boundary']);
     const earliest = rules?.[0];
     const deadline = rules?.[1];
     expect(earliest).toMatchObject({

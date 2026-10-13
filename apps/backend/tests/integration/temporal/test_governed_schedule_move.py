@@ -58,7 +58,9 @@ def _owner(database: Any) -> psycopg.Connection[Any]:
     return connection
 
 
-def _seed_scheduled_activity(database: Any, *, suffix: str) -> tuple[UUID, UUID, UUID, UUID, datetime, datetime]:
+def _seed_scheduled_activity(
+    database: Any, *, suffix: str
+) -> tuple[UUID, UUID, UUID, UUID, datetime, datetime]:
     self_person_ref = uuid7()
     activity_ref = uuid7()
     schedule_ref = uuid7()
@@ -479,8 +481,8 @@ def test_b04_d_hard_constraints_block_automatic_move_while_soft_preferences_do_n
     assert violation.value.diag.constraint_name == "schedule_move_hard_constraint_violation"
     assert _current_placement(migrated_database, schedule_ref) == placement_ref
 
-    self_ref2, activity_ref2, schedule_ref2, placement_ref2, starts_at2, _ = _seed_scheduled_activity(
-        migrated_database, suffix="soft"
+    self_ref2, activity_ref2, schedule_ref2, placement_ref2, starts_at2, _ = (
+        _seed_scheduled_activity(migrated_database, suffix="soft")
     )
     _set_policy(
         migrated_database,

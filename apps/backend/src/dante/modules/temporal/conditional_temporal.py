@@ -131,9 +131,7 @@ def _evaluation(row: RowMapping, *, replayed: bool = False) -> ConditionalEvalua
         disposition_code=disposition,
         actual_ref=(ScopedRecordRef(UUID(str(actual_ref))) if actual_ref is not None else None),
         actual_realization_material_state_ref=(
-            MaterialStateRef(UUID(str(actual_state_ref)))
-            if actual_state_ref is not None
-            else None
+            MaterialStateRef(UUID(str(actual_state_ref))) if actual_state_ref is not None else None
         ),
         evaluated_at=row["evaluated_at"],
         replayed=replayed,
@@ -171,26 +169,30 @@ class ConditionalTemporalApplication:
         try:
             async with self._session_factory() as session, session.begin():
                 row = (
-                    await session.execute(
-                        text(
-                            """
+                    (
+                        await session.execute(
+                            text(
+                                """
                             SELECT *
                               FROM dante.create_self_actual_realization_condition(
                                 :actor,:subject_kind,:operation_id,:fingerprint,
                                 :condition_ref,:subject_ref
                               )
                             """
-                        ),
-                        {
-                            "actor": self_person_ref,
-                            "subject_kind": subject_kind,
-                            "operation_id": key,
-                            "fingerprint": fingerprint,
-                            "condition_ref": new_scoped_record_ref(),
-                            "subject_ref": subject_native_ref,
-                        },
+                            ),
+                            {
+                                "actor": self_person_ref,
+                                "subject_kind": subject_kind,
+                                "operation_id": key,
+                                "fingerprint": fingerprint,
+                                "condition_ref": new_scoped_record_ref(),
+                                "subject_ref": subject_native_ref,
+                            },
+                        )
                     )
-                ).mappings().one_or_none()
+                    .mappings()
+                    .one_or_none()
+                )
         except DBAPIError as exc:
             raise _db_error(exc) from exc
         except SQLAlchemyError as exc:
@@ -208,18 +210,22 @@ class ConditionalTemporalApplication:
         try:
             async with self._session_factory() as session, session.begin():
                 row = (
-                    await session.execute(
-                        text(
-                            """
+                    (
+                        await session.execute(
+                            text(
+                                """
                             SELECT *
                               FROM dante.get_self_actual_realization_condition(
                                 :actor,:condition_ref
                               )
                             """
-                        ),
-                        {"actor": self_person_ref, "condition_ref": condition_ref},
+                            ),
+                            {"actor": self_person_ref, "condition_ref": condition_ref},
+                        )
                     )
-                ).mappings().one_or_none()
+                    .mappings()
+                    .one_or_none()
+                )
         except DBAPIError as exc:
             raise _db_error(exc) from exc
         except SQLAlchemyError as exc:
@@ -240,22 +246,26 @@ class ConditionalTemporalApplication:
         try:
             async with self._session_factory() as session, session.begin():
                 row = (
-                    await session.execute(
-                        text(
-                            """
+                    (
+                        await session.execute(
+                            text(
+                                """
                             SELECT *
                               FROM dante.find_self_actual_realization_condition(
                                 :actor,:subject_kind,:subject_ref
                               )
                             """
-                        ),
-                        {
-                            "actor": self_person_ref,
-                            "subject_kind": subject_kind,
-                            "subject_ref": subject_native_ref,
-                        },
+                            ),
+                            {
+                                "actor": self_person_ref,
+                                "subject_kind": subject_kind,
+                                "subject_ref": subject_native_ref,
+                            },
+                        )
                     )
-                ).mappings().one_or_none()
+                    .mappings()
+                    .one_or_none()
+                )
         except DBAPIError as exc:
             raise _db_error(exc) from exc
         except SQLAlchemyError as exc:
@@ -280,25 +290,29 @@ class ConditionalTemporalApplication:
         try:
             async with self._session_factory() as session, session.begin():
                 row = (
-                    await session.execute(
-                        text(
-                            """
+                    (
+                        await session.execute(
+                            text(
+                                """
                             SELECT *
                               FROM dante.evaluate_self_actual_realization_condition(
                                 :actor,:operation_id,:fingerprint,
                                 :evaluation_ref,:condition_ref
                               )
                             """
-                        ),
-                        {
-                            "actor": self_person_ref,
-                            "operation_id": key,
-                            "fingerprint": fingerprint,
-                            "evaluation_ref": new_scoped_record_ref(),
-                            "condition_ref": condition_ref,
-                        },
+                            ),
+                            {
+                                "actor": self_person_ref,
+                                "operation_id": key,
+                                "fingerprint": fingerprint,
+                                "evaluation_ref": new_scoped_record_ref(),
+                                "condition_ref": condition_ref,
+                            },
+                        )
                     )
-                ).mappings().one_or_none()
+                    .mappings()
+                    .one_or_none()
+                )
         except DBAPIError as exc:
             raise _db_error(exc) from exc
         except SQLAlchemyError as exc:

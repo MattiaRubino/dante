@@ -54,14 +54,16 @@ function copyFor(language: string) {
         title: 'Existing unplaced items',
         trigger: 'Open existing unplaced items',
         close: 'Close existing unplaced items',
-        description: 'Already-created Activities and Events without accepted Timeline placement. They are not drafts.',
+        description:
+          'Already-created Activities and Events without accepted Timeline placement. They are not drafts.',
         loading: 'Loading items…',
         failed: 'Items to place are unavailable.',
         retry: 'Retry',
         search: 'Search items to place',
         searchPlaceholder: 'Search…',
         emptyTitle: 'Nothing to place',
-        emptyBody: 'Activities and events without a placement will appear here.',
+        emptyBody:
+          'Activities and events without a placement will appear here.',
         activity: 'Activity',
         event: 'Event',
         postponed: 'Postponed',
@@ -78,13 +80,15 @@ function copyFor(language: string) {
         confirm: 'Place on Timeline',
         placing: 'Placing…',
         invalidPlacement: 'Choose a valid same-day interval.',
-        placementFailed: 'The Schedule was not accepted. The item is still here.',
+        placementFailed:
+          'The Schedule was not accepted. The item is still here.',
       })
     : Object.freeze({
         title: 'Elementi già creati',
         trigger: 'Apri elementi già creati',
         close: 'Chiudi elementi già creati',
-        description: 'Attività ed Eventi già creati senza collocazione: non sono Bozze.',
+        description:
+          'Attività ed Eventi già creati senza collocazione: non sono Bozze.',
         loading: 'Caricamento elementi…',
         failed: 'Gli elementi esistenti non sono disponibili.',
         retry: 'Riprova',
@@ -108,7 +112,8 @@ function copyFor(language: string) {
         confirm: 'Colloca in Timeline',
         placing: 'Collocazione…',
         invalidPlacement: 'Scegli un intervallo valido nella stessa giornata.',
-        placementFailed: 'Lo Schedule non è stato accettato. L’elemento resta qui.',
+        placementFailed:
+          'Lo Schedule non è stato accettato. L’elemento resta qui.',
       });
 }
 
@@ -117,7 +122,8 @@ function itemKey(item: TemporalPlanningTrayItem): string {
 }
 
 function operationId(item: TemporalPlanningTrayItem): string {
-  const random = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
+  const random =
+    globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
   return `planning-tray:${item.kind}:${item.subjectRef}:${random}`;
 }
 
@@ -145,12 +151,16 @@ export function TimelinePlanningTrayB01({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [readState, setReadState] = useState<ReadState>('loading');
-  const [remoteItems, setRemoteItems] = useState<readonly TemporalPlanningTrayItem[]>([]);
+  const [remoteItems, setRemoteItems] = useState<
+    readonly TemporalPlanningTrayItem[]
+  >([]);
   const [placingKey, setPlacingKey] = useState<string | null>(null);
   const [placementDate, setPlacementDate] = useState(defaultDate.toString());
   const [placementTime, setPlacementTime] = useState('09:00');
   const [durationMinutes, setDurationMinutes] = useState(30);
-  const [placementTimeMode, setPlacementTimeMode] = useState<'floating' | 'zoned'>('floating');
+  const [placementTimeMode, setPlacementTimeMode] = useState<
+    'floating' | 'zoned'
+  >('floating');
   const [placementTimeZone, setPlacementTimeZone] = useState(
     () => Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Rome',
   );
@@ -182,7 +192,9 @@ export function TimelinePlanningTrayB01({
       const items = await source.listItems();
       if (readGenerationRef.current !== generation) return;
       setRemoteItems(
-        Object.freeze([...new Map(items.map((item) => [itemKey(item), item])).values()]),
+        Object.freeze([
+          ...new Map(items.map((item) => [itemKey(item), item])).values(),
+        ]),
       );
       setReadState('ready');
     } catch {
@@ -209,7 +221,9 @@ export function TimelinePlanningTrayB01({
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
-      setActionsHost(document.querySelector<HTMLElement>('.dante-timeline-actions'));
+      setActionsHost(
+        document.querySelector<HTMLElement>('.dante-timeline-actions'),
+      );
     });
     return () => cancelAnimationFrame(frame);
   }, []);
@@ -260,7 +274,10 @@ export function TimelinePlanningTrayB01({
     if (!open) return;
     const closeOutside = (event: globalThis.PointerEvent) => {
       if (!(event.target instanceof Node)) return;
-      if (panelRef.current?.contains(event.target) || triggerRef.current?.contains(event.target)) {
+      if (
+        panelRef.current?.contains(event.target) ||
+        triggerRef.current?.contains(event.target)
+      ) {
         return;
       }
       setOpen(false);
@@ -287,7 +304,9 @@ export function TimelinePlanningTrayB01({
       let start: PlainDateTime;
       let end: PlainDateTime;
       try {
-        start = Temporal.PlainDateTime.from(`${placementDate}T${placementTime}`);
+        start = Temporal.PlainDateTime.from(
+          `${placementDate}T${placementTime}`,
+        );
         end = start.add({ minutes: durationMinutes });
         if (
           !Number.isInteger(durationMinutes) ||
@@ -297,8 +316,12 @@ export function TimelinePlanningTrayB01({
           throw new RangeError('cross-day-or-empty');
         }
         if (placementTimeMode === 'zoned') {
-          start.toZonedDateTime(placementTimeZone.trim(), { disambiguation: 'reject' });
-          end.toZonedDateTime(placementTimeZone.trim(), { disambiguation: 'reject' });
+          start.toZonedDateTime(placementTimeZone.trim(), {
+            disambiguation: 'reject',
+          });
+          end.toZonedDateTime(placementTimeZone.trim(), {
+            disambiguation: 'reject',
+          });
         }
       } catch {
         setPlacementError(copy.invalidPlacement);
@@ -392,7 +415,9 @@ export function TimelinePlanningTrayB01({
     >
       <header className="timeline-planning-tray__header">
         <div>
-          <span className="timeline-planning-tray__kicker">DANTE · Timeline</span>
+          <span className="timeline-planning-tray__kicker">
+            DANTE · Timeline
+          </span>
           <h2>{copy.title}</h2>
           <p>{copy.description}</p>
         </div>
@@ -432,10 +457,14 @@ export function TimelinePlanningTrayB01({
         {readState === 'error' ? (
           <div className="timeline-planning-empty is-search" role="alert">
             <strong>{copy.failed}</strong>
-            <button type="button" onClick={() => void refresh()}>{copy.retry}</button>
+            <button type="button" onClick={() => void refresh()}>
+              {copy.retry}
+            </button>
           </div>
         ) : readState === 'loading' && remoteItems.length === 0 ? (
-          <div className="timeline-planning-empty"><strong>{copy.loading}</strong></div>
+          <div className="timeline-planning-empty">
+            <strong>{copy.loading}</strong>
+          </div>
         ) : remoteItems.length === 0 ? (
           <div className="timeline-planning-empty">
             <span aria-hidden="true">✓</span>
@@ -443,13 +472,17 @@ export function TimelinePlanningTrayB01({
             <p>{copy.emptyBody}</p>
           </div>
         ) : filteredItems.length === 0 ? (
-          <div className="timeline-planning-empty is-search"><strong>{copy.emptyTitle}</strong></div>
+          <div className="timeline-planning-empty is-search">
+            <strong>{copy.emptyTitle}</strong>
+          </div>
         ) : (
           filteredItems.map((item) => {
             const key = itemKey(item);
             const placing = placingKey === key;
-            const typeLabel = item.kind === 'activity' ? copy.activity : copy.event;
-            const stateLabel = item.state === 'postponed' ? copy.postponed : typeLabel;
+            const typeLabel =
+              item.kind === 'activity' ? copy.activity : copy.event;
+            const stateLabel =
+              item.state === 'postponed' ? copy.postponed : typeLabel;
             return (
               <article
                 key={key}
@@ -476,12 +509,16 @@ export function TimelinePlanningTrayB01({
                       }}
                     >
                       <strong>{item.title}</strong>
-                      <span className="timeline-planning-card__policy">{stateLabel}</span>
+                      <span className="timeline-planning-card__policy">
+                        {stateLabel}
+                      </span>
                     </button>
                   ) : (
                     <div className="timeline-planning-card__copy">
                       <strong>{item.title}</strong>
-                      <span className="timeline-planning-card__policy">{stateLabel}</span>
+                      <span className="timeline-planning-card__policy">
+                        {stateLabel}
+                      </span>
                     </div>
                   )}
                   <span className="timeline-planning-card__actions">
@@ -525,7 +562,9 @@ export function TimelinePlanningTrayB01({
                         type="date"
                         value={placementDate}
                         disabled={placementPending}
-                        onChange={(event) => setPlacementDate(event.target.value)}
+                        onChange={(event) =>
+                          setPlacementDate(event.target.value)
+                        }
                       />
                     </label>
                     <label>
@@ -534,7 +573,9 @@ export function TimelinePlanningTrayB01({
                         type="time"
                         value={placementTime}
                         disabled={placementPending}
-                        onChange={(event) => setPlacementTime(event.target.value)}
+                        onChange={(event) =>
+                          setPlacementTime(event.target.value)
+                        }
                       />
                     </label>
                     <label>
@@ -546,7 +587,9 @@ export function TimelinePlanningTrayB01({
                         step={1}
                         value={durationMinutes}
                         disabled={placementPending}
-                        onChange={(event) => setDurationMinutes(Number(event.target.value))}
+                        onChange={(event) =>
+                          setDurationMinutes(Number(event.target.value))
+                        }
                       />
                     </label>
                     <label>
@@ -555,7 +598,9 @@ export function TimelinePlanningTrayB01({
                         value={placementTimeMode}
                         disabled={placementPending}
                         onChange={(event) =>
-                          setPlacementTimeMode(event.target.value as 'floating' | 'zoned')
+                          setPlacementTimeMode(
+                            event.target.value as 'floating' | 'zoned',
+                          )
                         }
                       >
                         <option value="floating">{copy.localTime}</option>
@@ -569,12 +614,16 @@ export function TimelinePlanningTrayB01({
                           type="text"
                           value={placementTimeZone}
                           disabled={placementPending}
-                          onChange={(event) => setPlacementTimeZone(event.target.value)}
+                          onChange={(event) =>
+                            setPlacementTimeZone(event.target.value)
+                          }
                           placeholder="Europe/Rome"
                         />
                       </label>
                     ) : null}
-                    {placementError ? <p role="alert">{placementError}</p> : null}
+                    {placementError ? (
+                      <p role="alert">{placementError}</p>
+                    ) : null}
                     <div className="timeline-planning-quick-place__actions">
                       <button
                         type="button"
@@ -602,7 +651,9 @@ export function TimelinePlanningTrayB01({
 
   return (
     <>
-      {!hiddenTrigger && actionsHost ? createPortal(trigger, actionsHost) : null}
+      {!hiddenTrigger && actionsHost
+        ? createPortal(trigger, actionsHost)
+        : null}
       {typeof document !== 'undefined' && panel
         ? createPortal(panel, document.body)
         : null}

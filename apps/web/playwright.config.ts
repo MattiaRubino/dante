@@ -9,7 +9,11 @@ const baseURL = `http://127.0.0.1:${e2ePort}`;
 // worker. Only the opt-in isolated parallel runner sets this value; browser
 // contexts and fixtures remain test-local.
 const nonAuthWorkers = Number(process.env.DANTE_E2E_NONAUTH_WORKERS ?? 1);
-if (!Number.isInteger(nonAuthWorkers) || nonAuthWorkers < 1 || nonAuthWorkers > 6) {
+if (
+  !Number.isInteger(nonAuthWorkers) ||
+  nonAuthWorkers < 1 ||
+  nonAuthWorkers > 6
+) {
   throw new Error('DANTE_E2E_NONAUTH_WORKERS must be an integer from 1 to 6');
 }
 

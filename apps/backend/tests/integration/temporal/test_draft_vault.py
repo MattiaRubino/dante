@@ -60,23 +60,40 @@ async def test_inert_drafts_are_owner_scoped_replay_safe_and_do_not_create_subje
     other = _seed_self(migrated_database)
     runtime = create_database_runtime(migrated_database.runtime_settings())
     draft = uuid7()
-    payload = json.dumps({
-        "version": 1,
-        "fields": {"kind": "activity", "title": "Allenamento"},
-        "advanced": {"activityStructure": {"plannedSlices": [
-            {"title": "Corsa", "startTime": "17:00"}
-        ]}},
-        "surface": "full",
-    })
+    payload = json.dumps(
+        {
+            "version": 1,
+            "fields": {"kind": "activity", "title": "Allenamento"},
+            "advanced": {
+                "activityStructure": {"plannedSlices": [{"title": "Corsa", "startTime": "17:00"}]}
+            },
+            "surface": "full",
+        }
+    )
     try:
+
         async def save(op: str, expected: int | None, title: str = "Allenamento"):
             async with runtime.session_factory() as session, session.begin():
-                return (await session.execute(text("""
+                return (
+                    (
+                        await session.execute(
+                            text("""
                     SELECT * FROM dante.save_self_temporal_draft(
                         :actor,:draft,:op,:rev,'activity',:title,CAST(:data AS jsonb))
-                """), {"actor": actor, "draft": draft, "op": op,
-                       "rev": expected, "title": title,
-                       "data": payload})).mappings().one()
+                """),
+                            {
+                                "actor": actor,
+                                "draft": draft,
+                                "op": op,
+                                "rev": expected,
+                                "title": title,
+                                "data": payload,
+                            },
+                        )
+                    )
+                    .mappings()
+                    .one()
+                )
 
         before = await save("vault:create", None)
         assert before["revision"] == 1
@@ -87,12 +104,30 @@ async def test_inert_drafts_are_owner_scoped_replay_safe_and_do_not_create_subje
         assert replay["revision"] == 1
 
         async with runtime.session_factory() as session, session.begin():
-            own = (await session.execute(text("""
+            own = (
+                (
+                    await session.execute(
+                        text("""
                 SELECT * FROM dante.list_self_temporal_drafts(:actor)
-            """), {"actor": actor})).mappings().all()
-            elsewhere = (await session.execute(text("""
+            """),
+                        {"actor": actor},
+                    )
+                )
+                .mappings()
+                .all()
+            )
+            elsewhere = (
+                (
+                    await session.execute(
+                        text("""
                 SELECT * FROM dante.list_self_temporal_drafts(:actor)
-            """), {"actor": other})).mappings().all()
+            """),
+                        {"actor": other},
+                    )
+                )
+                .mappings()
+                .all()
+            )
         assert [row["draft_ref"] for row in own] == [draft]
         assert elsewhere == []
 
@@ -103,13 +138,21 @@ async def test_inert_drafts_are_owner_scoped_replay_safe_and_do_not_create_subje
         assert updated["title"] == "Allenamento completo"
 
         async with runtime.session_factory() as session, session.begin():
-            await session.execute(text("""
+            await session.execute(
+                text("""
                 SELECT dante.retire_self_temporal_draft(:actor,:draft,:rev)
-            """), {"actor": actor, "draft": draft, "rev": 2})
+            """),
+                {"actor": actor, "draft": draft, "rev": 2},
+            )
         async with runtime.session_factory() as session, session.begin():
-            assert (await session.execute(text("""
+            assert (
+                await session.execute(
+                    text("""
                 SELECT * FROM dante.list_self_temporal_drafts(:actor)
-            """), {"actor": actor})).mappings().all() == []
+            """),
+                    {"actor": actor},
+                )
+            ).mappings().all() == []
     finally:
         await runtime.dispose()
 
@@ -122,8 +165,7 @@ async def test_draft_vault_http_capability_returns_saved_snapshot_and_cas_delete
     runtime = create_database_runtime(migrated_database.runtime_settings())
     draft_ref = uuid7()
     context = SimpleNamespace(self_person_ref=actor)
-    request = SimpleNamespace(app=SimpleNamespace(
-        state=SimpleNamespace(database_runtime=runtime)))
+    request = SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime)))
     payload = {
         "version": 1,
         "fields": {"kind": "event", "title": "Visita"},
@@ -134,11 +176,16 @@ async def test_draft_vault_http_capability_returns_saved_snapshot_and_cas_delete
         saved = await save_draft(
             draft_ref,
             DraftVaultSaveRequest(
-                draft_ref=draft_ref, operation_id="vault:event:save",
-                expected_revision=None, subject_kind="event", title="Visita",
+                draft_ref=draft_ref,
+                operation_id="vault:event:save",
+                expected_revision=None,
+                subject_kind="event",
+                title="Visita",
                 payload=payload,
             ),
-            context, request, Response(),
+            context,
+            request,
+            Response(),
         )
         assert saved.payload == payload
         assert saved.subject_kind == "event"

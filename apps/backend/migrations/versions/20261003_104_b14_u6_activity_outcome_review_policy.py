@@ -27,11 +27,13 @@ def upgrade() -> None:
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
         sa.PrimaryKeyConstraint("activity_ref", name="pk_activity_outcome_review_policy"),
         sa.ForeignKeyConstraint(
-            ["activity_ref"], ["dante.activity_intention.activity_ref"],
+            ["activity_ref"],
+            ["dante.activity_intention.activity_ref"],
             name="fk_activity_outcome_review_policy_activity",
         ),
         sa.ForeignKeyConstraint(
-            ["self_person_ref"], ["dante.person.person_ref"],
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
             name="fk_activity_outcome_review_policy_person",
         ),
         schema="dante",
@@ -64,7 +66,8 @@ def upgrade() -> None:
             "isfinite(recorded_at)", name="ck_activity_outcome_review_policy_state_recorded_at"
         ),
         sa.ForeignKeyConstraint(
-            ["activity_ref"], ["dante.activity_outcome_review_policy.activity_ref"],
+            ["activity_ref"],
+            ["dante.activity_outcome_review_policy.activity_ref"],
             name="fk_activity_outcome_review_policy_state_owner",
         ),
         schema="dante",
@@ -82,7 +85,8 @@ def upgrade() -> None:
         sa.Column("current_from_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("current_until_at", sa.DateTime(timezone=True), nullable=True),
         sa.PrimaryKeyConstraint(
-            "activity_ref", "current_from_at",
+            "activity_ref",
+            "current_from_at",
             name="pk_activity_outcome_review_policy_current_history",
         ),
         sa.CheckConstraint(
@@ -122,12 +126,11 @@ def upgrade() -> None:
         sa.Column("activity_ref", sa.Uuid(), nullable=False),
         sa.Column("state_ref", sa.Uuid(), nullable=False),
         sa.PrimaryKeyConstraint(
-            "self_person_ref", "operation_id",
+            "self_person_ref",
+            "operation_id",
             name="pk_activity_outcome_review_policy_operation",
         ),
-        sa.UniqueConstraint(
-            "state_ref", name="uq_activity_outcome_review_policy_operation_state"
-        ),
+        sa.UniqueConstraint("state_ref", name="uq_activity_outcome_review_policy_operation_state"),
         sa.CheckConstraint(
             "operation_id=btrim(operation_id) AND char_length(operation_id) BETWEEN 1 AND 200",
             name="ck_activity_outcome_review_policy_operation_id",
@@ -137,7 +140,8 @@ def upgrade() -> None:
             name="ck_activity_outcome_review_policy_operation_fingerprint",
         ),
         sa.ForeignKeyConstraint(
-            ["self_person_ref"], ["dante.person.person_ref"],
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
             name="fk_activity_outcome_review_policy_operation_person",
         ),
         sa.ForeignKeyConstraint(

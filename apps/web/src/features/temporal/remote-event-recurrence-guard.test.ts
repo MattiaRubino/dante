@@ -14,8 +14,9 @@ function response(payload: unknown, status = 200): Response {
 describe('Event duplicate recurrence ownership guard', () => {
   it('allows a one-off Event only after owner API confirms no recurrence', async () => {
     const fetchFn = vi.fn<typeof fetch>(() => Promise.resolve(response(null)));
-    await expect(createRemoteEventRecurrenceGuard(fetchFn)
-      .isRecurring(EVENT)).resolves.toBe(false);
+    await expect(
+      createRemoteEventRecurrenceGuard(fetchFn).isRecurring(EVENT),
+    ).resolves.toBe(false);
     expect(fetchFn.mock.calls[0]?.[0]).toBe(
       `/api/v1/temporal/events/${EVENT}/recurrence`,
     );
@@ -23,15 +24,21 @@ describe('Event duplicate recurrence ownership guard', () => {
 
   it('recognizes an existing recurring Event source', async () => {
     const fetchFn = vi.fn<typeof fetch>(() =>
-      Promise.resolve(response({ owner_kind: 'event', material_state_ref: EVENT })));
-    await expect(createRemoteEventRecurrenceGuard(fetchFn)
-      .isRecurring(EVENT)).resolves.toBe(true);
+      Promise.resolve(
+        response({ owner_kind: 'event', material_state_ref: EVENT }),
+      ),
+    );
+    await expect(
+      createRemoteEventRecurrenceGuard(fetchFn).isRecurring(EVENT),
+    ).resolves.toBe(true);
   });
 
   it('fails closed if the recurrence authority cannot be read', async () => {
     const fetchFn = vi.fn<typeof fetch>(() =>
-      Promise.resolve(response({ code: 'unavailable' }, 503)));
-    await expect(createRemoteEventRecurrenceGuard(fetchFn)
-      .isRecurring(EVENT)).rejects.toThrow('duplicazione bloccata');
+      Promise.resolve(response({ code: 'unavailable' }, 503)),
+    );
+    await expect(
+      createRemoteEventRecurrenceGuard(fetchFn).isRecurring(EVENT),
+    ).rejects.toThrow('duplicazione bloccata');
   });
 });

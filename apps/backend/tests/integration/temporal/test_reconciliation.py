@@ -6,9 +6,10 @@ from typing import Any
 
 import psycopg
 import pytest
+from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
 
-from dante.modules.temporal.actual_runtime import ActualApplication
 from dante.modules.temporal.activity import TemporalActivityApplication
+from dante.modules.temporal.actual_runtime import ActualApplication
 from dante.modules.temporal.confirmation_runtime import ConfirmationApplication
 from dante.modules.temporal.life_area import LifeAreaApplication
 from dante.modules.temporal.outcome_runtime import OutcomeApplication
@@ -21,7 +22,6 @@ from dante.modules.temporal.reconciliation_runtime import (
     ReconciliationOperationReuseError,
 )
 from dante.platform.database.runtime import create_database_runtime
-from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
 
 pytestmark = pytest.mark.postgres
 
@@ -102,10 +102,13 @@ async def test_b10_d_reconciliation_is_owner_scoped_versioned_and_evidence_pinne
             stance_code="disputed",
         )
 
-        assert await reconciliations.list_for_outcome(
-            self_person_ref=alice,
-            outcome_ref=outcome.outcome_ref,
-        ) == ()
+        assert (
+            await reconciliations.list_for_outcome(
+                self_person_ref=alice,
+                outcome_ref=outcome.outcome_ref,
+            )
+            == ()
+        )
         assert (
             await reconciliations.list_for_outcome(
                 self_person_ref=bob,
@@ -244,7 +247,9 @@ async def test_b10_d_reconciliation_is_owner_scoped_versioned_and_evidence_pinne
             item.confirmation_attestation_material_state_ref for item in pinned_history[0].evidence
         }
         assert alice_confirmation.material_state_ref in first_evidence_states
-        assert corrected_alice_confirmation.material_state_ref != alice_confirmation.material_state_ref
+        assert (
+            corrected_alice_confirmation.material_state_ref != alice_confirmation.material_state_ref
+        )
 
         with pytest.raises(ReconciliationInputError):
             await reconciliations.record(

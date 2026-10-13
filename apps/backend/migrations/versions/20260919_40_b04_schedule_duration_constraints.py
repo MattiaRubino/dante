@@ -190,10 +190,7 @@ def upgrade() -> None:
         $function$
         """
     )
-    _sql(
-        "ALTER FUNCTION dante.enforce_temporal_constraint_rule_totality() "
-        f"OWNER TO {_OWNER}"
-    )
+    _sql(f"ALTER FUNCTION dante.enforce_temporal_constraint_rule_totality() OWNER TO {_OWNER}")
     _sql(
         "REVOKE ALL PRIVILEGES ON FUNCTION dante.enforce_temporal_constraint_rule_totality() "
         f"FROM PUBLIC, {_RUNTIME}, {_MIGRATOR}"

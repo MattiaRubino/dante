@@ -24,18 +24,22 @@ def upgrade() -> None:
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
         sa.PrimaryKeyConstraint("activity_ref", name="pk_activity_decomposition_policy"),
         sa.ForeignKeyConstraint(
-            ["activity_ref"], ["dante.activity_intention.activity_ref"],
+            ["activity_ref"],
+            ["dante.activity_intention.activity_ref"],
             name="fk_activity_decomposition_policy_activity",
         ),
         sa.ForeignKeyConstraint(
-            ["self_person_ref"], ["dante.person.person_ref"],
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
             name="fk_activity_decomposition_policy_person",
         ),
         schema="dante",
     )
     op.create_index(
-        "ix_activity_decomposition_policy_self", "activity_decomposition_policy",
-        ["self_person_ref"], schema="dante",
+        "ix_activity_decomposition_policy_self",
+        "activity_decomposition_policy",
+        ["self_person_ref"],
+        schema="dante",
     )
     op.create_table(
         "activity_decomposition_policy_state",
@@ -45,7 +49,9 @@ def upgrade() -> None:
         sa.Column("recorded_at", sa.DateTime(timezone=True), nullable=False),
         sa.PrimaryKeyConstraint("state_ref", name="pk_activity_decomposition_policy_state"),
         sa.UniqueConstraint(
-            "activity_ref", "state_ref", name="uq_activity_decomposition_policy_state_owner",
+            "activity_ref",
+            "state_ref",
+            name="uq_activity_decomposition_policy_state_owner",
         ),
         sa.CheckConstraint(
             "uuid_extract_version(state_ref) IS NOT DISTINCT FROM 7",
@@ -56,17 +62,21 @@ def upgrade() -> None:
             name="mode",
         ),
         sa.CheckConstraint(
-            "isfinite(recorded_at)", name="recorded_at",
+            "isfinite(recorded_at)",
+            name="recorded_at",
         ),
         sa.ForeignKeyConstraint(
-            ["activity_ref"], ["dante.activity_decomposition_policy.activity_ref"],
+            ["activity_ref"],
+            ["dante.activity_decomposition_policy.activity_ref"],
             name="fk_activity_decomposition_policy_state_owner",
         ),
         schema="dante",
     )
     op.create_index(
-        "ix_activity_decomposition_policy_state_owner", "activity_decomposition_policy_state",
-        ["activity_ref"], schema="dante",
+        "ix_activity_decomposition_policy_state_owner",
+        "activity_decomposition_policy_state",
+        ["activity_ref"],
+        schema="dante",
     )
     op.create_table(
         "activity_decomposition_policy_current_history",
@@ -75,7 +85,8 @@ def upgrade() -> None:
         sa.Column("current_from_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("current_until_at", sa.DateTime(timezone=True), nullable=True),
         sa.PrimaryKeyConstraint(
-            "activity_ref", "current_from_at",
+            "activity_ref",
+            "current_from_at",
             name="pk_activity_decomposition_policy_current_history",
         ),
         sa.CheckConstraint(
@@ -85,21 +96,27 @@ def upgrade() -> None:
         ),
         sa.ForeignKeyConstraint(
             ["activity_ref", "state_ref"],
-            ["dante.activity_decomposition_policy_state.activity_ref",
-             "dante.activity_decomposition_policy_state.state_ref"],
+            [
+                "dante.activity_decomposition_policy_state.activity_ref",
+                "dante.activity_decomposition_policy_state.state_ref",
+            ],
             name="fk_activity_decomposition_policy_current_history_state",
         ),
         schema="dante",
     )
     op.create_index(
         "ux_activity_decomposition_policy_current_history_open",
-        "activity_decomposition_policy_current_history", ["activity_ref"],
-        unique=True, schema="dante",
+        "activity_decomposition_policy_current_history",
+        ["activity_ref"],
+        unique=True,
+        schema="dante",
         postgresql_where=sa.text("current_until_at IS NULL"),
     )
     op.create_index(
         "ix_activity_decomposition_policy_current_history_state",
-        "activity_decomposition_policy_current_history", ["state_ref"], schema="dante",
+        "activity_decomposition_policy_current_history",
+        ["state_ref"],
+        schema="dante",
     )
     op.create_table(
         "activity_decomposition_policy_operation",
@@ -109,10 +126,13 @@ def upgrade() -> None:
         sa.Column("activity_ref", sa.Uuid(), nullable=False),
         sa.Column("state_ref", sa.Uuid(), nullable=False),
         sa.PrimaryKeyConstraint(
-            "self_person_ref", "operation_id", name="pk_activity_decomposition_policy_operation",
+            "self_person_ref",
+            "operation_id",
+            name="pk_activity_decomposition_policy_operation",
         ),
         sa.UniqueConstraint(
-            "state_ref", name="uq_activity_decomposition_policy_operation_state",
+            "state_ref",
+            name="uq_activity_decomposition_policy_operation_state",
         ),
         sa.CheckConstraint(
             "operation_id=btrim(operation_id) AND char_length(operation_id) BETWEEN 1 AND 200",
@@ -123,13 +143,16 @@ def upgrade() -> None:
             name="fingerprint",
         ),
         sa.ForeignKeyConstraint(
-            ["self_person_ref"], ["dante.person.person_ref"],
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
             name="fk_activity_decomposition_policy_operation_person",
         ),
         sa.ForeignKeyConstraint(
             ["activity_ref", "state_ref"],
-            ["dante.activity_decomposition_policy_state.activity_ref",
-             "dante.activity_decomposition_policy_state.state_ref"],
+            [
+                "dante.activity_decomposition_policy_state.activity_ref",
+                "dante.activity_decomposition_policy_state.state_ref",
+            ],
             name="fk_activity_decomposition_policy_operation_state",
         ),
         schema="dante",
@@ -148,18 +171,22 @@ def upgrade() -> None:
             name="uuidv7",
         ),
         sa.ForeignKeyConstraint(
-            ["activity_ref"], ["dante.activity_intention.activity_ref"],
+            ["activity_ref"],
+            ["dante.activity_intention.activity_ref"],
             name="fk_activity_parent_actual_acknowledgement_activity",
         ),
         sa.ForeignKeyConstraint(
-            ["self_person_ref"], ["dante.person.person_ref"],
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
             name="fk_activity_parent_actual_acknowledgement_person",
         ),
         schema="dante",
     )
     op.create_index(
         "ix_activity_parent_actual_acknowledgement_activity",
-        "activity_parent_actual_acknowledgement", ["activity_ref"], schema="dante",
+        "activity_parent_actual_acknowledgement",
+        ["activity_ref"],
+        schema="dante",
     )
 
     _sql("""
@@ -281,8 +308,10 @@ $function$;
         _sql(f"REVOKE ALL ON FUNCTION {signature} FROM PUBLIC,dante_runtime,dante_migrator")
         _sql(f"GRANT EXECUTE ON FUNCTION {signature} TO dante_runtime")
     for table in (
-        "activity_decomposition_policy", "activity_decomposition_policy_state",
-        "activity_decomposition_policy_current_history", "activity_decomposition_policy_operation",
+        "activity_decomposition_policy",
+        "activity_decomposition_policy_state",
+        "activity_decomposition_policy_current_history",
+        "activity_decomposition_policy_operation",
         "activity_parent_actual_acknowledgement",
     ):
         _sql(f"REVOKE ALL ON TABLE dante.{table} FROM PUBLIC,dante_runtime,dante_migrator")
@@ -331,15 +360,22 @@ $function$;
 
     # The B10 capability is the actual admission point. Patch its exact source
     # forward, after replay detection and before creating a new Actual state.
-    definition = op.get_bind().exec_driver_sql(
-        "SELECT pg_get_functiondef('dante.record_self_actual_realization("
-        "uuid,text,text,text,uuid,uuid,uuid,uuid,boolean,text,"
-        "timestamptz,timestamptz,uuid[],uuid[])'::regprocedure)"
-    ).scalar_one()
-    matches = list(re.finditer(
-        r"\bIF\s+current_from\s+IS\s+NOT\s+NULL\s+AND\s+recorded_at\s*<=\s*current_from\s+THEN",
-        definition, flags=re.IGNORECASE,
-    ))
+    definition = (
+        op.get_bind()
+        .exec_driver_sql(
+            "SELECT pg_get_functiondef('dante.record_self_actual_realization("
+            "uuid,text,text,text,uuid,uuid,uuid,uuid,boolean,text,"
+            "timestamptz,timestamptz,uuid[],uuid[])'::regprocedure)"
+        )
+        .scalar_one()
+    )
+    matches = list(
+        re.finditer(
+            r"\bIF\s+current_from\s+IS\s+NOT\s+NULL\s+AND\s+recorded_at\s*<=\s*current_from\s+THEN",
+            definition,
+            flags=re.IGNORECASE,
+        )
+    )
     if len(matches) != 1:
         raise RuntimeError("B14-U6 B10 parent Actual admission patch point unavailable")
     guard = """
@@ -403,7 +439,7 @@ $function$;
   END IF;
 
 """
-    patched = definition[:matches[0].start()] + guard + definition[matches[0].start():]
+    patched = definition[: matches[0].start()] + guard + definition[matches[0].start() :]
     op.get_bind().exec_driver_sql(patched.replace("%", "%%"))
 
 

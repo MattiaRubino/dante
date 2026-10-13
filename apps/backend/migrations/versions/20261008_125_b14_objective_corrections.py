@@ -1,4 +1,5 @@
 """B14 M2: same-logical Objective revision and correction with immutable audit."""
+
 from collections.abc import Sequence
 
 import sqlalchemy as sa
@@ -9,52 +10,68 @@ down_revision: str | None = "20261008_124"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
+
 def upgrade() -> None:
     op.create_table(
         "temporal_objective_definition_revision",
-        sa.Column("objective_ref",sa.Uuid(),nullable=False),
-        sa.Column("revision",sa.BigInteger(),nullable=False),
-        sa.Column("self_person_ref",sa.Uuid(),nullable=False),
-        sa.Column("operation_id",sa.Text(),nullable=False),
-        sa.Column("intent_fingerprint",sa.Text(),nullable=False),
-        sa.Column("label",sa.Text(),nullable=False),
-        sa.Column("result_kind",sa.Text(),nullable=False),
-        sa.Column("comparator_code",sa.Text()),
-        sa.Column("target_value",sa.Numeric()),
-        sa.Column("target_min",sa.Numeric()),
-        sa.Column("target_max",sa.Numeric()),
-        sa.Column("unit_code",sa.Text()),
-        sa.Column("presentation_order",sa.Integer(),nullable=False),
-        sa.Column("accepted_at",sa.DateTime(timezone=True),nullable=False),
-        sa.Column("applied_evaluation_state_ref",sa.Uuid()),
-        sa.Column("applied_assessment_code",sa.Text()),
-        sa.PrimaryKeyConstraint("objective_ref","revision",
-            name="pk_temporal_objective_definition_revision"),
-        sa.UniqueConstraint("self_person_ref","operation_id",
-            name="uq_temporal_objective_definition_operation"),
-        sa.ForeignKeyConstraint(["objective_ref"],
+        sa.Column("objective_ref", sa.Uuid(), nullable=False),
+        sa.Column("revision", sa.BigInteger(), nullable=False),
+        sa.Column("self_person_ref", sa.Uuid(), nullable=False),
+        sa.Column("operation_id", sa.Text(), nullable=False),
+        sa.Column("intent_fingerprint", sa.Text(), nullable=False),
+        sa.Column("label", sa.Text(), nullable=False),
+        sa.Column("result_kind", sa.Text(), nullable=False),
+        sa.Column("comparator_code", sa.Text()),
+        sa.Column("target_value", sa.Numeric()),
+        sa.Column("target_min", sa.Numeric()),
+        sa.Column("target_max", sa.Numeric()),
+        sa.Column("unit_code", sa.Text()),
+        sa.Column("presentation_order", sa.Integer(), nullable=False),
+        sa.Column("accepted_at", sa.DateTime(timezone=True), nullable=False),
+        sa.Column("applied_evaluation_state_ref", sa.Uuid()),
+        sa.Column("applied_assessment_code", sa.Text()),
+        sa.PrimaryKeyConstraint(
+            "objective_ref", "revision", name="pk_temporal_objective_definition_revision"
+        ),
+        sa.UniqueConstraint(
+            "self_person_ref", "operation_id", name="uq_temporal_objective_definition_operation"
+        ),
+        sa.ForeignKeyConstraint(
+            ["objective_ref"],
             ["dante.temporal_objective.objective_ref"],
-            name="fk_temporal_objective_definition_objective"),
-        sa.ForeignKeyConstraint(["self_person_ref"],
+            name="fk_temporal_objective_definition_objective",
+        ),
+        sa.ForeignKeyConstraint(
+            ["self_person_ref"],
             ["dante.person.person_ref"],
-            name="fk_temporal_objective_definition_person"),
-        sa.CheckConstraint("revision>=1",
-            name=op.f("ck_temporal_objective_definition_revision_positive")),
-        sa.CheckConstraint("operation_id=btrim(operation_id) AND "
-            "char_length(operation_id) BETWEEN 1 AND 200",
-            name=op.f("ck_temporal_objective_definition_revision_operation")),
-        sa.CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'",
-            name=op.f("ck_temporal_objective_definition_revision_fingerprint")),
-        sa.CheckConstraint("result_kind IN ('boolean','quantity','qualitative','range')",
-            name=op.f("ck_temporal_objective_definition_revision_kind")),
-        sa.CheckConstraint("label=btrim(label) AND label<>'' AND "
+            name="fk_temporal_objective_definition_person",
+        ),
+        sa.CheckConstraint(
+            "revision>=1", name=op.f("ck_temporal_objective_definition_revision_positive")
+        ),
+        sa.CheckConstraint(
+            "operation_id=btrim(operation_id) AND char_length(operation_id) BETWEEN 1 AND 200",
+            name=op.f("ck_temporal_objective_definition_revision_operation"),
+        ),
+        sa.CheckConstraint(
+            "intent_fingerprint ~ '^[0-9a-f]{64}$'",
+            name=op.f("ck_temporal_objective_definition_revision_fingerprint"),
+        ),
+        sa.CheckConstraint(
+            "result_kind IN ('boolean','quantity','qualitative','range')",
+            name=op.f("ck_temporal_objective_definition_revision_kind"),
+        ),
+        sa.CheckConstraint(
+            "label=btrim(label) AND label<>'' AND "
             "char_length(label)<=300 AND presentation_order BETWEEN 0 AND 999",
-            name=op.f("ck_temporal_objective_definition_revision_label")),
-        sa.CheckConstraint("isfinite(accepted_at)",
-            name=op.f("ck_temporal_objective_definition_revision_time")),
+            name=op.f("ck_temporal_objective_definition_revision_label"),
+        ),
+        sa.CheckConstraint(
+            "isfinite(accepted_at)", name=op.f("ck_temporal_objective_definition_revision_time")
+        ),
         schema="dante",
     )
-    conn=op.get_bind()
+    conn = op.get_bind()
     conn.exec_driver_sql(
         "ALTER TABLE dante.temporal_objective_definition_revision OWNER TO dante_owner"
     )
@@ -62,28 +79,27 @@ def upgrade() -> None:
         "REVOKE ALL ON dante.temporal_objective_definition_revision "
         "FROM PUBLIC,dante_runtime,dante_migrator"
     )
-    sqls = (_DEFINITION,_REVISE,_LIST,_RESULT,_CORRECT)
+    sqls = (_DEFINITION, _REVISE, _LIST, _RESULT, _CORRECT)
     for sql in sqls:
         conn.execute(sa.text(sql))
     signatures = (
-      "get_self_temporal_objective_definition(uuid,uuid)",
-      "revise_self_temporal_objective_definition(uuid,text,text,uuid,bigint,text,text,text,numeric,numeric,numeric,text,integer,uuid)",
-      "list_self_temporal_objectives(uuid,text,uuid)",
-      "record_self_temporal_objective_result(uuid,text,text,uuid,uuid,uuid,boolean,numeric,text,text)",
-      "correct_self_temporal_objective_result(uuid,text,text,uuid,uuid,uuid,boolean,numeric,text,text,uuid)",
+        "get_self_temporal_objective_definition(uuid,uuid)",
+        "revise_self_temporal_objective_definition(uuid,text,text,uuid,bigint,text,text,text,numeric,numeric,numeric,text,integer,uuid)",
+        "list_self_temporal_objectives(uuid,text,uuid)",
+        "record_self_temporal_objective_result(uuid,text,text,uuid,uuid,uuid,boolean,numeric,text,text)",
+        "correct_self_temporal_objective_result(uuid,text,text,uuid,uuid,uuid,boolean,numeric,text,text,uuid)",
     )
     for signature in signatures:
         conn.exec_driver_sql(f"ALTER FUNCTION dante.{signature} OWNER TO dante_owner")
         conn.exec_driver_sql(
-            f"REVOKE ALL ON FUNCTION dante.{signature} "
-            "FROM PUBLIC,dante_runtime,dante_migrator"
+            f"REVOKE ALL ON FUNCTION dante.{signature} FROM PUBLIC,dante_runtime,dante_migrator"
         )
-        conn.exec_driver_sql(
-            f"GRANT EXECUTE ON FUNCTION dante.{signature} TO dante_runtime"
-        )
+        conn.exec_driver_sql(f"GRANT EXECUTE ON FUNCTION dante.{signature} TO dante_runtime")
+
 
 def downgrade() -> None:
     raise RuntimeError("M2 Objective correction history is forward-only")
+
 
 _DEFINITION = r"""CREATE FUNCTION dante.get_self_temporal_objective_definition(
     actor uuid, requested_objective uuid

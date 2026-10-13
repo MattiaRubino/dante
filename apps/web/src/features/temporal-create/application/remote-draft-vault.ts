@@ -1,5 +1,8 @@
 import { createWebFetch } from '../../../platform/api/web-fetch';
-import type { TemporalCreateFields, TemporalCreateSurface } from '../model/temporal-create-session';
+import type {
+  TemporalCreateFields,
+  TemporalCreateSurface,
+} from '../model/temporal-create-session';
 import type { TemporalCreateU2AuthoringDraft } from '../model/temporal-create-u2-authoring';
 
 export type DraftVaultSnapshot = Readonly<{
@@ -25,16 +28,22 @@ function parseItem(value: unknown): DraftVaultItem {
   }
   const item = value as Record<string, unknown>;
   const payload = item.payload as Record<string, unknown> | null;
-  if (typeof item.draft_ref !== 'string' ||
-      (item.subject_kind !== 'activity' && item.subject_kind !== 'event') ||
-      typeof item.title !== 'string' ||
-      typeof item.revision !== 'number' || !Number.isSafeInteger(item.revision) ||
-      typeof item.created_at !== 'string' ||
-      typeof item.updated_at !== 'string' ||
-      !payload || payload.version !== 1 ||
-      !payload.fields || typeof payload.fields !== 'object' ||
-      !payload.advanced || typeof payload.advanced !== 'object' ||
-      (payload.fields as Record<string, unknown>).kind !== item.subject_kind) {
+  if (
+    typeof item.draft_ref !== 'string' ||
+    (item.subject_kind !== 'activity' && item.subject_kind !== 'event') ||
+    typeof item.title !== 'string' ||
+    typeof item.revision !== 'number' ||
+    !Number.isSafeInteger(item.revision) ||
+    typeof item.created_at !== 'string' ||
+    typeof item.updated_at !== 'string' ||
+    !payload ||
+    payload.version !== 1 ||
+    !payload.fields ||
+    typeof payload.fields !== 'object' ||
+    !payload.advanced ||
+    typeof payload.advanced !== 'object' ||
+    (payload.fields as Record<string, unknown>).kind !== item.subject_kind
+  ) {
     throw new Error('La bozza salvata non è compatibile con questo editor.');
   }
   return Object.freeze({
@@ -57,8 +66,11 @@ export function createRemoteDraftVault(
   async function csrf(): Promise<string> {
     const response = await request('/api/v1/auth/session');
     if (!response.ok) throw new Error('Sessione scaduta.');
-    const session = await response.json() as Record<string, unknown>;
-    if (session.authenticated !== true || typeof session.csrf_token !== 'string') {
+    const session = (await response.json()) as Record<string, unknown>;
+    if (
+      session.authenticated !== true ||
+      typeof session.csrf_token !== 'string'
+    ) {
       throw new Error('Sessione non autenticata.');
     }
     return session.csrf_token;
@@ -75,23 +87,36 @@ export function createRemoteDraftVault(
 
     async save(
       snapshot: DraftVaultSnapshot,
-      basis: Readonly<{ draftRef: string; revision: number | null; operationId: string }>,
+      basis: Readonly<{
+        draftRef: string;
+        revision: number | null;
+        operationId: string;
+      }>,
     ): Promise<DraftVaultItem> {
-      const response = await request(`${url}/${encodeURIComponent(basis.draftRef)}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'X-Dante-CSRF': await csrf() },
-        body: JSON.stringify({
-          draft_ref: basis.draftRef,
-          operation_id: basis.operationId,
-          expected_revision: basis.revision,
-          subject_kind: snapshot.fields.kind,
-          title: snapshot.fields.title.trim(),
-          payload: snapshot,
-        }),
-      });
-      if (!response.ok) throw new Error(response.status === 409
-        ? 'La bozza è cambiata. Riaprila e riprova.'
-        : 'Non è stato possibile salvare la bozza.');
+      const response = await request(
+        `${url}/${encodeURIComponent(basis.draftRef)}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Dante-CSRF': await csrf(),
+          },
+          body: JSON.stringify({
+            draft_ref: basis.draftRef,
+            operation_id: basis.operationId,
+            expected_revision: basis.revision,
+            subject_kind: snapshot.fields.kind,
+            title: snapshot.fields.title.trim(),
+            payload: snapshot,
+          }),
+        },
+      );
+      if (!response.ok)
+        throw new Error(
+          response.status === 409
+            ? 'La bozza è cambiata. Riaprila e riprova.'
+            : 'Non è stato possibile salvare la bozza.',
+        );
       return parseItem(await response.json());
     },
 
@@ -100,9 +125,12 @@ export function createRemoteDraftVault(
         `${url}/${encodeURIComponent(item.draftRef)}?expected_revision=${item.revision}`,
         { method: 'DELETE', headers: { 'X-Dante-CSRF': await csrf() } },
       );
-      if (!response.ok) throw new Error(response.status === 409
-        ? 'La bozza è cambiata. Aggiorna il box Bozze.'
-        : 'Non è stato possibile eliminare la bozza.');
+      if (!response.ok)
+        throw new Error(
+          response.status === 409
+            ? 'La bozza è cambiata. Aggiorna il box Bozze.'
+            : 'Non è stato possibile eliminare la bozza.',
+        );
     },
   });
 }
@@ -110,5 +138,6 @@ export function createRemoteDraftVault(
 export const DRAFT_VAULT_UPDATED = 'dante:draft-vault-updated';
 
 export function notifyDraftVaultUpdated(): void {
-  if (typeof window !== 'undefined') window.dispatchEvent(new Event(DRAFT_VAULT_UPDATED));
+  if (typeof window !== 'undefined')
+    window.dispatchEvent(new Event(DRAFT_VAULT_UPDATED));
 }

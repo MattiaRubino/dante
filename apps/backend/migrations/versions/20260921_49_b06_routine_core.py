@@ -1,4 +1,3 @@
-# ruff: noqa: S608
 """B06-A: Routine source core and typed product organization.
 
 Routine is a self-owned recurrence source.  It is deliberately neither an
@@ -27,7 +26,7 @@ def _sql(value: str) -> None:
 def _fk(column: str, target: str, name: str) -> sa.ForeignKeyConstraint:
     return sa.ForeignKeyConstraint(
         [column],
-        [f"dante.{target}.{ 'person_ref' if target == 'person' else column}"],
+        [f"dante.{target}.{'person_ref' if target == 'person' else column}"],
         name=name,
         onupdate="NO ACTION",
         ondelete="NO ACTION",
@@ -76,14 +75,29 @@ def upgrade() -> None:
         sa.Column("expected_source_revision", sa.BigInteger(), nullable=False),
         sa.Column("accepted_source_revision", sa.BigInteger(), nullable=False),
         sa.Column("accepted_at", sa.DateTime(timezone=True), nullable=False),
-        sa.PrimaryKeyConstraint("self_person_ref", "operation_id", name=op.f("pk_routine_operation")),
+        sa.PrimaryKeyConstraint(
+            "self_person_ref", "operation_id", name=op.f("pk_routine_operation")
+        ),
         _fk("self_person_ref", "person", "fk_routine_operation_person"),
         _fk("routine_ref", "routine", "fk_routine_operation_routine"),
-        sa.CheckConstraint("operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200", name=op.f("ck_routine_operation_id")),
-        sa.CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name=op.f("ck_routine_operation_fingerprint")),
-        sa.CheckConstraint("kind IN ('create','rename','pause','resume','end')", name=op.f("ck_routine_operation_kind")),
-        sa.CheckConstraint("expected_source_revision>=0", name=op.f("ck_routine_operation_expected")),
-        sa.CheckConstraint("accepted_source_revision=expected_source_revision+1", name=op.f("ck_routine_operation_accepted")),
+        sa.CheckConstraint(
+            "operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200",
+            name=op.f("ck_routine_operation_id"),
+        ),
+        sa.CheckConstraint(
+            "intent_fingerprint ~ '^[0-9a-f]{64}$'", name=op.f("ck_routine_operation_fingerprint")
+        ),
+        sa.CheckConstraint(
+            "kind IN ('create','rename','pause','resume','end')",
+            name=op.f("ck_routine_operation_kind"),
+        ),
+        sa.CheckConstraint(
+            "expected_source_revision>=0", name=op.f("ck_routine_operation_expected")
+        ),
+        sa.CheckConstraint(
+            "accepted_source_revision=expected_source_revision+1",
+            name=op.f("ck_routine_operation_accepted"),
+        ),
         schema="dante",
     )
     op.create_table(
@@ -93,14 +107,21 @@ def upgrade() -> None:
         sa.Column("life_area_ref", sa.Uuid(), nullable=False),
         sa.Column("revision", sa.BigInteger(), nullable=False),
         sa.Column("assigned_at", sa.DateTime(timezone=True), nullable=False),
-        sa.PrimaryKeyConstraint("self_person_ref", "routine_ref", name=op.f("pk_routine_life_area_assignment")),
+        sa.PrimaryKeyConstraint(
+            "self_person_ref", "routine_ref", name=op.f("pk_routine_life_area_assignment")
+        ),
         _fk("self_person_ref", "person", "fk_routine_life_area_assignment_person"),
         _fk("routine_ref", "routine", "fk_routine_life_area_assignment_routine"),
         _fk("life_area_ref", "life_area", "fk_routine_life_area_assignment_life_area"),
         sa.CheckConstraint("revision>=1", name=op.f("ck_routine_life_area_assignment_revision")),
         schema="dante",
     )
-    op.create_index("ix_routine_life_area_assignment_self_person_life_area", "routine_life_area_assignment", ["self_person_ref", "life_area_ref", "routine_ref"], schema="dante")
+    op.create_index(
+        "ix_routine_life_area_assignment_self_person_life_area",
+        "routine_life_area_assignment",
+        ["self_person_ref", "life_area_ref", "routine_ref"],
+        schema="dante",
+    )
     op.create_table(
         "routine_life_area_assignment_operation",
         sa.Column("self_person_ref", sa.Uuid(), nullable=False),
@@ -111,14 +132,25 @@ def upgrade() -> None:
         sa.Column("expected_revision", sa.BigInteger(), nullable=False),
         sa.Column("accepted_revision", sa.BigInteger(), nullable=False),
         sa.Column("accepted_at", sa.DateTime(timezone=True), nullable=False),
-        sa.PrimaryKeyConstraint("self_person_ref", "operation_id", name=op.f("pk_routine_life_area_assignment_operation")),
+        sa.PrimaryKeyConstraint(
+            "self_person_ref",
+            "operation_id",
+            name=op.f("pk_routine_life_area_assignment_operation"),
+        ),
         _fk("self_person_ref", "person", "fk_routine_area_op_person"),
         _fk("routine_ref", "routine", "fk_routine_area_op_routine"),
         _fk("life_area_ref", "life_area", "fk_routine_area_op_life_area"),
-        sa.CheckConstraint("operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200", name=op.f("ck_routine_area_op_id")),
-        sa.CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name=op.f("ck_routine_area_op_fingerprint")),
+        sa.CheckConstraint(
+            "operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200",
+            name=op.f("ck_routine_area_op_id"),
+        ),
+        sa.CheckConstraint(
+            "intent_fingerprint ~ '^[0-9a-f]{64}$'", name=op.f("ck_routine_area_op_fingerprint")
+        ),
         sa.CheckConstraint("expected_revision>=0", name=op.f("ck_routine_area_op_expected")),
-        sa.CheckConstraint("accepted_revision=expected_revision+1", name=op.f("ck_routine_area_op_accepted")),
+        sa.CheckConstraint(
+            "accepted_revision=expected_revision+1", name=op.f("ck_routine_area_op_accepted")
+        ),
         schema="dante",
     )
     op.create_table(
@@ -127,13 +159,20 @@ def upgrade() -> None:
         sa.Column("routine_ref", sa.Uuid(), nullable=False),
         sa.Column("tag_ref", sa.Uuid(), nullable=False),
         sa.Column("attached_at", sa.DateTime(timezone=True), nullable=False),
-        sa.PrimaryKeyConstraint("self_person_ref", "routine_ref", "tag_ref", name=op.f("pk_routine_tag")),
+        sa.PrimaryKeyConstraint(
+            "self_person_ref", "routine_ref", "tag_ref", name=op.f("pk_routine_tag")
+        ),
         _fk("self_person_ref", "person", "fk_routine_tag_person"),
         _fk("routine_ref", "routine", "fk_routine_tag_routine"),
         _fk("tag_ref", "product_tag", "fk_routine_tag_tag"),
         schema="dante",
     )
-    op.create_index("ix_routine_tag_self_person_tag", "routine_tag", ["self_person_ref", "tag_ref", "routine_ref"], schema="dante")
+    op.create_index(
+        "ix_routine_tag_self_person_tag",
+        "routine_tag",
+        ["self_person_ref", "tag_ref", "routine_ref"],
+        schema="dante",
+    )
     op.create_table(
         "routine_tag_operation",
         sa.Column("self_person_ref", sa.Uuid(), nullable=False),
@@ -143,12 +182,19 @@ def upgrade() -> None:
         sa.Column("tag_ref", sa.Uuid(), nullable=False),
         sa.Column("attached", sa.Boolean(), nullable=False),
         sa.Column("accepted_at", sa.DateTime(timezone=True), nullable=False),
-        sa.PrimaryKeyConstraint("self_person_ref", "operation_id", name=op.f("pk_routine_tag_operation")),
+        sa.PrimaryKeyConstraint(
+            "self_person_ref", "operation_id", name=op.f("pk_routine_tag_operation")
+        ),
         _fk("self_person_ref", "person", "fk_routine_tag_op_person"),
         _fk("routine_ref", "routine", "fk_routine_tag_op_routine"),
         _fk("tag_ref", "product_tag", "fk_routine_tag_op_tag"),
-        sa.CheckConstraint("operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200", name=op.f("ck_routine_tag_op_id")),
-        sa.CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name=op.f("ck_routine_tag_op_fingerprint")),
+        sa.CheckConstraint(
+            "operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200",
+            name=op.f("ck_routine_tag_op_id"),
+        ),
+        sa.CheckConstraint(
+            "intent_fingerprint ~ '^[0-9a-f]{64}$'", name=op.f("ck_routine_tag_op_fingerprint")
+        ),
         schema="dante",
     )
 
@@ -159,19 +205,40 @@ def upgrade() -> None:
     _sql(_LIST_ROUTINES)
     _sql(_LIST_TAGS)
     _sql(_LIST_ITEM_TAGS)
-    for function in ("create_self_routine", "mutate_self_routine", "assign_self_routine_life_area", "set_self_routine_tag", "list_self_routines", "list_self_routine_tags"):
+    for function in (
+        "create_self_routine",
+        "mutate_self_routine",
+        "assign_self_routine_life_area",
+        "set_self_routine_tag",
+        "list_self_routines",
+        "list_self_routine_tags",
+    ):
         _sql(f"REVOKE ALL ON FUNCTION dante.{function} FROM PUBLIC")
         _sql(f"GRANT EXECUTE ON FUNCTION dante.{function} TO dante_runtime")
 
 
 def downgrade() -> None:
-    for function in ("list_self_routine_tags", "list_self_routines", "set_self_routine_tag", "assign_self_routine_life_area", "mutate_self_routine", "create_self_routine"):
+    for function in (
+        "list_self_routine_tags",
+        "list_self_routines",
+        "set_self_routine_tag",
+        "assign_self_routine_life_area",
+        "mutate_self_routine",
+        "create_self_routine",
+    ):
         _sql(f"DROP FUNCTION IF EXISTS dante.{function} CASCADE")
-    for table in ("routine_tag_operation", "routine_tag", "routine_life_area_assignment_operation", "routine_life_area_assignment", "routine_operation", "routine_intention"):
+    for table in (
+        "routine_tag_operation",
+        "routine_tag",
+        "routine_life_area_assignment_operation",
+        "routine_life_area_assignment",
+        "routine_operation",
+        "routine_intention",
+    ):
         op.drop_table(table, schema="dante")
 
 
-_CREATE_ROUTINE = r'''
+_CREATE_ROUTINE = r"""
 CREATE FUNCTION dante.create_self_routine(
     requested_self_person_ref uuid, requested_operation_id text,
     requested_intent_fingerprint text, requested_routine_ref uuid,
@@ -226,9 +293,9 @@ BEGIN
     RETURN QUERY SELECT requested_routine_ref,1::bigint,1::bigint,recorded_at,false;
 END;
 $function$;
-'''
+"""
 
-_MUTATE_ROUTINE = r'''
+_MUTATE_ROUTINE = r"""
 CREATE FUNCTION dante.mutate_self_routine(
     requested_self_person_ref uuid, requested_operation_id text, requested_intent_fingerprint text,
     requested_routine_ref uuid, requested_expected_source_revision bigint, requested_kind text,
@@ -280,9 +347,9 @@ BEGIN
     RETURN QUERY SELECT requested_routine_ref,requested_expected_source_revision+1,current_row.lifecycle_state,recorded_at,false;
 END;
 $function$;
-'''
+"""
 
-_ASSIGN_AREA = r'''
+_ASSIGN_AREA = r"""
 CREATE FUNCTION dante.assign_self_routine_life_area(
  requested_self_person_ref uuid, requested_operation_id text, requested_intent_fingerprint text,
  requested_routine_ref uuid, requested_life_area_ref uuid, requested_expected_revision bigint
@@ -305,9 +372,9 @@ BEGIN
  RETURN QUERY SELECT requested_life_area_ref,requested_expected_revision+1,recorded_at,false;
 END;
 $function$;
-'''
+"""
 
-_SET_TAG = r'''
+_SET_TAG = r"""
 CREATE FUNCTION dante.set_self_routine_tag(
  requested_self_person_ref uuid, requested_operation_id text, requested_intent_fingerprint text,
  requested_routine_ref uuid, requested_tag_ref uuid, requested_attached boolean
@@ -330,9 +397,9 @@ BEGIN
  RETURN QUERY SELECT requested_attached,recorded_at,false;
 END;
 $function$;
-'''
+"""
 
-_LIST_ROUTINES = r'''
+_LIST_ROUTINES = r"""
 CREATE FUNCTION dante.list_self_routines(requested_self_person_ref uuid)
 RETURNS TABLE(routine_ref uuid,title text,lifecycle_state text,source_revision bigint,created_at timestamptz,updated_at timestamptz,lifecycle_changed_at timestamptz,life_area_ref uuid,life_area_assignment_revision bigint,life_area_assigned_at timestamptz)
 LANGUAGE sql SECURITY DEFINER STABLE PARALLEL SAFE SET search_path = pg_catalog, dante, pg_temp AS $function$
@@ -340,17 +407,17 @@ LANGUAGE sql SECURITY DEFINER STABLE PARALLEL SAFE SET search_path = pg_catalog,
  FROM dante.routine_intention AS source JOIN dante.routine_life_area_assignment AS area ON area.routine_ref=source.routine_ref AND area.self_person_ref=source.self_person_ref
  WHERE source.self_person_ref=requested_self_person_ref ORDER BY source.created_at,source.routine_ref
 $function$;
-'''
+"""
 
-_LIST_TAGS = r'''
+_LIST_TAGS = r"""
 CREATE FUNCTION dante.list_self_routine_tags(requested_self_person_ref uuid)
 RETURNS TABLE(routine_ref uuid,tag_ref uuid,attached_at timestamptz)
 LANGUAGE sql SECURITY DEFINER STABLE PARALLEL SAFE SET search_path = pg_catalog, dante, pg_temp AS $function$
  SELECT routine_ref,tag_ref,attached_at FROM dante.routine_tag WHERE self_person_ref=requested_self_person_ref ORDER BY routine_ref,attached_at,tag_ref
 $function$;
-'''
+"""
 
-_LIST_ITEM_TAGS = r'''
+_LIST_ITEM_TAGS = r"""
 CREATE OR REPLACE FUNCTION dante.list_self_item_tags(requested_self_person_ref uuid)
 RETURNS TABLE(subject_kind text, subject_native_ref uuid, tag_ref uuid, attached_at timestamptz)
 LANGUAGE sql SECURITY DEFINER STABLE PARALLEL SAFE SET search_path = pg_catalog, dante, pg_temp AS $function$
@@ -364,4 +431,4 @@ LANGUAGE sql SECURITY DEFINER STABLE PARALLEL SAFE SET search_path = pg_catalog,
   WHERE edge.self_person_ref=requested_self_person_ref AND EXISTS(SELECT 1 FROM dante.account_application_context WHERE self_person_ref=requested_self_person_ref)
  ORDER BY 1,2,3
 $function$;
-'''
+"""

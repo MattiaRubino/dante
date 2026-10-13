@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ConfirmationControls } from './confirmation-controls';
@@ -92,7 +98,9 @@ describe('Confirmation controls', () => {
     render(<ConfirmationControls kind="event" subjectRef={SUBJECT} />);
     fireEvent.click(screen.getByText('Carica Confirmation'));
 
-    await screen.findByText('Confirmation non disponibile: registra prima un Outcome.');
+    await screen.findByText(
+      'Confirmation non disponibile: registra prima un Outcome.',
+    );
     expect(screen.queryByText('Registra Confirmation')).toBeNull();
     expect(fetchFn).toHaveBeenCalledTimes(1);
   });
@@ -111,7 +119,10 @@ describe('Confirmation controls', () => {
       if (url.endsWith(`/actuals/${ACTUAL}/outcome`)) {
         return Response.json(outcome());
       }
-      if (init?.method === 'POST' && url.endsWith(`/outcomes/${OUTCOME}/confirmations`)) {
+      if (
+        init?.method === 'POST' &&
+        url.endsWith(`/outcomes/${OUTCOME}/confirmations`)
+      ) {
         const body = JSON.parse(String(init.body)) as Record<string, unknown>;
         bodies.push(body);
         current = confirmation(
@@ -145,7 +156,9 @@ describe('Confirmation controls', () => {
     });
     fireEvent.click(screen.getByText('Registra Confirmation'));
     await screen.findByText('Confirmation registrata.');
-    expect(screen.getByText('Confirmation: review.personal / attested')).toBeTruthy();
+    expect(
+      screen.getByText('Confirmation: review.personal / attested'),
+    ).toBeTruthy();
 
     expect(bodies[0]).toMatchObject({
       outcome_disposition_material_state_ref: OUTCOME_STATE,
@@ -165,7 +178,9 @@ describe('Confirmation controls', () => {
       expected_material_state_ref: CONFIRMATION_STATE_1,
       stance_code: 'retracted',
     });
-    expect(screen.getByText('Confirmation: review.personal / retracted')).toBeTruthy();
+    expect(
+      screen.getByText('Confirmation: review.personal / retracted'),
+    ).toBeTruthy();
   });
 
   it('shows other actors’ Confirmation without treating it as universal truth', async () => {

@@ -290,13 +290,9 @@ async def test_api_keeps_scheduled_and_flexible_occurrence_semantics_distinct() 
                 ),
             ),
             TimelineExpectedOccurrenceItem(
-                occurrence_ref=NativeRef(
-                    UUID("0199a8c0-ae76-7015-9bf5-f739584ab6c2")
-                ),
+                occurrence_ref=NativeRef(UUID("0199a8c0-ae76-7015-9bf5-f739584ab6c2")),
                 source_kind="event",
-                source_native_ref=NativeRef(
-                    UUID("0199a8c0-be77-7126-8c06-084a695bc7d3")
-                ),
+                source_native_ref=NativeRef(UUID("0199a8c0-be77-7126-8c06-084a695bc7d3")),
                 title="Allenamenti",
                 coordinate=QuotaCoordinate(
                     family_code="quota_per_period",

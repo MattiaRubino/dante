@@ -948,9 +948,7 @@ class OccurrenceApplication:
         try:
             async with self._session_factory() as session, session.begin():
                 source_rows = (
-                    (await session.execute(statement, {"actor": self_person_ref}))
-                    .mappings()
-                    .all()
+                    (await session.execute(statement, {"actor": self_person_ref})).mappings().all()
                 )
         except SQLAlchemyError as exc:
             raise OccurrencePersistenceError() from exc

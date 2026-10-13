@@ -27,7 +27,9 @@ export function readTemporalCreateRecentUsedColors(): readonly string[] {
     if (!Array.isArray(parsed)) return Object.freeze([]);
     return Object.freeze(
       parsed
-        .map((value) => (typeof value === 'string' ? normalizeColor(value) : null))
+        .map((value) =>
+          typeof value === 'string' ? normalizeColor(value) : null,
+        )
         .filter((value): value is string => value !== null)
         .slice(0, 3),
     );

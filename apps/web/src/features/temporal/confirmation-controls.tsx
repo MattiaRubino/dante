@@ -48,7 +48,9 @@ export function ConfirmationControls({
     [],
   );
   const [outcome, setOutcome] = useState<TemporalOutcomeView | null>(null);
-  const [confirmations, setConfirmations] = useState<readonly TemporalConfirmationView[]>([]);
+  const [confirmations, setConfirmations] = useState<
+    readonly TemporalConfirmationView[]
+  >([]);
   const [purposeCode, setPurposeCode] = useState('');
   const [stanceCode, setStanceCode] = useState('');
   const [loaded, setLoaded] = useState(false);
@@ -57,7 +59,8 @@ export function ConfirmationControls({
 
   const normalizedPurpose = purposeCode.trim();
   const normalizedStance = stanceCode.trim();
-  const codesValid = CONTEXT_CODE.test(normalizedPurpose) && CONTEXT_CODE.test(normalizedStance);
+  const codesValid =
+    CONTEXT_CODE.test(normalizedPurpose) && CONTEXT_CODE.test(normalizedStance);
   const ownOnCurrent = confirmations.find(
     (item) =>
       item.confirmerIsSelf &&
@@ -87,34 +90,46 @@ export function ConfirmationControls({
       setLoaded(true);
       return { outcome: currentOutcome, confirmations: [] as const };
     }
-    const currentConfirmations = await confirmationSource.list(currentOutcome.outcomeRef);
+    const currentConfirmations = await confirmationSource.list(
+      currentOutcome.outcomeRef,
+    );
     setConfirmations(currentConfirmations);
     setLoaded(true);
     const own = currentConfirmations.find(
       (item) =>
         item.confirmerIsSelf &&
-        item.outcomeDispositionMaterialStateRef === currentOutcome.materialStateRef,
+        item.outcomeDispositionMaterialStateRef ===
+          currentOutcome.materialStateRef,
     );
     if (own !== undefined) {
       setPurposeCode(own.purposeCode);
       setStanceCode(own.stanceCode);
     }
-    return { outcome: currentOutcome, confirmations: currentConfirmations } as const;
+    return {
+      outcome: currentOutcome,
+      confirmations: currentConfirmations,
+    } as const;
   };
 
   const load = () => {
     setPending(true);
     setMessage(null);
     void reload()
-      .then(({ outcome: currentOutcome, confirmations: currentConfirmations }) => {
-        if (currentOutcome === null) {
-          setMessage('Confirmation non disponibile: registra prima un Outcome.');
-        } else if (currentConfirmations.length === 0) {
-          setMessage('Nessuna Confirmation registrata. Questo non significa che l’Outcome sia falso.');
-        } else {
-          setMessage('Confirmation caricate.');
-        }
-      })
+      .then(
+        ({ outcome: currentOutcome, confirmations: currentConfirmations }) => {
+          if (currentOutcome === null) {
+            setMessage(
+              'Confirmation non disponibile: registra prima un Outcome.',
+            );
+          } else if (currentConfirmations.length === 0) {
+            setMessage(
+              'Nessuna Confirmation registrata. Questo non significa che l’Outcome sia falso.',
+            );
+          } else {
+            setMessage('Confirmation caricate.');
+          }
+        },
+      )
       .catch((error: unknown) => {
         setLoaded(true);
         setMessage(rejection('Confirmation non disponibile.', error));
@@ -133,7 +148,9 @@ export function ConfirmationControls({
           setOutcome(null);
           setConfirmations([]);
           setLoaded(true);
-          setMessage('Confirmation non disponibile: registra prima un Outcome.');
+          setMessage(
+            'Confirmation non disponibile: registra prima un Outcome.',
+          );
           return;
         }
         const currentOutcome = await outcomeSource.get(currentActual.actualRef);
@@ -141,25 +158,35 @@ export function ConfirmationControls({
           setOutcome(null);
           setConfirmations([]);
           setLoaded(true);
-          setMessage('Confirmation non disponibile: registra prima un Outcome.');
+          setMessage(
+            'Confirmation non disponibile: registra prima un Outcome.',
+          );
           return;
         }
         setOutcome(currentOutcome);
-        const currentConfirmations = await confirmationSource.list(currentOutcome.outcomeRef);
+        const currentConfirmations = await confirmationSource.list(
+          currentOutcome.outcomeRef,
+        );
         const expected = currentConfirmations.find(
           (item) =>
             item.confirmerIsSelf &&
-            item.outcomeDispositionMaterialStateRef === currentOutcome.materialStateRef &&
+            item.outcomeDispositionMaterialStateRef ===
+              currentOutcome.materialStateRef &&
             item.purposeCode === normalizedPurpose,
         );
-        const saved = await confirmationSource.record(currentOutcome.outcomeRef, {
-          operationId: operationId(),
-          outcomeDispositionMaterialStateRef: currentOutcome.materialStateRef,
-          expectedMaterialStateRef: expected?.materialStateRef ?? null,
-          purposeCode: normalizedPurpose,
-          stanceCode: normalizedStance,
-        });
-        const refreshed = await confirmationSource.list(currentOutcome.outcomeRef);
+        const saved = await confirmationSource.record(
+          currentOutcome.outcomeRef,
+          {
+            operationId: operationId(),
+            outcomeDispositionMaterialStateRef: currentOutcome.materialStateRef,
+            expectedMaterialStateRef: expected?.materialStateRef ?? null,
+            purposeCode: normalizedPurpose,
+            stanceCode: normalizedStance,
+          },
+        );
+        const refreshed = await confirmationSource.list(
+          currentOutcome.outcomeRef,
+        );
         setConfirmations(refreshed.length === 0 ? [saved] : refreshed);
         setLoaded(true);
         setPurposeCode(saved.purposeCode);
@@ -169,20 +196,30 @@ export function ConfirmationControls({
       .catch((error: unknown) =>
         reload()
           .catch(() => undefined)
-          .then(() => setMessage(rejection('Aggiornamento Confirmation rifiutato.', error))),
+          .then(() =>
+            setMessage(
+              rejection('Aggiornamento Confirmation rifiutato.', error),
+            ),
+          ),
       )
       .finally(() => setPending(false));
   };
 
   return (
-    <div className="timeline-confirmation-controls" data-timeline-confirmation-subject={subjectRef}>
+    <div
+      className="timeline-confirmation-controls"
+      data-timeline-confirmation-subject={subjectRef}
+    >
       <strong>Confirmation</strong>
       <small>
-        Confirmation è un’attestazione contestuale e opzionale di una versione esatta dell’Outcome.
-        Non è Outcome, autorità o verità universale. Assenza di Confirmation non significa falso.
+        Confirmation è un’attestazione contestuale e opzionale di una versione
+        esatta dell’Outcome. Non è Outcome, autorità o verità universale.
+        Assenza di Confirmation non significa falso.
       </small>
       {outcome === null && loaded ? (
-        <p data-timeline-confirmation-state>Confirmation: non disponibile senza Outcome</p>
+        <p data-timeline-confirmation-state>
+          Confirmation: non disponibile senza Outcome
+        </p>
       ) : null}
       <button
         type="button"
@@ -239,7 +276,9 @@ export function ConfirmationControls({
         </>
       ) : null}
       {message === null ? null : (
-        <span role={message.startsWith('Aggiornamento') ? 'alert' : 'status'}>{message}</span>
+        <span role={message.startsWith('Aggiornamento') ? 'alert' : 'status'}>
+          {message}
+        </span>
       )}
     </div>
   );

@@ -13,8 +13,15 @@ function normalized(value: string): string {
   return value.trim().replace(/\s+/g, ' ');
 }
 
-export function TemporalLifeAreaSelect({ query, options, selectedId, onQueryChange,
-  onChoose, onClear, disabled = false, label = 'Life Area (opzionale)',
+export function TemporalLifeAreaSelect({
+  query,
+  options,
+  selectedId,
+  onQueryChange,
+  onChoose,
+  onClear,
+  disabled = false,
+  label = 'Life Area (opzionale)',
   placeholder = 'Life Area (opzionale)',
 }: Readonly<{
   query: string;
@@ -31,14 +38,20 @@ export function TemporalLifeAreaSelect({ query, options, selectedId, onQueryChan
   const rootRef = useRef<HTMLDivElement | null>(null);
   const filtered = useMemo(() => {
     const needle = normalized(query).toLocaleLowerCase();
-    return needle ? options.filter((option) =>
-      option.label.toLocaleLowerCase().includes(needle)) : options;
+    return needle
+      ? options.filter((option) =>
+          option.label.toLocaleLowerCase().includes(needle),
+        )
+      : options;
   }, [options, query]);
 
   useEffect(() => {
     if (!open) return;
     const dismiss = (event: PointerEvent) => {
-      if (event.target instanceof Node && !rootRef.current?.contains(event.target)) {
+      if (
+        event.target instanceof Node &&
+        !rootRef.current?.contains(event.target)
+      ) {
         setOpen(false);
       }
     };
@@ -46,22 +59,65 @@ export function TemporalLifeAreaSelect({ query, options, selectedId, onQueryChan
     return () => document.removeEventListener('pointerdown', dismiss, true);
   }, [open]);
 
-  return <div ref={rootRef} className="temporal-create-life-area-field__area-cell">
-    <input type="text" value={query} placeholder={placeholder} aria-label={label}
-      disabled={disabled} autoComplete="off" onFocus={() => setOpen(true)}
-      onChange={(event) => { onQueryChange(event.currentTarget.value); setOpen(true); }} />
-    {query ? <button type="button" aria-label="Rimuovi Life Area" disabled={disabled}
-      onClick={() => { onClear(); setOpen(false); }}>×</button> : null}
-    {open && filtered.length > 0 ? <div className="temporal-create-life-area-field__options"
-      role="listbox">
-      {filtered.map((option) => <button key={option.id} type="button" role="option"
-        aria-selected={selectedId === option.id}
-        onClick={() => { onChoose(option); setOpen(false); }}>
-        <span className="temporal-create-life-area-field__swatch"
-          style={option.colorCode ? { background: option.colorCode } : undefined}
-          data-context-tone={option.tone} aria-hidden="true" />
-        <span>{option.label}</span>
-      </button>)}
-    </div> : null}
-  </div>;
+  return (
+    <div ref={rootRef} className="temporal-create-life-area-field__area-cell">
+      <input
+        type="text"
+        value={query}
+        placeholder={placeholder}
+        aria-label={label}
+        disabled={disabled}
+        autoComplete="off"
+        onFocus={() => setOpen(true)}
+        onChange={(event) => {
+          onQueryChange(event.currentTarget.value);
+          setOpen(true);
+        }}
+      />
+      {query ? (
+        <button
+          type="button"
+          aria-label="Rimuovi Life Area"
+          disabled={disabled}
+          onClick={() => {
+            onClear();
+            setOpen(false);
+          }}
+        >
+          ×
+        </button>
+      ) : null}
+      {open && filtered.length > 0 ? (
+        <div
+          className="temporal-create-life-area-field__options"
+          role="listbox"
+        >
+          {filtered.map((option) => (
+            <button
+              key={option.id}
+              type="button"
+              role="option"
+              aria-selected={selectedId === option.id}
+              onClick={() => {
+                onChoose(option);
+                setOpen(false);
+              }}
+            >
+              <span
+                className="temporal-create-life-area-field__swatch"
+                style={
+                  option.colorCode
+                    ? { background: option.colorCode }
+                    : undefined
+                }
+                data-context-tone={option.tone}
+                aria-hidden="true"
+              />
+              <span>{option.label}</span>
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
 }

@@ -14,13 +14,16 @@ function operationId(): string {
 }
 
 function rejection(fallback: string, error: unknown): string {
-  if (error instanceof Error && error.message.trim()) return `${fallback} ${error.message}`;
+  if (error instanceof Error && error.message.trim())
+    return `${fallback} ${error.message}`;
   return fallback;
 }
 
 function evaluationText(evaluation: ConditionalEvaluationView): string {
-  if (evaluation.resultCode === 'satisfied') return 'Valutazione: soddisfatta → consenti';
-  if (evaluation.resultCode === 'not_satisfied') return 'Valutazione: non soddisfatta → trattieni';
+  if (evaluation.resultCode === 'satisfied')
+    return 'Valutazione: soddisfatta → consenti';
+  if (evaluation.resultCode === 'not_satisfied')
+    return 'Valutazione: non soddisfatta → trattieni';
   return 'Valutazione: indeterminata → trattieni';
 }
 
@@ -31,9 +34,14 @@ export function ConditionalTemporalControls({
   kind: ConditionalTemporalSubjectKind;
   subjectRef: string;
 }>) {
-  const source = useMemo(() => createRemoteConditionalTemporalDataSource(globalThis.fetch), []);
-  const [condition, setCondition] = useState<ActualRealizationConditionView | null>(null);
-  const [evaluation, setEvaluation] = useState<ConditionalEvaluationView | null>(null);
+  const source = useMemo(
+    () => createRemoteConditionalTemporalDataSource(globalThis.fetch),
+    [],
+  );
+  const [condition, setCondition] =
+    useState<ActualRealizationConditionView | null>(null);
+  const [evaluation, setEvaluation] =
+    useState<ConditionalEvaluationView | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -78,7 +86,9 @@ export function ConditionalTemporalControls({
       .catch((error: unknown) =>
         reload()
           .catch(() => undefined)
-          .then(() => setMessage(rejection('Creazione condizione rifiutata.', error))),
+          .then(() =>
+            setMessage(rejection('Creazione condizione rifiutata.', error)),
+          ),
       )
       .finally(() => setPending(false));
   };
@@ -106,7 +116,10 @@ export function ConditionalTemporalControls({
       : 'Condizione Actual: configurata';
 
   return (
-    <section className="timeline-conditional-controls" data-timeline-conditional-subject={subjectRef}>
+    <section
+      className="timeline-conditional-controls"
+      data-timeline-conditional-subject={subjectRef}
+    >
       <strong>Condizione Actual</strong>
       <p data-timeline-conditional-state>{state}</p>
       {evaluation === null ? null : <p>{evaluationText(evaluation)}</p>}
@@ -120,10 +133,12 @@ export function ConditionalTemporalControls({
         </button>
       )}
       <small>
-        La valutazione legge l'Actual canonico e produce soltanto un segnale allow/withhold:
-        non crea né modifica Schedule, Occurrence, Session o Actual.
+        La valutazione legge l'Actual canonico e produce soltanto un segnale
+        allow/withhold: non crea né modifica Schedule, Occurrence, Session o
+        Actual.
       </small>
-      {message === null ? null : message.endsWith('registrata.') || message.endsWith('creata.') ? (
+      {message === null ? null : message.endsWith('registrata.') ||
+        message.endsWith('creata.') ? (
         <span role="status">{message}</span>
       ) : (
         <span role="alert">{message}</span>

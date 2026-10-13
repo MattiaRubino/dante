@@ -29,7 +29,5 @@ def test_b04_e_runtime_can_read_duration_current_rule_payload_table(
             "temporal_constraint_mutation_operation",
         ):
             with pytest.raises(psycopg.errors.InsufficientPrivilege):
-                connection.execute(
-                    f"SELECT * FROM dante.{private_table} LIMIT 0"
-                ).fetchall()
+                connection.execute(f"SELECT * FROM dante.{private_table} LIMIT 0").fetchall()
             connection.rollback()

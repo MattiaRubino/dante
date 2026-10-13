@@ -34,16 +34,25 @@ def test_b10_c_confirmation_write_openapi_matches_runtime_http_contract() -> Non
         "422",
         "500",
     }
-    assert _response_schema_ref(
-        cast(dict[str, Any], responses["200"]),
-        "application/json",
-    ) == "#/components/schemas/ConfirmationResponse"
-    assert _response_schema_ref(
-        cast(dict[str, Any], responses["201"]),
-        "application/json",
-    ) == "#/components/schemas/ConfirmationResponse"
+    assert (
+        _response_schema_ref(
+            cast(dict[str, Any], responses["200"]),
+            "application/json",
+        )
+        == "#/components/schemas/ConfirmationResponse"
+    )
+    assert (
+        _response_schema_ref(
+            cast(dict[str, Any], responses["201"]),
+            "application/json",
+        )
+        == "#/components/schemas/ConfirmationResponse"
+    )
     for status in ("400", "401", "403", "404", "409", "422", "500"):
-        assert _response_schema_ref(
-            cast(dict[str, Any], responses[status]),
-            "application/problem+json",
-        ) == "#/components/schemas/ProblemDetails"
+        assert (
+            _response_schema_ref(
+                cast(dict[str, Any], responses[status]),
+                "application/problem+json",
+            )
+            == "#/components/schemas/ProblemDetails"
+        )

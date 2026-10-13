@@ -7,6 +7,7 @@ from typing import Any
 
 import psycopg
 import pytest
+from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
 
 from dante.modules.temporal.actual_runtime import ActualApplication
 from dante.modules.temporal.conditional_temporal import (
@@ -19,7 +20,6 @@ from dante.modules.temporal.routine import RoutineApplication
 from dante.modules.temporal.session_runtime import SessionApplication
 from dante.platform.database.references import NativeRef
 from dante.platform.database.runtime import create_database_runtime
-from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
 
 pytestmark = pytest.mark.postgres
 

@@ -48,12 +48,15 @@ def test_activity_execution_policy_is_explicit_current_and_self_scoped(
         initial = client.get(path, headers=_base_headers())
         assert initial.status_code == 200
         assert initial.json() == {
-            "activity_ref": activity_ref, "state_ref": None,
-            "mode_code": "disabled", "replayed": False,
+            "activity_ref": activity_ref,
+            "state_ref": None,
+            "mode_code": "disabled",
+            "replayed": False,
         }
 
         request = {
-            "operation_id": "u6:policy:live", "mode_code": "live",
+            "operation_id": "u6:policy:live",
+            "mode_code": "live",
             "expected_state_ref": None,
         }
         first = client.post(path, json=request, headers=headers)
@@ -62,21 +65,26 @@ def test_activity_execution_policy_is_explicit_current_and_self_scoped(
         state_ref = first.json()["state_ref"]
         assert state_ref is not None
         assert client.post(path, json=request, headers=headers).json() == {
-            **first.json(), "replayed": True,
+            **first.json(),
+            "replayed": True,
         }
         assert client.get(path, headers=_base_headers()).json()["state_ref"] == state_ref
 
         started = client.post(
             f"/api/v1/temporal/activities/{activity_ref}/sessions",
-            json={"operation_id": "u6:policy:start"}, headers=headers,
+            json={"operation_id": "u6:policy:start"},
+            headers=headers,
         )
         assert started.status_code == 201
         assert started.json()["subject_native_ref"] == activity_ref
 
         stale = client.post(
             path,
-            json={"operation_id": "u6:policy:stale", "mode_code": "disabled",
-                  "expected_state_ref": None},
+            json={
+                "operation_id": "u6:policy:stale",
+                "mode_code": "disabled",
+                "expected_state_ref": None,
+            },
             headers=headers,
         )
         assert stale.status_code == 409
@@ -89,8 +97,11 @@ def test_activity_execution_policy_is_explicit_current_and_self_scoped(
 
         disabled = client.post(
             path,
-            json={"operation_id": "u6:policy:disable", "mode_code": "disabled",
-                  "expected_state_ref": state_ref},
+            json={
+                "operation_id": "u6:policy:disable",
+                "mode_code": "disabled",
+                "expected_state_ref": state_ref,
+            },
             headers=headers,
         )
         assert disabled.status_code == 201
@@ -98,13 +109,15 @@ def test_activity_execution_policy_is_explicit_current_and_self_scoped(
         assert client.get(path, headers=_base_headers()).json()["mode_code"] == "disabled"
         blocked = client.post(
             f"/api/v1/temporal/activities/{activity_ref}/sessions",
-            json={"operation_id": "u6:policy:blocked"}, headers=headers,
+            json={"operation_id": "u6:policy:blocked"},
+            headers=headers,
         )
         assert blocked.status_code == 409
         assert blocked.json()["code"] == "temporal.session.capture_disabled"
         replay_started = client.post(
             f"/api/v1/temporal/activities/{activity_ref}/sessions",
-            json={"operation_id": "u6:policy:start"}, headers=headers,
+            json={"operation_id": "u6:policy:start"},
+            headers=headers,
         )
         assert replay_started.status_code == 200
         assert replay_started.json()["session_ref"] == started.json()["session_ref"]
@@ -113,9 +126,15 @@ def test_activity_execution_policy_is_explicit_current_and_self_scoped(
         _signin(other, bob)
         assert other.get(path, headers=_base_headers()).status_code == 404
 
-    with psycopg.connect(**migrated_database.connection_kwargs(
-        "dante_runtime", migrated_database.cluster.runtime_password,
-    )) as connection, pytest.raises(psycopg.errors.InsufficientPrivilege):
+    with (
+        psycopg.connect(
+            **migrated_database.connection_kwargs(
+                "dante_runtime",
+                migrated_database.cluster.runtime_password,
+            )
+        ) as connection,
+        pytest.raises(psycopg.errors.InsufficientPrivilege),
+    ):
         connection.execute("SELECT * FROM dante.activity_execution_policy LIMIT 1")
 
 
@@ -130,7 +149,8 @@ def test_activity_create_commits_policy_atomically_and_replays(
         csrf = _signin(client, email)
         headers = {**_base_headers(), CSRF_HEADER_NAME: csrf}
         command = {
-            "operation_id": "u6:policy:atomic", "title": "Read DANTE",
+            "operation_id": "u6:policy:atomic",
+            "title": "Read DANTE",
             "session_capture_mode": "live",
         }
         first = client.post("/api/v1/temporal/authoring/activities", json=command, headers=headers)
@@ -147,7 +167,8 @@ def test_activity_create_commits_policy_atomically_and_replays(
 
         reuse = client.post(
             "/api/v1/temporal/authoring/activities",
-            json={**command, "session_capture_mode": "record"}, headers=headers,
+            json={**command, "session_capture_mode": "record"},
+            headers=headers,
         )
         assert reuse.status_code == 409
         assert client.get(policy_path, headers=_base_headers()).json()["mode_code"] == "live"

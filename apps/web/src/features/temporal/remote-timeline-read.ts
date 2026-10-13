@@ -399,8 +399,14 @@ function parseOwnerIdentity(
   };
 
   if (payload.kind === 'scheduled_activity') {
-    if (payload.placement_locked !== undefined && typeof payload.placement_locked !== 'boolean') {
-      throw new TemporalTimelineRemoteError('protocol', 'Invalid Activity placement lock state.');
+    if (
+      payload.placement_locked !== undefined &&
+      typeof payload.placement_locked !== 'boolean'
+    ) {
+      throw new TemporalTimelineRemoteError(
+        'protocol',
+        'Invalid Activity placement lock state.',
+      );
     }
     return Object.freeze({
       placementLocked: payload.placement_locked === true,
@@ -451,7 +457,10 @@ function parseScheduledItem(payload: unknown): TemporalTimelineScheduledItem {
     'placement_material_state_ref',
     'title',
     'temporal_form',
-    ...(owner.kind === 'scheduled_activity' && payload.placement_locked !== undefined ? ['placement_locked'] as const : []),
+    ...(owner.kind === 'scheduled_activity' &&
+    payload.placement_locked !== undefined
+      ? (['placement_locked'] as const)
+      : []),
   ] as const;
 
   switch (payload.temporal_form) {

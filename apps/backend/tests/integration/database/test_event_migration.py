@@ -32,9 +32,7 @@ def _current_revision(database: Any) -> str:
         assert str(identity[2]).replace(" ", "") == _TRUSTED_SEARCH_PATH
 
         connection.execute("SET ROLE dante_owner")
-        row = connection.execute(
-            "SELECT version_num FROM dante.alembic_version"
-        ).fetchone()
+        row = connection.execute("SELECT version_num FROM dante.alembic_version").fetchone()
     assert row is not None
     return str(row[0])
 

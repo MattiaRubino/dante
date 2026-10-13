@@ -29,10 +29,7 @@ const scheduleUnscheduleUndoEndpoint = (scheduleRef: string) =>
   `${scheduleUnscheduleEndpoint(scheduleRef)}/undo`;
 
 export type TemporalScheduleRemoteFailureKind =
-  | 'transport'
-  | 'http'
-  | 'protocol'
-  | 'authentication';
+  'transport' | 'http' | 'protocol' | 'authentication';
 
 export class TemporalScheduleRemoteError extends Error {
   constructor(
@@ -178,7 +175,9 @@ function validatePlacement(placement: TemporalSchedulePlacementInput): void {
           placement.endsLocalAt,
         ) >= 0
       ) {
-        throw new RangeError('Floating-local Schedule interval must be positive.');
+        throw new RangeError(
+          'Floating-local Schedule interval must be positive.',
+        );
       }
       return;
     case 'named-zone-local-interval':
@@ -289,10 +288,7 @@ function parseAcceptedPlacement(
         payload.starts_local_at,
         'starts_local_at',
       );
-      const endsLocalAt = localDateTime(
-        payload.ends_local_at,
-        'ends_local_at',
-      );
+      const endsLocalAt = localDateTime(payload.ends_local_at, 'ends_local_at');
       if (Temporal.PlainDateTime.compare(startsLocalAt, endsLocalAt) >= 0) {
         throw new TemporalScheduleRemoteError(
           'protocol',
@@ -310,10 +306,7 @@ function parseAcceptedPlacement(
         payload.starts_local_at,
         'starts_local_at',
       );
-      const endsLocalAt = localDateTime(
-        payload.ends_local_at,
-        'ends_local_at',
-      );
+      const endsLocalAt = localDateTime(payload.ends_local_at, 'ends_local_at');
       const resolvedStartAt = instant(
         payload.resolved_start_at,
         'resolved_start_at',
