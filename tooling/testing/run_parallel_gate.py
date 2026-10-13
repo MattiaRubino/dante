@@ -258,7 +258,11 @@ def _observed_module_timings(
     """Extract actual per-module pytest setup/call/teardown durations."""
     totals: dict[str, float] = defaultdict(float)
     for name in plans:
-        lines = (folder / f"{name}.log").read_text(
+        # A one-shot infrastructure replay must replace (not double-count)
+        # incomplete original durations in the next scheduling profile.
+        retry = folder / f"{name}_RETRY_01.log"
+        source = retry if retry.is_file() else folder / f"{name}.log"
+        lines = source.read_text(
             encoding="utf-8", errors="replace",
         ).splitlines()
         for line in lines:
@@ -314,6 +318,18 @@ def self_test_scheduler() -> None:
     assert set(node for job in profiled for node in job) == set(nodes)
     assert _PYTEST_DURATION.match("1.25s setup tests/integration/foo/test_bar.py::test_a")
     assert not _PYTEST_DURATION.match("55 passed in 1.25s")
+    with tempfile.TemporaryDirectory(prefix="dante-gate-timing-test-") as tmp:
+        folder = Path(tmp)
+        (folder / "SHARD.log").write_text(
+            "0.40s setup tests/integration/test_a.py::test_a\n"
+            "1.25s call tests/integration/test_a.py::test_a\n"
+            "0.15s teardown tests/integration/test_b.py::test_b\n"
+            "2 passed in 2.00s\n",
+            encoding="utf-8",
+        )
+        measured = _observed_module_timings({"SHARD": []}, folder)
+        assert abs(measured["tests/integration/test_a.py"] - 1.65) < 0.01
+        assert abs(measured["tests/integration/test_b.py"] - 0.15) < 0.01
     assert docker_only_interruption(
         2, "Disposable PostgreSQL could not start: ports are not available"
     )
