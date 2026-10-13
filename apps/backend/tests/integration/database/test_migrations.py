@@ -182,6 +182,7 @@ def test_relative_recurrence_anchor_and_policy_indexes_match_current_contract(
             "dante_migrator", migrated_database.cluster.migrator_password
         )
     ) as connection:
+        connection.execute("SET ROLE dante_owner")
         for prefix in ("routine", "event"):
             elapsed = f"{prefix}_recurrence_elapsed_state"
             policy = f"{prefix}_occurrence_policy"
