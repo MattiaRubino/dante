@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { Temporal } from '@dante/time';
 import { expect, test, type Page, type TestInfo } from '@playwright/test';
 
 const password = 'correct horse battery staple';
@@ -140,7 +141,14 @@ test.describe('Timeline B00 real full-stack spine', () => {
       await useItalianLocale(page);
       await signIn(page, emailFor(testInfo, 2));
 
-      expect((await openHomeAndWaitForTemporalRead(page)).status()).toBe(200);
+      // Keep this strict full-stack Create assertion on a real future date
+      // and display that date in the Timeline being inspected.
+      const eventDate = Temporal.Now.plainDateISO('Europe/Rome')
+        .add({ days: 1 })
+        .toString();
+      expect(
+        (await openHomeAndWaitForTemporalRead(page, `/home?date=${eventDate}`)).status(),
+      ).toBe(200);
       await expect(
         page.locator('[data-temporal-read-state="ready"]'),
       ).toBeVisible();
@@ -153,6 +161,9 @@ test.describe('Timeline B00 real full-stack spine', () => {
       await dialog.getByRole('radio', { name: 'Evento' }).click();
       await dialog.getByRole('radio', { name: 'Orario' }).click();
       await dialog.getByLabel('Titolo').fill('B00 Evento reale');
+      // A title and type alone do not establish a valid timed placement.
+      await dialog.locator('[data-create-path="date"]').fill(eventDate);
+      await dialog.locator('[data-create-path="startTime"]').fill('10:00');
 
       // Real-stack validation: the Event must exist in PostgreSQL before
       // the projection shows it, and the frontend cannot invent its ref.
