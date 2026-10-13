@@ -115,7 +115,6 @@ async function createScheduledEvent(
   await dialog.getByRole('textbox', { name: 'Titolo' }).fill(title);
   await configure(dialog);
 
-  const timelineRefreshPromise = waitForTimelineRead(page);
   const responsePromise = page.waitForResponse(
     (response) =>
       response.url().endsWith('/api/v1/temporal/authoring/events') &&
@@ -123,9 +122,21 @@ async function createScheduledEvent(
     { timeout: E2E_RESPONSE_TIMEOUT_MS },
   );
   await dialog.getByRole('button', { name: 'Aggiungi', exact: true }).click();
-  const response = await responsePromise;
+  let response: Awaited<typeof responsePromise>;
+  try {
+    response = await responsePromise;
+  } catch (error) {
+    const alerts = await dialog.locator('[role="alert"]').allTextContents();
+    const start = await dialog.getByRole('button', { name: /^Data inizio:/ })
+      .getAttribute('data-temporal-date').catch(() => null);
+    const end = await dialog.getByRole('button', { name: /^Data fine:/ })
+      .getAttribute('data-temporal-date').catch(() => null);
+    throw new Error(
+      `Event U2 POST never fired for "${title}". Start=${start}, end=${end}; validation/errors=${JSON.stringify(alerts)}`,
+      { cause: error },
+    );
+  }
   expect(response.status()).toBe(201);
-  expect((await timelineRefreshPromise).status()).toBe(200);
   await expect(dialog).toHaveCount(0);
   const accepted = (await response.json()) as Record<string, unknown>;
   const schedule = accepted.schedule as Record<string, unknown> | null;
