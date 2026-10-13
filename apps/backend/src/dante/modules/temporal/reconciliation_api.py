@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request, Response
@@ -73,7 +73,7 @@ class ReconciliationHistoryResponse(ReconciliationResponse):
     current_until_at: datetime | None
 
 
-_RECONCILIATION_WRITE_RESPONSES = {
+_RECONCILIATION_WRITE_RESPONSES: dict[int, dict[str, Any]] = {
     200: {
         "model": ReconciliationResponse,
         "description": "Idempotent replay of the already accepted reconciliation command.",
