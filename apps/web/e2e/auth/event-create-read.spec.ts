@@ -133,6 +133,19 @@ async function createScheduledEvent(
       typeof schedule.placement_material_state_ref !== 'string') {
     throw new Error('Event U2 authoring did not persist a canonical Schedule.');
   }
+  // Require authoritative server readback before proceeding to placement
+  // revisions: an earlier in-flight Timeline GET can resolve first and
+  // temporarily replace the just-created card in the client.
+  const freshWindow = waitForTimelineRead(page);
+  await page.reload();
+  const freshResponse = await freshWindow;
+  expect(freshResponse.status()).toBe(200);
+  const readback = (await freshResponse.json()) as {
+    items?: Array<{ schedule_ref?: string }>;
+  };
+  expect(readback.items?.some(
+    (item) => item.schedule_ref === schedule.schedule_ref,
+  )).toBe(true);
   const placement = schedule.placement as Record<string, unknown>;
   if (!placement || (placement.kind !== 'floating_local_interval' &&
       placement.kind !== 'date_span')) {
