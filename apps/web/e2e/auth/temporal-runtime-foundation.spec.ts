@@ -226,6 +226,10 @@ test.describe('Timeline B00 real full-stack spine', () => {
   test('shows a truthful temporal read failure during PostgreSQL outage and recovers only after explicit retry', async ({
     browser,
   }, testInfo) => {
+    // A real Docker stop/restart plus a database connection-pool timeout can
+    // legitimately take longer than the 60s limit used for normal UI cases.
+    // Keep all 500/error/retry/200 assertions, with a bounded 2-minute budget.
+    test.setTimeout(120_000);
     const context = await browser.newContext({
       ignoreHTTPSErrors: true,
       timezoneId: 'Europe/Rome',
