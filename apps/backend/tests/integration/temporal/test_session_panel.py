@@ -36,7 +36,7 @@ def _fake_request(runtime: Any) -> Request:
     """Test the same app-state seam without a live ASGI request."""
     return cast(
         Request,
-        _fake_request(runtime),
+        SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))),
     )
 
 
