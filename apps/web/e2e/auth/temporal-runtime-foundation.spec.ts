@@ -301,6 +301,7 @@ test.describe('Timeline B00 real full-stack spine', () => {
         (response) =>
           response.url().includes('/api/v1/temporal/timeline/window') &&
           response.request().method() === 'GET',
+        { timeout: 15_000 },
       );
       await errorStatus.getByRole('button', { name: 'Riprova' }).click();
       expect((await recoveryResponsePromise).status()).toBe(200);
