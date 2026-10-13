@@ -261,7 +261,6 @@ test.describe('Timeline B00 real full-stack spine', () => {
       // Playwright timeout while PostgreSQL remains deliberately stopped.
       // This probe also proves whether the API serves 503 through auth and
       // DanteContext while disconnected from PostgreSQL.
-      let failedRead;
       try {
         const probe = await page.request.get(
           '/api/v1/temporal/timeline/window?start_date=2034-02-17&end_date_exclusive=2034-02-18',
@@ -275,18 +274,29 @@ test.describe('Timeline B00 real full-stack spine', () => {
             `Outage probe returned HTTP ${probe.status()} instead of 5xx`,
           );
         }
-        failedRead = await openHomeAndWaitForTemporalRead(
-          page,
-          '/home?date=2034-02-17',
-          12_000,
+        // Production does a POST /occurrences/checkpoint before each
+        // GET /timeline/window. During a genuine PostgreSQL outage that
+        // prerequisite is unavailable, so a Timeline GET MUST NOT fire.
+        // Observe the failed checkpoint and the truthful UI error instead
+        // of waiting for a request the product intentionally never makes.
+        const checkpointFailure = page.waitForResponse(
+          (response) =>
+            response.url().includes('/api/v1/temporal/occurrences/checkpoint') &&
+            response.request().method() === 'POST',
+          { timeout: 12_000 },
         );
+        await page.goto('/home?date=2034-02-17', {
+          waitUntil: 'domcontentloaded',
+          timeout: 12_000,
+        });
+        const checkpoint = await checkpointFailure;
+        expect(checkpoint.status()).toBeGreaterThanOrEqual(500);
       } catch (cause) {
         throw new Error(
-          'PostgreSQL outage blocked the authenticated Timeline API probe or Home navigation before the expected 503 UI state.',
+          'PostgreSQL outage failed at authenticated Timeline checkpoint or Home navigation before the expected error UI state.',
           { cause },
         );
       }
-      expect(failedRead.status()).toBeGreaterThanOrEqual(500);
 
       const errorStatus = page.locator(
         '.temporal-timeline-runtime-status--error',
