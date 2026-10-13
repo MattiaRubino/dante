@@ -141,7 +141,9 @@ class ActivityReplanCommand(BaseModel):
 
     @model_validator(mode="after")
     def unique_new_rows(self) -> ActivityReplanCommand:
-        refs = [row.client_ref for row in (*self.new_intervals, *self.new_planned_sessions)]
+        refs = [row.client_ref for row in self.new_intervals] + [
+            row.client_ref for row in self.new_planned_sessions
+        ]
         if len(set(refs)) != len(refs):
             raise ValueError("New Activity interval and planned Session identities must be unique.")
         return self
@@ -230,22 +232,22 @@ def _validated_plan(snapshot: ActivityEditSnapshot, command: ActivityReplanComma
             "and at most 100 planned Sessions."
         )
     current = {row.schedule_ref: row for row in (envelope, *intervals, *planned)}
-    retained = (
+    retained: list[ReplanRow] = [
         *((command.envelope,) if command.envelope else ()),
         *command.intervals,
         *command.planned_sessions,
-    )
+    ]
     deleted_timed = tuple(
         row
         for row in command.delete_planned_sessions
         if row.expected_material_state_ref is not None
     )
-    accounted = (
+    accounted: list[ReplanRow | DeletePlannedRow] = [
         *retained,
         *command.remove_intervals,
         *command.remove_planned_sessions,
         *deleted_timed,
-    )
+    ]
     if (
         len({row.schedule_ref for row in accounted})
         != len(current) - (0 if command.envelope else 1)
@@ -255,11 +257,8 @@ def _validated_plan(snapshot: ActivityEditSnapshot, command: ActivityReplanComma
             != {row.schedule_ref for row in intervals}
             or {
                 row.schedule_ref
-                for row in (
-                    *command.planned_sessions,
-                    *command.remove_planned_sessions,
-                    *deleted_timed,
-                )
+                for row in accounted
+                if row in (*command.planned_sessions, *command.remove_planned_sessions, *deleted_timed)
             }
             != {row.schedule_ref for row in planned}
         )
