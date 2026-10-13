@@ -293,8 +293,10 @@ def test_b04_e_duration_create_revise_retire_history_and_replay(
             (constraint_ref,),
         ).fetchone()
     assert len(history) == 2
-    assert history[0][0] == first_ref and history[0][1] is not None
-    assert history[1][0] == second_ref and history[1][1] is not None
+    assert history[0][0] == first_ref
+    assert history[0][1] is not None
+    assert history[1][0] == second_ref
+    assert history[1][1] is not None
     assert current is None
 
 
