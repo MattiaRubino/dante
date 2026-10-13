@@ -1,5 +1,14 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-13 — B01/B03 live browser contract repairs
+
+The real-stack B01 browser scenario now creates a canonical *unplaced* Activity using the authenticated U2 `/authoring/activities` API with `placement: null`, rather than asking retired Quick Create to produce an unplaced item. It verifies accepted response, PostgreSQL readback, legacy existing-items management, isolation from the inert Draft Vault, reload and user-discarded draft isolation. This is an explicit API-plus-browser journey, **not** a claim that Quick supports unplaced authoring.
+
+The B03 Event browser journey now waits for `/authoring/events`, verifies and unwraps the *real nested* accepted Schedule (without inventing identities), drives the current visible calendar widget and segmented time control, selects the original floating-local placement mode explicitly, and tests future dates to avoid already-past authoring. The future date is also routed into the viewed Timeline. The original acceptance assertions for schedule edit, all-day/multiday spans and reload remain in place. A fresh execution is required to learn whether other B03 behavior or test assumptions still fail.
+
+Latest patchwork remains **UNVERIFIED**, not a new full gate; quality groups and additional real-stack journeys have known red evidence. The source changes are intended to let the owner resume B14 with targeted acceptance; do not claim all tests pass or B14 is complete.
+
+
 ## 2026-10-13 — Real-stack Create endpoint correction
 
 The auth/browser B00 Event Create test has been updated to await the **current U2** `POST /api/v1/temporal/authoring/events` endpoint rather than the retired `/events/scheduled` endpoint, and to assert the actual nested `schedule.schedule_ref` from the accepted mutation. It sets time through the visible segmented editor and verifies the routed date through the controlled date picker instead of `.fill()` on hidden transport inputs. This was a concrete stale-test timeout cause, **not** evidence the full-stack journey now passes. The B01 canonical unplaced-Activity suite still uses the removed Quick unplaced path and must be rewritten around the explicit preexisting-items management API without confusing canonical records and inert Draft Vault records. Real-stack and browser acceptance remain pending WSL/Docker execution. A separate authoring type-guard change preserves rejection of non-timed Activity intervals while narrowing both the runtime and mypy contracts.
