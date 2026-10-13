@@ -579,3 +579,55 @@ The three failed PostgreSQL shards with Docker port/startup/cleanup
 errors remain unexecuted. The parallel runner already defaults to five
 PostgreSQL workers; use a bounded worker count on the next complete WSL
 gate. A focused six-test result cannot stand in for those modules.
+
+## Full parallel WSL gate 6476a5c1, 13 October 2026
+
+The user-supplied `FULL_GATE_LOGS.tar(7).gz`,
+`FULL_GATE_SUMMARY(7).md`, and WSL console trace report the
+**exact SHA `6476a5c134c6d1a7360de0699afe38018823c749`**, **27/27** groups,
+source stability PASS and **17 PASS / 10 FAIL**. Elapsed **1713.3s
+(28m33s)** with five general-group and five PostgreSQL subprocesses,
+four queued work items per PostgreSQL worker. This is a RED gate.
+
+- Non-PostgreSQL backend, TypeScript typecheck, generated-client drift,
+  build, mobile, architecture, API client, i18n, timing, test integrity,
+  observability and browser fixture remain PASS.
+- PostgreSQL collected **374 cases in 20 queued module-level shards**:
+  **16 PASS**, **2 assertion failures**, **2 Docker infrastructure aborts**.
+  The assertions were the Oct 13, 10:00 generated Event Objective classified
+  as future after the current Rome date/time passed it, and a CP6-M04-only
+  schema comparison using the current Dictionary nullability instead of the
+  historical NOT NULL elapsed anchor requirement. Shards 10 and 19 instead
+  failed Docker Desktop loopback port mapping and cluster restart/cleanup.
+  No new Alembic drift failure was observed among executed shards.
+- Vitest: **1050 PASS / 1 FAIL**. The Home Create rail mock declared a
+  1440px viewport while making `(max-width: 1120px)` match, causing a
+  body portal when it expected a rail-mounted composer.
+- Non-auth Playwright: **113 PASS / 14 FAIL**, chiefly old Create Context,
+  unscheduled radio/Planning Tray, deprecated execution-structure and
+  recurrence/date field selectors, plus mobile/floating geometry.
+- Real-stack Playwright: **66 PASS / 18 FAIL / 3 skipped**. B00 scheduled
+  Event and B02 unplaced Activity tests waited for a POST not emitted by
+  the tested UI action; several other long tests ended with global timeout
+  or context teardown errors. These must be checked against real API
+  evidence and must not be declared accepted without a rerun.
+- Formatting, Ruff, mypy and ESLint remain RED. Prettier reports **216
+  unformatted files**; comprehensive type/lint and historical migration
+  formatting policy remain open. Do not silence checks.
+
+Subsequent GitHub candidates (not yet full-gate verified):
+`569c83eb` corrects the two PostgreSQL test-history cases without
+altering protections; `718952ec` corrects desktop media-query mocking
+and handles Escape in the portaled discard confirmation with restored
+focus; `b3346858` gives the calendar explicit testable ISO-date
+attributes and aligns Event recurrence/Date Playwright interactions;
+`525e9b57` supplies future date and start time for the B00 real-stack
+scheduled Event proof; and `16bc56a1` adds a **single serial replay of
+only exit-code-2, explicitly diagnosed Docker-aborted PostgreSQL shards**
+while retaining original failure and retry logs. Functional assertion
+failures are never retried.
+
+**Candidate still RED / not release-qualified.** No post-repair complete
+same-SHA WSL run yet. In particular the historic `_143` to `_145`
+data-bearing upgrade path, remaining E2E UI contracts, quality debt, and
+Docker stability still need completion or explicit disposition.
