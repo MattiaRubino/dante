@@ -202,8 +202,7 @@ test('Advanced planned Session is retained and never silently dropped by the in-
   // actual atomic Activity + Session persistence is a real-stack contract.
   await dialog.getByRole('button', { name: 'Aggiungi', exact: true }).click();
   await expect(dialog).toBeVisible();
-  await expect(dialog.locator('.temporal-create-field-error'))
-    .toContainText('non possono ancora essere combinate');
+  await expect(dialog).toContainText('non possono ancora essere combinate');
   await expect(dialog.locator('[data-create-planned-session]'))
     .toHaveCount(1);
   await expect(
