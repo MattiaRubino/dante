@@ -163,23 +163,25 @@ async function createUnplacedActivity(
   page: Page,
   title: string,
 ): Promise<Readonly<{ activity_ref: string; title: string }>> {
-  await page.getByRole('button', { name: 'Aggiungi alla timeline' }).click();
-  const dialog = page.locator('[data-temporal-create="composer"]');
-  await expect(dialog).toBeVisible();
-  await dialog.getByLabel('Titolo').fill(title);
-  // Canonical unplaced Activity is an accepted Create outcome, not a Draft
-  // Vault item or the removed "Da collocare" radio mode.
-
-  const responsePromise = page.waitForResponse(
-    (response) =>
-      response.url().endsWith('/api/v1/temporal/activities') &&
-      response.request().method() === 'POST',
-    { timeout: E2E_RESPONSE_TIMEOUT_MS },
-  );
-  await dialog.getByRole('button', { name: 'Aggiungi', exact: true }).click();
-  const response = await responsePromise;
-  expect(response.status()).toBe(201);
-  return (await response.json()) as { activity_ref: string; title: string };
+  // The retired "Da collocare" Create mode is not a product action. The
+  // canonical unplaced authoring endpoint remains supported and is exercised
+  // directly; the user-visible legacy inventory is checked immediately after.
+  const result = await authenticatedMutation(page, {
+    method: 'POST',
+    path: '/api/v1/temporal/authoring/activities',
+    body: {
+      operation_id: `e2e:b02:unplaced:${randomUUID()}`,
+      title,
+      placement: null,
+    },
+  });
+  expect(result.status).toBe(201);
+  expect(result.payload.title).toBe(title);
+  expect(result.payload.schedule).toBeNull();
+  return {
+    activity_ref: uuidField(result.payload, 'activity_ref'),
+    title,
+  };
 }
 
 async function assertPlanningTrayContainsActivity(
