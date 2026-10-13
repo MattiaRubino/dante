@@ -41,8 +41,8 @@
     bottom: 0;
     left: 0 !important;
     width: 100%;
-    height: 100%;
-    max-height: none;
+    height: min(100%, calc(100dvh - 180px));
+    max-height: calc(100dvh - 180px);
     margin: 0;
     border-radius: var(--dante-semantic-radius-card);
     overflow: auto;
