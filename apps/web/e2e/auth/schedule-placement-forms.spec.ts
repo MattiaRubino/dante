@@ -71,15 +71,11 @@ function waitForTimelineRead(page: Page) {
     });
 }
 
-function waitForUnplacedRead(page: Page) {
-  return page.waitForResponse(
-    (response) =>
-      response.url().endsWith('/api/v1/temporal/activities/unplaced') &&
-      response.request().method() === 'GET',
-    { timeout: E2E_RESPONSE_TIMEOUT_MS },
-  );
+function readUnplaced(page: Page) {
+  // Legacy canonical activity inventory is no longer fetched automatically
+  // by Home. Exercise the authenticated endpoint explicitly after navigation.
+  return page.request.get('/api/v1/temporal/activities/unplaced');
 }
-
 type MutationResult = Readonly<{
   status: number;
   payload: Record<string, unknown>;
@@ -147,10 +143,9 @@ async function authenticatedMutation(
 
 async function openHome(page: Page): Promise<void> {
   const timeline = waitForTimelineRead(page);
-  const unplaced = waitForUnplacedRead(page);
   await page.goto('/home');
   expect((await timeline).status()).toBe(200);
-  expect((await unplaced).status()).toBe(200);
+  expect((await readUnplaced(page)).status()).toBe(200);
   await expect(page.locator('[data-temporal-read-state="ready"]')).toBeVisible();
 }
 
@@ -162,7 +157,8 @@ async function createUnplacedActivity(
   const dialog = page.locator('[data-temporal-create="composer"]');
   await expect(dialog).toBeVisible();
   await dialog.getByLabel('Titolo').fill(title);
-  await dialog.getByRole('radio', { name: 'Da collocare' }).click();
+  // Canonical unplaced Activity is an accepted Create outcome, not a Draft
+  // Vault item or the removed "Da collocare" radio mode.
 
   const responsePromise = page.waitForResponse(
     (response) =>
@@ -180,11 +176,12 @@ async function assertPlanningTrayContainsActivity(
   page: Page,
   activityRef: string,
 ): Promise<void> {
-  await page.getByRole('button', { name: 'Apri attività da collocare' }).click();
+  await page.getByRole('button', { name: 'Apri Bozze' }).click();
+  await page.getByRole('button', { name: 'Gestisci elementi già creati' }).click();
   const tray = page.locator('[data-timeline-planning-tray="true"]');
   await expect(tray).toBeVisible();
   await expect(
-    tray.locator(`[data-temporal-activity-ref="${activityRef}"]`),
+    tray.locator(`[data-temporal-subject-ref="${activityRef}"]`),
   ).toHaveCount(1);
 }
 
@@ -338,14 +335,13 @@ test.describe('Timeline B02-E full-stack Schedule forms', () => {
       );
 
       const reloadTimeline = waitForTimelineRead(page);
-      const reloadUnplaced = waitForUnplacedRead(page);
       await page.reload({
         waitUntil: 'domcontentloaded',
         timeout: E2E_RESPONSE_TIMEOUT_MS,
       });
       const timelineResponse = await reloadTimeline;
       expect(timelineResponse.status()).toBe(200);
-      expect((await reloadUnplaced).status()).toBe(200);
+      expect((await readUnplaced(page)).status()).toBe(200);
       const timeline = (await timelineResponse.json()) as {
         items?: Array<Record<string, unknown>>;
       };
@@ -436,14 +432,13 @@ test.describe('Timeline B02-E full-stack Schedule forms', () => {
       ]);
 
       const reloadTimeline = waitForTimelineRead(page);
-      const reloadUnplaced = waitForUnplacedRead(page);
       await page.reload({
         waitUntil: 'domcontentloaded',
         timeout: E2E_RESPONSE_TIMEOUT_MS,
       });
       const timelineResponse = await reloadTimeline;
       expect(timelineResponse.status()).toBe(200);
-      expect((await reloadUnplaced).status()).toBe(200);
+      expect((await readUnplaced(page)).status()).toBe(200);
       const timeline = (await timelineResponse.json()) as {
         items?: Array<Record<string, unknown>>;
       };

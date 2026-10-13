@@ -66,21 +66,16 @@ function waitForTimelineRead(page: Page) {
     });
 }
 
-function waitForUnplacedRead(page: Page) {
-  return page.waitForResponse(
-    (response) =>
-      response.url().endsWith('/api/v1/temporal/activities/unplaced') &&
-      response.request().method() === 'GET',
-    { timeout: E2E_RESPONSE_TIMEOUT_MS },
-  );
+function readUnplaced(page: Page) {
+  // Legacy canonical activity inventory is no longer fetched automatically
+  // by Home. Exercise the authenticated endpoint explicitly after navigation.
+  return page.request.get('/api/v1/temporal/activities/unplaced');
 }
-
 async function openHome(page: Page): Promise<void> {
   const timeline = waitForTimelineRead(page);
-  const unplaced = waitForUnplacedRead(page);
   await page.goto('/home');
   expect((await timeline).status()).toBe(200);
-  expect((await unplaced).status()).toBe(200);
+  expect((await readUnplaced(page)).status()).toBe(200);
   await expect(page.locator('[data-temporal-read-state="ready"]')).toBeVisible();
 }
 
@@ -231,14 +226,13 @@ test.describe('Timeline B03-E real-stack Event closure', () => {
 
       await page.waitForLoadState('networkidle');
       const reloadTimeline = waitForTimelineRead(page);
-      const reloadUnplaced = waitForUnplacedRead(page);
       await page.reload({
         waitUntil: 'domcontentloaded',
         timeout: E2E_RESPONSE_TIMEOUT_MS,
       });
       const timelineResponse = await reloadTimeline;
       expect(timelineResponse.status()).toBe(200);
-      expect((await reloadUnplaced).status()).toBe(200);
+      expect((await readUnplaced(page)).status()).toBe(200);
       const timeline = (await timelineResponse.json()) as {
         items?: Array<Record<string, unknown>>;
       };

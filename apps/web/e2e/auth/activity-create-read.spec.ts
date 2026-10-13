@@ -52,14 +52,11 @@ function waitForTimelineRead(page: Page) {
   );
 }
 
-function waitForUnplacedRead(page: Page) {
-  return page.waitForResponse(
-    (response) =>
-      response.url().endsWith('/api/v1/temporal/activities/unplaced') &&
-      response.request().method() === 'GET',
-  );
+function readUnplaced(page: Page) {
+  // Legacy canonical activity inventory is no longer fetched automatically
+  // by Home. Exercise the authenticated endpoint explicitly after navigation.
+  return page.request.get('/api/v1/temporal/activities/unplaced');
 }
-
 async function openExistingCanonicalItems(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Apri Bozze' }).click();
   const existing = page.locator(
@@ -85,10 +82,9 @@ test.describe('Timeline B01 canonical Activity vertical', () => {
       await signIn(page, emailFor(testInfo));
 
       const initialTimeline = waitForTimelineRead(page);
-      const initialUnplaced = waitForUnplacedRead(page);
       await page.goto('/home');
       expect((await initialTimeline).status()).toBe(200);
-      expect((await initialUnplaced).status()).toBe(200);
+      expect((await readUnplaced(page)).status()).toBe(200);
       await expect(
         page.locator('[data-temporal-read-state="ready"]'),
       ).toBeVisible();
@@ -158,10 +154,9 @@ test.describe('Timeline B01 canonical Activity vertical', () => {
       ).toHaveCount(0);
 
       const reloadTimeline = waitForTimelineRead(page);
-      const reloadUnplaced = waitForUnplacedRead(page);
       await page.reload();
       expect((await reloadTimeline).status()).toBe(200);
-      const reloadRead = await reloadUnplaced;
+      const reloadRead = await readUnplaced(page);
       expect(reloadRead.status()).toBe(200);
       const reloadPayload = (await reloadRead.json()) as {
         kind: string;
@@ -197,10 +192,9 @@ test.describe('Timeline B01 canonical Activity vertical', () => {
       await page.getByRole('button', { name: 'Scarta', exact: true }).click();
 
       const discardReloadTimeline = waitForTimelineRead(page);
-      const discardReloadUnplaced = waitForUnplacedRead(page);
       await page.reload();
       expect((await discardReloadTimeline).status()).toBe(200);
-      const discardReloadRead = await discardReloadUnplaced;
+      const discardReloadRead = await readUnplaced(page);
       expect(discardReloadRead.status()).toBe(200);
       const discardReloadPayload = (await discardReloadRead.json()) as {
         kind: string;
