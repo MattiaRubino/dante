@@ -110,6 +110,7 @@ test('saving a Draft never creates an executable Timeline card and Resume preser
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/home');
+  const records = await installDraftVaultFixture(page);
 
   await saveDraft(page, 'Preparare portfolio');
   expect(records.size).toBe(1);
