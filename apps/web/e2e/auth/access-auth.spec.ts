@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -50,23 +51,32 @@ function signupEmailFor(testInfo: TestInfo) {
 }
 
 function runHarnessCommand(args: readonly string[]): string {
-  return execFileSync(
-    'uv',
-    [
-      'run',
-      '--project',
-      'apps/backend',
-      'python',
-      'tooling/access-auth-e2e-control.py',
-      ...args,
-    ],
-    {
-      cwd: repoRoot,
-      encoding: 'utf8',
-      stdio: 'pipe',
-      timeout: 30_000,
-    },
+  // The full-stack webServer has already installed the backend environment.
+  // Going through 'uv run' again for every Docker stop/start can block under
+  // the complete gate's concurrent filesystem/process load. Use the pinned
+  // existing interpreter where available and only fall back to uv if absent.
+  const python = resolve(
+    repoRoot,
+    'apps/backend/.venv',
+    process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python',
   );
+  const executable = existsSync(python) ? python : 'uv';
+  const controlArgs = existsSync(python)
+    ? ['tooling/access-auth-e2e-control.py', ...args]
+    : [
+        'run',
+        '--project',
+        'apps/backend',
+        'python',
+        'tooling/access-auth-e2e-control.py',
+        ...args,
+      ];
+  return execFileSync(executable, controlArgs, {
+    cwd: repoRoot,
+    encoding: 'utf8',
+    stdio: 'pipe',
+    timeout: 75_000,
+  });
 }
 
 function runHarnessControl(action: string, value?: string) {
@@ -347,6 +357,11 @@ test.describe('DANTE Access/Auth full-stack spine', () => {
     context,
     page,
   }, testInfo) => {
+    // This is the one destructive Docker test in Access/Auth. A real
+    // restart plus readiness probe can exceed the normal 60-second UI
+    // budget under the complete gate. Preserve the outage assertions,
+    // and give the mandatory finally restart enough time to complete.
+    test.setTimeout(150_000);
     await page.goto('/');
     await expectUnauthenticated(page);
     await page.getByLabel('Email').fill(emailFor(testInfo, 6));
