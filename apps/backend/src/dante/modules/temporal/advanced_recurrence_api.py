@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from decimal import Decimal
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request, Response
@@ -93,7 +93,7 @@ class AdvancedCheckpointResponse(BaseModel):
     replayed: bool
 
 
-_WRITE_RESPONSES = {
+_WRITE_RESPONSES: dict[int, dict[str, Any]] = {
     200: {"model": AdvancedRecurrenceResponse, "description": "Idempotent replay."},
     400: {"model": ProblemDetails, "description": "Malformed request."},
     401: {"model": ProblemDetails, "description": "Authentication required."},
