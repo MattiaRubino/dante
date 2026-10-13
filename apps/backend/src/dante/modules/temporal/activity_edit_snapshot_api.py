@@ -339,8 +339,12 @@ async def revise_activity_core(
                         "description": profile_change.description.strip() or None
                         if profile_change.description
                         else None,
-                        "location": profile_change.location.strip() or None if profile_change.location else None,
-                        "color": profile_change.color_code.upper() if profile_change.color_code else None,
+                        "location": profile_change.location.strip() or None
+                        if profile_change.location
+                        else None,
+                        "color": profile_change.color_code.upper()
+                        if profile_change.color_code
+                        else None,
                     },
                 )
             if body.reminder is not None:

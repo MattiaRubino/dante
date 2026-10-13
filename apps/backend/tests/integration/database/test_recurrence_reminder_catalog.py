@@ -48,7 +48,9 @@ def _dictionary_names(kind: str) -> set[str]:
 
 
 def _print_delta(label: str, values: set[str]) -> None:
-    sys.stdout.write(f"B11_CATALOG_{label}=" + json.dumps(sorted(values), separators=(",", ":")) + "\n")
+    sys.stdout.write(
+        f"B11_CATALOG_{label}=" + json.dumps(sorted(values), separators=(",", ":")) + "\n"
+    )
 
 
 def test_b11_catalog_reconciliation_probe(migrated_database: Any) -> None:

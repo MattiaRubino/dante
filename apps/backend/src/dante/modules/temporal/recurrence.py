@@ -480,7 +480,13 @@ class RecurrenceApplication:
                 row = (
                     (
                         await session.execute(
-                            text(("SELECT * FROM dante.get_self_routine_recurrence(:actor,:owner)" if owner == "routine" else "SELECT * FROM dante.get_self_event_recurrence(:actor,:owner)")),
+                            text(
+                                (
+                                    "SELECT * FROM dante.get_self_routine_recurrence(:actor,:owner)"
+                                    if owner == "routine"
+                                    else "SELECT * FROM dante.get_self_event_recurrence(:actor,:owner)"
+                                )
+                            ),
                             {"actor": self_person_ref, "owner": owner_ref},
                         )
                     )
@@ -526,28 +532,40 @@ class RecurrenceApplication:
             "expected_occurrence_count": recurrence.expected_occurrence_count,
         }
         parameters.update(_arrays(recurrence))
-        statement = text(("""SELECT * FROM dante.replace_self_routine_recurrence(
+        statement = text(
+            (
+                """SELECT * FROM dante.replace_self_routine_recurrence(
           :actor,:operation,:fingerprint,:owner,:expected,:family_code,:range_kind,:expected_occurrence_count,
           :effective_from_date,:effective_until_date,:effective_from_instant,:effective_until_instant,
           :calendar_pattern_code,:calendar_interval_count,:calendar_clock_basis_code,:calendar_zone_id,:calendar_step_unit_code,:calendar_pattern_anchor_date,
           :calendar_wall_times,:calendar_weekdays,:calendar_month_days,:calendar_ordinal_weekdays,:calendar_ordinals,:calendar_year_months,:calendar_year_month_days,
           :dst_nonexistent_local_time_policy,:dst_ambiguous_local_time_policy,:elapsed_seconds,:elapsed_anchor_mode_code,:elapsed_anchor_at,
           :quota_count,:quota_period_unit_code,:quota_period_span,:quota_frame_code,:quota_zone_id,:quota_week_start,
-          :cyclic_cycle_length,:cyclic_position_unit_code,:cyclic_pattern_anchor_date,:cyclic_generates_expected)""" if owner == "routine" else """SELECT * FROM dante.replace_self_event_recurrence(
+          :cyclic_cycle_length,:cyclic_position_unit_code,:cyclic_pattern_anchor_date,:cyclic_generates_expected)"""
+                if owner == "routine"
+                else """SELECT * FROM dante.replace_self_event_recurrence(
           :actor,:operation,:fingerprint,:owner,:expected,:family_code,:range_kind,:expected_occurrence_count,
           :effective_from_date,:effective_until_date,:effective_from_instant,:effective_until_instant,
           :calendar_pattern_code,:calendar_interval_count,:calendar_clock_basis_code,:calendar_zone_id,:calendar_step_unit_code,:calendar_pattern_anchor_date,
           :calendar_wall_times,:calendar_weekdays,:calendar_month_days,:calendar_ordinal_weekdays,:calendar_ordinals,:calendar_year_months,:calendar_year_month_days,
           :dst_nonexistent_local_time_policy,:dst_ambiguous_local_time_policy,:elapsed_seconds,:elapsed_anchor_mode_code,:elapsed_anchor_at,
           :quota_count,:quota_period_unit_code,:quota_period_span,:quota_frame_code,:quota_zone_id,:quota_week_start,
-          :cyclic_cycle_length,:cyclic_position_unit_code,:cyclic_pattern_anchor_date,:cyclic_generates_expected)"""))
+          :cyclic_cycle_length,:cyclic_position_unit_code,:cyclic_pattern_anchor_date,:cyclic_generates_expected)"""
+            )
+        )
         try:
             async with self._session_factory() as session, session.begin():
                 receipt = (await session.execute(statement, parameters)).mappings().one()
                 row = (
                     (
                         await session.execute(
-                            text(("SELECT * FROM dante.get_self_routine_recurrence(:actor,:owner)" if owner == "routine" else "SELECT * FROM dante.get_self_event_recurrence(:actor,:owner)")),
+                            text(
+                                (
+                                    "SELECT * FROM dante.get_self_routine_recurrence(:actor,:owner)"
+                                    if owner == "routine"
+                                    else "SELECT * FROM dante.get_self_event_recurrence(:actor,:owner)"
+                                )
+                            ),
                             {"actor": self_person_ref, "owner": owner_ref},
                         )
                     )
