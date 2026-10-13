@@ -151,6 +151,31 @@ describe('Home U1 Create interaction bridge', () => {
     expect(onEscape).not.toHaveBeenCalled();
   });
 
+  it('does not mutate hidden transport inputs after emitting the controlled reseed', () => {
+    render(<Harness onEscape={vi.fn()} />);
+    const date = screen.getByLabelText('Data') as HTMLInputElement;
+    const time = screen.getByLabelText('Ora') as HTMLInputElement;
+    date.setAttribute('aria-hidden', 'true');
+    time.setAttribute('aria-hidden', 'true');
+    const day = screen.getByTestId('timeline-day');
+    vi.spyOn(day, 'getBoundingClientRect').mockReturnValue({
+      x: 0,
+      y: 0,
+      width: 400,
+      height: 1440,
+      top: 0,
+      right: 400,
+      bottom: 1440,
+      left: 0,
+      toJSON: () => ({}),
+    });
+
+    fireEvent.pointerDown(day, { clientY: 660 });
+
+    expect(date.value).toBe('2026-10-01');
+    expect(time.value).toBe('09:00');
+  });
+
   it('consumes Timeline double-click while Create is open so no second invocation leaks through', () => {
     const onEscape = vi.fn();
     render(<Harness onEscape={onEscape} />);
