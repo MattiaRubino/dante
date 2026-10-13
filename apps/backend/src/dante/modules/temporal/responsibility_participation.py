@@ -182,10 +182,13 @@ class ResponsibilityParticipationApplication:
         if subject_kind not in ("activity", "event"):
             raise ResponsibilityInputError("Responsibility subjects are Activity and Event only.")
         rows = await self._rows(
-            f"""
+            ("""
             SELECT subject_native_ref, responsible_person_ref, established_at
-              FROM dante.get_self_{subject_kind}_responsibility(:actor, :subject)
-            """,
+              FROM dante.get_self_activity_responsibility(:actor, :subject)
+            """ if subject_kind == "activity" else """
+            SELECT subject_native_ref, responsible_person_ref, established_at
+              FROM dante.get_self_event_responsibility(:actor, :subject)
+            """),
             {"actor": self_person_ref, "subject": subject_native_ref},
         )
         if not rows:
