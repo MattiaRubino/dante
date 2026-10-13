@@ -31,15 +31,15 @@ async def test_planned_row_without_time_is_persisted_without_placement_and_repla
     actor = _seed_self(migrated_database)
     runtime = create_database_runtime(migrated_database.runtime_settings())
     authoring = TemporalAuthoringApplication(runtime.session_factory)
-    kwargs = {
-        "self_person_ref": actor,
-        "operation_id": "u2:unplaced-planned:one",
-        "title": "Ricerca",
-        "planned_slices": (None,),
-        "planned_slice_names": ("Fonti",),
-    }
+
     try:
-        created = await authoring.create_activity(**kwargs)
+        created = await authoring.create_activity(
+            self_person_ref=actor,
+            operation_id="u2:unplaced-planned:one",
+            title="Ricerca",
+            planned_slices=(None,),
+            planned_slice_names=("Fonti",),
+        )
         assert not created.replayed
         assert created.planned_slices == ()  # No accepted time was manufactured.
         with psycopg.connect(
@@ -73,11 +73,23 @@ async def test_planned_row_without_time_is_persisted_without_placement_and_repla
         assert snapshot.schedules[0].schedule_ref == row[0]
         assert snapshot.schedules[0].placement_material_state_ref is None
         assert snapshot.schedules[0].temporal_form is None
-        replay = await authoring.create_activity(**kwargs)
+        replay = await authoring.create_activity(
+            self_person_ref=actor,
+            operation_id="u2:unplaced-planned:one",
+            title="Ricerca",
+            planned_slices=(None,),
+            planned_slice_names=("Fonti",),
+        )
         assert replay.replayed
         assert replay.item.subject_native_ref == created.item.subject_native_ref
         with pytest.raises(TemporalAuthoringOperationIdReuseError):
-            await authoring.create_activity(**{**kwargs, "planned_slice_names": ("Altro",)})
+            await authoring.create_activity(
+                self_person_ref=actor,
+                operation_id="u2:unplaced-planned:one",
+                title="Ricerca",
+                planned_slices=(None,),
+                planned_slice_names=("Altro",),
+            )
     finally:
         await runtime.dispose()
 
