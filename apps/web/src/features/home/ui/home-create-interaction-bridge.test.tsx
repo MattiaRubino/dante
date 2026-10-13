@@ -123,23 +123,31 @@ describe('Home U1 Create interaction bridge', () => {
     const onEscape = vi.fn();
     render(<Harness onEscape={onEscape} />);
     const composer = document.querySelector('[data-temporal-create="composer"]');
-    if (!composer) throw new Error('Expected mounted Create composer.');
+    if (!composer) {
+      throw new Error('Expected mounted Create composer.');
+    }
     const received: unknown[] = [];
     composer.addEventListener('dante:temporal-create-reseed', (event) => {
-      if (event instanceof CustomEvent) received.push(event.detail);
+      if (event instanceof CustomEvent) {
+        received.push(event.detail);
+      }
     });
     const day = screen.getByTestId('timeline-day');
     vi.spyOn(day, 'getBoundingClientRect').mockReturnValue({
-      x: 0, y: 0, width: 400, height: 1440,
-      top: 0, right: 400, bottom: 1440, left: 0,
+      x: 0,
+      y: 0,
+      width: 400,
+      height: 1440,
+      top: 0,
+      right: 400,
+      bottom: 1440,
+      left: 0,
       toJSON: () => ({}),
     });
 
     fireEvent.pointerDown(day, { clientY: 660 });
 
-    expect(received).toEqual([
-      { date: '2026-10-02', startTime: '11:00' },
-    ]);
+    expect(received).toEqual([{ date: '2026-10-02', startTime: '11:00' }]);
     expect(onEscape).not.toHaveBeenCalled();
   });
 
