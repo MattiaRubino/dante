@@ -83,4 +83,22 @@ echo "STYLE_AUTOFIX_COMMIT=$(cat "$LOG_DIR/NEW_HEAD.txt")"   | tee -a "$LOG_DIR/
 
 # Keep diagnostic evidence in temp/ for later targeted Ruff/ESLint repairs.
 echo "Unfixed Ruff and ESLint diagnostics remain in $LOG_DIR."
+
+# Keep one compact, inspectable diagnostic bundle for the next source-level
+# repair pass. Re-check only static errors plus the formerly red overnight
+# clock tests; the long PostgreSQL/browser gate is intentionally not rerun.
+set +e
+(cd apps/backend && uv run --locked ruff check .)   > "$LOG_DIR/RUFF_REMAINING.log" 2>&1
+RUFF_GATE=$?
+(cd apps/backend && uv run --locked mypy src tests tooling)   > "$LOG_DIR/MYPY_REMAINING.log" 2>&1
+MYPY_GATE=$?
+pnpm lint > "$LOG_DIR/ESLINT_REMAINING.log" 2>&1
+ESLINT_GATE=$?
+pnpm --filter @dante/web exec vitest run   src/features/temporal-create/ui/temporal-create-top-controls.test.tsx   > "$LOG_DIR/OVERNIGHT_VITEST.log" 2>&1
+VITEST_GATE=$?
+set -e
+
+printf 'RUFF_GATE=%s\nMYPY_GATE=%s\nESLINT_GATE=%s\nOVERNIGHT_VITEST=%s\n'   "$RUFF_GATE" "$MYPY_GATE" "$ESLINT_GATE" "$VITEST_GATE"   | tee -a "$LOG_DIR/SUMMARY.txt"
+tar -czf temp/FULL_GATE_REPAIR_LOGS.tar.gz -C temp "$(basename "$LOG_DIR")"
+echo "REPAIR_LOGS=$ROOT/temp/FULL_GATE_REPAIR_LOGS.tar.gz"
 echo "Do not interpret this commit as a green full gate."
