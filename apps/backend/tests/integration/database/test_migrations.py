@@ -15,7 +15,7 @@ pytestmark = pytest.mark.postgres
 
 # The current head is forward-only; the earlier B01/B02 downgrade guard
 # fixtures intentionally exercise the last historically reversible snapshot.
-_CURRENT_HEAD = "20261012_143"
+_CURRENT_HEAD = "20261013_144"
 _HISTORICAL_REVERSIBLE_HEAD = "20260917_29"
 _B02_REVISION_PARENT = "20260909_21"
 _B02_SCHEMA_HEAD = "20260909_20"
@@ -156,10 +156,22 @@ def test_current_repository_head_refuses_downgrade_by_design(
     assert _current_revisions(provisioned_database) == {_CURRENT_HEAD}
 
     # The latest accepted migration deliberately refuses rollback.
-    with pytest.raises(RuntimeError, match="Routine replay qualification must remain canonical"):
+    with pytest.raises(RuntimeError, match="Elapsed Recurrence anchors must remain non-null"):
         command.downgrade(alembic_config, "-1")
 
     assert _current_revisions(provisioned_database) == {_CURRENT_HEAD}
+
+
+def test_previous_routine_replay_forward_only_guard_remains_enforced(
+    provisioned_database: Any,
+    alembic_config: Config,
+) -> None:
+    """Repaired Routine replay cannot be rolled back by newer heads."""
+    command.upgrade(alembic_config, "20261012_143")
+    assert _current_revisions(provisioned_database) == {"20261012_143"}
+    with pytest.raises(RuntimeError, match="Routine replay qualification must remain canonical"):
+        command.downgrade(alembic_config, "-1")
+    assert _current_revisions(provisioned_database) == {"20261012_143"}
 
 
 def test_previous_forward_only_review_queue_guard_remains_enforced(
