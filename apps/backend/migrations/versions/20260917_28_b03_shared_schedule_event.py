@@ -4,6 +4,10 @@ Revision ID: 20260917_28
 Revises: 20260916_27
 """
 
+# Historical-migration-only Ruff S608 review: A fixed boolean selects only the hardcoded Activity/Event SQL scope fragments. All templates are internal literals.
+# The SQL is frozen, already applied, and must not be rewritten solely for lint.
+# ruff: noqa: S608
+
 from collections.abc import Sequence
 
 import sqlalchemy as sa
