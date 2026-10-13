@@ -5,11 +5,19 @@ import { defineConfig } from '@playwright/test';
 const e2ePort = Number(process.env.PLAYWRIGHT_PORT ?? 43117);
 const baseURL = `http://127.0.0.1:${e2ePort}`;
 
+// The authoritative standalone browser gate keeps its historical single
+// worker. Only the opt-in isolated parallel runner sets this value; browser
+// contexts and fixtures remain test-local.
+const nonAuthWorkers = Number(process.env.DANTE_E2E_NONAUTH_WORKERS ?? 1);
+if (!Number.isInteger(nonAuthWorkers) || nonAuthWorkers < 1 || nonAuthWorkers > 6) {
+  throw new Error('DANTE_E2E_NONAUTH_WORKERS must be an integer from 1 to 6');
+}
+
 export default defineConfig({
   testDir: './e2e',
   testIgnore: ['**/auth/**'],
   fullyParallel: false,
-  workers: 1,
+  workers: nonAuthWorkers,
   retries: 0,
   reporter: 'line',
   use: {
