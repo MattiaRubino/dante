@@ -1,5 +1,10 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-10-13 — Post-gate Create controlled-state correction
+
+The current branch includes a Home Timeline open-Create reseed fix (bridge event → controlled Create state) and its colocated unit regression in four code/test commits ending at `d0d6fbf5`. This resolves a source mismatch exposed by the new button-based date picker; it does not prove browser behavior without a WSL run. The `6476a5c1` complete gate remains RED (18/27 PASS), and previously patched objective/Dictionary tests and Docker-only retry logic have not received a same-SHA full rerun. Preserve remaining browser, formatting, mypy, ESLint, PostgreSQL, and historical migration acceptance as open.
+
+
 ## FULL GATE REPAIR — 2026-10-13
 
 At `6c3975ba` the user's focused WSL PostgreSQL check reports **6 passed**
