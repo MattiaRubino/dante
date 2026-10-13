@@ -987,3 +987,18 @@ Repair batch published on `feature/timeline-temporal-operational`:
 - Authoritative Event browser tests explicitly reload and assert Schedule presence in the canonical GET response before comparing rendered cards; this diagnoses persistence vs. hydration rather than accepting an optimistic result. Email worker failure loops now back off on a temporarily unavailable PostgreSQL during destructive outage tests.
 
 **Verification still required:** no WSL browser/PostgreSQL/TypeScript runner is available in this GitHub-editing environment. No all-green claim; rerun the full 27-group same-SHA gate, inspect new failure logs if any and preserve original assertions. Separate root cause analysis may still be needed for the all-day Create failure and the destructive outage recovery timeout; neither is marked resolved without a fresh run.
+
+## 2026-10-13 — Second focused B14 WSL gate (0937dadf; partial)
+
+User-provided complete logs `B14_REPAIR_LOGS.tar.gz` from `0937dadf042243fe3caca9f9b70bf243b851cdbb` show `TYPECHECK=0`, `VITEST=0` (focused suites), `BROWSER=1` (6 PASS, 9 FAIL), `REAL_STACK=1` (9 PASS, 11 FAIL, 1 historical B03-E WebKit SKIP). The run was **8.2m** in real-stack. This is a genuine red gate, not acceptable to declare green.
+
+Root causes/repairs committed after that SHA:
+
+- Four Draft Vault browser failures all targeted missing `Apri Bozze`: MODE=test omitted the product Draft Vault altogether. The actual component is now rendered in fixture builds while the preexisting fixture-only planning tray remains separately available. Tests still use an explicit isolated HTTP fixture and prove inertness, resume, duplicate and deletion.
+- Desktop quick Create overflow reached y=1481 at 900px viewport: the absolute host inherited the full Context Rail height. Define a real viewport-bounded host height (not `max-height` alone).
+- The non-auth browser fixture does not persist canonical new Life Areas or advanced U6 Activity structures and B03 legacy Event runtime rejects rich Notes. The fixture tests now assert staged input, preserved date/time values and **fail-closed** non-creation instead of expecting fabricated successful persistence. The full-stack U2 suites remain responsible for actual accepted authoring. **U6 advanced acceptance is not proven by these fixture tests; this is an outstanding verification obligation** and must not be presented as a closed B14 feature.
+- Real B02 scheduling test waited for retired `/temporal/activities` and `/temporal/activities/scheduled` POSTs plus removed `Fascia`/native date input. It now authors truly canonical U2 Activities via authenticated HTTP, reloads before reading the existing-item inventory, and checks the same establish→move→cross-form→unschedule→Undo, all-day/coarse/named-zone PostgreSQL contracts. Coarse is API-only, not falsely described as a product Create option.
+- B03-E Event full-stack timed/all-day creation and reschedule passed until **third multi-day Event**, where **no U2 POST fired**. Error reporting in the helper now prints actual form validation alerts and selected end/start dates instead of only a generic 10s timeout; the **multi-day authoring failure is still unresolved** pending that diagnostic.
+- The deliberate real PostgreSQL outage ran into the global 60s UI timeout. That one test now has a bounded 120s Docker lifecycle budget, with its 500/error/explicit retry/200 assertions unchanged. This is not evidence recovery works; the next WSL run must establish it.
+
+**Still no WSL test has been run after this batch.** Do not claim B14 or the 27-group full gate is green. Record exact post-fix SHA, collect the smallest affected browser/auth rerun before issuing another expensive full gate.
