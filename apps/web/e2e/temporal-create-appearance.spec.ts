@@ -13,14 +13,13 @@ async function openCreate(page: Page) {
 }
 
 async function selectCreateContext(dialog: Locator, label: string) {
-  const trigger = dialog.locator('.temporal-create-context-trigger');
-  await trigger.click();
-  const picker = dialog.locator('.temporal-create-context-popover');
-  await expect(picker).toBeVisible();
-  await picker.getByRole('option', { name: label }).click();
+  const search = dialog.getByRole('textbox', { name: 'Life Area (opzionale)' });
+  await search.fill(label);
+  await dialog.getByRole('option', { name: label, exact: true }).click();
+  await expect(search).toHaveValue(label);
 }
 
-test('item appearance inherits Context by default and an override remains presentation-only', async ({
+test('Life Area selection and its colour survive Advanced round trips and Timeline filtering', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -50,31 +49,30 @@ test('item appearance inherits Context by default and an override remains presen
     'data-temporal-create-surface',
     'advanced',
   );
-  await expect(dialog.getByText('Aspetto', { exact: true })).toBeVisible();
-
-  const inherit = dialog.getByRole('radio', {
-    name: /Eredita dal Contesto/,
-  });
-  const red = dialog.getByRole('radio', {
-    name: /Colore personalizzato · Rosso/,
-  });
-  const redChoice = dialog.locator(
-    '.temporal-create-appearance__tone[data-appearance-tone="urgent"]',
+  const area = dialog.getByRole('textbox', { name: 'Life Area (opzionale)' });
+  await expect(area).toHaveValue('Focus / lavoro profondo');
+  const color = dialog.getByRole('button', { name: 'Colore Life Area' });
+  await color.click();
+  const palette = page.getByRole('dialog', { name: 'Scegli colore' });
+  await expect(palette).toBeVisible();
+  await palette.getByRole('button', { name: 'Rosso', exact: true }).click();
+  await expect(color.locator('span')).toHaveCSS(
+    'background-color',
+    'rgb(213, 0, 0)',
   );
-  await expect(inherit).toBeChecked();
-  await redChoice.click();
-  await expect(red).toBeChecked();
-  await expect(preview).toHaveAttribute('data-timeline-tone', 'urgent');
 
   await dialog
     .getByRole('button', { name: 'Nascondi opzioni avanzate' })
     .click();
   await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'base');
-  await expect(dialog.getByText('Aspetto', { exact: true })).toHaveCount(0);
+  await expect(area).toHaveValue('Focus / lavoro profondo');
 
   await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
-  await expect(red).toBeChecked();
-  await expect(preview).toHaveAttribute('data-timeline-tone', 'urgent');
+  await expect(area).toHaveValue('Focus / lavoro profondo');
+  await expect(color.locator('span')).toHaveCSS(
+    'background-color',
+    'rgb(213, 0, 0)',
+  );
 
   const accessibility = await new AxeBuilder({ page })
     .include('[data-temporal-create="composer"]')
@@ -90,7 +88,7 @@ test('item appearance inherits Context by default and an override remains presen
     .filter({ hasText: 'Deep work override' });
   await expect(card).toBeVisible();
   await expect(card).toHaveAttribute('data-temporal-create-projection');
-  await expect(card).toHaveAttribute('data-timeline-tone', 'urgent');
+  await expect(card).toHaveAttribute('data-timeline-tone', 'focus');
   await expect(card).toContainText('Focus / lavoro profondo');
 
   const resetGroupsFocus = page.getByRole('button', {
@@ -111,7 +109,7 @@ test('item appearance inherits Context by default and an override remains presen
   await focusContext.click();
   await expect(focusContext).toHaveAttribute('aria-pressed', 'true');
   await expect(card).toBeVisible();
-  await expect(card).toHaveAttribute('data-timeline-tone', 'urgent');
+  await expect(card).toHaveAttribute('data-timeline-tone', 'focus');
   await resetGroupsFocus.click();
 
   const toast = page.locator('.temporal-create-toast.is-on');
