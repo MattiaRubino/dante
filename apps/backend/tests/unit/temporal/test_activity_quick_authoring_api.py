@@ -45,8 +45,8 @@ def test_activity_authoring_accepts_real_unassigned_state() -> None:
     assert payload.life_area is None
     assert payload.item_color_code == "#12abef"
     assert payload.placement is not None
-    assert payload.placement.starts_local_at == datetime(2026, 9, 30, 23, 30)
-    assert payload.placement.ends_local_at == datetime(2026, 10, 2, 1, 0)
+    assert payload.placement.starts_local_at == datetime.fromisoformat("2026-09-30T23:30:00")
+    assert payload.placement.ends_local_at == datetime.fromisoformat("2026-10-02T01:00:00")
 
 
 def test_activity_authoring_accepts_only_positive_session_minimum() -> None:
@@ -96,8 +96,8 @@ def test_life_area_intent_cannot_select_and_create_at_the_same_time() -> None:
 
 def test_accepted_schedule_response_keeps_explicit_multiday_boundaries() -> None:
     response = AcceptedFloatingLocalPlacementResponse(
-        starts_local_at=datetime(2026, 9, 30, 23, 30),
-        ends_local_at=datetime(2026, 10, 2, 1, 0),
+        starts_local_at=datetime.fromisoformat("2026-09-30T23:30:00"),
+        ends_local_at=datetime.fromisoformat("2026-10-02T01:00:00"),
     )
     assert response.kind == "floating_local_interval"
     assert response.starts_local_at.date().isoformat() == "2026-09-30"

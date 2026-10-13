@@ -48,8 +48,8 @@ async def test_b11_c_reminder_current_replay_ownership_and_schedule_revision(
             operation_id="b11c:floating",
             subject_native_ref=activity.activity.activity_ref,
             placement=FloatingLocalIntervalPlacement(
-                starts_local_at=datetime(2026, 10, 10, 9),
-                ends_local_at=datetime(2026, 10, 10, 10),
+                starts_local_at=datetime.fromisoformat("2026-10-10T09:00:00"),
+                ends_local_at=datetime.fromisoformat("2026-10-10T10:00:00"),
             ),
         )
         with pytest.raises(ScheduleReminderNotFoundError):
