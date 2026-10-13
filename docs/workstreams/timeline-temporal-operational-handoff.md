@@ -1,5 +1,10 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-13 — Controlled Create reseed repair after the full gate
+
+Live GitHub branch verification at `0450f539` showed six commits beyond the user's 27-group gate SHA `6476a5c1`; those candidates correct the focused objective/Dictionary assertions and parts of Web Create/browser/runner but have no new full gate proof. A subsequent repair series `370ec14c` → `21ee0493` → `00fb2e3f` → `d0d6fbf5` addresses the actual Home Timeline reseed mismatch: the interaction bridge previously writes DOM values into native date/time inputs, while Create now owns a controlled button-based date picker. The bridge now emits a bounded date/time reseed event to the mounted composer; the Create entry applies it to React state and resets draft validation through the canonical field update; the earlier native-input route remains available to embedded/legacy consumers. An existing UI test file now asserts the reseed contract. **Not verified on the user's WSL/Web browser or accepted as a full gate PASS.** The original non-auth browser failures, real-stack timeouts, format/lint/mypy debt, and the historical `_143` forward upgrade risk remain open. Do not run another costly full gate expecting green until these are addressed and the focused current-source tests pass.
+
+
 ## 2026-10-13 — Full parallel gate on cdad6bb2; repair candidate
 
 **Focused follow-up on `6c3975ba`: 6 PostgreSQL tests passed in 18.00s**
