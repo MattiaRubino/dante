@@ -37,7 +37,10 @@ test('Life Area selection and its colour survive Advanced round trips and Timeli
   const preview = page.locator(
     '[data-temporal-create-projection="temporal-create-preview"]',
   );
-  await expect(preview).toBeVisible();
+  // Preview is intentionally not rendered until U2 authoritative creation:
+  // timeline-create-bridge.css hides .is-preview to avoid fabricated truth.
+  // Still verify the staged Life Area tone before committing the item.
+  await expect(preview).toBeHidden();
   await expect(preview).toHaveAttribute('data-timeline-tone', 'focus');
 
   const advancedToggle = dialog.getByRole('button', {
