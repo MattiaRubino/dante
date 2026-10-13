@@ -9,6 +9,10 @@ Actual MaterialStates, and every generated Occurrence pins the exact Actual
 MaterialState used as its anchor.
 """
 
+# Historical-migration-only Ruff S608 review: Upgrade enumerates the literal routine/event pair; schema/owner columns and template expressions are internal.
+# The SQL is frozen, already applied, and must not be rewritten solely for lint.
+# ruff: noqa: S608
+
 from collections.abc import Sequence
 
 import sqlalchemy as sa
