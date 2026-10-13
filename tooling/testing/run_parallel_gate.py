@@ -496,6 +496,9 @@ def final_report(
             lines.append(f"| {name} | NOT RUN | — |")
         else:
             lines.append(f"| {name} | {r.code} | {r.seconds:.1f} |")
+    lines += ["", "## Slowest groups (wall-clock; parallel groups overlap)", ""]
+    for r in sorted(outcomes, key=lambda item: -item.seconds)[:8]:
+        lines.append(f"- {r.name}: {r.seconds:.1f}s, exit={r.code}")
     lines += ["", "## Failing groups", ""]
     for name, r in by_name.items():
         if r.code != 0:
