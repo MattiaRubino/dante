@@ -35,14 +35,14 @@ set -e
 (cd apps/backend && uv run --locked ruff format .)   > "$LOG_DIR/RUFF_FORMAT.log" 2>&1
 pnpm format > "$LOG_DIR/PRETTIER_FORMAT.log" 2>&1
 
-# ESLint --fix similarly applies only rules with documented automatic fixes.
-# It is expected to return nonzero until all remaining typed lint is repaired.
-set +e
-pnpm lint:fix > "$LOG_DIR/ESLINT_SAFE_FIX.log" 2>&1
-ESLINT_REMAINING=$?
-set -e
+# Do not apply ESLint --fix automatically in this bulk formatting pass.
+# ESLint's assertion-removal autofix has demonstrably stripped essential
+# DOM input typing and occurrence source-kind literals and broke tsc.
+# Keep its diagnostic-only report for a deliberate source-level repair.
+ESLINT_REMAINING="diagnostic-only"
+pnpm lint > "$LOG_DIR/ESLINT_SAFE_FIX.log" 2>&1 || true
 
-# Normalization after ESLint; keep exact gate formatting checks deterministic.
+# Normalize formatter output without ESLint rewriting TypeScript semantics.
 pnpm format > "$LOG_DIR/PRETTIER_AFTER_LINT.log" 2>&1
 
 git diff --check > "$LOG_DIR/DIFF_CHECK.log" 2>&1 || {
@@ -76,7 +76,7 @@ fi
 # Only stage tracked changes, never local data, .env, or any scratch logs.
 git add -u
 git diff --cached --stat > "$LOG_DIR/CHANGED_FILES.txt"
-git commit -m "style(gate): apply safe Ruff and ESLint fixes, format all tracked sources"
+git commit -m "style(gate): apply safe Ruff fixes and normalize tracked source formatting"
 git push origin "$BRANCH"
 git rev-parse HEAD | tee "$LOG_DIR/NEW_HEAD.txt"
 echo "STYLE_AUTOFIX_COMMIT=$(cat "$LOG_DIR/NEW_HEAD.txt")"   | tee -a "$LOG_DIR/SUMMARY.txt"
