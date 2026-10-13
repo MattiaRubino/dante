@@ -2,6 +2,12 @@
 
 ## FULL GATE REPAIR — 2026-10-13
 
+At `6c3975ba` the user's focused WSL PostgreSQL check reports **6 passed**
+for Alembic drift, relative-anchor/index and exact catalog, advanced
+Recurrence and conditional Reminder journeys. Whole PostgreSQL and full
+gate remain open, as do the `_143` data-bearing upgrade and browser/quality
+groups. See the current gate report for the command and limits of this proof.
+
 User WSL gate at `cdad6bb2`: 27 groups, 19 PASS / 8 FAIL. Current unverified candidate `_145` repairs B11-A relative elapsed-anchor nullability and two occurrence-policy index definitions. Browser test helpers now supply required timezone and dynamic recovery port; responsive quick Create is moved out of the hidden rail. Local Web typecheck and focused component test pass, but the full PostgreSQL/browser gate is still red until rerun; inherited code quality and stale Create journeys remain open. The exact evidence and historical migration risk are documented in `docs/development/full-gate-baseline-2026-10-12.md`.
 
 ## REAL-APP REGRESSIONS — 2026-10-12

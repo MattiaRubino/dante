@@ -537,3 +537,45 @@ Docker port/startup reliability in three jobs. Rerun the complete gate with
 fewer PostgreSQL workers after the functional fixes; do not reinterpret
 unexecuted jobs as PASS. None of the browser or quality failures is closed
 by the `_145` migration.
+
+## Focused PostgreSQL verification, 13 October 2026
+
+The user pulled `6c3975bab8c2c34fc2b355fb935b2768a3e1c98e` and ran
+the Alembic drift test, relative-anchor/index catalog test, exact current
+catalog test, plus the complete advanced-Recurrence and conditional-Reminder
+journey files using `uv run --locked pytest -q --no-cov -m postgres` on WSL:
+**6 passed in 18.00s**. The earlier focused run at `8faf7212` had **5 passed,
+1 failed** because the new catalog test inspected `dante` using the migrator
+role without assuming `dante_owner`; `6c3975ba` added the same owner-role
+switch used by existing catalog tests. These results prove the focused fresh
+migration and B11-A/B11-D regressions only. A complete PostgreSQL run, the
+27-group gate and any data-bearing `_143` upgrade path are not yet proven on
+this candidate.
+
+## Remaining gate work after the focused PostgreSQL pass
+
+The `cdad6bb2` logs remain the latest **complete** gate evidence; no
+same-SHA 27-group rerun exists after the focused `6c3975ba` repair.
+The red quality groups are real gate failures: Ruff format 245 files,
+Ruff 123 diagnostics (21 in applied migrations, 34 in runtime sources,
+68 in tests), mypy 666 errors in 72 files, Prettier 219 files, and
+ESLint 332 errors plus 2 warnings. The migration-format conflict needs
+an explicit immutable-migration policy and equivalent gate coverage;
+neither bulk-reformat applied migrations nor silently exclude current
+candidate migrations. No lint/type assertions have been disabled.
+
+Browser evidence at `cdad6bb2` remains 112 pass / 15 fail non-auth, and
+61 pass / 23 fail / 3 skipped real-stack. The non-auth failures include
+literal selectors for the retired `Da collocare` radio and the legacy
+Context picker. These are **unreviewed scenarios**, not permission to
+delete the tests: qualify each accepted invariant against the current
+Life Area/Draft Vault flow, add faithful replacements when needed and
+verify actual browser interaction. Four real-stack test helpers now pass
+the required timezone, and recovery URL parsing uses the harness port;
+those candidate fixes still lack a browser rerun. The B00 real-stack
+journeys and the remaining Create UI assertions require separate review.
+
+The three failed PostgreSQL shards with Docker port/startup/cleanup
+errors remain unexecuted. The parallel runner already defaults to five
+PostgreSQL workers; use a bounded worker count on the next complete WSL
+gate. A focused six-test result cannot stand in for those modules.

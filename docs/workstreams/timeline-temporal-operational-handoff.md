@@ -2,6 +2,15 @@
 
 ## 2026-10-13 — Full parallel gate on cdad6bb2; repair candidate
 
+**Focused follow-up on `6c3975ba`: 6 PostgreSQL tests passed in 18.00s**
+on the user's WSL, covering `_145` migration drift/current catalog, relative
+Recurrence anchors and advanced/conditional Recurrence journeys. The new
+catalog test needed `SET ROLE dante_owner`, consistent with the schema ACL.
+This is not a full PostgreSQL or full 27-group gate. Existing formatting,
+lint, typing and browser failures remain open; avoid another complete run
+until those known red groups have been repaired. Exact evidence is in the
+full-gate baseline report.
+
 The user's 27-group WSL gate completed with 19 PASS / 8 FAIL. Of 40 PostgreSQL jobs, 34 passed, three reported functional/catalog failures and three failed during Docker startup or cleanup. `_144` made relative elapsed Recurrence anchors non-null despite the earlier B11-A conditional CHECK; the new forward-only `_145` restores nullable columns and aligns two occurrence-policy indexes with the ORM/Dictionary. Browser API tests now send the required time-zone header, recovery URL tests honor the dynamic harness port, and quick Create portals outside the hidden Context Rail on narrow screens, including live viewport changes. Focused component and Web typecheck pass locally; PostgreSQL and browser full-stack acceptance **have not run on this candidate**. The historical `_143`-with-NULL upgrade path across `_144` remains unresolved, as do substantial formatting/lint/type debt and outdated Create browser journeys. See `docs/development/full-gate-baseline-2026-10-12.md` for exact failure evidence. Do not declare the gate green or merge.
 
 ## 2026-10-12 — User real-app regression report; focused repair candidate
