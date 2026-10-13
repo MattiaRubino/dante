@@ -267,6 +267,12 @@ test.describe('Timeline B02-E full-stack Schedule forms', () => {
       const title = `B02 E4 governed loop ${testInfo.project.name}`;
       const activity = await createUnplacedActivity(page, title);
       expect(activity.title).toBe(title);
+      // API-driven creation bypasses the SPA's optimistic invalidation.
+      // Reload to prove that the legacy existing-item inventory hydrates
+      // this canonical Activity from PostgreSQL, not from a stale client list.
+      const inventoryRead = waitForTimelineRead(page);
+      await page.reload();
+      expect((await inventoryRead).status()).toBe(200);
       await assertPlanningTrayContainsActivity(page, activity.activity_ref);
 
       const today = Temporal.Now.plainDateISO('Europe/Rome').toString();
@@ -406,7 +412,8 @@ test.describe('Timeline B02-E full-stack Schedule forms', () => {
       await useItalianLocale(page);
       await signIn(page, emailFor(testInfo));
       await openHome(page);
-      const today = Temporal.Now.plainDateISO('Europe/Rome').toString();
+      const today = Temporal.Now.plainDateISO('Europe/Rome')
+        .add({ days: 1 }).toString();
 
       const allDayTitle = `B02 E4 all-day ${testInfo.project.name}`;
       const allDay = await createScheduledActivity(page, allDayTitle, {
