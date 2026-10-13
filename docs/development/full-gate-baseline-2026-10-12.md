@@ -464,3 +464,41 @@ remain independently tested.
 **No fresh same-SHA WSL test gate has validated this revision yet.**
 Do not claim complete drift resolution or release readiness. Formatting,
 Ruff/mypy/ESLint debt and the remaining E2E acceptance may still be RED.
+
+## Full parallel WSL gate 3dbb8ed9, 13 October 2026
+
+The user's uploaded `FULL_GATE_SUMMARY(5).md` and complete log archive record
+**27/27 groups**, source stability PASS, and **17 groups PASS / 10 FAIL** on
+`3dbb8ed92b726a16c5219358ab8cb71fd27719d6` (461.2 seconds). The backend
+groups did not execute their tests: an indentation error in
+`src/dante/modules/temporal/recurrence.py` prevented pytest collection and
+OpenAPI export, and consequently blocked backend format/mypy and the
+real-stack browser server. This is one causal failure across several gate
+groups, not proof those groups pass once the syntax is fixed.
+
+The non-auth browser ran independently: **112 PASS / 15 FAIL**. Its failures
+concentrate in Temporal Create: removed quick `Da collocare`, relocated
+advanced Context, obsolete duration/recurrence/select controls, the discard
+dialog's current host, mobile visibility and floating-panel geometry. Each
+assertion must be compared with the accepted flow and rerun in a browser;
+the remaining appearance, mobile and geometry cases must not be waved away
+as harmless test drift. Quality gates also remain RED: backend formatter
+**244 files**, Ruff **124 errors**, repository formatter **219 files**, ESLint
+**332 errors / 2 warnings**. Applied migrations cannot be reformatted.
+
+In a separate isolated local checkout of this SHA, the indentation was
+repaired and a focused elapsed/Quota Recurrence validation test extended.
+Python **3.14.8** compiled all backend source/tests; pytest collected
+**993 tests (621 non-PostgreSQL, 372 PostgreSQL)**; the focused test file
+reported **7 PASS**. Local mypy, now able to analyze the tree, reported
+**666 errors in 72 files**. The full non-PostgreSQL run was interrupted and
+PostgreSQL was only collected; no local full-suite PASS is claimed. Python
+3.12 reports valid Python 3.14 multi-exception syntax as errors; those
+unnecessary edits were reverted. Chromium could not be installed in this
+workspace (truncated browser download), so the 15 browser failures still
+require the prepared WSL environment.
+
+The candidate syntax fix and test require a complete rerun on their exact
+published SHA. Global gate remains **RED**; continue Alembic drift, browser
+flow, quality and real-stack investigation from the new logs rather than
+assuming that collection fixes resolved them.

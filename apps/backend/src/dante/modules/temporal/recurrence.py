@@ -202,12 +202,12 @@ def _validate(spec: RecurrenceSpec) -> None:
             raise RecurrenceInputError("Calendar selectors must not contain duplicates.")
     elif isinstance(spec, ElapsedRecurrence):
         exponent = spec.elapsed_seconds.as_tuple().exponent
-    if (
-        not spec.elapsed_seconds.is_finite()
-        or spec.elapsed_seconds <= 0
-        or not isinstance(exponent, int)
-        or exponent < -6
-    ):
+        if (
+            not spec.elapsed_seconds.is_finite()
+            or spec.elapsed_seconds <= 0
+            or not isinstance(exponent, int)
+            or exponent < -6
+        ):
             raise RecurrenceInputError("Elapsed interval must be positive with at most six decimal places.")
         if spec.effective_from.tzinfo is None or spec.anchor_at.tzinfo is None or (spec.effective_until and spec.effective_until.tzinfo is None):
             raise RecurrenceInputError("Elapsed Recurrence requires absolute instants with timezone offsets.")
