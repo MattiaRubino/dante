@@ -146,6 +146,12 @@
  */
 @media (min-width: 1121px) {
   .home-context-rail:has(.home-create-panel-host .temporal-create-backdrop) {
+    /* The normal rail animates transform for expansion. Even translateX(0)
+       creates a fixed-position containing block; transitioning it to none
+       retains that block for the 320ms transition. Stop that transition
+       immediately while Create is open, or the editor sits 18px left of
+       the actual rail because right:18px resolves inside the rail. */
+    transition: none;
     transform: none;
   }
 
