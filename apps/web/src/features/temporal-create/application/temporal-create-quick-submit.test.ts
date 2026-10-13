@@ -10,6 +10,7 @@ import {
   buildTemporalCreateObjectiveTemplates,
   buildTemporalCreateU2Request,
   temporalCreateU2QuickIntentSupported,
+  temporalCreateRecurringEventSharedIntentSupported,
   validateTemporalCreateU2QuickFields,
   validateTemporalCreateU6Structure,
   validateTemporalCreateU6StructureIssue,
@@ -174,6 +175,48 @@ describe('U2 Quick Create submit mapping', () => {
     expect(mapped.request.location).toBe('Sala A');
     expect(mapped.request.description).toBe('Decisioni di progetto');
     expect(mapped.request.agendaParts).toEqual(['Revisione', 'Decisioni']);
+  });
+
+  it('keeps all-day multi-day Events on canonical U2 after Start date changes', () => {
+    const opened = createTemporalCreateFields({
+      kind: 'event',
+      title: 'Fiera',
+      date: '2026-10-14',
+    });
+    const edited = createTemporalCreateFields({
+      ...opened,
+      date: '2026-10-15',
+      timeSemantics: 'all-day',
+      event: {
+        ...opened.event,
+        allDayEndDate: '2026-10-17',
+      },
+    });
+    // Selecting a date does not edit inactive Scheduling dates; they retain
+    // their 14 October defaults. This must not divert Event authoring to
+    // the historical runtime before the canonical HTTP request.
+    expect(edited.scheduling.windowStartDate).toBe('2026-10-14');
+    expect(temporalCreateU2QuickIntentSupported(edited)).toBe(true);
+    expect(temporalCreateRecurringEventSharedIntentSupported(edited)).toBe(true);
+    const mapped = buildTemporalCreateU2Request(
+      edited,
+      createTemporalCreateU2AuthoringDraft(edited),
+      'u2:multi-day',
+    );
+    expect(mapped.kind).toBe('event');
+    expect(mapped.request.placement?.kind).toBe('date-span');
+    if (mapped.request.placement?.kind !== 'date-span') {
+      throw new Error('Expected a canonical date-span');
+    }
+    expect(mapped.request.placement.startDate.toString()).toBe('2026-10-15');
+    expect(mapped.request.placement.endDateExclusive.toString()).toBe('2026-10-18');
+
+    // Do not mask an actual, material Scheduling policy change.
+    const editedMovement = createTemporalCreateFields({
+      ...edited,
+      scheduling: { ...edited.scheduling, movementPolicy: 'block' },
+    });
+    expect(temporalCreateU2QuickIntentSupported(editedMovement)).toBe(false);
   });
 
   it('keeps not-yet-migrated advanced intent on the historical runtime path', () => {
