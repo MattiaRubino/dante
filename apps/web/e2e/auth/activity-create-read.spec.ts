@@ -60,6 +60,16 @@ function waitForUnplacedRead(page: Page) {
   );
 }
 
+async function openExistingCanonicalItems(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'Apri Bozze' }).click();
+  const existing = page.locator(
+    'section[aria-label="Elementi preesistenti senza orario"]',
+  );
+  await expect(existing).toBeVisible();
+  await page.getByRole('button', { name: 'Gestisci elementi già creati' }).click();
+  await expect(page.locator('[data-timeline-planning-tray="true"]')).toBeVisible();
+}
+
 test.describe('Timeline B01 canonical Activity vertical', () => {
   test('creates and reloads one canonical unplaced Activity', async ({
     browser,
@@ -111,11 +121,10 @@ test.describe('Timeline B01 canonical Activity vertical', () => {
       expect(created.title).toBe(title);
       expect(created.replayed).toBe(false);
 
-      const firstPlanningReadPromise = waitForUnplacedRead(page);
-      await page
-        .getByRole('button', { name: 'Apri attività da collocare' })
-        .click();
-      const firstPlanningRead = await firstPlanningReadPromise;
+      await openExistingCanonicalItems(page);
+      const firstPlanningRead = await page.request.get(
+        '/api/v1/temporal/activities/unplaced',
+      );
       expect(firstPlanningRead.status()).toBe(200);
       const firstPayload = (await firstPlanningRead.json()) as {
         kind: string;
@@ -129,11 +138,21 @@ test.describe('Timeline B01 canonical Activity vertical', () => {
       ).toHaveLength(1);
 
       const firstCard = page.locator(
-        `[data-temporal-activity-ref="${created.activity_ref}"]`,
+        `[data-temporal-subject-ref="${created.activity_ref}"]`,
       );
       await expect(firstCard).toHaveCount(1);
       await expect(firstCard).toContainText(title);
       await expect(page.locator('[data-timeline-event]')).toHaveCount(0);
+      // Canonical unplaced Activity is visible only through explicit legacy
+      // management. It must never masquerade as an inert Draft Vault item.
+      await page.getByRole('button', { name: 'Chiudi Da collocare' }).click();
+      await page.getByRole('button', { name: 'Apri Bozze' }).click();
+      await expect(
+        page.locator('[data-timeline-draft-vault="true"] article').filter({
+          hasText: title,
+        }),
+      ).toHaveCount(0);
+      await page.getByRole('button', { name: 'Chiudi Bozze' }).click();
       await expect(
         page.getByRole('button', { name: 'Colloca', exact: true }),
       ).toHaveCount(0);
@@ -154,14 +173,10 @@ test.describe('Timeline B01 canonical Activity vertical', () => {
         ),
       ).toHaveLength(1);
 
-      const secondPlanningReadPromise = waitForUnplacedRead(page);
-      await page
-        .getByRole('button', { name: 'Apri attività da collocare' })
-        .click();
-      expect((await secondPlanningReadPromise).status()).toBe(200);
+      await openExistingCanonicalItems(page);
 
       const reloadedCard = page.locator(
-        `[data-temporal-activity-ref="${created.activity_ref}"]`,
+        `[data-temporal-subject-ref="${created.activity_ref}"]`,
       );
       await expect(reloadedCard).toHaveCount(1);
       await expect(reloadedCard).toContainText(title);
@@ -202,13 +217,9 @@ test.describe('Timeline B01 canonical Activity vertical', () => {
         ),
       ).toHaveLength(0);
 
-      const afterDiscardPlanningReadPromise = waitForUnplacedRead(page);
-      await page
-        .getByRole('button', { name: 'Apri attività da collocare' })
-        .click();
-      expect((await afterDiscardPlanningReadPromise).status()).toBe(200);
+      await openExistingCanonicalItems(page);
       const afterDiscardCard = page.locator(
-        `[data-temporal-activity-ref="${created.activity_ref}"]`,
+        `[data-temporal-subject-ref="${created.activity_ref}"]`,
       );
       await expect(afterDiscardCard).toHaveCount(1);
       await expect(afterDiscardCard).toContainText(title);
