@@ -82,7 +82,8 @@ async def test_unplaced_activity_session_pause_resume_and_tc009_remain_independe
             subject_kind="activity",
             subject_native_ref=activity.activity_ref,
         )
-        assert started.open and not started.paused
+        assert started.open
+        assert not started.paused
         assert started.duration_evaluations[0].constraint_ref == constraint.constraint_ref
         assert started.duration_evaluations[0].evaluation == "pending"
 
@@ -92,7 +93,8 @@ async def test_unplaced_activity_session_pause_resume_and_tc009_remain_independe
             session_ref=started.session_ref,
             expected_material_state_ref=started.timing_material_state_ref,
         )
-        assert paused.paused and paused.open
+        assert paused.paused
+        assert paused.open
         assert paused.duration_evaluations[0].evaluation == "pending"
         # Stop while paused is now intentionally accepted. A stale basis
         # must still be refused without changing the current paused state.
@@ -113,7 +115,8 @@ async def test_unplaced_activity_session_pause_resume_and_tc009_remain_independe
             session_ref=started.session_ref,
             expected_material_state_ref=reloaded_pause.timing_material_state_ref,
         )
-        assert resumed.open and not resumed.paused
+        assert resumed.open
+        assert not resumed.paused
         assert resumed.timing_material_state_ref != paused.timing_material_state_ref
         ended = await sessions.end(
             self_person_ref=actor,
@@ -121,7 +124,8 @@ async def test_unplaced_activity_session_pause_resume_and_tc009_remain_independe
             session_ref=started.session_ref,
             expected_material_state_ref=resumed.timing_material_state_ref,
         )
-        assert not ended.open and not ended.paused
+        assert not ended.open
+        assert not ended.paused
         assert ended.session_ref == started.session_ref
         assert ended.duration_evaluations[0].evaluation == "violated"
         assert ended.active_seconds == pytest.approx(
@@ -215,7 +219,8 @@ async def test_occurrence_session_does_not_inherit_activity_duration_or_place_it
             subject_kind="occurrence",
             subject_native_ref=occurrence_ref,
         )
-        assert started.open and started.duration_evaluations == ()
+        assert started.open
+        assert started.duration_evaluations == ()
         paused = await sessions.pause(
             self_person_ref=actor,
             operation_id="b08-d:occurrence-pause",
@@ -236,7 +241,8 @@ async def test_occurrence_session_does_not_inherit_activity_duration_or_place_it
         )
         reloaded = await sessions.get(self_person_ref=actor, session_ref=started.session_ref)
         assert reloaded.session_ref == started.session_ref
-        assert not reloaded.open and reloaded.duration_evaluations == ()
+        assert not reloaded.open
+        assert reloaded.duration_evaluations == ()
         assert ended.active_seconds <= ended.elapsed_seconds + 0.001
         assert not (
             await occurrences.get(self_person_ref=actor, occurrence_ref=occurrence_ref)
