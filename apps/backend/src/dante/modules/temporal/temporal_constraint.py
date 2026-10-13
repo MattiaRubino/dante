@@ -1009,42 +1009,46 @@ def _hard_set_status(constraints: list[TemporalConstraintView]) -> HardSetStatus
         rule = constraint.current_rule
         if rule is None or rule.strength != "hard":
             continue
-        if isinstance(rule, TemporalConstraintCurrentBoundaryRuleView):
-            if rule.boundary_kind == "earliest_start":
-                _raise_lower(start_lower, rule.boundary_at)
-            elif rule.boundary_kind == "latest_start":
-                _lower_upper(start_upper, rule.boundary_at)
-            elif rule.boundary_kind == "latest_completion":
-                _lower_upper(completion_upper, rule.boundary_at)
+        # Runtime payloads may originate in persisted historical state.
+        # Keep the defensive "undetermined" fallback for unknown variants,
+        # even when the current Python union is exhaustive.
+        current_rule: object = rule
+        if isinstance(current_rule, TemporalConstraintCurrentBoundaryRuleView):
+            if current_rule.boundary_kind == "earliest_start":
+                _raise_lower(start_lower, current_rule.boundary_at)
+            elif current_rule.boundary_kind == "latest_start":
+                _lower_upper(start_upper, current_rule.boundary_at)
+            elif current_rule.boundary_kind == "latest_completion":
+                _lower_upper(completion_upper, current_rule.boundary_at)
             else:
                 return "undetermined"
-        elif isinstance(rule, TemporalConstraintCurrentWindowRuleView):
-            if rule.relationship == "start_within":
-                _raise_lower(start_lower, rule.starts_at)
-                _lower_upper(start_upper, rule.ends_at)
-            elif rule.relationship == "completion_within":
-                _raise_lower(completion_lower, rule.starts_at)
-                _lower_upper(completion_upper, rule.ends_at)
-            elif rule.relationship == "full_placement_contained":
-                _raise_lower(start_lower, rule.starts_at)
-                _lower_upper(completion_upper, rule.ends_at)
-            elif rule.relationship == "placement_overlaps":
-                _lower_upper(start_upper, rule.ends_at, strict=True)
-                _raise_lower(completion_lower, rule.starts_at, strict=True)
+        elif isinstance(current_rule, TemporalConstraintCurrentWindowRuleView):
+            if current_rule.relationship == "start_within":
+                _raise_lower(start_lower, current_rule.starts_at)
+                _lower_upper(start_upper, current_rule.ends_at)
+            elif current_rule.relationship == "completion_within":
+                _raise_lower(completion_lower, current_rule.starts_at)
+                _lower_upper(completion_upper, current_rule.ends_at)
+            elif current_rule.relationship == "full_placement_contained":
+                _raise_lower(start_lower, current_rule.starts_at)
+                _lower_upper(completion_upper, current_rule.ends_at)
+            elif current_rule.relationship == "placement_overlaps":
+                _lower_upper(start_upper, current_rule.ends_at, strict=True)
+                _raise_lower(completion_lower, current_rule.starts_at, strict=True)
             else:
                 return "undetermined"
-        elif isinstance(rule, TemporalConstraintCurrentDurationRuleView):
-            if rule.duration_kind == "minimum":
+        elif isinstance(current_rule, TemporalConstraintCurrentDurationRuleView):
+            if current_rule.duration_kind == "minimum":
                 minimum_duration_microseconds = max(
                     minimum_duration_microseconds or 0,
-                    rule.duration_microseconds,
+                    current_rule.duration_microseconds,
                 )
-            elif rule.duration_kind == "maximum":
+            elif current_rule.duration_kind == "maximum":
                 maximum_duration_microseconds = min(
                     maximum_duration_microseconds
                     if maximum_duration_microseconds is not None
-                    else rule.duration_microseconds,
-                    rule.duration_microseconds,
+                    else current_rule.duration_microseconds,
+                    current_rule.duration_microseconds,
                 )
             else:
                 return "undetermined"
@@ -1147,6 +1151,10 @@ class TemporalConstraintApplication:
         except SQLAlchemyError as exc:
             raise TemporalConstraintPersistenceError() from exc
 
+        # The not-found branch above aborts the transaction; repeat the
+        # narrowing outside the exception-handling region for static safety.
+        if subject_kind is None:
+            raise TemporalConstraintNotFoundError()
         material_state_ref = row["material_state_ref"]
         if material_state_ref is None or row["active"] is not True:
             raise TemporalConstraintPersistenceError(
