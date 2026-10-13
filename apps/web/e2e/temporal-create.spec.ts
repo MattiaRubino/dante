@@ -150,7 +150,7 @@ test('Create base is title-first, exposes actionable types, protects drafts, and
   await expect(trigger).toBeFocused();
 });
 
-test('Activity Orario plus Divisibile remains placed and Undo removes the same created Activity', async ({
+test('Activity with live capture and planned root Session survives Advanced round trip and Undo', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -169,11 +169,13 @@ test('Activity Orario plus Divisibile remains placed and Undo removes the same c
     'advanced',
   );
 
-  await dialog
-    .getByRole('combobox', { name: /Struttura di esecuzione/ })
-    .selectOption('splittable');
-  await dialog.getByLabel('Sessione minima (min)').fill('45');
-  await dialog.getByLabel('Numero massimo di sessioni').fill('4');
+  // B14 now authors an Activity with optional planned root Sessions;
+  // the legacy Splittable dropdown and duration-count fields were retired.
+  await dialog.getByRole('checkbox', { name: 'Sessione' }).check();
+  await dialog.locator('.temporal-create-tree-add').click();
+  const planned = dialog.locator('[data-create-planned-session]');
+  await expect(planned).toHaveCount(1);
+  await planned.getByRole('textbox', { name: 'Nome Sessione' }).fill('Montaggio');
   await expect(dialog.getByRole('radio', { name: 'Orario' })).toHaveAttribute(
     'aria-checked',
     'true',
@@ -189,13 +191,11 @@ test('Activity Orario plus Divisibile remains placed and Undo removes the same c
   expect(await timedDurationMinutes(dialog)).toBe(180);
 
   await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
+  await expect(dialog.getByRole('checkbox', { name: 'Sessione' })).toBeChecked();
   await expect(
-    dialog.getByRole('combobox', { name: /Struttura di esecuzione/ }),
-  ).toHaveValue('splittable');
-  await expect(dialog.getByLabel('Sessione minima (min)')).toHaveValue('45');
-  await expect(dialog.getByLabel('Numero massimo di sessioni')).toHaveValue(
-    '4',
-  );
+    dialog.locator('[data-create-planned-session]')
+      .getByRole('textbox', { name: 'Nome Sessione' }),
+  ).toHaveValue('Montaggio');
 
   await dialog.getByRole('button', { name: 'Aggiungi' }).click();
   await expect(dialog).toHaveCount(0);
@@ -295,7 +295,7 @@ test('Event Advanced preserves structured agenda, deep intent and provider reque
   await expect(card).toContainText('Prossimi passi');
 });
 
-test('Event quick recurrence enters truthful CP6 authoring and survives base Advanced round trips', async ({
+test('Event calendar recurrence preserves interval and end policy across Advanced round trips', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1360, height: 860 });
@@ -307,44 +307,31 @@ test('Event quick recurrence enters truthful CP6 authoring and survives base Adv
   await dialog.getByRole('radio', { name: 'Orario' }).click();
   await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
   await dialog.getByLabel('Ripeti').selectOption('weekly');
-  await expect(dialog).toHaveAttribute(
-    'data-temporal-create-surface',
-    'advanced',
-  );
 
-  const pattern = dialog.getByLabel('Modello di ricorrenza');
-  await expect(pattern.locator('option')).toHaveCount(5);
-  await expect(pattern).toHaveValue('calendar-wall-clock');
-  await expect(dialog.getByLabel('Frequenza di calendario')).toHaveValue(
-    'weekly',
-  );
+  const recurrence = dialog.locator('[data-create-recurrence-owner="event"]');
+  await expect(recurrence).toBeVisible();
+  await recurrence.getByRole('spinbutton', { name: 'Intervallo di ripetizione' })
+    .fill('2');
+  await recurrence.getByRole('radio', { name: 'Dopo' }).click();
+  await recurrence.getByRole('spinbutton', { name: 'Numero di occorrenze' })
+    .fill('3');
 
-  await pattern.selectOption('elapsed-interval');
-  await dialog.getByLabel('Intervallo trascorso (minuti)').fill('720');
-
-  await pattern.selectOption('quota-per-period');
-  await dialog.getByLabel('Occorrenze richieste').fill('3');
-  await dialog.getByLabel('Periodo', { exact: true }).selectOption('week');
-  await dialog.getByLabel('Confine del periodo').selectOption('named-zone');
-  await dialog.getByLabel('Fuso del periodo').fill('Europe/Rome');
-
-  await pattern.selectOption('cyclic-positional');
-  await dialog.getByLabel('Lunghezza ciclo').fill('4');
-  await dialog.getByLabel('Nuova posizione attiva').fill('2');
-  await dialog.getByRole('button', { name: 'Aggiungi posizione' }).click();
-
-  await dialog
-    .getByRole('button', { name: 'Nascondi opzioni avanzate' })
+  await dialog.getByRole('button', { name: 'Nascondi opzioni avanzate' })
     .click();
   await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'base');
   await expect(dialog.getByLabel('Ripeti')).toHaveCount(0);
 
   await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
-  await expect(pattern).toHaveValue('cyclic-positional');
-  await expect(dialog.getByLabel('Lunghezza ciclo')).toHaveValue('4');
+  await expect(dialog.getByLabel('Ripeti')).toHaveValue('custom');
+  await expect(recurrence).toBeVisible();
   await expect(
-    dialog.getByRole('button', { name: 'Rimuovi posizione 2' }),
-  ).toBeVisible();
+    recurrence.getByRole('spinbutton', { name: 'Intervallo di ripetizione' }),
+  ).toHaveValue('2');
+  await expect(
+    recurrence.getByRole('spinbutton', { name: 'Numero di occorrenze' }),
+  ).toHaveValue('3');
+  await expect(recurrence.getByRole('radio', { name: 'Dopo' }))
+    .toHaveAttribute('aria-checked', 'true');
 
   const accessibility = await new AxeBuilder({ page })
     .include('[data-temporal-create="composer"]')
@@ -456,29 +443,24 @@ test('all-day date spans live inside each day before minute zero for Event and A
   await expect(activity).toHaveCount(0);
 });
 
-test('Advanced validation focuses the invalid execution control without losing the draft', async ({
+test('Advanced validation focuses the required title without discarding time or draft', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1280, height: 820 });
   await page.goto('/home');
 
   const dialog = await openCreate(page);
-  await dialog.getByRole('textbox', { name: 'Titolo' }).fill('Studio');
+  const title = dialog.getByRole('textbox', { name: 'Titolo' });
+  await title.fill('Studio');
   await setTimedDuration(dialog, 60);
   await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
-  await dialog
-    .getByRole('combobox', { name: /Struttura di esecuzione/ })
-    .selectOption('splittable');
-  await dialog.getByLabel('Sessione minima (min)').fill('120');
+  await title.fill('');
   await dialog.getByRole('button', { name: 'Aggiungi' }).click();
 
-  await expect(
-    dialog.locator('.temporal-create-field-error').first(),
-  ).toBeVisible();
-  await expect(dialog.getByLabel('Sessione minima (min)')).toBeFocused();
-  await expect(dialog.getByRole('textbox', { name: 'Titolo' })).toHaveValue(
-    'Studio',
-  );
+  await expect(dialog.locator('.temporal-create-field-error').first())
+    .toBeVisible();
+  await expect(title).toBeFocused();
+  expect(await timedDurationMinutes(dialog)).toBe(60);
   await expect(dialog).toHaveAttribute(
     'data-temporal-create-surface',
     'advanced',
