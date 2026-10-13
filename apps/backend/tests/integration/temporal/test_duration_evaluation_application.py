@@ -182,7 +182,7 @@ async def test_b04_e_hard_set_detects_window_duration_infeasibility(
 
 
 def test_b04_e_duration_rule_rejects_non_positive_value() -> None:
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="duration must be a positive"):
         ScheduleDurationRule(
             duration_kind="minimum",
             strength="hard",
