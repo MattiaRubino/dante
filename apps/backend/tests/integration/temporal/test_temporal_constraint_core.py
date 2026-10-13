@@ -383,17 +383,19 @@ def test_b04_constraint_runtime_cannot_bypass_governed_mutation_function(
     self_ref, _, activity_ref, _ = _seed_self_subjects(migrated_database)
     constraint_ref = uuid7()
 
-    with psycopg.connect(
-        **migrated_database.connection_kwargs(
-            "dante_runtime",
-            migrated_database.cluster.runtime_password,
-        )
-    ) as connection:
-        with pytest.raises(psycopg.errors.InsufficientPrivilege):
-            connection.execute(
-                "INSERT INTO dante.temporal_constraint(constraint_ref,subject_native_ref) VALUES (%s,%s)",
-                (constraint_ref, activity_ref),
+    with (
+        psycopg.connect(
+            **migrated_database.connection_kwargs(
+                "dante_runtime",
+                migrated_database.cluster.runtime_password,
             )
+        ) as connection,
+        pytest.raises(psycopg.errors.InsufficientPrivilege),
+    ):
+        connection.execute(
+            "INSERT INTO dante.temporal_constraint(constraint_ref,subject_native_ref) VALUES (%s,%s)",
+            (constraint_ref, activity_ref),
+        )
 
     created = _mutate(
         migrated_database,
