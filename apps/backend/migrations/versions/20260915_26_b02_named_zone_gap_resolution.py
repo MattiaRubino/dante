@@ -4,6 +4,10 @@ Revision ID: 20260915_26
 Revises: 20260915_25
 """
 
+# Historical-migration-only Ruff S608 review: An internal boolean selects one of two literal PL/pgSQL predicates; no actor-controlled fragments or identifiers enter this historical DDL.
+# The SQL is frozen, already applied, and must not be rewritten solely for lint.
+# ruff: noqa: S608
+
 from collections.abc import Sequence
 
 import sqlalchemy as sa
