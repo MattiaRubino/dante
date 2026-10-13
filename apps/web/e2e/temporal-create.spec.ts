@@ -348,7 +348,7 @@ test('all-day Event editor preserves a two-day date-span and never invents an ac
   await dialog.getByRole('radio', { name: 'Tutto il giorno' }).click();
   const start = dialog.getByRole('button', { name: /^Data inizio:/ });
   const startDate = await start.getAttribute('data-temporal-date');
-  expect(startDate).toMatch(/^\\d{4}-\\d{2}-\\d{2}$/);
+  expect(startDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   if (!startDate) throw new Error('Expected a selected start date');
   const nextDate = await page.evaluate((value) => {
     const date = new Date(`${value}T12:00:00Z`);
