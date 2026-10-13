@@ -71,7 +71,7 @@ def _view(row: RowMapping) -> ScheduleReminderView:
     )
 
 
-def _error(exc: DBAPIError) -> RuntimeError:
+def _error(exc: DBAPIError) -> Exception:
     original = getattr(exc, "orig", None)
     sqlstate = getattr(original, "sqlstate", None)
     diagnostic = getattr(original, "diag", None)

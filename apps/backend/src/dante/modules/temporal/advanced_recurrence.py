@@ -105,7 +105,13 @@ def _bounded_operation_id(value: str) -> str:
 
 
 def _validate(spec: AdvancedElapsedRecurrence) -> None:
-    if spec.elapsed_seconds <= 0 or spec.elapsed_seconds.as_tuple().exponent < -6:
+    exponent = spec.elapsed_seconds.as_tuple().exponent
+    if (
+        not spec.elapsed_seconds.is_finite()
+        or spec.elapsed_seconds <= 0
+        or not isinstance(exponent, int)
+        or exponent < -6
+    ):
         raise AdvancedRecurrenceInputError(
             "Elapsed interval must be positive with at most six decimal places."
         )
