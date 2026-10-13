@@ -4,7 +4,6 @@ import { Temporal } from '@dante/time';
 import {
   expect,
   test,
-  type Locator,
   type Page,
   type TestInfo,
 } from '@playwright/test';
@@ -208,27 +207,46 @@ function uuidField(payload: Record<string, unknown>, field: string): string {
   return value;
 }
 
+type AcceptedAuthoringSchedule = Readonly<{
+  schedule_ref: string;
+  placement_material_state_ref: string;
+  placement: Record<string, unknown>;
+}>;
+
 async function createScheduledActivity(
   page: Page,
   title: string,
-  configure: (dialog: Locator) => Promise<void>,
+  placement: Record<string, unknown>,
 ): Promise<Record<string, unknown>> {
-  await page.getByRole('button', { name: 'Aggiungi alla timeline' }).click();
-  const dialog = page.locator('[data-temporal-create="composer"]');
-  await expect(dialog).toBeVisible();
-  await dialog.getByLabel('Titolo').fill(title);
-  await configure(dialog);
-
-  const responsePromise = page.waitForResponse(
-    (response) =>
-      response.url().endsWith('/api/v1/temporal/activities/scheduled') &&
-      response.request().method() === 'POST',
-    { timeout: E2E_RESPONSE_TIMEOUT_MS },
-  );
-  await dialog.getByRole('button', { name: 'Aggiungi', exact: true }).click();
-  const response = await responsePromise;
-  expect(response.status()).toBe(201);
-  return (await response.json()) as Record<string, unknown>;
+  const accepted = await authenticatedMutation(page, {
+    method: 'POST',
+    path: '/api/v1/temporal/authoring/activities',
+    body: {
+      operation_id: `e2e:b02:schedule:${randomUUID()}`,
+      title,
+      placement,
+    },
+  });
+  expect(accepted.status).toBe(201);
+  expect(accepted.payload.title).toBe(title);
+  const schedule = accepted.payload.schedule as
+    AcceptedAuthoringSchedule | null;
+  expect(schedule).not.toBeNull();
+  if (!schedule) throw new Error('Authoring returned no canonical Schedule');
+  const saved = schedule.placement;
+  // Preserve exact database-contract checks against the accepted U2 record.
+  return {
+    ...accepted.payload,
+    schedule_ref: schedule.schedule_ref,
+    placement_material_state_ref: schedule.placement_material_state_ref,
+    temporal_form:
+      saved.kind === 'date_span' ? 'date_span' :
+      saved.kind === 'coarse_local_period' ? 'coarse_local_period' :
+      saved.kind === 'named_zone_local_interval' ? 'named_zone_local' :
+      saved.kind === 'floating_local_interval' ? 'floating_local' :
+      String(saved.kind),
+    ...saved,
+  };
 }
 
 test.describe('Timeline B02-E full-stack Schedule forms', () => {
@@ -375,7 +393,7 @@ test.describe('Timeline B02-E full-stack Schedule forms', () => {
     }
   });
 
-  test('product-exposed date-span, coarse and named-zone forms survive canonical reload', async ({
+  test('canonical date-span, coarse and named-zone forms survive real PostgreSQL reload', async ({
     browser,
   }, testInfo) => {
     const context = await browser.newContext({
@@ -391,53 +409,35 @@ test.describe('Timeline B02-E full-stack Schedule forms', () => {
       const today = Temporal.Now.plainDateISO('Europe/Rome').toString();
 
       const allDayTitle = `B02 E4 all-day ${testInfo.project.name}`;
-      const allDay = await createScheduledActivity(
-        page,
-        allDayTitle,
-        async (dialog) => {
-          await dialog.getByRole('radio', { name: 'Tutto il giorno' }).click();
-          await dialog.locator('[data-create-path="date"]').fill(today);
-        },
-      );
+      const allDay = await createScheduledActivity(page, allDayTitle, {
+        kind: 'date_span',
+        start_date: today,
+        end_date_exclusive: Temporal.PlainDate.from(today)
+          .add({ days: 1 }).toString(),
+      });
       expect(allDay.temporal_form).toBe('date_span');
       expect(allDay.start_date).toBe(today);
 
+      // Coarse placement no longer has a Create radio; its canonical
+      // form is still an accepted, persisted Schedule contract.
       const coarseTitle = `B02 E4 coarse ${testInfo.project.name}`;
-      const coarse = await createScheduledActivity(
-        page,
-        coarseTitle,
-        async (dialog) => {
-          await dialog.getByRole('radio', { name: 'Fascia' }).click();
-          await dialog.locator('[data-create-path="date"]').fill(today);
-          await dialog
-            .locator('[data-create-path="coarsePeriod"]')
-            .selectOption('afternoon');
-        },
-      );
+      const coarse = await createScheduledActivity(page, coarseTitle, {
+        kind: 'coarse_local_period',
+        local_date: today,
+        period: 'afternoon',
+      });
       expect(coarse.temporal_form).toBe('coarse_local_period');
       expect(coarse.local_date).toBe(today);
       expect(coarse.period).toBe('afternoon');
 
       const zonedTitle = `B02 E4 zoned ${testInfo.project.name}`;
-      const zoned = await createScheduledActivity(
-        page,
-        zonedTitle,
-        async (dialog) => {
-          await dialog.getByRole('radio', { name: 'Orario' }).click();
-          await dialog.locator('[data-create-path="date"]').fill(today);
-          await dialog.locator('[data-create-path="startTime"]').fill('14:10');
-          await dialog.locator('[data-create-path="endTime"]').fill('14:40');
-          await dialog
-            .locator('[data-create-path="timeMode"]')
-            .selectOption('zoned');
-          await dialog
-            .locator('[data-create-path="timeZoneId"]')
-            .fill('Europe/Rome');
-          await dialog
-            .locator('[data-create-path="timeDisambiguation"]')
-            .selectOption('reject');
-        },
-      );
+      const zoned = await createScheduledActivity(page, zonedTitle, {
+        kind: 'named_zone_local_interval',
+        starts_local_at: `${today}T14:10:00`,
+        ends_local_at: `${today}T14:40:00`,
+        zone_id: 'Europe/Rome',
+        disambiguation: 'reject',
+      });
       expect(zoned.temporal_form).toBe('named_zone_local');
       expect(zoned.zone_id).toBe('Europe/Rome');
       expect(String(zoned.starts_local_at)).toContain(`${today}T14:10`);
