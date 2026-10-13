@@ -2,14 +2,15 @@
 
 from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
-from typing import Any
+from typing import Any, cast
 
 import psycopg
 import pytest
-from fastapi import Response
+from fastapi import Request, Response
 from sqlalchemy import text
 from tests.integration.temporal.test_activity_quick_authoring_metadata import _seed_self
 
+from dante.context.contracts import DanteContext
 from dante.modules.temporal.authoring import TemporalAuthoringApplication
 from dante.modules.temporal.schedule import AbsoluteIntervalPlacement
 from dante.modules.temporal.session_panel_api import get_session_panel
@@ -23,14 +24,30 @@ from dante.platform.database.runtime import create_database_runtime
 pytestmark = pytest.mark.postgres
 
 
+def _fake_context(actor: object, zone_id: str = "UTC") -> DanteContext:
+    """The Session Panel route only reads the actor and effective time zone."""
+    return cast(
+        DanteContext,
+        SimpleNamespace(self_person_ref=actor, effective_zone_id=zone_id),
+    )
+
+
+def _fake_request(runtime: Any) -> Request:
+    """Test the same app-state seam without a live ASGI request."""
+    return cast(
+        Request,
+        _fake_request(runtime),
+    )
+
+
 @pytest.mark.asyncio
 async def test_panel_untimed_start_pause_resume_stop_owner_isolation_and_no_actual(
     migrated_database: Any,
 ):
     actor, other = _seed_self(migrated_database), _seed_self(migrated_database)
     runtime = create_database_runtime(migrated_database.runtime_settings())
-    request = SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime)))
-    context = SimpleNamespace(self_person_ref=actor, effective_zone_id="Europe/Rome")
+    request = _fake_request(runtime)
+    context = _fake_context(actor, "Europe/Rome")
     now = datetime.now(UTC)
     try:
         created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
@@ -53,7 +70,7 @@ async def test_panel_untimed_start_pause_resume_stop_owner_isolation_and_no_actu
         assert planned.name == "Ripasso"
         assert planned.execution is None
         other_panel = await get_session_panel(
-            SimpleNamespace(self_person_ref=other, effective_zone_id="UTC"), request, Response()
+            _fake_context(other), request, Response()
         )
         assert other_panel.groups == []
         sessions = SessionApplication(runtime.session_factory)
@@ -64,19 +81,27 @@ async def test_panel_untimed_start_pause_resume_stop_owner_isolation_and_no_actu
             operation_id="panel:main:start",
         )
         assert main.open
-        kwargs = {
-            "self_person_ref": actor,
-            "operation_id": "panel:start",
-            "activity_ref": created.item.subject_native_ref,
-            "schedule_ref": planned.planned_schedule_ref,
-        }
-        started = await sessions.start_planned(**kwargs)
-        replay = await sessions.start_planned(**kwargs)
+        assert planned.planned_schedule_ref is not None
+        started = await sessions.start_planned(
+            self_person_ref=actor,
+            operation_id="panel:start",
+            activity_ref=created.item.subject_native_ref,
+            schedule_ref=planned.planned_schedule_ref,
+        )
+        replay = await sessions.start_planned(
+            self_person_ref=actor,
+            operation_id="panel:start",
+            activity_ref=created.item.subject_native_ref,
+            schedule_ref=planned.planned_schedule_ref,
+        )
         assert replay.replayed
         assert replay.session_ref == started.session_ref
         with pytest.raises(SessionNotFoundError):
             await sessions.start_planned(
-                **{**kwargs, "self_person_ref": other, "operation_id": "panel:other"}
+                self_person_ref=other,
+                operation_id="panel:other",
+                activity_ref=created.item.subject_native_ref,
+                schedule_ref=planned.planned_schedule_ref,
             )
         panel = await get_session_panel(context, request, Response())
         live = next(r for r in panel.groups[0].rows if r.planned_schedule_ref)
@@ -162,8 +187,8 @@ async def test_retired_untimed_row_cannot_start_and_is_not_projected(migrated_da
                 schedule_ref=schedule,
             )
         panel = await get_session_panel(
-            SimpleNamespace(self_person_ref=actor, effective_zone_id="UTC"),
-            SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))),
+            _fake_context(actor),
+            _fake_request(runtime),
             Response(),
         )
         assert [r.name for g in panel.groups for r in g.rows] == ["Sessione attività"]
@@ -178,8 +203,8 @@ async def test_independent_untimed_planned_session_without_main_capture(
     """The optional generic Activity clock stays disabled; named slice can run."""
     actor = _seed_self(migrated_database)
     runtime = create_database_runtime(migrated_database.runtime_settings())
-    request = SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime)))
-    ctx = SimpleNamespace(self_person_ref=actor, effective_zone_id="UTC")
+    request = _fake_request(runtime)
+    ctx = _fake_context(actor)
     now = datetime.now(UTC)
     try:
         created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
