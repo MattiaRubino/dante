@@ -247,8 +247,8 @@ def shard_modules(
 
 
 _PYTEST_DURATION = re.compile(
-    r"^\\s*(\\d+(?:\\.\\d+)?)s\\s+(?:setup|call|teardown)\\s+"
-    r"(tests/[^\\s:]+\\.py)(?:::|\\s|$)"
+    r"^\s*(\d+(?:\.\d+)?)s\s+(?:setup|call|teardown)\s+"
+    r"(tests/[^\s:]+\.py)(?:::|\s|$)"
 )
 
 
@@ -413,7 +413,7 @@ def postgres_phase(
         merged = {**_load_timings(PG_TIMINGS), **observed}
         PG_TIMINGS.parent.mkdir(parents=True, exist_ok=True)
         PG_TIMINGS.write_text(
-            json.dumps(merged, indent=2, sort_keys=True) + "\\n",
+            json.dumps(merged, indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
         )
     (folder / "BACKEND_POSTGRES_SHARD_TIMINGS.json").write_text(
@@ -424,7 +424,7 @@ def postgres_phase(
                 "modules": sorted({n.partition("::")[0] for n in plans[r.name]}),
             }
             for r in results
-        ], indent=2) + "\\n", encoding="utf-8",
+        ], indent=2) + "\n", encoding="utf-8",
     )
     lines = [
         f"Collected PostgreSQL tests: {len(all_nodes)}",
