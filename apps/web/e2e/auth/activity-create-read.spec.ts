@@ -74,7 +74,7 @@ async function openExistingCanonicalItems(page: Page): Promise<void> {
 }
 
 test.describe('Timeline B01 canonical Activity vertical', () => {
-  test('creates and reloads one canonical unplaced Activity', async ({
+  test('creates one canonical unplaced Activity by U2 API and reviews it separately from Draft Vault', async ({
     browser,
   }, testInfo) => {
     const context = await browser.newContext({
@@ -96,33 +96,57 @@ test.describe('Timeline B01 canonical Activity vertical', () => {
       ).toBeVisible();
 
       const title = `B01 Activity persistita ${testInfo.project.name}`;
-      await page
-        .getByRole('button', { name: 'Aggiungi alla timeline' })
-        .click();
-      await expect(
-        page.getByRole('radio', { name: 'Attività' }),
-      ).toHaveAttribute('aria-checked', 'true');
-      await expect(
-        page.locator('[data-create-path="durationMinutes"]'),
-      ).toHaveCount(0);
-      await page.getByLabel('Titolo').fill(title);
-
-      const createResponsePromise = page.waitForResponse(
-        (response) =>
-          response.url().endsWith('/api/v1/temporal/activities') &&
-          response.request().method() === 'POST',
-      );
-      await page.getByRole('button', { name: 'Aggiungi', exact: true }).click();
-      const createResponse = await createResponsePromise;
-      expect(createResponse.status()).toBe(201);
-      const created = (await createResponse.json()) as {
-        activity_ref: string;
-        title: string;
-        replayed: boolean;
-      };
+      // U2 Quick Create no longer offers an unplaced mode. This scenario
+      // explicitly proves canonical U2 authoring with placement=null,
+      // then its separate existing-item management and Draft Vault isolation.
+      const authored = await page.evaluate(async (activityTitle) => {
+        const sessionResponse = await fetch('/api/v1/auth/session', {
+          credentials: 'same-origin',
+        });
+        const session = (await sessionResponse.json()) as {
+          authenticated?: boolean;
+          csrf_token?: string;
+        };
+        if (!sessionResponse.ok || session.authenticated !== true ||
+            !session.csrf_token) {
+          throw new Error('An authenticated CSRF session is required.');
+        }
+        const response = await fetch('/api/v1/temporal/authoring/activities', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Dante-Client': 'web',
+            'X-Dante-Time-Zone': 'Europe/Rome',
+            'X-Dante-CSRF': session.csrf_token,
+          },
+          body: JSON.stringify({
+            operation_id: `e2e:b01:${crypto.randomUUID()}`,
+            title: activityTitle,
+            placement: null,
+          }),
+        });
+        return {
+          status: response.status,
+          payload: (await response.json()) as {
+            activity_ref: string;
+            title: string;
+            replayed: boolean;
+            schedule: unknown;
+          },
+        };
+      }, title);
+      expect(authored.status).toBe(201);
+      const created = authored.payload;
       expect(created.title).toBe(title);
       expect(created.replayed).toBe(false);
+      expect(created.schedule).toBeNull();
+      expect(created.activity_ref).toMatch(/^[0-9a-f-]{36}$/i);
 
+      // Direct API mutations do not emit Home's in-memory invalidation.
+      const createdRead = waitForTimelineRead(page);
+      await page.reload();
+      expect((await createdRead).status()).toBe(200);
       await openExistingCanonicalItems(page);
       const firstPlanningRead = await page.request.get(
         '/api/v1/temporal/activities/unplaced',
@@ -147,7 +171,7 @@ test.describe('Timeline B01 canonical Activity vertical', () => {
       await expect(page.locator('[data-timeline-event]')).toHaveCount(0);
       // Canonical unplaced Activity is visible only through explicit legacy
       // management. It must never masquerade as an inert Draft Vault item.
-      await page.getByRole('button', { name: 'Chiudi Da collocare' }).click();
+      await page.getByRole('button', { name: 'Chiudi elementi già creati' }).click();
       await page.getByRole('button', { name: 'Apri Bozze' }).click();
       await expect(
         page.locator('[data-timeline-draft-vault="true"] article').filter({
@@ -183,15 +207,15 @@ test.describe('Timeline B01 canonical Activity vertical', () => {
       await expect(reloadedCard).toContainText(title);
       await expect(page.locator('[data-timeline-event]')).toHaveCount(0);
 
+      await page.getByRole('button', { name: 'Chiudi elementi già creati' }).click();
       const discardedDraftTitle = `B01 bozza scartata ${testInfo.project.name}`;
       await page
         .getByRole('button', { name: 'Aggiungi alla timeline' })
         .click();
-      await page.getByLabel('Titolo').fill(discardedDraftTitle);
-      await page
-        .getByRole('dialog', { name: 'Aggiungi', exact: true })
-        .getByRole('button', { name: 'Annulla', exact: true })
-        .click();
+      const editor = page.locator('[data-temporal-create="composer"]');
+      await editor.getByRole('textbox', { name: 'Titolo' })
+        .fill(discardedDraftTitle);
+      await editor.locator('.dante-temporal-panel-close').click();
       await expect(
         page.getByRole('alertdialog', { name: 'Scartare questa bozza?' }),
       ).toBeVisible();
