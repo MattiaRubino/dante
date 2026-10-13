@@ -205,6 +205,8 @@ def test_b04_a5_runtime_can_read_current_rule_tables_but_not_history_or_receipts
             connection.execute(f"SELECT 1 FROM dante.{table} LIMIT 1").fetchone()
 
     for table in private_tables:
-        with psycopg.connect(**runtime_kwargs) as connection:
-            with pytest.raises(psycopg.errors.InsufficientPrivilege):
-                connection.execute(f"SELECT 1 FROM dante.{table} LIMIT 1").fetchone()
+        with (
+            psycopg.connect(**runtime_kwargs) as connection,
+            pytest.raises(psycopg.errors.InsufficientPrivilege),
+        ):
+            connection.execute(f"SELECT 1 FROM dante.{table} LIMIT 1").fetchone()
