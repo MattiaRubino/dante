@@ -120,8 +120,10 @@ test('Create base is title-first, exposes actionable types, protects drafts, and
     'true',
   );
   await expect(dialog.getByRole('radio', { name: 'Evento' })).toBeVisible();
+  // The retired unplaced-authoring radio was replaced by a dedicated
+  // inert Draft Vault save action, separate from canonical Create.
   await expect(
-    dialog.getByRole('radio', { name: 'Da collocare' }),
+    dialog.getByRole('button', { name: 'Salva bozza' }),
   ).toBeVisible();
   await expect(
     dialog.getByRole('button', { name: 'Opzioni avanzate' }),

@@ -148,7 +148,7 @@ test('Quick is draggable and Advanced stays floating while the Timeline remains 
     element.scrollTop = element.scrollHeight;
   });
   await expect(
-    dialog.locator('.temporal-create-composer__close'),
+    close,
   ).toBeInViewport();
   await expect(dialog.locator('.temporal-create-actions')).toBeInViewport();
   await expect(back).toBeInViewport();
