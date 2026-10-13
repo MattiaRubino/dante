@@ -230,7 +230,30 @@ def self_test_scheduler() -> None:
                 case_nodes = [n for n in chunk if n.startswith(module + "::")]
                 assert case_nodes == [n for n in nodes if n.startswith(module + "::")]
         assert len(owners) == 24
-    print("PASS: dynamic scheduler preserves all nodes and module fixtures")
+    assert docker_only_interruption(
+        2, "Disposable PostgreSQL could not start: ports are not available"
+    )
+    assert docker_only_interruption(
+        2, "Disposable PostgreSQL became unavailable during database cleanup"
+    )
+    assert not docker_only_interruption(
+        1, "FAILED tests/integration/test_real_rule.py"
+    )
+    assert not docker_only_interruption(
+        2, "FAILED tests/integration/test_real_rule.py\\nDisposable PostgreSQL could not start"
+    )
+    print("PASS: dynamic scheduler and infrastructure-only retries preserve coverage")
+
+
+def docker_only_interruption(code: int, output: str) -> bool:
+    """Retry an unexecuted/interrupted cluster, never an assertion failure."""
+    if code != 2 or "FAILED tests/" in output:
+        return False
+    return any(signal in output for signal in (
+        "Disposable PostgreSQL could not start",
+        "Disposable PostgreSQL became unavailable during database cleanup",
+        "PostgreSQL acceptance cluster did not become ready",
+    ))
 
 
 def postgres_phase(
@@ -267,6 +290,38 @@ def postgres_phase(
     # Executor work queue is deliberately longer than its pool. Completing
     # one job immediately starts the next, avoiding fixed-shard long tails.
     results = phase(tuple(commands), commands, folder, workers)
+    # Docker Desktop can reject simultaneous loopback port mappings or
+    # restart a disposable cluster under load. Retry *only* precisely
+    # classified infrastructure interruptions once, serially, after the
+    # parallel queue drains. The exact module nodes and assertions rerun;
+    # the original failure log is retained alongside the recovery log.
+    recovered: list[Result] = []
+    for original in results:
+        output = (folder / f"{original.name}.log").read_text(
+            encoding="utf-8", errors="replace",
+        )
+        if not docker_only_interruption(original.code, output):
+            recovered.append(original)
+            continue
+        retry_name = f"{original.name}_RETRY_01"
+        print(
+            f"DOCKER INFRASTRUCTURE ONLY: retry {original.name} once in "
+            "isolation without relaxing any selected tests", flush=True,
+        )
+        repeat = execute(
+            Task(retry_name, commands[original.name].cwd,
+                 commands[original.name].command),
+            folder,
+        )
+        recovered.append(Result(
+            original.name, repeat.code, original.seconds + repeat.seconds,
+        ))
+        print(
+            f"{'PASS' if repeat.code == 0 else 'FAIL'} {retry_name}: "
+            f"code={repeat.code}, {repeat.seconds:.1f}s",
+            flush=True,
+        )
+    results = recovered
     lines = [
         f"Collected PostgreSQL tests: {len(all_nodes)}",
         f"Dynamic PostgreSQL jobs: {len(commands)}",
