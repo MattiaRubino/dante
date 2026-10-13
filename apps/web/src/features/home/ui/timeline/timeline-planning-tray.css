@@ -611,12 +611,17 @@ html[data-timeline-planning-mode='true'] .home-timeline--production {
   }
 
   .timeline-draft-vault__anchor .timeline-planning-tray {
-    top: calc(100% + 8px);
-    right: 0;
+    /* The trigger can be to the right of the narrow viewport due to
+       Timeline horizontal layout. Anchor the popup to the viewport, not
+       that potentially off-screen trigger. */
+    position: fixed;
+    top: 72px;
+    right: 12px;
     bottom: auto;
-    left: auto;
-    width: min(390px, calc(100vw - 24px));
-    max-height: min(620px, calc(100dvh - 100px));
+    left: 12px;
+    width: auto;
+    max-width: calc(100vw - 24px);
+    max-height: min(620px, calc(100dvh - 90px));
     border: 1px solid rgba(255, 255, 255, 0.095);
     border-radius: 20px;
   }
