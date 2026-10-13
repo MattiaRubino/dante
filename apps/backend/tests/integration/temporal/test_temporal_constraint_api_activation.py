@@ -8,6 +8,7 @@ from uuid import UUID, uuid7
 
 import psycopg
 import pytest
+from psycopg import sql
 
 _MUTATE_SQL = """
 SELECT constraint_ref,
@@ -202,11 +203,15 @@ def test_b04_a5_runtime_can_read_current_rule_tables_but_not_history_or_receipts
 
     with psycopg.connect(**runtime_kwargs) as connection:
         for table in readable_tables:
-            connection.execute(f"SELECT 1 FROM dante.{table} LIMIT 1").fetchone()
+            connection.execute(
+                sql.SQL("SELECT 1 FROM dante.{} LIMIT 1").format(sql.Identifier(table))
+            ).fetchone()
 
     for table in private_tables:
         with (
             psycopg.connect(**runtime_kwargs) as connection,
             pytest.raises(psycopg.errors.InsufficientPrivilege),
         ):
-            connection.execute(f"SELECT 1 FROM dante.{table} LIMIT 1").fetchone()
+            connection.execute(
+                sql.SQL("SELECT 1 FROM dante.{} LIMIT 1").format(sql.Identifier(table))
+            ).fetchone()
