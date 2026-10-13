@@ -257,8 +257,11 @@ def _validated_plan(snapshot: ActivityEditSnapshot, command: ActivityReplanComma
             != {row.schedule_ref for row in intervals}
             or {
                 row.schedule_ref
-                for row in accounted
-                if row in (*command.planned_sessions, *command.remove_planned_sessions, *deleted_timed)
+                for row in [
+                    *command.planned_sessions,
+                    *command.remove_planned_sessions,
+                    *deleted_timed,
+                ]
             }
             != {row.schedule_ref for row in planned}
         )
