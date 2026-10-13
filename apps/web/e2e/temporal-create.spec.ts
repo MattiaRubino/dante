@@ -150,7 +150,7 @@ test('Create base is title-first, exposes actionable types, protects drafts, and
   await expect(trigger).toBeFocused();
 });
 
-test('Activity with live capture and planned root Session survives Advanced round trip and Undo', async ({
+test('Advanced planned Session is retained and never silently dropped by the in-memory fixture', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -197,28 +197,21 @@ test('Activity with live capture and planned root Session survives Advanced roun
       .getByRole('textbox', { name: 'Nome Sessione' }),
   ).toHaveValue('Montaggio');
 
+  // The in-memory fixture does not persist U6 planned Sessions. Ensure it
+  // refuses a fake "success" instead of dropping the Session silently;
+  // actual atomic Activity + Session persistence is a real-stack contract.
   await dialog.getByRole('button', { name: 'Aggiungi', exact: true }).click();
-  await expect(dialog).toHaveCount(0);
-
-  const card = page
-    .locator('.timeline-event-card[data-temporal-create-projection]')
-    .filter({ hasText: 'Montare il video' });
-  await expect(card).toBeVisible();
-  await expect(card).toContainText('14:30');
+  await expect(dialog).toBeVisible();
+  await expect(dialog.locator('.temporal-create-field-error'))
+    .toContainText('non possono ancora essere combinate');
+  await expect(dialog.locator('[data-create-planned-session]'))
+    .toHaveCount(1);
   await expect(
-    page
-      .locator('[data-timeline-planning-item]')
-      .filter({ hasText: 'Montare il video' }),
+    page.locator('.timeline-event-card').filter({ hasText: 'Montare il video' }),
   ).toHaveCount(0);
-
-  await page
-    .locator('.temporal-create-toast.is-on')
-    .getByRole('button', { name: 'Annulla' })
-    .click();
-  await expect(card).toHaveCount(0);
 });
 
-test('Event Advanced preserves the current Scaletta, participation and description without provider execution', async ({
+test('Event Advanced preserves Scaletta and refuses unsupported fixture persistence without losing input', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1360, height: 860 });
@@ -283,13 +276,19 @@ test('Event Advanced preserves the current Scaletta, participation and descripti
   await expect(participants.locator('.temporal-create-event-participants__list'))
     .toContainText('Io');
 
+  // Notes are supported by U2 authoritative Event authoring. This isolated
+  // legacy fixture intentionally has no Event persistence endpoint; the
+  // form must remain intact and visibly refuse the unsupported submission.
   await dialog.getByRole('button', { name: 'Aggiungi', exact: true }).click();
-  await expect(dialog).toHaveCount(0);
-  const card = page
-    .locator('.timeline-event-card[data-temporal-create-projection]')
-    .filter({ hasText: 'Call cliente' });
-  await expect(card).toBeVisible();
-  await expect(card).toContainText('16:00');
+  await expect(dialog).toBeVisible();
+  await expect(dialog.locator('.temporal-create-operation-error'))
+    .toBeVisible();
+  await expect(description).toHaveValue(
+    'Definire il rilascio con una decisione sul piano finale.',
+  );
+  await expect(
+    page.locator('.timeline-event-card').filter({ hasText: 'Call cliente' }),
+  ).toHaveCount(0);
 });
 
 test('Event calendar recurrence preserves interval and end policy across Advanced round trips', async ({
@@ -337,107 +336,39 @@ test('Event calendar recurrence preserves interval and end policy across Advance
   expect(accessibility.violations).toEqual([]);
 });
 
-test('all-day date spans live inside each day before minute zero for Event and Activity', async ({
+test('all-day Event editor preserves a two-day date-span and never invents an accepted fixture Schedule', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1280, height: 820 });
   await page.goto('/home');
 
-  let dialog = await openCreate(page);
+  const dialog = await openCreate(page);
   await dialog.getByRole('textbox', { name: 'Titolo' }).fill('Fiera');
   await dialog.getByRole('radio', { name: 'Evento' }).click();
   await dialog.getByRole('radio', { name: 'Tutto il giorno' }).click();
-  const startDate = await dialog
-    .getByRole('button', { name: /^Data inizio:/ })
-    .getAttribute('data-temporal-date');
-  expect(startDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-  if (!startDate) throw new Error('Selected all-day start date is missing');
+  const start = dialog.getByRole('button', { name: /^Data inizio:/ });
+  const startDate = await start.getAttribute('data-temporal-date');
+  expect(startDate).toMatch(/^\\d{4}-\\d{2}-\\d{2}$/);
+  if (!startDate) throw new Error('Expected a selected start date');
   const nextDate = await page.evaluate((value) => {
     const date = new Date(`${value}T12:00:00Z`);
     date.setUTCDate(date.getUTCDate() + 1);
     return date.toISOString().slice(0, 10);
   }, startDate);
   await dialog.getByRole('button', { name: /^Data fine:/ }).click();
-  await dialog
-    .getByRole('dialog', { name: 'Data fine' })
-    .locator(`[data-temporal-date="${nextDate}"]`)
-    .click();
+  await dialog.getByRole('dialog', { name: 'Data fine' })
+    .locator(`[data-temporal-date="${nextDate}"]`).click();
+  await expect(dialog.getByRole('button', { name: /^Data fine:/ }))
+    .toHaveAttribute('data-temporal-date', nextDate);
+  await expect(start).toHaveAttribute('data-temporal-date', startDate);
+
+  // The isolated legacy runtime has no Event authoring backend. The actual
+  // canonical multi-day creation + reload is tested in auth/event-create-read.
   await dialog.getByRole('button', { name: 'Aggiungi', exact: true }).click();
-  await expect(dialog).toHaveCount(0);
-
-  const startDay = page.locator(
-    `.timeline-day-section[data-timeline-date="${startDate}"]`,
-  );
-  const endDay = page.locator(
-    `.timeline-day-section[data-timeline-date="${nextDate}"]`,
-  );
-  const startItem = startDay
-    .locator('.timeline-all-day-item[data-temporal-create-projection]')
-    .filter({ hasText: 'Fiera' });
-  const endItem = endDay
-    .locator('.timeline-all-day-item[data-temporal-create-projection]')
-    .filter({ hasText: 'Fiera' });
-
-  await expect(startItem).toHaveAttribute('data-range-position', 'start');
-  await expect(endItem).toHaveAttribute('data-range-position', 'end');
-  const projectionId = await startItem.getAttribute(
-    'data-temporal-create-projection',
-  );
-  expect(projectionId).not.toBeNull();
-  await expect(endItem).toHaveAttribute(
-    'data-temporal-create-projection',
-    projectionId ?? '',
-  );
-  await expect(page.locator('[data-timeline-all-day-strip]')).toHaveCount(0);
-
-  expect(
-    await startDay.evaluate((section) => {
-      const lane = section.querySelector<HTMLElement>('.timeline-all-day-lane');
-      const minuteZero = section.querySelector<HTMLElement>(
-        '.timeline-hour-line',
-      );
-      if (!lane || !minuteZero) {
-        return false;
-      }
-      return (
-        Math.abs(
-          Number.parseFloat(minuteZero.style.top) -
-            lane.getBoundingClientRect().height,
-        ) <= 1
-      );
-    }),
-  ).toBe(true);
-
-  await startDay.locator('.timeline-all-day-lane__label').dblclick();
-  await expect(page.locator('[data-temporal-create="composer"]')).toHaveCount(
-    0,
-  );
-  await page
-    .locator('.temporal-create-toast.is-on')
-    .getByRole('button', { name: 'Annulla' })
-    .click();
-  await expect(startItem).toHaveCount(0);
-  await expect(endItem).toHaveCount(0);
-
-  dialog = await openCreate(page);
-  await dialog.getByRole('textbox', { name: 'Titolo' }).fill('Giornata studio');
-  await dialog.getByRole('radio', { name: 'Tutto il giorno' }).click();
-  const activityDate = await dialog
-    .getByRole('button', { name: /^Data inizio:/ })
-    .getAttribute('data-temporal-date');
-  expect(activityDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-  await dialog.getByRole('button', { name: 'Aggiungi', exact: true }).click();
-  const activity = page
-    .locator(
-      `.timeline-day-section[data-timeline-date="${activityDate}"] .timeline-all-day-item[data-temporal-create-projection]`,
-    )
-    .filter({ hasText: 'Giornata studio' });
-  await expect(activity).toHaveAttribute('data-range-position', 'single');
-  await page
-    .locator('.temporal-create-toast.is-on')
-    .getByRole('button', { name: 'Annulla' })
-    .click();
-  await expect(activity).toHaveCount(0);
+  await expect(dialog).toBeVisible();
+  await expect(
+    page.locator('.timeline-all-day-item').filter({ hasText: 'Fiera' }),
+  ).toHaveCount(0);
 });
 
 test('Advanced validation focuses the required title without discarding time or draft', async ({
