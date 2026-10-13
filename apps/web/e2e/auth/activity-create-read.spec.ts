@@ -148,9 +148,7 @@ test.describe('Timeline B01 canonical Activity vertical', () => {
       await page.reload();
       expect((await createdRead).status()).toBe(200);
       await openExistingCanonicalItems(page);
-      const firstPlanningRead = await page.request.get(
-        '/api/v1/temporal/activities/unplaced',
-      );
+      const firstPlanningRead = await readUnplaced(page);
       expect(firstPlanningRead.status()).toBe(200);
       const firstPayload = (await firstPlanningRead.json()) as {
         kind: string;
