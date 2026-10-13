@@ -387,6 +387,32 @@ export function TemporalCreateEntry({
     setSession((current) => updateTemporalCreateFields(current, boundedNext));
   };
 
+  useEffect(() => {
+    if (!open) return;
+    // Home's Timeline gestures may reseed an already-open composer.
+    // Update the real React draft: the visible date is no longer an input.
+    const reseed = (event: Event) => {
+      if (!(event instanceof CustomEvent)) return;
+      const detail: unknown = event.detail;
+      if (typeof detail !== 'object' || detail === null ||
+        !('date' in detail) || !('startTime' in detail) ||
+        typeof detail.date !== 'string' ||
+        typeof detail.startTime !== 'string' ||
+        !/^\\d{4}-\\d{2}-\\d{2}$/.test(detail.date) ||
+        !/^([01]\\d|2[0-3]):[0-5]\\d$/.test(detail.startTime)
+      ) return;
+      patch({
+        date: detail.date,
+        startTime: detail.startTime,
+        timeSemantics: 'timed',
+      });
+    };
+    document.addEventListener('dante:temporal-create-reseed', reseed);
+    return () => {
+      document.removeEventListener('dante:temporal-create-reseed', reseed);
+    };
+  }, [open, patch]);
+
   const changeSurface = (surface: TemporalCreateSurface) => {
     setSession((current) => setTemporalCreateSurface(current, surface));
   };
