@@ -115,7 +115,7 @@ async def test_b04_b_application_reads_and_revises_latest_bound_rule_kinds(
 
 
 def test_b04_b_application_rule_rejects_noncanonical_kind_facet_pair() -> None:
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="boundary kind and constrained facet"):
         AbsoluteBoundaryRule(
             boundary_kind="latest_start",
             constrained_facet="schedule.completion",
