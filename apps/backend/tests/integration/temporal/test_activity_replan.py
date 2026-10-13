@@ -3,16 +3,17 @@
 import hashlib
 from datetime import datetime
 from types import SimpleNamespace
-from typing import Any
+from typing import Any, cast
 from uuid import uuid7
 
 import psycopg
 import pytest
-from fastapi import Response
+from fastapi import Request, Response
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 from tests.integration.temporal.test_activity_quick_authoring_metadata import _seed_self
 
+from dante.context.contracts import DanteContext
 from dante.modules.temporal.activity_edit_snapshot_api import _SNAPSHOT, ActivityEditSnapshot
 from dante.modules.temporal.activity_replan_api import (
     ActivityReplanCommand,
@@ -49,6 +50,19 @@ def _move(row, start: int, end: int) -> ReplanRow:
     )
 
 
+def _fake_context(actor: object) -> DanteContext:
+    """The route depends on the actor identity only; test the same duck-typed shape."""
+    return cast(DanteContext, SimpleNamespace(self_person_ref=actor))
+
+
+def _fake_request(runtime: Any) -> Request:
+    """The route only uses app.state.database_runtime; no live ASGI connection."""
+    return cast(
+        Request,
+        SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))),
+    )
+
+
 @pytest.mark.asyncio
 async def test_activity_replan_previews_and_commits_dependent_rows_atomically(
     migrated_database: Any,
@@ -80,10 +94,8 @@ async def test_activity_replan_previews_and_commits_dependent_rows_atomically(
             intervals=[_move(intervals[0], 10, 11), _move(intervals[1], 12, 13)],
             planned_sessions=[_move(planned, 12, 13)],
         )
-        context = SimpleNamespace(self_person_ref=actor)
-        request = SimpleNamespace(
-            app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))
-        )
+        context = _fake_context(actor)
+        request = _fake_request(runtime)
         proposal = await preview_activity_replan(
             activity,
             command,
@@ -165,10 +177,8 @@ async def test_activity_replan_adds_and_removes_planned_sessions_without_reusing
                 )
             ],
         )
-        context = SimpleNamespace(self_person_ref=actor)
-        request = SimpleNamespace(
-            app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))
-        )
+        context = _fake_context(actor)
+        request = _fake_request(runtime)
         preview = await preview_activity_replan(activity, command, context, request, Response())
         assert {change.role for change in preview.changes} == {"planned_added", "planned_removed"}
         after = await apply_activity_replan(activity, command, context, request, Response())
@@ -224,10 +234,8 @@ async def test_activity_replan_retires_planned_rows_but_keeps_schedule_history(
                 for row in planned
             ],
         )
-        context = SimpleNamespace(self_person_ref=actor)
-        request = SimpleNamespace(
-            app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))
-        )
+        context = _fake_context(actor)
+        request = _fake_request(runtime)
         preview = await preview_activity_replan(activity, command, context, request, Response())
         assert [change.role for change in preview.changes] == ["planned_deleted"] * 2
         after = await apply_activity_replan(activity, command, context, request, Response())
@@ -299,10 +307,8 @@ async def test_planned_time_can_be_added_removed_and_added_again_on_same_schedul
             planned_slice_names=("Ripasso",),
         )
         activity = created.item.subject_native_ref
-        context = SimpleNamespace(self_person_ref=actor)
-        request = SimpleNamespace(
-            app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))
-        )
+        context = _fake_context(actor)
+        request = _fake_request(runtime)
 
         async def snapshot() -> ActivityEditSnapshot:
             async with runtime.session_factory() as session, session.begin():
@@ -406,10 +412,8 @@ async def test_activity_replan_replaces_current_interval_without_erasing_role_hi
             ],
             planned_sessions=[_move(planned, 11, 12)],
         )
-        context = SimpleNamespace(self_person_ref=actor)
-        request = SimpleNamespace(
-            app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))
-        )
+        context = _fake_context(actor)
+        request = _fake_request(runtime)
         preview = await preview_activity_replan(activity, command, context, request, Response())
         assert {change.role for change in preview.changes} == {
             "envelope",
@@ -467,10 +471,8 @@ async def test_locked_activity_accepts_new_sessions_without_moving_existing_plac
             placement=_window(9, 12),
         )
         activity = created.item.subject_native_ref
-        context = SimpleNamespace(self_person_ref=actor)
-        request = SimpleNamespace(
-            app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))
-        )
+        context = _fake_context(actor)
+        request = _fake_request(runtime)
         async with runtime.session_factory() as session, session.begin():
             before = ActivityEditSnapshot.model_validate(
                 await session.scalar(
