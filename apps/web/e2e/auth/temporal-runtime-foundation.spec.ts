@@ -161,15 +161,19 @@ test.describe('Timeline B00 real full-stack spine', () => {
       await dialog.getByRole('radio', { name: 'Evento' }).click();
       await dialog.getByRole('radio', { name: 'Orario' }).click();
       await dialog.getByLabel('Titolo').fill('B00 Evento reale');
-      // A title and type alone do not establish a valid timed placement.
-      await dialog.locator('[data-create-path="date"]').fill(eventDate);
-      await dialog.locator('[data-create-path="startTime"]').fill('10:00');
+      // Current Create uses controlled date and segmented time widgets,
+      // not editable native inputs. The routed day is the selected date.
+      await expect(
+        dialog.getByRole('button', { name: /^Data inizio:/ }),
+      ).toHaveAttribute('data-temporal-date', eventDate);
+      await dialog.getByRole('textbox', { name: 'Inizio: ore' }).fill('10');
+      await dialog.getByRole('textbox', { name: 'Inizio: minuti' }).fill('00');
 
       // Real-stack validation: the Event must exist in PostgreSQL before
       // the projection shows it, and the frontend cannot invent its ref.
       const createResponsePromise = page.waitForResponse(
         (response) =>
-          response.url().endsWith('/api/v1/temporal/events/scheduled') &&
+          response.url().endsWith('/api/v1/temporal/authoring/events') &&
           response.request().method() === 'POST',
         { timeout: 20_000 },
       );
@@ -184,14 +188,18 @@ test.describe('Timeline B00 real full-stack spine', () => {
       expect(created.status()).toBe(201);
       const data = (await created.json()) as {
         event_ref: string;
-        schedule_ref: string;
+        schedule: null | { schedule_ref: string };
       };
       expect(data.event_ref).toMatch(/^[a-f0-9-]{36}$/i);
-      expect(data.schedule_ref).toMatch(/^[a-f0-9-]{36}$/i);
+      expect(data.schedule).not.toBeNull();
+      if (!data.schedule) {
+        throw new Error('Timed Event authoring returned no canonical Schedule.');
+      }
+      expect(data.schedule.schedule_ref).toMatch(/^[a-f0-9-]{36}$/i);
       expect((await timelineRefresh).status()).toBe(200);
       await expect(dialog).toHaveCount(0);
       await expect(
-        page.locator(`[data-timeline-event="${data.schedule_ref}"]`),
+        page.locator(`[data-timeline-event="${data.schedule.schedule_ref}"]`),
       ).toHaveCount(1);
     } finally {
       await context.close();
