@@ -622,6 +622,33 @@ def main() -> int:
                 outcomes.extend(phase(READ_ONLY, tasks, folder, args.group_workers))
                 outcomes.extend(phase(SERIAL_BUILD, tasks, folder, 1))
                 outcomes.extend(phase(PACKAGE_TESTS, tasks, folder, args.group_workers))
+
+                # Fixture and non-auth Chromium use independent frontend
+                # ports and no PostgreSQL cluster. Overlap them with the
+                # bounded PG queue. Keep both browser groups serialized with
+                # each other, because they share test-results outputs.
+                for name in BROWSER[:2]:
+                    environment = (
+                        {"DANTE_E2E_NONAUTH_WORKERS": str(args.nonauth_workers)}
+                        if name == "WEB_BROWSER_NONAUTH" else None
+                    )
+                    result = execute(tasks[name], folder, environment=environment)
+                    outcomes.append(result)
+                    print(
+                        f"{'PASS' if result.code == 0 else 'FAIL'} "
+                        f"{name} code={result.code} {result.seconds:.1f}s",
+                        flush=True,
+                    )
+                    try:
+                        keep_browser_evidence(name, folder)
+                    except OSError as exc:
+                        (folder / f"{name}_BROWSER_CAPTURE_ERROR.log").write_text(
+                            f"Browser diagnostic copy failed: {exc}\n",
+                            encoding="utf-8",
+                        )
+
+                # Real-stack tests stop/restart their own PostgreSQL. Wait
+                # until all independent disposable database clusters drain.
                 try:
                     outcomes.append(pg_future.result())
                 except Exception as exc:
@@ -630,19 +657,23 @@ def main() -> int:
                         encoding="utf-8",
                     )
                     outcomes.append(Result(POSTGRES, 2, 0.0))
-            for name in BROWSER:
-                result = execute(tasks[name], folder)
-                outcomes.append(result)
-                print(
-                    f"{'PASS' if result.code == 0 else 'FAIL'} "
-                    f"{name} code={result.code} {result.seconds:.1f}s", flush=True,
+
+            # One real-stack webServer and one Playwright worker remain
+            # isolated from PostgreSQL jobs and the other browser gates.
+            name = "WEB_BROWSER_REAL_STACK"
+            result = execute(tasks[name], folder)
+            outcomes.append(result)
+            print(
+                f"{'PASS' if result.code == 0 else 'FAIL'} "
+                f"{name} code={result.code} {result.seconds:.1f}s", flush=True,
+            )
+            try:
+                keep_browser_evidence(name, folder)
+            except OSError as exc:
+                (folder / f"{name}_BROWSER_CAPTURE_ERROR.log").write_text(
+                    f"Browser diagnostic copy failed: {exc}\n",
+                    encoding="utf-8",
                 )
-                try:
-                    keep_browser_evidence(name, folder)
-                except OSError as exc:
-                    (folder / f"{name}_BROWSER_CAPTURE_ERROR.log").write_text(
-                        f"Browser diagnostic copy failed: {exc}\n", encoding="utf-8",
-                    )
             return final_report(tasks, outcomes, folder, sha, started)
 
 
