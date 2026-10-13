@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import sys
+
 from typing import Any
 
 import psycopg
@@ -124,7 +126,7 @@ def test_b04_c_window_catalog_probe(migrated_database: Any) -> None:
 
     assert revision == (_CURRENT_REVISION,)
     assert topology is not None
-    print("B04_C_LIVE_TOPOLOGY=" + "|".join(str(value) for value in topology))
+    sys.stdout.write("B04_C_LIVE_TOPOLOGY=" + "|".join(str(value) for value in topology) + "\n")
     assert table_owners == {(table, "dante_owner") for table in _WINDOW_TABLES}
     assert window_acl == dict.fromkeys(_WINDOW_TABLES, (True, False, False, False))
     assert private_acl == (False, False)
