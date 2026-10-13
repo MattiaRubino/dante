@@ -275,13 +275,13 @@ async def revise_activity_core(
             await session.execute(text("SET LOCAL statement_timeout = '15s'"))
             await session.execute(text("SET LOCAL lock_timeout = '5s'"))
             if body.capture is not None:
-                change = body.capture
+                capture_change = body.capture
                 intent = {
                     "version": 1,
                     "activity_ref": str(activity_ref),
-                    "mode_code": change.mode_code,
-                    "expected_state_ref": str(change.expected_state_ref)
-                    if change.expected_state_ref is not None
+                    "mode_code": capture_change.mode_code,
+                    "expected_state_ref": str(capture_change.expected_state_ref)
+                    if capture_change.expected_state_ref is not None
                     else None,
                 }
                 await session.execute(
@@ -294,19 +294,19 @@ async def revise_activity_core(
                         "operation": f"edit:capture:{digest}",
                         "fingerprint": _fingerprint(intent),
                         "state": uuid7(),
-                        "mode": change.mode_code,
-                        "expected": change.expected_state_ref,
+                        "mode": capture_change.mode_code,
+                        "expected": capture_change.expected_state_ref,
                     },
                 )
             if body.reality is not None:
-                change = body.reality
+                reality_change = body.reality
                 intent = {
                     "version": 1,
                     "subject_kind": "activity",
                     "subject_native_ref": str(activity_ref),
-                    "mode_code": change.mode_code,
-                    "expected_state_ref": str(change.expected_state_ref)
-                    if change.expected_state_ref is not None
+                    "mode_code": reality_change.mode_code,
+                    "expected_state_ref": str(reality_change.expected_state_ref)
+                    if reality_change.expected_state_ref is not None
                     else None,
                 }
                 await session.execute(
@@ -319,12 +319,12 @@ async def revise_activity_core(
                         "operation": f"edit:reality:{digest}",
                         "fingerprint": _fingerprint(intent),
                         "state": uuid7(),
-                        "mode": change.mode_code,
-                        "expected": change.expected_state_ref,
+                        "mode": reality_change.mode_code,
+                        "expected": reality_change.expected_state_ref,
                     },
                 )
             if body.profile is not None:
-                change = body.profile
+                profile_change = body.profile
                 await session.execute(
                     text("""
                     SELECT * FROM dante.revise_self_activity_profile(
@@ -334,17 +334,17 @@ async def revise_activity_core(
                     {
                         **params,
                         "operation": f"edit:profile:{digest}",
-                        "revision": change.expected_revision,
-                        "title": change.title.strip(),
-                        "description": change.description.strip() or None
-                        if change.description
+                        "revision": profile_change.expected_revision,
+                        "title": profile_change.title.strip(),
+                        "description": profile_change.description.strip() or None
+                        if profile_change.description
                         else None,
-                        "location": change.location.strip() or None if change.location else None,
-                        "color": change.color_code.upper() if change.color_code else None,
+                        "location": profile_change.location.strip() or None if profile_change.location else None,
+                        "color": profile_change.color_code.upper() if profile_change.color_code else None,
                     },
                 )
             if body.reminder is not None:
-                change = body.reminder
+                reminder_change = body.reminder
                 primary = await session.scalar(
                     text("""
                     SELECT r.schedule_ref
@@ -353,7 +353,7 @@ async def revise_activity_core(
                      WHERE r.schedule_ref=:schedule
                        AND r.role_code='envelope'
                 """),
-                    {**params, "schedule": change.schedule_ref},
+                    {**params, "schedule": reminder_change.schedule_ref},
                 )
                 if primary is None:
                     raise ProblemError(
@@ -365,12 +365,12 @@ async def revise_activity_core(
                     )
                 intent = {
                     "version": 1,
-                    "schedule_ref": str(change.schedule_ref),
-                    "expected_material_state_ref": str(change.expected_state_ref)
-                    if change.expected_state_ref is not None
+                    "schedule_ref": str(reminder_change.schedule_ref),
+                    "expected_material_state_ref": str(reminder_change.expected_state_ref)
+                    if reminder_change.expected_state_ref is not None
                     else None,
-                    "enabled": change.enabled,
-                    "lead_minutes": change.lead_minutes,
+                    "enabled": reminder_change.enabled,
+                    "lead_minutes": reminder_change.lead_minutes,
                 }
                 await session.execute(
                     text("""
@@ -382,12 +382,12 @@ async def revise_activity_core(
                         **params,
                         "operation": f"edit:reminder:{digest}",
                         "fingerprint": _fingerprint(intent),
-                        "schedule": change.schedule_ref,
-                        "expected": change.expected_state_ref,
+                        "schedule": reminder_change.schedule_ref,
+                        "expected": reminder_change.expected_state_ref,
                         "reminder_ref": uuid7(),
                         "material_state_ref": uuid7(),
-                        "enabled": change.enabled,
-                        "lead": change.lead_minutes,
+                        "enabled": reminder_change.enabled,
+                        "lead": reminder_change.lead_minutes,
                     },
                 )
             profile = (
