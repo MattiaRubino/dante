@@ -285,15 +285,16 @@ test.describe('Timeline B00 real full-stack spine', () => {
             response.request().method() === 'POST',
           { timeout: 12_000 },
         );
-        await page.goto('/home?date=2034-02-17', {
-          waitUntil: 'domcontentloaded',
-          timeout: 12_000,
-        });
+        // Navigate through the actual Timeline UI, keeping the already
+        // authenticated SPA mounted. A full page goto during the outage
+        // would also restart the auth bootstrap and could prevent Home from
+        // mounting at all, testing authentication rather than Timeline.
+        await page.locator('.dante-timeline-week-step').last().click();
         const checkpoint = await checkpointFailure;
         expect(checkpoint.status()).toBeGreaterThanOrEqual(500);
       } catch (cause) {
         throw new Error(
-          'PostgreSQL outage failed at authenticated Timeline checkpoint or Home navigation before the expected error UI state.',
+          'PostgreSQL outage failed at authenticated Timeline checkpoint or in-app date navigation before the expected error UI state.',
           { cause },
         );
       }
