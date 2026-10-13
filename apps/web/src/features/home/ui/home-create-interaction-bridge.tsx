@@ -83,17 +83,28 @@ function reseedOpenCreate(section: HTMLElement, clientY: number): void {
   const minute = snapMinute(minuteAtClientY(section, clientY));
   const composerSelector = '[data-temporal-create="composer"]';
   const apply = () => {
-    const dateInput = document.querySelector<HTMLInputElement>(
-      `${composerSelector} [data-create-path="date"]`,
-    );
-    const timeInput = document.querySelector<HTMLInputElement>(
-      `${composerSelector} [data-create-path="startTime"]`,
-    );
-    if (!dateInput || !timeInput) {
+    const composer = document.querySelector<HTMLElement>(composerSelector);
+    if (!composer) {
       return;
     }
-    setControlledInput(dateInput, date);
-    setControlledInput(timeInput, formatMinute(minute));
+    const startTime = formatMinute(minute);
+    // The current Create date picker is a controlled button, not a native
+    // input. Notify the owning React component rather than editing its DOM.
+    composer.dispatchEvent(new CustomEvent('dante:temporal-create-reseed', {
+      bubbles: true,
+      detail: { date, startTime },
+    }));
+    // Preserve native input support for earlier/embedded Create surfaces.
+    const dateInput = composer.querySelector<HTMLInputElement>(
+      '[data-create-path="date"]',
+    );
+    const timeInput = composer.querySelector<HTMLInputElement>(
+      '[data-create-path="startTime"]',
+    );
+    if (dateInput && timeInput) {
+      setControlledInput(dateInput, date);
+      setControlledInput(timeInput, startTime);
+    }
   };
 
   const timedButton = document.querySelector<HTMLButtonElement>(
