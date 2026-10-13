@@ -197,7 +197,7 @@ test('Activity with live capture and planned root Session survives Advanced roun
       .getByRole('textbox', { name: 'Nome Sessione' }),
   ).toHaveValue('Montaggio');
 
-  await dialog.getByRole('button', { name: 'Aggiungi' }).click();
+  await dialog.getByRole('button', { name: 'Aggiungi', exact: true }).click();
   await expect(dialog).toHaveCount(0);
 
   const card = page
@@ -231,7 +231,7 @@ test('Event Advanced preserves structured agenda, deep intent and provider reque
   await dialog.getByRole('textbox', { name: 'Inizio: minuti' }).fill('00');
   await dialog.getByRole('radio', { name: 'Orario' }).click();
   await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
-  await dialog.getByLabel('Ripeti').selectOption('weekly');
+  await dialog.getByLabel('Ripeti', { exact: true }).selectOption('weekly');
 
   await dialog.getByLabel('Scopo').fill('Definire il rilascio');
   await dialog
@@ -306,7 +306,7 @@ test('Event calendar recurrence preserves interval and end policy across Advance
   await dialog.getByRole('radio', { name: 'Evento' }).click();
   await dialog.getByRole('radio', { name: 'Orario' }).click();
   await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
-  await dialog.getByLabel('Ripeti').selectOption('weekly');
+  await dialog.getByLabel('Ripeti', { exact: true }).selectOption('weekly');
 
   const recurrence = dialog.locator('[data-create-recurrence-owner="event"]');
   await expect(recurrence).toBeVisible();
@@ -319,10 +319,10 @@ test('Event calendar recurrence preserves interval and end policy across Advance
   await dialog.getByRole('button', { name: 'Nascondi opzioni avanzate' })
     .click();
   await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'base');
-  await expect(dialog.getByLabel('Ripeti')).toHaveCount(0);
+  await expect(dialog.getByLabel('Ripeti', { exact: true })).toHaveCount(0);
 
   await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
-  await expect(dialog.getByLabel('Ripeti')).toHaveValue('custom');
+  await expect(dialog.getByLabel('Ripeti', { exact: true })).toHaveValue('custom');
   await expect(recurrence).toBeVisible();
   await expect(
     recurrence.getByRole('spinbutton', { name: 'Intervallo di ripetizione' }),
@@ -365,7 +365,7 @@ test('all-day date spans live inside each day before minute zero for Event and A
     .getByRole('dialog', { name: 'Data fine' })
     .locator(`[data-temporal-date="${nextDate}"]`)
     .click();
-  await dialog.getByRole('button', { name: 'Aggiungi' }).click();
+  await dialog.getByRole('button', { name: 'Aggiungi', exact: true }).click();
   await expect(dialog).toHaveCount(0);
 
   const startDay = page.locator(
@@ -429,7 +429,7 @@ test('all-day date spans live inside each day before minute zero for Event and A
     .getByRole('button', { name: /^Data inizio:/ })
     .getAttribute('data-temporal-date');
   expect(activityDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-  await dialog.getByRole('button', { name: 'Aggiungi' }).click();
+  await dialog.getByRole('button', { name: 'Aggiungi', exact: true }).click();
   const activity = page
     .locator(
       `.timeline-day-section[data-timeline-date="${activityDate}"] .timeline-all-day-item[data-temporal-create-projection]`,
@@ -455,7 +455,7 @@ test('Advanced validation focuses the required title without discarding time or 
   await setTimedDuration(dialog, 60);
   await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
   await title.fill('');
-  await dialog.getByRole('button', { name: 'Aggiungi' }).click();
+  await dialog.getByRole('button', { name: 'Aggiungi', exact: true }).click();
 
   await expect(dialog.locator('.temporal-create-field-error').first())
     .toBeVisible();
