@@ -62,7 +62,8 @@ async def test_routine_source_lifecycle_primary_area_tags_and_replay(
             wall_time=time(7, 30),
             tag_refs=(tag.tag_ref,),
         )
-        assert replay.replayed and replay.routine_ref == created.routine_ref
+        assert replay.replayed
+        assert replay.routine_ref == created.routine_ref
         with pytest.raises(RoutineOperationReuseError):
             await routines.create(
                 self_person_ref=alice,
@@ -79,7 +80,8 @@ async def test_routine_source_lifecycle_primary_area_tags_and_replay(
             expected_source_revision=1,
             kind="pause",
         )
-        assert paused.lifecycle_state == "paused" and paused.source_revision == 2
+        assert paused.lifecycle_state == "paused"
+        assert paused.source_revision == 2
         resumed = await routines.mutate(
             self_person_ref=alice,
             operation_id="routine:resume",
@@ -87,7 +89,8 @@ async def test_routine_source_lifecycle_primary_area_tags_and_replay(
             expected_source_revision=2,
             kind="resume",
         )
-        assert resumed.lifecycle_state == "active" and resumed.source_revision == 3
+        assert resumed.lifecycle_state == "active"
+        assert resumed.source_revision == 3
         renamed = await routines.mutate(
             self_person_ref=alice,
             operation_id="routine:rename",
@@ -113,7 +116,8 @@ async def test_routine_source_lifecycle_primary_area_tags_and_replay(
             life_area_ref=health.life_area_ref,
             expected_assignment_revision=1,
         )
-        assert moved.assignment_revision == 2 and moved.life_area_ref == health.life_area_ref
+        assert moved.assignment_revision == 2
+        assert moved.life_area_ref == health.life_area_ref
         detached = await routines.set_tag(
             self_person_ref=alice,
             operation_id="routine:tag:detach",
@@ -123,11 +127,9 @@ async def test_routine_source_lifecycle_primary_area_tags_and_replay(
         )
         assert not detached.attached
         visible = await routines.list(self_person_ref=alice)
-        assert (
-            len(visible) == 1
-            and visible[0].tag_refs == ()
-            and visible[0].life_area_ref == health.life_area_ref
-        )
+        assert len(visible) == 1
+        assert visible[0].tag_refs == ()
+        assert visible[0].life_area_ref == health.life_area_ref
         assert await routines.list(self_person_ref=bob) == ()
 
         with psycopg.connect(
