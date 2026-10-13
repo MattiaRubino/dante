@@ -154,13 +154,19 @@ class ResponsibilityParticipationApplication:
             }
         )
         row = await self._one(
-            f"""
+            ("""
             SELECT subject_native_ref, responsible_person_ref, established_at, replayed
-              FROM dante.set_self_{subject_kind}_responsibility(
+              FROM dante.set_self_activity_responsibility(
                 :actor, :operation_id, :fingerprint, :subject,
                 :responsible, :expected
               )
-            """,
+            """ if subject_kind == "activity" else """
+            SELECT subject_native_ref, responsible_person_ref, established_at, replayed
+              FROM dante.set_self_event_responsibility(
+                :actor, :operation_id, :fingerprint, :subject,
+                :responsible, :expected
+              )
+            """),
             {
                 "actor": self_person_ref,
                 "operation_id": normalized,
