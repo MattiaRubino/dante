@@ -702,16 +702,30 @@ export function TemporalCreateCoreFieldsU2({
       fields.timeZoneId,
     );
     if (duration === null && endDate === fields.date) {
-      // The previous end was earlier than the new start. Do not convert an
-      // ordinary same-day time edit into an accidental next-day interval
-      // (09:30 -> start 15:00 used to become ~18 hours).
-      // Retain the established duration, recompute the end from the new
-      // start, and let a subsequent explicit End edit choose another length.
-      const shiftedEnd = temporalCreateEndDateTime(
-        fields.date, startTime, fields.durationMinutes,
-        fields.timeMode, fields.timeZoneId,
+      // The end clock is explicitly authored, and its date is the only
+      // dimension that may advance when the start crosses that clock.
+      // This preserves both 21:30..23:00 -> 23:30..23:00 (+1 day) and
+      // 09:00..09:30 -> 23:30..09:30 (+1 day), without silently
+      // rewriting the user's end time to a rounded/default clock.
+      const nextDay = Temporal.PlainDate.from(fields.date)
+        .add({ days: 1 })
+        .toString();
+      const overnight = temporalCreateDurationFromEndDateTime(
+        fields.date,
+        startTime,
+        nextDay,
+        calculatedEnd.time,
+        fields.timeMode,
+        fields.timeZoneId,
       );
-      patchAuthoring({ endDate: shiftedEnd.date });
+      if (overnight !== null) {
+        patchAuthoring({ endDate: nextDay });
+        onPatch({ startTime, durationMinutes: overnight });
+        return;
+      }
+      // An invalid/ambiguous local-time combination must not manufacture
+      // a duration. Keep the existing duration and require an explicit
+      // end-time correction rather than showing an invalid interval.
       onPatch({ startTime });
       return;
     }
