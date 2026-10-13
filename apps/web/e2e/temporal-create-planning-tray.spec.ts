@@ -152,6 +152,7 @@ test('duplicating a Draft creates a separate inert draft without mutating the or
   const dialog = page.locator('[data-temporal-create="composer"]');
   await dialog.getByRole('textbox', { name: 'Titolo' }).fill('Proposta duplicata');
   await dialog.getByRole('button', { name: 'Salva bozza' }).click();
+  await expect(dialog).toHaveCount(0);
   expect(records.size).toBe(2);
   expect(records.get(originalId ?? '')?.title).toBe('Scrivere proposta');
   expect([...records.values()].some((value) =>
