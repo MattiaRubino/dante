@@ -313,7 +313,8 @@ def test_b04_d_direct_move_commits_monotonic_placement_and_replays(
             (schedule_ref,),
         ).fetchall()
     assert len(history) == 2
-    assert history[0][0] == placement_ref and history[0][1] is not None
+    assert history[0][0] == placement_ref
+    assert history[0][1] is not None
     assert history[1] == (resulting_ref, None)
 
 
