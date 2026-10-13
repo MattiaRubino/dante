@@ -1,5 +1,12 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-10-13 — B14 gate repair continuation (GitHub candidate, unverified)
+
+Current repair series after the previous `ff7cc98b` handoff includes narrow backend typing corrections for the elapsed/weekly recurrence and Activity authoring, and browser fixture scenario migrations for the new Life Area color/selector, rail-bound pinnable Create, root planned Session/capture, calendar recurrence, and the inert Draft Vault (replacing the retired "Da collocare" workflow in the non-auth UI harness). Draft Vault fixture tests explicitly stub only the HTTP contract; durable PostgreSQL behavior remains owned by auth/real-stack tests and is not proved here. The Home Timeline gesture bridge now avoids mutating the new aria-hidden date/time transport inputs after the controlled reseed, with an additional colocated regression.
+
+This is **source repair only**. Neither the edited browser files nor the amended backend types were executed locally in the user's WSL; their result is UNKNOWN until typecheck/Vitest/Playwright/PostgreSQL probes run on this exact SHA. The user's previous 27-group gate on `6476a5c1` remains RED and should not be relabeled. In particular, `temporal-create-planning-tray.spec.ts` has a new mock HTTP contract that must pass real Chromium fixture execution; the old drag cases belonged to retired canonical unplaced authoring and cannot be claimed as Draft Vault coverage. The `_143` data-bearing migration path, current full-stack Create responses, historical Activity truth policy, and substantial Ruff/mypy/ESLint/format debt remain open. **B14 is not closed.**
+
+
 ## 2026-10-13 — Post-gate Create controlled-state correction
 
 The current branch includes a Home Timeline open-Create reseed fix (bridge event → controlled Create state) and its colocated unit regression in four code/test commits ending at `d0d6fbf5`. This resolves a source mismatch exposed by the new button-based date picker; it does not prove browser behavior without a WSL run. The `6476a5c1` complete gate remains RED (18/27 PASS), and previously patched objective/Dictionary tests and Docker-only retry logic have not received a same-SHA full rerun. Preserve remaining browser, formatting, mypy, ESLint, PostgreSQL, and historical migration acceptance as open.
