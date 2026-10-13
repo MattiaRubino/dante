@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Mapping
 from datetime import datetime
 from decimal import Decimal
 from typing import Annotated, Literal
@@ -30,7 +31,7 @@ ComparatorCode = Literal["eq", "gte", "lte", "between"]
 AssessmentCode = Literal["satisfied", "partial", "not_satisfied", "unknown", "indeterminate"]
 
 
-def _fingerprint(value: dict[str, object]) -> str:
+def _fingerprint(value: Mapping[str, object]) -> str:
     return hashlib.sha256(
         json.dumps(value, sort_keys=True, separators=(",", ":"), default=str).encode("utf-8")
     ).hexdigest()
@@ -290,7 +291,9 @@ class ActivityObjectiveBatchCommand(BaseModel):
     def distinct_targets(self) -> ActivityObjectiveBatchCommand:
         if len(self.add) + len(self.revise) + len(self.retire) > 100:
             raise ValueError("At most 100 Objective edits are supported.")
-        refs = [item.objective_ref for item in (*self.revise, *self.retire)]
+        refs = [item.objective_ref for item in self.revise] + [
+            item.objective_ref for item in self.retire
+        ]
         if len(refs) != len(set(refs)):
             raise ValueError("The same Objective cannot be edited and retired together.")
         operations = [
@@ -682,8 +685,8 @@ async def apply_activity_objective_edits(
                     )
                 ).all()
             )
-            for item in payload.revise:
-                if item.objective_ref not in existing:
+            for revision in payload.revise:
+                if revision.objective_ref not in existing:
                     raise ProblemError(
                         status=409,
                         code="temporal.objective_edit.stale",
@@ -691,10 +694,10 @@ async def apply_activity_objective_edits(
                         title="Obiettivo cambiato",
                         detail="Un obiettivo è stato modificato. Riapri Modifica e riprova.",
                     )
-                change = item.change
+                change = revision.change
                 intent = {
                     "version": 1,
-                    "objective_ref": str(item.objective_ref),
+                    "objective_ref": str(revision.objective_ref),
                     **change.model_dump(mode="json"),
                 }
                 if change.scope_code == "this_and_following":
@@ -723,7 +726,7 @@ async def apply_activity_objective_edits(
                     text(statement),
                     {
                         "actor": actor,
-                        "objective": item.objective_ref,
+                        "objective": revision.objective_ref,
                         "operation": change.operation_id,
                         "fingerprint": _fingerprint(intent),
                         "expected": change.expected_revision,
@@ -741,7 +744,7 @@ async def apply_activity_objective_edits(
                         "evaluation": uuid7(),
                     },
                 )
-            for item in payload.retire:
+            for retirement in payload.retire:
                 await session.execute(
                     text("""
                     SELECT * FROM dante.retire_self_temporal_objective(
@@ -749,20 +752,20 @@ async def apply_activity_objective_edits(
                 """),
                     {
                         "actor": actor,
-                        "objective": item.objective_ref,
-                        "operation": item.operation_id,
+                        "objective": retirement.objective_ref,
+                        "operation": retirement.operation_id,
                         "fingerprint": _fingerprint(
                             {
                                 "version": 1,
-                                "objective_ref": str(item.objective_ref),
-                                "operation_id": item.operation_id,
-                                "expected_revision": item.expected_revision,
+                                "objective_ref": str(retirement.objective_ref),
+                                "operation_id": retirement.operation_id,
+                                "expected_revision": retirement.expected_revision,
                             }
                         ),
-                        "expected": item.expected_revision,
+                        "expected": retirement.expected_revision,
                     },
                 )
-            for item in payload.add:
+            for addition in payload.add:
                 await session.execute(
                     text("""
                     SELECT * FROM dante.create_self_temporal_objective(
@@ -771,25 +774,25 @@ async def apply_activity_objective_edits(
                 """),
                     {
                         "actor": actor,
-                        "operation": item.operation_id,
+                        "operation": addition.operation_id,
                         "fingerprint": _fingerprint(
                             {
                                 "version": 1,
                                 "subject_kind": "activity",
                                 "subject_native_ref": str(subject_ref),
-                                **item.model_dump(mode="json"),
+                                **addition.model_dump(mode="json"),
                             }
                         ),
                         "objective": uuid7(),
                         "activity": subject_ref,
-                        "label": item.label,
-                        "kind": item.result_kind,
-                        "comparator": item.comparator_code,
-                        "target": item.target_value,
-                        "minimum": item.target_min,
-                        "maximum": item.target_max,
-                        "unit": item.unit_code,
-                        "ordering": item.presentation_order,
+                        "label": addition.label,
+                        "kind": addition.result_kind,
+                        "comparator": addition.comparator_code,
+                        "target": addition.target_value,
+                        "minimum": addition.target_min,
+                        "maximum": addition.target_max,
+                        "unit": addition.unit_code,
+                        "ordering": addition.presentation_order,
                     },
                 )
             rows = (
