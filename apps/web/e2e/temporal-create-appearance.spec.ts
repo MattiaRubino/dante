@@ -80,7 +80,7 @@ test('Life Area selection and its colour survive Advanced round trips and Timeli
     .analyze();
   expect(accessibility.violations).toEqual([]);
 
-  await dialog.getByRole('button', { name: 'Aggiungi' }).click();
+  await dialog.getByRole('button', { name: 'Aggiungi', exact: true }).click();
   await expect(dialog).toHaveCount(0);
 
   const card = page
