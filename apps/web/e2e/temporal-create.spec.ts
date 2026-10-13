@@ -1,6 +1,8 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
+import { setTimedDuration, timedDurationMinutes } from './helpers/create-time';
+
 test.use({ locale: 'it-IT' });
 
 async function openCreate(page: Page) {
@@ -160,7 +162,7 @@ test('Activity Orario plus Divisibile remains placed and Undo removes the same c
     .fill('Montare il video');
   await dialog.getByRole('textbox', { name: 'Inizio: ore' }).fill('14');
   await dialog.getByRole('textbox', { name: 'Inizio: minuti' }).fill('30');
-  await dialog.getByLabel('Durata prevista').selectOption('180');
+  await setTimedDuration(dialog, 180);
   await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
   await expect(dialog).toHaveAttribute(
     'data-temporal-create-surface',
@@ -184,7 +186,7 @@ test('Activity Orario plus Divisibile remains placed and Undo removes the same c
   await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'base');
   await expect(dialog.getByRole('textbox', { name: 'Inizio: ore' })).toHaveValue('14');
   await expect(dialog.getByRole('textbox', { name: 'Inizio: minuti' })).toHaveValue('30');
-  await expect(dialog.getByLabel('Durata prevista')).toHaveValue('180');
+  expect(await timedDurationMinutes(dialog)).toBe(180);
 
   await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
   await expect(
@@ -227,6 +229,7 @@ test('Event Advanced preserves structured agenda, deep intent and provider reque
   await dialog.getByRole('radio', { name: 'Evento' }).click();
   await dialog.getByRole('textbox', { name: 'Inizio: ore' }).fill('16');
   await dialog.getByRole('textbox', { name: 'Inizio: minuti' }).fill('00');
+  await dialog.getByRole('radio', { name: 'Orario' }).click();
   await dialog.getByLabel('Ripeti').selectOption('weekly');
   await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
 
@@ -301,6 +304,7 @@ test('Event quick recurrence enters truthful CP6 authoring and survives base Adv
   const dialog = await openCreate(page);
   await dialog.getByRole('textbox', { name: 'Titolo' }).fill('Evento ciclico');
   await dialog.getByRole('radio', { name: 'Evento' }).click();
+  await dialog.getByRole('radio', { name: 'Orario' }).click();
   await dialog.getByLabel('Ripeti').selectOption('weekly');
   await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
   await expect(dialog).toHaveAttribute(
@@ -449,7 +453,7 @@ test('Advanced validation focuses the invalid execution control without losing t
 
   const dialog = await openCreate(page);
   await dialog.getByRole('textbox', { name: 'Titolo' }).fill('Studio');
-  await dialog.getByLabel('Durata prevista').selectOption('60');
+  await setTimedDuration(dialog, 60);
   await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
   await dialog
     .getByRole('combobox', { name: /Struttura di esecuzione/ })
@@ -507,9 +511,7 @@ test('double-click and Shift-drag only use the timed canvas for contextual Creat
 
   dialog = page.locator('[data-temporal-create="composer"]');
   await expect(dialog).toBeVisible();
-  const duration = Number(
-    await dialog.getByLabel('Durata prevista').inputValue(),
-  );
+  const duration = await timedDurationMinutes(dialog);
   expect(duration).toBeGreaterThanOrEqual(30);
 });
 

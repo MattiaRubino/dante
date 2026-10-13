@@ -1,5 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 
+import { setTimedDuration } from './helpers/create-time';
+
 test.use({ locale: 'it-IT' });
 
 async function openCreate(page: Page) {
@@ -19,7 +21,7 @@ test('page-local contexts carry their tone into native Timeline cards and dedupl
   await dialog.getByRole('textbox', { name: 'Titolo' }).fill('Sessione studio');
   await dialog.getByRole('textbox', { name: 'Inizio: ore' }).fill('15');
   await dialog.getByRole('textbox', { name: 'Inizio: minuti' }).fill('00');
-  await dialog.getByLabel('Durata prevista').selectOption('45');
+  await setTimedDuration(dialog, 45);
 
   const contextTrigger = dialog.locator('.temporal-create-context-trigger');
   await contextTrigger.click();

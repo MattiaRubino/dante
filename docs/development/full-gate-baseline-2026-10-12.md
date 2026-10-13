@@ -399,3 +399,48 @@ Following this diagnosis a targeted code correction is published for the
 Occurrence transport fixture and the Create header count. These changes are
 **unverified** until a fresh WSL run. No Alembic autogenerate verdict is
 possible on the blocked PostgreSQL group; keep prior drift RED.
+
+## Full WSL gate 3ed9c682, 13 October 2026
+
+Evidence: user-uploaded `FULL_GATE_SUMMARY(4).md`,
+`FULL_GATE_LOGS.tar(4).gz` (all original group/browser/PG logs)
+and WSL console trace on candidate
+`3ed9c6820338d12e0a8d1df902837bafa90d9a19`.
+**27/27 groups reported; 19 PASS, 8 FAIL; source stability 0.**
+
+Functional/backend outcomes:
+- Non-Postgres: **621 PASS, 371 deselected, 28.24s**.
+  The complete group returned **0**.
+- PostgreSQL: **370 PASS, 1 FAIL, 621 deselected, 804.43s**.
+  Only the mandatory
+  `test_alembic_check_reports_no_dante_schema_drift_with_extensions_present`
+  remains RED, with extensive metadata/canonical-schema autogenerate differences.
+  Never ignore or disable this guard; reconcile the Table metadata and Dictionary.
+- Web fixture Playwright and Web Vitest: PASS.
+- Non-auth E2E: **111 PASS / 16 FAIL**. Old Create `Durata prevista`
+  menu no longer exists (start/end determines duration), some `Ripeti`
+  assertions require a timed schedule, old `Da collocare` tests now target
+  a retired mode, all-day date picker is a button, and one timeline
+  focus-retargeting assertion is failing. Four tests also involve mobile
+  presentation / discard state and need visual/interaction review.
+- Real-stack E2E: **55 PASS / 29 FAIL / 3 skipped** across Chromium,
+  Firefox and WebKit. Nine of the failures are signup/recovery requests
+  returning HTTP 503; another group involves missing expected Schedule
+  responses/timeouts, while multiple teardown-timeouts followed long tests.
+  These are *not* justified to skip, ignore or retry indefinitely.
+- Quality: Ruff formatting **243 files**, Ruff **132 errors**, mypy
+  **677 errors in 76 files**, Prettier **217 files**, ESLint **337 errors
+  and 3 warnings**. Do not weaken Ruff/mypy/ESLint configurations.
+  Automated format-only changes must respect immutable Alembic migrations.
+
+Later candidate adjustments (not yet WSL-verified):
+- Optional parallel runner now dynamically allocates **more jobs than worker
+  processes** and starts the bounded PostgreSQL queue while safe independent
+  checks execute. It does not modify the sequential reference gate.
+- Browser Create duration tests are being adapted to *visible start/end*
+  controls and quick Event recurrence is explicitly timed, preserving the
+  original assertions instead of waiting for obsolete controls.
+
+**Global gate remains RED** pending an entire same-SHA WSL rerun,
+real Alembic metadata reconciliation and all outstanding product,
+browser and quality fixes.
