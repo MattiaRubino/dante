@@ -444,3 +444,23 @@ Later candidate adjustments (not yet WSL-verified):
 **Global gate remains RED** pending an entire same-SHA WSL rerun,
 real Alembic metadata reconciliation and all outstanding product,
 browser and quality fixes.
+
+## 2026-10-13: candidate metadata reconciliation (unverified)
+
+From WSL gate `3ed9c682`, the accepted current PostgreSQL suite reported
+**370 passed / 1 failed** (Alembic autogenerate), and **19/27** groups
+passed overall. Subsequent code commits address physical CHECK and FK
+metadata, server defaults, Session operation uniqueness, draft indexes,
+obsolete E2E Create/Bozze selectors, and real-stack SMTP durable admission.
+
+The new forward-only migration `20261013_144` enforces non-null
+`anchor_at` on `routine_recurrence_elapsed_state` and
+`event_recurrence_elapsed_state`. The physical columns were nullable but
+the accepted Dictionary already requires `nullable=false`. The migration
+checks for existing NULL rows and refuses to invent or overwrite accepted
+historical Recurrence instants. Both previous forward-only downgrade guards
+remain independently tested.
+
+**No fresh same-SHA WSL test gate has validated this revision yet.**
+Do not claim complete drift resolution or release readiness. Formatting,
+Ruff/mypy/ESLint debt and the remaining E2E acceptance may still be RED.

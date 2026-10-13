@@ -1,7 +1,7 @@
 # DANTE — Project Status
 
 - **Status:** CURRENT PROTECTED-MAIN TRUTH + ACTIVE CANDIDATE POINTER
-- **Last reconciled:** 2026-10-11 (candidate pointer; protected-main still `981f6cf9`)
+- **Last reconciled:** 2026-10-13 (candidate pointer; protected-main still `981f6cf9`)
 - **Current protected-main HEAD:** `981f6cf9ad985d0b811bc4172c12a7529fbc9b15` via PR #67 post-merge documentation reconciliation
 - **Pre-vertical implementation integration merge:** `1ecd58145860aebfaaa3dc1bd356b90f7a8eb19b` via PR #66
 - **AI protected-main merge:** `431fb34029baeacc9ef9f721e9626b39ca10dd39` via PR #63
@@ -9,9 +9,9 @@
 - **Protected-main Alembic:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Active candidate workstream:** `feature/timeline-temporal-operational`
-- **Candidate Alembic:** `20261012_143` (Routine replay SQL forward repair; local candidate proof pending)
+- **Candidate Alembic:** `20261013_144` (elapsed Recurrence NOT NULL forward repair; new-head verification pending)
 - **Candidate topology:** `238|5|228|103|486|421|596|0|0|0`
-- **Candidate frontier:** `_142` targeted PostgreSQL catalog locally proven; all-repository test gate RED on `181c5804`; real-app acceptance and B15 OPEN. Test governance repair is not functional acceptance.
+- **Candidate frontier:** Last complete 27-group gate on `3ed9c682` had 19 PASS / 8 FAIL; PostgreSQL 370 PASS / 1 FAIL (Alembic metadata drift); new `_144` migration and ORM reconciliation not yet WSL-verified. B15 and real-app acceptance OPEN.
 
 Protected `main` remains integration authority. Candidate truth below is explicitly branch-local and must not be relabeled as protected-main truth before integration.
 
@@ -44,7 +44,7 @@ production/cloud recovery                    NOT CLAIMED
 
 ## 2. Active branch candidate
 
-**Current candidate:** `20261012_143` / `238|5|228|103|486|421|596|0|0|0` (expected unchanged topology after function-only forward repair; **new-head proof pending**). The latest full PostgreSQL evidence on `c512854a` is **350 passed, 20 failed**; the whole-repository gate is RED. Current implementation and remaining UI acceptance are in `workstreams/timeline-temporal-operational-map.md` and `workstreams/timeline-temporal-operational-handoff.md`; Domain/Logical/Physical current overlays are in `domain/decisions/activity-session-live-timeline-v1.md`, `logical-model/slices/b14-session-objective-home-workspace-2026-10-11.md` and `physical-model/b14-session-objective-home-workspace-2026-10-11.md`.
+**Current candidate:** `20261013_144` / `238|5|228|103|486|421|596|0|0|0` (expected unchanged structural object counts after NOT NULL-only forward repair; **new-head proof pending**). The latest full PostgreSQL evidence, on `3ed9c682`, is **370 passed, 1 failed** (`alembic check`). The 27-group gate was **19 PASS / 8 FAIL**; subsequent fixes are not yet verified and the gate remains RED. Current implementation and remaining UI acceptance are in `workstreams/timeline-temporal-operational-map.md` and `workstreams/timeline-temporal-operational-handoff.md`; Domain/Logical/Physical current overlays are in `domain/decisions/activity-session-live-timeline-v1.md`, `logical-model/slices/b14-session-objective-home-workspace-2026-10-11.md` and `physical-model/b14-session-objective-home-workspace-2026-10-11.md`.
 
 **Historical candidate snapshot (2026-09-23; do not treat its NEXT or catalog as current):**
 

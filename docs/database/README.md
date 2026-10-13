@@ -1,12 +1,12 @@
 # DANTE Database System of Record
 
 - **Status:** CURRENT / AUTHORITATIVE DATABASE REFERENCE
-- **Last reconciled:** 2026-10-11 (Timeline candidate overlay; protected-main baseline unchanged)
+- **Last reconciled:** 2026-10-13 (Timeline candidate migration pointer; protected-main baseline unchanged)
 - **PostgreSQL:** 18.6
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
-- **Timeline candidate Alembic head (current branch candidate):** `20261012_143` (forward-only Routine replay ambiguity repair; scoped WSL gate pending; 2026-10-12 PostgreSQL full baseline RED; see `timeline-temporal-operational.md` and `../development/full-gate-baseline-2026-10-12.md`)
+- **Timeline candidate Alembic head (current branch candidate):** `20261013_144` (forward-only NOT NULL reconciliation of Routine/Event elapsed recurrence anchors, consistent with Dictionary; candidate WSL gate pending; see `timeline-temporal-operational.md` and `../development/full-gate-baseline-2026-10-12.md`)
 - **Historical B10-C proven topology (2026-09-26):** `20260925_79` / `167|5|123|93|329|279|446`; latest `_142` candidate topology `238|5|228|103|486|421|596` (user-local catalog gate green)
 - **Timeline candidate DB overlay:** `timeline-temporal-operational.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
