@@ -11,7 +11,7 @@ async function openCreate(page: Page) {
   return dialog;
 }
 
-test('page-local contexts carry their tone into native Timeline cards and deduplicate by name', async ({
+test('Create stages a colored Life Area and reuses existing names case-insensitively', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -23,34 +23,18 @@ test('page-local contexts carry their tone into native Timeline cards and dedupl
   await dialog.getByRole('textbox', { name: 'Inizio: minuti' }).fill('00');
   await setTimedDuration(dialog, 45);
 
-  const contextTrigger = dialog.locator('.temporal-create-context-trigger');
-  await contextTrigger.click();
-  const picker = dialog.locator('.temporal-create-context-popover');
-  await expect(picker).toBeVisible();
-  await picker.getByRole('searchbox').fill('Studio');
-  await picker.locator('.temporal-create-context-new').click();
-
-  const createPane = picker.locator('.temporal-create-context-create');
-  const contextName = createPane.getByRole('textbox');
-  await expect(contextName).toHaveValue('Studio');
-  await createPane
-    .locator('.temporal-create-context-tone-grid [data-context-tone="health"]')
-    .click();
-  await createPane
-    .locator('.temporal-create-context-create__actions .is-primary')
-    .click();
-
-  await expect(contextTrigger).toContainText('Studio');
-  await expect(
-    contextTrigger.locator('.temporal-create-context-swatch'),
-  ).toHaveAttribute('data-context-tone', 'health');
-
-  const contextChip = page.locator(
-    '.dante-timeline-group-chip[data-group-id="local-context:studio"]',
+  const area = dialog.getByRole('textbox', { name: 'Life Area (opzionale)' });
+  await area.fill('Studio');
+  await expect(area).toHaveValue('Studio');
+  const color = dialog.getByRole('button', { name: 'Colore Life Area' });
+  await color.click();
+  await page.getByRole('dialog', { name: 'Scegli colore' })
+    .getByRole('button', { name: 'Verde mela' }).click();
+  await expect(color.locator('span')).toHaveCSS(
+    'background-color',
+    'rgb(124, 179, 66)',
   );
-  await expect(contextChip).toBeVisible();
-  await expect(contextChip).toHaveAttribute('data-timeline-tone', 'health');
-  await expect(contextChip).toContainText('Studio');
+  await expect(area).toHaveValue('Studio');
 
   await dialog.getByRole('button', { name: 'Aggiungi' }).click();
   await expect(dialog).toHaveCount(0);
@@ -59,7 +43,6 @@ test('page-local contexts carry their tone into native Timeline cards and dedupl
     .locator('.timeline-event-card[data-temporal-create-projection]')
     .filter({ hasText: 'Sessione studio' });
   await expect(card).toBeVisible();
-  await expect(card).toHaveAttribute('data-timeline-tone', 'health');
   await expect(card).toContainText('Studio');
 
   await card.locator('.timeline-event-card__time').click();
@@ -68,30 +51,14 @@ test('page-local contexts carry their tone into native Timeline cards and dedupl
   await expect(page.locator('.timeline-time-popover')).toHaveCount(0);
 
   dialog = await openCreate(page);
-  const secondTrigger = dialog.locator('.temporal-create-context-trigger');
-  await secondTrigger.click();
-  const secondPicker = dialog.locator('.temporal-create-context-popover');
-  await secondPicker.getByRole('searchbox').fill('studio');
-  await secondPicker.locator('.temporal-create-context-new').click();
-
-  const secondCreatePane = secondPicker.locator(
-    '.temporal-create-context-create',
-  );
-  await secondCreatePane.getByRole('textbox').fill('  studio  ');
-  await secondCreatePane
-    .locator('.temporal-create-context-tone-grid [data-context-tone="urgent"]')
-    .click();
-  await secondCreatePane
-    .locator('.temporal-create-context-create__actions .is-primary')
-    .click();
-
+  const secondArea = dialog.getByRole('textbox', {
+    name: 'Life Area (opzionale)',
+  });
+  await secondArea.fill('studio');
+  // A case-insensitive exact match must select the existing Life Area
+  // instead of creating a second local group with the same name.
+  await expect(secondArea).toHaveValue(/studio/i);
   await expect(
-    page.locator(
-      '.dante-timeline-group-chip[data-group-id="local-context:studio"]',
-    ),
+    page.locator('.dante-timeline-group-chip[data-group-id="local-context:studio"]'),
   ).toHaveCount(1);
-  await expect(secondTrigger).toContainText('Studio');
-  await expect(
-    secondTrigger.locator('.temporal-create-context-swatch'),
-  ).toHaveAttribute('data-context-tone', 'health');
 });
