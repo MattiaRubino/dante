@@ -61,7 +61,7 @@ function waitForTimelineRead(page: Page) {
       const payload = (await response.json()) as unknown;
       return {
         status: () => status,
-        json: async () => payload,
+        json: () => Promise.resolve(payload),
       };
     });
 }

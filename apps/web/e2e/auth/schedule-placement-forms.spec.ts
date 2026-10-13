@@ -66,7 +66,7 @@ function waitForTimelineRead(page: Page) {
       const payload = (await response.json()) as unknown;
       return {
         status: () => status,
-        json: async () => payload,
+        json: () => Promise.resolve(payload),
       };
     });
 }
@@ -130,7 +130,7 @@ async function authenticatedMutation(
         };
       } catch (error) {
         if (controller.signal.aborted) {
-          throw new Error(`Timed out ${method} ${path} after ${timeoutMs}ms`);
+          throw new Error(`Timed out ${method} ${path} after ${timeoutMs}ms`, { cause: error });
         }
         throw error;
       } finally {
