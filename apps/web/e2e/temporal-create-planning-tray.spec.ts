@@ -1,280 +1,202 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 test.use({ locale: 'it-IT' });
 
-async function createUnplacedActivity(
-  page: Page,
-  title: string,
-  durationMinutes = 60,
-) {
+type DraftResponse = {
+  draft_ref: string;
+  subject_kind: 'activity' | 'event';
+  title: string;
+  revision: number;
+  payload: unknown;
+  created_at: string;
+  updated_at: string;
+};
+
+/**
+ * Non-auth Playwright exercises the Draft Vault's UI/HTTP contract with an
+ * explicit local fixture. Durable PostgreSQL/API acceptance belongs to the
+ * separate auth/full-stack browser project.
+ */
+async function installDraftVaultFixture(page: Page) {
+  const records = new Map<string, DraftResponse>();
+  await page.route('**/api/v1/auth/session', (route) =>
+    route.fulfill({
+      status: 200,
+      json: { authenticated: true, csrf_token: 'fixture-csrf' },
+    }),
+  );
+  await page.route('**/api/v1/temporal/drafts**', async (route) => {
+    const { request } = route;
+    const path = new URL(request.url()).pathname;
+    const key = path.slice('/api/v1/temporal/drafts/'.length);
+    const method = request.method();
+    if (method === 'GET') {
+      await route.fulfill({ status: 200, json: [...records.values()] });
+      return;
+    }
+    if (method === 'PUT') {
+      const body = request.postDataJSON() as {
+        draft_ref: string;
+        title: string;
+        subject_kind: 'activity' | 'event';
+        expected_revision: number | null;
+        payload: unknown;
+      };
+      const existing = records.get(key);
+      if (
+        body.draft_ref !== key ||
+        (existing?.revision ?? null) !== body.expected_revision
+      ) {
+        await route.fulfill({ status: 409, json: { error: 'revision_conflict' } });
+        return;
+      }
+      const now = new Date().toISOString();
+      const row: DraftResponse = {
+        draft_ref: key,
+        subject_kind: body.subject_kind,
+        title: body.title,
+        revision: (existing?.revision ?? 0) + 1,
+        payload: body.payload,
+        created_at: existing?.created_at ?? now,
+        updated_at: now,
+      };
+      records.set(key, row);
+      await route.fulfill({ status: 200, json: row });
+      return;
+    }
+    if (method === 'DELETE') {
+      const existing = records.get(key);
+      const expected = new URL(request.url()).searchParams.get('expected_revision');
+      if (!existing || String(existing.revision) !== expected) {
+        await route.fulfill({ status: 409, json: { error: 'revision_conflict' } });
+        return;
+      }
+      records.delete(key);
+      await route.fulfill({ status: 204, body: '' });
+      return;
+    }
+    await route.fulfill({ status: 405, body: '' });
+  });
+  return records;
+}
+
+async function saveDraft(page: Page, title: string) {
   await page.getByRole('button', { name: 'Aggiungi alla timeline' }).click();
   const dialog = page.locator('[data-temporal-create="composer"]');
   await expect(dialog).toBeVisible();
   await dialog.getByRole('textbox', { name: 'Titolo' }).fill(title);
-  await dialog.getByRole('radio', { name: 'Da collocare' }).click();
-  await dialog
-    .getByLabel('Durata prevista')
-    .selectOption(String(durationMinutes));
-  await dialog.getByRole('button', { name: 'Aggiungi' }).click();
+  await dialog.getByRole('button', { name: 'Salva bozza' }).click();
   await expect(dialog).toHaveCount(0);
 }
 
-async function openPlanningTray(page: Page) {
-  const trigger = page.getByRole('button', {
-    name: 'Apri attività da collocare',
-  });
+async function openDraftVault(page: Page) {
+  const trigger = page.getByRole('button', { name: 'Apri Bozze' });
   await expect(trigger).toBeVisible();
-  const tray = page.locator('[data-timeline-planning-tray="true"]');
-  if (!(await tray.isVisible().catch(() => false))) {
+  if (await trigger.getAttribute('aria-expanded') !== 'true') {
     await trigger.click();
   }
-  await expect(tray).toBeVisible();
-  return { trigger, tray };
+  const vault = page.locator('[data-timeline-draft-vault="true"]');
+  await expect(vault).toBeVisible();
+  return vault;
 }
 
-function planningItem(tray: Locator, title: string) {
-  return tray
-    .locator('[data-timeline-planning-item]')
-    .filter({ hasText: title });
+function draft(vault: ReturnType<Page['locator']>, title: string) {
+  return vault.locator('article').filter({ hasText: title });
 }
 
-async function visibleTimedDropPoint(page: Page) {
-  const grid = page.locator('.timeline-grid');
-  await grid.scrollIntoViewIfNeeded();
-  await expect(grid).toBeVisible();
-
-  const candidate = await page
-    .locator('.timeline-day-section[data-timeline-date]')
-    .evaluateAll((sections) => {
-      const timelineGrid = document.querySelector('.timeline-grid');
-      if (!(timelineGrid instanceof HTMLElement)) {
-        return null;
-      }
-
-      const gridRect = timelineGrid.getBoundingClientRect();
-      const viewportTop = Math.max(0, gridRect.top);
-      const viewportBottom = Math.min(window.innerHeight, gridRect.bottom);
-      const center = (viewportTop + viewportBottom) / 2;
-      const visible = sections.flatMap((section) => {
-        if (
-          !(section instanceof HTMLElement) ||
-          !section.dataset.timelineDate
-        ) {
-          return [];
-        }
-
-        const rect = section.getBoundingClientRect();
-        const minuteZero = section.querySelector<HTMLElement>(
-          '.timeline-hour-line',
-        );
-        const timedTop = minuteZero
-          ? rect.top + Number.parseFloat(minuteZero.style.top)
-          : rect.top;
-        const top = Math.max(timedTop + 24, rect.top, viewportTop);
-        const bottom = Math.min(rect.bottom, viewportBottom);
-        if (bottom - top < 80) {
-          return [];
-        }
-
-        return [
-          {
-            x: Math.max(rect.left + 180, Math.min(rect.right - 80, 620)),
-            y: top + (bottom - top) * 0.46,
-            distance: Math.abs((top + bottom) / 2 - center),
-          },
-        ];
-      });
-      visible.sort((left, right) => left.distance - right.distance);
-      return visible[0] ?? null;
-    });
-
-  if (!candidate) {
-    throw new Error('Expected a visible Timeline timed drop point');
-  }
-  return candidate;
-}
-
-async function undoPlanningMutation(page: Page) {
-  const toast = page.locator('.temporal-create-toast.is-on');
-  await expect(toast).toBeVisible();
-  await toast.getByRole('button', { name: 'Annulla' }).click();
-}
-
-test('an unplaced Activity lives in the tray, quick placement keeps one identity, and Undo returns it', async ({
+test('saving a Draft never creates an executable Timeline card and Resume preserves its identity', async ({
   page,
 }) => {
+  const records = await installDraftVaultFixture(page);
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/home');
 
-  await createUnplacedActivity(page, 'Preparare portfolio', 60);
-  await expect(
-    page
-      .locator('.timeline-event-card')
-      .filter({ hasText: 'Preparare portfolio' }),
-  ).toHaveCount(0);
-
-  const { trigger, tray } = await openPlanningTray(page);
-  await expect(trigger).toContainText('1');
-  const item = planningItem(tray, 'Preparare portfolio');
+  await saveDraft(page, 'Preparare portfolio');
+  expect(records.size).toBe(1);
+  await expect(page.locator('.timeline-event-card')
+    .filter({ hasText: 'Preparare portfolio' })).toHaveCount(0);
+  const vault = await openDraftVault(page);
+  const item = draft(vault, 'Preparare portfolio');
   await expect(item).toBeVisible();
-  await expect(item).toContainText('60 min');
+  await expect(item).toContainText('Non attiva');
 
   const accessibility = await new AxeBuilder({ page })
-    .include('[data-timeline-planning-tray="true"]')
+    .include('[data-timeline-draft-vault="true"]')
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
     .analyze();
   expect(accessibility.violations).toEqual([]);
 
-  await item.locator('.timeline-planning-card__main').dblclick();
-  const form = item.locator('.timeline-planning-quick-place');
-  await expect(form).toBeVisible();
-  await form.getByLabel('Ora').fill('13:15');
-  await form.getByRole('button', { name: 'Colloca nella Timeline' }).click();
-
-  await expect(planningItem(tray, 'Preparare portfolio')).toHaveCount(0);
-  const card = page
-    .locator('.timeline-event-card')
-    .filter({ hasText: 'Preparare portfolio' });
-  await expect(card).toBeVisible();
-  await expect(card).toHaveAttribute('data-timeline-event');
-  await expect(card).toContainText('13:15');
-  await expect(trigger).not.toContainText('1');
-
-  await undoPlanningMutation(page);
-  await expect(card).toHaveCount(0);
-  const restored = await openPlanningTray(page);
-  await expect(
-    planningItem(restored.tray, 'Preparare portfolio'),
-  ).toBeVisible();
-  await expect(restored.trigger).toContainText('1');
+  const originalId = [...records.keys()][0];
+  await item.getByRole('button', { name: 'Riprendi' }).click();
+  const dialog = page.locator('[data-temporal-create="composer"]');
+  await expect(dialog.getByRole('textbox', { name: 'Titolo' }))
+    .toHaveValue('Preparare portfolio');
+  await dialog.getByRole('button', { name: 'Salva bozza' }).click();
+  await expect(dialog).toHaveCount(0);
+  expect([...records.keys()]).toEqual([originalId]);
+  expect(records.get(originalId ?? '')?.revision).toBe(2);
 });
 
-test('dragging carries one card over the foreground Timeline, commits once, and Escape cancels', async ({
+test('duplicating a Draft creates a separate inert draft without mutating the original', async ({
   page,
 }) => {
+  const records = await installDraftVaultFixture(page);
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/home');
-  await createUnplacedActivity(page, 'Scrivere proposta', 45);
-  await createUnplacedActivity(page, 'Rivedere note', 30);
-
-  const { tray } = await openPlanningTray(page);
-  const target = await visibleTimedDropPoint(page);
-  const first = planningItem(tray, 'Scrivere proposta').locator(
-    '.timeline-planning-card__main',
-  );
-  const itemBox = await first.boundingBox();
-  if (!itemBox) {
-    throw new Error('Expected Planning Tray card geometry');
-  }
-
-  await page.mouse.move(
-    itemBox.x + Math.min(80, itemBox.width / 2),
-    itemBox.y + itemBox.height / 2,
-  );
-  await page.mouse.down();
-  await page.mouse.move(target.x, target.y, { steps: 8 });
-  await expect(page.locator('html')).toHaveAttribute(
-    'data-timeline-planning-mode',
-    'true',
-  );
-  const carried = page.locator('[data-timeline-planning-drag-card="true"]');
-  await expect(carried).toBeVisible();
-  await expect(carried).toContainText('Scrivere proposta');
-  await expect(
-    carried.locator('[data-timeline-planning-snap="true"]'),
-  ).toContainText(/\d{2}:\d{2}–\d{2}:\d{2}/);
-  await expect(page.locator('.timeline-planning-scrim')).toHaveCount(0);
-  await expect(
-    page.locator('[data-timeline-planning-drop-preview="true"]'),
-  ).toHaveCount(0);
-
-  await page.mouse.up();
-  await expect(page.locator('html')).not.toHaveAttribute(
-    'data-timeline-planning-mode',
-    'true',
-  );
-  await expect(carried).toHaveCount(0);
-  await expect(planningItem(tray, 'Scrivere proposta')).toHaveCount(0);
-  await expect(
-    page
-      .locator('.timeline-event-card')
-      .filter({ hasText: 'Scrivere proposta' }),
-  ).toBeVisible();
-
-  await undoPlanningMutation(page);
-  const restored = await openPlanningTray(page);
-  await expect(planningItem(restored.tray, 'Scrivere proposta')).toBeVisible();
-
-  const secondTarget = await visibleTimedDropPoint(page);
-  const second = planningItem(restored.tray, 'Rivedere note').locator(
-    '.timeline-planning-card__main',
-  );
-  const secondBox = await second.boundingBox();
-  if (!secondBox) {
-    throw new Error('Expected second Planning Tray card geometry');
-  }
-  await page.mouse.move(secondBox.x + 70, secondBox.y + secondBox.height / 2);
-  await page.mouse.down();
-  await page.mouse.move(secondTarget.x, secondTarget.y, { steps: 8 });
-  await expect(page.locator('html')).toHaveAttribute(
-    'data-timeline-planning-mode',
-    'true',
-  );
-  await expect(
-    page.locator('[data-timeline-planning-drag-card="true"]'),
-  ).toBeVisible();
-  await page.keyboard.press('Escape');
-  await expect(page.locator('html')).not.toHaveAttribute(
-    'data-timeline-planning-mode',
-    'true',
-  );
-  await page.mouse.up();
-  await expect(planningItem(restored.tray, 'Rivedere note')).toBeVisible();
-  await expect(
-    page.locator('.timeline-event-card').filter({ hasText: 'Rivedere note' }),
-  ).toHaveCount(0);
+  await saveDraft(page, 'Scrivere proposta');
+  const originalId = [...records.keys()][0];
+  const vault = await openDraftVault(page);
+  await draft(vault, 'Scrivere proposta')
+    .getByRole('button', { name: 'Duplica' }).click();
+  const dialog = page.locator('[data-temporal-create="composer"]');
+  await dialog.getByRole('textbox', { name: 'Titolo' }).fill('Proposta duplicata');
+  await dialog.getByRole('button', { name: 'Salva bozza' }).click();
+  expect(records.size).toBe(2);
+  expect(records.get(originalId ?? '')?.title).toBe('Scrivere proposta');
+  expect([...records.values()].some((value) =>
+    value.title === 'Proposta duplicata')).toBe(true);
+  await expect(page.locator('.timeline-event-card')
+    .filter({ hasText: 'Proposta duplicata' })).toHaveCount(0);
 });
 
-test('tray delete is explicit and Undo restores the unplaced Activity', async ({
+test('deleting a Draft requires explicit confirmation and does not affect other drafts', async ({
   page,
 }) => {
+  const records = await installDraftVaultFixture(page);
   await page.setViewportSize({ width: 1280, height: 820 });
   await page.goto('/home');
-  await createUnplacedActivity(page, 'Pulire archivio', 30);
-  const { tray } = await openPlanningTray(page);
-  const item = planningItem(tray, 'Pulire archivio');
-
-  await item.getByRole('button', { name: 'Elimina: Pulire archivio' }).click();
-  const confirmation = item.getByRole('alertdialog');
-  await expect(confirmation).toBeVisible();
-  await expect(confirmation).toContainText('Eliminare questa attività?');
-  await confirmation.getByRole('button', { name: 'Elimina' }).click();
-  await expect(planningItem(tray, 'Pulire archivio')).toHaveCount(0);
-
-  await undoPlanningMutation(page);
-  const restored = await openPlanningTray(page);
-  await expect(planningItem(restored.tray, 'Pulire archivio')).toBeVisible();
+  await saveDraft(page, 'Pulire archivio');
+  await saveDraft(page, 'Rivedere note');
+  const vault = await openDraftVault(page);
+  const item = draft(vault, 'Pulire archivio');
+  await item.getByRole('button', { name: 'Elimina' }).click();
+  await expect(item).toContainText('Eliminare definitivamente questa bozza?');
+  await item.getByRole('button', { name: 'Annulla' }).click();
+  await expect(item).toBeVisible();
+  expect(records.size).toBe(2);
+  await item.getByRole('button', { name: 'Elimina' }).click();
+  await item.getByRole('button', { name: 'Conferma eliminazione' }).click();
+  await expect(draft(vault, 'Pulire archivio')).toHaveCount(0);
+  await expect(draft(vault, 'Rivedere note')).toBeVisible();
+  expect(records.size).toBe(1);
 });
 
-test('Planning Tray becomes a bounded bottom sheet on mobile', async ({
+test('Draft Vault stays inside the mobile viewport without horizontal overflow', async ({
   page,
 }) => {
+  await installDraftVaultFixture(page);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/home');
-  await createUnplacedActivity(page, 'Telefonare assicurazione', 30);
-  const { tray } = await openPlanningTray(page);
-
-  const box = await tray.boundingBox();
-  expect(box).not.toBeNull();
-  expect(box?.width ?? 999).toBeLessThanOrEqual(390.5);
-  expect((box?.y ?? 0) + (box?.height ?? 0)).toBeGreaterThan(820);
-  expect(
-    await page.evaluate(
-      () =>
-        document.documentElement.scrollWidth <=
-        document.documentElement.clientWidth,
-    ),
-  ).toBe(true);
-  await expect(planningItem(tray, 'Telefonare assicurazione')).toBeVisible();
+  await saveDraft(page, 'Telefonare assicurazione');
+  const vault = await openDraftVault(page);
+  const bounds = await vault.boundingBox();
+  if (!bounds) throw new Error('Expected mobile Draft Vault geometry');
+  expect(bounds.x).toBeGreaterThanOrEqual(0);
+  expect(bounds.x + bounds.width).toBeLessThanOrEqual(390.5);
+  expect(await page.evaluate(() =>
+    document.documentElement.scrollWidth <=
+    document.documentElement.clientWidth,
+  )).toBe(true);
+  await expect(draft(vault, 'Telefonare assicurazione')).toBeVisible();
 });
