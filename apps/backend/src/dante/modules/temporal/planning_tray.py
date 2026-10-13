@@ -232,7 +232,7 @@ class TemporalPlanningTrayApplication:
             raise PlanningTrayItemNotFoundError()
 
         if kind == "activity":
-            result = await self._activity.schedule_existing_activity_with_placement(
+            activity_result = await self._activity.schedule_existing_activity_with_placement(
                 self_person_ref=self_person_ref,
                 activity_ref=subject_ref,
                 operation_id=operation_id,
@@ -241,9 +241,9 @@ class TemporalPlanningTrayApplication:
             return PlanningTrayPlacementView(
                 kind="activity",
                 subject_ref=subject_ref,
-                schedule_ref=UUID(str(result.schedule.schedule_ref)),
-                placement_material_state_ref=UUID(str(result.schedule.material_state_ref)),
-                replayed=result.replayed,
+                schedule_ref=UUID(str(activity_result.schedule.schedule_ref)),
+                placement_material_state_ref=UUID(str(activity_result.schedule.material_state_ref)),
+                replayed=activity_result.replayed,
             )
 
         if item.state == "postponed":
@@ -251,7 +251,7 @@ class TemporalPlanningTrayApplication:
                 raise PlanningTrayPersistenceError(
                     "Postponed Event is missing retained Schedule truth."
                 )
-            result = await self._event.replan_postponed_event(
+            postponed_result = await self._event.replan_postponed_event(
                 self_person_ref=self_person_ref,
                 event_ref=subject_ref,
                 schedule_ref=item.schedule_ref,
@@ -262,12 +262,12 @@ class TemporalPlanningTrayApplication:
             return PlanningTrayPlacementView(
                 kind="event",
                 subject_ref=subject_ref,
-                schedule_ref=UUID(str(result.schedule.schedule_ref)),
-                placement_material_state_ref=UUID(str(result.schedule.material_state_ref)),
-                replayed=result.replayed,
+                schedule_ref=UUID(str(postponed_result.schedule.schedule_ref)),
+                placement_material_state_ref=UUID(str(postponed_result.schedule.material_state_ref)),
+                replayed=postponed_result.replayed,
             )
 
-        result = await self._schedule.establish_schedule(
+        established_result = await self._schedule.establish_schedule(
             self_person_ref=self_person_ref,
             operation_id=operation_id,
             subject_native_ref=subject_ref,
@@ -276,7 +276,7 @@ class TemporalPlanningTrayApplication:
         return PlanningTrayPlacementView(
             kind="event",
             subject_ref=subject_ref,
-            schedule_ref=UUID(str(result.schedule_ref)),
-            placement_material_state_ref=UUID(str(result.material_state_ref)),
-            replayed=result.replayed,
+            schedule_ref=UUID(str(established_result.schedule_ref)),
+            placement_material_state_ref=UUID(str(established_result.material_state_ref)),
+            replayed=established_result.replayed,
         )
