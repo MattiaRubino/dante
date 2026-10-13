@@ -218,7 +218,7 @@ test('Activity with live capture and planned root Session survives Advanced roun
   await expect(card).toHaveCount(0);
 });
 
-test('Event Advanced preserves structured agenda, deep intent and provider requests without claiming provider execution', async ({
+test('Event Advanced preserves the current Scaletta, participation and description without provider execution', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1360, height: 860 });
@@ -227,58 +227,61 @@ test('Event Advanced preserves structured agenda, deep intent and provider reque
   const dialog = await openCreate(page);
   await dialog.getByRole('textbox', { name: 'Titolo' }).fill('Call cliente');
   await dialog.getByRole('radio', { name: 'Evento' }).click();
+  await dialog.getByRole('radio', { name: 'Orario' }).click();
   await dialog.getByRole('textbox', { name: 'Inizio: ore' }).fill('16');
   await dialog.getByRole('textbox', { name: 'Inizio: minuti' }).fill('00');
-  await dialog.getByRole('radio', { name: 'Orario' }).click();
+  await setTimedDuration(dialog, 60);
   await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
-  await dialog.getByLabel('Ripeti', { exact: true }).selectOption('weekly');
 
-  await dialog.getByLabel('Scopo').fill('Definire il rilascio');
-  await dialog
-    .getByLabel('Risultato atteso')
-    .fill('Decisione sul piano finale');
-
-  const agendaInput = dialog.getByLabel('Nuova voce agenda');
+  // The U2 product replaced legacy free-form provider instructions with
+  // canonical run-of-show and person-referent authoring. Verify those current
+  // controls instead of asserting removed Scopo/provider fields.
+  const agenda = dialog.locator('[data-temporal-create-agenda]');
+  const addPart = agenda.getByRole('button', {
+    name: 'Aggiungi punto alla scaletta',
+  });
   for (const part of ['Rischi', 'Decisioni', 'Prossimi passi']) {
-    await agendaInput.fill(part);
-    await agendaInput.press('Enter');
+    await addPart.click();
+    await agenda.getByRole('textbox', {
+      name: `Punto scaletta ${await agenda.locator('[data-temporal-create-agenda-part]').count()}`,
+    }).fill(part);
   }
-  await expect(
-    dialog.locator('[data-temporal-create-agenda-part]'),
-  ).toHaveCount(3);
-  await dialog.getByLabel('Voce agenda 3').press('Alt+ArrowUp');
-  await expect(dialog.getByLabel('Voce agenda 2')).toHaveValue(
-    'Prossimi passi',
-  );
-  await dialog.getByRole('button', { name: 'Sposta voce 2 giù' }).click();
-  await expect(dialog.getByLabel('Voce agenda 3')).toHaveValue(
-    'Prossimi passi',
-  );
-  await agendaInput.fill('   ');
-  await agendaInput.press('Enter');
-  await expect(
-    dialog.locator('[data-temporal-create-agenda-part]'),
-  ).toHaveCount(3);
-  await agendaInput.fill('');
+  await expect(agenda.locator('[data-temporal-create-agenda-part]'))
+    .toHaveCount(3);
+  await agenda.getByRole('textbox', { name: 'Punto scaletta 3' })
+    .press('Alt+ArrowUp');
+  await expect(agenda.getByRole('textbox', { name: 'Punto scaletta 2' }))
+    .toHaveValue('Prossimi passi');
+  await agenda.locator('[data-temporal-create-agenda-part]').nth(1)
+    .getByRole('button', { name: 'Sposta giù' }).click();
+  await expect(agenda.getByRole('textbox', { name: 'Punto scaletta 3' }))
+    .toHaveValue('Prossimi passi');
 
-  await dialog
-    .getByRole('checkbox', { name: 'Da questo evento è attesa una decisione' })
-    .check();
-  await dialog.getByLabel('Partecipanti richiesti').fill('Cliente principale');
-  await dialog.getByLabel('Sale e risorse').fill('Sala Atlas');
-  await dialog
-    .getByLabel('Pre-read / materiale da preparare')
-    .fill('Specifica v3');
-  await dialog.getByLabel('Buffer di preparazione').selectOption('15');
-  await dialog.getByLabel('Buffer di recupero').selectOption('10');
-  await dialog.getByLabel('Videochiamata').selectOption('provider-default');
-  await expect(dialog).toContainText(
-    'Inviti, prenotazioni e link reali vengono eseguiti solo quando il provider/backend è collegato.',
+  const description = dialog.getByRole('textbox', {
+    name: 'Descrizione avanzata',
+  });
+  await description.fill('Definire il rilascio con una decisione sul piano finale.');
+  const participants = dialog.locator('[data-create-event-participants]');
+  await expect(participants).toContainText(
+    'non concede accesso alla tua Timeline',
   );
-  await expect(dialog).toContainText(
-    'Generazione delle Occurrence, checkpoint dell’evaluator, reconciliation e persistenza durevole',
+  await participants.locator('.temporal-create-event-participants__add button')
+    .click();
+  await expect(participants.locator('.temporal-create-event-participants__list'))
+    .toContainText('Io');
+  await expect(participants.getByRole('combobox', { name: 'Partecipazione di Io' }))
+    .toHaveValue('required');
+
+  await dialog.getByRole('button', { name: 'Nascondi opzioni avanzate' })
+    .click();
+  await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
+  await expect(description).toHaveValue(
+    'Definire il rilascio con una decisione sul piano finale.',
   );
-  await expectNoRawCreateKeys(page);
+  await expect(agenda.locator('[data-temporal-create-agenda-part]'))
+    .toHaveCount(3);
+  await expect(participants.locator('.temporal-create-event-participants__list'))
+    .toContainText('Io');
 
   await dialog.getByRole('button', { name: 'Aggiungi', exact: true }).click();
   await expect(dialog).toHaveCount(0);
@@ -286,13 +289,7 @@ test('Event Advanced preserves structured agenda, deep intent and provider reque
     .locator('.timeline-event-card[data-temporal-create-projection]')
     .filter({ hasText: 'Call cliente' });
   await expect(card).toBeVisible();
-  await expect(card).toContainText('Ricorrente');
-  const expander = card.getByRole('button', { name: /3 sotto-attività/ });
-  await expect(expander).toBeVisible();
-  await expander.click();
-  await expect(card).toContainText('Rischi');
-  await expect(card).toContainText('Decisioni');
-  await expect(card).toContainText('Prossimi passi');
+  await expect(card).toContainText('16:00');
 });
 
 test('Event calendar recurrence preserves interval and end policy across Advanced round trips', async ({
