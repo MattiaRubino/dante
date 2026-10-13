@@ -9,6 +9,10 @@ Revision ID: 20261013_144
 Revises: 20261012_143
 """
 
+# Historical-migration-only Ruff S608 review: Upgrade only loops the fixed _TABLES tuple of two schema-owned recurrence tables; there is no runtime input.
+# The SQL is frozen, already applied, and must not be rewritten solely for lint.
+# ruff: noqa: S608
+
 from collections.abc import Sequence
 
 from alembic import op
