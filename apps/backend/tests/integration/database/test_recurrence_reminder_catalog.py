@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import sys
+
 import json
 from pathlib import Path
 from typing import Any
@@ -46,7 +48,7 @@ def _dictionary_names(kind: str) -> set[str]:
 
 
 def _print_delta(label: str, values: set[str]) -> None:
-    print(f"B11_CATALOG_{label}=" + json.dumps(sorted(values), separators=(",", ":")))
+    sys.stdout.write(f"B11_CATALOG_{label}=" + json.dumps(sorted(values), separators=(",", ":")) + "\n")
 
 
 def test_b11_catalog_reconciliation_probe(migrated_database: Any) -> None:
@@ -114,8 +116,8 @@ def test_b11_catalog_reconciliation_probe(migrated_database: Any) -> None:
     assert live["routines"] >= _B11_C_ROUTINES
     assert {table.name for table in MAPPED_TABLES} >= _B11_C_TABLES
 
-    print("B11_CATALOG_REVISION=" + revision[0])
-    print("B11_CATALOG_TOPOLOGY=" + "|".join(str(value) for value in topology))
+    sys.stdout.write("B11_CATALOG_REVISION=" + revision[0] + "\n")
+    sys.stdout.write("B11_CATALOG_TOPOLOGY=" + "|".join(str(value) for value in topology) + "\n")
     for kind in ("tables", "views", "routines"):
         _print_delta(f"LIVE_{kind.upper()}_MINUS_DICTIONARY", live[kind] - dictionary[kind])
         _print_delta(f"DICTIONARY_{kind.upper()}_MINUS_LIVE", dictionary[kind] - live[kind])
