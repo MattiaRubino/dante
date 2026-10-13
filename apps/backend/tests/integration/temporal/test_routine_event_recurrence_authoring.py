@@ -60,7 +60,8 @@ async def test_recurrence_authoring_preserves_four_families_history_dst_and_sour
         initial = await recurrences.get(
             owner="routine", self_person_ref=alice, owner_ref=routine.routine_ref
         )
-        assert initial is not None and isinstance(initial.recurrence, CalendarRecurrence)
+        assert initial is not None
+        assert isinstance(initial.recurrence, CalendarRecurrence)
         assert (
             await recurrences.get(owner="event", self_person_ref=alice, owner_ref=event.event_ref)
             is None
@@ -197,9 +198,8 @@ async def test_recurrence_authoring_preserves_four_families_history_dst_and_sour
             expected_material_state_ref=None,
             recurrence=named_calendar,
         )
-        assert not event_calendar.replayed and isinstance(
-            event_calendar.recurrence.recurrence, CalendarRecurrence
-        )
+        assert not event_calendar.replayed
+        assert isinstance(event_calendar.recurrence.recurrence, CalendarRecurrence)
         with pytest.raises(RecurrenceStateConflictError):
             await recurrences.replace(
                 owner="event",
