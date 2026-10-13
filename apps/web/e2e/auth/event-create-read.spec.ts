@@ -75,9 +75,9 @@ function readUnplaced(page: Page) {
     headers: { 'X-Dante-Time-Zone': 'Europe/Rome' },
   });
 }
-async function openHome(page: Page): Promise<void> {
+async function openHome(page: Page, target = '/home'): Promise<void> {
   const timeline = waitForTimelineRead(page);
-  await page.goto('/home');
+  await page.goto(target);
   expect((await timeline).status()).toBe(200);
   expect((await readUnplaced(page)).status()).toBe(200);
   await expect(
@@ -193,7 +193,7 @@ test.describe('Timeline B03-E real-stack Event closure', () => {
       // past-authoring policies while testing the same real DB contracts.
       const today = Temporal.Now.plainDateISO('Europe/Rome')
         .add({ days: 1 }).toString();
-      await openHome(page);
+      await openHome(page, `/home?date=${today}`);
       const browserTag = testInfo.project.name;
 
       const timedTitle = `B03 E timed ${browserTag}`;
