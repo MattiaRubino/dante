@@ -136,6 +136,29 @@ function defaultFieldsFor(fields: TemporalCreateFields): TemporalCreateFields {
 }
 
 /**
+ * The inactive Scheduling editor caches the date that Create originally
+ * opened on. Choosing another Start date does not represent a user-authored
+ * scheduling constraint. Comparing those stale, inactive dates against the
+ * new date previously diverted valid multi-day Event creation to the legacy
+ * runtime, where the B03 compatibility gate rejected it before any POST.
+ *
+ * Keep checking every meaningful policy, time and mode. Ignore only four
+ * dates which have no semantics while constraintKind is 'none'.
+ */
+function equivalentSchedulingForU2(fields: TemporalCreateFields): boolean {
+  const defaults = defaultFieldsFor(fields).scheduling;
+  const actual = fields.scheduling;
+  if (actual.constraintKind !== 'none') return false;
+  return sameJson({
+    ...actual,
+    windowStartDate: defaults.windowStartDate,
+    windowEndDate: defaults.windowEndDate,
+    earliestStartDate: defaults.earliestStartDate,
+    deadlineDate: defaults.deadlineDate,
+  }, defaults);
+}
+
+/**
  * U2 owns the product Quick Create contract. Rich historical authoring remains
  * on the established runtime until each advanced capability is migrated to an
  * equivalent canonical endpoint; unsupported intent must never be silently
@@ -149,7 +172,7 @@ export function temporalCreateU2QuickIntentSupported(
   if (fields.eventRecurrence.patternKind !== 'none') return false;
 
   const defaults = defaultFieldsFor(fields);
-  if (!sameJson(fields.scheduling, defaults.scheduling)) return false;
+  if (!equivalentSchedulingForU2(fields)) return false;
   if (
     fields.execution.sessionMode === 'indivisible' &&
     fields.execution.minSessionMinutes !== defaults.execution.minSessionMinutes
@@ -208,7 +231,7 @@ export function temporalCreateRecurringEventSharedIntentSupported(
   if (fields.appearanceTone !== null) return false;
 
   const defaults = defaultFieldsFor(fields);
-  if (!sameJson(fields.scheduling, defaults.scheduling)) return false;
+  if (!equivalentSchedulingForU2(fields)) return false;
   if (!sameJson(fields.execution, defaults.execution)) return false;
 
   const confirmationWithoutReminder = {
