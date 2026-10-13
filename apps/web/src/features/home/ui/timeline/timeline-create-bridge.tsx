@@ -641,11 +641,17 @@ export function TimelineCreateBridge({
   const applied = useCallback(
     (effect: TemporalCreateAppliedEffect) => {
       const projection = temporalCreateTimelineProjectionFromEffect(effect);
-      const meta = projection.recurring
+      const kindMeta = projection.recurring
         ? t(($) => $.common.home.timeline.create.recurrence.recurringBadge)
         : projection.kind === 'activity'
           ? t(($) => $.common.home.timeline.create.kind.activity)
           : t(($) => $.common.home.timeline.create.kind.event);
+      // Keep the selected Life Area visible on the actual Timeline card,
+      // not only in the Create editor and colour picker.
+      const contextLabel = groups.find(
+        (group) => group.id === projection.contextId,
+      )?.label;
+      const meta = contextLabel ? `${kindMeta} · ${contextLabel}` : kindMeta;
       const timed = timelineEventFromProjection(projection, meta);
       const allDay = timelineAllDayFromProjection(projection, meta);
       if (timed) {
@@ -673,6 +679,7 @@ export function TimelineCreateBridge({
       onMaterializeCreatedEvent,
       reveal,
       showCreateFeedback,
+      groups,
       t,
     ],
   );
