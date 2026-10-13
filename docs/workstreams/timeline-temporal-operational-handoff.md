@@ -1,5 +1,14 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-13 — Resource-aware full-gate scheduling (not WSL benchmarked)
+
+The latest *measured* complete WSL run at `6476a5c1` took **1713.3s** (28m33s): PostgreSQL **392.5s**, browser non-auth **395.5s**, browser real-stack **918.6s**, browser session fixture **6.5s**. Non-auth and real-stack Playwright were serialized after PostgreSQL, leaving long idle CPU capacity. The real-stack suite intentionally stops/restarts PostgreSQL in auth and timeline recovery proofs, so blindly raising its single Playwright worker count is unsafe.
+
+Opt-in `tooling/testing/run_parallel_gate.py` now runs PostgreSQL as **3 bounded Docker containers and 3 duration-balanced queued work items per worker by default**, with work stealing once any pytest subprocess finishes. Observed module timings are collected from `pytest --durations=0`, stored only in ignored `temp/POSTGRES_MODULE_TIMINGS.json`, and used to distribute the next run without splitting module fixture boundaries. Group timing history likewise starts heavy independent checks earlier; per-shard wall-times and longest-group summary are retained in the test archive. The fixture and non-auth browser runs stay serialized relative to each other but start before PostgreSQL finishes; non-auth Chromium has **3 independent workers** only in the opt-in parallel runner (ordinary Playwright config stays 1). Real-stack continues serial **after** PostgreSQL finishes, preserving destructive isolation. No original tests, acceptance gates or retries on functional failures were removed.
+
+Commands from a clean checked-out branch: `python3 tooling/testing/run_parallel_gate.py --self-test`, `--dry-run`, then `python3 tooling/testing/run_parallel_gate.py --group-workers 5 --postgres-workers 3 --postgres-jobs-per-worker 3 --nonauth-workers 3`. The authoritative sequential reference is unchanged. **This candidate is not performance-verified in user WSL and not a passing 27-group result.** Measure one full same-SHA run and compare exact group durations before increasing a resource budget.
+
+
 ## 2026-10-13 — B01/B03 live browser contract repairs
 
 The real-stack B01 browser scenario now creates a canonical *unplaced* Activity using the authenticated U2 `/authoring/activities` API with `placement: null`, rather than asking retired Quick Create to produce an unplaced item. It verifies accepted response, PostgreSQL readback, legacy existing-items management, isolation from the inert Draft Vault, reload and user-discarded draft isolation. This is an explicit API-plus-browser journey, **not** a claim that Quick supports unplaced authoring.
