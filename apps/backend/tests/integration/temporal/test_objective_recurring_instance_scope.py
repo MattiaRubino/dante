@@ -303,6 +303,11 @@ async def test_generated_event_objectives_share_future_scope_without_copying_res
     authoring = RecurringAuthoringApplication(runtime.session_factory)
     policy = EventOccurrencePolicyApplication(runtime.session_factory)
     materializer = RoutineOccurrenceMaterializationApplication(runtime.session_factory)
+    # A fixed 2026-10-13 10:00 occurrence became historical once the
+    # wall clock passed it. Always select a genuinely future instance:
+    # "Questa e le prossime" must never rewrite an accepted past instance.
+    past_day = date(2026, 10, 6)
+    future_day = datetime.now(ZoneInfo(ZONE)).date() + timedelta(days=7)
     try:
         source = await authoring.create_event(
             self_person_ref=actor, operation_id="m2scope:event",
@@ -319,25 +324,23 @@ async def test_generated_event_objectives_share_future_scope_without_copying_res
                 "presentation_order": 0,
             },),
         )
-        for token, day in (("past", 6), ("future", 13)):
+        for token, day in (("past", past_day), ("future", future_day)):
             await materializer.checkpoint_window(
                 self_person_ref=actor,
                 operation_id=f"m2scope:event:{token}",
-                start_date=datetime(2026, 10, day, tzinfo=ZoneInfo(ZONE)).date(),
-                end_date_exclusive=datetime(
-                    2026, 10, day, tzinfo=ZoneInfo(ZONE)
-                ).date() + timedelta(days=1),
+                start_date=day,
+                end_date_exclusive=day + timedelta(days=1),
                 effective_zone_id=ZONE,
             )
         (past_occurrence,) = await _read_checkpoint_refs(
             runtime, actor, source.source_ref, owner="event",
             operation="m2scope:event:past",
-            start=date(2026, 10, 6), end=date(2026, 10, 7),
+            start=past_day, end=past_day + timedelta(days=1),
         )
         (future_occurrence,) = await _read_checkpoint_refs(
             runtime, actor, source.source_ref, owner="event",
             operation="m2scope:event:future",
-            start=date(2026, 10, 13), end=date(2026, 10, 14),
+            start=future_day, end=future_day + timedelta(days=1),
         )
         past = await _objective_for_occurrence(
             runtime, actor, past_occurrence, kind="occurrence",

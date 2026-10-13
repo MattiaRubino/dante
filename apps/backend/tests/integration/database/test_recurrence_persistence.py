@@ -588,8 +588,28 @@ def test_m4_dictionary_matches_live_stage_and_current_scope(
                 """
             )
         }
+    # The Dictionary describes the *current* _145 canonical schema, but this
+    # proof explicitly upgrades only through CP6-M04 (_04). The two elapsed
+    # anchors were NOT NULL at _04; B11-A later admitted relative anchor
+    # modes that require a NULL anchor. Check historical physical truth
+    # without changing today's Dictionary or skipping any column.
+    relative_anchor_tables = {
+        "event_recurrence_elapsed_state",
+        "routine_recurrence_elapsed_state",
+    }
+    assert all(
+        entries[name]["structure"]["columns"]
+        for name in relative_anchor_tables
+    )
     dictionary_columns = {
-        (name, str(c["name"]), str(c["postgres_type"]), "YES" if c["nullable"] else "NO")
+        (
+            name,
+            str(c["name"]),
+            str(c["postgres_type"]),
+            "NO"
+            if name in relative_anchor_tables and c["name"] == "anchor_at"
+            else ("YES" if c["nullable"] else "NO"),
+        )
         for name, entry in historical_entries.items()
         for c in entry["structure"]["columns"]
     }
