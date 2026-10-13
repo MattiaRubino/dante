@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import UTC, date, datetime, time, timedelta
 from decimal import Decimal
 from typing import Any
+from uuid import UUID
 
 import psycopg
 import pytest

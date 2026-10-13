@@ -12,7 +12,7 @@ import json
 from dataclasses import asdict, dataclass
 from datetime import date, datetime, time
 from decimal import Decimal
-from typing import Literal, TypeAlias
+from typing import Literal
 from uuid import UUID
 
 from sqlalchemy import text
@@ -114,7 +114,7 @@ class CyclicRecurrence:
     generates_expected: tuple[bool, ...]
 
 
-RecurrenceSpec: TypeAlias = CalendarRecurrence | ElapsedRecurrence | QuotaRecurrence | CyclicRecurrence
+type RecurrenceSpec = CalendarRecurrence | ElapsedRecurrence | QuotaRecurrence | CyclicRecurrence
 
 
 @dataclass(frozen=True, slots=True)

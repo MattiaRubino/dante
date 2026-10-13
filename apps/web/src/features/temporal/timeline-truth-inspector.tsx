@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import './timeline-truth-inspector.css';
 
@@ -102,15 +102,6 @@ export function TimelineTruthInspector() {
     [state],
   );
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (
-      selectedKey !== null &&
-      !subjects.some((item) => item.key === selectedKey)
-    ) {
-      setSelectedKey(null);
-    }
-  }, [selectedKey, subjects]);
 
   const selected =
     subjects.find((item) => item.key === selectedKey) ?? subjects[0] ?? null;

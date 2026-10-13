@@ -122,7 +122,7 @@ test('a focused card never consumes the first drag gesture on another card', asy
   await expect(overlay).toHaveCount(0);
 });
 
-test('a simple click on another card dismisses focus before retargeting it', async ({
+test('a simple click on another card retargets focus without retaining stale selection', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -152,12 +152,15 @@ test('a simple click on another card dismisses focus before retargeting it', asy
   await page.mouse.click(focusedX, focusedY);
   await expect(focused).toHaveClass(/is-focused/);
 
+  // Direct single-click focus retargeting is the current Timeline contract:
+  // the old card must lose focus as the new card gains it.
   await page.mouse.click(targetX, targetY);
   await expect(focused).not.toHaveClass(/is-focused/);
-  await expect(target).not.toHaveClass(/is-focused/);
-
-  await page.mouse.click(targetX, targetY);
   await expect(target).toHaveClass(/is-focused/);
+
+  await page.mouse.click(focusedX, focusedY);
+  await expect(target).not.toHaveClass(/is-focused/);
+  await expect(focused).toHaveClass(/is-focused/);
 });
 
 test('compact overlap cards stay in a bounded cluster instead of jumping across the canvas', async ({
