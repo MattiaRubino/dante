@@ -190,3 +190,52 @@ PostgreSQL group; missing groups, failures, or a dirty/changed source tree
 keep the whole parallel gate RED. The parallel implementation itself requires
 a real WSL run before its performance or behavioral equivalence can be
 certified. The sequential gate remains the fallback authoritative mode.
+
+
+### Resource-aware parallel gate (13 October 2026 candidate)
+
+The **opt-in** `tooling/testing/run_parallel_gate.py` retains the exact
+27-group inventory from the authoritative sequential runner. Its default
+budgets are now `--group-workers 5 --postgres-workers 3
+--postgres-jobs-per-worker 3 --nonauth-workers 3`, chosen for the recorded
+Docker loopback-port and restart failures at 5–10 disposable PG containers.
+These are **independent limits**, not one pool of 15 PostgreSQL containers.
+Override them for an observed machine budget; no speedup or complete PASS is
+claimed without measured WSL evidence.
+
+PostgreSQL modules stay indivisible to preserve fixtures/test order. Jobs run
+in a refilling shared queue (next free worker pulls the next job), prioritized
+by prior per-module pytest setup/call/teardown durations when present. The
+first run falls back to collected-test counts. The runner writes an
+ignored `temp/POSTGRES_MODULE_TIMINGS.json` profile for subsequent runs and
+full shard timing evidence in `BACKEND_POSTGRES_SHARD_TIMINGS.json` inside
+the gate log archive. It also writes `temp/GATE_GROUP_TIMINGS.json` to
+prioritize long read-only groups on later runs. Timing files affect **order
+only**, never the number of cases selected or any PASS/FAIL requirement.
+
+After the serial generated/build lane, the browser fixture gate and the
+non-auth browser gate run one after the other **while** the PostgreSQL
+queue may still be active; their server ports remain separate, and browser
+test-results are archived before another browser gate runs. Only the
+opt-in parallel runner sets `DANTE_E2E_NONAUTH_WORKERS` (default 3);
+direct `playwright.config.ts` usage remains one worker. The real-stack
+auth Playwright gate stays **one worker** and starts **after** PostgreSQL
+has completely drained, because several of its actual tests deliberately
+stop and restart a real PostgreSQL instance. It cannot safely join the
+other PostgreSQL or browser pools without stronger resource isolation.
+
+Use:
+```bash
+python3 tooling/testing/run_parallel_gate.py --self-test
+python3 tooling/testing/run_parallel_gate.py --dry-run
+python3 tooling/testing/run_parallel_gate.py \
+  --group-workers 5 --postgres-workers 3 \
+  --postgres-jobs-per-worker 3 --nonauth-workers 3
+```
+The timing profiles and artifacts remain in ignored `temp/`; source must
+remain clean and on the same SHA. Historical result `6476a5c1`: 1713.3s
+total, `WEB_BROWSER_REAL_STACK` 918.6s, `WEB_BROWSER_NONAUTH` 395.5s,
+`BACKEND_POSTGRES` 392.5s. Most of the total duration was in the two
+**serial browser gates**; more PostgreSQL workers alone cannot fix that.
+These scheduler changes are unverified on WSL and must not be presented as
+a demonstrated speed gain or a green full gate.
