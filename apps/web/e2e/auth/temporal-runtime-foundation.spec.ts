@@ -11,10 +11,13 @@ const repoRoot = resolve(
   '../../../..',
 );
 
+// Each project owns three distinct seeded identities. Keep the B00 WebKit
+// range clear of the golden Life Area (55, 56) and Schedule Forms (58..60)
+// suites; otherwise the "empty Home" read sees another suite's real events.
 const projectEmailBase: Readonly<Record<string, number>> = {
-  chromium: 35,
-  firefox: 45,
-  webkit: 55,
+  chromium: 35, // 36..38
+  firefox: 45,  // 46..48
+  webkit: 48,   // 49..51
 };
 
 function emailFor(testInfo: TestInfo, slot: 1 | 2 | 3): string {
