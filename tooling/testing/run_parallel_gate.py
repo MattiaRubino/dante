@@ -11,6 +11,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from contextlib import redirect_stdout
 import json
+import os
 import re
 import shlex
 import shutil
@@ -24,6 +25,8 @@ from typing import TextIO
 ROOT = Path(__file__).resolve().parents[2]
 GATE = ROOT / "tooling/verify-all-current-tests-local.sh"
 BRANCH = "feature/timeline-temporal-operational"
+PG_TIMINGS = ROOT / "temp/POSTGRES_MODULE_TIMINGS.json"
+GROUP_TIMINGS = ROOT / "temp/GATE_GROUP_TIMINGS.json"
 
 READ_ONLY = (
     "DIFF_CHECK", "TEST_FILE_NAMES", "TEST_INTEGRITY", "BACKEND_FORMAT",
@@ -86,13 +89,16 @@ def git(*args: str) -> str:
     return subprocess.check_output(["git", *args], cwd=ROOT, text=True).strip()
 
 
-def execute(task: Task, folder: Path) -> Result:
+def execute(
+    task: Task, folder: Path, *, environment: dict[str, str] | None = None,
+) -> Result:
     started = time.monotonic()
     with (folder / f"{task.name}.log").open("w", encoding="utf-8") as output:
         try:
             result = subprocess.run(
                 task.command, cwd=task.cwd, stdout=output,
                 stderr=subprocess.STDOUT, check=False,
+                env={**os.environ, **environment} if environment else None,
             )
             code = result.returncode
         except OSError as exc:
@@ -107,7 +113,10 @@ def phase(
     print(f"PHASE: {', '.join(names)} (parallel={workers})", flush=True)
     completed: dict[str, Result] = {}
     with ThreadPoolExecutor(max_workers=workers) as pool:
-        submitted = {pool.submit(execute, tasks[n], folder): n for n in names}
+        submitted = {
+            pool.submit(execute, tasks[n], folder): n
+            for n in _prioritize_groups(names)
+        }
         for future in as_completed(submitted):
             name = submitted[future]
             try:
@@ -178,15 +187,34 @@ def postgres_collection(task: Task, folder: Path) -> list[str]:
     return nodes
 
 
-def shard_modules(
-    nodes: list[str], workers: int, jobs_per_worker: int = 4,
-) -> list[list[str]]:
-    """Create more module-atomic jobs than workers for dynamic work stealing.
+def _load_timings(path: Path) -> dict[str, float]:
+    """Historical timings influence order only; never selection or acceptance."""
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError, TypeError):
+        return {}
+    if not isinstance(raw, dict):
+        return {}
+    return {
+        key: float(value)
+        for key, value in raw.items()
+        if isinstance(key, str)
+        and isinstance(value, (int, float))
+        and not isinstance(value, bool)
+        and 0 < float(value) < 100_000
+    }
 
-    A worker finishing its current pytest process immediately takes the next
-    queued job. Keeping every module's cases in one job preserves module-level
-    fixture lifetimes and test order; a single running test is never interrupted
-    or executed twice. The scheduler deliberately bounds Docker concurrency.
+
+def shard_modules(
+    nodes: list[str], workers: int, jobs_per_worker: int = 3,
+    timings: dict[str, float] | None = None,
+) -> list[list[str]]:
+    """Build module-atomic, duration-balanced jobs for a refilling worker pool.
+
+    Each module is exactly once in the entire queue, preserving its existing
+    pytest order and module/session fixture semantics. Historical runtimes
+    (when available) replace inaccurate test-count-only weighting. The next
+    queued job is automatically assigned to the next free worker.
     """
     by_file: dict[str, list[str]] = defaultdict(list)
     for node in nodes:
@@ -194,17 +222,65 @@ def shard_modules(
     count = min(len(by_file), workers * jobs_per_worker)
     if count == 0:
         raise RuntimeError("No selected PostgreSQL modules")
+    weights = timings or {}
     result: list[list[str]] = [[] for _ in range(count)]
-    # Longest modules enter the queue first; short modules fill spare jobs.
-    for _, tests in sorted(by_file.items(), key=lambda x: (-len(x[1]), x[0])):
-        target = min(range(count), key=lambda i: (len(result[i]), i))
+    totals = [0.0] * count
+
+    def cost(module: str, cases: list[str]) -> float:
+        return weights.get(module, float(len(cases)))
+
+    # Largest/slowest modules are scheduled first. Greedy least-loaded packing
+    # keeps each job similar in observed cost without breaking module fixtures.
+    modules = sorted(
+        by_file.items(), key=lambda item: (-cost(*item), item[0]),
+    )
+    for module, tests in modules:
+        target = min(range(count), key=lambda i: (totals[i], i))
         result[target].extend(tests)
+        totals[target] += cost(module, tests)
     if not all(result):
         raise RuntimeError("Empty PostgreSQL work item")
     flattened = [node for job in result for node in job]
     if len(flattened) != len(nodes) or set(flattened) != set(nodes):
         raise RuntimeError("PostgreSQL work queue lost or duplicated tests")
     return result
+
+
+_PYTEST_DURATION = re.compile(
+    r"^\\s*(\\d+(?:\\.\\d+)?)s\\s+(?:setup|call|teardown)\\s+"
+    r"(tests/[^\\s:]+\\.py)(?:::|\\s|$)"
+)
+
+
+def _observed_module_timings(
+    plans: dict[str, list[str]], folder: Path,
+) -> dict[str, float]:
+    """Extract actual per-module pytest setup/call/teardown durations."""
+    totals: dict[str, float] = defaultdict(float)
+    for name in plans:
+        lines = (folder / f"{name}.log").read_text(
+            encoding="utf-8", errors="replace",
+        ).splitlines()
+        for line in lines:
+            match = _PYTEST_DURATION.match(line)
+            if match:
+                totals[match.group(2)] += float(match.group(1))
+    return dict(totals)
+
+
+def _prioritize_groups(names: tuple[str, ...]) -> tuple[str, ...]:
+    """Dispatch previously slow independent checks first, avoiding long tails."""
+    measured = _load_timings(GROUP_TIMINGS)
+    fallback = {
+        "BACKEND_NON_POSTGRES": 42.0,
+        "REPO_ESLINT": 40.0,
+        "WEB_VITEST": 32.0,
+        "REPO_FORMAT": 12.0,
+        "BACKEND_MYPY": 3.0,
+    }
+    return tuple(sorted(
+        names, key=lambda name: (-measured.get(name, fallback.get(name, 1.0)), name),
+    ))
 
 
 def self_test_scheduler() -> None:
@@ -216,7 +292,7 @@ def self_test_scheduler() -> None:
     ]
     for capacity in (1, 5, 10):
         chunks = shard_modules(nodes, capacity)
-        assert len(chunks) == min(24, capacity * 4)
+        assert len(chunks) == min(24, capacity * 3)
         seen = [node for chunk in chunks for node in chunk]
         assert len(seen) == len(set(seen)) == len(nodes)
         assert set(seen) == set(nodes)
@@ -230,6 +306,14 @@ def self_test_scheduler() -> None:
                 case_nodes = [n for n in chunk if n.startswith(module + "::")]
                 assert case_nodes == [n for n in nodes if n.startswith(module + "::")]
         assert len(owners) == 24
+    # Duration estimates rebalance jobs but never alter module ownership.
+    profiled = shard_modules(nodes, 3, timings={
+        "tests/integration/database/test_module_00.py": 1_000.0,
+    })
+    assert profiled[0][0].startswith("tests/integration/database/test_module_00.py::")
+    assert set(node for job in profiled for node in job) == set(nodes)
+    assert _PYTEST_DURATION.match("1.25s setup tests/integration/foo/test_bar.py::test_a")
+    assert not _PYTEST_DURATION.match("55 passed in 1.25s")
     assert docker_only_interruption(
         2, "Disposable PostgreSQL could not start: ports are not available"
     )
@@ -257,13 +341,15 @@ def docker_only_interruption(code: int, output: str) -> bool:
 
 
 def postgres_phase(
-    task: Task, folder: Path, workers: int, jobs_per_worker: int = 4,
+    task: Task, folder: Path, workers: int, jobs_per_worker: int = 3,
 ) -> Result:
     start = time.monotonic()
     log = folder / "BACKEND_POSTGRES.log"
     try:
         all_nodes = postgres_collection(task, folder)
-        shards = shard_modules(all_nodes, workers, jobs_per_worker)
+        shards = shard_modules(
+            all_nodes, workers, jobs_per_worker, _load_timings(PG_TIMINGS),
+        )
     except Exception as exc:
         log.write_text(f"PostgreSQL collection failed: {exc}\n", encoding="utf-8")
         return Result(POSTGRES, 2, time.monotonic() - start)
@@ -278,7 +364,7 @@ def postgres_phase(
     commands = {
         name: Task(name, task.cwd, (
             "uv", "run", "--locked", "pytest", "-q", "--no-cov",
-            "--tb=short", "-m", "postgres", *tests,
+            "--tb=short", "--durations=0", "-m", "postgres", *tests,
         ))
         for name, tests in plans.items()
     }
@@ -322,6 +408,24 @@ def postgres_phase(
             flush=True,
         )
     results = recovered
+    observed = _observed_module_timings(plans, folder)
+    if observed:
+        merged = {**_load_timings(PG_TIMINGS), **observed}
+        PG_TIMINGS.parent.mkdir(parents=True, exist_ok=True)
+        PG_TIMINGS.write_text(
+            json.dumps(merged, indent=2, sort_keys=True) + "\\n",
+            encoding="utf-8",
+        )
+    (folder / "BACKEND_POSTGRES_SHARD_TIMINGS.json").write_text(
+        json.dumps([
+            {
+                "name": r.name, "seconds": r.seconds,
+                "exit_code": r.code, "tests": len(plans[r.name]),
+                "modules": sorted({n.partition("::")[0] for n in plans[r.name]}),
+            }
+            for r in results
+        ], indent=2) + "\\n", encoding="utf-8",
+    )
     lines = [
         f"Collected PostgreSQL tests: {len(all_nodes)}",
         f"Dynamic PostgreSQL jobs: {len(commands)}",
@@ -401,6 +505,10 @@ def final_report(
     }
     (folder / "FULL_GATE_REPORT.json").write_text(
         json.dumps(manifest, indent=2) + "\n", encoding="utf-8",
+    )
+    GROUP_TIMINGS.write_text(
+        json.dumps({r.name: r.seconds for r in outcomes}, indent=2) + "\n",
+        encoding="utf-8",
     )
     sys.stdout.flush()
     archive = folder / "FULL_GATE_LOGS.tar.gz"
