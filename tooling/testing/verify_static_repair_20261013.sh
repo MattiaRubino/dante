@@ -26,6 +26,15 @@ git diff --check > "$D/DIFF_CHECK.log" 2>&1
 (cd apps/backend && uv run --locked ruff format --check .) > "$D/RUFF_FORMAT_CHECK.log" 2>&1
 pnpm format:check > "$D/PRETTIER_CHECK.log" 2>&1
 pnpm generated:check > "$D/GENERATED_CHECK.log" 2>&1
+# Source repairs span SQLAlchemy and historical migrations; compile all Python
+# files before pushing formatter adjustments, even while mypy still has debt.
+(cd apps/backend && uv run --locked python -m compileall -q src tests migrations tooling) \
+  > "$D/PYTHON_COMPILE.log" 2>&1 || {
+  echo "PYTHON_COMPILE=RED; no commit or push" | tee "$D/SUMMARY.txt"
+  tar -czf temp/STATIC_REPAIR_LOGS.tar.gz -C temp "$(basename "$D")"
+  echo "LOGS=~/projects/dante/temp/STATIC_REPAIR_LOGS.tar.gz"
+  exit 2
+}
 pnpm typecheck > "$D/TYPECHECK.log" 2>&1 || {
   echo "TYPECHECK=RED; no commit or push" | tee "$D/SUMMARY.txt"
   tar -czf temp/STATIC_REPAIR_LOGS.tar.gz -C temp "$(basename "$D")"
