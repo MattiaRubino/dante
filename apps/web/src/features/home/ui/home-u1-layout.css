@@ -159,7 +159,10 @@
     position: fixed;
     z-index: 1200;
     top: 96px;
-    right: 18px;
+    /* The Today rail itself already occupies the right edge of the
+       scrollable content box (which can exclude the ~17px scrollbar).
+       An extra 18px right inset shifts Create outside the rail. */
+    right: 0;
     bottom: 16px;
     left: auto;
     width: var(--home-today-rail-width);
