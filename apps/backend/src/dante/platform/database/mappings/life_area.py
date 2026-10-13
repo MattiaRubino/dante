@@ -13,6 +13,7 @@ from sqlalchemy import (
     Integer,
     Text,
     UniqueConstraint,
+    text,
 )
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
@@ -64,13 +65,13 @@ class LifeAreaRow(Base):
     self_person_ref: Mapped[NativeRef] = mapped_column(nullable=False)
     name: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    revision: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    revision: Mapped[int] = mapped_column(BigInteger, nullable=False, server_default=text("1"))
     sort_order: Mapped[int] = mapped_column(BigInteger, nullable=False)
-    archived: Mapped[bool] = mapped_column(Boolean, nullable=False)
-    hidden: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    archived: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
+    hidden: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
     icon_code: Mapped[str | None] = mapped_column(Text)
     color_code: Mapped[str | None] = mapped_column(Text)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=text("statement_timestamp()"))
 
 
 class LifeAreaCreateOperationRow(Base):

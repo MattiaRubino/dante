@@ -14,6 +14,7 @@ from sqlalchemy import (
     Numeric,
     Text,
     UniqueConstraint,
+    text,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
@@ -29,7 +30,9 @@ class RoutineOccurrencePolicyRow(Base):
     duration_minutes: Mapped[int] = mapped_column(Integer, nullable=False)
     reminder_lead_minutes: Mapped[int | None] = mapped_column(Integer)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    activity_template: Mapped[dict[str, object]] = mapped_column(JSONB, nullable=False)
+    activity_template: Mapped[dict[str, object]] = mapped_column(
+        JSONB, nullable=False, server_default=text("'{}'::jsonb")
+    )
 
 
 class SchedulePlacementLockRow(Base):
@@ -61,8 +64,12 @@ class EventOccurrencePolicyRow(Base):
     duration_days: Mapped[int | None] = mapped_column(Integer)
     reminder_lead_minutes: Mapped[int | None] = mapped_column(Integer)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    reality_mode: Mapped[str] = mapped_column(Text, nullable=False)
-    objectives: Mapped[list[dict[str, object]]] = mapped_column(JSONB, nullable=False)
+    reality_mode: Mapped[str] = mapped_column(
+        Text, nullable=False, server_default=text("'manual'")
+    )
+    objectives: Mapped[list[dict[str, object]]] = mapped_column(
+        JSONB, nullable=False, server_default=text("'[]'::jsonb")
+    )
 
 
 class RealityReviewPolicyRow(Base):
