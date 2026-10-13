@@ -147,3 +147,35 @@ Concurrent writes to generated sources and shared Playwright build outputs
 have not been proven isolated. This wrapper deliberately does not change
 worker counts or relax the source-stability gate. Review logs for locally
 sensitive information before sharing or publishing.
+
+## Optional parallel gate (the sequential reference stays unchanged)
+
+**Reference/sequential:** `python3 tooling/testing/run_complete_gate.py`.
+
+**Separate, opt-in parallel runner:**
+`python3 tooling/testing/run_parallel_gate.py --group-workers 3 --postgres-workers 5`.
+To use ten PostgreSQL processes, specify `--postgres-workers 10`
+only when Docker has adequate available RAM/CPU; to inspect commands only,
+use `--dry-run`. Do not run parallel and sequential gates concurrently.
+
+The parallel runner parses all actual gate declarations from the original
+`tooling/verify-all-current-tests-local.sh`, refuses to execute if any group
+is added, renamed or removed without an isolation review, and executes all 27
+original commands. It never changes the original suite or quality thresholds.
+Independent read-only groups use concurrent subprocesses. Generated sources,
+builds, and browser gates stay serialized where their outputs or server ports
+might conflict. PostgreSQL is divided by complete test module, using
+`pytest --collect-only -m postgres` as its inventory: every selected case
+belongs to exactly one shard, and each separate pytest process has its own
+session-scoped disposable Docker PostgreSQL 18.6 cluster and unique database
+fixture. Each shard keeps its complete original pytest log and explicit node-id
+manifest. No `pytest-xdist` installation or test-fixture rewrite is required.
+
+The resulting logs and archive are saved under the Git-ignored
+`temp/dante-parallel-gate.XXXXXX/`; `LATEST_GATE_SUMMARY.md` is updated.
+Browser screenshots/errors and at most three traces are copied before the next
+Playwright gate overwrites test-results. A failed shard fails the entire
+PostgreSQL group; missing groups, failures, or a dirty/changed source tree
+keep the whole parallel gate RED. The parallel implementation itself requires
+a real WSL run before its performance or behavioral equivalence can be
+certified. The sequential gate remains the fallback authoritative mode.
