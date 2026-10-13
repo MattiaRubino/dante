@@ -27,7 +27,7 @@ async function installDraftVaultFixture(page: Page) {
     }),
   );
   await page.route('**/api/v1/temporal/drafts**', async (route) => {
-    const { request } = route;
+    const request = route.request();
     const path = new URL(request.url()).pathname;
     const key = path.slice('/api/v1/temporal/drafts/'.length);
     const method = request.method();
