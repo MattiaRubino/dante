@@ -18,6 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from dante.context.contracts import DanteContext
 from dante.context.dependencies import require_dante_context, require_mutating_dante_context
 from dante.modules.temporal.activity_edit_snapshot_api import _SNAPSHOT, ActivityEditSnapshot
+from dante.modules.temporal.decomposition_api import ActivityScheduleResponse
 from dante.modules.temporal.schedule import (
     FloatingLocalIntervalPlacement,
     NamedZoneLocalIntervalPlacement,
