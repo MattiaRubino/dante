@@ -43,6 +43,9 @@ test('Create stages a colored Life Area and reuses existing names case-insensiti
     .locator('.timeline-event-card[data-temporal-create-projection]')
     .filter({ hasText: 'Sessione studio' });
   await expect(card).toBeVisible();
+  // Editing start time must not silently roll the end to tomorrow.
+  await expect(card.locator('.timeline-event-card__time'))
+    .toContainText('15:00–15:45');
   await expect(card).toContainText('Studio');
 
   await card.locator('.timeline-event-card__time').click();
