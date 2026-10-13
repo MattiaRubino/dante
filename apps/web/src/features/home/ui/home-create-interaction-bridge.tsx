@@ -102,7 +102,15 @@ function reseedOpenCreate(section: HTMLElement, clientY: number): void {
     const timeInput = composer.querySelector<HTMLInputElement>(
       '[data-create-path="startTime"]',
     );
-    if (dateInput && timeInput) {
+    // New Create keeps both values in aria-hidden transport inputs.
+    // Never synthesize a second change through those inputs: React has
+    // already received the single authoritative reseed event.
+    if (
+      dateInput &&
+      timeInput &&
+      dateInput.getAttribute('aria-hidden') !== 'true' &&
+      timeInput.getAttribute('aria-hidden') !== 'true'
+    ) {
       setControlledInput(dateInput, date);
       setControlledInput(timeInput, startTime);
     }
