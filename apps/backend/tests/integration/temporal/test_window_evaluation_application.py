@@ -168,7 +168,7 @@ async def test_b04_c_hard_set_reports_infeasible_without_creating_outcome(
 
 
 def test_b04_c_window_rule_rejects_relation_facet_mismatch_and_zero_interval() -> None:
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="window relation and constrained facet"):
         AbsoluteWindowRule(
             relationship="start_within",
             constrained_facet="schedule.completion",
@@ -176,7 +176,7 @@ def test_b04_c_window_rule_rejects_relation_facet_mismatch_and_zero_interval() -
             starts_at=datetime(2026, 10, 2, 9, 0, tzinfo=UTC),
             ends_at=datetime(2026, 10, 2, 10, 0, tzinfo=UTC),
         )
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="window end must be later"):
         AbsoluteWindowRule(
             relationship="placement_overlaps",
             constrained_facet="schedule.placement",
