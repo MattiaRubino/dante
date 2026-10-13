@@ -65,11 +65,10 @@ function formatMinute(minute: number): string {
 }
 
 function setControlledInput(input: HTMLInputElement, value: string): void {
-  const setter = Object.getOwnPropertyDescriptor(
+  Object.getOwnPropertyDescriptor(
     HTMLInputElement.prototype,
     'value',
-  )?.set;
-  setter?.call(input, value);
+  )?.set?.call(input, value);
   input.dispatchEvent(new Event('input', { bubbles: true }));
   input.dispatchEvent(new Event('change', { bubbles: true }));
 }
@@ -90,10 +89,12 @@ function reseedOpenCreate(section: HTMLElement, clientY: number): void {
     const startTime = formatMinute(minute);
     // The current Create date picker is a controlled button, not a native
     // input. Notify the owning React component rather than editing its DOM.
-    composer.dispatchEvent(new CustomEvent('dante:temporal-create-reseed', {
-      bubbles: true,
-      detail: { date, startTime },
-    }));
+    composer.dispatchEvent(
+      new CustomEvent('dante:temporal-create-reseed', {
+        bubbles: true,
+        detail: { date, startTime },
+      }),
+    );
     // Preserve native input support for earlier/embedded Create surfaces.
     const dateInput = composer.querySelector<HTMLInputElement>(
       '[data-create-path="date"]',
