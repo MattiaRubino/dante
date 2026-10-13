@@ -127,7 +127,7 @@ test.describe('Timeline B00 real full-stack spine', () => {
     }
   });
 
-  test('fails closed for unsupported Event Create', async ({
+  test('creates one canonical scheduled Event without fabricating local truth', async ({
     browser,
   }, testInfo) => {
     const context = await browser.newContext({
@@ -148,19 +148,40 @@ test.describe('Timeline B00 real full-stack spine', () => {
       await page
         .getByRole('button', { name: 'Aggiungi alla timeline' })
         .click();
-      await page.getByRole('radio', { name: 'Evento' }).click();
-      await page.getByLabel('Titolo').fill('B00 non deve fingere un Evento');
-      await page.getByRole('button', { name: 'Aggiungi', exact: true }).click();
+      const dialog = page.locator('[data-temporal-create="composer"]');
+      await expect(dialog).toBeVisible();
+      await dialog.getByRole('radio', { name: 'Evento' }).click();
+      await dialog.getByRole('radio', { name: 'Orario' }).click();
+      await dialog.getByLabel('Titolo').fill('B00 Evento reale');
 
-      await expect(
-        page.getByText(
-          'Non è stato possibile applicare la creazione. La bozza è ancora qui.',
-        ),
-      ).toBeVisible();
-      await expect(page.getByLabel('Titolo')).toHaveValue(
-        'B00 non deve fingere un Evento',
+      // Real-stack validation: the Event must exist in PostgreSQL before
+      // the projection shows it, and the frontend cannot invent its ref.
+      const createResponsePromise = page.waitForResponse(
+        (response) =>
+          response.url().endsWith('/api/v1/temporal/events/scheduled') &&
+          response.request().method() === 'POST',
+        { timeout: 20_000 },
       );
-      await expect(page.locator('[data-timeline-event]')).toHaveCount(0);
+      const timelineRefresh = page.waitForResponse(
+        (response) =>
+          response.url().includes('/api/v1/temporal/timeline/window') &&
+          response.request().method() === 'GET',
+        { timeout: 20_000 },
+      );
+      await dialog.getByRole('button', { name: 'Aggiungi', exact: true }).click();
+      const created = await createResponsePromise;
+      expect(created.status()).toBe(201);
+      const data = (await created.json()) as {
+        event_ref: string;
+        schedule_ref: string;
+      };
+      expect(data.event_ref).toMatch(/^[a-f0-9-]{36}$/i);
+      expect(data.schedule_ref).toMatch(/^[a-f0-9-]{36}$/i);
+      expect((await timelineRefresh).status()).toBe(200);
+      await expect(dialog).toHaveCount(0);
+      await expect(
+        page.locator(`[data-timeline-event="${data.schedule_ref}"]`),
+      ).toHaveCount(1);
     } finally {
       await context.close();
     }
