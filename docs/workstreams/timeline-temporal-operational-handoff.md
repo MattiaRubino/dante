@@ -1002,3 +1002,16 @@ Root causes/repairs committed after that SHA:
 - The deliberate real PostgreSQL outage ran into the global 60s UI timeout. That one test now has a bounded 120s Docker lifecycle budget, with its 500/error/explicit retry/200 assertions unchanged. This is not evidence recovery works; the next WSL run must establish it.
 
 **Still no WSL test has been run after this batch.** Do not claim B14 or the 27-group full gate is green. Record exact post-fix SHA, collect the smallest affected browser/auth rerun before issuing another expensive full gate.
+
+## 2026-10-13 — Third focused B14 check (68e52633)
+
+The uploaded `B14_CHECK_LOGS.tar.gz` covers `68e526333b727c696bc8084e91676d98f2f5e2d7`, reporting `TYPECHECK=0`, `BROWSER=1` (11/15 pass), `REAL_STACK=1` (5/7 Chromium pass). **This is not a full green gate.** Browser failures: Context Rail quick composer box extends to y=1443 at 900px viewport; Draft duplication test asserts record count before async save completes; Draft Vault popup right boundary at x=401.97 on 390px viewport; generic 'Call cliente' card locator finds one already-present card in a non-auth negative-creation test. Real-stack failures: third multi-day Event never POSTs; PostgreSQL outage remained stopped for 120 seconds, causing a global test timeout.
+
+Committed source-backed fixes after this baseline:
+- Enforce viewport-derived height on the **composer itself**, not only its absolute host; bound mobile Draft Vault by fixed viewport edges.
+- Await draft duplicate form closure before reading fixture state; assign the isolated Event UI scenario a unique nonseeded title.
+- **Identified root cause for multi-day Event**: as Start date changes, the inactive `scheduling` default date fields remain anchored to the initial Create date. `temporalCreateU2QuickIntentSupported` incorrectly compared these semantically inactive dates against defaults for the new date, returned false and diverted the Event into B03 legacy runtime without a canonical U2 POST. `equivalentSchedulingForU2` now disregards **only** those four inactive default date values; all effective constraint kinds, movement and fallback policy, time policies and advanced options remain checked. Added a regression covering three-day 2026-10-15..17 Event and exact half-open date-span request.
+- For the destructive real-stack DB outage, backend E2E database engine already uses a 1-second connect timeout and 5-second pool timeout. It remains **unresolved** why the frontend never observed a 5xx within the previous 120-second budget. The test now probes the authenticated Timeline endpoint with an explicit 12-second bound before UI navigation, independently bounds Home response and subsequent recovery response, and always restores the disposable database in `finally`. No skip or false success.
+- A full 27-group gate is still required after B14 cross-browser passes; the older gate's broad Ruff/mypy/format/ESLint red inventory has **not** been cleared or remeasured against this new HEAD.
+
+Verification remains pending on WSL. Never claim B14 closure until TYPECHECK, focused Vitest, Chromium browser fixtures and all required real-stack browsers pass. Then execute all 27 reference gate groups on the same SHA.
