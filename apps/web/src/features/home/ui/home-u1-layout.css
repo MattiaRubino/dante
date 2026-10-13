@@ -201,5 +201,8 @@
   .home-context-rail .home-create-panel-host .temporal-create-backdrop.is-advanced {
     position: fixed;
     inset: 0;
+    background: rgba(3, 7, 13, 0.62) !important;
+    backdrop-filter: blur(3px);
+    pointer-events: auto !important;
   }
 }
