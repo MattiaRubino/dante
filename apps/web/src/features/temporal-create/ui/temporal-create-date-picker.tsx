@@ -80,11 +80,6 @@ export function TemporalCreateDatePicker({
 
   useEffect(() => {
     if (!open) return;
-    setMonth(firstDayOfMonth(selected));
-  }, [open, value]);
-
-  useEffect(() => {
-    if (!open) return;
     const dismiss = (event: PointerEvent) => {
       if (
         event.target instanceof Node &&
@@ -109,7 +104,10 @@ export function TemporalCreateDatePicker({
         type="button"
         aria-label={`${label}: ${compactLabel(selected, locale)}`}
         aria-expanded={open}
-        onClick={() => setOpen((current) => !current)}
+        onClick={() => {
+          if (!open) setMonth(firstDayOfMonth(selected));
+          setOpen((current) => !current);
+        }}
       >
         {compactLabel(selected, locale)}
       </button>
