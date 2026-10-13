@@ -1,5 +1,10 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-13 — Real-stack Create endpoint correction
+
+The auth/browser B00 Event Create test has been updated to await the **current U2** `POST /api/v1/temporal/authoring/events` endpoint rather than the retired `/events/scheduled` endpoint, and to assert the actual nested `schedule.schedule_ref` from the accepted mutation. It sets time through the visible segmented editor and verifies the routed date through the controlled date picker instead of `.fill()` on hidden transport inputs. This was a concrete stale-test timeout cause, **not** evidence the full-stack journey now passes. The B01 canonical unplaced-Activity suite still uses the removed Quick unplaced path and must be rewritten around the explicit preexisting-items management API without confusing canonical records and inert Draft Vault records. Real-stack and browser acceptance remain pending WSL/Docker execution. A separate authoring type-guard change preserves rejection of non-timed Activity intervals while narrowing both the runtime and mypy contracts.
+
+
 ## 2026-10-13 — B14 gate repair continuation (GitHub candidate, unverified)
 
 Current repair series after the previous `ff7cc98b` handoff includes narrow backend typing corrections for the elapsed/weekly recurrence and Activity authoring, and browser fixture scenario migrations for the new Life Area color/selector, rail-bound pinnable Create, root planned Session/capture, calendar recurrence, and the inert Draft Vault (replacing the retired "Da collocare" workflow in the non-auth UI harness). Draft Vault fixture tests explicitly stub only the HTTP contract; durable PostgreSQL behavior remains owned by auth/real-stack tests and is not proved here. The Home Timeline gesture bridge now avoids mutating the new aria-hidden date/time transport inputs after the controlled reseed, with an additional colocated regression.
