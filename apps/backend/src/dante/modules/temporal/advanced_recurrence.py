@@ -207,7 +207,7 @@ class AdvancedRecurrenceApplication:
             base = (
                 (
                     await session.execute(
-                        text(f"SELECT * FROM dante.get_self_{owner}_recurrence(:actor,:source)"),
+                        text(("SELECT * FROM dante.get_self_routine_recurrence(:actor,:source)" if owner == "routine" else "SELECT * FROM dante.get_self_event_recurrence(:actor,:source)")),
                         {"actor": self_person_ref, "source": source_ref},
                     )
                 )
@@ -225,7 +225,7 @@ class AdvancedRecurrenceApplication:
                 (
                     await session.execute(
                         text(
-                            f"SELECT * FROM dante.get_self_{owner}_dynamic_elapsed_anchor(:actor,:source)"
+                            ("SELECT * FROM dante.get_self_routine_dynamic_elapsed_anchor(:actor,:source)" if owner == "routine" else "SELECT * FROM dante.get_self_event_dynamic_elapsed_anchor(:actor,:source)")
                         ),
                         {"actor": self_person_ref, "source": source_ref},
                     )
@@ -320,10 +320,13 @@ class AdvancedRecurrenceApplication:
                     (
                         await session.execute(
                             text(
-                                f"""SELECT * FROM dante.replace_self_{owner}_dynamic_elapsed_recurrence(
+                                ("""SELECT * FROM dante.replace_self_routine_dynamic_elapsed_recurrence(
                               :actor,:operation,:fingerprint,:source,:expected,:range_kind,:count,
                               :effective_from,:effective_until,:elapsed_seconds,:anchor_mode,
-                              :anchor_family,:anchor_source)"""
+                              :anchor_family,:anchor_source)""" if owner == "routine" else """SELECT * FROM dante.replace_self_event_dynamic_elapsed_recurrence(
+                              :actor,:operation,:fingerprint,:source,:expected,:range_kind,:count,
+                              :effective_from,:effective_until,:elapsed_seconds,:anchor_mode,
+                              :anchor_family,:anchor_source)""")
                             ),
                             params,
                         )
@@ -398,8 +401,9 @@ class AdvancedRecurrenceApplication:
                     (
                         await session.execute(
                             text(
-                                f"""SELECT * FROM dante.checkpoint_self_{owner}_dynamic_elapsed_occurrences(
-                              :actor,:operation,:fingerprint,:source,:state,:start_at,:end_at)"""
+                                ("""SELECT * FROM dante.checkpoint_self_routine_dynamic_elapsed_occurrences(
+                              :actor,:operation,:fingerprint,:source,:state,:start_at,:end_at)""" if owner == "routine" else """SELECT * FROM dante.checkpoint_self_event_dynamic_elapsed_occurrences(
+                              :actor,:operation,:fingerprint,:source,:state,:start_at,:end_at)""")
                             ),
                             {
                                 "actor": self_person_ref,
