@@ -198,6 +198,23 @@ test.describe('Timeline B00 real full-stack spine', () => {
       expect(data.schedule.schedule_ref).toMatch(/^[a-f0-9-]{36}$/i);
       expect((await timelineRefresh).status()).toBe(200);
       await expect(dialog).toHaveCount(0);
+      // The POST response is canonical DB truth, but the first invalidated
+      // GET can complete before the React hydration pass. A fresh page load
+      // explicitly proves durable readback rather than optimistic UI state.
+      const readback = page.waitForResponse(
+        (response) =>
+          response.url().includes('/api/v1/temporal/timeline/window') &&
+          response.request().method() === 'GET',
+      );
+      await page.reload();
+      const canonicalReadback = await readback;
+      expect(canonicalReadback.status()).toBe(200);
+      const payload = (await canonicalReadback.json()) as {
+        items?: Array<{ schedule_ref?: string }>;
+      };
+      expect(payload.items?.some(
+        (item) => item.schedule_ref === data.schedule?.schedule_ref,
+      )).toBe(true);
       await expect(
         page.locator(`[data-timeline-event="${data.schedule.schedule_ref}"]`),
       ).toHaveCount(1);
