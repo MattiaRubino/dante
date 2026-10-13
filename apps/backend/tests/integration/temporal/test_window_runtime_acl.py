@@ -6,6 +6,7 @@ from typing import Any
 
 import psycopg
 import pytest
+from psycopg import sql
 
 
 @pytest.mark.postgres
@@ -24,6 +25,8 @@ def test_b04_c_runtime_can_read_window_current_rule_payload_tables(
             "temporal_constraint_window_absolute_state",
         ):
             rows = connection.execute(
-                f"SELECT material_state_ref FROM dante.{table} LIMIT 0"
+                sql.SQL("SELECT material_state_ref FROM dante.{} LIMIT 0").format(
+                    sql.Identifier(table)
+                )
             ).fetchall()
             assert rows == []
