@@ -95,6 +95,7 @@ class EmailDeliveryWorkerPool:
         self._workers.clear()
 
     async def _worker_loop(self, worker_index: int) -> None:
+        failures = 0
         while not self._stop.is_set():
             try:
                 processed = await self._run_batch()
@@ -103,15 +104,31 @@ class EmailDeliveryWorkerPool:
             except Exception:
                 _LOGGER.exception("email_platform.worker_batch_failed worker=%d", worker_index)
                 processed = 0
+                failures = min(failures + 1, 5)
+            else:
+                failures = 0
 
             if processed > 0:
                 continue
             self._wake.clear()
-            with suppress(TimeoutError):
-                await asyncio.wait_for(
-                    self._wake.wait(),
-                    timeout=self._settings.email_poll_interval_seconds,
+            if failures:
+                # A temporarily unavailable PostgreSQL (including deliberate
+                # full-stack outage tests) must not trigger unbounded claim
+                # attempts and log storms from every worker every 0.5 s.
+                # The stop event still interrupts promptly during shutdown.
+                delay = min(
+                    8.0,
+                    max(0.5, self._settings.email_poll_interval_seconds)
+                    * (2 ** (failures - 1)),
                 )
+                with suppress(TimeoutError):
+                    await asyncio.wait_for(self._stop.wait(), timeout=delay)
+            else:
+                with suppress(TimeoutError):
+                    await asyncio.wait_for(
+                        self._wake.wait(),
+                        timeout=self._settings.email_poll_interval_seconds,
+                    )
 
     async def _run_batch(self) -> int:
         claims = await self._claim_batch()
