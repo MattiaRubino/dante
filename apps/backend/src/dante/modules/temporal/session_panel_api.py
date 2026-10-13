@@ -153,20 +153,28 @@ def build_panel(
         # Main Sessions have no planned-Schedule link yet. Associate a stopped
         # main attempt with its closest accepted Activity interval, so an early
         # stop suppresses that row without hiding a different later interval.
+        # Carry a non-optional interval alongside its schedule: the mapper
+        # returns None for coarse/undetermined placements, and re-indexing
+        # bounds inside the min() key loses the null guard in type checking.
+        bounded_intervals = [
+            (schedule, interval)
+            for schedule in intervals
+            if (interval := bounds[schedule.schedule_ref]) is not None
+        ]
         main_stopped_in_window = any(
             str(item["activity_ref"]) == str(owner["activity_ref"])
             and item["planned_schedule_ref"] is None
             and (
                 nearest := min(
-                    (s for s in intervals if bounds[s.schedule_ref]),
-                    key=lambda s: abs(
-                        (item["started_at"] - bounds[s.schedule_ref][0]).total_seconds()
+                    bounded_intervals,
+                    key=lambda pair: abs(
+                        (item["started_at"] - pair[1][0]).total_seconds()
                     ),
                     default=None,
                 )
             )
             is not None
-            and nearest.schedule_ref in {s.schedule_ref for s in current_intervals}
+            and nearest[0].schedule_ref in {s.schedule_ref for s in current_intervals}
             for item in stopped
         )
         executions: dict[str | None, list[Any]] = {}
