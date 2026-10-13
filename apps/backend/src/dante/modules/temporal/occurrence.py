@@ -606,10 +606,10 @@ def _period_floor(spec: QuotaRecurrence, value: date) -> date:
     if spec.period_unit_code == "week":
         week_start = int(spec.week_start or 1)
         base = value - timedelta(days=(value.isoweekday() - week_start) % 7)
-        anchor = spec.pattern_anchor_date
-        if spec.period_span == 1 or anchor is None:
+        week_anchor = spec.pattern_anchor_date
+        if spec.period_span == 1 or week_anchor is None:
             return base
-        anchor_base = anchor - timedelta(days=(anchor.isoweekday() - week_start) % 7)
+        anchor_base = week_anchor - timedelta(days=(week_anchor.isoweekday() - week_start) % 7)
         weeks = max(0, (base - anchor_base).days // 7)
         return anchor_base + timedelta(weeks=(weeks // spec.period_span) * spec.period_span)
     if spec.period_unit_code == "month":
