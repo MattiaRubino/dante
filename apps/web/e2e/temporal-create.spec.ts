@@ -217,7 +217,7 @@ test('Event Advanced preserves Scaletta and refuses unsupported fixture persiste
   await page.goto('/home');
 
   const dialog = await openCreate(page);
-  await dialog.getByRole('textbox', { name: 'Titolo' }).fill('Call cliente');
+  await dialog.getByRole('textbox', { name: 'Titolo' }).fill('B14 Evento isolato con Scaletta');
   await dialog.getByRole('radio', { name: 'Evento' }).click();
   await dialog.getByRole('radio', { name: 'Orario' }).click();
   await dialog.getByRole('textbox', { name: 'Inizio: ore' }).fill('16');
@@ -286,7 +286,7 @@ test('Event Advanced preserves Scaletta and refuses unsupported fixture persiste
     'Definire il rilascio con una decisione sul piano finale.',
   );
   await expect(
-    page.locator('.timeline-event-card').filter({ hasText: 'Call cliente' }),
+    page.locator('.timeline-event-card').filter({ hasText: 'B14 Evento isolato con Scaletta' }),
   ).toHaveCount(0);
 });
 
