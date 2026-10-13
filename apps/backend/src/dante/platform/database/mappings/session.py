@@ -278,6 +278,7 @@ class SessionStartOperationRow(Base):
 
     __tablename__ = "session_start_operation"
     __table_args__ = (
+        UniqueConstraint("session_ref", name="uq_session_start_operation_session_ref"),
         CheckConstraint(
             "operation_id=btrim(operation_id) AND operation_id<>'' "
             "AND char_length(operation_id)<=200",
@@ -400,7 +401,7 @@ class _SessionTransitionOperationRow(Base):
     self_person_ref: Mapped[NativeRef] = mapped_column(primary_key=True)
     operation_id: Mapped[str] = mapped_column(Text, primary_key=True)
     intent_fingerprint: Mapped[str] = mapped_column(Text, nullable=False)
-    session_ref: Mapped[NativeRef] = mapped_column(nullable=False, unique=True)
+    session_ref: Mapped[NativeRef] = mapped_column(nullable=False)
     expected_material_state_ref: Mapped[MaterialStateRef] = mapped_column(nullable=False)
     resulting_material_state_ref: Mapped[MaterialStateRef] = mapped_column(nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

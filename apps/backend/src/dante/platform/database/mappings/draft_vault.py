@@ -20,6 +20,12 @@ class TemporalDraftVaultRow(Base):
             name="payload",
         ),
         CheckConstraint("revision >= 1", name="revision"),
+        Index(
+            "ix_temporal_draft_vault_owner_updated",
+            "owner_person_ref",
+            text("updated_at DESC"),
+            "draft_ref",
+        ),
     )
 
     draft_ref: Mapped[UUID] = mapped_column(primary_key=True)

@@ -14,6 +14,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import DATERANGE, Range
 from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.schema import conv
 
 from dante.platform.database.metadata import Base
 from dante.platform.database.references import (
@@ -58,16 +59,16 @@ class ActivityScheduleRoleRow(Base):
             "activity_ref", "role_code", "presentation_order", unique=True,
             postgresql_where=text("retired_at IS NULL"),
         ),
-        CheckConstraint("role_code IN ('envelope','planned','interval')", name="role"),
+        CheckConstraint("role_code IN ('envelope','planned','interval')", name=conv("ck_activity_schedule_role_ck_activity_schedule_role_role")),
         CheckConstraint(
             "(role_code='envelope' AND presentation_order=0) OR "
             "(role_code IN ('planned','interval') AND presentation_order BETWEEN 1 AND 2147483647)",
-            name="order",
+            name=conv("ck_activity_schedule_role_ck_activity_schedule_role_order"),
         ),
         CheckConstraint(
             "display_name IS NULL OR (role_code='planned' AND display_name=btrim(display_name) "
             "AND display_name<>'' AND char_length(display_name)<=300)",
-            name="name",
+            name=conv("ck_activity_schedule_role_name"),
         ),
         ForeignKeyConstraint(
             ["schedule_ref"], ["dante.schedule.schedule_ref"],

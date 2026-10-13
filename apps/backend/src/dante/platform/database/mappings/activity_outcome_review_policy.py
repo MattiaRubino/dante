@@ -12,6 +12,7 @@ from sqlalchemy import (
     text,
 )
 from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.schema import conv
 
 from dante.platform.database.metadata import Base
 from dante.platform.database.references import NativeRef
@@ -39,11 +40,11 @@ class ActivityOutcomeReviewPolicyRow(Base):
 class ActivityOutcomeReviewPolicyStateRow(Base):
     __tablename__ = "activity_outcome_review_policy_state"
     __table_args__ = (
-        CheckConstraint("uuid_extract_version(state_ref) IS NOT DISTINCT FROM 7", name="uuidv7"),
+        CheckConstraint("uuid_extract_version(state_ref) IS NOT DISTINCT FROM 7", name=conv("ck_activity_outcome_review_policy_state_ck_activity_out_3e17")),
         CheckConstraint(
-            "mode_code IN ('manual','review_on_end','auto_confirm_outcome')", name="mode"
+            "mode_code IN ('manual','review_on_end','auto_confirm_outcome')", name=conv("ck_activity_outcome_review_policy_state_ck_activity_out_0ebd")
         ),
-        CheckConstraint("isfinite(recorded_at)", name="recorded_at"),
+        CheckConstraint("isfinite(recorded_at)", name=conv("ck_activity_outcome_review_policy_state_ck_activity_out_44ef")),
         UniqueConstraint(
             "activity_ref", "state_ref", name="uq_activity_outcome_review_policy_state_owner"
         ),
@@ -66,7 +67,7 @@ class ActivityOutcomeReviewPolicyCurrentHistoryRow(Base):
         CheckConstraint(
             "isfinite(current_from_at) AND (current_until_at IS NULL OR "
             "(isfinite(current_until_at) AND current_until_at>current_from_at))",
-            name="interval",
+            name=conv("ck_activity_outcome_review_policy_current_history_ck_ac_6a10"),
         ),
         ForeignKeyConstraint(
             ["activity_ref", "state_ref"],
@@ -98,9 +99,9 @@ class ActivityOutcomeReviewPolicyOperationRow(Base):
     __table_args__ = (
         CheckConstraint(
             "operation_id=btrim(operation_id) AND char_length(operation_id) BETWEEN 1 AND 200",
-            name="id",
+            name=conv("ck_activity_outcome_review_policy_operation_ck_activity_cf22"),
         ),
-        CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name="fingerprint"),
+        CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name=conv("ck_activity_outcome_review_policy_operation_ck_activity_4474")),
         UniqueConstraint(
             "state_ref", name="uq_activity_outcome_review_policy_operation_state"
         ),

@@ -6,6 +6,7 @@ from uuid import UUID
 from sqlalchemy import BigInteger, Boolean, CheckConstraint, DateTime, ForeignKeyConstraint, Index, Text
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.schema import conv
 
 from dante.platform.database.metadata import Base
 from dante.platform.database.references import NativeRef
@@ -67,7 +68,7 @@ class RoutineLifeAreaAssignmentRow(Base):
 
 class RoutineLifeAreaAssignmentOperationRow(Base):
     __tablename__ = "routine_life_area_assignment_operation"
-    __table_args__ = (_fk("self_person_ref", "person", "fk_routine_area_op_person"), _fk("routine_ref", "routine", "fk_routine_area_op_routine"), _fk("life_area_ref", "life_area", "fk_routine_area_op_life_area"), CheckConstraint("operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200", name="id"), CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name="fingerprint"), CheckConstraint("expected_revision>=0", name="expected"), CheckConstraint("accepted_revision=expected_revision+1", name="accepted"))
+    __table_args__ = (_fk("self_person_ref", "person", "fk_routine_area_op_person"), _fk("routine_ref", "routine", "fk_routine_area_op_routine"), _fk("life_area_ref", "life_area", "fk_routine_area_op_life_area"), CheckConstraint("operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200", name=conv("ck_routine_area_op_id")), CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name=conv("ck_routine_area_op_fingerprint")), CheckConstraint("expected_revision>=0", name=conv("ck_routine_area_op_expected")), CheckConstraint("accepted_revision=expected_revision+1", name=conv("ck_routine_area_op_accepted")))
     self_person_ref: Mapped[NativeRef] = mapped_column(primary_key=True)
     operation_id: Mapped[str] = mapped_column(Text, primary_key=True)
     intent_fingerprint: Mapped[str] = mapped_column(Text, nullable=False)
@@ -89,7 +90,7 @@ class RoutineTagRow(Base):
 
 class RoutineTagOperationRow(Base):
     __tablename__ = "routine_tag_operation"
-    __table_args__ = (_fk("self_person_ref", "person", "fk_routine_tag_op_person"), _fk("routine_ref", "routine", "fk_routine_tag_op_routine"), _fk("tag_ref", "product_tag", "fk_routine_tag_op_tag"), CheckConstraint("operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200", name="id"), CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name="fingerprint"))
+    __table_args__ = (_fk("self_person_ref", "person", "fk_routine_tag_op_person"), _fk("routine_ref", "routine", "fk_routine_tag_op_routine"), _fk("tag_ref", "product_tag", "fk_routine_tag_op_tag"), CheckConstraint("operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200", name=conv("ck_routine_tag_op_id")), CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name=conv("ck_routine_tag_op_fingerprint")))
     self_person_ref: Mapped[NativeRef] = mapped_column(primary_key=True)
     operation_id: Mapped[str] = mapped_column(Text, primary_key=True)
     intent_fingerprint: Mapped[str] = mapped_column(Text, nullable=False)
