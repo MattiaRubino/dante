@@ -24,6 +24,7 @@ from dante.modules.temporal.routine import (
     RoutineNotFoundError,
     RoutineOperationReuseError,
     RoutinePersistenceError,
+    RoutineView,
     RoutineStateConflictError,
 )
 from dante.platform.http.problem import ProblemError
@@ -162,7 +163,7 @@ def _problem(exc: Exception) -> ProblemError:
     )
 
 
-def _view(value: object) -> RoutineResponse:
+def _view(value: RoutineView) -> RoutineResponse:
     return RoutineResponse(**asdict(value))
 
 
