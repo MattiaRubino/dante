@@ -393,6 +393,13 @@ export function TemporalCreateEntry({
 
   const continueEditing = () => {
     setSession((current) => continueTemporalCreateEditing(current));
+    // The discard confirmation is portaled to document.body, outside the
+    // composer keydown boundary. Restore focus when that portal unmounts.
+    requestAnimationFrame(() => {
+      document.querySelector<HTMLInputElement>(
+        '[data-temporal-create="composer"] [data-create-path="title"]',
+      )?.focus({ preventScroll: true });
+    });
   };
 
   const saveDraft = async () => {
@@ -982,6 +989,12 @@ export function TemporalCreateEntry({
           <div
             className="temporal-create-discard-viewport"
             data-temporal-create="discard-modal"
+            onKeyDown={(event) => {
+              if (event.key !== 'Escape') return;
+              event.preventDefault();
+              event.stopPropagation();
+              continueEditing();
+            }}
           >
             <div
               className="temporal-create-discard"

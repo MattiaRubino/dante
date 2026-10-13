@@ -17,7 +17,9 @@ beforeAll(async () => {
   vi.stubGlobal(
     'matchMedia',
     vi.fn().mockImplementation((query: string) => ({
-      matches: true,
+      // Desktop contract: the compact-rail media query must be false at
+      // 1440 px or the composer is intentionally portaled to document.body.
+      matches: query !== '(max-width: 1120px)',
       media: query,
       onchange: null,
       addListener: vi.fn(),
