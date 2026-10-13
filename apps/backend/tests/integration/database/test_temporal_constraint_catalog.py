@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import sys
+
 from pathlib import Path
 from typing import Any
 
@@ -200,7 +202,7 @@ def test_b04_catalog_surface_and_live_topology(
     assert owners == {(table, "dante_owner") for table in _B04_TABLES}
     assert topology is not None
     assert topology == (109, 5, 35, 87, 214, 131, 312, 0, 0, 0)
-    print("B04_LIVE_TOPOLOGY=" + "|".join(str(value) for value in topology))
+    sys.stdout.write("B04_LIVE_TOPOLOGY=" + "|".join(str(value) for value in topology) + "\n")
 
     config = Config(toml_file=str(_REPO_ROOT / "apps" / "backend" / "pyproject.toml"))
     scripts = ScriptDirectory.from_config(config)
