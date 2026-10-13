@@ -143,6 +143,12 @@ class RealityReviewPolicyStateRow(Base):
 class RealityReviewPolicyCurrentHistoryRow(Base):
     __tablename__ = "reality_review_policy_current_history"
 
+    __table_args__ = (
+        CheckConstraint("isfinite(current_from_at) AND (current_until_at IS NULL OR (isfinite(current_until_at) AND current_until_at>current_from_at))", name=conv("ck_reality_review_policy_current_history_ck_reality_rev_6854")),
+        ForeignKeyConstraint(["subject_kind", "subject_native_ref", "state_ref"], ["dante.reality_review_policy_state.subject_kind", "dante.reality_review_policy_state.subject_native_ref", "dante.reality_review_policy_state.state_ref"], name="fk_reality_review_policy_current_history_state", match="SIMPLE", onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False),
+        Index("ux_reality_review_policy_current_history_open", "subject_kind", "subject_native_ref", unique=True, postgresql_where=text("current_until_at IS NULL")),
+    )
+
     subject_kind: Mapped[str] = mapped_column(Text, primary_key=True)
     subject_native_ref: Mapped[UUID] = mapped_column(primary_key=True)
     state_ref: Mapped[UUID] = mapped_column(nullable=False)
@@ -155,6 +161,13 @@ class RealityReviewPolicyCurrentHistoryRow(Base):
 class RealityReviewPolicyOperationRow(Base):
     __tablename__ = "reality_review_policy_operation"
 
+    __table_args__ = (
+        CheckConstraint("operation_id=btrim(operation_id) AND char_length(operation_id) BETWEEN 1 AND 200", name=conv("ck_reality_review_policy_operation_ck_reality_review_po_aef0")),
+        CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name=conv("ck_reality_review_policy_operation_ck_reality_review_po_adec")),
+        ForeignKeyConstraint(["self_person_ref"], ["dante.person.person_ref"], name="fk_reality_review_policy_operation_person", match="SIMPLE", onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False),
+        ForeignKeyConstraint(["subject_kind", "subject_native_ref", "state_ref"], ["dante.reality_review_policy_state.subject_kind", "dante.reality_review_policy_state.subject_native_ref", "dante.reality_review_policy_state.state_ref"], name="fk_reality_review_policy_operation_state", match="SIMPLE", onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False),
+    )
+
     self_person_ref: Mapped[UUID] = mapped_column(primary_key=True)
     operation_id: Mapped[str] = mapped_column(Text, primary_key=True)
     intent_fingerprint: Mapped[str] = mapped_column(Text, nullable=False)
@@ -165,6 +178,18 @@ class RealityReviewPolicyOperationRow(Base):
 
 class TemporalObjectiveRow(Base):
     __tablename__ = "temporal_objective"
+
+    __table_args__ = (
+        CheckConstraint("uuid_extract_version(objective_ref) IS NOT DISTINCT FROM 7", name=conv("ck_temporal_objective_ck_temporal_objective_uuidv7")),
+        CheckConstraint("subject_kind IN ('activity','event','occurrence')", name=conv("ck_temporal_objective_ck_temporal_objective_subject_kind")),
+        CheckConstraint("label=btrim(label) AND label<>'' AND char_length(label)<=300", name=conv("ck_temporal_objective_ck_temporal_objective_label")),
+        CheckConstraint("result_kind IN ('boolean','quantity','qualitative','range')", name=conv("ck_temporal_objective_ck_temporal_objective_result_kind")),
+        CheckConstraint("presentation_order>=0", name=conv("ck_temporal_objective_ck_temporal_objective_presentation_order")),
+        CheckConstraint("unit_code IS NULL OR (unit_code=btrim(unit_code) AND unit_code<>'' AND char_length(unit_code)<=40)", name=conv("ck_temporal_objective_ck_temporal_objective_unit")),
+        CheckConstraint("(result_kind IN ('boolean','qualitative') AND comparator_code IS NULL AND target_value IS NULL AND target_min IS NULL AND target_max IS NULL AND unit_code IS NULL) OR (result_kind='quantity' AND comparator_code IN ('eq','gte','lte') AND target_value IS NOT NULL AND target_min IS NULL AND target_max IS NULL) OR (result_kind='range' AND comparator_code='between' AND target_value IS NULL AND target_min IS NOT NULL AND target_max IS NOT NULL AND target_min<=target_max)", name=conv("ck_temporal_objective_ck_temporal_objective_shape")),
+        ForeignKeyConstraint(["self_person_ref"], ["dante.person.person_ref"], name="fk_temporal_objective_person", match="SIMPLE", onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False),
+        Index("ix_temporal_objective_subject", "self_person_ref", "subject_kind", "subject_native_ref", "presentation_order", unique=False),
+    )
 
     objective_ref: Mapped[UUID] = mapped_column(primary_key=True)
     self_person_ref: Mapped[UUID] = mapped_column(nullable=False)
@@ -187,6 +212,13 @@ class TemporalObjectiveRow(Base):
 class TemporalObjectiveCreateOperationRow(Base):
     __tablename__ = "temporal_objective_create_operation"
 
+    __table_args__ = (
+        CheckConstraint("operation_id=btrim(operation_id) AND char_length(operation_id) BETWEEN 1 AND 200", name=conv("ck_temporal_objective_create_operation_ck_temporal_obje_ce6a")),
+        CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name=conv("ck_temporal_objective_create_operation_ck_temporal_obje_666a")),
+        ForeignKeyConstraint(["self_person_ref"], ["dante.person.person_ref"], name="fk_temporal_objective_create_operation_person", match="SIMPLE", onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False),
+        ForeignKeyConstraint(["objective_ref"], ["dante.temporal_objective.objective_ref"], name="fk_temporal_objective_create_operation_objective", match="SIMPLE", onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False),
+    )
+
     self_person_ref: Mapped[UUID] = mapped_column(primary_key=True)
     operation_id: Mapped[str] = mapped_column(Text, primary_key=True)
     intent_fingerprint: Mapped[str] = mapped_column(Text, nullable=False)
@@ -195,6 +227,13 @@ class TemporalObjectiveCreateOperationRow(Base):
 
 class TemporalObjectiveObservationRow(Base):
     __tablename__ = "temporal_objective_observation"
+
+    __table_args__ = (
+        CheckConstraint("isfinite(recorded_at)", name=conv("ck_temporal_objective_observation_ck_temporal_objective_fec4")),
+        CheckConstraint("qualitative_code IS NULL OR (qualitative_code=btrim(qualitative_code) AND qualitative_code<>'' AND char_length(qualitative_code)<=120)", name=conv("ck_temporal_objective_observation_ck_temporal_objective_2428")),
+        ForeignKeyConstraint(["observation_ref"], ["dante.observation.observation_ref"], name="fk_temporal_objective_observation_identity", match="SIMPLE", onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False),
+        ForeignKeyConstraint(["objective_ref"], ["dante.temporal_objective.objective_ref"], name="fk_temporal_objective_observation_objective", match="SIMPLE", onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False),
+    )
 
     observation_ref: Mapped[UUID] = mapped_column(primary_key=True)
     objective_ref: Mapped[UUID] = mapped_column(nullable=False)
@@ -207,6 +246,15 @@ class TemporalObjectiveObservationRow(Base):
 class TemporalObjectiveEvaluationStateRow(Base):
     __tablename__ = "temporal_objective_evaluation_state"
 
+    __table_args__ = (
+        CheckConstraint("uuid_extract_version(state_ref) IS NOT DISTINCT FROM 7", name=conv("ck_temporal_objective_evaluation_state_ck_temporal_obje_2274")),
+        CheckConstraint("assessment_code IN ('satisfied','partial','not_satisfied','unknown','indeterminate')", name=conv("ck_temporal_objective_evaluation_state_ck_temporal_obje_5297")),
+        CheckConstraint("isfinite(recorded_at)", name=conv("ck_temporal_objective_evaluation_state_ck_temporal_obje_d1ea")),
+        ForeignKeyConstraint(["objective_ref"], ["dante.temporal_objective.objective_ref"], name="fk_temporal_objective_evaluation_state_objective", match="SIMPLE", onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False),
+        ForeignKeyConstraint(["observation_ref"], ["dante.temporal_objective_observation.observation_ref"], name="fk_temporal_objective_evaluation_state_observation", match="SIMPLE", onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False),
+        UniqueConstraint("objective_ref", "state_ref", name="uq_temporal_objective_evaluation_state_owner"),
+    )
+
     state_ref: Mapped[UUID] = mapped_column(primary_key=True)
     objective_ref: Mapped[UUID] = mapped_column(nullable=False)
     observation_ref: Mapped[UUID] = mapped_column(nullable=False)
@@ -216,6 +264,12 @@ class TemporalObjectiveEvaluationStateRow(Base):
 
 class TemporalObjectiveEvaluationCurrentHistoryRow(Base):
     __tablename__ = "temporal_objective_evaluation_current_history"
+
+    __table_args__ = (
+        CheckConstraint("isfinite(current_from_at) AND (current_until_at IS NULL OR (isfinite(current_until_at) AND current_until_at>current_from_at))", name=conv("ck_temporal_objective_evaluation_current_history_ck_tem_6955")),
+        ForeignKeyConstraint(["objective_ref", "state_ref"], ["dante.temporal_objective_evaluation_state.objective_ref", "dante.temporal_objective_evaluation_state.state_ref"], name="fk_temporal_objective_evaluation_history_state", match="SIMPLE", onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False),
+        Index("ux_temporal_objective_evaluation_history_open", "objective_ref", unique=True, postgresql_where=text("current_until_at IS NULL")),
+    )
 
     objective_ref: Mapped[UUID] = mapped_column(primary_key=True)
     state_ref: Mapped[UUID] = mapped_column(nullable=False)
@@ -227,6 +281,15 @@ class TemporalObjectiveEvaluationCurrentHistoryRow(Base):
 
 class TemporalObjectiveResultOperationRow(Base):
     __tablename__ = "temporal_objective_result_operation"
+
+    __table_args__ = (
+        CheckConstraint("operation_id=btrim(operation_id) AND char_length(operation_id) BETWEEN 1 AND 200", name=conv("ck_temporal_objective_result_operation_ck_temporal_obje_1266")),
+        CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name=conv("ck_temporal_objective_result_operation_ck_temporal_obje_d8ab")),
+        ForeignKeyConstraint(["self_person_ref"], ["dante.person.person_ref"], name="fk_temporal_objective_result_operation_person", match="SIMPLE", onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False),
+        ForeignKeyConstraint(["objective_ref"], ["dante.temporal_objective.objective_ref"], name="fk_temporal_objective_result_operation_objective", match="SIMPLE", onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False),
+        ForeignKeyConstraint(["observation_ref"], ["dante.temporal_objective_observation.observation_ref"], name="fk_temporal_objective_result_operation_observation", match="SIMPLE", onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False),
+        ForeignKeyConstraint(["state_ref"], ["dante.temporal_objective_evaluation_state.state_ref"], name="fk_temporal_objective_result_operation_state", match="SIMPLE", onupdate="NO ACTION", ondelete="NO ACTION", deferrable=False),
+    )
 
     self_person_ref: Mapped[UUID] = mapped_column(primary_key=True)
     operation_id: Mapped[str] = mapped_column(Text, primary_key=True)
