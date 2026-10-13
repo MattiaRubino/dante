@@ -10,7 +10,7 @@ import {
   type TestInfo,
 } from '@playwright/test';
 
-const baseURL = 'https://127.0.0.1:4173';
+const baseURL = `https://127.0.0.1:${process.env.DANTE_E2E_WEB_PORT ?? '4173'}`;
 const password = 'correct horse battery staple';
 const replacementPassword = 'replacement horse battery staple';
 const sessionCookieName = '__Host-dante-session';
@@ -111,9 +111,9 @@ function verificationCode(email: CapturedEmail): string {
 
 function recoveryUrl(email: CapturedEmail): string {
   const match = email.body.match(
-    /https:\/\/127\.0\.0\.1:4173\/\?recovery=[^\s#]+#[^\s]+/,
+    /https:\/\/127\.0\.0\.1:\d+\/\?recovery=[^\s#]+#[^\s]+/,
   );
-  if (!match?.[0]) {
+  if (!match?.[0] || new URL(match[0]).origin !== baseURL) {
     throw new Error(
       'Recovery email did not contain the canonical recovery URL.',
     );

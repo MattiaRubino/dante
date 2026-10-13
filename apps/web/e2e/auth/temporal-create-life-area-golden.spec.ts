@@ -101,10 +101,8 @@ async function readJson<T>(page: Page, path: string): Promise<T> {
         'X-Dante-Time-Zone': 'Europe/Rome',
       },
     });
-    return {
-      status: response.status,
-      payload: await response.json(),
-    };
+    const payload: unknown = await response.json();
+    return { status: response.status, payload };
   }, path);
   expect(result.status).toBe(200);
   return result.payload as T;
@@ -443,6 +441,7 @@ test.describe('Temporal Create Life Area golden gate', () => {
       await chooseBlue(dialog);
       await dialog.getByLabel('Life Area (opzionale)').fill(areaName);
       await expect(dialog.getByRole('listbox')).toHaveCount(0);
+      await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
       await dialog.getByLabel('Ripeti').selectOption('daily');
 
       const routineResponsePromise = page.waitForResponse(
@@ -489,6 +488,7 @@ test.describe('Temporal Create Life Area golden gate', () => {
       const eventArea = dialog.getByLabel('Life Area (opzionale)');
       await eventArea.focus();
       await dialog.getByRole('option', { name: areaName }).click();
+      await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
       await dialog.getByLabel('Ripeti').selectOption('daily');
 
       const recurringEventResponsePromise = page.waitForResponse(
@@ -522,6 +522,7 @@ test.describe('Temporal Create Life Area golden gate', () => {
         .getByRole('textbox', { name: 'Titolo' })
         .fill(noAreaRoutineTitle);
       await fillTimedWindow(dialog, '12:20', '12:50');
+      await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
       await dialog.getByLabel('Ripeti').selectOption('daily');
 
       const noAreaRoutineResponsePromise = page.waitForResponse(
@@ -560,6 +561,7 @@ test.describe('Temporal Create Life Area golden gate', () => {
         .getByRole('textbox', { name: 'Titolo' })
         .fill(noAreaEventTitle);
       await fillTimedWindow(dialog, '14:20', '14:50');
+      await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
       await dialog.getByLabel('Ripeti').selectOption('daily');
 
       const noAreaEventResponsePromise = page.waitForResponse(

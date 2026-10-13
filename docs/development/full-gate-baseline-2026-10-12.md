@@ -502,3 +502,38 @@ The candidate syntax fix and test require a complete rerun on their exact
 published SHA. Global gate remains **RED**; continue Alembic drift, browser
 flow, quality and real-stack investigation from the new logs rather than
 assuming that collection fixes resolved them.
+
+## Full parallel WSL gate cdad6bb2, 13 October 2026
+
+The user's `FULL_GATE_SUMMARY(6).md` and complete archive report 27/27
+groups on `cdad6bb29a9f810b193b44226a36802080861cf7`, source stability
+PASS, **19 PASS / 8 FAIL**. Backend non-PostgreSQL, generated drift,
+typecheck, build, Vitest and browser fixture PASS. PostgreSQL collected 372
+tests into 40 module-atomic jobs. Six jobs failed: one Alembic autogenerate
+index mismatch; two jobs contain three functional failures from the same
+relative elapsed-anchor NULL rejection; three jobs had Docker port/startup
+or restart/cleanup failures and cannot be counted as executed. The other
+34 PostgreSQL jobs passed. Browser non-auth: 112 PASS / 15 FAIL (the same
+Create drift and responsive geometry cases). Real stack: 61 PASS / 23 FAIL /
+3 skipped across three browsers; recurring 400 responses on unplaced reads,
+recovery-email URL parsing and runtime timeouts require separate diagnosis.
+Python/TS format, Ruff, mypy and ESLint remain RED.
+
+The `_144` migration contradicted the earlier B11-A conditional anchor CHECK:
+fixed and previous-expected modes require a finite instant, while
+previous-completion and anchor-stream modes require `anchor_at IS NULL`.
+It also left two live composite unique occurrence-policy indexes different
+from the single-owner lookup indexes in SQLAlchemy/Dictionary. Candidate
+`_145` drops the incorrect table-wide NOT NULL and replaces these two
+indexes with their documented single-owner nonunique forms; metadata and
+Dictionary are aligned. It is **unverified on PostgreSQL**. A pre-existing
+`_143` database already containing relative-anchor NULL rows cannot cross
+the immutable `_144` guard on a normal `upgrade head`; a safe upgrade path
+for that historical data remains open and must not be silently backfilled or
+stamped. Do not merge until this path is addressed and tested.
+
+Ten simultaneous disposable PostgreSQL containers exceeded the user's WSL
+Docker port/startup reliability in three jobs. Rerun the complete gate with
+fewer PostgreSQL workers after the functional fixes; do not reinterpret
+unexecuted jobs as PASS. None of the browser or quality failures is closed
+by the `_145` migration.

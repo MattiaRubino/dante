@@ -1,5 +1,5 @@
 import type { PlainDate } from '@dante/time';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
@@ -81,6 +81,23 @@ type InvocationAnchor = Readonly<{
   top: number;
   bottom: number;
 }>;
+
+const COMPACT_HOME_QUERY = '(max-width: 1120px)';
+
+function subscribeCompactHome(onChange: () => void): () => void {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+    return () => undefined;
+  }
+  const media = window.matchMedia(COMPACT_HOME_QUERY);
+  media.addEventListener('change', onChange);
+  return () => media.removeEventListener('change', onChange);
+}
+
+function isCompactHome(): boolean {
+  return typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia(COMPACT_HOME_QUERY).matches;
+}
 
 export type TemporalCreateInvocation = Readonly<{
   id: number;
@@ -956,6 +973,9 @@ export function TemporalCreateEntry({
     typeof document === 'undefined'
       ? null
       : document.querySelector<HTMLElement>('[data-home-context-create-host]');
+  // The Context Rail is display:none below this breakpoint. A portal into it
+  // would exist in the DOM but make the entire quick composer invisible.
+  const compactHome = useSyncExternalStore(subscribeCompactHome, isCompactHome, () => false);
   const discardModal =
     discardPending && typeof document !== 'undefined'
       ? createPortal(
@@ -1031,7 +1051,9 @@ export function TemporalCreateEntry({
       {composer && typeof document !== 'undefined'
         ? createPortal(
             composer,
-            advancedComposer ? document.body : (createHost ?? document.body),
+            advancedComposer || compactHome
+              ? document.body
+              : (createHost ?? document.body),
           )
         : null}
       {discardModal}

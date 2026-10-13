@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { Temporal } from '@dante/time';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { i18n } from '../../../bootstrap/i18n';
@@ -13,6 +13,7 @@ beforeAll(async () => {
 
 afterEach(() => {
   cleanup();
+  vi.unstubAllGlobals();
 });
 
 function renderEntry() {
@@ -51,6 +52,48 @@ function renderEntry() {
 }
 
 describe('Temporal Create U1 entry', () => {
+  it('portals quick Create outside the hidden Context Rail on narrow screens', () => {
+    const media = {
+      matches: true,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    };
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn(() => media),
+    );
+    const { quickAdd, host } = renderEntry();
+
+    fireEvent.click(quickAdd);
+
+    const composer = document.body.querySelector(
+      '[data-temporal-create="composer"]',
+    );
+    expect(composer).not.toBeNull();
+    expect(host.contains(composer)).toBe(false);
+    expect(quickAdd.getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('moves an open quick Create outside the rail when the viewport becomes narrow', () => {
+    let onChange: (() => void) | undefined;
+    const media = {
+      matches: false,
+      addEventListener: vi.fn((_name: string, callback: () => void) => { onChange = callback; }),
+      removeEventListener: vi.fn(),
+    };
+    vi.stubGlobal('matchMedia', vi.fn(() => media));
+    const { quickAdd, host } = renderEntry();
+    fireEvent.click(quickAdd);
+    expect(host.querySelector('[data-temporal-create="composer"]')).not.toBeNull();
+
+    act(() => {
+      media.matches = true;
+      onChange?.();
+    });
+    expect(host.querySelector('[data-temporal-create="composer"]')).toBeNull();
+    expect(document.body.querySelector('[data-temporal-create="composer"]')).not.toBeNull();
+  });
+
   it('keeps the + entry interactive while canonical Life Area readiness is pending', () => {
     const { quickAdd, host } = renderEntry();
 
@@ -58,7 +101,9 @@ describe('Temporal Create U1 entry', () => {
     expect(quickAdd.dataset.createReady).toBe('false');
     fireEvent.click(quickAdd);
 
-    expect(host.querySelector('[data-temporal-create="composer"]')).not.toBeNull();
+    expect(
+      host.querySelector('[data-temporal-create="composer"]'),
+    ).not.toBeNull();
     expect(quickAdd.getAttribute('aria-expanded')).toBe('true');
   });
 

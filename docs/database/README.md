@@ -6,7 +6,7 @@
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
-- **Timeline candidate Alembic head (current branch candidate):** `20261013_144` (forward-only NOT NULL reconciliation of Routine/Event elapsed recurrence anchors, consistent with Dictionary; candidate WSL gate pending; see `timeline-temporal-operational.md` and `../development/full-gate-baseline-2026-10-12.md`)
+- **Timeline candidate Alembic head (current branch candidate):** `20261013_145` (forward-only correction of `_144`: relative elapsed anchors remain NULL under the B11-A conditional CHECK; occurrence-policy lookup indexes match the Dictionary; WSL validation pending; see `timeline-temporal-operational.md` and `../development/full-gate-baseline-2026-10-12.md`)
 - **Historical B10-C proven topology (2026-09-26):** `20260925_79` / `167|5|123|93|329|279|446`; latest `_142` candidate topology `238|5|228|103|486|421|596` (user-local catalog gate green)
 - **Timeline candidate DB overlay:** `timeline-temporal-operational.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`

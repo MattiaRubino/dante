@@ -55,7 +55,9 @@ function waitForTimelineRead(page: Page) {
 function readUnplaced(page: Page) {
   // Legacy canonical activity inventory is no longer fetched automatically
   // by Home. Exercise the authenticated endpoint explicitly after navigation.
-  return page.request.get('/api/v1/temporal/activities/unplaced');
+  return page.request.get('/api/v1/temporal/activities/unplaced', {
+    headers: { 'X-Dante-Time-Zone': 'Europe/Rome' },
+  });
 }
 async function openExistingCanonicalItems(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Apri Bozze' }).click();
@@ -63,8 +65,12 @@ async function openExistingCanonicalItems(page: Page): Promise<void> {
     'section[aria-label="Elementi preesistenti senza orario"]',
   );
   await expect(existing).toBeVisible();
-  await page.getByRole('button', { name: 'Gestisci elementi già creati' }).click();
-  await expect(page.locator('[data-timeline-planning-tray="true"]')).toBeVisible();
+  await page
+    .getByRole('button', { name: 'Gestisci elementi già creati' })
+    .click();
+  await expect(
+    page.locator('[data-timeline-planning-tray="true"]'),
+  ).toBeVisible();
 }
 
 test.describe('Timeline B01 canonical Activity vertical', () => {

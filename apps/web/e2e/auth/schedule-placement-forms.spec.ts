@@ -21,7 +21,9 @@ const projectEmail: Readonly<Record<string, string>> = {
 function emailFor(testInfo: TestInfo): string {
   const email = projectEmail[testInfo.project.name];
   if (!email) {
-    throw new Error(`Unsupported temporal B02 browser project: ${testInfo.project.name}`);
+    throw new Error(
+      `Unsupported temporal B02 browser project: ${testInfo.project.name}`,
+    );
   }
   return email;
 }
@@ -74,7 +76,9 @@ function waitForTimelineRead(page: Page) {
 function readUnplaced(page: Page) {
   // Legacy canonical activity inventory is no longer fetched automatically
   // by Home. Exercise the authenticated endpoint explicitly after navigation.
-  return page.request.get('/api/v1/temporal/activities/unplaced');
+  return page.request.get('/api/v1/temporal/activities/unplaced', {
+    headers: { 'X-Dante-Time-Zone': 'Europe/Rome' },
+  });
 }
 type MutationResult = Readonly<{
   status: number;
@@ -108,7 +112,9 @@ async function authenticatedMutation(
           typeof session.csrf_token !== 'string' ||
           session.csrf_token.length === 0
         ) {
-          throw new Error('Expected an authenticated session with a CSRF token.');
+          throw new Error(
+            'Expected an authenticated session with a CSRF token.',
+          );
         }
 
         const response = await fetch(path, {
@@ -130,7 +136,9 @@ async function authenticatedMutation(
         };
       } catch (error) {
         if (controller.signal.aborted) {
-          throw new Error(`Timed out ${method} ${path} after ${timeoutMs}ms`, { cause: error });
+          throw new Error(`Timed out ${method} ${path} after ${timeoutMs}ms`, {
+            cause: error,
+          });
         }
         throw error;
       } finally {
@@ -146,7 +154,9 @@ async function openHome(page: Page): Promise<void> {
   await page.goto('/home');
   expect((await timeline).status()).toBe(200);
   expect((await readUnplaced(page)).status()).toBe(200);
-  await expect(page.locator('[data-temporal-read-state="ready"]')).toBeVisible();
+  await expect(
+    page.locator('[data-temporal-read-state="ready"]'),
+  ).toBeVisible();
 }
 
 async function createUnplacedActivity(
@@ -177,7 +187,9 @@ async function assertPlanningTrayContainsActivity(
   activityRef: string,
 ): Promise<void> {
   await page.getByRole('button', { name: 'Apri Bozze' }).click();
-  await page.getByRole('button', { name: 'Gestisci elementi già creati' }).click();
+  await page
+    .getByRole('button', { name: 'Gestisci elementi già creati' })
+    .click();
   const tray = page.locator('[data-timeline-planning-tray="true"]');
   await expect(tray).toBeVisible();
   await expect(
@@ -277,7 +289,10 @@ test.describe('Timeline B02-E full-stack Schedule forms', () => {
       expect(moved.payload.previous_placement_material_state_ref).toBe(
         establishedState,
       );
-      const movedState = uuidField(moved.payload, 'placement_material_state_ref');
+      const movedState = uuidField(
+        moved.payload,
+        'placement_material_state_ref',
+      );
 
       const crossForm = await authenticatedMutation(page, {
         method: 'PATCH',

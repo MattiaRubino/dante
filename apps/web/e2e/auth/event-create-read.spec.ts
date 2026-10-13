@@ -17,7 +17,9 @@ function requireClosureProject(testInfo: TestInfo): void {
     'B03-E closure requires Chromium and Firefox real-stack proof.',
   );
   if (!['chromium', 'firefox'].includes(testInfo.project.name)) {
-    throw new Error(`Unsupported B03-E browser project: ${testInfo.project.name}`);
+    throw new Error(
+      `Unsupported B03-E browser project: ${testInfo.project.name}`,
+    );
   }
 }
 
@@ -69,14 +71,18 @@ function waitForTimelineRead(page: Page) {
 function readUnplaced(page: Page) {
   // Legacy canonical activity inventory is no longer fetched automatically
   // by Home. Exercise the authenticated endpoint explicitly after navigation.
-  return page.request.get('/api/v1/temporal/activities/unplaced');
+  return page.request.get('/api/v1/temporal/activities/unplaced', {
+    headers: { 'X-Dante-Time-Zone': 'Europe/Rome' },
+  });
 }
 async function openHome(page: Page): Promise<void> {
   const timeline = waitForTimelineRead(page);
   await page.goto('/home');
   expect((await timeline).status()).toBe(200);
   expect((await readUnplaced(page)).status()).toBe(200);
-  await expect(page.locator('[data-temporal-read-state="ready"]')).toBeVisible();
+  await expect(
+    page.locator('[data-temporal-read-state="ready"]'),
+  ).toBeVisible();
 }
 
 async function openCreate(page: Page): Promise<Locator> {
@@ -148,10 +154,14 @@ test.describe('Timeline B03-E real-stack Event closure', () => {
       const browserTag = testInfo.project.name;
 
       const timedTitle = `B03 E timed ${browserTag}`;
-      const timed = await createScheduledEvent(page, timedTitle, async (dialog) => {
-        await dialog.locator('[data-create-path="date"]').fill(today);
-        await dialog.locator('[data-create-path="startTime"]').fill('10:00');
-      });
+      const timed = await createScheduledEvent(
+        page,
+        timedTitle,
+        async (dialog) => {
+          await dialog.locator('[data-create-path="date"]').fill(today);
+          await dialog.locator('[data-create-path="startTime"]').fill('10:00');
+        },
+      );
       expect(timed.temporal_form).toBe('floating_local');
       const timedEventRef = uuidField(timed, 'event_ref');
       const timedScheduleRef = uuidField(timed, 'schedule_ref');
@@ -167,18 +177,25 @@ test.describe('Timeline B03-E real-stack Event closure', () => {
       const revisionTimelineRefresh = waitForTimelineRead(page);
       const revisionResponsePromise = page.waitForResponse(
         (response) =>
-          response.url().endsWith(
-            `/api/v1/temporal/schedules/${timedScheduleRef}/placement`,
-          ) && response.request().method() === 'PATCH',
+          response
+            .url()
+            .endsWith(
+              `/api/v1/temporal/schedules/${timedScheduleRef}/placement`,
+            ) && response.request().method() === 'PATCH',
         { timeout: E2E_RESPONSE_TIMEOUT_MS },
       );
       await timedCard.press('Alt+ArrowDown');
       const revisionResponse = await revisionResponsePromise;
       expect(revisionResponse.status()).toBe(200);
       expect((await revisionTimelineRefresh).status()).toBe(200);
-      const revised = (await revisionResponse.json()) as Record<string, unknown>;
+      const revised = (await revisionResponse.json()) as Record<
+        string,
+        unknown
+      >;
       expect(revised.schedule_ref).toBe(timedScheduleRef);
-      expect(revised.previous_placement_material_state_ref).toBe(initialStateRef);
+      expect(revised.previous_placement_material_state_ref).toBe(
+        initialStateRef,
+      );
       const revisedStateRef = uuidField(
         revised,
         'placement_material_state_ref',
@@ -274,10 +291,14 @@ test.describe('Timeline B03-E real-stack Event closure', () => {
         page.locator(`[data-timeline-event="${timedScheduleRef}"]`),
       ).toHaveCount(1);
       await expect(
-        page.locator('.timeline-all-day-item').filter({ hasText: singleDayTitle }),
+        page
+          .locator('.timeline-all-day-item')
+          .filter({ hasText: singleDayTitle }),
       ).toHaveCount(1);
       await expect(
-        page.locator('.timeline-all-day-item').filter({ hasText: multiDayTitle }),
+        page
+          .locator('.timeline-all-day-item')
+          .filter({ hasText: multiDayTitle }),
       ).toHaveCount(3);
     } finally {
       await context.close();

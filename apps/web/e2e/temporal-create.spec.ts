@@ -134,7 +134,7 @@ test('Create base is title-first, exposes actionable types, protects drafts, and
 
   await title.fill('Studiare inglese');
   await page.keyboard.press('Escape');
-  const discard = dialog.getByRole('alertdialog');
+  const discard = page.getByRole('alertdialog');
   await expect(discard).toBeVisible();
   await expect(title).toHaveValue('Studiare inglese');
 
@@ -145,7 +145,7 @@ test('Create base is title-first, exposes actionable types, protects drafts, and
   await dialog.locator('.dante-temporal-panel-close').click();
   await expect(discard).toBeVisible();
   await expect(title).toHaveValue('Studiare inglese');
-  await dialog.getByRole('button', { name: 'Scarta' }).click();
+  await discard.getByRole('button', { name: 'Scarta' }).click();
   await expect(dialog).toHaveCount(0);
   await expect(trigger).toBeFocused();
 });

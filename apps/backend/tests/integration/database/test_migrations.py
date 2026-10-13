@@ -15,7 +15,7 @@ pytestmark = pytest.mark.postgres
 
 # The current head is forward-only; the earlier B01/B02 downgrade guard
 # fixtures intentionally exercise the last historically reversible snapshot.
-_CURRENT_HEAD = "20261013_144"
+_CURRENT_HEAD = "20261013_145"
 _HISTORICAL_REVERSIBLE_HEAD = "20260917_29"
 _B02_REVISION_PARENT = "20260909_21"
 _B02_SCHEMA_HEAD = "20260909_20"
@@ -156,10 +156,50 @@ def test_current_repository_head_refuses_downgrade_by_design(
     assert _current_revisions(provisioned_database) == {_CURRENT_HEAD}
 
     # The latest accepted migration deliberately refuses rollback.
-    with pytest.raises(RuntimeError, match="Elapsed Recurrence anchors must remain non-null"):
+    with pytest.raises(RuntimeError, match="relative Recurrence anchors and policy indexes are canonical"):
         command.downgrade(alembic_config, "-1")
 
     assert _current_revisions(provisioned_database) == {_CURRENT_HEAD}
+
+
+def test_previous_elapsed_anchor_forward_only_guard_remains_enforced(
+    provisioned_database: Any,
+    alembic_config: Config,
+) -> None:
+    """Keep the historical _144 downgrade guard independently testable."""
+    command.upgrade(alembic_config, "20261013_144")
+    with pytest.raises(RuntimeError, match="Elapsed Recurrence anchors must remain non-null"):
+        command.downgrade(alembic_config, "-1")
+    assert _current_revisions(provisioned_database) == {"20261013_144"}
+
+
+def test_relative_recurrence_anchor_and_policy_indexes_match_current_contract(
+    migrated_database: Any,
+) -> None:
+    """The conditional anchor shape and lookup indexes survive fresh migration."""
+    with psycopg.connect(
+        **migrated_database.connection_kwargs(
+            "dante_migrator", migrated_database.cluster.migrator_password
+        )
+    ) as connection:
+        for prefix in ("routine", "event"):
+            elapsed = f"{prefix}_recurrence_elapsed_state"
+            policy = f"{prefix}_occurrence_policy"
+            nullable = connection.execute(
+                "SELECT attnotnull FROM pg_attribute "
+                "WHERE attrelid=%s::regclass AND attname='anchor_at'",
+                (f"dante.{elapsed}",),
+            ).fetchone()
+            assert nullable == (False,)
+            index = connection.execute(
+                "SELECT indisunique, pg_get_indexdef(indexrelid) FROM pg_index "
+                "WHERE indexrelid=%s::regclass",
+                (f"dante.ix_{policy}_{prefix}",),
+            ).fetchone()
+            assert index is not None
+            assert index[0] is False
+            assert f"({prefix}_ref)" in index[1]
+            assert "self_person_ref" not in index[1]
 
 
 def test_previous_routine_replay_forward_only_guard_remains_enforced(

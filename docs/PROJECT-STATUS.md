@@ -9,7 +9,7 @@
 - **Protected-main Alembic:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Active candidate workstream:** `feature/timeline-temporal-operational`
-- **Candidate Alembic:** `20261013_144` (elapsed Recurrence NOT NULL forward repair; new-head verification pending)
+- **Candidate Alembic:** `20261013_145` (relative elapsed Recurrence anchor and occurrence-policy index correction; new-head verification pending)
 - **Candidate topology:** `238|5|228|103|486|421|596|0|0|0`
 - **Candidate frontier:** Last complete 27-group gate on `3ed9c682` had 19 PASS / 8 FAIL; PostgreSQL 370 PASS / 1 FAIL (Alembic metadata drift); new `_144` migration and ORM reconciliation not yet WSL-verified. B15 and real-app acceptance OPEN.
 
@@ -44,7 +44,7 @@ production/cloud recovery                    NOT CLAIMED
 
 ## 2. Active branch candidate
 
-**Current candidate:** `20261013_144` / `238|5|228|103|486|421|596|0|0|0` (expected unchanged structural object counts after NOT NULL-only forward repair; **new-head proof pending**). The latest full PostgreSQL evidence, on `3ed9c682`, is **370 passed, 1 failed** (`alembic check`). The 27-group gate was **19 PASS / 8 FAIL**; subsequent fixes are not yet verified and the gate remains RED. Current implementation and remaining UI acceptance are in `workstreams/timeline-temporal-operational-map.md` and `workstreams/timeline-temporal-operational-handoff.md`; Domain/Logical/Physical current overlays are in `domain/decisions/activity-session-live-timeline-v1.md`, `logical-model/slices/b14-session-objective-home-workspace-2026-10-11.md` and `physical-model/b14-session-objective-home-workspace-2026-10-11.md`.
+**Current candidate:** `20261013_145` / `238|5|228|103|486|421|596|0|0|0` (structural object counts expected unchanged after replacing two indexes; **new-head proof pending**). The user-run full parallel gate on `cdad6bb2` reported 27/27 groups, 19 PASS / 8 FAIL, with non-PostgreSQL and generated drift PASS, PostgreSQL migration drift/relative-anchor failures plus Docker cluster failures, and browser/quality failures. `_145` is unverified on real PostgreSQL. Current implementation and remaining UI acceptance are in `workstreams/timeline-temporal-operational-map.md` and `workstreams/timeline-temporal-operational-handoff.md`; Domain/Logical/Physical current overlays are in `domain/decisions/activity-session-live-timeline-v1.md`, `logical-model/slices/b14-session-objective-home-workspace-2026-10-11.md` and `physical-model/b14-session-objective-home-workspace-2026-10-11.md`.
 
 **Historical candidate snapshot (2026-09-23; do not treat its NEXT or catalog as current):**
 

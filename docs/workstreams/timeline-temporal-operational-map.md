@@ -1,5 +1,9 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## FULL GATE REPAIR — 2026-10-13
+
+User WSL gate at `cdad6bb2`: 27 groups, 19 PASS / 8 FAIL. Current unverified candidate `_145` repairs B11-A relative elapsed-anchor nullability and two occurrence-policy index definitions. Browser test helpers now supply required timezone and dynamic recovery port; responsive quick Create is moved out of the hidden rail. Local Web typecheck and focused component test pass, but the full PostgreSQL/browser gate is still red until rerun; inherited code quality and stale Create journeys remain open. The exact evidence and historical migration risk are documented in `docs/development/full-gate-baseline-2026-10-12.md`.
+
 ## REAL-APP REGRESSIONS — 2026-10-12
 
 User screenshot acceptance is red despite the prior `_142` technical gate. A focused candidate fixes mounted Session capability refresh, numeric Objective edit feedback before writes, recurring root untimed planned Session materialization, displayed-minute card alignment and route/scroll feedback. Local Web typecheck and focused tests pass; user PostgreSQL and real-app confirmation are pending. `Ripeti` from one-off Activity Edit remains unimplemented and needs a new governed conversion contract; see handoff. No B14/B15 closure.

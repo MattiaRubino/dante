@@ -339,11 +339,11 @@ class RoutineRecurrenceElapsedStateRow(Base):
             name="elapsed_positive",
         ),
         CheckConstraint(
-            "anchor_mode_code IN ('fixed_anchor','previous_expected')",
+            "anchor_mode_code IN ('fixed_anchor','previous_expected','previous_completion','anchor_stream')",
             name="anchor_mode",
         ),
         CheckConstraint(
-            "isfinite(anchor_at)",
+            "((anchor_mode_code IN ('fixed_anchor','previous_expected') AND anchor_at IS NOT NULL AND isfinite(anchor_at)) OR (anchor_mode_code IN ('previous_completion','anchor_stream') AND anchor_at IS NULL))",
             name="anchor_at",
         ),
         ForeignKeyConstraint(
@@ -360,7 +360,7 @@ class RoutineRecurrenceElapsedStateRow(Base):
     material_state_ref: Mapped[MaterialStateRef] = mapped_column(primary_key=True)
     elapsed_seconds: Mapped[Decimal] = mapped_column(Numeric, nullable=False)
     anchor_mode_code: Mapped[str] = mapped_column(Text, nullable=False)
-    anchor_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    anchor_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
 
 class RoutineRecurrenceQuotaStateRow(Base):
@@ -782,11 +782,11 @@ class EventRecurrenceElapsedStateRow(Base):
             name="elapsed_positive",
         ),
         CheckConstraint(
-            "anchor_mode_code IN ('fixed_anchor','previous_expected')",
+            "anchor_mode_code IN ('fixed_anchor','previous_expected','previous_completion','anchor_stream')",
             name="anchor_mode",
         ),
         CheckConstraint(
-            "isfinite(anchor_at)",
+            "((anchor_mode_code IN ('fixed_anchor','previous_expected') AND anchor_at IS NOT NULL AND isfinite(anchor_at)) OR (anchor_mode_code IN ('previous_completion','anchor_stream') AND anchor_at IS NULL))",
             name="anchor_at",
         ),
         ForeignKeyConstraint(
@@ -803,7 +803,7 @@ class EventRecurrenceElapsedStateRow(Base):
     material_state_ref: Mapped[MaterialStateRef] = mapped_column(primary_key=True)
     elapsed_seconds: Mapped[Decimal] = mapped_column(Numeric, nullable=False)
     anchor_mode_code: Mapped[str] = mapped_column(Text, nullable=False)
-    anchor_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    anchor_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
 
 class EventRecurrenceQuotaStateRow(Base):
