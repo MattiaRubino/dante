@@ -17,6 +17,10 @@
   }
 
   .home-create-panel-host {
+    /* The rail can be taller than the visible viewport when its sections
+       contain long content. The quick composer must use the viewport's
+       remaining space, with scrolling inside its own form. */
+    max-height: calc(100dvh - 104px);
     overflow: hidden;
   }
 
