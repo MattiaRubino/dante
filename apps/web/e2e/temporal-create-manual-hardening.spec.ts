@@ -34,8 +34,10 @@ test('Create stays in the desktop Context Rail, keeps Timeline scroll available,
   if (!railBox || !quickBox) {
     throw new Error('Expected rail-mounted Create geometry');
   }
-  expect(quickBox.x).toBeGreaterThanOrEqual(railBox.x - 1);
-  expect(quickBox.x + quickBox.width).toBeLessThanOrEqual(
+  const hostBox = await host.boundingBox();
+  const geometry = JSON.stringify({ railBox, hostBox, quickBox });
+  expect(quickBox.x, geometry).toBeGreaterThanOrEqual(railBox.x - 1);
+  expect(quickBox.x + quickBox.width, geometry).toBeLessThanOrEqual(
     railBox.x + railBox.width + 1,
   );
   expect(quickBox.y).toBeGreaterThanOrEqual(0);
