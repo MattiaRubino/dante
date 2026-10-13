@@ -647,7 +647,9 @@ class TemporalAuthoringApplication:
                 raise TemporalAuthoringInputError("Activity intervals require a timed Activity.")
             previous_end = None
             for interval in activity_intervals:
-                if type(interval) is not type(placement):
+                if not isinstance(
+                    interval, (FloatingLocalIntervalPlacement, NamedZoneLocalIntervalPlacement)
+                ) or type(interval) is not type(placement):
                     raise TemporalAuthoringInputError(
                         "Activity intervals must use the Activity time frame."
                     )
