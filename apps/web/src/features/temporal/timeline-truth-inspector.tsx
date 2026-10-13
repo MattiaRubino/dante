@@ -30,13 +30,13 @@ function timelineItemLabel(item: TemporalTimelineItem): string {
       case 'calendar-wall-clock':
         return item.coordinate.generatedWallTime === null
           ? item.coordinate.generatedDate.toString()
-          : `${item.coordinate.generatedDate} ${item.coordinate.generatedWallTime}`;
+          : `${item.coordinate.generatedDate.toString()} ${item.coordinate.generatedWallTime.toString()}`;
       case 'elapsed-interval':
         return item.coordinate.expectedAt.toString();
       case 'quota-per-period':
-        return `${item.coordinate.periodStartDate}–${item.coordinate.periodEndDateExclusive}`;
+        return `${item.coordinate.periodStartDate.toString()}–${item.coordinate.periodEndDateExclusive.toString()}`;
       case 'cyclic-positional':
-        return `${item.coordinate.generatedDate} · ciclo ${item.coordinate.positionIndex}`;
+        return `${item.coordinate.generatedDate.toString()} · ciclo ${item.coordinate.positionIndex}`;
     }
   }
 
@@ -49,7 +49,7 @@ function timelineItemLabel(item: TemporalTimelineItem): string {
     case 'absolute':
       return item.displayStartsLocalAt.toString();
     case 'coarse-local-period':
-      return `${item.localDate} · ${item.period}`;
+      return `${item.localDate.toString()} · ${item.period}`;
   }
 }
 
