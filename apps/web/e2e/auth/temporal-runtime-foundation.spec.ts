@@ -75,14 +75,22 @@ async function signIn(page: Page, email: string): Promise<void> {
   ).toBeVisible();
 }
 
-async function openHomeAndWaitForTemporalRead(page: Page, target = '/home') {
+async function openHomeAndWaitForTemporalRead(
+  page: Page,
+  target = '/home',
+  timeoutMs = 20_000,
+) {
   const temporalResponsePromise = page.waitForResponse(
     (response) =>
       response.url().includes('/api/v1/temporal/timeline/window') &&
       response.request().method() === 'GET',
+    { timeout: timeoutMs },
   );
-  await page.goto(target);
-  return temporalResponsePromise;
+  await page.goto(target, {
+    waitUntil: 'domcontentloaded',
+    timeout: timeoutMs,
+  });
+  return await temporalResponsePromise;
 }
 
 test.describe('Timeline B00 real full-stack spine', () => {
@@ -249,10 +257,35 @@ test.describe('Timeline B00 real full-stack spine', () => {
       runHarnessControl('database-stop');
       databaseStopped = true;
 
-      const failedRead = await openHomeAndWaitForTemporalRead(
-        page,
-        '/home?date=2034-02-17',
-      );
+      // Surface the exact failing stage instead of consuming the full
+      // Playwright timeout while PostgreSQL remains deliberately stopped.
+      // This probe also proves whether the API serves 503 through auth and
+      // DanteContext while disconnected from PostgreSQL.
+      let failedRead;
+      try {
+        const probe = await page.request.get(
+          '/api/v1/temporal/timeline/window?start_date=2034-02-17&end_date_exclusive=2034-02-18',
+          {
+            headers: { 'X-Dante-Time-Zone': 'Europe/Rome' },
+            timeout: 12_000,
+          },
+        );
+        if (probe.status() < 500) {
+          throw new Error(
+            `Outage probe returned HTTP ${probe.status()} instead of 5xx`,
+          );
+        }
+        failedRead = await openHomeAndWaitForTemporalRead(
+          page,
+          '/home?date=2034-02-17',
+          12_000,
+        );
+      } catch (cause) {
+        throw new Error(
+          'PostgreSQL outage blocked the authenticated Timeline API probe or Home navigation before the expected 503 UI state.',
+          { cause },
+        );
+      }
       expect(failedRead.status()).toBeGreaterThanOrEqual(500);
 
       const errorStatus = page.locator(
