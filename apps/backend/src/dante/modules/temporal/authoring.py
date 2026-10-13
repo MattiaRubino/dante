@@ -12,7 +12,7 @@ import hashlib
 import json
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Literal
+from typing import Literal, cast
 from uuid import UUID, uuid7
 
 from sqlalchemy import text
@@ -669,9 +669,19 @@ class TemporalAuthoringApplication:
                         "Activity intervals must be ordered and non-overlapping."
                     )
                 previous_end = end
+            first_interval = activity_intervals[0]
+            last_interval = activity_intervals[-1]
+            if not isinstance(
+                first_interval, (FloatingLocalIntervalPlacement, NamedZoneLocalIntervalPlacement)
+            ) or not isinstance(
+                last_interval, (FloatingLocalIntervalPlacement, NamedZoneLocalIntervalPlacement)
+            ):
+                raise TemporalAuthoringInputError(
+                    "Activity intervals must use the Activity time frame."
+                )
             if (
-                activity_intervals[0].starts_local_at != placement.starts_local_at
-                or activity_intervals[-1].ends_local_at != placement.ends_local_at
+                first_interval.starts_local_at != placement.starts_local_at
+                or last_interval.ends_local_at != placement.ends_local_at
             ):
                 raise TemporalAuthoringInputError(
                     "Activity envelope must exactly cover its first and last interval."
@@ -1153,8 +1163,16 @@ class TemporalAuthoringApplication:
                     item=item,
                     replayed=replayed,
                     schedule=schedule,
-                    session_capture_mode=session_capture_mode or "disabled",
-                    child_guard_mode=child_guard_mode or "none",
+                    # Both free-form inputs were validated above; retain their
+                    # narrowed product contracts in the returned view.
+                    session_capture_mode=cast(
+                        Literal["disabled", "record", "live", "record_and_live"],
+                        session_capture_mode or "disabled",
+                    ),
+                    child_guard_mode=cast(
+                        Literal["none", "confirm", "block"],
+                        child_guard_mode or "none",
+                    ),
                     planned_slices=tuple(planned_results),
                     activity_intervals=tuple(interval_results),
                     children=tuple(child_results),
