@@ -305,25 +305,36 @@ def _validated_plan(snapshot: ActivityEditSnapshot, command: ActivityReplanComma
             != current[row.schedule_ref].placement_material_state_ref
         ):
             raise _conflict()
-    ordered = (
-        sorted((*command.intervals, *command.new_intervals), key=lambda row: row.starts_local_at)
-        if intervals
-        else [command.envelope]
-    )
-    if any(a.ends_local_at > b.starts_local_at for a, b in pairwise(ordered)):
+    # Normalize the typed intervals to pairs before sorting. Python's mixed
+    # Pydantic-model tuple otherwise infers only BaseModel in mypy and loses
+    # the fields shared by ReplanRow, NewIntervalRow and PlacePlannedRow.
+    if intervals:
+        ordered_spans = sorted(
+            [(row.starts_local_at, row.ends_local_at) for row in command.intervals]
+            + [(row.starts_local_at, row.ends_local_at) for row in command.new_intervals],
+            key=lambda span: span[0],
+        )
+    else:
+        if command.envelope is None:
+            raise _invalid("An Activity without intervals must revise its envelope.")
+        ordered_spans = [(command.envelope.starts_local_at, command.envelope.ends_local_at)]
+    if any(a[1] > b[0] for a, b in pairwise(ordered_spans)):
         raise _invalid("Activity intervals overlap.")
-    start, end = ordered[0].starts_local_at, ordered[-1].ends_local_at
-    ordered_planned = sorted(
-        (
-            *command.planned_sessions,
-            *command.place_planned_sessions,
-            *(row for row in command.new_planned_sessions if row.starts_local_at is not None),
-        ),
-        key=lambda row: row.starts_local_at,
+    start, end = ordered_spans[0][0], ordered_spans[-1][1]
+
+    planned_spans = sorted(
+        [(row.starts_local_at, row.ends_local_at) for row in command.planned_sessions]
+        + [(row.starts_local_at, row.ends_local_at) for row in command.place_planned_sessions]
+        + [
+            (row.starts_local_at, row.ends_local_at)
+            for row in command.new_planned_sessions
+            if row.starts_local_at is not None and row.ends_local_at is not None
+        ],
+        key=lambda span: span[0],
     )
-    if any(row.starts_local_at < start or row.ends_local_at > end for row in ordered_planned):
+    if any(begin < start or finish > end for begin, finish in planned_spans):
         raise _invalid("A planned Session falls outside the Activity envelope.")
-    if any(a.ends_local_at > b.starts_local_at for a, b in pairwise(ordered_planned)):
+    if any(a[1] > b[0] for a, b in pairwise(planned_spans)):
         raise _invalid("Planned Sessions overlap.")
     if envelope.temporal_form == "named_zone_local" and not envelope.zone_id:
         raise _invalid("The Activity time zone is missing.")
