@@ -7,8 +7,7 @@ from uuid import uuid7
 
 import psycopg
 import pytest
-from psycopg import sql
-from psycopg import errors
+from psycopg import errors, sql
 
 pytestmark = pytest.mark.postgres
 pytest_plugins = ("tests.integration.temporal.test_activity_core",)
