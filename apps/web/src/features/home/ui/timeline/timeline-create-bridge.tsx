@@ -964,6 +964,15 @@ export function TimelineCreateBridge({
         />
       </TemporalCreateContextCatalogProvider>
 
+      {/* The real Draft Vault must remain present in the browser fixture
+          build: its HTTP boundary is explicitly mocked by Draft Vault E2E
+          tests. Only the legacy planning projection is test-only. */}
+      <TimelineDraftVault
+        onOpen={(item, duplicate) => setDraftRequest({
+          id: Date.now(), item, duplicate,
+        })}
+        onManageExisting={() => setLegacyOpenRequest((count) => count + 1)}
+      />
       {import.meta.env.MODE === 'test' ? (
         <TimelinePlanningTray
           items={planningItems}
@@ -973,21 +982,13 @@ export function TimelineCreateBridge({
           onDelete={deletePlanningItem}
         />
       ) : (
-        <>
-          <TimelineDraftVault
-            onOpen={(item, duplicate) => setDraftRequest({
-              id: Date.now(), item, duplicate,
-            })}
-            onManageExisting={() => setLegacyOpenRequest((count) => count + 1)}
-          />
-          <TimelinePlanningTrayB01
-            hiddenTrigger
-            openRequest={legacyOpenRequest}
-            runtime={runtime}
-            defaultDate={defaultDate}
-            onBeforeOpen={onBeforeOpen}
-          />
-        </>
+        <TimelinePlanningTrayB01
+          hiddenTrigger
+          openRequest={legacyOpenRequest}
+          runtime={runtime}
+          defaultDate={defaultDate}
+          onBeforeOpen={onBeforeOpen}
+        />
       )}
 
       {portalTargets.map(({ projection, host, style, tone }) =>
