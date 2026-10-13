@@ -13,16 +13,19 @@ from dante.auth.contracts import Principal
 from dante.context.contracts import DanteContext
 from dante.modules.temporal.temporal_constraint import (
     AbsoluteEarliestStartRule,
+    AbsoluteIntervalPlacement,
     CreatedTemporalConstraintView,
-    RevisedTemporalConstraintView,
     RetiredTemporalConstraintView,
+    RevisedTemporalConstraintView,
+    SessionMinimumDurationRule,
     TemporalConstraintApplication,
     TemporalConstraintCurrentBoundaryRuleView,
+    TemporalConstraintEvaluationItem,
+    TemporalConstraintEvaluationView,
     TemporalConstraintNotFoundError,
     TemporalConstraintOperationIdReuseError,
     TemporalConstraintStateConflictError,
     TemporalConstraintView,
-    SessionMinimumDurationRule,
 )
 from dante.modules.temporal.temporal_constraint_api import (
     AbsoluteEarliestStartRuleRequest,
@@ -30,13 +33,16 @@ from dante.modules.temporal.temporal_constraint_api import (
     RetireTemporalConstraintRequest,
     ReviseTemporalConstraintRequest,
     SessionMinimumDurationRuleRequest,
+    _evaluation_response,
     _rule_from_request,
-    _rule_request as _temporal_rule_request,
     create_temporal_constraint,
     get_temporal_constraint,
     list_temporal_constraints_by_subject,
     retire_temporal_constraint,
     revise_temporal_constraint_rule,
+)
+from dante.modules.temporal.temporal_constraint_api import (
+    _rule_request as _temporal_rule_request,
 )
 from dante.platform.database.references import MaterialStateRef, NativeRef, ScopedRecordRef
 from dante.platform.http.problem import ProblemError
@@ -59,6 +65,34 @@ def test_session_duration_rule_api_round_trip_keeps_the_bounded_semantics() -> N
     assert rule == SessionMinimumDurationRule(duration_microseconds=2_700_000_000)
     serialized = _temporal_rule_request(rule)
     assert serialized.model_dump() == payload.model_dump()
+
+
+def test_duration_evaluation_item_serializes_the_session_facet() -> None:
+    response = _evaluation_response(
+        TemporalConstraintEvaluationView(
+            subject_native_ref=_SUBJECT_REF,
+            placement=AbsoluteIntervalPlacement(
+                starts_at=_BOUNDARY_AT,
+                ends_at=datetime(2026, 9, 24, 9, 0, tzinfo=UTC),
+            ),
+            status="not_evaluable",
+            hard_set_status="undetermined",
+            items=(
+                TemporalConstraintEvaluationItem(
+                    constraint_ref=_CONSTRAINT_REF,
+                    material_state_ref=_STATE_REF,
+                    family="duration",
+                    rule_code="session_minimum_duration",
+                    constrained_facet="session.active_duration",
+                    strength="hard",
+                    evaluation="not_evaluable",
+                    reason_code="session_not_recorded",
+                ),
+            ),
+        )
+    )
+    assert response.items[0].family == "duration"
+    assert response.items[0].constrained_facet == "session.active_duration"
 
 
 def _context() -> DanteContext:

@@ -276,9 +276,11 @@ class TemporalConstraintEvaluationItemResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
     constraint_ref: UUID
     material_state_ref: UUID
-    family: Literal["boundary", "window"]
+    family: Literal["boundary", "window", "duration"]
     rule_code: str
-    constrained_facet: Literal["schedule.start", "schedule.completion", "schedule.placement"]
+    constrained_facet: Literal[
+        "schedule.start", "schedule.completion", "schedule.placement", "session.active_duration"
+    ]
     strength: Literal["hard", "soft"]
     evaluation: Literal["satisfied", "violated", "not_evaluable"]
     reason_code: str

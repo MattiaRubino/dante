@@ -16321,7 +16321,8 @@
             "enum": [
               "schedule.start",
               "schedule.completion",
-              "schedule.placement"
+              "schedule.placement",
+              "session.active_duration"
             ],
             "title": "Constrained Facet",
             "type": "string"
@@ -16337,7 +16338,7 @@
             "type": "string"
           },
           "family": {
-            "enum": ["boundary", "window"],
+            "enum": ["boundary", "window", "duration"],
             "title": "Family",
             "type": "string"
           },

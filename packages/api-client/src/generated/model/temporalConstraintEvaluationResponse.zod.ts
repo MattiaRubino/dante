@@ -19,6 +19,7 @@ export const TemporalConstraintEvaluationResponse = /*#__PURE__*/ zod.object({
         'schedule.start',
         'schedule.completion',
         'schedule.placement',
+        'session.active_duration',
       ]),
       constraint_ref: /*#__PURE__*/ zod.uuid(),
       evaluation: /*#__PURE__*/ zod.enum([
@@ -26,7 +27,7 @@ export const TemporalConstraintEvaluationResponse = /*#__PURE__*/ zod.object({
         'violated',
         'not_evaluable',
       ]),
-      family: /*#__PURE__*/ zod.enum(['boundary', 'window']),
+      family: /*#__PURE__*/ zod.enum(['boundary', 'window', 'duration']),
       material_state_ref: /*#__PURE__*/ zod.uuid(),
       reason_code: /*#__PURE__*/ zod.string(),
       rule_code: /*#__PURE__*/ zod.string(),
