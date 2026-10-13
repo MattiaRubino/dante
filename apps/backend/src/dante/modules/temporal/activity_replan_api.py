@@ -13,6 +13,7 @@ from fastapi import APIRouter, Depends, Request, Response
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError, SQLAlchemyError
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from dante.context.contracts import DanteContext
 from dante.context.dependencies import require_dante_context, require_mutating_dante_context
@@ -184,7 +185,13 @@ def _conflict(detail: str = "Reload the Activity and review the proposed times."
     )
 
 
-def _validated_plan(snapshot: ActivityEditSnapshot, command: ActivityReplanCommand):
+def _validated_plan(
+    snapshot: ActivityEditSnapshot,
+    command: ActivityReplanCommand,
+) -> tuple[
+    list[ReplanChange],
+    list[tuple[ReplanRow, FloatingLocalIntervalPlacement | NamedZoneLocalIntervalPlacement]],
+]:
     """Pure preflight. Every dependent row is explicit, so none move silently."""
     rows = snapshot.schedules
     intervals = [row for row in rows if row.role_code == "interval"]
@@ -345,7 +352,9 @@ def _validated_plan(snapshot: ActivityEditSnapshot, command: ActivityReplanComma
         ends_local_at=end,
     )
     changes: list[ReplanChange] = []
-    placements = []
+    placements: list[
+        tuple[ReplanRow, FloatingLocalIntervalPlacement | NamedZoneLocalIntervalPlacement]
+    ] = []
     # Removed rows are handled by the unschedule path, never by placement revision.
     # Only retained rows can be looked up in by_ref.
     for existing_row in (
@@ -367,7 +376,7 @@ def _validated_plan(snapshot: ActivityEditSnapshot, command: ActivityReplanComma
                 NamedZoneLocalIntervalPlacement(
                     starts_local_at=next_row.starts_local_at,
                     ends_local_at=next_row.ends_local_at,
-                    zone_id=envelope.zone_id,
+                    zone_id=_checked_zone(envelope),
                 )
                 if envelope.temporal_form == "named_zone_local" and envelope.zone_id
                 else FloatingLocalIntervalPlacement(
@@ -452,7 +461,13 @@ def _validated_plan(snapshot: ActivityEditSnapshot, command: ActivityReplanComma
     return changes, placements
 
 
-async def _read(session, actor: UUID, activity: UUID) -> ActivityEditSnapshot:
+def _checked_zone(envelope: ActivityScheduleResponse) -> str:
+    if envelope.zone_id is None:
+        raise _invalid("The Activity time zone is missing.")
+    return envelope.zone_id
+
+
+async def _read(session: AsyncSession, actor: UUID, activity: UUID) -> ActivityEditSnapshot:
     payload = await session.scalar(_SNAPSHOT, {"actor": actor, "activity": activity})
     if payload is None:
         raise ProblemError(
@@ -555,15 +570,15 @@ async def apply_activity_replan(
                 {"actor": actor, "schedule": envelope.schedule_ref},
             ):
                 raise _conflict("Unlock the Activity placement before replanning.")
-            for row in body.remove_intervals:
+            for removed_interval in body.remove_intervals:
                 if await session.scalar(
                     text("""
                     SELECT locked FROM dante.get_self_schedule_placement_lock(:actor,:schedule)
                 """),
-                    {"actor": actor, "schedule": row.schedule_ref},
+                    {"actor": actor, "schedule": removed_interval.schedule_ref},
                 ):
                     raise _conflict("Unlock the Activity interval before removing it.")
-            for row in (*body.remove_planned_sessions, *body.delete_planned_sessions):
+            for removed_schedule in (*body.remove_planned_sessions, *body.delete_planned_sessions):
                 if await session.scalar(
                     text("""
                     SELECT EXISTS(
@@ -573,22 +588,22 @@ async def apply_activity_replan(
                              :actor,execution.session_ref)=:schedule
                     )
                 """),
-                    {"actor": actor, "activity": activity_ref, "schedule": row.schedule_ref},
+                    {"actor": actor, "activity": activity_ref, "schedule": removed_schedule.schedule_ref},
                 ):
                     raise _conflict("A planned Session with recorded execution cannot be removed.")
                 if await session.scalar(
                     text("""
                     SELECT locked FROM dante.get_self_schedule_placement_lock(:actor,:schedule)
                 """),
-                    {"actor": actor, "schedule": row.schedule_ref},
+                    {"actor": actor, "schedule": removed_schedule.schedule_ref},
                 ):
                     raise _conflict("Unlock the planned Session before removing it.")
-            for row, placement in placements:
+            for revised_schedule, placement in placements:
                 locked = await session.scalar(
                     text("""
                     SELECT locked FROM dante.get_self_schedule_placement_lock(:actor,:schedule)
                 """),
-                    {"actor": actor, "schedule": row.schedule_ref},
+                    {"actor": actor, "schedule": revised_schedule.schedule_ref},
                 )
                 if locked:
                     raise _conflict("Unlock the Activity placement before replanning.")
@@ -600,21 +615,21 @@ async def apply_activity_replan(
                 """),
                     {
                         "actor": actor,
-                        "operation": f"replan:{digest}:{row.schedule_ref}",
+                        "operation": f"replan:{digest}:{revised_schedule.schedule_ref}",
                         "fingerprint": _revision_fingerprint(
-                            schedule_ref=ScopedRecordRef(row.schedule_ref),
+                            schedule_ref=ScopedRecordRef(revised_schedule.schedule_ref),
                             expected_material_state_ref=MaterialStateRef(
-                                row.expected_material_state_ref
+                                revised_schedule.expected_material_state_ref
                             ),
                             placement=placement,
                         ),
-                        "schedule": row.schedule_ref,
-                        "expected": row.expected_material_state_ref,
+                        "schedule": revised_schedule.schedule_ref,
+                        "expected": revised_schedule.expected_material_state_ref,
                         "state": uuid7(),
                         "placement": json.dumps(_placement_payload(placement), sort_keys=True),
                     },
                 )
-            for row in (
+            for unscheduled_row in (
                 *body.remove_intervals,
                 *body.remove_planned_sessions,
                 *(
@@ -630,18 +645,18 @@ async def apply_activity_replan(
                 """),
                     {
                         "actor": actor,
-                        "operation": f"replan:remove:{digest}:{row.schedule_ref}",
+                        "operation": f"replan:remove:{digest}:{unscheduled_row.schedule_ref}",
                         "fingerprint": _unschedule_fingerprint(
-                            schedule_ref=ScopedRecordRef(row.schedule_ref),
+                            schedule_ref=ScopedRecordRef(unscheduled_row.schedule_ref),
                             expected_material_state_ref=MaterialStateRef(
-                                row.expected_material_state_ref
+                                unscheduled_row.expected_material_state_ref
                             ),
                         ),
-                        "schedule": row.schedule_ref,
-                        "expected": row.expected_material_state_ref,
+                        "schedule": unscheduled_row.schedule_ref,
+                        "expected": unscheduled_row.expected_material_state_ref,
                     },
                 )
-            for row in body.delete_planned_sessions:
+            for retired_row in body.delete_planned_sessions:
                 await session.execute(
                     text("""
                     SELECT dante.retire_self_planned_schedule(:actor,:activity,:schedule)
@@ -649,28 +664,28 @@ async def apply_activity_replan(
                     {
                         "actor": actor,
                         "activity": activity_ref,
-                        "schedule": row.schedule_ref,
+                        "schedule": retired_row.schedule_ref,
                     },
                 )
-            for row in body.place_planned_sessions:
+            for placed_row in body.place_planned_sessions:
                 if await session.scalar(
                     text("""
                     SELECT locked FROM dante.get_self_schedule_placement_lock(:actor,:schedule)
                 """),
-                    {"actor": actor, "schedule": row.schedule_ref},
+                    {"actor": actor, "schedule": placed_row.schedule_ref},
                 ):
                     raise _conflict("Unlock the planned Session before placing it.")
                 try:
                     placement = (
                         NamedZoneLocalIntervalPlacement(
-                            starts_local_at=row.starts_local_at,
-                            ends_local_at=row.ends_local_at,
-                            zone_id=envelope.zone_id,
+                            starts_local_at=placed_row.starts_local_at,
+                            ends_local_at=placed_row.ends_local_at,
+                            zone_id=_checked_zone(envelope),
                         )
                         if envelope.temporal_form == "named_zone_local"
                         else FloatingLocalIntervalPlacement(
-                            starts_local_at=row.starts_local_at,
-                            ends_local_at=row.ends_local_at,
+                            starts_local_at=placed_row.starts_local_at,
+                            ends_local_at=placed_row.ends_local_at,
                         )
                     )
                 except ScheduleInputError as exc:
@@ -684,19 +699,19 @@ async def apply_activity_replan(
                 """),
                     {
                         "actor": actor,
-                        "operation": f"replan:place:{digest}:{row.schedule_ref}",
+                        "operation": f"replan:place:{digest}:{placed_row.schedule_ref}",
                         "fingerprint": hashlib.sha256(
                             json.dumps(
                                 {
                                     "activity": str(activity_ref),
-                                    "schedule": str(row.schedule_ref),
+                                    "schedule": str(placed_row.schedule_ref),
                                     "placement": payload,
                                 },
                                 sort_keys=True,
                             ).encode()
                         ).hexdigest(),
                         "activity": activity_ref,
-                        "schedule": row.schedule_ref,
+                        "schedule": placed_row.schedule_ref,
                         "state": uuid7(),
                         "placement": json.dumps(payload, sort_keys=True),
                     },
@@ -711,19 +726,19 @@ async def apply_activity_replan(
                 """),
                     {"actor": actor, "activity": activity_ref},
                 )
-                for row in body.new_intervals:
+                for new_interval in body.new_intervals:
                     next_interval_order += 1
                     try:
                         placement = (
                             NamedZoneLocalIntervalPlacement(
-                                starts_local_at=row.starts_local_at,
-                                ends_local_at=row.ends_local_at,
-                                zone_id=envelope.zone_id,
+                                starts_local_at=new_interval.starts_local_at,
+                                ends_local_at=new_interval.ends_local_at,
+                                zone_id=_checked_zone(envelope),
                             )
                             if envelope.temporal_form == "named_zone_local"
                             else FloatingLocalIntervalPlacement(
-                                starts_local_at=row.starts_local_at,
-                                ends_local_at=row.ends_local_at,
+                                starts_local_at=new_interval.starts_local_at,
+                                ends_local_at=new_interval.ends_local_at,
                             )
                         )
                     except ScheduleInputError as exc:
@@ -731,7 +746,7 @@ async def apply_activity_replan(
                     created = await establish_schedule_in_session(
                         session,
                         self_person_ref=NativeRef(actor),
-                        operation_id=f"replan:add-interval:{digest}:{row.client_ref}",
+                        operation_id=f"replan:add-interval:{digest}:{new_interval.client_ref}",
                         subject_native_ref=NativeRef(activity_ref),
                         placement=placement,
                     )
@@ -772,12 +787,12 @@ async def apply_activity_replan(
                 ]
                 if len(free_orders) < len(body.new_planned_sessions):
                     raise _invalid("At most 100 current planned Sessions are supported.")
-                for row, next_order in zip(
+                for new_planned, next_order in zip(
                     body.new_planned_sessions,
                     free_orders[: len(body.new_planned_sessions)],
                     strict=True,
                 ):
-                    if row.starts_local_at is None:
+                    if new_planned.starts_local_at is None:
                         await session.execute(
                             text("""
                             SELECT * FROM dante.establish_self_unplaced_planned_schedule(
@@ -788,21 +803,21 @@ async def apply_activity_replan(
                                 "activity": activity_ref,
                                 "schedule": uuid7(),
                                 "position": next_order,
-                                "name": row.name,
+                                "name": new_planned.name,
                             },
                         )
                         continue
                     try:
                         placement = (
                             NamedZoneLocalIntervalPlacement(
-                                starts_local_at=row.starts_local_at,
-                                ends_local_at=row.ends_local_at,
-                                zone_id=envelope.zone_id,
+                                starts_local_at=new_planned.starts_local_at,
+                                ends_local_at=new_planned.ends_local_at,
+                                zone_id=_checked_zone(envelope),
                             )
                             if envelope.temporal_form == "named_zone_local"
                             else FloatingLocalIntervalPlacement(
-                                starts_local_at=row.starts_local_at,
-                                ends_local_at=row.ends_local_at,
+                                starts_local_at=new_planned.starts_local_at,
+                                ends_local_at=new_planned.ends_local_at,
                             )
                         )
                     except ScheduleInputError as exc:
@@ -810,7 +825,7 @@ async def apply_activity_replan(
                     created = await establish_schedule_in_session(
                         session,
                         self_person_ref=NativeRef(actor),
-                        operation_id=f"replan:add:{digest}:{row.client_ref}",
+                        operation_id=f"replan:add:{digest}:{new_planned.client_ref}",
                         subject_native_ref=NativeRef(activity_ref),
                         placement=placement,
                     )
@@ -824,7 +839,7 @@ async def apply_activity_replan(
                             "activity": activity_ref,
                             "schedule": created.schedule_ref,
                             "position": next_order,
-                            "name": row.name,
+                            "name": new_planned.name,
                         },
                     )
             return await _read(session, actor, activity_ref)
