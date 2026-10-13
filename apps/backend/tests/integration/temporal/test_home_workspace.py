@@ -2,12 +2,13 @@
 
 from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
-from typing import Any
+from typing import Any, cast
 
 import pytest
-from fastapi import Response
+from fastapi import Request, Response
 from tests.integration.temporal.test_activity_quick_authoring_metadata import _seed_self
 
+from dante.context.contracts import DanteContext
 from dante.modules.temporal.authoring import TemporalAuthoringApplication
 from dante.modules.temporal.outcome_review_policy_api import (
     OutcomeReviewPolicyCommand,
@@ -29,6 +30,22 @@ from dante.platform.database.runtime import create_database_runtime
 pytestmark = pytest.mark.postgres
 
 
+def _fake_context(actor: object, zone_id: str = "Europe/Rome") -> DanteContext:
+    """Only identity/zone attributes are accessed by these direct route calls."""
+    return cast(
+        DanteContext,
+        SimpleNamespace(self_person_ref=actor, effective_zone_id=zone_id),
+    )
+
+
+def _fake_request(runtime: Any) -> Request:
+    """Use a bounded ASGI app-state double rather than a running web server."""
+    return cast(
+        Request,
+        SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))),
+    )
+
+
 @pytest.mark.asyncio
 async def test_home_history_has_real_session_stop_but_no_inferred_activity_completion(
     migrated_database: Any,
@@ -36,8 +53,8 @@ async def test_home_history_has_real_session_stop_but_no_inferred_activity_compl
     actor = _seed_self(migrated_database)
     stranger = _seed_self(migrated_database)
     runtime = create_database_runtime(migrated_database.runtime_settings())
-    request = SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime)))
-    context = SimpleNamespace(self_person_ref=actor)
+    request = _fake_request(runtime)
+    context = _fake_context(actor)
     now = datetime.now(UTC)
     try:
         created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
@@ -73,7 +90,7 @@ async def test_home_history_has_real_session_stop_but_no_inferred_activity_compl
         assert history[0].subject_kind == "activity"
         assert (
             await list_home_finished_work(
-                request, SimpleNamespace(self_person_ref=stranger), Response()
+                request, _fake_context(stranger), Response()
             )
             == []
         )
@@ -97,7 +114,7 @@ async def test_home_history_has_real_session_stop_but_no_inferred_activity_compl
         assert pending[0].draft_revision is None
         assert (
             await list_home_objective_work(
-                request, SimpleNamespace(self_person_ref=stranger), Response()
+                request, _fake_context(stranger), Response()
             )
             == []
         )
@@ -112,8 +129,8 @@ async def test_past_unstarted_activity_requires_explicit_reality_review_and_show
     actor = _seed_self(migrated_database)
     stranger = _seed_self(migrated_database)
     runtime = create_database_runtime(migrated_database.runtime_settings())
-    request = SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime)))
-    context = SimpleNamespace(self_person_ref=actor, effective_zone_id="Europe/Rome")
+    request = _fake_request(runtime)
+    context = _fake_context(actor)
     now = datetime.now(UTC)
     try:
         activity = (
@@ -192,7 +209,7 @@ async def test_past_unstarted_activity_requires_explicit_reality_review_and_show
         assert (
             await list_resolution_queue(
                 request,
-                SimpleNamespace(self_person_ref=stranger, effective_zone_id="Europe/Rome"),
+                _fake_context(stranger),
             )
         ).count == 0
     finally:
