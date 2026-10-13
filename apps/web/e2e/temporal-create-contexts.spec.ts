@@ -36,7 +36,7 @@ test('Create stages a colored Life Area and reuses existing names case-insensiti
   );
   await expect(area).toHaveValue('Studio');
 
-  await dialog.getByRole('button', { name: 'Aggiungi' }).click();
+  await dialog.getByRole('button', { name: 'Aggiungi', exact: true }).click();
   await expect(dialog).toHaveCount(0);
 
   const card = page
