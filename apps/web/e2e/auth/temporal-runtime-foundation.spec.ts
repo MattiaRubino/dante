@@ -3,7 +3,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { Temporal } from '@dante/time';
-import { expect, test, type Page, type TestInfo } from '@playwright/test';
+import { expect, test, type Page, type Response, type TestInfo } from '@playwright/test';
 
 const password = 'correct horse battery staple';
 const repoRoot = resolve(
@@ -257,52 +257,54 @@ test.describe('Timeline B00 real full-stack spine', () => {
       runHarnessControl('database-stop');
       databaseStopped = true;
 
-      // Surface the exact failing stage instead of consuming the full
-      // Playwright timeout while PostgreSQL remains deliberately stopped.
-      // This probe also proves whether the API serves 503 through auth and
-      // DanteContext while disconnected from PostgreSQL.
-      try {
-        const probe = await page.request.get(
-          '/api/v1/temporal/timeline/window?start_date=2034-02-17&end_date_exclusive=2034-02-18',
-          {
-            headers: { 'X-Dante-Time-Zone': 'Europe/Rome' },
-            timeout: 12_000,
-          },
-        );
-        if (probe.status() < 500) {
-          throw new Error(
-            `Outage probe returned HTTP ${probe.status()} instead of 5xx`,
+      // The authoritative Timeline GET is deliberately preceded by a
+      // GET /auth/session to obtain CSRF, then POST /occurrences/checkpoint.
+      // With PostgreSQL stopped, the auth/session request itself can fail,
+      // short-circuiting the checkpoint and the Timeline GET. Testing only
+      // one downstream endpoint yields a false timeout. Preserve the real
+      // outage by proving 5xx directly, then require the UI's error state.
+      const probe = await page.request.get(
+        '/api/v1/temporal/timeline/window?start_date=2034-02-17&end_date_exclusive=2034-02-18',
+        {
+          headers: { 'X-Dante-Time-Zone': 'Europe/Rome' },
+          timeout: 12_000,
+        },
+      );
+      expect(probe.status()).toBeGreaterThanOrEqual(500);
+
+      const outageResponses: string[] = [];
+      const observeOutage = (response: Response) => {
+        const address = new URL(response.url());
+        if (
+          address.pathname.startsWith('/api/v1/auth/') ||
+          address.pathname.startsWith('/api/v1/temporal/')
+        ) {
+          outageResponses.push(
+            `${response.request().method()} ${address.pathname} ${response.status()}`,
           );
         }
-        // Production does a POST /occurrences/checkpoint before each
-        // GET /timeline/window. During a genuine PostgreSQL outage that
-        // prerequisite is unavailable, so a Timeline GET MUST NOT fire.
-        // Observe the failed checkpoint and the truthful UI error instead
-        // of waiting for a request the product intentionally never makes.
-        const checkpointFailure = page.waitForResponse(
-          (response) =>
-            response.url().includes('/api/v1/temporal/occurrences/checkpoint') &&
-            response.request().method() === 'POST',
-          { timeout: 12_000 },
-        );
-        // Navigate through the actual Timeline UI, keeping the already
-        // authenticated SPA mounted. A full page goto during the outage
-        // would also restart the auth bootstrap and could prevent Home from
-        // mounting at all, testing authentication rather than Timeline.
-        await page.locator('.dante-timeline-week-step').last().click();
-        const checkpoint = await checkpointFailure;
-        expect(checkpoint.status()).toBeGreaterThanOrEqual(500);
-      } catch (cause) {
-        throw new Error(
-          'PostgreSQL outage failed at authenticated Timeline checkpoint or in-app date navigation before the expected error UI state.',
-          { cause },
-        );
-      }
-
+      };
+      page.on('response', observeOutage);
       const errorStatus = page.locator(
         '.temporal-timeline-runtime-status--error',
       );
-      await expect(errorStatus).toContainText('Timeline non disponibile');
+      try {
+        // Navigate inside the mounted, signed-in SPA so Timeline must
+        // checkpoint a different window without repeating sign-in.
+        await page.locator('.dante-timeline-week-step').last().click();
+        await expect(errorStatus).toContainText(
+          'Timeline non disponibile',
+          { timeout: 15_000 },
+        );
+      } catch (cause) {
+        throw new Error(
+          'PostgreSQL outage did not surface the Timeline error after in-app navigation. Browser API responses: ' +
+            (outageResponses.join('; ') || '(no API response)'),
+          { cause },
+        );
+      } finally {
+        page.off('response', observeOutage);
+      }
       await expect(page.locator('[data-timeline-event]')).toHaveCount(0);
 
       runHarnessControl('database-start');
