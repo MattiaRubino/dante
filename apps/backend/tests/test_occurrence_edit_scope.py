@@ -20,7 +20,14 @@ def _ref(n: int) -> UUID:
     return UUID(f"0199a101-0000-7000-8000-{n:012d}")
 
 
-def _occurrence(n: int, *, source: UUID = SOURCE, **kwargs: object) -> RecurrenceEditCandidate:
+def _occurrence(
+    n: int,
+    *,
+    source: UUID = SOURCE,
+    skipped: bool = False,
+    has_override: bool = False,
+    has_recorded_facts: bool = False,
+) -> RecurrenceEditCandidate:
     dates = {
         1: NOW - timedelta(days=3),
         2: NOW - timedelta(days=2),
@@ -34,7 +41,9 @@ def _occurrence(n: int, *, source: UUID = SOURCE, **kwargs: object) -> Recurrenc
         source_native_ref=source,
         expected_at=dates[n],
         origin_code="recurrence_generated",
-        **kwargs,
+        skipped=skipped,
+        has_override=has_override,
+        has_recorded_facts=has_recorded_facts,
     )
 
 
