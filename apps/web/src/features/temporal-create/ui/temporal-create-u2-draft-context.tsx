@@ -26,7 +26,10 @@ type TemporalCreateU2DraftProviderProps = Readonly<{
   fields: TemporalCreateFields;
   resetKey: string | number;
   initialDraft?: TemporalCreateU2AuthoringDraft;
-  onDraftChange: (draft: TemporalCreateU2AuthoringDraft) => void;
+  onDraftChange: (
+    draft: TemporalCreateU2AuthoringDraft,
+    source: 'user' | 'sync',
+  ) => void;
   children: ReactNode;
 }>;
 
@@ -70,18 +73,20 @@ function TemporalCreateU2DraftProviderInstance({
   // date normalization) only after render. The patch callback below still
   // notifies synchronously for user edits before a subsequent Submit click.
   useEffect(() => {
-    onDraftChange(state);
+    // A mount/date synchronization is not a user edit: never clear a
+    // validation error simply because this provider committed new state.
+    onDraftChange(state, 'sync');
   }, [state, onDraftChange]);
 
   const value = useMemo<U2DraftContextValue>(
     () => ({
       draft: state,
       patch: (patch) => {
-        setState((current) => {
-          const next = patchTemporalCreateU2AuthoringDraft(current, patch);
-          onDraftChange(next);
-          return next;
-        });
+        // Event handlers own user edits. Publishing them from a React state
+        // updater can run after Submit and incorrectly erase validation.
+        const next = patchTemporalCreateU2AuthoringDraft(state, patch);
+        setState(next);
+        onDraftChange(next, 'user');
       },
     }),
     [onDraftChange, state],
