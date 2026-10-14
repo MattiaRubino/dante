@@ -105,14 +105,18 @@ function renderEntry(
   const activityRequests: TemporalAuthorActivityRequest[] = [];
   const eventRequests: TemporalAuthorEventRequest[] = [];
   const source: TemporalAuthoringDataSource = {
-    authorActivity: vi.fn(async (request) => {
-      activityRequests.push(request);
-      return activityResult(request.title, scheduledResult);
-    }),
-    authorEvent: vi.fn(async (request) => {
-      eventRequests.push(request);
-      return eventResult(request.title, scheduledResult);
-    }),
+    authorActivity: vi.fn<TemporalAuthoringDataSource['authorActivity']>(
+      (request: TemporalAuthorActivityRequest) => {
+        activityRequests.push(request);
+        return Promise.resolve(activityResult(request.title, scheduledResult));
+      },
+    ),
+    authorEvent: vi.fn<TemporalAuthoringDataSource['authorEvent']>(
+      (request: TemporalAuthorEventRequest) => {
+        eventRequests.push(request);
+        return Promise.resolve(eventResult(request.title, scheduledResult));
+      },
+    ),
   };
   const rendered = render(
     <>
