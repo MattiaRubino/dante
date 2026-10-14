@@ -261,3 +261,72 @@ async def test_independent_untimed_planned_session_without_main_capture(
         assert len(after.visuals) == 1
     finally:
         await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_two_simultaneous_activities_keep_independent_named_session_rows(
+    migrated_database: Any,
+) -> None:
+    """Starting/stopping one Activity must not erase another Activity's ready rows."""
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    now = datetime.now(UTC)
+    try:
+        created = []
+        for index, name in enumerate(("Studio", "Allenamento")):
+            item = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
+                self_person_ref=actor,
+                operation_id=f"panel:multi:create:{index}",
+                title=name,
+                placement=AbsoluteIntervalPlacement(
+                    starts_at=now - timedelta(minutes=10),
+                    ends_at=now + timedelta(minutes=25),
+                ),
+                planned_slices=(None,),
+                planned_slice_names=(f"Parte {index + 1}",),
+                session_capture_mode="disabled",
+            )
+            created.append(item.item.subject_native_ref)
+
+        panel = await get_session_panel(
+            _fake_context(actor), _fake_request(runtime), Response()
+        )
+        assert {group.activity_ref for group in panel.groups} == set(created)
+        rows = {
+            group.activity_ref: next(
+                row for row in group.rows if row.planned_schedule_ref is not None
+            )
+            for group in panel.groups
+        }
+        assert all(row.execution is None for row in rows.values())
+
+        sessions = SessionApplication(runtime.session_factory)
+        first_row = rows[created[0]]
+        assert first_row.planned_schedule_ref is not None
+        started = await sessions.start_planned(
+            self_person_ref=actor,
+            activity_ref=created[0],
+            schedule_ref=ScopedRecordRef(first_row.planned_schedule_ref),
+            operation_id="panel:multi:start",
+        )
+        running = await get_session_panel(
+            _fake_context(actor), _fake_request(runtime), Response()
+        )
+        assert {group.activity_ref for group in running.groups} == set(created)
+        first_group = next(group for group in running.groups if group.activity_ref == created[0])
+        assert any(row.execution and row.execution.session_ref == started.session_ref
+                   for row in first_group.rows)
+
+        await sessions.end(
+            self_person_ref=actor,
+            session_ref=started.session_ref,
+            expected_material_state_ref=started.timing_material_state_ref,
+            operation_id="panel:multi:stop",
+        )
+        remaining = await get_session_panel(
+            _fake_context(actor), _fake_request(runtime), Response()
+        )
+        assert {group.activity_ref for group in remaining.groups} == {created[1]}
+        assert all(row.execution is None for row in remaining.groups[0].rows)
+    finally:
+        await runtime.dispose()
