@@ -24,10 +24,12 @@ export function PlacementLockControls({
   const [readError, setReadError] = useState<
     Readonly<{ scheduleRef: string; message: string }> | null
   >(null);
-  const [mutationError, setMutationError] = useState<string | null>(null);
+  const [mutationError, setMutationError] = useState<
+    Readonly<{ scheduleRef: string; message: string }> | null
+  >(null);
   const state = loaded?.scheduleRef === scheduleRef ? loaded.value : null;
   const error =
-    mutationError ??
+    (mutationError?.scheduleRef === scheduleRef ? mutationError.message : null) ??
     (readError?.scheduleRef === scheduleRef ? readError.message : null);
   const onLockChangedRef = useRef(onLockChanged);
 
@@ -72,7 +74,10 @@ export function PlacementLockControls({
       onLockChanged?.(next.locked);
       invalidateTemporalTimelineRead();
     } catch {
-      setMutationError('Non è stato possibile cambiare il blocco. Riprova.');
+      setMutationError({
+        scheduleRef,
+        message: 'Non è stato possibile cambiare il blocco. Riprova.',
+      });
     } finally {
       setPending(false);
     }
