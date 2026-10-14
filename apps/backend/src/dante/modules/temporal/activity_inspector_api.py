@@ -311,6 +311,62 @@ async def retire_self_activity(
     return ActivityRetirementResponse(activity_ref=activity_ref, replayed=bool(replayed))
 
 
+class ActivityHardDeleteCommand(BaseModel):
+    """One confirmed, irreversible lifecycle delete with an attempts CAS token."""
+
+    model_config = ConfigDict(extra="forbid")
+    expected_session_fingerprint: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+
+class ActivityHardDeleteResponse(BaseModel):
+    activity_ref: UUID
+    deleted_rows: int
+
+
+@router.delete(
+    "/{activity_ref}",
+    response_model=ActivityHardDeleteResponse,
+    operation_id="temporal_delete_self_activity_hard",
+)
+async def delete_self_activity_hard(
+    activity_ref: UUID,
+    body: ActivityHardDeleteCommand,
+    context: WriteContext,
+    request: Request,
+    response: Response,
+) -> ActivityHardDeleteResponse:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        async with request.app.state.database_runtime.session_factory() as session, session.begin():
+            await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
+            deleted = await session.scalar(
+                text("SELECT dante.delete_self_activity_hard(:actor,:activity,:fingerprint)"),
+                {
+                    "actor": context.self_person_ref,
+                    "activity": activity_ref,
+                    "fingerprint": body.expected_session_fingerprint,
+                },
+            )
+    except DBAPIError as exc:
+        constraint = getattr(getattr(exc.orig, "diag", None), "constraint_name", None)
+        if constraint == "activity_lifecycle_unavailable":
+            raise ProblemError(
+                status=404, code="temporal.activity_lifecycle.not_found",
+                category="not_found", title="Activity unavailable",
+                detail="L'attività non è più disponibile.",
+            ) from exc
+        if constraint in {"activity_lifecycle_stale", "activity_lifecycle_named_unavailable"}:
+            raise ProblemError(
+                status=409, code="temporal.activity_lifecycle.stale",
+                category="conflict", title="Session state changed",
+                detail="Le Sessioni sono cambiate: ricarica prima di confermare.",
+            ) from exc
+        raise _unavailable() from exc
+    except SQLAlchemyError as exc:
+        raise _unavailable() from exc
+    return ActivityHardDeleteResponse(activity_ref=activity_ref, deleted_rows=deleted or 0)
+
+
 class PlannedSessionNameChange(BaseModel):
     model_config = ConfigDict(extra="forbid")
     expected_name: str | None = Field(default=None, max_length=300)
