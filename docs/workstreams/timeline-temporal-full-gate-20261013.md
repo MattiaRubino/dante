@@ -76,3 +76,19 @@ Concrete reviewed examples:
 - Fixed Ruff's two import-order reports directly. These subsequent commits still require normal local formatter/typecheck/ESLint/Vitest and E2E verification.
 
 Prior focused Quick Create browser hardening was green; prior full PostgreSQL 374-case gate was green on older code. **No new 27-group all-green claim** is justified until the current source is tested. React hooks warnings in actual UI components are not safe candidates for automated rewrites.
+
+## 14 October — full acceptance rerun with adaptive concurrency
+
+The user requested a **complete** acceptance view now, without excluding static failures or deprecated-test candidates. The measured previous complete 27-group execution at SHA `23754d0d` ran in **721.6 s (12m 1.6s)**, with the critical path consisting of `BACKEND_POSTGRES=495.1s` plus `WEB_BROWSER_REAL_STACK=225.4s` (serialized by design). Earlier runs reportedly took ~28 minutes, but this is the latest complete sourced measurement. PostgreSQL was 374 cases in 21 module-atomic, duration-balanced shards across 7 isolated clusters, with two infrastructure-only retries. The existing pool automatically dispatches new shards to freed workers; it does *not* leave idle workers waiting for fixed groups.
+
+Created `tooling/testing/run_full_gate_adaptive.sh`. On a clean feature branch it measures WSL CPU affinity (`nproc`), Docker CPU/RAM limits (`docker info`), and current Linux available RAM, then chooses bounded `--group-workers` (1..8), `--postgres-workers` (1..8 adaptive; underlying runner permits 10), and `--nonauth-workers` (2..5 adaptive; underlying permits 6). Ample hardware enables up to **16 simultaneously dispatched read-only and PostgreSQL test processes** (8+8); smaller machines receive fewer, minimizing Docker port/readiness failures and CPU oversubscription. Three queue jobs per Postgres worker preserve balanced module fixture granularity; historical `POSTGRES_MODULE_TIMINGS.json` can reorder jobs. PostgreSQL runs alongside read-only and build/package phases. The full-stack authentication Playwright gate remains single-worker after draining PostgreSQL because its outage test stops/restarts a database; running it at the same time would produce invalid HTTP 503 cascades, not reliable faster proof. Browser fixture/non-auth share output directories and remain sequential relative to each other.
+
+The adaptive launcher calls `run_parallel_gate.py --self-test` (coverage and queue invariant), then launches the exact existing **27-group** acceptance gate and preserves `temp/LATEST_GATE_DIR.txt`, `FULL_GATE_SUMMARY.md`, `FULL_GATE_LOGS.tar.gz`, and wrapper console log. It includes no exclusions, skipped assertions, lint suppressions, fake passes, or modifications to acceptance thresholds. Support expert override environment variables only after assessing actual Docker resources. It is a speed optimization with **no guaranteed runtime**, because CPU, RAM, Postgres Docker health, and real-stack timings dominate.
+
+Run once from WSL:
+```bash
+cd ~/projects/dante || exit 1
+git pull --ff-only origin feature/timeline-temporal-operational || exit 1
+bash tooling/testing/run_full_gate_adaptive.sh
+```
+Attach the exact `UPLOAD_THIS_ARCHIVE` path printed by the script to diagnose all remaining product, test, and static failures against the **current** SHA.
