@@ -82,22 +82,29 @@ function compactTime(value: string | null): string {
  * cards. The compact band exposes their count; detail controls are only
  * rendered in the Activity Inspector.
  */
-export function ActivityPlannedSessionsCardDetail({
-  activityRef,
-  visible,
-  variant = 'detail',
-}: Readonly<{
+type PlannedSessionCardProps = Readonly<{
   activityRef: string;
   visible: boolean;
   variant?: 'detail' | 'indicator';
-}>) {
+}>;
+
+export function ActivityPlannedSessionsCardDetail(
+  props: PlannedSessionCardProps,
+) {
+  // Hidden panels unmount instead of retaining a stale prior fetch or
+  // resetting state synchronously inside an effect.
+  if (!props.visible) return null;
+  return <PlannedSessionCardContent key={props.activityRef} {...props} />;
+}
+
+function PlannedSessionCardContent({
+  activityRef,
+  visible,
+  variant = 'detail',
+}: PlannedSessionCardProps) {
   const [rows, setRows] = useState<readonly PlannedSession[] | null>(null);
 
   useEffect(() => {
-    if (!visible) {
-      setRows(null);
-      return;
-    }
 
     let cancelled = false;
     const controller = new AbortController();
