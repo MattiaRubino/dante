@@ -27,8 +27,8 @@ describe('Activity structure after reload', () => {
   });
 
   it('reads current children, modes and Schedules without creating future Sessions', async () => {
-    const fetchFn = vi.fn<typeof fetch>(async () =>
-      Response.json({
+    const fetchFn = vi.fn<typeof fetch>(() =>
+      Promise.resolve(Response.json({
         parent_activity_ref: PARENT,
         session_capture_mode: 'live',
         child_guard_mode: 'confirm',
@@ -62,7 +62,7 @@ describe('Activity structure after reload', () => {
             ],
           },
         ],
-      }),
+      })),
     );
     vi.stubGlobal('fetch', fetchFn);
     render(<ActivityStructureReadback activityRef={PARENT} />);
