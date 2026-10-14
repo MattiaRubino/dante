@@ -263,6 +263,7 @@ async def test_b10_e_chain_is_explicit_layered_and_history_preserving(
             self_person_ref=alice,
             outcome_ref=outcome.outcome_ref,
         )
+        assert reconciliations_after_outcome_correction is not None
         assert len(reconciliations_after_outcome_correction) == 1
         assert (
             reconciliations_after_outcome_correction[0].outcome_disposition_material_state_ref
