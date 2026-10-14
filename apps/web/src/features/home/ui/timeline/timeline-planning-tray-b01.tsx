@@ -206,8 +206,12 @@ export function TimelinePlanningTrayB01({
   }, [source]);
 
   useEffect(() => {
-    void refresh();
+    let mounted = true;
+    void Promise.resolve().then(() => {
+      if (mounted) return refresh();
+    });
     return () => {
+      mounted = false;
       readGenerationRef.current += 1;
     };
   }, [refresh]);
