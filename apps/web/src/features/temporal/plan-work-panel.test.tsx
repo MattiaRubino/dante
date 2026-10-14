@@ -7,7 +7,7 @@ import {
 } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { PlanWork } from './remote-plan-work-data-source';
+import type { PlanStep, PlanWork } from './remote-plan-work-data-source';
 
 const PLAN = '0199a8c0-5e74-7bc0-8ad0-a2f403f5617d';
 const STATE = '0199a8c0-5e74-7bc0-8ad0-a2f403f5617e';
@@ -45,7 +45,7 @@ const current: PlanWork = {
 
 const { list, replace } = vi.hoisted(() => ({
   list: vi.fn<() => Promise<readonly PlanWork[]>>(),
-  replace: vi.fn(),
+  replace: vi.fn<(current: PlanWork, title: string, steps: readonly Omit<PlanStep, 'position'>[], operationId: string) => Promise<PlanWork>>(),
 }));
 vi.mock('./remote-plan-work-data-source', async (importOriginal) => {
   const original =
