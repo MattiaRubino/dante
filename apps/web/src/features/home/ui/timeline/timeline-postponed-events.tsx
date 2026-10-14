@@ -15,5 +15,8 @@ export function TimelinePostponedEventsPanel({
   enabled: boolean;
   areas: readonly LifeArea[];
 }>) {
+  // Only retained for compatibility with TimelineSurface; the canonical tray owns the UI.
+  void _enabled;
+  void _areas;
   return null;
 }
