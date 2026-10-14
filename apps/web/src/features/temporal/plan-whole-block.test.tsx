@@ -165,8 +165,11 @@ describe('B13 whole Plan panel', () => {
       screen.getByRole('button', { name: 'Salva policy nello Step' }),
     );
     await waitFor(() => expect(replacePlan).toHaveBeenCalledOnce());
-    expect(replacePlan.mock.calls[0]?.[0].stateRef).toBe(STATE);
-    expect(replacePlan.mock.calls[0]?.[2][1]).toMatchObject({
+    const replacementCalls = replacePlan.mock.calls as unknown as Array<
+      [PlanWork, string, PlanWork['steps'], string]
+    >;
+    expect(replacementCalls[0]?.[0].stateRef).toBe(STATE);
+    expect(replacementCalls[0]?.[2][1]).toMatchObject({
       stepRef: MIX,
       maxPlannedSlices: 2,
       mergeCompatible: true,
