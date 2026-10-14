@@ -551,13 +551,15 @@ class SessionApplication:
             raise SessionCaptureDisabledError(
                 "Session capture is disabled by Activity policy."
             ) from exc
-        if name in {
-            "session_internal_requires_running_main",
-            "session_internal_before_planned_start",
-        }:
+        if name == "session_internal_requires_running_main":
             raise SessionInputError(
-                "La Sessione interna richiede una Sessione principale in corso "
-                "e non può partire prima dell'orario previsto."
+                "Avvia prima la Sessione principale di questa Attività."
+            ) from exc
+        if name == "session_internal_before_planned_start":
+            # Only a pre-lifecycle-v2 database can still report this removed
+            # admission rule. Never misleadingly blame the main Session.
+            raise SessionInputError(
+                "La Sessione non può iniziare prima dell'orario previsto."
             ) from exc
         if name == "session_manual_record_invalid":
             raise SessionInputError(
