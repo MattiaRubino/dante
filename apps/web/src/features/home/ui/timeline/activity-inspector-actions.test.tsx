@@ -23,7 +23,9 @@ const saveCore = vi.fn();
 const previewReplan = vi.fn();
 const applyReplan = vi
   .fn()
-  .mockImplementation(async (_ref, settings) => settings);
+  .mockImplementation((_ref: unknown, settings: unknown) =>
+    Promise.resolve(settings),
+  );
 const loadLifeAreaChoice = vi.fn();
 const createLifeArea = vi.fn();
 const setLifeAreaAppearance = vi.fn();
