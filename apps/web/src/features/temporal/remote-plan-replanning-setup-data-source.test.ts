@@ -10,7 +10,9 @@ const activityRef = '0199a8c0-5e74-7bc0-8ad0-a2f403f56184';
 
 it('sends self-scoped Policy CAS and an Activity hard boundary through CSRF writes', async () => {
   const fetchFn = vi.fn(
-    (input: RequestInfo | URL) => {
+    (input: RequestInfo | URL, init?: RequestInit) => {
+      // Keep the complete fetch signature so recorded calls expose method/body.
+      void init;
       const url = fetchRequestUrl(input);
       if (url.endsWith('/api/v1/auth/session')) {
         return Promise.resolve(new Response(
