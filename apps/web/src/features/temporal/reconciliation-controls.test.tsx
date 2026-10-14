@@ -106,6 +106,10 @@ function notFound(code: string, title: string, detail: string) {
   );
 }
 
+function resolvedJson(value: unknown, init?: ResponseInit): Promise<Response> {
+  return Promise.resolve(Response.json(value, init));
+}
+
 describe('Reconciliation controls', () => {
   afterEach(() => {
     cleanup();
@@ -113,14 +117,14 @@ describe('Reconciliation controls', () => {
   });
 
   it('does not manufacture reconciliation without an Outcome', async () => {
-    const fetchFn = vi.fn<Fetch>(async (input) => {
+    const fetchFn = vi.fn<Fetch>((input) => {
       const url = fetchRequestUrl(input);
       if (url.endsWith(`/events/${SUBJECT}/actual`)) {
-        return notFound(
+        return Promise.resolve(notFound(
           'temporal.actual.not_found',
           'Actual unavailable',
           'No Actual is established for this subject.',
-        );
+        ));
       }
       throw new Error(`Unexpected fetch ${url}`);
     });
@@ -139,17 +143,17 @@ describe('Reconciliation controls', () => {
   it('can explicitly keep the current Outcome unresolved without inventing evidence or truth', async () => {
     const bodies: Array<Record<string, unknown>> = [];
     let current: ReturnType<typeof reconciliation> | null = null;
-    const fetchFn = vi.fn<Fetch>(async (input, init) => {
+    const fetchFn = vi.fn<Fetch>((input, init) => {
       const url = fetchRequestUrl(input);
       if (url.endsWith('/api/v1/auth/session')) {
-        return Response.json({ authenticated: true, csrf_token: 'csrf' });
+        return resolvedJson({ authenticated: true, csrf_token: 'csrf' });
       }
       if (url.endsWith(`/events/${SUBJECT}/actual`))
-        return Response.json(actual());
+        return resolvedJson(actual());
       if (url.endsWith(`/actuals/${ACTUAL}/outcome`))
-        return Response.json(outcome());
+        return resolvedJson(outcome());
       if (url.endsWith(`/outcomes/${OUTCOME}/confirmations`))
-        return Response.json([]);
+        return resolvedJson([]);
       if (
         init?.method === 'POST' &&
         url.endsWith(`/outcomes/${OUTCOME}/reconciliations`)
@@ -160,10 +164,10 @@ describe('Reconciliation controls', () => {
         >;
         bodies.push(body);
         current = reconciliation(RECONCILIATION_STATE_1, 'unresolved', []);
-        return Response.json(current, { status: 201 });
+        return resolvedJson(current, { status: 201 });
       }
       if (url.endsWith(`/outcomes/${OUTCOME}/reconciliations`)) {
-        return Response.json(current === null ? [] : [current]);
+        return resolvedJson(current === null ? [] : [current]);
       }
       throw new Error(`Unexpected fetch ${url}`);
     });
@@ -200,17 +204,17 @@ describe('Reconciliation controls', () => {
     ];
     const bodies: Array<Record<string, unknown>> = [];
     let current: ReturnType<typeof reconciliation> | null = null;
-    const fetchFn = vi.fn<Fetch>(async (input, init) => {
+    const fetchFn = vi.fn<Fetch>((input, init) => {
       const url = fetchRequestUrl(input);
       if (url.endsWith('/api/v1/auth/session')) {
-        return Response.json({ authenticated: true, csrf_token: 'csrf' });
+        return resolvedJson({ authenticated: true, csrf_token: 'csrf' });
       }
       if (url.endsWith(`/events/${SUBJECT}/actual`))
-        return Response.json(actual());
+        return resolvedJson(actual());
       if (url.endsWith(`/actuals/${ACTUAL}/outcome`))
-        return Response.json(outcome());
+        return resolvedJson(outcome());
       if (url.endsWith(`/outcomes/${OUTCOME}/confirmations`))
-        return Response.json(confirmations);
+        return resolvedJson(confirmations);
       if (
         init?.method === 'POST' &&
         url.endsWith(`/outcomes/${OUTCOME}/reconciliations`)
@@ -227,10 +231,10 @@ describe('Reconciliation controls', () => {
           String(body.action_code),
           body.evidence as readonly Record<string, string>[],
         );
-        return Response.json(current, { status: 201 });
+        return resolvedJson(current, { status: 201 });
       }
       if (url.endsWith(`/outcomes/${OUTCOME}/reconciliations`)) {
-        return Response.json(current === null ? [] : [current]);
+        return resolvedJson(current === null ? [] : [current]);
       }
       throw new Error(`Unexpected fetch ${url}`);
     });
