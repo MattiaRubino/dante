@@ -164,7 +164,7 @@ async def test_b08_b_pause_resume_is_idempotent_and_preserves_timing_history(
         assert rehydrated_end.active_seconds == pytest.approx(ended.active_seconds, abs=0.001)
 
         with _admin(migrated_database) as connection:
-            old_pause, completed_pause, ended_pause, state_count = connection.execute(
+            fetched_row = connection.execute(
                 """
                 SELECT
                   (SELECT resumed_at FROM dante.session_timing_pause
@@ -183,6 +183,8 @@ async def test_b08_b_pause_resume_is_idempotent_and_preserves_timing_history(
                     started.session_ref,
                 ),
             ).fetchone()
+            assert fetched_row is not None
+            old_pause, completed_pause, ended_pause, state_count = fetched_row
         assert old_pause is None
         assert completed_pause is not None
         assert ended_pause is not None
