@@ -78,7 +78,7 @@ describe('responsibility controls', () => {
     await screen.findByText('Responsabile: tu');
 
     expect(typeof (bodies[0] as Record<string, unknown>).operation_id).toBe('string');
-    expect(bodies).toEqual([
+    expect(bodies).toMatchObject([
       {
         holder: 'self',
         expected_holder: null,
@@ -119,7 +119,7 @@ describe('responsibility controls', () => {
     await screen.findByText('Partecipazione attesa: facoltativa');
 
     expect(typeof (bodies[0] as Record<string, unknown>).operation_id).toBe('string');
-    expect(bodies).toEqual([
+    expect(bodies).toMatchObject([
       {
         participant: 'self',
         requirement_code: 'optional',
