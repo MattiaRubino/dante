@@ -134,6 +134,10 @@ export function TemporalCreateComposer({
   const pending = lifecycle === 'pending';
   const discardPending = session.closeDecision === 'confirm-discard';
   const advanced = session.surface !== 'quick';
+  const handledPlannedSessionError =
+    advanced &&
+    fields.kind === 'activity' &&
+    failureTarget?.startsWith('plannedSession:') === true;
   const italian = i18n.language.toLowerCase().startsWith('it');
 
   useLayoutEffect(() => {
@@ -176,7 +180,7 @@ export function TemporalCreateComposer({
       ...issues
         .map((issue) => issue.path[0])
         .filter((path): path is string => Boolean(path)),
-      ...(failureTarget ? [failureTarget] : []),
+      ...(failureTarget && !handledPlannedSessionError ? [failureTarget] : []),
     ];
     const marked = new Map<HTMLElement, string | null>();
     for (const path of invalidPaths) {
@@ -196,7 +200,7 @@ export function TemporalCreateComposer({
         else region.setAttribute('aria-invalid', previousAriaInvalid);
       }
     };
-  }, [issues, failureTarget, session.surface]);
+  }, [issues, failureTarget, session.surface, handledPlannedSessionError]);
 
   useEffect(() => {
     if (!failureTarget) return;
@@ -576,7 +580,7 @@ export function TemporalCreateComposer({
             inert={discardPending || undefined}
             onSubmit={submitForm}
           >
-            {failureMessage && !inlineFailureHost ? (
+            {failureMessage && !inlineFailureHost && !handledPlannedSessionError ? (
               <div className="temporal-create-operation-error" role="alert">
                 {failureMessage}
               </div>
@@ -638,7 +642,11 @@ export function TemporalCreateComposer({
                 ) : null}
               </div>
               {advanced && fields.kind === 'activity' ? (
-                <TemporalCreateAdvancedActivityStructure fields={fields} />
+                <TemporalCreateAdvancedActivityStructure
+                  fields={fields}
+                  validationTarget={handledPlannedSessionError ? failureTarget : null}
+                  validationMessage={handledPlannedSessionError ? failureMessage : ''}
+                />
               ) : null}
               {advanced && fields.kind === 'event' ? (
                 <TemporalCreateEventAgenda
@@ -688,7 +696,7 @@ export function TemporalCreateComposer({
               />
             </TemporalCreateU2DraftProvider>
 
-            {failureMessage && inlineFailureHost
+            {failureMessage && inlineFailureHost && !handledPlannedSessionError
               ? createPortal(
                   <span className="temporal-create-field-error" role="alert">
                     {failureMessage}
