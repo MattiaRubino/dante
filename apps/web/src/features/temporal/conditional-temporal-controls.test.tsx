@@ -44,6 +44,10 @@ function condition(replayed = false) {
   };
 }
 
+function resolvedJson(value: unknown, init?: ResponseInit): Promise<Response> {
+  return Promise.resolve(Response.json(value, init));
+}
+
 describe('Conditional temporal controls', () => {
   afterEach(() => {
     cleanup();
@@ -53,13 +57,13 @@ describe('Conditional temporal controls', () => {
   it('recovers the canonical Condition by subject and evaluates PostgreSQL-derived truth', async () => {
     const writes: Array<Record<string, unknown>> = [];
     let created = false;
-    const fetchFn = vi.fn<Fetch>(async (input, init) => {
+    const fetchFn = vi.fn<Fetch>((input, init) => {
       const url = fetchRequestUrl(input);
       if (url.endsWith('/api/v1/auth/session')) {
-        return Response.json({ authenticated: true, csrf_token: 'csrf' });
+        return resolvedJson({ authenticated: true, csrf_token: 'csrf' });
       }
       if (url.includes('/conditions/actual-realization?')) {
-        return created ? Response.json(condition()) : unavailable();
+        return created ? resolvedJson(condition()) : Promise.resolve(unavailable());
       }
       if (
         init?.method === 'POST' &&
@@ -69,7 +73,7 @@ describe('Conditional temporal controls', () => {
           JSON.parse(fetchRequestBody(init.body)) as Record<string, unknown>,
         );
         created = true;
-        return Response.json(condition(), { status: 201 });
+        return resolvedJson(condition(), { status: 201 });
       }
       if (
         init?.method === 'POST' &&
@@ -78,7 +82,7 @@ describe('Conditional temporal controls', () => {
         writes.push(
           JSON.parse(fetchRequestBody(init.body)) as Record<string, unknown>,
         );
-        return Response.json(
+        return resolvedJson(
           {
             evaluation_ref: EVALUATION,
             condition_ref: CONDITION,
@@ -92,7 +96,7 @@ describe('Conditional temporal controls', () => {
           { status: 201 },
         );
       }
-      return unavailable();
+      return Promise.resolve(unavailable());
     });
     vi.stubGlobal('fetch', fetchFn);
 
