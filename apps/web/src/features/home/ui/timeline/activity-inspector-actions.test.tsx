@@ -41,6 +41,11 @@ function requiredItems(value: unknown): readonly unknown[] {
 const get = vi.fn();
 const revise = vi.fn();
 const retire = vi.fn();
+const sessionImpact = vi.fn().mockResolvedValue({
+  fingerprint: 'a'.repeat(64),
+  attempts: [],
+});
+const deleteHard = vi.fn();
 const loadSettings = vi.fn();
 const listActivitySessions = vi.fn().mockResolvedValue([]);
 const loadChildCount = vi.fn().mockResolvedValue(0);
@@ -83,7 +88,7 @@ vi.mock('../../../temporal/remote-recurring-profile-edit', () => ({
   }),
 }));
 vi.mock('../../../temporal/remote-activity-inspector', () => ({
-  createRemoteActivityInspector: () => ({ get, revise, retire }),
+  createRemoteActivityInspector: () => ({ get, revise, retire, sessionImpact, deleteHard }),
 }));
 vi.mock('../../../temporal/remote-session-data-source', () => ({
   createRemoteTemporalSessionDataSource: () => ({
@@ -1422,8 +1427,15 @@ describe('Activity Inspector', () => {
     expect(onCancel).toHaveBeenCalledOnce();
   });
 
-  it('requires confirmation before retirement', async () => {
-    retire.mockResolvedValue(undefined);
+  it('hard-deletes an Activity only after showing real attempts and confirming its fingerprint', async () => {
+    const fingerprint = 'b'.repeat(64);
+    sessionImpact.mockResolvedValueOnce({
+      fingerprint,
+      attempts: [
+        { sessionRef: 'attempt', status: 'in pausa', plannedScheduleRef: null },
+      ],
+    });
+    deleteHard.mockResolvedValueOnce(undefined);
     const onDeleted = vi.fn();
     render(
       <ActivityInspectorActions
@@ -1435,11 +1447,34 @@ describe('Activity Inspector', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: 'Elimina' }));
     expect(retire).not.toHaveBeenCalled();
+    expect(deleteHard).not.toHaveBeenCalled();
+    expect((await screen.findByText(/1 Sessioni registrate/)).textContent).toContain('in pausa');
     fireEvent.click(
-      screen.getByRole('button', { name: 'Conferma eliminazione' }),
+      screen.getByRole('button', { name: 'Conferma eliminazione definitiva' }),
     );
-    await waitFor(() => expect(retire).toHaveBeenCalledWith(ref));
+    await waitFor(() => expect(deleteHard).toHaveBeenCalledWith(ref, fingerprint));
+    expect(retire).not.toHaveBeenCalled();
     expect(onDeleted).toHaveBeenCalledOnce();
+  });
+
+  it('cancelling Activity deletion leaves recorded Sessions untouched', async () => {
+    sessionImpact.mockResolvedValueOnce({
+      fingerprint: 'c'.repeat(64),
+      attempts: [{ sessionRef: 'live', status: 'in corso', plannedScheduleRef: null }],
+    });
+    render(
+      <ActivityInspectorActions
+        activityRef={ref}
+        onEdit={() => undefined}
+        onDeleted={() => undefined}
+        onDuplicate={() => undefined}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Elimina' }));
+    await screen.findByRole('button', { name: 'Conferma eliminazione definitiva' });
+    fireEvent.click(screen.getByRole('button', { name: 'Annulla' }));
+    expect(deleteHard).not.toHaveBeenCalled();
+    expect(retire).not.toHaveBeenCalled();
   });
 
   it('refuses a recurring Activity duplicate instead of silently creating a one-off', async () => {
