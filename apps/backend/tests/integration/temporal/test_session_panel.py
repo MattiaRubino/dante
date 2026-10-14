@@ -330,3 +330,67 @@ async def test_two_simultaneous_activities_keep_independent_named_session_rows(
         assert all(row.execution is None for row in remaining.groups[0].rows)
     finally:
         await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_named_session_can_start_before_activity_interval_from_direct_command(
+    migrated_database: Any,
+) -> None:
+    """Starting a named execution early never shifts the accepted Activity plan."""
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    now = datetime.now(UTC)
+    planned_start = now + timedelta(hours=2)
+    planned_end = planned_start + timedelta(hours=1)
+    try:
+        created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
+            self_person_ref=actor,
+            operation_id="panel:early-named:create",
+            title="Studio futuro",
+            placement=AbsoluteIntervalPlacement(
+                starts_at=planned_start,
+                ends_at=planned_end,
+            ),
+            planned_slices=(None,),
+            planned_slice_names=("Inizio anticipato",),
+            session_capture_mode="disabled",
+        )
+        activity = created.item.subject_native_ref
+        panel = await get_session_panel(
+            _fake_context(actor), _fake_request(runtime), Response()
+        )
+        # No fabricated preview row two hours before the planned Activity.
+        assert all(group.activity_ref != activity for group in panel.groups)
+        async with runtime.session_factory() as session, session.begin():
+            refs = (
+                await session.execute(
+                    text(
+                        "SELECT schedule_ref FROM dante.get_self_activity_schedule_roles("
+                        ":actor, CAST(ARRAY[:activity] AS uuid[])) "
+                        "WHERE role_code='planned'"
+                    ),
+                    {"actor": actor, "activity": activity},
+                )
+            ).scalars().all()
+        assert len(refs) == 1
+        started = await SessionApplication(runtime.session_factory).start_planned(
+            self_person_ref=actor,
+            activity_ref=activity,
+            schedule_ref=ScopedRecordRef(refs[0]),
+            operation_id="panel:early-named:start",
+        )
+        assert started.open
+        assert started.started_at < planned_start
+        active = await get_session_panel(
+            _fake_context(actor), _fake_request(runtime), Response()
+        )
+        rows = [
+            row
+            for group in active.groups
+            if group.activity_ref == activity
+            for row in group.rows
+        ]
+        assert any(row.execution and row.execution.session_ref == started.session_ref
+                   for row in rows)
+    finally:
+        await runtime.dispose()
