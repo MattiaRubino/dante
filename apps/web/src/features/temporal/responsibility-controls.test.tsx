@@ -77,9 +77,9 @@ describe('responsibility controls', () => {
     fireEvent.click(screen.getByText('Assegna a me'));
     await screen.findByText('Responsabile: tu');
 
+    expect(typeof (bodies[0] as Record<string, unknown>).operation_id).toBe('string');
     expect(bodies).toEqual([
       {
-        operation_id: expect.any(String),
         holder: 'self',
         expected_holder: null,
       },
@@ -97,8 +97,11 @@ describe('responsibility controls', () => {
         return resolvedJson({ authenticated: true, csrf_token: 'csrf' });
       }
       if (url.endsWith('/expected-participation') && init?.method === 'PUT') {
-        const body = JSON.parse(fetchRequestBody(init.body));
+        const body = JSON.parse(fetchRequestBody(init.body)) as Record<string, unknown>;
         bodies.push(body);
+        if (body.requirement_code !== 'optional' && body.requirement_code !== 'required') {
+          throw new Error('Expected an accepted participation requirement.');
+        }
         current = body.requirement_code;
         return resolvedJson(participation(current));
       }
@@ -115,9 +118,9 @@ describe('responsibility controls', () => {
     fireEvent.click(screen.getByText('Facoltativa'));
     await screen.findByText('Partecipazione attesa: facoltativa');
 
+    expect(typeof (bodies[0] as Record<string, unknown>).operation_id).toBe('string');
     expect(bodies).toEqual([
       {
-        operation_id: expect.any(String),
         participant: 'self',
         requirement_code: 'optional',
         expected_requirement_code: 'required',
