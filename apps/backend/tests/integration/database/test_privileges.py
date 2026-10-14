@@ -230,6 +230,7 @@ def test_database_schema_and_search_path_are_explicitly_hardened(
     with _admin_connection(migrated_database) as connection:
         database_privileges = connection.execute(
             "SELECT "
+            "has_database_privilege('dante_owner', %s, 'TEMP'), "
             "has_database_privilege('dante_runtime', %s, 'CONNECT'), "
             "has_database_privilege('dante_runtime', %s, 'TEMP'), "
             "has_database_privilege('dante_runtime', %s, 'CREATE'), "
@@ -240,6 +241,7 @@ def test_database_schema_and_search_path_are_explicitly_hardened(
             "has_database_privilege('dante_observer', %s, 'TEMP'), "
             "has_database_privilege('dante_observer', %s, 'CREATE')",
             (
+                migrated_database.name,
                 migrated_database.name,
                 migrated_database.name,
                 migrated_database.name,
@@ -274,6 +276,7 @@ def test_database_schema_and_search_path_are_explicitly_hardened(
 
     assert database_privileges == (
         True,
+        True,
         False,
         False,
         True,
@@ -287,6 +290,17 @@ def test_database_schema_and_search_path_are_explicitly_hardened(
     assert "CONNECT" not in public_database_privileges
     assert "TEMPORARY" not in public_database_privileges
     assert "CREATE" not in public_database_privileges
+
+    # The lifecycle graph uses owner-only temporary tables; the login roles
+    # above must still lack TEMP even when the owner has it.
+    with _role_connection(
+        migrated_database,
+        "dante_migrator",
+        migrated_database.cluster.migrator_password,
+    ) as connection:
+        connection.execute("SET ROLE dante_owner")
+        connection.execute("CREATE TEMP TABLE cp3_owner_lifecycle_probe (id integer)")
+        connection.execute("DROP TABLE pg_temp.cp3_owner_lifecycle_probe")
 
 
 def test_observer_can_read_statistics_but_not_dante_business_state(

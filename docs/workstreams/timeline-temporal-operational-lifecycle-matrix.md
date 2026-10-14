@@ -48,6 +48,14 @@ Timeline, review rail and browser must agree before a row is accepted.
   role. The third surfaced a 503 for a stale profile during Delete; core edit
   now checks that revision before attempting the Session graph mutation.
   Destructive graph acceptance remains pending the next PostgreSQL run.
+- The next rerun on `a4a5a15` reached all eight bodies: **5 passed, 3 failed**.
+  All three destructive paths encountered `InsufficientPrivilege` when the
+  owner-executed graph created its temporary working table. The corrective
+  candidate grants database `TEMPORARY` only to the `NOLOGIN` owner during
+  administrative provisioning, asserts the exact login-role denials and
+  exercises owner temporary table creation in the PostgreSQL privilege test.
+  Existing databases need explicit provisioning rerun. PostgreSQL proof of
+  this corrective candidate is **NOT_RUN**.
 - Intended `_148` Dictionary topology: `238|5|233|103|486|421|596`.
   This is a computed expectation, **not** a measured live catalog.
 - This environment has no Docker, PostgreSQL 18/PostGIS or real-app browser

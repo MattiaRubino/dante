@@ -1,5 +1,21 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-14 — Lifecycle deletion privilege repair candidate
+
+The user's focused PostgreSQL run on `a4a5a15` executed all eight selected
+tests: **5 passed, 3 failed**. Hard Activity deletion, editor Delete Sessions,
+and named X all failed at the same owner-executed graph function because
+`dante_owner` had no database `TEMPORARY` permission. This candidate grants
+TEMP only to the NOLOGIN owner in explicit administrative provisioning, keeps
+all login roles denied, verifies the grant and an actual owner temp table in
+`test_privileges.py`, and records the required provisioning rerun for existing
+databases. The migration head remains `_148`; no applied migration was edited.
+Local Ruff/format, targeted mypy, 37 settings tests, test registry and diff
+checks passed. PostgreSQL and real browser are unavailable in this workspace;
+the destructive scenarios and complete gate remain unverified on this SHA.
+The never-started review queue, direct Timeline mutation UX and recurring
+instance/series behavior remain open in the lifecycle matrix.
+
 ## 2026-10-14 — Second static repair checkpoint (PostgreSQL rerun pending)
 
 After the first published checkpoint (`bb6a9725`, tree `af2f90be`), a second focused backend pass reduced mypy diagnostics from **118 to 26** over `src tests`. It replaces test-only pseudo-contexts with real request/context contracts, checks nullable SQL rows and optional application reads, narrows response variants, and validates the Plan diagnosis and Recurrence response payloads through their declared Pydantic models. The latter two API paths still require the full PostgreSQL/real-stack proof. Ruff and Python formatting pass; focused non-PostgreSQL recurrence, Plan diagnosis, constraint boundary and execution-assessment tests passed (**7 tests**), and Quick Create API tests passed (**6 tests**). ESLint is still **RED: 140 errors** on the first checkpoint; no second-pass Web changes were made.

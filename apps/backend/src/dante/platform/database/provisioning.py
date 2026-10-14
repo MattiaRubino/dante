@@ -137,6 +137,9 @@ async def _configure_database_privileges(
             "REVOKE TEMPORARY, CREATE ON DATABASE {} "
             "FROM dante_migrator, dante_runtime, dante_observer"
         ).format(database),
+        # Only owner-executed lifecycle routines need temporary working tables.
+        # The NOLOGIN owner is not inherited by the migrator or runtime.
+        sql.SQL("GRANT TEMPORARY ON DATABASE {} TO dante_owner").format(database),
         sql.SQL(
             "GRANT CONNECT ON DATABASE {} TO dante_migrator, dante_runtime, dante_observer"
         ).format(database),
@@ -287,6 +290,7 @@ async def _verify_security_posture(
     database_result = await connection.execute(
         """
         SELECT
+            has_database_privilege('dante_owner', %s, 'TEMP'),
             has_database_privilege('dante_runtime', %s, 'CONNECT'),
             has_database_privilege('dante_runtime', %s, 'TEMP'),
             has_database_privilege('dante_runtime', %s, 'CREATE'),
@@ -307,10 +311,12 @@ async def _verify_security_posture(
             database_name,
             database_name,
             database_name,
+            database_name,
         ),
     )
     database_row = await database_result.fetchone()
     if database_row is None or tuple(database_row) != (
+        True,
         True,
         False,
         False,

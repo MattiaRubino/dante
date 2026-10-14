@@ -177,6 +177,9 @@ PUBLIC
   TEMPORARY   NO
   CREATE      NO
 
+dante_owner (NOLOGIN; SECURITY DEFINER execution only)
+  TEMPORARY   YES
+
 dante_runtime
   CONNECT     YES
   TEMPORARY   NO
@@ -187,6 +190,14 @@ dante_migrator
   TEMPORARY   NO
   CREATE      NO
 ```
+
+The owner-only lifecycle deletion routine needs transaction-scoped temporary
+working tables. Provisioning grants `TEMPORARY` only to `dante_owner`; the
+three login roles retain their prohibition. An existing provisioned database
+must rerun the explicit administrative provisioning command before using that
+routine. This database-level grant is administered by provisioning, not by
+Alembic, whose migrator runs under `SET ROLE dante_owner` without database
+grant authority.
 
 Schema baseline:
 
