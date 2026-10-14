@@ -103,23 +103,23 @@ describe('B13 whole Plan panel', () => {
   beforeEach(() => {
     let accepted = initial;
     let currentRelation: PlanDependency | null = null;
-    listPlans.mockReset().mockImplementation(async () => [accepted]);
+    listPlans.mockReset().mockImplementation(() => Promise.resolve([accepted]));
     replacePlan
       .mockReset()
       .mockImplementation(
-        async (_prior: PlanWork, _title: string, steps: PlanWork['steps']) => {
+        (_prior: PlanWork, _title: string, steps: PlanWork['steps']) => {
           accepted = { ...accepted, stateRef: NEXT, steps };
-          return accepted;
+          return Promise.resolve(accepted);
         },
       );
     listDependencies
       .mockReset()
-      .mockImplementation(async () =>
-        currentRelation ? [currentRelation] : [],
+      .mockImplementation(() =>
+        Promise.resolve(currentRelation ? [currentRelation] : []),
       );
-    createDependency.mockReset().mockImplementation(async () => {
+    createDependency.mockReset().mockImplementation(() => {
       currentRelation = relation;
-      return relation;
+      return Promise.resolve(relation);
     });
     assess.mockReset().mockResolvedValue({
       basis: 'explicit_proposed_slices',
