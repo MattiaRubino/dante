@@ -1,5 +1,20 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-14 — Owner TEMP corrective candidate: focused PostgreSQL PASS
+
+The user's WSL run of ten selected PostgreSQL tests on exact source
+`0e84894396ecb6692666ce7ecf2475fb16131f04` passed **10/10 in 31.18s**.
+This covers the owner-only TEMP grant and denied login-role permissions,
+non-broadening provisioning rerun, fresh migration head, bounded deletion
+ACL, Dictionary cross-representation, three formerly failing destructive
+paths, guarded direct revision and untimed recurring named Session. It does
+not cover the full PostgreSQL inventory, full 27-group gate, or browser.
+The current lifecycle matrix names the still-missing review queue, direct
+Timeline disposition UX and recurring instance/series operation. The older
+T08 entry in the Temporal regression matrix has been aligned with the newer
+normative Activity/Session lifecycle decision; historical test evidence stays
+at its original SHA.
+
 ## 2026-10-14 — Lifecycle deletion privilege repair candidate
 
 The user's focused PostgreSQL run on `a4a5a15` executed all eight selected

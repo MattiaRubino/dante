@@ -30,14 +30,14 @@ Per ogni riga servono almeno successo, input/ordine avverso, rifiuto senza scrit
 
 | ID | Scenario minimo e incroci che devono restare veri | Evidenza oggi / lacuna |
 | --- | --- | --- |
-| T01 | Create Activity semplice, Sessione principale on/off, intervalli multipli, Sessione pianificata con/senza ora, Schedule unplaced → colloca | PARZIALE: B01/B02, `temporal-create-u2-submit`, Planning Tray e UI attuale verdi in Vitest; combinazione ricorrente da provare nello stack. |
+| T01 | Create Activity semplice, Sessione principale on/off, intervalli multipli, Sessioni interne nominate senza orario autonomo, Schedule unplaced → colloca | PARZIALE: B01/B02, `temporal-create-u2-submit`, Planning Tray e UI attuale verdi in Vitest; combinazione ricorrente da provare nello stack. |
 | T02 | Edit Activity salva dopo reload, campi e Sessioni esistenti, mutazione parziale rifiutata, policy Play aggiornata | PARZIALE: test Edit e card mirati; intero percorso Play dopo Edit APERTO. |
-| T03 | Delete/unschedule/Undo Activity: identità stabile, CAS, storico, voci nel tray dopo refetch | PARZIALE: B02/B03 Undo e tray verdi in Vitest; storicità da decidere e stack da provare. |
+| T03 | Hard Delete Activity con cascata confermata; unschedule/Undo preservano identità, CAS e storico pertinente; tray dopo refetch | PARZIALE: cancellazione Activity e grafo Session in PostgreSQL mirato su `0e848943`; Undo/tray/stack completo APERTI. |
 | T04 | Create/Edit/Postpone/Delete Event, data nel passato, Agenda, Undo, identità e Scope | PARZIALE: B03 lifecycle verde in Vitest; passato/correzioni e stack APERTI. |
-| T05 | Ricorrenza: prima occorrenza, futuro, eccezione singola, intervalli, Sessione senza ora, timezone/DST | PARZIALE: B06/M3 e due nuove prove Sessione untimed; conversione in ricorrenza nell'Edit APERTA. |
+| T05 | Ricorrenza: prima occorrenza, futuro, eccezione singola, intervalli, Sessioni interne senza orario autonomo, timezone/DST | PARZIALE: B06/M3 e prova PostgreSQL mirata Sessione untimed su `0e848943`; conversione in ricorrenza nell'Edit APERTA. |
 | T06 | Play/Pausa/Riprendi/Stop sulla card e sul pannello, main e Sessione interna, ripetizione, errori/retry | PARZIALE: test Session e card; percorso reale incrociato APERTO. |
 | T07 | Sessione conclusa: Stop non ripresenta Play, non altera Schedule, conserva tempo reale e minimo leggibile | PARZIALE: test realtà e geometria; screenshot e stack reale APERTI. |
-| T08 | Blocco Edit/Move/Delete durante/dopo Sessione, correzione/retrazione auditabile | APERTO: policy storica non ancora accettata/implementata; prima decisione Domain/API. |
+| T08 | Edit/Move con tentativi reali richiede Mantieni/Elimina/Annulla; X della Sessione interna rimuove la configurazione e i tentativi al Salva; Hard Delete Activity confermata rimuove il grafo | PARZIALE: decisione attuale in `activity-session-operational-lifecycle-v2.md`; Keep, Delete, X e Hard Delete passano in PostgreSQL mirato su `0e848943`. Drag, Undo, ricorrenza e browser APERTI. |
 | T09 | Objective quantità (target richiesto), creazione/edizione atomica, input, conferma, correzione, policy automatica/esplicita | PARZIALE: M5/Objective; integrazione Create/Edit → review → reload APERTA. |
 | T10 | Attività scaduta non avviata e Objective non confermato appaiono in `Da verificare`; negazione esplicita senza inventare Actual | PARZIALE: funzione PG/review; browser reale APERTO. |
 | T11 | Timeline: eventi simultanei, Sessione anticipata, durata 1 minuto, colonne senza collisione, etichette, scroll su/giù, mobile/DST | PARZIALE: test di geometria e scroll mirati; browser visivo reale APERTO. |
