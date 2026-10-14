@@ -30,12 +30,16 @@ describe('remote Session capability read', () => {
   });
 
   it('keeps live controls hidden for the explicit record-only policy', async () => {
-    const fetchFn = vi.fn<typeof fetch>().mockResolvedValue(
-      response({
-        activity_ref: ACTIVITY_REF,
-        state_ref: null,
-        mode_code: 'record',
-      }),
+    // Return a fresh Response for each fetch: .json() consumes its body.
+    // activityEnabled and activityMode are two independent network reads.
+    const fetchFn = vi.fn<typeof fetch>().mockImplementation(() =>
+      Promise.resolve(
+        response({
+          activity_ref: ACTIVITY_REF,
+          state_ref: null,
+          mode_code: 'record',
+        }),
+      ),
     );
     const source = createRemoteTemporalSessionCapabilityDataSource(fetchFn);
 
