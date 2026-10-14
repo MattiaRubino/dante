@@ -580,7 +580,9 @@ export function TemporalCreateComposer({
             inert={discardPending || undefined}
             onSubmit={submitForm}
           >
-            {failureMessage && !inlineFailureHost && !handledPlannedSessionError ? (
+            {failureMessage &&
+            !inlineFailureHost &&
+            !handledPlannedSessionError ? (
               <div className="temporal-create-operation-error" role="alert">
                 {failureMessage}
               </div>
@@ -644,8 +646,12 @@ export function TemporalCreateComposer({
               {advanced && fields.kind === 'activity' ? (
                 <TemporalCreateAdvancedActivityStructure
                   fields={fields}
-                  validationTarget={handledPlannedSessionError ? failureTarget : null}
-                  validationMessage={handledPlannedSessionError ? failureMessage : ''}
+                  validationTarget={
+                    handledPlannedSessionError ? failureTarget : null
+                  }
+                  validationMessage={
+                    handledPlannedSessionError ? failureMessage : ''
+                  }
                 />
               ) : null}
               {advanced && fields.kind === 'event' ? (

@@ -281,7 +281,10 @@ export function TemporalCreateAdvancedActivityStructure({
                     aria-invalid={timeError ? 'true' : undefined}
                   >
                     {timeError ? (
-                      <span className="temporal-create-field-error" role="alert">
+                      <span
+                        className="temporal-create-field-error"
+                        role="alert"
+                      >
                         {timeError}
                       </span>
                     ) : null}
