@@ -68,3 +68,26 @@ transactional history cascade and dependent facts, expiration to actionable
 review queue, X + Save, Activity hard-delete, concurrency and recurrence
 boundaries) remain **MISSING**, not accepted. Do not give the frontend the
 appearance of working Delete until its database capability is correct.
+
+
+## Editor attempt-state read follow-up (candidate)
+
+Activity Edit now reads existing canonical Activity Session attempts through the
+same authenticated `/api/v1/temporal/activities/{activity_ref}/sessions` data
+source used elsewhere, refreshes on `dante:session-changed`, and displays the
+current state of linked generic and named attempts as **in corso / in pausa /
+conclusa**. This is a read-only UI improvement: it does not claim the new
+Keep/Delete/Cancel mutation workflow has been implemented. The owning existing
+Inspector/Edit Vitest file includes a focused fake-transport test of all three
+labels and named provenance.
+
+The renderer additionally distinguishes the two database rejection constraints
+for missing main capture versus historical early-start admission; the current
+`_146` migration removes the latter admission. This does not change the
+database lifecycle or the authority rules.
+
+**Source code published but NOT RUN:** local WSL Vitest, TypeScript, Ruff,
+Mypy, focused PostgreSQL and browser acceptance are still required for all
+post-`ae8621ed` commits. If the new data-source read cannot be verified, do
+not enable destructive editing. The normative lifecycle matrix rows about
+atomic deletion, review persistence, UI confirmation and recurrence are OPEN.
