@@ -109,7 +109,7 @@ describe('Timeline truth inspector', () => {
     render(
       <TemporalTimelineRuntimeBoundary
         viewedDateIso="2026-09-26"
-        dataSource={{ loadWindow: async () => windowFixture() }}
+        dataSource={{ loadWindow: () => Promise.resolve(windowFixture()) }}
         mode="development"
       >
         <TimelineTruthInspector />
@@ -124,19 +124,21 @@ describe('Timeline truth inspector', () => {
 
   it('mounts the full Actual-to-Reconciliation controls from the real timeline runtime', async () => {
     const dataSource: TemporalTimelineDataSource = {
-      loadWindow: async () => windowFixture(),
+      loadWindow: () => Promise.resolve(windowFixture()),
     };
     vi.stubGlobal(
       'fetch',
-      vi.fn(async () =>
-        Response.json(
-          {
-            code: 'temporal.actual.not_found',
-            category: 'not_found',
-            title: 'Actual unavailable',
-            detail: 'No Actual is established for this subject.',
-          },
-          { status: 404 },
+      vi.fn(() =>
+        Promise.resolve(
+          Response.json(
+            {
+              code: 'temporal.actual.not_found',
+              category: 'not_found',
+              title: 'Actual unavailable',
+              detail: 'No Actual is established for this subject.',
+            },
+            { status: 404 },
+          ),
         ),
       ),
     );
@@ -171,22 +173,24 @@ describe('Timeline truth inspector', () => {
   });
 
   it('keeps Condition on the Occurrence and Recurrence on its Routine source', async () => {
-    const fetchFn = vi.fn<typeof globalThis.fetch>(async () =>
-      Response.json(
-        {
-          code: 'temporal.not_found',
-          category: 'not_found',
-          title: 'Not found',
-          detail: 'Canonical state is unavailable.',
-        },
-        { status: 404 },
+    const fetchFn = vi.fn<typeof globalThis.fetch>(() =>
+      Promise.resolve(
+        Response.json(
+          {
+            code: 'temporal.not_found',
+            category: 'not_found',
+            title: 'Not found',
+            detail: 'Canonical state is unavailable.',
+          },
+          { status: 404 },
+        ),
       ),
     );
     vi.stubGlobal('fetch', fetchFn);
     render(
       <TemporalTimelineRuntimeBoundary
         viewedDateIso="2026-09-26"
-        dataSource={{ loadWindow: async () => windowFixture() }}
+        dataSource={{ loadWindow: () => Promise.resolve(windowFixture()) }}
         mode="development"
       >
         <TimelineTruthInspector />
