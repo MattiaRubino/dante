@@ -297,7 +297,7 @@ describe('B03 Temporal Create runtime', () => {
 
     const restored = await postponed.effect.undo();
     expect(undoScheduleUnschedule).toHaveBeenCalledTimes(1);
-    const unscheduleReceipt = unscheduleSchedule.mock.results[0]?.value;
+    const unscheduleReceipt: unknown = unscheduleSchedule.mock.results[0]?.value;
     const undoRequest = undoScheduleUnschedule.mock.calls[0]?.[0];
     expect(undoRequest?.scheduleRef).toBe(SCHEDULE_REF);
     expect(undoRequest?.unscheduleOperationId).toBeTruthy();
