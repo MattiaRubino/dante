@@ -136,6 +136,7 @@ function parseStructure(value: unknown, parentRef: string): Structure {
 }
 
 function Schedules({ rows }: Readonly<{ rows: readonly Schedule[] }>) {
+  const [observedAt] = useState(() => Date.now());
   if (rows.length === 0) return <small>Nessuno Schedule corrente.</small>;
   return (
     <ul>
@@ -153,7 +154,7 @@ function Schedules({ rows }: Readonly<{ rows: readonly Schedule[] }>) {
           {row.end === null ? '' : ` → ${row.end}`}
           {row.roleCode === 'planned' &&
           row.end !== null &&
-          Date.parse(row.end) <= Date.now()
+          Date.parse(row.end) <= observedAt
             ? ' · Pianificazione conclusa; verifica separatamente Session/Actual'
             : ''}
         </li>
@@ -213,12 +214,21 @@ function ChildDetail({ child }: Readonly<{ child: Child }>) {
 export function ActivityStructureReadback({
   activityRef,
 }: Readonly<{ activityRef: string }>) {
-  const [structure, setStructure] = useState<Structure | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [loaded, setLoaded] = useState<
+    Readonly<{
+      activityRef: string;
+      structure: Structure | null;
+      error: string | null;
+    }> | null
+  >(null);
+  // Invalidation is determined by the requested Activity identity, not an
+  // extra synchronous render forced from useEffect.
+  const current = loaded?.activityRef === activityRef ? loaded : null;
+  const structure = current?.structure ?? null;
+  const error = current?.error ?? null;
+
   useEffect(() => {
     let cancelled = false;
-    setStructure(null);
-    setError(null);
     const webFetch = createWebFetch(globalThis.fetch);
     void webFetch(
       `/api/v1/temporal/activities/${encodeURIComponent(activityRef)}/children`,
@@ -229,15 +239,18 @@ export function ActivityStructureReadback({
         return parseStructure(await response.json(), activityRef);
       })
       .then((value) => {
-        if (!cancelled) setStructure(value);
+        if (!cancelled) setLoaded({ activityRef, structure: value, error: null });
       })
       .catch((reason: unknown) => {
         if (!cancelled)
-          setError(
-            reason instanceof Error
-              ? reason.message
-              : 'Struttura non disponibile.',
-          );
+          setLoaded({
+            activityRef,
+            structure: null,
+            error:
+              reason instanceof Error
+                ? reason.message
+                : 'Struttura non disponibile.',
+          });
       });
     return () => {
       cancelled = true;
