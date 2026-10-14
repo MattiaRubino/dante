@@ -32,9 +32,10 @@ _OTP_KEY_ID = "test-signup-otp-v1"
 
 
 class _TestHttpResponse(Protocol):
-    """Only the API response surface inspected by this integration test."""
+    """Only the API response surface inspected by integration tests."""
 
     status_code: int
+    text: str
 
     def json(self) -> Any: ...
 
