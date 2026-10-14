@@ -2,9 +2,9 @@ import {
   createContext,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
-  useLayoutEffect,
   useState,
   type ReactNode,
 } from 'react';
