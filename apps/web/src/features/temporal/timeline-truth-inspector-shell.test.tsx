@@ -16,12 +16,13 @@ describe('Timeline Reality Outcome U1 shell', () => {
       <TemporalTimelineRuntimeBoundary
         viewedDateIso="2026-09-30"
         dataSource={{
-          loadWindow: async () => ({
-            kind: 'empty',
-            startDate: '2026-09-30',
-            endDateExclusive: '2026-10-01',
-            effectiveZoneId: 'Europe/Rome',
-          }),
+          loadWindow: () =>
+            Promise.resolve({
+              kind: 'empty' as const,
+              startDate: '2026-09-30',
+              endDateExclusive: '2026-10-01',
+              effectiveZoneId: 'Europe/Rome',
+            }),
         }}
         mode="development"
       >
