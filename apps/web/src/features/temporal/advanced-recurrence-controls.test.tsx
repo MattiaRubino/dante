@@ -114,8 +114,8 @@ describe('Advanced Recurrence controls', () => {
 
     await screen.findByText('Recurrence avanzata salvata.');
     expect(writes).toHaveLength(1);
+    expect(typeof writes[0]?.operation_id).toBe('string');
     expect(writes[0]).toMatchObject({
-      operation_id: expect.any(String),
       expected_material_state_ref: STATE_1,
       range_kind: 'open',
       expected_occurrence_count: null,
