@@ -31,10 +31,26 @@ function initialDateTime(): string {
   return localDateTime(new Date().toISOString());
 }
 
-export function AdvancedRecurrenceControls({
+type AdvancedRecurrenceControlsProps = Readonly<{
+  ownerKind: AdvancedRecurrenceOwnerKind;
+  sourceRef: string;
+}>;
+
+export function AdvancedRecurrenceControls(props: AdvancedRecurrenceControlsProps) {
+  // Recurrence state is source-scoped: a different owner requires fresh draft
+  // and read state, never a synchronous reset from the fetch effect.
+  return (
+    <AdvancedRecurrenceControlsInstance
+      key={`${props.ownerKind}:${props.sourceRef}`}
+      {...props}
+    />
+  );
+}
+
+function AdvancedRecurrenceControlsInstance({
   ownerKind,
   sourceRef,
-}: Readonly<{ ownerKind: AdvancedRecurrenceOwnerKind; sourceRef: string }>) {
+}: AdvancedRecurrenceControlsProps) {
   const source = useMemo(
     () => createRemoteTemporalAdvancedRecurrenceDataSource(globalThis.fetch),
     [],
@@ -79,9 +95,7 @@ export function AdvancedRecurrenceControls({
 
   useEffect(() => {
     let cancelled = false;
-    setLoaded(false);
-    setLoadError(null);
-    setMessage(null);
+    // Initial state already represents loading; owner changes remount.
     void source
       .load(ownerKind, sourceRef)
       .then((result) => {
