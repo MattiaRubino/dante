@@ -73,10 +73,13 @@ describe('Plan work panel', () => {
   afterEach(cleanup);
   beforeEach(() => {
     list.mockReset().mockResolvedValue([current]);
+    const firstStep = current.steps[0];
+    const secondStep = current.steps[1];
+    if (!firstStep || !secondStep) throw new Error('Expected two Plan fixture steps');
     replace.mockReset().mockResolvedValue({
       ...current,
       stateRef: '0199a8c0-5e74-7bc0-8ad0-a2f403f56181',
-      steps: [current.steps[1], current.steps[0]],
+      steps: [secondStep, firstStep],
     });
   });
 
