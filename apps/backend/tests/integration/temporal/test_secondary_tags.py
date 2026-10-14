@@ -238,9 +238,11 @@ async def test_secondary_tags_are_many_valued_independent_and_actor_local(
                 attached=False,
             )
         ).replayed
-        assert (
-            await activities.get_activity(self_person_ref=alice, activity_ref=activity.activity_ref)
-        ).life_area_ref == area.life_area_ref
+        restored = await activities.get_activity(
+            self_person_ref=alice, activity_ref=activity.activity_ref
+        )
+        assert restored is not None
+        assert restored.life_area_ref == area.life_area_ref
         with psycopg.connect(
             **migrated_database.connection_kwargs(
                 "dante_migrator", migrated_database.cluster.migrator_password
