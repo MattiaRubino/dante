@@ -28,7 +28,13 @@ type TimelineEventAgendaEditorProps = Readonly<{
   hideWhenEmpty?: boolean;
 }>;
 
-export function TimelineEventAgendaEditor({
+export function TimelineEventAgendaEditor(props: TimelineEventAgendaEditorProps) {
+  // The editor is scoped to one Event: switching identity must discard
+  // pending draft edits and stale async read state together.
+  return <TimelineEventAgendaEditorInstance key={props.eventRef} {...props} />;
+}
+
+function TimelineEventAgendaEditorInstance({
   eventRef,
   dataSource,
   ids = systemTemporalIdFactory,
@@ -67,7 +73,7 @@ export function TimelineEventAgendaEditor({
 
   useEffect(() => {
     const controller = new AbortController();
-    setState({ status: 'loading' });
+    // Mount starts at 'loading'; a changed eventRef remounts the instance.
     void load(controller.signal);
     return () => controller.abort();
   }, [load]);
