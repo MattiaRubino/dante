@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import hashlib
-import json
 from typing import Annotated
 from uuid import UUID
 
@@ -119,16 +118,9 @@ async def get_self_activity_session_impact(
         raise _unavailable() from exc
     attempts = [ActivitySessionAttemptImpact.model_validate(dict(row)) for row in rows]
     digest = hashlib.sha256(
-        json.dumps(
-            [
-                [
-                    str(row.session_ref),
-                    str(row.timing_material_state_ref),
-                    row.status,
-                ]
-                for row in attempts
-            ],
-            separators=(",", ":"),
+        ";".join(
+            f"{row.session_ref}:{row.timing_material_state_ref}:{row.status}"
+            for row in attempts
         ).encode("utf-8")
     ).hexdigest()
     return ActivitySessionImpactResponse(
