@@ -1,11 +1,15 @@
 """Coordinated Activity planning must retain explicit dependent intent."""
 
 from datetime import datetime
-from types import SimpleNamespace
+from typing import Literal
 from uuid import uuid7
 
 import pytest
 
+from dante.modules.temporal.activity_edit_snapshot_api import (
+    ActivityEditSnapshot,
+    EditExecutionPolicy,
+)
 from dante.modules.temporal.activity_replan_api import (
     ActivityReplanCommand,
     NewIntervalRow,
@@ -13,6 +17,8 @@ from dante.modules.temporal.activity_replan_api import (
     ReplanRow,
     _validated_plan,
 )
+from dante.modules.temporal.decomposition_api import ActivityScheduleResponse
+from dante.modules.temporal.reality_objective_api import RealityPolicyResponse
 from dante.platform.http.problem import ProblemError
 
 
@@ -20,8 +26,10 @@ def _time(hour: int) -> datetime:
     return datetime(2026, 10, 9, hour)  # noqa: DTZ001
 
 
-def _row(role: str, start: int, end: int):
-    return SimpleNamespace(
+def _row(
+    role: Literal["envelope", "interval", "planned"], start: int, end: int
+) -> ActivityScheduleResponse:
+    return ActivityScheduleResponse(
         schedule_ref=uuid7(),
         placement_material_state_ref=uuid7(),
         role_code=role,
@@ -29,10 +37,43 @@ def _row(role: str, start: int, end: int):
         zone_id="Europe/Rome",
         starts_local_at=_time(start),
         ends_local_at=_time(end),
+        presentation_order=None,
+        display_name=None,
+        start_date=None,
+        end_date_exclusive=None,
+        resolved_start_at=None,
+        resolved_end_at=None,
+        starts_at=None,
+        ends_at=None,
+        local_date=None,
+        period_code=None,
     )
 
 
-def _intent(row, start: int, end: int) -> ReplanRow:
+def _snapshot(*rows: ActivityScheduleResponse) -> ActivityEditSnapshot:
+    activity_ref = uuid7()
+    return ActivityEditSnapshot(
+        activity_ref=activity_ref,
+        execution_policy=EditExecutionPolicy(
+            activity_ref=activity_ref, mode_code="disabled", state_ref=None
+        ),
+        reality_policy=RealityPolicyResponse(
+            subject_kind="activity",
+            subject_native_ref=activity_ref,
+            state_ref=None,
+            mode_code="manual",
+        ),
+        child_guard_mode="none",
+        life_area_ref=None,
+        schedules=list(rows),
+        objectives=[],
+        placement_lock=None,
+        reminder=None,
+    )
+
+
+def _intent(row: ActivityScheduleResponse, start: int, end: int) -> ReplanRow:
+    assert row.placement_material_state_ref is not None
     return ReplanRow(
         schedule_ref=row.schedule_ref,
         expected_material_state_ref=row.placement_material_state_ref,
@@ -49,7 +90,7 @@ def test_replan_previews_every_changed_interval_and_planned_session() -> None:
         _row("planned", 11, 12),
     )
     changes, placements = _validated_plan(
-        SimpleNamespace(schedules=[envelope, first, second, planned]),
+        _snapshot(envelope, first, second, planned),
         ActivityReplanCommand(
             operation_id="move-all",
             intervals=[_intent(first, 10, 11), _intent(second, 12, 13)],
@@ -68,7 +109,7 @@ def test_replan_rejects_omitted_or_overlapping_dependents_and_stale_basis() -> N
         _row("interval", 9, 12),
         _row("planned", 10, 11),
     )
-    snapshot = SimpleNamespace(schedules=[envelope, first, planned])
+    snapshot = _snapshot(envelope, first, planned)
     with pytest.raises(ProblemError) as omitted:
         _validated_plan(
             snapshot,
@@ -117,7 +158,7 @@ def test_replan_previews_replacement_and_rejects_ambiguous_planned_rows() -> Non
         starts_local_at=_time(10),
         ends_local_at=_time(11),
     )
-    snapshot = SimpleNamespace(schedules=[envelope, interval, planned])
+    snapshot = _snapshot(envelope, interval, planned)
     changes, placements = _validated_plan(
         snapshot,
         ActivityReplanCommand(
@@ -159,7 +200,7 @@ def test_replan_replaces_activity_interval_and_keeps_one_current_interval() -> N
         ends_local_at=_time(11),
     )
     changes, placements = _validated_plan(
-        SimpleNamespace(schedules=[envelope, first, second, planned]),
+        _snapshot(envelope, first, second, planned),
         ActivityReplanCommand(
             operation_id="replace-interval",
             intervals=[_intent(second, 11, 12)],
@@ -179,7 +220,7 @@ def test_replan_replaces_activity_interval_and_keeps_one_current_interval() -> N
 
     with pytest.raises(ProblemError) as none_left:
         _validated_plan(
-            SimpleNamespace(schedules=[envelope, first, second, planned]),
+            _snapshot(envelope, first, second, planned),
             ActivityReplanCommand(
                 operation_id="remove-last",
                 remove_intervals=[_intent(first, 9, 10), _intent(second, 11, 12)],
@@ -190,7 +231,7 @@ def test_replan_replaces_activity_interval_and_keeps_one_current_interval() -> N
 
     with pytest.raises(ProblemError) as overlapping:
         _validated_plan(
-            SimpleNamespace(schedules=[envelope, first, second, planned]),
+            _snapshot(envelope, first, second, planned),
             ActivityReplanCommand(
                 operation_id="overlapping-new-interval",
                 intervals=[_intent(first, 9, 10), _intent(second, 11, 12)],
@@ -209,7 +250,7 @@ def test_replan_replaces_activity_interval_and_keeps_one_current_interval() -> N
 
 def test_replan_envelope_only_requires_cas_and_keeps_planned_sessions_in_bounds() -> None:
     envelope, planned = _row("envelope", 9, 12), _row("planned", 10, 11)
-    snapshot = SimpleNamespace(schedules=[envelope, planned])
+    snapshot = _snapshot(envelope, planned)
     changes, placements = _validated_plan(
         snapshot,
         ActivityReplanCommand(

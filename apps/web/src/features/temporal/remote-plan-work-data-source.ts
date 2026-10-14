@@ -66,11 +66,10 @@ function step(value: unknown): PlanStep {
     title: row.title,
     position: row.position,
     activityRef: row.activity_ref === null ? null : uuid(row.activity_ref),
-    divisible: row.divisible as boolean | null,
-    maxPlannedSlices: row.max_planned_slices as number | null,
-    mergeCompatible: row.merge_compatible as boolean | null,
-    executionStrengthCode: row.execution_strength_code as
-      'hard' | 'soft' | null,
+    divisible: row.divisible,
+    maxPlannedSlices: row.max_planned_slices,
+    mergeCompatible: row.merge_compatible,
+    executionStrengthCode: row.execution_strength_code,
   });
 }
 

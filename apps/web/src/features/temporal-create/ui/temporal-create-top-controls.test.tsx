@@ -1,3 +1,4 @@
+import { domElement } from '../../../test-support/dom-element';
 // @vitest-environment jsdom
 
 import { Temporal } from '@dante/time';
@@ -100,7 +101,10 @@ describe('Temporal Create U1 top controls', () => {
     renderEntry();
     fireEvent.click(screen.getByRole('radio', { name: 'Evento' }));
 
-    const startHour = screen.getByLabelText('Inizio: ore');
+    const startHour = domElement(
+      screen.getByLabelText('Inizio: ore'),
+      HTMLInputElement,
+    );
     const endHour = screen.getByLabelText('Fine: ore');
     const endMinute = screen.getByLabelText('Fine: minuti');
     fireEvent.change(startHour, { target: { value: '15' } });
@@ -292,8 +296,14 @@ describe('Temporal Create U1 top controls', () => {
     const before = startRaw.value;
     const endBefore = endRaw.value;
 
-    const hour = screen.getByLabelText('Inizio: ore') as HTMLInputElement;
-    const minute = screen.getByLabelText('Inizio: minuti') as HTMLInputElement;
+    const hour = domElement(
+      screen.getByLabelText('Inizio: ore'),
+      HTMLInputElement,
+    );
+    const minute = domElement(
+      screen.getByLabelText('Inizio: minuti'),
+      HTMLInputElement,
+    );
 
     fireEvent.click(
       screen.getByRole('button', { name: 'Inizio: aumenta 15 minuti' }),
@@ -360,7 +370,7 @@ describe('Temporal Create U1 top controls', () => {
       screen.getByRole('button', { name: /Fuso orario: Ora locale/ }),
     ).toBeTruthy();
     expect(
-      (screen.getByLabelText('Ricorda') as HTMLSelectElement).disabled,
+      domElement(screen.getByLabelText('Ricorda'), HTMLSelectElement).disabled,
     ).toBe(true);
 
     fireEvent.click(
@@ -371,7 +381,7 @@ describe('Temporal Create U1 top controls', () => {
       screen.getByRole('button', { name: /Fuso orario: Europe\/Rome/ }),
     ).toBeTruthy();
     expect(
-      (screen.getByLabelText('Ricorda') as HTMLSelectElement).disabled,
+      domElement(screen.getByLabelText('Ricorda'), HTMLSelectElement).disabled,
     ).toBe(false);
   });
 
@@ -442,11 +452,13 @@ describe('Temporal Create U1 top controls', () => {
     expect(advancedComposer?.parentElement).toBe(advancedBackdrop);
     expect(advancedBackdrop?.parentElement).toBe(document.body);
     expect(
-      (screen.getByPlaceholderText('Titolo') as HTMLInputElement).value,
+      domElement(screen.getByPlaceholderText('Titolo'), HTMLInputElement).value,
     ).toBe('Bozza preservata');
     expect(
-      (screen.getByLabelText('Life Area (opzionale)') as HTMLInputElement)
-        .value,
+      domElement(
+        screen.getByLabelText('Life Area (opzionale)'),
+        HTMLInputElement,
+      ).value,
     ).toBe('Nuova Area');
 
     // Advanced owns the full timezone field and continues to edit the same
@@ -476,11 +488,13 @@ describe('Temporal Create U1 top controls', () => {
       returnedComposer?.closest('[data-home-context-create-host]'),
     ).toBeTruthy();
     expect(
-      (screen.getByPlaceholderText('Titolo') as HTMLInputElement).value,
+      domElement(screen.getByPlaceholderText('Titolo'), HTMLInputElement).value,
     ).toBe('Bozza preservata');
     expect(
-      (screen.getByLabelText('Life Area (opzionale)') as HTMLInputElement)
-        .value,
+      domElement(
+        screen.getByLabelText('Life Area (opzionale)'),
+        HTMLInputElement,
+      ).value,
     ).toBe('Nuova Area');
   });
 });

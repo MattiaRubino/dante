@@ -1,3 +1,7 @@
+import {
+  fetchRequestUrl,
+  fetchRequestBody,
+} from '../../test-support/fetch-request';
 import { describe, expect, it, vi } from 'vitest';
 
 import {
@@ -35,10 +39,10 @@ describe('remote Plan work structure', () => {
     const fetchFn = vi.fn(
       async (url: RequestInfo | URL, init?: RequestInit) => {
         calls.push({
-          url: String(url),
+          url: fetchRequestUrl(url),
           ...(init === undefined ? {} : { init }),
         });
-        if (String(url) === '/api/v1/auth/session') {
+        if (fetchRequestUrl(url) === '/api/v1/auth/session') {
           return new Response(
             JSON.stringify({ authenticated: true, csrf_token: 'csrf' }),
           );
@@ -64,7 +68,7 @@ describe('remote Plan work structure', () => {
     const last = calls.at(-1)!;
     expect(last.init?.method).toBe('PUT');
     expect(new Headers(last.init?.headers).get('X-Dante-CSRF')).toBe('csrf');
-    expect(JSON.parse(String(last.init?.body))).toMatchObject({
+    expect(JSON.parse(fetchRequestBody(last.init?.body))).toMatchObject({
       operation_id: 'replace-op',
       expected_state_ref: STATE,
       steps: [{ step_ref: STEP, title: 'Record', activity_ref: null }],

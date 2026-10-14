@@ -41,7 +41,7 @@ function parse(value: unknown): Admission {
   }
   return Object.freeze({
     kind: row.kind,
-    proposalRef: row.proposal_ref as string | null,
+    proposalRef: row.proposal_ref,
     replayed: row.replayed,
   });
 }

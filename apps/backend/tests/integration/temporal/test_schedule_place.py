@@ -17,7 +17,10 @@ from dante.modules.temporal.activity import (
     ActivityOperationIdReuseError,
     TemporalActivityApplication,
 )
-from dante.modules.temporal.application import TemporalTimelineApplication
+from dante.modules.temporal.application import (
+    TemporalTimelineApplication,
+    TimelineFloatingLocalActivityItem,
+)
 from dante.modules.temporal.contracts import TimelineWindowQuery
 from dante.modules.temporal.schedule import FloatingLocalIntervalPlacement
 from dante.platform.database.references import NativeRef
@@ -172,9 +175,11 @@ async def test_existing_unplaced_activity_is_scheduled_idempotently_and_visible_
             context=_context(self_person_ref),
         )
         assert len(window.items) == 1
-        assert window.items[0].activity_ref == created.activity.activity_ref
-        assert window.items[0].schedule_ref == placed.schedule.schedule_ref
-        assert window.items[0].placement_material_state_ref == (placed.schedule.material_state_ref)
+        item = window.items[0]
+        assert isinstance(item, TimelineFloatingLocalActivityItem)
+        assert item.activity_ref == created.activity.activity_ref
+        assert item.schedule_ref == placed.schedule.schedule_ref
+        assert item.placement_material_state_ref == placed.schedule.material_state_ref
     finally:
         await runtime.dispose()
 

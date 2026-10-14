@@ -452,24 +452,33 @@ function appliedEffect(
     // optimistic Timeline item. The caller closes Create and the canonical
     // checkpoint/refetch path renders Occurrences.
     undoAvailable: false,
-    undo: async () =>
-      unavailableResult(ids.operationId(), 'temporal.create.undo_unavailable'),
-    replacePlacement: async (_placement: TemporalPlacement | null) =>
-      Object.freeze({
-        result: unavailableResult(
+    undo: () =>
+      Promise.resolve(
+        unavailableResult(
           ids.operationId(),
-          'temporal.occurrence.schedule_required',
+          'temporal.create.undo_unavailable',
         ),
-        effect: null,
-      }),
-    remove: async () =>
-      Object.freeze({
-        result: unavailableResult(
-          ids.operationId(),
-          'temporal.create.remove_unavailable',
-        ),
-        effect: null,
-      }),
+      ),
+    replacePlacement: () =>
+      Promise.resolve(
+        Object.freeze({
+          result: unavailableResult(
+            ids.operationId(),
+            'temporal.occurrence.schedule_required',
+          ),
+          effect: null,
+        }),
+      ),
+    remove: () =>
+      Promise.resolve(
+        Object.freeze({
+          result: unavailableResult(
+            ids.operationId(),
+            'temporal.create.remove_unavailable',
+          ),
+          effect: null,
+        }),
+      ),
   });
 }
 

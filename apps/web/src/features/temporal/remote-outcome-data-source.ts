@@ -109,7 +109,7 @@ export function createRemoteTemporalOutcomeDataSource(
   async function problem(
     response: Response,
   ): Promise<TemporalOutcomeRemoteError> {
-    let payload: Record<string, unknown> = {};
+    let payload: Record<string, unknown>;
     try {
       payload = record(await response.json());
     } catch {

@@ -1,3 +1,8 @@
+import { domElement } from '../../test-support/dom-element';
+import {
+  fetchRequestUrl,
+  fetchRequestBody,
+} from '../../test-support/fetch-request';
 import {
   cleanup,
   fireEvent,
@@ -69,7 +74,7 @@ describe('Advanced Recurrence controls', () => {
     const writes: Array<Record<string, unknown>> = [];
     let saved = false;
     const fetchFn = vi.fn<Fetch>(async (input, init) => {
-      const url = String(input);
+      const url = fetchRequestUrl(input);
       if (url.endsWith('/api/v1/auth/session')) {
         return Response.json({ authenticated: true, csrf_token: 'csrf' });
       }
@@ -77,7 +82,9 @@ describe('Advanced Recurrence controls', () => {
         return Response.json(recurrence(saved ? STATE_2 : STATE_1));
       }
       if (init?.method === 'PUT') {
-        writes.push(JSON.parse(String(init.body)) as Record<string, unknown>);
+        writes.push(
+          JSON.parse(fetchRequestBody(init.body)) as Record<string, unknown>,
+        );
         saved = true;
         return Response.json(advanced(STATE_2, 'previous_completion'), {
           status: 201,
@@ -118,7 +125,7 @@ describe('Advanced Recurrence controls', () => {
   it('authors a typed anchor-stream recurrence without inventing a generic anchor', async () => {
     const writes: Array<Record<string, unknown>> = [];
     const fetchFn = vi.fn<Fetch>(async (input, init) => {
-      const url = String(input);
+      const url = fetchRequestUrl(input);
       if (url.endsWith('/api/v1/auth/session')) {
         return Response.json({ authenticated: true, csrf_token: 'csrf' });
       }
@@ -126,7 +133,9 @@ describe('Advanced Recurrence controls', () => {
         return Response.json(recurrence(STATE_1));
       }
       if (init?.method === 'PUT') {
-        writes.push(JSON.parse(String(init.body)) as Record<string, unknown>);
+        writes.push(
+          JSON.parse(fetchRequestBody(init.body)) as Record<string, unknown>,
+        );
         return Response.json(advanced(STATE_2, 'anchor_stream'), {
           status: 201,
         });
@@ -171,7 +180,7 @@ describe('Advanced Recurrence controls', () => {
   it('authors a Routine recurrence through the Routine owner endpoint', async () => {
     const writes: Array<{ url: string; body: Record<string, unknown> }> = [];
     const fetchFn = vi.fn<Fetch>(async (input, init) => {
-      const url = String(input);
+      const url = fetchRequestUrl(input);
       if (url.endsWith('/api/v1/auth/session')) {
         return Response.json({ authenticated: true, csrf_token: 'csrf' });
       }
@@ -184,7 +193,10 @@ describe('Advanced Recurrence controls', () => {
       ) {
         writes.push({
           url,
-          body: JSON.parse(String(init.body)) as Record<string, unknown>,
+          body: JSON.parse(fetchRequestBody(init.body)) as Record<
+            string,
+            unknown
+          >,
         });
         return Response.json(
           advanced(STATE_2, 'previous_completion', 'routine'),
@@ -222,7 +234,7 @@ describe('Advanced Recurrence controls', () => {
 
   it('does not report a source as non-recurring when reading its Recurrence failed', async () => {
     const fetchFn = vi.fn<Fetch>(async (input) => {
-      const url = String(input);
+      const url = fetchRequestUrl(input);
       if (url.endsWith(`/routines/${ROUTINE}/recurrence`)) {
         return Response.json(
           {
@@ -248,8 +260,10 @@ describe('Advanced Recurrence controls', () => {
       screen.queryByText('Recurrence avanzata: sorgente non ricorrente'),
     ).toBeNull();
     expect(
-      (screen.getByLabelText('Regola Recurrence avanzata') as HTMLSelectElement)
-        .disabled,
+      domElement(
+        screen.getByLabelText('Regola Recurrence avanzata'),
+        HTMLSelectElement,
+      ).disabled,
     ).toBe(true);
   });
 });

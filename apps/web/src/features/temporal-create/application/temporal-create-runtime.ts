@@ -1047,11 +1047,10 @@ class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
         return Object.freeze({
           result,
           effect,
-          reminderRetry: async () => {
-            throw new Error(
-              'Committed Schedule Reminder reference unavailable.',
-            );
-          },
+          reminderRetry: () =>
+            Promise.reject(
+              new Error('Committed Schedule Reminder reference unavailable.'),
+            ),
         });
       }
       const reminderSource = this.reminderSource;

@@ -1,3 +1,4 @@
+import { domElement } from '../../../test-support/dom-element';
 // @vitest-environment jsdom
 import { Temporal } from '@dante/time';
 import {
@@ -121,7 +122,7 @@ describe('Create + Draft Vault', () => {
       duplicate: false,
     });
     expect(
-      ((await screen.findByPlaceholderText('Titolo')) as HTMLInputElement)
+      domElement(await screen.findByPlaceholderText('Titolo'), HTMLInputElement)
         .value,
     ).toBe('Preparazione');
     expect(screen.getByRole('button', { name: 'Salva bozza' })).toBeTruthy();

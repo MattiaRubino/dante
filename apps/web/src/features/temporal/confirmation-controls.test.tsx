@@ -1,4 +1,8 @@
 import {
+  fetchRequestUrl,
+  fetchRequestBody,
+} from '../../test-support/fetch-request';
+import {
   cleanup,
   fireEvent,
   render,
@@ -83,7 +87,7 @@ describe('Confirmation controls', () => {
 
   it('does not manufacture a Confirmation when no Outcome exists', async () => {
     const fetchFn = vi.fn<Fetch>(async (input) => {
-      const url = String(input);
+      const url = fetchRequestUrl(input);
       if (url.endsWith(`/events/${SUBJECT}/actual`)) {
         return notFound(
           'temporal.actual.not_found',
@@ -109,7 +113,7 @@ describe('Confirmation controls', () => {
     const bodies: Array<Record<string, unknown>> = [];
     let current: ReturnType<typeof confirmation> | null = null;
     const fetchFn = vi.fn<Fetch>(async (input, init) => {
-      const url = String(input);
+      const url = fetchRequestUrl(input);
       if (url.endsWith('/api/v1/auth/session')) {
         return Response.json({ authenticated: true, csrf_token: 'csrf' });
       }
@@ -123,7 +127,10 @@ describe('Confirmation controls', () => {
         init?.method === 'POST' &&
         url.endsWith(`/outcomes/${OUTCOME}/confirmations`)
       ) {
-        const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+        const body = JSON.parse(fetchRequestBody(init.body)) as Record<
+          string,
+          unknown
+        >;
         bodies.push(body);
         current = confirmation(
           bodies.length === 1 ? CONFIRMATION_STATE_1 : CONFIRMATION_STATE_2,
@@ -185,7 +192,7 @@ describe('Confirmation controls', () => {
 
   it('shows other actors’ Confirmation without treating it as universal truth', async () => {
     const fetchFn = vi.fn<Fetch>(async (input) => {
-      const url = String(input);
+      const url = fetchRequestUrl(input);
       if (url.endsWith(`/events/${SUBJECT}/actual`)) {
         return Response.json(actual());
       }

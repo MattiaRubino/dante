@@ -1,3 +1,4 @@
+import { fetchRequestUrl } from '../../test-support/fetch-request';
 // @vitest-environment jsdom
 
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
@@ -82,7 +83,7 @@ describe('Activity structure after reload', () => {
     expect(manual?.dataset.subject).toBe(CHILD);
     expect(manual?.dataset.live).toBe('false');
     expect(manual?.dataset.manual).toBe('true');
-    expect(String(fetchFn.mock.calls[0]?.[0])).toContain(
+    expect(fetchRequestUrl(fetchFn.mock.calls[0]?.[0])).toContain(
       `/activities/${PARENT}/children`,
     );
   });

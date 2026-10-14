@@ -103,7 +103,7 @@ export function createRemoteScheduleReminderDataSource(
   async function problem(
     response: Response,
   ): Promise<ScheduleReminderRemoteError> {
-    let payload: Record<string, unknown> = {};
+    let payload: Record<string, unknown>;
     try {
       payload = record(await response.json());
     } catch {

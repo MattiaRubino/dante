@@ -148,7 +148,7 @@ export function createRemoteTemporalAdvancedRecurrenceDataSource(
   async function problem(
     response: Response,
   ): Promise<TemporalAdvancedRecurrenceRemoteError> {
-    let payload: Record<string, unknown> = {};
+    let payload: Record<string, unknown>;
     try {
       payload = record(await response.json());
     } catch {

@@ -3,17 +3,39 @@
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
+from typing import Any
 from uuid import uuid7
 
 import pytest
 from fastapi import Request, Response
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from dante.auth.contracts import Principal
+from dante.context.contracts import DanteContext
 from dante.modules.temporal import plan_work_api
-from dante.modules.temporal.plan_work import PlanStepView, PlanWorkView
+from dante.modules.temporal.plan_work import PlanStepView, PlanWorkApplication, PlanWorkView
+from dante.platform.time import TimeZoneMode, TimeZonePolicy
+
+
+def _context() -> DanteContext:
+    now = datetime.now(UTC)
+    return DanteContext(
+        principal=Principal(
+            account_ref=uuid7(),
+            auth_session_ref=uuid7(),
+            authenticated_at=now,
+            recent_auth_at=now,
+        ),
+        self_person_ref=uuid7(),
+        timezone_policy=TimeZonePolicy(mode=TimeZoneMode.FOLLOW_DEVICE),
+        effective_zone_id="Europe/Rome",
+    )
 
 
 @pytest.mark.asyncio
-async def test_explicit_slices_count_and_merge_reuse_temporal_evaluation(monkeypatch) -> None:
+async def test_explicit_slices_count_and_merge_reuse_temporal_evaluation(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     plan_ref, state_ref, step_ref, activity_ref = (uuid7() for _ in range(4))
     plan = PlanWorkView(
         plan_ref=plan_ref,
@@ -35,17 +57,19 @@ async def test_explicit_slices_count_and_merge_reuse_temporal_evaluation(monkeyp
         ),
     )
 
-    class FakePlans:
-        async def get(self, **_kwargs):
-            return plan
+    async def get_plan(**_kwargs: Any) -> PlanWorkView:
+        return plan
+
+    application = PlanWorkApplication(async_sessionmaker[AsyncSession]())
+    monkeypatch.setattr(application, "get", get_plan)
 
     class FakeTemporal:
         status = "admissible"
 
-        def __init__(self, _factory):
+        def __init__(self, _factory: Any) -> None:
             pass
 
-        async def evaluate_constraints(self, **_kwargs):
+        async def evaluate_constraints(self, **_kwargs: Any) -> SimpleNamespace:
             return SimpleNamespace(status=self.status, hard_set_status="feasible", items=())
 
     monkeypatch.setattr(plan_work_api, "TemporalConstraintApplication", FakeTemporal)
@@ -77,8 +101,8 @@ async def test_explicit_slices_count_and_merge_reuse_temporal_evaluation(monkeyp
         plan_ref=plan_ref,
         step_ref=step_ref,
         payload=payload,
-        context=SimpleNamespace(self_person_ref=uuid7()),
-        application=FakePlans(),
+        context=_context(),
+        application=application,
         request=request,
         response=Response(),
     )
@@ -104,8 +128,8 @@ async def test_explicit_slices_count_and_merge_reuse_temporal_evaluation(monkeyp
         plan_ref=plan_ref,
         step_ref=step_ref,
         payload=payload,
-        context=SimpleNamespace(self_person_ref=uuid7()),
-        application=FakePlans(),
+        context=_context(),
+        application=application,
         request=request,
         response=Response(),
     )
@@ -118,8 +142,8 @@ async def test_explicit_slices_count_and_merge_reuse_temporal_evaluation(monkeyp
         plan_ref=plan_ref,
         step_ref=step_ref,
         payload=payload,
-        context=SimpleNamespace(self_person_ref=uuid7()),
-        application=FakePlans(),
+        context=_context(),
+        application=application,
         request=request,
         response=Response(),
     )

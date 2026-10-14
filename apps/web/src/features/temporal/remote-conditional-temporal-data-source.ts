@@ -153,7 +153,7 @@ export function createRemoteConditionalTemporalDataSource(
   async function problem(
     response: Response,
   ): Promise<ConditionalTemporalRemoteError> {
-    let payload: Record<string, unknown> = {};
+    let payload: Record<string, unknown>;
     try {
       payload = record(await response.json());
     } catch {

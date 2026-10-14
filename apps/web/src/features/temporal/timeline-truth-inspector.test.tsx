@@ -1,3 +1,4 @@
+import { fetchRequestUrl } from '../../test-support/fetch-request';
 import {
   cleanup,
   fireEvent,
@@ -202,14 +203,14 @@ describe('Timeline truth inspector', () => {
       ).toBeTruthy();
       expect(
         fetchFn.mock.calls.some(([input]) =>
-          String(input).includes(`/routines/${ROUTINE}/recurrence`),
+          fetchRequestUrl(input).includes(`/routines/${ROUTINE}/recurrence`),
         ),
       ).toBe(true);
       expect(
         fetchFn.mock.calls.some(
           ([input]) =>
-            String(input).includes('subject_kind=occurrence') &&
-            String(input).includes(OCCURRENCE),
+            fetchRequestUrl(input).includes('subject_kind=occurrence') &&
+            fetchRequestUrl(input).includes(OCCURRENCE),
         ),
       ).toBe(true);
     });
@@ -231,8 +232,8 @@ describe('Timeline truth inspector', () => {
       expect(
         fetchFn.mock.calls.some(
           ([input]) =>
-            String(input).includes('subject_kind=event') &&
-            String(input).includes(EVENT),
+            fetchRequestUrl(input).includes('subject_kind=event') &&
+            fetchRequestUrl(input).includes(EVENT),
         ),
       ).toBe(true);
     });

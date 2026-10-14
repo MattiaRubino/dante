@@ -1,3 +1,4 @@
+import { fetchRequestUrl } from '../../test-support/fetch-request';
 // @vitest-environment jsdom
 
 import { cleanup, render, screen } from '@testing-library/react';
@@ -78,7 +79,7 @@ describe('Activity planned Sessions card detail', () => {
     expect(
       container.querySelectorAll('[data-activity-planned-sessions]'),
     ).toHaveLength(1);
-    expect(String(fetchFn.mock.calls[0]?.[0])).toContain(
+    expect(fetchRequestUrl(fetchFn.mock.calls[0]?.[0])).toContain(
       `/activities/${ACTIVITY}/children`,
     );
   });

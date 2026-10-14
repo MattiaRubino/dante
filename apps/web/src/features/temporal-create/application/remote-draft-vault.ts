@@ -51,7 +51,7 @@ function parseItem(value: unknown): DraftVaultItem {
     subjectKind: item.subject_kind,
     title: item.title,
     payload: payload as unknown as DraftVaultSnapshot,
-    revision: item.revision as number,
+    revision: item.revision,
     createdAt: item.created_at,
     updatedAt: item.updated_at,
   });

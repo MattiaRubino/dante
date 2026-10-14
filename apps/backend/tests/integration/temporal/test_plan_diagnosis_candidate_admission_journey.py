@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from datetime import UTC, date, datetime, timedelta
-from typing import Any
-from uuid import uuid7
+from typing import Any, TypedDict
+from uuid import UUID, uuid7
 
 import pytest
 from tests.integration.temporal.support.life_area import ensure_test_life_area
@@ -29,10 +29,17 @@ from dante.modules.temporal.temporal_constraint import (
     AbsoluteBoundaryRule,
     TemporalConstraintApplication,
 )
-from dante.platform.database.references import new_native_ref
+from dante.platform.database.references import NativeRef, new_native_ref
 from dante.platform.database.runtime import create_database_runtime
 
 pytestmark = pytest.mark.postgres
+
+
+class _SearchArgs(TypedDict):
+    self_person_ref: NativeRef
+    plan_ref: UUID
+    step_ref: UUID
+    expected_state_ref: UUID
 
 
 @pytest.mark.asyncio
@@ -112,7 +119,7 @@ async def test_b12_d_conflict_to_reviewed_proposal_to_accepted_timeline(
             schedule_ref=mix.schedule.schedule_ref,
             rule=MovementPolicyRule("automatic", "confirmation_required"),
         )
-        args = {
+        args: _SearchArgs = {
             "self_person_ref": alice,
             "plan_ref": plan.plan_ref,
             "step_ref": mix_step,
@@ -127,7 +134,12 @@ async def test_b12_d_conflict_to_reviewed_proposal_to_accepted_timeline(
         assert "unknown_basis" in before.steps[1].diagnostics
         assert (await candidates.search(**args)).basis_status == "unknown"
         with pytest.raises(LookupError):
-            await candidates.search(**{**args, "self_person_ref": bob})
+            await candidates.search(
+                self_person_ref=bob,
+                plan_ref=args["plan_ref"],
+                step_ref=args["step_ref"],
+                expected_state_ref=args["expected_state_ref"],
+            )
 
         occurred = await actuals.record(
             self_person_ref=alice,
@@ -137,13 +149,13 @@ async def test_b12_d_conflict_to_reviewed_proposal_to_accepted_timeline(
             realization_occurred=True,
             expected_material_state_ref=None,
         )
-        assert (
-            await dependencies.get(
-                self_person_ref=alice,
-                plan_ref=plan.plan_ref,
-                dependency_ref=relation.dependency_ref,
-            )
-        ).evaluation_code == "satisfied"
+        current_relation = await dependencies.get(
+            self_person_ref=alice,
+            plan_ref=plan.plan_ref,
+            dependency_ref=relation.dependency_ref,
+        )
+        assert current_relation is not None
+        assert current_relation.evaluation_code == "satisfied"
         eligible = await candidates.search(**args)
         assert (eligible.basis_status, eligible.solver_status) == ("supported", "OPTIMAL")
         assert eligible.candidates[0].starts_at >= start + timedelta(hours=1)
@@ -179,9 +191,9 @@ async def test_b12_d_conflict_to_reviewed_proposal_to_accepted_timeline(
                 review=reviewed,
                 proposal_ref=pending.proposal_ref,
             )
-        assert (await candidates.search(**args)).placement.material_state_ref == (
-            mix.schedule.material_state_ref
-        )
+        before_correction = await candidates.search(**args)
+        assert before_correction.placement is not None
+        assert before_correction.placement.material_state_ref == mix.schedule.material_state_ref
         await actuals.record(
             self_person_ref=alice,
             operation_id="b12d:correct-occurred",
@@ -243,8 +255,8 @@ async def test_b12_d_conflict_to_reviewed_proposal_to_accepted_timeline(
             accepted.placement_state_ref,
             fresh.starts_at,
         )
-        assert (await candidates.search(**args)).placement.material_state_ref == (
-            accepted.placement_state_ref
-        )
+        after_acceptance = await candidates.search(**args)
+        assert after_acceptance.placement is not None
+        assert after_acceptance.placement.material_state_ref == accepted.placement_state_ref
     finally:
         await runtime.engine.dispose()

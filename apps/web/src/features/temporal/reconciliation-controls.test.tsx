@@ -1,3 +1,8 @@
+import { domElement } from '../../test-support/dom-element';
+import {
+  fetchRequestUrl,
+  fetchRequestBody,
+} from '../../test-support/fetch-request';
 import {
   cleanup,
   fireEvent,
@@ -109,7 +114,7 @@ describe('Reconciliation controls', () => {
 
   it('does not manufacture reconciliation without an Outcome', async () => {
     const fetchFn = vi.fn<Fetch>(async (input) => {
-      const url = String(input);
+      const url = fetchRequestUrl(input);
       if (url.endsWith(`/events/${SUBJECT}/actual`)) {
         return notFound(
           'temporal.actual.not_found',
@@ -135,7 +140,7 @@ describe('Reconciliation controls', () => {
     const bodies: Array<Record<string, unknown>> = [];
     let current: ReturnType<typeof reconciliation> | null = null;
     const fetchFn = vi.fn<Fetch>(async (input, init) => {
-      const url = String(input);
+      const url = fetchRequestUrl(input);
       if (url.endsWith('/api/v1/auth/session')) {
         return Response.json({ authenticated: true, csrf_token: 'csrf' });
       }
@@ -149,7 +154,10 @@ describe('Reconciliation controls', () => {
         init?.method === 'POST' &&
         url.endsWith(`/outcomes/${OUTCOME}/reconciliations`)
       ) {
-        const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+        const body = JSON.parse(fetchRequestBody(init.body)) as Record<
+          string,
+          unknown
+        >;
         bodies.push(body);
         current = reconciliation(RECONCILIATION_STATE_1, 'unresolved', []);
         return Response.json(current, { status: 201 });
@@ -193,7 +201,7 @@ describe('Reconciliation controls', () => {
     const bodies: Array<Record<string, unknown>> = [];
     let current: ReturnType<typeof reconciliation> | null = null;
     const fetchFn = vi.fn<Fetch>(async (input, init) => {
-      const url = String(input);
+      const url = fetchRequestUrl(input);
       if (url.endsWith('/api/v1/auth/session')) {
         return Response.json({ authenticated: true, csrf_token: 'csrf' });
       }
@@ -207,7 +215,10 @@ describe('Reconciliation controls', () => {
         init?.method === 'POST' &&
         url.endsWith(`/outcomes/${OUTCOME}/reconciliations`)
       ) {
-        const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+        const body = JSON.parse(fetchRequestBody(init.body)) as Record<
+          string,
+          unknown
+        >;
         bodies.push(body);
         const state =
           bodies.length === 1 ? RECONCILIATION_STATE_1 : RECONCILIATION_STATE_2;
@@ -240,7 +251,7 @@ describe('Reconciliation controls', () => {
       ),
     ).toBeTruthy();
     expect(
-      (screen.getByText('Registra Reconciliation') as HTMLButtonElement)
+      domElement(screen.getByText('Registra Reconciliation'), HTMLButtonElement)
         .disabled,
     ).toBe(true);
 
@@ -248,7 +259,7 @@ describe('Reconciliation controls', () => {
       screen.getByLabelText(`Seleziona Confirmation ${CONFIRMATION_A}`),
     );
     expect(
-      (screen.getByText('Registra Reconciliation') as HTMLButtonElement)
+      domElement(screen.getByText('Registra Reconciliation'), HTMLButtonElement)
         .disabled,
     ).toBe(false);
     fireEvent.click(screen.getByText('Registra Reconciliation'));

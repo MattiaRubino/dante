@@ -667,16 +667,19 @@ class B03TemporalCreateRuntime implements TemporalCreateRuntime {
         metadata: prepared.metadata,
         undoToken: null,
         undoAvailable: false,
-        undo: async () => unsupportedMutationResult(this.ids.operationId()),
+        undo: () =>
+          Promise.resolve(unsupportedMutationResult(this.ids.operationId())),
         replacePlacement: async (nextPlacement: TemporalPlacement | null) =>
           nextPlacement === null
             ? await postponeCurrent()
             : await reviseCurrent(nextPlacement),
-        remove: async () =>
-          Object.freeze({
-            result: unsupportedMutationResult(this.ids.operationId()),
-            effect: null,
-          }),
+        remove: () =>
+          Promise.resolve(
+            Object.freeze({
+              result: unsupportedMutationResult(this.ids.operationId()),
+              effect: null,
+            }),
+          ),
       }) satisfies TemporalCreateAppliedEffect;
       return Object.freeze({ result, effect });
     } catch (error) {

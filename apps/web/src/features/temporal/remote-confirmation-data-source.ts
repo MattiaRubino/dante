@@ -125,7 +125,7 @@ export function createRemoteTemporalConfirmationDataSource(
   async function problem(
     response: Response,
   ): Promise<TemporalConfirmationRemoteError> {
-    let payload: Record<string, unknown> = {};
+    let payload: Record<string, unknown>;
     try {
       payload = record(await response.json());
     } catch {

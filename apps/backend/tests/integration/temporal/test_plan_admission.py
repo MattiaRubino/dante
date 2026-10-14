@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import asyncio
 from datetime import UTC, datetime, timedelta
-from typing import Any
-from uuid import uuid7
+from typing import Any, TypedDict
+from uuid import UUID, uuid7
 
 import pytest
 from tests.integration.temporal.support.life_area import ensure_test_life_area
@@ -30,10 +30,17 @@ from dante.modules.temporal.temporal_constraint import (
     AbsoluteBoundaryRule,
     TemporalConstraintApplication,
 )
-from dante.platform.database.references import new_native_ref
+from dante.platform.database.references import NativeRef, new_native_ref
 from dante.platform.database.runtime import create_database_runtime
 
 pytestmark = pytest.mark.postgres
+
+
+class _SearchArgs(TypedDict):
+    self_person_ref: NativeRef
+    plan_ref: UUID
+    step_ref: UUID
+    expected_state_ref: UUID
 
 
 def _review(view: PlanCandidateView, operation_id: str) -> ReviewedMove:
@@ -97,7 +104,7 @@ async def test_b12_c_direct_pending_confirmation_and_stale_review(
             schedule_ref=created.schedule.schedule_ref,
             rule=MovementPolicyRule("automatic", "direct"),
         )
-        args = {
+        args: _SearchArgs = {
             "self_person_ref": alice,
             "plan_ref": plan.plan_ref,
             "step_ref": step_ref,
@@ -155,6 +162,7 @@ async def test_b12_c_direct_pending_confirmation_and_stale_review(
         with pytest.raises(PlanAdmissionStaleError):
             await admission.request(self_ref=alice, review=stale_constraint_review)
 
+        assert policy.material_state_ref is not None
         await policies.revise_policy(
             self_person_ref=alice,
             operation_id="b12c:confirm-policy",
@@ -183,9 +191,9 @@ async def test_b12_c_direct_pending_confirmation_and_stale_review(
                 proposal_ref=pending.proposal_ref,
             )
         ).replayed is True
-        assert (
-            await search.search(**args)
-        ).placement.material_state_ref == accepted.placement_state_ref
+        current = await search.search(**args)
+        assert current.placement is not None
+        assert current.placement.material_state_ref == accepted.placement_state_ref
 
         stale_policy_review = _review(await search.search(**args), str(uuid7()))
         stale_policy_proposal = await admission.request(self_ref=alice, review=stale_policy_review)
@@ -208,9 +216,9 @@ async def test_b12_c_direct_pending_confirmation_and_stale_review(
                 review=stale_policy_review,
                 proposal_ref=stale_policy_proposal.proposal_ref,
             )
-        assert (
-            await search.search(**args)
-        ).placement.material_state_ref == accepted.placement_state_ref
+        current = await search.search(**args)
+        assert current.placement is not None
+        assert current.placement.material_state_ref == accepted.placement_state_ref
 
         await plans.replace(
             self_person_ref=alice,

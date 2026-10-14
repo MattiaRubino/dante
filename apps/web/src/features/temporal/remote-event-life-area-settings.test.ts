@@ -1,3 +1,5 @@
+import { fetchRequestBody } from '../../test-support/fetch-request';
+import { fetchRequestUrl } from '../../test-support/fetch-request';
 import { describe, expect, it, vi } from 'vitest';
 
 import { createRemoteEventLifeAreaSettings } from './remote-event-life-area-settings';
@@ -16,7 +18,7 @@ describe('Event Life Area owner-scoped edits', () => {
   it('permits explicit null unassignment and preserves revision CAS', async () => {
     const calls: unknown[] = [];
     const fetchFn = vi.fn<typeof globalThis.fetch>((input, init) => {
-      const url = String(input);
+      const url = fetchRequestUrl(input);
       if (url === '/api/v1/temporal/life-areas')
         return Promise.resolve(
           json([{ life_area_ref: AREA, name: 'Lavoro', archived: false }]),
@@ -39,7 +41,7 @@ describe('Event Life Area owner-scoped edits', () => {
       if (url === '/api/v1/temporal/life-area-assignments/events/' + EVENT) {
         expect(init?.method).toBe('PUT');
         expect(new Headers(init?.headers).get('X-Dante-CSRF')).toBe('csrf');
-        calls.push(JSON.parse(String(init?.body)) as unknown);
+        calls.push(JSON.parse(fetchRequestBody(init?.body)) as unknown);
         return Promise.resolve(
           json({
             subject_kind: 'event',
@@ -69,7 +71,7 @@ describe('Event Life Area owner-scoped edits', () => {
   it('fails closed on a stale confirmation without claiming saved state', async () => {
     const source = createRemoteEventLifeAreaSettings(
       vi.fn<typeof globalThis.fetch>((input) => {
-        const url = String(input);
+        const url = fetchRequestUrl(input);
         if (url === '/api/v1/auth/session')
           return Promise.resolve(
             json({ authenticated: true, csrf_token: 'csrf' }),
@@ -93,7 +95,7 @@ describe('Event Life Area owner-scoped edits', () => {
     const source = createRemoteEventLifeAreaSettings(
       vi.fn<typeof globalThis.fetch>((input) =>
         Promise.resolve(
-          String(input).endsWith('/life-areas')
+          fetchRequestUrl(input).endsWith('/life-areas')
             ? json([])
             : json([
                 {

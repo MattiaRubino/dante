@@ -165,13 +165,13 @@ async def test_b13_b_dependency_reacts_to_current_actual_and_outcome(
             steps=(steps[1], steps[0]),
         )
         assert reordered.steps[1].step_ref == first_step
-        assert (
-            await dependencies.get(
-                self_person_ref=alice,
-                plan_ref=plan.plan_ref,
-                dependency_ref=actual_rule.dependency_ref,
-            )
-        ).prerequisite_activity_ref == first_activity
+        current = await dependencies.get(
+            self_person_ref=alice,
+            plan_ref=plan.plan_ref,
+            dependency_ref=actual_rule.dependency_ref,
+        )
+        assert current is not None
+        assert current.prerequisite_activity_ref == first_activity
         actual = await actuals.record(
             self_person_ref=alice,
             operation_id="b13b:actual-false",
@@ -180,13 +180,13 @@ async def test_b13_b_dependency_reacts_to_current_actual_and_outcome(
             realization_occurred=False,
             expected_material_state_ref=None,
         )
-        assert (
-            await dependencies.get(
-                self_person_ref=alice,
-                plan_ref=plan.plan_ref,
-                dependency_ref=actual_rule.dependency_ref,
-            )
-        ).evaluation_code == "unsatisfied"
+        current = await dependencies.get(
+            self_person_ref=alice,
+            plan_ref=plan.plan_ref,
+            dependency_ref=actual_rule.dependency_ref,
+        )
+        assert current is not None
+        assert current.evaluation_code == "unsatisfied"
         actual = await actuals.record(
             self_person_ref=alice,
             operation_id="b13b:actual-true",
@@ -195,13 +195,13 @@ async def test_b13_b_dependency_reacts_to_current_actual_and_outcome(
             realization_occurred=True,
             expected_material_state_ref=actual.material_state_ref,
         )
-        assert (
-            await dependencies.get(
-                self_person_ref=alice,
-                plan_ref=plan.plan_ref,
-                dependency_ref=actual_rule.dependency_ref,
-            )
-        ).evaluation_code == "satisfied"
+        current = await dependencies.get(
+            self_person_ref=alice,
+            plan_ref=plan.plan_ref,
+            dependency_ref=actual_rule.dependency_ref,
+        )
+        assert current is not None
+        assert current.evaluation_code == "satisfied"
         outcome_rule = await dependencies.write(
             self_person_ref=alice,
             plan_ref=plan.plan_ref,
@@ -220,13 +220,13 @@ async def test_b13_b_dependency_reacts_to_current_actual_and_outcome(
             expected_material_state_ref=None,
             disposition_code="work.partial",
         )
-        assert (
-            await dependencies.get(
-                self_person_ref=alice,
-                plan_ref=plan.plan_ref,
-                dependency_ref=outcome_rule.dependency_ref,
-            )
-        ).evaluation_code == "unsatisfied"
+        current = await dependencies.get(
+            self_person_ref=alice,
+            plan_ref=plan.plan_ref,
+            dependency_ref=outcome_rule.dependency_ref,
+        )
+        assert current is not None
+        assert current.evaluation_code == "unsatisfied"
         outcome = await outcomes.record(
             self_person_ref=alice,
             operation_id="b13b:outcome-completed",
@@ -235,13 +235,13 @@ async def test_b13_b_dependency_reacts_to_current_actual_and_outcome(
             expected_material_state_ref=outcome.material_state_ref,
             disposition_code="work.completed",
         )
-        assert (
-            await dependencies.get(
-                self_person_ref=alice,
-                plan_ref=plan.plan_ref,
-                dependency_ref=outcome_rule.dependency_ref,
-            )
-        ).evaluation_code == "satisfied"
+        current = await dependencies.get(
+            self_person_ref=alice,
+            plan_ref=plan.plan_ref,
+            dependency_ref=outcome_rule.dependency_ref,
+        )
+        assert current is not None
+        assert current.evaluation_code == "satisfied"
         corrected_actual = await actuals.record(
             self_person_ref=alice,
             operation_id="b13b:actual-correct",
@@ -250,20 +250,20 @@ async def test_b13_b_dependency_reacts_to_current_actual_and_outcome(
             realization_occurred=False,
             expected_material_state_ref=actual.material_state_ref,
         )
-        assert (
-            await dependencies.get(
-                self_person_ref=alice,
-                plan_ref=plan.plan_ref,
-                dependency_ref=outcome_rule.dependency_ref,
-            )
-        ).evaluation_code == "unknown"
-        assert (
-            await dependencies.get(
-                self_person_ref=alice,
-                plan_ref=plan.plan_ref,
-                dependency_ref=actual_rule.dependency_ref,
-            )
-        ).evaluation_code == "unsatisfied"
+        current = await dependencies.get(
+            self_person_ref=alice,
+            plan_ref=plan.plan_ref,
+            dependency_ref=outcome_rule.dependency_ref,
+        )
+        assert current is not None
+        assert current.evaluation_code == "unknown"
+        current = await dependencies.get(
+            self_person_ref=alice,
+            plan_ref=plan.plan_ref,
+            dependency_ref=actual_rule.dependency_ref,
+        )
+        assert current is not None
+        assert current.evaluation_code == "unsatisfied"
         outcome = await outcomes.record(
             self_person_ref=alice,
             operation_id="b13b:outcome-rebased",
@@ -272,13 +272,13 @@ async def test_b13_b_dependency_reacts_to_current_actual_and_outcome(
             expected_material_state_ref=outcome.material_state_ref,
             disposition_code="work.completed",
         )
-        assert (
-            await dependencies.get(
-                self_person_ref=alice,
-                plan_ref=plan.plan_ref,
-                dependency_ref=outcome_rule.dependency_ref,
-            )
-        ).evaluation_code == "satisfied"
+        current = await dependencies.get(
+            self_person_ref=alice,
+            plan_ref=plan.plan_ref,
+            dependency_ref=outcome_rule.dependency_ref,
+        )
+        assert current is not None
+        assert current.evaluation_code == "satisfied"
         revised = await dependencies.write(
             self_person_ref=alice,
             plan_ref=plan.plan_ref,

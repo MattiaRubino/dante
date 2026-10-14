@@ -1,3 +1,4 @@
+import { domElement } from '../../../test-support/dom-element';
 // @vitest-environment jsdom
 
 import { Temporal } from '@dante/time';
@@ -64,9 +65,10 @@ describe('Temporal Create Advanced Activity IA', () => {
       '[data-session-capability="activity"]',
     );
     if (!rootCapability) throw new Error('Expected root Session capability.');
-    const rootCapabilityCheckbox = within(rootCapability).getByRole(
-      'checkbox',
-    ) as HTMLInputElement;
+    const rootCapabilityCheckbox = domElement(
+      within(rootCapability).getByRole('checkbox'),
+      HTMLInputElement,
+    );
     expect(rootCapabilityCheckbox.checked).toBe(false);
 
     const protection = titleRow?.querySelector<HTMLButtonElement>(

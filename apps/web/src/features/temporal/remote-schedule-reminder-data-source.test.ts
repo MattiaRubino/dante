@@ -1,3 +1,4 @@
+import { fetchRequestBody } from '../../test-support/fetch-request';
 import { describe, expect, it, vi } from 'vitest';
 
 import {
@@ -76,7 +77,7 @@ describe('remote Schedule Reminder', () => {
     expect((request?.[1]?.headers as Headers).get('X-Dante-CSRF')).toBe(
       'csrf-value',
     );
-    expect(JSON.parse(String(request?.[1]?.body))).toEqual({
+    expect(JSON.parse(fetchRequestBody(request?.[1]?.body))).toEqual({
       operation_id: 'b11c:configure',
       expected_material_state_ref: STATE,
       enabled: true,

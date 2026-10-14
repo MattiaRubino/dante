@@ -19,6 +19,7 @@ from dante.modules.temporal.session_runtime import (
     SessionCaptureDisabledError,
     SessionNotFoundError,
 )
+from dante.platform.database.references import ScopedRecordRef
 from dante.platform.database.runtime import create_database_runtime
 
 pytestmark = pytest.mark.postgres
@@ -43,7 +44,7 @@ def _fake_request(runtime: Any) -> Request:
 @pytest.mark.asyncio
 async def test_panel_untimed_start_pause_resume_stop_owner_isolation_and_no_actual(
     migrated_database: Any,
-):
+) -> None:
     actor, other = _seed_self(migrated_database), _seed_self(migrated_database)
     runtime = create_database_runtime(migrated_database.runtime_settings())
     request = _fake_request(runtime)
@@ -84,13 +85,13 @@ async def test_panel_untimed_start_pause_resume_stop_owner_isolation_and_no_actu
             self_person_ref=actor,
             operation_id="panel:start",
             activity_ref=created.item.subject_native_ref,
-            schedule_ref=planned.planned_schedule_ref,
+            schedule_ref=ScopedRecordRef(planned.planned_schedule_ref),
         )
         replay = await sessions.start_planned(
             self_person_ref=actor,
             operation_id="panel:start",
             activity_ref=created.item.subject_native_ref,
-            schedule_ref=planned.planned_schedule_ref,
+            schedule_ref=ScopedRecordRef(planned.planned_schedule_ref),
         )
         assert replay.replayed
         assert replay.session_ref == started.session_ref
@@ -99,10 +100,11 @@ async def test_panel_untimed_start_pause_resume_stop_owner_isolation_and_no_actu
                 self_person_ref=other,
                 operation_id="panel:other",
                 activity_ref=created.item.subject_native_ref,
-                schedule_ref=planned.planned_schedule_ref,
+                schedule_ref=ScopedRecordRef(planned.planned_schedule_ref),
             )
         panel = await get_session_panel(context, request, Response())
         live = next(r for r in panel.groups[0].rows if r.planned_schedule_ref)
+        assert live.execution is not None
         assert live.execution.session_ref == started.session_ref
         paused = await sessions.pause(
             self_person_ref=actor,
@@ -111,7 +113,9 @@ async def test_panel_untimed_start_pause_resume_stop_owner_isolation_and_no_actu
             operation_id="panel:pause",
         )
         panel = await get_session_panel(context, request, Response())
-        assert next(r for r in panel.groups[0].rows if r.planned_schedule_ref).execution.paused
+        paused_row = next(r for r in panel.groups[0].rows if r.planned_schedule_ref)
+        assert paused_row.execution is not None
+        assert paused_row.execution.paused
         resumed = await sessions.resume(
             self_person_ref=actor,
             session_ref=started.session_ref,
@@ -149,7 +153,9 @@ async def test_panel_untimed_start_pause_resume_stop_owner_isolation_and_no_actu
 
 
 @pytest.mark.asyncio
-async def test_retired_untimed_row_cannot_start_and_is_not_projected(migrated_database: Any):
+async def test_retired_untimed_row_cannot_start_and_is_not_projected(
+    migrated_database: Any,
+) -> None:
     actor = _seed_self(migrated_database)
     runtime = create_database_runtime(migrated_database.runtime_settings())
     now = datetime.now(UTC)
@@ -177,12 +183,13 @@ async def test_retired_untimed_row_cannot_start_and_is_not_projected(migrated_da
                 text("SELECT dante.retire_self_planned_schedule(:actor,:activity,:schedule)"),
                 {"actor": actor, "activity": activity, "schedule": schedule},
             )
+        assert schedule is not None
         with pytest.raises(SessionNotFoundError):
             await SessionApplication(runtime.session_factory).start_planned(
                 self_person_ref=actor,
                 operation_id="panel:retired:start",
                 activity_ref=activity,
-                schedule_ref=schedule,
+                schedule_ref=ScopedRecordRef(schedule),
             )
         panel = await get_session_panel(
             _fake_context(actor),
@@ -235,11 +242,12 @@ async def test_independent_untimed_planned_session_without_main_capture(
         started = await sessions.start_planned(
             self_person_ref=actor,
             activity_ref=activity,
-            schedule_ref=row.planned_schedule_ref,
+            schedule_ref=ScopedRecordRef(row.planned_schedule_ref),
             operation_id="panel:independent:planned",
         )
         assert started.open
         live = await get_session_panel(ctx, request, Response())
+        assert live.groups[0].rows[0].execution is not None
         assert live.groups[0].rows[0].execution.session_ref == started.session_ref
         ended = await sessions.end(
             self_person_ref=actor,

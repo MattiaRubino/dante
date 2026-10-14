@@ -93,7 +93,7 @@ function timing(value: unknown): TemporalActualTiming | null {
   return Object.freeze({
     extentCode: extent,
     startedAt: payload.started_at,
-    endedAt: payload.ended_at as string | null,
+    endedAt: payload.ended_at,
   });
 }
 
@@ -174,7 +174,7 @@ export function createRemoteTemporalActualDataSource(
   async function problem(
     response: Response,
   ): Promise<TemporalActualRemoteError> {
-    let payload: Record<string, unknown> = {};
+    let payload: Record<string, unknown>;
     try {
       payload = record(await response.json());
     } catch {

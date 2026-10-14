@@ -1,3 +1,5 @@
+import { fetchRequestBody } from '../../test-support/fetch-request';
+import { fetchRequestUrl } from '../../test-support/fetch-request';
 import { describe, expect, it, vi } from 'vitest';
 
 import {
@@ -102,7 +104,7 @@ describe('remote temporal organization data source', () => {
             ]),
           );
         default:
-          throw new Error(`unexpected request ${String(input)}`);
+          throw new Error(`unexpected request ${fetchRequestUrl(input)}`);
       }
     });
 
@@ -159,7 +161,9 @@ describe('remote temporal organization data source', () => {
       expect(input).toBe('/api/v1/temporal/life-areas');
       expect(init?.method).toBe('POST');
       expect(new Headers(init?.headers).get('X-Dante-CSRF')).toBe('csrf-b05-d');
-      expect(JSON.parse(String(init?.body))).toMatchObject({ name: 'Salute' });
+      expect(JSON.parse(fetchRequestBody(init?.body))).toMatchObject({
+        name: 'Salute',
+      });
       return Promise.resolve(
         response(
           {

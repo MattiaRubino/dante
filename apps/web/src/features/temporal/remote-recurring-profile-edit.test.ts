@@ -1,3 +1,4 @@
+import { fetchRequestBody } from '../../test-support/fetch-request';
 import { describe, expect, it, vi } from 'vitest';
 
 import { createRemoteRecurringProfileEdit } from './remote-recurring-profile-edit';
@@ -53,7 +54,7 @@ describe('Recurring Activity metadata edit remote contract', () => {
             'csrf-token',
           );
           requests.push(
-            JSON.parse(String(init.body)) as Record<string, unknown>,
+            JSON.parse(fetchRequestBody(init.body)) as Record<string, unknown>,
           );
           return Promise.resolve(
             response({

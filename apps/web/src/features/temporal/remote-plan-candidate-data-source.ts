@@ -57,14 +57,17 @@ function parse(
     row.capacity_evaluated !== false ||
     typeof row.basis_fingerprint !== 'string' ||
     !/^[0-9a-f]{64}$/.test(row.basis_fingerprint) ||
+    typeof row.basis_status !== 'string' ||
     !['supported', 'unknown', 'blocked', 'unsupported'].includes(
-      String(row.basis_status),
+      row.basis_status,
     ) ||
-    !['automatic', 'blocked', 'missing'].includes(
-      String(row.movement_policy_status),
-    ) ||
+    typeof row.movement_policy_status !== 'string' ||
+    !['automatic', 'blocked', 'missing'].includes(row.movement_policy_status) ||
     (row.solver_status !== null &&
-      !statuses.includes(String(row.solver_status))) ||
+      (typeof row.solver_status !== 'string' ||
+        !statuses.includes(row.solver_status))) ||
+    (row.movement_policy_material_state_ref !== null &&
+      typeof row.movement_policy_material_state_ref !== 'string') ||
     typeof row.reason_code !== 'string' ||
     !Array.isArray(row.candidates) ||
     row.candidates.length > 3
@@ -114,10 +117,7 @@ function parse(
       placement === null || placement.ends_at === null
         ? null
         : date(placement.ends_at),
-    policyStateRef:
-      row.movement_policy_material_state_ref === null
-        ? null
-        : String(row.movement_policy_material_state_ref),
+    policyStateRef: row.movement_policy_material_state_ref,
     basisStatus: row.basis_status as PlanCandidates['basisStatus'],
     reasonCode: row.reason_code,
     solverStatus: row.solver_status as PlanCandidates['solverStatus'],

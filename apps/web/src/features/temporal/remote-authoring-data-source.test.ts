@@ -1,3 +1,4 @@
+import { fetchRequestBody } from '../../test-support/fetch-request';
 import { Temporal } from '@dante/time';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -83,7 +84,7 @@ describe('remote U2 authoring data source', () => {
     const [, request] = fetchFn.mock.calls[1] ?? [];
     expect(request?.method).toBe('POST');
     expect((request?.headers as Headers).get('X-Dante-CSRF')).toBe('csrf-u2');
-    expect(JSON.parse(String(request?.body))).toEqual({
+    expect(JSON.parse(fetchRequestBody(request?.body))).toEqual({
       operation_id: 'u2-activity-1',
       title: 'Viaggio',
       description: 'Tratta notturna',
@@ -139,7 +140,7 @@ describe('remote U2 authoring data source', () => {
     expect(result.item.lifeAreaColorCode).toBe('#8A4FFF');
     expect(result.agendaParts).toEqual(['Decisioni']);
     expect(
-      JSON.parse(String(fetchFn.mock.calls[1]?.[1]?.body)).life_area,
+      JSON.parse(fetchRequestBody(fetchFn.mock.calls[1]?.[1]?.body)).life_area,
     ).toEqual({
       new_name: 'Lavoro',
       color_code: '#8A4FFF',
@@ -218,7 +219,7 @@ describe('remote U2 authoring data source', () => {
     expect(result.plannedSlices).toHaveLength(1);
     expect(result.children[0]?.requirementCode).toBe('required');
     expect(result.children[0]?.sessionCaptureMode).toBe('live');
-    const body = JSON.parse(String(fetchFn.mock.calls[1]?.[1]?.body));
+    const body = JSON.parse(fetchRequestBody(fetchFn.mock.calls[1]?.[1]?.body));
     expect(body.minimum_session_duration_microseconds).toBe(1_500_000_000);
     expect(body.planned_slices).toEqual([
       {

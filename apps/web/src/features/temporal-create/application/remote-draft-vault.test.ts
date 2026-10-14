@@ -1,3 +1,5 @@
+import { fetchRequestUrl } from '../../../test-support/fetch-request';
+import { fetchRequestBody } from '../../../test-support/fetch-request';
 import { describe, expect, it, vi } from 'vitest';
 
 import { createTemporalCreateFields } from '../model/temporal-create-session';
@@ -36,7 +38,10 @@ describe('Draft Vault remote owner boundary', () => {
           init?.method === 'PUT'
         ) {
           expect(new Headers(init.headers).get('X-Dante-CSRF')).toBe('csrf');
-          const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+          const body = JSON.parse(fetchRequestBody(init.body)) as Record<
+            string,
+            unknown
+          >;
           requests.push({ path, method: init.method, body });
           return response({
             draft_ref: 'draft-1',
@@ -78,8 +83,8 @@ describe('Draft Vault remote owner boundary', () => {
     expect(
       fetchFn.mock.calls.every(
         ([path]) =>
-          String(path).includes('/drafts') ||
-          String(path).includes('/auth/session'),
+          fetchRequestUrl(path).includes('/drafts') ||
+          fetchRequestUrl(path).includes('/auth/session'),
       ),
     ).toBe(true);
   });

@@ -675,10 +675,12 @@ class B04TemporalCreateRuntime implements TemporalCreateRuntime {
       metadata,
       undoToken: null,
       undoAvailable: false,
-      undo: async () =>
-        unavailableResult(
-          this.ids.operationId(),
-          'temporal.create.undo_unavailable',
+      undo: () =>
+        Promise.resolve(
+          unavailableResult(
+            this.ids.operationId(),
+            'temporal.create.undo_unavailable',
+          ),
         ),
       replacePlacement: async (placement: TemporalPlacement | null) =>
         placement === null
@@ -690,14 +692,16 @@ class B04TemporalCreateRuntime implements TemporalCreateRuntime {
               effect: null,
             })
           : await this.establish(activityRef, metadata, placement),
-      remove: async () =>
-        Object.freeze({
-          result: unavailableResult(
-            this.ids.operationId(),
-            'temporal.create.remove_unavailable',
-          ),
-          effect: null,
-        }),
+      remove: () =>
+        Promise.resolve(
+          Object.freeze({
+            result: unavailableResult(
+              this.ids.operationId(),
+              'temporal.create.remove_unavailable',
+            ),
+            effect: null,
+          }),
+        ),
     });
   }
 

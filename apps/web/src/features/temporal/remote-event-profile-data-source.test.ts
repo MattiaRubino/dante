@@ -1,3 +1,5 @@
+import { fetchRequestBody } from '../../test-support/fetch-request';
+import { fetchRequestUrl } from '../../test-support/fetch-request';
 import { Temporal } from '@dante/time';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -32,7 +34,7 @@ describe('owner-scoped Event profile CAS source', () => {
     const sent: unknown[] = [];
     let changed = false;
     const fetchFn = vi.fn<typeof globalThis.fetch>((input, init) => {
-      const url = String(input);
+      const url = fetchRequestUrl(input);
       if (url === '/api/v1/auth/session') {
         return Promise.resolve(
           json({ authenticated: true, csrf_token: 'csrf' }),
@@ -60,7 +62,7 @@ describe('owner-scoped Event profile CAS source', () => {
       if (url === '/api/v1/temporal/events/' + EVENT + '/profile') {
         expect(init?.method).toBe('PUT');
         expect(new Headers(init?.headers).get('X-Dante-CSRF')).toBe('csrf');
-        sent.push(JSON.parse(String(init?.body)) as unknown);
+        sent.push(JSON.parse(fetchRequestBody(init?.body)) as unknown);
         changed = true;
         return Promise.resolve(
           json({
@@ -109,7 +111,7 @@ describe('owner-scoped Event profile CAS source', () => {
   it('does not announce success when CAS is stale', async () => {
     const fetchFn = vi.fn<typeof globalThis.fetch>((input) =>
       Promise.resolve(
-        String(input).endsWith('auth/session')
+        fetchRequestUrl(input).endsWith('auth/session')
           ? json({ authenticated: true, csrf_token: 'csrf' })
           : json({ code: 'temporal.event.profile_conflict' }, 409),
       ),

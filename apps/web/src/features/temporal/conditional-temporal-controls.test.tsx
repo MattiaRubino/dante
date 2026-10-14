@@ -1,4 +1,8 @@
 import {
+  fetchRequestUrl,
+  fetchRequestBody,
+} from '../../test-support/fetch-request';
+import {
   cleanup,
   fireEvent,
   render,
@@ -50,7 +54,7 @@ describe('Conditional temporal controls', () => {
     const writes: Array<Record<string, unknown>> = [];
     let created = false;
     const fetchFn = vi.fn<Fetch>(async (input, init) => {
-      const url = String(input);
+      const url = fetchRequestUrl(input);
       if (url.endsWith('/api/v1/auth/session')) {
         return Response.json({ authenticated: true, csrf_token: 'csrf' });
       }
@@ -61,7 +65,9 @@ describe('Conditional temporal controls', () => {
         init?.method === 'POST' &&
         url.endsWith('/conditions/actual-realization')
       ) {
-        writes.push(JSON.parse(String(init.body)) as Record<string, unknown>);
+        writes.push(
+          JSON.parse(fetchRequestBody(init.body)) as Record<string, unknown>,
+        );
         created = true;
         return Response.json(condition(), { status: 201 });
       }
@@ -69,7 +75,9 @@ describe('Conditional temporal controls', () => {
         init?.method === 'POST' &&
         url.endsWith(`/conditions/actual-realization/${CONDITION}/evaluations`)
       ) {
-        writes.push(JSON.parse(String(init.body)) as Record<string, unknown>);
+        writes.push(
+          JSON.parse(fetchRequestBody(init.body)) as Record<string, unknown>,
+        );
         return Response.json(
           {
             evaluation_ref: EVALUATION,

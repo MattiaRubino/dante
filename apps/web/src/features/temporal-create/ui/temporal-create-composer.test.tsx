@@ -1,3 +1,4 @@
+import { domElement } from '../../../test-support/dom-element';
 // @vitest-environment jsdom
 
 import {
@@ -156,9 +157,10 @@ describe('TemporalCreateComposer', () => {
       await screen.findByRole('button', { name: '＋ Aggiungi' }),
     ).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: '＋ Aggiungi' }));
-    const selfParticipation = screen.getByRole('combobox', {
-      name: 'Partecipazione di Io',
-    }) as HTMLSelectElement;
+    const selfParticipation = domElement(
+      screen.getByRole('combobox', { name: 'Partecipazione di Io' }),
+      HTMLSelectElement,
+    );
     expect(selfParticipation.value).toBe('required');
     expect(
       selfParticipation.closest('.temporal-create-event-participants__row')

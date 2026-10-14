@@ -1,3 +1,4 @@
+import { fetchRequestBody } from '../../test-support/fetch-request';
 import { Temporal } from '@dante/time';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -53,7 +54,7 @@ describe('remote temporal Event data source', () => {
       expect(headers.get('X-Dante-CSRF')).toBe('csrf-b03-b');
       expect(headers.get('X-Dante-Client')).toBe('web');
       expect(headers.get('X-Dante-Time-Zone')).toBe('Europe/Rome');
-      expect(JSON.parse(String(init?.body))).toEqual({
+      expect(JSON.parse(fetchRequestBody(init?.body))).toEqual({
         operation_id: 'operation:b03-b:web-floating',
         title: 'Evento B03-B',
         agenda_parts: agendaParts,
@@ -307,7 +308,7 @@ describe('remote temporal Event data source', () => {
         `/api/v1/temporal/events/${EVENT_REF}/schedules/${SCHEDULE_REF}/replan`,
       );
       expect(init?.method).toBe('PUT');
-      expect(JSON.parse(String(init?.body))).toEqual({
+      expect(JSON.parse(fetchRequestBody(init?.body))).toEqual({
         operation_id: 'operation:b05-d:replan',
         unschedule_operation_id: 'operation:b05-d:postpone',
         placement: {

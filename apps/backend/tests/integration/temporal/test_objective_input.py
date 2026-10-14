@@ -1,14 +1,18 @@
 """PostgreSQL: provisional Objective input is never accepted Result until Confirm."""
 
 from datetime import UTC, datetime, timedelta
+from decimal import Decimal
 from types import SimpleNamespace
 from typing import Any
+from uuid import uuid7
 
 import pytest
-from fastapi import Response
+from fastapi import Request, Response
 from sqlalchemy import text
 from tests.integration.temporal.test_activity_quick_authoring_metadata import _seed_self
 
+from dante.auth.contracts import Principal
+from dante.context.contracts import DanteContext
 from dante.modules.temporal.authoring import TemporalAuthoringApplication
 from dante.modules.temporal.reality_objective_api import (
     ObjectiveCreateCommand,
@@ -21,9 +25,26 @@ from dante.modules.temporal.reality_objective_api import (
     save_objective_input_draft,
 )
 from dante.modules.temporal.schedule import AbsoluteIntervalPlacement
+from dante.platform.database.references import NativeRef
 from dante.platform.database.runtime import create_database_runtime
+from dante.platform.time import TimeZoneMode, TimeZonePolicy
 
 pytestmark = pytest.mark.postgres
+
+
+def _context(self_person_ref: NativeRef) -> DanteContext:
+    now = datetime.now(UTC)
+    return DanteContext(
+        principal=Principal(
+            account_ref=uuid7(),
+            auth_session_ref=uuid7(),
+            authenticated_at=now,
+            recent_auth_at=now,
+        ),
+        self_person_ref=self_person_ref,
+        timezone_policy=TimeZonePolicy(mode=TimeZoneMode.FOLLOW_DEVICE),
+        effective_zone_id="Europe/Rome",
+    )
 
 
 @pytest.mark.asyncio
@@ -33,8 +54,10 @@ async def test_input_survives_refresh_and_is_not_observation_before_explicit_con
     actor = _seed_self(migrated_database)
     stranger = _seed_self(migrated_database)
     runtime = create_database_runtime(migrated_database.runtime_settings())
-    request = SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime)))
-    context = SimpleNamespace(self_person_ref=actor)
+    request = Request(
+        {"type": "http", "app": SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))}
+    )
+    context = _context(actor)
     now = datetime.now(UTC)
     try:
         created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
@@ -54,7 +77,7 @@ async def test_input_survives_refresh_and_is_not_observation_before_explicit_con
                 label="Ripetizioni",
                 result_kind="quantity",
                 comparator_code="gte",
-                target_value=20,
+                target_value=Decimal(20),
                 presentation_order=1,
             ),
             context,
@@ -66,7 +89,7 @@ async def test_input_survives_refresh_and_is_not_observation_before_explicit_con
             objective.objective_ref,
             ObjectiveInputDraftSave(
                 operation_id="objective-workspace:stage",
-                input=ObjectiveInputDraftPayload(observed_numeric=15),
+                input=ObjectiveInputDraftPayload(observed_numeric=Decimal(15)),
             ),
             context,
             request,
@@ -77,12 +100,7 @@ async def test_input_survives_refresh_and_is_not_observation_before_explicit_con
         result = await list_objective_input_drafts(context, request, Response())
         assert len(result) == 1
         assert result[0].payload.observed_numeric == 15
-        assert (
-            await list_objective_input_drafts(
-                SimpleNamespace(self_person_ref=stranger), request, Response()
-            )
-            == []
-        )
+        assert await list_objective_input_drafts(_context(stranger), request, Response()) == []
         async with runtime.session_factory() as session, session.begin():
             before = (
                 (

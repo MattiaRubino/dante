@@ -1,3 +1,4 @@
+import { fetchRequestBody } from '../../test-support/fetch-request';
 import { describe, expect, it, vi } from 'vitest';
 
 import {
@@ -74,7 +75,7 @@ describe('remote Event Agenda data source', () => {
       expect(headers.get('X-Dante-CSRF')).toBe('csrf-b03-d');
       expect(headers.get('X-Dante-Client')).toBe('web');
       expect(headers.get('X-Dante-Time-Zone')).toBe('Europe/Rome');
-      expect(JSON.parse(String(init?.body))).toEqual({
+      expect(JSON.parse(fetchRequestBody(init?.body))).toEqual({
         operation_id: 'operation:b03-d:web',
         expected_revision: 2,
         agenda_parts: ['A', 'B2'],

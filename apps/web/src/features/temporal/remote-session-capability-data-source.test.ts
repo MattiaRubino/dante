@@ -1,3 +1,4 @@
+import { fetchRequestUrl } from '../../test-support/fetch-request';
 import { describe, expect, it, vi } from 'vitest';
 
 import { createRemoteTemporalSessionCapabilityDataSource } from './remote-session-capability-data-source';
@@ -23,7 +24,7 @@ describe('remote Session capability read', () => {
     const source = createRemoteTemporalSessionCapabilityDataSource(fetchFn);
 
     await expect(source.activityEnabled(ACTIVITY_REF)).resolves.toBe(true);
-    expect(String(fetchFn.mock.calls[0]?.[0])).toBe(
+    expect(fetchRequestUrl(fetchFn.mock.calls[0]?.[0])).toBe(
       `/api/v1/temporal/activities/${ACTIVITY_REF}/execution-policy`,
     );
   });

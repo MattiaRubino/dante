@@ -69,7 +69,9 @@ export function createRemoteEventLifeAreaSettings(
       return {
         options,
         currentRef:
-          current?.life_area_ref == null ? null : String(current.life_area_ref),
+          current && typeof current.life_area_ref === 'string'
+            ? current.life_area_ref
+            : null,
         currentRevision: current ? Number(current.assignment_revision) : 0,
       };
     },

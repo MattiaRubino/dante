@@ -668,6 +668,7 @@ function parseScheduledOccurrence(
       'Scheduled Timeline Occurrence source kind is unsupported.',
     );
   }
+  const sourceKind = payload.source_kind;
   if (typeof payload.title !== 'string' || payload.title.trim().length === 0) {
     throw new TemporalTimelineRemoteError(
       'protocol',
@@ -683,7 +684,7 @@ function parseScheduledOccurrence(
   const common = {
     kind: 'scheduled_occurrence' as const,
     occurrenceRef: parseUuidV7(payload.occurrence_ref, 'occurrence_ref'),
-    sourceKind: payload.source_kind as 'routine' | 'event',
+    sourceKind,
     sourceNativeRef: parseUuidV7(
       payload.source_native_ref,
       'source_native_ref',
@@ -698,7 +699,7 @@ function parseScheduledOccurrence(
       payload.placement_material_state_ref,
       'placement_material_state_ref',
     ),
-  };
+  } as const;
   const placement = payload.placement;
 
   switch (placement.temporal_form) {

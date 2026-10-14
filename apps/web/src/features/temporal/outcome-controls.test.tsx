@@ -1,4 +1,8 @@
 import {
+  fetchRequestUrl,
+  fetchRequestBody,
+} from '../../test-support/fetch-request';
+import {
   cleanup,
   fireEvent,
   render,
@@ -88,7 +92,7 @@ describe('Outcome controls', () => {
     const bodies: Array<Record<string, unknown>> = [];
     let current: ReturnType<typeof outcome> | null = null;
     const fetchFn = vi.fn<Fetch>(async (input, init) => {
-      const url = String(input);
+      const url = fetchRequestUrl(input);
       if (url.endsWith('/api/v1/auth/session')) {
         return Response.json({ authenticated: true, csrf_token: 'csrf' });
       }
@@ -99,7 +103,10 @@ describe('Outcome controls', () => {
         init?.method === 'POST' &&
         url.endsWith(`/actuals/${ACTUAL}/outcome`)
       ) {
-        const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+        const body = JSON.parse(fetchRequestBody(init.body)) as Record<
+          string,
+          unknown
+        >;
         bodies.push(body);
         current = outcome(
           bodies.length === 1 ? OUTCOME_STATE_1 : OUTCOME_STATE_2,

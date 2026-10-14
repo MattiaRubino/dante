@@ -1,3 +1,6 @@
+import { domElement } from '../../../test-support/dom-element';
+import { fetchRequestBody } from '../../../test-support/fetch-request';
+import { fetchRequestUrl } from '../../../test-support/fetch-request';
 // @vitest-environment jsdom
 
 import { Temporal } from '@dante/time';
@@ -307,7 +310,7 @@ describe('Temporal Create U2 entry', () => {
       screen.getByRole('button', { name: /Nascondi opzioni avanzate/ }),
     );
     expect(
-      (screen.getByLabelText('Ricorda') as HTMLSelectElement).disabled,
+      domElement(screen.getByLabelText('Ricorda'), HTMLSelectElement).disabled,
     ).toBe(false);
     fireEvent.change(screen.getByPlaceholderText('Titolo'), {
       target: { value: 'Passeggiata' },
@@ -497,7 +500,7 @@ describe('Temporal Create U2 entry', () => {
   it('configures B11 reminder only after accepted scheduled U2 authoring', async () => {
     const fetchMock = vi.fn(
       async (input: RequestInfo | URL, init?: RequestInit) => {
-        const url = String(input);
+        const url = fetchRequestUrl(input);
         if (url.endsWith('/api/v1/auth/session')) {
           return new Response(
             JSON.stringify({ authenticated: true, csrf_token: 'csrf-test' }),
@@ -508,10 +511,9 @@ describe('Temporal Create U2 entry', () => {
           url.includes(`/api/v1/temporal/schedules/${SCHEDULE_REF}/reminder`)
         ) {
           expect(init?.method).toBe('PUT');
-          const body = JSON.parse(String(init?.body ?? '{}')) as Record<
-            string,
-            unknown
-          >;
+          const body = JSON.parse(
+            fetchRequestBody(init?.body ?? '{}'),
+          ) as Record<string, unknown>;
           expect(body.enabled).toBe(true);
           expect(body.lead_minutes).toBe(15);
           return new Response(
@@ -574,7 +576,7 @@ describe('Temporal Create U2 entry', () => {
     const participationBodies: Record<string, unknown>[] = [];
     const fetchMock = vi.fn(
       async (input: RequestInfo | URL, init?: RequestInit) => {
-        const url = String(input);
+        const url = fetchRequestUrl(input);
         if (url.endsWith('/api/v1/temporal/person-referents')) {
           return new Response(JSON.stringify([]), {
             status: 200,
@@ -593,10 +595,9 @@ describe('Temporal Create U2 entry', () => {
           )
         ) {
           expect(init?.method).toBe('PUT');
-          const body = JSON.parse(String(init?.body ?? '{}')) as Record<
-            string,
-            unknown
-          >;
+          const body = JSON.parse(
+            fetchRequestBody(init?.body ?? '{}'),
+          ) as Record<string, unknown>;
           participationBodies.push(body);
           return new Response(
             JSON.stringify({

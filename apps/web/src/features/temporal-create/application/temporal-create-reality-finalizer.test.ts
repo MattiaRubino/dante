@@ -78,7 +78,7 @@ describe('Temporal Create policy finalizer', () => {
       authored,
       draft,
       realitySource as never,
-      movementSource as never,
+      movementSource,
       lockSource as never,
     );
     await finalize();

@@ -1,3 +1,4 @@
+import { fetchRequestBody } from '../../test-support/fetch-request';
 import { describe, expect, it, vi } from 'vitest';
 
 import { createRemoteActivityInspector } from './remote-activity-inspector';
@@ -36,7 +37,10 @@ describe('remote Activity Inspector', () => {
       expect(input).toBe(`/api/v1/temporal/activities/${ref}/profile`);
       if (init?.method === 'PUT') {
         expect(headers.get('X-Dante-CSRF')).toBe('token');
-        const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+        const body = JSON.parse(fetchRequestBody(init.body)) as Record<
+          string,
+          unknown
+        >;
         expect(body).toMatchObject({ expected_revision: 0, title: 'Dopo' });
         expect(typeof body.operation_id).toBe('string');
         return Promise.resolve(

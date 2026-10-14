@@ -1,3 +1,7 @@
+import {
+  fetchRequestUrl,
+  fetchRequestBody,
+} from '../../test-support/fetch-request';
 import { describe, expect, it, vi } from 'vitest';
 
 import { createRemoteTemporalResponsibilityDataSource } from './remote-responsibility-data-source';
@@ -9,7 +13,7 @@ describe('Person referent remote commands', () => {
   it('creates, lists and renames a native Person with CSRF and revision', async () => {
     const calls: Array<{ url: string; method: string; body: unknown }> = [];
     const fetchFn = vi.fn<typeof globalThis.fetch>(async (input, init) => {
-      const url = String(input);
+      const url = fetchRequestUrl(input);
       const method = init?.method ?? 'GET';
       if (url.endsWith('/auth/session')) {
         return Response.json({ authenticated: true, csrf_token: 'csrf' });
@@ -20,7 +24,9 @@ describe('Person referent remote commands', () => {
       calls.push({
         url,
         method,
-        body: init?.body ? (JSON.parse(String(init.body)) as unknown) : null,
+        body: init?.body
+          ? (JSON.parse(fetchRequestBody(init.body)) as unknown)
+          : null,
       });
       if (url.endsWith('/person-referents') && method === 'GET') {
         return Response.json([
@@ -60,11 +66,11 @@ describe('Person referent remote commands', () => {
   it('sends the selected Person and the current holder without collapsing roles', async () => {
     const bodies: unknown[] = [];
     const fetchFn = vi.fn<typeof globalThis.fetch>(async (input, init) => {
-      if (String(input).endsWith('/auth/session')) {
+      if (fetchRequestUrl(input).endsWith('/auth/session')) {
         return Response.json({ authenticated: true, csrf_token: 'csrf' });
       }
-      bodies.push(JSON.parse(String(init?.body)) as unknown);
-      if (String(input).endsWith('/expected-participation')) {
+      bodies.push(JSON.parse(fetchRequestBody(init?.body)) as unknown);
+      if (fetchRequestUrl(input).endsWith('/expected-participation')) {
         return Response.json({
           event_ref: EVENT,
           participant_person_ref: PERSON,

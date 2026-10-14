@@ -26,6 +26,7 @@ from dante.modules.temporal.activity_replan_api import (
     preview_activity_replan,
 )
 from dante.modules.temporal.authoring import TemporalAuthoringApplication
+from dante.modules.temporal.decomposition_api import ActivityScheduleResponse
 from dante.modules.temporal.schedule import NamedZoneLocalIntervalPlacement
 from dante.platform.database.runtime import create_database_runtime
 from dante.platform.http.problem import ProblemError
@@ -41,13 +42,24 @@ def _window(start: int, end: int) -> NamedZoneLocalIntervalPlacement:
     )
 
 
-def _move(row, start: int, end: int) -> ReplanRow:
+def _move(row: ActivityScheduleResponse, start: int, end: int) -> ReplanRow:
+    assert row.placement_material_state_ref is not None
     return ReplanRow(
         schedule_ref=row.schedule_ref,
         expected_material_state_ref=row.placement_material_state_ref,
         starts_local_at=datetime(2026, 10, 9, start),  # noqa: DTZ001
         ends_local_at=datetime(2026, 10, 9, end),  # noqa: DTZ001
     )
+
+
+def _hour(value: datetime | None) -> int:
+    assert value is not None, "This accepted Schedule must be timed."
+    return value.hour
+
+
+def _order(row: ActivityScheduleResponse) -> int:
+    assert row.presentation_order is not None, "This accepted row must be ordered."
+    return row.presentation_order
 
 
 def _fake_context(actor: object) -> DanteContext:
@@ -119,8 +131,8 @@ async def test_activity_replan_previews_and_commits_dependent_rows_atomically(
             request,
             Response(),
         )
-        assert [row.starts_local_at.hour for row in after.schedules] == [10, 10, 12, 12]
-        assert [row.ends_local_at.hour for row in after.schedules] == [13, 11, 13, 13]
+        assert [_hour(row.starts_local_at) for row in after.schedules] == [10, 10, 12, 12]
+        assert [_hour(row.ends_local_at) for row in after.schedules] == [13, 11, 13, 13]
         assert (
             next(row for row in after.schedules if row.role_code == "planned").display_name
             == "Ripasso"
@@ -192,7 +204,7 @@ async def test_activity_replan_adds_and_removes_planned_sessions_without_reusing
         )
         added = next(row for row in accepted if row.schedule_ref != old.schedule_ref)
         assert added.display_name == "Seconda"
-        assert added.presentation_order > old.presentation_order
+        assert _order(added) > _order(old)
         assert len([row for row in after.schedules if row.role_code == "interval"]) == 1
     finally:
         await runtime.dispose()
@@ -275,6 +287,7 @@ async def test_activity_replan_retires_planned_rows_but_keeps_schedule_history(
                         "placement": "{}",
                     },
                 )
+        assert isinstance(unavailable.value.orig, psycopg.Error)
         assert (
             unavailable.value.orig.diag.constraint_name == "planned_schedule_placement_unavailable"
         )
@@ -346,7 +359,7 @@ async def test_planned_time_can_be_added_removed_and_added_again_on_same_schedul
         )
         placed = next(row for row in timed.schedules if row.role_code == "planned")
         assert placed.schedule_ref == planned.schedule_ref
-        assert placed.starts_local_at.hour == 10
+        assert _hour(placed.starts_local_at) == 10
         removed = await apply_activity_replan(
             activity,
             ActivityReplanCommand(
@@ -428,10 +441,10 @@ async def test_activity_replan_replaces_current_interval_without_erasing_role_hi
         added = next(
             row for row in current_intervals if row.schedule_ref != intervals[1].schedule_ref
         )
-        assert added.presentation_order > max(row.presentation_order for row in intervals)
-        assert (added.starts_local_at.hour, added.ends_local_at.hour) == (10, 11)
+        assert _order(added) > max(_order(row) for row in intervals)
+        assert (_hour(added.starts_local_at), _hour(added.ends_local_at)) == (10, 11)
         envelope = next(row for row in after.schedules if row.role_code == "envelope")
-        assert envelope.starts_local_at.hour == 10
+        assert _hour(envelope.starts_local_at) == 10
         retained_planned = next(row for row in after.schedules if row.role_code == "planned")
         assert retained_planned.schedule_ref == planned.schedule_ref
         # The original role is historically accepted and never reassigned.

@@ -1,3 +1,8 @@
+import { domElement } from '../../test-support/dom-element';
+import {
+  fetchRequestUrl,
+  fetchRequestBody,
+} from '../../test-support/fetch-request';
 import {
   cleanup,
   fireEvent,
@@ -33,13 +38,15 @@ describe('Schedule Reminder controls', () => {
     const writes: Array<Record<string, unknown>> = [];
     let attempts = 0;
     const fetchFn = vi.fn<typeof fetch>(async (input, init) => {
-      const url = String(input);
+      const url = fetchRequestUrl(input);
       if (url.endsWith('/api/v1/auth/session')) {
         return json({ authenticated: true, csrf_token: 'csrf' });
       }
       if (url.endsWith(`/schedules/${SCHEDULE}/reminder`)) {
         if (init?.method === 'PUT') {
-          writes.push(JSON.parse(String(init.body)) as Record<string, unknown>);
+          writes.push(
+            JSON.parse(fetchRequestBody(init.body)) as Record<string, unknown>,
+          );
           attempts += 1;
           if (attempts === 1) {
             return json(
@@ -84,10 +91,9 @@ describe('Schedule Reminder controls', () => {
     await screen.findByRole('alert');
     await waitFor(() => {
       expect(
-        (
-          screen.getByRole('button', {
-            name: 'Salva promemoria',
-          }) as HTMLButtonElement
+        domElement(
+          screen.getByRole('button', { name: 'Salva promemoria' }),
+          HTMLButtonElement,
         ).disabled,
       ).toBe(false);
     });

@@ -1,3 +1,4 @@
+import { fetchRequestBody } from '../../test-support/fetch-request';
 import { Temporal } from '@dante/time';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -29,7 +30,7 @@ describe('remote Occurrence Schedule data source', () => {
       );
       expect(init?.method).toBe('POST');
       expect(new Headers(init?.headers).get('X-Dante-CSRF')).toBe('csrf-b06-d');
-      expect(JSON.parse(String(init?.body))).toEqual({
+      expect(JSON.parse(fetchRequestBody(init?.body))).toEqual({
         operation_id: 'b06-d:schedule:1',
         placement: {
           kind: 'floating_local_interval',

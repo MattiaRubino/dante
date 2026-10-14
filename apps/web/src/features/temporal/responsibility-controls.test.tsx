@@ -1,4 +1,8 @@
 import {
+  fetchRequestUrl,
+  fetchRequestBody,
+} from '../../test-support/fetch-request';
+import {
   cleanup,
   fireEvent,
   render,
@@ -46,7 +50,7 @@ describe('responsibility controls', () => {
     let holder: string | null = null;
     const bodies: unknown[] = [];
     const fetchFn = vi.fn<Fetch>(async (input, init) => {
-      const url = String(input);
+      const url = fetchRequestUrl(input);
       if (url.endsWith('/person-referents')) return Response.json([]);
       if (url.endsWith('/api/v1/auth/session')) {
         return Response.json({ authenticated: true, csrf_token: 'csrf' });
@@ -55,7 +59,7 @@ describe('responsibility controls', () => {
         return Response.json([]);
       }
       if (init?.method === 'PUT') {
-        bodies.push(JSON.parse(String(init.body)));
+        bodies.push(JSON.parse(fetchRequestBody(init.body)));
         holder = PERSON;
         return Response.json(responsibility(holder));
       }
@@ -83,13 +87,13 @@ describe('responsibility controls', () => {
     let current: 'required' | 'optional' | null = 'required';
     const bodies: unknown[] = [];
     const fetchFn = vi.fn<Fetch>(async (input, init) => {
-      const url = String(input);
+      const url = fetchRequestUrl(input);
       if (url.endsWith('/person-referents')) return Response.json([]);
       if (url.endsWith('/api/v1/auth/session')) {
         return Response.json({ authenticated: true, csrf_token: 'csrf' });
       }
       if (url.endsWith('/expected-participation') && init?.method === 'PUT') {
-        const body = JSON.parse(String(init.body));
+        const body = JSON.parse(fetchRequestBody(init.body));
         bodies.push(body);
         current = body.requirement_code;
         return Response.json(participation(current));
@@ -120,7 +124,7 @@ describe('responsibility controls', () => {
 
   it('reports a rejected command instead of showing an optimistic state', async () => {
     const fetchFn = vi.fn<Fetch>(async (input, init) => {
-      const url = String(input);
+      const url = fetchRequestUrl(input);
       if (url.endsWith('/person-referents')) return Response.json([]);
       if (url.endsWith('/api/v1/auth/session')) {
         return Response.json({ authenticated: true, csrf_token: 'csrf' });
@@ -155,7 +159,7 @@ describe('responsibility controls', () => {
 
   it('does not offer Event Participation controls on an Activity', async () => {
     const fetchFn = vi.fn<Fetch>(async (input) => {
-      const url = String(input);
+      const url = fetchRequestUrl(input);
       if (url.endsWith('/person-referents')) return Response.json([]);
       if (url.endsWith('/api/v1/auth/session')) {
         return Response.json({ authenticated: true, csrf_token: 'csrf' });
@@ -185,7 +189,7 @@ describe('responsibility controls', () => {
     let holder: string | null = null;
     let requirement: 'required' | 'optional' | null = null;
     const fetchFn = vi.fn<Fetch>(async (input, init) => {
-      const url = String(input);
+      const url = fetchRequestUrl(input);
       if (url.endsWith('/api/v1/auth/session')) {
         return Response.json({ authenticated: true, csrf_token: 'csrf' });
       }
@@ -201,7 +205,10 @@ describe('responsibility controls', () => {
       }
       if (url.endsWith('/expected-participation')) {
         if (init?.method === 'PUT') {
-          const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+          const body = JSON.parse(fetchRequestBody(init.body)) as Record<
+            string,
+            unknown
+          >;
           commands.push(body);
           requirement = body.requirement_code as 'required' | 'optional';
         }
@@ -220,7 +227,10 @@ describe('responsibility controls', () => {
         );
       }
       if (init?.method === 'PUT') {
-        const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+        const body = JSON.parse(fetchRequestBody(init.body)) as Record<
+          string,
+          unknown
+        >;
         commands.push(body);
         holder = OTHER;
       }
@@ -264,13 +274,16 @@ describe('responsibility controls', () => {
       replayed: false,
     });
     const fetchFn = vi.fn<Fetch>(async (input, init) => {
-      const url = String(input);
+      const url = fetchRequestUrl(input);
       if (url.endsWith('/api/v1/auth/session')) {
         return Response.json({ authenticated: true, csrf_token: 'csrf' });
       }
       if (url.endsWith('/person-referents')) {
         if (init?.method === 'POST') {
-          const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+          const body = JSON.parse(fetchRequestBody(init.body)) as Record<
+            string,
+            unknown
+          >;
           commands.push(body);
           created = true;
           displayLabel = String(body.display_label);
@@ -283,7 +296,10 @@ describe('responsibility controls', () => {
         url.endsWith('/person-referents/' + PERSON) &&
         init?.method === 'PATCH'
       ) {
-        const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+        const body = JSON.parse(fetchRequestBody(init.body)) as Record<
+          string,
+          unknown
+        >;
         commands.push(body);
         displayLabel = String(body.display_label);
         revision += 1;
@@ -291,7 +307,10 @@ describe('responsibility controls', () => {
       }
       if (url.endsWith('/expected-participation')) {
         if (init?.method === 'PUT') {
-          const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+          const body = JSON.parse(fetchRequestBody(init.body)) as Record<
+            string,
+            unknown
+          >;
           commands.push(body);
           requirement = body.requirement_code as 'required' | 'optional' | null;
           return Response.json({
@@ -312,7 +331,10 @@ describe('responsibility controls', () => {
       }
       if (url.endsWith('/responsibility')) {
         if (init?.method === 'PUT') {
-          const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+          const body = JSON.parse(fetchRequestBody(init.body)) as Record<
+            string,
+            unknown
+          >;
           commands.push(body);
           holder = body.holder as string | null;
         }

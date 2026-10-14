@@ -1,3 +1,4 @@
+import { fetchRequestBody } from '../../test-support/fetch-request';
 import { describe, expect, it, vi } from 'vitest';
 
 import { createRemoteRealityObjectiveDataSource } from './remote-reality-objective-data-source';
@@ -48,7 +49,7 @@ describe('M2 Objective corrections', () => {
         }
         if (uri.endsWith('/definition') && init?.method === 'PUT') {
           expect(new Headers(init.headers).get('X-Dante-CSRF')).toBe('csrf');
-          posts.push(JSON.parse(String(init.body)) as unknown);
+          posts.push(JSON.parse(fetchRequestBody(init.body)) as unknown);
           return Promise.resolve(
             response({
               objective_ref: ref,
@@ -60,7 +61,7 @@ describe('M2 Objective corrections', () => {
           );
         }
         if (uri.endsWith('/correction') && init?.method === 'POST') {
-          posts.push(JSON.parse(String(init.body)) as unknown);
+          posts.push(JSON.parse(fetchRequestBody(init.body)) as unknown);
           return Promise.resolve(
             response({
               objective_ref: ref,
@@ -154,7 +155,7 @@ describe('M2 Objective corrections', () => {
           );
         }
         if (uri.endsWith('/definition') && init?.method === 'PUT') {
-          received.push(JSON.parse(String(init.body)) as unknown);
+          received.push(JSON.parse(fetchRequestBody(init.body)) as unknown);
           return Promise.resolve(
             response({
               objective_ref: ref,

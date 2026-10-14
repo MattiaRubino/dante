@@ -1,3 +1,7 @@
+import {
+  fetchRequestUrl,
+  fetchRequestBody,
+} from '../../test-support/fetch-request';
 import { describe, expect, it, vi } from 'vitest';
 
 import { createRemoteActivityEditSettings } from './remote-activity-edit-settings';
@@ -14,7 +18,7 @@ describe('Activity editor settings remote contract', () => {
     vi.useFakeTimers();
     try {
       const fetchFn = vi.fn((input: RequestInfo | URL) => {
-        if (String(input).endsWith('/auth/session'))
+        if (fetchRequestUrl(input).endsWith('/auth/session'))
           return Promise.resolve(
             response({ authenticated: true, csrf_token: 'token' }),
           );
@@ -270,7 +274,9 @@ describe('Activity editor settings remote contract', () => {
           response({ authenticated: true, csrf_token: 'token' }),
         );
       if (path.endsWith('/placement-lock') && init?.method === 'PUT') {
-        received.push(JSON.parse(String(init.body)) as Record<string, unknown>);
+        received.push(
+          JSON.parse(fetchRequestBody(init.body)) as Record<string, unknown>,
+        );
         expect(new Headers(init.headers).get('X-Dante-CSRF')).toBe('token');
         return Promise.resolve(
           response({
@@ -306,7 +312,7 @@ describe('Activity editor settings remote contract', () => {
           response({ authenticated: true, csrf_token: 'token' }),
         );
       if (path.endsWith('/placement-lock') && init?.method === 'PUT') {
-        expect(JSON.parse(String(init.body))).toEqual({
+        expect(JSON.parse(fetchRequestBody(init.body))).toEqual({
           locked: true,
           expected_revision: null,
         });
@@ -373,7 +379,9 @@ describe('Activity editor settings remote contract', () => {
         init?.method === 'PUT'
       ) {
         expect(new Headers(init.headers).get('X-Dante-CSRF')).toBe('token');
-        requests.push(JSON.parse(String(init.body)) as Record<string, unknown>);
+        requests.push(
+          JSON.parse(fetchRequestBody(init.body)) as Record<string, unknown>,
+        );
         return Promise.resolve(
           response({
             subject_kind: 'activity',
@@ -427,7 +435,7 @@ describe('Activity editor settings remote contract', () => {
           response({ authenticated: true, csrf_token: 'token' }),
         );
       if (path.endsWith('/life-areas') && init?.method === 'POST') {
-        expect(JSON.parse(String(init.body))).toEqual({
+        expect(JSON.parse(fetchRequestBody(init.body))).toEqual({
           operation_id: 'new-area-op',
           name: 'Studio',
         });
@@ -472,7 +480,7 @@ describe('Activity editor settings remote contract', () => {
         init?.method === 'PUT'
       ) {
         expect(new Headers(init.headers).get('X-Dante-CSRF')).toBe('token');
-        expect(JSON.parse(String(init.body))).toEqual({
+        expect(JSON.parse(fetchRequestBody(init.body))).toEqual({
           operation_id: 'area-color-op',
           expected_revision: 1,
           icon_code: null,
@@ -524,7 +532,9 @@ describe('Activity editor settings remote contract', () => {
           response({ authenticated: true, csrf_token: 'token' }),
         );
       if (path.endsWith('/replan-preview') && init?.method === 'POST') {
-        requests.push(JSON.parse(String(init.body)) as Record<string, unknown>);
+        requests.push(
+          JSON.parse(fetchRequestBody(init.body)) as Record<string, unknown>,
+        );
         return Promise.resolve(response({ activity_ref: ref, changes: [] }));
       }
       throw new Error(`Unexpected path: ${path}`);
@@ -638,7 +648,7 @@ describe('Activity editor settings remote contract', () => {
         );
       if (path.endsWith('/replan-preview')) {
         requests.push(
-          JSON.parse(String(init?.body)) as Record<string, unknown>,
+          JSON.parse(fetchRequestBody(init?.body)) as Record<string, unknown>,
         );
         return Promise.resolve(response({ activity_ref: ref, changes: [] }));
       }
@@ -712,7 +722,9 @@ describe('Activity editor settings remote contract', () => {
         init?.method === 'POST'
       ) {
         expect(new Headers(init.headers).get('X-Dante-CSRF')).toBe('token');
-        received.push(JSON.parse(String(init.body)) as Record<string, unknown>);
+        received.push(
+          JSON.parse(fetchRequestBody(init.body)) as Record<string, unknown>,
+        );
         return Promise.resolve(
           response({
             objective_ref: 'created-objective',
@@ -839,7 +851,7 @@ describe('Activity editor settings remote contract', () => {
         path.endsWith('/life-area-assignments/activities/' + ref) &&
         init?.method === 'PUT'
       ) {
-        requests.push(JSON.parse(String(init.body)) as unknown);
+        requests.push(JSON.parse(fetchRequestBody(init.body)) as unknown);
         return Promise.resolve(
           response({
             subject_kind: 'activity',
@@ -890,7 +902,7 @@ describe('Activity editor settings remote contract', () => {
         path.endsWith('/planned-sessions/' + scheduleRef + '/name') &&
         init?.method === 'PUT'
       ) {
-        requests.push(JSON.parse(String(init.body)) as unknown);
+        requests.push(JSON.parse(fetchRequestBody(init.body)) as unknown);
         return Promise.resolve(
           response({
             schedule_ref: scheduleRef,
