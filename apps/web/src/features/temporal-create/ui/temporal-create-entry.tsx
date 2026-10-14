@@ -389,10 +389,11 @@ export function TemporalCreateEntry({
     setSession(requestResult.session);
   };
 
+  const currentDraft = session.draft.current;
   const patch = useCallback(
     (next: Partial<TemporalCreateSession['draft']['current']>) => {
       if (partialPostCreateRef.current !== null) return;
-      const merged = { ...session.draft.current, ...next };
+      const merged = { ...currentDraft, ...next };
       const eligibleReminder =
         merged.timeSemantics === 'timed' && merged.timeMode === 'zoned';
       const boundedNext = eligibleReminder
@@ -409,7 +410,7 @@ export function TemporalCreateEntry({
       setLifecycle('idle');
       setSession((current) => updateTemporalCreateFields(current, boundedNext));
     },
-    [session.draft.current],
+    [currentDraft],
   );
 
   useEffect(() => {
