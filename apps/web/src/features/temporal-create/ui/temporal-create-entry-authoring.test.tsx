@@ -503,13 +503,13 @@ describe('Temporal Create U2 entry', () => {
 
   it('configures B11 reminder only after accepted scheduled U2 authoring', async () => {
     const fetchMock = vi.fn(
-      async (input: RequestInfo | URL, init?: RequestInit) => {
+      (input: RequestInfo | URL, init?: RequestInit) => {
         const url = fetchRequestUrl(input);
         if (url.endsWith('/api/v1/auth/session')) {
-          return new Response(
+          return Promise.resolve(new Response(
             JSON.stringify({ authenticated: true, csrf_token: 'csrf-test' }),
             { status: 200, headers: { 'Content-Type': 'application/json' } },
-          );
+          ));
         }
         if (
           url.includes(`/api/v1/temporal/schedules/${SCHEDULE_REF}/reminder`)
@@ -520,7 +520,7 @@ describe('Temporal Create U2 entry', () => {
           ) as Record<string, unknown>;
           expect(body.enabled).toBe(true);
           expect(body.lead_minutes).toBe(15);
-          return new Response(
+          return Promise.resolve(new Response(
             JSON.stringify({
               reminder_ref: '0199a111-1111-7111-8111-111111111122',
               schedule_ref: SCHEDULE_REF,
@@ -533,12 +533,12 @@ describe('Temporal Create U2 entry', () => {
               replayed: false,
             }),
             { status: 200, headers: { 'Content-Type': 'application/json' } },
-          );
+          ));
         }
         throw new Error(`Unexpected fetch ${url}`);
       },
     );
-    vi.stubGlobal('fetch', fetchMock);
+    vi.stubGlobal('fetch', fetchMock); // wrapped-mock-0
 
     const { activityRequests } = renderEntry([], true);
     fireEvent.change(screen.getByPlaceholderText('Titolo'), {
@@ -579,19 +579,19 @@ describe('Temporal Create U2 entry', () => {
     const eventRef = '0199a111-1111-7111-8111-111111111111';
     const participationBodies: Record<string, unknown>[] = [];
     const fetchMock = vi.fn(
-      async (input: RequestInfo | URL, init?: RequestInit) => {
+      (input: RequestInfo | URL, init?: RequestInit) => {
         const url = fetchRequestUrl(input);
         if (url.endsWith('/api/v1/temporal/person-referents')) {
-          return new Response(JSON.stringify([]), {
+          return Promise.resolve(new Response(JSON.stringify([]), {
             status: 200,
             headers: { 'Content-Type': 'application/json' },
-          });
+          }));
         }
         if (url.endsWith('/api/v1/auth/session')) {
-          return new Response(
+          return Promise.resolve(new Response(
             JSON.stringify({ authenticated: true, csrf_token: 'csrf-test' }),
             { status: 200, headers: { 'Content-Type': 'application/json' } },
-          );
+          ));
         }
         if (
           url.endsWith(
@@ -603,7 +603,7 @@ describe('Temporal Create U2 entry', () => {
             fetchRequestBody(init?.body ?? '{}'),
           ) as Record<string, unknown>;
           participationBodies.push(body);
-          return new Response(
+          return Promise.resolve(new Response(
             JSON.stringify({
               event_ref: eventRef,
               participant_person_ref: eventRef,
@@ -613,7 +613,7 @@ describe('Temporal Create U2 entry', () => {
               replayed: false,
             }),
             { status: 200, headers: { 'Content-Type': 'application/json' } },
-          );
+          ));
         }
         throw new Error(`Unexpected fetch ${url}`);
       },
@@ -665,7 +665,7 @@ describe('Temporal Create U2 entry', () => {
     expect(screen.queryByText(/Schedule non è confermato/i)).toBeNull();
   });
 
-  it('keeps an Event without accepted Schedule inactive until Add', async () => {
+  it('keeps an Event without accepted Schedule inactive until Add', () => {
     const { eventRequests } = renderEntry();
     fireEvent.click(screen.getByRole('radio', { name: 'Evento' }));
     expect(screen.queryByRole('radio', { name: 'Da collocare' })).toBeNull();
