@@ -5,6 +5,26 @@ import {
   TemporalSessionRemoteError,
 } from './remote-session-data-source';
 
+/** A fetch may receive a URL string, URL or Request; never stringify Request objects. */
+function requestUrl(input: RequestInfo | URL): string {
+  if (typeof input === 'string') return input;
+  if (input instanceof URL) return input.href;
+  return input.url;
+}
+
+/** The production transport sends JSON request bodies as UTF-8 strings. */
+function requiredTextBody(init?: RequestInit): string {
+  if (typeof init?.body !== 'string') {
+    throw new Error('Expected a JSON string request body');
+  }
+  return init.body;
+}
+
+/** Keep the mocked fetch asynchronous without misleading async/no-await handlers. */
+function resolvedJson(value: unknown, init?: ResponseInit): Promise<Response> {
+  return Promise.resolve(Response.json(value, init));
+}
+
 const SESSION = '01991f2a-1234-7abc-8def-1234567890ab';
 const SUBJECT = '01991f2a-1234-7abc-8def-1234567890ac';
 const STATE = '01991f2a-1234-7abc-8def-1234567890ad';
@@ -36,18 +56,18 @@ const minimumEvaluation = {
 
 describe('remote session data source', () => {
   it('starts one planned Activity row as a linked real Session', async () => {
-    const fetchFn = vi.fn<typeof fetch>(async (input, init) => {
-      if (String(input).endsWith('/api/v1/auth/session')) {
-        return Response.json({ authenticated: true, csrf_token: 'csrf' });
+    const fetchFn = vi.fn<typeof fetch>((input, init) => {
+      if (requestUrl(input).endsWith('/api/v1/auth/session')) {
+        return resolvedJson({ authenticated: true, csrf_token: 'csrf' });
       }
-      expect(String(input)).toBe(
+      expect(requestUrl(input)).toBe(
         `/api/v1/temporal/activities/${SUBJECT}/planned-sessions/${PLANNED}/sessions`,
       );
       expect(init?.method).toBe('POST');
-      expect(JSON.parse(String(init?.body))).toEqual({
+      expect(JSON.parse(requiredTextBody(init))).toEqual({
         operation_id: 'planned-1',
       });
-      return Response.json({ ...openSession, planned_schedule_ref: PLANNED });
+      return resolvedJson({ ...openSession, planned_schedule_ref: PLANNED });
     });
     const started = await createRemoteTemporalSessionDataSource(
       fetchFn,
@@ -55,16 +75,16 @@ describe('remote session data source', () => {
     expect(started.plannedScheduleRef).toBe(PLANNED);
   });
   it('starts an Activity Session through the canonical endpoint', async () => {
-    const fetchFn = vi.fn<typeof fetch>(async (input, init) => {
-      const url = String(input);
+    const fetchFn = vi.fn<typeof fetch>((input, init) => {
+      const url = requestUrl(input);
       if (url.endsWith('/api/v1/auth/session')) {
-        return Response.json({ authenticated: true, csrf_token: 'csrf' });
+        return resolvedJson({ authenticated: true, csrf_token: 'csrf' });
       }
       expect(url).toBe(`/api/v1/temporal/activities/${SUBJECT}/sessions`);
       expect(init?.method).toBe('POST');
       expect((init?.headers as Headers).get('X-Dante-CSRF')).toBe('csrf');
-      expect(JSON.parse(String(init?.body))).toEqual({ operation_id: 'op-1' });
-      return Response.json(openSession);
+      expect(JSON.parse(requiredTextBody(init))).toEqual({ operation_id: 'op-1' });
+      return resolvedJson(openSession);
     });
     const source = createRemoteTemporalSessionDataSource(fetchFn);
     const started = await source.start('activity', SUBJECT, 'op-1');
@@ -76,14 +96,14 @@ describe('remote session data source', () => {
   });
 
   it('starts an Occurrence Session through the occurrence endpoint', async () => {
-    const fetchFn = vi.fn<typeof fetch>(async (input, init) => {
-      const url = String(input);
+    const fetchFn = vi.fn<typeof fetch>((input, init) => {
+      const url = requestUrl(input);
       if (url.endsWith('/api/v1/auth/session')) {
-        return Response.json({ authenticated: true, csrf_token: 'csrf' });
+        return resolvedJson({ authenticated: true, csrf_token: 'csrf' });
       }
       expect(url).toBe(`/api/v1/temporal/occurrences/${SUBJECT}/sessions`);
       expect(init?.method).toBe('POST');
-      return Response.json(openSession);
+      return resolvedJson(openSession);
     });
     const source = createRemoteTemporalSessionDataSource(fetchFn);
     const started = await source.start('occurrence', SUBJECT, 'op-occurrence');
@@ -92,12 +112,12 @@ describe('remote session data source', () => {
   });
 
   it('lists authoritative Sessions without acquiring a CSRF token', async () => {
-    const fetchFn = vi.fn<typeof fetch>(async (input, init) => {
-      expect(String(input)).toBe(
+    const fetchFn = vi.fn<typeof fetch>((input, init) => {
+      expect(requestUrl(input)).toBe(
         `/api/v1/temporal/activities/${SUBJECT}/sessions`,
       );
       expect(init?.method).toBe('GET');
-      return Response.json([openSession]);
+      return resolvedJson([openSession]);
     });
     const source = createRemoteTemporalSessionDataSource(fetchFn);
     const listed = await source.list('activity', SUBJECT);
@@ -108,8 +128,8 @@ describe('remote session data source', () => {
   });
 
   it('parses canonical Session duration evaluations', async () => {
-    const fetchFn = vi.fn<typeof fetch>(async () =>
-      Response.json([
+    const fetchFn = vi.fn<typeof fetch>(() =>
+      resolvedJson([
         { ...openSession, duration_evaluations: [minimumEvaluation] },
       ]),
     );
@@ -128,18 +148,18 @@ describe('remote session data source', () => {
   });
 
   it('ends a Session with the expected timing MaterialStateRef', async () => {
-    const fetchFn = vi.fn<typeof fetch>(async (input, init) => {
-      const url = String(input);
+    const fetchFn = vi.fn<typeof fetch>((input, init) => {
+      const url = requestUrl(input);
       if (url.endsWith('/api/v1/auth/session')) {
-        return Response.json({ authenticated: true, csrf_token: 'csrf' });
+        return resolvedJson({ authenticated: true, csrf_token: 'csrf' });
       }
       expect(url).toBe(`/api/v1/temporal/sessions/${SESSION}/end`);
       expect(init?.method).toBe('POST');
-      expect(JSON.parse(String(init?.body))).toEqual({
+      expect(JSON.parse(requiredTextBody(init))).toEqual({
         operation_id: 'op-end',
         expected_material_state_ref: STATE,
       });
-      return Response.json({
+      return resolvedJson({
         ...openSession,
         ended_at: '2026-09-24T08:00:00Z',
         evaluated_at: '2026-09-24T08:00:00Z',
@@ -157,21 +177,21 @@ describe('remote session data source', () => {
   });
 
   it('pauses and resumes with the authoritative MaterialStateRef', async () => {
-    const fetchFn = vi.fn<typeof fetch>(async (input, init) => {
-      const url = String(input);
+    const fetchFn = vi.fn<typeof fetch>((input, init) => {
+      const url = requestUrl(input);
       if (url.endsWith('/api/v1/auth/session')) {
-        return Response.json({ authenticated: true, csrf_token: 'csrf' });
+        return resolvedJson({ authenticated: true, csrf_token: 'csrf' });
       }
       expect(init?.method).toBe('POST');
-      expect(JSON.parse(String(init?.body))).toEqual({
+      expect(JSON.parse(requiredTextBody(init))).toEqual({
         operation_id: 'op-transition',
         expected_material_state_ref: STATE,
       });
       if (url.endsWith('/pause')) {
-        return Response.json({ ...openSession, paused: true });
+        return resolvedJson({ ...openSession, paused: true });
       }
       expect(url).toBe('/api/v1/temporal/sessions/' + SESSION + '/resume');
-      return Response.json(openSession);
+      return resolvedJson(openSession);
     });
     const source = createRemoteTemporalSessionDataSource(fetchFn);
     const paused = await source.pause(SESSION, STATE, 'op-transition');
@@ -185,8 +205,8 @@ describe('remote session data source', () => {
   });
 
   it('rejects malformed duration totals at the transport boundary', async () => {
-    const fetchFn = vi.fn<typeof fetch>(async () =>
-      Response.json({ ...openSession, paused_seconds: 1900 }),
+    const fetchFn = vi.fn<typeof fetch>(() =>
+      resolvedJson({ ...openSession, paused_seconds: 1900 }),
     );
     const source = createRemoteTemporalSessionDataSource(fetchFn);
     await expect(source.list('activity', SUBJECT)).rejects.toMatchObject({
@@ -195,12 +215,12 @@ describe('remote session data source', () => {
   });
 
   it('preserves the canonical HTTP problem code for conflicts', async () => {
-    const fetchFn = vi.fn<typeof fetch>(async (input) => {
-      const url = String(input);
+    const fetchFn = vi.fn<typeof fetch>((input) => {
+      const url = requestUrl(input);
       if (url.endsWith('/api/v1/auth/session')) {
-        return Response.json({ authenticated: true, csrf_token: 'csrf' });
+        return resolvedJson({ authenticated: true, csrf_token: 'csrf' });
       }
-      return Response.json(
+      return resolvedJson(
         {
           code: 'temporal.session.end_conflict',
           detail: 'Session end conflicts with current timing.',
