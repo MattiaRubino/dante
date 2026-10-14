@@ -61,3 +61,18 @@ Additional Python typing corrections: typed separate Planning Tray result varian
 ESLint has not had an automatic rewrite. Fixed a production Timeline Truth Inspector issue by explicitly rendering Temporal dates and times as strings. The remaining ESLint errors are expected to require separate source-level repairs; do not apply the unsafe global ESLint --fix that previously removed required DOM casts and broke TS.
 
 On a clean local checkout, run `bash tooling/testing/verify_static_repair_20261013.sh` once. It now additionally gates every Python source/test/migration on bytecode compilation before committing formatting changes, then reports real residual Ruff/mypy/ESLint diagnostics in `temp/STATIC_REPAIR_LOGS.tar.gz`. The 27-group full PostgreSQL/browser gate remains outstanding.
+
+## 14 October — audit of stale tests versus current UI contracts
+
+The user explicitly requires a genuine **working current UI**, not lint-green obsolescence. Do not change assertions or discard old tests just to make a gate pass. For each mismatch, compare test intent with accepted B14/current product behavior, and classify: (a) supported contract with a product regression → fix implementation and retain test; (b) replaced contract → migrate assertions to the canonical UI and maintain coverage; (c) fully retired behavior → delete only after verifying reference ownership and preserving replacement coverage. Never treat mypy/ESLint static failures as proof that a test's runtime behavior is deprecated.
+
+The actual `STATIC_REPAIR_LOGS.tar(1).gz` (commit `0422390eebdb62d7ba4159e4fa057998df85be7a`) reports `RUFF=2` (both import sorting), `MYPY=240` in 58 files, `ESLINT=328` with 3 warnings; TypeScript, Python compile, generated drift and formatting all green. Of the 240 mypy errors, **209 are in test paths and 31 in production source paths**. ESLint is similarly heavily test-oriented, but includes real React hooks findings requiring UI-oriented review. All counts refer to that checkpoint, not to unverified newer commits.
+
+Concrete reviewed examples:
+- `timeline-organization.tsx` explicitly notes that U3 retired the **old inline Life Area/Tag editor**, though TimelineSurface keeps a temporary compatibility import. Its no-op component is not evidence Quick Create Life Area is absent; remove the shim only during an auditable calling-site cleanup.
+- `timeline-postponed-events.tsx` intentionally renders no duplicate panel because B14 consolidated postponed Events into the canonical unplaced/planning tray. Tests of that removed separate panel must migrate to the canonical tray, not resurrect an obsolete second panel.
+- `home-create-interaction-bridge.test.tsx` still tests active Quick Create pointer, date, time and focus behavior. Its nine `as HTMLInputElement` casts conflicted with ESLint's assertion rule; replaced them with a real `instanceof HTMLInputElement` helper, keeping all assertions unchanged.
+- `remote-session-data-source.test.ts` still guards active Session HTTP routes, CSRF, pause/resume, observed duration and 409 problem codes. Replaced object stringification with typed URL and request body inspection, and async-without-await fetch mocks with explicit `Promise<Response>`, without changing expected behavior.
+- Fixed Ruff's two import-order reports directly. These subsequent commits still require normal local formatter/typecheck/ESLint/Vitest and E2E verification.
+
+Prior focused Quick Create browser hardening was green; prior full PostgreSQL 374-case gate was green on older code. **No new 27-group all-green claim** is justified until the current source is tested. React hooks warnings in actual UI components are not safe candidates for automated rewrites.
