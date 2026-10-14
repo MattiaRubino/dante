@@ -67,6 +67,14 @@ function Harness({ onEscape }: { onEscape: () => void }) {
   );
 }
 
+function inputByLabel(label: string): HTMLInputElement {
+  const element = screen.getByLabelText(label);
+  if (!(element instanceof HTMLInputElement)) {
+    throw new Error(`Expected an input for label: ${label}`);
+  }
+  return element;
+}
+
 afterEach(() => {
   cleanup();
 });
@@ -84,7 +92,7 @@ describe('Home U1 Create interaction bridge', () => {
   it('marks Create date as required before the native picker interaction', () => {
     const onEscape = vi.fn();
     render(<Harness onEscape={onEscape} />);
-    const date = screen.getByLabelText('Data') as HTMLInputElement;
+    const date = inputByLabel('Data');
 
     expect(date.required).toBe(false);
     fireEvent.pointerDown(date);
@@ -110,10 +118,10 @@ describe('Home U1 Create interaction bridge', () => {
 
     fireEvent.pointerDown(day, { clientY: 615 });
 
-    expect((screen.getByLabelText('Data') as HTMLInputElement).value).toBe(
+    expect((inputByLabel('Data')).value).toBe(
       '2026-10-02',
     );
-    expect((screen.getByLabelText('Ora') as HTMLInputElement).value).toBe(
+    expect((inputByLabel('Ora')).value).toBe(
       '10:15',
     );
     expect(onEscape).not.toHaveBeenCalled();
@@ -155,8 +163,8 @@ describe('Home U1 Create interaction bridge', () => {
 
   it('does not mutate hidden transport inputs after emitting the controlled reseed', () => {
     render(<Harness onEscape={vi.fn()} />);
-    const date = screen.getByLabelText('Data') as HTMLInputElement;
-    const time = screen.getByLabelText('Ora') as HTMLInputElement;
+    const date = inputByLabel('Data');
+    const time = inputByLabel('Ora');
     date.setAttribute('aria-hidden', 'true');
     time.setAttribute('aria-hidden', 'true');
     const day = screen.getByTestId('timeline-day');
@@ -198,10 +206,10 @@ describe('Home U1 Create interaction bridge', () => {
 
     fireEvent.doubleClick(day, { clientY: 720 });
 
-    expect((screen.getByLabelText('Data') as HTMLInputElement).value).toBe(
+    expect((inputByLabel('Data')).value).toBe(
       '2026-10-02',
     );
-    expect((screen.getByLabelText('Ora') as HTMLInputElement).value).toBe(
+    expect((inputByLabel('Ora')).value).toBe(
       '12:00',
     );
     expect(leakedDoubleClick).not.toHaveBeenCalled();
@@ -213,8 +221,8 @@ describe('Home U1 Create interaction bridge', () => {
   it('selects a time segment, closes its clock picker and advances hours to minutes', async () => {
     const onEscape = vi.fn();
     render(<Harness onEscape={onEscape} />);
-    const hour = screen.getByLabelText('Inizio: ore') as HTMLInputElement;
-    const minute = screen.getByLabelText('Inizio: minuti') as HTMLInputElement;
+    const hour = inputByLabel('Inizio: ore');
+    const minute = inputByLabel('Inizio: minuti');
     const clock = screen.getByRole('button', { name: 'Inizio: scegli orario' });
 
     fireEvent.click(clock);
