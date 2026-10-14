@@ -582,7 +582,11 @@ function eventResult(payload: unknown): TemporalAuthoredEventResult {
     schedule: schedule(payload.schedule),
     replayed: payload.replayed,
     agendaRevision: payload.agenda_revision,
-    agendaParts: Object.freeze([...payload.agenda_parts] as string[]),
+    agendaParts: Object.freeze(
+      (payload.agenda_parts as unknown[]).filter(
+        (part): part is string => typeof part === 'string',
+      ),
+    ),
   });
 }
 
