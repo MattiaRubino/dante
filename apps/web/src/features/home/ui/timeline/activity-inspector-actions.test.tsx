@@ -14,6 +14,30 @@ import { ActivityInspectorActions } from './activity-inspector-actions';
 import { ActivityEditPanel } from './activity-edit-panel';
 import type { ActivityDuplicateSeed } from '../../../temporal-create/application/activity-duplicate-seed';
 
+/** Vitest asymmetric matchers are typed as any; preserve their runtime
+ * matching semantics without propagating any into the expected payload. */
+function containing(expected: unknown): unknown {
+  return expect.objectContaining(expected) as unknown;
+}
+
+function anyInstance(ctor: typeof String): unknown {
+  return expect.any(ctor) as unknown;
+}
+
+function requiredRecord(value: unknown): Record<string, unknown> {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    throw new Error('Expected an object in the mutation call.');
+  }
+  return value as Record<string, unknown>;
+}
+
+function requiredItems(value: unknown): readonly unknown[] {
+  if (!Array.isArray(value)) {
+    throw new Error('Expected a list in the mutation call.');
+  }
+  return value as unknown[];
+}
+
 const get = vi.fn();
 const revise = vi.fn();
 const retire = vi.fn();
@@ -189,7 +213,7 @@ describe('Recurring Activity profile scope', () => {
     expect(saveCore).not.toHaveBeenCalled();
     await waitFor(() =>
       expect(onSaved).toHaveBeenCalledWith(
-        expect.objectContaining({ title: 'Dopo' }),
+        containing({ title: 'Dopo' }),
       ),
     );
   });
@@ -254,9 +278,9 @@ describe('Objective correction in Activity Editor', () => {
       expect(applyActivityEdits).toHaveBeenCalledWith(ref, {
         add: [],
         revise: [
-          expect.objectContaining({
+          containing({
             objectiveRef: objective.objectiveRef,
-            change: expect.objectContaining({
+            change: containing({
               label: 'Corsa 7 km',
               resultKind: 'quantity',
               targetValue: 10,
@@ -313,11 +337,11 @@ describe('Objective correction in Activity Editor', () => {
     await waitFor(() =>
       expect(applyActivityEdits).toHaveBeenCalledWith(
         ref,
-        expect.objectContaining({
+        containing({
           revise: [
-            expect.objectContaining({
+            containing({
               objectiveRef: objective.objectiveRef,
-              change: expect.objectContaining({
+              change: containing({
                 scopeCode: 'this_and_following',
                 seriesState,
                 label: 'Corsa 7 km',
@@ -366,7 +390,7 @@ describe('Objective correction in Activity Editor', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Salva rettifica' }));
     await waitFor(() =>
       expect(correctResult).toHaveBeenCalledWith(objective.objectiveRef, {
-        operationId: expect.any(String),
+        operationId: anyInstance(String),
         expectedEvaluationStateRef: objective.evaluationStateRef,
         observedBoolean: null,
         observedNumeric: 6,
@@ -431,7 +455,7 @@ describe('Activity Inspector', () => {
     );
     await waitFor(() =>
       expect(onSaved).toHaveBeenCalledWith(
-        expect.objectContaining({ title: 'Dopo', revision: 1 }),
+        containing({ title: 'Dopo', revision: 1 }),
       ),
     );
   });
@@ -527,10 +551,16 @@ describe('Activity Inspector', () => {
     expect(onSaved).not.toHaveBeenCalled();
     await submitEditor();
     await waitFor(() => expect(applyActivityEdits).toHaveBeenCalledTimes(2));
-    expect(applyActivityEdits.mock.calls[0]?.[1].add[0]?.operationId).toEqual(
-      applyActivityEdits.mock.calls[1]?.[1].add[0]?.operationId,
+    const firstAdds = requiredItems(
+      requiredRecord(applyActivityEdits.mock.calls[0]?.[1]).add,
     );
-    expect(applyActivityEdits.mock.calls[0]?.[1].add[0]).toMatchObject({
+    const secondAdds = requiredItems(
+      requiredRecord(applyActivityEdits.mock.calls[1]?.[1]).add,
+    );
+    const firstAdded = requiredRecord(firstAdds[0]);
+    const secondAdded = requiredRecord(secondAdds[0]);
+    expect(firstAdded.operationId).toEqual(secondAdded.operationId);
+    expect(firstAdded).toMatchObject({
       label: 'Percorrere 10 km',
       resultKind: 'quantity',
       comparatorCode: 'gte',
@@ -580,7 +610,7 @@ describe('Activity Inspector', () => {
         add: [],
         revise: [],
         retire: [
-          expect.objectContaining({
+          containing({
             objectiveRef: objective.objectiveRef,
             expectedRevision: 3,
           }),
@@ -662,9 +692,9 @@ describe('Activity Inspector', () => {
         expect(applyReplan).toHaveBeenCalledWith(
           ref,
           settings,
-          expect.objectContaining({
+          containing({
             newPlanned: [
-              expect.objectContaining({
+              containing({
                 name: 'Nuova Sessione',
                 start: timed ? '2026-10-09T09:00' : '',
                 end: timed ? '2026-10-09T12:00' : '',
@@ -745,7 +775,10 @@ describe('Activity Inspector', () => {
     ).toBeNull();
     await submitEditor();
     await waitFor(() => expect(applyReplan).toHaveBeenCalledOnce());
-    expect(applyReplan.mock.calls[0]?.[2].times.interval).toEqual({
+    const placementTimes = requiredRecord(
+      requiredRecord(applyReplan.mock.calls[0]?.[2]).times,
+    );
+    expect(placementTimes.interval).toEqual({
       start: '2026-10-09T10:00',
       end: '2026-10-09T11:00',
     });
@@ -837,10 +870,10 @@ describe('Activity Inspector', () => {
       expect(applyReplan).toHaveBeenCalledWith(
         ref,
         settings,
-        expect.objectContaining({
+        containing({
           removedPlanned: ['planned'],
           newPlanned: [
-            expect.objectContaining({
+            containing({
               name: 'Seconda',
               start: '2026-10-09T10:00',
               end: '2026-10-09T11:00',
@@ -905,7 +938,7 @@ describe('Activity Inspector', () => {
       expect(applyReplan).toHaveBeenCalledWith(
         ref,
         settings,
-        expect.objectContaining({
+        containing({
           deletedPlanned: ['planned'],
           removedPlanned: [],
         }),
@@ -960,8 +993,8 @@ describe('Activity Inspector', () => {
       expect(applyReplan).toHaveBeenCalledWith(
         ref,
         settings,
-        expect.objectContaining({
-          times: expect.objectContaining({
+        containing({
+          times: containing({
             envelope: { start: '2026-10-09T10:00', end: '2026-10-09T13:00' },
           }),
         }),
@@ -1273,10 +1306,10 @@ describe('Activity Inspector', () => {
       expect(applyReplan).toHaveBeenCalledWith(
         ref,
         settings,
-        expect.objectContaining({
+        containing({
           removedIntervals: ['interval'],
           newIntervals: [
-            expect.objectContaining({
+            containing({
               start: '2026-10-09T10:00',
               end: '2026-10-09T11:00',
             }),
@@ -1541,8 +1574,8 @@ describe('Activity Inspector', () => {
       expect(applyReplan).toHaveBeenCalledWith(
         ref,
         settings,
-        expect.objectContaining({
-          times: expect.objectContaining({
+        containing({
+          times: containing({
             untimed: { start: '2026-10-09T09:00', end: '2026-10-09T12:00' },
           }),
         }),
@@ -1832,16 +1865,16 @@ describe('Activity Inspector', () => {
       expect(createLifeArea).toHaveBeenCalledWith('Studio', expect.any(String)),
     );
     expect(setLifeAreaAppearance).toHaveBeenCalledWith(
-      expect.objectContaining({ ref: 'area-new', revision: 1 }),
+      containing({ ref: 'area-new', revision: 1 }),
       '#EA5C12',
       expect.any(String),
     );
     expect(assignLifeArea).toHaveBeenCalledWith(
       ref,
-      expect.objectContaining({
+      containing({
         currentRevision: 0,
         options: [
-          expect.objectContaining({
+          containing({
             ref: 'area-new',
             revision: 2,
             colorCode: '#EA5C12',
