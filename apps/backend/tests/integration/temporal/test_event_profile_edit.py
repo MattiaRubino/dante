@@ -71,11 +71,13 @@ async def test_event_profile_is_guarded_and_current_read_tracks_append_only_edit
             )
         ) as db:
             db.execute("SET ROLE dante_owner")
-            before, after = db.execute(
+            fetched_row = db.execute(
                 "SELECT previous_profile,current_profile FROM dante.event_profile_revision "
                 "WHERE event_ref=%s AND revision=1",
                 (event,),
             ).fetchone()
+            assert fetched_row is not None
+            before, after = fetched_row
         assert before["title"] == "Original"
         assert after["title"] == "Modificato"
 
