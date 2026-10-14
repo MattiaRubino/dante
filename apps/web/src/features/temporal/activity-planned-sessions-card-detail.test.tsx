@@ -18,8 +18,8 @@ describe('Activity planned Sessions card detail', () => {
   });
 
   it('renders only Activity-owned planned schedules as nested card detail', async () => {
-    const fetchFn = vi.fn<typeof fetch>(async () =>
-      Response.json({
+    const fetchFn = vi.fn<typeof fetch>(() =>
+      Promise.resolve(Response.json({
         parent_activity_ref: ACTIVITY,
         session_capture_mode: 'disabled',
         child_guard_mode: 'none',
@@ -53,7 +53,7 @@ describe('Activity planned Sessions card detail', () => {
           },
         ],
         children: [],
-      }),
+      })),
     );
     vi.stubGlobal('fetch', fetchFn);
 
