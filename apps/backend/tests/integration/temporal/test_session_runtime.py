@@ -204,7 +204,7 @@ async def test_b08_a_activity_session_is_scoped_idempotent_and_does_not_fabricat
         assert restarted.open
 
         with _admin(migrated_database) as connection:
-            schedule_count, actual_count, subject_count = connection.execute(
+            fetched_row = connection.execute(
                 """
                 SELECT
                   (SELECT count(*) FROM dante.schedule WHERE subject_native_ref=%s),
@@ -214,6 +214,8 @@ async def test_b08_a_activity_session_is_scoped_idempotent_and_does_not_fabricat
                 """,
                 (activity.activity_ref, activity.activity_ref, activity.activity_ref),
             ).fetchone()
+            assert fetched_row is not None
+            schedule_count, actual_count, subject_count = fetched_row
         assert schedule_count == 0
         assert actual_count == 0
         assert subject_count == 2
@@ -297,7 +299,7 @@ async def test_b08_a_occurrence_session_uses_the_occurrence_identity_without_sch
         assert not canonical_occurrence.skipped
 
         with _admin(migrated_database) as connection:
-            schedule_count, actual_count, historical_old_end = connection.execute(
+            fetched_row = connection.execute(
                 """
                 SELECT
                   (SELECT count(*) FROM dante.schedule WHERE subject_native_ref=%s),
@@ -307,6 +309,8 @@ async def test_b08_a_occurrence_session_uses_the_occurrence_identity_without_sch
                 """,
                 (occurrence_ref, occurrence_ref, started.timing_material_state_ref),
             ).fetchone()
+            assert fetched_row is not None
+            schedule_count, actual_count, historical_old_end = fetched_row
         assert schedule_count == 0
         assert actual_count == 0
         assert historical_old_end is None
