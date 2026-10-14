@@ -3,6 +3,8 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
+  useLayoutEffect,
   useState,
   type ReactNode,
 } from 'react';
@@ -52,6 +54,14 @@ function TemporalCreateU2DraftProviderInstance({
   const [state, setState] = useState(
     () => initialDraft ?? createTemporalCreateU2AuthoringDraft(fields),
   );
+  // Multiple U2 updates can belong to the same DOM event (for example,
+  // staging a new Life Area then resetting the standalone item color).
+  // Compose against the latest published draft, not the closure of the
+  // preceding React render.
+  const latestDraftRef = useRef(state);
+  useLayoutEffect(() => {
+    latestDraftRef.current = state;
+  }, [state]);
 
   const [previousDate, setPreviousDate] = useState(fields.date);
 
@@ -73,18 +83,24 @@ function TemporalCreateU2DraftProviderInstance({
   // date normalization) only after render. The patch callback below still
   // notifies synchronously for user edits before a subsequent Submit click.
   useEffect(() => {
-    // A mount/date synchronization is not a user edit: never clear a
-    // validation error simply because this provider committed new state.
-    onDraftChange(state, 'sync');
+    // Ignore stale commits from earlier edits; they must not overwrite
+    // the newest draft in the owning Create entry.
+    if (latestDraftRef.current === state) {
+      onDraftChange(state, 'sync');
+    }
   }, [state, onDraftChange]);
 
   const value = useMemo<U2DraftContextValue>(
     () => ({
       draft: state,
       patch: (patch) => {
-        // Event handlers own user edits. Publishing them from a React state
-        // updater can run after Submit and incorrectly erase validation.
-        const next = patchTemporalCreateU2AuthoringDraft(state, patch);
+        // Publish synchronously from the DOM event, before Submit can occur,
+        // while composing every patch with the latest event-local draft.
+        const next = patchTemporalCreateU2AuthoringDraft(
+          latestDraftRef.current,
+          patch,
+        );
+        latestDraftRef.current = next;
         setState(next);
         onDraftChange(next, 'user');
       },
