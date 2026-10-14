@@ -52,7 +52,10 @@ type TemporalCreateComposerProps = Readonly<{
   onMoveToUnplaced: () => void;
   onSaveDraft?: () => void;
   onSubmit: () => void;
-  onU2DraftChange?: (draft: TemporalCreateU2AuthoringDraft) => void;
+  onU2DraftChange?: (
+    draft: TemporalCreateU2AuthoringDraft,
+    source: 'user' | 'sync',
+  ) => void;
 }>;
 
 const FOCUSABLE_SELECTOR =
