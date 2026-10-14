@@ -20,8 +20,8 @@ const REMINDER = '0199a8c0-5e74-7bc0-8ad0-a2f403f5617e';
 const STATE_1 = '0199a8c0-5e74-7bc0-8ad0-a2f403f5617f';
 const STATE_2 = '0199a8c0-5e74-7bc0-8ad0-a2f403f56180';
 
-function json(body: unknown, status = 200): Response {
-  return Response.json(body, { status });
+function json(body: unknown, status = 200): Promise<Response> {
+  return Promise.resolve(Response.json(body, { status }));
 }
 
 describe('Schedule Reminder controls', () => {
@@ -37,7 +37,7 @@ describe('Schedule Reminder controls', () => {
   it('retries an uncertain write with the same operation and exact expected state', async () => {
     const writes: Array<Record<string, unknown>> = [];
     let attempts = 0;
-    const fetchFn = vi.fn<typeof fetch>(async (input, init) => {
+    const fetchFn = vi.fn<typeof fetch>((input, init) => {
       const url = fetchRequestUrl(input);
       if (url.endsWith('/api/v1/auth/session')) {
         return json({ authenticated: true, csrf_token: 'csrf' });
