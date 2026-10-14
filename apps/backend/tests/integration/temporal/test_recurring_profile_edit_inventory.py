@@ -4,11 +4,11 @@ from __future__ import annotations
 
 from datetime import date, time
 from types import SimpleNamespace
-from typing import Any
+from typing import Any, cast
 from uuid import uuid4
 
 import pytest
-from fastapi import Response
+from fastapi import Request, Response
 from sqlalchemy import text
 from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
 from tests.integration.temporal.test_schedule_place import _context
@@ -192,7 +192,7 @@ async def test_inventory_reuses_self_scope_and_returns_skipped_and_extra_occurre
         result = await get_occurrence_edit_inventory(
             selected_ref,
             _context(alice),
-            SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))),
+            cast(Request, SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime)))),
             api_response,
         )
         assert result.selected_occurrence_ref == selected_ref
