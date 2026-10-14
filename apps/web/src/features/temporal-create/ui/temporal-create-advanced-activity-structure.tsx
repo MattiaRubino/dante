@@ -14,6 +14,8 @@ import './temporal-create-session-time-polish.css';
 
 type TemporalCreateAdvancedActivityStructureProps = Readonly<{
   fields: TemporalCreateFields;
+  validationTarget?: string | null;
+  validationMessage?: string;
 }>;
 
 let nextStructureRowId = 0;
@@ -150,6 +152,8 @@ export function TemporalCreateAdvancedActivityHeaderActions() {
  */
 export function TemporalCreateAdvancedActivityStructure({
   fields,
+  validationTarget = null,
+  validationMessage = '',
 }: TemporalCreateAdvancedActivityStructureProps) {
   const { i18n } = useTranslation('common');
   const italian = i18n.language.toLowerCase().startsWith('it');
@@ -205,6 +209,13 @@ export function TemporalCreateAdvancedActivityStructure({
           {structure.plannedSlices.map((slice) => {
             const timeId = `session:${slice.id}`;
             const timeOpen = slice.timeEnabled === true;
+            // A failed Submit identifies one specific planned Session. Render
+            // its error in React so unrelated draft/DOM effects cannot erase
+            // the red border or detach its accessible Italian message.
+            const timeError =
+              timeOpen && validationTarget === `plannedSession:${slice.id}`
+                ? validationMessage
+                : '';
             return (
               <div
                 className="temporal-create-tree-item is-session is-root"
@@ -266,7 +277,14 @@ export function TemporalCreateAdvancedActivityStructure({
                     id={`${timeId}:editor`}
                     className="temporal-create-tree-time-editor"
                     data-create-path={`plannedSession:${slice.id}`}
+                    data-create-invalid={timeError ? 'true' : undefined}
+                    aria-invalid={timeError ? 'true' : undefined}
                   >
+                    {timeError ? (
+                      <span className="temporal-create-field-error" role="alert">
+                        {timeError}
+                      </span>
+                    ) : null}
                     <TemporalCreateDatePicker
                       label={italian ? 'Data Sessione' : 'Session date'}
                       value={slice.date}
