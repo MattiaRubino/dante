@@ -23,6 +23,10 @@ import {
   type RealityMode,
 } from '../../../temporal/remote-reality-objective-data-source';
 import type { SessionCaptureMode } from '../../../temporal/remote-session-capability-data-source';
+import {
+  createRemoteTemporalSessionDataSource,
+  type TemporalSessionView,
+} from '../../../temporal/remote-session-data-source';
 import { TemporalColorControl } from '../../../temporal-create/ui/temporal-color-control';
 import { TimeControl } from '../../../temporal-create/ui/temporal-create-core-u2';
 import { TemporalCreateDatePicker } from '../../../temporal-create/ui/temporal-create-date-picker';
@@ -119,6 +123,42 @@ export function ActivityEditPanel({
   closeRequestRef: RefObject<(() => void) | null>;
 }>) {
   const [settingsSource] = useState(createRemoteActivityEditSettings);
+  const [sessionSource] = useState(createRemoteTemporalSessionDataSource);
+  const [sessionAttempts, setSessionAttempts] = useState<
+    readonly TemporalSessionView[] | null
+  >(null);
+  const [sessionAttemptsError, setSessionAttemptsError] = useState('');
+  useEffect(() => {
+    let active = true;
+    const refresh = () => {
+      void sessionSource
+        .list('activity', profile.activityRef)
+        .then((attempts) => {
+          if (!active) return;
+          setSessionAttempts(attempts);
+          setSessionAttemptsError('');
+        })
+        .catch((reason: unknown) => {
+          if (!active) return;
+          setSessionAttempts(null);
+          setSessionAttemptsError(
+            reason instanceof Error
+              ? reason.message
+              : 'Impossibile leggere le Sessioni registrate.',
+          );
+        });
+    };
+    refresh();
+    window.addEventListener('dante:session-changed', refresh);
+    return () => {
+      active = false;
+      window.removeEventListener('dante:session-changed', refresh);
+    };
+  }, [profile.activityRef, sessionSource]);
+
+  const attemptStatus = (attempt: TemporalSessionView) =>
+    !attempt.open ? 'conclusa' : attempt.paused ? 'in pausa' : 'in corso';
+
   const [objectiveSource] = useState(createRemoteRealityObjectiveDataSource);
   const [recurringSource] = useState(createRemoteRecurringProfileEdit);
   const [recurringContext, setRecurringContext] =
@@ -1118,10 +1158,23 @@ export function ActivityEditPanel({
                 />
                 Sessione
               </label>
+              {sessionAttempts?.some((attempt) => !attempt.plannedScheduleRef) ? (
+                <small
+                  className="timeline-activity-editor__session-attempt-status"
+                  aria-label="Stato della Sessione principale"
+                >
+                  Sessione principale: {' '}
+                  {sessionAttempts
+                    .filter((attempt) => !attempt.plannedScheduleRef)
+                    .map(attemptStatus)
+                    .join(' · ')}
+                </small>
+              ) : null}
             </div>
           ) : null}
         </div>
         {lockError ? <p role="alert">{lockError}</p> : null}
+        {sessionAttemptsError ? <p role="alert">{sessionAttemptsError}</p> : null}
         {settings &&
         (settings.schedules.some((row) => row.role === 'planned') ||
           newPlanned.length > 0) ? (
@@ -1196,6 +1249,22 @@ export function ActivityEditPanel({
                           </button>
                         </div>
                       </div>
+                      {sessionAttempts?.some(
+                        (attempt) => attempt.plannedScheduleRef === row.scheduleRef,
+                      ) ? (
+                        <small
+                          className="timeline-activity-editor__session-attempt-status"
+                          aria-label="Stato delle Sessioni registrate"
+                        >
+                          {sessionAttempts
+                            .filter(
+                              (attempt) =>
+                                attempt.plannedScheduleRef === row.scheduleRef,
+                            )
+                            .map(attemptStatus)
+                            .join(' · ')}
+                        </small>
+                      ) : null}
                     </div>
                   );
                 })}
