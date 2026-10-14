@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 from typing import Annotated
 from uuid import UUID
 
@@ -38,6 +40,100 @@ class ActivityProfileChange(BaseModel):
     description: str | None = None
     location: str | None = None
     color_code: str | None = Field(default=None, pattern=r"^#[0-9A-Fa-f]{6}$")
+
+
+class ActivitySessionAttemptImpact(BaseModel):
+    session_ref: UUID
+    planned_schedule_ref: UUID | None
+    timing_material_state_ref: UUID
+    status: str
+
+
+class ActivitySessionImpactResponse(BaseModel):
+    activity_ref: UUID
+    fingerprint: str
+    attempts: list[ActivitySessionAttemptImpact]
+
+
+_SESSION_IMPACT = text("""
+    WITH owned AS MATERIALIZED (
+        SELECT activity_ref
+          FROM dante.get_self_activity_profile(:actor,:activity)
+    )
+    SELECT sessions.session_ref,
+           sessions.timing_material_state_ref,
+           dante.get_self_session_planned_schedule(:actor, sessions.session_ref)
+               AS planned_schedule_ref,
+           CASE WHEN sessions.ended_at IS NOT NULL THEN 'conclusa'
+                WHEN runtime.paused THEN 'in pausa'
+                ELSE 'in corso'
+           END AS status
+      FROM owned
+      JOIN LATERAL dante.list_self_subject_sessions(:actor,owned.activity_ref)
+           AS sessions ON true
+      LEFT JOIN LATERAL dante.get_self_session_runtime_metrics(
+          :actor,sessions.session_ref
+      ) AS runtime ON true
+     ORDER BY sessions.session_ref
+""")
+
+
+@router.get(
+    "/{activity_ref}/session-impact",
+    response_model=ActivitySessionImpactResponse,
+    operation_id="temporal_get_self_activity_session_impact",
+)
+async def get_self_activity_session_impact(
+    activity_ref: UUID,
+    context: ReadContext,
+    request: Request,
+    response: Response,
+) -> ActivitySessionImpactResponse:
+    """Authoritative attempt snapshot for a future Keep/Delete/Cancel admission.
+
+    This read does not authorize mutations: the write must verify the token
+    again inside its transaction against the same owner-scoped Session rows.
+    """
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        async with request.app.state.database_runtime.session_factory() as session, session.begin():
+            owner = await session.scalar(
+                text("SELECT activity_ref FROM dante.get_self_activity_profile(:actor,:activity)"),
+                {"actor": context.self_person_ref, "activity": activity_ref},
+            )
+            if owner is None:
+                raise ProblemError(
+                    status=404,
+                    code="temporal.activity_profile.not_found",
+                    category="not_found",
+                    title="Activity unavailable",
+                    detail="Activity unavailable in self scope.",
+                )
+            rows = (
+                await session.execute(
+                    _SESSION_IMPACT,
+                    {"actor": context.self_person_ref, "activity": activity_ref},
+                )
+            ).mappings().all()
+    except SQLAlchemyError as exc:
+        raise _unavailable() from exc
+    attempts = [ActivitySessionAttemptImpact.model_validate(dict(row)) for row in rows]
+    digest = hashlib.sha256(
+        json.dumps(
+            [
+                [
+                    str(row.session_ref),
+                    str(row.timing_material_state_ref),
+                    row.status,
+                ]
+                for row in attempts
+            ],
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
+    return ActivitySessionImpactResponse(
+        activity_ref=activity_ref, fingerprint=digest, attempts=attempts
+    )
 
 
 class ActivityRetirementCommand(BaseModel):
