@@ -14,6 +14,7 @@ from dante.auth.contracts import Principal
 from dante.context.contracts import DanteContext
 from dante.modules.temporal import plan_work_api
 from dante.modules.temporal.plan_work import PlanStepView, PlanWorkApplication, PlanWorkView
+from dante.platform.database.references import NativeRef
 from dante.platform.time import TimeZoneMode, TimeZonePolicy
 
 
@@ -26,7 +27,7 @@ def _context() -> DanteContext:
             authenticated_at=now,
             recent_auth_at=now,
         ),
-        self_person_ref=uuid7(),
+        self_person_ref=NativeRef(uuid7()),
         timezone_policy=TimeZonePolicy(mode=TimeZoneMode.FOLLOW_DEVICE),
         effective_zone_id="Europe/Rome",
     )

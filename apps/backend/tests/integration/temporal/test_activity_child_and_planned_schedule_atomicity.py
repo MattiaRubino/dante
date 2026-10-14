@@ -8,7 +8,9 @@ from typing import Any
 
 import psycopg
 import pytest
+from fastapi import Request
 from tests.integration.temporal.test_activity_quick_authoring_metadata import _seed_self
+from tests.integration.temporal.test_schedule_create import _context
 
 from dante.modules.temporal.authoring import (
     ActivityChildIntent,
@@ -18,7 +20,10 @@ from dante.modules.temporal.authoring import (
 )
 from dante.modules.temporal.decomposition_api import get_activity_children
 from dante.modules.temporal.schedule import AbsoluteIntervalPlacement
-from dante.modules.temporal.temporal_constraint import TemporalConstraintApplication
+from dante.modules.temporal.temporal_constraint import (
+    TemporalConstraintApplication,
+    TemporalConstraintCurrentDurationRuleView,
+)
 from dante.platform.database.runtime import create_database_runtime
 
 pytestmark = pytest.mark.postgres
@@ -98,8 +103,13 @@ async def test_root_children_and_planned_slices_are_atomic_and_replayable(
         ]
         current = await get_activity_children(
             created.item.subject_native_ref,
-            SimpleNamespace(self_person_ref=actor),
-            SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))),
+            _context(actor),
+            Request(
+                {
+                    "type": "http",
+                    "app": SimpleNamespace(state=SimpleNamespace(database_runtime=runtime)),
+                }
+            ),
         )
         assert [child.child_activity_ref for child in current.children] == [
             child.item.subject_native_ref for child in created.children
@@ -142,7 +152,7 @@ async def test_root_children_and_planned_slices_are_atomic_and_replayable(
             subject_native_ref=created.item.subject_native_ref,
         )
         assert len(rules) == 1
-        assert rules[0].current_rule is not None
+        assert isinstance(rules[0].current_rule, TemporalConstraintCurrentDurationRuleView)
         assert rules[0].current_rule.constrained_facet == "session.active_duration"
         assert rules[0].current_rule.duration_microseconds == 25 * 60 * 1_000_000
         with pytest.raises(TemporalAuthoringOperationIdReuseError):

@@ -12,6 +12,7 @@ import pytest
 from dante.modules.temporal.temporal_constraint import (
     AbsoluteEarliestStartRule,
     TemporalConstraintApplication,
+    TemporalConstraintCurrentBoundaryRuleView,
     TemporalConstraintNotFoundError,
     TemporalConstraintOperationIdReuseError,
     TemporalConstraintStateConflictError,
@@ -102,7 +103,7 @@ async def test_b04_a5_application_create_revise_read_list_retire_and_replay(
             constraint_ref=created.constraint_ref,
         )
         assert current.status == "active"
-        assert current.current_rule is not None
+        assert isinstance(current.current_rule, TemporalConstraintCurrentBoundaryRuleView)
         assert current.current_rule.material_state_ref == created.material_state_ref
         assert current.current_rule.strength == "hard"
         assert current.current_rule.boundary_at == first_rule.boundary_at

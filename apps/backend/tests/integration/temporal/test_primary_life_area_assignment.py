@@ -68,12 +68,12 @@ def _legacy_activity(database: Any, actor: NativeRef, title: str) -> NativeRef:
         **database.connection_kwargs("dante_migrator", database.cluster.migrator_password)
     ) as connection:
         connection.execute("SET ROLE dante_owner")
-        return NativeRef(
-            connection.execute(
-                "SELECT activity_ref FROM dante.create_self_activity(%s,%s,%s,%s,%s)",
-                (actor, f"legacy:{uuid7()}", fingerprint, uuid7(), title),
-            ).fetchone()[0]
-        )
+        row = connection.execute(
+            "SELECT activity_ref FROM dante.create_self_activity(%s,%s,%s,%s,%s)",
+            (actor, f"legacy:{uuid7()}", fingerprint, uuid7(), title),
+        ).fetchone()
+        assert row is not None
+        return NativeRef(row[0])
 
 
 def _legacy_event(database: Any, actor: NativeRef, title: str) -> NativeRef:
@@ -86,12 +86,12 @@ def _legacy_event(database: Any, actor: NativeRef, title: str) -> NativeRef:
         **database.connection_kwargs("dante_migrator", database.cluster.migrator_password)
     ) as connection:
         connection.execute("SET ROLE dante_owner")
-        return NativeRef(
-            connection.execute(
-                "SELECT event_ref FROM dante.create_self_event(%s,%s,%s,%s,%s)",
-                (actor, f"legacy-event:{uuid7()}", fingerprint, uuid7(), title),
-            ).fetchone()[0]
-        )
+        row = connection.execute(
+            "SELECT event_ref FROM dante.create_self_event(%s,%s,%s,%s,%s)",
+            (actor, f"legacy-event:{uuid7()}", fingerprint, uuid7(), title),
+        ).fetchone()
+        assert row is not None
+        return NativeRef(row[0])
 
 
 @pytest.mark.asyncio
@@ -275,14 +275,16 @@ async def test_primary_assignment_create_reassign_archive_legacy_and_isolation(
                 life_area_ref=second.life_area_ref,
             )
         assert await activities.get_activity(self_person_ref=alice, activity_ref=legacy) is not None
-        assert (
-            await activities.get_activity(
-                self_person_ref=alice, activity_ref=created.activity.activity_ref
-            )
-        ).life_area_ref == second.life_area_ref
-        assert (
-            await events.get_event(self_person_ref=alice, event_ref=scheduled.event.event_ref)
-        ).life_area_ref == first.life_area_ref
+        current_activity = await activities.get_activity(
+            self_person_ref=alice, activity_ref=created.activity.activity_ref
+        )
+        assert current_activity is not None
+        assert current_activity.life_area_ref == second.life_area_ref
+        current_event = await events.get_event(
+            self_person_ref=alice, event_ref=scheduled.event.event_ref
+        )
+        assert current_event is not None
+        assert current_event.life_area_ref == first.life_area_ref
         with psycopg.connect(
             **migrated_database.connection_kwargs(
                 "dante_migrator", migrated_database.cluster.migrator_password

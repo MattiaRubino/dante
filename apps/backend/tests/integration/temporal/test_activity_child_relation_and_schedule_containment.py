@@ -66,7 +66,13 @@ def _mutate(
             ),
         ).fetchone()
         assert row is not None
-        return row
+        assert len(row) == 4
+        relation_ref, state_ref, is_active, replayed = row
+        assert isinstance(relation_ref, UUID)
+        assert isinstance(state_ref, UUID)
+        assert isinstance(is_active, bool)
+        assert isinstance(replayed, bool)
+        return relation_ref, state_ref, is_active, replayed
 
 
 def _children(database: Any, actor: UUID, parent: UUID) -> list[tuple[Any, ...]]:
@@ -154,7 +160,14 @@ def test_direct_relation_is_scoped_current_ordered_and_replayable(
         ("foreign", {"relation": uuid7(), "parent": root, "child": outsider}),
     ):
         with pytest.raises((psycopg.errors.CheckViolation, psycopg.errors.ForeignKeyViolation)):
-            _mutate(migrated_database, actor=actor, operation=f"u6:{operation}", **kwargs)
+            _mutate(
+                migrated_database,
+                actor=actor,
+                operation=f"u6:{operation}",
+                relation=kwargs["relation"],
+                parent=kwargs["parent"],
+                child=kwargs["child"],
+            )
 
     detached = _mutate(
         migrated_database,

@@ -45,20 +45,12 @@ def ensure_test_life_area(database: Any, actor: NativeRef) -> UUID:
                 "VALUES (%s,%s,'follow_device',NULL)",
                 (account_ref, actor),
             )
-        return UUID(
-            str(
-                connection.execute(
-                    "SELECT life_area_ref FROM dante.create_self_life_area(%s,%s,%s,%s,%s)",
-                    (
-                        actor,
-                        "b05b:legacy-regression-area",
-                        fingerprint,
-                        uuid7(),
-                        "Legacy regression",
-                    ),
-                ).fetchone()[0]
-            )
-        )
+        row = connection.execute(
+            "SELECT life_area_ref FROM dante.create_self_life_area(%s,%s,%s,%s,%s)",
+            (actor, "b05b:legacy-regression-area", fingerprint, uuid7(), "Legacy regression"),
+        ).fetchone()
+        assert row is not None
+        return UUID(str(row[0]))
 
 
 def api_test_life_area(client: TestClient, headers: dict[str, str]) -> str:

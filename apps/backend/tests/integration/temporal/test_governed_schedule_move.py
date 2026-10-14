@@ -143,7 +143,7 @@ def _set_policy(
         ).fetchone()
         connection.commit()
     assert row is not None
-    return row
+    return tuple(row)
 
 
 def _request_move(
@@ -176,7 +176,7 @@ def _request_move(
         ).fetchone()
         connection.commit()
     assert row is not None
-    return row
+    return tuple(row)
 
 
 def _accept_move(
@@ -195,7 +195,7 @@ def _accept_move(
         ).fetchone()
         connection.commit()
     assert row is not None
-    return row
+    return tuple(row)
 
 
 def _add_boundary(
@@ -240,7 +240,7 @@ def _current_placement(database: Any, schedule_ref: UUID) -> UUID:
             (schedule_ref,),
         ).fetchone()
     assert row is not None
-    return row[0]
+    return UUID(str(row[0]))
 
 
 @pytest.mark.postgres

@@ -7,9 +7,10 @@ from types import SimpleNamespace
 from typing import Any
 
 import pytest
-from fastapi import Response
+from fastapi import Request, Response
 from sqlalchemy import text
 from tests.integration.temporal.test_activity_quick_authoring_metadata import _seed_self
+from tests.integration.temporal.test_schedule_create import _context
 
 from dante.modules.temporal.activity_edit_snapshot_api import (
     _SNAPSHOT,
@@ -29,6 +30,15 @@ from dante.platform.database.runtime import create_database_runtime
 from dante.platform.http.problem import ProblemError
 
 pytestmark = pytest.mark.postgres
+
+
+def _request(runtime: Any) -> Request:
+    return Request(
+        {
+            "type": "http",
+            "app": SimpleNamespace(state=SimpleNamespace(database_runtime=runtime)),
+        }
+    )
 
 
 @pytest.mark.asyncio
@@ -105,10 +115,8 @@ async def test_reminder_and_profile_edit_commit_together_and_stale_profile_rolls
             ),
         )
         activity = created.item.subject_native_ref
-        context = SimpleNamespace(self_person_ref=actor)
-        request = SimpleNamespace(
-            app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))
-        )
+        context = _context(actor)
+        request = _request(runtime)
         async with runtime.session_factory() as session, session.begin():
             before = ActivityEditSnapshot.model_validate(
                 await session.scalar(
@@ -181,10 +189,8 @@ async def test_core_edit_rolls_back_policy_when_profile_revision_is_stale(
             title="Prima",
         )
         activity = created.item.subject_native_ref
-        context = SimpleNamespace(self_person_ref=actor)
-        request = SimpleNamespace(
-            app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))
-        )
+        context = _context(actor)
+        request = _request(runtime)
         accepted = await revise_activity_core(
             activity,
             ActivityCoreEditCommand(

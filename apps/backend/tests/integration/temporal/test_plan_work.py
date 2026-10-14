@@ -83,9 +83,9 @@ async def test_b13_a_plan_structure_is_self_owned_ordered_and_historical(
         )
         assert [item.step_ref for item in reordered.steps] == [mix, voice]
         assert reordered.state_ref != first.state_ref
-        assert (
-            await plans.get(self_person_ref=alice, plan_ref=created.plan_ref)
-        ).state_ref == reordered.state_ref
+        reloaded = await plans.get(self_person_ref=alice, plan_ref=created.plan_ref)
+        assert reloaded is not None
+        assert reloaded.state_ref == reordered.state_ref
         replay = await plans.replace(
             self_person_ref=alice,
             plan_ref=created.plan_ref,

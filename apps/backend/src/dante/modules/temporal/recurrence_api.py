@@ -273,8 +273,11 @@ def _spec(payload: RecurrenceRequest) -> RecurrenceSpec:
 
 
 def _state(value: RecurrenceView) -> RecurrenceStateResponse:
-    return RecurrenceStateResponse(
-        material_state_ref=value.material_state_ref, recurrence=asdict(value.recurrence)
+    return RecurrenceStateResponse.model_validate(
+        {
+            "material_state_ref": value.material_state_ref,
+            "recurrence": asdict(value.recurrence),
+        }
     )
 
 

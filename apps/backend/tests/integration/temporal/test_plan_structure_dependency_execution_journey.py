@@ -9,7 +9,7 @@ from typing import Any
 import pytest
 from fastapi import Request, Response
 from tests.integration.temporal.support.life_area import ensure_test_life_area
-from tests.integration.temporal.test_schedule_create import _seed_self_person
+from tests.integration.temporal.test_schedule_create import _context, _seed_self_person
 
 from dante.modules.temporal.activity import TemporalActivityApplication
 from dante.modules.temporal.actual_runtime import ActualApplication
@@ -168,7 +168,7 @@ async def test_b13_d_one_plan_integrates_structure_dependency_and_execution(
                 ),
             }
         )
-        context = SimpleNamespace(self_person_ref=alice)
+        context = _context(alice)
         assessment = await assess_plan_step_execution(
             plan_ref=plan.plan_ref,
             step_ref=mix_ref,
@@ -191,13 +191,13 @@ async def test_b13_d_one_plan_integrates_structure_dependency_and_execution(
         assert assessment.merged_temporal_rules[0].evaluation == "violated"
         assert all(item.temporal_status == "admissible" for item in assessment.slice_assessments)
         assert (await plans.get(self_person_ref=alice, plan_ref=plan.plan_ref)) == reordered
-        assert (
-            await dependencies.get(
-                self_person_ref=alice,
-                plan_ref=plan.plan_ref,
-                dependency_ref=relation.dependency_ref,
-            )
-        ).evaluation_code == "unknown"
+        current_relation = await dependencies.get(
+            self_person_ref=alice,
+            plan_ref=plan.plan_ref,
+            dependency_ref=relation.dependency_ref,
+        )
+        assert current_relation is not None
+        assert current_relation.evaluation_code == "unknown"
         with pytest.raises(ProblemError) as stale:
             await assess_plan_step_execution(
                 plan_ref=plan.plan_ref,
@@ -218,13 +218,13 @@ async def test_b13_d_one_plan_integrates_structure_dependency_and_execution(
             realization_occurred=True,
             expected_material_state_ref=None,
         )
-        assert (
-            await dependencies.get(
-                self_person_ref=alice,
-                plan_ref=plan.plan_ref,
-                dependency_ref=relation.dependency_ref,
-            )
-        ).evaluation_code == "satisfied"
+        current_relation = await dependencies.get(
+            self_person_ref=alice,
+            plan_ref=plan.plan_ref,
+            dependency_ref=relation.dependency_ref,
+        )
+        assert current_relation is not None
+        assert current_relation.evaluation_code == "satisfied"
         await actuals.record(
             self_person_ref=alice,
             operation_id="b13d:actual-correction",
@@ -233,19 +233,19 @@ async def test_b13_d_one_plan_integrates_structure_dependency_and_execution(
             realization_occurred=False,
             expected_material_state_ref=actual.material_state_ref,
         )
-        assert (
-            await dependencies.get(
-                self_person_ref=alice,
-                plan_ref=plan.plan_ref,
-                dependency_ref=relation.dependency_ref,
-            )
-        ).evaluation_code == "unsatisfied"
-        assert (
-            await PlanWorkApplication(runtime.session_factory).get(
-                self_person_ref=alice,
-                plan_ref=plan.plan_ref,
-            )
-        ).steps[0].max_planned_slices == 2
+        current_relation = await dependencies.get(
+            self_person_ref=alice,
+            plan_ref=plan.plan_ref,
+            dependency_ref=relation.dependency_ref,
+        )
+        assert current_relation is not None
+        assert current_relation.evaluation_code == "unsatisfied"
+        current_plan = await PlanWorkApplication(runtime.session_factory).get(
+            self_person_ref=alice,
+            plan_ref=plan.plan_ref,
+        )
+        assert current_plan is not None
+        assert current_plan.steps[0].max_planned_slices == 2
 
         retired_policy = await plans.replace(
             self_person_ref=alice,

@@ -135,7 +135,7 @@ def _duration(
         ).fetchone()
         connection.commit()
     assert row is not None
-    return row
+    return tuple(row)
 
 
 def _set_direct_policy(database: Any, *, self_ref: UUID, schedule_ref: UUID, suffix: str) -> UUID:
@@ -171,7 +171,7 @@ def _current_placement(database: Any, schedule_ref: UUID) -> UUID:
             (schedule_ref,),
         ).fetchone()
     assert row is not None
-    return row[0]
+    return UUID(str(row[0]))
 
 
 @pytest.mark.postgres

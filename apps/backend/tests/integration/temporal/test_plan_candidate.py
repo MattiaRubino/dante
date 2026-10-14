@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
-from typing import Any
+from typing import Any, TypedDict
+from uuid import UUID
 
 import pytest
 from tests.integration.temporal.support.life_area import ensure_test_life_area
@@ -28,10 +29,17 @@ from dante.modules.temporal.temporal_constraint import (
 from dante.modules.temporal.temporal_constraint import (
     AbsoluteIntervalPlacement as ConstraintIntervalPlacement,
 )
-from dante.platform.database.references import new_native_ref
+from dante.platform.database.references import NativeRef, new_native_ref
 from dante.platform.database.runtime import create_database_runtime
 
 pytestmark = pytest.mark.postgres
+
+
+class _SearchArgs(TypedDict):
+    self_person_ref: NativeRef
+    plan_ref: UUID
+    step_ref: UUID
+    expected_state_ref: UUID
 
 
 @pytest.mark.asyncio
@@ -91,7 +99,7 @@ async def test_b12_b_fixed_duration_hard_rule_dependency_and_no_effect(
                 boundary_at=start + timedelta(hours=1),
             ),
         )
-        args = {
+        args: _SearchArgs = {
             "self_person_ref": alice,
             "plan_ref": plan.plan_ref,
             "step_ref": second,

@@ -88,6 +88,7 @@ async def test_b04_b_create_api_preserves_latest_completion_deadline_semantics()
     )
 
     assert response.status_code == 201
+    assert isinstance(result.rule, AbsoluteLatestCompletionRuleRequest)
     assert result.rule.boundary_kind == "latest_completion"
     assert result.rule.constrained_facet == "schedule.completion"
     assert result.rule.temporal_form == "absolute"

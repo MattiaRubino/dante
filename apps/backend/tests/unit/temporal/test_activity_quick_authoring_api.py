@@ -4,8 +4,10 @@ from datetime import datetime
 from uuid import uuid7
 
 import pytest
+from fastapi.routing import APIRoute
 from pydantic import ValidationError
 
+from dante.modules.temporal.api import FloatingLocalIntervalPlacementRequest
 from dante.modules.temporal.authoring_api import (
     AcceptedFloatingLocalPlacementResponse,
     AuthorActivityRequest,
@@ -19,7 +21,7 @@ def test_u2_authoring_routes_have_stable_operation_ids() -> None:
     operations = {
         route.path: getattr(route, "operation_id", None)
         for route in router.routes
-        if getattr(route, "path", None) is not None
+        if isinstance(route, APIRoute)
     }
     assert operations == {
         "/api/v1/temporal/authoring/activities": "temporal_author_activity",
@@ -44,7 +46,7 @@ def test_activity_authoring_accepts_real_unassigned_state() -> None:
     )
     assert payload.life_area is None
     assert payload.item_color_code == "#12abef"
-    assert payload.placement is not None
+    assert isinstance(payload.placement, FloatingLocalIntervalPlacementRequest)
     assert payload.placement.starts_local_at == datetime.fromisoformat("2026-09-30T23:30:00")
     assert payload.placement.ends_local_at == datetime.fromisoformat("2026-10-02T01:00:00")
 

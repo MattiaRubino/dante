@@ -5,12 +5,12 @@ from __future__ import annotations
 from dataclasses import replace
 from datetime import date, datetime, timedelta
 from types import SimpleNamespace
-from typing import Any
+from typing import Any, Literal
 from uuid import UUID, uuid7
 from zoneinfo import ZoneInfo
 
 import pytest
-from fastapi import Response
+from fastapi import Request, Response
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
@@ -33,6 +33,7 @@ from dante.modules.temporal.routine_occurrence_materialization import (
     RoutineOccurrenceMaterializationApplication,
 )
 from dante.modules.temporal.routine_occurrence_policy import RoutineOccurrencePolicyApplication
+from dante.platform.database.references import NativeRef
 from dante.platform.database.runtime import create_database_runtime
 
 pytestmark = pytest.mark.postgres
@@ -118,10 +119,10 @@ async def _apply(
 
 async def _read_checkpoint_refs(
     runtime: Any,
-    actor: UUID,
+    actor: NativeRef,
     source: UUID,
     *,
-    owner: str,
+    owner: Literal["routine", "event"],
     operation: str,
     start: date,
     end: date,
@@ -174,7 +175,7 @@ async def _objective_for_occurrence(
             ),
             {"actor": actor, "kind": kind, "subject": subject},
         )
-        return result.scalar_one()
+        return UUID(str(result.scalar_one()))
 
 
 @pytest.mark.asyncio
@@ -445,8 +446,11 @@ async def test_generated_event_objectives_share_future_scope_without_copying_res
         assert state.template_slot == 0
         # Exercise the real shared Event/Occurrence Objective API, not
         # merely its backing SQL function.
-        request = SimpleNamespace(
-            app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))
+        request = Request(
+            {
+                "type": "http",
+                "app": SimpleNamespace(state=SimpleNamespace(database_runtime=runtime)),
+            }
         )
         ctx = _context(actor)
         api_state = await get_objective_series_state(past, ctx, request, Response())

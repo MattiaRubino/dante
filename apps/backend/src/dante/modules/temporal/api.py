@@ -1078,7 +1078,7 @@ def _timeline_item_response(item: TimelineItem) -> TimelineItemResponse:
         ),
     ):
         return _timeline_event_item_response(item)
-    return _timeline_activity_item_response(cast(TimelineScheduledActivityItem, item))
+    return _timeline_activity_item_response(item)
 
 
 def _placement_from_request(payload: SchedulePlacementRequest) -> SchedulePlacement:

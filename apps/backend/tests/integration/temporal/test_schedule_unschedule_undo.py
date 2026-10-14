@@ -13,7 +13,10 @@ from tests.integration.temporal.support.life_area import ensure_test_life_area
 from dante.auth.contracts import Principal
 from dante.context.contracts import DanteContext
 from dante.modules.temporal.activity import TemporalActivityApplication
-from dante.modules.temporal.application import TemporalTimelineApplication
+from dante.modules.temporal.application import (
+    TemporalTimelineApplication,
+    TimelineFloatingLocalActivityItem,
+)
 from dante.modules.temporal.contracts import TimelineWindowQuery
 from dante.modules.temporal.schedule import (
     FloatingLocalIntervalPlacement,
@@ -158,7 +161,9 @@ async def test_unschedule_returns_activity_to_tray_and_undo_is_monotonic(
             ),
         )
         assert len(restored_window.items) == 1
-        assert restored_window.items[0].placement_material_state_ref == restored.material_state_ref
+        item = restored_window.items[0]
+        assert isinstance(item, TimelineFloatingLocalActivityItem)
+        assert item.placement_material_state_ref == restored.material_state_ref
     finally:
         await runtime.dispose()
 

@@ -1,14 +1,16 @@
 """B14: real PostgreSQL atomic main→internal Session semantics and historical visuals."""
 
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 from typing import Any
 
 import psycopg
 import pytest
-from fastapi import Response
+from fastapi import Request, Response
 from sqlalchemy import text
 from tests.integration.temporal.test_activity_quick_authoring_metadata import _seed_self
+from tests.integration.temporal.test_schedule_create import _context
 
 from dante.modules.temporal.authoring import TemporalAuthoringApplication
 from dante.modules.temporal.schedule import AbsoluteIntervalPlacement
@@ -169,10 +171,13 @@ async def test_main_pause_resume_end_are_atomic_and_internal_actions_not_inverse
         assert replay.replayed
         assert replay.session_ref == main.session_ref
 
-        request = SimpleNamespace(
-            app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))
+        request = Request(
+            {
+                "type": "http",
+                "app": SimpleNamespace(state=SimpleNamespace(database_runtime=runtime)),
+            }
         )
-        context = SimpleNamespace(self_person_ref=actor, effective_zone_id="UTC")
+        context = replace(_context(actor), effective_zone_id="UTC")
         result = await get_session_panel(
             context,
             request,

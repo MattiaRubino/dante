@@ -10,9 +10,11 @@ from uuid import uuid7
 
 import psycopg
 import pytest
-from fastapi import Response
+from fastapi import Request, Response
 from sqlalchemy import text
+from sqlalchemy.engine import RowMapping
 from sqlalchemy.exc import DBAPIError
+from tests.integration.temporal.test_schedule_create import _context
 
 from dante.modules.temporal.draft_vault_api import (
     DraftVaultSaveRequest,
@@ -72,7 +74,7 @@ async def test_inert_drafts_are_owner_scoped_replay_safe_and_do_not_create_subje
     )
     try:
 
-        async def save(op: str, expected: int | None, title: str = "Allenamento"):
+        async def save(op: str, expected: int | None, title: str = "Allenamento") -> RowMapping:
             async with runtime.session_factory() as session, session.begin():
                 return (
                     (
@@ -164,8 +166,13 @@ async def test_draft_vault_http_capability_returns_saved_snapshot_and_cas_delete
     actor = _seed_self(migrated_database)
     runtime = create_database_runtime(migrated_database.runtime_settings())
     draft_ref = uuid7()
-    context = SimpleNamespace(self_person_ref=actor)
-    request = SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime)))
+    context = _context(actor)
+    request = Request(
+        {
+            "type": "http",
+            "app": SimpleNamespace(state=SimpleNamespace(database_runtime=runtime)),
+        }
+    )
     payload = {
         "version": 1,
         "fields": {"kind": "event", "title": "Visita"},

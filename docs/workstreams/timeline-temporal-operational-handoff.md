@@ -1,5 +1,11 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-14 — Second static repair checkpoint (PostgreSQL rerun pending)
+
+After the first published checkpoint (`bb6a9725`, tree `af2f90be`), a second focused backend pass reduced mypy diagnostics from **118 to 26** over `src tests`. It replaces test-only pseudo-contexts with real request/context contracts, checks nullable SQL rows and optional application reads, narrows response variants, and validates the Plan diagnosis and Recurrence response payloads through their declared Pydantic models. The latter two API paths still require the full PostgreSQL/real-stack proof. Ruff and Python formatting pass; focused non-PostgreSQL recurrence, Plan diagnosis, constraint boundary and execution-assessment tests passed (**7 tests**), and Quick Create API tests passed (**6 tests**). ESLint is still **RED: 140 errors** on the first checkpoint; no second-pass Web changes were made.
+
+This is saved progress, **not a passing full gate**. On the final published SHA rerun the focused PostgreSQL tests under `apps/backend/tests/integration/temporal/` for the changed files, then the failing `BACKEND_MYPY` and `REPO_ESLINT` groups. Mypy still has 26 concrete diagnostics, so a complete 27-group run will remain red until those and ESLint are repaired. Preserve the 84 passed / 3 skipped browser evidence on `23545137` as historical evidence, not as a claim about this SHA.
+
 ## 2026-10-14 — Focused repair following `23545137` WSL browser evidence
 
 The user's WSL rerun on `23545137` reports **WEB_BROWSER_NONAUTH: 1 passed** for the formerly failing scenario and **WEB_BROWSER_REAL_STACK: 84 passed, 3 skipped**. This closes those two browser failures on that SHA, not the full 27-group gate. Keep the 3 skipped cases visible in the suite report.

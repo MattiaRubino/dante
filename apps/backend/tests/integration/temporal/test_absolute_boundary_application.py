@@ -12,6 +12,7 @@ import pytest
 from dante.modules.temporal.temporal_constraint import (
     AbsoluteBoundaryRule,
     TemporalConstraintApplication,
+    TemporalConstraintCurrentBoundaryRuleView,
 )
 from dante.platform.database.references import NativeRef
 from dante.platform.database.runtime import create_database_runtime
@@ -87,7 +88,7 @@ async def test_b04_b_application_reads_and_revises_latest_bound_rule_kinds(
             self_person_ref=self_ref,
             constraint_ref=created.constraint_ref,
         )
-        assert current.current_rule is not None
+        assert isinstance(current.current_rule, TemporalConstraintCurrentBoundaryRuleView)
         assert current.current_rule.boundary_kind == "latest_start"
         assert current.current_rule.constrained_facet == "schedule.start"
         assert current.current_rule.boundary_at == latest_start.boundary_at
@@ -105,7 +106,7 @@ async def test_b04_b_application_reads_and_revises_latest_bound_rule_kinds(
             self_person_ref=self_ref,
             constraint_ref=created.constraint_ref,
         )
-        assert after_revision.current_rule is not None
+        assert isinstance(after_revision.current_rule, TemporalConstraintCurrentBoundaryRuleView)
         assert after_revision.current_rule.boundary_kind == "latest_completion"
         assert after_revision.current_rule.constrained_facet == "schedule.completion"
         assert after_revision.current_rule.strength == "soft"

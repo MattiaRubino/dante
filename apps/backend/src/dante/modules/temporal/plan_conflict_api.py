@@ -175,46 +175,52 @@ def _response(view: PlanDiagnosis) -> PlanDiagnosisResponse:
         title=view.title,
         capacity_evaluated=view.capacity_evaluated,
         steps=[
-            StepDiagnosisResponse(
-                step_ref=step.step_ref,
-                title=step.title,
-                activity_ref=step.activity_ref,
-                placements=[
-                    PlacementBasisResponse(
-                        schedule_ref=item.schedule_ref,
-                        material_state_ref=item.material_state_ref,
-                        temporal_form_code=item.temporal_form_code,
-                        starts_at=item.starts_at,
-                        ends_at=item.ends_at,
-                    )
-                    for item in step.placements
-                ],
-                constraint_status=step.constraint_status,
-                hard_set_status=step.hard_set_status,
-                constraints=[
-                    ConstraintFindingResponse(
-                        constraint_ref=item.constraint_ref,
-                        material_state_ref=item.material_state_ref,
-                        strength=item.strength,
-                        evaluation=item.evaluation,
-                        reason_code=item.reason_code,
-                    )
-                    for item in step.constraints
-                ],
-                dependencies=[
-                    DependencyFindingResponse(
-                        dependency_ref=item.dependency_ref,
-                        state_ref=item.state_ref,
-                        prerequisite_step_ref=item.prerequisite_step_ref,
-                        qualifier_code=item.qualifier_code,
-                        evaluation_code=item.evaluation_code,
-                        actual_material_state_ref=item.actual_material_state_ref,
-                        outcome_material_state_ref=item.outcome_material_state_ref,
-                        cycle=item.cycle,
-                    )
-                    for item in step.dependencies
-                ],
-                diagnostics=list(step.diagnostics),
+            StepDiagnosisResponse.model_validate(
+                {
+                    "step_ref": step.step_ref,
+                    "title": step.title,
+                    "activity_ref": step.activity_ref,
+                    "placements": [
+                        PlacementBasisResponse(
+                            schedule_ref=item.schedule_ref,
+                            material_state_ref=item.material_state_ref,
+                            temporal_form_code=item.temporal_form_code,
+                            starts_at=item.starts_at,
+                            ends_at=item.ends_at,
+                        )
+                        for item in step.placements
+                    ],
+                    "constraint_status": step.constraint_status,
+                    "hard_set_status": step.hard_set_status,
+                    "constraints": [
+                        ConstraintFindingResponse.model_validate(
+                            {
+                                "constraint_ref": item.constraint_ref,
+                                "material_state_ref": item.material_state_ref,
+                                "strength": item.strength,
+                                "evaluation": item.evaluation,
+                                "reason_code": item.reason_code,
+                            }
+                        )
+                        for item in step.constraints
+                    ],
+                    "dependencies": [
+                        DependencyFindingResponse.model_validate(
+                            {
+                                "dependency_ref": item.dependency_ref,
+                                "state_ref": item.state_ref,
+                                "prerequisite_step_ref": item.prerequisite_step_ref,
+                                "qualifier_code": item.qualifier_code,
+                                "evaluation_code": item.evaluation_code,
+                                "actual_material_state_ref": item.actual_material_state_ref,
+                                "outcome_material_state_ref": item.outcome_material_state_ref,
+                                "cycle": item.cycle,
+                            }
+                        )
+                        for item in step.dependencies
+                    ],
+                    "diagnostics": list(step.diagnostics),
+                }
             )
             for step in view.steps
         ],

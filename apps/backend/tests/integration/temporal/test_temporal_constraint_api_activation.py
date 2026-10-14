@@ -99,7 +99,7 @@ def _mutate(
         ).fetchone()
         connection.commit()
         assert row is not None
-        return row
+        return tuple(row)
 
 
 @pytest.mark.postgres
