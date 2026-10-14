@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 from uuid import UUID
 
@@ -15,6 +16,7 @@ from dante.modules.temporal.session_api import (
     SessionEndCommand,
     SessionTransitionCommand,
 )
+from dante.modules.temporal.session_runtime import SessionApplication, SessionInputError
 from dante.platform.database.mappings import MAPPED_TABLES
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -139,3 +141,34 @@ def test_session_transitions_accept_json_uuid_string_and_reject_invalid_refs() -
             command.model_validate({**payload, "expected_material_state_ref": "not-a-uuid"})
         with pytest.raises(ValidationError):
             command.model_validate({**payload, "unexpected_field": True})
+
+
+
+class _SessionConstraintFailure(Exception):
+    def __init__(self, constraint: str) -> None:
+        super().__init__(constraint)
+        self.orig = SimpleNamespace(
+            diag=SimpleNamespace(constraint_name=constraint)
+        )
+
+
+@pytest.mark.parametrize(
+    ("constraint", "expected_message"),
+    (
+        (
+            "session_internal_requires_running_main",
+            "Avvia prima la Sessione principale",
+        ),
+        (
+            "session_internal_before_planned_start",
+            "La Sessione non può iniziare prima",
+        ),
+    ),
+)
+def test_named_session_rejection_identifies_only_the_failed_precondition(
+    constraint: str, expected_message: str
+) -> None:
+    """The API must never blame the main clock for an early-start rejection."""
+    application = object.__new__(SessionApplication)
+    with pytest.raises(SessionInputError, match=expected_message):
+        application._raise_known(_SessionConstraintFailure(constraint))
