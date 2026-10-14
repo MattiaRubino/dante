@@ -10,35 +10,35 @@ const activityRef = '0199a8c0-5e74-7bc0-8ad0-a2f403f56184';
 
 it('sends self-scoped Policy CAS and an Activity hard boundary through CSRF writes', async () => {
   const fetchFn = vi.fn(
-    async (input: RequestInfo | URL, init?: RequestInit) => {
+    (input: RequestInfo | URL) => {
       const url = fetchRequestUrl(input);
       if (url.endsWith('/api/v1/auth/session')) {
-        return new Response(
+        return Promise.resolve(new Response(
           JSON.stringify({ authenticated: true, csrf_token: 'csrf' }),
-        );
+        ));
       }
       if (url.endsWith(`/schedules/${scheduleRef}/movement-policy`)) {
-        return new Response(
+        return Promise.resolve(new Response(
           JSON.stringify({
             schedule_ref: scheduleRef,
             material_state_ref: policyStateRef,
           }),
-        );
+        ));
       }
       if (url.endsWith(`/schedules/${scheduleRef}/placement`)) {
-        return new Response(
+        return Promise.resolve(new Response(
           JSON.stringify({
             schedule_ref: scheduleRef,
             temporal_form: 'absolute',
           }),
-        );
+        ));
       }
-      return new Response(
+      return Promise.resolve(new Response(
         JSON.stringify({
           subject_ref: activityRef,
           constraint_ref: 'constraint',
         }),
-      );
+      ));
     },
   );
   const source = createRemotePlanReplanningSetupDataSource(fetchFn);
