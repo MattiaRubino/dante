@@ -447,9 +447,7 @@ function TemporalCreateTimeControl({
                 type="button"
                 data-time-value={option}
                 className={
-                  nearestQuarter(committedValue) === option
-                    ? 'is-selected'
-                    : ''
+                  nearestQuarter(committedValue) === option ? 'is-selected' : ''
                 }
                 onClick={() => {
                   syncDraft(option);

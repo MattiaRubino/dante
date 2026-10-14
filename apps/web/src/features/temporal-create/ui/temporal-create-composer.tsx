@@ -459,15 +459,28 @@ export function TemporalCreateComposer({
           previous.target === failureTarget &&
           previous.host === host &&
           previous.locatedPaths.length === locatedPaths.length &&
-          previous.locatedPaths.every((path, index) => path === locatedPaths[index])
+          previous.locatedPaths.every(
+            (path, index) => path === locatedPaths[index],
+          )
         ) {
           return previous;
         }
-        return { surface: session.surface, target: failureTarget, host, locatedPaths };
+        return {
+          surface: session.surface,
+          target: failureTarget,
+          host,
+          locatedPaths,
+        };
       });
     });
     return () => cancelAnimationFrame(frame);
-  }, [issues, failureTarget, session.surface, fields.kind, fields.timeSemantics]);
+  }, [
+    issues,
+    failureTarget,
+    session.surface,
+    fields.kind,
+    fields.timeSemantics,
+  ]);
 
   const currentValidationDOM =
     validationDOM?.surface === session.surface &&
@@ -476,7 +489,8 @@ export function TemporalCreateComposer({
       : null;
   const inlineFailureHost = currentValidationDOM?.host ?? null;
   const unlocatedIssues = issues.filter(
-    (issue) => !currentValidationDOM?.locatedPaths.includes(issue.path[0] ?? ''),
+    (issue) =>
+      !currentValidationDOM?.locatedPaths.includes(issue.path[0] ?? ''),
   );
 
   return (

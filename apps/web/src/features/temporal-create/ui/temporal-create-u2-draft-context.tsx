@@ -30,10 +30,14 @@ type TemporalCreateU2DraftProviderProps = Readonly<{
   children: ReactNode;
 }>;
 
-export function TemporalCreateU2DraftProvider(props: TemporalCreateU2DraftProviderProps) {
+export function TemporalCreateU2DraftProvider(
+  props: TemporalCreateU2DraftProviderProps,
+) {
   // Reset only on a true baseline transition. Ordinary field edits must not
   // discard staged Life Area, color, or activity structure intentions.
-  return <TemporalCreateU2DraftProviderInstance key={props.resetKey} {...props} />;
+  return (
+    <TemporalCreateU2DraftProviderInstance key={props.resetKey} {...props} />
+  );
 }
 
 function TemporalCreateU2DraftProviderInstance({
@@ -53,7 +57,10 @@ function TemporalCreateU2DraftProviderInstance({
   // render. It never resets Life Area or other authored draft fields.
   if (previousDate !== fields.date) {
     setPreviousDate(fields.date);
-    const endDate = normalizeTemporalCreateU2EndDate(fields.date, state.endDate);
+    const endDate = normalizeTemporalCreateU2EndDate(
+      fields.date,
+      state.endDate,
+    );
     if (endDate !== state.endDate) {
       setState(patchTemporalCreateU2AuthoringDraft(state, { endDate }));
     }
