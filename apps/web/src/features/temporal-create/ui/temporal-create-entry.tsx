@@ -1024,6 +1024,22 @@ export function TemporalCreateEntry({
     ? continueTemporalCreateEditing(session)
     : session;
   const advancedComposer = composerSession.surface !== 'quick';
+  // The U2 provider notifies the parent in an effect. Keep the callback
+  // identity stable across validation-only renders: otherwise its effect
+  // fires again and clears the just-produced field error.
+  const handleU2DraftChange = useCallback(
+    (draft: TemporalCreateU2AuthoringDraft) => {
+      if (u2DraftRef.current === draft) return;
+      pendingVaultSave.current = null;
+      u2DraftRef.current = draft;
+      setU2Draft(draft);
+      queueMicrotask(() => {
+        setFailureMessage('');
+        setFailureTarget(null);
+      });
+    },
+    [],
+  );
   const composer = open ? (
     <TemporalCreateComposer
       session={composerSession}
@@ -1042,15 +1058,7 @@ export function TemporalCreateEntry({
       onMoveToUnplaced={() => void saveDraft()}
       onSaveDraft={() => void saveDraft()}
       onSubmit={() => void submit()}
-      onU2DraftChange={(draft) => {
-        if (u2DraftRef.current !== draft) pendingVaultSave.current = null;
-        u2DraftRef.current = draft;
-        setU2Draft(draft);
-        queueMicrotask(() => {
-          setFailureMessage('');
-          setFailureTarget(null);
-        });
-      }}
+      onU2DraftChange={handleU2DraftChange}
     />
   ) : null;
   const createHost =
