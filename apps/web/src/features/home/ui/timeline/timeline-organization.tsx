@@ -106,5 +106,7 @@ export function TimelineOrganizationPanel(
     selectedItem: Item | null;
   }>,
 ) {
+  // Kept only for typed calling-site compatibility during canonical UI migration.
+  void _props;
   return null;
 }
