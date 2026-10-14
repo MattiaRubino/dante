@@ -157,7 +157,7 @@ async def test_unplaced_activity_session_pause_resume_and_tc009_remain_independe
         assert listed[1].duration_evaluations[0].evaluation == "pending"
 
         with _admin(migrated_database) as connection:
-            schedule_count, actual_count, old_end, history_count = connection.execute(
+            fetched_row = connection.execute(
                 """
                 SELECT
                   (SELECT count(*) FROM dante.schedule WHERE subject_native_ref=%s),
@@ -174,6 +174,8 @@ async def test_unplaced_activity_session_pause_resume_and_tc009_remain_independe
                     started.session_ref,
                 ),
             ).fetchone()
+            assert fetched_row is not None
+            schedule_count, actual_count, old_end, history_count = fetched_row
         assert (schedule_count, actual_count, old_end, history_count) == (0, 0, None, 4)
     finally:
         await runtime.dispose()
