@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+from collections.abc import Mapping, Sequence
 import json
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime
@@ -467,7 +468,7 @@ class SessionApplication:
     @staticmethod
     def _duration_evaluations(
         *,
-        rows: list[RowMapping],
+        rows: Sequence[Mapping[str, object]],
         session: SessionView,
     ) -> tuple[SessionDurationEvaluation, ...]:
         # Rule reads and metrics share one PostgreSQL statement snapshot. An
