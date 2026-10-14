@@ -97,21 +97,28 @@ export function TemporalCreateLifeAreaField({
   onItemColorChange,
   onLegacyContextChange,
 }: TemporalCreateLifeAreaFieldProps) {
-  const [query, setQuery] = useState(() => selectedLabel(draft));
-  const [availableContexts, setAvailableContexts] = useState(() =>
-    authorableContexts(contexts),
-  );
+  // Associate edits with the accepted Life Area selection. Incoming draft
+  // resets update the displayed label without an extra synchronous effect.
+  const selectionKey = JSON.stringify(draft.lifeArea);
+  const [queryEdit, setQueryEdit] = useState(() => ({
+    selectionKey,
+    text: selectedLabel(draft),
+  }));
+  const query =
+    queryEdit.selectionKey === selectionKey ? queryEdit.text : selectedLabel(draft);
+  const setQuery = (text: string) => setQueryEdit({ selectionKey, text });
+
+  // Keep remotely accepted organization options associated with the exact
+  // context snapshot used to load them; new props never flash stale areas.
+  const [canonical, setCanonical] = useState<Readonly<{
+    origin: readonly TemporalCreateContextOption[];
+    options: readonly TemporalCreateContextOption[];
+  }> | null>(null);
+  const availableContexts =
+    canonical?.origin === contexts ? canonical.options : authorableContexts(contexts);
   const sourceRef = useRef<ReturnType<
     typeof createRemoteTemporalOrganizationDataSource
   > | null>(null);
-
-  useEffect(() => {
-    setQuery(selectedLabel(draft));
-  }, [draft.lifeArea]);
-
-  useEffect(() => {
-    setAvailableContexts(authorableContexts(contexts));
-  }, [contexts]);
 
   useEffect(() => {
     if (import.meta.env.MODE === 'test') return;
@@ -120,7 +127,7 @@ export function TemporalCreateLifeAreaField({
     void sourceRef.current.load().then(
       (snapshot) => {
         if (!cancelled) {
-          setAvailableContexts(canonicalOptions(contexts, snapshot.areas));
+          setCanonical({ origin: contexts, options: canonicalOptions(contexts, snapshot.areas) });
         }
       },
       () => undefined,
