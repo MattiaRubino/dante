@@ -17,19 +17,24 @@ export function PlacementLockControls({
   variant?: 'text' | 'icon';
   onLockChanged?: (locked: boolean) => void;
 }>) {
-  const [loaded, setLoaded] = useState<
-    Readonly<{ scheduleRef: string; value: PlacementLockState | null }> | null
-  >(null);
+  const [loaded, setLoaded] = useState<Readonly<{
+    scheduleRef: string;
+    value: PlacementLockState | null;
+  }> | null>(null);
   const [pending, setPending] = useState(false);
-  const [readError, setReadError] = useState<
-    Readonly<{ scheduleRef: string; message: string }> | null
-  >(null);
-  const [mutationError, setMutationError] = useState<
-    Readonly<{ scheduleRef: string; message: string }> | null
-  >(null);
+  const [readError, setReadError] = useState<Readonly<{
+    scheduleRef: string;
+    message: string;
+  }> | null>(null);
+  const [mutationError, setMutationError] = useState<Readonly<{
+    scheduleRef: string;
+    message: string;
+  }> | null>(null);
   const state = loaded?.scheduleRef === scheduleRef ? loaded.value : null;
   const error =
-    (mutationError?.scheduleRef === scheduleRef ? mutationError.message : null) ??
+    (mutationError?.scheduleRef === scheduleRef
+      ? mutationError.message
+      : null) ??
     (readError?.scheduleRef === scheduleRef ? readError.message : null);
   const onLockChangedRef = useRef(onLockChanged);
 

@@ -16,9 +16,11 @@ export function TimelineInspectorReality({
   subjectRef: string;
 }>) {
   const requestKey = `${kind}:${subjectRef}`;
-  const [result, setResult] = useState<
-    Readonly<{ key: string; mode: RealityMode | null; failed: boolean }> | null
-  >(null);
+  const [result, setResult] = useState<Readonly<{
+    key: string;
+    mode: RealityMode | null;
+    failed: boolean;
+  }> | null>(null);
   // A previous subject's result must never flash on a different Inspector.
   const current = result?.key === requestKey ? result : null;
   const mode = current?.mode ?? null;

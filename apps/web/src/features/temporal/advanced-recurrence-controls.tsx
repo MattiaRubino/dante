@@ -36,7 +36,9 @@ type AdvancedRecurrenceControlsProps = Readonly<{
   sourceRef: string;
 }>;
 
-export function AdvancedRecurrenceControls(props: AdvancedRecurrenceControlsProps) {
+export function AdvancedRecurrenceControls(
+  props: AdvancedRecurrenceControlsProps,
+) {
   // Recurrence state is source-scoped: a different owner requires fresh draft
   // and read state, never a synchronous reset from the fetch effect.
   return (

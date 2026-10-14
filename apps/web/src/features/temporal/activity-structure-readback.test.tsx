@@ -28,41 +28,43 @@ describe('Activity structure after reload', () => {
 
   it('reads current children, modes and Schedules without creating future Sessions', async () => {
     const fetchFn = vi.fn<typeof fetch>(() =>
-      Promise.resolve(Response.json({
-        parent_activity_ref: PARENT,
-        session_capture_mode: 'live',
-        child_guard_mode: 'confirm',
-        schedules: [
-          {
-            schedule_ref: PARENT,
-            role_code: 'envelope',
-            presentation_order: 0,
-            temporal_form: 'absolute',
-            starts_at: '2026-10-02T08:00:00Z',
-            ends_at: '2026-10-02T11:00:00Z',
-          },
-        ],
-        children: [
-          {
-            child_activity_ref: CHILD,
-            child_title: 'Fase uno',
-            requirement_code: 'required',
-            presentation_order: 1,
-            session_capture_mode: 'record',
-            schedules: [
-              {
-                schedule_ref: CHILD,
-                role_code: 'planned',
-                presentation_order: 1,
-                display_name: 'Ricerca fonti',
-                temporal_form: 'absolute',
-                starts_at: '2026-10-02T09:00:00Z',
-                ends_at: '2026-10-02T09:30:00Z',
-              },
-            ],
-          },
-        ],
-      })),
+      Promise.resolve(
+        Response.json({
+          parent_activity_ref: PARENT,
+          session_capture_mode: 'live',
+          child_guard_mode: 'confirm',
+          schedules: [
+            {
+              schedule_ref: PARENT,
+              role_code: 'envelope',
+              presentation_order: 0,
+              temporal_form: 'absolute',
+              starts_at: '2026-10-02T08:00:00Z',
+              ends_at: '2026-10-02T11:00:00Z',
+            },
+          ],
+          children: [
+            {
+              child_activity_ref: CHILD,
+              child_title: 'Fase uno',
+              requirement_code: 'required',
+              presentation_order: 1,
+              session_capture_mode: 'record',
+              schedules: [
+                {
+                  schedule_ref: CHILD,
+                  role_code: 'planned',
+                  presentation_order: 1,
+                  display_name: 'Ricerca fonti',
+                  temporal_form: 'absolute',
+                  starts_at: '2026-10-02T09:00:00Z',
+                  ends_at: '2026-10-02T09:30:00Z',
+                },
+              ],
+            },
+          ],
+        }),
+      ),
     );
     vi.stubGlobal('fetch', fetchFn);
     render(<ActivityStructureReadback activityRef={PARENT} />);

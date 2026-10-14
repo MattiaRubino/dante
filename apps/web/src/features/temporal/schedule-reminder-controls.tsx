@@ -104,13 +104,16 @@ function ScheduleReminderInstance({
       {loading ? (
         <span>{t(($) => $.common.home.timeline.detail.reminder.loading)}</span>
       ) : readFailed ? (
-        <button type="button" onClick={() => {
+        <button
+          type="button"
+          onClick={() => {
             setLoading(true);
             setCurrent(null);
             setError(false);
             setReadFailed(false);
             setReload((value) => value + 1);
-          }}>
+          }}
+        >
           {t(($) => $.common.home.timeline.detail.reminder.retryRead)}
         </button>
       ) : (

@@ -19,41 +19,43 @@ describe('Activity planned Sessions card detail', () => {
 
   it('renders only Activity-owned planned schedules as nested card detail', async () => {
     const fetchFn = vi.fn<typeof fetch>(() =>
-      Promise.resolve(Response.json({
-        parent_activity_ref: ACTIVITY,
-        session_capture_mode: 'disabled',
-        child_guard_mode: 'none',
-        schedules: [
-          {
-            schedule_ref: ENVELOPE,
-            role_code: 'envelope',
-            presentation_order: 0,
-            display_name: null,
-            temporal_form: 'named_zone_local',
-            starts_local_at: '2026-10-04T18:00:00',
-            ends_local_at: '2026-10-04T21:00:00',
-          },
-          {
-            schedule_ref: SESSION_A,
-            role_code: 'planned',
-            presentation_order: 1,
-            display_name: 'Teoria',
-            temporal_form: 'named_zone_local',
-            starts_local_at: '2026-10-04T18:00:00',
-            ends_local_at: '2026-10-04T19:00:00',
-          },
-          {
-            schedule_ref: SESSION_B,
-            role_code: 'planned',
-            presentation_order: 2,
-            display_name: 'Esercizi',
-            temporal_form: 'named_zone_local',
-            starts_local_at: '2026-10-04T20:00:00',
-            ends_local_at: '2026-10-04T21:00:00',
-          },
-        ],
-        children: [],
-      })),
+      Promise.resolve(
+        Response.json({
+          parent_activity_ref: ACTIVITY,
+          session_capture_mode: 'disabled',
+          child_guard_mode: 'none',
+          schedules: [
+            {
+              schedule_ref: ENVELOPE,
+              role_code: 'envelope',
+              presentation_order: 0,
+              display_name: null,
+              temporal_form: 'named_zone_local',
+              starts_local_at: '2026-10-04T18:00:00',
+              ends_local_at: '2026-10-04T21:00:00',
+            },
+            {
+              schedule_ref: SESSION_A,
+              role_code: 'planned',
+              presentation_order: 1,
+              display_name: 'Teoria',
+              temporal_form: 'named_zone_local',
+              starts_local_at: '2026-10-04T18:00:00',
+              ends_local_at: '2026-10-04T19:00:00',
+            },
+            {
+              schedule_ref: SESSION_B,
+              role_code: 'planned',
+              presentation_order: 2,
+              display_name: 'Esercizi',
+              temporal_form: 'named_zone_local',
+              starts_local_at: '2026-10-04T20:00:00',
+              ends_local_at: '2026-10-04T21:00:00',
+            },
+          ],
+          children: [],
+        }),
+      ),
     );
     vi.stubGlobal('fetch', fetchFn);
 

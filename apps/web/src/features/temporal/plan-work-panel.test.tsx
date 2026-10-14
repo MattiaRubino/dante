@@ -45,7 +45,15 @@ const current: PlanWork = {
 
 const { list, replace } = vi.hoisted(() => ({
   list: vi.fn<() => Promise<readonly PlanWork[]>>(),
-  replace: vi.fn<(current: PlanWork, title: string, steps: readonly Omit<PlanStep, 'position'>[], operationId: string) => Promise<PlanWork>>(),
+  replace:
+    vi.fn<
+      (
+        current: PlanWork,
+        title: string,
+        steps: readonly Omit<PlanStep, 'position'>[],
+        operationId: string,
+      ) => Promise<PlanWork>
+    >(),
 }));
 vi.mock('./remote-plan-work-data-source', async (importOriginal) => {
   const original =
@@ -75,7 +83,8 @@ describe('Plan work panel', () => {
     list.mockReset().mockResolvedValue([current]);
     const firstStep = current.steps[0];
     const secondStep = current.steps[1];
-    if (!firstStep || !secondStep) throw new Error('Expected two Plan fixture steps');
+    if (!firstStep || !secondStep)
+      throw new Error('Expected two Plan fixture steps');
     replace.mockReset().mockResolvedValue({
       ...current,
       stateRef: '0199a8c0-5e74-7bc0-8ad0-a2f403f56181',

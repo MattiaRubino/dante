@@ -292,7 +292,10 @@ async def test_event_parity_and_protected_future_override(
         )
         selected = rows.occurrences[0].occurrence_ref
         future = rows.occurrences[-1].occurrence_ref
-        req = cast(Request, SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))))
+        req = cast(
+            Request,
+            SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))),
+        )
         ctx = _context(alice)
         initial = await get_occurrence_profile_edit_state(future, ctx, req, Response())
         assert initial.edit_revision == 0

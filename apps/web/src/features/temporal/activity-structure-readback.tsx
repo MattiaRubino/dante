@@ -214,13 +214,11 @@ function ChildDetail({ child }: Readonly<{ child: Child }>) {
 export function ActivityStructureReadback({
   activityRef,
 }: Readonly<{ activityRef: string }>) {
-  const [loaded, setLoaded] = useState<
-    Readonly<{
-      activityRef: string;
-      structure: Structure | null;
-      error: string | null;
-    }> | null
-  >(null);
+  const [loaded, setLoaded] = useState<Readonly<{
+    activityRef: string;
+    structure: Structure | null;
+    error: string | null;
+  }> | null>(null);
   // Invalidation is determined by the requested Activity identity, not an
   // extra synchronous render forced from useEffect.
   const current = loaded?.activityRef === activityRef ? loaded : null;
@@ -239,7 +237,8 @@ export function ActivityStructureReadback({
         return parseStructure(await response.json(), activityRef);
       })
       .then((value) => {
-        if (!cancelled) setLoaded({ activityRef, structure: value, error: null });
+        if (!cancelled)
+          setLoaded({ activityRef, structure: value, error: null });
       })
       .catch((reason: unknown) => {
         if (!cancelled)

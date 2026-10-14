@@ -192,7 +192,12 @@ async def test_inventory_reuses_self_scope_and_returns_skipped_and_extra_occurre
         result = await get_occurrence_edit_inventory(
             selected_ref,
             _context(alice),
-            cast(Request, SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime)))),
+            cast(
+                Request,
+                SimpleNamespace(
+                    app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))
+                ),
+            ),
             api_response,
         )
         assert result.selected_occurrence_ref == selected_ref

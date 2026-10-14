@@ -28,7 +28,9 @@ type TimelineEventAgendaEditorProps = Readonly<{
   hideWhenEmpty?: boolean;
 }>;
 
-export function TimelineEventAgendaEditor(props: TimelineEventAgendaEditorProps) {
+export function TimelineEventAgendaEditor(
+  props: TimelineEventAgendaEditorProps,
+) {
   // The editor is scoped to one Event: switching identity must discard
   // pending draft edits and stale async read state together.
   return <TimelineEventAgendaEditorInstance key={props.eventRef} {...props} />;
