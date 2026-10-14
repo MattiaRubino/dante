@@ -21,6 +21,7 @@ from dante.modules.temporal.routine_occurrence_materialization import (
     RoutineOccurrenceMaterializationApplication,
 )
 from dante.modules.temporal.routine_occurrence_policy import RoutineOccurrencePolicyApplication
+from dante.platform.database.references import NativeRef
 from dante.platform.database.runtime import create_database_runtime
 
 pytestmark = pytest.mark.postgres
@@ -37,7 +38,7 @@ async def _activity(runtime: Any, actor: UUID, occurrence: UUID) -> UUID:
             ),
             {"actor": actor, "occurrences": [occurrence], "occurrence": occurrence},
         )
-        return result.scalar_one()
+        return UUID(str(result.scalar_one()))
 
 
 async def _planned(runtime: Any, actor: UUID, activity: UUID) -> Any:
@@ -121,7 +122,7 @@ async def test_selected_activity_life_area_and_planned_name_do_not_propagate(
         assigned = await assignments.assign(
             self_person_ref=actor,
             subject_kind="activity",
-            subject_native_ref=selected,
+            subject_native_ref=NativeRef(selected),
             life_area_ref=area.life_area_ref,
             expected_assignment_revision=0,
             operation_id="m3b:selected-area",
