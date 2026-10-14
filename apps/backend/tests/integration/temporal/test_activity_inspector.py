@@ -81,11 +81,13 @@ async def test_profile_revision_and_retirement_are_guarded_and_replayable(
             )
         ) as connection:
             connection.execute("SET ROLE dante_owner")
-            previous, current = connection.execute(
+            fetched_row = connection.execute(
                 "SELECT previous_profile,current_profile "
                 "FROM dante.activity_profile_revision WHERE activity_ref=%s",
                 (activity,),
             ).fetchone()
+            assert fetched_row is not None
+            previous, current = fetched_row
             assert previous["title"] == "Prima"
             assert current["title"] == "Dopo"
 
