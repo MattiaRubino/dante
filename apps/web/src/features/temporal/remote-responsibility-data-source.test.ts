@@ -6,17 +6,21 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { createRemoteTemporalResponsibilityDataSource } from './remote-responsibility-data-source';
 
+function resolvedJson(value: unknown): Promise<Response> {
+  return Promise.resolve(Response.json(value));
+}
+
 const PERSON = '0199a8c0-6e71-7bc0-8ad0-a2f403f5617d';
 const EVENT = '0199a8c0-6e72-7bc0-8ad0-a2f403f5617d';
 
 describe('Person referent remote commands', () => {
   it('creates, lists and renames a native Person with CSRF and revision', async () => {
     const calls: Array<{ url: string; method: string; body: unknown }> = [];
-    const fetchFn = vi.fn<typeof globalThis.fetch>(async (input, init) => {
+    const fetchFn = vi.fn<typeof globalThis.fetch>((input, init) => {
       const url = fetchRequestUrl(input);
       const method = init?.method ?? 'GET';
       if (url.endsWith('/auth/session')) {
-        return Response.json({ authenticated: true, csrf_token: 'csrf' });
+        return resolvedJson({ authenticated: true, csrf_token: 'csrf' });
       }
       if (method !== 'GET') {
         expect(new Headers(init?.headers).get('X-Dante-CSRF')).toBe('csrf');
@@ -29,7 +33,7 @@ describe('Person referent remote commands', () => {
           : null,
       });
       if (url.endsWith('/person-referents') && method === 'GET') {
-        return Response.json([
+        return resolvedJson([
           {
             person_ref: PERSON,
             display_label: 'Anna',
@@ -38,7 +42,7 @@ describe('Person referent remote commands', () => {
           },
         ]);
       }
-      return Response.json({
+      return resolvedJson({
         person_ref: PERSON,
         display_label: method === 'PATCH' ? 'Anna Rossi' : 'Anna',
         revision: method === 'PATCH' ? 2 : 1,
@@ -65,13 +69,13 @@ describe('Person referent remote commands', () => {
 
   it('sends the selected Person and the current holder without collapsing roles', async () => {
     const bodies: unknown[] = [];
-    const fetchFn = vi.fn<typeof globalThis.fetch>(async (input, init) => {
+    const fetchFn = vi.fn<typeof globalThis.fetch>((input, init) => {
       if (fetchRequestUrl(input).endsWith('/auth/session')) {
-        return Response.json({ authenticated: true, csrf_token: 'csrf' });
+        return resolvedJson({ authenticated: true, csrf_token: 'csrf' });
       }
       bodies.push(JSON.parse(fetchRequestBody(init?.body)) as unknown);
       if (fetchRequestUrl(input).endsWith('/expected-participation')) {
-        return Response.json({
+        return resolvedJson({
           event_ref: EVENT,
           participant_person_ref: PERSON,
           participant_is_self: false,
@@ -80,7 +84,7 @@ describe('Person referent remote commands', () => {
           replayed: false,
         });
       }
-      return Response.json({
+      return resolvedJson({
         subject_kind: 'event',
         subject_native_ref: EVENT,
         responsible_person_ref: PERSON,
