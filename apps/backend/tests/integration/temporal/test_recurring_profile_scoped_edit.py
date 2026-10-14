@@ -5,12 +5,12 @@ from __future__ import annotations
 import json
 from datetime import date, datetime, time, timedelta
 from types import SimpleNamespace
-from typing import Any
+from typing import Any, cast
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
 import pytest
-from fastapi import Response
+from fastapi import Request, Response
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
@@ -292,7 +292,7 @@ async def test_event_parity_and_protected_future_override(
         )
         selected = rows.occurrences[0].occurrence_ref
         future = rows.occurrences[-1].occurrence_ref
-        req = SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime)))
+        req = cast(Request, SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))))
         ctx = _context(alice)
         initial = await get_occurrence_profile_edit_state(future, ctx, req, Response())
         assert initial.edit_revision == 0
