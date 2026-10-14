@@ -427,16 +427,56 @@ export function TemporalCreateComposer({
   };
 
   const resetKey = `${session.draft.baseline.date}|${session.draft.baseline.startTime}|${session.draft.baseline.title}`;
-  const inlineFailureHost = failureTarget
-    ? dialogRef.current?.querySelector<HTMLElement>(
-        `[data-create-path="${failureTarget}"]`,
-      )
-    : null;
+  const [validationDOM, setValidationDOM] = useState<Readonly<{
+    surface: TemporalCreateSurface;
+    target: string | null;
+    host: HTMLElement | null;
+    locatedPaths: readonly string[];
+  }> | null>(null);
+
+  // Query the committed DOM, not React refs during render. Advanced/Quick
+  // fields mount conditionally; keep the existing exact field-level portal
+  // and operation-level fallback instead of dropping either validation path.
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      const root = dialogRef.current;
+      if (!root) return;
+      const host = failureTarget
+        ? root.querySelector<HTMLElement>(
+            `[data-create-path="${failureTarget}"]`,
+          )
+        : null;
+      const locatedPaths = issues
+        .map((issue) => issue.path[0])
+        .filter(
+          (path): path is string =>
+            typeof path === 'string' &&
+            root.querySelector(`[data-create-path="${path}"]`) !== null,
+        );
+      setValidationDOM((previous) => {
+        if (
+          previous?.surface === session.surface &&
+          previous.target === failureTarget &&
+          previous.host === host &&
+          previous.locatedPaths.length === locatedPaths.length &&
+          previous.locatedPaths.every((path, index) => path === locatedPaths[index])
+        ) {
+          return previous;
+        }
+        return { surface: session.surface, target: failureTarget, host, locatedPaths };
+      });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [issues, failureTarget, session.surface, fields.kind, fields.timeSemantics]);
+
+  const currentValidationDOM =
+    validationDOM?.surface === session.surface &&
+    validationDOM.target === failureTarget
+      ? validationDOM
+      : null;
+  const inlineFailureHost = currentValidationDOM?.host ?? null;
   const unlocatedIssues = issues.filter(
-    (issue) =>
-      !dialogRef.current?.querySelector(
-        `[data-create-path="${issue.path[0]}"]`,
-      ),
+    (issue) => !currentValidationDOM?.locatedPaths.includes(issue.path[0] ?? ''),
   );
 
   return (
