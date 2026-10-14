@@ -13,6 +13,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ResponsibilityControls } from './responsibility-controls';
 
+function resolvedJson(value: unknown, init?: ResponseInit): Promise<Response> {
+  return Promise.resolve(Response.json(value, init));
+}
+
 const EVENT = '01991f2a-1234-7abc-8def-1234567890ab';
 const PERSON = '01991f2a-1234-7abc-8def-1234567890ac';
 
@@ -49,21 +53,21 @@ describe('responsibility controls', () => {
   it('assigns Responsibility to the actor without sending a Person reference', async () => {
     let holder: string | null = null;
     const bodies: unknown[] = [];
-    const fetchFn = vi.fn<Fetch>(async (input, init) => {
+    const fetchFn = vi.fn<Fetch>((input, init) => {
       const url = fetchRequestUrl(input);
-      if (url.endsWith('/person-referents')) return Response.json([]);
+      if (url.endsWith('/person-referents')) return resolvedJson([]);
       if (url.endsWith('/api/v1/auth/session')) {
-        return Response.json({ authenticated: true, csrf_token: 'csrf' });
+        return resolvedJson({ authenticated: true, csrf_token: 'csrf' });
       }
       if (url.endsWith('/expected-participation')) {
-        return Response.json([]);
+        return resolvedJson([]);
       }
       if (init?.method === 'PUT') {
         bodies.push(JSON.parse(fetchRequestBody(init.body)));
         holder = PERSON;
-        return Response.json(responsibility(holder));
+        return resolvedJson(responsibility(holder));
       }
-      return Response.json(responsibility(holder));
+      return resolvedJson(responsibility(holder));
     });
     vi.stubGlobal('fetch', fetchFn);
 
@@ -86,22 +90,22 @@ describe('responsibility controls', () => {
   it('sends the previously read requirement as the expected value', async () => {
     let current: 'required' | 'optional' | null = 'required';
     const bodies: unknown[] = [];
-    const fetchFn = vi.fn<Fetch>(async (input, init) => {
+    const fetchFn = vi.fn<Fetch>((input, init) => {
       const url = fetchRequestUrl(input);
-      if (url.endsWith('/person-referents')) return Response.json([]);
+      if (url.endsWith('/person-referents')) return resolvedJson([]);
       if (url.endsWith('/api/v1/auth/session')) {
-        return Response.json({ authenticated: true, csrf_token: 'csrf' });
+        return resolvedJson({ authenticated: true, csrf_token: 'csrf' });
       }
       if (url.endsWith('/expected-participation') && init?.method === 'PUT') {
         const body = JSON.parse(fetchRequestBody(init.body));
         bodies.push(body);
         current = body.requirement_code;
-        return Response.json(participation(current));
+        return resolvedJson(participation(current));
       }
       if (url.endsWith('/expected-participation')) {
-        return Response.json(current === null ? [] : [participation(current)]);
+        return resolvedJson(current === null ? [] : [participation(current)]);
       }
-      return Response.json(responsibility(null));
+      return resolvedJson(responsibility(null));
     });
     vi.stubGlobal('fetch', fetchFn);
 
@@ -123,22 +127,22 @@ describe('responsibility controls', () => {
   });
 
   it('reports a rejected command instead of showing an optimistic state', async () => {
-    const fetchFn = vi.fn<Fetch>(async (input, init) => {
+    const fetchFn = vi.fn<Fetch>((input, init) => {
       const url = fetchRequestUrl(input);
-      if (url.endsWith('/person-referents')) return Response.json([]);
+      if (url.endsWith('/person-referents')) return resolvedJson([]);
       if (url.endsWith('/api/v1/auth/session')) {
-        return Response.json({ authenticated: true, csrf_token: 'csrf' });
+        return resolvedJson({ authenticated: true, csrf_token: 'csrf' });
       }
       if (url.endsWith('/expected-participation')) {
-        return Response.json([]);
+        return resolvedJson([]);
       }
       if (init?.method === 'PUT') {
-        return Response.json(
+        return resolvedJson(
           { detail: 'Responsibility holder changed since it was read.' },
           { status: 409 },
         );
       }
-      return Response.json(responsibility(null));
+      return resolvedJson(responsibility(null));
     });
     vi.stubGlobal('fetch', fetchFn);
 
@@ -158,13 +162,13 @@ describe('responsibility controls', () => {
   });
 
   it('does not offer Event Participation controls on an Activity', async () => {
-    const fetchFn = vi.fn<Fetch>(async (input) => {
+    const fetchFn = vi.fn<Fetch>((input) => {
       const url = fetchRequestUrl(input);
-      if (url.endsWith('/person-referents')) return Response.json([]);
+      if (url.endsWith('/person-referents')) return resolvedJson([]);
       if (url.endsWith('/api/v1/auth/session')) {
-        return Response.json({ authenticated: true, csrf_token: 'csrf' });
+        return resolvedJson({ authenticated: true, csrf_token: 'csrf' });
       }
-      return Response.json({
+      return resolvedJson({
         subject_kind: 'activity',
         subject_native_ref: EVENT,
         responsible_person_ref: null,
@@ -188,13 +192,13 @@ describe('responsibility controls', () => {
     const commands: Array<Record<string, unknown>> = [];
     let holder: string | null = null;
     let requirement: 'required' | 'optional' | null = null;
-    const fetchFn = vi.fn<Fetch>(async (input, init) => {
+    const fetchFn = vi.fn<Fetch>((input, init) => {
       const url = fetchRequestUrl(input);
       if (url.endsWith('/api/v1/auth/session')) {
-        return Response.json({ authenticated: true, csrf_token: 'csrf' });
+        return resolvedJson({ authenticated: true, csrf_token: 'csrf' });
       }
       if (url.endsWith('/person-referents')) {
-        return Response.json([
+        return resolvedJson([
           {
             person_ref: OTHER,
             display_label: 'Anna',
@@ -212,7 +216,7 @@ describe('responsibility controls', () => {
           commands.push(body);
           requirement = body.requirement_code as 'required' | 'optional';
         }
-        return Response.json(
+        return resolvedJson(
           init?.method === 'PUT'
             ? participation(requirement)
             : requirement === null
@@ -234,7 +238,7 @@ describe('responsibility controls', () => {
         commands.push(body);
         holder = OTHER;
       }
-      return Response.json({
+      return resolvedJson({
         ...responsibility(holder),
         responsible_is_self: false,
       });
@@ -273,10 +277,10 @@ describe('responsibility controls', () => {
       revision,
       replayed: false,
     });
-    const fetchFn = vi.fn<Fetch>(async (input, init) => {
+    const fetchFn = vi.fn<Fetch>((input, init) => {
       const url = fetchRequestUrl(input);
       if (url.endsWith('/api/v1/auth/session')) {
-        return Response.json({ authenticated: true, csrf_token: 'csrf' });
+        return resolvedJson({ authenticated: true, csrf_token: 'csrf' });
       }
       if (url.endsWith('/person-referents')) {
         if (init?.method === 'POST') {
@@ -288,9 +292,9 @@ describe('responsibility controls', () => {
           created = true;
           displayLabel = String(body.display_label);
           revision = 1;
-          return Response.json(person(), { status: 201 });
+          return resolvedJson(person(), { status: 201 });
         }
-        return Response.json(created ? [person()] : []);
+        return resolvedJson(created ? [person()] : []);
       }
       if (
         url.endsWith('/person-referents/' + PERSON) &&
@@ -303,7 +307,7 @@ describe('responsibility controls', () => {
         commands.push(body);
         displayLabel = String(body.display_label);
         revision += 1;
-        return Response.json(person());
+        return resolvedJson(person());
       }
       if (url.endsWith('/expected-participation')) {
         if (init?.method === 'PUT') {
@@ -313,12 +317,12 @@ describe('responsibility controls', () => {
           >;
           commands.push(body);
           requirement = body.requirement_code as 'required' | 'optional' | null;
-          return Response.json({
+          return resolvedJson({
             ...participation(requirement),
             participant_is_self: false,
           });
         }
-        return Response.json(
+        return resolvedJson(
           requirement === null
             ? []
             : [
@@ -338,7 +342,7 @@ describe('responsibility controls', () => {
           commands.push(body);
           holder = body.holder as string | null;
         }
-        return Response.json({
+        return resolvedJson({
           ...responsibility(holder),
           responsible_is_self: false,
         });
