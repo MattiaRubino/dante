@@ -30,7 +30,7 @@ describe('remote Session capability read', () => {
   });
 
   it('keeps live controls hidden for the explicit record-only policy', async () => {
-    const fetchFn = vi.fn<typeof fetch>().mockImplementation(async () =>
+    const fetchFn = vi.fn<typeof fetch>().mockResolvedValue(
       response({
         activity_ref: ACTIVITY_REF,
         state_ref: null,
