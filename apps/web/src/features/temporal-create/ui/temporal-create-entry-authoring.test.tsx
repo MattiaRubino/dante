@@ -538,7 +538,7 @@ describe('Temporal Create U2 entry', () => {
         throw new Error(`Unexpected fetch ${url}`);
       },
     );
-    vi.stubGlobal('fetch', fetchMock); // wrapped-mock-0
+    vi.stubGlobal('fetch', fetchMock);
 
     const { activityRequests } = renderEntry([], true);
     fireEvent.change(screen.getByPlaceholderText('Titolo'), {
