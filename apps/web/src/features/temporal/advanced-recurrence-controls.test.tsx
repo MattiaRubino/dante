@@ -64,6 +64,10 @@ function advanced(
   };
 }
 
+function resolvedJson(value: unknown, init?: ResponseInit): Promise<Response> {
+  return Promise.resolve(Response.json(value, init));
+}
+
 describe('Advanced Recurrence controls', () => {
   afterEach(() => {
     cleanup();
@@ -73,24 +77,24 @@ describe('Advanced Recurrence controls', () => {
   it('authors completion-relative recurrence against the current canonical MaterialState', async () => {
     const writes: Array<Record<string, unknown>> = [];
     let saved = false;
-    const fetchFn = vi.fn<Fetch>(async (input, init) => {
+    const fetchFn = vi.fn<Fetch>((input, init) => {
       const url = fetchRequestUrl(input);
       if (url.endsWith('/api/v1/auth/session')) {
-        return Response.json({ authenticated: true, csrf_token: 'csrf' });
+        return resolvedJson({ authenticated: true, csrf_token: 'csrf' });
       }
       if (url.endsWith(`/events/${EVENT}/recurrence`)) {
-        return Response.json(recurrence(saved ? STATE_2 : STATE_1));
+        return resolvedJson(recurrence(saved ? STATE_2 : STATE_1));
       }
       if (init?.method === 'PUT') {
         writes.push(
           JSON.parse(fetchRequestBody(init.body)) as Record<string, unknown>,
         );
         saved = true;
-        return Response.json(advanced(STATE_2, 'previous_completion'), {
+        return resolvedJson(advanced(STATE_2, 'previous_completion'), {
           status: 201,
         });
       }
-      return unavailable();
+      return Promise.resolve(unavailable());
     });
     vi.stubGlobal('fetch', fetchFn);
 
@@ -124,23 +128,23 @@ describe('Advanced Recurrence controls', () => {
 
   it('authors a typed anchor-stream recurrence without inventing a generic anchor', async () => {
     const writes: Array<Record<string, unknown>> = [];
-    const fetchFn = vi.fn<Fetch>(async (input, init) => {
+    const fetchFn = vi.fn<Fetch>((input, init) => {
       const url = fetchRequestUrl(input);
       if (url.endsWith('/api/v1/auth/session')) {
-        return Response.json({ authenticated: true, csrf_token: 'csrf' });
+        return resolvedJson({ authenticated: true, csrf_token: 'csrf' });
       }
       if (url.endsWith(`/events/${EVENT}/recurrence`)) {
-        return Response.json(recurrence(STATE_1));
+        return resolvedJson(recurrence(STATE_1));
       }
       if (init?.method === 'PUT') {
         writes.push(
           JSON.parse(fetchRequestBody(init.body)) as Record<string, unknown>,
         );
-        return Response.json(advanced(STATE_2, 'anchor_stream'), {
+        return resolvedJson(advanced(STATE_2, 'anchor_stream'), {
           status: 201,
         });
       }
-      return unavailable();
+      return Promise.resolve(unavailable());
     });
     vi.stubGlobal('fetch', fetchFn);
 
@@ -179,13 +183,13 @@ describe('Advanced Recurrence controls', () => {
 
   it('authors a Routine recurrence through the Routine owner endpoint', async () => {
     const writes: Array<{ url: string; body: Record<string, unknown> }> = [];
-    const fetchFn = vi.fn<Fetch>(async (input, init) => {
+    const fetchFn = vi.fn<Fetch>((input, init) => {
       const url = fetchRequestUrl(input);
       if (url.endsWith('/api/v1/auth/session')) {
-        return Response.json({ authenticated: true, csrf_token: 'csrf' });
+        return resolvedJson({ authenticated: true, csrf_token: 'csrf' });
       }
       if (url.endsWith(`/routines/${ROUTINE}/recurrence`)) {
-        return Response.json(recurrence(STATE_1));
+        return resolvedJson(recurrence(STATE_1));
       }
       if (
         init?.method === 'PUT' &&
@@ -198,14 +202,14 @@ describe('Advanced Recurrence controls', () => {
             unknown
           >,
         });
-        return Response.json(
+        return resolvedJson(
           advanced(STATE_2, 'previous_completion', 'routine'),
           {
             status: 201,
           },
         );
       }
-      return unavailable();
+      return Promise.resolve(unavailable());
     });
     vi.stubGlobal('fetch', fetchFn);
 
@@ -233,10 +237,10 @@ describe('Advanced Recurrence controls', () => {
   });
 
   it('does not report a source as non-recurring when reading its Recurrence failed', async () => {
-    const fetchFn = vi.fn<Fetch>(async (input) => {
+    const fetchFn = vi.fn<Fetch>((input) => {
       const url = fetchRequestUrl(input);
       if (url.endsWith(`/routines/${ROUTINE}/recurrence`)) {
-        return Response.json(
+        return resolvedJson(
           {
             code: 'temporal.recurrence.persistence_unavailable',
             detail: 'Canonical Recurrence state could not be read.',
@@ -244,7 +248,7 @@ describe('Advanced Recurrence controls', () => {
           { status: 503 },
         );
       }
-      return unavailable();
+      return Promise.resolve(unavailable());
     });
     vi.stubGlobal('fetch', fetchFn);
 
