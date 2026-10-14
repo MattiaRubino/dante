@@ -1028,15 +1028,18 @@ export function TemporalCreateEntry({
   // identity stable across validation-only renders: otherwise its effect
   // fires again and clears the just-produced field error.
   const handleU2DraftChange = useCallback(
-    (draft: TemporalCreateU2AuthoringDraft) => {
+    (draft: TemporalCreateU2AuthoringDraft, source: 'user' | 'sync') => {
       if (u2DraftRef.current === draft) return;
       pendingVaultSave.current = null;
       u2DraftRef.current = draft;
       setU2Draft(draft);
-      queueMicrotask(() => {
+      if (source === 'user') {
+        // A genuine draft edit invalidates an older validation result.
+        // Initial provider sync and date normalization must not erase errors
+        // produced by the Submit the user has just requested.
         setFailureMessage('');
         setFailureTarget(null);
-      });
+      }
     },
     [],
   );
