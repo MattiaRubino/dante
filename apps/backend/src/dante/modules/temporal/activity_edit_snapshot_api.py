@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 from uuid import UUID, uuid7
 
 from fastapi import APIRouter, Depends, Request, Response
@@ -98,6 +98,10 @@ class ActivityCoreEditCommand(BaseModel):
     capture: EditPolicyChange | None = None
     reality: EditPolicyChange | None = None
     reminder: EditReminderChange | None = None
+    session_disposition: Literal["keep", "delete"] | None = None
+    expected_session_fingerprint: str | None = Field(
+        default=None, pattern=r"^[a-f0-9]{64}$"
+    )
 
     @model_validator(mode="after")
     def validate_changes(self) -> ActivityCoreEditCommand:
@@ -111,6 +115,10 @@ class ActivityCoreEditCommand(BaseModel):
             )
         ):
             raise ValueError("At least one change is required.")
+        if (self.session_disposition is None) != (
+            self.expected_session_fingerprint is None
+        ):
+            raise ValueError("Session choice and fingerprint must be submitted together.")
         if self.capture is not None and self.capture.mode_code not in {
             "disabled",
             "record",
@@ -272,8 +280,41 @@ async def revise_activity_core(
     params = {"actor": context.self_person_ref, "activity": activity_ref}
     try:
         async with request.app.state.database_runtime.session_factory() as session, session.begin():
+            await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
             await session.execute(text("SET LOCAL statement_timeout = '15s'"))
             await session.execute(text("SET LOCAL lock_timeout = '5s'"))
+            current_session_fingerprint = await session.scalar(
+                text("SELECT dante.get_self_activity_session_impact_hash(:actor,:activity)"),
+                params,
+            )
+            attempts_exist = bool(
+                await session.scalar(
+                    text("SELECT EXISTS(SELECT 1 FROM dante.list_self_subject_sessions(:actor,:activity))"),
+                    params,
+                )
+            )
+            if attempts_exist and body.session_disposition is None:
+                raise ProblemError(
+                    status=409,
+                    code="temporal.activity_edit.session_confirmation_required",
+                    category="conflict",
+                    title="Session disposition required",
+                    detail="Scegli Mantieni Sessioni, Elimina Sessioni o Annulla.",
+                )
+            if body.session_disposition is not None:
+                if current_session_fingerprint != body.expected_session_fingerprint:
+                    raise ProblemError(
+                        status=409,
+                        code="temporal.activity_edit.session_state_stale",
+                        category="conflict",
+                        title="Session state changed",
+                        detail="Le Sessioni sono cambiate: ricarica e conferma.",
+                    )
+                if body.session_disposition == "delete":
+                    await session.scalar(
+                        text("SELECT dante.delete_self_activity_sessions(:actor,:activity,:fingerprint)"),
+                        {**params, "fingerprint": current_session_fingerprint},
+                    )
             if body.capture is not None:
                 capture_change = body.capture
                 intent = {
