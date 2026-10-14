@@ -42,6 +42,7 @@ const get = vi.fn();
 const revise = vi.fn();
 const retire = vi.fn();
 const loadSettings = vi.fn();
+const listActivitySessions = vi.fn().mockResolvedValue([]);
 const loadChildCount = vi.fn().mockResolvedValue(0);
 const saveCore = vi.fn();
 const previewReplan = vi.fn();
@@ -83,6 +84,11 @@ vi.mock('../../../temporal/remote-recurring-profile-edit', () => ({
 }));
 vi.mock('../../../temporal/remote-activity-inspector', () => ({
   createRemoteActivityInspector: () => ({ get, revise, retire }),
+}));
+vi.mock('../../../temporal/remote-session-data-source', () => ({
+  createRemoteTemporalSessionDataSource: () => ({
+    list: listActivitySessions,
+  }),
 }));
 vi.mock('../../../temporal/remote-activity-edit-settings', () => ({
   createRemoteActivityEditSettings: () => ({
@@ -147,6 +153,51 @@ loadLifeAreaChoice.mockResolvedValue({
 });
 
 describe('Recurring Activity profile scope', () => {
+
+  it('labels retained named and generic attempts with their factual lifecycle state', async () => {
+    loadSettings.mockResolvedValueOnce({
+      ...currentSettings,
+      schedules: [
+        {
+          scheduleRef: 'named-schedule',
+          role: 'planned',
+          name: 'Ripasso',
+          order: 1,
+          placementStateRef: null,
+          temporalForm: null,
+          start: null,
+          end: null,
+          zoneId: null,
+        },
+      ],
+    });
+    listActivitySessions.mockResolvedValueOnce([
+      { sessionRef: 'main', plannedScheduleRef: null, open: true, paused: false },
+      { sessionRef: 'named1', plannedScheduleRef: 'named-schedule', open: true, paused: true },
+      { sessionRef: 'named2', plannedScheduleRef: 'named-schedule', open: false, paused: false },
+    ]);
+    const { container } = render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
+    );
+    const mainStatus = await screen.findByLabelText('Stato della Sessione principale');
+    expect(mainStatus.textContent).toContain('in corso');
+    const namedRow = container.querySelector('[data-edit-planned-session="named-schedule"]');
+    expect(namedRow).not.toBeNull();
+    await waitFor(() => {
+      const status = namedRow?.querySelector(
+        '[aria-label="Stato delle Sessioni registrate"]',
+      );
+      expect(status?.textContent).toContain('in pausa');
+      expect(status?.textContent).toContain('conclusa');
+    });
+    expect(listActivitySessions).toHaveBeenCalledWith('activity', ref);
+  });
+
   it('keeps the Advanced create order in the edit surface', async () => {
     const { container } = render(
       <ActivityEditPanel
