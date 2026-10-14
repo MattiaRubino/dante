@@ -88,12 +88,7 @@ async def test_home_history_has_real_session_stop_but_no_inferred_activity_compl
         assert history[0].record_kind == "session_ended"
         assert history[0].title == "Studio inglese"
         assert history[0].subject_kind == "activity"
-        assert (
-            await list_home_finished_work(
-                request, _fake_context(stranger), Response()
-            )
-            == []
-        )
+        assert await list_home_finished_work(request, _fake_context(stranger), Response()) == []
 
         objective = await create_activity_objective(
             activity,
@@ -112,12 +107,7 @@ async def test_home_history_has_real_session_stop_but_no_inferred_activity_compl
         assert pending[0].objective_ref == objective.objective_ref
         assert pending[0].subject_title == "Studio inglese"
         assert pending[0].draft_revision is None
-        assert (
-            await list_home_objective_work(
-                request, _fake_context(stranger), Response()
-            )
-            == []
-        )
+        assert await list_home_objective_work(request, _fake_context(stranger), Response()) == []
     finally:
         await runtime.dispose()
 

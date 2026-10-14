@@ -431,7 +431,9 @@ def _validated_plan(
         )
     for deleted_planned in command.delete_planned_sessions:
         prior = next(
-            item for item in (*planned, *unplaced) if item.schedule_ref == deleted_planned.schedule_ref
+            item
+            for item in (*planned, *unplaced)
+            if item.schedule_ref == deleted_planned.schedule_ref
         )
         changes.append(
             ReplanChange(
@@ -589,7 +591,11 @@ async def apply_activity_replan(
                              :actor,execution.session_ref)=:schedule
                     )
                 """),
-                    {"actor": actor, "activity": activity_ref, "schedule": removed_schedule.schedule_ref},
+                    {
+                        "actor": actor,
+                        "activity": activity_ref,
+                        "schedule": removed_schedule.schedule_ref,
+                    },
                 ):
                     raise _conflict("A planned Session with recorded execution cannot be removed.")
                 if await session.scalar(

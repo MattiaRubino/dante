@@ -167,9 +167,7 @@ def build_panel(
             and (
                 nearest := min(
                     bounded_intervals,
-                    key=lambda pair: abs(
-                        (item["started_at"] - pair[1][0]).total_seconds()
-                    ),
+                    key=lambda pair: abs((item["started_at"] - pair[1][0]).total_seconds()),
                     default=None,
                 )
             )

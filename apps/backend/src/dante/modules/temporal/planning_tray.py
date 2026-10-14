@@ -263,7 +263,9 @@ class TemporalPlanningTrayApplication:
                 kind="event",
                 subject_ref=subject_ref,
                 schedule_ref=UUID(str(postponed_result.schedule.schedule_ref)),
-                placement_material_state_ref=UUID(str(postponed_result.schedule.material_state_ref)),
+                placement_material_state_ref=UUID(
+                    str(postponed_result.schedule.material_state_ref)
+                ),
                 replayed=postponed_result.replayed,
             )
 

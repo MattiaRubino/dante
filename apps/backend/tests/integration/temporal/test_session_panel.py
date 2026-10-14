@@ -69,9 +69,7 @@ async def test_panel_untimed_start_pause_resume_stop_owner_isolation_and_no_actu
         planned = next(r for r in panel.groups[0].rows if r.planned_schedule_ref)
         assert planned.name == "Ripasso"
         assert planned.execution is None
-        other_panel = await get_session_panel(
-            _fake_context(other), request, Response()
-        )
+        other_panel = await get_session_panel(_fake_context(other), request, Response())
         assert other_panel.groups == []
         sessions = SessionApplication(runtime.session_factory)
         main = await sessions.start(
