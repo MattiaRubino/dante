@@ -208,18 +208,21 @@ def _post_scheduled_event(
     title: str,
     placement: Mapping[str, object],
 ) -> _TestHttpResponse:
-    return cast(_TestHttpResponse, client.post(
-        "/api/v1/temporal/events/scheduled",
-        json={
-            "operation_id": operation_id,
-            "life_area_ref": api_test_life_area(
-                client, {**_base_headers(), CSRF_HEADER_NAME: csrf}
-            ),
-            "title": title,
-            "placement": placement,
-        },
-        headers={**_base_headers(), CSRF_HEADER_NAME: csrf},
-    ))
+    return cast(
+        _TestHttpResponse,
+        client.post(
+            "/api/v1/temporal/events/scheduled",
+            json={
+                "operation_id": operation_id,
+                "life_area_ref": api_test_life_area(
+                    client, {**_base_headers(), CSRF_HEADER_NAME: csrf}
+                ),
+                "title": title,
+                "placement": placement,
+            },
+            headers={**_base_headers(), CSRF_HEADER_NAME: csrf},
+        ),
+    )
 
 
 @pytest.mark.postgres

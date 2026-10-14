@@ -120,11 +120,13 @@ describe('Reconciliation controls', () => {
     const fetchFn = vi.fn<Fetch>((input) => {
       const url = fetchRequestUrl(input);
       if (url.endsWith(`/events/${SUBJECT}/actual`)) {
-        return Promise.resolve(notFound(
-          'temporal.actual.not_found',
-          'Actual unavailable',
-          'No Actual is established for this subject.',
-        ));
+        return Promise.resolve(
+          notFound(
+            'temporal.actual.not_found',
+            'Actual unavailable',
+            'No Actual is established for this subject.',
+          ),
+        );
       }
       throw new Error(`Unexpected fetch ${url}`);
     });

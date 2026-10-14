@@ -208,15 +208,18 @@ def _replace(
     expected_revision: int,
     agenda_parts: list[str],
 ) -> _TestHttpResponse:
-    return cast(_TestHttpResponse, client.put(
-        f"/api/v1/temporal/events/{event_ref}/agenda",
-        json={
-            "operation_id": operation_id,
-            "expected_revision": expected_revision,
-            "agenda_parts": agenda_parts,
-        },
-        headers={**_base_headers(), CSRF_HEADER_NAME: csrf},
-    ))
+    return cast(
+        _TestHttpResponse,
+        client.put(
+            f"/api/v1/temporal/events/{event_ref}/agenda",
+            json={
+                "operation_id": operation_id,
+                "expected_revision": expected_revision,
+                "agenda_parts": agenda_parts,
+            },
+            headers={**_base_headers(), CSRF_HEADER_NAME: csrf},
+        ),
+    )
 
 
 @pytest.mark.postgres

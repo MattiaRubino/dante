@@ -24,42 +24,37 @@ describe('Draft Vault remote owner boundary', () => {
       method: string;
       body?: Record<string, unknown>;
     }> = [];
-    const fetchFn = vi.fn(
-      (input: RequestInfo | URL, init?: RequestInit) => {
-        const path =
-          typeof input === 'string'
-            ? input
-            : input instanceof URL
-              ? input.href
-              : input.url;
-        if (path.endsWith('/auth/session'))
-          return resolvedResponse({
-            authenticated: true,
-            csrf_token: 'csrf',
-          });
-        if (
-          path.endsWith('/temporal/drafts/draft-1') &&
-          init?.method === 'PUT'
-        ) {
-          expect(new Headers(init.headers).get('X-Dante-CSRF')).toBe('csrf');
-          const body = JSON.parse(fetchRequestBody(init.body)) as Record<
-            string,
-            unknown
-          >;
-          requests.push({ path, method: init.method, body });
-          return resolvedResponse({
-            draft_ref: 'draft-1',
-            subject_kind: 'activity',
-            title: 'Allenamento',
-            payload: body.payload,
-            revision: 1,
-            created_at: '2026-10-09T20:00:00Z',
-            updated_at: '2026-10-09T20:00:00Z',
-          });
-        }
-        throw new Error(`Unexpected path: ${path}`);
-      },
-    );
+    const fetchFn = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const path =
+        typeof input === 'string'
+          ? input
+          : input instanceof URL
+            ? input.href
+            : input.url;
+      if (path.endsWith('/auth/session'))
+        return resolvedResponse({
+          authenticated: true,
+          csrf_token: 'csrf',
+        });
+      if (path.endsWith('/temporal/drafts/draft-1') && init?.method === 'PUT') {
+        expect(new Headers(init.headers).get('X-Dante-CSRF')).toBe('csrf');
+        const body = JSON.parse(fetchRequestBody(init.body)) as Record<
+          string,
+          unknown
+        >;
+        requests.push({ path, method: init.method, body });
+        return resolvedResponse({
+          draft_ref: 'draft-1',
+          subject_kind: 'activity',
+          title: 'Allenamento',
+          payload: body.payload,
+          revision: 1,
+          created_at: '2026-10-09T20:00:00Z',
+          updated_at: '2026-10-09T20:00:00Z',
+        });
+      }
+      throw new Error(`Unexpected path: ${path}`);
+    });
     const fields = { ...createTemporalCreateFields(), title: 'Allenamento' };
     const advanced = createTemporalCreateU2AuthoringDraft(fields);
     const saved = await createRemoteDraftVault(fetchFn).save(

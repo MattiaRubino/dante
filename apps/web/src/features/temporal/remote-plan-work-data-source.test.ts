@@ -36,24 +36,26 @@ const item = {
 describe('remote Plan work structure', () => {
   it('reads accepted order and uses the authenticated mutation boundary', async () => {
     const calls: Array<{ url: string; init?: RequestInit }> = [];
-    const fetchFn = vi.fn(
-      (url: RequestInfo | URL, init?: RequestInit) => {
-        calls.push({
-          url: fetchRequestUrl(url),
-          ...(init === undefined ? {} : { init }),
-        });
-        if (fetchRequestUrl(url) === '/api/v1/auth/session') {
-          return Promise.resolve(
-            new Response(JSON.stringify({ authenticated: true, csrf_token: 'csrf' })),
-          );
-        }
-        if (init?.method === 'PUT')
-          return Promise.resolve(new Response(JSON.stringify(item)));
-        if (init?.method === 'POST')
-          return Promise.resolve(new Response(JSON.stringify({ ...item, steps: [] })));
-        return Promise.resolve(new Response(JSON.stringify([item])));
-      },
-    ) as typeof globalThis.fetch;
+    const fetchFn = vi.fn((url: RequestInfo | URL, init?: RequestInit) => {
+      calls.push({
+        url: fetchRequestUrl(url),
+        ...(init === undefined ? {} : { init }),
+      });
+      if (fetchRequestUrl(url) === '/api/v1/auth/session') {
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({ authenticated: true, csrf_token: 'csrf' }),
+          ),
+        );
+      }
+      if (init?.method === 'PUT')
+        return Promise.resolve(new Response(JSON.stringify(item)));
+      if (init?.method === 'POST')
+        return Promise.resolve(
+          new Response(JSON.stringify({ ...item, steps: [] })),
+        );
+      return Promise.resolve(new Response(JSON.stringify([item])));
+    }) as typeof globalThis.fetch;
     const source = createRemotePlanWorkDataSource(fetchFn);
     const [loaded] = await source.list();
     expect(loaded?.steps[0]?.stepRef).toBe(STEP);
@@ -83,13 +85,14 @@ describe('remote Plan work structure', () => {
   });
 
   it('rejects a response whose order is not contiguous', async () => {
-    const fetchFn = vi.fn(
-      () =>
-        Promise.resolve(new Response(
+    const fetchFn = vi.fn(() =>
+      Promise.resolve(
+        new Response(
           JSON.stringify([
             { ...item, steps: [{ ...item.steps[0], position: 2 }] },
           ]),
-        )),
+        ),
+      ),
     ) as typeof globalThis.fetch;
     await expect(
       createRemotePlanWorkDataSource(fetchFn).list(),

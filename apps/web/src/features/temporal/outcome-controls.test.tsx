@@ -119,7 +119,9 @@ describe('Outcome controls', () => {
         return resolvedJson(current, { status: 201 });
       }
       if (url.endsWith(`/actuals/${ACTUAL}/outcome`)) {
-        return current === null ? Promise.resolve(outcomeNotFound()) : resolvedJson(current);
+        return current === null
+          ? Promise.resolve(outcomeNotFound())
+          : resolvedJson(current);
       }
       throw new Error(`Unexpected fetch ${url}`);
     });
