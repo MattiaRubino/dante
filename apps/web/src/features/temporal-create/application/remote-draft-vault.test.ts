@@ -13,6 +13,10 @@ function response(body: unknown, status = 200): Response {
   });
 }
 
+function resolvedResponse(body: unknown, status = 200): Promise<Response> {
+  return Promise.resolve(response(body, status));
+}
+
 describe('Draft Vault remote owner boundary', () => {
   it('saves an inert Activity configuration without any product authoring call', async () => {
     const requests: Array<{
@@ -21,7 +25,7 @@ describe('Draft Vault remote owner boundary', () => {
       body?: Record<string, unknown>;
     }> = [];
     const fetchFn = vi.fn(
-      async (input: RequestInfo | URL, init?: RequestInit) => {
+      (input: RequestInfo | URL, init?: RequestInit) => {
         const path =
           typeof input === 'string'
             ? input
@@ -29,7 +33,7 @@ describe('Draft Vault remote owner boundary', () => {
               ? input.href
               : input.url;
         if (path.endsWith('/auth/session'))
-          return response({
+          return resolvedResponse({
             authenticated: true,
             csrf_token: 'csrf',
           });
@@ -43,7 +47,7 @@ describe('Draft Vault remote owner boundary', () => {
             unknown
           >;
           requests.push({ path, method: init.method, body });
-          return response({
+          return resolvedResponse({
             draft_ref: 'draft-1',
             subject_kind: 'activity',
             title: 'Allenamento',
