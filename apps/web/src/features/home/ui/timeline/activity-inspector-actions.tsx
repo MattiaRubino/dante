@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import {
   createRemoteActivityInspector,
   type ActivityProfile,
+  type ActivitySessionImpact,
 } from '../../../temporal/remote-activity-inspector';
 import { createRemoteActivityEditSettings } from '../../../temporal/remote-activity-edit-settings';
 import { createRemoteRecurringProfileEdit } from '../../../temporal/remote-recurring-profile-edit';
@@ -39,6 +40,7 @@ export function ActivityInspectorActions({
   const [draftVault] = useState(createRemoteDraftVault);
   const [profile, setProfile] = useState<ActivityProfile | null>(null);
   const [confirming, setConfirming] = useState(false);
+  const [deleteImpact, setDeleteImpact] = useState<ActivitySessionImpact | null>(null);
   const [confirmingVault, setConfirmingVault] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
@@ -145,7 +147,13 @@ export function ActivityInspectorActions({
         aria-label="Elimina"
         title="Elimina"
         disabled={pending}
-        onClick={() => setConfirming(true)}
+        onClick={() =>
+          void action(async () => {
+            const current = await source.sessionImpact(activityRef);
+            setDeleteImpact(current);
+            setConfirming(true);
+          })
+        }
       >
         {toolbarTarget ? <TimelineInspectorIcon name="trash" /> : 'Elimina'}
       </button>
@@ -253,29 +261,39 @@ export function ActivityInspectorActions({
           </button>
         </div>
       ) : null}
-      {confirming ? (
+      {confirming && deleteImpact ? (
         <div className="timeline-activity-inspector__confirmation">
           <p>
-            Eliminare questa attività? Se ci sono sessioni o risultati
-            registrati, il sistema ne impedisce la cancellazione: puoi
-            correggere i dati storici.
+            Eliminare definitivamente questa attività, i suoi intervalli,
+            promemoria, Sessioni e dati collegati? L'operazione non è
+            reversibile.
           </p>
+          {deleteImpact.attempts.length > 0 ? (
+            <p>
+              Verranno eliminate anche {deleteImpact.attempts.length}
+              {' '}Sessioni registrate (
+              {deleteImpact.attempts.map((attempt) => attempt.status).join(', ')}).
+            </p>
+          ) : null}
           <button
             type="button"
             disabled={pending}
             onClick={() =>
               void action(async () => {
-                await source.retire(activityRef);
+                await source.deleteHard(activityRef, deleteImpact.fingerprint);
                 onDeleted();
               })
             }
           >
-            Conferma eliminazione
+            Conferma eliminazione definitiva
           </button>
           <button
             type="button"
             disabled={pending}
-            onClick={() => setConfirming(false)}
+            onClick={() => {
+              setConfirming(false);
+              setDeleteImpact(null);
+            }}
           >
             Annulla
           </button>
