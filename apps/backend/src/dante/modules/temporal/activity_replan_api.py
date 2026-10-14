@@ -6,7 +6,7 @@ import hashlib
 import json
 from datetime import datetime
 from itertools import pairwise
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import UUID, uuid7
 
 from fastapi import APIRouter, Depends, Request, Response
@@ -140,6 +140,10 @@ class ActivityReplanCommand(BaseModel):
     new_planned_sessions: list[NewPlannedRow] = Field(default_factory=list, max_length=100)
     remove_planned_sessions: list[RetainedPlannedRow] = Field(default_factory=list, max_length=0)
     delete_planned_sessions: list[DeletePlannedRow] = Field(default_factory=list, max_length=100)
+    session_disposition: Literal["keep", "delete"] | None = None
+    expected_session_fingerprint: str | None = Field(
+        default=None, pattern=r"^[a-f0-9]{64}$"
+    )
 
     @model_validator(mode="after")
     def unique_new_rows(self) -> ActivityReplanCommand:
@@ -148,6 +152,10 @@ class ActivityReplanCommand(BaseModel):
         ]
         if len(set(refs)) != len(refs):
             raise ValueError("New Activity interval and planned Session identities must be unique.")
+        if (self.session_disposition is None) != (
+            self.expected_session_fingerprint is None
+        ):
+            raise ValueError("Session disposition requires its expected impact fingerprint.")
         return self
 
 
@@ -455,18 +463,44 @@ async def apply_activity_replan(
                 or body.new_planned_sessions
                 or body.delete_planned_sessions
             )
-            # Historical execution is immutable. Current open execution and accepted
-            # realization close ordinary planning edits for this bounded command.
-            if changes_required and await session.scalar(
-                text("""
-                    SELECT EXISTS(SELECT 1 FROM dante.list_self_subject_sessions(:actor,:activity)
-                                   WHERE ended_at IS NULL)
-                        OR EXISTS(SELECT 1 FROM dante.get_self_subject_actual(
-                            :actor,'activity',:activity))
-                """),
+            # Accepted v2 lifecycle: planning never rewrites real attempts.
+            # A deliberate Keep/Delete decision is required when attempts exist,
+            # and the DB checks its CAS token again under SERIALIZABLE isolation.
+            current_session_fingerprint = await session.scalar(
+                text("SELECT dante.get_self_activity_session_impact_hash(:actor,:activity)"),
                 {"actor": actor, "activity": activity_ref},
-            ):
-                raise _conflict("This Activity has open execution or accepted realization.")
+            )
+            attempts_present = bool(
+                await session.scalar(
+                    text("""
+                        SELECT EXISTS(
+                            SELECT 1 FROM dante.list_self_subject_sessions(:actor,:activity)
+                        )
+                    """),
+                    {"actor": actor, "activity": activity_ref},
+                )
+            )
+            if changes_required and attempts_present and body.session_disposition is None:
+                raise _conflict("Scegli Mantieni Sessioni, Elimina Sessioni o Annulla.")
+            if body.session_disposition is not None:
+                if (
+                    current_session_fingerprint is None
+                    or current_session_fingerprint != body.expected_session_fingerprint
+                ):
+                    raise _conflict("Session attempts changed. Reload before confirming.")
+                if body.session_disposition == "delete":
+                    await session.scalar(
+                        text("""
+                            SELECT dante.delete_self_activity_sessions(
+                                :actor,:activity,:fingerprint
+                            )
+                        """),
+                        {
+                            "actor": actor,
+                            "activity": activity_ref,
+                            "fingerprint": current_session_fingerprint,
+                        },
+                    )
             envelope = next(row for row in snapshot.schedules if row.role_code == "envelope")
             # A placement lock freezes existing Schedule coordinates, not new
             # Activity structure. Adding a planned Session inside the already
@@ -535,10 +569,6 @@ async def apply_activity_replan(
             unscheduled_rows = [
                 (item.schedule_ref, item.expected_material_state_ref)
                 for item in body.remove_intervals
-            ] + [
-                (item.schedule_ref, item.expected_material_state_ref)
-                for item in body.delete_planned_sessions
-                if item.expected_material_state_ref is not None
             ]
             for schedule_ref, expected_state in unscheduled_rows:
                 await session.execute(
@@ -558,14 +588,24 @@ async def apply_activity_replan(
                     },
                 )
             for retired_row in body.delete_planned_sessions:
-                await session.execute(
+                # X is draft-only until Save. Here both the named configuration
+                # and its linked real attempts disappear in the SAME transaction;
+                # the other retained Session attempts remain unchanged.
+                current_session_fingerprint = await session.scalar(
+                    text("SELECT dante.get_self_activity_session_impact_hash(:actor,:activity)"),
+                    {"actor": actor, "activity": activity_ref},
+                )
+                await session.scalar(
                     text("""
-                    SELECT dante.retire_self_planned_schedule(:actor,:activity,:schedule)
-                """),
+                        SELECT dante.delete_self_named_activity_session(
+                            :actor,:activity,:schedule,:fingerprint
+                        )
+                    """),
                     {
                         "actor": actor,
                         "activity": activity_ref,
                         "schedule": retired_row.schedule_ref,
+                        "fingerprint": current_session_fingerprint,
                     },
                 )
             if body.new_intervals:
