@@ -8,10 +8,19 @@ import {
 
 const REMINDER_LEADS = [0, 5, 15, 30, 60, 120, 1440] as const;
 
-export function ScheduleReminderControls({
+type ScheduleReminderControlsProps = Readonly<{
+  scheduleRef: string;
+  hideWhenAbsent?: boolean;
+}>;
+
+export function ScheduleReminderControls(props: ScheduleReminderControlsProps) {
+  return <ScheduleReminderInstance key={props.scheduleRef} {...props} />;
+}
+
+function ScheduleReminderInstance({
   scheduleRef,
   hideWhenAbsent = false,
-}: Readonly<{ scheduleRef: string; hideWhenAbsent?: boolean }>) {
+}: ScheduleReminderControlsProps) {
   const { t } = useTranslation('common');
   const [source] = useState(() => createRemoteScheduleReminderDataSource());
   const [current, setCurrent] = useState<ScheduleReminderView | null>(null);
@@ -29,10 +38,6 @@ export function ScheduleReminderControls({
 
   useEffect(() => {
     let active = true;
-    setLoading(true);
-    setCurrent(null);
-    setError(false);
-    setReadFailed(false);
     attemptRef.current = null;
     void source
       .get(scheduleRef)
@@ -99,7 +104,13 @@ export function ScheduleReminderControls({
       {loading ? (
         <span>{t(($) => $.common.home.timeline.detail.reminder.loading)}</span>
       ) : readFailed ? (
-        <button type="button" onClick={() => setReload((value) => value + 1)}>
+        <button type="button" onClick={() => {
+            setLoading(true);
+            setCurrent(null);
+            setError(false);
+            setReadFailed(false);
+            setReload((value) => value + 1);
+          }}>
           {t(($) => $.common.home.timeline.detail.reminder.retryRead)}
         </button>
       ) : (
