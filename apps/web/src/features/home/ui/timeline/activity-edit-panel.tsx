@@ -845,7 +845,7 @@ export function ActivityEditPanel({
                 currentSettings,
                 replanDraft,
                 operationId,
-                sessionDecision ?? undefined,
+                ...(sessionDecision ? ([sessionDecision] as const) : ([] as const)),
               )
               .catch((reason: unknown) => {
                 errorHandled = true;
@@ -1090,7 +1090,7 @@ export function ActivityEditPanel({
               ...(reminderChanged ? { reminderLeadMinutes } : {}),
             },
             (operation.current ??= crypto.randomUUID()),
-            sessionDecision ?? undefined,
+            ...(sessionDecision ? ([sessionDecision] as const) : ([] as const)),
           );
           operation.current = undefined;
           setSettings(saved.settings);
