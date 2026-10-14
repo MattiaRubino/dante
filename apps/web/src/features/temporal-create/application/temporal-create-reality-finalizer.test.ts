@@ -37,7 +37,7 @@ describe('Temporal Create policy finalizer', () => {
     > = [];
     const lockCalls: string[] = [];
     const realitySource = {
-      configureReality: async (
+      configureReality: (
         kind: 'activity' | 'event' | 'occurrence',
         activityRef: string,
         command: Readonly<{ operationId: string; mode: string }>,
@@ -48,29 +48,26 @@ describe('Temporal Create policy finalizer', () => {
           operationId: command.operationId,
           mode: command.mode,
         });
+        return Promise.resolve();
       },
-      createObjective: async () => {
-        throw new Error('not used');
-      },
-      listObjectives: async () => Object.freeze([]),
-      recordResult: async () => {
-        throw new Error('not used');
-      },
+      createObjective: () => Promise.reject(new Error('not used')),
+      listObjectives: () => Promise.resolve(Object.freeze([])),
+      recordResult: () => Promise.reject(new Error('not used')),
     };
     const movementSource = {
-      protect: async (scheduleRef: string, operationId: string) => {
+      protect: (scheduleRef: string, operationId: string) => {
         movementCalls.push({ scheduleRef, operationId });
-        return {
+        return Promise.resolve({
           scheduleRef,
           materialStateRef: '0199eeee-eeee-7eee-8eee-eeeeeeeeeeee',
           replayed: movementCalls.length > 1,
-        };
+        });
       },
     };
     const lockSource = {
-      lock: async (scheduleRef: string) => {
+      lock: (scheduleRef: string) => {
         lockCalls.push(scheduleRef);
-        return { scheduleRef, locked: true, revision: 1 };
+        return Promise.resolve({ scheduleRef, locked: true, revision: 1 });
       },
     };
 
