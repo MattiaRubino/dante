@@ -333,7 +333,7 @@ async def test_retirement_rejects_recorded_past_execution_without_erasing_it(
                     text("SELECT dante.retire_self_activity(:actor,:activity,:operation)"),
                     {"actor": actor, "activity": activity, "operation": "m3:retire"},
                 )
-        assert getattr(failure.value.orig.diag, "constraint_name", None) == (
+        assert getattr(getattr(failure.value.orig, "diag", None), "constraint_name", None) == (
             "activity_profile_recorded_truth"
         )
         assert [
