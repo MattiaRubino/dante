@@ -94,6 +94,7 @@ describe('remote Event Timeline protocol', () => {
 
   it('rejects scheduled_event without its Event reference', async () => {
     const { event_ref: _eventRef, ...withoutEventRef } = EVENT;
+    void _eventRef;
     const source = createRemoteTemporalTimelineDataSource(
       vi.fn<typeof globalThis.fetch>(() =>
         Promise.resolve(
