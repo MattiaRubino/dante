@@ -171,11 +171,13 @@ describe('TemporalCreateComposer', () => {
       screen.getByRole('button', { name: 'Aggiungi punto alla scaletta' }),
     );
 
-    expect(onPatch).toHaveBeenCalledWith({
-      event: expect.objectContaining({
-        agendaParts: [''],
-      }),
-    });
+    expect(onPatch).toHaveBeenCalledTimes(1);
+    const patch: unknown = onPatch.mock.calls[0]?.[0];
+    if (typeof patch !== 'object' || patch === null || !('event' in patch)) {
+      throw new Error('Expected an Event agenda patch.');
+    }
+    expect(Object.keys(patch)).toEqual(['event']);
+    expect(patch.event).toMatchObject({ agendaParts: [''] });
   });
 
   it('locks background scrolling while Advanced Create owns the viewport', () => {
