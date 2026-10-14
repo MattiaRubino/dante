@@ -14,6 +14,7 @@ from uuid import UUID, uuid7
 import psycopg
 import pytest
 from fastapi.testclient import TestClient
+from httpx import Response
 from pydantic import SecretStr
 from tests.integration.temporal.support.life_area import api_test_life_area
 
@@ -199,7 +200,7 @@ def _replace(
     operation_id: str,
     expected_revision: int,
     agenda_parts: list[str],
-):
+) -> Response:
     return client.put(
         f"/api/v1/temporal/events/{event_ref}/agenda",
         json={
