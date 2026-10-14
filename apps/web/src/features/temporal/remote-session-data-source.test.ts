@@ -83,7 +83,9 @@ describe('remote session data source', () => {
       expect(url).toBe(`/api/v1/temporal/activities/${SUBJECT}/sessions`);
       expect(init?.method).toBe('POST');
       expect((init?.headers as Headers).get('X-Dante-CSRF')).toBe('csrf');
-      expect(JSON.parse(requiredTextBody(init))).toEqual({ operation_id: 'op-1' });
+      expect(JSON.parse(requiredTextBody(init))).toEqual({
+        operation_id: 'op-1',
+      });
       return resolvedJson(openSession);
     });
     const source = createRemoteTemporalSessionDataSource(fetchFn);

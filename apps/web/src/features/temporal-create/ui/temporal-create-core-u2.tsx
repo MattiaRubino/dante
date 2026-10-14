@@ -464,7 +464,7 @@ export function TemporalCreateCoreFieldsU2({
   onRequestAdvanced,
   renderError,
 }: Props) {
-  const { t, i18n } = useTranslation('common');
+  const { i18n } = useTranslation('common');
   const { draft: authoringDraft, patch: patchAuthoring } =
     useTemporalCreateU2Draft();
   const copy = temporalCreateProductCopy(
@@ -477,6 +477,7 @@ export function TemporalCreateCoreFieldsU2({
   const [timeBandOpen, setTimeBandOpen] = useState(false);
   const timeZoneRootRef = useRef<HTMLDivElement | null>(null);
   const timeBandRootRef = useRef<HTMLDivElement | null>(null);
+  const autoRolledEndDateRef = useRef(false);
   const recurrenceOwner: Exclude<TemporalCreateRecurrenceOwner, null> =
     fields.kind === 'event' ? 'event' : 'routine';
 
@@ -634,10 +635,17 @@ export function TemporalCreateCoreFieldsU2({
       : safeAllDayEndDate(fields.date, authoringDraft.endDate);
 
   const patchEnd = (endDate: string, endTime: string) => {
-    const normalizedEndDate = normalizeTemporalCreateU2EndDate(
+    let normalizedEndDate = normalizeTemporalCreateU2EndDate(
       fields.date,
       endDate,
     );
+    // Editing the start may temporarily move the old end clock to tomorrow.
+    // Once the user supplies an end clock after the new start, that temporary
+    // rollover must not turn an intraday event into a 24-hour event.
+    if (autoRolledEndDateRef.current && endTime > fields.startTime) {
+      normalizedEndDate = fields.date;
+      autoRolledEndDateRef.current = false;
+    }
     const duration = temporalCreateDurationFromEndDateTime(
       fields.date,
       fields.startTime,
@@ -651,6 +659,7 @@ export function TemporalCreateCoreFieldsU2({
   };
 
   const patchStartDate = (date: string) => {
+    autoRolledEndDateRef.current = false;
     const endDate = normalizeTemporalCreateU2EndDate(date, visibleEndDate);
     const duration = temporalCreateDurationFromEndDateTime(
       date,
@@ -693,7 +702,11 @@ export function TemporalCreateCoreFieldsU2({
     // The end displayed in the form is an explicit choice. Moving the start
     // changes the duration, not the end clock (including overnight ranges).
     let endDate = visibleEndDate;
-    let duration = temporalCreateDurationFromEndDateTime(
+    if (autoRolledEndDateRef.current && calculatedEnd.time > startTime) {
+      endDate = fields.date;
+      autoRolledEndDateRef.current = false;
+    }
+    const duration = temporalCreateDurationFromEndDateTime(
       fields.date,
       startTime,
       endDate,
@@ -719,6 +732,7 @@ export function TemporalCreateCoreFieldsU2({
         fields.timeZoneId,
       );
       if (overnight !== null) {
+        autoRolledEndDateRef.current = true;
         patchAuthoring({ endDate: nextDay });
         onPatch({ startTime, durationMinutes: overnight });
         return;
@@ -751,6 +765,7 @@ export function TemporalCreateCoreFieldsU2({
       };
 
   const applyTimeBand = (band: TimeBand) => {
+    autoRolledEndDateRef.current = false;
     const startMinute = timeToMinute(band.start) ?? 0;
     const endMinute = timeToMinute(band.end) ?? 0;
     const endDate =
@@ -1043,7 +1058,10 @@ export function TemporalCreateCoreFieldsU2({
             value={visibleEndDate}
             min={fields.date}
             locale={locale}
-            onChange={(date) => patchEnd(date, calculatedEnd.time)}
+            onChange={(date) => {
+              autoRolledEndDateRef.current = false;
+              patchEnd(date, calculatedEnd.time);
+            }}
           />
 
           {fields.kind === 'activity' &&

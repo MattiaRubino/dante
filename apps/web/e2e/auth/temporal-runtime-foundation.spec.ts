@@ -187,6 +187,11 @@ test.describe('Timeline B00 real full-stack spine', () => {
       ).toHaveAttribute('data-temporal-date', eventDate);
       await dialog.getByRole('textbox', { name: 'Inizio: ore' }).fill('10');
       await dialog.getByRole('textbox', { name: 'Inizio: minuti' }).fill('00');
+      await dialog.getByRole('textbox', { name: 'Fine: ore' }).fill('10');
+      await dialog.getByRole('textbox', { name: 'Fine: minuti' }).fill('30');
+      await expect(
+        dialog.getByRole('button', { name: /^Data fine:/ }),
+      ).toHaveAttribute('data-temporal-date', eventDate);
 
       // Real-stack validation: the Event must exist in PostgreSQL before
       // the projection shows it, and the frontend cannot invent its ref.

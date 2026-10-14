@@ -118,12 +118,8 @@ describe('Home U1 Create interaction bridge', () => {
 
     fireEvent.pointerDown(day, { clientY: 615 });
 
-    expect((inputByLabel('Data')).value).toBe(
-      '2026-10-02',
-    );
-    expect((inputByLabel('Ora')).value).toBe(
-      '10:15',
-    );
+    expect(inputByLabel('Data').value).toBe('2026-10-02');
+    expect(inputByLabel('Ora').value).toBe('10:15');
     expect(onEscape).not.toHaveBeenCalled();
   });
 
@@ -206,12 +202,8 @@ describe('Home U1 Create interaction bridge', () => {
 
     fireEvent.doubleClick(day, { clientY: 720 });
 
-    expect((inputByLabel('Data')).value).toBe(
-      '2026-10-02',
-    );
-    expect((inputByLabel('Ora')).value).toBe(
-      '12:00',
-    );
+    expect(inputByLabel('Data').value).toBe('2026-10-02');
+    expect(inputByLabel('Ora').value).toBe('12:00');
     expect(leakedDoubleClick).not.toHaveBeenCalled();
     expect(onEscape).not.toHaveBeenCalled();
 

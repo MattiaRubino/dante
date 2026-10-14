@@ -73,7 +73,7 @@ class ReconciliationHistoryResponse(ReconciliationResponse):
     current_until_at: datetime | None
 
 
-_RECONCILIATION_WRITE_RESPONSES: dict[int, dict[str, Any]] = {
+_RECONCILIATION_WRITE_RESPONSES: dict[int | str, dict[str, Any]] = {
     200: {
         "model": ReconciliationResponse,
         "description": "Idempotent replay of the already accepted reconciliation command.",

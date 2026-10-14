@@ -57,6 +57,7 @@ from dante.modules.temporal.schedule import (
     FloatingLocalIntervalPlacement,
     NamedZoneLocalIntervalPlacement,
     SchedulePersistenceError,
+    SchedulePlacement,
     TemporalScheduleApplication,
 )
 from dante.modules.temporal.schedule_reminder import (
@@ -125,7 +126,7 @@ class RoutineOccurrenceMaterializationApplication:
         occurrence_ref: UUID,
         coordinate: CalendarCoordinate | ElapsedCoordinate,
         policy: RoutineOccurrencePolicyView,
-    ):
+    ) -> SchedulePlacement:
         duration = timedelta(minutes=policy.duration_minutes)
         if isinstance(coordinate, ElapsedCoordinate):
             return AbsoluteIntervalPlacement(
@@ -169,7 +170,7 @@ class RoutineOccurrenceMaterializationApplication:
         occurrence_ref: UUID,
         coordinate: CalendarCoordinate,
         policy: EventOccurrencePolicyView,
-    ):
+    ) -> SchedulePlacement:
         if policy.placement_kind == "all_day":
             if policy.duration_days is None:
                 raise OccurrenceInputError("Recurring all-day Event policy has no duration.")
@@ -589,9 +590,11 @@ class RoutineOccurrenceMaterializationApplication:
             coordinate,
             root_window,
         )
+        interval_rows = template.get("activity_intervals", [])
+        if not isinstance(interval_rows, list):
+            raise OccurrenceInputError("Recurring Activity intervals are invalid.")
         intervals = tuple(
-            self._template_window(occurrence_ref, coordinate, value)
-            for value in template.get("activity_intervals", [])
+            self._template_window(occurrence_ref, coordinate, value) for value in interval_rows
         )
         planned_rows = template.get("planned_slices", [])
         if not isinstance(planned_rows, list):
@@ -674,7 +677,7 @@ class RoutineOccurrenceMaterializationApplication:
             ),
             placement=root_placement,
             session_capture_mode=cast(str, template.get("session_capture_mode", "disabled")),
-            minimum_session_duration_microseconds=cast(int | None, minimum),
+            minimum_session_duration_microseconds=minimum,
             child_guard_mode=cast(str, template.get("child_guard_mode", "none")),
             planned_slices=planned_slices,
             activity_intervals=intervals,

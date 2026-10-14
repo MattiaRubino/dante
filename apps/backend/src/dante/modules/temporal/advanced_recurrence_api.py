@@ -93,7 +93,7 @@ class AdvancedCheckpointResponse(BaseModel):
     replayed: bool
 
 
-_WRITE_RESPONSES: dict[int, dict[str, Any]] = {
+_WRITE_RESPONSES: dict[int | str, dict[str, Any]] = {
     200: {"model": AdvancedRecurrenceResponse, "description": "Idempotent replay."},
     400: {"model": ProblemDetails, "description": "Malformed request."},
     401: {"model": ProblemDetails, "description": "Authentication required."},

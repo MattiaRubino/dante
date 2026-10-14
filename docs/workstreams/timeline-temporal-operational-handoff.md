@@ -1,5 +1,11 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-14 — Repair candidate after full gate at `6c9d421`
+
+The uploaded full WSL gate ran all 27 groups on `6c9d421`: 22 passed and five failed (`BACKEND_MYPY`, `REPO_FORMAT`, `REPO_ESLINT`, `WEB_BROWSER_NONAUTH`, `WEB_BROWSER_REAL_STACK`). Both browser failures share a Create start/end interaction: editing the start can temporarily roll the old end clock to the following day; later editing the end clock did not restore the same-day date. A focused component regression was red before the fix and now passes. Authenticated Event scenarios now enter an explicit 30-minute end through the current segmented control, while preserving canonical POST/readback assertions. The two Prettier failures have been formatted. Type and input-shape corrections reduced the observed mypy error count from 240 to 219, but this group remains red; ESLint also remains red (295 errors and three warnings in the current local rerun). Do not claim either browser group green until rerun in WSL against the candidate SHA. Locally checked: Web typecheck, 29 Create Vitest cases, five Activity replan unit cases, Python Ruff on changed backend, structural test registry and full Prettier. The local environment has no Docker or installed Playwright browsers, so PostgreSQL and browser proofs remain WSL-only.
+
+Run only the five previously failing groups against the published SHA before another complete 27-group gate; treat any newly exposed functional failure as a real defect, not a test to retire without contract review.
+
 ## 2026-10-13 — Resource-aware full-gate scheduling (not WSL benchmarked)
 
 The latest *measured* complete WSL run at `6476a5c1` took **1713.3s** (28m33s): PostgreSQL **392.5s**, browser non-auth **395.5s**, browser real-stack **918.6s**, browser session fixture **6.5s**. Non-auth and real-stack Playwright were serialized after PostgreSQL, leaving long idle CPU capacity. The real-stack suite intentionally stops/restarts PostgreSQL in auth and timeline recovery proofs, so blindly raising its single Playwright worker count is unsafe.

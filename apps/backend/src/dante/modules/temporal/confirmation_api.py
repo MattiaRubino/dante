@@ -55,7 +55,7 @@ class ConfirmationHistoryResponse(ConfirmationResponse):
     current_until_at: datetime | None
 
 
-_CONFIRMATION_WRITE_RESPONSES: dict[int, dict[str, Any]] = {
+_CONFIRMATION_WRITE_RESPONSES: dict[int | str, dict[str, Any]] = {
     200: {
         "model": ConfirmationResponse,
         "description": "Idempotent replay of the already accepted Confirmation command.",

@@ -96,6 +96,32 @@ function setClock(label: 'Inizio' | 'Fine', value: string) {
 }
 
 describe('Temporal Create U1 top controls', () => {
+  it('returns an automatically rolled end date to today when the user enters a later end clock', () => {
+    renderEntry();
+    fireEvent.click(screen.getByRole('radio', { name: 'Evento' }));
+
+    const startHour = screen.getByLabelText('Inizio: ore');
+    const endHour = screen.getByLabelText('Fine: ore');
+    const endMinute = screen.getByLabelText('Fine: minuti');
+    fireEvent.change(startHour, { target: { value: '15' } });
+    fireEvent.blur(startHour);
+    fireEvent.change(endHour, { target: { value: '15' } });
+    fireEvent.blur(endHour);
+    fireEvent.change(endMinute, { target: { value: '45' } });
+    fireEvent.blur(endMinute);
+
+    expect(clockValues().start.value).toBe('15:00');
+    expect(clockValues().end.value).toBe('15:45');
+    expect(
+      screen
+        .getByRole('button', { name: /^Data fine:/ })
+        .getAttribute('data-temporal-date'),
+    ).toBe('2026-09-30');
+    expect(
+      within(screen.getByRole('group', { name: 'Fine' })).getByText('45 min'),
+    ).toBeTruthy();
+  });
+
   it.each([
     ['Quick', 'Attività'],
     ['Quick', 'Evento'],

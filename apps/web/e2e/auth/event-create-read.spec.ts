@@ -7,6 +7,8 @@ import {
   type TestInfo,
 } from '@playwright/test';
 
+import { setTimedDuration } from '../helpers/create-time';
+
 const password = 'correct horse battery staple';
 const E2E_RESPONSE_TIMEOUT_MS = 10_000;
 const B03_E2E_EMAIL = 'synthetic.user+e2e-64@example.com';
@@ -212,6 +214,7 @@ async function chooseFloatingLocalTime(dialog: Locator) {
   await dialog.getByRole('button', { name: 'Ora locale', exact: true }).click();
   await dialog.getByRole('textbox', { name: 'Inizio: ore' }).fill('10');
   await dialog.getByRole('textbox', { name: 'Inizio: minuti' }).fill('00');
+  await setTimedDuration(dialog, 30);
 }
 
 function addDays(date: string, days: number): string {

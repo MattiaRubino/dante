@@ -68,7 +68,7 @@ class ConditionalEvaluationResponse(BaseModel):
     replayed: bool
 
 
-_CONDITION_WRITE_RESPONSES: dict[int, dict[str, Any]] = {
+_CONDITION_WRITE_RESPONSES: dict[int | str, dict[str, Any]] = {
     200: {
         "model": ActualRealizationConditionResponse,
         "description": "Idempotent replay.",
@@ -82,7 +82,7 @@ _CONDITION_WRITE_RESPONSES: dict[int, dict[str, Any]] = {
     500: {"model": ProblemDetails, "description": "Unexpected server error."},
 }
 
-_EVALUATION_WRITE_RESPONSES: dict[int, dict[str, Any]] = {
+_EVALUATION_WRITE_RESPONSES: dict[int | str, dict[str, Any]] = {
     200: {
         "model": ConditionalEvaluationResponse,
         "description": "Idempotent replay.",

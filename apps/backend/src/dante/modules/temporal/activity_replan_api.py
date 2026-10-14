@@ -581,7 +581,11 @@ async def apply_activity_replan(
                     {"actor": actor, "schedule": removed_interval.schedule_ref},
                 ):
                     raise _conflict("Unlock the Activity interval before removing it.")
-            for removed_schedule in (*body.remove_planned_sessions, *body.delete_planned_sessions):
+            removed_schedules: tuple[ReplanRow | DeletePlannedRow, ...] = (
+                *body.remove_planned_sessions,
+                *body.delete_planned_sessions,
+            )
+            for removed_schedule in removed_schedules:
                 if await session.scalar(
                     text("""
                     SELECT EXISTS(
@@ -636,7 +640,7 @@ async def apply_activity_replan(
                         "placement": json.dumps(_placement_payload(placement), sort_keys=True),
                     },
                 )
-            for unscheduled_row in (
+            unscheduled_rows: tuple[ReplanRow | DeletePlannedRow, ...] = (
                 *body.remove_intervals,
                 *body.remove_planned_sessions,
                 *(
@@ -644,7 +648,11 @@ async def apply_activity_replan(
                     for item in body.delete_planned_sessions
                     if item.expected_material_state_ref is not None
                 ),
-            ):
+            )
+            for unscheduled_row in unscheduled_rows:
+                expected_state = unscheduled_row.expected_material_state_ref
+                if expected_state is None:
+                    raise _invalid("A scheduled Session must have a current placement state.")
                 await session.execute(
                     text("""
                     SELECT * FROM dante.unschedule_self_schedule(
@@ -655,12 +663,10 @@ async def apply_activity_replan(
                         "operation": f"replan:remove:{digest}:{unscheduled_row.schedule_ref}",
                         "fingerprint": _unschedule_fingerprint(
                             schedule_ref=ScopedRecordRef(unscheduled_row.schedule_ref),
-                            expected_material_state_ref=MaterialStateRef(
-                                unscheduled_row.expected_material_state_ref
-                            ),
+                            expected_material_state_ref=MaterialStateRef(expected_state),
                         ),
                         "schedule": unscheduled_row.schedule_ref,
-                        "expected": unscheduled_row.expected_material_state_ref,
+                        "expected": expected_state,
                     },
                 )
             for retired_row in body.delete_planned_sessions:
@@ -799,7 +805,9 @@ async def apply_activity_replan(
                     free_orders[: len(body.new_planned_sessions)],
                     strict=True,
                 ):
-                    if new_planned.starts_local_at is None:
+                    planned_start = new_planned.starts_local_at
+                    planned_end = new_planned.ends_local_at
+                    if planned_start is None:
                         await session.execute(
                             text("""
                             SELECT * FROM dante.establish_self_unplaced_planned_schedule(
@@ -814,17 +822,19 @@ async def apply_activity_replan(
                             },
                         )
                         continue
+                    if planned_end is None:
+                        raise _invalid("A timed planned Session requires an end.")
                     try:
                         placement = (
                             NamedZoneLocalIntervalPlacement(
-                                starts_local_at=new_planned.starts_local_at,
-                                ends_local_at=new_planned.ends_local_at,
+                                starts_local_at=planned_start,
+                                ends_local_at=planned_end,
                                 zone_id=_checked_zone(envelope),
                             )
                             if envelope.temporal_form == "named_zone_local"
                             else FloatingLocalIntervalPlacement(
-                                starts_local_at=new_planned.starts_local_at,
-                                ends_local_at=new_planned.ends_local_at,
+                                starts_local_at=planned_start,
+                                ends_local_at=planned_end,
                             )
                         )
                     except ScheduleInputError as exc:
