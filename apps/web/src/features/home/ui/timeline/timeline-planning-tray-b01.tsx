@@ -136,6 +136,9 @@ export function TimelinePlanningTrayB01({
   hiddenTrigger = false,
   openRequest = 0,
 }: TimelineB01PlanningTrayProps) {
+  // Legacy inputs are kept for compatibility; the canonical tray reads server truth.
+  void _items;
+  void _runtime;
   const { i18n } = useTranslation('common');
   const language = i18n.resolvedLanguage ?? i18n.language;
   const copy = copyFor(language);
