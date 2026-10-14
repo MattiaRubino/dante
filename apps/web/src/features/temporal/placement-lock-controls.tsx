@@ -17,25 +17,40 @@ export function PlacementLockControls({
   variant?: 'text' | 'icon';
   onLockChanged?: (locked: boolean) => void;
 }>) {
-  const [state, setState] = useState<PlacementLockState | null>(null);
+  const [loaded, setLoaded] = useState<
+    Readonly<{ scheduleRef: string; value: PlacementLockState | null }> | null
+  >(null);
   const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [readError, setReadError] = useState<
+    Readonly<{ scheduleRef: string; message: string }> | null
+  >(null);
+  const [mutationError, setMutationError] = useState<string | null>(null);
+  const state = loaded?.scheduleRef === scheduleRef ? loaded.value : null;
+  const error =
+    mutationError ??
+    (readError?.scheduleRef === scheduleRef ? readError.message : null);
   const onLockChangedRef = useRef(onLockChanged);
-  onLockChangedRef.current = onLockChanged;
+
+  useEffect(() => {
+    onLockChangedRef.current = onLockChanged;
+  }, [onLockChanged]);
 
   useEffect(() => {
     let active = true;
-    setState(null);
-    setError(null);
     void source.get(scheduleRef).then(
       (value) => {
         if (active) {
-          setState(value);
+          setLoaded({ scheduleRef, value });
+          setReadError(null);
           onLockChangedRef.current?.(value.locked);
         }
       },
       () => {
-        if (active) setError('Impossibile leggere il blocco spostamenti.');
+        if (active)
+          setReadError({
+            scheduleRef,
+            message: 'Impossibile leggere il blocco spostamenti.',
+          });
       },
     );
     return () => {
@@ -46,18 +61,18 @@ export function PlacementLockControls({
   const toggle = async () => {
     if (state === null || pending) return;
     setPending(true);
-    setError(null);
+    setMutationError(null);
     try {
       const next = await source.set(
         scheduleRef,
         !state.locked,
         state.revision || null,
       );
-      setState(next);
+      setLoaded({ scheduleRef, value: next });
       onLockChanged?.(next.locked);
       invalidateTemporalTimelineRead();
     } catch {
-      setError('Non è stato possibile cambiare il blocco. Riprova.');
+      setMutationError('Non è stato possibile cambiare il blocco. Riprova.');
     } finally {
       setPending(false);
     }
