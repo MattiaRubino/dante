@@ -50,7 +50,10 @@ mem_gib=$(( mem_bytes / 1073741824 ))
 
 # Group jobs run external processes: Python threads here are a dispatcher,
 # not CPU-bound GIL workers. The upper bound is the actual runner limit.
-if (( cpus >= 20 && mem_gib >= 16 )); then
+# Eight simultaneous Docker clusters are opt-in automatically only with
+# substantial CPU/RAM headroom: seven previously caused two transient
+# Docker port failures on a smaller acceptance run.
+if (( cpus >= 24 && mem_gib >= 24 )); then
   group_workers=8
   pg_workers=8
   browser_workers=5
