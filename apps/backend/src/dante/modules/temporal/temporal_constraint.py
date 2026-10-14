@@ -1029,36 +1029,36 @@ def _hard_set_status(constraints: list[TemporalConstraintView]) -> HardSetStatus
         # even when the current Python union is exhaustive.
         current_rule: object = rule
         if isinstance(current_rule, TemporalConstraintCurrentBoundaryRuleView):
-            if current_rule.boundary_kind == "earliest_start":
+            if str(current_rule.boundary_kind) == "earliest_start":
                 _raise_lower(start_lower, current_rule.boundary_at)
-            elif current_rule.boundary_kind == "latest_start":
+            elif str(current_rule.boundary_kind) == "latest_start":
                 _lower_upper(start_upper, current_rule.boundary_at)
-            elif current_rule.boundary_kind == "latest_completion":
+            elif str(current_rule.boundary_kind) == "latest_completion":
                 _lower_upper(completion_upper, current_rule.boundary_at)
             else:
                 return "undetermined"
         elif isinstance(current_rule, TemporalConstraintCurrentWindowRuleView):
-            if current_rule.relationship == "start_within":
+            if str(current_rule.relationship) == "start_within":
                 _raise_lower(start_lower, current_rule.starts_at)
                 _lower_upper(start_upper, current_rule.ends_at)
-            elif current_rule.relationship == "completion_within":
+            elif str(current_rule.relationship) == "completion_within":
                 _raise_lower(completion_lower, current_rule.starts_at)
                 _lower_upper(completion_upper, current_rule.ends_at)
-            elif current_rule.relationship == "full_placement_contained":
+            elif str(current_rule.relationship) == "full_placement_contained":
                 _raise_lower(start_lower, current_rule.starts_at)
                 _lower_upper(completion_upper, current_rule.ends_at)
-            elif current_rule.relationship == "placement_overlaps":
+            elif str(current_rule.relationship) == "placement_overlaps":
                 _lower_upper(start_upper, current_rule.ends_at, strict=True)
                 _raise_lower(completion_lower, current_rule.starts_at, strict=True)
             else:
                 return "undetermined"
         elif isinstance(current_rule, TemporalConstraintCurrentDurationRuleView):
-            if current_rule.duration_kind == "minimum":
+            if str(current_rule.duration_kind) == "minimum":
                 minimum_duration_microseconds = max(
                     minimum_duration_microseconds or 0,
                     current_rule.duration_microseconds,
                 )
-            elif current_rule.duration_kind == "maximum":
+            elif str(current_rule.duration_kind) == "maximum":
                 maximum_duration_microseconds = min(
                     maximum_duration_microseconds
                     if maximum_duration_microseconds is not None
