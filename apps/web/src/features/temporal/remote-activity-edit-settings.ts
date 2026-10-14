@@ -67,6 +67,11 @@ export type ActivityNewPlanned = Readonly<{ clientRef: string; name: string }>;
 export type ActivityNewInterval = Readonly<
   ActivityReplanTime & { clientRef: string }
 >;
+export type ActivitySessionDisposition = Readonly<{
+  mode: 'keep' | 'delete';
+  expectedFingerprint: string;
+}>;
+
 export type ActivityReplanDraft = Readonly<{
   times: Record<string, ActivityReplanTime>;
   removedIntervals: readonly string[];
@@ -489,6 +494,7 @@ export function createRemoteActivityEditSettings(
       settings: ActivityEditSettings,
       draft: ActivityReplanDraft,
       operationId: string,
+      disposition?: ActivitySessionDisposition,
     ): Promise<ActivityEditSettings> {
       const controller = new AbortController();
       let timer: ReturnType<typeof setTimeout> | undefined;
@@ -513,7 +519,15 @@ export function createRemoteActivityEditSettings(
                 'Content-Type': 'application/json',
                 'X-Dante-CSRF': await csrf(controller.signal),
               },
-              body: JSON.stringify(replanBody(settings, draft, operationId)),
+              body: JSON.stringify({
+                ...replanBody(settings, draft, operationId),
+                ...(disposition
+                  ? {
+                      session_disposition: disposition.mode,
+                      expected_session_fingerprint: disposition.expectedFingerprint,
+                    }
+                  : {}),
+              }),
             });
             if (!response.ok)
               throw new Error(
