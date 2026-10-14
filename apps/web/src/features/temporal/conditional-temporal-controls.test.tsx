@@ -101,8 +101,8 @@ describe('Conditional temporal controls', () => {
 
     fireEvent.click(screen.getByText('Crea condizione Actual'));
     await screen.findByText('Condizione Actual creata.');
+    expect(typeof writes[0]?.operation_id).toBe('string');
     expect(writes[0]).toMatchObject({
-      operation_id: expect.any(String),
       subject_kind: 'event',
       subject_native_ref: EVENT,
     });
@@ -110,7 +110,7 @@ describe('Conditional temporal controls', () => {
     fireEvent.click(screen.getByText('Valuta condizione Actual'));
     await screen.findByText('Valutazione: soddisfatta → consenti');
     await waitFor(() => expect(writes).toHaveLength(2));
-    expect(writes[1]).toMatchObject({ operation_id: expect.any(String) });
+    expect(typeof writes[1]?.operation_id).toBe('string');
     expect(writes[1]).not.toHaveProperty('result_code');
     expect(writes[1]).not.toHaveProperty('disposition_code');
   });
