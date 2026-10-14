@@ -24,8 +24,8 @@ from dante.modules.temporal.recurrence import (
     RecurrenceOperationReuseError,
     RecurrencePersistenceError,
     RecurrenceSpec,
-    RecurrenceView,
     RecurrenceStateConflictError,
+    RecurrenceView,
 )
 from dante.platform.http.problem import ProblemError
 
