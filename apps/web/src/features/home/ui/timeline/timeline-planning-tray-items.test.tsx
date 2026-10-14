@@ -56,15 +56,20 @@ const items = Object.freeze([
 
 describe('TimelinePlanningTrayB01 unified product tray', () => {
   it('shows Activity, never-placed Event and postponed Event in the separate existing-items placement surface', async () => {
+    const listItems = vi.fn<TemporalPlanningTrayDataSource['listItems']>(
+      () => Promise.resolve(items),
+    );
     const source: TemporalPlanningTrayDataSource = {
-      listItems: vi.fn(async () => items),
-      placeItem: vi.fn(async (request) => ({
-        kind: request.kind,
-        subjectRef: request.subjectRef,
-        scheduleRef: '0199a555-5555-7555-8555-555555555555',
-        placementMaterialStateRef: '0199a666-6666-7666-8666-666666666666',
-        replayed: false,
-      })),
+      listItems,
+      placeItem: vi.fn<TemporalPlanningTrayDataSource['placeItem']>((request) =>
+        Promise.resolve({
+          kind: request.kind,
+          subjectRef: request.subjectRef,
+          scheduleRef: '0199a555-5555-7555-8555-555555555555',
+          placementMaterialStateRef: '0199a666-6666-7666-8666-666666666666',
+          replayed: false,
+        }),
+      ),
     };
 
     render(
@@ -81,7 +86,7 @@ describe('TimelinePlanningTrayB01 unified product tray', () => {
     const trigger = await screen.findByRole('button', {
       name: 'Apri elementi già creati',
     });
-    await waitFor(() => expect(source.listItems).toHaveBeenCalled());
+    await waitFor(() => expect(listItems).toHaveBeenCalled());
     fireEvent.click(trigger);
 
     expect(
@@ -98,7 +103,9 @@ describe('TimelinePlanningTrayB01 unified product tray', () => {
 
   it('opens legacy placement only through the explicit vault handoff when trigger is hidden', async () => {
     const source: TemporalPlanningTrayDataSource = {
-      listItems: vi.fn(async () => items),
+      listItems: vi.fn<TemporalPlanningTrayDataSource['listItems']>(
+        () => Promise.resolve(items),
+      ),
       placeItem: vi.fn(),
     };
     const props = {
