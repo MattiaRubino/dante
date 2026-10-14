@@ -37,7 +37,7 @@ def _policy(database: Any, actor: UUID, activity: UUID, mode: str) -> UUID:
             ),
         ).fetchone()
         assert row is not None
-        return row[0]
+        return UUID(str(row[0]))
 
 
 @pytest.mark.asyncio
