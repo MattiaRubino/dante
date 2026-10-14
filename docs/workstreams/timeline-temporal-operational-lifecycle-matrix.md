@@ -42,6 +42,12 @@ Timeline, review rail and browser must agree before a row is accepted.
   migration setup (one failure and seven errors), so none supplies acceptance
   evidence. The corrected candidate passes the existing timing state ref as
   the third argument and needs a fresh PostgreSQL run.
+- The rerun on `332ccbf` reached the test bodies: **5 passed, 3 failed**.
+  Two newly written tests incorrectly assumed an untimed named Schedule
+  appears in the create return value; they now read its persisted Activity
+  role. The third surfaced a 503 for a stale profile during Delete; core edit
+  now checks that revision before attempting the Session graph mutation.
+  Destructive graph acceptance remains pending the next PostgreSQL run.
 - Intended `_148` Dictionary topology: `238|5|233|103|486|421|596`.
   This is a computed expectation, **not** a measured live catalog.
 - This environment has no Docker, PostgreSQL 18/PostGIS or real-app browser

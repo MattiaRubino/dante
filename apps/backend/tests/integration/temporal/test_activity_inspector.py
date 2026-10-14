@@ -20,6 +20,7 @@ from dante.modules.temporal.activity_inspector_api import (
 )
 from dante.modules.temporal.authoring import TemporalAuthoringApplication
 from dante.modules.temporal.session_runtime import SessionApplication
+from dante.platform.database.references import ScopedRecordRef
 from dante.platform.database.runtime import create_database_runtime
 from dante.platform.http.problem import ProblemError
 
@@ -207,6 +208,15 @@ async def test_hard_delete_requires_fresh_owner_confirmation_and_removes_executi
             title="Di un'altra persona",
         )
         activity = created.item.subject_native_ref
+        async with runtime.session_factory() as session, session.begin():
+            planned_schedule_ref = await session.scalar(
+                text(
+                    "SELECT schedule_ref FROM dante.get_self_activity_schedule_roles("
+                    ":actor, CAST(ARRAY[:activity] AS uuid[])) WHERE role_code='planned'"
+                ),
+                {"actor": actor, "activity": activity},
+            )
+        assert planned_schedule_ref is not None
         request = cast(
             Request,
             SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))),
@@ -225,7 +235,7 @@ async def test_hard_delete_requires_fresh_owner_confirmation_and_removes_executi
             self_person_ref=actor,
             operation_id="hard-delete:named",
             activity_ref=activity,
-            schedule_ref=created.planned_slices[0].schedule_ref,
+            schedule_ref=ScopedRecordRef(planned_schedule_ref),
         )
         impact = await get_self_activity_session_impact(activity, context, request, Response())
         assert {row.session_ref for row in impact.attempts} == {main.session_ref, named.session_ref}
@@ -267,7 +277,7 @@ async def test_hard_delete_requires_fresh_owner_confirmation_and_removes_executi
                 ("native_address", "native_ref", activity),
                 ("session", "session_ref", main.session_ref),
                 ("session", "session_ref", named.session_ref),
-                ("schedule", "schedule_ref", created.planned_slices[0].schedule_ref),
+                ("schedule", "schedule_ref", planned_schedule_ref),
             ):
                 assert connection.execute(
                     sql.SQL("SELECT count(*) FROM {} WHERE {}=%s").format(

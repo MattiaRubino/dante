@@ -358,6 +358,8 @@ async def test_keep_preserves_running_attempts_when_moving_and_named_x_deletes_o
             session_capture_mode="live",
         )
         activity = created.item.subject_native_ref
+        before = await _snapshot(runtime, actor, activity)
+        named = next(row for row in before.schedules if row.role_code == "planned")
         sessions = SessionApplication(runtime.session_factory)
         main = await sessions.start(
             self_person_ref=actor,
@@ -369,11 +371,9 @@ async def test_keep_preserves_running_attempts_when_moving_and_named_x_deletes_o
             self_person_ref=actor,
             operation_id="lifecycle:keep:child",
             activity_ref=activity,
-            schedule_ref=created.planned_slices[0].schedule_ref,
+            schedule_ref=ScopedRecordRef(named.schedule_ref),
         )
-        before = await _snapshot(runtime, actor, activity)
         interval = next(row for row in before.schedules if row.role_code == "interval")
-        named = next(row for row in before.schedules if row.role_code == "planned")
         impact = await get_self_activity_session_impact(
             activity, _context(actor), _request(runtime), Response()
         )

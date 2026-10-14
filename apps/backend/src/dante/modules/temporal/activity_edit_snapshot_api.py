@@ -99,9 +99,7 @@ class ActivityCoreEditCommand(BaseModel):
     reality: EditPolicyChange | None = None
     reminder: EditReminderChange | None = None
     session_disposition: Literal["keep", "delete"] | None = None
-    expected_session_fingerprint: str | None = Field(
-        default=None, pattern=r"^[a-f0-9]{64}$"
-    )
+    expected_session_fingerprint: str | None = Field(default=None, pattern=r"^[a-f0-9]{64}$")
 
     @model_validator(mode="after")
     def validate_changes(self) -> ActivityCoreEditCommand:
@@ -115,9 +113,7 @@ class ActivityCoreEditCommand(BaseModel):
             )
         ):
             raise ValueError("At least one change is required.")
-        if (self.session_disposition is None) != (
-            self.expected_session_fingerprint is None
-        ):
+        if (self.session_disposition is None) != (self.expected_session_fingerprint is None):
             raise ValueError("Session choice and fingerprint must be submitted together.")
         if self.capture is not None and self.capture.mode_code not in {
             "disabled",
@@ -283,13 +279,38 @@ async def revise_activity_core(
             await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
             await session.execute(text("SET LOCAL statement_timeout = '15s'"))
             await session.execute(text("SET LOCAL lock_timeout = '5s'"))
+            if body.session_disposition == "delete" and body.profile is not None:
+                # Reject an already stale profile before the bounded Session
+                # graph deletion. The whole edit remains one transaction.
+                current_revision = await session.scalar(
+                    text("SELECT revision FROM dante.get_self_activity_profile(:actor,:activity)"),
+                    params,
+                )
+                if current_revision is None:
+                    raise ProblemError(
+                        status=404,
+                        code="temporal.activity_edit.not_found",
+                        category="not_found",
+                        title="Activity unavailable",
+                        detail="Activity unavailable in self scope.",
+                    )
+                if current_revision != body.profile.expected_revision:
+                    raise ProblemError(
+                        status=409,
+                        code="temporal.activity_edit.conflict",
+                        category="conflict",
+                        title="Activity changed",
+                        detail="Reload the Activity and retry.",
+                    )
             current_session_fingerprint = await session.scalar(
                 text("SELECT dante.get_self_activity_session_impact_hash(:actor,:activity)"),
                 params,
             )
             attempts_exist = bool(
                 await session.scalar(
-                    text("SELECT EXISTS(SELECT 1 FROM dante.list_self_subject_sessions(:actor,:activity))"),
+                    text(
+                        "SELECT EXISTS(SELECT 1 FROM dante.list_self_subject_sessions(:actor,:activity))"
+                    ),
                     params,
                 )
             )
@@ -312,7 +333,9 @@ async def revise_activity_core(
                     )
                 if body.session_disposition == "delete":
                     await session.scalar(
-                        text("SELECT dante.delete_self_activity_sessions(:actor,:activity,:fingerprint)"),
+                        text(
+                            "SELECT dante.delete_self_activity_sessions(:actor,:activity,:fingerprint)"
+                        ),
                         {**params, "fingerprint": current_session_fingerprint},
                     )
             if body.capture is not None:
