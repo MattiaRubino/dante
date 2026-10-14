@@ -389,25 +389,28 @@ export function TemporalCreateEntry({
     setSession(requestResult.session);
   };
 
-  const patch = (next: Partial<TemporalCreateSession['draft']['current']>) => {
-    if (partialPostCreateRef.current !== null) return;
-    const merged = { ...session.draft.current, ...next };
-    const eligibleReminder =
-      merged.timeSemantics === 'timed' && merged.timeMode === 'zoned';
-    const boundedNext = eligibleReminder
-      ? next
-      : {
-          ...next,
-          confirmation: { ...merged.confirmation, reminderLeadMinutes: null },
-        };
-    preparedRef.current = null;
-    pendingVaultSave.current = null;
-    setIssues([]);
-    setFailureMessage('');
-    setFailureTarget(null);
-    setLifecycle('idle');
-    setSession((current) => updateTemporalCreateFields(current, boundedNext));
-  };
+  const patch = useCallback(
+    (next: Partial<TemporalCreateSession['draft']['current']>) => {
+      if (partialPostCreateRef.current !== null) return;
+      const merged = { ...session.draft.current, ...next };
+      const eligibleReminder =
+        merged.timeSemantics === 'timed' && merged.timeMode === 'zoned';
+      const boundedNext = eligibleReminder
+        ? next
+        : {
+            ...next,
+            confirmation: { ...merged.confirmation, reminderLeadMinutes: null },
+          };
+      preparedRef.current = null;
+      pendingVaultSave.current = null;
+      setIssues([]);
+      setFailureMessage('');
+      setFailureTarget(null);
+      setLifecycle('idle');
+      setSession((current) => updateTemporalCreateFields(current, boundedNext));
+    },
+    [session.draft.current],
+  );
 
   useEffect(() => {
     if (!open) {
