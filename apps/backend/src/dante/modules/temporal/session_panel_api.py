@@ -89,6 +89,34 @@ def _bounds(row: ActivityScheduleResponse, zone: ZoneInfo) -> tuple[datetime, da
     return None
 
 
+def _stopped_in_interval(
+    stopped: list[Any],
+    activity_ref: UUID,
+    planned_ref: UUID | None,
+    bounded_intervals: list[tuple[ActivityScheduleResponse, tuple[datetime, datetime]]],
+    current_interval_refs: set[UUID],
+) -> bool:
+    # Associate an early stop with the nearest Activity interval rather than
+    # the retired clock on a named Session. Later intervals permit new attempts.
+    return any(
+        str(item["activity_ref"]) == str(activity_ref)
+        and (
+            str(item["planned_schedule_ref"]) if item["planned_schedule_ref"] is not None else None
+        )
+        == (str(planned_ref) if planned_ref is not None else None)
+        and (
+            nearest := min(
+                bounded_intervals,
+                key=lambda pair: abs((item["started_at"] - pair[1][0]).total_seconds()),
+                default=None,
+            )
+        )
+        is not None
+        and nearest[0].schedule_ref in current_interval_refs
+        for item in stopped
+    )
+
+
 def build_panel(
     records: list[Any],
     now: datetime,
@@ -103,6 +131,9 @@ def build_panel(
         schedules = [ActivityScheduleResponse.model_validate(s) for s in owner["schedules"]]
         bounds = {s.schedule_ref: _bounds(s, zone) for s in schedules}
         for schedule in schedules:
+            # Named internal Session rows have no autonomous clock boundary.
+            if schedule.role_code == "planned":
+                continue
             boundary = bounds[schedule.schedule_ref]
             if not boundary:
                 continue
@@ -116,27 +147,6 @@ def build_panel(
         intervals = [s for s in schedules if s.role_code == "interval"]
         if not intervals:
             intervals = [s for s in schedules if s.role_code in {None, "envelope"}]
-        active = any(
-            b is not None and b[0] <= now < b[1] for s in intervals if (b := bounds[s.schedule_ref])
-        )
-
-        def ended_for_current_attempt(
-            planned_ref: UUID | None,
-            activity_ref: UUID,
-        ) -> bool:
-            # An early Stop still belongs to this planned Session identity.
-            # Actual timing must not be compared with the planned window to
-            # decide whether the stopped attempt can become Ready again.
-            return any(
-                str(item["activity_ref"]) == str(activity_ref)
-                and (
-                    str(item["planned_schedule_ref"])
-                    if item["planned_schedule_ref"] is not None
-                    else None
-                )
-                == (str(planned_ref) if planned_ref is not None else None)
-                for item in stopped
-            )
 
         upcoming = any(
             b is not None and b[0] - PREVIEW_LEAD <= now < b[1]
@@ -161,19 +171,9 @@ def build_panel(
             for schedule in intervals
             if (interval := bounds[schedule.schedule_ref]) is not None
         ]
-        main_stopped_in_window = any(
-            str(item["activity_ref"]) == str(owner["activity_ref"])
-            and item["planned_schedule_ref"] is None
-            and (
-                nearest := min(
-                    bounded_intervals,
-                    key=lambda pair: abs((item["started_at"] - pair[1][0]).total_seconds()),
-                    default=None,
-                )
-            )
-            is not None
-            and nearest[0].schedule_ref in {s.schedule_ref for s in current_intervals}
-            for item in stopped
+        current_refs = {s.schedule_ref for s in current_intervals}
+        main_stopped_in_window = _stopped_in_interval(
+            stopped, owner["activity_ref"], None, bounded_intervals, current_refs
         )
         executions: dict[str | None, list[Any]] = {}
         for execution in owner["executions"]:
@@ -188,29 +188,25 @@ def build_panel(
             if schedule.role_code != "planned":
                 continue
             matching = executions.pop(str(schedule.schedule_ref), [])
-            timing = bounds[schedule.schedule_ref]
-            if timing:
-                preview_allowed = schedule.temporal_form in {
-                    "absolute",
-                    "named_zone_local",
-                    "floating_local",
-                }
-                due = (
-                    timing[0] - (PREVIEW_LEAD if preview_allowed else timedelta())
-                    <= now
-                    < timing[1]
-                )
-            else:
-                due = active
+            # An internal Session is a named part of execution, not a second
+            # calendar placement. Its availability follows the enclosing
+            # Activity interval (including its five-minute preview), while a
+            # running/paused attempt remains actionable independently.
             due = (
-                due
+                upcoming
                 and owner["mode_code"] in {"live", "record_and_live", "internal_only"}
                 and not main_stopped_in_window
             )
             if (
                 due
                 and not matching
-                and ended_for_current_attempt(schedule.schedule_ref, owner["activity_ref"])
+                and _stopped_in_interval(
+                    stopped,
+                    owner["activity_ref"],
+                    schedule.schedule_ref,
+                    bounded_intervals,
+                    current_refs,
+                )
             ):
                 due = False
             if not due and not matching:
@@ -219,7 +215,7 @@ def build_panel(
                 SessionPanelRow(
                     planned_schedule_ref=schedule.schedule_ref,
                     name=schedule.display_name or f"Sessione {schedule.presentation_order or 1}",
-                    starts_at=timing[0] if timing else None,
+                    starts_at=None,
                     execution=SessionPanelExecution.model_validate(execution)
                     if execution
                     else None,

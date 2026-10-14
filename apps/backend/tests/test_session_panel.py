@@ -68,11 +68,11 @@ def execution(ref: str | None = None, **extra: Any) -> dict[str, Any]:
 def test_exact_start_and_end_and_next_boundary() -> None:
     record = owner(schedule("envelope", at(9), at(12)), schedule(start=at(10), end=at(11)))
     early = build_panel([record], at(9), "UTC")
-    assert names(early) == ["Sessione attività"]
-    assert early.next_change_at == at(9, 55)
+    assert names(early) == ["Sessione attività", "Ripasso"]
+    assert early.next_change_at == at(12)
     assert names(build_panel([record], at(9, 55), "UTC")) == ["Sessione attività", "Ripasso"]
     assert names(build_panel([record], at(10), "UTC")) == ["Sessione attività", "Ripasso"]
-    assert names(build_panel([record], at(11), "UTC")) == ["Sessione attività"]
+    assert names(build_panel([record], at(11), "UTC")) == ["Sessione attività", "Ripasso"]
     assert build_panel([record], at(12), "UTC").groups == []
 
 
@@ -138,14 +138,20 @@ def test_floating_time_uses_effective_zone_not_server_zone() -> None:
 
 def test_named_zone_uses_resolved_instant_in_dst_overlap() -> None:
     record = owner(
-        schedule(start="2026-10-25T01:30:00Z", end="2026-10-25T02:30:00Z", form="named_zone_local")
+        schedule(
+            "envelope",
+            start="2026-10-25T01:30:00Z",
+            end="2026-10-25T02:30:00Z",
+            form="named_zone_local",
+        ),
+        schedule(start="2026-10-25T01:30:00Z", end="2026-10-25T02:30:00Z", form="named_zone_local"),
     )
     assert (
         build_panel([record], datetime(2026, 10, 25, 0, 30, tzinfo=UTC), "Europe/Rome").groups == []
     )
     assert names(
         build_panel([record], datetime(2026, 10, 25, 1, 30, tzinfo=UTC), "Europe/Rome")
-    ) == ["Ripasso"]
+    ) == ["Sessione attività", "Ripasso"]
 
 
 def test_date_span_and_coarse_precision_do_not_invent_hourly_boundaries() -> None:
@@ -174,18 +180,18 @@ def test_no_placement_does_not_invent_activity_start_but_open_work_survives() ->
     assert names(build_panel([record], at(10), "UTC")) == ["Sessione in corso"]
 
 
-def test_preview_is_not_an_execution_and_exact_start_is_preserved() -> None:
+def test_named_session_uses_activity_preview_and_has_no_own_planned_time() -> None:
+    # The legacy named schedule carries old timestamps, but panel availability
+    # follows the enclosing Activity interval and exposes no child clock.
     planned = schedule(start=at(10), end=at(11))
     record = owner(schedule("envelope", at(9), at(12)), planned)
-    early = build_panel([record], at(9, 54), "UTC")
-    assert names(early) == ["Sessione attività"]
-    assert early.next_change_at == at(9, 55)
-    preview = build_panel([record], at(9, 55), "UTC")
-    assert names(preview) == ["Sessione attività", "Ripasso"]
+    assert names(build_panel([record], at(8, 54), "UTC")) == []
+    preview = build_panel([record], at(8, 55), "UTC")
     child = preview.groups[0].rows[1]
-    assert child.starts_at == at(10)
+    assert child.name == "Ripasso"
+    assert child.starts_at is None
     assert child.execution is None
-    assert preview.next_change_at == at(10)
+    assert preview.next_change_at == at(9)
 
 
 def test_main_preview_does_not_fill_interval_gaps() -> None:
@@ -195,7 +201,7 @@ def test_main_preview_does_not_fill_interval_gaps() -> None:
         schedule(),
     )
     assert build_panel([record], at(10, 30), "UTC").groups == []
-    assert names(build_panel([record], at(10, 55), "UTC")) == ["Sessione attività"]
+    assert names(build_panel([record], at(10, 55), "UTC")) == ["Sessione attività", "Ripasso"]
     assert names(build_panel([record], at(11), "UTC")) == ["Sessione attività", "Ripasso"]
 
 
@@ -240,7 +246,8 @@ def test_completed_internal_exits_desk_while_main_stays_available() -> None:
 def test_old_stopped_execution_does_not_hide_new_unrelated_interval() -> None:
     first = schedule("interval", at(9), at(10))
     second = schedule("interval", at(18), at(19))
-    activity = owner(first, second)
+    named = schedule()
+    activity = owner(first, second, named)
     stopped = [
         {
             "activity_ref": activity["activity_ref"],
@@ -252,6 +259,14 @@ def test_old_stopped_execution_does_not_hide_new_unrelated_interval() -> None:
     assert names(build_panel([activity], at(9, 30), "UTC", stopped)) == []
     assert names(build_panel([activity], at(18), "UTC", stopped)) == [
         "Sessione attività",
+        "Ripasso",
+    ]
+
+    stopped_named = [{**stopped[0], "planned_schedule_ref": named["schedule_ref"]}]
+    assert names(build_panel([activity], at(9, 30), "UTC", stopped_named)) == ["Sessione attività"]
+    assert names(build_panel([activity], at(18), "UTC", stopped_named)) == [
+        "Sessione attività",
+        "Ripasso",
     ]
 
 

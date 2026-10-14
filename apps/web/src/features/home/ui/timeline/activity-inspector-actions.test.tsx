@@ -644,67 +644,59 @@ describe('Activity Inspector', () => {
     expect(applyActivityEdits).not.toHaveBeenCalled();
   });
 
-  for (const timed of [false, true]) {
-    it(`adds a ${timed ? 'timed' : 'untimed'} Session while preserving the protected Activity`, async () => {
-      const settings = {
-        ...currentSettings,
-        placementProtected: true,
-        placementLockScheduleRef: 'envelope',
-        placementLockRevision: 1,
-        schedules: [
-          {
-            scheduleRef: 'envelope',
-            role: 'envelope' as const,
-            name: null,
-            order: 0,
-            placementStateRef: 'state-0',
-            temporalForm: 'named_zone_local',
-            start: '2026-10-09T09:00:00',
-            end: '2026-10-09T12:00:00',
-            zoneId: 'Europe/Rome',
-          },
-        ],
-      };
-      loadSettings.mockResolvedValueOnce(settings);
-      applyReplan.mockResolvedValueOnce(settings);
-      render(
-        <ActivityEditPanel
-          profile={profile}
-          closeRequestRef={createRef()}
-          onSaved={() => undefined}
-          onCancel={() => undefined}
-        />,
-      );
-      fireEvent.click(
-        await screen.findByRole('button', { name: /＋ Sessione/ }),
-      );
-      const input = await screen.findByRole('textbox', {
-        name: 'Nome Sessione',
-      });
-      fireEvent.change(input, { target: { value: 'Nuova Sessione' } });
-      if (timed) {
-        fireEvent.click(screen.getByRole('button', { name: 'Orario' }));
-      }
-      await submitEditor();
-      await waitFor(() =>
-        expect(applyReplan).toHaveBeenCalledWith(
-          ref,
-          settings,
-          containing({
-            newPlanned: [
-              containing({
-                name: 'Nuova Sessione',
-                start: timed ? '2026-10-09T09:00' : '',
-                end: timed ? '2026-10-09T12:00' : '',
-              }),
-            ],
-          }),
-          expect.any(String),
-        ),
-      );
-      expect(setPlacementProtected).not.toHaveBeenCalled();
+  it('adds a named Session without a separate time while preserving the protected Activity', async () => {
+    const settings = {
+      ...currentSettings,
+      placementProtected: true,
+      placementLockScheduleRef: 'envelope',
+      placementLockRevision: 1,
+      schedules: [
+        {
+          scheduleRef: 'envelope',
+          role: 'envelope' as const,
+          name: null,
+          order: 0,
+          placementStateRef: 'state-0',
+          temporalForm: 'named_zone_local',
+          start: '2026-10-09T09:00:00',
+          end: '2026-10-09T12:00:00',
+          zoneId: 'Europe/Rome',
+        },
+      ],
+    };
+    loadSettings.mockResolvedValueOnce(settings);
+    applyReplan.mockResolvedValueOnce(settings);
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
+    );
+    fireEvent.click(await screen.findByRole('button', { name: /＋ Sessione/ }));
+    const input = await screen.findByRole('textbox', {
+      name: 'Nome Sessione',
     });
-  }
+    fireEvent.change(input, { target: { value: 'Nuova Sessione' } });
+    expect(screen.queryByRole('button', { name: 'Orario' })).toBeNull();
+    await submitEditor();
+    await waitFor(() =>
+      expect(applyReplan).toHaveBeenCalledWith(
+        ref,
+        settings,
+        containing({
+          newPlanned: [
+            containing({
+              name: 'Nuova Sessione',
+            }),
+          ],
+        }),
+        expect.any(String),
+      ),
+    );
+    expect(setPlacementProtected).not.toHaveBeenCalled();
+  });
 
   it('saves a planning change directly from Salva modifiche', async () => {
     const settings = {
@@ -846,22 +838,13 @@ describe('Activity Inspector', () => {
     fireEvent.click(
       (await screen.findByRole('textbox', { name: 'Nome Sessione' }))
         .closest('[data-edit-planned-session]')!
-        .querySelector('button[aria-controls]')!,
+        .querySelector('button[aria-label="Rimuovi Sessione"]')!,
     );
     fireEvent.click(screen.getByRole('button', { name: '＋ Sessione' }));
     const newSession = document.querySelector('[data-edit-new-session]')!;
-    fireEvent.click(newSession.querySelector('button[aria-controls]')!);
     fireEvent.change(
       newSession.querySelector('[aria-label="Nome Sessione"]')!,
       { target: { value: 'Seconda' } },
-    );
-    fireEvent.change(
-      newSession.querySelector('[data-create-path^="newStart-"]')!,
-      { target: { value: '10:00' } },
-    );
-    fireEvent.change(
-      newSession.querySelector('[data-create-path^="newEnd-"]')!,
-      { target: { value: '11:00' } },
     );
     await submitEditor();
     await waitFor(() =>
@@ -869,12 +852,10 @@ describe('Activity Inspector', () => {
         ref,
         settings,
         containing({
-          removedPlanned: ['planned'],
+          deletedPlanned: ['planned'],
           newPlanned: [
             containing({
               name: 'Seconda',
-              start: '2026-10-09T10:00',
-              end: '2026-10-09T11:00',
             }),
           ],
         }),
@@ -944,6 +925,54 @@ describe('Activity Inspector', () => {
       ),
     );
     expect(onSaved).toHaveBeenCalledWith(profile);
+  });
+
+  it('cancels a named Session removal without sending any mutation', async () => {
+    loadSettings.mockResolvedValueOnce({
+      ...currentSettings,
+      schedules: [
+        {
+          scheduleRef: 'envelope',
+          role: 'envelope',
+          name: null,
+          order: 0,
+          placementStateRef: 'state-0',
+          temporalForm: 'named_zone_local',
+          start: '2026-10-09T09:00:00',
+          end: '2026-10-09T12:00:00',
+          zoneId: 'Europe/Rome',
+        },
+        {
+          scheduleRef: 'named',
+          role: 'planned',
+          name: 'Studio',
+          order: 1,
+          placementStateRef: null,
+          temporalForm: null,
+          start: null,
+          end: null,
+          zoneId: null,
+        },
+      ],
+    });
+    const onCancel = vi.fn();
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={onCancel}
+      />,
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Rimuovi Sessione' }),
+    );
+    expect(screen.queryByRole('textbox', { name: 'Nome Sessione' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Annulla' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Scarta modifiche' }));
+    expect(onCancel).toHaveBeenCalledOnce();
+    expect(applyReplan).not.toHaveBeenCalled();
+    expect(revisePlannedName).not.toHaveBeenCalled();
   });
 
   it('edits the single overall interval of an Activity without role intervals', async () => {
@@ -1052,7 +1081,7 @@ describe('Activity Inspector', () => {
     await waitFor(() => expect(applyReplan).toHaveBeenCalledOnce());
   });
 
-  it('marks only the planned Session when it falls outside the Activity time', async () => {
+  it('keeps a legacy named Session free from its old time when editing the Activity', async () => {
     loadSettings.mockResolvedValueOnce({
       ...currentSettings,
       schedules: [
@@ -1088,26 +1117,21 @@ describe('Activity Inspector', () => {
         onCancel={() => undefined}
       />,
     );
-    fireEvent.click(
-      await screen.findByRole('button', { name: 'Fine Sessione: aumenta ora' }),
-    );
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Fine Sessione: aumenta ora' }),
-    );
-    const sessionTime = document.querySelector(
-      '[data-edit-planned-session] .temporal-create-tree-time-editor',
-    )!;
-    expect(sessionTime.getAttribute('data-edit-invalid')).toBe('true');
-    expect(sessionTime.textContent).toContain(
-      'Fuori dall’orario dell’attività.',
-    );
+    await screen.findByRole('textbox', { name: 'Nome Sessione' });
     expect(
-      document
-        .querySelector('.timeline-activity-editor__when')!
-        .getAttribute('data-edit-invalid'),
-    ).toBe('false');
+      document.querySelector(
+        '[data-edit-planned-session] .temporal-create-tree-time-editor',
+      ),
+    ).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: 'Fine Sessione: aumenta ora' }),
+    ).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Fine: aumenta ora' }));
     await submitEditor();
-    expect(applyReplan).not.toHaveBeenCalled();
+    await waitFor(() => expect(applyReplan).toHaveBeenCalledOnce());
+    expect(
+      requiredRecord(applyReplan.mock.calls[0]?.[2]).deletedPlanned,
+    ).toEqual([]);
   });
 
   it('retries a failed time save without losing the edited time', async () => {
@@ -1499,12 +1523,12 @@ describe('Activity Inspector', () => {
     ).toHaveLength(1);
     expect(
       sessions.querySelector('.temporal-create-tree-time-editor'),
-    ).toBeTruthy();
+    ).toBeNull();
     expect(
       sessions.querySelector(
         'button[aria-controls="edit-session:planned-m3b:time"]',
       ),
-    ).toHaveProperty('disabled', true);
+    ).toBeNull();
     fireEvent.change(name, { target: { value: 'Preparazione approfondita' } });
     revisePlannedName.mockResolvedValueOnce('Preparazione approfondita');
     await submitEditor();
@@ -1520,7 +1544,7 @@ describe('Activity Inspector', () => {
     expect(onSaved).toHaveBeenCalledWith(profile);
   });
 
-  it('offers an Orario toggle for an untimed planned Session and keeps its identity', async () => {
+  it('renames an untimed named Session without changing its identity or Activity time', async () => {
     const settings = {
       ...currentSettings,
       schedules: [
@@ -1559,27 +1583,28 @@ describe('Activity Inspector', () => {
       />,
     );
     const name = await screen.findByRole('textbox', { name: 'Nome Sessione' });
-    const toggle = name
-      .closest('[data-edit-planned-session]')!
-      .querySelector('button[aria-controls]')!;
-    expect(toggle).toHaveProperty('disabled', false);
-    fireEvent.click(toggle);
     expect(
-      screen.getByRole('button', { name: 'Ripristina orari' }),
-    ).toBeTruthy();
+      name
+        .closest('[data-edit-planned-session]')
+        ?.getAttribute('data-edit-planned-session'),
+    ).toBe('untimed');
+    expect(
+      name
+        .closest('[data-edit-planned-session]')
+        ?.querySelector('button[aria-controls]'),
+    ).toBeNull();
+    fireEvent.change(name, { target: { value: 'Studio intenso' } });
+    revisePlannedName.mockResolvedValueOnce('Studio intenso');
     await submitEditor();
     await waitFor(() =>
-      expect(applyReplan).toHaveBeenCalledWith(
+      expect(revisePlannedName).toHaveBeenCalledWith(
         ref,
-        settings,
-        containing({
-          times: containing({
-            untimed: { start: '2026-10-09T09:00', end: '2026-10-09T12:00' },
-          }),
-        }),
-        expect.any(String),
+        'untimed',
+        'Studio',
+        'Studio intenso',
       ),
     );
+    expect(applyReplan).not.toHaveBeenCalled();
   });
 
   it('does not turn a nonlocal temporal form into a local Schedule during edit', async () => {

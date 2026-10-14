@@ -316,6 +316,7 @@ export * from './restoredScheduleCoarseResponse.zod';
 export * from './restoredScheduleDateSpanResponse.zod';
 export * from './restoredScheduleNamedZoneResponse.zod';
 export * from './restoredScheduleResponse.zod';
+export * from './retainedPlannedRow.zod';
 export * from './retireTemporalConstraintRequest.zod';
 export * from './retiredTemporalConstraintResponse.zod';
 export * from './reviewedMoveBody.zod';

@@ -388,7 +388,7 @@ describe('U2 Quick Create submit mapping', () => {
     );
   });
 
-  it('rejects child and Session time ranges outside the root Activity envelope', () => {
+  it('rejects child ranges and ignores obsolete named Session clock fields in saved drafts', () => {
     const fields = createTemporalCreateFields({
       kind: 'activity',
       date: '2026-10-20',
@@ -434,18 +434,16 @@ describe('U2 Quick Create submit mapping', () => {
         ],
       },
     });
-    expect(validateTemporalCreateU6Structure(fields, outsideSession)).toBe(
-      'Every Activity Session must stay inside the parent Activity time range.',
-    );
     expect(
-      validateTemporalCreateU6StructureIssue(fields, outsideSession),
-    ).toEqual({
-      message:
-        'Every Activity Session must stay inside the parent Activity time range.',
-      messageEn: 'Session time must fit within the Activity.',
-      messageIt: 'La Sessione deve rientrare nell’orario dell’attività.',
-      target: 'plannedSession:session',
-    });
+      validateTemporalCreateU6Structure(fields, outsideSession),
+    ).toBeNull();
+    const migrated = buildTemporalCreateU2Request(
+      fields,
+      outsideSession,
+      'old-draft',
+    );
+    if (migrated.kind !== 'activity') throw new Error('Expected Activity');
+    expect(migrated.request.plannedSlices).toEqual([null]);
 
     const reversedSession = patchTemporalCreateU2AuthoringDraft(initial, {
       activityStructure: {
@@ -461,12 +459,13 @@ describe('U2 Quick Create submit mapping', () => {
     });
     expect(
       validateTemporalCreateU6StructureIssue(fields, reversedSession),
-    ).toEqual({
-      message:
-        'Every Activity Session must stay inside the parent Activity time range.',
-      messageEn: 'Set a Session duration.',
-      messageIt: 'La Sessione deve avere una durata.',
-      target: 'plannedSession:session',
-    });
+    ).toBeNull();
+    const reversed = buildTemporalCreateU2Request(
+      fields,
+      reversedSession,
+      'old-draft-reversed',
+    );
+    if (reversed.kind !== 'activity') throw new Error('Expected Activity');
+    expect(reversed.request.plannedSlices).toEqual([null]);
   });
 });

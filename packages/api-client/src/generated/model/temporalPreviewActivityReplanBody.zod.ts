@@ -18,13 +18,13 @@ export const temporalPreviewActivityReplanBodyNewPlannedSessionsMax = 100;
 
 export const temporalPreviewActivityReplanBodyOperationIdMax = 200;
 
-export const temporalPreviewActivityReplanBodyPlacePlannedSessionsMax = 100;
+export const temporalPreviewActivityReplanBodyPlacePlannedSessionsMax = 0;
 
 export const temporalPreviewActivityReplanBodyPlannedSessionsMax = 100;
 
 export const temporalPreviewActivityReplanBodyRemoveIntervalsMax = 100;
 
-export const temporalPreviewActivityReplanBodyRemovePlannedSessionsMax = 100;
+export const temporalPreviewActivityReplanBodyRemovePlannedSessionsMax = 0;
 
 export const TemporalPreviewActivityReplanBody = /*#__PURE__*/ zod.object({
   delete_planned_sessions: /*#__PURE__*/ zod.optional(
@@ -91,12 +91,6 @@ export const TemporalPreviewActivityReplanBody = /*#__PURE__*/ zod.object({
       .array(
         /*#__PURE__*/ zod.object({
           client_ref: /*#__PURE__*/ zod.uuid(),
-          ends_local_at: /*#__PURE__*/ zod.optional(
-            /*#__PURE__*/ zod.union([
-              /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-              /*#__PURE__*/ zod.null(),
-            ]),
-          ),
           name: /*#__PURE__*/ zod.optional(
             /*#__PURE__*/ zod.union([
               /*#__PURE__*/ zod
@@ -107,12 +101,6 @@ export const TemporalPreviewActivityReplanBody = /*#__PURE__*/ zod.object({
                     temporalPreviewActivityReplanBodyNewPlannedSessionsItemNameOneMax,
                   ),
                 ),
-              /*#__PURE__*/ zod.null(),
-            ]),
-          ),
-          starts_local_at: /*#__PURE__*/ zod.optional(
-            /*#__PURE__*/ zod.union([
-              /*#__PURE__*/ zod.iso.datetime({ offset: true }),
               /*#__PURE__*/ zod.null(),
             ]),
           ),
@@ -150,12 +138,21 @@ export const TemporalPreviewActivityReplanBody = /*#__PURE__*/ zod.object({
   planned_sessions: /*#__PURE__*/ zod.optional(
     /*#__PURE__*/ zod
       .array(
-        /*#__PURE__*/ zod.object({
-          ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-          expected_material_state_ref: /*#__PURE__*/ zod.uuid(),
-          schedule_ref: /*#__PURE__*/ zod.uuid(),
-          starts_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-        }),
+        /*#__PURE__*/ zod
+          .object({
+            expected_material_state_ref: /*#__PURE__*/ zod.optional(
+              /*#__PURE__*/ zod.union([
+                /*#__PURE__*/ zod.uuid(),
+                /*#__PURE__*/ zod.null(),
+              ]),
+            ),
+            schedule_ref: /*#__PURE__*/ zod.uuid(),
+          })
+          .check(
+            /*#__PURE__*/ zod.describe(
+              'A named internal Session retained by an Activity edit.\n\nIt has identity and order, but deliberately no calendar placement.',
+            ),
+          ),
       )
       .check(
         /*#__PURE__*/ zod.maxLength(
@@ -182,12 +179,21 @@ export const TemporalPreviewActivityReplanBody = /*#__PURE__*/ zod.object({
   remove_planned_sessions: /*#__PURE__*/ zod.optional(
     /*#__PURE__*/ zod
       .array(
-        /*#__PURE__*/ zod.object({
-          ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-          expected_material_state_ref: /*#__PURE__*/ zod.uuid(),
-          schedule_ref: /*#__PURE__*/ zod.uuid(),
-          starts_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-        }),
+        /*#__PURE__*/ zod
+          .object({
+            expected_material_state_ref: /*#__PURE__*/ zod.optional(
+              /*#__PURE__*/ zod.union([
+                /*#__PURE__*/ zod.uuid(),
+                /*#__PURE__*/ zod.null(),
+              ]),
+            ),
+            schedule_ref: /*#__PURE__*/ zod.uuid(),
+          })
+          .check(
+            /*#__PURE__*/ zod.describe(
+              'A named internal Session retained by an Activity edit.\n\nIt has identity and order, but deliberately no calendar placement.',
+            ),
+          ),
       )
       .check(
         /*#__PURE__*/ zod.maxLength(

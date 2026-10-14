@@ -104,47 +104,6 @@ function planValidation(
       errors[orderedBounds[i]!.ref] = 'Intervalli sovrapposti.';
     }
   }
-  const planned = settings.schedules
-    .filter(
-      (row) =>
-        row.role === 'planned' &&
-        !draft.removedPlanned.includes(row.scheduleRef) &&
-        !draft.deletedPlanned?.includes(row.scheduleRef) &&
-        (row.placementStateRef !== null ||
-          !!draft.times[row.scheduleRef]?.start),
-    )
-    .map((row) => ({
-      ref: row.scheduleRef,
-      start: (draft.times[row.scheduleRef]?.start ?? '').slice(0, 16),
-      end: (draft.times[row.scheduleRef]?.end ?? '').slice(0, 16),
-    }))
-    .concat(
-      draft.newPlanned
-        .filter((row) => !!row.start || !!row.end)
-        .map((row) => ({
-          ref: row.clientRef,
-          start: row.start.slice(0, 16),
-          end: row.end.slice(0, 16),
-        })),
-    );
-  planned.forEach(({ ref, start, end }) => check(ref, start, end));
-  if (orderedBounds.length && bounds.length === orderedBounds.length) {
-    const min = orderedBounds[0]!.start;
-    const max = orderedBounds[orderedBounds.length - 1]!.end;
-    for (const row of planned) {
-      if (!errors[row.ref] && (row.start < min || row.end > max)) {
-        errors[row.ref] = 'Fuori dall’orario dell’attività.';
-      }
-    }
-  }
-  const orderedPlanned = spans
-    .filter((row) => planned.some((item) => item.ref === row.ref))
-    .sort((a, b) => a.start.localeCompare(b.start));
-  for (let i = 1; i < orderedPlanned.length; i++) {
-    if (orderedPlanned[i - 1]!.end > orderedPlanned[i]!.start) {
-      errors[orderedPlanned[i]!.ref] = 'Sessioni sovrapposte.';
-    }
-  }
   return errors;
 }
 
@@ -196,7 +155,6 @@ export function ActivityEditPanel({
     Record<string, ActivityReplanTime>
   >({});
   const [newPlanned, setNewPlanned] = useState<ActivityNewPlanned[]>([]);
-  const [removedPlanned, setRemovedPlanned] = useState<string[]>([]);
   const [deletedPlanned, setDeletedPlanned] = useState<string[]>([]);
   const [newIntervals, setNewIntervals] = useState<ActivityNewInterval[]>([]);
   const [removedIntervals, setRemovedIntervals] = useState<string[]>([]);
@@ -239,7 +197,6 @@ export function ActivityEditPanel({
     settings?.schedules.filter(
       (schedule) =>
         schedule.role === 'interval' ||
-        (schedule.role === 'planned' && !!schedule.start && !!schedule.end) ||
         (schedule.role === 'envelope' && !hasIntervals),
     ) ?? [];
   const metadataDirty =
@@ -271,20 +228,10 @@ export function ActivityEditPanel({
     canReplan &&
     (removedIntervals.length > 0 ||
       newIntervals.length > 0 ||
-      removedPlanned.length > 0 ||
       newPlanned.length > 0 ||
       deletedPlanned.length > 0 ||
-      (settings?.schedules.some(
-        (schedule) =>
-          schedule.role === 'planned' &&
-          schedule.placementStateRef === null &&
-          !deletedPlanned.includes(schedule.scheduleRef) &&
-          !!planDraft[schedule.scheduleRef]?.start,
-      ) ??
-        false) ||
       editablePlan.some(
         (schedule) =>
-          !removedPlanned.includes(schedule.scheduleRef) &&
           !deletedPlanned.includes(schedule.scheduleRef) &&
           !removedIntervals.includes(schedule.scheduleRef) &&
           (planDraft[schedule.scheduleRef]?.start !== schedule.start ||
@@ -294,7 +241,7 @@ export function ActivityEditPanel({
     times: planDraft,
     removedIntervals,
     newIntervals,
-    removedPlanned,
+    removedPlanned: [],
     deletedPlanned,
     newPlanned,
   };
@@ -390,7 +337,6 @@ export function ActivityEditPanel({
               .map((row) => [row.scheduleRef, row.name ?? '']),
           ),
         );
-        setRemovedPlanned([]);
         setDeletedPlanned([]);
         setNewIntervals([]);
         setRemovedIntervals([]);
@@ -696,7 +642,6 @@ export function ActivityEditPanel({
     }));
     setPlanOperation(null);
     setPlanError('');
-    setPlanError('');
   };
 
   const changeNewInterval = (
@@ -713,11 +658,7 @@ export function ActivityEditPanel({
     setPlanError('');
   };
 
-  const changeNewPlanned = (
-    ref: string,
-    field: 'start' | 'end' | 'name',
-    value: string,
-  ) => {
+  const changeNewPlanned = (ref: string, field: 'name', value: string) => {
     setNewPlanned((current) =>
       current.map((item) =>
         item.clientRef === ref ? { ...item, [field]: value } : item,
@@ -831,7 +772,6 @@ export function ActivityEditPanel({
               ),
             );
             setNewPlanned([]);
-            setRemovedPlanned([]);
             setDeletedPlanned([]);
             setNewIntervals([]);
             setRemovedIntervals([]);
@@ -1204,14 +1144,6 @@ export function ActivityEditPanel({
                     !deletedPlanned.includes(row.scheduleRef),
                 )
                 .map((row) => {
-                  const removed = removedPlanned.includes(row.scheduleRef);
-                  const currentStart =
-                    planDraft[row.scheduleRef]?.start ?? row.start ?? '';
-                  const currentEnd =
-                    planDraft[row.scheduleRef]?.end ?? row.end ?? '';
-                  const hasTime =
-                    !removed &&
-                    (row.placementStateRef !== null || !!currentStart);
                   return (
                     <div
                       className="temporal-create-tree-item is-session is-root"
@@ -1234,7 +1166,7 @@ export function ActivityEditPanel({
                           maxLength={300}
                           aria-label="Nome Sessione"
                           placeholder="Nome Sessione"
-                          disabled={removed || pending || planPending}
+                          disabled={pending || planPending}
                           value={plannedNames[row.scheduleRef] ?? ''}
                           onChange={(event) => {
                             const value = event.currentTarget.value;
@@ -1248,41 +1180,6 @@ export function ActivityEditPanel({
                         <div className="temporal-create-tree-row__actions">
                           <button
                             type="button"
-                            className={hasTime ? 'is-active' : undefined}
-                            aria-expanded={hasTime}
-                            aria-controls={`edit-session:${row.scheduleRef}:time`}
-                            disabled={!canReplan || planPending}
-                            onClick={() => {
-                              if (row.placementStateRef !== null) {
-                                setRemovedPlanned((current) =>
-                                  current.includes(row.scheduleRef)
-                                    ? current.filter(
-                                        (ref) => ref !== row.scheduleRef,
-                                      )
-                                    : [...current, row.scheduleRef],
-                                );
-                              } else {
-                                const root = settings.schedules.find(
-                                  (schedule) => schedule.role === 'envelope',
-                                );
-                                setPlanDraft((current) => ({
-                                  ...current,
-                                  [row.scheduleRef]: hasTime
-                                    ? { start: '', end: '' }
-                                    : {
-                                        start: root?.start?.slice(0, 16) ?? '',
-                                        end: root?.end?.slice(0, 16) ?? '',
-                                      },
-                                }));
-                              }
-                              setPlanOperation(null);
-                              setPlanError('');
-                            }}
-                          >
-                            Orario
-                          </button>
-                          <button
-                            type="button"
                             className="is-remove"
                             aria-label="Rimuovi Sessione"
                             disabled={!canReplan || pending || planPending}
@@ -1291,11 +1188,6 @@ export function ActivityEditPanel({
                                 ...current,
                                 row.scheduleRef,
                               ]);
-                              setRemovedPlanned((current) =>
-                                current.filter(
-                                  (ref) => ref !== row.scheduleRef,
-                                ),
-                              );
                               setPlanOperation(null);
                               setPlanError('');
                             }}
@@ -1304,67 +1196,6 @@ export function ActivityEditPanel({
                           </button>
                         </div>
                       </div>
-                      {hasTime ? (
-                        <div
-                          id={`edit-session:${row.scheduleRef}:time`}
-                          className="temporal-create-tree-time-editor"
-                          inert={planPending || undefined}
-                          data-edit-invalid={!!planErrors[row.scheduleRef]}
-                        >
-                          {canReplan ? (
-                            <>
-                              <TemporalCreateDatePicker
-                                label="Data Sessione"
-                                locale="it"
-                                value={currentStart.slice(0, 10)}
-                                onChange={(date) =>
-                                  changePlan(
-                                    row.scheduleRef,
-                                    'start',
-                                    `${date}${currentStart.slice(10, 16)}`,
-                                  )
-                                }
-                              />
-                              <TimeControl
-                                label="Inizio Sessione"
-                                dataPath={`startTime-${row.scheduleRef}`}
-                                value={currentStart.slice(11, 16)}
-                                onChange={(time) =>
-                                  changePlan(
-                                    row.scheduleRef,
-                                    'start',
-                                    `${currentStart.slice(0, 10)}T${time}`,
-                                  )
-                                }
-                              />
-                              <TimeControl
-                                label="Fine Sessione"
-                                dataPath={`endTime-${row.scheduleRef}`}
-                                value={currentEnd.slice(11, 16)}
-                                onChange={(time) =>
-                                  changePlan(
-                                    row.scheduleRef,
-                                    'end',
-                                    `${currentEnd.slice(0, 10)}T${time}`,
-                                  )
-                                }
-                              />
-                            </>
-                          ) : (
-                            <span>
-                              {currentStart} – {currentEnd}
-                            </span>
-                          )}
-                          {planErrors[row.scheduleRef] ? (
-                            <small
-                              className="temporal-create-field-error"
-                              role="alert"
-                            >
-                              {planErrors[row.scheduleRef]}
-                            </small>
-                          ) : null}
-                        </div>
-                      ) : null}
                     </div>
                   );
                 })}
@@ -1403,36 +1234,6 @@ export function ActivityEditPanel({
                     <div className="temporal-create-tree-row__actions">
                       <button
                         type="button"
-                        className={item.start ? 'is-active' : undefined}
-                        aria-expanded={!!item.start}
-                        aria-controls={`edit-session:${item.clientRef}:time`}
-                        disabled={planPending}
-                        onClick={() => {
-                          const root = settings.schedules.find(
-                            (row) => row.role === 'envelope',
-                          );
-                          setNewPlanned((current) =>
-                            current.map((row) =>
-                              row.clientRef === item.clientRef
-                                ? {
-                                    ...row,
-                                    start: row.start
-                                      ? ''
-                                      : (root?.start?.slice(0, 16) ?? ''),
-                                    end: row.start
-                                      ? ''
-                                      : (root?.end?.slice(0, 16) ?? ''),
-                                  }
-                                : row,
-                            ),
-                          );
-                          setPlanOperation(null);
-                        }}
-                      >
-                        Orario
-                      </button>
-                      <button
-                        type="button"
                         className="is-remove"
                         aria-label="Rimuovi Sessione"
                         disabled={planPending}
@@ -1449,58 +1250,6 @@ export function ActivityEditPanel({
                       </button>
                     </div>
                   </div>
-                  {item.start ? (
-                    <div
-                      id={`edit-session:${item.clientRef}:time`}
-                      className="temporal-create-tree-time-editor"
-                      data-edit-invalid={!!planErrors[item.clientRef]}
-                    >
-                      <TemporalCreateDatePicker
-                        label="Data Sessione"
-                        locale="it"
-                        value={item.start.slice(0, 10)}
-                        onChange={(date) =>
-                          changeNewPlanned(
-                            item.clientRef,
-                            'start',
-                            `${date}${item.start.slice(10, 16)}`,
-                          )
-                        }
-                      />
-                      <TimeControl
-                        label="Inizio Sessione"
-                        dataPath={`newStart-${item.clientRef}`}
-                        value={item.start.slice(11, 16)}
-                        onChange={(time) =>
-                          changeNewPlanned(
-                            item.clientRef,
-                            'start',
-                            `${item.start.slice(0, 10)}T${time}`,
-                          )
-                        }
-                      />
-                      <TimeControl
-                        label="Fine Sessione"
-                        dataPath={`newEnd-${item.clientRef}`}
-                        value={item.end.slice(11, 16)}
-                        onChange={(time) =>
-                          changeNewPlanned(
-                            item.clientRef,
-                            'end',
-                            `${item.end.slice(0, 10)}T${time}`,
-                          )
-                        }
-                      />
-                      {planErrors[item.clientRef] ? (
-                        <small
-                          className="temporal-create-field-error"
-                          role="alert"
-                        >
-                          {planErrors[item.clientRef]}
-                        </small>
-                      ) : null}
-                    </div>
-                  ) : null}
                 </div>
               ))}
             </div>
@@ -1526,8 +1275,6 @@ export function ActivityEditPanel({
                 {
                   clientRef: crypto.randomUUID(),
                   name: '',
-                  start: '',
-                  end: '',
                 },
               ]);
               setPlanOperation(null);
@@ -1659,7 +1406,6 @@ export function ActivityEditPanel({
                         {canReplan &&
                         (schedule.role === 'interval' ||
                           (schedule.role === 'envelope' && !hasIntervals)) &&
-                        !removedPlanned.includes(schedule.scheduleRef) &&
                         !removedIntervals.includes(schedule.scheduleRef) ? (
                           <div
                             className="temporal-create-u2-when timeline-activity-editor__when"
@@ -1899,7 +1645,6 @@ export function ActivityEditPanel({
                         ),
                       );
                       setNewPlanned([]);
-                      setRemovedPlanned([]);
                       setDeletedPlanned([]);
                       setNewIntervals([]);
                       setRemovedIntervals([]);

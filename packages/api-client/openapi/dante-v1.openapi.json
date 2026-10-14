@@ -1358,13 +1358,13 @@
             "items": {
               "$ref": "#/components/schemas/PlacePlannedRow"
             },
-            "maxItems": 100,
+            "maxItems": 0,
             "title": "Place Planned Sessions",
             "type": "array"
           },
           "planned_sessions": {
             "items": {
-              "$ref": "#/components/schemas/ReplanRow"
+              "$ref": "#/components/schemas/RetainedPlannedRow"
             },
             "maxItems": 100,
             "title": "Planned Sessions",
@@ -1380,9 +1380,9 @@
           },
           "remove_planned_sessions": {
             "items": {
-              "$ref": "#/components/schemas/ReplanRow"
+              "$ref": "#/components/schemas/RetainedPlannedRow"
             },
-            "maxItems": 100,
+            "maxItems": 0,
             "title": "Remove Planned Sessions",
             "type": "array"
           }
@@ -7409,18 +7409,6 @@
             "title": "Client Ref",
             "type": "string"
           },
-          "ends_local_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Ends Local At"
-          },
           "name": {
             "anyOf": [
               {
@@ -7433,18 +7421,6 @@
               }
             ],
             "title": "Name"
-          },
-          "starts_local_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Starts Local At"
           }
         },
         "required": ["client_ref"],
@@ -13073,6 +13049,32 @@
           "ends_local_at"
         ],
         "title": "RestoredScheduleResponse",
+        "type": "object"
+      },
+      "RetainedPlannedRow": {
+        "additionalProperties": false,
+        "description": "A named internal Session retained by an Activity edit.\n\nIt has identity and order, but deliberately no calendar placement.",
+        "properties": {
+          "expected_material_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Material State Ref"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          }
+        },
+        "required": ["schedule_ref"],
+        "title": "RetainedPlannedRow",
         "type": "object"
       },
       "RetireTemporalConstraintRequest": {

@@ -7,8 +7,6 @@ import './activity-planned-sessions-card-detail.css';
 type PlannedSession = Readonly<{
   scheduleRef: string;
   name: string;
-  start: string | null;
-  end: string | null;
   order: number;
 }>;
 
@@ -55,26 +53,11 @@ function parsePlannedSessions(
             row.display_name.trim().length > 0
               ? row.display_name
               : `Sessione ${order}`,
-          start: optionalString(
-            row.starts_local_at ??
-              row.starts_at ??
-              row.start_date ??
-              row.local_date,
-          ),
-          end: optionalString(
-            row.ends_local_at ?? row.ends_at ?? row.end_date_exclusive,
-          ),
           order,
         });
       })
       .sort((left, right) => left.order - right.order),
   );
-}
-
-function compactTime(value: string | null): string {
-  if (value === null) return '—';
-  const match = value.match(/T(\d{2}:\d{2})/);
-  return match?.[1] ?? value;
 }
 
 /**
@@ -166,9 +149,6 @@ function PlannedSessionCardContent({
           <span className="timeline-activity-planned-sessions__summary">
             <span className="timeline-activity-planned-sessions__name">
               {row.name}
-            </span>
-            <span className="timeline-activity-planned-sessions__time">
-              {compactTime(row.start)}–{compactTime(row.end)}
             </span>
           </span>
           <SessionSubjectControls

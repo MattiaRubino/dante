@@ -426,24 +426,12 @@ export function validateTemporalCreateU6Structure(
       ? null
       : { start: bands[0]!.start, end: bands[bands.length - 1]!.end };
   if (
-    (structure.plannedSlices.some((slice) => slice.timeEnabled === true) ||
-      structure.children.some(
-        (child) => child.scheduleEnabled || child.plannedSlices.length > 0,
-      )) &&
+    structure.children.some(
+      (child) => child.scheduleEnabled || child.plannedSlices.length > 0,
+    ) &&
     parent === null
   ) {
     return 'Place the Activity before assigning times to planned Sessions.';
-  }
-
-  for (const slice of structure.plannedSlices) {
-    if (slice.timeEnabled !== true) continue;
-    const window = sliceLocalWindow(slice);
-    if (window === null || parent === null) {
-      return 'Complete each Session date, start and end time.';
-    }
-    if (!contained(window, parent)) {
-      return 'Every Activity Session must stay inside the parent Activity time range.';
-    }
   }
 
   for (const child of structure.children) {
@@ -758,22 +746,12 @@ export function buildTemporalCreateRecurringActivityTemplate(
         ? Object.freeze([])
         : Object.freeze(bands.map((band) => window(band.start, band.end))),
     planned_slices: Object.freeze(
-      structure.plannedSlices.map((slice) => {
-        if (slice.timeEnabled !== true) {
-          return Object.freeze({
-            name: slice.title.trim(),
-            time_enabled: false as const,
-          });
-        }
-        const value = sliceLocalWindow(slice);
-        if (value === null) {
-          throw new Error('Recurring Activity Session has an invalid time.');
-        }
-        return Object.freeze({
-          ...window(value.start, value.end),
+      structure.plannedSlices.map((slice) =>
+        Object.freeze({
           name: slice.title.trim(),
-        });
-      }),
+          time_enabled: false as const,
+        }),
+      ),
     ),
     children: Object.freeze(
       structure.children.map((child) => {
@@ -869,10 +847,8 @@ export function buildTemporalCreateU2Request(
         ? {
             sessionCaptureMode: draft.activityStructure.captureMode,
             childGuardMode: draft.activityStructure.childGuardMode,
-            plannedSlices: draft.activityStructure.plannedSlices.map((slice) =>
-              slice.timeEnabled === true
-                ? plannedSliceInput(fields, slice)
-                : null,
+            plannedSlices: draft.activityStructure.plannedSlices.map(
+              () => null,
             ),
             ...(draft.activityStructure.activityIntervals.length > 0 &&
             bands !== null

@@ -3,8 +3,6 @@ import { Temporal } from '@dante/time';
 
 import type { TemporalCreateFields } from '../model/temporal-create-session';
 import type { TemporalCreatePlannedSliceDraft } from '../model/temporal-create-u2-authoring';
-import { TemporalCreateDatePicker } from './temporal-create-date-picker';
-import { TimeControl } from './temporal-create-core-u2';
 import { useTemporalCreateU2Draft } from './temporal-create-u2-draft-context';
 
 import './temporal-create-advanced-activity-structure.css';
@@ -152,12 +150,9 @@ export function TemporalCreateAdvancedActivityHeaderActions() {
  */
 export function TemporalCreateAdvancedActivityStructure({
   fields,
-  validationTarget = null,
-  validationMessage = '',
 }: TemporalCreateAdvancedActivityStructureProps) {
   const { i18n } = useTranslation('common');
   const italian = i18n.language.toLowerCase().startsWith('it');
-  const locale = i18n.resolvedLanguage ?? i18n.language ?? 'it';
   const { draft, patch } = useTemporalCreateU2Draft();
   const structure = draft.activityStructure;
 
@@ -207,15 +202,6 @@ export function TemporalCreateAdvancedActivityStructure({
             {italian ? 'Sessioni attività' : 'Activity sessions'}
           </div>
           {structure.plannedSlices.map((slice) => {
-            const timeId = `session:${slice.id}`;
-            const timeOpen = slice.timeEnabled === true;
-            // A failed Submit identifies one specific planned Session. Render
-            // its error in React so unrelated draft/DOM effects cannot erase
-            // the red border or detach its accessible Italian message.
-            const timeError =
-              timeOpen && validationTarget === `plannedSession:${slice.id}`
-                ? validationMessage
-                : '';
             return (
               <div
                 className="temporal-create-tree-item is-session is-root"
@@ -250,17 +236,6 @@ export function TemporalCreateAdvancedActivityStructure({
                   <div className="temporal-create-tree-row__actions">
                     <button
                       type="button"
-                      className={timeOpen ? 'is-active' : undefined}
-                      aria-expanded={timeOpen}
-                      aria-controls={`${timeId}:editor`}
-                      onClick={() =>
-                        updateSlice(slice.id, { timeEnabled: !timeOpen })
-                      }
-                    >
-                      {italian ? 'Orario' : 'Time'}
-                    </button>
-                    <button
-                      type="button"
                       className="is-remove"
                       onClick={() => removeSlice(slice.id)}
                       aria-label={
@@ -271,45 +246,6 @@ export function TemporalCreateAdvancedActivityStructure({
                     </button>
                   </div>
                 </div>
-
-                {timeOpen ? (
-                  <div
-                    id={`${timeId}:editor`}
-                    className="temporal-create-tree-time-editor"
-                    data-create-path={`plannedSession:${slice.id}`}
-                    data-create-invalid={timeError ? 'true' : undefined}
-                    aria-invalid={timeError ? 'true' : undefined}
-                  >
-                    {timeError ? (
-                      <span
-                        className="temporal-create-field-error"
-                        role="alert"
-                      >
-                        {timeError}
-                      </span>
-                    ) : null}
-                    <TemporalCreateDatePicker
-                      label={italian ? 'Data Sessione' : 'Session date'}
-                      value={slice.date}
-                      locale={locale}
-                      onChange={(date) => updateSlice(slice.id, { date })}
-                    />
-                    <TimeControl
-                      label={italian ? 'Inizio Sessione' : 'Session start'}
-                      value={slice.startTime}
-                      dataPath={`plannedSlices.${slice.id}.startTime`}
-                      onChange={(startTime) =>
-                        updateSlice(slice.id, { startTime })
-                      }
-                    />
-                    <TimeControl
-                      label={italian ? 'Fine Sessione' : 'Session end'}
-                      value={slice.endTime}
-                      dataPath={`plannedSlices.${slice.id}.endTime`}
-                      onChange={(endTime) => updateSlice(slice.id, { endTime })}
-                    />
-                  </div>
-                ) : null}
               </div>
             );
           })}

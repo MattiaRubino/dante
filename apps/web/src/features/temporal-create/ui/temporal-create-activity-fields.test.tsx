@@ -53,7 +53,7 @@ function plannedSessionActions(): HTMLElement {
 }
 
 describe('Activity Create current interval and planned Session controls', () => {
-  it('accepts a planned Session lasting exactly one minute through the time editor', () => {
+  it('keeps a named Session independent from Activity time controls', () => {
     openAdvanced();
     const actions = plannedSessionActions();
     fireEvent.click(within(actions).getByRole('button', { name: 'Sessione' }));
@@ -67,19 +67,13 @@ describe('Activity Create current interval and planned Session controls', () => 
         target: { value: 'Una prova breve' },
       },
     );
-    fireEvent.click(within(planned).getByRole('button', { name: 'Orario' }));
-    const start = planned.querySelector<HTMLInputElement>(
-      '[data-create-path$=".startTime"]',
-    );
-    const end = planned.querySelector<HTMLInputElement>(
-      '[data-create-path$=".endTime"]',
-    );
-    if (!start || !end)
-      throw new Error('Expected planned Session start/end controls');
-    fireEvent.change(start, { target: { value: '10:00' } });
-    fireEvent.change(end, { target: { value: '10:01' } });
-    expect(start.value).toBe('10:00');
-    expect(end.value).toBe('10:01');
+    expect(
+      within(planned).queryByRole('button', { name: 'Orario' }),
+    ).toBeNull();
+    expect(
+      planned.querySelector('[data-create-path$=".startTime"]'),
+    ).toBeNull();
+    expect(planned.querySelector('[data-create-path$=".endTime"]')).toBeNull();
     expect(within(planned).getByDisplayValue('Una prova breve')).toBeTruthy();
   });
 

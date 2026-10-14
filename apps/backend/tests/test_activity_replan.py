@@ -1,10 +1,11 @@
-"""Coordinated Activity planning must retain explicit dependent intent."""
+"""Activity interval edits never turn named Sessions into calendar placements."""
 
 from datetime import datetime
 from typing import Literal
 from uuid import uuid7
 
 import pytest
+from pydantic import ValidationError
 
 from dante.modules.temporal.activity_edit_snapshot_api import (
     ActivityEditSnapshot,
@@ -12,9 +13,10 @@ from dante.modules.temporal.activity_edit_snapshot_api import (
 )
 from dante.modules.temporal.activity_replan_api import (
     ActivityReplanCommand,
-    NewIntervalRow,
+    DeletePlannedRow,
     NewPlannedRow,
     ReplanRow,
+    RetainedPlannedRow,
     _validated_plan,
 )
 from dante.modules.temporal.decomposition_api import ActivityScheduleResponse
@@ -72,7 +74,7 @@ def _snapshot(*rows: ActivityScheduleResponse) -> ActivityEditSnapshot:
     )
 
 
-def _intent(row: ActivityScheduleResponse, start: int, end: int) -> ReplanRow:
+def _interval(row: ActivityScheduleResponse, start: int, end: int) -> ReplanRow:
     assert row.placement_material_state_ref is not None
     return ReplanRow(
         schedule_ref=row.schedule_ref,
@@ -82,216 +84,117 @@ def _intent(row: ActivityScheduleResponse, start: int, end: int) -> ReplanRow:
     )
 
 
-def test_replan_previews_every_changed_interval_and_planned_session() -> None:
-    envelope, first, second, planned = (
+def _session(row: ActivityScheduleResponse) -> RetainedPlannedRow:
+    return RetainedPlannedRow(
+        schedule_ref=row.schedule_ref, expected_material_state_ref=row.placement_material_state_ref
+    )
+
+
+def test_replan_moves_activity_intervals_without_retiming_named_sessions() -> None:
+    envelope, first, second, named = (
         _row("envelope", 9, 12),
         _row("interval", 9, 10),
         _row("interval", 11, 12),
         _row("planned", 11, 12),
     )
     changes, placements = _validated_plan(
-        _snapshot(envelope, first, second, planned),
+        _snapshot(envelope, first, second, named),
         ActivityReplanCommand(
-            operation_id="move-all",
-            intervals=[_intent(first, 10, 11), _intent(second, 12, 13)],
-            planned_sessions=[_intent(planned, 12, 13)],
+            operation_id="move",
+            intervals=[_interval(first, 10, 11), _interval(second, 12, 13)],
+            planned_sessions=[_session(named)],
         ),
     )
-    assert {change.role for change in changes} == {"envelope", "interval", "planned"}
-    assert len(changes) == len(placements) == 4
-    assert changes[0].proposed_start == _time(10)
-    assert changes[0].proposed_end == _time(13)
+    assert {change.role for change in changes} == {"envelope", "interval"}
+    assert len(placements) == 3
+    assert all(change.schedule_ref != named.schedule_ref for change in changes)
 
 
-def test_replan_rejects_omitted_or_overlapping_dependents_and_stale_basis() -> None:
-    envelope, first, planned = (
+def test_replan_requires_each_named_session_to_be_kept_or_deleted() -> None:
+    envelope, interval, named = (
         _row("envelope", 9, 12),
         _row("interval", 9, 12),
         _row("planned", 10, 11),
     )
-    snapshot = _snapshot(envelope, first, planned)
     with pytest.raises(ProblemError) as omitted:
         _validated_plan(
-            snapshot,
-            ActivityReplanCommand(
-                operation_id="omitted",
-                intervals=[_intent(first, 10, 13)],
-            ),
+            _snapshot(envelope, interval, named),
+            ActivityReplanCommand(operation_id="omitted", intervals=[_interval(interval, 9, 12)]),
         )
     assert omitted.value.status == 422
 
-    with pytest.raises(ProblemError) as outside:
-        _validated_plan(
-            snapshot,
-            ActivityReplanCommand(
-                operation_id="outside",
-                intervals=[_intent(first, 10, 13)],
-                planned_sessions=[_intent(planned, 9, 10)],
-            ),
-        )
-    assert outside.value.status == 422
-
-    stale = _intent(first, 10, 13).model_copy(
-        update={"expected_material_state_ref": uuid7()},
-    )
-    with pytest.raises(ProblemError) as conflict:
-        _validated_plan(
-            snapshot,
-            ActivityReplanCommand(
-                operation_id="stale",
-                intervals=[stale],
-                planned_sessions=[_intent(planned, 10, 11)],
-            ),
-        )
-    assert conflict.value.status == 409
-
-
-def test_replan_previews_replacement_and_rejects_ambiguous_planned_rows() -> None:
-    envelope, interval, planned = (
-        _row("envelope", 9, 12),
-        _row("interval", 9, 12),
-        _row("planned", 9, 10),
-    )
-    addition = NewPlannedRow(
-        client_ref=uuid7(),
-        name="Nuova sessione",
-        starts_local_at=_time(10),
-        ends_local_at=_time(11),
-    )
-    snapshot = _snapshot(envelope, interval, planned)
     changes, placements = _validated_plan(
-        snapshot,
+        _snapshot(envelope, interval, named),
         ActivityReplanCommand(
-            operation_id="replace",
-            intervals=[_intent(interval, 9, 12)],
-            remove_planned_sessions=[_intent(planned, 9, 10)],
-            new_planned_sessions=[addition],
+            operation_id="delete",
+            intervals=[_interval(interval, 9, 12)],
+            delete_planned_sessions=[
+                DeletePlannedRow(
+                    schedule_ref=named.schedule_ref,
+                    expected_material_state_ref=named.placement_material_state_ref,
+                )
+            ],
         ),
     )
     assert placements == []
-    assert {change.role for change in changes} == {"planned_removed", "planned_added"}
-    assert (
-        next(change.client_ref for change in changes if change.role == "planned_added")
-        == addition.client_ref
+    assert [(change.role, change.schedule_ref) for change in changes] == [
+        ("planned_deleted", named.schedule_ref)
+    ]
+
+
+def test_replan_adds_an_untimed_named_session() -> None:
+    envelope, interval = _row("envelope", 9, 12), _row("interval", 9, 12)
+    added = NewPlannedRow(client_ref=uuid7(), name="Ripasso")
+    changes, placements = _validated_plan(
+        _snapshot(envelope, interval),
+        ActivityReplanCommand(
+            operation_id="add", intervals=[_interval(interval, 9, 12)], new_planned_sessions=[added]
+        ),
     )
-    with pytest.raises(ProblemError) as duplicate:
-        _validated_plan(
-            snapshot,
-            ActivityReplanCommand(
-                operation_id="duplicate",
-                intervals=[_intent(interval, 9, 12)],
-                planned_sessions=[_intent(planned, 9, 10)],
-                remove_planned_sessions=[_intent(planned, 9, 10)],
-            ),
-        )
-    assert duplicate.value.status == 422
+    assert placements == []
+    assert [(change.role, change.client_ref) for change in changes] == [
+        ("planned_added", added.client_ref)
+    ]
 
 
-def test_replan_replaces_activity_interval_and_keeps_one_current_interval() -> None:
-    envelope, first, second, planned = (
+def test_replan_rejects_overlapping_activity_intervals_even_with_named_sessions() -> None:
+    envelope, first, second, named = (
         _row("envelope", 9, 12),
         _row("interval", 9, 10),
         _row("interval", 11, 12),
-        _row("planned", 11, 12),
+        _row("planned", 9, 12),
     )
-    new = NewIntervalRow(
-        client_ref=uuid7(),
-        starts_local_at=_time(10),
-        ends_local_at=_time(11),
-    )
-    changes, placements = _validated_plan(
-        _snapshot(envelope, first, second, planned),
-        ActivityReplanCommand(
-            operation_id="replace-interval",
-            intervals=[_intent(second, 11, 12)],
-            remove_intervals=[_intent(first, 9, 10)],
-            new_intervals=[new],
-            planned_sessions=[_intent(planned, 11, 12)],
-        ),
-    )
-    assert {row.role for row in changes} == {
-        "envelope",
-        "interval_removed",
-        "interval_added",
-    }
-    assert len(placements) == 1
-    assert placements[0][0].schedule_ref == envelope.schedule_ref
-    assert changes[0].proposed_start == _time(10)
-
-    with pytest.raises(ProblemError) as none_left:
+    with pytest.raises(ProblemError) as invalid:
         _validated_plan(
-            _snapshot(envelope, first, second, planned),
+            _snapshot(envelope, first, second, named),
             ActivityReplanCommand(
-                operation_id="remove-last",
-                remove_intervals=[_intent(first, 9, 10), _intent(second, 11, 12)],
-                planned_sessions=[_intent(planned, 11, 12)],
+                operation_id="overlap",
+                intervals=[_interval(first, 9, 11), _interval(second, 10, 12)],
+                planned_sessions=[_session(named)],
             ),
         )
-    assert none_left.value.status == 422
-
-    with pytest.raises(ProblemError) as overlapping:
-        _validated_plan(
-            _snapshot(envelope, first, second, planned),
-            ActivityReplanCommand(
-                operation_id="overlapping-new-interval",
-                intervals=[_intent(first, 9, 10), _intent(second, 11, 12)],
-                new_intervals=[
-                    NewIntervalRow(
-                        client_ref=uuid7(),
-                        starts_local_at=_time(9),
-                        ends_local_at=_time(11),
-                    )
-                ],
-                planned_sessions=[_intent(planned, 11, 12)],
-            ),
-        )
-    assert overlapping.value.status == 422
+    assert invalid.value.status == 422
 
 
-def test_replan_envelope_only_requires_cas_and_keeps_planned_sessions_in_bounds() -> None:
-    envelope, planned = _row("envelope", 9, 12), _row("planned", 10, 11)
-    snapshot = _snapshot(envelope, planned)
-    changes, placements = _validated_plan(
-        snapshot,
-        ActivityReplanCommand(
-            operation_id="move-envelope",
-            envelope=_intent(envelope, 10, 13),
-            planned_sessions=[_intent(planned, 11, 12)],
-        ),
+def test_named_session_identity_rejects_stale_placement_and_old_timed_payload() -> None:
+    envelope, interval, named = (
+        _row("envelope", 9, 12),
+        _row("interval", 9, 12),
+        _row("planned", 10, 11),
     )
-    assert {row.role for row in changes} == {"envelope", "planned"}
-    assert len(placements) == 2
-
-    with pytest.raises(ProblemError) as omitted:
-        _validated_plan(
-            snapshot,
-            ActivityReplanCommand(
-                operation_id="missing-envelope",
-                planned_sessions=[_intent(planned, 10, 11)],
-            ),
-        )
-    assert omitted.value.status == 422
-
     with pytest.raises(ProblemError) as stale:
         _validated_plan(
-            snapshot,
+            _snapshot(envelope, interval, named),
             ActivityReplanCommand(
-                operation_id="stale-envelope",
-                envelope=_intent(envelope, 10, 13).model_copy(
-                    update={"expected_material_state_ref": uuid7()}
-                ),
-                planned_sessions=[_intent(planned, 10, 11)],
+                operation_id="stale",
+                intervals=[_interval(interval, 9, 12)],
+                planned_sessions=[
+                    RetainedPlannedRow(
+                        schedule_ref=named.schedule_ref, expected_material_state_ref=uuid7()
+                    )
+                ],
             ),
         )
     assert stale.value.status == 409
-
-    with pytest.raises(ProblemError) as outside:
-        _validated_plan(
-            snapshot,
-            ActivityReplanCommand(
-                operation_id="outside-envelope",
-                envelope=_intent(envelope, 11, 13),
-                planned_sessions=[_intent(planned, 10, 11)],
-            ),
-        )
-    assert outside.value.status == 422
+    with pytest.raises(ValidationError):
+        NewPlannedRow(client_ref=uuid7(), name="Ripasso", starts_local_at=_time(10))

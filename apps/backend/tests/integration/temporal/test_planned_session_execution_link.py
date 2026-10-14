@@ -129,3 +129,45 @@ async def test_planned_start_is_linked_replayable_and_never_actual(
             ).fetchone() == (0,)
     finally:
         await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_named_session_can_start_before_its_legacy_child_placement(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    try:
+        now = datetime.now(UTC)
+        created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
+            self_person_ref=actor,
+            operation_id="legacy-child:activity",
+            title="Preparazione",
+            placement=AbsoluteIntervalPlacement(
+                starts_at=now - timedelta(hours=1), ends_at=now + timedelta(hours=2)
+            ),
+            planned_slices=(
+                AbsoluteIntervalPlacement(
+                    starts_at=now + timedelta(minutes=30),
+                    ends_at=now + timedelta(hours=1),
+                ),
+            ),
+            session_capture_mode="live",
+        )
+        sessions = SessionApplication(runtime.session_factory)
+        await sessions.start(
+            self_person_ref=actor,
+            operation_id="legacy-child:main",
+            subject_kind="activity",
+            subject_native_ref=created.item.subject_native_ref,
+        )
+        started = await sessions.start_planned(
+            self_person_ref=actor,
+            operation_id="legacy-child:named",
+            activity_ref=created.item.subject_native_ref,
+            schedule_ref=created.planned_slices[0].schedule_ref,
+        )
+        assert started.open
+        assert started.planned_schedule_ref == created.planned_slices[0].schedule_ref
+    finally:
+        await runtime.dispose()

@@ -17,7 +17,7 @@ describe('Activity planned Sessions card detail', () => {
     vi.unstubAllGlobals();
   });
 
-  it('renders only Activity-owned planned schedules as nested card detail', async () => {
+  it('renders only Activity-owned named Sessions without calendar times', async () => {
     const fetchFn = vi.fn<typeof fetch>(() =>
       Promise.resolve(
         Response.json({
@@ -65,8 +65,8 @@ describe('Activity planned Sessions card detail', () => {
 
     expect(await screen.findByText('Teoria')).toBeTruthy();
     expect(screen.getByText('Esercizi')).toBeTruthy();
-    expect(screen.getByText('18:00–19:00')).toBeTruthy();
-    expect(screen.getByText('20:00–21:00')).toBeTruthy();
+    expect(screen.queryByText('18:00–19:00')).toBeNull();
+    expect(screen.queryByText('20:00–21:00')).toBeNull();
     const rows = container.querySelectorAll(
       '.timeline-activity-planned-sessions__row',
     );

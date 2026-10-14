@@ -80,7 +80,8 @@ describe('Activity structure after reload', () => {
       expect(screen.getAllByTestId('session-capture')).toHaveLength(2),
     );
     expect(screen.getByText(/Ricerca fonti/)).toBeTruthy();
-    expect(screen.getByText(/Pianificazione conclusa/)).toBeTruthy();
+    expect(screen.queryByText(/Pianificazione conclusa/)).toBeNull();
+    expect(screen.queryByText(/2026-10-02T09:00:00Z/)).toBeNull();
     const manual = screen.getAllByTestId('session-capture')[1];
     expect(manual?.dataset.subject).toBe(CHILD);
     expect(manual?.dataset.live).toBe('false');

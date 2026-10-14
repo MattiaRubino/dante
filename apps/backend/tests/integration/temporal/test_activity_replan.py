@@ -1,16 +1,13 @@
-"""A coordinated replan writes existing Activity rows as one accepted unit."""
+"""Real PostgreSQL contract for Activity intervals and named Session configuration."""
 
-import hashlib
 from datetime import datetime
 from types import SimpleNamespace
 from typing import Any, cast
 from uuid import uuid7
 
-import psycopg
 import pytest
 from fastapi import Request, Response
 from sqlalchemy import text
-from sqlalchemy.exc import DBAPIError
 from tests.integration.temporal.test_activity_quick_authoring_metadata import _seed_self
 
 from dante.context.contracts import DanteContext
@@ -20,8 +17,8 @@ from dante.modules.temporal.activity_replan_api import (
     DeletePlannedRow,
     NewIntervalRow,
     NewPlannedRow,
-    PlacePlannedRow,
     ReplanRow,
+    RetainedPlannedRow,
     apply_activity_replan,
     preview_activity_replan,
 )
@@ -52,31 +49,33 @@ def _move(row: ActivityScheduleResponse, start: int, end: int) -> ReplanRow:
     )
 
 
-def _hour(value: datetime | None) -> int:
-    assert value is not None, "This accepted Schedule must be timed."
-    return value.hour
+def _retain(row: ActivityScheduleResponse) -> RetainedPlannedRow:
+    return RetainedPlannedRow(
+        schedule_ref=row.schedule_ref,
+        expected_material_state_ref=row.placement_material_state_ref,
+    )
 
 
-def _order(row: ActivityScheduleResponse) -> int:
-    assert row.presentation_order is not None, "This accepted row must be ordered."
-    return row.presentation_order
-
-
-def _fake_context(actor: object) -> DanteContext:
-    """The route depends on the actor identity only; test the same duck-typed shape."""
+def _context(actor: object) -> DanteContext:
     return cast(DanteContext, SimpleNamespace(self_person_ref=actor))
 
 
-def _fake_request(runtime: Any) -> Request:
-    """The route only uses app.state.database_runtime; no live ASGI connection."""
+def _request(runtime: Any) -> Request:
     return cast(
         Request,
         SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))),
     )
 
 
+async def _snapshot(runtime: Any, actor: object, activity: object) -> ActivityEditSnapshot:
+    async with runtime.session_factory() as session, session.begin():
+        return ActivityEditSnapshot.model_validate(
+            await session.scalar(_SNAPSHOT, {"actor": actor, "activity": activity})
+        )
+
+
 @pytest.mark.asyncio
-async def test_activity_replan_previews_and_commits_dependent_rows_atomically(
+async def test_replanning_an_activity_keeps_named_session_configuration_without_retiming_it(
     migrated_database: Any,
 ) -> None:
     actor = _seed_self(migrated_database)
@@ -84,309 +83,39 @@ async def test_activity_replan_previews_and_commits_dependent_rows_atomically(
     try:
         created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
             self_person_ref=actor,
-            operation_id="replan:create",
-            title="Studio",
-            placement=_window(9, 12),
-            activity_intervals=(_window(9, 10), _window(11, 12)),
-            planned_slices=(_window(11, 12),),
-            planned_slice_names=("Ripasso",),
-        )
-        activity = created.item.subject_native_ref
-        async with runtime.session_factory() as session, session.begin():
-            before = ActivityEditSnapshot.model_validate(
-                await session.scalar(
-                    _SNAPSHOT,
-                    {"actor": actor, "activity": activity},
-                )
-            )
-        intervals = [row for row in before.schedules if row.role_code == "interval"]
-        planned = next(row for row in before.schedules if row.role_code == "planned")
-        command = ActivityReplanCommand(
-            operation_id="replan:move",
-            intervals=[_move(intervals[0], 10, 11), _move(intervals[1], 12, 13)],
-            planned_sessions=[_move(planned, 12, 13)],
-        )
-        context = _fake_context(actor)
-        request = _fake_request(runtime)
-        proposal = await preview_activity_replan(
-            activity,
-            command,
-            context,
-            request,
-            Response(),
-        )
-        assert len(proposal.changes) == 4
-        async with runtime.session_factory() as session, session.begin():
-            still_before = ActivityEditSnapshot.model_validate(
-                await session.scalar(
-                    _SNAPSHOT,
-                    {"actor": actor, "activity": activity},
-                )
-            )
-            assert still_before.schedules == before.schedules
-        after = await apply_activity_replan(
-            activity,
-            command,
-            context,
-            request,
-            Response(),
-        )
-        assert [_hour(row.starts_local_at) for row in after.schedules] == [10, 10, 12, 12]
-        assert [_hour(row.ends_local_at) for row in after.schedules] == [13, 11, 13, 13]
-        assert (
-            next(row for row in after.schedules if row.role_code == "planned").display_name
-            == "Ripasso"
-        )
-        with pytest.raises(ProblemError) as stale:
-            await apply_activity_replan(
-                activity,
-                command.model_copy(update={"operation_id": "replan:stale"}),
-                context,
-                request,
-                Response(),
-            )
-        assert stale.value.status == 409
-    finally:
-        await runtime.dispose()
-
-
-@pytest.mark.asyncio
-async def test_activity_replan_adds_and_removes_planned_sessions_without_reusing_history(
-    migrated_database: Any,
-) -> None:
-    actor = _seed_self(migrated_database)
-    runtime = create_database_runtime(migrated_database.runtime_settings())
-    try:
-        created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
-            self_person_ref=actor,
-            operation_id="replan:replace:create",
+            operation_id="session-lifecycle:move",
             title="Studio",
             placement=_window(9, 12),
             activity_intervals=(_window(9, 12),),
-            planned_slices=(_window(9, 10),),
-            planned_slice_names=("Prima",),
-        )
-        activity = created.item.subject_native_ref
-        async with runtime.session_factory() as session, session.begin():
-            before = ActivityEditSnapshot.model_validate(
-                await session.scalar(
-                    _SNAPSHOT,
-                    {"actor": actor, "activity": activity},
-                )
-            )
-        interval = next(row for row in before.schedules if row.role_code == "interval")
-        old = next(row for row in before.schedules if row.role_code == "planned")
-        command = ActivityReplanCommand(
-            operation_id="replan:replace:apply",
-            intervals=[_move(interval, 9, 12)],
-            remove_planned_sessions=[_move(old, 9, 10)],
-            new_planned_sessions=[
-                NewPlannedRow(
-                    client_ref=uuid7(),
-                    name="Seconda",
-                    starts_local_at=datetime(2026, 10, 9, 10),  # noqa: DTZ001
-                    ends_local_at=datetime(2026, 10, 9, 11),  # noqa: DTZ001
-                )
-            ],
-        )
-        context = _fake_context(actor)
-        request = _fake_request(runtime)
-        preview = await preview_activity_replan(activity, command, context, request, Response())
-        assert {change.role for change in preview.changes} == {"planned_added", "planned_removed"}
-        after = await apply_activity_replan(activity, command, context, request, Response())
-        accepted = [row for row in after.schedules if row.role_code == "planned"]
-        assert len(accepted) == 2
-        assert (
-            next(
-                row for row in accepted if row.schedule_ref == old.schedule_ref
-            ).placement_material_state_ref
-            is None
-        )
-        added = next(row for row in accepted if row.schedule_ref != old.schedule_ref)
-        assert added.display_name == "Seconda"
-        assert _order(added) > _order(old)
-        assert len([row for row in after.schedules if row.role_code == "interval"]) == 1
-    finally:
-        await runtime.dispose()
-
-
-@pytest.mark.asyncio
-async def test_activity_replan_retires_planned_rows_but_keeps_schedule_history(
-    migrated_database: Any,
-) -> None:
-    actor = _seed_self(migrated_database)
-    runtime = create_database_runtime(migrated_database.runtime_settings())
-    try:
-        created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
-            self_person_ref=actor,
-            operation_id="replan:retire:create",
-            title="Studio",
-            placement=_window(9, 12),
-            planned_slices=(_window(9, 10), None),
-            planned_slice_names=("Mattina", "Libera"),
-        )
-        activity = created.item.subject_native_ref
-        async with runtime.session_factory() as session, session.begin():
-            before = ActivityEditSnapshot.model_validate(
-                await session.scalar(
-                    _SNAPSHOT,
-                    {"actor": actor, "activity": activity},
-                )
-            )
-        envelope = next(row for row in before.schedules if row.role_code == "envelope")
-        planned = [row for row in before.schedules if row.role_code == "planned"]
-        command = ActivityReplanCommand(
-            operation_id="replan:retire:apply",
-            envelope=_move(envelope, 9, 12),
-            delete_planned_sessions=[
-                DeletePlannedRow(
-                    schedule_ref=row.schedule_ref,
-                    expected_material_state_ref=row.placement_material_state_ref,
-                )
-                for row in planned
-            ],
-        )
-        context = _fake_context(actor)
-        request = _fake_request(runtime)
-        preview = await preview_activity_replan(activity, command, context, request, Response())
-        assert [change.role for change in preview.changes] == ["planned_deleted"] * 2
-        after = await apply_activity_replan(activity, command, context, request, Response())
-        assert not any(row.role_code == "planned" for row in after.schedules)
-        with psycopg.connect(
-            host=migrated_database.cluster.host,
-            port=migrated_database.cluster.port,
-            dbname=migrated_database.name,
-            user=migrated_database.cluster.admin_user,
-            password=migrated_database.cluster.admin_password,
-        ) as connection:
-            historical = connection.execute(
-                """
-                SELECT schedule_ref,retired_at FROM dante.activity_schedule_role
-                 WHERE activity_ref=%s AND role_code='planned'
-            """,
-                (activity,),
-            ).fetchall()
-        assert {row[0] for row in historical} == {row.schedule_ref for row in planned}
-        assert all(row[1] is not None for row in historical)
-        retired_unplaced = next(row for row in planned if row.placement_material_state_ref is None)
-        with pytest.raises(DBAPIError) as unavailable:
-            async with runtime.session_factory() as session, session.begin():
-                await session.execute(
-                    text("""
-                    SELECT * FROM dante.place_self_unplaced_planned_schedule(
-                        :actor,:operation,:fingerprint,:activity,:schedule,:state,
-                        CAST(:placement AS jsonb))
-                """),
-                    {
-                        "actor": actor,
-                        "operation": "replan:retire:forbidden-placement",
-                        "fingerprint": hashlib.sha256(b"retired-row").hexdigest(),
-                        "activity": activity,
-                        "schedule": retired_unplaced.schedule_ref,
-                        "state": uuid7(),
-                        "placement": "{}",
-                    },
-                )
-        assert isinstance(unavailable.value.orig, psycopg.Error)
-        assert (
-            unavailable.value.orig.diag.constraint_name == "planned_schedule_placement_unavailable"
-        )
-        with pytest.raises(ProblemError) as stale:
-            await apply_activity_replan(
-                activity,
-                command.model_copy(update={"operation_id": "replan:retire:stale"}),
-                context,
-                request,
-                Response(),
-            )
-        assert stale.value.status == 422
-    finally:
-        await runtime.dispose()
-
-
-@pytest.mark.asyncio
-async def test_planned_time_can_be_added_removed_and_added_again_on_same_schedule(
-    migrated_database: Any,
-) -> None:
-    actor = _seed_self(migrated_database)
-    runtime = create_database_runtime(migrated_database.runtime_settings())
-    try:
-        created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
-            self_person_ref=actor,
-            operation_id="replan:untimed:create",
-            title="Studio",
-            placement=_window(9, 12),
             planned_slices=(None,),
             planned_slice_names=("Ripasso",),
         )
         activity = created.item.subject_native_ref
-        context = _fake_context(actor)
-        request = _fake_request(runtime)
-
-        async def snapshot() -> ActivityEditSnapshot:
-            async with runtime.session_factory() as session, session.begin():
-                return ActivityEditSnapshot.model_validate(
-                    await session.scalar(
-                        _SNAPSHOT,
-                        {"actor": actor, "activity": activity},
-                    )
-                )
-
-        before = await snapshot()
-        planned = next(row for row in before.schedules if row.role_code == "planned")
-        envelope = next(row for row in before.schedules if row.role_code == "envelope")
-        assert planned.placement_material_state_ref is None
-
-        def place(op: str) -> ActivityReplanCommand:
-            return ActivityReplanCommand(
-                operation_id=op,
-                envelope=_move(envelope, 9, 12),
-                place_planned_sessions=[
-                    PlacePlannedRow(
-                        schedule_ref=planned.schedule_ref,
-                        starts_local_at=datetime(2026, 10, 9, 10),  # noqa: DTZ001
-                        ends_local_at=datetime(2026, 10, 9, 11),  # noqa: DTZ001
-                    )
-                ],
-            )
-
-        proposed = await preview_activity_replan(
-            activity, place("place:first"), context, request, Response()
+        before = await _snapshot(runtime, actor, activity)
+        interval = next(row for row in before.schedules if row.role_code == "interval")
+        named = next(row for row in before.schedules if row.role_code == "planned")
+        command = ActivityReplanCommand(
+            operation_id="session-lifecycle:move:apply",
+            intervals=[_move(interval, 10, 13)],
+            planned_sessions=[_retain(named)],
         )
-        assert [change.role for change in proposed.changes] == ["planned_placed"]
-        timed = await apply_activity_replan(
-            activity, place("place:first"), context, request, Response()
+        preview = await preview_activity_replan(
+            activity, command, _context(actor), _request(runtime), Response()
         )
-        placed = next(row for row in timed.schedules if row.role_code == "planned")
-        assert placed.schedule_ref == planned.schedule_ref
-        assert _hour(placed.starts_local_at) == 10
-        removed = await apply_activity_replan(
-            activity,
-            ActivityReplanCommand(
-                operation_id="place:remove",
-                envelope=_move(envelope, 9, 12),
-                remove_planned_sessions=[_move(placed, 10, 11)],
-            ),
-            context,
-            request,
-            Response(),
+        assert {change.role for change in preview.changes} == {"envelope", "interval"}
+        after = await apply_activity_replan(
+            activity, command, _context(actor), _request(runtime), Response()
         )
-        untimed = next(row for row in removed.schedules if row.role_code == "planned")
-        assert untimed.schedule_ref == planned.schedule_ref
-        assert untimed.placement_material_state_ref is None
-        retimed = await apply_activity_replan(
-            activity, place("place:again"), context, request, Response()
-        )
-        again = next(row for row in retimed.schedules if row.role_code == "planned")
-        assert again.schedule_ref == planned.schedule_ref
-        assert again.placement_material_state_ref != placed.placement_material_state_ref
-        assert (await snapshot()).schedules == retimed.schedules
+        retained = next(row for row in after.schedules if row.role_code == "planned")
+        assert retained.schedule_ref == named.schedule_ref
+        assert retained.display_name == "Ripasso"
+        assert retained.placement_material_state_ref is None
     finally:
         await runtime.dispose()
 
 
 @pytest.mark.asyncio
-async def test_activity_replan_replaces_current_interval_without_erasing_role_history(
+async def test_replacing_one_activity_interval_preserves_other_intervals_and_named_identity(
     migrated_database: Any,
 ) -> None:
     actor = _seed_self(migrated_database)
@@ -394,175 +123,211 @@ async def test_activity_replan_replaces_current_interval_without_erasing_role_hi
     try:
         created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
             self_person_ref=actor,
-            operation_id="replan:intervals:create",
+            operation_id="lifecycle:replace-interval",
             title="Lavoro",
             placement=_window(9, 12),
             activity_intervals=(_window(9, 10), _window(11, 12)),
-            planned_slices=(_window(11, 12),),
-            planned_slice_names=("Pianificata",),
+            planned_slices=(None,),
+            planned_slice_names=("Studio",),
         )
         activity = created.item.subject_native_ref
-        async with runtime.session_factory() as session, session.begin():
-            before = ActivityEditSnapshot.model_validate(
-                await session.scalar(
-                    _SNAPSHOT,
-                    {"actor": actor, "activity": activity},
-                )
-            )
-        intervals = [row for row in before.schedules if row.role_code == "interval"]
-        planned = next(row for row in before.schedules if row.role_code == "planned")
-        new_ref = uuid7()
+        before = await _snapshot(runtime, actor, activity)
+        first, second = (row for row in before.schedules if row.role_code == "interval")
+        named = next(row for row in before.schedules if row.role_code == "planned")
         command = ActivityReplanCommand(
-            operation_id="replan:intervals:replace",
-            intervals=[_move(intervals[1], 11, 12)],
-            remove_intervals=[_move(intervals[0], 9, 10)],
+            operation_id="lifecycle:replace-interval:apply",
+            intervals=[_move(second, 11, 12)],
+            remove_intervals=[_move(first, 9, 10)],
             new_intervals=[
                 NewIntervalRow(
-                    client_ref=new_ref,
+                    client_ref=uuid7(),
                     starts_local_at=datetime(2026, 10, 9, 10),  # noqa: DTZ001
                     ends_local_at=datetime(2026, 10, 9, 11),  # noqa: DTZ001
                 )
             ],
-            planned_sessions=[_move(planned, 11, 12)],
+            planned_sessions=[_retain(named)],
         )
-        context = _fake_context(actor)
-        request = _fake_request(runtime)
-        preview = await preview_activity_replan(activity, command, context, request, Response())
+        preview = await preview_activity_replan(
+            activity, command, _context(actor), _request(runtime), Response()
+        )
         assert {change.role for change in preview.changes} == {
             "envelope",
             "interval_removed",
             "interval_added",
         }
-        after = await apply_activity_replan(activity, command, context, request, Response())
-        current_intervals = [row for row in after.schedules if row.role_code == "interval"]
-        assert len(current_intervals) == 2
-        assert intervals[0].schedule_ref not in {row.schedule_ref for row in current_intervals}
-        assert intervals[1].schedule_ref in {row.schedule_ref for row in current_intervals}
-        added = next(
-            row for row in current_intervals if row.schedule_ref != intervals[1].schedule_ref
+        after = await apply_activity_replan(
+            activity, command, _context(actor), _request(runtime), Response()
         )
-        assert _order(added) > max(_order(row) for row in intervals)
-        assert (_hour(added.starts_local_at), _hour(added.ends_local_at)) == (10, 11)
-        envelope = next(row for row in after.schedules if row.role_code == "envelope")
-        assert _hour(envelope.starts_local_at) == 10
-        retained_planned = next(row for row in after.schedules if row.role_code == "planned")
-        assert retained_planned.schedule_ref == planned.schedule_ref
-        # The original role is historically accepted and never reassigned.
+        current = [row for row in after.schedules if row.role_code == "interval"]
+        assert len(current) == 2
+        assert first.schedule_ref not in {row.schedule_ref for row in current}
+        assert second.schedule_ref in {row.schedule_ref for row in current}
+        retained = next(row for row in after.schedules if row.role_code == "planned")
+        assert retained.schedule_ref == named.schedule_ref
+        assert retained.placement_material_state_ref is None
         async with runtime.session_factory() as session, session.begin():
             accepted = (
-                (
-                    await session.execute(
-                        text("""
+                await session.scalars(
+                    text("""
                 SELECT schedule_ref FROM dante.get_self_activity_schedule_roles(
-                    :actor, CAST(ARRAY[:activity] AS uuid[]))
-                WHERE role_code='interval'
+                    :actor,CAST(ARRAY[:activity] AS uuid[])) WHERE role_code='interval'
             """),
-                        {"actor": actor, "activity": activity},
-                    )
+                    {"actor": actor, "activity": activity},
                 )
-                .scalars()
-                .all()
-            )
-        assert intervals[0].schedule_ref in accepted
-        assert added.schedule_ref in accepted
+            ).all()
+        assert first.schedule_ref in accepted
     finally:
         await runtime.dispose()
 
 
 @pytest.mark.asyncio
-async def test_locked_activity_accepts_new_sessions_without_moving_existing_placement(
+async def test_adding_a_named_session_creates_no_schedule_placement(
     migrated_database: Any,
 ) -> None:
-    """Placement lock blocks movement, not authoring within its accepted window."""
     actor = _seed_self(migrated_database)
     runtime = create_database_runtime(migrated_database.runtime_settings())
     try:
         created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
             self_person_ref=actor,
-            operation_id="replan:locked:add:create",
+            operation_id="session-lifecycle:add",
+            title="Studio",
+            placement=_window(9, 12),
+            activity_intervals=(_window(9, 12),),
+        )
+        activity = created.item.subject_native_ref
+        before = await _snapshot(runtime, actor, activity)
+        interval = next(row for row in before.schedules if row.role_code == "interval")
+        after = await apply_activity_replan(
+            activity,
+            ActivityReplanCommand(
+                operation_id="session-lifecycle:add:apply",
+                intervals=[_move(interval, 9, 12)],
+                new_planned_sessions=[NewPlannedRow(client_ref=uuid7(), name="Esercizi")],
+            ),
+            _context(actor),
+            _request(runtime),
+            Response(),
+        )
+        named = next(row for row in after.schedules if row.role_code == "planned")
+        assert named.display_name == "Esercizi"
+        assert named.placement_material_state_ref is None
+        async with runtime.session_factory() as session, session.begin():
+            count = await session.scalar(
+                text(
+                    "SELECT count(*) FROM dante.schedule_current_placement WHERE scoped_owner_ref=:schedule"
+                ),
+                {"schedule": named.schedule_ref},
+            )
+        assert count == 0
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_named_session_delete_requires_explicit_accounting_and_retires_the_configuration(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    try:
+        created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
+            self_person_ref=actor,
+            operation_id="session-lifecycle:delete",
+            title="Studio",
+            placement=_window(9, 12),
+            activity_intervals=(_window(9, 12),),
+            planned_slices=(None,),
+            planned_slice_names=("Da eliminare",),
+        )
+        activity = created.item.subject_native_ref
+        before = await _snapshot(runtime, actor, activity)
+        interval = next(row for row in before.schedules if row.role_code == "interval")
+        named = next(row for row in before.schedules if row.role_code == "planned")
+        with pytest.raises(ProblemError):
+            await preview_activity_replan(
+                activity,
+                ActivityReplanCommand(
+                    operation_id="session-lifecycle:omitted", intervals=[_move(interval, 9, 12)]
+                ),
+                _context(actor),
+                _request(runtime),
+                Response(),
+            )
+        after = await apply_activity_replan(
+            activity,
+            ActivityReplanCommand(
+                operation_id="session-lifecycle:delete:apply",
+                intervals=[_move(interval, 9, 12)],
+                delete_planned_sessions=[
+                    DeletePlannedRow(
+                        schedule_ref=named.schedule_ref,
+                        expected_material_state_ref=named.placement_material_state_ref,
+                    )
+                ],
+            ),
+            _context(actor),
+            _request(runtime),
+            Response(),
+        )
+        assert not any(row.role_code == "planned" for row in after.schedules)
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_placement_lock_allows_new_unplaced_named_session_but_blocks_movement(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    try:
+        created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
+            self_person_ref=actor,
+            operation_id="lifecycle:locked",
             title="Studio",
             placement=_window(9, 12),
         )
         activity = created.item.subject_native_ref
-        context = _fake_context(actor)
-        request = _fake_request(runtime)
+        before = await _snapshot(runtime, actor, activity)
+        envelope = next(row for row in before.schedules if row.role_code == "envelope")
         async with runtime.session_factory() as session, session.begin():
-            before = ActivityEditSnapshot.model_validate(
-                await session.scalar(
-                    _SNAPSHOT,
-                    {"actor": actor, "activity": activity},
-                )
-            )
-            envelope = next(row for row in before.schedules if row.role_code == "envelope")
-            locked = (
-                (
-                    await session.execute(
-                        text("""
-                SELECT * FROM dante.set_self_schedule_placement_lock(
-                    :actor,:schedule,true,NULL)
-            """),
-                        {"actor": actor, "schedule": envelope.schedule_ref},
-                    )
-                )
-                .mappings()
-                .one()
-            )
-            assert locked["locked"] is True
-        command = ActivityReplanCommand(
-            operation_id="replan:locked:add:apply",
-            envelope=_move(envelope, 9, 12),
-            new_planned_sessions=[
-                NewPlannedRow(client_ref=uuid7(), name="Senza orario"),
-                NewPlannedRow(
-                    client_ref=uuid7(),
-                    name="Con orario",
-                    starts_local_at=datetime(2026, 10, 9, 10),  # noqa: DTZ001
-                    ends_local_at=datetime(2026, 10, 9, 11),  # noqa: DTZ001
+            await session.execute(
+                text(
+                    "SELECT * FROM dante.set_self_schedule_placement_lock(:actor,:schedule,true,NULL)"
                 ),
-            ],
+                {"actor": actor, "schedule": envelope.schedule_ref},
+            )
+        unchanged = await apply_activity_replan(
+            activity,
+            ActivityReplanCommand(
+                operation_id="lifecycle:locked:add",
+                envelope=_move(envelope, 9, 12),
+                new_planned_sessions=[NewPlannedRow(client_ref=uuid7(), name="Ripasso")],
+            ),
+            _context(actor),
+            _request(runtime),
+            Response(),
         )
-        after = await apply_activity_replan(activity, command, context, request, Response())
-        assert len([row for row in after.schedules if row.role_code == "planned"]) == 2
+        named = next(row for row in unchanged.schedules if row.role_code == "planned")
+        assert named.placement_material_state_ref is None
         assert (
             next(
-                row for row in after.schedules if row.role_code == "envelope"
+                row for row in unchanged.schedules if row.role_code == "envelope"
             ).placement_material_state_ref
             == envelope.placement_material_state_ref
         )
-        async with runtime.session_factory() as session, session.begin():
-            assert (
-                await session.scalar(
-                    text("""
-                SELECT locked FROM dante.get_self_schedule_placement_lock(
-                    :actor,:schedule)
-            """),
-                    {"actor": actor, "schedule": envelope.schedule_ref},
-                )
-                is True
-            )
-        with pytest.raises(ProblemError) as moving:
+        with pytest.raises(ProblemError) as locked:
             await apply_activity_replan(
                 activity,
                 ActivityReplanCommand(
-                    operation_id="replan:locked:move:reject",
-                    envelope=_move(envelope, 8, 12),
-                    planned_sessions=[
-                        _move(
-                            next(
-                                row
-                                for row in after.schedules
-                                if row.role_code == "planned"
-                                and row.placement_material_state_ref is not None
-                            ),
-                            10,
-                            11,
-                        )
-                    ],
+                    operation_id="lifecycle:locked:move",
+                    envelope=_move(envelope, 10, 13),
+                    planned_sessions=[_retain(named)],
                 ),
-                context,
-                request,
+                _context(actor),
+                _request(runtime),
                 Response(),
             )
-        assert moving.value.status == 409
+        assert locked.value.status == 409
     finally:
         await runtime.dispose()

@@ -136,7 +136,6 @@ function parseStructure(value: unknown, parentRef: string): Structure {
 }
 
 function Schedules({ rows }: Readonly<{ rows: readonly Schedule[] }>) {
-  const [observedAt] = useState(() => Date.now());
   if (rows.length === 0) return <small>Nessuno Schedule corrente.</small>;
   return (
     <ul>
@@ -149,14 +148,10 @@ function Schedules({ rows }: Readonly<{ rows: readonly Schedule[] }>) {
               ? `Intervallo attività ${row.presentationOrder ?? ''}`
               : row.roleCode === 'envelope'
                 ? 'Estensione complessiva attività'
-                : 'Schedule'}{' '}
-          · {row.temporalForm} · {row.start ?? 'senza inizio'}
-          {row.end === null ? '' : ` → ${row.end}`}
-          {row.roleCode === 'planned' &&
-          row.end !== null &&
-          Date.parse(row.end) <= observedAt
-            ? ' · Pianificazione conclusa; verifica separatamente Session/Actual'
-            : ''}
+                : 'Schedule'}
+          {row.roleCode === 'planned'
+            ? null
+            : ` · ${row.temporalForm} · ${row.start ?? 'senza inizio'}${row.end === null ? '' : ` → ${row.end}`}`}
         </li>
       ))}
     </ul>

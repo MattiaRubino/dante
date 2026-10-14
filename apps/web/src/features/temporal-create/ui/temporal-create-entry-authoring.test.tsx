@@ -182,7 +182,7 @@ describe('Temporal Create U2 entry', () => {
     expect(screen.getByDisplayValue('Copia lavoro')).toBeTruthy();
     expect(screen.getByDisplayValue('Finire')).toBeTruthy();
   });
-  it('submits named future Session planning without exposing Sub-Activities', async () => {
+  it('submits a named Session without a child clock or Sub-Activities', async () => {
     const { activityRequests } = renderEntry([], false, '2132-03-06');
     fireEvent.change(screen.getByPlaceholderText('Titolo'), {
       target: { value: 'Progetto' },
@@ -209,35 +209,19 @@ describe('Temporal Create U2 entry', () => {
         target: { value: 'Ricerca fonti' },
       },
     );
-    fireEvent.click(
-      within(planned as HTMLElement).getByRole('button', { name: 'Orario' }),
-    );
-    fireEvent.change(
-      within(planned as HTMLElement).getByLabelText('Inizio Sessione: ore'),
-      { target: { value: '09' } },
-    );
-    fireEvent.change(
-      within(planned as HTMLElement).getByLabelText('Inizio Sessione: minuti'),
-      { target: { value: '15' } },
-    );
-    fireEvent.change(
-      within(planned as HTMLElement).getByLabelText('Fine Sessione: ore'),
-      { target: { value: '09' } },
-    );
-    fireEvent.change(
-      within(planned as HTMLElement).getByLabelText('Fine Sessione: minuti'),
-      { target: { value: '30' } },
-    );
+    expect(
+      within(planned as HTMLElement).queryByRole('button', { name: 'Orario' }),
+    ).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Aggiungi' }));
 
     await waitFor(() => expect(activityRequests).toHaveLength(1));
     expect(activityRequests[0]?.sessionCaptureMode).toBe('live');
     expect(activityRequests[0]?.plannedSliceNames).toEqual(['Ricerca fonti']);
-    expect(activityRequests[0]?.plannedSlices).toHaveLength(1);
+    expect(activityRequests[0]?.plannedSlices).toEqual([null]);
     expect(activityRequests[0]?.children).toEqual([]);
   });
 
-  it('shows an out-of-range Session error in Italian on its time controls', async () => {
+  it('lets a named Session save without a separate time range', async () => {
     const { activityRequests } = renderEntry([], false, '2132-03-06');
     fireEvent.change(screen.getByPlaceholderText('Titolo'), {
       target: { value: 'Progetto' },
@@ -251,57 +235,38 @@ describe('Temporal Create U2 entry', () => {
     fireEvent.change(within(planned).getByLabelText('Nome Sessione'), {
       target: { value: 'Ricerca fonti' },
     });
-    fireEvent.click(within(planned).getByRole('button', { name: 'Orario' }));
-    fireEvent.change(within(planned).getByLabelText('Inizio Sessione: ore'), {
-      target: { value: '00' },
-    });
-    fireEvent.change(within(planned).getByLabelText('Fine Sessione: ore'), {
-      target: { value: '23' },
-    });
-    fireEvent.change(within(planned).getByLabelText('Fine Sessione: minuti'), {
-      target: { value: '59' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi' }));
-
-    const editor = planned.querySelector<HTMLElement>(
-      '.temporal-create-tree-time-editor',
-    );
-    if (!editor) throw new Error('Expected Session time editor.');
-    await waitFor(() => {
-      expect(editor.getAttribute('data-create-invalid')).toBe('true');
-      expect(within(editor).getByRole('alert').textContent).toBe(
-        'La Sessione deve rientrare nell’orario dell’attività.',
-      );
-    });
-    expect(planned.getAttribute('data-create-invalid')).toBeNull();
-    expect(activityRequests).toHaveLength(0);
-  });
-
-  it('saves a planned Session without any time when Orario remains off or is switched off', async () => {
-    const { activityRequests } = renderEntry([], false, '2132-03-06');
-    fireEvent.change(screen.getByPlaceholderText('Titolo'), {
-      target: { value: 'Progetto' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: /Opzioni avanzate/ }));
-    const actions = screen.getByLabelText('Aggiungi Sessione pianificata');
-    fireEvent.click(within(actions).getByRole('button', { name: 'Sessione' }));
-    const planned = document.querySelector(
-      '[data-create-planned-session]',
-    ) as HTMLElement;
-    fireEvent.change(within(planned).getByLabelText('Nome Sessione'), {
-      target: { value: 'Ricerca fonti' },
-    });
-    const toggle = within(planned).getByRole('button', { name: 'Orario' });
-    expect(toggle.getAttribute('aria-expanded')).toBe('false');
-    fireEvent.click(toggle);
-    expect(within(planned).getByLabelText('Inizio Sessione: ore')).toBeTruthy();
-    fireEvent.click(toggle);
-    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(
+      within(planned).queryByRole('button', { name: 'Orario' }),
+    ).toBeNull();
     expect(within(planned).queryByLabelText('Inizio Sessione: ore')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Aggiungi' }));
     await waitFor(() => expect(activityRequests).toHaveLength(1));
     expect(activityRequests[0]?.plannedSlices).toEqual([null]);
     expect(activityRequests[0]?.plannedSliceNames).toEqual(['Ricerca fonti']);
+  });
+
+  it('discards a new named Session before Activity creation', async () => {
+    const { activityRequests } = renderEntry([], false, '2132-03-06');
+    fireEvent.change(screen.getByPlaceholderText('Titolo'), {
+      target: { value: 'Progetto' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Opzioni avanzate/ }));
+    const actions = screen.getByLabelText('Aggiungi Sessione pianificata');
+    fireEvent.click(within(actions).getByRole('button', { name: 'Sessione' }));
+    const planned = document.querySelector(
+      '[data-create-planned-session]',
+    ) as HTMLElement;
+    fireEvent.change(within(planned).getByLabelText('Nome Sessione'), {
+      target: { value: 'Da scartare' },
+    });
+    fireEvent.click(
+      within(planned).getByRole('button', { name: 'Rimuovi Sessione' }),
+    );
+    expect(document.querySelector('[data-create-planned-session]')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi' }));
+    await waitFor(() => expect(activityRequests).toHaveLength(1));
+    expect(activityRequests[0]?.plannedSlices ?? []).toEqual([]);
+    expect(activityRequests[0]?.plannedSliceNames ?? []).toEqual([]);
   });
 
   it('creates an Activity without requiring any Life Area and persists the DANTE default color', async () => {

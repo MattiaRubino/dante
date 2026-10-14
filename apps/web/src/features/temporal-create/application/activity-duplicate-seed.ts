@@ -124,47 +124,14 @@ export function buildActivityDuplicateSeed(
       endTime: end.toPlainTime().toString({ smallestUnit: 'minute' }),
     };
   });
-  const plannedSlices = planned.map((schedule) => {
-    if (!schedule.start || !schedule.end) {
-      return {
-        id: crypto.randomUUID(),
-        title: schedule.name ?? `Sessione ${schedule.order ?? 1}`,
-        timeEnabled: false,
-        date: fields.date ?? Temporal.Now.plainDateISO().toString(),
-        startTime: fields.startTime ?? '09:00',
-        endTime: fields.startTime ?? '09:00',
-      };
-    }
-    const { start, end } = localWindow(schedule);
-    if (
-      primary &&
-      (schedule.temporalForm !== primary.temporalForm ||
-        schedule.zoneId !== primary.zoneId)
-    ) {
-      throw new Error(
-        'Una sessione pianificata usa un fuso diverso dall’attività.',
-      );
-    }
-    return {
-      id: crypto.randomUUID(),
-      title: schedule.name ?? `Sessione ${schedule.order ?? 1}`,
-      timeEnabled: true,
-      date: start.toPlainDate().toString(),
-      startTime: start.toPlainTime().toString({ smallestUnit: 'minute' }),
-      endTime: end.toPlainTime().toString({ smallestUnit: 'minute' }),
-    };
-  });
-  if (
-    planned.some((schedule) => {
-      if (!schedule.start || !schedule.end) return false;
-      const { start, end } = localWindow(schedule);
-      return start.toPlainDate().toString() !== end.toPlainDate().toString();
-    })
-  ) {
-    throw new Error(
-      'Una sessione attraversa la mezzanotte e richiede una modifica manuale.',
-    );
-  }
+  const plannedSlices = planned.map((schedule) => ({
+    id: crypto.randomUUID(),
+    title: schedule.name ?? `Sessione ${schedule.order ?? 1}`,
+    timeEnabled: false,
+    date: fields.date ?? Temporal.Now.plainDateISO().toString(),
+    startTime: fields.startTime ?? '09:00',
+    endTime: fields.startTime ?? '09:00',
+  }));
   const objectives = settings.objectives.map((objective) => ({
     id: crypto.randomUUID(),
     label: objective.label,

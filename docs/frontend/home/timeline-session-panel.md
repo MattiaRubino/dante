@@ -1,3 +1,5 @@
+> **Superseded operational lifecycle:** [`activity-session-operational-lifecycle-v2.md`](../../domain/decisions/activity-session-operational-lifecycle-v2.md) is the current authority. This document retains B14 implementation history and must not reintroduce timed internal Session rows.
+
 # Timeline Session desk — current B14 contract
 
 **Status:** B14 live Session + Home three-view workspace technical gate GREEN through source `b71bf532` / `_141`, based on cumulative user-local tests (2026-10-10); 14 generated client files were published in commit `a9a8353a`; real-app acceptance remains pending.

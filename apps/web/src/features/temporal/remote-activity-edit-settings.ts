@@ -63,9 +63,7 @@ export type ActivityLifeAreaChoice = Readonly<{
 }>;
 
 export type ActivityReplanTime = Readonly<{ start: string; end: string }>;
-export type ActivityNewPlanned = Readonly<
-  ActivityReplanTime & { clientRef: string; name: string }
->;
+export type ActivityNewPlanned = Readonly<{ clientRef: string; name: string }>;
 export type ActivityNewInterval = Readonly<
   ActivityReplanTime & { clientRef: string }
 >;
@@ -286,7 +284,7 @@ export function createRemoteActivityEditSettings(
     draft: ActivityReplanDraft,
     operationId: string,
   ) {
-    const row = (item: ActivityEditSchedule) => ({
+    const timedRow = (item: ActivityEditSchedule) => ({
       schedule_ref: item.scheduleRef,
       expected_material_state_ref: item.placementStateRef,
       starts_local_at: draft.times[item.scheduleRef]?.start,
@@ -299,7 +297,7 @@ export function createRemoteActivityEditSettings(
         : {
             envelope: settings.schedules
               .filter((item) => item.role === 'envelope')
-              .map(row)[0],
+              .map(timedRow)[0],
           }),
       intervals: settings.schedules
         .filter(
@@ -307,49 +305,33 @@ export function createRemoteActivityEditSettings(
             item.role === 'interval' &&
             !draft.removedIntervals.includes(item.scheduleRef),
         )
-        .map(row),
+        .map(timedRow),
       remove_intervals: settings.schedules
         .filter(
           (item) =>
             item.role === 'interval' &&
             draft.removedIntervals.includes(item.scheduleRef),
         )
-        .map(row),
+        .map(timedRow),
       new_intervals: draft.newIntervals.map((item) => ({
         client_ref: item.clientRef,
         starts_local_at: item.start,
         ends_local_at: item.end,
       })),
+      // Named Sessions keep only identity and name. They deliberately never
+      // send placement data, even when a legacy row still has it persisted.
       planned_sessions: settings.schedules
         .filter(
           (item) =>
             item.role === 'planned' &&
-            item.placementStateRef !== null &&
-            !draft.removedPlanned.includes(item.scheduleRef) &&
             !draft.deletedPlanned?.includes(item.scheduleRef),
-        )
-        .map(row),
-      place_planned_sessions: settings.schedules
-        .filter(
-          (item) =>
-            item.role === 'planned' &&
-            item.placementStateRef === null &&
-            !draft.deletedPlanned?.includes(item.scheduleRef) &&
-            !!draft.times[item.scheduleRef]?.start,
         )
         .map((item) => ({
           schedule_ref: item.scheduleRef,
-          starts_local_at: draft.times[item.scheduleRef]?.start,
-          ends_local_at: draft.times[item.scheduleRef]?.end,
+          expected_material_state_ref: item.placementStateRef,
         })),
-      remove_planned_sessions: settings.schedules
-        .filter(
-          (item) =>
-            item.role === 'planned' &&
-            item.placementStateRef !== null &&
-            draft.removedPlanned.includes(item.scheduleRef),
-        )
-        .map(row),
+      place_planned_sessions: [],
+      remove_planned_sessions: [],
       delete_planned_sessions: settings.schedules
         .filter(
           (item) =>
@@ -363,8 +345,6 @@ export function createRemoteActivityEditSettings(
       new_planned_sessions: draft.newPlanned.map((item) => ({
         client_ref: item.clientRef,
         name: item.name.trim() || null,
-        starts_local_at: item.start || null,
-        ends_local_at: item.end || null,
       })),
     };
   }
