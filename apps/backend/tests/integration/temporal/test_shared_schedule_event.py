@@ -8,13 +8,12 @@ from base64 import urlsafe_b64encode
 from collections.abc import Generator, Mapping
 from datetime import UTC, datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from typing import Any, override
+from typing import Any, Protocol, cast, override
 from uuid import UUID, uuid7
 
 import psycopg
 import pytest
 from fastapi.testclient import TestClient
-from httpx import Response
 from pydantic import SecretStr
 from tests.integration.temporal.support.life_area import api_test_life_area
 
@@ -30,6 +29,14 @@ _CANONICAL_ORIGIN = "https://dante.test"
 _AUTH_TEST_VALUE = "correct horse battery staple"
 _PEPPER_KEY_ID = "test-password-v1"
 _OTP_KEY_ID = "test-signup-otp-v1"
+
+
+class _TestHttpResponse(Protocol):
+    """Only the API response surface inspected by this integration test."""
+
+    status_code: int
+
+    def json(self) -> Any: ...
 
 
 def _secret(raw: bytes) -> str:
@@ -200,8 +207,8 @@ def _post_scheduled_event(
     operation_id: str,
     title: str,
     placement: Mapping[str, object],
-) -> Response:
-    return client.post(
+) -> _TestHttpResponse:
+    return cast(_TestHttpResponse, client.post(
         "/api/v1/temporal/events/scheduled",
         json={
             "operation_id": operation_id,
@@ -212,7 +219,7 @@ def _post_scheduled_event(
             "placement": placement,
         },
         headers={**_base_headers(), CSRF_HEADER_NAME: csrf},
-    )
+    ))
 
 
 @pytest.mark.postgres
