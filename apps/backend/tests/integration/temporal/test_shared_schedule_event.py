@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import threading
 from base64 import urlsafe_b64encode
-from collections.abc import Generator
+from collections.abc import Generator, Mapping
 from datetime import UTC, datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any, override
@@ -14,6 +14,7 @@ from uuid import UUID, uuid7
 import psycopg
 import pytest
 from fastapi.testclient import TestClient
+from httpx import Response
 from pydantic import SecretStr
 from tests.integration.temporal.support.life_area import api_test_life_area
 
@@ -198,8 +199,8 @@ def _post_scheduled_event(
     csrf: str,
     operation_id: str,
     title: str,
-    placement: dict[str, object],
-):
+    placement: Mapping[str, object],
+) -> Response:
     return client.post(
         "/api/v1/temporal/events/scheduled",
         json={
