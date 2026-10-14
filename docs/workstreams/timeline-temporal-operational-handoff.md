@@ -1149,3 +1149,20 @@ Three precise source changes published *after the logged SHA*:
 - `temporal-create-entry.tsx`: stable `handleU2DraftChange` still updates ref, state and staged-vault invalidation, but clears prior failure message/target **only** on a true `'user'` edit, synchronously without a queued microtask. Initial provider synchronization never clears a just-produced validation error.
 
 **New changes not yet tested** by WSL; do not claim full green. Efficient next check: first run the exact failing file via `pnpm --filter @dante/web exec vitest run src/features/temporal-create/ui/temporal-create-entry-authoring.test.tsx`. On PASS, execute `bash tooling/testing/verify_work_handoff_20261014.sh` (Ruff, mypy, ESLint, TypeScript, all 1055 Vitest, generated/formatted contracts) and on complete PASS execute `bash tooling/testing/run_full_gate_adaptive.sh` (27 groups incl. PostgreSQL and browser real-stack). Do not change or mute the Session visual-error test. Preserve complete per-run log archives.
+
+
+## 2026-10-14 — Focused Quick Create regression: three failures after 6e929e2d
+
+The user supplied `CREATE_SESSION_FOCUSED_VITEST.log` from a WSL run after `6e929e2d`: 16 tests in `temporal-create-entry-authoring.test.tsx`, **13 PASS / 3 FAIL**. Exact failing cases: (1) out-of-range planned Session still not marked with `data-create-invalid="true"` at the session time editor; (2) staging `Formazione` new Life Area then Add sent a request with `lifeArea=undefined` instead of the default orange `#EA5C12`; (3) staging `Formazione blu` after choosing item color blue sent `lifeArea=undefined` instead of `#4285F4`. All three test contracts are valid product behavior: do not remove, skip or weaken them. The chained all-gate command did NOT progress beyond focused Vitest, so no new broad static/PostgreSQL/Playwright results exist.
+
+Root cause identified for the two new Life Area failures: `TemporalCreateLifeAreaField.stageTypedName` calls `onLifeAreaChange(newArea)` and `onItemColorChange(null)` synchronously in one event. The last provider refactor replaced a functional `setState(current=>...)` with `patchTemporalCreateU2AuthoringDraft(state, patch)`, capturing the **previous render's** `state` in both callbacks. The second patch could overwrite the new Life Area with `kind:'none'`. Potential related source for the Session validation: a stale provider `useEffect` syncing a preceding render could overwrite newer Activity Structure data in the entry ref before Submit, even when clearing failureTarget on auto-sync was prevented.
+
+Published a targeted U2 provider fix after this log: `latestDraftRef = useRef(state)`, synced to committed `state` in `useLayoutEffect`. User-initiated `patch` composes against `latestDraftRef.current`, updates it synchronously, then sets React state and calls `onDraftChange(next,'user')`. The post-commit sync effect only publishes `onDraftChange(state,'sync')` when the committed `state` matches the current ref; old commits cannot replace newer data. This protects same-event Life Area/color changes, queued time-field edits and future Create validation without changing any tests or removing UI behavior. The previous user/sync distinctions in the entry/composer remain. **New fix is UNVERIFIED**; do not claim the three tests now pass until the focused Vitest reports success.
+
+Next verification on a clean checkout:
+```bash
+cd ~/projects/dante || exit 1
+git pull --ff-only origin feature/timeline-temporal-operational || exit 1
+pnpm --filter @dante/web exec vitest run src/features/temporal-create/ui/temporal-create-entry-authoring.test.tsx
+```
+Only when all 16 pass, run `bash tooling/testing/verify_work_handoff_20261014.sh`, then `bash tooling/testing/run_full_gate_adaptive.sh` with log archives and provenance. If targeted tests still fail, inspect actual U2 create validation and stage/edit source before modifying more logic.
