@@ -115,7 +115,7 @@ describe('TemporalTimelineRuntimeBoundary', () => {
     }>();
     const checkpointWindow = vi.fn<
       NonNullable<TemporalTimelineDataSource['checkpointWindow']>
-    >((request) => {
+    >(() => {
       order.push('checkpoint');
       return checkpoint.promise.then((result) => {
         order.push('checkpoint-complete');
