@@ -15,25 +15,33 @@ export function TimelineInspectorReality({
   kind: RealitySubjectKind;
   subjectRef: string;
 }>) {
-  const [mode, setMode] = useState<RealityMode | null>(null);
-  const [failed, setFailed] = useState(false);
+  const requestKey = `${kind}:${subjectRef}`;
+  const [result, setResult] = useState<
+    Readonly<{ key: string; mode: RealityMode | null; failed: boolean }> | null
+  >(null);
+  // A previous subject's result must never flash on a different Inspector.
+  const current = result?.key === requestKey ? result : null;
+  const mode = current?.mode ?? null;
+  const failed = current?.failed ?? false;
 
   useEffect(() => {
     let active = true;
-    setMode(null);
-    setFailed(false);
     void createRemoteRealityObjectiveDataSource(globalThis.fetch)
       .getRealityMode(kind, subjectRef)
       .then((value) => {
-        if (active) setMode(value);
+        if (active) {
+          setResult({ key: requestKey, mode: value, failed: false });
+        }
       })
       .catch(() => {
-        if (active) setFailed(true);
+        if (active) {
+          setResult({ key: requestKey, mode: null, failed: true });
+        }
       });
     return () => {
       active = false;
     };
-  }, [kind, subjectRef]);
+  }, [kind, subjectRef, requestKey]);
 
   return (
     <>
