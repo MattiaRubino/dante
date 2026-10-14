@@ -46,6 +46,10 @@ function notFound() {
   );
 }
 
+function resolvedJson(value: unknown, init?: ResponseInit): Promise<Response> {
+  return Promise.resolve(Response.json(value, init));
+}
+
 describe('Actual realization controls', () => {
   afterEach(() => {
     cleanup();
@@ -56,18 +60,18 @@ describe('Actual realization controls', () => {
     const bodies: unknown[] = [];
     const onRecorded = vi.fn();
     let current: ReturnType<typeof actual> | null = null;
-    const fetchFn = vi.fn<Fetch>(async (input, init) => {
+    const fetchFn = vi.fn<Fetch>((input, init) => {
       const url = fetchRequestUrl(input);
       if (url.endsWith('/api/v1/auth/session')) {
-        return Response.json({ authenticated: true, csrf_token: 'csrf' });
+        return resolvedJson({ authenticated: true, csrf_token: 'csrf' });
       }
       if (init?.method === 'POST') {
         const body = JSON.parse(fetchRequestBody(init.body));
         bodies.push(body);
         current = actual(STATE_1, true);
-        return Response.json(current, { status: 201 });
+        return resolvedJson(current, { status: 201 });
       }
-      return current === null ? notFound() : Response.json(current);
+      return current === null ? notFound() : resolvedJson(current);
     });
     vi.stubGlobal('fetch', fetchFn);
 
@@ -101,15 +105,15 @@ describe('Actual realization controls', () => {
     const sessionTimingMaterialStateRef =
       '01991f2a-1234-7abc-8def-1234567890b0';
     const bodies: Array<Record<string, unknown>> = [];
-    const fetchFn = vi.fn<Fetch>(async (input, init) => {
+    const fetchFn = vi.fn<Fetch>((input, init) => {
       if (fetchRequestUrl(input).endsWith('/api/v1/auth/session')) {
-        return Response.json({ authenticated: true, csrf_token: 'csrf' });
+        return resolvedJson({ authenticated: true, csrf_token: 'csrf' });
       }
       if (init?.method === 'POST') {
         bodies.push(
           JSON.parse(fetchRequestBody(init.body)) as Record<string, unknown>,
         );
-        return Response.json(
+        return resolvedJson(
           {
             ...actual(STATE_1, true),
             session_bases: [
@@ -123,7 +127,7 @@ describe('Actual realization controls', () => {
           { status: 201 },
         );
       }
-      return notFound();
+      return Promise.resolve(notFound());
     });
     vi.stubGlobal('fetch', fetchFn);
 
@@ -149,10 +153,10 @@ describe('Actual realization controls', () => {
   it('uses the current MaterialState as compare-and-set input for a later realization', async () => {
     const bodies: Array<Record<string, unknown>> = [];
     let current = actual(STATE_1, true);
-    const fetchFn = vi.fn<Fetch>(async (input, init) => {
+    const fetchFn = vi.fn<Fetch>((input, init) => {
       const url = fetchRequestUrl(input);
       if (url.endsWith('/api/v1/auth/session')) {
-        return Response.json({ authenticated: true, csrf_token: 'csrf' });
+        return resolvedJson({ authenticated: true, csrf_token: 'csrf' });
       }
       if (init?.method === 'POST') {
         const body = JSON.parse(fetchRequestBody(init.body)) as Record<
@@ -161,9 +165,9 @@ describe('Actual realization controls', () => {
         >;
         bodies.push(body);
         current = actual(STATE_2, false);
-        return Response.json(current, { status: 201 });
+        return resolvedJson(current, { status: 201 });
       }
-      return Response.json(current);
+      return resolvedJson(current);
     });
     vi.stubGlobal('fetch', fetchFn);
 
@@ -182,9 +186,9 @@ describe('Actual realization controls', () => {
 
   it('asks for explicit acknowledgement only when the parent guard requires it', async () => {
     const bodies: Array<Record<string, unknown>> = [];
-    const fetchFn = vi.fn<Fetch>(async (input, init) => {
+    const fetchFn = vi.fn<Fetch>((input, init) => {
       if (fetchRequestUrl(input).endsWith('/api/v1/auth/session')) {
-        return Response.json({ authenticated: true, csrf_token: 'csrf' });
+        return resolvedJson({ authenticated: true, csrf_token: 'csrf' });
       }
       if (init?.method === 'POST') {
         const body = JSON.parse(fetchRequestBody(init.body)) as Record<
@@ -193,7 +197,7 @@ describe('Actual realization controls', () => {
         >;
         bodies.push(body);
         if (!body.acknowledge_unresolved_children) {
-          return Response.json(
+          return resolvedJson(
             {
               code: 'temporal.actual.parent_ack_required',
               detail: 'Required children need acknowledgement.',
@@ -201,9 +205,9 @@ describe('Actual realization controls', () => {
             { status: 409 },
           );
         }
-        return Response.json(actual(STATE_1, true), { status: 201 });
+        return resolvedJson(actual(STATE_1, true), { status: 201 });
       }
-      return notFound();
+      return Promise.resolve(notFound());
     });
     vi.stubGlobal('fetch', fetchFn);
 
@@ -225,13 +229,13 @@ describe('Actual realization controls', () => {
 
   it('reloads authoritative state after a stale-current rejection', async () => {
     let reads = 0;
-    const fetchFn = vi.fn<Fetch>(async (input, init) => {
+    const fetchFn = vi.fn<Fetch>((input, init) => {
       const url = fetchRequestUrl(input);
       if (url.endsWith('/api/v1/auth/session')) {
-        return Response.json({ authenticated: true, csrf_token: 'csrf' });
+        return resolvedJson({ authenticated: true, csrf_token: 'csrf' });
       }
       if (init?.method === 'POST') {
-        return Response.json(
+        return resolvedJson(
           {
             code: 'temporal.actual.current_conflict',
             detail: 'Actual realization changed.',
@@ -240,7 +244,7 @@ describe('Actual realization controls', () => {
         );
       }
       reads += 1;
-      return Response.json(
+      return resolvedJson(
         actual(reads === 1 ? STATE_1 : STATE_2, reads === 1),
       );
     });
