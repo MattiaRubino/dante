@@ -6,13 +6,18 @@ import {
   type RefObject,
 } from 'react';
 
-import type { ActivityProfile } from '../../../temporal/remote-activity-inspector';
+import {
+  createRemoteActivityInspector,
+  type ActivityProfile,
+  type ActivitySessionImpact,
+} from '../../../temporal/remote-activity-inspector';
 import {
   createRemoteActivityEditSettings,
   type ActivityNewInterval,
   type ActivityNewPlanned,
   type ActivityReplanDraft,
   type ActivityReplanTime,
+  type ActivitySessionDisposition,
   type ActivityEditSettings,
   type ActivityLifeAreaChoice,
 } from '../../../temporal/remote-activity-edit-settings';
@@ -124,6 +129,12 @@ export function ActivityEditPanel({
 }>) {
   const [settingsSource] = useState(createRemoteActivityEditSettings);
   const [sessionSource] = useState(createRemoteTemporalSessionDataSource);
+  const [sessionImpactSource] = useState(createRemoteActivityInspector);
+  const formRef = useRef<HTMLFormElement | null>(null);
+  const [sessionConfirmation, setSessionConfirmation] =
+    useState<ActivitySessionImpact | null>(null);
+  const [sessionDecision, setSessionDecision] =
+    useState<ActivitySessionDisposition | null>(null);
   const [sessionAttempts, setSessionAttempts] = useState<
     readonly TemporalSessionView[] | null
   >(null);
@@ -721,6 +732,7 @@ export function ActivityEditPanel({
 
   return (
     <form
+      ref={formRef}
       className="timeline-activity-editor"
       onSubmit={(event) => {
         event.preventDefault();
@@ -735,7 +747,9 @@ export function ActivityEditPanel({
           settingsError ||
           !captureMode ||
           !realityMode ||
-          !draft.title.trim()
+          !draft.title.trim() ||
+          sessionAttempts === null ||
+          !!sessionAttemptsError
         )
           return;
         if (planDirty && Object.keys(planErrors).length) return;
@@ -759,6 +773,45 @@ export function ActivityEditPanel({
             `.timeline-activity-editor__objective-row[data-objective-id="${invalidObjective.id}"] input[type="number"]`,
           );
           field?.focus();
+          return;
+        }
+        if (dirty && sessionAttempts.length > 0 && sessionDecision === null) {
+          setPending(true);
+          void sessionImpactSource
+            .sessionImpact(profile.activityRef)
+            .then((impact) => {
+              if (impact.attempts.length > 0) {
+                setSessionConfirmation(impact);
+              } else {
+                // An attempt ended or was removed while Edit was open.
+                // No destructive confirmation is necessary for an empty graph.
+                setSessionAttempts([]);
+                setSessionDecision({
+                  mode: 'keep',
+                  expectedFingerprint: impact.fingerprint,
+                });
+                requestAnimationFrame(() => formRef.current?.requestSubmit());
+              }
+            })
+            .catch((reason: unknown) => {
+              setError(
+                reason instanceof Error
+                  ? reason.message
+                  : 'Impossibile verificare le Sessioni registrate.',
+              );
+            })
+            .finally(() => setPending(false));
+          return;
+        }
+        if (
+          sessionDecision?.mode === 'delete' &&
+          ((planDirty && (coreDirty || areaDirty || objectiveDirty || nameDirty)) ||
+            (!planDirty && !coreDirty))
+        ) {
+          setError(
+            'La rimozione delle Sessioni richiede un salvataggio atomico: ' +
+              'salva prima le altre modifiche o modifica soltanto il piano.',
+          );
           return;
         }
         setObjectiveError('');
@@ -792,6 +845,7 @@ export function ActivityEditPanel({
                 currentSettings,
                 replanDraft,
                 operationId,
+                sessionDecision ?? undefined,
               )
               .catch((reason: unknown) => {
                 errorHandled = true;
@@ -1036,6 +1090,7 @@ export function ActivityEditPanel({
               ...(reminderChanged ? { reminderLeadMinutes } : {}),
             },
             (operation.current ??= crypto.randomUUID()),
+            sessionDecision ?? undefined,
           );
           operation.current = undefined;
           setSettings(saved.settings);
@@ -2123,6 +2178,45 @@ export function ActivityEditPanel({
           {pending ? 'Salvataggio…' : 'Salva modifiche'}
         </button>
       </div>
+      {sessionConfirmation ? (
+        <div
+          className="timeline-activity-editor__session-confirmation"
+          role="alertdialog"
+          aria-modal="true"
+          aria-label="Conferma Sessioni registrate"
+        >
+          <p>
+            Questa attività contiene {sessionConfirmation.attempts.length}
+            {' '}Sessioni reali. Scegli come gestirle prima di salvare la modifica.
+          </p>
+          <p>
+            {sessionConfirmation.attempts.map((attempt) => attempt.status).join(' · ')}
+          </p>
+          {(['keep', 'delete'] as const).map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              disabled={pending}
+              onClick={() => {
+                setSessionDecision({
+                  mode,
+                  expectedFingerprint: sessionConfirmation.fingerprint,
+                });
+                setSessionConfirmation(null);
+                requestAnimationFrame(() => formRef.current?.requestSubmit());
+              }}
+            >
+              {mode === 'keep' ? 'Mantieni Sessioni' : 'Elimina Sessioni'}
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={() => setSessionConfirmation(null)}
+          >
+            Annulla
+          </button>
+        </div>
+      ) : null}
       {confirmingDiscard ? (
         <div className="timeline-activity-editor__discard" role="alert">
           <p>Scartare le modifiche non salvate?</p>
