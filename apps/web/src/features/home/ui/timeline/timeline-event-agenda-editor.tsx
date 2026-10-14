@@ -75,8 +75,11 @@ function TimelineEventAgendaEditorInstance({
 
   useEffect(() => {
     const controller = new AbortController();
-    // Mount starts at 'loading'; a changed eventRef remounts the instance.
-    void load(controller.signal);
+    // Fetch in the asynchronous effect continuation. No render-state update
+    // is triggered synchronously inside the effect itself.
+    void Promise.resolve().then(() => {
+      if (!controller.signal.aborted) return load(controller.signal);
+    });
     return () => controller.abort();
   }, [load]);
 
