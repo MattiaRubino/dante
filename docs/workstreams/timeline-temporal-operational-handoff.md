@@ -1184,3 +1184,21 @@ mkdir -p temp
 pnpm --filter @dante/web exec vitest run src/features/temporal-create/ui/temporal-create-entry-authoring.test.tsx 2>&1 | tee temp/CREATE_SESSION_FOCUSED_VITEST.log
 ```
 On **16/16 PASS** proceed to `bash tooling/testing/verify_work_handoff_20261014.sh` (all static + full Web Vitest) and only then `bash tooling/testing/run_full_gate_adaptive.sh` (all 27 PostgreSQL/browser groups). If it remains red, capture whether the parent `failureTarget` and `failureMessage` were produced before changing any domain validation.
+
+
+## 2026-10-14 — 27/27 acceptance PASS on 4ad30f90 (final full-gate evidence)
+
+**Verified directly from user's uploaded `FULL_GATE_LOGS.tar(20261014-113549).gz` and `FULL_GATE_SUMMARY(10).md`**. The adaptive full parallel gate completed on **source SHA `4ad30f905db0c37520fe180aeebcff74779e8d93`**, captured 2026-10-14 at 11:35:22 UTC, **27 of 27 groups PASS; source stability PASS; exit code 0; elapsed 660.4 seconds (11m 0.4s)**. This is an acceptance-test success for the exact SHA; it is *not* proof that every manual UI behavior or every historical contract is fully covered.
+
+Test evidence from separate archived logs:
+- Backend non-PostgreSQL `628 passed, 374 deselected` (intentional separate Postgres selection), 42.92s.
+- Backend PostgreSQL **374 selected tests covered in 21 module-atomic, duration-balanced queued jobs**, maximum **7 disposable isolated clusters**; PostgreSQL group passed, 465.6s total wall-clock.
+- `BACKEND_POSTGRES_SHARD_19` initially exited 2 due to transient **PostgreSQL readiness/cleanup**: startup reported `FATAL: the database system is starting up`, NOT an assertion failure; the full shard was retried once in isolation as `BACKEND_POSTGRES_SHARD_19_RETRY_01` and **17/17 passed**. Preserve this as an infrastructure observation and do not misreport 21 shards having clean first-attempt passes.
+- Web Vitest **225 test files, 1,055/1,055 cases PASS**, including the previously failing planned Session validation and Life Area colors; 26.36s inside log.
+- Playwright fixture / Session Panel **2/2 PASS** at 1440px and 390px.
+- Playwright nonauth **127/127 PASS** using 4 workers; web-server proxy emitted `ECONNREFUSED 127.0.0.1:8000` diagnostic noise because the nonauth browser route does not require a live backend; does not negate the passing assertions.
+- Playwright authenticated real-stack **84 PASS, 3 SKIPPED** out of 87 declared checks, using 1 isolated worker across Chromium, Firefox, WebKit; **3 skips are explicitly declared WebKit exclusions**: one B03-E Event closure check from `e2e/auth/event-create-read.spec.ts`, and two Life Area golden checks from `e2e/auth/temporal-create-life-area-golden.spec.ts`; these contracts are exercised in Chromium and Firefox by design. The real-stack email workers logged transient `OperationalError` during orchestrated database-outage scenarios. No Playwright failures.
+- `TEST_INTEGRITY` shows `REGISTERED=491 DISCOVERED=491 UNREVIEWED=491` with structural-consistency PASS; this *is not* an audit of all 491 historical test expectations or deprecation status. Do not characterize structural completeness as semantic review.
+- Python Ruff/format/mypy, repo ESLint/format/typecheck, architecture, generated drift, build, mobile bundle, all listed platform/eval/tooling/i18n/time/api contracts **PASS**.
+
+**Decision:** close the immediate static/type/unit/integration/E2E green-up phase for `4ad30f90`. Do not perform another 27-group run without a changed source SHA or a specific need. Future work may evaluate the single startup flake and nonauth backend-proxy/error noise as separate infrastructure/observability improvements, and independently audit whether all historical tests reflect the current UI; these are not reasons to reopen all passed tests. Preserve current product UI contracts (Bozze, Quick Create, red local validation, Session hierarchy, Timeline/Inspector, recurring edit scopes) without resurrecting deprecated features. If updating docs or any other file after this gate, explicitly tie the acceptance verdict to the tested SHA, not to a newer documentation-only HEAD.
